@@ -200,20 +200,20 @@ export const weeklyStories: Template[] = [
 ];
 
 export const aiTools = [
+  { name: "Criador de Anúncios", url: "https://chatgpt.com/g/g-67e9da4bd78881919f6c27aa46c0c076-corpo-de-anuncios", icon: "📢" },
   { name: "Criador de Títulos de Alto Impacto", url: "https://chatgpt.com/g/g-mXIK1OLtB-headlines-de-alto-impacto", icon: "💡" },
   { name: "Criador de Promessas Únicas", url: "https://chatgpt.com/g/g-pvCUBPOH1-gerador-de-promessas-com-mecanismo-unico", icon: "⭐" },
-  { name: "Criador de Quiz 2.0", url: "https://chatgpt.com/g/g-673e0736558881918f8e65ed8c8c5e81-funil-de-quiz-2-0", icon: "❓" },
-  { name: "Mapa de Dores e Desejos", url: "https://chatgpt.com/g/g-673e2ac6d1f08191bac9d38be1970598-mapa-de-dores-e-desejos", icon: "🎯" },
-  { name: "Criador de Cursos em Vídeo", url: "https://chatgpt.com/g/g-e53YJbtqR-criador-de-cursos-em-video", icon: "🎓" },
+  { name: "Mapa de Dores e Desejos de Clientes", url: "https://chatgpt.com/g/g-673e2ac6d1f08191bac9d38be1970598-mapa-de-dores-e-desejos", icon: "🎯" },
+  { name: "Criador de Curso em Vídeo", url: "https://chatgpt.com/g/g-e53YJbtqR-criador-de-cursos-em-video", icon: "🎓" },
   { name: "Criador de BÔNUS e ORDER BUMPS", url: "https://chatgpt.com/g/g-gYZKgxBX6-criador-de-bonus-e-order-bumps", icon: "🎁" },
-  { name: "Criador de Anúncios", url: "https://chatgpt.com/g/g-67e9da4bd78881919f6c27aa46c0c076-corpo-de-anuncios", icon: "📢" },
-  { name: "9 Ângulos de Hooks", url: "https://chatgpt.com/g/g-67e9d49f4dc88191b0e9e850ef4bb8ed-9-oticas-de-hooks", icon: "🪝" },
+  { name: "9 Ângulos de Ganchos de Ofertas", url: "https://chatgpt.com/g/g-67e9d49f4dc88191b0e9e850ef4bb8ed-9-oticas-de-hooks", icon: "🪝" },
+  { name: "Criador de Quiz", url: "https://chatgpt.com/g/g-673e0736558881918f8e65ed8c8c5e81-funil-de-quiz-2-0", icon: "❓" },
 ];
 
 export const resources = [
-  { name: "Baixar PDF dos Produtos", url: "https://bit.ly/150videos-destinos", icon: "📄" },
-  { name: "Comunidade Agente Lucrativo", url: "https://hotmart.com/pt-br/club/agente-lucrativo", icon: "👥" },
-  { name: "Grupo WhatsApp", url: "https://chat.whatsapp.com/Glq12Ih9jOz5IhtHJ98ud0", icon: "💬" },
+  { name: "Baixar PDF de Produtos e Bônus", url: "https://bit.ly/150videos-destinos", icon: "📄" },
+  { name: "Comunidade Agente Lucrativo Hotmart", url: "https://hotmart.com/pt-br/club/agente-lucrativo", icon: "👥" },
+  { name: "Entre no Grupo WhatsApp", url: "https://chat.whatsapp.com/Glq12Ih9jOz5IhtHJ98ud0", icon: "💬" },
   { name: "Calendário Editorial Notion", url: "https://www.notion.so/PLANNER-DE-AG-NCIA-DE-VIAGENS-LUCRATIVA-22ca83fea5d080dc9826fb043d5d000a", icon: "📅" },
 ];
 
