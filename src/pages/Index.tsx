@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { SearchBar } from "@/components/SearchBar";
 import { TemplateCard } from "@/components/TemplateCard";
 import { ResourceSection } from "@/components/ResourceSection";
 import { Footer } from "@/components/Footer";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
 import { 
   templates, 
   feedTemplates, 
@@ -14,6 +17,7 @@ import {
   resources,
   videoDownloads 
 } from "@/data/templates";
+import { captions } from "@/data/captions";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,6 +39,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <Hero />
         
@@ -45,7 +50,7 @@ const Index = () => {
         />
 
         <Tabs defaultValue="videos" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-auto gap-2 bg-muted/50 p-2 rounded-xl">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 h-auto gap-2 bg-muted/50 p-2 rounded-xl">
             <TabsTrigger value="videos" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               🎬 Vídeos Reels
             </TabsTrigger>
@@ -54,6 +59,9 @@ const Index = () => {
             </TabsTrigger>
             <TabsTrigger value="stories" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               📱 Stories
+            </TabsTrigger>
+            <TabsTrigger value="captions" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              📝 Legendas
             </TabsTrigger>
             <TabsTrigger value="downloads" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               📥 Downloads
@@ -134,6 +142,34 @@ const Index = () => {
             </div>
           </TabsContent>
 
+          <TabsContent value="captions" className="space-y-6 animate-in fade-in-50 duration-500">
+            <div className="text-center space-y-2 mb-8">
+              <h2 className="text-3xl font-bold">Legendas Prontas</h2>
+              <p className="text-muted-foreground">Copie e cole legendas profissionais para seus posts</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {captions.map((caption, index) => (
+                <Card key={index} className="p-6 space-y-4 hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-primary">{caption.destination}</h3>
+                    <span className="text-2xl">✍️</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground whitespace-pre-line">{caption.text}</p>
+                  <p className="text-xs text-accent font-medium">{caption.hashtags}</p>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${caption.text}\n\n${caption.hashtags}`);
+                    }}
+                  >
+                    📋 Copiar Legenda
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
           <TabsContent value="downloads" className="space-y-6 animate-in fade-in-50 duration-500">
             <div className="text-center space-y-2 mb-8">
               <h2 className="text-3xl font-bold">Downloads de Vídeos</h2>
@@ -157,7 +193,7 @@ const Index = () => {
             <div className="grid lg:grid-cols-2 gap-6">
               <ResourceSection
                 title="🤖 Robôs de IA para Marketing"
-                resources={aiTools}
+                resources={aiTools.map(tool => ({ name: tool.title, url: tool.url, icon: tool.icon }))}
                 description="Ferramentas de Inteligência Artificial para criar conteúdo"
               />
               
