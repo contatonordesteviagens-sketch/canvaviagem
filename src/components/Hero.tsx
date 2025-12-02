@@ -1,4 +1,4 @@
-import heroImage from "@/assets/team-hero.png";
+import heroImage from "@/assets/influencers-banner.png";
 import { Sparkles } from "lucide-react";
 
 export const Hero = () => {
@@ -26,7 +26,7 @@ export const Hero = () => {
           <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-accent/20 rounded-2xl blur-3xl" />
           <img 
             src={heroImage} 
-            alt="Equipe de especialistas em viagens" 
+            alt="Influencers de viagens Eva, Mel e Bia" 
             className="relative rounded-2xl shadow-2xl w-full h-auto object-cover"
           />
         </div>

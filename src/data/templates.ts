@@ -200,25 +200,99 @@ export const weeklyStories: Template[] = [
 ];
 
 export const aiTools = [
-  { name: "Criador de Anúncios", url: "https://chatgpt.com/g/g-67e9da4bd78881919f6c27aa46c0c076-corpo-de-anuncios", icon: "📢" },
-  { name: "Criador de Títulos de Alto Impacto", url: "https://chatgpt.com/g/g-mXIK1OLtB-headlines-de-alto-impacto", icon: "💡" },
-  { name: "Criador de Promessas Únicas", url: "https://chatgpt.com/g/g-pvCUBPOH1-gerador-de-promessas-com-mecanismo-unico", icon: "⭐" },
-  { name: "Mapa de Dores e Desejos de Clientes", url: "https://chatgpt.com/g/g-673e2ac6d1f08191bac9d38be1970598-mapa-de-dores-e-desejos", icon: "🎯" },
-  { name: "Criador de Curso em Vídeo", url: "https://chatgpt.com/g/g-e53YJbtqR-criador-de-cursos-em-video", icon: "🎓" },
-  { name: "Criador de BÔNUS e ORDER BUMPS", url: "https://chatgpt.com/g/g-gYZKgxBX6-criador-de-bonus-e-order-bumps", icon: "🎁" },
-  { name: "9 Ângulos de Ganchos de Ofertas", url: "https://chatgpt.com/g/g-67e9d49f4dc88191b0e9e850ef4bb8ed-9-oticas-de-hooks", icon: "🪝" },
-  { name: "Criador de Quiz", url: "https://chatgpt.com/g/g-673e0736558881918f8e65ed8c8c5e81-funil-de-quiz-2-0", icon: "❓" },
+  { 
+    title: "Criador de Headlines (Mr. Beast)", 
+    url: "https://chatgpt.com/g/g-mXIK1OLtB-headlines-de-alto-impacto",
+    icon: "🤖",
+    description: "Crie títulos de alto impacto para seus conteúdos"
+  },
+  { 
+    title: "Criador de Promessas Únicas", 
+    url: "https://chatgpt.com/g/g-pvCUBPOH1-gerador-de-promessas-com-mecanismo-unico",
+    icon: "✨",
+    description: "Gere promessas com mecanismo único"
+  },
+  { 
+    title: "Criador de Quizz 2.0", 
+    url: "https://chatgpt.com/g/g-673e0736558881918f8e65ed8c8c5e81-funil-de-quiz-2-0",
+    icon: "❓",
+    description: "Crie funis de quiz interativos"
+  },
+  { 
+    title: "Mapa de Dores e Desejos", 
+    url: "https://chatgpt.com/g/g-673e2ac6d1f08191bac9d38be1970598-mapa-de-dores-e-desejos",
+    icon: "🎯",
+    description: "Mapeie dores e desejos do seu público"
+  },
+  { 
+    title: "Criador de Cursos em Vídeo", 
+    url: "https://chatgpt.com/g/g-e53YJbtqR-criador-de-cursos-em-video",
+    icon: "🎓",
+    description: "Desenvolva cursos em vídeo profissionais"
+  },
+  { 
+    title: "Criador de Bônus e Order Bumps", 
+    url: "https://chatgpt.com/g/g-gYZKgxBX6-criador-de-bonus-e-order-bumps",
+    icon: "🎁",
+    description: "Crie bônus e ofertas irresistíveis"
+  },
+  { 
+    title: "Corpo de Anúncios", 
+    url: "https://chatgpt.com/g/g-67e9da4bd78881919f6c27aa46c0c076-corpo-de-anuncios",
+    icon: "📝",
+    description: "Desenvolva textos persuasivos para anúncios"
+  },
+  { 
+    title: "9 Óticas de Hooks", 
+    url: "https://chatgpt.com/g/g-67e9d49f4dc88191b0e9e850ef4bb8ed-9-oticas-de-hooks",
+    icon: "🪝",
+    description: "Crie ganchos com 9 óticas diferentes"
+  },
+  { 
+    title: "Narração de Ofertas de Viagens", 
+    url: "https://chatgpt.com/g/g-zuVzD4urh-redador",
+    icon: "🎙️",
+    description: "Crie narrações profissionais para vídeos de viagens"
+  },
 ];
 
 export const resources = [
-  { name: "Baixar PDF de Produtos e Bônus", url: "https://bit.ly/150videos-destinos", icon: "📄" },
-  { name: "Comunidade Agente Lucrativo Hotmart", url: "https://hotmart.com/pt-br/club/agente-lucrativo", icon: "👥" },
-  { name: "Entre no Grupo WhatsApp", url: "https://chat.whatsapp.com/Glq12Ih9jOz5IhtHJ98ud0", icon: "💬" },
-  { name: "Calendário Editorial Notion", url: "https://www.notion.so/PLANNER-DE-AG-NCIA-DE-VIAGENS-LUCRATIVA-22ca83fea5d080dc9826fb043d5d000a", icon: "📅" },
+  {
+    name: "PDF de Produtos",
+    url: "https://bit.ly/150videos-destinos",
+    icon: "📄"
+  },
+  {
+    name: "Comunidade Agente Lucrativo",
+    url: "https://hotmart.com/pt-br/club/agente-lucrativo",
+    icon: "👥"
+  },
+  {
+    name: "Grupo WhatsApp",
+    url: "https://chat.whatsapp.com/Glq12Ih9jOz5IhtHJ98ud0",
+    icon: "💬"
+  },
+  {
+    name: "Calendário Editorial",
+    url: "https://www.notion.so/PLANNER-DE-AG-NCIA-DE-VIAGENS-LUCRATIVA-22ca83fea5d080dc9826fb043d5d000a",
+    icon: "📅"
+  }
 ];
 
 export const videoDownloads = [
-  { name: "Vídeos Internacionais", url: "https://drive.google.com/drive/folders/10LWKcjLVA6L1FLkzRGDpDmCkKlTHoNOu", icon: "🌍" },
-  { name: "Vídeos Nacionais", url: "https://drive.google.com/drive/folders/10KCEnIdj6oC8rtOAEl-G0nHtPfC56ln9?usp=drive_link", icon: "🇧🇷" },
-  { name: "Vídeos Extras", url: "https://drive.google.com/drive/folders/14uF1au_WY7XI5X2lfkQUKq8LGVl0OHO7", icon: "✨" },
+  {
+    name: "Vídeos Internacionais",
+    url: "https://drive.google.com/drive/folders/10LWKcjLVA6L1FLkzRGDpDmCkKlTHoNOu",
+    icon: "🌍"
+  },
+  {
+    name: "Vídeos Nacionais",
+    url: "https://drive.google.com/drive/folders/10KCEnIdj6oC8rtOAEl-G0nHtPfC56ln9?usp=drive_link",
+    icon: "🇧🇷"
+  },
+  {
+    name: "Vídeos Extras",
+    url: "https://drive.google.com/drive/folders/14uF1au_WY7XI5X2lfkQUKq8LGVl0OHO7",
+    icon: "⭐"
+  }
 ];
