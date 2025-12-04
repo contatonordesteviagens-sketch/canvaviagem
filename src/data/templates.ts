@@ -248,13 +248,15 @@ export const aiTools = [
     icon: "🪝",
     description: "Crie ganchos com 9 óticas diferentes"
   },
-  { 
-    title: "Narração de Ofertas de Viagens", 
-    url: "https://chatgpt.com/g/g-zuVzD4urh-redador",
-    icon: "🎙️",
-    description: "Crie narrações profissionais para vídeos de viagens"
-  },
 ];
+
+// Narração de Ofertas separada para ficar em primeiro
+export const narracaoTool = { 
+  title: "Narração de Ofertas de Viagens", 
+  url: "https://chatgpt.com/g/g-zuVzD4urh-redador",
+  icon: "🎙️",
+  description: "Narrar com sua voz - Crie narrações profissionais para vídeos"
+};
 
 export const resources = [
   {
