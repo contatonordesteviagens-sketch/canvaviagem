@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Plane } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { NavLink } from "@/components/NavLink";
@@ -19,9 +19,9 @@ export const Header = () => {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
         <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-            <Plane className="h-5 w-5 text-primary-foreground" />
+            <span className="text-xl">🎬</span>
           </div>
-          <span className="font-bold text-xl hidden sm:inline">Agência Lucrativa</span>
+          <span className="font-bold text-xl hidden sm:inline">Canva Viagens</span>
         </Link>
 
         {/* Desktop Navigation */}
