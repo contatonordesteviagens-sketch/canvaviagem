@@ -2,7 +2,8 @@ export interface Template {
   title: string;
   url: string;
   type: 'video' | 'feed' | 'story' | 'seasonal';
-  category?: string;
+  category?: 'nacional' | 'internacional' | 'influencer-eva' | 'influencer-mel' | 'influencer-bia' | string;
+  isNew?: boolean;
 }
 
 export const templates: Template[] = [
@@ -201,9 +202,15 @@ export const weeklyStories: Template[] = [
 
 export const aiTools = [
   { 
+    title: "IA Vendedor de Viagens (novo)", 
+    url: "https://copy-travel-1089893400135.us-west1.run.app/",
+    icon: "🤖",
+    description: "Assistente IA para vender viagens"
+  },
+  { 
     title: "Criador de Headlines (Mr. Beast)", 
     url: "https://chatgpt.com/g/g-mXIK1OLtB-headlines-de-alto-impacto",
-    icon: "🤖",
+    icon: "🎯",
     description: "Crie títulos de alto impacto para seus conteúdos"
   },
   { 
