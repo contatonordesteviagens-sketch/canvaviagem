@@ -7,11 +7,17 @@ interface TemplateCardProps {
   url: string;
   icon: string;
   category?: string;
+  isNew?: boolean;
 }
 
-export const TemplateCard = ({ title, url, icon, category }: TemplateCardProps) => {
+export const TemplateCard = ({ title, url, icon, category, isNew }: TemplateCardProps) => {
   return (
-    <Card className="group hover:shadow-[var(--shadow-hover)] transition-all duration-300 border-border/50 overflow-hidden">
+    <Card className="group hover:shadow-[var(--shadow-hover)] transition-all duration-300 border-border/50 overflow-hidden relative">
+      {isNew && (
+        <span className="absolute top-2 right-2 z-10 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide shadow-sm">
+          Novo
+        </span>
+      )}
       <CardHeader className="bg-gradient-to-br from-primary/5 to-accent/5 pb-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">

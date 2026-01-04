@@ -7,6 +7,18 @@ export interface Template {
 }
 
 export const templates: Template[] = [
+  // NOVOS VÍDEOS - marcados com isNew
+  { "title": "Beto Carrero 1", "url": "https://www.canva.com/design/DAG9S3v2-Xs/SlewfwY2SK7tWD8Kh8PQnA/view?utm_content=DAG9S3v2-Xs&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "nacional", "isNew": true },
+  { "title": "Beto Carrero 2", "url": "https://www.canva.com/design/DAG9S-vZM7E/x1W88qKaCcyg7xEgXpB2Xw/view?utm_content=DAG9S-vZM7E&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "nacional", "isNew": true },
+  { "title": "Eva - Destinos", "url": "https://www.canva.com/design/DAG9S4RtOxw/TCkudfkvm9UR0spYybxRgw/view?utm_content=DAG9S4RtOxw&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-eva", "isNew": true },
+  { "title": "Eva - Dubai 2", "url": "https://www.canva.com/design/DAG9TCOrDTY/wKMgRGy0lpWPcMGwiRBpnw/view?utm_content=DAG9TCOrDTY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-eva", "isNew": true },
+  { "title": "Eva - Paris 2", "url": "https://www.canva.com/design/DAG9TO_rCfY/KfeUizKIZ37ELrlcqW__Kg/view?utm_content=DAG9TO_rCfY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-eva", "isNew": true },
+  { "title": "Eva - Roma", "url": "https://www.canva.com/design/DAG9TH2QDlI/e3Dp22xh9ORyokUSoqBbxQ/view?utm_content=DAG9TH2QDlI&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-eva", "isNew": true },
+  { "title": "Eva - Foz do Iguaçu", "url": "https://www.canva.com/design/DAG9Te0N8_4/MS2Pbpjl9eBoPeyrGEaZqw/view?utm_content=DAG9Te0N8_4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-eva", "isNew": true },
+  { "title": "Bia - Ceará", "url": "https://www.canva.com/design/DAG9TZvP9zQ/Iuv0I4ERobM3QdbyCCiQQw/view?utm_content=DAG9TZvP9zQ&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-bia", "isNew": true },
+  { "title": "Bia - Canoa Quebrada", "url": "https://www.canva.com/design/DAG9TYMIt98/sX5SRhcQlvB2Aieh_IiUKw/view?utm_content=DAG9TYMIt98&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-bia", "isNew": true },
+  { "title": "Bia - Jericoacoara", "url": "https://www.canva.com/design/DAG9TfxEuT4/nGCpaJevmQNasD6cHAEf6A/view?utm_content=DAG9TfxEuT4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-bia", "isNew": true },
+  // Vídeos existentes
   { "title": "1ª vez no aeroporto", "url": "https://www.canva.com/design/DAGkwz6Stn8/5DPMi1DhNpaXJI-J3NKGxw/view?utm_content=DAGkwz6Stn8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video" },
   { "title": "5 motivos stopover", "url": "https://www.canva.com/design/DAGgIR03ya4/uIilbTx2KqhMAcvum1zJhA/view?utm_content=DAGgIR03ya4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video" },
   { "title": "Bagagem de mãos", "url": "https://www.canva.com/design/DAGiIypPPKM/ekpIHP0DECKGnpD8Ab7yfw/view?utm_content=DAGiIypPPKM&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video" },
@@ -263,6 +275,14 @@ export const narracaoTool = {
   url: "https://chatgpt.com/g/g-zuVzD4urh-redador",
   icon: "🎙️",
   description: "Narrar com sua voz - Crie narrações profissionais para vídeos"
+};
+
+// IA Vendedor de Viagens - ferramenta nova
+export const iaVendedorTool = {
+  title: "IA Vendedor de Viagens",
+  url: "https://copy-travel-1089893400135.us-west1.run.app/",
+  icon: "🤖",
+  isNew: true
 };
 
 export const resources = [
