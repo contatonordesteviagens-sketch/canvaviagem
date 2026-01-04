@@ -17,7 +17,8 @@ import {
   aiTools,
   narracaoTool,
   resources,
-  videoDownloads 
+  videoDownloads,
+  type AiTool 
 } from "@/data/templates";
 import { captions } from "@/data/captions";
 
@@ -69,8 +70,8 @@ const Index = () => {
   const displayedCaptions = showAllCaptions ? filteredCaptions : filteredCaptions.slice(0, 8);
 
   // Combinar narracaoTool no início dos aiTools
-  const allTools = [
-    { title: narracaoTool.title, url: narracaoTool.url, icon: narracaoTool.icon },
+  const allTools: AiTool[] = [
+    narracaoTool,
     ...aiTools
   ];
 
@@ -297,7 +298,7 @@ const Index = () => {
             <div className="grid lg:grid-cols-2 gap-6">
               <ResourceSection
                 title="🤖 Robôs de IA para Marketing"
-                resources={allTools.map(tool => ({ name: tool.title, url: tool.url, icon: tool.icon }))}
+                resources={allTools.map(tool => ({ name: tool.title, url: tool.url, icon: tool.icon, isNew: tool.isNew }))}
                 description="Ferramentas de Inteligência Artificial para criar conteúdo"
               />
               
