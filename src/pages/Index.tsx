@@ -21,29 +21,15 @@ import {
 } from "@/data/templates";
 import { captions } from "@/data/captions";
 
-type VideoFilter = 'todos' | 'nacional' | 'internacional' | 'Eva' | 'Mel' | 'Bia';
-
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [showAllCaptions, setShowAllCaptions] = useState(false);
-  const [videoFilter, setVideoFilter] = useState<VideoFilter>('todos');
 
   const filterTemplates = (items: typeof templates) => {
-    let filtered = items.filter(item =>
+    return items.filter(item =>
       item.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    // Aplicar filtro de categoria/influencer
-    if (videoFilter !== 'todos') {
-      if (videoFilter === 'Eva' || videoFilter === 'Mel' || videoFilter === 'Bia') {
-        filtered = filtered.filter(item => item.influencer === videoFilter);
-      } else {
-        filtered = filtered.filter(item => item.category === videoFilter);
-      }
-    }
-
-    return filtered;
   };
 
   const filterCaptions = () => {
@@ -72,15 +58,6 @@ const Index = () => {
   const allTools = [
     { title: narracaoTool.title, url: narracaoTool.url, icon: narracaoTool.icon },
     ...aiTools
-  ];
-
-  const filterButtons: { label: string; value: VideoFilter }[] = [
-    { label: 'Todos', value: 'todos' },
-    { label: '🇧🇷 Nacionais', value: 'nacional' },
-    { label: '🌎 Internacionais', value: 'internacional' },
-    { label: '👩 Eva', value: 'Eva' },
-    { label: '👩 Mel', value: 'Mel' },
-    { label: '👩 Bia', value: 'Bia' },
   ];
 
   return (
@@ -122,22 +99,6 @@ const Index = () => {
               <h2 className="text-3xl font-bold">Vídeos Reels Editáveis</h2>
               <p className="text-muted-foreground">Templates prontos para editar no Canva e publicar</p>
             </div>
-
-            {/* Filtros */}
-            <div className="flex flex-wrap gap-2 justify-center mb-6">
-              {filterButtons.map((btn) => (
-                <Button
-                  key={btn.value}
-                  variant={videoFilter === btn.value ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setVideoFilter(btn.value)}
-                  className="text-xs md:text-sm"
-                >
-                  {btn.label}
-                </Button>
-              ))}
-            </div>
-
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {displayedVideos.map((template, index) => (
                 <TemplateCard
@@ -164,7 +125,7 @@ const Index = () => {
                   ) : (
                     <>
                       <ChevronDown className="h-4 w-4" />
-                      Ver tudo
+                      Ver tudo ({filteredVideos.length} vídeos)
                     </>
                   )}
                 </Button>
@@ -266,7 +227,7 @@ const Index = () => {
                   ) : (
                     <>
                       <ChevronDown className="h-4 w-4" />
-                      Ver tudo
+                      Ver tudo ({filteredCaptions.length} legendas)
                     </>
                   )}
                 </Button>
