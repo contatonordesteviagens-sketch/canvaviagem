@@ -202,23 +202,14 @@ export const weeklyStories = [
   { title: "Domingo - Recap", url: "https://www.canva.com/design/DAGgHZ-fCuI/RFrxKhGE6O92snzhuuv0BA/view" },
 ];
 
-export interface AiTool {
-  title: string;
-  url: string;
-  icon: string;
-  description?: string;
-  isNew?: boolean;
-}
-
-export const narracaoTool: AiTool = {
+export const narracaoTool = {
   title: "Narração de Ofertas de Viagens",
   url: "https://chatgpt.com/g/g-zuVzD4urh-redador",
   icon: "🎙️",
-  description: "Narrar com sua voz",
-  isNew: true
+  description: "Narrar com sua voz"
 };
 
-export const aiTools: AiTool[] = [
+export const aiTools = [
   { title: "Criador de Legendas", url: "https://chatgpt.com/g/g-zuVzD4urh-redador", icon: "✍️" },
   { title: "Gerador de Hashtags", url: "https://chatgpt.com/g/g-zuVzD4urh-redador", icon: "🏷️" },
   { title: "Planejador de Conteúdo", url: "https://chatgpt.com/g/g-zuVzD4urh-redador", icon: "📊" },
