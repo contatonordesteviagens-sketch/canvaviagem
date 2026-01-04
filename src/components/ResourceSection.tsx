@@ -6,6 +6,7 @@ interface Resource {
   name: string;
   url: string;
   icon: string;
+  isNew?: boolean;
 }
 
 interface ResourceSectionProps {
@@ -30,11 +31,16 @@ export const ResourceSection = ({ title, resources, description }: ResourceSecti
               key={index}
               asChild
               variant="outline"
-              className="w-full justify-start h-auto py-4 px-6 hover:bg-primary/5 hover:border-primary/30 transition-all group"
+              className="w-full justify-start h-auto py-4 px-6 hover:bg-primary/5 hover:border-primary/30 transition-all group relative"
             >
               <a href={resource.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3">
                 <span className="text-2xl">{resource.icon}</span>
                 <span className="flex-1 text-left font-medium">{resource.name}</span>
+                {resource.isNew && (
+                  <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide shadow-sm">
+                    Novo
+                  </span>
+                )}
                 <ExternalLink className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
               </a>
             </Button>

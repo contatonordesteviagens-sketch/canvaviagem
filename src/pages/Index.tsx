@@ -16,6 +16,7 @@ import {
   weeklyStories,
   aiTools,
   narracaoTool,
+  iaVendedorTool,
   resources,
   videoDownloads 
 } from "@/data/templates";
@@ -97,8 +98,9 @@ const Index = () => {
   const filteredCaptions = filterCaptions();
   const displayedCaptions = showAllCaptions ? filteredCaptions : filteredCaptions.slice(0, 8);
 
-  // Combinar narracaoTool no início dos aiTools
+  // Combinar ferramentas com IA Vendedor no início (marcado como novo)
   const allTools = [
+    { title: iaVendedorTool.title, url: iaVendedorTool.url, icon: iaVendedorTool.icon, isNew: iaVendedorTool.isNew },
     { title: narracaoTool.title, url: narracaoTool.url, icon: narracaoTool.icon },
     ...aiTools
   ];
@@ -197,6 +199,7 @@ const Index = () => {
                   url={template.url}
                   icon={getIcon(template.type)}
                   category={template.category}
+                  isNew={template.isNew}
                 />
               ))}
             </div>
@@ -348,7 +351,7 @@ const Index = () => {
             <div className="grid lg:grid-cols-2 gap-6">
               <ResourceSection
                 title="🤖 Robôs de IA para Marketing"
-                resources={allTools.map(tool => ({ name: tool.title, url: tool.url, icon: tool.icon }))}
+                resources={allTools.map(tool => ({ name: tool.title, url: tool.url, icon: tool.icon, isNew: (tool as any).isNew }))}
                 description="Ferramentas de Inteligência Artificial para criar conteúdo"
               />
               
