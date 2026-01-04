@@ -21,15 +21,58 @@ import {
 } from "@/data/templates";
 import { captions } from "@/data/captions";
 
+type VideoFilter = 'todos' | 'nacionais' | 'internacionais' | 'eva' | 'mel' | 'bia';
+
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [showAllCaptions, setShowAllCaptions] = useState(false);
+  const [videoFilter, setVideoFilter] = useState<VideoFilter>('todos');
+
+  // Destinos nacionais conhecidos
+  const destinosNacionais = [
+    'Maragogi', 'Salvador', 'Trancoso', 'Jalapão', 'Foz do Iguaçu', 'Florianópolis',
+    'Gramado', 'Natal', 'Fortaleza', 'Pantanal', 'Rio de Janeiro', 'Recife',
+    'Balneário Camboriú', 'Alter do Chão', 'Arraial do Cabo', 'Rota das Emoções',
+    'Maceió', 'Lençóis Maranhenses', 'Fernando de Noronha', 'Angra dos Reis',
+    'Jericoacoara', 'Porto de Galinhas', 'Amazônia', 'Amazonas', 'Alagoas',
+    'João Pessoa', 'Ouro Preto', 'Genipabu', '5 Praias Floripa', 'Bonito',
+    'Chapada Diamantina', 'Curitiba', 'São Paulo', 'Belo Horizonte', 'Manaus'
+  ];
+
+  const isNacional = (title: string) => {
+    return destinosNacionais.some(destino => 
+      title.toLowerCase().includes(destino.toLowerCase())
+    ) || title.includes('- AL') || title.includes('- BA') || title.includes('- CE') || 
+    title.includes('- SC') || title.includes('- RN') || title.includes('- TO') ||
+    title.includes('- PE') || title.includes('- PB') || title.includes('- MG') ||
+    title.includes('- PR') || title.includes('- AM') || title.includes('- PA') ||
+    title.includes('- MS');
+  };
+
+  const isInfluencer = (title: string, influencer: string) => {
+    return title.toLowerCase().includes(influencer.toLowerCase());
+  };
 
   const filterTemplates = (items: typeof templates) => {
-    return items.filter(item =>
+    let filtered = items.filter(item =>
       item.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    // Aplicar filtro de categoria
+    if (videoFilter === 'nacionais') {
+      filtered = filtered.filter(item => isNacional(item.title));
+    } else if (videoFilter === 'internacionais') {
+      filtered = filtered.filter(item => !isNacional(item.title) && item.type === 'video');
+    } else if (videoFilter === 'eva') {
+      filtered = filtered.filter(item => isInfluencer(item.title, 'Eva'));
+    } else if (videoFilter === 'mel') {
+      filtered = filtered.filter(item => isInfluencer(item.title, 'Mel'));
+    } else if (videoFilter === 'bia') {
+      filtered = filtered.filter(item => isInfluencer(item.title, 'Bia'));
+    }
+
+    return filtered;
   };
 
   const filterCaptions = () => {
@@ -99,6 +142,53 @@ const Index = () => {
               <h2 className="text-3xl font-bold">Vídeos Reels Editáveis</h2>
               <p className="text-muted-foreground">Templates prontos para editar no Canva e publicar</p>
             </div>
+            
+            {/* Filtros de Vídeos */}
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+              <Button 
+                variant={videoFilter === 'todos' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setVideoFilter('todos')}
+              >
+                Todos
+              </Button>
+              <Button 
+                variant={videoFilter === 'nacionais' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setVideoFilter('nacionais')}
+              >
+                🇧🇷 Nacionais
+              </Button>
+              <Button 
+                variant={videoFilter === 'internacionais' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setVideoFilter('internacionais')}
+              >
+                🌍 Internacionais
+              </Button>
+              <Button 
+                variant={videoFilter === 'eva' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setVideoFilter('eva')}
+              >
+                👩 Eva
+              </Button>
+              <Button 
+                variant={videoFilter === 'mel' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setVideoFilter('mel')}
+              >
+                👩 Mel
+              </Button>
+              <Button 
+                variant={videoFilter === 'bia' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setVideoFilter('bia')}
+              >
+                👩 Bia
+              </Button>
+            </div>
+
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {displayedVideos.map((template, index) => (
                 <TemplateCard
@@ -125,7 +215,7 @@ const Index = () => {
                   ) : (
                     <>
                       <ChevronDown className="h-4 w-4" />
-                      Ver tudo ({filteredVideos.length} vídeos)
+                      Ver mais vídeos
                     </>
                   )}
                 </Button>
@@ -227,7 +317,7 @@ const Index = () => {
                   ) : (
                     <>
                       <ChevronDown className="h-4 w-4" />
-                      Ver tudo ({filteredCaptions.length} legendas)
+                      Ver mais legendas
                     </>
                   )}
                 </Button>
