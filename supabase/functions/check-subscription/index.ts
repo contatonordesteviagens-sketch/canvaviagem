@@ -95,10 +95,15 @@ serve(async (req) => {
     let subscriptionId = null;
 
     if (hasActiveSub && subscription) {
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       subscriptionId = subscription.id;
+      
+      // Safely handle current_period_end which may be null
+      if (subscription.current_period_end) {
+        subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      }
+      
       logStep("Active subscription found", { subscriptionId, endDate: subscriptionEnd });
-      productId = subscription.items.data[0].price.product;
+      productId = subscription.items.data[0]?.price?.product ?? null;
       logStep("Determined subscription product", { productId });
       
       // Update subscription status in database
