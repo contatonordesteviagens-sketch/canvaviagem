@@ -17,11 +17,21 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    { auth: { persistSession: false } }
-  );
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+  // Client used ONLY to validate the JWT (always uses anon key + Authorization header)
+  const authHeader = req.headers.get("Authorization");
+  const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+    global: authHeader ? { headers: { Authorization: authHeader } } : undefined,
+    auth: { persistSession: false },
+  });
+
+  // Client used for DB writes (prefer service role; if missing, we skip DB updates)
+  const dbClient = supabaseServiceRoleKey
+    ? createClient(supabaseUrl, supabaseServiceRoleKey, { auth: { persistSession: false } })
+    : null;
 
   try {
     logStep("Function started");
@@ -30,38 +40,48 @@ serve(async (req) => {
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
     logStep("Stripe key verified");
 
-    const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
     logStep("Authorization header found");
 
     const token = authHeader.replace("Bearer ", "");
     logStep("Authenticating user with token");
-    
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+
+    const { data: userData, error: userError } = await authClient.auth.getUser(token);
+    if (userError || !userData?.user) {
+      throw new Error(`Authentication error: ${userError?.message ?? "Invalid token"}`);
+    }
+
+    const userId = userData.user.id;
+    const email = userData.user.email;
+    if (!userId || !email) throw new Error("User not authenticated or email not available");
+    logStep("User authenticated", { userId, email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    
+    const customers = await stripe.customers.list({ email, limit: 1 });
+
     if (customers.data.length === 0) {
       logStep("No customer found, user is not subscribed");
-      
-      // Update subscription status in database
-      await supabaseClient
-        .from('subscriptions')
-        .upsert({
-          user_id: user.id,
-          status: 'inactive',
-          stripe_customer_id: null,
-          stripe_subscription_id: null,
-          product_id: null,
-          current_period_end: null
-        }, { onConflict: 'user_id' });
-      
-      return new Response(JSON.stringify({ subscribed: false }), {
+
+      // Best-effort DB update (only if service role key is available)
+      if (dbClient) {
+        await dbClient
+          .from("subscriptions")
+          .upsert(
+            {
+              user_id: userId,
+              status: "inactive",
+              stripe_customer_id: null,
+              stripe_subscription_id: null,
+              product_id: null,
+              current_period_end: null,
+            },
+            { onConflict: "user_id" }
+          );
+      } else {
+        logStep("Skipping DB update (missing SUPABASE_SERVICE_ROLE_KEY)");
+      }
+
+      return new Response(JSON.stringify({ subscribed: false, product_id: null, subscription_end: null }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -90,47 +110,57 @@ serve(async (req) => {
       subscription = trialingSubscriptions.data[0];
     }
 
-    let productId = null;
-    let subscriptionEnd = null;
-    let subscriptionId = null;
+    let productId: string | null = null;
+    let subscriptionEnd: string | null = null;
+    let subscriptionId: string | null = null;
 
     if (hasActiveSub && subscription) {
       subscriptionId = subscription.id;
-      
+
       // Safely handle current_period_end which may be null
       if (subscription.current_period_end) {
         subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       }
-      
+
       logStep("Active subscription found", { subscriptionId, endDate: subscriptionEnd });
-      productId = subscription.items.data[0]?.price?.product ?? null;
+      productId = (subscription.items.data[0]?.price?.product as string | null) ?? null;
       logStep("Determined subscription product", { productId });
-      
-      // Update subscription status in database
-      await supabaseClient
-        .from('subscriptions')
-        .upsert({
-          user_id: user.id,
-          status: 'active',
-          stripe_customer_id: customerId,
-          stripe_subscription_id: subscriptionId,
-          product_id: productId,
-          current_period_end: subscriptionEnd
-        }, { onConflict: 'user_id' });
+
+      // Best-effort DB update (only if service role key is available)
+      if (dbClient) {
+        await dbClient
+          .from("subscriptions")
+          .upsert(
+            {
+              user_id: userId,
+              status: "active",
+              stripe_customer_id: customerId,
+              stripe_subscription_id: subscriptionId,
+              product_id: productId,
+              current_period_end: subscriptionEnd,
+            },
+            { onConflict: "user_id" }
+          );
+      }
     } else {
       logStep("No active subscription found");
-      
-      // Update subscription status in database
-      await supabaseClient
-        .from('subscriptions')
-        .upsert({
-          user_id: user.id,
-          status: 'inactive',
-          stripe_customer_id: customerId,
-          stripe_subscription_id: null,
-          product_id: null,
-          current_period_end: null
-        }, { onConflict: 'user_id' });
+
+      // Best-effort DB update (only if service role key is available)
+      if (dbClient) {
+        await dbClient
+          .from("subscriptions")
+          .upsert(
+            {
+              user_id: userId,
+              status: "inactive",
+              stripe_customer_id: customerId,
+              stripe_subscription_id: null,
+              product_id: null,
+              current_period_end: null,
+            },
+            { onConflict: "user_id" }
+          );
+      }
     }
 
     return new Response(JSON.stringify({
