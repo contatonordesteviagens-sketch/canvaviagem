@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { SearchBar } from "@/components/SearchBar";
@@ -8,7 +10,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { 
   templates, 
   feedTemplates, 
@@ -25,10 +27,37 @@ import { captions } from "@/data/captions";
 type VideoFilter = 'todos' | 'nacionais' | 'internacionais' | 'eva' | 'mel' | 'bia';
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user, loading, subscription } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [showAllCaptions, setShowAllCaptions] = useState(false);
   const [videoFilter, setVideoFilter] = useState<VideoFilter>('todos');
+
+  // Protect route: redirect to /planos if not subscribed
+  useEffect(() => {
+    if (!loading && !subscription.loading) {
+      if (!user) {
+        navigate("/auth");
+      } else if (!subscription.subscribed) {
+        navigate("/planos");
+      }
+    }
+  }, [user, loading, subscription, navigate]);
+
+  // Show loading while checking auth/subscription
+  if (loading || subscription.loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Don't render content if not subscribed (will redirect)
+  if (!user || !subscription.subscribed) {
+    return null;
+  }
 
   // Destinos nacionais conhecidos
   const destinosNacionais = [

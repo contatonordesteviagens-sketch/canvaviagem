@@ -16,16 +16,21 @@ const passwordSchema = z.string().min(6, "A senha deve ter pelo menos 6 caracter
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, subscription } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Redirect based on subscription status after login
   useEffect(() => {
-    if (!loading && user) {
-      navigate("/");
+    if (!loading && !subscription.loading && user) {
+      if (subscription.subscribed) {
+        navigate("/");
+      } else {
+        navigate("/planos");
+      }
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, subscription, navigate]);
 
   const validateInputs = () => {
     try {
