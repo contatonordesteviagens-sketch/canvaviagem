@@ -8,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import { SubscriptionGate } from "@/components/SubscriptionGate";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { 
   templates, 
@@ -139,6 +140,7 @@ const Index = () => {
             </TabsTrigger>
           </TabsList>
 
+          <SubscriptionGate>
           <TabsContent value="videos" className="space-y-6 animate-in fade-in-50 duration-500">
             <div className="text-center space-y-2 mb-8">
               <h2 className="text-3xl font-bold">Vídeos Reels Editáveis</h2>
@@ -362,6 +364,7 @@ const Index = () => {
               />
             </div>
           </TabsContent>
+          </SubscriptionGate>
         </Tabs>
       </div>
       
