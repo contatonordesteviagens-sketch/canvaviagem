@@ -140,7 +140,7 @@ const Index = () => {
             </TabsTrigger>
           </TabsList>
 
-          <SubscriptionGate>
+          <SubscriptionGate mode="preview">
           <TabsContent value="videos" className="space-y-6 animate-in fade-in-50 duration-500">
             <div className="text-center space-y-2 mb-8">
               <h2 className="text-3xl font-bold">Vídeos Reels Editáveis</h2>

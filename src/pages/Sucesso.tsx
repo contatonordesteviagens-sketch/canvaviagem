@@ -7,14 +7,32 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const Sucesso = () => {
   const navigate = useNavigate();
-  const { refreshSubscription } = useAuth();
+  const { refreshSubscription, subscription } = useAuth();
   const [countdown, setCountdown] = useState(5);
 
+  // Tenta atualizar a assinatura algumas vezes logo após o checkout
   useEffect(() => {
-    // Refresh subscription status
-    refreshSubscription();
+    let tries = 0;
+    const maxTries = 15; // ~30s
 
-    // Countdown timer
+    const poll = setInterval(() => {
+      tries += 1;
+      refreshSubscription();
+      if (tries >= maxTries) clearInterval(poll);
+    }, 2000);
+
+    return () => clearInterval(poll);
+  }, [refreshSubscription]);
+
+  // Assim que a assinatura virar ativa, manda pro conteúdo desbloqueado
+  useEffect(() => {
+    if (subscription.subscribed) {
+      navigate("/");
+    }
+  }, [subscription.subscribed, navigate]);
+
+  // Redirecionamento automático (fallback)
+  useEffect(() => {
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -27,32 +45,28 @@ const Sucesso = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [navigate, refreshSubscription]);
+  }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
-      <Card className="max-w-md w-full border-2 border-primary/20 shadow-2xl">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="max-w-md w-full">
         <CardContent className="pt-8 pb-8 text-center space-y-6">
           <div className="relative">
-            <div className="w-20 h-20 mx-auto bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
-              <CheckCircle className="w-12 h-12 text-white" />
+            <div className="w-20 h-20 mx-auto bg-primary rounded-full flex items-center justify-center shadow-lg">
+              <CheckCircle className="w-12 h-12 text-primary-foreground" />
             </div>
-            <Sparkles className="absolute top-0 right-1/4 w-6 h-6 text-yellow-400 animate-bounce" />
-            <Sparkles className="absolute bottom-0 left-1/4 w-4 h-4 text-yellow-400 animate-bounce delay-100" />
+            <Sparkles className="absolute top-0 right-1/4 w-6 h-6 text-muted-foreground animate-bounce" />
+            <Sparkles className="absolute bottom-0 left-1/4 w-4 h-4 text-muted-foreground animate-bounce delay-100" />
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-foreground">
-              🎉 Parabéns!
-            </h1>
-            <p className="text-xl text-primary font-semibold">
-              Sua assinatura foi ativada!
-            </p>
+            <h1 className="text-3xl font-bold text-foreground">🎉 Parabéns!</h1>
+            <p className="text-xl text-primary font-semibold">Sua assinatura foi ativada!</p>
           </div>
 
-          <div className="bg-primary/10 rounded-lg p-4 space-y-2">
+          <div className="bg-muted rounded-lg p-4 space-y-2">
             <p className="text-muted-foreground">
-              Bem-vindo à família <span className="font-bold text-primary">Canva Viagens</span>! 
+              Bem-vindo à família <span className="font-bold text-primary">Canva Viagens</span>!
             </p>
             <p className="text-sm text-muted-foreground">
               Agora você tem acesso completo a todos os templates, vídeos, legendas e ferramentas exclusivas.
@@ -63,12 +77,9 @@ const Sucesso = () => {
             <p className="text-sm text-muted-foreground">
               Redirecionando em <span className="font-bold text-primary">{countdown}</span> segundos...
             </p>
-            
-            <Button 
-              onClick={() => navigate("/")}
-              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity"
-            >
-              Acessar Conteúdo Agora 🚀
+
+            <Button onClick={() => navigate("/")} className="w-full">
+              Acessar Conteúdo Agora
             </Button>
           </div>
         </CardContent>
