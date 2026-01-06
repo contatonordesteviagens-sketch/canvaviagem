@@ -44,100 +44,51 @@ serve(async (req) => {
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-
-    // Prefer stored customer id (avoids email mismatch)
-    const { data: profile } = await supabaseClient
-      .from("profiles")
-      .select("stripe_customer_id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    const tryCustomer = async (candidateCustomerId: string) => {
-      // Check active first
-      const active = await stripe.subscriptions.list({
-        customer: candidateCustomerId,
-        status: "active",
-        limit: 1,
+    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    
+    if (customers.data.length === 0) {
+      logStep("No customer found, user is not subscribed");
+      
+      // Update subscription status in database
+      await supabaseClient
+        .from('subscriptions')
+        .upsert({
+          user_id: user.id,
+          status: 'inactive',
+          stripe_customer_id: null,
+          stripe_subscription_id: null,
+          product_id: null,
+          current_period_end: null
+        }, { onConflict: 'user_id' });
+      
+      return new Response(JSON.stringify({ subscribed: false }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
       });
-      if (active.data.length > 0) {
-        return { status: "active" as const, subscription: active.data[0] };
-      }
+    }
 
-      const trialing = await stripe.subscriptions.list({
-        customer: candidateCustomerId,
+    const customerId = customers.data[0].id;
+    logStep("Found Stripe customer", { customerId });
+
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: "active",
+      limit: 1,
+    });
+
+    // Also check trialing status
+    let hasActiveSub = subscriptions.data.length > 0;
+    let subscription = subscriptions.data[0];
+
+    if (!hasActiveSub) {
+      const trialingSubscriptions = await stripe.subscriptions.list({
+        customer: customerId,
         status: "trialing",
         limit: 1,
       });
-      if (trialing.data.length > 0) {
-        return { status: "trialing" as const, subscription: trialing.data[0] };
-      }
-
-      return null;
-    };
-
-    let customerId = profile?.stripe_customer_id ?? null;
-    let subscriptionHit: { status: "active" | "trialing"; subscription: any } | null = null;
-
-    // 1) Try stored customer id
-    if (customerId) {
-      logStep("Using stored Stripe customer id", { customerId });
-      subscriptionHit = await tryCustomer(customerId);
+      hasActiveSub = trialingSubscriptions.data.length > 0;
+      subscription = trialingSubscriptions.data[0];
     }
-
-    // 2) Fallback: scan ALL customers by email (Stripe can have multiple customers with same email)
-    if (!subscriptionHit) {
-      const customers = await stripe.customers.list({ email: user.email, limit: 10 });
-      if (customers.data.length === 0) {
-        logStep("No customer found, user is not subscribed");
-
-        await supabaseClient.from("subscriptions").upsert(
-          {
-            user_id: user.id,
-            status: "inactive",
-            stripe_customer_id: null,
-            stripe_subscription_id: null,
-            product_id: null,
-            current_period_end: null,
-          },
-          { onConflict: "user_id" }
-        );
-
-        return new Response(JSON.stringify({ subscribed: false }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-
-      logStep("Scanning customers by email", { count: customers.data.length });
-
-      for (const c of customers.data) {
-        const hit = await tryCustomer(c.id);
-        if (hit) {
-          customerId = c.id;
-          subscriptionHit = hit;
-          logStep("Found subscription via email scan", { customerId, status: hit.status });
-          break;
-        }
-      }
-
-      // If still nothing, just keep first customer as reference (for portal etc.)
-      if (!customerId) customerId = customers.data[0].id;
-    }
-
-    // If we found a better customer id, persist it for future checks
-    if (customerId && customerId !== (profile?.stripe_customer_id ?? null)) {
-      await supabaseClient.from("profiles").upsert(
-        {
-          user_id: user.id,
-          email: user.email,
-          stripe_customer_id: customerId,
-        },
-        { onConflict: "user_id" }
-      );
-    }
-
-    const hasActiveSub = !!subscriptionHit;
-    const subscription = subscriptionHit?.subscription;
 
     let productId = null;
     let subscriptionEnd = null;

@@ -22,8 +22,7 @@ serve(async (req) => {
 
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    { auth: { persistSession: false } }
+    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
   );
 
   try {
@@ -44,56 +43,21 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     
-    // Check if customer already exists (Stripe may have multiple customers for same email)
-    const customers = await stripe.customers.list({ email: user.email, limit: 10 });
-    let customerId: string | undefined;
-
+    // Check if customer already exists
+    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    let customerId;
     if (customers.data.length > 0) {
-      // Prefer a customer that already has an active/trialing subscription
-      for (const c of customers.data) {
-        const active = await stripe.subscriptions.list({ customer: c.id, status: "active", limit: 1 });
-        const trialing = active.data.length === 0
-          ? await stripe.subscriptions.list({ customer: c.id, status: "trialing", limit: 1 })
-          : null;
-
-        if (active.data.length > 0 || (trialing && trialing.data.length > 0)) {
-          customerId = c.id;
-          logStep("Existing customer with subscription found", { customerId });
-          break;
-        }
-      }
-
-      // Otherwise fall back to the first customer
-      if (!customerId) {
-        customerId = customers.data[0].id;
-        logStep("Existing customer found", { customerId });
-      }
+      customerId = customers.data[0].id;
+      logStep("Existing customer found", { customerId });
     } else {
-      logStep("No existing customer, creating new one");
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: { user_id: user.id },
-      });
-      customerId = customer.id;
-      logStep("Customer created", { customerId });
+      logStep("No existing customer, will create new one");
     }
-
-
-    // Persist customer id for future checks
-    await supabaseClient.from("profiles").upsert(
-      {
-        user_id: user.id,
-        email: user.email,
-        stripe_customer_id: customerId,
-      },
-      { onConflict: "user_id" }
-    );
 
     const origin = req.headers.get("origin") || "https://lovable.dev";
     
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: undefined,
+      customer_email: customerId ? undefined : user.email,
       line_items: [
         {
           price: PRICE_ID,
@@ -101,7 +65,7 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${origin}/sucesso`,
+      success_url: `${origin}/planos?success=true`,
       cancel_url: `${origin}/planos?canceled=true`,
       metadata: {
         user_id: user.id,
