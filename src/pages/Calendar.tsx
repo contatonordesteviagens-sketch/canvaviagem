@@ -7,6 +7,7 @@ import { templates } from "@/data/templates";
 import { captions } from "@/data/captions";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { PremiumGate } from "@/components/PremiumGate";
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -95,7 +96,7 @@ const Calendar = () => {
     const days = [];
 
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="min-h-[80px] md:min-h-[120px]" />);
+      days.push(<div key={`empty-${i}`} className="min-h-[60px] md:min-h-[120px]" />);
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
@@ -106,20 +107,24 @@ const Calendar = () => {
       days.push(
         <Card 
           key={day} 
-          className={`p-2 md:p-3 min-h-[80px] md:min-h-[120px] hover:shadow-lg transition-all duration-300 border-border/50 cursor-pointer ${
+          className={`p-1.5 md:p-3 min-h-[60px] md:min-h-[120px] hover:shadow-lg transition-all duration-300 border-border/50 cursor-pointer ${
             today ? 'ring-2 ring-primary bg-primary/5' : ''
           }`}
           onClick={() => handleDayClick(day)}
         >
-          <div className="space-y-1 md:space-y-2">
+          <div className="space-y-0.5 md:space-y-2">
             <div className="flex items-center justify-between">
-              <span className={`text-sm md:text-lg font-bold ${today ? 'text-primary' : ''}`}>
+              <span className={`text-xs md:text-lg font-bold ${today ? 'text-primary' : ''}`}>
                 {day}
-                {today && <span className="ml-1 text-xs bg-primary text-primary-foreground px-1 rounded">Hoje</span>}
               </span>
-              <span className="text-xs">🎬</span>
+              <span className="text-[8px] md:text-xs">🎬</span>
             </div>
-            <div className="space-y-1">
+            {today && (
+              <span className="text-[8px] md:text-xs bg-primary text-primary-foreground px-1 rounded block w-fit">
+                Hoje
+              </span>
+            )}
+            <div className="hidden md:block space-y-1">
               <p className="text-[10px] md:text-xs font-medium text-foreground line-clamp-2">{template.title}</p>
               <Button 
                 size="sm" 
@@ -142,67 +147,64 @@ const Calendar = () => {
     return days;
   };
 
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-      
-      <div className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-            📅 Calendário de Postagens
-          </h1>
-          <p className="text-muted-foreground">
-            Planeje seu conteúdo com 365 dias de templates e legendas prontas
-          </p>
+  const calendarContent = (
+    <>
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+          📅 Calendário de Postagens
+        </h1>
+        <p className="text-sm md:text-base text-muted-foreground">
+          Planeje seu conteúdo com 365 dias de templates e legendas prontas
+        </p>
+      </div>
+
+      <Card className="p-3 md:p-6 shadow-[var(--shadow-card)]">
+        <div className="flex items-center justify-between mb-4 md:mb-6">
+          <Button variant="outline" onClick={previousMonth} size="icon" className="h-8 w-8 md:h-10 md:w-10">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h2 className="text-lg md:text-2xl font-bold">
+            {monthNames[currentMonth]} {currentYear}
+          </h2>
+          <Button variant="outline" onClick={nextMonth} size="icon" className="h-8 w-8 md:h-10 md:w-10">
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
 
-        <Card className="p-4 md:p-6 shadow-[var(--shadow-card)]">
-          <div className="flex items-center justify-between mb-6">
-            <Button variant="outline" onClick={previousMonth} size="icon">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <h2 className="text-xl md:text-2xl font-bold">
-              {monthNames[currentMonth]} {currentYear}
-            </h2>
-            <Button variant="outline" onClick={nextMonth} size="icon">
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+        <div className="grid grid-cols-7 gap-1 md:gap-2 mb-2 md:mb-4">
+          {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(day => (
+            <div key={day} className="text-center font-semibold text-[10px] md:text-sm text-muted-foreground py-1 md:py-2">
+              {day}
+            </div>
+          ))}
+        </div>
 
-          <div className="grid grid-cols-7 gap-1 md:gap-2 mb-4">
-            {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(day => (
-              <div key={day} className="text-center font-semibold text-xs md:text-sm text-muted-foreground py-2">
-                {day}
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-7 gap-1 md:gap-2">
-            {renderCalendar()}
-          </div>
-        </Card>
-      </div>
+        <div className="grid grid-cols-7 gap-1 md:gap-2">
+          {renderCalendar()}
+        </div>
+      </Card>
 
       {/* Dialog para mostrar conteúdo do dia */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto mx-4">
           <DialogHeader>
-            <DialogTitle className="text-xl">
+            <DialogTitle className="text-lg md:text-xl">
               📅 {selectedDay} de {monthNames[currentMonth]} de {currentYear}
             </DialogTitle>
           </DialogHeader>
           
           {selectedDayContent && (
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {/* Vídeo */}
-              <div className="space-y-3">
-                <h3 className="font-bold text-lg flex items-center gap-2">
+              <div className="space-y-2 md:space-y-3">
+                <h3 className="font-bold text-base md:text-lg flex items-center gap-2">
                   🎬 Vídeo do Dia
                 </h3>
-                <Card className="p-4 bg-muted/30">
-                  <p className="font-medium mb-3">{selectedDayContent.template.title}</p>
+                <Card className="p-3 md:p-4 bg-muted/30">
+                  <p className="font-medium mb-2 md:mb-3 text-sm md:text-base">{selectedDayContent.template.title}</p>
                   <Button 
                     className="w-full"
+                    size="sm"
                     onClick={() => window.open(selectedDayContent.template.url, '_blank')}
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
@@ -212,21 +214,22 @@ const Calendar = () => {
               </div>
 
               {/* Legenda */}
-              <div className="space-y-3">
-                <h3 className="font-bold text-lg flex items-center gap-2">
+              <div className="space-y-2 md:space-y-3">
+                <h3 className="font-bold text-base md:text-lg flex items-center gap-2">
                   📝 Legenda do Dia
                 </h3>
-                <Card className="p-4 bg-muted/30 space-y-3">
-                  <p className="font-medium text-primary">{selectedDayContent.caption.destination}</p>
-                  <p className="text-sm text-muted-foreground whitespace-pre-line">
+                <Card className="p-3 md:p-4 bg-muted/30 space-y-2 md:space-y-3">
+                  <p className="font-medium text-primary text-sm md:text-base">{selectedDayContent.caption.destination}</p>
+                  <p className="text-xs md:text-sm text-muted-foreground whitespace-pre-line">
                     {selectedDayContent.caption.text}
                   </p>
-                  <p className="text-xs text-accent font-medium">
+                  <p className="text-[10px] md:text-xs text-accent font-medium">
                     {selectedDayContent.caption.hashtags}
                   </p>
                   <Button 
                     variant="outline"
                     className="w-full"
+                    size="sm"
                     onClick={() => {
                       navigator.clipboard.writeText(
                         `${selectedDayContent.caption.text}\n\n${selectedDayContent.caption.hashtags}`
@@ -242,6 +245,18 @@ const Calendar = () => {
           )}
         </DialogContent>
       </Dialog>
+    </>
+  );
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header />
+      
+      <div className="flex-1 container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-7xl">
+        <PremiumGate>
+          {calendarContent}
+        </PremiumGate>
+      </div>
 
       <Footer />
     </div>

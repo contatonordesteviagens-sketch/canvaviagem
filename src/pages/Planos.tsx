@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { UserInfoCard } from "@/components/UserInfoCard";
 import { 
   Loader2, 
   Check, 
@@ -23,7 +24,8 @@ import {
   X,
   Sparkles,
   Shield,
-  Clock
+  Clock,
+  RefreshCw
 } from "lucide-react";
 import {
   Accordion,
@@ -39,6 +41,7 @@ const Planos = () => {
   const [searchParams] = useSearchParams();
   const { user, loading: authLoading, subscription, refreshSubscription, signOut } = useAuth();
   const [portalLoading, setPortalLoading] = useState(false);
+  const [refreshLoading, setRefreshLoading] = useState(false);
   const [showAllBenefits, setShowAllBenefits] = useState(false);
 
   useEffect(() => {
@@ -65,6 +68,18 @@ const Planos = () => {
   const handleSubscribe = () => {
     // Open Stripe checkout in new tab
     window.open(STRIPE_CHECKOUT_URL, "_blank");
+  };
+
+  const handleRefreshSubscription = async () => {
+    setRefreshLoading(true);
+    try {
+      await refreshSubscription();
+      toast.success("Status da assinatura atualizado!");
+    } catch (error) {
+      toast.error("Erro ao atualizar status");
+    } finally {
+      setRefreshLoading(false);
+    }
   };
 
   const handleManageSubscription = async () => {
@@ -166,66 +181,88 @@ const Planos = () => {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-          <div className="text-center mb-12">
+        <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-4xl">
+          <UserInfoCard />
+          
+          <div className="text-center mb-8 md:mb-12">
             <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
               <Sparkles className="h-3 w-3 mr-1" />
               Assinante Ativo
             </Badge>
-            <h1 className="text-4xl font-bold mb-4">Você está a bordo! ✈️</h1>
-            <p className="text-muted-foreground text-lg">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">Você está a bordo! ✈️</h1>
+            <p className="text-muted-foreground text-base md:text-lg">
               Aproveite todos os recursos do Canva Viagens
             </p>
           </div>
 
           <Card className="border-primary border-2 mb-8">
-            <CardHeader className="text-center">
-              <div className="h-20 w-20 mx-auto rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4">
-                <Plane className="h-10 w-10 text-white" />
+            <CardHeader className="text-center p-4 md:p-6">
+              <div className="h-16 w-16 md:h-20 md:w-20 mx-auto rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4">
+                <Plane className="h-8 w-8 md:h-10 md:w-10 text-white" />
               </div>
-              <CardTitle className="text-2xl">Assinatura Mensal</CardTitle>
-              <p className="text-muted-foreground">Plano ativo: Decolando ✈️</p>
+              <CardTitle className="text-xl md:text-2xl">Assinatura Mensal</CardTitle>
+              <p className="text-sm md:text-base text-muted-foreground">Plano ativo: Decolando ✈️</p>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="p-4 bg-primary/10 rounded-lg text-center">
-                <p className="font-semibold text-primary flex items-center justify-center gap-2">
-                  <Check className="h-5 w-5" />
+            <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6">
+              <div className="p-3 md:p-4 bg-primary/10 rounded-lg text-center">
+                <p className="font-semibold text-primary flex items-center justify-center gap-2 text-sm md:text-base">
+                  <Check className="h-4 w-4 md:h-5 md:w-5" />
                   Acesso completo liberado
                 </p>
                 {subscription.subscriptionEnd && (
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-xs md:text-sm text-muted-foreground mt-1">
                     Próxima renovação: {new Date(subscription.subscriptionEnd).toLocaleDateString('pt-BR')}
                   </p>
                 )}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col gap-3">
                 <Button 
                   onClick={() => navigate("/")}
-                  className="flex-1"
+                  className="w-full"
                   size="lg"
                 >
                   <Plane className="mr-2 h-4 w-4" />
                   Acessar Plataforma
                 </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={handleManageSubscription}
-                  disabled={portalLoading}
-                  className="flex-1"
-                >
-                  {portalLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Carregando...
-                    </>
-                  ) : (
-                    <>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Gerenciar Assinatura
-                    </>
-                  )}
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={handleManageSubscription}
+                    disabled={portalLoading}
+                    className="flex-1"
+                  >
+                    {portalLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Carregando...
+                      </>
+                    ) : (
+                      <>
+                        <Settings className="mr-2 h-4 w-4" />
+                        Gerenciar Assinatura
+                      </>
+                    )}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    onClick={handleRefreshSubscription}
+                    disabled={refreshLoading}
+                    className="flex-1"
+                  >
+                    {refreshLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Atualizando...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Atualizar Status
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -238,29 +275,52 @@ const Planos = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl">
+        <UserInfoCard />
+        
         {/* Hero Section */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8 md:mb-12">
           <Badge className="mb-4 bg-accent/10 text-accent border-accent/20">
             <Clock className="h-3 w-3 mr-1" />
             Oferta por tempo limitado
           </Badge>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          <h1 className="text-3xl md:text-5xl font-bold mb-4">
             Transforme seu Marketing de Viagens
           </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
             Acesse centenas de templates profissionais e ferramentas de IA para criar conteúdo incrível para sua agência
           </p>
         </div>
 
         {/* Alert for non-subscribers */}
-        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-8 flex items-center gap-3">
-          <div className="bg-amber-100 dark:bg-amber-900 rounded-full p-2">
-            <Plane className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 md:p-4 mb-6 md:mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-amber-100 dark:bg-amber-900 rounded-full p-2 shrink-0">
+              <Plane className="h-4 w-4 md:h-5 md:w-5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <p className="text-amber-800 dark:text-amber-200 text-sm md:text-base">
+              <strong>Você ainda não possui um plano ativo.</strong> Assine agora para liberar todos os recursos!
+            </p>
           </div>
-          <p className="text-amber-800 dark:text-amber-200">
-            <strong>Você ainda não possui um plano ativo.</strong> Assine agora para liberar todos os recursos!
-          </p>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleRefreshSubscription}
+            disabled={refreshLoading}
+            className="w-full sm:w-auto"
+          >
+            {refreshLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Atualizando...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Atualizar status da assinatura
+              </>
+            )}
+          </Button>
         </div>
 
         {/* Main Pricing Card */}
