@@ -44,31 +44,44 @@ serve(async (req) => {
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    
-    if (customers.data.length === 0) {
-      logStep("No customer found, user is not subscribed");
-      
-      // Update subscription status in database
-      await supabaseClient
-        .from('subscriptions')
-        .upsert({
-          user_id: user.id,
-          status: 'inactive',
-          stripe_customer_id: null,
-          stripe_subscription_id: null,
-          product_id: null,
-          current_period_end: null
-        }, { onConflict: 'user_id' });
-      
-      return new Response(JSON.stringify({ subscribed: false }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
 
-    const customerId = customers.data[0].id;
-    logStep("Found Stripe customer", { customerId });
+    // Prefer stored customer id (avoids email mismatch)
+    const { data: profile } = await supabaseClient
+      .from("profiles")
+      .select("stripe_customer_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    let customerId = profile?.stripe_customer_id ?? null;
+
+    if (!customerId) {
+      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      if (customers.data.length === 0) {
+        logStep("No customer found, user is not subscribed");
+
+        await supabaseClient.from("subscriptions").upsert(
+          {
+            user_id: user.id,
+            status: "inactive",
+            stripe_customer_id: null,
+            stripe_subscription_id: null,
+            product_id: null,
+            current_period_end: null,
+          },
+          { onConflict: "user_id" }
+        );
+
+        return new Response(JSON.stringify({ subscribed: false }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
+      customerId = customers.data[0].id;
+      logStep("Found Stripe customer by email", { customerId });
+    } else {
+      logStep("Using stored Stripe customer id", { customerId });
+    }
 
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,

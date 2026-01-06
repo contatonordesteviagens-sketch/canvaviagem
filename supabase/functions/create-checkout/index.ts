@@ -22,7 +22,8 @@ serve(async (req) => {
 
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
   );
 
   try {
@@ -45,19 +46,36 @@ serve(async (req) => {
     
     // Check if customer already exists
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
+    let customerId: string | undefined;
+
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Existing customer found", { customerId });
     } else {
-      logStep("No existing customer, will create new one");
+      logStep("No existing customer, creating new one");
+      const customer = await stripe.customers.create({
+        email: user.email,
+        metadata: { user_id: user.id },
+      });
+      customerId = customer.id;
+      logStep("Customer created", { customerId });
     }
+
+    // Persist customer id for future checks
+    await supabaseClient.from("profiles").upsert(
+      {
+        user_id: user.id,
+        email: user.email,
+        stripe_customer_id: customerId,
+      },
+      { onConflict: "user_id" }
+    );
 
     const origin = req.headers.get("origin") || "https://lovable.dev";
     
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
+      customer_email: undefined,
       line_items: [
         {
           price: PRICE_ID,
