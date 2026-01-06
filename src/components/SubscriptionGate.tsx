@@ -38,13 +38,23 @@ export const SubscriptionGate = ({ children, mode = "block" }: SubscriptionGateP
     const ctaAction = () => (user ? navigate("/planos") : navigate("/auth"));
 
     return (
-      <div className="relative">
-        <div className="opacity-35 blur-[1px] pointer-events-none select-none">
+      <div
+        className="relative"
+        onClickCapture={(e) => {
+          const target = e.target as HTMLElement | null;
+          const clickedCta = target?.closest('[data-subscription-cta="true"]');
+          if (clickedCta) return;
+          e.preventDefault();
+          e.stopPropagation();
+          ctaAction();
+        }}
+      >
+        <div className="opacity-35 blur-[1px] select-none">
           {children}
         </div>
 
         <div className="absolute inset-0 flex items-center justify-center p-4">
-          <Card className="max-w-md w-full mx-auto">
+          <Card data-subscription-cta="true" className="max-w-md w-full mx-auto">
             <CardContent className="pt-6 text-center space-y-4">
               <div className="h-16 w-16 mx-auto rounded-full bg-muted flex items-center justify-center">
                 <Lock className="h-8 w-8 text-muted-foreground" />
