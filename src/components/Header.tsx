@@ -1,17 +1,20 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { NavLink } from "@/components/NavLink";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   const navItems = [
     { to: "/", label: "Início", icon: "🏠" },
     { to: "/calendar", label: "Calendário", icon: "📅" },
+    { to: "/planos", label: "Planos", icon: "💳" },
   ];
 
   return (
@@ -37,6 +40,25 @@ export const Header = () => {
               {item.label}
             </NavLink>
           ))}
+          
+          {user ? (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={signOut}
+              className="ml-2"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sair
+            </Button>
+          ) : (
+            <Link to="/auth">
+              <Button variant="outline" size="sm" className="ml-2">
+                <User className="h-4 w-4 mr-2" />
+                Entrar
+              </Button>
+            </Link>
+          )}
         </nav>
 
         {/* Mobile Navigation */}
@@ -60,6 +82,27 @@ export const Header = () => {
                   {item.label}
                 </NavLink>
               ))}
+              
+              {user ? (
+                <Button 
+                  variant="ghost" 
+                  onClick={() => {
+                    signOut();
+                    setIsOpen(false);
+                  }}
+                  className="justify-start mt-4"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
+                </Button>
+              ) : (
+                <Link to="/auth" onClick={() => setIsOpen(false)}>
+                  <Button variant="outline" className="w-full mt-4">
+                    <User className="h-4 w-4 mr-2" />
+                    Entrar
+                  </Button>
+                </Link>
+              )}
             </nav>
           </SheetContent>
         </Sheet>
