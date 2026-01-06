@@ -1,15 +1,37 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LogOut, User } from "lucide-react";
+import { Menu, X, LogOut, User, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [loadingPortal, setLoadingPortal] = useState(false);
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const { user, signOut, subscription } = useAuth();
+
+  const handleManageSubscription = async () => {
+    setLoadingPortal(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke('customer-portal', {
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
+    } finally {
+      setLoadingPortal(false);
+    }
+  };
 
   const navItems = [
     { to: "/", label: "Início", icon: "🏠" },
@@ -42,15 +64,29 @@ export const Header = () => {
           ))}
           
           {user ? (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={signOut}
-              className="ml-2"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sair
-            </Button>
+            <>
+              {subscription.subscribed && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleManageSubscription}
+                  disabled={loadingPortal}
+                  className="ml-2"
+                >
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  {loadingPortal ? "Carregando..." : "Gerenciar Assinatura"}
+                </Button>
+              )}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={signOut}
+                className="ml-2"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
+            </>
           ) : (
             <Link to="/auth">
               <Button variant="outline" size="sm" className="ml-2">
@@ -84,17 +120,33 @@ export const Header = () => {
               ))}
               
               {user ? (
-                <Button 
-                  variant="ghost" 
-                  onClick={() => {
-                    signOut();
-                    setIsOpen(false);
-                  }}
-                  className="justify-start mt-4"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sair
-                </Button>
+                <>
+                  {subscription.subscribed && (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        handleManageSubscription();
+                        setIsOpen(false);
+                      }}
+                      disabled={loadingPortal}
+                      className="justify-start mt-4"
+                    >
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      {loadingPortal ? "Carregando..." : "Gerenciar Assinatura"}
+                    </Button>
+                  )}
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => {
+                      signOut();
+                      setIsOpen(false);
+                    }}
+                    className="justify-start mt-2"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sair
+                  </Button>
+                </>
               ) : (
                 <Link to="/auth" onClick={() => setIsOpen(false)}>
                   <Button variant="outline" className="w-full mt-4">
