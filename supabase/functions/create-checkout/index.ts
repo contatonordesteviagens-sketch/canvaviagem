@@ -44,13 +44,30 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     
-    // Check if customer already exists
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    // Check if customer already exists (Stripe may have multiple customers for same email)
+    const customers = await stripe.customers.list({ email: user.email, limit: 10 });
     let customerId: string | undefined;
 
     if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-      logStep("Existing customer found", { customerId });
+      // Prefer a customer that already has an active/trialing subscription
+      for (const c of customers.data) {
+        const active = await stripe.subscriptions.list({ customer: c.id, status: "active", limit: 1 });
+        const trialing = active.data.length === 0
+          ? await stripe.subscriptions.list({ customer: c.id, status: "trialing", limit: 1 })
+          : null;
+
+        if (active.data.length > 0 || (trialing && trialing.data.length > 0)) {
+          customerId = c.id;
+          logStep("Existing customer with subscription found", { customerId });
+          break;
+        }
+      }
+
+      // Otherwise fall back to the first customer
+      if (!customerId) {
+        customerId = customers.data[0].id;
+        logStep("Existing customer found", { customerId });
+      }
     } else {
       logStep("No existing customer, creating new one");
       const customer = await stripe.customers.create({
@@ -60,6 +77,7 @@ serve(async (req) => {
       customerId = customer.id;
       logStep("Customer created", { customerId });
     }
+
 
     // Persist customer id for future checks
     await supabaseClient.from("profiles").upsert(
