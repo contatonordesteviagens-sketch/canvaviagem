@@ -57,8 +57,10 @@ serve(async (req) => {
     }
     logStep("Authenticating user with token");
 
-    const { data: userData, error: userError } = await authClient.auth.getUser(token);
+    // Use getUser() without passing token - it uses the Authorization header from the client
+    const { data: userData, error: userError } = await authClient.auth.getUser();
     if (userError || !userData?.user) {
+      logStep("Auth error", { error: userError?.message });
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
