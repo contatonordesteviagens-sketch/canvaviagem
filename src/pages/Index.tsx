@@ -7,6 +7,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { TemplateCard } from "@/components/TemplateCard";
 import { ResourceSection } from "@/components/ResourceSection";
 import { Footer } from "@/components/Footer";
+import { PremiumGate } from "@/components/PremiumGate";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
@@ -34,19 +35,15 @@ const Index = () => {
   const [showAllCaptions, setShowAllCaptions] = useState(false);
   const [videoFilter, setVideoFilter] = useState<VideoFilter>('todos');
 
-  // Protect route: redirect to /planos if not subscribed
+  // Redirect to auth if not logged in
   useEffect(() => {
-    if (!loading && !subscription.loading) {
-      if (!user) {
-        navigate("/auth");
-      } else if (!subscription.subscribed) {
-        navigate("/planos");
-      }
+    if (!loading && !user) {
+      navigate("/auth");
     }
-  }, [user, loading, subscription, navigate]);
+  }, [user, loading, navigate]);
 
-  // Show loading while checking auth/subscription
-  if (loading || subscription.loading) {
+  // Show loading while checking auth
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -54,10 +51,13 @@ const Index = () => {
     );
   }
 
-  // Don't render content if not subscribed (will redirect)
-  if (!user || !subscription.subscribed) {
+  // Don't render if not logged in (will redirect)
+  if (!user) {
     return null;
   }
+
+  // Check if user is subscribed for showing premium content
+  const isSubscribed = subscription.subscribed;
 
   // Destinos nacionais conhecidos
   const destinosNacionais = [
@@ -134,19 +134,17 @@ const Index = () => {
     ...aiTools
   ];
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <Hero />
-        
-        <SearchBar 
-          value={searchQuery} 
-          onChange={setSearchQuery}
-          placeholder="Buscar destinos, templates, materiais..." 
-        />
+  const mainContent = (
+    <>
+      <Hero />
+      
+      <SearchBar 
+        value={searchQuery} 
+        onChange={setSearchQuery}
+        placeholder="Buscar destinos, templates, materiais..." 
+      />
 
-        <Tabs defaultValue="videos" className="space-y-8">
+      <Tabs defaultValue="videos" className="space-y-6 md:space-y-8">
           <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 h-auto gap-2 bg-muted/50 p-2 rounded-xl">
             <TabsTrigger value="videos" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               🎬 Vídeos Reels
@@ -392,8 +390,15 @@ const Index = () => {
             </div>
           </TabsContent>
         </Tabs>
+    </>
+  );
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-7xl">
+        {isSubscribed ? mainContent : <PremiumGate>{mainContent}</PremiumGate>}
       </div>
-      
       <Footer />
     </div>
   );
