@@ -328,7 +328,7 @@ const Planos = () => {
           <div className="bg-gradient-to-r from-primary to-accent p-6 text-white text-center">
             <h2 className="text-2xl font-bold mb-2">Assinatura Mensal</h2>
             <div className="flex items-baseline justify-center gap-1">
-              <span className="text-5xl font-bold">R$ 29,90</span>
+              <span className="text-5xl font-bold">R$ 37,90</span>
               <span className="text-xl opacity-80">/mês</span>
             </div>
           </div>
@@ -379,7 +379,7 @@ const Planos = () => {
                     onClick={handleSubscribe}
                   >
                     <Sparkles className="mr-2 h-5 w-5" />
-                    ASSINAR AGORA – R$ 29,90/MÊS
+                    ASSINAR AGORA – R$ 37,90/MÊS
                   </Button>
                   
                   <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
@@ -457,7 +457,7 @@ const Planos = () => {
               className="text-lg px-8"
               onClick={handleSubscribe}
             >
-              Começar Agora – R$ 29,90/mês
+              Começar Agora – R$ 37,90/mês
             </Button>
           </CardContent>
         </Card>
