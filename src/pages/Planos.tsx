@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { UserInfoCard } from "@/components/UserInfoCard";
+import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
 
 import {
   Loader2,
@@ -54,6 +55,11 @@ const Planos = () => {
     }
   }, [user, authLoading, navigate]);
 
+  // Track view content
+  useEffect(() => {
+    trackViewContent('Página de Planos');
+  }, []);
+
   // Handle success/cancel redirects from Stripe
   useEffect(() => {
     const success = searchParams.get("success");
@@ -70,6 +76,9 @@ const Planos = () => {
   }, [searchParams, refreshSubscription, navigate]);
 
   const handleCheckout = async () => {
+    // Track initiate checkout event
+    trackInitiateCheckout(37.90, 'BRL');
+    
     setCheckoutLoading(true);
 
     try {

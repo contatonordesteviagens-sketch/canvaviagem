@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Plane, Sparkles } from "lucide-react";
+import { trackPurchase, trackSubscribe } from "@/lib/meta-pixel";
 
 const Sucesso = () => {
   const navigate = useNavigate();
@@ -11,6 +12,10 @@ const Sucesso = () => {
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
+    // Track purchase and subscription events
+    trackPurchase(37.90, 'BRL');
+    trackSubscribe(37.90, 'BRL', 37.90 * 12); // LTV estimado de 12 meses
+    
     // Refresh subscription status
     refreshSubscription();
 

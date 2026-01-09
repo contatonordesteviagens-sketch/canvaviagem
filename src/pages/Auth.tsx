@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
+import { trackCompleteRegistration, trackViewContent } from "@/lib/meta-pixel";
 
 const emailSchema = z.string().email("Por favor, insira um email válido");
 const passwordSchema = z.string().min(6, "A senha deve ter pelo menos 6 caracteres");
@@ -20,6 +21,11 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Track page view
+  useEffect(() => {
+    trackViewContent('Página de Login/Cadastro');
+  }, []);
 
   // Redirect based on subscription status after login
   useEffect(() => {
@@ -72,6 +78,9 @@ const Auth = () => {
       return;
     }
 
+    // Track registration complete
+    trackCompleteRegistration();
+    
     toast.success("Conta criada com sucesso! Você já pode acessar a plataforma.");
     navigate("/");
   };
