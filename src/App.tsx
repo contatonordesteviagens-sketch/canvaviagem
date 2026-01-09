@@ -9,6 +9,7 @@ import Calendar from "./pages/Calendar";
 import Auth from "./pages/Auth";
 import Planos from "./pages/Planos";
 import Sucesso from "./pages/Sucesso";
+import Obrigado from "./pages/Obrigado";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/planos" element={<Planos />} />
             <Route path="/sucesso" element={<Sucesso />} />
+            <Route path="/obrigado" element={<Obrigado />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
