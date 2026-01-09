@@ -379,7 +379,7 @@ const Planos = () => {
                 <div className="space-y-4">
                   <Button
                     size="lg"
-                    className="w-full text-lg py-6"
+                    className="w-full text-lg py-6 bg-orange-500 hover:bg-orange-600"
                     onClick={() => window.open(STRIPE_CHECKOUT_URL, '_blank')}
                   >
                     <Plane className="mr-2 h-5 w-5" />
@@ -457,7 +457,7 @@ const Planos = () => {
             </p>
             <Button
               size="lg"
-              className="bg-white text-primary hover:bg-white/90 text-lg py-6 px-8"
+              className="bg-orange-500 hover:bg-orange-600 text-white text-lg py-6 px-8"
               onClick={() => window.open(STRIPE_CHECKOUT_URL, '_blank')}
             >
               <Plane className="mr-2 h-5 w-5" />
