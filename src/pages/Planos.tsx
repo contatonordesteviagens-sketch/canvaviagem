@@ -34,7 +34,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/test_28EeVe1nQ2nIchW6Du3F600";
+const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00";
 
 const Planos = () => {
   const navigate = useNavigate();
