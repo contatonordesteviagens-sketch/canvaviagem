@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -17,10 +17,14 @@ const passwordSchema = z.string().min(6, "A senha deve ter pelo menos 6 caracter
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading, subscription } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Get redirect param for post-auth navigation
+  const redirectTo = searchParams.get("redirect") || null;
 
   // Track page view
   useEffect(() => {
@@ -30,13 +34,16 @@ const Auth = () => {
   // Redirect based on subscription status after login
   useEffect(() => {
     if (!loading && !subscription.loading && user) {
-      if (subscription.subscribed) {
+      // If there's a redirect param, use it
+      if (redirectTo) {
+        navigate(redirectTo);
+      } else if (subscription.subscribed) {
         navigate("/");
       } else {
         navigate("/planos");
       }
     }
-  }, [user, loading, subscription, navigate]);
+  }, [user, loading, subscription, navigate, redirectTo]);
 
   const validateInputs = () => {
     try {

@@ -49,11 +49,7 @@ const Planos = () => {
   const [refreshLoading, setRefreshLoading] = useState(false);
   const [showAllBenefits, setShowAllBenefits] = useState(false);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/auth");
-    }
-  }, [user, authLoading, navigate]);
+  // Allow non-logged users to view the plans page (for conversion)
 
   // Track view content
   useEffect(() => {
@@ -76,6 +72,13 @@ const Planos = () => {
   }, [searchParams, refreshSubscription, navigate]);
 
   const handleCheckout = async () => {
+    // If user is not logged in, redirect to auth first
+    if (!user) {
+      toast.info("Faça login para continuar com a assinatura.");
+      navigate("/auth?redirect=/planos");
+      return;
+    }
+    
     // Track initiate checkout event
     trackInitiateCheckout(37.90, 'BRL');
     
@@ -88,7 +91,7 @@ const Planos = () => {
 
       if (!session?.access_token) {
         toast.error("Você precisa estar logado para assinar.");
-        navigate("/auth");
+        navigate("/auth?redirect=/planos");
         return;
       }
 
@@ -327,7 +330,27 @@ const Planos = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl">
-        <UserInfoCard />
+        {user && <UserInfoCard />}
+        
+        {/* Wistia Video - High visibility position */}
+        <div className="mb-8 md:mb-12 max-w-2xl mx-auto">
+          <div className="wistia_responsive_padding" style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
+            <div className="wistia_responsive_wrapper" style={{ height: '100%', left: 0, position: 'absolute', top: 0, width: '100%' }}>
+              <iframe 
+                src="https://fast.wistia.net/embed/iframe/28dkpy88ix?web_component=true&seo=false"
+                title="30seg Video" 
+                allow="autoplay; fullscreen" 
+                allowTransparency={true}
+                frameBorder={0} 
+                scrolling="no" 
+                className="wistia_embed rounded-xl shadow-lg" 
+                name="wistia_embed"
+                width="100%" 
+                height="100%"
+              />
+            </div>
+          </div>
+        </div>
         
         {/* Hero Section */}
         <div className="text-center mb-8 md:mb-12">
@@ -343,36 +366,38 @@ const Planos = () => {
           </p>
         </div>
 
-        {/* Alert for non-subscribers */}
-        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 md:p-4 mb-6 md:mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="bg-amber-100 dark:bg-amber-900 rounded-full p-2 shrink-0">
-              <Plane className="h-4 w-4 md:h-5 md:w-5 text-amber-600 dark:text-amber-400" />
+        {/* Alert for non-subscribers - only show for logged in users */}
+        {user && (
+          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 md:p-4 mb-6 md:mb-8">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-amber-100 dark:bg-amber-900 rounded-full p-2 shrink-0">
+                <Plane className="h-4 w-4 md:h-5 md:w-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <p className="text-amber-800 dark:text-amber-200 text-sm md:text-base">
+                <strong>Você ainda não possui um plano ativo.</strong> Assine agora para liberar todos os recursos!
+              </p>
             </div>
-            <p className="text-amber-800 dark:text-amber-200 text-sm md:text-base">
-              <strong>Você ainda não possui um plano ativo.</strong> Assine agora para liberar todos os recursos!
-            </p>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleRefreshSubscription}
+              disabled={refreshLoading}
+              className="w-full sm:w-auto"
+            >
+              {refreshLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Atualizando...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Atualizar status da assinatura
+                </>
+              )}
+            </Button>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleRefreshSubscription}
-            disabled={refreshLoading}
-            className="w-full sm:w-auto"
-          >
-            {refreshLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Atualizando...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Atualizar status da assinatura
-              </>
-            )}
-          </Button>
-        </div>
+        )}
 
         {/* Main Pricing Card */}
         <Card className="mb-12 overflow-hidden border-2 border-primary/20 shadow-xl">
