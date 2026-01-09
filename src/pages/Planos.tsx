@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { UserInfoCard } from "@/components/UserInfoCard";
-import { StripeBuyButton } from "@/components/StripeBuyButton";
+
 import { 
   Loader2, 
   Check, 
@@ -38,9 +38,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-// Stripe Buy Button credentials
-const STRIPE_BUY_BUTTON_ID = "buy_btn_1SnTjELXUoWoiE4TCTbE8tJg";
-const STRIPE_PUBLISHABLE_KEY = "pk_live_51QNAV0LXUoWoiE4TypBZJzJZ8Jdg1PYkdqDy0L75uPD00xekOWqibE8Pk5rMhfeFAqNvq6f1o8T7MwE6OI12F8iq00Ps5tNzN3";
+// Stripe checkout URL
+const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00";
 
 const Planos = () => {
   const navigate = useNavigate();
@@ -378,11 +377,14 @@ const Planos = () => {
               {/* CTA Section */}
               <div className="flex flex-col justify-center space-y-6">
                 <div className="space-y-4">
-                  <StripeBuyButton
-                    buyButtonId={STRIPE_BUY_BUTTON_ID}
-                    publishableKey={STRIPE_PUBLISHABLE_KEY}
-                    customerEmail={user?.email}
-                  />
+                  <Button
+                    size="lg"
+                    className="w-full text-lg py-6"
+                    onClick={() => window.open(STRIPE_CHECKOUT_URL, '_blank')}
+                  >
+                    <Plane className="mr-2 h-5 w-5" />
+                    Assinar Agora - R$ 37,90/mês
+                  </Button>
                   
                   <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
@@ -453,13 +455,14 @@ const Planos = () => {
             <p className="mb-6 opacity-90">
               Junte-se a centenas de agentes de viagens que já transformaram seu marketing
             </p>
-            <div className="bg-white/10 rounded-lg p-4">
-              <StripeBuyButton
-                buyButtonId={STRIPE_BUY_BUTTON_ID}
-                publishableKey={STRIPE_PUBLISHABLE_KEY}
-                customerEmail={user?.email}
-              />
-            </div>
+            <Button
+              size="lg"
+              className="bg-white text-primary hover:bg-white/90 text-lg py-6 px-8"
+              onClick={() => window.open(STRIPE_CHECKOUT_URL, '_blank')}
+            >
+              <Plane className="mr-2 h-5 w-5" />
+              Assinar Agora - R$ 37,90/mês
+            </Button>
           </CardContent>
         </Card>
       </div>
