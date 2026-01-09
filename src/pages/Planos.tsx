@@ -105,7 +105,8 @@ const Planos = () => {
       }
 
       if (data?.url) {
-        window.location.href = data.url;
+        window.open(data.url, '_blank');
+        toast.info("O checkout foi aberto em uma nova aba. Complete o pagamento e volte aqui!");
       } else {
         toast.error("Checkout indisponível. Tente novamente.");
       }
