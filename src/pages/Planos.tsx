@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { UserInfoCard } from "@/components/UserInfoCard";
+import { StripeBuyButton } from "@/components/StripeBuyButton";
 import { 
   Loader2, 
   Check, 
@@ -25,7 +26,10 @@ import {
   Sparkles,
   Shield,
   Clock,
-  RefreshCw
+  RefreshCw,
+  Infinity,
+  Users,
+  FileText
 } from "lucide-react";
 import {
   Accordion,
@@ -34,7 +38,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00";
+// Stripe Buy Button credentials
+const STRIPE_BUY_BUTTON_ID = "buy_btn_1SnTjELXUoWoiE4TCTbE8tJg";
+const STRIPE_PUBLISHABLE_KEY = "pk_live_51QNAV0LXUoWoiE4TypBZJzJZ8Jdg1PYkdqDy0L75uPD00xekOWqibE8Pk5rMhfeFAqNvq6f1o8T7MwE6OI12F8iq00Ps5tNzN3";
 
 const Planos = () => {
   const navigate = useNavigate();
@@ -65,10 +71,7 @@ const Planos = () => {
     }
   }, [searchParams, refreshSubscription, navigate]);
 
-  const handleSubscribe = () => {
-    // Open Stripe checkout in new tab
-    window.open(STRIPE_CHECKOUT_URL, "_blank");
-  };
+  // handleSubscribe is no longer needed as we use Stripe Buy Button directly
 
   const handleRefreshSubscription = async () => {
     setRefreshLoading(true);
@@ -119,12 +122,14 @@ const Planos = () => {
   };
 
   const benefits = [
-    { icon: Video, title: "Vídeos Reels Editáveis", description: "Templates prontos para editar no Canva" },
-    { icon: Image, title: "Artes para Feed e Stories", description: "Posts profissionais para seu Instagram" },
-    { icon: MessageSquare, title: "Legendas Prontas", description: "Copie e cole legendas de alta conversão" },
-    { icon: Bot, title: "Ferramentas de IA", description: "Robôs de marketing e narração" },
-    { icon: Download, title: "Downloads Ilimitados", description: "Baixe quantos materiais precisar" },
-    { icon: Calendar, title: "Novidades Semanais", description: "Novos conteúdos toda semana" },
+    { icon: Calendar, title: "Calendário Anual de Postagens", description: "Reels, Stories, Feed e Carrosséis prontos" },
+    { icon: Download, title: "Downloads Ilimitados", description: "Vídeos prontos nacionais e internacionais" },
+    { icon: Image, title: "Templates 100% Editáveis", description: "Edite tudo diretamente no Canva" },
+    { icon: Bot, title: "10 Robôs de IA", description: "Crie tudo de marketing e vendas" },
+    { icon: Users, title: "3 Influenciadoras de I.A", description: "Eva, Mel e Bia prontas para usar" },
+    { icon: Video, title: "Uso LIVRE de Direitos Autorais", description: "Vídeos e imagens em HD" },
+    { icon: Sparkles, title: "Atualizações Vitalícias", description: "Acesso permanente a novidades" },
+    { icon: FileText, title: "Legendas Prontas", description: "Textos de destinos e roteiros editáveis" },
   ];
 
   const comparisons = [
@@ -373,14 +378,11 @@ const Planos = () => {
               {/* CTA Section */}
               <div className="flex flex-col justify-center space-y-6">
                 <div className="space-y-4">
-                  <Button 
-                    size="lg" 
-                    className="w-full text-lg py-6 bg-gradient-to-r from-primary to-accent hover:opacity-90"
-                    onClick={handleSubscribe}
-                  >
-                    <Sparkles className="mr-2 h-5 w-5" />
-                    ASSINAR AGORA – R$ 37,90/MÊS
-                  </Button>
+                  <StripeBuyButton
+                    buyButtonId={STRIPE_BUY_BUTTON_ID}
+                    publishableKey={STRIPE_PUBLISHABLE_KEY}
+                    customerEmail={user?.email}
+                  />
                   
                   <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
@@ -451,14 +453,13 @@ const Planos = () => {
             <p className="mb-6 opacity-90">
               Junte-se a centenas de agentes de viagens que já transformaram seu marketing
             </p>
-            <Button 
-              size="lg" 
-              variant="secondary"
-              className="text-lg px-8"
-              onClick={handleSubscribe}
-            >
-              Começar Agora – R$ 37,90/mês
-            </Button>
+            <div className="bg-white/10 rounded-lg p-4">
+              <StripeBuyButton
+                buyButtonId={STRIPE_BUY_BUTTON_ID}
+                publishableKey={STRIPE_PUBLISHABLE_KEY}
+                customerEmail={user?.email}
+              />
+            </div>
           </CardContent>
         </Card>
       </div>
