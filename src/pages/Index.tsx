@@ -36,13 +36,6 @@ const Index = () => {
   const [showAllCaptions, setShowAllCaptions] = useState(false);
   const [videoFilter, setVideoFilter] = useState<VideoFilter>('todos');
 
-  // Redirect to auth if not logged in
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth");
-    }
-  }, [user, loading, navigate]);
-
   // Track view content when user is logged in
   useEffect(() => {
     if (user) {
@@ -51,7 +44,7 @@ const Index = () => {
   }, [user]);
 
   // Show loading while checking auth
-  if (loading) {
+  if (loading || subscription.loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -59,13 +52,8 @@ const Index = () => {
     );
   }
 
-  // Don't render if not logged in (will redirect)
-  if (!user) {
-    return null;
-  }
-
-  // Check if user is subscribed for showing premium content
-  const isSubscribed = subscription.subscribed;
+  // Check if user is subscribed for showing premium content (logged in + active subscription)
+  const isSubscribed = user && subscription.subscribed;
 
   // Destinos nacionais conhecidos
   const destinosNacionais = [
