@@ -76,7 +76,51 @@ serve(async (req) => {
     const customers = await stripe.customers.list({ email, limit: 1 });
 
     if (customers.data.length === 0) {
-      logStep("No customer found, user is not subscribed");
+      logStep("No customer found, checking for one-off payments by email");
+
+      // Check for completed checkout sessions (one-off payments) by email
+      const checkoutSessions = await stripe.checkout.sessions.list({
+        customer_email: email,
+        status: 'complete',
+        limit: 100,
+      });
+
+      const hasValidOneOffPayment = checkoutSessions.data.some((session: { payment_status: string; mode: string }) => 
+        session.payment_status === 'paid' && 
+        session.mode === 'payment'
+      );
+
+      if (hasValidOneOffPayment) {
+        logStep("Found valid one-off payment for email", { email });
+
+        // Best-effort DB update
+        if (dbClient) {
+          await dbClient
+            .from("subscriptions")
+            .upsert(
+              {
+                user_id: userId,
+                status: "active",
+                stripe_customer_id: null,
+                stripe_subscription_id: null,
+                product_id: "one_off_payment",
+                current_period_end: null,
+              },
+              { onConflict: "user_id" }
+            );
+        }
+
+        return new Response(JSON.stringify({ 
+          subscribed: true, 
+          product_id: "one_off_payment", 
+          subscription_end: null 
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
+      logStep("No valid payments found, user is not subscribed");
 
       // Best-effort DB update (only if service role key is available)
       if (dbClient) {
@@ -106,6 +150,7 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
+    // Check for active subscriptions
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
@@ -158,31 +203,84 @@ serve(async (req) => {
             { onConflict: "user_id" }
           );
       }
-    } else {
-      logStep("No active subscription found");
 
-      // Best-effort DB update (only if service role key is available)
+      return new Response(JSON.stringify({
+        subscribed: true,
+        product_id: productId,
+        subscription_end: subscriptionEnd
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // No active subscription, check for one-off payments (checkout sessions)
+    logStep("No active subscription, checking for one-off payments");
+    
+    const checkoutSessions = await stripe.checkout.sessions.list({
+      customer: customerId,
+      status: 'complete',
+      limit: 100,
+    });
+
+    const hasValidOneOffPayment = checkoutSessions.data.some((session: { payment_status: string; mode: string }) => 
+      session.payment_status === 'paid' && 
+      session.mode === 'payment'
+    );
+
+    if (hasValidOneOffPayment) {
+      logStep("Found valid one-off payment", { customerId });
+
+      // Best-effort DB update
       if (dbClient) {
         await dbClient
           .from("subscriptions")
           .upsert(
             {
               user_id: userId,
-              status: "inactive",
+              status: "active",
               stripe_customer_id: customerId,
               stripe_subscription_id: null,
-              product_id: null,
+              product_id: "one_off_payment",
               current_period_end: null,
             },
             { onConflict: "user_id" }
           );
       }
+
+      return new Response(JSON.stringify({
+        subscribed: true,
+        product_id: "one_off_payment",
+        subscription_end: null
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    logStep("No active subscription or one-off payment found");
+
+    // Best-effort DB update (only if service role key is available)
+    if (dbClient) {
+      await dbClient
+        .from("subscriptions")
+        .upsert(
+          {
+            user_id: userId,
+            status: "inactive",
+            stripe_customer_id: customerId,
+            stripe_subscription_id: null,
+            product_id: null,
+            current_period_end: null,
+          },
+          { onConflict: "user_id" }
+        );
     }
 
     return new Response(JSON.stringify({
-      subscribed: hasActiveSub,
-      product_id: productId,
-      subscription_end: subscriptionEnd
+      subscribed: false,
+      product_id: null,
+      subscription_end: null
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
