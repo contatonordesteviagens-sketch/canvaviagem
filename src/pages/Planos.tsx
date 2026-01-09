@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,16 +10,16 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { UserInfoCard } from "@/components/UserInfoCard";
 
-import { 
-  Loader2, 
-  Check, 
-  Plane, 
-  Settings, 
-  Video, 
-  Image, 
-  MessageSquare, 
-  Bot, 
-  Download, 
+import {
+  Loader2,
+  Check,
+  Plane,
+  Settings,
+  Video,
+  Image,
+  MessageSquare,
+  Bot,
+  Download,
   Calendar,
   ChevronDown,
   ChevronUp,
@@ -29,7 +30,7 @@ import {
   RefreshCw,
   Infinity,
   Users,
-  FileText
+  FileText,
 } from "lucide-react";
 import {
   Accordion,
@@ -38,13 +39,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-// Stripe checkout URL
-const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00";
-
 const Planos = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, loading: authLoading, subscription, refreshSubscription, signOut } = useAuth();
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
   const [showAllBenefits, setShowAllBenefits] = useState(false);
@@ -70,7 +69,44 @@ const Planos = () => {
     }
   }, [searchParams, refreshSubscription, navigate]);
 
-  // handleSubscribe is no longer needed as we use Stripe Buy Button directly
+  const handleCheckout = async () => {
+    setCheckoutLoading(true);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        toast.error("Você precisa estar logado para assinar.");
+        navigate("/auth");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        console.error("Checkout error:", error);
+        toast.error("Erro ao abrir o checkout. Tente novamente.");
+        return;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error("Checkout indisponível. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      toast.error("Erro ao processar. Tente novamente.");
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   const handleRefreshSubscription = async () => {
     setRefreshLoading(true);
@@ -86,25 +122,26 @@ const Planos = () => {
 
   const handleManageSubscription = async () => {
     setPortalLoading(true);
-    
+
     try {
-      const { supabase } = await import("@/integrations/supabase/client");
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (!session?.access_token) {
         toast.error("Você precisa estar logado.");
         navigate("/auth");
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('customer-portal', {
+      const { data, error } = await supabase.functions.invoke("customer-portal", {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
 
       if (error) {
-        console.error('Portal error:', error);
+        console.error("Portal error:", error);
         toast.error("Erro ao acessar portal. Tente novamente.");
         return;
       }
@@ -113,7 +150,7 @@ const Planos = () => {
         window.location.href = data.url;
       }
     } catch (error) {
-      console.error('Portal error:', error);
+      console.error("Portal error:", error);
       toast.error("Erro ao processar. Tente novamente.");
     } finally {
       setPortalLoading(false);
@@ -379,11 +416,21 @@ const Planos = () => {
                 <div className="space-y-4">
                   <Button
                     size="lg"
-                    className="w-full text-lg py-6 bg-orange-500 hover:bg-orange-600"
-                    onClick={() => window.open(STRIPE_CHECKOUT_URL, '_blank')}
+                    className="w-full text-lg py-6 bg-orange-500 hover:bg-orange-600 pulse"
+                    onClick={handleCheckout}
+                    disabled={checkoutLoading}
                   >
-                    <Plane className="mr-2 h-5 w-5" />
-                    Assinar Agora - R$ 37,90/mês
+                    {checkoutLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Abrindo checkout...
+                      </>
+                    ) : (
+                      <>
+                        <Plane className="mr-2 h-5 w-5" />
+                        Assinar Agora - R$ 37,90/mês
+                      </>
+                    )}
                   </Button>
                   
                   <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
@@ -457,11 +504,21 @@ const Planos = () => {
             </p>
             <Button
               size="lg"
-              className="bg-orange-500 hover:bg-orange-600 text-white text-lg py-6 px-8"
-              onClick={() => window.open(STRIPE_CHECKOUT_URL, '_blank')}
+              className="bg-orange-500 hover:bg-orange-600 text-white text-lg py-6 px-8 pulse"
+              onClick={handleCheckout}
+              disabled={checkoutLoading}
             >
-              <Plane className="mr-2 h-5 w-5" />
-              Assinar Agora - R$ 37,90/mês
+              {checkoutLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Abrindo checkout...
+                </>
+              ) : (
+                <>
+                  <Plane className="mr-2 h-5 w-5" />
+                  Assinar Agora - R$ 37,90/mês
+                </>
+              )}
             </Button>
           </CardContent>
         </Card>
