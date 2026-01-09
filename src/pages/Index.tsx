@@ -24,6 +24,7 @@ import {
   videoDownloads 
 } from "@/data/templates";
 import { captions } from "@/data/captions";
+import { trackViewContent } from "@/lib/meta-pixel";
 
 type VideoFilter = 'todos' | 'nacionais' | 'internacionais' | 'eva' | 'mel' | 'bia';
 
@@ -41,6 +42,13 @@ const Index = () => {
       navigate("/auth");
     }
   }, [user, loading, navigate]);
+
+  // Track view content when user is logged in
+  useEffect(() => {
+    if (user) {
+      trackViewContent('Plataforma Principal');
+    }
+  }, [user]);
 
   // Show loading while checking auth
   if (loading) {
