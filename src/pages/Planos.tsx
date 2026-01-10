@@ -419,11 +419,16 @@ const Planos = () => {
                   </div>
                 </div>
 
-                <div className="bg-muted/50 rounded-lg p-4 text-center">
-                  <p className="text-sm text-muted-foreground">                                                                                            
-
-
-                </p>
+                <div className="bg-muted/50 rounded-lg p-4 text-center space-y-3">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    <span className="font-semibold text-foreground">✨ Acesso imediato</span> após confirmação do pagamento — todas as funções liberadas!
+                  </p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    <span className="font-semibold text-primary">🔥 Garantia:</span> Em 3 dias seu perfil vai ter o dobro de engajamento ou devolvo seu dinheiro.
+                  </p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Seu perfil vai ficar parecido com o da <span className="font-semibold">CVC</span> e <span className="font-semibold">Decolar</span>, concorda?
+                  </p>
                   <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmo1NGh5cGxiZG1vdHl3bmZxNTBxd2h0aDBsbXkxa2xhNWk4bmE4aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MpVJ9IjphA5p6sO8Zr/giphy.gif" alt="Confirmação de pagamento" className="mx-auto mt-3 rounded-lg max-w-[200px]" />
                 </div>
               </div>
