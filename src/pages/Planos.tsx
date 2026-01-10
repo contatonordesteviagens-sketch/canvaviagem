@@ -455,7 +455,8 @@ const Planos = () => {
         {/* Final CTA */}
         <Card className="bg-gradient-to-r from-primary to-accent text-white">
           <CardContent className="p-8 text-center">
-            <h2 className="text-2xl font-bold mb-4">82% de DESCONTO</h2>
+            <h2 className="text-2xl font-bold mb-4">Acesse hoje com 
+82% de DESCONTO</h2>
             <p className="mb-6 opacity-90">
               
 Isso aqui não é gatilho mental, essa oferta de lançamento do plano premium + atualização vitalícia pode mudar a qualquer momento.
