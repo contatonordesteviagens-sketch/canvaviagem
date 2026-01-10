@@ -423,11 +423,7 @@ const Planos = () => {
                   <p className="text-sm text-muted-foreground">
                     ✨ Acesso imediato após confirmação do pagamento
                   </p>
-                  <img 
-                    src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmo1NGh5cGxiZG1vdHl3bmZxNTBxd2h0aDBsbXkxa2xhNWk4bmE4aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MpVJ9IjphA5p6sO8Zr/giphy.gif"
-                    alt="Confirmação de pagamento"
-                    className="mx-auto mt-3 rounded-lg max-w-[200px]"
-                  />
+                  <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmo1NGh5cGxiZG1vdHl3bmZxNTBxd2h0aDBsbXkxa2xhNWk4bmE4aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MpVJ9IjphA5p6sO8Zr/giphy.gif" alt="Confirmação de pagamento" className="mx-auto mt-3 rounded-lg max-w-[200px]" />
                 </div>
               </div>
             </div>
@@ -461,7 +457,7 @@ const Planos = () => {
                   <span className="text-[10px] opacity-60 font-light mt-1">Abrindo...</span>
                 </> : <>
                   <span className="md:text-lg font-semibold whitespace-nowrap text-xl">Quero meu acesso!</span>
-                  <span className="opacity-60 font-light mt-0.5 text-sm">R$ 37,90 / mês</span>
+                  <span className="opacity-60 font-light mt-0.5 text-sm">Canva Viagem Premium         </span>
                 </>}
             </Button>
           </CardContent>
