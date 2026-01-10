@@ -364,9 +364,11 @@ const Planos = () => {
         <Card className="mb-12 overflow-hidden border-2 border-primary/20 shadow-xl">
           <div className="bg-gradient-to-r from-primary to-accent p-6 text-white text-center">
             <h2 className="text-2xl font-bold mb-2">Canva Viagem</h2>
-            <div className="flex items-baseline justify-center gap-1">
-              <span className="text-5xl font-bold">R$ 37,90</span>
-              <span className="text-xl opacity-80">mês</span>
+            <div className="flex items-baseline justify-center">
+              <span className="text-2xl font-bold opacity-80">R$</span>
+              <span className="text-5xl font-bold mx-1">37</span>
+              <span className="text-2xl font-bold opacity-80">,90</span>
+              <span className="text-xl opacity-80 ml-1">mês</span>
             </div>
           </div>
           <CardContent className="p-6 md:p-8">
