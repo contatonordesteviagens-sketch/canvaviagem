@@ -420,9 +420,10 @@ const Planos = () => {
                 </div>
 
                 <div className="bg-muted/50 rounded-lg p-4 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    ✨ Acesso imediato após confirmação do pagamento
-                  </p>
+                  <p className="text-sm text-muted-foreground">                                                                                            
+
+
+                </p>
                   <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmo1NGh5cGxiZG1vdHl3bmZxNTBxd2h0aDBsbXkxa2xhNWk4bmE4aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MpVJ9IjphA5p6sO8Zr/giphy.gif" alt="Confirmação de pagamento" className="mx-auto mt-3 rounded-lg max-w-[200px]" />
                 </div>
               </div>
