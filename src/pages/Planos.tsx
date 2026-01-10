@@ -403,7 +403,7 @@ const Planos = () => {
                         <span className="text-[10px] opacity-60 font-light mt-1">Abrindo...</span>
                       </> : <>
                         <span className="md:text-lg font-semibold whitespace-nowrap text-2xl my-0 px-[2px] py-0">Quero meu acesso!</span>
-                        <span className="opacity-60 font-light mt-0.5 text-lg">R$ 37,90 / mês</span>
+                        <span className="opacity-60 font-light mt-0.5 text-lg my-px py-0 px-0">R$ 37,90 / mês</span>
                       </>}
                   </Button>
                   
