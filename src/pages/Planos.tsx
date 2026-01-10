@@ -397,13 +397,13 @@ const Planos = () => {
               {/* CTA Section */}
               <div className="flex flex-col justify-center space-y-6">
                 <div className="space-y-4">
-                  <Button size="lg" className="w-full py-5 bg-orange-500 hover:bg-orange-600 pulse flex flex-col items-center h-auto" onClick={handleCheckout} disabled={checkoutLoading}>
+                  <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="w-full bg-orange-500 hover:bg-orange-600 pulse flex flex-col items-center h-auto my-0 py-[5px]">
                     {checkoutLoading ? <>
                         <Loader2 className="h-5 w-5 animate-spin" />
                         <span className="text-[10px] opacity-60 font-light mt-1">Abrindo...</span>
                       </> : <>
-                        <span className="text-base md:text-lg font-semibold whitespace-nowrap">Quero meu acesso!</span>
-                        <span className="text-[10px] opacity-60 font-light mt-0.5">R$ 37,90 / mês</span>
+                        <span className="md:text-lg font-semibold whitespace-nowrap text-lg">Quero meu acesso!</span>
+                        <span className="opacity-60 font-light mt-0.5 text-lg">R$ 37,90 / mês</span>
                       </>}
                   </Button>
                   
