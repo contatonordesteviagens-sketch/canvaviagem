@@ -42,8 +42,8 @@ export const PremiumGate = ({
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/10 to-background/30" />
           
           {/* Floating CTA that appears on hover/focus */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300">
-            <div className="bg-card/95 backdrop-blur-md border-2 border-primary/20 rounded-2xl p-6 md:p-8 max-w-md text-center shadow-2xl transform group-hover:scale-105 transition-transform duration-300 mx-[26px] pl-[3px]">
+          <div className="absolute inset-0 flex items-start justify-center pt-8 md:pt-12 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300">
+            <div className="bg-card/95 backdrop-blur-md border-2 border-primary/20 rounded-2xl p-6 md:p-8 max-w-md text-center shadow-2xl transform group-hover:scale-105 transition-transform duration-300 mx-6">
               <div className="h-14 w-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <Lock className="h-7 w-7 text-primary" />
               </div>
