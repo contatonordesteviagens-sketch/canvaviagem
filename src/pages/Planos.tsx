@@ -365,10 +365,10 @@ const Planos = () => {
           <div className="bg-gradient-to-r from-primary to-accent p-6 text-white text-center">
             <h2 className="text-2xl font-bold mb-2">Canva Viagem</h2>
             <div className="flex items-baseline justify-center">
-              <span className="text-2xl font-bold opacity-80">R$</span>
-              <span className="text-5xl font-bold mx-1">37</span>
-              <span className="text-2xl font-bold opacity-80">,90</span>
-              <span className="text-xl opacity-80 ml-1">mês</span>
+              <span className="text-2xl font-bold opacity-80 text-white">R$</span>
+              <span className="text-5xl font-bold mx-1 text-white/[0.91]">37</span>
+              <span className="text-2xl font-bold opacity-80 text-white">,90</span>
+              <span className="text-xl opacity-80 ml-1 text-white/[0.67]">/mês</span>
             </div>
           </div>
           <CardContent className="p-6 md:p-8">
