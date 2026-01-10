@@ -12,6 +12,7 @@ import { UserInfoCard } from "@/components/UserInfoCard";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
 import { Loader2, Check, Plane, Settings, Video, Image, MessageSquare, Bot, Download, Calendar, ChevronDown, ChevronUp, X, Sparkles, Shield, Clock, RefreshCw, Infinity, Users, FileText } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
 const Planos = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -47,6 +48,7 @@ const Planos = () => {
       window.history.replaceState({}, "", "/planos");
     }
   }, [searchParams, refreshSubscription, navigate]);
+
   const handleCheckout = async () => {
     // If user is not logged in, redirect to auth first
     if (!user) {
@@ -95,6 +97,7 @@ const Planos = () => {
       setCheckoutLoading(false);
     }
   };
+
   const handleRefreshSubscription = async () => {
     setRefreshLoading(true);
     try {
@@ -106,6 +109,7 @@ const Planos = () => {
       setRefreshLoading(false);
     }
   };
+
   const handleManageSubscription = async () => {
     setPortalLoading(true);
     try {
@@ -142,6 +146,7 @@ const Planos = () => {
       setPortalLoading(false);
     }
   };
+
   const benefits = [{
     icon: Calendar,
     title: "Calendário Anual de Postagens",
@@ -175,6 +180,7 @@ const Planos = () => {
     title: "Legendas Prontas",
     description: "Textos de destinos e roteiros editáveis"
   }];
+
   const comparisons = [{
     feature: "Vídeos Reels profissionais",
     without: false,
@@ -204,6 +210,7 @@ const Planos = () => {
     without: false,
     with: true
   }];
+
   const faqs = [{
     question: "Posso cancelar a qualquer momento?",
     answer: "Sim! Você pode cancelar sua assinatura quando quiser, sem multas ou taxas adicionais. O acesso permanece ativo até o final do período pago."
@@ -223,6 +230,7 @@ const Planos = () => {
     question: "Vocês oferecem garantia?",
     answer: "Sim! Se por qualquer motivo você não ficar satisfeito, pode cancelar sua assinatura dentro dos primeiros 7 dias e solicitar reembolso."
   }];
+
   if (authLoading || subscription.loading) {
     return <div className="min-h-screen bg-background">
         <Header />
@@ -302,6 +310,7 @@ const Planos = () => {
         <Footer />
       </div>;
   }
+
   return <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl">
@@ -397,13 +406,18 @@ const Planos = () => {
               {/* CTA Section */}
               <div className="flex flex-col justify-center space-y-6">
                 <div className="space-y-4">
-                  <Button size="lg" className="w-full text-lg py-6 bg-orange-500 hover:bg-orange-600 pulse" onClick={handleCheckout} disabled={checkoutLoading}>Quero Acessar R$ 37,90/mês{checkoutLoading ? <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Abrindo checkout...
-                      </> : <>
-                        <Plane className="mr-2 h-5 w-5" />
-                        Assinar Agora - R$ 37,90/mês
-                      </>}
+                  <Button size="lg" className="w-full py-6 bg-orange-500 hover:bg-orange-600 pulse flex flex-col items-center" onClick={handleCheckout} disabled={checkoutLoading}>
+                    {checkoutLoading ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span className="text-xs opacity-60 font-light">Abrindo checkout...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-lg font-semibold">Quero meu acesso!</span>
+                        <span className="text-xs opacity-60 font-light">R$ 37,90 / mês</span>
+                      </>
+                    )}
                   </Button>
                   
                   <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
@@ -471,14 +485,18 @@ const Planos = () => {
             <p className="mb-6 opacity-90">
               Junte-se a centenas de agentes de viagens que já transformaram seu marketing
             </p>
-            <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white text-lg py-6 px-8 pulse" onClick={handleCheckout} disabled={checkoutLoading}>
-              {checkoutLoading ? <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Abrindo checkout...
-                </> : <>
-                  <Plane className="mr-2 h-5 w-5" />
-                  Assinar Agora - R$ 37,90/mês
-                </>}
+            <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white py-6 px-8 pulse flex flex-col items-center" onClick={handleCheckout} disabled={checkoutLoading}>
+              {checkoutLoading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span className="text-xs opacity-60 font-light">Abrindo checkout...</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-lg font-semibold">Quero meu acesso!</span>
+                  <span className="text-xs opacity-60 font-light">R$ 37,90 / mês</span>
+                </>
+              )}
             </Button>
           </CardContent>
         </Card>
@@ -486,4 +504,5 @@ const Planos = () => {
       <Footer />
     </div>;
 };
+
 export default Planos;
