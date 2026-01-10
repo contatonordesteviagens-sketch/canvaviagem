@@ -450,13 +450,13 @@ const Planos = () => {
             <p className="mb-6 opacity-90">
               Junte-se a centenas de agentes de viagens que já transformaram seu marketing
             </p>
-            <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white py-5 px-8 pulse flex flex-col items-center h-auto" onClick={handleCheckout} disabled={checkoutLoading}>
+            <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="bg-orange-500 hover:bg-orange-600 text-white pulse flex flex-col items-center h-auto py-[5px] px-[50px]">
               {checkoutLoading ? <>
                   <Loader2 className="h-5 w-5 animate-spin" />
                   <span className="text-[10px] opacity-60 font-light mt-1">Abrindo...</span>
                 </> : <>
-                  <span className="text-base md:text-lg font-semibold whitespace-nowrap">Quero meu acesso!</span>
-                  <span className="text-[10px] opacity-60 font-light mt-0.5">R$ 37,90 / mês</span>
+                  <span className="md:text-lg font-semibold whitespace-nowrap text-xl">Quero meu acesso!</span>
+                  <span className="opacity-60 font-light mt-0.5 text-sm">R$ 37,90 / mês</span>
                 </>}
             </Button>
           </CardContent>
