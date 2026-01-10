@@ -333,8 +333,8 @@ const Planos = () => {
         {user && <UserInfoCard />}
         
         {/* Wistia Video - High visibility position */}
-        <div className="mb-8 md:mb-12 max-w-2xl mx-auto">
-          <div className="wistia_responsive_padding" style={{ padding: '56.25% 0 0 0', position: 'relative' }}>
+        <div className="mb-8 md:mb-12 max-w-md mx-auto">
+          <div className="wistia_responsive_padding" style={{ padding: '100% 0 0 0', position: 'relative' }}>
             <div className="wistia_responsive_wrapper" style={{ height: '100%', left: 0, position: 'absolute', top: 0, width: '100%' }}>
               <iframe 
                 src="https://fast.wistia.net/embed/iframe/28dkpy88ix?web_component=true&seo=false"
