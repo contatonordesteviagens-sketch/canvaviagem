@@ -331,11 +331,11 @@ const Planos = () => {
             <Clock className="h-3 w-3 mr-1" />
             Oferta por tempo limitado
           </Badge>
-          <h1 className="text-3xl md:text-5xl font-bold mb-4">
-            Transforme seu Marketing de Viagens
+          <h1 className="md:text-5xl font-bold mb-4 text-2xl">
+            Praticamente um time de marketing de viagens mais barato que uma pizza        
           </h1>
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
-            Acesse centenas de templates profissionais e ferramentas de IA para criar conteúdo incrível para sua agência
+            São centenas de templates exclusivos para você vender viagens o ano inteiro.
           </p>
         </div>
 
@@ -397,7 +397,7 @@ const Planos = () => {
               {/* CTA Section */}
               <div className="flex flex-col justify-center space-y-6">
                 <div className="space-y-4">
-                  <Button size="lg" className="w-full text-lg py-6 bg-orange-500 hover:bg-orange-600 pulse" onClick={handleCheckout} disabled={checkoutLoading}>Quero Acessar{checkoutLoading ? <>
+                  <Button size="lg" className="w-full text-lg py-6 bg-orange-500 hover:bg-orange-600 pulse" onClick={handleCheckout} disabled={checkoutLoading}>Quero Acessar R$ 37,90/mês{checkoutLoading ? <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                         Abrindo checkout...
                       </> : <>
