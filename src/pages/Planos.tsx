@@ -406,16 +406,16 @@ const Planos = () => {
               {/* CTA Section */}
               <div className="flex flex-col justify-center space-y-6">
                 <div className="space-y-4">
-                  <Button size="lg" className="w-full py-6 bg-orange-500 hover:bg-orange-600 pulse flex flex-col items-center" onClick={handleCheckout} disabled={checkoutLoading}>
+                  <Button size="lg" className="w-full py-5 bg-orange-500 hover:bg-orange-600 pulse flex flex-col items-center h-auto" onClick={handleCheckout} disabled={checkoutLoading}>
                     {checkoutLoading ? (
                       <>
                         <Loader2 className="h-5 w-5 animate-spin" />
-                        <span className="text-xs opacity-60 font-light">Abrindo checkout...</span>
+                        <span className="text-[10px] opacity-60 font-light mt-1">Abrindo...</span>
                       </>
                     ) : (
                       <>
-                        <span className="text-lg font-semibold">Quero meu acesso!</span>
-                        <span className="text-xs opacity-60 font-light">R$ 37,90 / mês</span>
+                        <span className="text-base md:text-lg font-semibold whitespace-nowrap">Quero meu acesso!</span>
+                        <span className="text-[10px] opacity-60 font-light mt-0.5">R$ 37,90 / mês</span>
                       </>
                     )}
                   </Button>
@@ -442,28 +442,6 @@ const Planos = () => {
           </CardContent>
         </Card>
 
-        {/* Comparison Table */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-center mb-8">Compare e Decida</h2>
-          <Card>
-            <CardContent className="p-0">
-              <div className="grid grid-cols-3 text-center font-semibold border-b">
-                <div className="p-4">Recurso</div>
-                <div className="p-4 bg-muted/50">Sem Plano</div>
-                <div className="p-4 bg-primary/10 text-primary">Com Assinatura</div>
-              </div>
-              {comparisons.map((item, index) => <div key={index} className="grid grid-cols-3 text-center border-b last:border-0">
-                  <div className="p-4 text-left text-sm">{item.feature}</div>
-                  <div className="p-4 bg-muted/50">
-                    <X className="h-5 w-5 text-muted-foreground mx-auto" />
-                  </div>
-                  <div className="p-4 bg-primary/5">
-                    <Check className="h-5 w-5 text-primary mx-auto" />
-                  </div>
-                </div>)}
-            </CardContent>
-          </Card>
-        </div>
 
         {/* FAQ Section */}
         <div className="mb-12">
@@ -485,16 +463,16 @@ const Planos = () => {
             <p className="mb-6 opacity-90">
               Junte-se a centenas de agentes de viagens que já transformaram seu marketing
             </p>
-            <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white py-6 px-8 pulse flex flex-col items-center" onClick={handleCheckout} disabled={checkoutLoading}>
+            <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white py-5 px-8 pulse flex flex-col items-center h-auto" onClick={handleCheckout} disabled={checkoutLoading}>
               {checkoutLoading ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  <span className="text-xs opacity-60 font-light">Abrindo checkout...</span>
+                  <span className="text-[10px] opacity-60 font-light mt-1">Abrindo...</span>
                 </>
               ) : (
                 <>
-                  <span className="text-lg font-semibold">Quero meu acesso!</span>
-                  <span className="text-xs opacity-60 font-light">R$ 37,90 / mês</span>
+                  <span className="text-base md:text-lg font-semibold whitespace-nowrap">Quero meu acesso!</span>
+                  <span className="text-[10px] opacity-60 font-light mt-0.5">R$ 37,90 / mês</span>
                 </>
               )}
             </Button>
