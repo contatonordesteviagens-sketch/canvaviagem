@@ -461,7 +461,7 @@ const Planos = () => {
 Isso aqui não é gatilho mental, essa oferta de lançamento do plano premium + atualização vitalícia pode mudar a qualquer momento.
 Clica aqui e aproveita 👇
             </p>
-            <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="bg-orange-500 hover:bg-orange-600 text-white pulse flex flex-col items-center h-auto py-[5px] px-[50px]">
+            <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="bg-orange-500 hover:bg-orange-600 text-white pulse flex flex-col items-center h-auto py-[5px] px-[50px] md:mx-auto">
               {checkoutLoading ? <>
                   <Loader2 className="h-5 w-5 animate-spin" />
                   <span className="text-[10px] opacity-60 font-light mt-1">Abrindo...</span>
