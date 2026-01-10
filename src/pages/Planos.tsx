@@ -10,40 +10,18 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { UserInfoCard } from "@/components/UserInfoCard";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
-
-import {
-  Loader2,
-  Check,
-  Plane,
-  Settings,
-  Video,
-  Image,
-  MessageSquare,
-  Bot,
-  Download,
-  Calendar,
-  ChevronDown,
-  ChevronUp,
-  X,
-  Sparkles,
-  Shield,
-  Clock,
-  RefreshCw,
-  Infinity,
-  Users,
-  FileText,
-} from "lucide-react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-
+import { Loader2, Check, Plane, Settings, Video, Image, MessageSquare, Bot, Download, Calendar, ChevronDown, ChevronUp, X, Sparkles, Shield, Clock, RefreshCw, Infinity, Users, FileText } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 const Planos = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, loading: authLoading, subscription, refreshSubscription, signOut } = useAuth();
+  const {
+    user,
+    loading: authLoading,
+    subscription,
+    refreshSubscription,
+    signOut
+  } = useAuth();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
@@ -60,7 +38,6 @@ const Planos = () => {
   useEffect(() => {
     const success = searchParams.get("success");
     const canceled = searchParams.get("canceled");
-
     if (success === "true") {
       toast.success("Pagamento realizado com sucesso!");
       refreshSubscription();
@@ -70,7 +47,6 @@ const Planos = () => {
       window.history.replaceState({}, "", "/planos");
     }
   }, [searchParams, refreshSubscription, navigate]);
-
   const handleCheckout = async () => {
     // If user is not logged in, redirect to auth first
     if (!user) {
@@ -78,35 +54,34 @@ const Planos = () => {
       navigate("/auth?redirect=/planos");
       return;
     }
-    
+
     // Track initiate checkout event
     trackInitiateCheckout(37.90, 'BRL');
-    
     setCheckoutLoading(true);
-
     try {
       const {
-        data: { session },
+        data: {
+          session
+        }
       } = await supabase.auth.getSession();
-
       if (!session?.access_token) {
         toast.error("Você precisa estar logado para assinar.");
         navigate("/auth?redirect=/planos");
         return;
       }
-
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke("create-checkout", {
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+          Authorization: `Bearer ${session.access_token}`
+        }
       });
-
       if (error) {
         console.error("Checkout error:", error);
         toast.error("Erro ao abrir o checkout. Tente novamente.");
         return;
       }
-
       if (data?.url) {
         window.open(data.url, '_blank');
         toast.info("O checkout foi aberto em uma nova aba. Complete o pagamento e volte aqui!");
@@ -120,7 +95,6 @@ const Planos = () => {
       setCheckoutLoading(false);
     }
   };
-
   const handleRefreshSubscription = async () => {
     setRefreshLoading(true);
     try {
@@ -132,33 +106,32 @@ const Planos = () => {
       setRefreshLoading(false);
     }
   };
-
   const handleManageSubscription = async () => {
     setPortalLoading(true);
-
     try {
       const {
-        data: { session },
+        data: {
+          session
+        }
       } = await supabase.auth.getSession();
-
       if (!session?.access_token) {
         toast.error("Você precisa estar logado.");
         navigate("/auth");
         return;
       }
-
-      const { data, error } = await supabase.functions.invoke("customer-portal", {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke("customer-portal", {
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+          Authorization: `Bearer ${session.access_token}`
+        }
       });
-
       if (error) {
         console.error("Portal error:", error);
         toast.error("Erro ao acessar portal. Tente novamente.");
         return;
       }
-
       if (data?.url) {
         window.location.href = data.url;
       }
@@ -169,71 +142,100 @@ const Planos = () => {
       setPortalLoading(false);
     }
   };
-
-  const benefits = [
-    { icon: Calendar, title: "Calendário Anual de Postagens", description: "Reels, Stories, Feed e Carrosséis prontos" },
-    { icon: Download, title: "Downloads Ilimitados", description: "Vídeos prontos nacionais e internacionais" },
-    { icon: Image, title: "Templates 100% Editáveis", description: "Edite tudo diretamente no Canva" },
-    { icon: Bot, title: "10 Robôs de IA", description: "Crie tudo de marketing e vendas" },
-    { icon: Users, title: "3 Influenciadoras de I.A", description: "Eva, Mel e Bia prontas para usar" },
-    { icon: Video, title: "Uso LIVRE de Direitos Autorais", description: "Vídeos e imagens em HD" },
-    { icon: Sparkles, title: "Atualizações Vitalícias", description: "Acesso permanente a novidades" },
-    { icon: FileText, title: "Legendas Prontas", description: "Textos de destinos e roteiros editáveis" },
-  ];
-
-  const comparisons = [
-    { feature: "Vídeos Reels profissionais", without: false, with: true },
-    { feature: "Artes para agência de viagens", without: false, with: true },
-    { feature: "Legendas prontas para copiar", without: false, with: true },
-    { feature: "Ferramentas de IA integradas", without: false, with: true },
-    { feature: "Downloads ilimitados", without: false, with: true },
-    { feature: "Atualizações semanais", without: false, with: true },
-    { feature: "Suporte prioritário", without: false, with: true },
-  ];
-
-  const faqs = [
-    {
-      question: "Posso cancelar a qualquer momento?",
-      answer: "Sim! Você pode cancelar sua assinatura quando quiser, sem multas ou taxas adicionais. O acesso permanece ativo até o final do período pago."
-    },
-    {
-      question: "Como funciona o pagamento?",
-      answer: "O pagamento é mensal e renovado automaticamente. Você pode usar cartão de crédito ou débito via Stripe, a plataforma de pagamentos mais segura do mundo."
-    },
-    {
-      question: "Os templates são realmente editáveis?",
-      answer: "Sim! Todos os templates são editáveis diretamente no Canva. Basta clicar, editar o que quiser e baixar pronto para postar."
-    },
-    {
-      question: "Posso usar para minha agência de viagens?",
-      answer: "Absolutamente! O Canva Viagens foi criado especialmente para agentes de viagens e profissionais do turismo que querem produzir conteúdo profissional."
-    },
-    {
-      question: "Quanto tempo leva para ter acesso?",
-      answer: "O acesso é liberado imediatamente após a confirmação do pagamento. Você já pode começar a usar todos os recursos na hora!"
-    },
-    {
-      question: "Vocês oferecem garantia?",
-      answer: "Sim! Se por qualquer motivo você não ficar satisfeito, pode cancelar sua assinatura dentro dos primeiros 7 dias e solicitar reembolso."
-    }
-  ];
-
+  const benefits = [{
+    icon: Calendar,
+    title: "Calendário Anual de Postagens",
+    description: "Reels, Stories, Feed e Carrosséis prontos"
+  }, {
+    icon: Download,
+    title: "Downloads Ilimitados",
+    description: "Vídeos prontos nacionais e internacionais"
+  }, {
+    icon: Image,
+    title: "Templates 100% Editáveis",
+    description: "Edite tudo diretamente no Canva"
+  }, {
+    icon: Bot,
+    title: "10 Robôs de IA",
+    description: "Crie tudo de marketing e vendas"
+  }, {
+    icon: Users,
+    title: "3 Influenciadoras de I.A",
+    description: "Eva, Mel e Bia prontas para usar"
+  }, {
+    icon: Video,
+    title: "Uso LIVRE de Direitos Autorais",
+    description: "Vídeos e imagens em HD"
+  }, {
+    icon: Sparkles,
+    title: "Atualizações Vitalícias",
+    description: "Acesso permanente a novidades"
+  }, {
+    icon: FileText,
+    title: "Legendas Prontas",
+    description: "Textos de destinos e roteiros editáveis"
+  }];
+  const comparisons = [{
+    feature: "Vídeos Reels profissionais",
+    without: false,
+    with: true
+  }, {
+    feature: "Artes para agência de viagens",
+    without: false,
+    with: true
+  }, {
+    feature: "Legendas prontas para copiar",
+    without: false,
+    with: true
+  }, {
+    feature: "Ferramentas de IA integradas",
+    without: false,
+    with: true
+  }, {
+    feature: "Downloads ilimitados",
+    without: false,
+    with: true
+  }, {
+    feature: "Atualizações semanais",
+    without: false,
+    with: true
+  }, {
+    feature: "Suporte prioritário",
+    without: false,
+    with: true
+  }];
+  const faqs = [{
+    question: "Posso cancelar a qualquer momento?",
+    answer: "Sim! Você pode cancelar sua assinatura quando quiser, sem multas ou taxas adicionais. O acesso permanece ativo até o final do período pago."
+  }, {
+    question: "Como funciona o pagamento?",
+    answer: "O pagamento é mensal e renovado automaticamente. Você pode usar cartão de crédito ou débito via Stripe, a plataforma de pagamentos mais segura do mundo."
+  }, {
+    question: "Os templates são realmente editáveis?",
+    answer: "Sim! Todos os templates são editáveis diretamente no Canva. Basta clicar, editar o que quiser e baixar pronto para postar."
+  }, {
+    question: "Posso usar para minha agência de viagens?",
+    answer: "Absolutamente! O Canva Viagens foi criado especialmente para agentes de viagens e profissionais do turismo que querem produzir conteúdo profissional."
+  }, {
+    question: "Quanto tempo leva para ter acesso?",
+    answer: "O acesso é liberado imediatamente após a confirmação do pagamento. Você já pode começar a usar todos os recursos na hora!"
+  }, {
+    question: "Vocês oferecem garantia?",
+    answer: "Sim! Se por qualquer motivo você não ficar satisfeito, pode cancelar sua assinatura dentro dos primeiros 7 dias e solicitar reembolso."
+  }];
   if (authLoading || subscription.loading) {
-    return (
-      <div className="min-h-screen bg-background">
+    return <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto px-4 py-16 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
         <Footer />
-      </div>
-    );
+      </div>;
   }
 
   // If user has active subscription, show different view
   if (subscription.subscribed) {
-    return (
-      <div className="min-h-screen bg-background">
+    return <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-4xl">
           <UserInfoCard />
@@ -263,58 +265,34 @@ const Planos = () => {
                   <Check className="h-4 w-4 md:h-5 md:w-5" />
                   Acesso completo liberado
                 </p>
-                {subscription.subscriptionEnd && (
-                  <p className="text-xs md:text-sm text-muted-foreground mt-1">
+                {subscription.subscriptionEnd && <p className="text-xs md:text-sm text-muted-foreground mt-1">
                     Próxima renovação: {new Date(subscription.subscriptionEnd).toLocaleDateString('pt-BR')}
-                  </p>
-                )}
+                  </p>}
               </div>
 
               <div className="flex flex-col gap-3">
-                <Button 
-                  onClick={() => navigate("/")}
-                  className="w-full"
-                  size="lg"
-                >
+                <Button onClick={() => navigate("/")} className="w-full" size="lg">
                   <Plane className="mr-2 h-4 w-4" />
                   Acessar Plataforma
                 </Button>
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Button 
-                    variant="outline" 
-                    onClick={handleManageSubscription}
-                    disabled={portalLoading}
-                    className="flex-1"
-                  >
-                    {portalLoading ? (
-                      <>
+                  <Button variant="outline" onClick={handleManageSubscription} disabled={portalLoading} className="flex-1">
+                    {portalLoading ? <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Carregando...
-                      </>
-                    ) : (
-                      <>
+                      </> : <>
                         <Settings className="mr-2 h-4 w-4" />
                         Gerenciar Assinatura
-                      </>
-                    )}
+                      </>}
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    onClick={handleRefreshSubscription}
-                    disabled={refreshLoading}
-                    className="flex-1"
-                  >
-                    {refreshLoading ? (
-                      <>
+                  <Button variant="ghost" onClick={handleRefreshSubscription} disabled={refreshLoading} className="flex-1">
+                    {refreshLoading ? <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Atualizando...
-                      </>
-                    ) : (
-                      <>
+                      </> : <>
                         <RefreshCw className="mr-2 h-4 w-4" />
                         Atualizar Status
-                      </>
-                    )}
+                      </>}
                   </Button>
                 </div>
               </div>
@@ -322,32 +300,27 @@ const Planos = () => {
           </Card>
         </div>
         <Footer />
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl">
         {user && <UserInfoCard />}
         
         {/* Wistia Video - High visibility position */}
         <div className="mb-8 md:mb-12 max-w-md mx-auto">
-          <div className="wistia_responsive_padding" style={{ padding: '100% 0 0 0', position: 'relative' }}>
-            <div className="wistia_responsive_wrapper" style={{ height: '100%', left: 0, position: 'absolute', top: 0, width: '100%' }}>
-              <iframe 
-                src="https://fast.wistia.net/embed/iframe/28dkpy88ix?web_component=true&seo=false"
-                title="30seg Video" 
-                allow="autoplay; fullscreen" 
-                allowTransparency={true}
-                frameBorder={0} 
-                scrolling="no" 
-                className="wistia_embed rounded-xl shadow-lg" 
-                name="wistia_embed"
-                width="100%" 
-                height="100%"
-              />
+          <div className="wistia_responsive_padding" style={{
+          padding: '100% 0 0 0',
+          position: 'relative'
+        }}>
+            <div className="wistia_responsive_wrapper" style={{
+            height: '100%',
+            left: 0,
+            position: 'absolute',
+            top: 0,
+            width: '100%'
+          }}>
+              <iframe src="https://fast.wistia.net/embed/iframe/28dkpy88ix?web_component=true&seo=false" title="30seg Video" allow="autoplay; fullscreen" allowTransparency={true} frameBorder={0} scrolling="no" className="wistia_embed rounded-xl shadow-lg" name="wistia_embed" width="100%" height="100%" />
             </div>
           </div>
         </div>
@@ -367,8 +340,7 @@ const Planos = () => {
         </div>
 
         {/* Alert for non-subscribers - only show for logged in users */}
-        {user && (
-          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 md:p-4 mb-6 md:mb-8">
+        {user && <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 md:p-4 mb-6 md:mb-8">
             <div className="flex items-center gap-3 mb-3">
               <div className="bg-amber-100 dark:bg-amber-900 rounded-full p-2 shrink-0">
                 <Plane className="h-4 w-4 md:h-5 md:w-5 text-amber-600 dark:text-amber-400" />
@@ -377,27 +349,16 @@ const Planos = () => {
                 <strong>Você ainda não possui um plano ativo.</strong> Assine agora para liberar todos os recursos!
               </p>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleRefreshSubscription}
-              disabled={refreshLoading}
-              className="w-full sm:w-auto"
-            >
-              {refreshLoading ? (
-                <>
+            <Button variant="outline" size="sm" onClick={handleRefreshSubscription} disabled={refreshLoading} className="w-full sm:w-auto">
+              {refreshLoading ? <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Atualizando...
-                </>
-              ) : (
-                <>
+                </> : <>
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Atualizar status da assinatura
-                </>
-              )}
+                </>}
             </Button>
-          </div>
-        )}
+          </div>}
 
         {/* Main Pricing Card */}
         <Card className="mb-12 overflow-hidden border-2 border-primary/20 shadow-xl">
@@ -405,7 +366,7 @@ const Planos = () => {
             <h2 className="text-2xl font-bold mb-2">Assinatura Mensal</h2>
             <div className="flex items-baseline justify-center gap-1">
               <span className="text-5xl font-bold">R$ 37,90</span>
-              <span className="text-xl opacity-80">/mês</span>
+              <span className="text-xl opacity-80">mês</span>
             </div>
           </div>
           <CardContent className="p-6 md:p-8">
@@ -413,8 +374,7 @@ const Planos = () => {
               {/* Benefits List */}
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg mb-4">O que você recebe:</h3>
-                {(showAllBenefits ? benefits : benefits.slice(0, 4)).map((benefit, index) => (
-                  <div key={index} className="flex items-start gap-3">
+                {(showAllBenefits ? benefits : benefits.slice(0, 4)).map((benefit, index) => <div key={index} className="flex items-start gap-3">
                     <div className="bg-primary/10 rounded-lg p-2">
                       <benefit.icon className="h-5 w-5 text-primary" />
                     </div>
@@ -422,50 +382,28 @@ const Planos = () => {
                       <p className="font-medium">{benefit.title}</p>
                       <p className="text-sm text-muted-foreground">{benefit.description}</p>
                     </div>
-                  </div>
-                ))}
-                {benefits.length > 4 && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setShowAllBenefits(!showAllBenefits)}
-                    className="w-full mt-2"
-                  >
-                    {showAllBenefits ? (
-                      <>
+                  </div>)}
+                {benefits.length > 4 && <Button variant="ghost" size="sm" onClick={() => setShowAllBenefits(!showAllBenefits)} className="w-full mt-2">
+                    {showAllBenefits ? <>
                         <ChevronUp className="h-4 w-4 mr-1" />
                         Ver menos
-                      </>
-                    ) : (
-                      <>
+                      </> : <>
                         <ChevronDown className="h-4 w-4 mr-1" />
                         Ver todos os benefícios
-                      </>
-                    )}
-                  </Button>
-                )}
+                      </>}
+                  </Button>}
               </div>
 
               {/* CTA Section */}
               <div className="flex flex-col justify-center space-y-6">
                 <div className="space-y-4">
-                  <Button
-                    size="lg"
-                    className="w-full text-lg py-6 bg-orange-500 hover:bg-orange-600 pulse"
-                    onClick={handleCheckout}
-                    disabled={checkoutLoading}
-                  >
-                    {checkoutLoading ? (
-                      <>
+                  <Button size="lg" className="w-full text-lg py-6 bg-orange-500 hover:bg-orange-600 pulse" onClick={handleCheckout} disabled={checkoutLoading}>Quero Acessar{checkoutLoading ? <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                         Abrindo checkout...
-                      </>
-                    ) : (
-                      <>
+                      </> : <>
                         <Plane className="mr-2 h-5 w-5" />
                         Assinar Agora - R$ 37,90/mês
-                      </>
-                    )}
+                      </>}
                   </Button>
                   
                   <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
@@ -500,8 +438,7 @@ const Planos = () => {
                 <div className="p-4 bg-muted/50">Sem Plano</div>
                 <div className="p-4 bg-primary/10 text-primary">Com Assinatura</div>
               </div>
-              {comparisons.map((item, index) => (
-                <div key={index} className="grid grid-cols-3 text-center border-b last:border-0">
+              {comparisons.map((item, index) => <div key={index} className="grid grid-cols-3 text-center border-b last:border-0">
                   <div className="p-4 text-left text-sm">{item.feature}</div>
                   <div className="p-4 bg-muted/50">
                     <X className="h-5 w-5 text-muted-foreground mx-auto" />
@@ -509,8 +446,7 @@ const Planos = () => {
                   <div className="p-4 bg-primary/5">
                     <Check className="h-5 w-5 text-primary mx-auto" />
                   </div>
-                </div>
-              ))}
+                </div>)}
             </CardContent>
           </Card>
         </div>
@@ -519,14 +455,12 @@ const Planos = () => {
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-center mb-8">Perguntas Frequentes</h2>
           <Accordion type="single" collapsible className="w-full">
-            {faqs.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`}>
+            {faqs.map((faq, index) => <AccordionItem key={index} value={`item-${index}`}>
                 <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
                   {faq.answer}
                 </AccordionContent>
-              </AccordionItem>
-            ))}
+              </AccordionItem>)}
           </Accordion>
         </div>
 
@@ -537,30 +471,19 @@ const Planos = () => {
             <p className="mb-6 opacity-90">
               Junte-se a centenas de agentes de viagens que já transformaram seu marketing
             </p>
-            <Button
-              size="lg"
-              className="bg-orange-500 hover:bg-orange-600 text-white text-lg py-6 px-8 pulse"
-              onClick={handleCheckout}
-              disabled={checkoutLoading}
-            >
-              {checkoutLoading ? (
-                <>
+            <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white text-lg py-6 px-8 pulse" onClick={handleCheckout} disabled={checkoutLoading}>
+              {checkoutLoading ? <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Abrindo checkout...
-                </>
-              ) : (
-                <>
+                </> : <>
                   <Plane className="mr-2 h-5 w-5" />
                   Assinar Agora - R$ 37,90/mês
-                </>
-              )}
+                </>}
             </Button>
           </CardContent>
         </Card>
       </div>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Planos;
