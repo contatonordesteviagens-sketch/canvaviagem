@@ -447,9 +447,11 @@ const Planos = () => {
         {/* Final CTA */}
         <Card className="bg-gradient-to-r from-primary to-accent text-white">
           <CardContent className="p-8 text-center">
-            <h2 className="text-2xl font-bold mb-4">Pronto para decolar? ✈️</h2>
+            <h2 className="text-2xl font-bold mb-4">82% de DESCONTO</h2>
             <p className="mb-6 opacity-90">
-              Junte-se a centenas de agentes de viagens que já transformaram seu marketing
+              
+Isso aqui não é gatilho mental, essa oferta de lançamento do plano premium + atualização vitalícia pode mudar a qualquer momento.
+Clica aqui e aproveita 👇
             </p>
             <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="bg-orange-500 hover:bg-orange-600 text-white pulse flex flex-col items-center h-auto py-[5px] px-[50px]">
               {checkoutLoading ? <>
