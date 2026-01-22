@@ -9,7 +9,8 @@ import {
   Search, 
   ExternalLink,
   Loader2,
-  Filter
+  Filter,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,6 +67,7 @@ interface ContentFormData {
   category: string;
   icon: string;
   description: string;
+  image_url: string;
   is_new: boolean;
   is_active: boolean;
   display_order: number;
@@ -78,6 +80,7 @@ const defaultFormData: ContentFormData = {
   category: "",
   icon: "🎬",
   description: "",
+  image_url: "",
   is_new: false,
   is_active: true,
   display_order: 0,
@@ -93,6 +96,7 @@ export default function ContentManager() {
   const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
   const [formData, setFormData] = useState<ContentFormData>(defaultFormData);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false);
 
   // Mutations
   const createMutation = useMutation({
@@ -177,6 +181,7 @@ export default function ContentManager() {
       category: item.category || "",
       icon: item.icon,
       description: item.description || "",
+      image_url: item.image_url || "",
       is_new: item.is_new,
       is_active: item.is_active,
       display_order: item.display_order,
@@ -203,17 +208,45 @@ export default function ContentManager() {
     setFormData(defaultFormData);
   };
 
+  const handleGenerateThumbnail = async () => {
+    if (!formData.title.trim()) {
+      toast.error("Digite um título primeiro para gerar a capa");
+      return;
+    }
+
+    setIsGeneratingThumbnail(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-thumbnail", {
+        body: { title: formData.title },
+      });
+
+      if (error) throw error;
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      setFormData((prev) => ({ ...prev, image_url: data.imageUrl }));
+      toast.success("Capa gerada com sucesso!");
+    } catch (err) {
+      console.error("Thumbnail generation error:", err);
+      toast.error(err instanceof Error ? err.message : "Erro ao gerar capa");
+    } finally {
+      setIsGeneratingThumbnail(false);
+    }
+  };
+
   const getTypeBadge = (type: string) => {
     const colors: Record<string, string> = {
-      video: "bg-blue-500",
-      feed: "bg-green-500",
-      story: "bg-purple-500",
-      seasonal: "bg-orange-500",
-      "weekly-story": "bg-pink-500",
-      resource: "bg-yellow-500",
-      download: "bg-cyan-500",
+      video: "bg-blue-500/80",
+      feed: "bg-green-500/80",
+      story: "bg-purple-500/80",
+      seasonal: "bg-orange-500/80",
+      "weekly-story": "bg-pink-500/80",
+      resource: "bg-yellow-500/80",
+      download: "bg-cyan-500/80",
     };
-    return colors[type] || "bg-gray-500";
+    return colors[type] || "bg-muted";
   };
 
   return (
@@ -438,6 +471,50 @@ export default function ContentManager() {
                 placeholder="Descrição opcional..."
                 rows={2}
               />
+            </div>
+
+            {/* AI Magic Thumbnail Generator */}
+            <div className="space-y-2">
+              <Label>Imagem de Capa</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                  placeholder="https://... ou gere com IA"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleGenerateThumbnail}
+                  disabled={isGeneratingThumbnail || !formData.title.trim()}
+                  className="shrink-0 gap-2"
+                >
+                  {isGeneratingThumbnail ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  {isGeneratingThumbnail ? "Gerando..." : "Gerar com IA"}
+                </Button>
+              </div>
+              
+              {/* Image Preview */}
+              {formData.image_url && (
+                <div className="mt-2 rounded-lg overflow-hidden border bg-muted/50">
+                  <img 
+                    src={formData.image_url} 
+                    alt="Preview da capa" 
+                    className="w-full h-40 object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Dica: A IA gera capas com base no título. Você pode editar a URL manualmente se preferir.
+              </p>
             </div>
 
             <div className="flex gap-6">
