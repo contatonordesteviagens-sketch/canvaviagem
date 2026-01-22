@@ -10,6 +10,7 @@ interface PremiumCardProps {
   aspectRatio?: "9/16" | "4/5" | "1/1" | "16/10";
   variant?: "image" | "icon";
   icon?: string;
+  onClick?: () => void;
 }
 
 export const PremiumCard = ({ 
@@ -20,7 +21,8 @@ export const PremiumCard = ({
   isNew, 
   aspectRatio = "9/16",
   variant = "icon",
-  icon = "📱"
+  icon = "📱",
+  onClick
 }: PremiumCardProps) => {
   // Generate a placeholder gradient based on title
   const getPlaceholderGradient = () => {
@@ -36,12 +38,20 @@ export const PremiumCard = ({
     return gradients[index];
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <a 
       href={url} 
       target="_blank" 
       rel="noopener noreferrer"
       className="group block relative"
+      onClick={handleClick}
     >
       <div 
         className={cn(
