@@ -373,6 +373,7 @@ export const useCreateContentItem = () => {
       type: string;
       category?: string | null;
       icon?: string;
+      language?: string;
       is_new?: boolean;
       is_active?: boolean;
     }) => {
@@ -384,6 +385,7 @@ export const useCreateContentItem = () => {
           type: data.type,
           category: data.category || null,
           icon: data.icon || "✨",
+          language: data.language || null,
           is_new: data.is_new ?? false,
           is_active: data.is_active ?? true,
         });

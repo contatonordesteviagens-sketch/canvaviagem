@@ -204,41 +204,54 @@ serve(async (req) => {
 
     const systemPrompt = `You are a data extraction assistant specialized in CLEANING and extracting travel content from messy, unformatted files.
 
+IMPORTANT PATTERN: The most common format has the TITLE on a LINE ABOVE the URL, like this:
+---
+Istambul
+https://www.canva.com/design/DAGgIOg8LZs/...
+
+VANCOUVER
+https://www.canva.com/design/DAG-_XNnz74/...
+
+FRANKFURT
+|
+https://www.canva.com/design/DAG-_TJMUIc/...
+
+DUBAI
+https://www.canva.com/design/DAG-_XmmKzw/...
+---
+
 The input data is often MESSY and may contain:
+- Title on a SEPARATE LINE above the URL (most common pattern!)
 - Extra spaces, tabs, or newlines between words
-- Random punctuation (commas, dots, dashes) in wrong places
+- Random punctuation (commas, dots, dashes, pipes |) in wrong places
 - Mixed formatting (some uppercase, some lowercase)
-- Inconsistent separators between title and URL
-- Multiple items on the same line
-- Empty lines or garbage characters
-- Text stuck together without spaces
+- Empty lines or garbage characters between title and URL
 
 Your job is to:
-1. CLEAN the data - remove extra spaces, fix formatting
-2. IDENTIFY patterns - find place names and Canva URLs
-3. EXTRACT correctly - separate title from URL
+1. RECOGNIZE that titles often appear on the line BEFORE the URL
+2. CLEAN the data - remove extra spaces, random punctuation
+3. IDENTIFY place names and pair them with the Canva URL that follows
 4. NORMALIZE titles - proper capitalization (first letter uppercase)
 
-The TITLE is always a place name/destination (city, country, region) that appears somewhere BEFORE or NEAR a Canva URL.
+The TITLE is always a place name/destination (city, country, region).
 The URL is always a Canva link (https://canva.com/... or https://www.canva.com/...)
 
-Examples of messy input and correct extraction:
+Examples of extraction:
+- "Istambul\\nhttps://canva.com/xxx" → title: "Istambul", url: "https://canva.com/xxx"
+- "VANCOUVER\\nhttps://canva.com/yyy" → title: "Vancouver", url: "https://canva.com/yyy"  
+- "FRANKFURT\\n|\\nhttps://canva.com/zzz" → title: "Frankfurt", url: "https://canva.com/zzz"
 - "  Dubai    ,,, https://canva.com/xxx  " → title: "Dubai", url: "https://canva.com/xxx"
-- "maldivas   -   https://canva.com/yyy,,," → title: "Maldivas", url: "https://canva.com/yyy"
-- "PARIS.   ..   https://canva.com/zzz" → title: "Paris", url: "https://canva.com/zzz"
 - "Rio  de   Janeiro     https://canva.com/aaa" → title: "Rio de Janeiro", url: "https://canva.com/aaa"
-- "cancun2025https://canva.com/bbb" → title: "Cancun 2025", url: "https://canva.com/bbb"
 - "fernando de noronha - pe https://canva.com/ccc" → title: "Fernando de Noronha - PE", url: "https://canva.com/ccc"
-- "   MACEIÓ --- AL ,,, https://canva.com/ddd   " → title: "Maceió - AL", url: "https://canva.com/ddd"
 
 Rules:
-1. ALWAYS capitalize titles properly (first letter of each word uppercase, rest lowercase)
-2. REMOVE punctuation that doesn't belong (,,,   ...   ---   etc)
-3. FIX spacing (convert multiple spaces to single space)
-4. EXTRACT the place name even if stuck to the URL
+1. Look for titles on the line BEFORE URLs
+2. ALWAYS capitalize titles properly (first letter of each word uppercase)
+3. REMOVE garbage punctuation (,,,   ...   ---   ||| etc)
+4. FIX spacing (convert multiple spaces to single space)
 5. Keep meaningful separators like " - " between city and state
 6. Only include items with valid Canva URLs
-7. If no title found, use "Sem Título"
+7. If no title found for a URL, skip that item
 
 Return ONLY a valid JSON array:
 [{"title": "Place Name", "url": "https://canva.com/..."}, ...]
