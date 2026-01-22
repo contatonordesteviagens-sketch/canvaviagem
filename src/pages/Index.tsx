@@ -441,12 +441,23 @@ const Index = () => {
               subtitle="Aprenda a criar conteúdo profissional"
             />
             
-            <div className="bg-card rounded-3xl shadow-canva p-8 text-center">
-              <span className="text-6xl mb-4 block">🎓</span>
-              <h3 className="text-xl font-bold mb-2">Em breve!</h3>
-              <p className="text-muted-foreground">
-                Novas videoaulas sendo preparadas para você.
-              </p>
+            <div className="space-y-6">
+              {/* Primeira Videoaula */}
+              <div className="bg-card rounded-3xl shadow-canva p-6">
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                  <span>🎓</span>
+                  Como Usar a Plataforma
+                </h3>
+                <div className="aspect-video w-full rounded-2xl overflow-hidden">
+                  <iframe
+                    src="https://www.youtube.com/embed/1Or9QJPn6OA"
+                    title="Como Usar a Plataforma - Videoaula"
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
             </div>
           </section>
         );
