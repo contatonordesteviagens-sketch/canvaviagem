@@ -254,33 +254,67 @@ export const ImportSection = () => {
     );
   };
 
-  // Quick import from text
+  // Quick import from text - Supports both formats:
+  // 1. Title on same line as URL: "Dubai https://canva.com/..."
+  // 2. Title on line ABOVE URL (most common):
+  //    Dubai
+  //    https://canva.com/...
   const handleQuickImport = async () => {
-    const lines = quickImportText.trim().split('\n').filter(line => line.trim());
+    const lines = quickImportText.trim().split('\n').map(line => line.trim()).filter(Boolean);
     const items: { title: string; url: string }[] = [];
     
-    for (const line of lines) {
-      // Regex to extract title (before link) and Canva URL
-      const match = line.match(/^(.+?)\s+(https?:\/\/(?:www\.)?canva\.com\/.+)$/i);
-      if (match) {
-        items.push({
-          title: match[1].trim(),
-          url: match[2].trim(),
-        });
-      } else {
-        // Try generic URL pattern
-        const genericMatch = line.match(/^(.+?)\s+(https?:\/\/.+)$/i);
-        if (genericMatch) {
+    let pendingTitle: string | null = null;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      // Check if line contains a Canva URL
+      const urlMatch = line.match(/(https?:\/\/(?:www\.)?canva\.com\/[^\s]+)/i);
+      
+      if (urlMatch) {
+        const url = urlMatch[1];
+        
+        // Check if there's a title BEFORE the URL on the same line
+        const beforeUrl = line.substring(0, line.indexOf(urlMatch[0])).trim();
+        
+        // Clean up title - remove separators like ,,, --- ||| etc
+        const cleanTitle = (text: string) => {
+          return text
+            .replace(/[,\-|.]{2,}/g, '') // Remove repeated punctuation
+            .replace(/\s+/g, ' ')         // Normalize spaces
+            .trim();
+        };
+        
+        if (beforeUrl && beforeUrl.length > 1) {
+          // Title is on the same line before URL
           items.push({
-            title: genericMatch[1].trim(),
-            url: genericMatch[2].trim(),
+            title: cleanTitle(beforeUrl),
+            url: url,
+          });
+          pendingTitle = null;
+        } else if (pendingTitle) {
+          // Title was on the previous line
+          items.push({
+            title: cleanTitle(pendingTitle),
+            url: url,
+          });
+          pendingTitle = null;
+        } else {
+          // No title found, use URL fragment as fallback
+          const fallbackTitle = url.match(/DAG[\w-]+/)?.[0] || 'Sem Título';
+          items.push({
+            title: fallbackTitle,
+            url: url,
           });
         }
+      } else if (!line.startsWith('http')) {
+        // This line doesn't have a URL - it might be a title for the next line
+        pendingTitle = line;
       }
     }
     
     if (items.length === 0) {
-      toast.error("Nenhum item válido encontrado. Use o formato: Título https://...");
+      toast.error("Nenhum item válido encontrado. Cole o texto com títulos e links do Canva.");
       return;
     }
     
@@ -294,6 +328,7 @@ export const ImportSection = () => {
           type: selectedType,
           icon: getDefaultIconByType(selectedType),
           category: influencer || location || null,
+          language: language,
           is_active: true,
         });
         successCount++;
@@ -427,12 +462,12 @@ export const ImportSection = () => {
             Importação Rápida via Texto
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Cole os dados no formato: Título https://link.canva.com/...
+            Cole o texto com títulos e links do Canva. Aceita título na linha acima do link ou na mesma linha.
           </p>
         </CardHeader>
         <CardContent>
           <Textarea
-            placeholder={"Dubai https://canva.com/design/xxx\nMaldivas https://canva.com/design/yyy\nParis https://canva.com/design/zzz"}
+            placeholder={"Istambul\nhttps://canva.com/design/xxx...\n\nVancouver\nhttps://canva.com/design/yyy...\n\nDubai\nhttps://canva.com/design/zzz..."}
             value={quickImportText}
             onChange={(e) => setQuickImportText(e.target.value)}
             rows={6}
