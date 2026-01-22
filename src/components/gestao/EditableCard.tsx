@@ -1,4 +1,4 @@
-import { Pencil, ExternalLink } from "lucide-react";
+import { Pencil, ExternalLink, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ interface EditableCardProps {
   isActive?: boolean;
   isNew?: boolean;
   onEdit: (item: { id: string; title: string; url: string; is_active?: boolean }) => void;
+  onDelete?: (id: string, title: string) => void;
 }
 
 export const EditableCard = ({
@@ -21,6 +22,7 @@ export const EditableCard = ({
   isActive = true,
   isNew = false,
   onEdit,
+  onDelete,
 }: EditableCardProps) => {
   const truncatedUrl = url.length > 40 ? url.substring(0, 40) + "..." : url;
 
@@ -62,16 +64,27 @@ export const EditableCard = ({
         </div>
       </div>
 
-      {/* Edit button */}
-      <Button
-        size="sm"
-        variant="outline"
-        className="w-full"
-        onClick={() => onEdit({ id, title, url, is_active: isActive })}
-      >
-        <Pencil className="h-4 w-4 mr-2" />
-        Editar
-      </Button>
+      {/* Action buttons */}
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          className="flex-1"
+          onClick={() => onEdit({ id, title, url, is_active: isActive })}
+        >
+          <Pencil className="h-4 w-4 mr-2" />
+          Editar
+        </Button>
+        {onDelete && (
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => onDelete(id, title)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

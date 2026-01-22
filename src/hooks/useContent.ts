@@ -465,3 +465,62 @@ export const useUpdateDisplayOrder = () => {
     },
   });
 };
+
+// Delete mutations
+export const useDeleteContentItem = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("content_items")
+        .delete()
+        .eq("id", id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
+      queryClient.invalidateQueries({ queryKey: ["content-items"] });
+      queryClient.invalidateQueries({ queryKey: ["video-templates"] });
+    },
+  });
+};
+
+export const useDeleteCaption = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("captions")
+        .delete()
+        .eq("id", id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-captions"] });
+      queryClient.invalidateQueries({ queryKey: ["captions"] });
+    },
+  });
+};
+
+export const useDeleteMarketingTool = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("marketing_tools")
+        .delete()
+        .eq("id", id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-marketing-tools"] });
+      queryClient.invalidateQueries({ queryKey: ["marketing-tools"] });
+    },
+  });
+};

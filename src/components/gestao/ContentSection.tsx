@@ -48,6 +48,9 @@ interface ContentSectionProps {
   tools: MarketingTool[];
   onEditItem: (item: EditableItem) => void;
   onEditCaption: (caption: EditableCaption) => void;
+  onDeleteItem?: (id: string, title: string) => void;
+  onDeleteCaption?: (id: string, title: string) => void;
+  onDeleteTool?: (id: string, title: string) => void;
 }
 
 type SortOrder = "recent" | "oldest" | "custom";
@@ -58,6 +61,9 @@ export const ContentSection = ({
   tools,
   onEditItem,
   onEditCaption,
+  onDeleteItem,
+  onDeleteCaption,
+  onDeleteTool,
 }: ContentSectionProps) => {
   const { toast } = useToast();
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -254,6 +260,7 @@ export const ContentSection = ({
                 isActive={item.is_active}
                 isNew={item.is_new}
                 onEdit={onEditItem}
+                onDelete={onDeleteItem}
               />
             </SortableCard>
           ))}
@@ -279,6 +286,7 @@ export const ContentSection = ({
                 hashtags={caption.hashtags}
                 isActive={caption.is_active}
                 onEdit={onEditCaption}
+                onDelete={onDeleteCaption}
               />
             </SortableCard>
           ))}
@@ -305,6 +313,7 @@ export const ContentSection = ({
                 isActive={tool.is_active}
                 isNew={tool.is_new}
                 onEdit={onEditItem}
+                onDelete={onDeleteTool}
               />
             </SortableCard>
           ))}
