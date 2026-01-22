@@ -77,6 +77,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_email_automations: {
+        Row: {
+          created_at: string
+          email: string
+          email_1_sent_at: string | null
+          email_2_sent_at: string | null
+          email_3_sent_at: string | null
+          id: string
+          name: string | null
+          unsubscribed: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          email_1_sent_at?: string | null
+          email_2_sent_at?: string | null
+          email_3_sent_at?: string | null
+          id?: string
+          name?: string | null
+          unsubscribed?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          email_1_sent_at?: string | null
+          email_2_sent_at?: string | null
+          email_3_sent_at?: string | null
+          id?: string
+          name?: string | null
+          unsubscribed?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
