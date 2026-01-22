@@ -13,6 +13,7 @@ import Obrigado from "./pages/Obrigado";
 import PosPagamento from "./pages/PosPagamento";
 import NotFound from "./pages/NotFound";
 import Gestao from "./pages/Gestao";
+import AdminLogin from "./pages/AdminLogin";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import ContentManager from "./pages/admin/ContentManager";
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/obrigado" element={<Obrigado />} />
             <Route path="/pos-pagamento" element={<PosPagamento />} />
             <Route path="/gestao" element={<Gestao />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
             
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminLayout />}>
