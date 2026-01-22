@@ -1,15 +1,20 @@
 import { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Video, Image, BookOpen, FileText, Wrench, Download, Plus, ArrowUpDown, Clock, ArrowDown, ArrowUp } from "lucide-react";
+import { Video, Image, BookOpen, FileText, Wrench, Download, Plus, ArrowUpDown, Clock, ArrowDown, ArrowUp, Sparkles } from "lucide-react";
 import { EditableCard } from "./EditableCard";
 import { CaptionCard } from "./CaptionCard";
 import { SortableCard } from "./SortableCard";
 import { CreateItemModal } from "./CreateItemModal";
 import { CreateCaptionModal } from "./CreateCaptionModal";
-import { ContentItem, Caption, MarketingTool, useCreateContentItem, useCreateCaption, useCreateMarketingTool, useUpdateDisplayOrder } from "@/hooks/useContent";
+import { FeaturedCard } from "./FeaturedCard";
+import { SelectFeaturedModal } from "./SelectFeaturedModal";
+import { ContentItem, Caption, MarketingTool, useCreateContentItem, useCreateCaption, useCreateMarketingTool, useUpdateDisplayOrder, useUpdateContentItem } from "@/hooks/useContent";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   DndContext,
   closestCenter,
@@ -23,7 +28,6 @@ import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
   rectSortingStrategy,
 } from "@dnd-kit/sortable";
 
@@ -66,8 +70,10 @@ export const ContentSection = ({
   onDeleteTool,
 }: ContentSectionProps) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [createCaptionModalOpen, setCreateCaptionModalOpen] = useState(false);
+  const [selectFeaturedModalOpen, setSelectFeaturedModalOpen] = useState(false);
   const [createType, setCreateType] = useState<"content" | "tool">("content");
   const [currentTab, setCurrentTab] = useState("videos");
   const [sortOrder, setSortOrder] = useState<SortOrder>("recent");
@@ -76,6 +82,7 @@ export const ContentSection = ({
   const createCaption = useCreateCaption();
   const createMarketingTool = useCreateMarketingTool();
   const updateDisplayOrder = useUpdateDisplayOrder();
+  const updateContentItem = useUpdateContentItem();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -114,6 +121,18 @@ export const ContentSection = ({
   const resourceItems = useMemo(() => 
     sortItems(contentItems.filter(item => ['resource', 'download'].includes(item.type))),
     [contentItems, sortOrder]
+  );
+
+  // Featured items (videos with is_featured = true)
+  const featuredItems = useMemo(() => 
+    contentItems.filter(item => item.is_featured && ['video', 'seasonal'].includes(item.type)),
+    [contentItems]
+  );
+
+  // Available videos for featuring (not already featured)
+  const availableForFeatured = useMemo(() => 
+    videoItems.filter(item => !item.is_featured),
+    [videoItems]
   );
 
   const nacionalCaptions = useMemo(() => 
@@ -242,6 +261,90 @@ export const ContentSection = ({
     setCreateModalOpen(true);
   };
 
+  // Featured handling
+  const handleSelectFeatured = async (id: string) => {
+    try {
+      await supabase
+        .from("content_items")
+        .update({ is_featured: true })
+        .eq("id", id);
+      
+      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
+      toast({
+        title: "Destaque adicionado",
+        description: "O vídeo foi marcado como destaque.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível marcar como destaque.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRemoveFromFeatured = async (id: string) => {
+    try {
+      await supabase
+        .from("content_items")
+        .update({ is_featured: false })
+        .eq("id", id);
+      
+      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
+      toast({
+        title: "Destaque removido",
+        description: "O vídeo foi removido dos destaques.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover dos destaques.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUploadFeaturedImage = async (id: string, file: File) => {
+    try {
+      // Generate unique filename
+      const ext = file.name.split('.').pop();
+      const fileName = `featured/${id}_${Date.now()}.${ext}`;
+      
+      // Upload to Storage
+      const { error: uploadError } = await supabase.storage
+        .from("thumbnails")
+        .upload(fileName, file, { upsert: true });
+      
+      if (uploadError) throw uploadError;
+      
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from("thumbnails")
+        .getPublicUrl(fileName);
+      
+      // Update content_item with new image_url
+      const { error: updateError } = await supabase
+        .from("content_items")
+        .update({ image_url: urlData.publicUrl })
+        .eq("id", id);
+      
+      if (updateError) throw updateError;
+      
+      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
+      toast({
+        title: "Imagem atualizada",
+        description: "A imagem do destaque foi atualizada com sucesso.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível fazer upload da imagem.",
+        variant: "destructive",
+      });
+      console.error(error);
+    }
+  };
+
   const renderItemGrid = (items: ContentItem[], table: "content_items") => (
     <DndContext
       sensors={sensors}
@@ -326,6 +429,10 @@ export const ContentSection = ({
     <>
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
         <TabsList className="w-full flex-wrap h-auto gap-2 bg-muted/50 p-2">
+          <TabsTrigger value="destaque" className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            Destaque ({featuredItems.length}/10)
+          </TabsTrigger>
           <TabsTrigger value="videos" className="flex items-center gap-2">
             <Video className="h-4 w-4" />
             Vídeos ({videoItems.length})
@@ -355,6 +462,46 @@ export const ContentSection = ({
             Recursos ({resourceItems.length})
           </TabsTrigger>
         </TabsList>
+
+        {/* Destaque Tab */}
+        <TabsContent value="destaque" className="mt-6">
+          <Card className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-200 dark:border-amber-800">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-500" />
+                Mídias em Destaque
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Estas {featuredItems.length}/10 mídias aparecem com imagens personalizadas na plataforma.
+                As demais mídias usam apenas ícones.
+              </p>
+            </CardHeader>
+          </Card>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {featuredItems.map(item => (
+              <FeaturedCard
+                key={item.id}
+                item={item}
+                onUploadImage={handleUploadFeaturedImage}
+                onRemoveFromFeatured={handleRemoveFromFeatured}
+                onEdit={onEditItem}
+              />
+            ))}
+            
+            {/* Slot to add new featured item (if < 10) */}
+            {featuredItems.length < 10 && (
+              <Button
+                variant="outline"
+                className="aspect-[9/16] h-auto border-dashed flex flex-col items-center justify-center gap-2"
+                onClick={() => setSelectFeaturedModalOpen(true)}
+              >
+                <Plus className="h-8 w-8" />
+                <span className="text-sm">Adicionar</span>
+              </Button>
+            )}
+          </div>
+        </TabsContent>
 
         {/* Videos Tab */}
         <TabsContent value="videos" className="mt-6">
@@ -454,6 +601,13 @@ export const ContentSection = ({
         onClose={() => setCreateCaptionModalOpen(false)}
         onSave={handleCreateCaption}
         isSaving={createCaption.isPending}
+      />
+
+      <SelectFeaturedModal
+        isOpen={selectFeaturedModalOpen}
+        onClose={() => setSelectFeaturedModalOpen(false)}
+        availableVideos={availableForFeatured}
+        onSelect={handleSelectFeatured}
       />
     </>
   );

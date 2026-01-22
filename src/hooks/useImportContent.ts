@@ -11,6 +11,8 @@ export interface ParsedItem {
   destination?: string;
   text?: string;
   hashtags?: string;
+  category?: string;
+  language?: string;
 }
 
 export const getDefaultIconByType = (type: ContentType): string => {
@@ -140,6 +142,8 @@ export const useImportContent = () => {
             url: item.url,
             icon: item.icon || getDefaultIconByType(type),
             type: type,
+            category: item.category || null,
+            language: item.language || 'pt',
             display_order: index,
             is_active: true,
           }))

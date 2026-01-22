@@ -14,8 +14,10 @@ export interface ContentItem {
   icon: string;
   description: string | null;
   is_new: boolean;
+  is_featured: boolean;
   is_active: boolean;
   display_order: number;
+  language: string | null;
   created_at: string;
   updated_at: string;
 }
