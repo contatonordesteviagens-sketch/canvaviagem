@@ -12,8 +12,8 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Price ID for the monthly subscription - R$ 37,90/month
-const PRICE_ID = "price_1SnPjZLXUoWoiE4TWVWEP6TZ";
+// Price ID for the monthly subscription - R$ 9,90/month
+const PRICE_ID = "price_1Sr8tOLXUoWoiE4TaKqmrSG5";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {

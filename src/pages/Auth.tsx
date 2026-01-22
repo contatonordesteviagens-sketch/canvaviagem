@@ -6,34 +6,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { z } from "zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, ArrowLeft, CheckCircle, MessageCircle } from "lucide-react";
 import { trackCompleteRegistration, trackViewContent } from "@/lib/meta-pixel";
-
-const emailSchema = z.string().email("Por favor, insira um email válido");
-const passwordSchema = z.string().min(6, "A senha deve ter pelo menos 6 caracteres");
 
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, loading, subscription } = useAuth();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
   
   // Get redirect param for post-auth navigation
   const redirectTo = searchParams.get("redirect") || null;
 
   // Track page view
   useEffect(() => {
-    trackViewContent('Página de Login/Cadastro');
+    trackViewContent('Página de Login');
   }, []);
 
   // Redirect based on subscription status after login
   useEffect(() => {
     if (!loading && !subscription.loading && user) {
+      // Track registration if coming from signup flow
+      trackCompleteRegistration();
+      
       // If there's a redirect param, use it
       if (redirectTo) {
         navigate(redirectTo);
@@ -45,77 +43,79 @@ const Auth = () => {
     }
   }, [user, loading, subscription, navigate, redirectTo]);
 
-  const validateInputs = () => {
+  const handleSendMagicLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email) {
+      toast.error("Por favor, insira seu email.");
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error("Por favor, insira um email válido.");
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      emailSchema.parse(email);
-      passwordSchema.parse(password);
-      return true;
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: redirectTo 
+            ? `${window.location.origin}${redirectTo}` 
+            : `${window.location.origin}/`,
+        },
+      });
+
+      if (error) {
+        if (error.message.includes("rate limit")) {
+          toast.error("Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.");
+        } else if (error.message.includes("Email not confirmed")) {
+          toast.error("Email não encontrado. Verifique se você já fez uma compra.");
+        } else {
+          toast.error("Erro ao enviar link. Tente novamente.");
+        }
+        console.error("Magic link error:", error);
+        return;
+      }
+
+      setMagicLinkSent(true);
+      toast.success("Link de acesso enviado! Verifique seu email.");
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast.error(error.errors[0].message);
-      }
-      return false;
+      console.error("Error sending magic link:", error);
+      toast.error("Erro ao processar. Tente novamente.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateInputs()) return;
-    
+  const handleResendLink = async () => {
     setIsLoading(true);
-    
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-      },
-    });
 
-    setIsLoading(false);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: redirectTo 
+            ? `${window.location.origin}${redirectTo}` 
+            : `${window.location.origin}/`,
+        },
+      });
 
-    if (error) {
-      if (error.message.includes("already registered")) {
-        toast.error("Este email já está cadastrado. Tente fazer login.");
-      } else {
-        toast.error(error.message);
+      if (error) {
+        toast.error("Erro ao reenviar link.");
+        return;
       }
-      return;
+
+      toast.success("Link reenviado com sucesso!");
+    } catch (error) {
+      toast.error("Erro ao processar.");
+    } finally {
+      setIsLoading(false);
     }
-
-    // Track registration complete
-    trackCompleteRegistration();
-    
-    toast.success("Conta criada com sucesso! Você já pode acessar a plataforma.");
-    navigate("/");
-  };
-
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateInputs()) return;
-    
-    setIsLoading(true);
-    
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setIsLoading(false);
-
-    if (error) {
-      if (error.message.includes("Invalid login credentials")) {
-        toast.error("Email ou senha incorretos.");
-      } else {
-        toast.error(error.message);
-      }
-      return;
-    }
-
-    toast.success("Login realizado com sucesso!");
-    navigate("/");
   };
 
   if (loading) {
@@ -134,93 +134,128 @@ const Auth = () => {
             <span className="text-3xl">🎬</span>
           </div>
           <CardTitle className="text-2xl font-bold">Canva Viagens</CardTitle>
-          <CardDescription>Acesse sua conta para continuar</CardDescription>
+          <CardDescription>
+            {magicLinkSent 
+              ? "Verifique seu email para acessar" 
+              : "Acesse com seu email (sem senha!)"}
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="login" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Entrar</TabsTrigger>
-              <TabsTrigger value="signup">Cadastrar</TabsTrigger>
-            </TabsList>
+        <CardContent className="space-y-6">
+          {!magicLinkSent ? (
+            <form onSubmit={handleSendMagicLink} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Use o mesmo email que você usou na compra
+                </p>
+              </div>
+              
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Enviar Link de Acesso
+                  </>
+                )}
+              </Button>
+            </form>
+          ) : (
+            <div className="space-y-6">
+              <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-center">
+                <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-3" />
+                <p className="text-green-800 dark:text-green-200 font-medium">
+                  Link enviado para
+                </p>
+                <p className="text-green-600 dark:text-green-400 font-bold">
+                  {email}
+                </p>
+              </div>
 
-            <TabsContent value="login">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email-login">Email</Label>
-                  <Input
-                    id="email-login"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password-login">Senha</Label>
-                  <Input
-                    id="password-login"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+              <div className="text-center space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Verifique sua caixa de entrada e também a pasta de spam.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  O link expira em <strong>1 hora</strong>.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={handleResendLink}
+                  disabled={isLoading}
+                  className="w-full"
+                >
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Entrando...
+                      Reenviando...
                     </>
                   ) : (
-                    "Entrar"
+                    "Reenviar Link"
                   )}
                 </Button>
-              </form>
-            </TabsContent>
+                
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setMagicLinkSent(false)}
+                  className="w-full"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Usar outro email
+                </Button>
+              </div>
+            </div>
+          )}
 
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email-signup">Email</Label>
-                  <Input
-                    id="email-signup"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password-signup">Senha</Label>
-                  <Input
-                    id="password-signup"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Cadastrando...
-                    </>
-                  ) : (
-                    "Criar Conta"
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+          {/* Separator */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-muted"></div>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">ainda não tem conta?</span>
+            </div>
+          </div>
+
+          {/* Subscribe CTA */}
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground mb-3">
+              Para acessar, você precisa ter uma assinatura ativa.
+            </p>
+            <Button variant="outline" onClick={() => navigate("/planos")} className="w-full">
+              Ver Planos e Assinar
+            </Button>
+          </div>
+
+          {/* Support */}
+          <div className="bg-muted/50 rounded-lg p-4 text-center text-sm text-muted-foreground">
+            <p className="font-medium mb-2">Precisa de ajuda?</p>
+            <a 
+              href="https://wa.me/5585986411294" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-primary hover:underline"
+            >
+              <MessageCircle className="h-4 w-4" />
+              WhatsApp: (85) 9 8641-1294
+            </a>
+          </div>
         </CardContent>
       </Card>
     </div>
