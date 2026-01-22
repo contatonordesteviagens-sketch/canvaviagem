@@ -254,6 +254,9 @@ export const ImportSection = () => {
     );
   };
 
+  // State for quick import loading
+  const [isQuickImporting, setIsQuickImporting] = useState(false);
+
   // Quick import from text - handles blocks separated by empty lines
   // Format: Title (one or more lines) followed by Canva URL, separated by empty lines
   const handleQuickImport = async () => {
@@ -262,87 +265,121 @@ export const ImportSection = () => {
       return;
     }
 
-    // Split into blocks using one or more empty lines as delimiter
-    const blocks = quickImportText.trim().split(/\n\s*\n+/);
-    const items: { title: string; url: string }[] = [];
-
-    for (const block of blocks) {
-      const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
-      if (lines.length === 0) continue;
-
-      // Find the line with Canva URL
-      let urlLine: string | null = null;
-      const titleLines: string[] = [];
-
-      for (const line of lines) {
-        if (line.match(/https?:\/\/(?:www\.)?canva\.com/i)) {
-          // Extract only the URL (may have text before/after)
-          const urlMatch = line.match(/(https?:\/\/(?:www\.)?canva\.com\/[^\s]+)/i);
-          if (urlMatch) {
-            urlLine = urlMatch[1];
-            // If there's text before the URL on the same line, it's part of title
-            const beforeUrl = line.substring(0, line.indexOf(urlMatch[0])).trim();
-            if (beforeUrl) {
-              titleLines.push(beforeUrl);
-            }
-          }
-        } else {
-          // Line without URL - it's part of the title
-          titleLines.push(line);
-        }
-      }
-
-      if (urlLine && titleLines.length > 0) {
-        // Join title lines and clean up
-        const title = titleLines.join(' ')
-          .replace(/[|,.\-:]{2,}/g, ' ')  // Remove repeated punctuation
-          .replace(/^\s*[|,.\-:]+\s*/g, '')  // Remove leading punctuation
-          .replace(/\s*[|,.\-:]+\s*$/g, '')  // Remove trailing punctuation
-          .replace(/\s+/g, ' ')  // Normalize spaces
-          .trim();
-
-        if (title) {
-          // Capitalize first letter of each word for consistency
-          const capitalizedTitle = title
-            .toLowerCase()
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-
-          items.push({ title: capitalizedTitle, url: urlLine });
-        }
-      }
-    }
-
-    if (items.length === 0) {
-      toast.error("Nenhum item válido encontrado. Verifique o formato (título seguido de link Canva).");
+    if (isQuickImporting) {
+      toast.error("Aguarde, importação em andamento...");
       return;
     }
 
-    // Create items in database
-    let successCount = 0;
-    for (const item of items) {
-      try {
-        await createContentItem.mutateAsync({
-          title: item.title,
-          url: item.url,
-          type: selectedType,
-          icon: getDefaultIconByType(selectedType),
-          category: influencer || location || null,
-          language: language,
-          is_active: true,
-        });
-        successCount++;
-      } catch (error) {
-        console.error("Error creating item:", error);
-      }
-    }
+    setIsQuickImporting(true);
+    toast.info("Processando texto...");
 
-    if (successCount > 0) {
-      toast.success(`${successCount} item(s) importado(s) com sucesso!`);
-      setQuickImportText("");
-    } else {
-      toast.error("Erro ao importar itens. Tente novamente.");
+    try {
+      // Split into blocks using one or more empty lines as delimiter
+      const blocks = quickImportText.trim().split(/\n\s*\n+/);
+      const items: { title: string; url: string }[] = [];
+
+      console.log("Blocks found:", blocks.length, blocks);
+
+      for (const block of blocks) {
+        const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length === 0) continue;
+
+        // Find the line with Canva URL
+        let urlLine: string | null = null;
+        const titleLines: string[] = [];
+
+        for (const line of lines) {
+          if (line.match(/https?:\/\/(?:www\.)?canva\.com/i)) {
+            // Extract only the URL (may have text before/after)
+            const urlMatch = line.match(/(https?:\/\/(?:www\.)?canva\.com\/[^\s]+)/i);
+            if (urlMatch) {
+              urlLine = urlMatch[1];
+              // If there's text before the URL on the same line, it's part of title
+              const beforeUrl = line.substring(0, line.indexOf(urlMatch[0])).trim();
+              if (beforeUrl) {
+                titleLines.push(beforeUrl);
+              }
+            }
+          } else {
+            // Line without URL - it's part of the title
+            titleLines.push(line);
+          }
+        }
+
+        console.log("Block parsed:", { titleLines, urlLine });
+
+        if (urlLine && titleLines.length > 0) {
+          // Join title lines and clean up
+          const title = titleLines.join(' ')
+            .replace(/[|,.\-:]{2,}/g, ' ')  // Remove repeated punctuation
+            .replace(/^\s*[|,.\-:]+\s*/g, '')  // Remove leading punctuation
+            .replace(/\s*[|,.\-:]+\s*$/g, '')  // Remove trailing punctuation
+            .replace(/\s+/g, ' ')  // Normalize spaces
+            .trim();
+
+          if (title) {
+            // Capitalize first letter of each word for consistency
+            const capitalizedTitle = title
+              .toLowerCase()
+              .split(' ')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ');
+
+            items.push({ title: capitalizedTitle, url: urlLine });
+          }
+        }
+      }
+
+      console.log("Items to import:", items);
+
+      if (items.length === 0) {
+        toast.error("Nenhum item válido encontrado. Verifique o formato (título seguido de link Canva).");
+        setIsQuickImporting(false);
+        return;
+      }
+
+      toast.info(`${items.length} item(s) encontrado(s). Importando...`);
+
+      // Create items in database
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const item of items) {
+        try {
+          await createContentItem.mutateAsync({
+            title: item.title,
+            url: item.url,
+            type: selectedType,
+            icon: getDefaultIconByType(selectedType),
+            category: influencer || location || null,
+            language: language,
+            is_active: true,
+          });
+          successCount++;
+          console.log("Item created:", item.title);
+        } catch (error) {
+          errorCount++;
+          console.error("Error creating item:", item.title, error);
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`${successCount} item(s) importado(s) com sucesso!`);
+        setQuickImportText("");
+      }
+      
+      if (errorCount > 0) {
+        toast.error(`${errorCount} item(s) falharam ao importar.`);
+      }
+      
+      if (successCount === 0 && errorCount === 0) {
+        toast.error("Nenhum item foi processado. Verifique o formato.");
+      }
+    } catch (error) {
+      console.error("Quick import error:", error);
+      toast.error("Erro ao processar importação.");
+    } finally {
+      setIsQuickImporting(false);
     }
   };
 
@@ -481,16 +518,16 @@ export const ImportSection = () => {
           <div className="flex gap-2 mt-3">
             <Button 
               onClick={handleQuickImport} 
-              disabled={!quickImportText.trim() || createContentItem.isPending}
+              disabled={!quickImportText.trim() || isQuickImporting}
             >
-              {createContentItem.isPending ? (
+              {isQuickImporting ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
                 <Upload className="h-4 w-4 mr-2" />
               )}
-              Processar e Importar
+              {isQuickImporting ? "Importando..." : "Processar e Importar"}
             </Button>
-            <Button variant="outline" onClick={() => setQuickImportText("")}>
+            <Button variant="outline" onClick={() => setQuickImportText("")} disabled={isQuickImporting}>
               Limpar
             </Button>
           </div>
