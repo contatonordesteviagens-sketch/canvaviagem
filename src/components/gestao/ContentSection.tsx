@@ -190,6 +190,26 @@ export const ContentSection = ({
           display_order: index,
         }));
 
+        // Determine query key based on table
+        const queryKey = table === "content_items" 
+          ? ["all-content-items"] 
+          : table === "captions" 
+          ? ["all-captions"] 
+          : ["all-marketing-tools"];
+
+        // OPTIMISTIC UPDATE - update cache immediately
+        queryClient.setQueryData(queryKey, (old: any[] | undefined) => {
+          if (!old) return old;
+          const updated = [...old];
+          updates.forEach((update) => {
+            const itemIndex = updated.findIndex(i => i.id === update.id);
+            if (itemIndex !== -1) {
+              updated[itemIndex] = { ...updated[itemIndex], display_order: update.display_order };
+            }
+          });
+          return updated.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+        });
+
         updateDisplayOrder.mutate(
           { table, items: updates },
           {
@@ -200,6 +220,8 @@ export const ContentSection = ({
               });
             },
             onError: () => {
+              // Revert on error by refetching
+              queryClient.invalidateQueries({ queryKey });
               toast({
                 title: "Erro",
                 description: "Não foi possível salvar a nova ordem.",
