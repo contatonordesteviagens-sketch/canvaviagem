@@ -108,7 +108,7 @@ export const PremiumCard = ({
         )}
         
         {/* Image or Placeholder */}
-        {variant === "image" && imageUrl ? (
+        {imageUrl ? (
           <>
             <img 
               src={imageUrl} 

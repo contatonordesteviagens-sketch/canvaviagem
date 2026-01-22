@@ -6,7 +6,7 @@ import { Footer } from "@/components/Footer";
 import { PremiumGate } from "@/components/PremiumGate";
 import { ResourceSection } from "@/components/ResourceSection";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Loader2, Heart } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
@@ -26,6 +26,7 @@ import {
   useCaptions, 
   useMarketingTools,
   useTrackClick,
+  useFeaturedItems,
   ContentItem,
   Caption,
 } from "@/hooks/useContent";
@@ -55,6 +56,7 @@ const Index = () => {
 
   // Database hooks
   const { data: videoTemplates, isLoading: videosLoading } = useContentItems(['video', 'seasonal']);
+  const { data: featuredVideos, isLoading: featuredLoading } = useFeaturedItems();
   const { data: feedTemplates, isLoading: feedLoading } = useContentItems('feed');
   const { data: storyTemplates, isLoading: storiesLoading } = useContentItems(['story', 'weekly-story']);
   const { data: captionsData, isLoading: captionsLoading } = useCaptions();
@@ -205,63 +207,103 @@ const Index = () => {
     switch (activeCategory) {
       case 'videos':
         return (
-          <section className="animate-fade-in">
-            <SectionHeader 
-              title="Vídeos Reels Editáveis" 
-              subtitle="Templates prontos para editar no Canva e publicar"
-            />
-            
-            <FilterChips<VideoFilter>
-              filters={videoFilters}
-              activeFilter={videoFilter}
-              onFilterChange={(filter) => setVideoFilter(filter)}
-            />
-            
-            {videosLoading ? (
-              <ContentSkeleton />
-            ) : (
-              <>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {displayedVideos.map((template) => (
-                    <PremiumCard
-                      key={template.id}
-                      id={template.id}
-                      title={template.title}
-                      url={template.url}
-                      category="Vídeos Reels"
-                      isNew={template.is_new}
-                      icon={getIcon(template.type, template.icon)}
-                      aspectRatio="9/16"
-                      onClick={() => handleCardClick(template)}
-                      isFavorite={isFavorite("content_item", template.id)}
-                      onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                    />
-                  ))}
-                </div>
+          <section className="animate-fade-in space-y-8">
+            {/* Featured Section - 10 videos in spotlight */}
+            {featuredVideos && featuredVideos.length > 0 && (
+              <div>
+                <SectionHeader 
+                  title="Em Destaque" 
+                  subtitle="Vídeos selecionados especialmente para você"
+                />
                 
-                {filteredVideos.length > 8 && (
-                  <div className="flex justify-center mt-8">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setShowAllVideos(!showAllVideos)}
-                      className="gap-2 rounded-full px-6"
-                    >
-                      {showAllVideos ? (
-                        <>
-                          <ChevronUp className="h-4 w-4" />
-                          Mostrar menos
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown className="h-4 w-4" />
-                          Ver mais vídeos ({filteredVideos.length - 8} restantes)
-                        </>
-                      )}
-                    </Button>
+                {featuredLoading ? (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    {[...Array(10)].map((_, i) => (
+                      <Skeleton key={i} className="aspect-[9/16] rounded-xl" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    {featuredVideos.slice(0, 10).map((video) => (
+                      <PremiumCard
+                        key={video.id}
+                        id={video.id}
+                        title={video.title}
+                        url={video.url}
+                        category="Destaque"
+                        isNew={video.is_new}
+                        icon={getIcon(video.type, video.icon)}
+                        imageUrl={video.image_url || undefined}
+                        aspectRatio="9/16"
+                        onClick={() => handleCardClick(video)}
+                        isFavorite={isFavorite("content_item", video.id)}
+                        onToggleFavorite={() => handleToggleFavorite("content_item", video.id)}
+                      />
+                    ))}
                   </div>
                 )}
-              </>
+              </div>
             )}
+
+            {/* All Videos Section */}
+            <div>
+              <SectionHeader 
+                title="Vídeos Reels Editáveis" 
+                subtitle="Templates prontos para editar no Canva e publicar"
+              />
+              
+              <FilterChips<VideoFilter>
+                filters={videoFilters}
+                activeFilter={videoFilter}
+                onFilterChange={(filter) => setVideoFilter(filter)}
+              />
+              
+              {videosLoading ? (
+                <ContentSkeleton />
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    {displayedVideos.map((template) => (
+                      <PremiumCard
+                        key={template.id}
+                        id={template.id}
+                        title={template.title}
+                        url={template.url}
+                        category="Vídeos Reels"
+                        isNew={template.is_new}
+                        icon={getIcon(template.type, template.icon)}
+                        aspectRatio="9/16"
+                        onClick={() => handleCardClick(template)}
+                        isFavorite={isFavorite("content_item", template.id)}
+                        onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
+                      />
+                    ))}
+                  </div>
+                  
+                  {filteredVideos.length > 8 && (
+                    <div className="flex justify-center mt-8">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setShowAllVideos(!showAllVideos)}
+                        className="gap-2 rounded-full px-6"
+                      >
+                        {showAllVideos ? (
+                          <>
+                            <ChevronUp className="h-4 w-4" />
+                            Mostrar menos
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-4 w-4" />
+                            Ver mais vídeos ({filteredVideos.length - 8} restantes)
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </section>
         );
 
