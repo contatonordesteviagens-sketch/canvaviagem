@@ -1,12 +1,14 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Users, CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
+import { Search, Users, CheckCircle, XCircle, Clock, AlertTriangle, Download } from "lucide-react";
 import { useActiveUsers, ActiveUser } from "@/hooks/useActiveUsers";
+import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -16,6 +18,7 @@ export const UsersSection = () => {
   const { data: users, isLoading } = useActiveUsers();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const { toast } = useToast();
 
   const filteredUsers = useMemo(() => {
     if (!users) return [];
@@ -76,6 +79,62 @@ export const UsersSection = () => {
     return format(new Date(dateString), "dd/MM/yyyy", { locale: ptBR });
   };
 
+  const getStatusText = (status: ActiveUser["status"]) => {
+    const statusMap: Record<string, string> = {
+      active: "Ativo",
+      canceled: "Cancelado",
+      past_due: "Inadimplente",
+      trialing: "Trial",
+      inactive: "Inativo",
+    };
+    return statusMap[status] || status;
+  };
+
+  const handleExportUsersCSV = () => {
+    const usersToExport = filteredUsers;
+
+    if (!usersToExport?.length) {
+      toast({
+        title: "Nada para exportar",
+        description: "Não há usuários para exportar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const headers = ["Email", "Status", "Inscrito em", "Válido até", "Stripe Customer ID"];
+
+    const rows = usersToExport.map((user) => [
+      user.email,
+      getStatusText(user.status),
+      formatDate(user.created_at),
+      formatDate(user.current_period_end),
+      user.stripe_customer_id || "-",
+    ]);
+
+    // BOM for Excel UTF-8 compatibility
+    const BOM = "\uFEFF";
+    const csvContent =
+      BOM +
+      [
+        headers.join(";"),
+        ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(";")),
+      ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `usuarios_${format(new Date(), "yyyy-MM-dd")}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "CSV exportado!",
+      description: `${usersToExport.length} usuário(s) exportado(s).`,
+    });
+  };
+
   // Contadores
   const counts = useMemo(() => {
     if (!users) return { total: 0, active: 0, canceled: 0, pastDue: 0 };
@@ -128,10 +187,16 @@ export const UsersSection = () => {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Usuários ({filteredUsers.length})
-          </CardTitle>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Usuários ({filteredUsers.length})
+            </CardTitle>
+            <Button variant="outline" size="sm" onClick={handleExportUsersCSV}>
+              <Download className="h-4 w-4 mr-2" />
+              Exportar CSV
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-6">
