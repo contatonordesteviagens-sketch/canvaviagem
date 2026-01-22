@@ -12,6 +12,14 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CUSTOMER-PORTAL] ${step}${detailsStr}`);
 };
 
+// Generic error messages for clients (security best practice)
+const GENERIC_ERRORS = {
+  unauthorized: "Unauthorized",
+  serviceError: "Service temporarily unavailable",
+  configError: "Service configuration error",
+  notFound: "Resource not found",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -21,7 +29,13 @@ serve(async (req) => {
     logStep("Function started");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+    if (!stripeKey) {
+      logStep("ERROR: STRIPE_SECRET_KEY not configured");
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.configError }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
     logStep("Stripe key verified");
 
     const supabaseClient = createClient(
@@ -31,20 +45,42 @@ serve(async (req) => {
     );
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
+    if (!authHeader) {
+      logStep("ERROR: No authorization header provided");
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.unauthorized }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
     logStep("Authorization header found");
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    if (userError) {
+      logStep("Authentication error", { error: userError.message });
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.unauthorized }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
     const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    if (!user?.email) {
+      logStep("ERROR: User not authenticated or email not available");
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.unauthorized }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     if (customers.data.length === 0) {
-      throw new Error("No Stripe customer found for this user");
+      logStep("ERROR: No Stripe customer found for this user");
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.notFound }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 404,
+      });
     }
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
@@ -63,7 +99,7 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR in customer-portal", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ error: GENERIC_ERRORS.serviceError }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
