@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      email_events: {
+        Row: {
+          created_at: string
+          email_id: string
+          email_type: string | null
+          id: string
+          metadata: Json | null
+          recipient_email: string | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          email_id: string
+          email_type?: string | null
+          id?: string
+          metadata?: Json | null
+          recipient_email?: string | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          email_id?: string
+          email_type?: string | null
+          id?: string
+          metadata?: Json | null
+          recipient_email?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
