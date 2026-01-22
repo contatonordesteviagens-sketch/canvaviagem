@@ -31,21 +31,22 @@ export const SortableCard = ({ id, children, disabled = false }: SortableCardPro
       style={style}
       className={cn(
         "relative group",
-        isDragging && "opacity-50 z-50"
+        isDragging && "opacity-50 z-50 shadow-lg"
       )}
     >
       {!disabled && (
         <button
           className={cn(
-            "absolute -left-2 top-1/2 -translate-y-1/2 z-10",
-            "p-1 rounded bg-muted opacity-0 group-hover:opacity-100",
-            "cursor-grab active:cursor-grabbing transition-opacity",
-            "hover:bg-accent"
+            "absolute left-2 top-2 z-20",
+            "p-2 rounded-lg bg-black/60 backdrop-blur-sm",
+            "opacity-70 hover:opacity-100",
+            "cursor-grab active:cursor-grabbing transition-all",
+            "hover:bg-black/80 touch-none"
           )}
           {...attributes}
           {...listeners}
         >
-          <GripVertical className="h-4 w-4 text-muted-foreground" />
+          <GripVertical className="h-5 w-5 text-white" />
         </button>
       )}
       {children}
