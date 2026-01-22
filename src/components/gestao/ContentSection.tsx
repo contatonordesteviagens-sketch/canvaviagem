@@ -76,7 +76,7 @@ export const ContentSection = ({
   const [selectFeaturedModalOpen, setSelectFeaturedModalOpen] = useState(false);
   const [createType, setCreateType] = useState<"content" | "tool">("content");
   const [currentTab, setCurrentTab] = useState("videos");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("recent");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("custom");
 
   const createContentItem = useCreateContentItem();
   const createCaption = useCreateCaption();
@@ -414,7 +414,7 @@ export const ContentSection = ({
       <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {items.map((item) => (
-            <SortableCard key={item.id} id={item.id}>
+            <SortableCard key={item.id} id={item.id} disabled={sortOrder !== "custom"}>
               <EditableCard
                 id={item.id}
                 title={item.title}
@@ -443,7 +443,7 @@ export const ContentSection = ({
       <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {items.map((item) => (
-            <SortableCard key={item.id} id={item.id}>
+            <SortableCard key={item.id} id={item.id} disabled={sortOrder !== "custom"}>
               <EditableCard
                 id={item.id}
                 title={item.title}
@@ -470,7 +470,7 @@ export const ContentSection = ({
       <SortableContext items={captionList.map(c => c.id)} strategy={rectSortingStrategy}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {captionList.map((caption) => (
-            <SortableCard key={caption.id} id={caption.id}>
+            <SortableCard key={caption.id} id={caption.id} disabled={sortOrder !== "custom"}>
               <CaptionCard
                 id={caption.id}
                 destination={caption.destination}
@@ -496,7 +496,7 @@ export const ContentSection = ({
       <SortableContext items={toolList.map(t => t.id)} strategy={rectSortingStrategy}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {toolList.map((tool) => (
-            <SortableCard key={tool.id} id={tool.id}>
+            <SortableCard key={tool.id} id={tool.id} disabled={sortOrder !== "custom"}>
               <EditableCard
                 id={tool.id}
                 title={tool.title}
