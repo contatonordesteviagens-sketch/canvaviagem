@@ -464,8 +464,6 @@ export const useCreateMarketingTool = () => {
 
 // Update display order mutation
 export const useUpdateDisplayOrder = () => {
-  const queryClient = useQueryClient();
-  
   return useMutation({
     mutationFn: async ({ 
       table, 
@@ -484,14 +482,7 @@ export const useUpdateDisplayOrder = () => {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
-      queryClient.invalidateQueries({ queryKey: ["all-captions"] });
-      queryClient.invalidateQueries({ queryKey: ["all-marketing-tools"] });
-      queryClient.invalidateQueries({ queryKey: ["content-items"] });
-      queryClient.invalidateQueries({ queryKey: ["captions"] });
-      queryClient.invalidateQueries({ queryKey: ["marketing-tools"] });
-    },
+    // No onSuccess invalidation - optimistic updates handle UI immediately
   });
 };
 

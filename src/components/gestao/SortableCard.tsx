@@ -37,11 +37,12 @@ export const SortableCard = ({ id, children, disabled = false }: SortableCardPro
       {!disabled && (
         <button
           className={cn(
-            "absolute left-2 top-2 z-20",
-            "p-2 rounded-lg bg-black/60 backdrop-blur-sm",
-            "opacity-70 hover:opacity-100",
+            "absolute left-2 top-2 z-50",
+            "p-3 rounded-lg bg-black/80 backdrop-blur-sm",
+            "opacity-100",
             "cursor-grab active:cursor-grabbing transition-all",
-            "hover:bg-black/80 touch-none"
+            "hover:bg-black/90 touch-none",
+            "shadow-lg border border-white/20"
           )}
           {...attributes}
           {...listeners}
