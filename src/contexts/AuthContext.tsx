@@ -2,10 +2,17 @@ import React, { createContext, useContext, useEffect, useState, useRef, useCallb
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-// List of admin emails that get automatic access
-const ADMIN_EMAILS = [
-  'lucashenriquephd@gmail.com',
-];
+/**
+ * SECURITY NOTE: Admin verification
+ * 
+ * The isAdmin state in this context is used for UI/UX purposes only (showing/hiding admin menus).
+ * ALL actual authorization is enforced server-side via:
+ * 1. RLS policies using the is_admin() database function
+ * 2. Edge functions that verify user_roles table directly
+ * 
+ * Client-side admin checks can be bypassed by modifying JavaScript, but this only grants
+ * access to UI elements - not actual data or operations, which are protected server-side.
+ */
 
 interface SubscriptionStatus {
   subscribed: boolean;
@@ -63,44 +70,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const lastCheckRef = useRef<number>(0);
   const initializedRef = useRef(false);
   
-  // Check if user is admin by email or database role
+  /**
+   * Check if user is admin by querying the database user_roles table.
+   * This is the ONLY source of truth for admin status.
+   * UI state is updated for UX purposes, but actual authorization is enforced server-side.
+   */
   const checkAdminStatus = useCallback(async (currentUser: User | null) => {
     if (!currentUser) {
       setIsAdmin(false);
       return false;
     }
     
-    // First check if email is in admin list
-    const emailIsAdmin = ADMIN_EMAILS.includes(currentUser.email || '');
-    
-    if (emailIsAdmin) {
-      console.log('[AuthContext] User is admin by email whitelist');
-      setIsAdmin(true);
-      
-      // Also ensure they have admin role in DB (auto-register if not)
-      try {
-        const { data: existingRole } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', currentUser.id)
-          .eq('role', 'admin')
-          .maybeSingle();
-        
-        if (!existingRole) {
-          console.log('[AuthContext] Auto-registering admin role in database');
-          await supabase.from('user_roles').insert({
-            user_id: currentUser.id,
-            role: 'admin',
-          });
-        }
-      } catch (error) {
-        console.error('[AuthContext] Error managing admin role:', error);
-      }
-      
-      return true;
-    }
-    
-    // Check database for admin role
+    // Check database for admin role - this is the authoritative source
     try {
       const { data } = await supabase
         .from('user_roles')
@@ -111,6 +92,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const dbIsAdmin = !!data;
       setIsAdmin(dbIsAdmin);
+      
+      if (dbIsAdmin) {
+        console.log('[AuthContext] User has admin role in database');
+      }
+      
       return dbIsAdmin;
     } catch (error) {
       console.error('[AuthContext] Error checking admin status:', error);
@@ -123,7 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const now = Date.now();
     const userId = currentUser?.id || null;
     
-    // Check admin status first
+    // Check admin status first (server-side verification via database query)
     const userIsAdmin = await checkAdminStatus(currentUser);
     
     // If admin, bypass subscription check entirely
