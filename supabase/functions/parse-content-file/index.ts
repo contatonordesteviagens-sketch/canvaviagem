@@ -202,29 +202,46 @@ serve(async (req) => {
       .replace(/[<>'"\\]/g, "")
       .substring(0, 255);
 
-    const systemPrompt = `You are a data extraction assistant specialized in extracting travel content from files.
-    
-Your task is to extract content items from files that typically contain:
-- A place name/destination (the title) - this is usually a city, country, or travel destination
-- A Canva link (the URL)
+    const systemPrompt = `You are a data extraction assistant specialized in CLEANING and extracting travel content from messy, unformatted files.
 
-The format is usually: "Place Name https://canva.com/design/xxx"
+The input data is often MESSY and may contain:
+- Extra spaces, tabs, or newlines between words
+- Random punctuation (commas, dots, dashes) in wrong places
+- Mixed formatting (some uppercase, some lowercase)
+- Inconsistent separators between title and URL
+- Multiple items on the same line
+- Empty lines or garbage characters
+- Text stuck together without spaces
 
-Rules for extraction:
-1. The TITLE is always a place name or destination that appears BEFORE the Canva URL (e.g., "Dubai", "Maldivas", "Paris", "Florianópolis", "Cancun 2025")
-2. The URL is always a Canva link starting with "https://canva.com/" or "https://www.canva.com/"
-3. If there's text before the Canva URL, that text is the title - extract it as the place/destination name
-4. Clean up titles - remove extra spaces, quotes, or formatting characters
-5. If multiple words appear before the URL, they are all part of the title (e.g., "New York" or "Rio de Janeiro")
+Your job is to:
+1. CLEAN the data - remove extra spaces, fix formatting
+2. IDENTIFY patterns - find place names and Canva URLs
+3. EXTRACT correctly - separate title from URL
+4. NORMALIZE titles - proper capitalization (first letter uppercase)
 
-Examples of correct extraction:
-- "Dubai https://canva.com/design/xxx" → title: "Dubai", url: "https://canva.com/design/xxx"
-- "Maldivas - Resort https://www.canva.com/design/yyy" → title: "Maldivas - Resort", url: "https://www.canva.com/design/yyy"
-- "Paris França https://canva.com/design/zzz" → title: "Paris França", url: "https://canva.com/design/zzz"
-- Only URL without title: extract from URL path or use "Sem título"
+The TITLE is always a place name/destination (city, country, region) that appears somewhere BEFORE or NEAR a Canva URL.
+The URL is always a Canva link (https://canva.com/... or https://www.canva.com/...)
+
+Examples of messy input and correct extraction:
+- "  Dubai    ,,, https://canva.com/xxx  " → title: "Dubai", url: "https://canva.com/xxx"
+- "maldivas   -   https://canva.com/yyy,,," → title: "Maldivas", url: "https://canva.com/yyy"
+- "PARIS.   ..   https://canva.com/zzz" → title: "Paris", url: "https://canva.com/zzz"
+- "Rio  de   Janeiro     https://canva.com/aaa" → title: "Rio de Janeiro", url: "https://canva.com/aaa"
+- "cancun2025https://canva.com/bbb" → title: "Cancun 2025", url: "https://canva.com/bbb"
+- "fernando de noronha - pe https://canva.com/ccc" → title: "Fernando de Noronha - PE", url: "https://canva.com/ccc"
+- "   MACEIÓ --- AL ,,, https://canva.com/ddd   " → title: "Maceió - AL", url: "https://canva.com/ddd"
+
+Rules:
+1. ALWAYS capitalize titles properly (first letter of each word uppercase, rest lowercase)
+2. REMOVE punctuation that doesn't belong (,,,   ...   ---   etc)
+3. FIX spacing (convert multiple spaces to single space)
+4. EXTRACT the place name even if stuck to the URL
+5. Keep meaningful separators like " - " between city and state
+6. Only include items with valid Canva URLs
+7. If no title found, use "Sem Título"
 
 Return ONLY a valid JSON array:
-[{"title": "Dubai", "url": "https://canva.com/design/xxx"}, ...]
+[{"title": "Place Name", "url": "https://canva.com/..."}, ...]
 
 If no valid items are found, return an empty array: []`;
 

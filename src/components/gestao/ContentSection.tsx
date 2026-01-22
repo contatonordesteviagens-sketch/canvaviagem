@@ -345,6 +345,95 @@ export const ContentSection = ({
     }
   };
 
+  const handleUpdateImageUrl = async (id: string, imageUrl: string) => {
+    try {
+      const { error } = await supabase
+        .from("content_items")
+        .update({ image_url: imageUrl })
+        .eq("id", id);
+      
+      if (error) throw error;
+      
+      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
+      toast({
+        title: "Imagem atualizada",
+        description: "A URL da imagem foi salva com sucesso.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar a imagem.",
+        variant: "destructive",
+      });
+      console.error(error);
+    }
+  };
+
+  const handleToggleFeatured = async (id: string) => {
+    const item = contentItems.find(i => i.id === id);
+    if (!item) return;
+    
+    // Check if marking as featured and limit is reached
+    if (!item.is_featured && featuredItems.length >= 10) {
+      toast({
+        title: "Limite atingido",
+        description: "Você já possui 10 mídias em destaque. Remova uma para adicionar outra.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      await supabase
+        .from("content_items")
+        .update({ is_featured: !item.is_featured })
+        .eq("id", id);
+      
+      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
+      toast({
+        title: item.is_featured ? "Destaque removido" : "Destaque adicionado",
+        description: item.is_featured 
+          ? "O vídeo foi removido dos destaques." 
+          : "O vídeo foi marcado como destaque.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o destaque.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const renderVideoGrid = (items: ContentItem[], table: "content_items") => (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={(event) => handleDragEnd(event, items, table)}
+    >
+      <SortableContext items={items.map(i => i.id)} strategy={rectSortingStrategy}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {items.map((item) => (
+            <SortableCard key={item.id} id={item.id}>
+              <EditableCard
+                id={item.id}
+                title={item.title}
+                url={item.url}
+                icon={item.icon}
+                isActive={item.is_active}
+                isNew={item.is_new}
+                isFeatured={item.is_featured}
+                onToggleFeatured={handleToggleFeatured}
+                onEdit={onEditItem}
+                onDelete={onDeleteItem}
+              />
+            </SortableCard>
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
+  );
+
   const renderItemGrid = (items: ContentItem[], table: "content_items") => (
     <DndContext
       sensors={sensors}
@@ -484,6 +573,7 @@ export const ContentSection = ({
                 key={item.id}
                 item={item}
                 onUploadImage={handleUploadFeaturedImage}
+                onUpdateImageUrl={handleUpdateImageUrl}
                 onRemoveFromFeatured={handleRemoveFromFeatured}
                 onEdit={onEditItem}
               />
@@ -512,7 +602,7 @@ export const ContentSection = ({
             </Button>
             <SortFilter />
           </div>
-          {renderItemGrid(videoItems, "content_items")}
+          {renderVideoGrid(videoItems, "content_items")}
         </TabsContent>
 
         {/* Artes Tab */}

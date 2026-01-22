@@ -49,9 +49,9 @@ export interface MarketingTool {
 }
 
 // Hook para buscar content items por tipo
-export const useContentItems = (type?: string | string[]) => {
+export const useContentItems = (type?: string | string[], featuredOnly?: boolean) => {
   return useQuery({
-    queryKey: ["content-items", type],
+    queryKey: ["content-items", type, featuredOnly],
     queryFn: async () => {
       let query = supabase
         .from("content_items")
@@ -66,12 +66,37 @@ export const useContentItems = (type?: string | string[]) => {
           query = query.eq("type", type);
         }
       }
+
+      if (featuredOnly) {
+        query = query.eq("is_featured", true);
+      }
       
       const { data, error } = await query;
       if (error) throw error;
       return data as ContentItem[];
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
+  });
+};
+
+// Hook para buscar itens em destaque
+export const useFeaturedItems = () => {
+  return useQuery({
+    queryKey: ["featured-items"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("content_items")
+        .select("*")
+        .eq("is_active", true)
+        .eq("is_featured", true)
+        .in("type", ["video", "seasonal"])
+        .order("display_order", { ascending: true })
+        .limit(10);
+      
+      if (error) throw error;
+      return data as ContentItem[];
+    },
+    staleTime: 1000 * 60 * 5,
   });
 };
 

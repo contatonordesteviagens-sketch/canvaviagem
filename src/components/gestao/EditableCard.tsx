@@ -1,4 +1,4 @@
-import { Pencil, ExternalLink, Trash2 } from "lucide-react";
+import { Pencil, ExternalLink, Trash2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,8 @@ interface EditableCardProps {
   icon?: string;
   isActive?: boolean;
   isNew?: boolean;
+  isFeatured?: boolean;
+  onToggleFeatured?: (id: string) => void;
   onEdit: (item: { id: string; title: string; url: string; is_active?: boolean }) => void;
   onDelete?: (id: string, title: string) => void;
 }
@@ -21,6 +23,8 @@ export const EditableCard = ({
   icon = "📄",
   isActive = true,
   isNew = false,
+  isFeatured = false,
+  onToggleFeatured,
   onEdit,
   onDelete,
 }: EditableCardProps) => {
@@ -33,6 +37,25 @@ export const EditableCard = ({
         isActive ? "border-border" : "border-destructive/30 bg-destructive/5 opacity-60"
       )}
     >
+      {/* Featured star button - top left */}
+      {onToggleFeatured && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFeatured(id);
+          }}
+          className={cn(
+            "absolute top-2 left-2 p-1.5 rounded-full transition-all z-10",
+            isFeatured 
+              ? "bg-amber-500 text-white shadow-md" 
+              : "bg-muted text-muted-foreground hover:bg-amber-100 hover:text-amber-600"
+          )}
+          title={isFeatured ? "Remover destaque" : "Marcar como destaque"}
+        >
+          <Star className={cn("h-4 w-4", isFeatured && "fill-current")} />
+        </button>
+      )}
+
       {/* Status badges */}
       <div className="absolute top-2 right-2 flex gap-1">
         {isNew && (
@@ -48,7 +71,7 @@ export const EditableCard = ({
       </div>
 
       {/* Icon and title */}
-      <div className="flex items-start gap-3 mb-3 pr-16">
+      <div className={cn("flex items-start gap-3 mb-3 pr-16", onToggleFeatured && "pl-8")}>
         <span className="text-2xl">{icon}</span>
         <div className="flex-1 min-w-0">
           <h3 className="font-medium text-foreground truncate">{title}</h3>
