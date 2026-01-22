@@ -136,7 +136,7 @@ const getEmail3Content = (name: string) => `
 
 // ========== SEND FUNCTIONS ==========
 
-async function sendEmail1(resend: Resend, email: string, name: string) {
+async function sendEmail1(resend: Resend, email: string, name: string, supabase: ReturnType<typeof createClient>) {
   const content = getEmail1Content(name);
   const html = getEmailTemplate(content, "🎥 Assistir Vídeo Aula", "https://youtu.be/1Or9QJPn6OA");
   
@@ -147,11 +147,21 @@ async function sendEmail1(resend: Resend, email: string, name: string) {
     html,
   });
   
-  logStep("Email 1 sent", { email, result });
+  // Salvar evento 'sent' na tabela email_events
+  if (result.data?.id) {
+    await supabase.rpc("insert_email_event", {
+      p_email_id: result.data.id,
+      p_type: "sent",
+      p_recipient_email: email,
+      p_email_type: "email_1",
+    }).catch((e: Error) => logStep("Email event insert error", { error: e.message }));
+  }
+  
+  logStep("Email 1 sent", { email, emailId: result.data?.id });
   return result;
 }
 
-async function sendEmail2(resend: Resend, email: string, name: string) {
+async function sendEmail2(resend: Resend, email: string, name: string, supabase: ReturnType<typeof createClient>) {
   const content = getEmail2Content(name);
   const html = getEmailTemplate(content, "✈️ Conhecer o Curso Agente Lucrativo", "https://rochadigitalmidia.com.br/agente-lucrativo/");
   
@@ -162,11 +172,20 @@ async function sendEmail2(resend: Resend, email: string, name: string) {
     html,
   });
   
-  logStep("Email 2 sent", { email, result });
+  if (result.data?.id) {
+    await supabase.rpc("insert_email_event", {
+      p_email_id: result.data.id,
+      p_type: "sent",
+      p_recipient_email: email,
+      p_email_type: "email_2",
+    }).catch((e: Error) => logStep("Email event insert error", { error: e.message }));
+  }
+  
+  logStep("Email 2 sent", { email, emailId: result.data?.id });
   return result;
 }
 
-async function sendEmail3(resend: Resend, email: string, name: string) {
+async function sendEmail3(resend: Resend, email: string, name: string, supabase: ReturnType<typeof createClient>) {
   const content = getEmail3Content(name);
   const html = getEmailTemplate(content, "🚀 Quero Ser Um Agente Lucrativo", "https://rochadigitalmidia.com.br/agente-lucrativo/");
   
@@ -177,7 +196,16 @@ async function sendEmail3(resend: Resend, email: string, name: string) {
     html,
   });
   
-  logStep("Email 3 sent", { email, result });
+  if (result.data?.id) {
+    await supabase.rpc("insert_email_event", {
+      p_email_id: result.data.id,
+      p_type: "sent",
+      p_recipient_email: email,
+      p_email_type: "email_3",
+    }).catch((e: Error) => logStep("Email event insert error", { error: e.message }));
+  }
+  
+  logStep("Email 3 sent", { email, emailId: result.data?.id });
   return result;
 }
 
@@ -247,7 +275,7 @@ serve(async (req) => {
       try {
         // EMAIL 1: Boas-vindas (imediato - enviado assim que cadastra)
         if (!user.email_1_sent_at) {
-          await sendEmail1(resend, user.email, userName);
+          await sendEmail1(resend, user.email, userName, supabase);
           await supabase
             .from("user_email_automations")
             .update({ email_1_sent_at: now.toISOString() })
@@ -258,7 +286,7 @@ serve(async (req) => {
 
         // EMAIL 2: Curso Agente Lucrativo (3 dias depois do cadastro)
         if (!user.email_2_sent_at && createdAt < threeDaysAgo) {
-          await sendEmail2(resend, user.email, userName);
+          await sendEmail2(resend, user.email, userName, supabase);
           await supabase
             .from("user_email_automations")
             .update({ email_2_sent_at: now.toISOString() })
@@ -269,7 +297,7 @@ serve(async (req) => {
 
         // EMAIL 3: Oferta Final (5 dias depois do cadastro)
         if (!user.email_3_sent_at && createdAt < fiveDaysAgo) {
-          await sendEmail3(resend, user.email, userName);
+          await sendEmail3(resend, user.email, userName, supabase);
           await supabase
             .from("user_email_automations")
             .update({ email_3_sent_at: now.toISOString() })
