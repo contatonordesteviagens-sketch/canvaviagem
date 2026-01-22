@@ -1,9 +1,15 @@
 import { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Video, Image, BookOpen, FileText, Wrench, Download, Plus, ArrowUpDown, Clock, ArrowDown, ArrowUp, Sparkles } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Video, Image, BookOpen, FileText, Wrench, Download, Plus, ArrowUpDown, Clock, ArrowDown, ArrowUp, Sparkles, ChevronDown, FileStack } from "lucide-react";
 import { EditableCard } from "./EditableCard";
 import { CaptionCard } from "./CaptionCard";
 import { SortableCard } from "./SortableCard";
@@ -11,6 +17,8 @@ import { CreateItemModal } from "./CreateItemModal";
 import { CreateCaptionModal } from "./CreateCaptionModal";
 import { FeaturedCard } from "./FeaturedCard";
 import { SelectFeaturedModal } from "./SelectFeaturedModal";
+import { BulkAddModal } from "./BulkAddModal";
+import { ContentFilters } from "./ContentFilters";
 import { ContentItem, Caption, MarketingTool, useCreateContentItem, useCreateCaption, useCreateMarketingTool, useUpdateDisplayOrder, useUpdateContentItem } from "@/hooks/useContent";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,9 +82,15 @@ export const ContentSection = ({
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [createCaptionModalOpen, setCreateCaptionModalOpen] = useState(false);
   const [selectFeaturedModalOpen, setSelectFeaturedModalOpen] = useState(false);
+  const [bulkAddModalOpen, setBulkAddModalOpen] = useState(false);
   const [createType, setCreateType] = useState<"content" | "tool">("content");
   const [currentTab, setCurrentTab] = useState("videos");
   const [sortOrder, setSortOrder] = useState<SortOrder>("custom");
+  
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
   const createContentItem = useCreateContentItem();
   const createCaption = useCreateCaption();
@@ -105,22 +119,32 @@ export const ContentSection = ({
     });
   };
 
+  // Apply search and category filters
+  const filterItems = <T extends { title?: string; category?: string | null }>(items: T[]): T[] => {
+    return items.filter(item => {
+      const matchesSearch = !searchQuery || 
+        (item.title?.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesCategory = categoryFilter === "all" || item.category === categoryFilter;
+      return matchesSearch && matchesCategory;
+    });
+  };
+
   // Filter and sort content by type
   const videoItems = useMemo(() => 
-    sortItems(contentItems.filter(item => ['video', 'seasonal'].includes(item.type))),
-    [contentItems, sortOrder]
+    sortItems(filterItems(contentItems.filter(item => ['video', 'seasonal'].includes(item.type)))),
+    [contentItems, sortOrder, searchQuery, categoryFilter]
   );
   const feedItems = useMemo(() => 
-    sortItems(contentItems.filter(item => item.type === 'feed')),
-    [contentItems, sortOrder]
+    sortItems(filterItems(contentItems.filter(item => item.type === 'feed'))),
+    [contentItems, sortOrder, searchQuery, categoryFilter]
   );
   const storyItems = useMemo(() => 
-    sortItems(contentItems.filter(item => ['story', 'weekly-story'].includes(item.type))),
-    [contentItems, sortOrder]
+    sortItems(filterItems(contentItems.filter(item => ['story', 'weekly-story'].includes(item.type)))),
+    [contentItems, sortOrder, searchQuery, categoryFilter]
   );
   const resourceItems = useMemo(() => 
-    sortItems(contentItems.filter(item => ['resource', 'download'].includes(item.type))),
-    [contentItems, sortOrder]
+    sortItems(filterItems(contentItems.filter(item => ['resource', 'download'].includes(item.type)))),
+    [contentItems, sortOrder, searchQuery, categoryFilter]
   );
 
   // Featured items (videos with is_featured = true)
@@ -135,16 +159,33 @@ export const ContentSection = ({
     [videoItems]
   );
 
+  // Filter captions
+  const filterCaptions = (captionList: Caption[]): Caption[] => {
+    return captionList.filter(caption => {
+      const matchesSearch = !searchQuery || 
+        caption.destination?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        caption.text?.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesSearch;
+    });
+  };
+
   const nacionalCaptions = useMemo(() => 
-    sortItems(captions.filter(c => c.category === 'nacional')),
-    [captions, sortOrder]
+    sortItems(filterCaptions(captions.filter(c => c.category === 'nacional'))),
+    [captions, sortOrder, searchQuery]
   );
   const internacionalCaptions = useMemo(() => 
-    sortItems(captions.filter(c => c.category === 'internacional')),
-    [captions, sortOrder]
+    sortItems(filterCaptions(captions.filter(c => c.category === 'internacional'))),
+    [captions, sortOrder, searchQuery]
   );
 
-  const sortedTools = useMemo(() => sortItems(tools), [tools, sortOrder]);
+  const sortedTools = useMemo(() => {
+    const filtered = tools.filter(tool => {
+      const matchesSearch = !searchQuery || 
+        tool.title?.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesSearch;
+    });
+    return sortItems(filtered);
+  }, [tools, sortOrder, searchQuery]);
 
   // Sort filter component
   const SortFilter = () => (
@@ -281,6 +322,34 @@ export const ContentSection = ({
   const openCreateModal = (type: "content" | "tool") => {
     setCreateType(type);
     setCreateModalOpen(true);
+  };
+
+  // Bulk add handler
+  const handleBulkAdd = async (items: { title: string; url: string; type: string; category: string | null; icon: string }[]) => {
+    try {
+      for (const item of items) {
+        await createContentItem.mutateAsync({
+          title: item.title,
+          url: item.url,
+          type: item.type,
+          category: item.category,
+          icon: item.icon,
+          is_new: false,
+          is_active: true,
+        });
+      }
+      toast({
+        title: "Importação concluída",
+        description: `${items.length} item(s) foram adicionados com sucesso.`,
+      });
+      setBulkAddModalOpen(false);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível importar alguns itens.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Featured handling
@@ -617,84 +686,221 @@ export const ContentSection = ({
 
         {/* Videos Tab */}
         <TabsContent value="videos" className="mt-6">
-          <div className="mb-4 flex flex-wrap items-center gap-4">
-            <Button onClick={() => openCreateModal("content")} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Adicionar Vídeo
-            </Button>
-            <SortFilter />
+          <div className="mb-4 space-y-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Adicionar
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => openCreateModal("content")}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Adicionar Individual
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setBulkAddModalOpen(true)}>
+                    <FileStack className="h-4 w-4 mr-2" />
+                    Adicionar em Massa
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <SortFilter />
+            </div>
+            <ContentFilters
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              typeFilter={typeFilter}
+              onTypeChange={setTypeFilter}
+              categoryFilter={categoryFilter}
+              onCategoryChange={setCategoryFilter}
+              showTypeFilter={false}
+            />
           </div>
           {renderVideoGrid(videoItems, "content_items")}
         </TabsContent>
 
         {/* Artes Tab */}
         <TabsContent value="artes" className="mt-6">
-          <div className="mb-4 flex flex-wrap items-center gap-4">
-            <Button onClick={() => openCreateModal("content")} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Adicionar Arte
-            </Button>
-            <SortFilter />
+          <div className="mb-4 space-y-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Adicionar
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => openCreateModal("content")}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Adicionar Individual
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setBulkAddModalOpen(true)}>
+                    <FileStack className="h-4 w-4 mr-2" />
+                    Adicionar em Massa
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <SortFilter />
+            </div>
+            <ContentFilters
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              typeFilter={typeFilter}
+              onTypeChange={setTypeFilter}
+              categoryFilter={categoryFilter}
+              onCategoryChange={setCategoryFilter}
+              showTypeFilter={false}
+            />
           </div>
           {renderItemGrid(feedItems, "content_items")}
         </TabsContent>
 
         {/* Stories Tab */}
         <TabsContent value="stories" className="mt-6">
-          <div className="mb-4 flex flex-wrap items-center gap-4">
-            <Button onClick={() => openCreateModal("content")} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Adicionar Story
-            </Button>
-            <SortFilter />
+          <div className="mb-4 space-y-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Adicionar
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => openCreateModal("content")}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Adicionar Individual
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setBulkAddModalOpen(true)}>
+                    <FileStack className="h-4 w-4 mr-2" />
+                    Adicionar em Massa
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <SortFilter />
+            </div>
+            <ContentFilters
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              typeFilter={typeFilter}
+              onTypeChange={setTypeFilter}
+              categoryFilter={categoryFilter}
+              onCategoryChange={setCategoryFilter}
+              showTypeFilter={false}
+            />
           </div>
           {renderItemGrid(storyItems, "content_items")}
         </TabsContent>
 
         {/* Legendas Nacionais Tab */}
         <TabsContent value="legendas-nac" className="mt-6">
-          <div className="mb-4 flex flex-wrap items-center gap-4">
-            <Button onClick={() => setCreateCaptionModalOpen(true)} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Adicionar Legenda
-            </Button>
-            <SortFilter />
+          <div className="mb-4 space-y-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <Button onClick={() => setCreateCaptionModalOpen(true)} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Adicionar Legenda
+              </Button>
+              <SortFilter />
+            </div>
+            <ContentFilters
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              typeFilter={typeFilter}
+              onTypeChange={setTypeFilter}
+              categoryFilter={categoryFilter}
+              onCategoryChange={setCategoryFilter}
+              showTypeFilter={false}
+            />
           </div>
           {renderCaptionGrid(nacionalCaptions, "captions")}
         </TabsContent>
 
         {/* Legendas Internacionais Tab */}
         <TabsContent value="legendas-int" className="mt-6">
-          <div className="mb-4 flex flex-wrap items-center gap-4">
-            <Button onClick={() => setCreateCaptionModalOpen(true)} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Adicionar Legenda
-            </Button>
-            <SortFilter />
+          <div className="mb-4 space-y-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <Button onClick={() => setCreateCaptionModalOpen(true)} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Adicionar Legenda
+              </Button>
+              <SortFilter />
+            </div>
+            <ContentFilters
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              typeFilter={typeFilter}
+              onTypeChange={setTypeFilter}
+              categoryFilter={categoryFilter}
+              onCategoryChange={setCategoryFilter}
+              showTypeFilter={false}
+            />
           </div>
           {renderCaptionGrid(internacionalCaptions, "captions")}
         </TabsContent>
 
         {/* Ferramentas Tab */}
         <TabsContent value="ferramentas" className="mt-6">
-          <div className="mb-4 flex flex-wrap items-center gap-4">
-            <Button onClick={() => openCreateModal("tool")} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Adicionar Ferramenta
-            </Button>
-            <SortFilter />
+          <div className="mb-4 space-y-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <Button onClick={() => openCreateModal("tool")} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Adicionar Ferramenta
+              </Button>
+              <SortFilter />
+            </div>
+            <ContentFilters
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              typeFilter={typeFilter}
+              onTypeChange={setTypeFilter}
+              categoryFilter={categoryFilter}
+              onCategoryChange={setCategoryFilter}
+              showTypeFilter={false}
+            />
           </div>
           {renderToolGrid(sortedTools)}
         </TabsContent>
 
         {/* Recursos Tab */}
         <TabsContent value="recursos" className="mt-6">
-          <div className="mb-4 flex flex-wrap items-center gap-4">
-            <Button onClick={() => openCreateModal("content")} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Adicionar Recurso
-            </Button>
-            <SortFilter />
+          <div className="mb-4 space-y-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Adicionar
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => openCreateModal("content")}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Adicionar Individual
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setBulkAddModalOpen(true)}>
+                    <FileStack className="h-4 w-4 mr-2" />
+                    Adicionar em Massa
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <SortFilter />
+            </div>
+            <ContentFilters
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              typeFilter={typeFilter}
+              onTypeChange={setTypeFilter}
+              categoryFilter={categoryFilter}
+              onCategoryChange={setCategoryFilter}
+              showTypeFilter={false}
+            />
           </div>
           {renderItemGrid(resourceItems, "content_items")}
         </TabsContent>
@@ -720,6 +926,13 @@ export const ContentSection = ({
         onClose={() => setSelectFeaturedModalOpen(false)}
         availableVideos={availableForFeatured}
         onSelect={handleSelectFeatured}
+      />
+
+      <BulkAddModal
+        isOpen={bulkAddModalOpen}
+        onClose={() => setBulkAddModalOpen(false)}
+        onSave={handleBulkAdd}
+        isSaving={createContentItem.isPending}
       />
     </>
   );
