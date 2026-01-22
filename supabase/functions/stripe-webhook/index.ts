@@ -13,6 +13,20 @@ const logStep = (step: string, details?: any) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
+// Redact email for logging (security best practice - avoid PII in logs)
+function redactEmail(email: string | null | undefined): string {
+  if (!email || typeof email !== 'string') return '[no-email]';
+  const parts = email.split('@');
+  if (parts.length !== 2) return '[invalid-email]';
+  const localPart = parts[0];
+  const domain = parts[1];
+  // Show first 2 chars and domain only: "lu***@gmail.com"
+  const redacted = localPart.length > 2 
+    ? localPart.substring(0, 2) + '***' 
+    : '***';
+  return `${redacted}@${domain}`;
+}
+
 // Generic error messages for clients (security best practice)
 const GENERIC_ERRORS = {
   badRequest: "Bad request",
@@ -148,7 +162,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
   const stripeCustomerId = session.customer as string;
   const stripeSubscriptionId = session.subscription as string;
 
-  logStep("Checkout details", { email, stripeCustomerId, stripeSubscriptionId });
+  logStep("Checkout details", { email: redactEmail(email), stripeCustomerId, stripeSubscriptionId });
 
   // Check if user already exists
   const { data: existingUsers } = await supabase.auth.admin.listUsers();
@@ -417,9 +431,9 @@ async function sendWelcomeEmail(resend: any, email: string) {
         </html>
       `,
     });
-    logStep("Welcome email sent successfully", { email });
+    logStep("Welcome email sent successfully", { email: redactEmail(email) });
   } catch (error: unknown) {
-    logStep("ERROR: Failed to send welcome email", { error: error instanceof Error ? error.message : String(error), email });
+    logStep("ERROR: Failed to send welcome email", { error: error instanceof Error ? error.message : String(error), email: redactEmail(email) });
   }
 }
 
@@ -483,9 +497,9 @@ async function sendCancellationEmail(resend: any, email: string) {
         </html>
       `,
     });
-    logStep("Cancellation email sent successfully", { email });
+    logStep("Cancellation email sent successfully", { email: redactEmail(email) });
   } catch (error: unknown) {
-    logStep("ERROR: Failed to send cancellation email", { error: error instanceof Error ? error.message : String(error), email });
+    logStep("ERROR: Failed to send cancellation email", { error: error instanceof Error ? error.message : String(error), email: redactEmail(email) });
   }
 }
 
@@ -553,8 +567,8 @@ async function sendPaymentFailedEmail(resend: any, email: string) {
         </html>
       `,
     });
-    logStep("Payment failed email sent successfully", { email });
+    logStep("Payment failed email sent successfully", { email: redactEmail(email) });
   } catch (error: unknown) {
-    logStep("ERROR: Failed to send payment failed email", { error: error instanceof Error ? error.message : String(error), email });
+    logStep("ERROR: Failed to send payment failed email", { error: error instanceof Error ? error.message : String(error), email: redactEmail(email) });
   }
 }
