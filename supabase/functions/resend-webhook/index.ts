@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { Webhook } from "https://esm.sh/svix@1.24.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,6 +19,7 @@ serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const webhookSecret = Deno.env.get("RESEND_WEBHOOK_SECRET");
 
   if (!supabaseServiceKey) {
     logStep("ERROR: SUPABASE_SERVICE_ROLE_KEY not configured");
@@ -27,12 +29,66 @@ serve(async (req) => {
     });
   }
 
-  const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
+  // Verify webhook signature
+  if (!webhookSecret) {
+    logStep("ERROR: RESEND_WEBHOOK_SECRET not configured");
+    return new Response(JSON.stringify({ error: "Configuration error" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+    });
+  }
 
   try {
-    const payload = await req.json();
+    // Read raw body for signature verification
+    const body = await req.text();
+    
+    // Get Svix headers
+    const svixId = req.headers.get("svix-id");
+    const svixTimestamp = req.headers.get("svix-timestamp");
+    const svixSignature = req.headers.get("svix-signature");
+
+    if (!svixId || !svixTimestamp || !svixSignature) {
+      logStep("ERROR: Missing Svix headers");
+      return new Response(JSON.stringify({ error: "Missing signature headers" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
+    // Define payload type
+    interface ResendWebhookPayload {
+      type: string;
+      data: {
+        email_id?: string;
+        to?: string[];
+        subject?: string;
+        [key: string]: unknown;
+      };
+    }
+
+    // Verify the webhook signature
+    const wh = new Webhook(webhookSecret);
+    let payload: ResendWebhookPayload;
+    
+    try {
+      payload = wh.verify(body, {
+        "svix-id": svixId,
+        "svix-timestamp": svixTimestamp,
+        "svix-signature": svixSignature,
+      }) as ResendWebhookPayload;
+      logStep("Signature verified successfully");
+    } catch (verifyError) {
+      logStep("ERROR: Invalid signature", { error: String(verifyError) });
+      return new Response(JSON.stringify({ error: "Invalid signature" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
     logStep("Received webhook", { type: payload.type });
 
     // Estrutura do webhook Resend:
