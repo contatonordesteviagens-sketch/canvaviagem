@@ -256,3 +256,81 @@ export const useAllMarketingTools = () => {
     enabled: isAdmin === true,
   });
 };
+
+// Mutation hooks for admin updates
+export const useUpdateContentItem = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: { 
+      id: string; 
+      title?: string; 
+      url?: string; 
+      is_active?: boolean 
+    }) => {
+      const { id, ...updateData } = data;
+      const { error } = await supabase
+        .from("content_items")
+        .update({ ...updateData, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
+      queryClient.invalidateQueries({ queryKey: ["content-items"] });
+      queryClient.invalidateQueries({ queryKey: ["video-templates"] });
+    },
+  });
+};
+
+export const useUpdateCaption = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: { 
+      id: string; 
+      destination?: string;
+      text?: string;
+      hashtags?: string;
+      is_active?: boolean 
+    }) => {
+      const { id, ...updateData } = data;
+      const { error } = await supabase
+        .from("captions")
+        .update({ ...updateData, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-captions"] });
+      queryClient.invalidateQueries({ queryKey: ["captions"] });
+    },
+  });
+};
+
+export const useUpdateMarketingTool = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: { 
+      id: string; 
+      title?: string; 
+      url?: string; 
+      is_active?: boolean 
+    }) => {
+      const { id, ...updateData } = data;
+      const { error } = await supabase
+        .from("marketing_tools")
+        .update({ ...updateData, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-marketing-tools"] });
+      queryClient.invalidateQueries({ queryKey: ["marketing-tools"] });
+    },
+  });
+};
