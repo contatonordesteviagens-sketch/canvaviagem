@@ -56,9 +56,9 @@ const Gestao = () => {
     );
   }
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated - go to admin login
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/admin-login" replace />;
   }
 
   // Redirect if not admin

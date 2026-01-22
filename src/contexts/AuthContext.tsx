@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 // List of admin emails that get automatic access
 const ADMIN_EMAILS = [
-  'lucas@rochadigitalmidia.com.br',
+  'lucashenriquephd@gmail.com',
 ];
 
 interface SubscriptionStatus {
