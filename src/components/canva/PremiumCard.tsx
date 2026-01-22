@@ -79,11 +79,11 @@ export const PremiumCard = ({
         {onToggleFavorite && (
           <button
             onClick={handleFavoriteClick}
-            className="absolute top-3 right-3 z-30 p-2 rounded-full bg-black/30 backdrop-blur-sm transition-all hover:bg-black/50"
+            className="absolute top-2 md:top-3 right-2 md:right-3 z-30 p-1.5 md:p-2 rounded-full bg-black/30 backdrop-blur-sm transition-all hover:bg-black/50"
           >
             <Heart 
               className={cn(
-                "w-5 h-5 transition-colors",
+                "w-4 h-4 md:w-5 md:h-5 transition-colors",
                 isFavorite ? "fill-red-500 text-red-500" : "text-white"
               )}
             />
@@ -93,8 +93,8 @@ export const PremiumCard = ({
         {/* Badge NEW */}
         {isNew && (
           <span className={cn(
-            "absolute top-3 z-20 bg-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide shadow-md",
-            onToggleFavorite ? "left-3" : "right-3"
+            "absolute top-2 md:top-3 z-20 bg-orange-500 text-white text-[9px] md:text-[10px] font-bold px-2 md:px-2.5 py-0.5 md:py-1 rounded-full uppercase tracking-wide shadow-md",
+            onToggleFavorite ? "left-2 md:left-3" : "right-2 md:right-3"
           )}>
             Novo
           </span>
@@ -102,7 +102,7 @@ export const PremiumCard = ({
         
         {/* Category Badge */}
         {category && !isNew && (
-          <span className="absolute top-3 left-3 z-20 bg-primary/90 text-primary-foreground text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-sm">
+          <span className="absolute top-2 md:top-3 left-2 md:left-3 z-20 bg-primary/90 text-primary-foreground text-[10px] md:text-xs font-medium px-2 md:px-3 py-1 md:py-1.5 rounded-full backdrop-blur-sm">
             {category}
           </span>
         )}
@@ -120,24 +120,24 @@ export const PremiumCard = ({
           </>
         ) : (
           <div className={cn(
-            "w-full h-full bg-gradient-to-br flex flex-col items-center justify-center p-4",
+            "w-full h-full bg-gradient-to-br flex flex-col items-center justify-center p-3 md:p-4",
             getPlaceholderGradient()
           )}>
-            <span className="text-4xl md:text-5xl mb-2">{icon}</span>
+            <span className="text-3xl md:text-5xl mb-2">{icon}</span>
           </div>
         )}
         
         {/* Content overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+        <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 z-10">
           {/* Title */}
-          <h3 className="text-white font-bold text-lg mb-3 drop-shadow-lg line-clamp-2">
+          <h3 className="text-white font-bold text-base md:text-lg mb-2 md:mb-3 drop-shadow-lg line-clamp-2">
             {title}
           </h3>
           
-          {/* CTA Button */}
-          <button className="w-full bg-white text-foreground font-medium py-3 px-4 rounded-full flex items-center justify-center gap-2 transition-all duration-300 hover:bg-white/90 active:scale-95 shadow-md min-h-[44px]">
-            <ExternalLink className="w-4 h-4" />
-            <span>Editar no Canva</span>
+          {/* CTA Button - Compacto e elegante */}
+          <button className="w-full bg-white/95 backdrop-blur-sm text-foreground font-medium py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 text-sm transition-all duration-300 hover:bg-white active:scale-95 shadow-sm">
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span>Editar</span>
           </button>
         </div>
       </div>
