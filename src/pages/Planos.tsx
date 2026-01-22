@@ -344,15 +344,26 @@ const Planos = () => {
                 <strong>Você ainda não possui um plano ativo.</strong> Assine agora para liberar todos os recursos!
               </p>
             </div>
-            <Button variant="outline" size="sm" onClick={handleRefreshSubscription} disabled={refreshLoading} className="w-full sm:w-auto">
-              {refreshLoading ? <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Atualizando...
-                </> : <>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Atualizar status da assinatura
-                </>}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2 mt-2">
+              <Button variant="outline" size="sm" onClick={handleRefreshSubscription} disabled={refreshLoading} className="w-full sm:w-auto">
+                {refreshLoading ? <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Atualizando...
+                  </> : <>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Atualizar status da assinatura
+                  </>}
+              </Button>
+              <Button size="sm" onClick={handleCheckout} disabled={checkoutLoading} className="w-full sm:w-auto bg-gradient-to-r from-primary to-accent">
+                {checkoutLoading ? <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Abrindo...
+                  </> : <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Finalizar Assinatura Agora
+                  </>}
+              </Button>
+            </div>
           </div>}
 
         {/* Main Pricing Card */}
