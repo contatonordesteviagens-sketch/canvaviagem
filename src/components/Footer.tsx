@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { Plane, Palmtree, MapPin, Compass } from "lucide-react";
 
 export const Footer = () => {
@@ -18,20 +17,6 @@ export const Footer = () => {
           <p className="text-sm text-muted-foreground">
             © 2024 - Todos os direitos reservados
           </p>
-          <div className="flex gap-4 text-sm">
-            <Link 
-              to="/privacidade" 
-              className="text-muted-foreground hover:text-primary transition-colors"
-            >
-              Política de Privacidade
-            </Link>
-            <Link 
-              to="/termos" 
-              className="text-muted-foreground hover:text-primary transition-colors"
-            >
-              Termos de Uso
-            </Link>
-          </div>
         </div>
       </div>
     </footer>

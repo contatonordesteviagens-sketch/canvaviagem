@@ -1,24 +1,13 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LogOut, User, CreditCard, Loader2 } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [portalLoading, setPortalLoading] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
 
@@ -27,33 +16,6 @@ export const Header = () => {
     { to: "/calendar", label: "Calendário", icon: "📅" },
     { to: "/planos", label: "Planos", icon: "💳" },
   ];
-
-  const handleManageSubscription = async () => {
-    setPortalLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        toast.error("Você precisa estar logado.");
-        return;
-      }
-      const { data, error } = await supabase.functions.invoke("customer-portal", {
-        headers: { Authorization: `Bearer ${session.access_token}` }
-      });
-      if (error) {
-        console.error("Portal error:", error);
-        toast.error("Erro ao acessar portal. Tente novamente.");
-        return;
-      }
-      if (data?.url) {
-        window.location.href = data.url;
-      }
-    } catch (error) {
-      console.error("Portal error:", error);
-      toast.error("Erro ao processar. Tente novamente.");
-    } finally {
-      setPortalLoading(false);
-    }
-  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -80,31 +42,15 @@ export const Header = () => {
           ))}
           
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="ml-2">
-                  <User className="h-4 w-4 mr-2" />
-                  <span className="max-w-[150px] truncate">{user.email}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleManageSubscription} disabled={portalLoading}>
-                  {portalLoading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <CreditCard className="mr-2 h-4 w-4" />
-                  )}
-                  Minha Assinatura
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut} className="text-red-600 focus:text-red-600">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={signOut}
+              className="ml-2"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sair
+            </Button>
           ) : (
             <Link to="/auth">
               <Button variant="outline" size="sm" className="ml-2">
@@ -138,40 +84,21 @@ export const Header = () => {
               ))}
               
               {user ? (
-                <div className="mt-4 pt-4 border-t border-border space-y-2">
-                  <p className="px-4 text-sm text-muted-foreground truncate">{user.email}</p>
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => {
-                      handleManageSubscription();
-                      setIsOpen(false);
-                    }}
-                    disabled={portalLoading}
-                    className="w-full justify-start"
-                  >
-                    {portalLoading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <CreditCard className="mr-2 h-4 w-4" />
-                    )}
-                    Minha Assinatura
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => {
-                      signOut();
-                      setIsOpen(false);
-                    }}
-                    className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sair
-                  </Button>
-                </div>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => {
+                    signOut();
+                    setIsOpen(false);
+                  }}
+                  className="justify-start mt-4"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
+                </Button>
               ) : (
                 <Link to="/auth" onClick={() => setIsOpen(false)}>
                   <Button variant="outline" className="w-full mt-4">
-                    <User className="mr-2 h-4 w-4" />
+                    <User className="h-4 w-4 mr-2" />
                     Entrar
                   </Button>
                 </Link>
