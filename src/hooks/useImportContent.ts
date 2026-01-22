@@ -90,21 +90,19 @@ export const useImportContent = () => {
     }
   };
 
-  // Main parse function
+  // Main parse function - ALWAYS use AI for better interpretation
   const parseFile = async (file: File): Promise<ParsedItem[]> => {
     const extension = file.name.split('.').pop()?.toLowerCase();
+    const supportedExtensions = ['txt', 'csv', 'pdf', 'xlsx', 'xls'];
     
-    if (extension === 'txt' || extension === 'csv') {
-      const items = await parseLocalFile(file);
-      setParsedItems(items);
-      return items;
-    } else if (extension === 'pdf' || extension === 'xlsx' || extension === 'xls') {
-      const items = await parseWithAI(file);
-      setParsedItems(items);
-      return items;
+    if (!supportedExtensions.includes(extension || '')) {
+      throw new Error('Formato de arquivo não suportado. Use TXT, CSV, PDF ou XLSX.');
     }
     
-    throw new Error('Formato de arquivo não suportado');
+    // Always use AI to interpret the content - handles messy formats better
+    const items = await parseWithAI(file);
+    setParsedItems(items);
+    return items;
   };
 
   // Import content items
