@@ -2,6 +2,11 @@ import React, { createContext, useContext, useEffect, useState, useRef, useCallb
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
+// List of admin emails that get automatic access
+const ADMIN_EMAILS = [
+  'lucas@rochadigitalmidia.com.br',
+];
+
 interface SubscriptionStatus {
   subscribed: boolean;
   productId: string | null;
@@ -14,6 +19,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   subscription: SubscriptionStatus;
+  isAdmin: boolean;
   signOut: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
 }
@@ -44,6 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionStatus>({
     subscribed: false,
     productId: null,
@@ -55,10 +62,87 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isCheckingRef = useRef(false);
   const lastCheckRef = useRef<number>(0);
   const initializedRef = useRef(false);
+  
+  // Check if user is admin by email or database role
+  const checkAdminStatus = useCallback(async (currentUser: User | null) => {
+    if (!currentUser) {
+      setIsAdmin(false);
+      return false;
+    }
+    
+    // First check if email is in admin list
+    const emailIsAdmin = ADMIN_EMAILS.includes(currentUser.email || '');
+    
+    if (emailIsAdmin) {
+      console.log('[AuthContext] User is admin by email whitelist');
+      setIsAdmin(true);
+      
+      // Also ensure they have admin role in DB (auto-register if not)
+      try {
+        const { data: existingRole } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', currentUser.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+        
+        if (!existingRole) {
+          console.log('[AuthContext] Auto-registering admin role in database');
+          await supabase.from('user_roles').insert({
+            user_id: currentUser.id,
+            role: 'admin',
+          });
+        }
+      } catch (error) {
+        console.error('[AuthContext] Error managing admin role:', error);
+      }
+      
+      return true;
+    }
+    
+    // Check database for admin role
+    try {
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', currentUser.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+      
+      const dbIsAdmin = !!data;
+      setIsAdmin(dbIsAdmin);
+      return dbIsAdmin;
+    } catch (error) {
+      console.error('[AuthContext] Error checking admin status:', error);
+      setIsAdmin(false);
+      return false;
+    }
+  }, []);
 
-  const checkSubscription = useCallback(async (accessToken: string, forceRefresh = false) => {
+  const checkSubscription = useCallback(async (accessToken: string, currentUser: User | null, forceRefresh = false) => {
     const now = Date.now();
-    const userId = session?.user?.id || null;
+    const userId = currentUser?.id || null;
+    
+    // Check admin status first
+    const userIsAdmin = await checkAdminStatus(currentUser);
+    
+    // If admin, bypass subscription check entirely
+    if (userIsAdmin) {
+      console.log('[AuthContext] Admin user - bypassing subscription check');
+      const adminStatus = {
+        subscribed: true,
+        productId: 'admin_bypass',
+        subscriptionEnd: null,
+        loading: false,
+      };
+      setSubscription(adminStatus);
+      subscriptionCache = {
+        data: adminStatus,
+        timestamp: now,
+        userId,
+      };
+      return;
+    }
 
     // Check cache first (unless forcing refresh)
     if (
@@ -136,19 +220,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       isCheckingRef.current = false;
     }
-  }, [session?.user?.id]);
+  }, [checkAdminStatus]);
 
   const refreshSubscription = useCallback(async () => {
-    if (session?.access_token) {
+    if (session?.access_token && user) {
       // Force refresh bypasses cache
-      await checkSubscription(session.access_token, true);
+      await checkSubscription(session.access_token, user, true);
     }
-  }, [session?.access_token, checkSubscription]);
+  }, [session?.access_token, user, checkSubscription]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
+    setIsAdmin(false);
     setSubscription({
       subscribed: false,
       productId: null,
@@ -175,9 +260,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Only check subscription on specific events, not every state change
         if (currentSession?.access_token && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
           setTimeout(() => {
-            checkSubscription(currentSession.access_token);
+            checkSubscription(currentSession.access_token, currentSession?.user ?? null);
           }, 100);
         } else if (!currentSession) {
+          setIsAdmin(false);
           setSubscription({
             subscribed: false,
             productId: null,
@@ -196,7 +282,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
       
       if (existingSession?.access_token) {
-        checkSubscription(existingSession.access_token);
+        checkSubscription(existingSession.access_token, existingSession?.user ?? null);
       } else {
         setSubscription(prev => ({ ...prev, loading: false }));
       }
@@ -207,21 +293,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Auto-refresh subscription every 2 minutes (reduced frequency)
   useEffect(() => {
-    if (!session?.access_token) return;
+    if (!session?.access_token || !user) return;
 
     const interval = setInterval(() => {
-      checkSubscription(session.access_token);
+      checkSubscription(session.access_token, user);
     }, 120000); // 2 minutes instead of 1
 
     return () => clearInterval(interval);
-  }, [session?.access_token, checkSubscription]);
+  }, [session?.access_token, user, checkSubscription]);
 
   return (
     <AuthContext.Provider value={{ 
       user, 
       session, 
       loading, 
-      subscription, 
+      subscription,
+      isAdmin,
       signOut, 
       refreshSubscription 
     }}>
