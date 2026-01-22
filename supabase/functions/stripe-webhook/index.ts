@@ -20,7 +20,8 @@ serve(async (req) => {
 
   const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
   const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
-  const resendKey = Deno.env.get("RESEND_API_KEY");
+  // Modificado para aceitar maiúsculo ou minúsculo
+  const resendKey = Deno.env.get("RESEND_API_KEY") || Deno.env.get("resend");
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
@@ -316,7 +317,8 @@ async function sendWelcomeEmail(resend: any, email: string) {
 
   try {
     await resend.emails.send({
-      from: "onboarding@resend.dev",
+      // Modificado para aceitar variáveis em minúsculo
+      from: Deno.env.get("RESEND_FROM_EMAIL") || Deno.env.get("resend_from_email") || "onboarding@resend.dev",
       to: [email],
       subject: "🎉 Seu acesso está liberado! - Canva Viagens",
       html: `
@@ -388,7 +390,7 @@ async function sendCancellationEmail(resend: any, email: string) {
 
   try {
     await resend.emails.send({
-      from: "onboarding@resend.dev",
+      from: Deno.env.get("RESEND_FROM_EMAIL") || Deno.env.get("resend_from_email") || "onboarding@resend.dev",
       to: [email],
       subject: "😢 Sua assinatura foi cancelada - Canva Viagens",
       html: `
@@ -444,7 +446,7 @@ async function sendCancellationEmail(resend: any, email: string) {
 async function sendPaymentFailedEmail(resend: any, email: string) {
   try {
     await resend.emails.send({
-      from: "onboarding@resend.dev",
+      from: Deno.env.get("RESEND_FROM_EMAIL") || Deno.env.get("resend_from_email") || "onboarding@resend.dev",
       to: [email],
       subject: "⚠️ Problema com seu pagamento - Canva Viagens",
       html: `
