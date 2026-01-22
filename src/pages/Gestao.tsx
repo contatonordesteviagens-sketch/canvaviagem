@@ -2,11 +2,7 @@ import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Video, FileText, Wrench, Image, BookOpen, Download } from "lucide-react";
-import { EditableCard } from "@/components/gestao/EditableCard";
-import { CaptionCard } from "@/components/gestao/CaptionCard";
-import { EditModal } from "@/components/gestao/EditModal";
-import { CaptionEditModal } from "@/components/gestao/CaptionEditModal";
+import { Loader2, LayoutDashboard, FolderOpen, Upload, StickyNote, Eye } from "lucide-react";
 import {
   useAllContentItems,
   useAllCaptions,
@@ -16,6 +12,15 @@ import {
   useUpdateMarketingTool,
 } from "@/hooks/useContent";
 import { toast } from "sonner";
+
+// Components
+import { ContentSection } from "@/components/gestao/ContentSection";
+import { ImportSection } from "@/components/gestao/ImportSection";
+import { NotesSection } from "@/components/gestao/NotesSection";
+import { PreviewSection } from "@/components/gestao/PreviewSection";
+import { DashboardSection } from "@/components/gestao/DashboardSection";
+import { EditModal } from "@/components/gestao/EditModal";
+import { CaptionEditModal } from "@/components/gestao/CaptionEditModal";
 
 type EditableItem = {
   id: string;
@@ -65,15 +70,6 @@ const Gestao = () => {
   if (!isAdmin) {
     return <Navigate to="/" replace />;
   }
-
-  // Filter content by type
-  const videoItems = contentItems?.filter(item => ['video', 'seasonal'].includes(item.type)) || [];
-  const feedItems = contentItems?.filter(item => item.type === 'feed') || [];
-  const storyItems = contentItems?.filter(item => ['story', 'weekly-story'].includes(item.type)) || [];
-  const resourceItems = contentItems?.filter(item => ['resource', 'download'].includes(item.type)) || [];
-
-  const nacionalCaptions = captions?.filter(c => c.category === 'nacional') || [];
-  const internacionalCaptions = captions?.filter(c => c.category === 'internacional') || [];
 
   const handleEditItem = (item: EditableItem) => {
     setSelectedItem(item);
@@ -141,177 +137,73 @@ const Gestao = () => {
       <div className="border-b bg-card">
         <div className="container mx-auto px-4 py-6">
           <h1 className="text-2xl font-bold text-foreground">Gestão do Canvatrip</h1>
-          <p className="text-muted-foreground">Gerencie todo o conteúdo da plataforma</p>
+          <p className="text-muted-foreground">Painel administrativo completo</p>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Main Content with Tabs */}
       <div className="container mx-auto px-4 py-6">
-        {isLoadingData ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : (
-          <Tabs defaultValue="videos" className="w-full">
-            <TabsList className="w-full flex-wrap h-auto gap-2 bg-muted/50 p-2">
-              <TabsTrigger value="videos" className="flex items-center gap-2">
-                <Video className="h-4 w-4" />
-                Vídeos ({videoItems.length})
-              </TabsTrigger>
-              <TabsTrigger value="artes" className="flex items-center gap-2">
-                <Image className="h-4 w-4" />
-                Artes ({feedItems.length})
-              </TabsTrigger>
-              <TabsTrigger value="stories" className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
-                Stories ({storyItems.length})
-              </TabsTrigger>
-              <TabsTrigger value="legendas-nac" className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Legendas Nacionais ({nacionalCaptions.length})
-              </TabsTrigger>
-              <TabsTrigger value="legendas-int" className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Legendas Int. ({internacionalCaptions.length})
-              </TabsTrigger>
-              <TabsTrigger value="ferramentas" className="flex items-center gap-2">
-                <Wrench className="h-4 w-4" />
-                Ferramentas ({tools?.length || 0})
-              </TabsTrigger>
-              <TabsTrigger value="recursos" className="flex items-center gap-2">
-                <Download className="h-4 w-4" />
-                Recursos ({resourceItems.length})
-              </TabsTrigger>
-            </TabsList>
+        <Tabs defaultValue="dashboard" className="w-full">
+          <TabsList className="w-full flex-wrap h-auto gap-2 bg-muted/50 p-2 mb-6">
+            <TabsTrigger value="dashboard" className="flex items-center gap-2 flex-1 min-w-[120px]">
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="content" className="flex items-center gap-2 flex-1 min-w-[120px]">
+              <FolderOpen className="h-4 w-4" />
+              Conteúdo
+            </TabsTrigger>
+            <TabsTrigger value="import" className="flex items-center gap-2 flex-1 min-w-[120px]">
+              <Upload className="h-4 w-4" />
+              Importar
+            </TabsTrigger>
+            <TabsTrigger value="notes" className="flex items-center gap-2 flex-1 min-w-[120px]">
+              <StickyNote className="h-4 w-4" />
+              Notas
+            </TabsTrigger>
+            <TabsTrigger value="preview" className="flex items-center gap-2 flex-1 min-w-[120px]">
+              <Eye className="h-4 w-4" />
+              Preview
+            </TabsTrigger>
+          </TabsList>
 
-            {/* Videos Tab */}
-            <TabsContent value="videos" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {videoItems.map((item) => (
-                  <EditableCard
-                    key={item.id}
-                    id={item.id}
-                    title={item.title}
-                    url={item.url}
-                    icon={item.icon}
-                    isActive={item.is_active}
-                    isNew={item.is_new}
-                    onEdit={handleEditItem}
-                  />
-                ))}
-              </div>
-            </TabsContent>
+          {/* Dashboard Tab */}
+          <TabsContent value="dashboard" className="mt-0">
+            <DashboardSection />
+          </TabsContent>
 
-            {/* Artes Tab */}
-            <TabsContent value="artes" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {feedItems.map((item) => (
-                  <EditableCard
-                    key={item.id}
-                    id={item.id}
-                    title={item.title}
-                    url={item.url}
-                    icon={item.icon}
-                    isActive={item.is_active}
-                    isNew={item.is_new}
-                    onEdit={handleEditItem}
-                  />
-                ))}
+          {/* Content Tab */}
+          <TabsContent value="content" className="mt-0">
+            {isLoadingData ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            </TabsContent>
+            ) : (
+              <ContentSection
+                contentItems={contentItems || []}
+                captions={captions || []}
+                tools={tools || []}
+                onEditItem={handleEditItem}
+                onEditCaption={handleEditCaption}
+              />
+            )}
+          </TabsContent>
 
-            {/* Stories Tab */}
-            <TabsContent value="stories" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {storyItems.map((item) => (
-                  <EditableCard
-                    key={item.id}
-                    id={item.id}
-                    title={item.title}
-                    url={item.url}
-                    icon={item.icon}
-                    isActive={item.is_active}
-                    isNew={item.is_new}
-                    onEdit={handleEditItem}
-                  />
-                ))}
-              </div>
-            </TabsContent>
+          {/* Import Tab */}
+          <TabsContent value="import" className="mt-0">
+            <ImportSection />
+          </TabsContent>
 
-            {/* Legendas Nacionais Tab */}
-            <TabsContent value="legendas-nac" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {nacionalCaptions.map((caption) => (
-                  <CaptionCard
-                    key={caption.id}
-                    id={caption.id}
-                    destination={caption.destination}
-                    text={caption.text}
-                    hashtags={caption.hashtags}
-                    isActive={caption.is_active}
-                    onEdit={handleEditCaption}
-                  />
-                ))}
-              </div>
-            </TabsContent>
+          {/* Notes Tab */}
+          <TabsContent value="notes" className="mt-0">
+            <NotesSection />
+          </TabsContent>
 
-            {/* Legendas Internacionais Tab */}
-            <TabsContent value="legendas-int" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {internacionalCaptions.map((caption) => (
-                  <CaptionCard
-                    key={caption.id}
-                    id={caption.id}
-                    destination={caption.destination}
-                    text={caption.text}
-                    hashtags={caption.hashtags}
-                    isActive={caption.is_active}
-                    onEdit={handleEditCaption}
-                  />
-                ))}
-              </div>
-            </TabsContent>
-
-            {/* Ferramentas Tab */}
-            <TabsContent value="ferramentas" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {tools?.map((tool) => (
-                  <EditableCard
-                    key={tool.id}
-                    id={tool.id}
-                    title={tool.title}
-                    url={tool.url}
-                    icon={tool.icon}
-                    isActive={tool.is_active}
-                    isNew={tool.is_new}
-                    onEdit={(item) => {
-                      setSelectedItem(item);
-                      setEditModalOpen(true);
-                    }}
-                  />
-                ))}
-              </div>
-            </TabsContent>
-
-            {/* Recursos Tab */}
-            <TabsContent value="recursos" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {resourceItems.map((item) => (
-                  <EditableCard
-                    key={item.id}
-                    id={item.id}
-                    title={item.title}
-                    url={item.url}
-                    icon={item.icon}
-                    isActive={item.is_active}
-                    isNew={item.is_new}
-                    onEdit={handleEditItem}
-                  />
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
-        )}
+          {/* Preview Tab */}
+          <TabsContent value="preview" className="mt-0">
+            <PreviewSection />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Edit Modals */}
@@ -320,7 +212,6 @@ const Gestao = () => {
         onOpenChange={setEditModalOpen}
         item={selectedItem}
         onSave={(id, data) => {
-          // Detect if it's a tool or content item based on where it came from
           const isTool = tools?.some(t => t.id === id);
           if (isTool) {
             handleSaveTool(id, data);
