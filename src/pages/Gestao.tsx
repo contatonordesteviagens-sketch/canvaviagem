@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, LayoutDashboard, FolderOpen, Upload, StickyNote, Eye, History } from "lucide-react";
+import { Loader2, LayoutDashboard, FolderOpen, Upload, StickyNote, Eye, History, Users } from "lucide-react";
 import {
   useAllContentItems,
   useAllCaptions,
@@ -10,6 +10,9 @@ import {
   useUpdateContentItem,
   useUpdateCaption,
   useUpdateMarketingTool,
+  useDeleteContentItem,
+  useDeleteCaption,
+  useDeleteMarketingTool,
 } from "@/hooks/useContent";
 import { toast } from "sonner";
 
@@ -20,8 +23,10 @@ import { NotesSection } from "@/components/gestao/NotesSection";
 import { PreviewSection } from "@/components/gestao/PreviewSection";
 import { DashboardSection } from "@/components/gestao/DashboardSection";
 import { HistorySection } from "@/components/gestao/HistorySection";
+import { UsersSection } from "@/components/gestao/UsersSection";
 import { EditModal } from "@/components/gestao/EditModal";
 import { CaptionEditModal } from "@/components/gestao/CaptionEditModal";
+import { DeleteConfirmDialog } from "@/components/gestao/DeleteConfirmDialog";
 
 type EditableItem = {
   id: string;
@@ -42,8 +47,10 @@ const Gestao = () => {
   const { user, loading, isAdmin } = useAuth();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [captionModalOpen, setCaptionModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<EditableItem | null>(null);
   const [selectedCaption, setSelectedCaption] = useState<EditableCaption | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; title: string; type: "content" | "caption" | "tool" } | null>(null);
 
   const { data: contentItems, isLoading: loadingContent } = useAllContentItems();
   const { data: captions, isLoading: loadingCaptions } = useAllCaptions();
@@ -52,6 +59,9 @@ const Gestao = () => {
   const updateContent = useUpdateContentItem();
   const updateCaption = useUpdateCaption();
   const updateTool = useUpdateMarketingTool();
+  const deleteContent = useDeleteContentItem();
+  const deleteCaptionMutation = useDeleteCaption();
+  const deleteTool = useDeleteMarketingTool();
 
   // Loading state
   if (loading) {
@@ -80,6 +90,30 @@ const Gestao = () => {
   const handleEditCaption = (caption: EditableCaption) => {
     setSelectedCaption(caption);
     setCaptionModalOpen(true);
+  };
+
+  const handleDeleteItem = (id: string, title: string, type: "content" | "caption" | "tool") => {
+    setItemToDelete({ id, title, type });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!itemToDelete) return;
+
+    const { id, type } = itemToDelete;
+    const mutation = type === "content" ? deleteContent : type === "caption" ? deleteCaptionMutation : deleteTool;
+
+    mutation.mutate(id, {
+      onSuccess: () => {
+        toast.success("Item excluído com sucesso!");
+        setDeleteDialogOpen(false);
+        setItemToDelete(null);
+      },
+      onError: (error) => {
+        toast.error("Erro ao excluir item");
+        console.error(error);
+      },
+    });
   };
 
   const handleSaveItem = (id: string, data: { title: string; url: string; is_active: boolean }) => {
@@ -170,6 +204,10 @@ const Gestao = () => {
               <History className="h-4 w-4" />
               Histórico
             </TabsTrigger>
+            <TabsTrigger value="users" className="flex items-center gap-2 flex-1 min-w-[120px]">
+              <Users className="h-4 w-4" />
+              Usuários
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
@@ -190,6 +228,9 @@ const Gestao = () => {
                 tools={tools || []}
                 onEditItem={handleEditItem}
                 onEditCaption={handleEditCaption}
+                onDeleteItem={(id, title) => handleDeleteItem(id, title, "content")}
+                onDeleteCaption={(id, title) => handleDeleteItem(id, title, "caption")}
+                onDeleteTool={(id, title) => handleDeleteItem(id, title, "tool")}
               />
             )}
           </TabsContent>
@@ -212,6 +253,11 @@ const Gestao = () => {
           {/* History Tab */}
           <TabsContent value="history" className="mt-0">
             <HistorySection />
+          </TabsContent>
+
+          {/* Users Tab */}
+          <TabsContent value="users" className="mt-0">
+            <UsersSection />
           </TabsContent>
         </Tabs>
       </div>
@@ -238,6 +284,14 @@ const Gestao = () => {
         item={selectedCaption}
         onSave={handleSaveCaption}
         isSaving={updateCaption.isPending}
+      />
+
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title={itemToDelete?.title || ""}
+        onConfirm={handleConfirmDelete}
+        isDeleting={deleteContent.isPending || deleteCaptionMutation.isPending || deleteTool.isPending}
       />
     </div>
   );

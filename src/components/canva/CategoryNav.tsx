@@ -1,11 +1,12 @@
-import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap } from "lucide-react";
+import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula';
+export type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
 
 interface CategoryNavProps {
   activeCategory: CategoryType;
   onCategoryChange: (category: CategoryType) => void;
+  showFavorites?: boolean;
 }
 
 const categories: { id: CategoryType; label: string; icon: React.ReactNode }[] = [
@@ -16,14 +17,19 @@ const categories: { id: CategoryType; label: string; icon: React.ReactNode }[] =
   { id: 'downloads', label: 'Downloads', icon: <Download className="w-6 h-6" /> },
   { id: 'tools', label: 'IA Tools', icon: <Bot className="w-6 h-6" /> },
   { id: 'videoaula', label: 'Videoaula', icon: <GraduationCap className="w-6 h-6" /> },
+  { id: 'favorites', label: 'Favoritos', icon: <Heart className="w-6 h-6" /> },
 ];
 
-export const CategoryNav = ({ activeCategory, onCategoryChange }: CategoryNavProps) => {
+export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = true }: CategoryNavProps) => {
+  const displayCategories = showFavorites 
+    ? categories 
+    : categories.filter(c => c.id !== 'favorites');
+
   return (
     <div className="mb-8">
       <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
         <div className="flex gap-4 pb-2 snap-x-mandatory min-w-max">
-          {categories.map((category) => {
+          {displayCategories.map((category) => {
             const isActive = activeCategory === category.id;
             
             return (

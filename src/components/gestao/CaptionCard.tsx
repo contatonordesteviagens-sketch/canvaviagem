@@ -1,4 +1,4 @@
-import { Pencil, MapPin } from "lucide-react";
+import { Pencil, MapPin, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ interface CaptionCardProps {
   hashtags: string;
   isActive?: boolean;
   onEdit: (item: { id: string; destination: string; text: string; hashtags: string; is_active?: boolean }) => void;
+  onDelete?: (id: string, title: string) => void;
 }
 
 export const CaptionCard = ({
@@ -19,6 +20,7 @@ export const CaptionCard = ({
   hashtags,
   isActive = true,
   onEdit,
+  onDelete,
 }: CaptionCardProps) => {
   const truncatedText = text.length > 100 ? text.substring(0, 100) + "..." : text;
 
@@ -52,16 +54,27 @@ export const CaptionCard = ({
         {hashtags.substring(0, 50)}...
       </p>
 
-      {/* Edit button */}
-      <Button
-        size="sm"
-        variant="outline"
-        className="w-full"
-        onClick={() => onEdit({ id, destination, text, hashtags, is_active: isActive })}
-      >
-        <Pencil className="h-4 w-4 mr-2" />
-        Editar
-      </Button>
+      {/* Action buttons */}
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          className="flex-1"
+          onClick={() => onEdit({ id, destination, text, hashtags, is_active: isActive })}
+        >
+          <Pencil className="h-4 w-4 mr-2" />
+          Editar
+        </Button>
+        {onDelete && (
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => onDelete(id, destination)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

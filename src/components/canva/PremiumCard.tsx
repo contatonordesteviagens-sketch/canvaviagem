@@ -1,7 +1,8 @@
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PremiumCardProps {
+  id?: string;
   title: string;
   url: string;
   imageUrl?: string;
@@ -11,9 +12,12 @@ interface PremiumCardProps {
   variant?: "image" | "icon";
   icon?: string;
   onClick?: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 export const PremiumCard = ({ 
+  id,
   title, 
   url, 
   imageUrl,
@@ -22,7 +26,9 @@ export const PremiumCard = ({
   aspectRatio = "9/16",
   variant = "icon",
   icon = "📱",
-  onClick
+  onClick,
+  isFavorite = false,
+  onToggleFavorite
 }: PremiumCardProps) => {
   // Generate a placeholder gradient based on title
   const getPlaceholderGradient = () => {
@@ -45,6 +51,14 @@ export const PremiumCard = ({
     }
   };
 
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onToggleFavorite) {
+      onToggleFavorite();
+    }
+  };
+
   return (
     <a 
       href={url} 
@@ -61,15 +75,33 @@ export const PremiumCard = ({
         )}
         style={{ aspectRatio }}
       >
+        {/* Favorite Button */}
+        {onToggleFavorite && (
+          <button
+            onClick={handleFavoriteClick}
+            className="absolute top-3 right-3 z-30 p-2 rounded-full bg-black/30 backdrop-blur-sm transition-all hover:bg-black/50"
+          >
+            <Heart 
+              className={cn(
+                "w-5 h-5 transition-colors",
+                isFavorite ? "fill-red-500 text-red-500" : "text-white"
+              )}
+            />
+          </button>
+        )}
+
         {/* Badge NEW */}
         {isNew && (
-          <span className="absolute top-3 right-3 z-20 bg-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide shadow-md">
+          <span className={cn(
+            "absolute top-3 z-20 bg-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide shadow-md",
+            onToggleFavorite ? "left-3" : "right-3"
+          )}>
             Novo
           </span>
         )}
         
         {/* Category Badge */}
-        {category && (
+        {category && !isNew && (
           <span className="absolute top-3 left-3 z-20 bg-primary/90 text-primary-foreground text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur-sm">
             {category}
           </span>
