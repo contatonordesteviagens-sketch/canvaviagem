@@ -1,7 +1,8 @@
 import { useEmailDashboard } from "@/hooks/useEmailDashboard";
 import { useAdminDashboard, usePageViews } from "@/hooks/useAdminDashboard";
+import { useStripeDashboard } from "@/hooks/useStripeDashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Users, MousePointer, TrendingUp, Activity } from "lucide-react";
+import { Loader2, Users, MousePointer, TrendingUp, Activity, DollarSign, Percent, CreditCard, BarChart3 } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -13,6 +14,8 @@ import {
   PieChart,
   Pie,
   Cell,
+  LineChart,
+  Line,
 } from "recharts";
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
@@ -21,6 +24,7 @@ export const DashboardSection = () => {
   const { data: stats, isLoading } = useAdminDashboard();
   const { data: pageViews } = usePageViews();
   const { metrics: emailStats, isLoading: emailLoading } = useEmailDashboard();
+  const { data: stripeData, isLoading: stripeLoading } = useStripeDashboard();
 
   if (isLoading) {
     return (
@@ -39,24 +43,84 @@ export const DashboardSection = () => {
     resource: 'Recursos',
   };
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+  };
+
   return (
     <div className="space-y-6">
-      {/* KPI Cards */}
+      {/* Stripe KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/20 rounded-full">
+                <DollarSign className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">
+                  {stripeLoading ? "..." : formatCurrency(stripeData?.mrr || 0)}
+                </p>
+                <p className="text-sm text-muted-foreground">MRR</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/10 rounded-full">
-                <Users className="h-6 w-6 text-primary" />
+              <div className="p-3 bg-green-500/10 rounded-full">
+                <Users className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats?.activeSubscribers || 0}</p>
+                <p className="text-2xl font-bold">
+                  {stripeLoading ? "..." : stripeData?.activeSubscribers || stats?.activeSubscribers || 0}
+                </p>
                 <p className="text-sm text-muted-foreground">Assinantes Ativos</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-red-500/10 rounded-full">
+                <Percent className="h-6 w-6 text-red-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">
+                  {stripeLoading ? "..." : `${stripeData?.churnRate || 0}%`}
+                </p>
+                <p className="text-sm text-muted-foreground">Churn Rate</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-blue-500/10 rounded-full">
+                <CreditCard className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">
+                  {stripeLoading ? "..." : formatCurrency(stripeData?.currentMonthRevenue || 0)}
+                </p>
+                <p className="text-sm text-muted-foreground">Fat. Mensal</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Engagement KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
@@ -75,11 +139,11 @@ export const DashboardSection = () => {
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-secondary rounded-full">
-                <TrendingUp className="h-6 w-6 text-secondary-foreground" />
+                <BarChart3 className="h-6 w-6 text-secondary-foreground" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats?.totalSubscribers || 0}</p>
-                <p className="text-sm text-muted-foreground">Total Assinaturas</p>
+                <p className="text-2xl font-bold">{pageViews?.reduce((acc, p) => acc + p.count, 0) || 0}</p>
+                <p className="text-sm text-muted-foreground">Page Views</p>
               </div>
             </div>
           </CardContent>
@@ -98,7 +162,45 @@ export const DashboardSection = () => {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-purple-500/10 rounded-full">
+                <TrendingUp className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">
+                  {stripeLoading ? "..." : `${stripeData?.growth > 0 ? '+' : ''}${stripeData?.growth || 0}%`}
+                </p>
+                <p className="text-sm text-muted-foreground">Crescimento</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Revenue Chart */}
+      {stripeData?.revenueChartData && stripeData.revenueChartData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Receita Mensal</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={stripeData.revenueChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis tickFormatter={(value) => `R$${value}`} />
+                <Tooltip 
+                  formatter={(value) => [formatCurrency(value as number), "Receita"]}
+                />
+                <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Charts Row */}
       <div className="grid md:grid-cols-2 gap-6">
@@ -139,6 +241,35 @@ export const DashboardSection = () => {
           </CardContent>
         </Card>
 
+        {/* Subscriber Growth */}
+        {stripeData?.subscriptionChartData && stripeData.subscriptionChartData.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Novas Assinaturas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={stripeData.subscriptionChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line 
+                    type="monotone" 
+                    dataKey="subscriptions" 
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth={2}
+                    dot={{ fill: "hsl(var(--primary))" }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Top Content & Page Views */}
+      <div className="grid md:grid-cols-2 gap-6">
         {/* Top Content */}
         <Card>
           <CardHeader>
@@ -171,27 +302,27 @@ export const DashboardSection = () => {
             )}
           </CardContent>
         </Card>
-      </div>
 
-      {/* Page Views */}
-      {pageViews && pageViews.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Páginas Mais Acessadas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={pageViews.slice(0, 8)}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="path" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      )}
+        {/* Page Views */}
+        {pageViews && pageViews.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Páginas Mais Acessadas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={pageViews.slice(0, 6)} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis dataKey="path" type="category" width={100} tick={{ fontSize: 12 }} />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* Email Stats */}
       {!emailLoading && emailStats && (

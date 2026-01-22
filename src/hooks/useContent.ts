@@ -334,3 +334,134 @@ export const useUpdateMarketingTool = () => {
     },
   });
 };
+
+// Create mutations
+export const useCreateContentItem = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: {
+      title: string;
+      url: string;
+      type: string;
+      category?: string | null;
+      icon?: string;
+      is_new?: boolean;
+      is_active?: boolean;
+    }) => {
+      const { error } = await supabase
+        .from("content_items")
+        .insert({
+          title: data.title,
+          url: data.url,
+          type: data.type,
+          category: data.category || null,
+          icon: data.icon || "✨",
+          is_new: data.is_new ?? false,
+          is_active: data.is_active ?? true,
+        });
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
+      queryClient.invalidateQueries({ queryKey: ["content-items"] });
+      queryClient.invalidateQueries({ queryKey: ["video-templates"] });
+    },
+  });
+};
+
+export const useCreateCaption = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: {
+      destination: string;
+      text: string;
+      hashtags: string;
+      category?: "nacional" | "internacional" | null;
+      is_active?: boolean;
+    }) => {
+      const { error } = await supabase
+        .from("captions")
+        .insert({
+          destination: data.destination,
+          text: data.text,
+          hashtags: data.hashtags,
+          category: data.category || null,
+          is_active: data.is_active ?? true,
+        });
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-captions"] });
+      queryClient.invalidateQueries({ queryKey: ["captions"] });
+    },
+  });
+};
+
+export const useCreateMarketingTool = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: {
+      title: string;
+      url: string;
+      icon?: string;
+      description?: string;
+      is_new?: boolean;
+      is_active?: boolean;
+    }) => {
+      const { error } = await supabase
+        .from("marketing_tools")
+        .insert({
+          title: data.title,
+          url: data.url,
+          icon: data.icon || "🤖",
+          description: data.description || null,
+          is_new: data.is_new ?? false,
+          is_active: data.is_active ?? true,
+        });
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-marketing-tools"] });
+      queryClient.invalidateQueries({ queryKey: ["marketing-tools"] });
+    },
+  });
+};
+
+// Update display order mutation
+export const useUpdateDisplayOrder = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ 
+      table, 
+      items 
+    }: { 
+      table: "content_items" | "captions" | "marketing_tools"; 
+      items: { id: string; display_order: number }[];
+    }) => {
+      // Update each item's display_order
+      for (const item of items) {
+        const { error } = await supabase
+          .from(table)
+          .update({ display_order: item.display_order })
+          .eq("id", item.id);
+        
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
+      queryClient.invalidateQueries({ queryKey: ["all-captions"] });
+      queryClient.invalidateQueries({ queryKey: ["all-marketing-tools"] });
+      queryClient.invalidateQueries({ queryKey: ["content-items"] });
+      queryClient.invalidateQueries({ queryKey: ["captions"] });
+      queryClient.invalidateQueries({ queryKey: ["marketing-tools"] });
+    },
+  });
+};

@@ -7,6 +7,7 @@ import { PremiumGate } from "@/components/PremiumGate";
 import { ResourceSection } from "@/components/ResourceSection";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Canva-style components
 import { HeroBanner } from "@/components/canva/HeroBanner";
@@ -18,18 +19,19 @@ import { CaptionCard } from "@/components/canva/CaptionCard";
 import { ToolCard } from "@/components/canva/ToolCard";
 import { BottomNav } from "@/components/canva/BottomNav";
 
+// Database hooks
 import { 
-  templates, 
-  feedTemplates, 
-  storyTemplates, 
-  weeklyStories,
-  aiTools,
-  narracaoTool,
-  iaVendedorTool,
-  resources,
-  videoDownloads 
-} from "@/data/templates";
-import { captions } from "@/data/captions";
+  useContentItems, 
+  useCaptions, 
+  useMarketingTools,
+  useTrackClick,
+  ContentItem,
+  Caption,
+} from "@/hooks/useContent";
+import { useTrackPageView } from "@/hooks/useAdminDashboard";
+
+// Static resources (downloads and resources that don't need DB management)
+import { resources, videoDownloads } from "@/data/templates";
 import { trackViewContent } from "@/lib/meta-pixel";
 
 type VideoFilter = 'todos' | 'nacionais' | 'internacionais' | 'eva' | 'mel' | 'bia';
@@ -49,12 +51,22 @@ const Index = () => {
   const [videoFilter, setVideoFilter] = useState<VideoFilter>('todos');
   const [activeCategory, setActiveCategory] = useState<CategoryType>('videos');
 
+  // Database hooks
+  const { data: videoTemplates, isLoading: videosLoading } = useContentItems(['video', 'seasonal']);
+  const { data: feedTemplates, isLoading: feedLoading } = useContentItems('feed');
+  const { data: storyTemplates, isLoading: storiesLoading } = useContentItems(['story', 'weekly-story']);
+  const { data: captionsData, isLoading: captionsLoading } = useCaptions();
+  const { data: toolsData, isLoading: toolsLoading } = useMarketingTools();
+  const { trackClick } = useTrackClick();
+  const { trackPageView } = useTrackPageView();
+
   // Track view content when user is logged in
   useEffect(() => {
     if (user) {
       trackViewContent('Plataforma Principal');
+      trackPageView('/');
     }
-  }, [user]);
+  }, [user, trackPageView]);
 
   // Show loading while checking auth
   if (loading || subscription.loading) {
@@ -79,7 +91,9 @@ const Index = () => {
     'Chapada Diamantina', 'Curitiba', 'São Paulo', 'Belo Horizonte', 'Manaus'
   ];
 
-  const isNacional = (title: string) => {
+  const isNacional = (title: string, category?: string | null) => {
+    if (category === 'nacional') return true;
+    if (category === 'internacional') return false;
     return destinosNacionais.some(destino => 
       title.toLowerCase().includes(destino.toLowerCase())
     ) || title.includes('- AL') || title.includes('- BA') || title.includes('- CE') || 
@@ -93,35 +107,38 @@ const Index = () => {
     return title.toLowerCase().includes(influencer.toLowerCase());
   };
 
-  const filterTemplates = (items: typeof templates) => {
+  const filterTemplates = (items: ContentItem[] | undefined) => {
+    if (!items) return [];
     let filtered = items.filter(item =>
       item.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     // Aplicar filtro de categoria
     if (videoFilter === 'nacionais') {
-      filtered = filtered.filter(item => isNacional(item.title));
+      filtered = filtered.filter(item => isNacional(item.title, item.category));
     } else if (videoFilter === 'internacionais') {
-      filtered = filtered.filter(item => !isNacional(item.title) && item.type === 'video');
+      filtered = filtered.filter(item => !isNacional(item.title, item.category) && item.type === 'video');
     } else if (videoFilter === 'eva') {
-      filtered = filtered.filter(item => isInfluencer(item.title, 'Eva'));
+      filtered = filtered.filter(item => isInfluencer(item.title, 'Eva') || item.category === 'influencer-eva');
     } else if (videoFilter === 'mel') {
-      filtered = filtered.filter(item => isInfluencer(item.title, 'Mel'));
+      filtered = filtered.filter(item => isInfluencer(item.title, 'Mel') || item.category === 'influencer-mel');
     } else if (videoFilter === 'bia') {
-      filtered = filtered.filter(item => isInfluencer(item.title, 'Bia'));
+      filtered = filtered.filter(item => isInfluencer(item.title, 'Bia') || item.category === 'influencer-bia');
     }
 
     return filtered;
   };
 
   const filterCaptions = () => {
-    return captions.filter(caption =>
+    if (!captionsData) return [];
+    return captionsData.filter(caption =>
       caption.destination.toLowerCase().includes(searchQuery.toLowerCase()) ||
       caption.text.toLowerCase().includes(searchQuery.toLowerCase())
     );
   };
 
-  const getIcon = (type: string) => {
+  const getIcon = (type: string, icon?: string) => {
+    if (icon) return icon;
     switch (type) {
       case "video": return "🎬";
       case "feed": return "🖼️";
@@ -130,18 +147,33 @@ const Index = () => {
     }
   };
 
-  const filteredVideos = filterTemplates(templates);
+  const handleCardClick = (item: ContentItem) => {
+    trackClick(item.type, item.id);
+    window.open(item.url, '_blank');
+  };
+
+  const handleCaptionClick = (caption: Caption) => {
+    trackClick('caption', caption.id);
+  };
+
+  const filteredVideos = filterTemplates(videoTemplates);
   const displayedVideos = showAllVideos ? filteredVideos : filteredVideos.slice(0, 8);
 
   const filteredCaptions = filterCaptions();
   const displayedCaptions = showAllCaptions ? filteredCaptions : filteredCaptions.slice(0, 8);
 
-  // Combinar ferramentas com IA Vendedor no início (marcado como novo)
-  const allTools = [
-    { title: iaVendedorTool.title, url: iaVendedorTool.url, icon: iaVendedorTool.icon, isNew: iaVendedorTool.isNew, description: "Crie pacotes e roteiros personalizados em segundos" },
-    { title: narracaoTool.title, url: narracaoTool.url, icon: narracaoTool.icon, description: "Gere áudios envolventes para suas promoções" },
-    ...aiTools.map(tool => ({ ...tool, description: "Ferramentas de IA para marketing" }))
-  ];
+  // Get weekly stories from story templates
+  const weeklyStories = storyTemplates?.filter(s => s.type === 'weekly-story') || [];
+  const regularStories = storyTemplates?.filter(s => s.type === 'story') || [];
+
+  // Loading skeleton for content
+  const ContentSkeleton = () => (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {[...Array(8)].map((_, i) => (
+        <Skeleton key={i} className="aspect-[9/16] rounded-xl" />
+      ))}
+    </div>
+  );
 
   // Content sections based on active category
   const renderContent = () => {
@@ -160,40 +192,47 @@ const Index = () => {
               onFilterChange={(filter) => setVideoFilter(filter)}
             />
             
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {displayedVideos.map((template, index) => (
-                <PremiumCard
-                  key={index}
-                  title={template.title}
-                  url={template.url}
-                  category="Vídeos Reels"
-                  isNew={template.isNew}
-                  icon={getIcon(template.type)}
-                  aspectRatio="9/16"
-                />
-              ))}
-            </div>
-            
-            {filteredVideos.length > 8 && (
-              <div className="flex justify-center mt-8">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowAllVideos(!showAllVideos)}
-                  className="gap-2 rounded-full px-6"
-                >
-                  {showAllVideos ? (
-                    <>
-                      <ChevronUp className="h-4 w-4" />
-                      Mostrar menos
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="h-4 w-4" />
-                      Ver mais vídeos ({filteredVideos.length - 8} restantes)
-                    </>
-                  )}
-                </Button>
-              </div>
+            {videosLoading ? (
+              <ContentSkeleton />
+            ) : (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {displayedVideos.map((template) => (
+                    <PremiumCard
+                      key={template.id}
+                      title={template.title}
+                      url={template.url}
+                      category="Vídeos Reels"
+                      isNew={template.is_new}
+                      icon={getIcon(template.type, template.icon)}
+                      aspectRatio="9/16"
+                      onClick={() => handleCardClick(template)}
+                    />
+                  ))}
+                </div>
+                
+                {filteredVideos.length > 8 && (
+                  <div className="flex justify-center mt-8">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowAllVideos(!showAllVideos)}
+                      className="gap-2 rounded-full px-6"
+                    >
+                      {showAllVideos ? (
+                        <>
+                          <ChevronUp className="h-4 w-4" />
+                          Mostrar menos
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-4 w-4" />
+                          Ver mais vídeos ({filteredVideos.length - 8} restantes)
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </section>
         );
@@ -206,60 +245,75 @@ const Index = () => {
               subtitle="Posts prontos para engajar seu público"
             />
             
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filterTemplates(feedTemplates).map((template, index) => (
-                <PremiumCard
-                  key={index}
-                  title={template.title}
-                  url={template.url}
-                  icon={getIcon(template.type)}
-                  aspectRatio="4/5"
-                />
-              ))}
-            </div>
+            {feedLoading ? (
+              <ContentSkeleton />
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {filterTemplates(feedTemplates).map((template) => (
+                  <PremiumCard
+                    key={template.id}
+                    title={template.title}
+                    url={template.url}
+                    icon={getIcon(template.type, template.icon)}
+                    aspectRatio="4/5"
+                    onClick={() => handleCardClick(template)}
+                  />
+                ))}
+              </div>
+            )}
           </section>
         );
 
       case 'stories':
         return (
           <section className="space-y-12 animate-fade-in">
-            <div>
-              <SectionHeader 
-                title="Stories Semanais" 
-                subtitle="Planejamento semanal de conteúdo"
-              />
-              
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {weeklyStories.map((story, index) => (
-                  <PremiumCard
-                    key={index}
-                    title={story.title}
-                    url={story.url}
-                    icon="📅"
-                    aspectRatio="1/1"
-                  />
-                ))}
-              </div>
-            </div>
+            {storiesLoading ? (
+              <ContentSkeleton />
+            ) : (
+              <>
+                {weeklyStories.length > 0 && (
+                  <div>
+                    <SectionHeader 
+                      title="Stories Semanais" 
+                      subtitle="Planejamento semanal de conteúdo"
+                    />
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {weeklyStories.map((story) => (
+                        <PremiumCard
+                          key={story.id}
+                          title={story.title}
+                          url={story.url}
+                          icon="📅"
+                          aspectRatio="1/1"
+                          onClick={() => handleCardClick(story)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-            <div>
-              <SectionHeader 
-                title="Templates de Stories" 
-                subtitle="Artes individuais para stories"
-              />
-              
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {filterTemplates(storyTemplates).map((template, index) => (
-                  <PremiumCard
-                    key={index}
-                    title={template.title}
-                    url={template.url}
-                    icon={getIcon(template.type)}
-                    aspectRatio="9/16"
+                <div>
+                  <SectionHeader 
+                    title="Templates de Stories" 
+                    subtitle="Artes individuais para stories"
                   />
-                ))}
-              </div>
-            </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {filterTemplates(regularStories).map((template) => (
+                      <PremiumCard
+                        key={template.id}
+                        title={template.title}
+                        url={template.url}
+                        icon={getIcon(template.type, template.icon)}
+                        aspectRatio="9/16"
+                        onClick={() => handleCardClick(template)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </section>
         );
 
@@ -271,37 +325,48 @@ const Index = () => {
               subtitle="Copie e cole legendas profissionais para seus posts"
             />
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {displayedCaptions.map((caption, index) => (
-                <CaptionCard
-                  key={index}
-                  destination={caption.destination}
-                  text={caption.text}
-                  hashtags={caption.hashtags}
-                />
-              ))}
-            </div>
-            
-            {filteredCaptions.length > 8 && (
-              <div className="flex justify-center mt-8">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowAllCaptions(!showAllCaptions)}
-                  className="gap-2 rounded-full px-6"
-                >
-                  {showAllCaptions ? (
-                    <>
-                      <ChevronUp className="h-4 w-4" />
-                      Mostrar menos
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="h-4 w-4" />
-                      Ver mais legendas
-                    </>
-                  )}
-                </Button>
+            {captionsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <Skeleton key={i} className="h-48 rounded-xl" />
+                ))}
               </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {displayedCaptions.map((caption) => (
+                    <div key={caption.id} onClick={() => handleCaptionClick(caption)}>
+                      <CaptionCard
+                        destination={caption.destination}
+                        text={caption.text}
+                        hashtags={caption.hashtags}
+                      />
+                    </div>
+                  ))}
+                </div>
+                
+                {filteredCaptions.length > 8 && (
+                  <div className="flex justify-center mt-8">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowAllCaptions(!showAllCaptions)}
+                      className="gap-2 rounded-full px-6"
+                    >
+                      {showAllCaptions ? (
+                        <>
+                          <ChevronUp className="h-4 w-4" />
+                          Mostrar menos
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-4 w-4" />
+                          Ver mais legendas
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </section>
         );
@@ -336,18 +401,27 @@ const Index = () => {
               Robôs de IA para Marketing
             </h3>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-12">
-              {allTools.map((tool, index) => (
-                <ToolCard
-                  key={index}
-                  title={tool.title}
-                  url={tool.url}
-                  icon={tool.icon}
-                  description={tool.description}
-                  isNew={(tool as any).isNew}
-                />
-              ))}
-            </div>
+            {toolsLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <Skeleton key={i} className="h-32 rounded-xl" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-12">
+                {toolsData?.map((tool) => (
+                  <ToolCard
+                    key={tool.id}
+                    title={tool.title}
+                    url={tool.url}
+                    icon={tool.icon}
+                    description={tool.description || "Ferramenta de IA para marketing"}
+                    isNew={tool.is_new}
+                    onClick={() => trackClick('tool', tool.id)}
+                  />
+                ))}
+              </div>
+            )}
             
             <div className="bg-card rounded-3xl shadow-canva p-6">
               <ResourceSection

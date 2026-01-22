@@ -7,9 +7,10 @@ interface ToolCardProps {
   icon?: string;
   description?: string;
   isNew?: boolean;
+  onClick?: () => void;
 }
 
-export const ToolCard = ({ title, url, icon = "🤖", description, isNew }: ToolCardProps) => {
+export const ToolCard = ({ title, url, icon = "🤖", description, isNew, onClick }: ToolCardProps) => {
   // Generate gradient based on title
   const getGradient = () => {
     const gradients = [
@@ -23,12 +24,19 @@ export const ToolCard = ({ title, url, icon = "🤖", description, isNew }: Tool
     return gradients[index];
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      onClick();
+    }
+  };
+
   return (
     <a
       href={url}
       target="_blank"
       rel="noopener noreferrer"
       className="group block"
+      onClick={handleClick}
     >
       <article className="flex flex-col cursor-pointer">
         {/* Image container */}

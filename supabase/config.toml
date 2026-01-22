@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.parse-content-file]
 verify_jwt = false
+
+[functions.stripe-dashboard]
+verify_jwt = false
