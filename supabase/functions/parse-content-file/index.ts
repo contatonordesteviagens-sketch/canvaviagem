@@ -6,6 +6,91 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Security constants for input validation
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_CONTENT_LENGTH = 50000; // Characters sent to AI
+const MAX_URL_LENGTH = 2048;
+const MAX_TITLE_LENGTH = 500;
+
+// Allowlist of acceptable MIME types
+const ALLOWED_MIME_TYPES = [
+  "text/plain",
+  "text/csv",
+  "application/csv",
+  "application/pdf",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+];
+
+// Validate URL format and structure
+function isValidUrl(url: string): boolean {
+  if (!url || typeof url !== "string") return false;
+  if (url.length > MAX_URL_LENGTH) return false;
+  
+  try {
+    const parsed = new URL(url);
+    // Only allow http and https protocols
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return false;
+    }
+    // Block potentially dangerous patterns
+    if (url.includes("javascript:") || url.includes("data:") || url.includes("vbscript:")) {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Sanitize title to prevent injection
+function sanitizeTitle(title: string): string {
+  if (!title || typeof title !== "string") return "";
+  // Truncate to max length
+  let sanitized = title.substring(0, MAX_TITLE_LENGTH);
+  // Remove potentially dangerous characters
+  sanitized = sanitized.replace(/[<>'"\\]/g, "");
+  // Trim whitespace
+  return sanitized.trim();
+}
+
+// Validate and sanitize extracted items
+function validateAndSanitizeItems(items: unknown[]): Array<{ title: string; url: string }> {
+  if (!Array.isArray(items)) return [];
+  
+  const validItems: Array<{ title: string; url: string }> = [];
+  
+  for (const item of items) {
+    if (!item || typeof item !== "object") continue;
+    
+    const rawTitle = (item as Record<string, unknown>).title;
+    const rawUrl = (item as Record<string, unknown>).url;
+    
+    if (typeof rawTitle !== "string" || typeof rawUrl !== "string") continue;
+    
+    const sanitizedTitle = sanitizeTitle(rawTitle);
+    const url = rawUrl.trim();
+    
+    // Only include items with valid URLs and non-empty titles
+    if (sanitizedTitle && isValidUrl(url)) {
+      validItems.push({
+        title: sanitizedTitle,
+        url: url,
+      });
+    }
+  }
+  
+  return validItems;
+}
+
+// Validate MIME type against allowlist
+function isAllowedMimeType(mimeType: string): boolean {
+  if (!mimeType || typeof mimeType !== "string") return false;
+  // Normalize and check against allowlist
+  const normalized = mimeType.toLowerCase().split(";")[0].trim();
+  return ALLOWED_MIME_TYPES.includes(normalized);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -55,13 +140,45 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Admin ${user.email} accessing parse-content-file`);
+    // Log admin access (redact email for security)
+    const emailParts = (user.email || "").split("@");
+    const redactedEmail = emailParts.length === 2 
+      ? `${emailParts[0].substring(0, 2)}***@${emailParts[1]}`
+      : "[redacted]";
+    console.log(`Admin ${redactedEmail} accessing parse-content-file`);
 
-    const { fileContent, fileName, mimeType } = await req.json();
+    const body = await req.json();
+    const { fileContent, fileName, mimeType } = body;
 
+    // Validate required fields
     if (!fileContent) {
       return new Response(
         JSON.stringify({ error: "File content is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate file content type
+    if (typeof fileContent !== "string") {
+      return new Response(
+        JSON.stringify({ error: "Invalid file content format" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate MIME type
+    if (mimeType && !isAllowedMimeType(mimeType)) {
+      return new Response(
+        JSON.stringify({ error: "Unsupported file type" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate file size (base64 is ~33% larger than original)
+    const estimatedSize = fileContent.length * 0.75; // Approximate original size
+    if (estimatedSize > MAX_FILE_SIZE_BYTES) {
+      return new Response(
+        JSON.stringify({ error: `File too large. Maximum size is ${MAX_FILE_SIZE_BYTES / (1024 * 1024)}MB` }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -76,8 +193,14 @@ serve(async (req) => {
     try {
       textContent = atob(fileContent);
     } catch {
+      // If not base64, use as-is (but truncate for safety)
       textContent = fileContent;
     }
+
+    // Sanitize filename for logging (remove potentially dangerous chars)
+    const safeFileName = (fileName || "unknown")
+      .replace(/[<>'"\\]/g, "")
+      .substring(0, 255);
 
     const systemPrompt = `You are a data extraction assistant. Extract content items from the provided file.
     
@@ -108,7 +231,7 @@ Be thorough and extract ALL items you can find. Look for patterns like:
           { role: "system", content: systemPrompt },
           { 
             role: "user", 
-            content: `File name: ${fileName}\nMIME type: ${mimeType}\n\nContent:\n${textContent.substring(0, 50000)}` 
+            content: `File name: ${safeFileName}\nMIME type: ${mimeType || "unknown"}\n\nContent:\n${textContent.substring(0, MAX_CONTENT_LENGTH)}` 
           },
         ],
       }),
@@ -127,24 +250,25 @@ Be thorough and extract ALL items you can find. Look for patterns like:
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      console.error("AI gateway error:", response.status);
       throw new Error("Failed to process file with AI");
     }
 
     const aiResponse = await response.json();
     const content = aiResponse.choices?.[0]?.message?.content || "[]";
 
-    // Parse the JSON from the response
-    let items = [];
+    // Parse and validate the JSON from the response
+    let items: Array<{ title: string; url: string }> = [];
     try {
       // Try to extract JSON from the response
       const jsonMatch = content.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
-        items = JSON.parse(jsonMatch[0]);
+        const parsed = JSON.parse(jsonMatch[0]);
+        // Validate and sanitize all extracted items
+        items = validateAndSanitizeItems(parsed);
       }
     } catch (parseError) {
-      console.error("Error parsing AI response:", parseError);
+      console.error("Error parsing AI response");
       items = [];
     }
 
@@ -154,9 +278,9 @@ Be thorough and extract ALL items you can find. Look for patterns like:
     );
 
   } catch (error) {
-    console.error("Error in parse-content-file:", error);
+    console.error("Error in parse-content-file");
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: "An error occurred while processing the file" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
