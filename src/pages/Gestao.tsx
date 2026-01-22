@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, LayoutDashboard, FolderOpen, Upload, StickyNote, Eye } from "lucide-react";
+import { Loader2, LayoutDashboard, FolderOpen, Upload, StickyNote, Eye, History } from "lucide-react";
 import {
   useAllContentItems,
   useAllCaptions,
@@ -19,6 +19,7 @@ import { ImportSection } from "@/components/gestao/ImportSection";
 import { NotesSection } from "@/components/gestao/NotesSection";
 import { PreviewSection } from "@/components/gestao/PreviewSection";
 import { DashboardSection } from "@/components/gestao/DashboardSection";
+import { HistorySection } from "@/components/gestao/HistorySection";
 import { EditModal } from "@/components/gestao/EditModal";
 import { CaptionEditModal } from "@/components/gestao/CaptionEditModal";
 
@@ -165,6 +166,10 @@ const Gestao = () => {
               <Eye className="h-4 w-4" />
               Preview
             </TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center gap-2 flex-1 min-w-[120px]">
+              <History className="h-4 w-4" />
+              Histórico
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
@@ -202,6 +207,11 @@ const Gestao = () => {
           {/* Preview Tab */}
           <TabsContent value="preview" className="mt-0">
             <PreviewSection />
+          </TabsContent>
+
+          {/* History Tab */}
+          <TabsContent value="history" className="mt-0">
+            <HistorySection />
           </TabsContent>
         </Tabs>
       </div>
