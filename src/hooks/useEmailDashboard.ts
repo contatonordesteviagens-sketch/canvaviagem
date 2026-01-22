@@ -37,19 +37,15 @@ export const useEmailDashboard = () => {
     refetchInterval: 30000, // Atualiza a cada 30 segundos
   });
 
-  // Eventos recentes - usando fetch direto para evitar problemas de tipagem
+  // Eventos recentes - usando fetch direto na tabela
   const eventsQuery = useQuery({
     queryKey: ["email-events"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .rpc("get_email_events_recent", { limit_count: 50 })
-        .then(res => {
-          // Fallback: se a função RPC não existir, retornar array vazio
-          if (res.error?.code === "PGRST202") {
-            return { data: [], error: null };
-          }
-          return res;
-        });
+        .from("email_events")
+        .select("id, email_id, type, recipient_email, email_type, created_at")
+        .order("created_at", { ascending: false })
+        .limit(50);
       
       if (error) throw error;
       return (data || []) as EmailEvent[];

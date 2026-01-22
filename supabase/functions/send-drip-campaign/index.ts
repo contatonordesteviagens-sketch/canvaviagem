@@ -136,7 +136,8 @@ const getEmail3Content = (name: string) => `
 
 // ========== SEND FUNCTIONS ==========
 
-async function sendEmail1(resend: Resend, email: string, name: string, supabase: ReturnType<typeof createClient>) {
+// deno-lint-ignore no-explicit-any
+async function sendEmail1(resend: Resend, email: string, name: string, supabase: any) {
   const content = getEmail1Content(name);
   const html = getEmailTemplate(content, "🎥 Assistir Vídeo Aula", "https://youtu.be/1Or9QJPn6OA");
   
@@ -149,19 +150,21 @@ async function sendEmail1(resend: Resend, email: string, name: string, supabase:
   
   // Salvar evento 'sent' na tabela email_events
   if (result.data?.id) {
-    await supabase.rpc("insert_email_event", {
-      p_email_id: result.data.id,
-      p_type: "sent",
-      p_recipient_email: email,
-      p_email_type: "email_1",
-    }).catch((e: Error) => logStep("Email event insert error", { error: e.message }));
+    const { error } = await supabase.from("email_events").insert({
+      email_id: result.data.id,
+      type: "sent",
+      recipient_email: email,
+      email_type: "email_1",
+    });
+    if (error) logStep("Email event insert error", { error: error.message });
   }
   
   logStep("Email 1 sent", { email, emailId: result.data?.id });
   return result;
 }
 
-async function sendEmail2(resend: Resend, email: string, name: string, supabase: ReturnType<typeof createClient>) {
+// deno-lint-ignore no-explicit-any
+async function sendEmail2(resend: Resend, email: string, name: string, supabase: any) {
   const content = getEmail2Content(name);
   const html = getEmailTemplate(content, "✈️ Conhecer o Curso Agente Lucrativo", "https://rochadigitalmidia.com.br/agente-lucrativo/");
   
@@ -173,19 +176,21 @@ async function sendEmail2(resend: Resend, email: string, name: string, supabase:
   });
   
   if (result.data?.id) {
-    await supabase.rpc("insert_email_event", {
-      p_email_id: result.data.id,
-      p_type: "sent",
-      p_recipient_email: email,
-      p_email_type: "email_2",
-    }).catch((e: Error) => logStep("Email event insert error", { error: e.message }));
+    const { error } = await supabase.from("email_events").insert({
+      email_id: result.data.id,
+      type: "sent",
+      recipient_email: email,
+      email_type: "email_2",
+    });
+    if (error) logStep("Email event insert error", { error: error.message });
   }
   
   logStep("Email 2 sent", { email, emailId: result.data?.id });
   return result;
 }
 
-async function sendEmail3(resend: Resend, email: string, name: string, supabase: ReturnType<typeof createClient>) {
+// deno-lint-ignore no-explicit-any
+async function sendEmail3(resend: Resend, email: string, name: string, supabase: any) {
   const content = getEmail3Content(name);
   const html = getEmailTemplate(content, "🚀 Quero Ser Um Agente Lucrativo", "https://rochadigitalmidia.com.br/agente-lucrativo/");
   
@@ -197,12 +202,13 @@ async function sendEmail3(resend: Resend, email: string, name: string, supabase:
   });
   
   if (result.data?.id) {
-    await supabase.rpc("insert_email_event", {
-      p_email_id: result.data.id,
-      p_type: "sent",
-      p_recipient_email: email,
-      p_email_type: "email_3",
-    }).catch((e: Error) => logStep("Email event insert error", { error: e.message }));
+    const { error } = await supabase.from("email_events").insert({
+      email_id: result.data.id,
+      type: "sent",
+      recipient_email: email,
+      email_type: "email_3",
+    });
+    if (error) logStep("Email event insert error", { error: error.message });
   }
   
   logStep("Email 3 sent", { email, emailId: result.data?.id });
