@@ -313,14 +313,13 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, supabase: any, resen
 }
 
 async function sendWelcomeEmail(resend: any, email: string) {
-  const appUrl = Deno.env.get("APP_URL") || "https://id-preview--998ca1b7-1f9d-4bc1-bba2-e32e02c74e9e.lovable.app";
+  const appUrl = Deno.env.get("APP_URL") || "https://canvatrip.lovable.app";
 
   try {
     await resend.emails.send({
-      // Modificado para aceitar variáveis em minúsculo
-      from: Deno.env.get("RESEND_FROM_EMAIL") || Deno.env.get("resend_from_email") || "onboarding@resend.dev",
+      from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
       to: [email],
-      subject: "🎉 Seu acesso está liberado! - Canva Viagens",
+      subject: "🚀 Acesso Liberado: Bem-vindo ao Futuro do Marketing de Viagens! 🌴",
       html: `
         <!DOCTYPE html>
         <html>
@@ -331,47 +330,68 @@ async function sendWelcomeEmail(resend: any, email: string) {
         <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
           <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 40px 20px; text-align: center;">
-              <h1 style="color: white; margin: 0; font-size: 28px;">✈️ Canva Viagens</h1>
-              <p style="color: rgba(255,255,255,0.9); margin-top: 10px; font-size: 16px;">Bem-vindo(a)!</p>
+              <p style="font-size: 40px; margin: 0;">✈️ 🤖 📱</p>
+              <h1 style="color: white; margin: 10px 0; font-size: 28px;">Bem-vindo ao Canva Viagens!</h1>
+              <p style="color: rgba(255,255,255,0.9); margin-top: 10px; font-size: 16px;">Sua agência acaba de ganhar superpoderes.</p>
             </div>
             
             <div style="padding: 40px 30px;">
-              <h2 style="color: #1f2937; margin-top: 0;">🎉 Pagamento Confirmado!</h2>
+              <h2 style="color: #1f2937; margin-top: 0;">Pagamento Confirmado com Sucesso! ✅</h2>
               
               <p style="color: #4b5563; line-height: 1.6;">
-                Seu pagamento de <strong>R$ 9,90</strong> foi processado com sucesso e sua assinatura mensal está ativa!
+                É oficial: você faz parte do grupo seleto de agentes que usam tecnologia de ponta para vender mais. Seu acesso está ativo e liberado.
               </p>
               
-              <p style="color: #4b5563; line-height: 1.6;">
-                Agora você tem acesso completo a todos os recursos da plataforma:
-              </p>
+              <h3 style="color: #1f2937;">O que está incluso no seu arsenal:</h3>
               
-              <ul style="color: #4b5563; line-height: 2;">
-                <li>📹 Vídeos Reels profissionais</li>
-                <li>🎨 Templates 100% editáveis</li>
-                <li>🤖 10 Robôs de IA</li>
-                <li>📝 Legendas prontas</li>
-                <li>📥 Downloads ilimitados</li>
-              </ul>
+              <div style="display: grid; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
+                  <span style="font-size: 24px;">📹</span>
+                  <span style="color: #4b5563;">Vídeos Reels Virais prontos para postar</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
+                  <span style="font-size: 24px;">🤖</span>
+                  <span style="color: #4b5563;">10 Robôs de IA trabalhando por você</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
+                  <span style="font-size: 24px;">🎨</span>
+                  <span style="color: #4b5563;">Templates Editáveis de alta conversão</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
+                  <span style="font-size: 24px;">📱</span>
+                  <span style="color: #4b5563;">Estratégias para: Instagram, TikTok e YouTube</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
+                  <span style="font-size: 24px;">🌴</span>
+                  <span style="color: #4b5563;">Banco de Imagens exclusivo de destinos</span>
+                </div>
+              </div>
               
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${appUrl}/auth" 
                    style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
-                  Acessar Plataforma
+                  🚀 Acessar Minha Plataforma
                 </a>
+                <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">Toque no botão para começar a criar</p>
               </div>
               
               <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-top: 20px;">
                 <p style="color: #6b7280; font-size: 14px; margin: 0;">
-                  <strong>Como fazer login:</strong><br>
-                  Use o email <strong>${email}</strong> para acessar. Você receberá um link mágico no seu email para entrar - não precisa de senha!
+                  <strong>🔐 Seu Acesso Seguro:</strong><br><br>
+                  Email cadastrado: <strong>${email}</strong><br><br>
+                  Basta digitar seu email na tela de login e enviaremos um Link Mágico. Sem senhas complicadas para decorar!
                 </p>
               </div>
             </div>
             
             <div style="background-color: #f9fafb; padding: 20px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
-              <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                Precisa de ajuda? Fale conosco no WhatsApp: (85) 9 8641-1294
+              <p style="font-size: 24px; margin: 0 0 10px 0;">🌍 ✈️ 📸</p>
+              <p style="color: #6b7280; font-size: 12px; margin: 0;">
+                © 2025 Canva Viagens & Marketing.<br>
+                Transformando agentes em autoridades digitais.
+              </p>
+              <p style="color: #9ca3af; font-size: 12px; margin-top: 10px;">
+                Precisa de suporte VIP? <a href="https://wa.me/5585986411294" style="color: #6366f1;">Chame no WhatsApp</a>
               </p>
             </div>
           </div>
@@ -386,13 +406,13 @@ async function sendWelcomeEmail(resend: any, email: string) {
 }
 
 async function sendCancellationEmail(resend: any, email: string) {
-  const appUrl = Deno.env.get("APP_URL") || "https://id-preview--998ca1b7-1f9d-4bc1-bba2-e32e02c74e9e.lovable.app";
+  const appUrl = Deno.env.get("APP_URL") || "https://canvatrip.lovable.app";
 
   try {
     await resend.emails.send({
-      from: Deno.env.get("RESEND_FROM_EMAIL") || Deno.env.get("resend_from_email") || "onboarding@resend.dev",
+      from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
       to: [email],
-      subject: "😢 Sua assinatura foi cancelada - Canva Viagens",
+      subject: "💔 Sentiremos sua falta (e seus resultados também...)",
       html: `
         <!DOCTYPE html>
         <html>
@@ -403,33 +423,41 @@ async function sendCancellationEmail(resend: any, email: string) {
         <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
           <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 40px 20px; text-align: center;">
-              <h1 style="color: white; margin: 0; font-size: 28px;">✈️ Canva Viagens</h1>
+              <p style="font-size: 50px; margin: 0;">😢</p>
+              <h1 style="color: white; margin: 10px 0; font-size: 28px;">Sua assinatura foi pausada</h1>
             </div>
             
             <div style="padding: 40px 30px;">
-              <h2 style="color: #1f2937; margin-top: 0;">Assinatura Cancelada</h2>
+              <h2 style="color: #1f2937; margin-top: 0;">Não é um adeus, é um "até logo"!</h2>
               
               <p style="color: #4b5563; line-height: 1.6;">
-                Sua assinatura foi cancelada e seu acesso à plataforma foi encerrado.
+                Confirmamos o cancelamento da sua assinatura. Seu acesso às ferramentas de IA, templates e artes de viagem foi encerrado por enquanto.
               </p>
               
-              <p style="color: #4b5563; line-height: 1.6;">
-                Sentimos muito em ver você partir! 😢
-              </p>
+              <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p style="color: #991b1b; font-weight: bold; margin: 0 0 10px 0;">⚠️ O que você acaba de perder:</p>
+                <ul style="color: #991b1b; margin: 0; padding-left: 20px; line-height: 1.8;">
+                  <li>Atualizações semanais de Reels</li>
+                  <li>Acesso aos novos Robôs de Atendimento</li>
+                  <li>Suporte prioritário de marketing</li>
+                </ul>
+              </div>
               
               <p style="color: #4b5563; line-height: 1.6;">
-                Se mudar de ideia, você pode reativar sua assinatura a qualquer momento:
+                Sabemos que a vida de agente é corrida. Quando estiver pronto para automatizar seu marketing novamente, estaremos te esperando de portas abertas (e com novidades!).
               </p>
               
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${appUrl}/planos" 
                    style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
-                  Reativar Assinatura
+                  🔙 Quero Reativar Agora
                 </a>
               </div>
-              
-              <p style="color: #6b7280; font-size: 14px;">
-                Obrigado por ter feito parte da nossa comunidade!
+            </div>
+            
+            <div style="background-color: #f9fafb; padding: 20px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                Foi um erro? <a href="https://wa.me/5585986411294" style="color: #6366f1;">Fale conosco no WhatsApp</a>
               </p>
             </div>
           </div>
@@ -444,11 +472,13 @@ async function sendCancellationEmail(resend: any, email: string) {
 }
 
 async function sendPaymentFailedEmail(resend: any, email: string) {
+  const appUrl = Deno.env.get("APP_URL") || "https://canvatrip.lovable.app";
+
   try {
     await resend.emails.send({
-      from: Deno.env.get("RESEND_FROM_EMAIL") || Deno.env.get("resend_from_email") || "onboarding@resend.dev",
+      from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
       to: [email],
-      subject: "⚠️ Problema com seu pagamento - Canva Viagens",
+      subject: "🔴 Ação Necessária: Evite o bloqueio do seu marketing",
       html: `
         <!DOCTYPE html>
         <html>
@@ -458,39 +488,47 @@ async function sendPaymentFailedEmail(resend: any, email: string) {
         </head>
         <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
           <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 20px; text-align: center;">
-              <h1 style="color: white; margin: 0; font-size: 28px;">⚠️ Atenção</h1>
+            <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px 20px; text-align: center;">
+              <p style="color: white; font-size: 14px; font-weight: bold; margin: 0;">⚠️ ALERTA DE SISTEMA</p>
             </div>
             
             <div style="padding: 40px 30px;">
-              <h2 style="color: #1f2937; margin-top: 0;">Falha no Pagamento</h2>
-              
-              <p style="color: #4b5563; line-height: 1.6;">
-                Não conseguimos processar o pagamento da sua assinatura mensal.
-              </p>
-              
-              <p style="color: #4b5563; line-height: 1.6;">
-                <strong>Seu acesso foi temporariamente bloqueado.</strong>
-              </p>
-              
-              <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <p style="color: #92400e; margin: 0; font-weight: bold;">O que fazer:</p>
-                <ul style="color: #92400e; margin-top: 10px; padding-left: 20px;">
-                  <li>Verifique os dados do seu cartão</li>
-                  <li>Certifique-se de que há saldo disponível</li>
-                  <li>Atualize suas informações de pagamento</li>
-                </ul>
+              <div style="text-align: center; margin-bottom: 20px;">
+                <p style="font-size: 50px; margin: 0;">💳 🚫</p>
               </div>
               
+              <h2 style="color: #1f2937; margin-top: 0; text-align: center;">O pagamento falhou</h2>
+              
               <p style="color: #4b5563; line-height: 1.6;">
-                Assim que o pagamento for processado, seu acesso será restaurado automaticamente.
+                Olá! Tivemos um probleminha ao processar a renovação da sua assinatura do Canva Viagens.
               </p>
               
-              <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-top: 20px;">
-                <p style="color: #6b7280; font-size: 14px; margin: 0;">
-                  Precisa de ajuda? Fale conosco no WhatsApp: (85) 9 8641-1294
+              <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+                <p style="color: #92400e; margin: 0; font-weight: bold;">
+                  Consequência: Seus acessos aos templates, robôs e downloads ilimitados podem ser suspensos temporariamente nas próximas 24h.
                 </p>
               </div>
+              
+              <p style="color: #4b5563; line-height: 1.6;">
+                Geralmente isso acontece por: cartão vencido, limite insuficiente ou bloqueio preventivo do banco.
+              </p>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${appUrl}/planos" 
+                   style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                  🔄 Atualizar Cartão Agora
+                </a>
+              </div>
+              
+              <p style="color: #4b5563; line-height: 1.6; text-align: center;">
+                Não deixe sua agência parar de vender! Resolva isso em menos de 1 minuto.
+              </p>
+            </div>
+            
+            <div style="background-color: #f9fafb; padding: 20px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                Precisa de um boleto ou PIX? <a href="https://wa.me/5585986411294" style="color: #6366f1;">Chame o Suporte</a>
+              </p>
             </div>
           </div>
         </body>
