@@ -13,6 +13,20 @@ const logStep = (step: string, details?: any) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
+// Generic error messages for clients (security best practice)
+const GENERIC_ERRORS = {
+  badRequest: "Bad request",
+  serviceError: "Service temporarily unavailable",
+  configError: "Service configuration error",
+};
+
+// Email validation helper function
+function isValidEmail(email: string | null | undefined): email is string {
+  if (!email || typeof email !== 'string') return false;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailRegex.test(email) && email.length <= 254;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -27,7 +41,7 @@ serve(async (req) => {
 
   if (!stripeKey) {
     logStep("ERROR: STRIPE_SECRET_KEY not configured");
-    return new Response(JSON.stringify({ error: "Stripe key not configured" }), {
+    return new Response(JSON.stringify({ error: GENERIC_ERRORS.configError }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
@@ -35,7 +49,7 @@ serve(async (req) => {
 
   if (!webhookSecret) {
     logStep("ERROR: STRIPE_WEBHOOK_SECRET not configured");
-    return new Response(JSON.stringify({ error: "Webhook secret not configured" }), {
+    return new Response(JSON.stringify({ error: GENERIC_ERRORS.configError }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
@@ -56,7 +70,7 @@ serve(async (req) => {
 
     if (!signature) {
       logStep("ERROR: No stripe-signature header");
-      return new Response(JSON.stringify({ error: "No signature" }), {
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.badRequest }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
       });
@@ -67,7 +81,7 @@ serve(async (req) => {
       event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
     } catch (err: unknown) {
       logStep("ERROR: Webhook signature verification failed", { error: err instanceof Error ? err.message : String(err) });
-      return new Response(JSON.stringify({ error: "Webhook signature verification failed" }), {
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.badRequest }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
       });
@@ -111,7 +125,7 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR in stripe-webhook", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ error: GENERIC_ERRORS.serviceError }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
@@ -121,11 +135,15 @@ serve(async (req) => {
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabase: any, resend: any) {
   logStep("Processing checkout.session.completed", { sessionId: session.id });
 
-  const email = session.customer_email || session.customer_details?.email;
-  if (!email) {
-    logStep("ERROR: No email found in session");
+  const rawEmail = session.customer_email || session.customer_details?.email;
+  
+  // Validate email format before processing
+  if (!isValidEmail(rawEmail)) {
+    logStep("ERROR: Invalid or missing email in session", { rawEmail: rawEmail ? "[REDACTED]" : "null" });
     return;
   }
+  
+  const email = rawEmail;
 
   const stripeCustomerId = session.customer as string;
   const stripeSubscriptionId = session.subscription as string;

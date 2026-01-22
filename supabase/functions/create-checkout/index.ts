@@ -12,6 +12,13 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
+// Generic error messages for clients (security best practice)
+const GENERIC_ERRORS = {
+  unauthorized: "Unauthorized",
+  serviceError: "Service temporarily unavailable",
+  configError: "Service configuration error",
+};
+
 // Price ID for the monthly subscription - R$ 9,90/month
 const PRICE_ID = "price_1Sr8tOLXUoWoiE4TaKqmrSG5";
 
@@ -29,16 +36,34 @@ serve(async (req) => {
     logStep("Function started");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+    if (!stripeKey) {
+      logStep("ERROR: STRIPE_SECRET_KEY not configured");
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.configError }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
     logStep("Stripe key verified");
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
+    if (!authHeader) {
+      logStep("ERROR: No authorization header provided");
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.unauthorized }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
     
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    if (!user?.email) {
+      logStep("ERROR: User not authenticated or email not available");
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.unauthorized }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -81,7 +106,7 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR in create-checkout", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ error: GENERIC_ERRORS.serviceError }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

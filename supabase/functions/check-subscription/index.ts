@@ -12,6 +12,13 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+// Generic error messages for clients (security best practice)
+const GENERIC_ERRORS = {
+  unauthorized: "Unauthorized",
+  serviceError: "Service temporarily unavailable",
+  configError: "Service configuration error",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -37,11 +44,17 @@ serve(async (req) => {
     logStep("Function started");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+    if (!stripeKey) {
+      logStep("ERROR: STRIPE_SECRET_KEY not configured");
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.configError }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
     logStep("Stripe key verified");
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.unauthorized }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
       });
@@ -50,7 +63,7 @@ serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "").trim();
     if (!token || token === "null" || token === "undefined") {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.unauthorized }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
       });
@@ -61,7 +74,7 @@ serve(async (req) => {
     const { data: userData, error: userError } = await authClient.auth.getUser();
     if (userError || !userData?.user) {
       logStep("Auth error", { error: userError?.message });
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.unauthorized }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
       });
@@ -69,7 +82,13 @@ serve(async (req) => {
 
     const userId = userData.user.id;
     const email = userData.user.email;
-    if (!userId || !email) throw new Error("User not authenticated or email not available");
+    if (!userId || !email) {
+      logStep("ERROR: User authenticated but missing required data");
+      return new Response(JSON.stringify({ error: GENERIC_ERRORS.unauthorized }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
     logStep("User authenticated", { userId, email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -263,7 +282,7 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR in check-subscription", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ error: GENERIC_ERRORS.serviceError }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
