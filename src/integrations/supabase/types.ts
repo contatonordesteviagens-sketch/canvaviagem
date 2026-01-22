@@ -14,6 +14,117 @@ export type Database = {
   }
   public: {
     Tables: {
+      captions: {
+        Row: {
+          category: string | null
+          created_at: string
+          destination: string
+          display_order: number | null
+          hashtags: string
+          id: string
+          is_active: boolean | null
+          text: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          destination: string
+          display_order?: number | null
+          hashtags: string
+          id?: string
+          is_active?: boolean | null
+          text: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          destination?: string
+          display_order?: number | null
+          hashtags?: string
+          id?: string
+          is_active?: boolean | null
+          text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      content_clicks: {
+        Row: {
+          clicked_at: string
+          content_id: string
+          content_type: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          clicked_at?: string
+          content_id: string
+          content_type: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          clicked_at?: string
+          content_id?: string
+          content_type?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      content_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          is_new: boolean | null
+          subcategory: string | null
+          title: string
+          type: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          is_new?: boolean | null
+          subcategory?: string | null
+          title: string
+          type: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          is_new?: boolean | null
+          subcategory?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       email_events: {
         Row: {
           created_at: string
@@ -41,6 +152,48 @@ export type Database = {
           metadata?: Json | null
           recipient_email?: string | null
           type?: string
+        }
+        Relationships: []
+      }
+      marketing_tools: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          is_new: boolean | null
+          title: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          is_new?: boolean | null
+          title: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          is_new?: boolean | null
+          title?: string
+          updated_at?: string
+          url?: string
         }
         Relationships: []
       }
@@ -146,15 +299,43 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -281,6 +462,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
