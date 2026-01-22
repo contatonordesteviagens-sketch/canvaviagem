@@ -47,53 +47,48 @@ const Planos = () => {
       window.history.replaceState({}, "", "/planos");
     }
   }, [searchParams, refreshSubscription, navigate]);
-  const handleCheckout = async () => {
-    // If user is not logged in, redirect to auth first
-    if (!user) {
-      toast.info("Faça login para continuar com a assinatura.");
-      navigate("/auth?redirect=/planos");
-      return;
-    }
+  // Stripe Payment Link for new users (payment-first flow)
+  const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi28s2PEa2Q6aD9wU8so03";
 
+  const handleCheckout = async () => {
     // Track initiate checkout event
-    trackInitiateCheckout(37.90, 'BRL');
+    trackInitiateCheckout(9.90, 'BRL');
     setCheckoutLoading(true);
-    try {
-      const {
-        data: {
-          session
+    
+    // If user is logged in, use edge function for better UX
+    if (user) {
+      try {
+        const {
+          data: {
+            session
+          }
+        } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          const {
+            data,
+            error
+          } = await supabase.functions.invoke("create-checkout", {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`
+            }
+          });
+          if (!error && data?.url) {
+            window.open(data.url, '_blank');
+            toast.info("O checkout foi aberto em uma nova aba. Complete o pagamento e volte aqui!");
+            setCheckoutLoading(false);
+            return;
+          }
         }
-      } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        toast.error("Você precisa estar logado para assinar.");
-        navigate("/auth?redirect=/planos");
-        return;
-      }
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke("create-checkout", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
-      if (error) {
+      } catch (error) {
         console.error("Checkout error:", error);
-        toast.error("Erro ao abrir o checkout. Tente novamente.");
-        return;
+        // Fall through to payment link
       }
-      if (data?.url) {
-        window.open(data.url, '_blank');
-        toast.info("O checkout foi aberto em uma nova aba. Complete o pagamento e volte aqui!");
-      } else {
-        toast.error("Checkout indisponível. Tente novamente.");
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      toast.error("Erro ao processar. Tente novamente.");
-    } finally {
-      setCheckoutLoading(false);
     }
+    
+    // For new users or if edge function fails, use Payment Link
+    window.open(STRIPE_PAYMENT_LINK, '_blank');
+    toast.info("O checkout foi aberto em uma nova aba. Após o pagamento, verifique seu email!");
+    setCheckoutLoading(false);
   };
   const handleRefreshSubscription = async () => {
     setRefreshLoading(true);
@@ -366,7 +361,7 @@ const Planos = () => {
             <h2 className="text-2xl font-bold mb-2">Canva Viagem</h2>
             <div className="flex items-baseline justify-center">
               <span className="text-2xl font-bold opacity-80 text-white">R$</span>
-              <span className="text-5xl font-bold mx-1 text-white/[0.91]">37</span>
+              <span className="text-5xl font-bold mx-1 text-white/[0.91]">9</span>
               <span className="text-2xl font-bold opacity-80 text-white">,90</span>
               <span className="text-xl opacity-80 ml-1 text-white/[0.67]">/mês</span>
             </div>
@@ -405,7 +400,7 @@ const Planos = () => {
                         <span className="text-[10px] opacity-60 font-light mt-1">Abrindo...</span>
                       </> : <>
                         <span className="md:text-lg font-semibold whitespace-nowrap text-2xl my-0 px-[2px] py-0">Quero meu acesso!</span>
-                        <span className="opacity-60 font-light mt-0.5 my-px py-0 px-0 text-sm">Canva Viagem Premium por R$ 37        </span>
+                        <span className="opacity-60 font-light mt-0.5 my-px py-0 px-0 text-sm">Canva Viagem Premium por R$ 9,90</span>
                       </>}
                   </Button>
                   
