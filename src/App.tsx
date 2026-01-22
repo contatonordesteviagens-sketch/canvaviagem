@@ -12,7 +12,11 @@ import Sucesso from "./pages/Sucesso";
 import Obrigado from "./pages/Obrigado";
 import PosPagamento from "./pages/PosPagamento";
 import NotFound from "./pages/NotFound";
+import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
+import ContentManager from "./pages/admin/ContentManager";
+import CaptionsManager from "./pages/admin/CaptionsManager";
+import ToolsManager from "./pages/admin/ToolsManager";
 
 const queryClient = new QueryClient();
 
@@ -31,7 +35,15 @@ const App = () => (
             <Route path="/sucesso" element={<Sucesso />} />
             <Route path="/obrigado" element={<Obrigado />} />
             <Route path="/pos-pagamento" element={<PosPagamento />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="content" element={<ContentManager />} />
+              <Route path="captions" element={<CaptionsManager />} />
+              <Route path="tools" element={<ToolsManager />} />
+            </Route>
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
