@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Video, Image, BookOpen, FileText, Wrench, Download, Plus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Video, Image, BookOpen, FileText, Wrench, Download, Plus, ArrowUpDown, Clock, ArrowDown, ArrowUp } from "lucide-react";
 import { EditableCard } from "./EditableCard";
 import { CaptionCard } from "./CaptionCard";
 import { SortableCard } from "./SortableCard";
@@ -49,6 +50,8 @@ interface ContentSectionProps {
   onEditCaption: (caption: EditableCaption) => void;
 }
 
+type SortOrder = "recent" | "oldest" | "custom";
+
 export const ContentSection = ({
   contentItems,
   captions,
@@ -61,6 +64,7 @@ export const ContentSection = ({
   const [createCaptionModalOpen, setCreateCaptionModalOpen] = useState(false);
   const [createType, setCreateType] = useState<"content" | "tool">("content");
   const [currentTab, setCurrentTab] = useState("videos");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("recent");
 
   const createContentItem = useCreateContentItem();
   const createCaption = useCreateCaption();
@@ -78,14 +82,74 @@ export const ContentSection = ({
     })
   );
 
-  // Filter content by type
-  const videoItems = contentItems.filter(item => ['video', 'seasonal'].includes(item.type));
-  const feedItems = contentItems.filter(item => item.type === 'feed');
-  const storyItems = contentItems.filter(item => ['story', 'weekly-story'].includes(item.type));
-  const resourceItems = contentItems.filter(item => ['resource', 'download'].includes(item.type));
+  // Sort function
+  const sortItems = <T extends { created_at?: string }>(items: T[]): T[] => {
+    if (sortOrder === "custom") return items;
+    return [...items].sort((a, b) => {
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
+      return sortOrder === "recent" ? dateB - dateA : dateA - dateB;
+    });
+  };
 
-  const nacionalCaptions = captions.filter(c => c.category === 'nacional');
-  const internacionalCaptions = captions.filter(c => c.category === 'internacional');
+  // Filter and sort content by type
+  const videoItems = useMemo(() => 
+    sortItems(contentItems.filter(item => ['video', 'seasonal'].includes(item.type))),
+    [contentItems, sortOrder]
+  );
+  const feedItems = useMemo(() => 
+    sortItems(contentItems.filter(item => item.type === 'feed')),
+    [contentItems, sortOrder]
+  );
+  const storyItems = useMemo(() => 
+    sortItems(contentItems.filter(item => ['story', 'weekly-story'].includes(item.type))),
+    [contentItems, sortOrder]
+  );
+  const resourceItems = useMemo(() => 
+    sortItems(contentItems.filter(item => ['resource', 'download'].includes(item.type))),
+    [contentItems, sortOrder]
+  );
+
+  const nacionalCaptions = useMemo(() => 
+    sortItems(captions.filter(c => c.category === 'nacional')),
+    [captions, sortOrder]
+  );
+  const internacionalCaptions = useMemo(() => 
+    sortItems(captions.filter(c => c.category === 'internacional')),
+    [captions, sortOrder]
+  );
+
+  const sortedTools = useMemo(() => sortItems(tools), [tools, sortOrder]);
+
+  // Sort filter component
+  const SortFilter = () => (
+    <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as SortOrder)}>
+      <SelectTrigger className="w-48">
+        <ArrowUpDown className="w-4 h-4 mr-2" />
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="recent">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4" />
+            Mais recentes
+          </div>
+        </SelectItem>
+        <SelectItem value="oldest">
+          <div className="flex items-center gap-2">
+            <ArrowUp className="w-4 h-4" />
+            Mais antigos
+          </div>
+        </SelectItem>
+        <SelectItem value="custom">
+          <div className="flex items-center gap-2">
+            <ArrowDown className="w-4 h-4" />
+            Ordem manual (drag)
+          </div>
+        </SelectItem>
+      </SelectContent>
+    </Select>
+  );
 
   const handleDragEnd = (event: DragEndEvent, items: { id: string }[], table: "content_items" | "captions" | "marketing_tools") => {
     const { active, over } = event;
@@ -285,77 +349,84 @@ export const ContentSection = ({
 
         {/* Videos Tab */}
         <TabsContent value="videos" className="mt-6">
-          <div className="mb-4">
+          <div className="mb-4 flex flex-wrap items-center gap-4">
             <Button onClick={() => openCreateModal("content")} className="gap-2">
               <Plus className="h-4 w-4" />
               Adicionar Vídeo
             </Button>
+            <SortFilter />
           </div>
           {renderItemGrid(videoItems, "content_items")}
         </TabsContent>
 
         {/* Artes Tab */}
         <TabsContent value="artes" className="mt-6">
-          <div className="mb-4">
+          <div className="mb-4 flex flex-wrap items-center gap-4">
             <Button onClick={() => openCreateModal("content")} className="gap-2">
               <Plus className="h-4 w-4" />
               Adicionar Arte
             </Button>
+            <SortFilter />
           </div>
           {renderItemGrid(feedItems, "content_items")}
         </TabsContent>
 
         {/* Stories Tab */}
         <TabsContent value="stories" className="mt-6">
-          <div className="mb-4">
+          <div className="mb-4 flex flex-wrap items-center gap-4">
             <Button onClick={() => openCreateModal("content")} className="gap-2">
               <Plus className="h-4 w-4" />
               Adicionar Story
             </Button>
+            <SortFilter />
           </div>
           {renderItemGrid(storyItems, "content_items")}
         </TabsContent>
 
         {/* Legendas Nacionais Tab */}
         <TabsContent value="legendas-nac" className="mt-6">
-          <div className="mb-4">
+          <div className="mb-4 flex flex-wrap items-center gap-4">
             <Button onClick={() => setCreateCaptionModalOpen(true)} className="gap-2">
               <Plus className="h-4 w-4" />
               Adicionar Legenda
             </Button>
+            <SortFilter />
           </div>
           {renderCaptionGrid(nacionalCaptions, "captions")}
         </TabsContent>
 
         {/* Legendas Internacionais Tab */}
         <TabsContent value="legendas-int" className="mt-6">
-          <div className="mb-4">
+          <div className="mb-4 flex flex-wrap items-center gap-4">
             <Button onClick={() => setCreateCaptionModalOpen(true)} className="gap-2">
               <Plus className="h-4 w-4" />
               Adicionar Legenda
             </Button>
+            <SortFilter />
           </div>
           {renderCaptionGrid(internacionalCaptions, "captions")}
         </TabsContent>
 
         {/* Ferramentas Tab */}
         <TabsContent value="ferramentas" className="mt-6">
-          <div className="mb-4">
+          <div className="mb-4 flex flex-wrap items-center gap-4">
             <Button onClick={() => openCreateModal("tool")} className="gap-2">
               <Plus className="h-4 w-4" />
               Adicionar Ferramenta
             </Button>
+            <SortFilter />
           </div>
-          {renderToolGrid(tools)}
+          {renderToolGrid(sortedTools)}
         </TabsContent>
 
         {/* Recursos Tab */}
         <TabsContent value="recursos" className="mt-6">
-          <div className="mb-4">
+          <div className="mb-4 flex flex-wrap items-center gap-4">
             <Button onClick={() => openCreateModal("content")} className="gap-2">
               <Plus className="h-4 w-4" />
               Adicionar Recurso
             </Button>
+            <SortFilter />
           </div>
           {renderItemGrid(resourceItems, "content_items")}
         </TabsContent>

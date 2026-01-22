@@ -7,10 +7,23 @@ export type ContentType = 'video' | 'feed' | 'story' | 'caption' | 'tool' | 'res
 export interface ParsedItem {
   title: string;
   url: string;
+  icon?: string;
   destination?: string;
   text?: string;
   hashtags?: string;
 }
+
+export const getDefaultIconByType = (type: ContentType): string => {
+  const iconMap: Record<ContentType, string> = {
+    video: "🎬",
+    feed: "🖼️",
+    story: "📱",
+    caption: "📝",
+    tool: "🤖",
+    resource: "📥",
+  };
+  return iconMap[type] || "📄";
+};
 
 export const useImportContent = () => {
   const [parsedItems, setParsedItems] = useState<ParsedItem[]>([]);
@@ -113,6 +126,7 @@ export const useImportContent = () => {
           items.map((item, index) => ({
             title: item.title,
             url: item.url,
+            icon: item.icon || "🤖",
             display_order: index,
             is_active: true,
           }))
@@ -124,6 +138,7 @@ export const useImportContent = () => {
           items.map((item, index) => ({
             title: item.title,
             url: item.url,
+            icon: item.icon || getDefaultIconByType(type),
             type: type,
             display_order: index,
             is_active: true,

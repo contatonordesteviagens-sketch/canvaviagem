@@ -1,22 +1,72 @@
 import { useState, useCallback } from "react";
-import { useImportContent, ContentType, ParsedItem } from "@/hooks/useImportContent";
+import { useImportContent, ContentType, ParsedItem, getDefaultIconByType } from "@/hooks/useImportContent";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Upload, FileText, Loader2, Trash2, Check, X } from "lucide-react";
+import { Upload, FileText, Loader2, Trash2, Check, X, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+
+// Icon options by category
+const iconsByCategory: Record<ContentType, { value: string; label: string }[]> = {
+  video: [
+    { value: "🎬", label: "🎬 Vídeo" },
+    { value: "🎥", label: "🎥 Câmera" },
+    { value: "📹", label: "📹 Filmadora" },
+    { value: "🎞️", label: "🎞️ Filme" },
+    { value: "▶️", label: "▶️ Play" },
+  ],
+  feed: [
+    { value: "🖼️", label: "🖼️ Quadro" },
+    { value: "🎨", label: "🎨 Arte" },
+    { value: "📸", label: "📸 Foto" },
+    { value: "✨", label: "✨ Destaque" },
+    { value: "🌅", label: "🌅 Paisagem" },
+  ],
+  story: [
+    { value: "📱", label: "📱 Celular" },
+    { value: "📲", label: "📲 Mobile" },
+    { value: "👆", label: "👆 Toque" },
+    { value: "💫", label: "💫 Magic" },
+    { value: "🔥", label: "🔥 Fire" },
+  ],
+  tool: [
+    { value: "🤖", label: "🤖 Robô" },
+    { value: "⚙️", label: "⚙️ Engrenagem" },
+    { value: "🔧", label: "🔧 Ferramenta" },
+    { value: "💡", label: "💡 Ideia" },
+    { value: "🚀", label: "🚀 Foguete" },
+  ],
+  resource: [
+    { value: "📥", label: "📥 Download" },
+    { value: "📦", label: "📦 Pacote" },
+    { value: "📁", label: "📁 Pasta" },
+    { value: "💾", label: "💾 Salvar" },
+    { value: "📚", label: "📚 Livros" },
+  ],
+  caption: [
+    { value: "📝", label: "📝 Nota" },
+    { value: "✍️", label: "✍️ Escrita" },
+    { value: "💬", label: "💬 Balão" },
+    { value: "📄", label: "📄 Documento" },
+    { value: "🏷️", label: "🏷️ Tag" },
+  ],
+};
+
+interface EditableItem extends ParsedItem {
+  icon: string;
+}
 
 export const ImportSection = () => {
   const [selectedType, setSelectedType] = useState<ContentType>('video');
   const [dragActive, setDragActive] = useState(false);
+  const [editableItems, setEditableItems] = useState<EditableItem[]>([]);
+  const [bulkIcon, setBulkIcon] = useState<string>("");
   
   const {
     parseFile,
-    parsedItems,
-    setParsedItems,
     clearParsedItems,
     isParsingFile,
     importContent,
@@ -38,46 +88,102 @@ export const ImportSection = () => {
     e.stopPropagation();
     setDragActive(false);
 
-    const files = e.dataTransfer.files;
-    if (files && files[0]) {
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
       try {
-        await parseFile(files[0]);
-        toast.success(`${files[0].name} processado com sucesso!`);
+        const defaultIcon = getDefaultIconByType(selectedType);
+        for (const file of files) {
+          const items = await parseFile(file);
+          const itemsWithIcons = items.map(item => ({
+            ...item,
+            icon: item.icon || defaultIcon,
+          }));
+          setEditableItems(prev => [...prev, ...itemsWithIcons]);
+        }
+        toast.success(`${files.length} arquivo(s) processado(s) com sucesso!`);
       } catch (error) {
-        toast.error("Erro ao processar arquivo");
+        toast.error("Erro ao processar arquivo(s)");
         console.error(error);
       }
     }
-  }, [parseFile]);
+  }, [parseFile, selectedType]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
       try {
-        await parseFile(file);
-        toast.success(`${file.name} processado com sucesso!`);
+        const defaultIcon = getDefaultIconByType(selectedType);
+        for (const file of files) {
+          const items = await parseFile(file);
+          const itemsWithIcons = items.map(item => ({
+            ...item,
+            icon: item.icon || defaultIcon,
+          }));
+          setEditableItems(prev => [...prev, ...itemsWithIcons]);
+        }
+        toast.success(`${files.length} arquivo(s) processado(s) com sucesso!`);
       } catch (error) {
-        toast.error("Erro ao processar arquivo");
+        toast.error("Erro ao processar arquivo(s)");
         console.error(error);
       }
     }
+    // Reset input
+    e.target.value = "";
+  };
+
+  const handleTypeChange = (newType: ContentType) => {
+    setSelectedType(newType);
+    const defaultIcon = getDefaultIconByType(newType);
+    // Update all items without custom icons to the new default
+    setEditableItems(prev => prev.map(item => ({
+      ...item,
+      icon: defaultIcon,
+    })));
+  };
+
+  const updateItemField = (index: number, field: keyof EditableItem, value: string) => {
+    setEditableItems(prev => prev.map((item, i) => 
+      i === index ? { ...item, [field]: value } : item
+    ));
   };
 
   const handleRemoveItem = (index: number) => {
-    setParsedItems(prev => prev.filter((_, i) => i !== index));
+    setEditableItems(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleClearAll = () => {
+    setEditableItems([]);
+    clearParsedItems();
+  };
+
+  const applyIconToAll = () => {
+    if (!bulkIcon) return;
+    setEditableItems(prev => prev.map(item => ({
+      ...item,
+      icon: bulkIcon,
+    })));
+    toast.success("Ícone aplicado a todos os itens!");
   };
 
   const handleImport = () => {
-    if (parsedItems.length === 0) {
+    if (editableItems.length === 0) {
       toast.error("Nenhum item para importar");
       return;
     }
 
+    // Validate all items have title and url
+    const invalidItems = editableItems.filter(item => !item.title.trim() || !item.url.trim());
+    if (invalidItems.length > 0) {
+      toast.error(`${invalidItems.length} item(s) sem título ou URL`);
+      return;
+    }
+
     importContent(
-      { items: parsedItems, type: selectedType },
+      { items: editableItems, type: selectedType },
       {
         onSuccess: () => {
-          toast.success(`${parsedItems.length} itens importados com sucesso!`);
+          toast.success(`${editableItems.length} itens importados com sucesso!`);
+          setEditableItems([]);
         },
         onError: (error) => {
           toast.error("Erro ao importar itens");
@@ -96,8 +202,10 @@ export const ImportSection = () => {
     { value: 'resource', label: '📚 Recurso' },
   ];
 
+  const currentIcons = iconsByCategory[selectedType] || iconsByCategory.video;
+
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto">
       {/* Type Selection */}
       <Card>
         <CardHeader>
@@ -109,7 +217,7 @@ export const ImportSection = () => {
               <Button
                 key={option.value}
                 variant={selectedType === option.value ? 'default' : 'outline'}
-                onClick={() => setSelectedType(option.value as ContentType)}
+                onClick={() => handleTypeChange(option.value as ContentType)}
               >
                 {option.label}
               </Button>
@@ -121,7 +229,7 @@ export const ImportSection = () => {
       {/* File Upload */}
       <Card>
         <CardHeader>
-          <CardTitle>Upload de Arquivo</CardTitle>
+          <CardTitle>Upload de Arquivos</CardTitle>
         </CardHeader>
         <CardContent>
           <div
@@ -138,22 +246,22 @@ export const ImportSection = () => {
             {isParsingFile ? (
               <div className="flex flex-col items-center gap-4">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                <p className="text-muted-foreground">Processando arquivo com IA...</p>
+                <p className="text-muted-foreground">Processando arquivo(s) com IA...</p>
               </div>
             ) : (
               <>
                 <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <p className="text-lg font-medium mb-2">
-                  Arraste um arquivo aqui ou clique para selecionar
+                  Arraste arquivos aqui ou clique para selecionar
                 </p>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Formatos suportados: TXT, CSV, XLSX, PDF
+                  Suporta múltiplos arquivos: TXT, CSV, XLSX, PDF
                 </p>
                 <Label htmlFor="file-upload" className="cursor-pointer">
                   <Button asChild>
                     <span>
                       <FileText className="h-4 w-4 mr-2" />
-                      Selecionar Arquivo
+                      Selecionar Arquivos
                     </span>
                   </Button>
                   <Input
@@ -162,6 +270,7 @@ export const ImportSection = () => {
                     className="hidden"
                     accept=".txt,.csv,.xlsx,.xls,.pdf"
                     onChange={handleFileChange}
+                    multiple
                   />
                 </Label>
               </>
@@ -178,14 +287,39 @@ export const ImportSection = () => {
         </CardContent>
       </Card>
 
-      {/* Preview Table */}
-      {parsedItems.length > 0 && (
+      {/* Editable Preview Table */}
+      {editableItems.length > 0 && (
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Preview ({parsedItems.length} itens)</CardTitle>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={clearParsedItems}>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle>Editar Itens ({editableItems.length})</CardTitle>
+              <div className="flex flex-wrap gap-2">
+                {/* Bulk Icon Selector */}
+                <div className="flex items-center gap-2">
+                  <Select value={bulkIcon} onValueChange={setBulkIcon}>
+                    <SelectTrigger className="w-24">
+                      <SelectValue placeholder="Ícone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currentIcons.map(icon => (
+                        <SelectItem key={icon.value} value={icon.value}>
+                          {icon.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={applyIconToAll}
+                    disabled={!bulkIcon}
+                  >
+                    <Sparkles className="h-4 w-4 mr-1" />
+                    Aplicar a Todos
+                  </Button>
+                </div>
+
+                <Button variant="outline" size="sm" onClick={handleClearAll}>
                   <X className="h-4 w-4 mr-1" />
                   Limpar
                 </Button>
@@ -199,36 +333,61 @@ export const ImportSection = () => {
                   ) : (
                     <Check className="h-4 w-4 mr-1" />
                   )}
-                  Importar Todos
+                  Salvar {editableItems.length} Itens
                 </Button>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="border rounded-lg overflow-hidden">
+            <div className="border rounded-lg overflow-hidden overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12">#</TableHead>
-                    <TableHead>Título</TableHead>
-                    <TableHead>URL</TableHead>
+                    <TableHead className="w-20">Ícone</TableHead>
+                    <TableHead className="min-w-[200px]">Nome</TableHead>
+                    <TableHead className="min-w-[300px]">Link</TableHead>
                     <TableHead className="w-12"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {parsedItems.map((item, index) => (
+                  {editableItems.map((item, index) => (
                     <TableRow key={index}>
-                      <TableCell className="font-medium">{index + 1}</TableCell>
-                      <TableCell>{item.title}</TableCell>
-                      <TableCell className="max-w-[300px] truncate">
-                        <a 
-                          href={item.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline"
+                      <TableCell className="font-medium text-muted-foreground">
+                        {index + 1}
+                      </TableCell>
+                      <TableCell>
+                        <Select 
+                          value={item.icon} 
+                          onValueChange={(v) => updateItemField(index, 'icon', v)}
                         >
-                          {item.url}
-                        </a>
+                          <SelectTrigger className="w-16">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {currentIcons.map(icon => (
+                              <SelectItem key={icon.value} value={icon.value}>
+                                {icon.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Input 
+                          value={item.title} 
+                          onChange={(e) => updateItemField(index, 'title', e.target.value)}
+                          placeholder="Título do item..."
+                          className={!item.title.trim() ? 'border-destructive' : ''}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input 
+                          value={item.url} 
+                          onChange={(e) => updateItemField(index, 'url', e.target.value)}
+                          placeholder="https://..."
+                          className={!item.url.trim() ? 'border-destructive' : ''}
+                        />
                       </TableCell>
                       <TableCell>
                         <Button
