@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.resend-webhook]
 verify_jwt = false
+
+[functions.parse-content-file]
+verify_jwt = false
