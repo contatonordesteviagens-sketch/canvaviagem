@@ -254,70 +254,71 @@ export const ImportSection = () => {
     );
   };
 
-  // Quick import from text - Supports both formats:
-  // 1. Title on same line as URL: "Dubai https://canva.com/..."
-  // 2. Title on line ABOVE URL (most common):
-  //    Dubai
-  //    https://canva.com/...
+  // Quick import from text - handles blocks separated by empty lines
+  // Format: Title (one or more lines) followed by Canva URL, separated by empty lines
   const handleQuickImport = async () => {
-    const lines = quickImportText.trim().split('\n').map(line => line.trim()).filter(Boolean);
-    const items: { title: string; url: string }[] = [];
-    
-    let pendingTitle: string | null = null;
-    
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      
-      // Check if line contains a Canva URL
-      const urlMatch = line.match(/(https?:\/\/(?:www\.)?canva\.com\/[^\s]+)/i);
-      
-      if (urlMatch) {
-        const url = urlMatch[1];
-        
-        // Check if there's a title BEFORE the URL on the same line
-        const beforeUrl = line.substring(0, line.indexOf(urlMatch[0])).trim();
-        
-        // Clean up title - remove separators like ,,, --- ||| etc
-        const cleanTitle = (text: string) => {
-          return text
-            .replace(/[,\-|.]{2,}/g, '') // Remove repeated punctuation
-            .replace(/\s+/g, ' ')         // Normalize spaces
-            .trim();
-        };
-        
-        if (beforeUrl && beforeUrl.length > 1) {
-          // Title is on the same line before URL
-          items.push({
-            title: cleanTitle(beforeUrl),
-            url: url,
-          });
-          pendingTitle = null;
-        } else if (pendingTitle) {
-          // Title was on the previous line
-          items.push({
-            title: cleanTitle(pendingTitle),
-            url: url,
-          });
-          pendingTitle = null;
-        } else {
-          // No title found, use URL fragment as fallback
-          const fallbackTitle = url.match(/DAG[\w-]+/)?.[0] || 'Sem Título';
-          items.push({
-            title: fallbackTitle,
-            url: url,
-          });
-        }
-      } else if (!line.startsWith('http')) {
-        // This line doesn't have a URL - it might be a title for the next line
-        pendingTitle = line;
-      }
-    }
-    
-    if (items.length === 0) {
-      toast.error("Nenhum item válido encontrado. Cole o texto com títulos e links do Canva.");
+    if (!quickImportText.trim()) {
+      toast.error("Cole o texto com os links do Canva");
       return;
     }
-    
+
+    // Split into blocks using one or more empty lines as delimiter
+    const blocks = quickImportText.trim().split(/\n\s*\n+/);
+    const items: { title: string; url: string }[] = [];
+
+    for (const block of blocks) {
+      const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+      if (lines.length === 0) continue;
+
+      // Find the line with Canva URL
+      let urlLine: string | null = null;
+      const titleLines: string[] = [];
+
+      for (const line of lines) {
+        if (line.match(/https?:\/\/(?:www\.)?canva\.com/i)) {
+          // Extract only the URL (may have text before/after)
+          const urlMatch = line.match(/(https?:\/\/(?:www\.)?canva\.com\/[^\s]+)/i);
+          if (urlMatch) {
+            urlLine = urlMatch[1];
+            // If there's text before the URL on the same line, it's part of title
+            const beforeUrl = line.substring(0, line.indexOf(urlMatch[0])).trim();
+            if (beforeUrl) {
+              titleLines.push(beforeUrl);
+            }
+          }
+        } else {
+          // Line without URL - it's part of the title
+          titleLines.push(line);
+        }
+      }
+
+      if (urlLine && titleLines.length > 0) {
+        // Join title lines and clean up
+        const title = titleLines.join(' ')
+          .replace(/[|,.\-:]{2,}/g, ' ')  // Remove repeated punctuation
+          .replace(/^\s*[|,.\-:]+\s*/g, '')  // Remove leading punctuation
+          .replace(/\s*[|,.\-:]+\s*$/g, '')  // Remove trailing punctuation
+          .replace(/\s+/g, ' ')  // Normalize spaces
+          .trim();
+
+        if (title) {
+          // Capitalize first letter of each word for consistency
+          const capitalizedTitle = title
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+
+          items.push({ title: capitalizedTitle, url: urlLine });
+        }
+      }
+    }
+
+    if (items.length === 0) {
+      toast.error("Nenhum item válido encontrado. Verifique o formato (título seguido de link Canva).");
+      return;
+    }
+
     // Create items in database
     let successCount = 0;
     for (const item of items) {
@@ -336,9 +337,13 @@ export const ImportSection = () => {
         console.error("Error creating item:", error);
       }
     }
-    
-    toast.success(`${successCount} item(s) importado(s) com sucesso!`);
-    setQuickImportText("");
+
+    if (successCount > 0) {
+      toast.success(`${successCount} item(s) importado(s) com sucesso!`);
+      setQuickImportText("");
+    } else {
+      toast.error("Erro ao importar itens. Tente novamente.");
+    }
   };
 
   const typeOptions = [
