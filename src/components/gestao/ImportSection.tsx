@@ -1,12 +1,14 @@
 import { useState, useCallback } from "react";
 import { useImportContent, ContentType, ParsedItem, getDefaultIconByType } from "@/hooks/useImportContent";
+import { useCreateContentItem } from "@/hooks/useContent";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Upload, FileText, Loader2, Trash2, Check, X, Sparkles } from "lucide-react";
+import { Upload, FileText, Loader2, Trash2, Check, X, Sparkles, Globe, MapPin, Users } from "lucide-react";
 import { toast } from "sonner";
 
 // Icon options by category
@@ -55,8 +57,30 @@ const iconsByCategory: Record<ContentType, { value: string; label: string }[]> =
   ],
 };
 
+// Category filter options
+const influencerOptions = [
+  { value: "", label: "Nenhum" },
+  { value: "influencer-eva", label: "Eva" },
+  { value: "influencer-mel", label: "Mel" },
+  { value: "influencer-bia", label: "Bia" },
+];
+
+const locationOptions = [
+  { value: "", label: "Nenhum" },
+  { value: "nacional", label: "Nacional" },
+  { value: "internacional", label: "Internacional" },
+];
+
+const languageOptions = [
+  { value: "pt", label: "🇧🇷 Português" },
+  { value: "es", label: "🇪🇸 Espanhol" },
+  { value: "en", label: "🇺🇸 Inglês" },
+];
+
 interface EditableItem extends ParsedItem {
   icon: string;
+  category?: string;
+  language?: string;
 }
 
 export const ImportSection = () => {
@@ -64,6 +88,18 @@ export const ImportSection = () => {
   const [dragActive, setDragActive] = useState(false);
   const [editableItems, setEditableItems] = useState<EditableItem[]>([]);
   const [bulkIcon, setBulkIcon] = useState<string>("");
+  const [bulkCategory, setBulkCategory] = useState<string>("");
+  const [bulkLanguage, setBulkLanguage] = useState<string>("pt");
+  
+  // Category filters
+  const [influencer, setInfluencer] = useState<string>("");
+  const [location, setLocation] = useState<string>("");
+  const [language, setLanguage] = useState<string>("pt");
+  
+  // Quick import text
+  const [quickImportText, setQuickImportText] = useState<string>("");
+  
+  const createContentItem = useCreateContentItem();
   
   const {
     parseFile,
@@ -92,13 +128,17 @@ export const ImportSection = () => {
     if (files.length > 0) {
       try {
         const defaultIcon = getDefaultIconByType(selectedType);
+        const selectedCategory = influencer || location || undefined;
+        
         for (const file of files) {
           const items = await parseFile(file);
-          const itemsWithIcons = items.map(item => ({
+          const itemsWithExtras = items.map(item => ({
             ...item,
             icon: item.icon || defaultIcon,
+            category: selectedCategory,
+            language: language,
           }));
-          setEditableItems(prev => [...prev, ...itemsWithIcons]);
+          setEditableItems(prev => [...prev, ...itemsWithExtras]);
         }
         toast.success(`${files.length} arquivo(s) processado(s) com sucesso!`);
       } catch (error) {
@@ -106,20 +146,24 @@ export const ImportSection = () => {
         console.error(error);
       }
     }
-  }, [parseFile, selectedType]);
+  }, [parseFile, selectedType, influencer, location, language]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       try {
         const defaultIcon = getDefaultIconByType(selectedType);
+        const selectedCategory = influencer || location || undefined;
+        
         for (const file of files) {
           const items = await parseFile(file);
-          const itemsWithIcons = items.map(item => ({
+          const itemsWithExtras = items.map(item => ({
             ...item,
             icon: item.icon || defaultIcon,
+            category: selectedCategory,
+            language: language,
           }));
-          setEditableItems(prev => [...prev, ...itemsWithIcons]);
+          setEditableItems(prev => [...prev, ...itemsWithExtras]);
         }
         toast.success(`${files.length} arquivo(s) processado(s) com sucesso!`);
       } catch (error) {
@@ -165,6 +209,23 @@ export const ImportSection = () => {
     toast.success("Ícone aplicado a todos os itens!");
   };
 
+  const applyCategoryToAll = () => {
+    setEditableItems(prev => prev.map(item => ({
+      ...item,
+      category: bulkCategory || undefined,
+    })));
+    toast.success("Categoria aplicada a todos os itens!");
+  };
+
+  const applyLanguageToAll = () => {
+    if (!bulkLanguage) return;
+    setEditableItems(prev => prev.map(item => ({
+      ...item,
+      language: bulkLanguage,
+    })));
+    toast.success("Idioma aplicado a todos os itens!");
+  };
+
   const handleImport = () => {
     if (editableItems.length === 0) {
       toast.error("Nenhum item para importar");
@@ -193,6 +254,58 @@ export const ImportSection = () => {
     );
   };
 
+  // Quick import from text
+  const handleQuickImport = async () => {
+    const lines = quickImportText.trim().split('\n').filter(line => line.trim());
+    const items: { title: string; url: string }[] = [];
+    
+    for (const line of lines) {
+      // Regex to extract title (before link) and Canva URL
+      const match = line.match(/^(.+?)\s+(https?:\/\/(?:www\.)?canva\.com\/.+)$/i);
+      if (match) {
+        items.push({
+          title: match[1].trim(),
+          url: match[2].trim(),
+        });
+      } else {
+        // Try generic URL pattern
+        const genericMatch = line.match(/^(.+?)\s+(https?:\/\/.+)$/i);
+        if (genericMatch) {
+          items.push({
+            title: genericMatch[1].trim(),
+            url: genericMatch[2].trim(),
+          });
+        }
+      }
+    }
+    
+    if (items.length === 0) {
+      toast.error("Nenhum item válido encontrado. Use o formato: Título https://...");
+      return;
+    }
+    
+    // Create items in database
+    let successCount = 0;
+    for (const item of items) {
+      try {
+        await createContentItem.mutateAsync({
+          title: item.title,
+          url: item.url,
+          type: selectedType,
+          icon: getDefaultIconByType(selectedType),
+          category: influencer || location || null,
+          is_active: true,
+        });
+        successCount++;
+      } catch (error) {
+        console.error("Error creating item:", error);
+      }
+    }
+    
+    toast.success(`${successCount} item(s) importado(s) com sucesso!`);
+    setQuickImportText("");
+  };
+
   const typeOptions = [
     { value: 'video', label: '🎬 Vídeo Reels' },
     { value: 'feed', label: '🖼️ Arte Feed' },
@@ -203,6 +316,13 @@ export const ImportSection = () => {
   ];
 
   const currentIcons = iconsByCategory[selectedType] || iconsByCategory.video;
+
+  // Combined category options for the table dropdown
+  const allCategoryOptions = [
+    { value: "", label: "Nenhum" },
+    ...influencerOptions.filter(o => o.value),
+    ...locationOptions.filter(o => o.value),
+  ];
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -222,6 +342,117 @@ export const ImportSection = () => {
                 {option.label}
               </Button>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Category and Language Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            Categorias e Filtros
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Influencer */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Influencer
+              </Label>
+              <Select value={influencer || "none"} onValueChange={(v) => setInfluencer(v === "none" ? "" : v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {influencerOptions.map(opt => (
+                    <SelectItem key={opt.value || "none"} value={opt.value || "none"}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Location */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Localização
+              </Label>
+              <Select value={location || "none"} onValueChange={(v) => setLocation(v === "none" ? "" : v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {locationOptions.map(opt => (
+                    <SelectItem key={opt.value || "none"} value={opt.value || "none"}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Language */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Globe className="h-4 w-4" />
+                Idioma
+              </Label>
+              <Select value={language} onValueChange={setLanguage}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {languageOptions.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Quick Import via Text */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Importação Rápida via Texto
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Cole os dados no formato: Título https://link.canva.com/...
+          </p>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            placeholder={"Dubai https://canva.com/design/xxx\nMaldivas https://canva.com/design/yyy\nParis https://canva.com/design/zzz"}
+            value={quickImportText}
+            onChange={(e) => setQuickImportText(e.target.value)}
+            rows={6}
+            className="font-mono text-sm"
+          />
+          <div className="flex gap-2 mt-3">
+            <Button 
+              onClick={handleQuickImport} 
+              disabled={!quickImportText.trim() || createContentItem.isPending}
+            >
+              {createContentItem.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4 mr-2" />
+              )}
+              Processar e Importar
+            </Button>
+            <Button variant="outline" onClick={() => setQuickImportText("")}>
+              Limpar
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -282,6 +513,7 @@ export const ImportSection = () => {
             <ul className="text-sm text-muted-foreground space-y-1">
               <li>• <strong>TXT/CSV:</strong> Uma linha por item, formato "Título | URL" ou "Título; URL"</li>
               <li>• <strong>PDF/XLSX:</strong> A IA extrai automaticamente títulos e URLs</li>
+              <li>• <strong>Dica:</strong> O nome do lugar antes do link Canva é usado como título</li>
             </ul>
           </div>
         </CardContent>
@@ -294,31 +526,6 @@ export const ImportSection = () => {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle>Editar Itens ({editableItems.length})</CardTitle>
               <div className="flex flex-wrap gap-2">
-                {/* Bulk Icon Selector */}
-                <div className="flex items-center gap-2">
-                  <Select value={bulkIcon} onValueChange={setBulkIcon}>
-                    <SelectTrigger className="w-24">
-                      <SelectValue placeholder="Ícone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {currentIcons.map(icon => (
-                        <SelectItem key={icon.value} value={icon.value}>
-                          {icon.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={applyIconToAll}
-                    disabled={!bulkIcon}
-                  >
-                    <Sparkles className="h-4 w-4 mr-1" />
-                    Aplicar a Todos
-                  </Button>
-                </div>
-
                 <Button variant="outline" size="sm" onClick={handleClearAll}>
                   <X className="h-4 w-4 mr-1" />
                   Limpar
@@ -339,14 +546,82 @@ export const ImportSection = () => {
             </div>
           </CardHeader>
           <CardContent>
+            {/* Bulk Actions */}
+            <div className="flex flex-wrap gap-2 mb-4 p-3 bg-muted/50 rounded-lg">
+              {/* Bulk Icon */}
+              <div className="flex items-center gap-2">
+                <Select value={bulkIcon} onValueChange={setBulkIcon}>
+                  <SelectTrigger className="w-24">
+                    <SelectValue placeholder="Ícone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currentIcons.map(icon => (
+                      <SelectItem key={icon.value} value={icon.value}>
+                        {icon.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={applyIconToAll}
+                  disabled={!bulkIcon}
+                >
+                  <Sparkles className="h-4 w-4 mr-1" />
+                  Aplicar Ícone
+                </Button>
+              </div>
+
+              {/* Bulk Category */}
+              <div className="flex items-center gap-2">
+                <Select value={bulkCategory || "none"} onValueChange={(v) => setBulkCategory(v === "none" ? "" : v)}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allCategoryOptions.map(opt => (
+                      <SelectItem key={opt.value || "none"} value={opt.value || "none"}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="sm" onClick={applyCategoryToAll}>
+                  Aplicar Categoria
+                </Button>
+              </div>
+
+              {/* Bulk Language */}
+              <div className="flex items-center gap-2">
+                <Select value={bulkLanguage} onValueChange={setBulkLanguage}>
+                  <SelectTrigger className="w-28">
+                    <SelectValue placeholder="Idioma" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {languageOptions.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="sm" onClick={applyLanguageToAll}>
+                  Aplicar Idioma
+                </Button>
+              </div>
+            </div>
+
             <div className="border rounded-lg overflow-hidden overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12">#</TableHead>
                     <TableHead className="w-20">Ícone</TableHead>
-                    <TableHead className="min-w-[200px]">Nome</TableHead>
-                    <TableHead className="min-w-[300px]">Link</TableHead>
+                    <TableHead className="min-w-[180px]">Nome</TableHead>
+                    <TableHead className="min-w-[200px]">Link</TableHead>
+                    <TableHead className="w-28">Categoria</TableHead>
+                    <TableHead className="w-24">Idioma</TableHead>
                     <TableHead className="w-12"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -388,6 +663,40 @@ export const ImportSection = () => {
                           placeholder="https://..."
                           className={!item.url.trim() ? 'border-destructive' : ''}
                         />
+                      </TableCell>
+                      <TableCell>
+                        <Select 
+                          value={item.category || "none"} 
+                          onValueChange={(v) => updateItemField(index, 'category', v === "none" ? "" : v)}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {allCategoryOptions.map(opt => (
+                              <SelectItem key={opt.value || "none"} value={opt.value || "none"}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Select 
+                          value={item.language || "pt"} 
+                          onValueChange={(v) => updateItemField(index, 'language', v)}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {languageOptions.map(opt => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       <TableCell>
                         <Button

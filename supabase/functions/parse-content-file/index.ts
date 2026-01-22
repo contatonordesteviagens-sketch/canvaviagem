@@ -202,22 +202,32 @@ serve(async (req) => {
       .replace(/[<>'"\\]/g, "")
       .substring(0, 255);
 
-    const systemPrompt = `You are a data extraction assistant. Extract content items from the provided file.
+    const systemPrompt = `You are a data extraction assistant specialized in extracting travel content from files.
     
-For each item found, extract:
-- title: The name/title of the content
-- url: The URL/link associated with the content
+Your task is to extract content items from files that typically contain:
+- A place name/destination (the title) - this is usually a city, country, or travel destination
+- A Canva link (the URL)
 
-Return ONLY a valid JSON array with objects containing "title" and "url" fields.
-Example: [{"title": "Maldivas Package", "url": "https://canva.com/xxx"}, {"title": "Cancun 2025", "url": "https://canva.com/yyy"}]
+The format is usually: "Place Name https://canva.com/design/xxx"
 
-If no valid items are found, return an empty array: []
+Rules for extraction:
+1. The TITLE is always a place name or destination that appears BEFORE the Canva URL (e.g., "Dubai", "Maldivas", "Paris", "Florianópolis", "Cancun 2025")
+2. The URL is always a Canva link starting with "https://canva.com/" or "https://www.canva.com/"
+3. If there's text before the Canva URL, that text is the title - extract it as the place/destination name
+4. Clean up titles - remove extra spaces, quotes, or formatting characters
+5. If multiple words appear before the URL, they are all part of the title (e.g., "New York" or "Rio de Janeiro")
 
-Be thorough and extract ALL items you can find. Look for patterns like:
-- Lines with titles followed by URLs
-- Tables with title/name and URL columns
-- Lists of links with descriptions
-- Any structured content with names and URLs`;
+Examples of correct extraction:
+- "Dubai https://canva.com/design/xxx" → title: "Dubai", url: "https://canva.com/design/xxx"
+- "Maldivas - Resort https://www.canva.com/design/yyy" → title: "Maldivas - Resort", url: "https://www.canva.com/design/yyy"
+- "Paris França https://canva.com/design/zzz" → title: "Paris França", url: "https://canva.com/design/zzz"
+- Only URL without title: extract from URL path or use "Sem título"
+
+Return ONLY a valid JSON array:
+[{"title": "Dubai", "url": "https://canva.com/design/xxx"}, ...]
+
+If no valid items are found, return an empty array: []`;
+
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
