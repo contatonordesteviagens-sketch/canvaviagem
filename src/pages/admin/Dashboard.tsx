@@ -11,16 +11,12 @@ import { Mail, Eye, Clock, Users, ArrowLeft, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Lista de admins autorizados
-const ADMIN_EMAILS = ["lucas@rochadigitalmidia.com.br"];
-
+// NOTE: Admin verification is handled by database roles via useAuth().isAdmin
+// The isAdmin flag comes from the user_roles table, not hardcoded emails
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isAdmin } = useAuth();
   const { metrics, eventsQuery, isLoading, error } = useEmailDashboard();
-
-  // Verificar se é admin
-  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -49,7 +45,7 @@ const Dashboard = () => {
     );
   }
 
-  if (!isAdmin) {
+  if (!authLoading && !isAdmin) {
     return null;
   }
 
