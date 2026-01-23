@@ -12,6 +12,10 @@ import { UserInfoCard } from "@/components/UserInfoCard";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
 import { Loader2, Check, Plane, Settings, Video, Image, MessageSquare, Bot, Download, Calendar, ChevronDown, ChevronUp, X, Sparkles, Shield, Clock, RefreshCw, Infinity, Users, FileText } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import planosHero from "@/assets/planos-hero.webp";
+import planosVoceRecebe from "@/assets/planos-voce-recebe.webp";
+import planosFeatures from "@/assets/planos-features.webp";
+import planosPro from "@/assets/planos-pro.webp";
 const Planos = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -318,6 +322,65 @@ const Planos = () => {
               <iframe src="https://fast.wistia.net/embed/iframe/28dkpy88ix?web_component=true&seo=false" title="30seg Video" allow="autoplay; fullscreen" allowTransparency={true} frameBorder={0} scrolling="no" className="wistia_embed rounded-xl shadow-lg" name="wistia_embed" width="100%" height="100%" />
             </div>
           </div>
+        </div>
+
+        {/* Promotional Images - Mobile optimized, all clickable to Stripe */}
+        <div className="space-y-4 mb-8 md:mb-12">
+          <a 
+            href={STRIPE_PAYMENT_LINK} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => trackInitiateCheckout(9.90, 'BRL')}
+          >
+            <img 
+              src={planosHero} 
+              alt="Super Pack Canva Viagem" 
+              className="w-full rounded-xl shadow-lg"
+            />
+          </a>
+          
+          <a 
+            href={STRIPE_PAYMENT_LINK} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => trackInitiateCheckout(9.90, 'BRL')}
+          >
+            <img 
+              src={planosVoceRecebe} 
+              alt="Você irá receber" 
+              className="w-full rounded-xl shadow-lg"
+            />
+          </a>
+          
+          <a 
+            href={STRIPE_PAYMENT_LINK} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => trackInitiateCheckout(9.90, 'BRL')}
+          >
+            <img 
+              src={planosFeatures} 
+              alt="Features e benefícios" 
+              className="w-full rounded-xl shadow-lg"
+            />
+          </a>
+          
+          <a 
+            href={STRIPE_PAYMENT_LINK} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => trackInitiateCheckout(9.90, 'BRL')}
+          >
+            <img 
+              src={planosPro} 
+              alt="Plano PRO" 
+              className="w-full rounded-xl shadow-lg"
+            />
+          </a>
         </div>
         
         {/* Hero Section */}
