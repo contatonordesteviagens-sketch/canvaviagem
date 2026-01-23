@@ -1,20 +1,10 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Plane, Sparkles, Heart } from "lucide-react";
-import { trackPurchase, trackSubscribe } from "@/lib/meta-pixel";
 
 const Obrigado = () => {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Dispara evento de compra ao carregar a página
-    trackPurchase(37.90, 'BRL');
-    trackSubscribe(37.90, 'BRL', 37.90 * 12);
-    
-    console.log('Meta Pixel: Purchase event fired');
-  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10 flex items-center justify-center p-4">
