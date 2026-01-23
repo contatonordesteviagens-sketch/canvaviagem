@@ -204,6 +204,24 @@ const Planos = () => {
     with: true
   }];
   const faqs = [{
+    question: "O que é um Canva Viagem?",
+    answer: "São conteúdos prontos em vídeos no formato Reels, fotos, artes, feed, carrosseis e agentes de IA que você pode personalizar com as informações da sua Agência adicionando o logotipo ou publicar da forma que está."
+  }, {
+    question: "É fácil de utilizar?",
+    answer: "Sim! Todos os modelos são editáveis no CANVA PRO e estão prontos para garantir que você aproveite ao máximo e comece a usar hoje mesmo!"
+  }, {
+    question: "Preciso de conhecimento em Design?",
+    answer: "Não! Todos os Reels estão 100% prontos com vídeos, escrita e transições, caso queira você ainda pode personalizar tudo facilmente com o CANVA PRO."
+  }, {
+    question: "E se eu precisar de suporte?",
+    answer: "Nossa equipe está disponível para tirar todas as suas dúvidas e garantir que você utilize os Reels da melhor forma possível."
+  }, {
+    question: "Como eu vou acessar os Canva Viagem para minha Agência?",
+    answer: "Nós vamos te enviar o login de acesso via plataforma no seu email e para que você possa ter acesso aos vídeos, mídias e links de com todos as entregáveis."
+  }, {
+    question: "Posso usar com o CANVA GRÁTIS?",
+    answer: "Não! Será necessário ter o CANVA PRO para realizar as edições e downloads dos Reels. Isso ocorre pois os vídeos sem direitos autorais possuem licença especial para utilização com o CANVA PRO."
+  }, {
     question: "Posso cancelar a qualquer momento?",
     answer: "Sim! Você pode cancelar sua assinatura quando quiser, sem multas ou taxas adicionais. O acesso permanece ativo até o final do período pago."
   }, {
