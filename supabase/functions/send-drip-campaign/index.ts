@@ -12,6 +12,16 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[DRIP-CAMPAIGN] ${step}${detailsStr}`);
 };
 
+// Security: HTML escape function to prevent HTML injection in email templates
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // ========== EMAIL TEMPLATES ==========
 
 const getEmailTemplate = (content: string, ctaText: string, ctaLink: string) => `
@@ -54,8 +64,10 @@ const getEmailTemplate = (content: string, ctaText: string, ctaLink: string) => 
 </html>
 `;
 
-const getEmail1Content = (name: string) => `
-  <h2 style="color: #1a1a2e; margin: 0 0 20px 0; font-size: 24px;">Olá, ${name}! 👋</h2>
+const getEmail1Content = (name: string) => {
+  const safeName = escapeHtml(name);
+  return `
+  <h2 style="color: #1a1a2e; margin: 0 0 20px 0; font-size: 24px;">Olá, ${safeName}! 👋</h2>
   <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0;">
     Seja muito bem-vindo(a) ao <strong>CanvaTrip</strong>! É uma alegria ter você aqui.
   </p>
@@ -76,9 +88,12 @@ const getEmail1Content = (name: string) => `
     Após assistir, faça login na plataforma para criar seus primeiros posts!
   </p>
 `;
+};
 
-const getEmail2Content = (name: string) => `
-  <h2 style="color: #1a1a2e; margin: 0 0 20px 0; font-size: 24px;">${name}, este é seu próximo passo! ✈️</h2>
+const getEmail2Content = (name: string) => {
+  const safeName = escapeHtml(name);
+  return `
+  <h2 style="color: #1a1a2e; margin: 0 0 20px 0; font-size: 24px;">${safeName}, este é seu próximo passo! ✈️</h2>
   <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0;">
     Você já está usando o CanvaTrip há alguns dias. Parabéns por dar esse passo!
   </p>
@@ -105,9 +120,12 @@ const getEmail2Content = (name: string) => `
     Não fique só na criação de posts. <strong>Aprenda a vender de verdade!</strong>
   </p>
 `;
+};
 
-const getEmail3Content = (name: string) => `
-  <h2 style="color: #1a1a2e; margin: 0 0 20px 0; font-size: 24px;">Última chance, ${name}! 🚀</h2>
+const getEmail3Content = (name: string) => {
+  const safeName = escapeHtml(name);
+  return `
+  <h2 style="color: #1a1a2e; margin: 0 0 20px 0; font-size: 24px;">Última chance, ${safeName}! 🚀</h2>
   <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0;">
     Já faz 5 dias que você está no CanvaTrip. E eu preciso ser sincero com você:
   </p>
@@ -133,6 +151,7 @@ const getEmail3Content = (name: string) => `
     <strong>Você quer continuar no mesmo lugar ou quer ser um Agente Lucrativo?</strong>
   </p>
 `;
+};
 
 // ========== SEND FUNCTIONS ==========
 
