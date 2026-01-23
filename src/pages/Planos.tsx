@@ -53,12 +53,11 @@ const Planos = () => {
   }, [searchParams, refreshSubscription, navigate]);
   // Stripe Payment Link for new users (payment-first flow)
   const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi28s2PEa2Q6aD9wU8so03";
-
   const handleCheckout = async () => {
     // Track initiate checkout event
     trackInitiateCheckout(9.90, 'BRL');
     setCheckoutLoading(true);
-    
+
     // If user is logged in, use edge function for better UX
     if (user) {
       try {
@@ -88,7 +87,7 @@ const Planos = () => {
         // Fall through to payment link
       }
     }
-    
+
     // For new users or if edge function fails, use Payment Link
     window.open(STRIPE_PAYMENT_LINK, '_blank');
     toast.info("O checkout foi aberto em uma nova aba. Após o pagamento, verifique seu email!");
@@ -344,60 +343,20 @@ const Planos = () => {
 
         {/* Promotional Images - Mobile optimized, all clickable to Stripe */}
         <div className="space-y-4 mb-8 md:mb-12">
-          <a 
-            href={STRIPE_PAYMENT_LINK} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="block cursor-pointer hover:opacity-90 transition-opacity"
-            onClick={() => trackInitiateCheckout(9.90, 'BRL')}
-          >
-            <img 
-              src={planosHero} 
-              alt="Super Pack Canva Viagem" 
-              className="w-full rounded-xl shadow-lg"
-            />
+          <a href={STRIPE_PAYMENT_LINK} target="_blank" rel="noopener noreferrer" className="block cursor-pointer hover:opacity-90 transition-opacity" onClick={() => trackInitiateCheckout(9.90, 'BRL')}>
+            <img src={planosHero} alt="Super Pack Canva Viagem" className="w-full rounded-xl shadow-lg" />
           </a>
           
-          <a 
-            href={STRIPE_PAYMENT_LINK} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="block cursor-pointer hover:opacity-90 transition-opacity"
-            onClick={() => trackInitiateCheckout(9.90, 'BRL')}
-          >
-            <img 
-              src={planosVoceRecebe} 
-              alt="Você irá receber" 
-              className="w-full rounded-xl shadow-lg"
-            />
+          <a href={STRIPE_PAYMENT_LINK} target="_blank" rel="noopener noreferrer" className="block cursor-pointer hover:opacity-90 transition-opacity" onClick={() => trackInitiateCheckout(9.90, 'BRL')}>
+            <img src={planosVoceRecebe} alt="Você irá receber" className="w-full rounded-xl shadow-lg" />
           </a>
           
-          <a 
-            href={STRIPE_PAYMENT_LINK} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="block cursor-pointer hover:opacity-90 transition-opacity"
-            onClick={() => trackInitiateCheckout(9.90, 'BRL')}
-          >
-            <img 
-              src={planosFeatures} 
-              alt="Features e benefícios" 
-              className="w-full rounded-xl shadow-lg"
-            />
+          <a href={STRIPE_PAYMENT_LINK} target="_blank" rel="noopener noreferrer" className="block cursor-pointer hover:opacity-90 transition-opacity" onClick={() => trackInitiateCheckout(9.90, 'BRL')}>
+            <img src={planosFeatures} alt="Features e benefícios" className="w-full rounded-xl shadow-lg" />
           </a>
           
-          <a 
-            href={STRIPE_PAYMENT_LINK} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="block cursor-pointer hover:opacity-90 transition-opacity"
-            onClick={() => trackInitiateCheckout(9.90, 'BRL')}
-          >
-            <img 
-              src={planosPro} 
-              alt="Plano PRO" 
-              className="w-full rounded-xl shadow-lg"
-            />
+          <a href={STRIPE_PAYMENT_LINK} target="_blank" rel="noopener noreferrer" className="block cursor-pointer hover:opacity-90 transition-opacity" onClick={() => trackInitiateCheckout(9.90, 'BRL')}>
+            <img src={planosPro} alt="Plano PRO" className="w-full rounded-xl shadow-lg" />
           </a>
         </div>
         
@@ -439,7 +398,7 @@ const Planos = () => {
         {/* Main Pricing Card */}
         <Card className="mb-12 overflow-hidden border-2 border-primary/20 shadow-xl">
           <div className="bg-gradient-to-r from-primary to-accent p-6 text-white text-center">
-            <h2 className="text-2xl font-bold mb-2">Canva Viagem</h2>
+            <h2 className="text-2xl font-bold mb-2">Assine o Canva Viagem para ter acesso a todas as ferramentas</h2>
             <div className="flex items-baseline justify-center">
               <span className="text-2xl font-bold opacity-80 text-white">R$</span>
               <span className="text-5xl font-bold mx-1 text-white/[0.91]">9</span>
