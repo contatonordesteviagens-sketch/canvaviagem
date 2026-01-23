@@ -1,13 +1,15 @@
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Lock, Loader2 } from "lucide-react";
+
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi28s2PEa2Q6aD9wU8so03";
+
 interface PremiumGateProps {
   children: React.ReactNode;
 }
+
 export const PremiumGate = ({
   children
 }: PremiumGateProps) => {
-  const navigate = useNavigate();
   const {
     user,
     loading,
@@ -32,10 +34,10 @@ export const PremiumGate = ({
           {children}
         </div>
         
-        {/* Clickable overlay - redirects to plans page */}
-        <div className="absolute inset-0 cursor-pointer group" onClick={() => navigate("/planos")} role="button" tabIndex={0} onKeyDown={e => {
+        {/* Clickable overlay - opens Stripe checkout directly */}
+        <div className="absolute inset-0 cursor-pointer group" onClick={() => window.open(STRIPE_PAYMENT_LINK, "_blank")} role="button" tabIndex={0} onKeyDown={e => {
         if (e.key === 'Enter' || e.key === ' ') {
-          navigate("/planos");
+          window.open(STRIPE_PAYMENT_LINK, "_blank");
         }
       }}>
           {/* Subtle gradient overlay */}
