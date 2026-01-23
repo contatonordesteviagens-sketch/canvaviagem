@@ -5,15 +5,25 @@ declare global {
   }
 }
 
+import { supabase } from "@/integrations/supabase/client";
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-// Helper to send server-side event via Conversions API
+// Helper to send server-side event via Conversions API (requires authentication)
 const sendServerEvent = async (
   eventName: string,
   customData?: Record<string, unknown>,
   userData?: Record<string, unknown>
 ) => {
   try {
+    // Security: Only send server-side events if user is authenticated
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      // Not authenticated - server event will fail, skip silently
+      // Client-side pixel (fbq) will still track the event
+      return;
+    }
+
     // Get fbp and fbc from cookies if available
     const fbp = document.cookie.match(/_fbp=([^;]+)/)?.[1];
     const fbc = document.cookie.match(/_fbc=([^;]+)/)?.[1];
@@ -22,6 +32,7 @@ const sendServerEvent = async (
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
         event_name: eventName,
@@ -51,7 +62,7 @@ export const trackViewContent = (contentName?: string) => {
     });
   }
   
-  // Server-side
+  // Server-side (only for authenticated users)
   sendServerEvent('ViewContent', {
     content_name: contentName || 'Página',
   });
@@ -63,7 +74,7 @@ export const trackCompleteRegistration = () => {
     window.fbq('track', 'CompleteRegistration');
   }
   
-  // Server-side
+  // Server-side (only for authenticated users)
   sendServerEvent('CompleteRegistration');
 };
 
@@ -76,7 +87,7 @@ export const trackInitiateCheckout = (value: number, currency: string = 'BRL') =
     });
   }
   
-  // Server-side
+  // Server-side (only for authenticated users)
   sendServerEvent('InitiateCheckout', {
     value,
     currency,
@@ -92,7 +103,7 @@ export const trackPurchase = (value: number, currency: string = 'BRL') => {
     });
   }
   
-  // Server-side
+  // Server-side (only for authenticated users)
   sendServerEvent('Purchase', {
     value,
     currency,
@@ -109,7 +120,7 @@ export const trackSubscribe = (value: number, currency: string = 'BRL', predicte
     });
   }
   
-  // Server-side
+  // Server-side (only for authenticated users)
   sendServerEvent('Subscribe', {
     value,
     currency,
@@ -123,7 +134,7 @@ export const trackLead = () => {
     window.fbq('track', 'Lead');
   }
   
-  // Server-side
+  // Server-side (only for authenticated users)
   sendServerEvent('Lead');
 };
 
@@ -137,7 +148,7 @@ export const trackAddToCart = (value: number, currency: string = 'BRL', contentN
     });
   }
   
-  // Server-side
+  // Server-side (only for authenticated users)
   sendServerEvent('AddToCart', {
     value,
     currency,
@@ -153,7 +164,7 @@ export const trackSearch = (searchQuery: string) => {
     });
   }
   
-  // Server-side
+  // Server-side (only for authenticated users)
   sendServerEvent('Search', {
     search_string: searchQuery,
   });
@@ -165,7 +176,7 @@ export const trackContact = () => {
     window.fbq('track', 'Contact');
   }
   
-  // Server-side
+  // Server-side (only for authenticated users)
   sendServerEvent('Contact');
 };
 
@@ -177,7 +188,7 @@ export const trackCustomizeProduct = (contentName?: string) => {
     });
   }
   
-  // Server-side
+  // Server-side (only for authenticated users)
   sendServerEvent('CustomizeProduct', {
     content_name: contentName,
   });
@@ -192,7 +203,7 @@ export const trackStartTrial = (value?: number, currency: string = 'BRL') => {
     });
   }
   
-  // Server-side
+  // Server-side (only for authenticated users)
   sendServerEvent('StartTrial', {
     value,
     currency,
@@ -205,7 +216,7 @@ export const trackSubmitApplication = () => {
     window.fbq('track', 'SubmitApplication');
   }
   
-  // Server-side
+  // Server-side (only for authenticated users)
   sendServerEvent('SubmitApplication');
 };
 
@@ -215,6 +226,6 @@ export const trackPageView = () => {
     window.fbq('track', 'PageView');
   }
   
-  // Server-side
+  // Server-side (only for authenticated users)
   sendServerEvent('PageView');
 };
