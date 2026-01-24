@@ -26,35 +26,36 @@ const AdminLogin = () => {
         password,
       });
 
-      if (authError) {
-        setError("Credenciais inválidas. Verifique email e senha.");
+      // Use generic error message for all failure cases to prevent user enumeration
+      const genericError = "Credenciais inválidas ou acesso não autorizado.";
+
+      if (authError || !data.user) {
+        setError(genericError);
         setLoading(false);
         return;
       }
 
-      if (data.user) {
-        // Check if user has admin role in database
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", data.user.id)
-          .eq("role", "admin")
-          .maybeSingle();
+      // Check if user has admin role in database
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
 
-        if (!roleData) {
-          // Not an admin - sign out and show error
-          await supabase.auth.signOut();
-          setError("Acesso negado. Esta área é restrita a administradores.");
-          setLoading(false);
-          return;
-        }
-
-        toast.success("Login realizado com sucesso!");
-        navigate("/gestao");
+      if (!roleData) {
+        // Not an admin - sign out silently and show same generic error
+        await supabase.auth.signOut();
+        setError(genericError);
+        setLoading(false);
+        return;
       }
+
+      toast.success("Login realizado com sucesso!");
+      navigate("/gestao");
     } catch (err) {
-      console.error("Login error:", err);
-      setError("Erro ao fazer login. Tente novamente.");
+      // Use generic error for all exceptions too
+      setError("Credenciais inválidas ou acesso não autorizado.");
     } finally {
       setLoading(false);
     }
