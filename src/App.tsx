@@ -19,6 +19,8 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import ContentManager from "./pages/admin/ContentManager";
 import CaptionsManager from "./pages/admin/CaptionsManager";
 import ToolsManager from "./pages/admin/ToolsManager";
+import Termos from "./pages/Termos";
+import Privacidade from "./pages/Privacidade";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,8 @@ const App = () => (
             <Route path="/obrigado" element={<Obrigado />} />
             <Route path="/pos-pagamento" element={<PosPagamento />} />
             <Route path="/gestao" element={<Gestao />} />
+            <Route path="/termos" element={<Termos />} />
+            <Route path="/privacidade" element={<Privacidade />} />
             <Route path="/admin-login" element={<AdminLogin />} />
             
             {/* Admin Routes */}
