@@ -1,91 +1,91 @@
 
 
-# Plano: Footer Profissional para Canva Viagem
+# Plano: Correção de Segurança RLS - Profiles e Subscriptions
 
-## Objetivo
-Substituir o footer atual por um rodapé moderno, profissional e completo com redes sociais, navegação rápida e links institucionais.
+## Situação Atual
 
----
+Após análise detalhada, as políticas RLS atuais já são **restritivas**:
 
-## Alterações Necessárias
+| Tabela | Política SELECT | Status |
+|--------|-----------------|--------|
+| `profiles` | `auth.uid() = user_id` | ✅ Correto |
+| `subscriptions` | `auth.uid() = user_id` | ✅ Correto |
 
-### 1. Reescrever `src/components/Footer.tsx`
+**Porém**, o painel administrativo (`UsersSection.tsx`) usa o hook `useActiveUsers` que precisa listar todos os usuários e assinaturas - e isso **não funciona** porque não há política de admin.
 
-**Estrutura em 3 colunas (Desktop) / Empilhado (Mobile):**
+## Problema Identificado
 
-| Coluna | Conteúdo |
-|--------|----------|
-| **Marca** | Logo `/favicon.webp`, nome "Canva Viagem", tagline |
-| **Links Rápidos** | Início, Calendário, Planos, Modelos, Contato |
-| **Redes Sociais** | Instagram, Facebook, TikTok, YouTube + @canvaviagem |
+O hook `useActiveUsers.ts` tenta:
+1. Buscar **todas** as subscriptions → Bloqueado pelo RLS (só retorna a do próprio usuário)
+2. Buscar **todos** os profiles → Bloqueado pelo RLS (só retorna o próprio perfil)
 
-**Rodapé inferior:**
-- Copyright: "© 2026 Canva Viagem. Todos os direitos reservados."
-- Links: Termos de Uso | Política de Privacidade
+**Resultado**: O painel de usuários do admin provavelmente está vazio ou só mostra o próprio admin.
 
----
+## Solução Proposta
 
-### 2. Criar `src/pages/Termos.tsx`
-Página de Termos de Uso com layout consistente (Header + Footer) e conteúdo placeholder.
+Adicionar políticas de **leitura somente para admins** nas tabelas sensíveis, usando a função `is_admin()` que já existe e é SECURITY DEFINER:
 
-### 3. Criar `src/pages/Privacidade.tsx`
-Página de Política de Privacidade com layout consistente e conteúdo placeholder.
+### Migration SQL
 
-### 4. Atualizar `src/App.tsx`
-Adicionar rotas:
-```tsx
-<Route path="/termos" element={<Termos />} />
-<Route path="/privacidade" element={<Privacidade />} />
+```sql
+-- ============================================
+-- POLÍTICAS DE ADMIN PARA PROFILES
+-- ============================================
+
+-- Adicionar política para admins verem todos os profiles
+CREATE POLICY "Admins can view all profiles"
+ON public.profiles
+FOR SELECT
+TO authenticated
+USING (is_admin());
+
+-- ============================================
+-- POLÍTICAS DE ADMIN PARA SUBSCRIPTIONS
+-- ============================================
+
+-- Adicionar política para admins verem todas as subscriptions
+CREATE POLICY "Admins can view all subscriptions"
+ON public.subscriptions
+FOR SELECT
+TO authenticated
+USING (is_admin());
 ```
 
----
+## Resultado Final das Políticas
 
-## Redes Sociais
+### Tabela `profiles`:
+| Política | Comando | Quem pode |
+|----------|---------|-----------|
+| `Users can view their own profile` | SELECT | Próprio usuário |
+| `Admins can view all profiles` | SELECT | Admins |
+| `Users can insert their own profile` | INSERT | Próprio usuário |
+| `Users can update their own profile` | UPDATE | Próprio usuário |
+| `Block anonymous access to profiles` | ALL | Bloqueia anônimos |
 
-| Rede | URL | Ícone |
-|------|-----|-------|
-| Instagram | instagram.com/canvaviagem | `Instagram` (lucide) |
-| Facebook | facebook.com/canvaviagem | `Facebook` (lucide) |
-| TikTok | tiktok.com/@canvaviagem | SVG customizado |
-| YouTube | youtube.com/@canvaviagem | `Youtube` (lucide) |
+### Tabela `subscriptions`:
+| Política | Comando | Quem pode |
+|----------|---------|-----------|
+| `Users can view their own subscription` | SELECT | Próprio usuário |
+| `Admins can view all subscriptions` | SELECT | Admins |
+| `Block direct subscription inserts` | INSERT | Ninguém (via webhook) |
+| `Block direct subscription updates` | UPDATE | Ninguém (via webhook) |
+| `Block direct subscription deletes` | DELETE | Ninguém (via webhook) |
 
----
+## Segurança Mantida
 
-## Design Visual
+1. **Usuários normais**: Só veem seus próprios dados ✅
+2. **Usuários anônimos**: Bloqueados completamente ✅
+3. **Admins**: Podem ver tudo (necessário para gestão) ✅
+4. **Função is_admin()**: Já é SECURITY DEFINER e valida `auth.uid() IS NOT NULL` ✅
 
-```text
-┌──────────────────────────────────────────────────────────────────────┐
-│                         FOOTER - DESKTOP                             │
-├──────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  [Logo] Canva Viagem      LINKS RÁPIDOS       CONECTE-SE            │
-│  Hub de Conteúdo          • Início            [IG][FB][TT][YT]      │
-│  Profissional para        • Calendário        @canvaviagem          │
-│  Agências de Viagens      • Planos                                   │
-│                           • Modelos                                  │
-│                           • Contato                                  │
-│                                                                      │
-├──────────────────────────────────────────────────────────────────────┤
-│  © 2026 Canva Viagem. Todos os direitos reservados.                 │
-│  Termos de Uso  •  Política de Privacidade                          │
-└──────────────────────────────────────────────────────────────────────┘
+## Verificação Pós-Implementação
+
+Após a migration, executar:
+```sql
+SELECT tablename, policyname, cmd, qual 
+FROM pg_policies 
+WHERE tablename IN ('profiles', 'subscriptions');
 ```
 
----
-
-## Responsividade
-
-| Breakpoint | Comportamento |
-|------------|---------------|
-| Mobile (< 768px) | Coluna única, centralizado, ícones maiores |
-| Desktop (≥ 768px) | Grid 3 colunas, alinhado à esquerda |
-
----
-
-## Detalhes Técnicos
-
-- **TikTok**: SVG inline (lucide não possui)
-- **Hover**: Ícones com `scale-110` + mudança de cor
-- **Separador**: Linha gradiente `from-transparent via-primary/30 to-transparent`
-- **Background**: `bg-gradient-to-br from-background to-muted/30`
+Isso confirmará que as políticas estão corretas e o painel admin voltará a funcionar.
 
