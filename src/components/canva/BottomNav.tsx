@@ -1,4 +1,4 @@
-import { Bot, Image, GraduationCap, Heart } from "lucide-react";
+import { Bot, Image, GraduationCap, Heart, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CategoryType } from "./CategoryNav";
 
@@ -7,7 +7,8 @@ interface BottomNavProps {
   onCategoryChange: (category: CategoryType) => void;
 }
 
-const navItems: { category: CategoryType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+const navItems: { category: CategoryType | "home"; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { category: "home", label: "Início", icon: Home },
   { category: "tools", label: "IA", icon: Bot },
   { category: "feed", label: "Artes", icon: Image },
   { category: "videoaula", label: "Aula", icon: GraduationCap },
@@ -15,10 +16,16 @@ const navItems: { category: CategoryType; label: string; icon: React.ComponentTy
 ];
 
 export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) => {
-  const handleTabClick = (category: CategoryType) => {
-    onCategoryChange(category);
+  const handleTabClick = (category: CategoryType | "home") => {
     // Scroll to top when changing tabs
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Home resets to default feed view
+    if (category === "home") {
+      onCategoryChange("feed");
+    } else {
+      onCategoryChange(category);
+    }
   };
 
   return (
@@ -26,7 +33,9 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
       {/* Safe area padding for iOS devices */}
       <div className="flex items-center justify-around h-16 pb-safe">
         {navItems.map((item) => {
-          const isActive = activeCategory === item.category;
+          const isActive = item.category === "home" 
+            ? activeCategory === "feed" 
+            : activeCategory === item.category;
           const Icon = item.icon;
           
           return (
