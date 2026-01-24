@@ -704,7 +704,10 @@ const Index = () => {
       <Footer />
       
       {/* Bottom Navigation - Mobile only */}
-      <BottomNav />
+      <BottomNav 
+        activeCategory={activeCategory} 
+        onCategoryChange={setActiveCategory} 
+      />
     </div>
   );
 };
