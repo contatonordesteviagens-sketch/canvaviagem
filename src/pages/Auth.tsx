@@ -18,8 +18,23 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   
-  // Get redirect param for post-auth navigation
-  const redirectTo = searchParams.get("redirect") || null;
+  // Validate redirect parameter to prevent open redirect attacks
+  const isValidRedirect = (path: string | null): boolean => {
+    if (!path) return false;
+    // Only allow relative paths starting with /
+    if (!path.startsWith('/')) return false;
+    // Block protocol-relative URLs (//)
+    if (path.startsWith('//')) return false;
+    // Block data: and javascript: URLs
+    if (path.match(/^\/?(data|javascript):/i)) return false;
+    // Block URLs with encoded characters that could bypass checks
+    if (path.includes('%')) return false;
+    return true;
+  };
+  
+  // Get redirect param for post-auth navigation (validated)
+  const rawRedirect = searchParams.get("redirect");
+  const redirectTo = isValidRedirect(rawRedirect) ? rawRedirect : null;
 
   // Track page view
   useEffect(() => {
