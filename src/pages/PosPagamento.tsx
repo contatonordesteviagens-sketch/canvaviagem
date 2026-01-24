@@ -145,7 +145,7 @@ const PosPagamento = () => {
                 <div className="text-left">
                   <p className="font-medium text-orange-800 dark:text-orange-200">Boleto Bancário</p>
                   <p className="text-orange-700 dark:text-orange-300">
-                    Acesso liberado em <strong>até 3 dias úteis</strong> após o pagamento ser compensado pelo banco.
+                    Acesso liberado após o pagamento compensado pelo banco.
                   </p>
                 </div>
               </div>
