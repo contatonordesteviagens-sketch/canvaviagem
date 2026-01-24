@@ -1,105 +1,156 @@
 
-# Plano: Otimização de Abas Externas no Mobile
+# Plano: Correção do CategoryNav + Novo Menu Principal
 
-## Problema Atual
-Quando o usuário clica em qualquer link externo (Canva, ferramentas de IA, downloads), o site abre uma nova aba no navegador usando `target="_blank"`. No mobile, isso resulta em **dezenas de abas acumuladas**, prejudicando a experiência do usuário.
+## Problema 1: Seta do CategoryNav não é clicável no mobile
 
-## Solução Proposta
-Implementar uma estratégia inteligente de gerenciamento de abas:
+### Causa
+A seta `ChevronRight` está dentro de um `div` com `pointer-events-none` (linha 122), impedindo cliques.
 
-1. **Links do Canva (vídeos/artes)**: Sempre reutilizar a **mesma aba externa** ao invés de abrir novas
-2. **Outras ferramentas**: Também reutilizar uma única aba externa
-3. **Navegação interna**: Continuar na mesma aba (já funciona assim)
+### Solução
+Tornar a seta clicável separadamente, fora do gradiente:
+- Manter o gradiente de fade visual (sem interação)
+- Adicionar um botão de seta clicável em cima do gradiente (com `pointer-events-auto`)
+- Ao clicar na seta, fazer scroll para a direita
 
-### Como Funciona Tecnicamente
-
-Usaremos o parâmetro `name` do `window.open()` para especificar o nome da aba:
-- `window.open(url, 'canva-editor')` → Sempre abre na mesma aba chamada "canva-editor"
-- Se a aba já existir, ela é reutilizada; se não, é criada
-
----
-
-## Componentes a Modificar
-
-### 1. `src/components/canva/PremiumCard.tsx`
-**Usado para**: Vídeos e Artes (templates do Canva)
-
+### Mudanças em `src/components/canva/CategoryNav.tsx`
 ```text
-Mudanças:
-- Remover target="_blank" do link <a>
-- Alterar handleClick para usar window.open(url, 'canva-editor')
-- Impedir o comportamento padrão do link com e.preventDefault()
-```
-
-### 2. `src/components/canva/ToolCard.tsx`
-**Usado para**: Ferramentas de IA
-
-```text
-Mudanças:
-- Remover target="_blank" do link <a>
-- Alterar handleClick para usar window.open(url, 'canva-tools')
-- Impedir o comportamento padrão do link
-```
-
-### 3. `src/components/TemplateCard.tsx`
-**Usado para**: Cards de template (se ainda em uso)
-
-```text
-Mudanças:
-- Remover target="_blank" do link <a>
-- Adicionar onClick para usar window.open(url, 'canva-editor')
-```
-
-### 4. `src/components/ResourceSection.tsx`
-**Usado para**: Materiais e Downloads
-
-```text
-Mudanças:
-- Remover target="_blank" do link <a>
-- Adicionar onClick para usar window.open(url, 'canva-resources')
-```
-
-### 5. `src/pages/Index.tsx`
-**Usado para**: Handler de clique nos cards
-
-```text
-Mudanças:
-- Atualizar handleCardClick para usar window.open com nome específico
-- window.open(item.url, 'canva-editor') em vez de window.open(item.url, '_blank')
+Linhas 119-128:
+- Separar o gradiente (visual) do botão da seta (interativo)
+- Adicionar um <button> com onClick={() => scroll('right')}
+- Manter animação de pulse na seta
+- Exibir em mobile E desktop (remover hidden md:flex)
 ```
 
 ---
 
-## Estratégia de Nomes de Abas
+## Problema 2: Menu Principal Incompleto
 
-| Tipo de Conteúdo | Nome da Aba | Resultado |
-|------------------|-------------|-----------|
-| Vídeos/Artes (Canva) | `canva-editor` | Mesma aba para todos os templates |
-| Ferramentas de IA | `canva-tools` | Mesma aba para todas as ferramentas |
-| Downloads/Recursos | `canva-resources` | Mesma aba para downloads |
+### Situação Atual
+O Header tem apenas 3 links: Início, Calendário, Planos
+
+### Solução
+Adicionar TODAS as opções do app no menu:
+
+| Opção | Ícone | Destino |
+|-------|-------|---------|
+| Início | Home | `/` |
+| Vídeos | Video | Categoria `videos` |
+| Artes | Image | Categoria `feed` |
+| Stories | LayoutGrid | Categoria `stories` |
+| Legendas | FileText | Categoria `captions` |
+| Downloads | Download | Categoria `downloads` |
+| IA Tools | Bot | Categoria `tools` |
+| Videoaula | GraduationCap | Categoria `videoaula` |
+| Favoritos | Heart | Categoria `favorites` |
+| Calendário | Calendar | `/calendar` |
+| Planos | CreditCard | `/planos` |
+
+### Layout Desktop
+Menu horizontal com os principais links + dropdown "Mais" para categorias de conteúdo
+
+### Layout Mobile
+Ícone de hambúrguer (Menu) que abre Sheet com todas as opções listadas verticalmente
 
 ---
 
-## Resultado Final
+## Arquivos a Modificar
 
-**Antes**: Cada clique = Nova aba (10 cliques = 10 abas)
+### 1. `src/components/canva/CategoryNav.tsx`
 
-**Depois**: Todas as abas do mesmo tipo reutilizam uma única aba externa
+**Linha 119-128 - Tornar seta clicável:**
+```tsx
+{/* Right fade gradient - visual only */}
+<div 
+  className={cn(
+    "absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none transition-opacity duration-200",
+    canScrollRight ? "opacity-100" : "opacity-0"
+  )}
+/>
+
+{/* Clickable scroll button - appears on top of gradient */}
+<button
+  onClick={() => scroll('right')}
+  className={cn(
+    "absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center transition-opacity duration-200",
+    canScrollRight ? "opacity-100" : "opacity-0 pointer-events-none"
+  )}
+  aria-label="Scroll para direita"
+>
+  <ChevronRight className="w-5 h-5 text-muted-foreground animate-pulse" />
+</button>
+```
+
+### 2. `src/components/Header.tsx`
+
+**Adicionar navegação completa:**
+
+**Desktop:**
+- Links principais: Início, Calendário, Planos
+- Dropdown "Conteúdos" com subcategorias (Vídeos, Artes, Stories, etc.)
+- Usar DropdownMenu do shadcn/ui
+
+**Mobile:**
+- Manter ícone hambúrguer
+- Listar TODAS as opções no Sheet
+- Dividir em seções: "Navegação" e "Conteúdos"
+
+**Nova estrutura de navItems:**
+```tsx
+const mainNavItems = [
+  { to: "/", label: "Início", icon: Home },
+  { to: "/calendar", label: "Calendário", icon: Calendar },
+  { to: "/planos", label: "Planos", icon: CreditCard },
+];
+
+const contentCategories = [
+  { category: "videos", label: "Vídeos", icon: Video },
+  { category: "feed", label: "Artes", icon: Image },
+  { category: "stories", label: "Stories", icon: LayoutGrid },
+  { category: "captions", label: "Legendas", icon: FileText },
+  { category: "downloads", label: "Downloads", icon: Download },
+  { category: "tools", label: "IA Tools", icon: Bot },
+  { category: "videoaula", label: "Videoaula", icon: GraduationCap },
+  { category: "favorites", label: "Favoritos", icon: Heart },
+];
+```
+
+**Comportamento:**
+- Ao clicar em uma categoria de conteúdo, navegar para `/` e definir `activeCategory`
+- Usar React Context ou URL params para passar a categoria selecionada
+
+---
+
+## Fluxo Visual
 
 ```text
-Usuário clica em "Vídeo Cancún" → Abre aba 'canva-editor'
-Usuário clica em "Vídeo Maldivas" → REUTILIZA aba 'canva-editor' (atualiza URL)
-Usuário clica em "Robô IA Vendas" → Abre aba 'canva-tools'
-Usuário clica em "Robô IA Copy" → REUTILIZA aba 'canva-tools'
+┌─────────────────────────────────────────────────────────────┐
+│ DESKTOP HEADER                                              │
+│ [🎬 Canva Viagens]   Início  Calendário  Planos  ▾Conteúdos │
+│                                                      │      │
+│                                          ┌───────────┴───┐  │
+│                                          │ Vídeos        │  │
+│                                          │ Artes         │  │
+│                                          │ Stories       │  │
+│                                          │ Legendas      │  │
+│                                          │ Downloads     │  │
+│                                          │ IA Tools      │  │
+│                                          │ Videoaula     │  │
+│                                          │ Favoritos     │  │
+│                                          └───────────────┘  │
+└─────────────────────────────────────────────────────────────┘
 
-Total de abas externas: MÁXIMO 3 (editor, tools, resources)
+┌─────────────────────────────────────────────────────────────┐
+│ MOBILE HEADER                                               │
+│ [🎬]                                                   [☰]  │
+└─────────────────────────────────────────────────────────────┘
+             Clique no ☰ abre Sheet com todas opções
 ```
 
 ---
 
-## Benefícios
+## Resultado Esperado
 
-1. **Mobile amigável**: Usuário não precisa fechar dezenas de abas
-2. **Navegação fluida**: Menos confusão entre abas
-3. **Performance**: Menos abas = menos memória do navegador
-4. **UX melhorada**: Usuário sempre sabe onde está o conteúdo do Canva
+1. **Seta no CategoryNav**: Clicável em mobile e desktop - faz scroll suave para a direita
+2. **Menu Desktop**: Links principais + dropdown "Conteúdos" com subcategorias
+3. **Menu Mobile**: Hambúrguer com lista completa de todas as opções do app
+4. **UX consistente**: Qualquer menu leva o usuário ao conteúdo desejado
