@@ -1,21 +1,58 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LogOut, User } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { 
+  Menu, X, LogOut, User, Home, Calendar, CreditCard, 
+  Video, Image, LayoutGrid, FileText, Download, Bot, 
+  GraduationCap, Heart, ChevronDown 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 
-export const Header = () => {
+type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
+
+interface HeaderProps {
+  onCategoryChange?: (category: CategoryType) => void;
+}
+
+export const Header = ({ onCategoryChange }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
 
-  const navItems = [
-    { to: "/", label: "Início", icon: "🏠" },
-    { to: "/calendar", label: "Calendário", icon: "📅" },
-    { to: "/planos", label: "Planos", icon: "💳" },
+  const mainNavItems = [
+    { to: "/", label: "Início", icon: Home },
+    { to: "/calendar", label: "Calendário", icon: Calendar },
+    { to: "/planos", label: "Planos", icon: CreditCard },
   ];
+
+  const contentCategories: { category: CategoryType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { category: "videos", label: "Vídeos", icon: Video },
+    { category: "feed", label: "Artes", icon: Image },
+    { category: "stories", label: "Stories", icon: LayoutGrid },
+    { category: "captions", label: "Legendas", icon: FileText },
+    { category: "downloads", label: "Downloads", icon: Download },
+    { category: "tools", label: "IA Tools", icon: Bot },
+    { category: "videoaula", label: "Videoaula", icon: GraduationCap },
+    { category: "favorites", label: "Favoritos", icon: Heart },
+  ];
+
+  const handleCategoryClick = (category: CategoryType) => {
+    if (location.pathname !== "/") {
+      navigate("/", { state: { category } });
+    }
+    onCategoryChange?.(category);
+    setIsOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -29,17 +66,39 @@ export const Header = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
-          {navItems.map((item) => (
+          {mainNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
               activeClassName="bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              <span className="mr-2">{item.icon}</span>
+              <item.icon className="w-4 h-4 mr-2 inline" />
               {item.label}
             </NavLink>
           ))}
+
+          {/* Dropdown Conteúdos */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="px-4 py-2 text-sm font-medium">
+                Conteúdos
+                <ChevronDown className="w-4 h-4 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              {contentCategories.map((item) => (
+                <DropdownMenuItem
+                  key={item.category}
+                  onClick={() => handleCategoryClick(item.category)}
+                  className="cursor-pointer"
+                >
+                  <item.icon className="w-4 h-4 mr-2" />
+                  {item.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           
           {user ? (
             <Button 
@@ -68,20 +127,43 @@ export const Header = () => {
               {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[240px] sm:w-[300px]">
-            <nav className="flex flex-col gap-2 mt-8">
-              {navItems.map((item) => (
+          <SheetContent side="right" className="w-[280px] sm:w-[320px]">
+            <nav className="flex flex-col gap-1 mt-8">
+              {/* Navegação Principal */}
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+                Navegação
+              </p>
+              {mainNavItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   onClick={() => setIsOpen(false)}
-                  className="px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
                   activeClassName="bg-primary text-primary-foreground"
                 >
-                  <span className="mr-2">{item.icon}</span>
+                  <item.icon className="h-5 w-5" />
                   {item.label}
                 </NavLink>
               ))}
+
+              <DropdownMenuSeparator className="my-3" />
+
+              {/* Conteúdos */}
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+                Conteúdos
+              </p>
+              {contentCategories.map((item) => (
+                <button
+                  key={item.category}
+                  onClick={() => handleCategoryClick(item.category)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10 text-left w-full"
+                >
+                  <item.icon className="h-5 w-5" />
+                  {item.label}
+                </button>
+              ))}
+
+              <DropdownMenuSeparator className="my-3" />
               
               {user ? (
                 <Button 
@@ -90,15 +172,15 @@ export const Header = () => {
                     signOut();
                     setIsOpen(false);
                   }}
-                  className="justify-start mt-4"
+                  className="justify-start gap-3 px-3"
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
+                  <LogOut className="h-5 w-5" />
                   Sair
                 </Button>
               ) : (
                 <Link to="/auth" onClick={() => setIsOpen(false)}>
-                  <Button variant="outline" className="w-full mt-4">
-                    <User className="h-4 w-4 mr-2" />
+                  <Button variant="outline" className="w-full justify-start gap-3 px-3">
+                    <User className="h-5 w-5" />
                     Entrar
                   </Button>
                 </Link>

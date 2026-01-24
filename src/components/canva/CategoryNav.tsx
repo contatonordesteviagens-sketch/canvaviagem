@@ -116,16 +116,25 @@ export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = 
           )}
         />
         
-        {/* Right fade gradient - always visible when there's more content */}
+        {/* Right fade gradient - visual only */}
         <div 
           className={cn(
-            "absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none transition-opacity duration-200 flex items-center justify-end pr-1",
+            "absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none transition-opacity duration-200",
             canScrollRight ? "opacity-100" : "opacity-0"
           )}
+        />
+        
+        {/* Clickable scroll button - mobile & desktop */}
+        <button
+          onClick={() => scroll('right')}
+          className={cn(
+            "absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/90 shadow-md transition-all duration-200",
+            canScrollRight ? "opacity-100" : "opacity-0 pointer-events-none"
+          )}
+          aria-label="Scroll para direita"
         >
-          {/* Subtle arrow indicator */}
-          <ChevronRight className="w-4 h-4 text-muted-foreground/60 animate-pulse" />
-        </div>
+          <ChevronRight className="w-5 h-5 text-muted-foreground animate-pulse" />
+        </button>
 
         <div 
           ref={scrollRef}
