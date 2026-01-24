@@ -5,6 +5,7 @@ import {
   Video, Image, LayoutGrid, FileText, Download, Bot, 
   GraduationCap, Heart, ChevronDown 
 } from "lucide-react";
+import logoImage from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -59,9 +60,9 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
         <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <img 
-            src="/favicon.webp" 
+            src={logoImage} 
             alt="Canva Viagem" 
-            className="h-10 w-10 rounded-full shadow-lg object-cover"
+            className="h-10 w-10 rounded-xl shadow-lg object-cover"
           />
           <span className="font-bold text-xl hidden sm:inline">Canva Viagens</span>
         </Link>
