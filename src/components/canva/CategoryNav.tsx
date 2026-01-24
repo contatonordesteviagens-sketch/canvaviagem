@@ -1,4 +1,5 @@
-import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart } from "lucide-react";
+import { useRef, useState, useEffect, useCallback } from "react";
+import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
@@ -21,13 +22,95 @@ const categories: { id: CategoryType; label: string; icon: React.ReactNode }[] =
 ];
 
 export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = true }: CategoryNavProps) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
   const displayCategories = showFavorites 
     ? categories 
     : categories.filter(c => c.id !== 'favorites');
 
+  // Check scroll position and update arrow visibility
+  const checkScrollPosition = useCallback(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+    
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    setCanScrollLeft(scrollLeft > 5);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+  }, []);
+
+  // Initial check and scroll listeners
+  useEffect(() => {
+    checkScrollPosition();
+    const container = scrollRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScrollPosition);
+      window.addEventListener('resize', checkScrollPosition);
+    }
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', checkScrollPosition);
+      }
+      window.removeEventListener('resize', checkScrollPosition);
+    };
+  }, [checkScrollPosition]);
+
+  // Hint animation on first load
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container || hasAnimated) return;
+
+    // Check if there's content to scroll
+    const hasScrollableContent = container.scrollWidth > container.clientWidth;
+    if (!hasScrollableContent) return;
+
+    // Small delay before animation
+    const timer = setTimeout(() => {
+      container.classList.add('animate-hint-scroll');
+      setHasAnimated(true);
+      
+      // Remove animation class after it completes
+      setTimeout(() => {
+        container.classList.remove('animate-hint-scroll');
+      }, 600);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [hasAnimated]);
+
+  // Scroll by amount
+  const scroll = (direction: 'left' | 'right') => {
+    const container = scrollRef.current;
+    if (!container) return;
+    
+    const scrollAmount = 200;
+    container.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    });
+  };
+
   return (
-    <div className="mb-8">
-      <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+    <div className="mb-8 relative">
+      {/* Left arrow */}
+      <button
+        onClick={() => scroll('left')}
+        className={cn(
+          "absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 shadow-md flex items-center justify-center transition-opacity duration-200",
+          canScrollLeft ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        aria-label="Scroll para esquerda"
+      >
+        <ChevronLeft className="w-5 h-5 text-muted-foreground" />
+      </button>
+
+      {/* Categories container */}
+      <div 
+        ref={scrollRef}
+        className="overflow-x-auto scrollbar-hide -mx-4 px-4"
+      >
         <div className="flex gap-4 pb-2 snap-x-mandatory min-w-max">
           {displayCategories.map((category) => {
             const isActive = activeCategory === category.id;
@@ -64,6 +147,18 @@ export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = 
           })}
         </div>
       </div>
+
+      {/* Right arrow */}
+      <button
+        onClick={() => scroll('right')}
+        className={cn(
+          "absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 shadow-md flex items-center justify-center transition-opacity duration-200",
+          canScrollRight ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        aria-label="Scroll para direita"
+      >
+        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+      </button>
     </div>
   );
 };

@@ -1,31 +1,33 @@
-import { Link, useLocation } from "react-router-dom";
-import { Home, FolderOpen, LayoutGrid, Plus } from "lucide-react";
+import { Bot, Image, GraduationCap, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CategoryType } from "./CategoryNav";
 
-const navItems = [
-  { to: "/", label: "Início", icon: Home },
-  { to: "/projetos", label: "Projetos", icon: FolderOpen },
-  { to: "/modelos", label: "Modelos", icon: LayoutGrid },
-  { to: "/criar", label: "Criar", icon: Plus },
+interface BottomNavProps {
+  activeCategory: CategoryType;
+  onCategoryChange: (category: CategoryType) => void;
+}
+
+const navItems: { category: CategoryType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { category: "tools", label: "IA", icon: Bot },
+  { category: "feed", label: "Artes", icon: Image },
+  { category: "videoaula", label: "Aula", icon: GraduationCap },
+  { category: "favorites", label: "Favoritos", icon: Heart },
 ];
 
-export const BottomNav = () => {
-  const location = useLocation();
-  
+export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border/40 md:hidden safe-area-pb">
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.to || 
-            (item.to === "/" && location.pathname === "/");
+          const isActive = activeCategory === item.category;
           const Icon = item.icon;
           
           return (
-            <Link
-              key={item.to}
-              to={item.to}
+            <button
+              key={item.category}
+              onClick={() => onCategoryChange(item.category)}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 flex-1 h-full min-w-[64px] transition-colors",
+                "flex flex-col items-center justify-center gap-1 flex-1 h-full min-w-[64px] transition-colors relative",
                 isActive ? "text-primary" : "text-muted-foreground"
               )}
             >
@@ -41,7 +43,7 @@ export const BottomNav = () => {
               )}>
                 {item.label}
               </span>
-            </Link>
+            </button>
           );
         })}
       </div>
