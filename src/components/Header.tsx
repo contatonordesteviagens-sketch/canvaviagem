@@ -58,9 +58,11 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
         <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-            <span className="text-xl">🎬</span>
-          </div>
+          <img 
+            src="/favicon.webp" 
+            alt="Canva Viagem" 
+            className="h-10 w-10 rounded-full shadow-lg object-cover"
+          />
           <span className="font-bold text-xl hidden sm:inline">Canva Viagens</span>
         </Link>
 
