@@ -57,7 +57,7 @@ export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = 
     };
   }, [checkScrollPosition]);
 
-  // Hint animation on first load
+  // Hint animation on first load - more visible nudge
   useEffect(() => {
     const container = scrollRef.current;
     if (!container || hasAnimated) return;
@@ -66,16 +66,16 @@ export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = 
     const hasScrollableContent = container.scrollWidth > container.clientWidth;
     if (!hasScrollableContent) return;
 
-    // Small delay before animation
+    // Delay before animation starts
     const timer = setTimeout(() => {
-      container.classList.add('animate-hint-scroll');
-      setHasAnimated(true);
+      // Animate scroll to the right then back
+      container.scrollTo({ left: 60, behavior: 'smooth' });
       
-      // Remove animation class after it completes
       setTimeout(() => {
-        container.classList.remove('animate-hint-scroll');
-      }, 600);
-    }, 500);
+        container.scrollTo({ left: 0, behavior: 'smooth' });
+        setHasAnimated(true);
+      }, 400);
+    }, 800);
 
     return () => clearTimeout(timer);
   }, [hasAnimated]);
@@ -94,11 +94,11 @@ export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = 
 
   return (
     <div className="mb-8 relative">
-      {/* Left arrow */}
+      {/* Left arrow - desktop only */}
       <button
         onClick={() => scroll('left')}
         className={cn(
-          "absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 shadow-md flex items-center justify-center transition-opacity duration-200",
+          "absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 shadow-md items-center justify-center transition-opacity duration-200 hidden md:flex",
           canScrollLeft ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         aria-label="Scroll para esquerda"
@@ -106,53 +106,74 @@ export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = 
         <ChevronLeft className="w-5 h-5 text-muted-foreground" />
       </button>
 
-      {/* Categories container */}
-      <div 
-        ref={scrollRef}
-        className="overflow-x-auto scrollbar-hide -mx-4 px-4"
-      >
-        <div className="flex gap-4 pb-2 snap-x-mandatory min-w-max">
-          {displayCategories.map((category) => {
-            const isActive = activeCategory === category.id;
-            
-            return (
-              <button
-                key={category.id}
-                onClick={() => onCategoryChange(category.id)}
-                className="flex flex-col items-center gap-2 snap-center min-w-[72px] group"
-              >
-                {/* Circle Icon Container */}
-                <div
-                  className={cn(
-                    "w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300",
-                    isActive 
-                      ? "bg-primary/10 ring-[3px] ring-primary text-primary" 
-                      : "bg-secondary text-muted-foreground hover:bg-secondary/80 group-hover:scale-105"
-                  )}
+      {/* Categories container with fade edges */}
+      <div className="relative">
+        {/* Left fade gradient */}
+        <div 
+          className={cn(
+            "absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none transition-opacity duration-200",
+            canScrollLeft ? "opacity-100" : "opacity-0"
+          )}
+        />
+        
+        {/* Right fade gradient - always visible when there's more content */}
+        <div 
+          className={cn(
+            "absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none transition-opacity duration-200 flex items-center justify-end pr-1",
+            canScrollRight ? "opacity-100" : "opacity-0"
+          )}
+        >
+          {/* Subtle arrow indicator */}
+          <ChevronRight className="w-4 h-4 text-muted-foreground/60 animate-pulse" />
+        </div>
+
+        <div 
+          ref={scrollRef}
+          className="overflow-x-auto scrollbar-hide -mx-4 px-4"
+        >
+          <div className="flex gap-4 pb-2 snap-x-mandatory min-w-max">
+            {displayCategories.map((category) => {
+              const isActive = activeCategory === category.id;
+              
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => onCategoryChange(category.id)}
+                  className="flex flex-col items-center gap-2 snap-center min-w-[72px] group"
                 >
-                  {category.icon}
-                </div>
-                
-                {/* Label */}
-                <span
-                  className={cn(
-                    "text-xs font-medium text-center transition-colors whitespace-nowrap",
-                    isActive ? "text-primary" : "text-muted-foreground"
-                  )}
-                >
-                  {category.label}
-                </span>
-              </button>
-            );
-          })}
+                  {/* Circle Icon Container */}
+                  <div
+                    className={cn(
+                      "w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300",
+                      isActive 
+                        ? "bg-primary/10 ring-[3px] ring-primary text-primary" 
+                        : "bg-secondary text-muted-foreground hover:bg-secondary/80 group-hover:scale-105"
+                    )}
+                  >
+                    {category.icon}
+                  </div>
+                  
+                  {/* Label */}
+                  <span
+                    className={cn(
+                      "text-xs font-medium text-center transition-colors whitespace-nowrap",
+                      isActive ? "text-primary" : "text-muted-foreground"
+                    )}
+                  >
+                    {category.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Right arrow */}
+      {/* Right arrow - desktop only */}
       <button
         onClick={() => scroll('right')}
         className={cn(
-          "absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 shadow-md flex items-center justify-center transition-opacity duration-200",
+          "absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 shadow-md items-center justify-center transition-opacity duration-200 hidden md:flex",
           canScrollRight ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         aria-label="Scroll para direita"

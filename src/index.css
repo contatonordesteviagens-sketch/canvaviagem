@@ -179,4 +179,19 @@
   .animate-hint-scroll {
     animation: hint-scroll 0.6s ease-in-out;
   }
+  
+  /* Safe area padding for iOS bottom bar */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  /* Pulse animation for scroll hint */
+  @keyframes gentle-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+  
+  .animate-gentle-pulse {
+    animation: gentle-pulse 2s ease-in-out infinite;
+  }
 }
