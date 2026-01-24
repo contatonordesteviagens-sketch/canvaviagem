@@ -152,7 +152,7 @@ const PosPagamento = () => {
             </div>
             
             <p className="text-xs text-amber-700 dark:text-amber-400 text-center">
-              Você receberá um email assim que seu acesso for liberado.
+              Envie o link de acesso abaixo para verificar se seu acesso está liberado.
             </p>
           </div>
 
