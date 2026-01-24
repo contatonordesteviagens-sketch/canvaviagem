@@ -38,9 +38,12 @@ export const ToolCard = ({
   };
 
   const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (onClick) {
       onClick();
     }
+    // Reutiliza a mesma aba externa para ferramentas
+    window.open(url, 'canva-tools');
   };
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
@@ -54,7 +57,6 @@ export const ToolCard = ({
   return (
     <a
       href={url}
-      target="_blank"
       rel="noopener noreferrer"
       className="group block"
       onClick={handleClick}

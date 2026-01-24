@@ -45,10 +45,12 @@ export const PremiumCard = ({
   };
 
   const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (onClick) {
-      e.preventDefault();
       onClick();
     }
+    // Reutiliza a mesma aba externa para templates do Canva
+    window.open(url, 'canva-editor');
   };
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
@@ -62,7 +64,6 @@ export const PremiumCard = ({
   return (
     <a 
       href={url} 
-      target="_blank" 
       rel="noopener noreferrer"
       className="group block relative"
       onClick={handleClick}

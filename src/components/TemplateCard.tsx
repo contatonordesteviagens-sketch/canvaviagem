@@ -11,6 +11,11 @@ interface TemplateCardProps {
 }
 
 export const TemplateCard = ({ title, url, icon, category, isNew }: TemplateCardProps) => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.open(url, 'canva-editor');
+  };
+
   return (
     <Card className="group hover:shadow-[var(--shadow-hover)] transition-all duration-300 border-border/50 overflow-hidden relative">
       {isNew && (
@@ -36,7 +41,7 @@ export const TemplateCard = ({ title, url, icon, category, isNew }: TemplateCard
           asChild
           className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-md"
         >
-          <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+          <a href={url} rel="noopener noreferrer" onClick={handleClick} className="flex items-center justify-center gap-2">
             <ExternalLink className="h-4 w-4" />
             Editar no Canva
           </a>

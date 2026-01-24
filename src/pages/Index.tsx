@@ -154,7 +154,7 @@ const Index = () => {
 
   const handleCardClick = (item: ContentItem) => {
     trackClick(item.type, item.id);
-    window.open(item.url, '_blank');
+    // Nota: a abertura da aba agora é controlada pelo PremiumCard
   };
 
   const handleCaptionClick = (caption: Caption) => {
