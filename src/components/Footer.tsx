@@ -1,22 +1,148 @@
-import { Plane, Palmtree, MapPin, Compass } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Instagram, Facebook, Youtube } from "lucide-react";
+
+// TikTok icon (lucide doesn't have it)
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+  </svg>
+);
+
+const socialLinks = [
+  {
+    name: "Instagram",
+    url: "https://instagram.com/canvaviagem",
+    icon: Instagram,
+  },
+  {
+    name: "Facebook",
+    url: "https://facebook.com/canvaviagem",
+    icon: Facebook,
+  },
+  {
+    name: "TikTok",
+    url: "https://tiktok.com/@canvaviagem",
+    icon: TikTokIcon,
+  },
+  {
+    name: "YouTube",
+    url: "https://youtube.com/@canvaviagem",
+    icon: Youtube,
+  },
+];
+
+const quickLinks = [
+  { name: "Início", to: "/" },
+  { name: "Calendário", to: "/calendar" },
+  { name: "Planos", to: "/planos" },
+  { name: "Modelos", to: "/#artes" },
+  { name: "Contato", to: "mailto:contato@canvaviagem.com", external: true },
+];
 
 export const Footer = () => {
   return (
-    <footer className="mt-16 border-t border-border/50 bg-gradient-to-br from-primary/5 to-accent/5">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="flex items-center gap-3">
-            <Plane className="h-6 w-6 text-primary animate-pulse" />
-            <Palmtree className="h-6 w-6 text-accent" />
-            <MapPin className="h-6 w-6 text-primary" />
-            <Compass className="h-6 w-6 text-accent animate-pulse" />
+    <footer className="mt-16 border-t border-border/50 bg-gradient-to-br from-background to-muted/30">
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-12 max-w-7xl">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
+          {/* Brand Column */}
+          <div className="flex flex-col items-center md:items-start gap-4">
+            <div className="flex items-center gap-3">
+              <img
+                src="/favicon.webp"
+                alt="Canva Viagem"
+                className="h-10 w-10 rounded-lg"
+              />
+              <h3 className="text-xl font-bold text-foreground">
+                Canva Viagem
+              </h3>
+            </div>
+            <p className="text-muted-foreground text-center md:text-left text-sm leading-relaxed max-w-xs">
+              Hub de Conteúdo Profissional para Agências de Viagens ✈️🌴
+            </p>
           </div>
-          <p className="text-muted-foreground">
-            Hub de Conteúdo Profissional para Agências de Viagens ✈️🌴
+
+          {/* Quick Links Column */}
+          <div className="flex flex-col items-center md:items-start gap-4">
+            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+              Links Rápidos
+            </h4>
+            <nav className="flex flex-col items-center md:items-start gap-2">
+              {quickLinks.map((link) =>
+                link.external ? (
+                  <a
+                    key={link.name}
+                    href={link.to}
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                  >
+                    {link.name}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.name}
+                    to={link.to}
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                  >
+                    {link.name}
+                  </Link>
+                )
+              )}
+            </nav>
+          </div>
+
+          {/* Social Links Column */}
+          <div className="flex flex-col items-center md:items-start gap-4">
+            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+              Conecte-se
+            </h4>
+            <div className="flex items-center gap-3">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.name}
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-full bg-muted/50 text-muted-foreground hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
+                  aria-label={social.name}
+                >
+                  <social.icon className="h-5 w-5" />
+                </a>
+              ))}
+            </div>
+            <p className="text-muted-foreground text-sm">@canvaviagem</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Gradient Separator */}
+      <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+
+      {/* Bottom Footer */}
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground text-center md:text-left">
+            © 2026 Canva Viagem. Todos os direitos reservados.
           </p>
-          <p className="text-sm text-muted-foreground">
-            © 2024 - Todos os direitos reservados
-          </p>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/termos"
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              Termos de Uso
+            </Link>
+            <span className="text-muted-foreground/50">•</span>
+            <Link
+              to="/privacidade"
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              Política de Privacidade
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
