@@ -1,127 +1,105 @@
 
+# Plano: Otimização de Abas Externas no Mobile
 
-# Plano: Melhorias na Navegação Mobile
+## Problema Atual
+Quando o usuário clica em qualquer link externo (Canva, ferramentas de IA, downloads), o site abre uma nova aba no navegador usando `target="_blank"`. No mobile, isso resulta em **dezenas de abas acumuladas**, prejudicando a experiência do usuário.
 
-## Visão Geral
-Este plano aborda duas melhorias na interface mobile:
-1. **Navegação inferior (BottomNav)**: Substituir os links atuais por abas funcionais que navegam entre categorias de conteúdo
-2. **Navegação de categorias (CategoryNav)**: Adicionar setas de navegação e uma animação sutil de "dica" para indicar scroll horizontal
+## Solução Proposta
+Implementar uma estratégia inteligente de gerenciamento de abas:
 
----
+1. **Links do Canva (vídeos/artes)**: Sempre reutilizar a **mesma aba externa** ao invés de abrir novas
+2. **Outras ferramentas**: Também reutilizar uma única aba externa
+3. **Navegação interna**: Continuar na mesma aba (já funciona assim)
 
-## Mudança 1: Nova Navegação Inferior Mobile
+### Como Funciona Tecnicamente
 
-### Problema Atual
-A barra inferior mostra links quebrados ("Projetos", "Modelos", "Criar") que não existem no app.
-
-### Solução
-Substituir por 4 abas que funcionam como atalhos para categorias do conteúdo:
-
-| Aba | Ícone | Categoria que Ativa |
-|-----|-------|-------------------|
-| IA | Bot | `tools` |
-| Artes | Image | `feed` |
-| Aula | GraduationCap | `videoaula` |
-| Favoritos | Heart | `favorites` |
-
-### Como Funciona
-- Em vez de navegação por rotas, as abas vão **comunicar com a página Index** para mudar a categoria ativa
-- Usaremos um callback `onCategoryChange` passado via props ou contexto
+Usaremos o parâmetro `name` do `window.open()` para especificar o nome da aba:
+- `window.open(url, 'canva-editor')` → Sempre abre na mesma aba chamada "canva-editor"
+- Se a aba já existir, ela é reutilizada; se não, é criada
 
 ---
 
-## Mudança 2: Indicadores de Scroll + Animação no CategoryNav
+## Componentes a Modificar
 
-### Problema Atual
-Usuários não percebem que podem arrastar para ver mais categorias.
+### 1. `src/components/canva/PremiumCard.tsx`
+**Usado para**: Vídeos e Artes (templates do Canva)
 
-### Solução
-
-**Setas de navegação:**
-- Adicionar setas `ChevronLeft` e `ChevronRight` nas extremidades
-- As setas ficam visíveis apenas quando há mais conteúdo para rolar naquela direção
-- Ao clicar, faz scroll suave para a próxima/anterior categoria
-
-**Animação de "dica":**
-- Ao carregar a página, uma animação sutil desloca o carrossel 20px para a esquerda e retorna
-- Acontece apenas uma vez (primeira visita)
-- Dá a pista visual de que há mais conteúdo
-
----
-
-## Detalhes Técnicos
-
-### Arquivos a Modificar
-
-**1. `src/components/canva/BottomNav.tsx`**
 ```text
 Mudanças:
-- Importar novos ícones (Bot, Image, GraduationCap, Heart)
-- Aceitar props: activeCategory e onCategoryChange
-- Converter de Links para buttons que chamam onCategoryChange
-- Manter visual atual com ícones + labels
+- Remover target="_blank" do link <a>
+- Alterar handleClick para usar window.open(url, 'canva-editor')
+- Impedir o comportamento padrão do link com e.preventDefault()
 ```
 
-**2. `src/components/canva/CategoryNav.tsx`**
+### 2. `src/components/canva/ToolCard.tsx`
+**Usado para**: Ferramentas de IA
+
 ```text
 Mudanças:
-- Adicionar ref para o container de scroll
-- Implementar detecção de scroll position (canScrollLeft/Right)
-- Adicionar botões de seta nas extremidades
-- Criar animação keyframe "hint-scroll"
-- Adicionar useEffect que roda animação uma vez ao montar
+- Remover target="_blank" do link <a>
+- Alterar handleClick para usar window.open(url, 'canva-tools')
+- Impedir o comportamento padrão do link
 ```
 
-**3. `src/index.css`**
-```text
-Adicionar keyframe de animação:
-@keyframes hint-scroll {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(-20px); }
-}
-```
+### 3. `src/components/TemplateCard.tsx`
+**Usado para**: Cards de template (se ainda em uso)
 
-**4. `src/pages/Index.tsx`**
 ```text
 Mudanças:
-- Passar activeCategory e onCategoryChange para BottomNav
+- Remover target="_blank" do link <a>
+- Adicionar onClick para usar window.open(url, 'canva-editor')
+```
+
+### 4. `src/components/ResourceSection.tsx`
+**Usado para**: Materiais e Downloads
+
+```text
+Mudanças:
+- Remover target="_blank" do link <a>
+- Adicionar onClick para usar window.open(url, 'canva-resources')
+```
+
+### 5. `src/pages/Index.tsx`
+**Usado para**: Handler de clique nos cards
+
+```text
+Mudanças:
+- Atualizar handleCardClick para usar window.open com nome específico
+- window.open(item.url, 'canva-editor') em vez de window.open(item.url, '_blank')
 ```
 
 ---
 
-## Fluxo Visual
+## Estratégia de Nomes de Abas
+
+| Tipo de Conteúdo | Nome da Aba | Resultado |
+|------------------|-------------|-----------|
+| Vídeos/Artes (Canva) | `canva-editor` | Mesma aba para todos os templates |
+| Ferramentas de IA | `canva-tools` | Mesma aba para todas as ferramentas |
+| Downloads/Recursos | `canva-resources` | Mesma aba para downloads |
+
+---
+
+## Resultado Final
+
+**Antes**: Cada clique = Nova aba (10 cliques = 10 abas)
+
+**Depois**: Todas as abas do mesmo tipo reutilizam uma única aba externa
 
 ```text
-┌─────────────────────────────────────┐
-│           CATEGORIA NAV             │
-│  ◄  [🎬] [🖼️] [📱] [📝] [⬇️] [🤖]...  ►  │
-│      ↑                           ↑  │
-│   Seta                       Seta   │
-│  (aparece se há mais)              │
-│                                     │
-│   * Animação sutil ao carregar *   │
-└─────────────────────────────────────┘
+Usuário clica em "Vídeo Cancún" → Abre aba 'canva-editor'
+Usuário clica em "Vídeo Maldivas" → REUTILIZA aba 'canva-editor' (atualiza URL)
+Usuário clica em "Robô IA Vendas" → Abre aba 'canva-tools'
+Usuário clica em "Robô IA Copy" → REUTILIZA aba 'canva-tools'
 
-┌─────────────────────────────────────┐
-│          CONTEÚDO PRINCIPAL         │
-│                                     │
-│        (muda com categoria)         │
-│                                     │
-└─────────────────────────────────────┘
-
-┌─────────────────────────────────────┐
-│           BOTTOM NAV (mobile)       │
-│   🤖      🖼️       🎓       ❤️      │
-│   IA    Artes    Aula   Favoritos  │
-└─────────────────────────────────────┘
+Total de abas externas: MÁXIMO 3 (editor, tools, resources)
 ```
 
 ---
 
-## Resultado Esperado
+## Benefícios
 
-1. **Bottom Nav funcional** com 4 abas que trocam o conteúdo da página
-2. **Setas visuais** indicando que há mais categorias para rolar
-3. **Animação sutil** de boas-vindas que "mostra" o scroll horizontal
-4. **Experiência mobile** mais intuitiva e profissional
-
+1. **Mobile amigável**: Usuário não precisa fechar dezenas de abas
+2. **Navegação fluida**: Menos confusão entre abas
+3. **Performance**: Menos abas = menos memória do navegador
+4. **UX melhorada**: Usuário sempre sabe onde está o conteúdo do Canva
