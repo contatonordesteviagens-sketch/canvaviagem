@@ -15,9 +15,16 @@ const navItems: { category: CategoryType; label: string; icon: React.ComponentTy
 ];
 
 export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) => {
+  const handleTabClick = (category: CategoryType) => {
+    onCategoryChange(category);
+    // Scroll to top when changing tabs
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border/40 md:hidden safe-area-pb">
-      <div className="flex items-center justify-around h-16">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border/40 md:hidden">
+      {/* Safe area padding for iOS devices */}
+      <div className="flex items-center justify-around h-16 pb-safe">
         {navItems.map((item) => {
           const isActive = activeCategory === item.category;
           const Icon = item.icon;
@@ -25,21 +32,25 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
           return (
             <button
               key={item.category}
-              onClick={() => onCategoryChange(item.category)}
+              onClick={() => handleTabClick(item.category)}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 flex-1 h-full min-w-[64px] transition-colors relative",
+                "flex flex-col items-center justify-center gap-1 flex-1 h-full min-w-[64px] transition-all duration-200 relative active:scale-95",
                 isActive ? "text-primary" : "text-muted-foreground"
               )}
+              aria-label={item.label}
             >
-              {/* Active indicator */}
+              {/* Active indicator bar */}
               {isActive && (
-                <div className="absolute top-0 w-12 h-0.5 bg-primary rounded-b-md" />
+                <div className="absolute top-0 w-12 h-0.5 bg-primary rounded-b-full" />
               )}
               
-              <Icon className="w-6 h-6" />
+              <Icon className={cn(
+                "w-6 h-6 transition-transform",
+                isActive && "scale-110"
+              )} />
               <span className={cn(
-                "text-[10px] font-medium",
-                isActive && "font-bold"
+                "text-[10px] font-medium transition-all",
+                isActive && "font-bold text-primary"
               )}>
                 {item.label}
               </span>
