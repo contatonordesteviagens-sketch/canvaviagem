@@ -16,6 +16,11 @@ interface ResourceSectionProps {
 }
 
 export const ResourceSection = ({ title, resources, description }: ResourceSectionProps) => {
+  const handleResourceClick = (e: React.MouseEvent, url: string) => {
+    e.preventDefault();
+    window.open(url, 'canva-resources');
+  };
+
   return (
     <Card className="shadow-[var(--shadow-card)] border-border/50">
       <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5">
@@ -33,7 +38,12 @@ export const ResourceSection = ({ title, resources, description }: ResourceSecti
               variant="outline"
               className="w-full justify-start h-auto py-4 px-6 hover:bg-primary/5 hover:border-primary/30 transition-all group relative"
             >
-              <a href={resource.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3">
+              <a 
+                href={resource.url} 
+                rel="noopener noreferrer" 
+                onClick={(e) => handleResourceClick(e, resource.url)}
+                className="flex items-center gap-3"
+              >
                 <span className="text-2xl">{resource.icon}</span>
                 <span className="flex-1 text-left font-medium">{resource.name}</span>
                 {resource.isNew && (
