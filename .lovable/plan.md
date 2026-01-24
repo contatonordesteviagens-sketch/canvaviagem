@@ -1,24 +1,117 @@
 
-# Plano: Atualizar Favicon
+# Plano: Modo Escuro + Toggle de Tema
 
 ## Objetivo
-Substituir o favicon atual do Lovable pelo novo ícone de anéis azuis enviado.
+Adicionar modo escuro funcional ao app com um botão minimalista no canto superior direito do header para alternar entre claro/escuro.
 
-## Passos
+## Situação Atual
+O projeto já possui:
+- `next-themes` instalado (dependência já existe)
+- `darkMode: ["class"]` configurado no Tailwind
+- Estilos `.dark` completos no `index.css`
 
-### 1. Copiar a imagem para o projeto
-O arquivo `user-uploads://favicon.webp` será copiado para `public/favicon.webp`
+Falta apenas ativar o ThemeProvider e adicionar o botão de toggle.
 
-### 2. Atualizar o `index.html`
-Modificar a referência do favicon de `/favicon.png` para `/favicon.webp`:
+---
 
-```html
-<!-- Antes -->
-<link rel="icon" type="image/png" href="/favicon.png" />
+## Arquivos a Modificar
 
-<!-- Depois -->
-<link rel="icon" type="image/webp" href="/favicon.webp" />
+### 1. `src/App.tsx`
+
+Adicionar o `ThemeProvider` do `next-themes` envolvendo a aplicação:
+
+```tsx
+import { ThemeProvider } from "next-themes";
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+      <TooltipProvider>
+        {/* ... resto do app */}
+      </TooltipProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
+);
 ```
 
-## Resultado
-O novo ícone azul com anéis interconectados aparecerá na aba do navegador em vez do favicon do Lovable.
+---
+
+### 2. `src/components/Header.tsx`
+
+Adicionar botão de toggle de tema no canto superior direito:
+
+**Imports adicionais:**
+```tsx
+import { Sun, Moon } from "lucide-react";
+import { useTheme } from "next-themes";
+```
+
+**Hook no componente:**
+```tsx
+const { theme, setTheme } = useTheme();
+```
+
+**Botão no Desktop** (antes do botão Entrar/Sair):
+```tsx
+<Button
+  variant="ghost"
+  size="icon"
+  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+  className="ml-2"
+>
+  <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+  <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+  <span className="sr-only">Alternar tema</span>
+</Button>
+```
+
+**Botão no Mobile** (dentro do Sheet):
+```tsx
+<Button
+  variant="ghost"
+  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+  className="justify-start gap-3 px-3"
+>
+  {theme === "dark" ? (
+    <Sun className="h-5 w-5" />
+  ) : (
+    <Moon className="h-5 w-5" />
+  )}
+  {theme === "dark" ? "Modo Claro" : "Modo Escuro"}
+</Button>
+```
+
+---
+
+## Posicionamento do Botão
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ DESKTOP HEADER                                              │
+│ [🔵Logo]  Início  Calendário  Planos  ▾Conteúdos  [🌙] [👤] │
+└─────────────────────────────────────────────────────────────┘
+                                                  ↑
+                                          Botão de tema
+                                          (Sol/Lua animado)
+```
+
+---
+
+## Comportamento
+
+| Estado | Ícone Visível | Clique Alterna Para |
+|--------|---------------|---------------------|
+| Modo Claro | ☀️ Sol | Modo Escuro |
+| Modo Escuro | 🌙 Lua | Modo Claro |
+
+O ícone terá uma transição suave com rotação (sol → lua e vice-versa).
+
+---
+
+## Resultado Esperado
+
+1. **Toggle funcional**: Clique alterna entre modo claro e escuro
+2. **Persistência**: O tema é salvo no localStorage automaticamente pelo `next-themes`
+3. **Ícone minimalista**: Sol/Lua com animação de transição
+4. **Posição**: Canto superior direito, antes do botão de login
+5. **Mobile**: Opção também disponível no menu lateral
