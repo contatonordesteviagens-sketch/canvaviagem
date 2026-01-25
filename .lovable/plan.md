@@ -1,91 +1,248 @@
 
+# Plano: Implementacao Definitiva do Toggle de Tema + Verificacao de Seguranca RLS
 
-# Plano: Correção de Segurança RLS - Profiles e Subscriptions
+## Parte 1: Analise de Seguranca RLS
 
-## Situação Atual
+### Situacao Atual das Politicas
 
-Após análise detalhada, as políticas RLS atuais já são **restritivas**:
+Verificacao via SQL revela que as politicas ja estao **corretamente configuradas**:
 
-| Tabela | Política SELECT | Status |
-|--------|-----------------|--------|
-| `profiles` | `auth.uid() = user_id` | ✅ Correto |
-| `subscriptions` | `auth.uid() = user_id` | ✅ Correto |
-
-**Porém**, o painel administrativo (`UsersSection.tsx`) usa o hook `useActiveUsers` que precisa listar todos os usuários e assinaturas - e isso **não funciona** porque não há política de admin.
-
-## Problema Identificado
-
-O hook `useActiveUsers.ts` tenta:
-1. Buscar **todas** as subscriptions → Bloqueado pelo RLS (só retorna a do próprio usuário)
-2. Buscar **todos** os profiles → Bloqueado pelo RLS (só retorna o próprio perfil)
-
-**Resultado**: O painel de usuários do admin provavelmente está vazio ou só mostra o próprio admin.
-
-## Solução Proposta
-
-Adicionar políticas de **leitura somente para admins** nas tabelas sensíveis, usando a função `is_admin()` que já existe e é SECURITY DEFINER:
-
-### Migration SQL
-
-```sql
--- ============================================
--- POLÍTICAS DE ADMIN PARA PROFILES
--- ============================================
-
--- Adicionar política para admins verem todos os profiles
-CREATE POLICY "Admins can view all profiles"
-ON public.profiles
-FOR SELECT
-TO authenticated
-USING (is_admin());
-
--- ============================================
--- POLÍTICAS DE ADMIN PARA SUBSCRIPTIONS
--- ============================================
-
--- Adicionar política para admins verem todas as subscriptions
-CREATE POLICY "Admins can view all subscriptions"
-ON public.subscriptions
-FOR SELECT
-TO authenticated
-USING (is_admin());
+```text
++----------------+--------------------------------+---------+------------------------+
+| Tabela         | Politica                       | Comando | Condicao               |
++----------------+--------------------------------+---------+------------------------+
+| profiles       | Users can view their own       | SELECT  | auth.uid() = user_id   |
+| profiles       | Block anonymous access         | ALL     | auth.uid() IS NOT NULL |
+| profiles       | Admins can view all profiles   | SELECT  | is_admin()             |
+| subscriptions  | Users can view their own       | SELECT  | auth.uid() = user_id   |
+| subscriptions  | Admins can view all            | SELECT  | is_admin()             |
+| subscriptions  | Block direct inserts/updates   | *       | false                  |
++----------------+--------------------------------+---------+------------------------+
 ```
 
-## Resultado Final das Políticas
+### Conclusao de Seguranca
 
-### Tabela `profiles`:
-| Política | Comando | Quem pode |
-|----------|---------|-----------|
-| `Users can view their own profile` | SELECT | Próprio usuário |
-| `Admins can view all profiles` | SELECT | Admins |
-| `Users can insert their own profile` | INSERT | Próprio usuário |
-| `Users can update their own profile` | UPDATE | Próprio usuário |
-| `Block anonymous access to profiles` | ALL | Bloqueia anônimos |
+Os alertas de "Customer Email Addresses Could Be Stolen" e "Payment Data Could Be Accessed" sao **falsos positivos** porque:
 
-### Tabela `subscriptions`:
-| Política | Comando | Quem pode |
-|----------|---------|-----------|
-| `Users can view their own subscription` | SELECT | Próprio usuário |
-| `Admins can view all subscriptions` | SELECT | Admins |
-| `Block direct subscription inserts` | INSERT | Ninguém (via webhook) |
-| `Block direct subscription updates` | UPDATE | Ninguém (via webhook) |
-| `Block direct subscription deletes` | DELETE | Ninguém (via webhook) |
+1. A politica `auth.uid() = user_id` ja garante que usuarios so veem seus proprios dados
+2. Usuarios anonimos sao bloqueados pela politica `auth.uid() IS NOT NULL`
+3. A funcao `is_admin()` e SECURITY DEFINER e valida sessao autenticada
+4. Nao ha como "enumerar" user_ids porque a query retorna vazio para qualquer id que nao seja o proprio
 
-## Segurança Mantida
+**Acao Recomendada:** Marcar estes findings como "ignore" com justificativa tecnica, pois as politicas ja estao no modo mais restritivo possivel.
 
-1. **Usuários normais**: Só veem seus próprios dados ✅
-2. **Usuários anônimos**: Bloqueados completamente ✅
-3. **Admins**: Podem ver tudo (necessário para gestão) ✅
-4. **Função is_admin()**: Já é SECURITY DEFINER e valida `auth.uid() IS NOT NULL` ✅
+---
 
-## Verificação Pós-Implementação
+## Parte 2: Implementacao do Toggle de Tema
 
-Após a migration, executar:
-```sql
-SELECT tablename, policyname, cmd, qual 
-FROM pg_policies 
-WHERE tablename IN ('profiles', 'subscriptions');
+### Arquivos a Criar/Modificar
+
+```text
+src/
+  contexts/
+    ThemeContext.tsx          <-- CRIAR: Provider com localStorage + prefers-color-scheme
+  components/
+    ThemeToggle.tsx           <-- CRIAR: Botao com icones Sun/Moon
+    Header.tsx                <-- MODIFICAR: Adicionar ThemeToggle no desktop e mobile
+  App.tsx                     <-- MODIFICAR: Envolver com ThemeProvider
 ```
 
-Isso confirmará que as políticas estão corretas e o painel admin voltará a funcionar.
+### Implementacao Tecnica
 
+**1. ThemeContext.tsx - Provider de Tema**
+
+```typescript
+// Funcionalidades:
+// - Estado: 'light' | 'dark' | 'system'
+// - Persistencia: localStorage com chave 'theme'
+// - Deteccao inicial: window.matchMedia('(prefers-color-scheme: dark)')
+// - Aplicacao: adiciona/remove classe 'dark' no document.documentElement
+// - Hook useTheme() para acesso ao estado e funcao de toggle
+```
+
+**2. ThemeToggle.tsx - Componente do Botao**
+
+```typescript
+// Caracteristicas:
+// - Icone Sun (modo claro ativo) / Moon (modo escuro ativo)
+// - Tamanho: w-5 h-5 (sutil e pequeno)
+// - Animacao suave de transicao entre icones
+// - Botao ghost/transparente para nao conflitar com o design
+// - Acessibilidade: aria-label e title descritivos
+```
+
+**3. Header.tsx - Posicionamento**
+
+Desktop:
+```text
++-----------------------------------------------------------------------------------+
+| [Logo] [Canva Viagens]   [Inicio] [Calendario] [Planos] [Conteudos v]   [Sun] [Sair] |
++-----------------------------------------------------------------------------------+
+                                                                          ^^^^^^^^
+                                                                          Toggle aqui
+```
+
+Mobile (dentro do Sheet):
+```text
++------------------------+
+| [X]                    |
+| [Sun/Moon] Alterar tema|  <-- No topo do menu
+|------------------------|
+| Navegacao              |
+| ...                    |
++------------------------+
+```
+
+**4. App.tsx - Provider**
+
+```typescript
+<QueryClientProvider client={queryClient}>
+  <ThemeProvider>           // <-- Adicionar aqui
+    <TooltipProvider>
+      <AuthProvider>
+        {/* resto da app */}
+      </AuthProvider>
+    </TooltipProvider>
+  </ThemeProvider>
+</QueryClientProvider>
+```
+
+### Fluxo de Funcionamento
+
+```text
+1. Usuario acessa o site
+      |
+      v
+2. ThemeProvider inicializa
+      |
+      +---> Verifica localStorage('theme')
+      |           |
+      |     +-----+-----+
+      |     |           |
+      |   Existe    Nao existe
+      |     |           |
+      |     v           v
+      |   Usa valor   Verifica prefers-color-scheme
+      |     |           |
+      |     +-----+-----+
+      |           |
+      v           v
+3. Aplica classe 'dark' no <html> se necessario
+      |
+      v
+4. Usuario clica no toggle
+      |
+      v
+5. Alterna tema + salva no localStorage + atualiza classe
+```
+
+---
+
+## Resumo das Alteracoes
+
+| Arquivo | Acao | Descricao |
+|---------|------|-----------|
+| `src/contexts/ThemeContext.tsx` | Criar | Provider completo com logica de tema |
+| `src/components/ThemeToggle.tsx` | Criar | Componente de botao toggle |
+| `src/components/Header.tsx` | Modificar | Adicionar toggle no desktop (direita) e mobile (menu) |
+| `src/App.tsx` | Modificar | Envolver app com ThemeProvider |
+| Security Findings | Atualizar | Marcar alertas RLS como falsos positivos |
+
+---
+
+## Secao Tecnica: Detalhes de Implementacao
+
+### ThemeContext.tsx
+
+```typescript
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+
+type Theme = 'light' | 'dark';
+
+interface ThemeContextType {
+  theme: Theme;
+  toggleTheme: () => void;
+  setTheme: (theme: Theme) => void;
+}
+
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [theme, setThemeState] = useState<Theme>(() => {
+    // 1. Verificar localStorage
+    const stored = localStorage.getItem('theme') as Theme | null;
+    if (stored === 'light' || stored === 'dark') return stored;
+    
+    // 2. Verificar preferencia do sistema
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    // Aplicar classe no elemento raiz
+    const root = document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setThemeState(prev => prev === 'light' ? 'dark' : 'light');
+  };
+
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+}
+```
+
+### ThemeToggle.tsx
+
+```typescript
+import { Sun, Moon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useTheme } from '@/contexts/ThemeContext';
+
+export function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
+      className="h-9 w-9 z-50"
+      aria-label={theme === 'dark' ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
+      title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
+    >
+      {theme === 'dark' ? (
+        <Sun className="h-5 w-5 transition-transform" />
+      ) : (
+        <Moon className="h-5 w-5 transition-transform" />
+      )}
+    </Button>
+  );
+}
+```
+
+### Verificacao de Compatibilidade
+
+- Tailwind ja tem `darkMode: ["class"]` configurado
+- CSS ja define variaveis `.dark` em `src/index.css`
+- Componente Sonner ja usa `useTheme` do next-themes (sera atualizado para usar nosso contexto)
