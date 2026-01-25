@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, User, Home, Calendar, CreditCard, 
   Video, Image, LayoutGrid, FileText, Download, Bot, 
-  GraduationCap, Heart, ChevronDown 
+  GraduationCap, Heart, ChevronDown, Sun, Moon
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { useTheme } from "@/contexts/ThemeContext";
 
 type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
 
@@ -29,6 +31,23 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+
+  // Mobile theme toggle button component
+  const ThemeToggleMobile = () => (
+    <button
+      onClick={toggleTheme}
+      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10 text-left w-full"
+      aria-label={theme === 'dark' ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
+    >
+      {theme === 'dark' ? (
+        <Sun className="h-5 w-5" />
+      ) : (
+        <Moon className="h-5 w-5" />
+      )}
+      {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
+    </button>
+  );
 
   const mainNavItems = [
     { to: "/", label: "Início", icon: Home },
@@ -102,6 +121,9 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Theme Toggle - Desktop */}
+          <ThemeToggle />
           
           {user ? (
             <Button 
@@ -132,6 +154,11 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
           </SheetTrigger>
           <SheetContent side="right" className="w-[280px] sm:w-[320px]">
             <nav className="flex flex-col gap-1 mt-8">
+              {/* Theme Toggle - Mobile */}
+              <ThemeToggleMobile />
+              
+              <DropdownMenuSeparator className="my-3" />
+
               {/* Navegação Principal */}
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
                 Navegação
