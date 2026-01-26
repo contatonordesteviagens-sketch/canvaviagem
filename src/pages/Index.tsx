@@ -18,9 +18,6 @@ import { FilterChips } from "@/components/canva/FilterChips";
 import { SectionHeader } from "@/components/canva/SectionHeader";
 import { CaptionCard } from "@/components/canva/CaptionCard";
 import { ToolCard } from "@/components/canva/ToolCard";
-import { LevelUpCard } from "@/components/canva/LevelUpCard";
-import { AdBanner } from "@/components/canva/AdBanner";
-import { PromoPopup } from "@/components/canva/PromoPopup";
 import { BottomNav } from "@/components/canva/BottomNav";
 
 // Database hooks
@@ -229,9 +226,6 @@ const Index = () => {
               activeFilter={videoFilter}
               onFilterChange={(filter) => setVideoFilter(filter)}
             />
-            
-            {/* Banner de Anúncio */}
-            <AdBanner />
             
             {videosLoading ? (
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
@@ -687,9 +681,6 @@ const Index = () => {
         onSearchChange={setSearchQuery}
       />
       
-      {/* Card de Gamificação - Sempre visível */}
-      <LevelUpCard />
-      
       {/* Category Navigation - Horizontal scroll with icons */}
       <CategoryNav 
         activeCategory={activeCategory}
@@ -717,9 +708,6 @@ const Index = () => {
         activeCategory={activeCategory} 
         onCategoryChange={setActiveCategory} 
       />
-      
-      {/* Popup de Promoção */}
-      <PromoPopup />
     </div>
   );
 };
