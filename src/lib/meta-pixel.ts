@@ -17,10 +17,25 @@ const sendServerEvent = async (
 ) => {
   try {
     // Security: Only send server-side events if user is authenticated
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) {
-      // Not authenticated - server event will fail, skip silently
-      // Client-side pixel (fbq) will still track the event
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    // Skip if no session, error getting session, or no access token
+    if (sessionError || !session?.access_token) {
+      return;
+    }
+
+    // Check if token is expired before making the request
+    try {
+      const tokenPayload = session.access_token.split('.')[1];
+      if (tokenPayload) {
+        const decoded = JSON.parse(atob(tokenPayload));
+        if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+          // Token is expired, skip server-side event silently
+          return;
+        }
+      }
+    } catch {
+      // If we can't decode the token, skip to avoid 401 errors
       return;
     }
 
@@ -46,11 +61,12 @@ const sendServerEvent = async (
       }),
     });
 
+    // Silently handle errors - client-side pixel still tracks
     if (!response.ok) {
-      console.warn('Server-side event failed:', await response.text());
+      // Don't log to avoid console noise for users with expired sessions
     }
-  } catch (error) {
-    console.warn('Failed to send server event:', error);
+  } catch {
+    // Silently fail - client-side pixel (fbq) will still track the event
   }
 };
 
