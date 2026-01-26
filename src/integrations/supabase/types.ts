@@ -289,6 +289,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          language: string | null
           stripe_customer_id: string | null
           updated_at: string
           user_id: string
@@ -297,6 +298,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          language?: string | null
           stripe_customer_id?: string | null
           updated_at?: string
           user_id: string
@@ -305,6 +307,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          language?: string | null
           stripe_customer_id?: string | null
           updated_at?: string
           user_id?: string
