@@ -109,6 +109,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const now = Date.now();
     const userId = currentUser?.id || null;
     
+    // Check if token is expired before making any requests
+    try {
+      const tokenPayload = accessToken.split('.')[1];
+      if (tokenPayload) {
+        const decoded = JSON.parse(atob(tokenPayload));
+        if (decoded.exp && decoded.exp * 1000 < now) {
+          console.log('[AuthContext] Token expired, skipping subscription check');
+          // Token is expired - don't make the request, let auth state change handle refresh
+          return;
+        }
+      }
+    } catch {
+      // If we can't decode the token, skip to avoid 401 errors
+      console.log('[AuthContext] Could not decode token, skipping subscription check');
+      return;
+    }
+    
     // Check admin status first (server-side verification via database query)
     const userIsAdmin = await checkAdminStatus(currentUser);
     
