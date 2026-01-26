@@ -2,6 +2,28 @@ import React, { createContext, useContext, useEffect, useState, useRef, useCallb
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
+type JwtPayload = {
+  exp?: number;
+  [key: string]: unknown;
+};
+
+const decodeJwtPayload = (jwt: string): JwtPayload | null => {
+  try {
+    const parts = jwt.split('.');
+    if (parts.length < 2) return null;
+
+    // base64url -> base64
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+
+    const json = atob(padded);
+    return JSON.parse(json) as JwtPayload;
+  } catch {
+    return null;
+  }
+};
+
 /**
  * SECURITY NOTE: Admin verification
  * 
@@ -107,27 +129,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkSubscription = useCallback(async (accessToken: string, currentUser: User | null, forceRefresh = false) => {
     const now = Date.now();
-    const userId = currentUser?.id || null;
-    
-    // Check if token is expired before making any requests
-    try {
-      const tokenPayload = accessToken.split('.')[1];
-      if (tokenPayload) {
-        const decoded = JSON.parse(atob(tokenPayload));
-        if (decoded.exp && decoded.exp * 1000 < now) {
-          console.log('[AuthContext] Token expired, skipping subscription check');
-          // Token is expired - don't make the request, let auth state change handle refresh
+    let token = accessToken;
+    let userId = currentUser?.id || null;
+    let userForChecks = currentUser;
+
+    // Guard against clearly invalid tokens
+    if (!token || token === 'null' || token === 'undefined') {
+      console.log('[AuthContext] Missing/invalid token, skipping subscription check');
+      setSubscription(prev => ({ ...prev, loading: false }));
+      return;
+    }
+
+    // Refresh session if token is expired OR close to expiring (prevents 401s)
+    const payload = decodeJwtPayload(token);
+    const expMs = typeof payload?.exp === 'number' ? payload.exp * 1000 : null;
+    const REFRESH_SKEW_MS = 30_000; // 30s safety window
+
+    if (expMs && expMs <= now + REFRESH_SKEW_MS) {
+      console.log('[AuthContext] Token expired/near expiry, attempting refreshSession');
+      try {
+        const { data, error } = await supabase.auth.refreshSession();
+        if (error || !data.session?.access_token) {
+          console.log('[AuthContext] refreshSession failed, skipping subscription check');
+          setSubscription(prev => ({ ...prev, loading: false }));
           return;
         }
+
+        token = data.session.access_token;
+        userForChecks = data.session.user;
+        userId = userForChecks?.id || userId;
+      } catch {
+        setSubscription(prev => ({ ...prev, loading: false }));
+        return;
       }
-    } catch {
-      // If we can't decode the token, skip to avoid 401 errors
+    } else if (!payload) {
+      // If we can't decode the token reliably, don't call the backend function.
       console.log('[AuthContext] Could not decode token, skipping subscription check');
+      setSubscription(prev => ({ ...prev, loading: false }));
       return;
     }
     
     // Check admin status first (server-side verification via database query)
-    const userIsAdmin = await checkAdminStatus(currentUser);
+    const userIsAdmin = await checkAdminStatus(userForChecks);
     
     // If admin, bypass subscription check entirely
     if (userIsAdmin) {
@@ -178,9 +221,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log('[AuthContext] Checking subscription status...');
       
-      const { data, error } = await supabase.functions.invoke('check-subscription', {
+       const { data, error } = await supabase.functions.invoke('check-subscription', {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+           Authorization: `Bearer ${token}`,
         },
       });
 
