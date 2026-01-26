@@ -64,7 +64,7 @@ export const Footer = () => {
               </h3>
             </div>
             <p className="text-muted-foreground text-center md:text-left text-sm leading-relaxed max-w-xs">
-              Hub de Conteúdo Profissional para Agências de Viagens ✈️🌴
+              Conteúdos Profissionais e Exclusivos para Agências de Viagens ✈️🌴
             </p>
           </div>
 
