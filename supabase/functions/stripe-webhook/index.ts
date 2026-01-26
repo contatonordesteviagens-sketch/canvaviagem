@@ -20,6 +20,7 @@ function redactEmail(email: string | null | undefined): string {
   if (parts.length !== 2) return '[invalid-email]';
   const localPart = parts[0];
   const domain = parts[1];
+  // Show first 2 chars and domain only: "lu***@gmail.com"
   const redacted = localPart.length > 2 
     ? localPart.substring(0, 2) + '***' 
     : '***';
@@ -40,154 +41,6 @@ function isValidEmail(email: string | null | undefined): email is string {
   return emailRegex.test(email) && email.length <= 254;
 }
 
-// Valid languages
-const VALID_LANGUAGES = ['pt', 'en', 'es'] as const;
-type Language = typeof VALID_LANGUAGES[number];
-
-function detectLanguage(metadata?: Record<string, string> | null): Language {
-  const lang = metadata?.language || metadata?.locale?.substring(0, 2) || 'pt';
-  return VALID_LANGUAGES.includes(lang as Language) ? (lang as Language) : 'pt';
-}
-
-// ============= EMAIL TEMPLATES (i18n) =============
-const emailTemplates = {
-  welcome: {
-    pt: {
-      subject: "🚀 Acesso Liberado: Bem-vindo ao Futuro do Marketing de Viagens! 🌴",
-      heading: "Bem-vindo ao Canva Viagens!",
-      subheading: "Sua agência acaba de ganhar superpoderes.",
-      confirmed: "Pagamento Confirmado com Sucesso! ✅",
-      intro: "É oficial: você faz parte do grupo seleto de agentes que usam tecnologia de ponta para vender mais. Seu acesso está ativo e liberado.",
-      arsenal: "O que está incluso no seu arsenal:",
-      features: [
-        { icon: "📹", text: "Vídeos Reels Virais prontos para postar" },
-        { icon: "🤖", text: "10 Robôs de IA trabalhando por você" },
-        { icon: "🎨", text: "Templates Editáveis de alta conversão" },
-        { icon: "📱", text: "Estratégias para: Instagram, TikTok e YouTube" },
-        { icon: "🌴", text: "Banco de Imagens exclusivo de destinos" },
-      ],
-      cta: "🚀 Acessar Minha Plataforma",
-      ctaSubtext: "Toque no botão para começar a criar",
-      accessTitle: "🔐 Seu Acesso Seguro:",
-      accessText: "Basta digitar seu email na tela de login e enviaremos um Link Mágico. Sem senhas complicadas para decorar!",
-      footer: "Transformando agentes em autoridades digitais.",
-      support: "Precisa de suporte VIP?",
-    },
-    en: {
-      subject: "🚀 Access Granted: Welcome to the Future of Travel Marketing! 🌴",
-      heading: "Welcome to Canva Viagens!",
-      subheading: "Your agency just gained superpowers.",
-      confirmed: "Payment Confirmed Successfully! ✅",
-      intro: "It's official: you're now part of the select group of agents using cutting-edge technology to sell more. Your access is active and ready.",
-      arsenal: "What's included in your arsenal:",
-      features: [
-        { icon: "📹", text: "Viral Reels Videos ready to post" },
-        { icon: "🤖", text: "10 AI Robots working for you" },
-        { icon: "🎨", text: "High-converting Editable Templates" },
-        { icon: "📱", text: "Strategies for: Instagram, TikTok, and YouTube" },
-        { icon: "🌴", text: "Exclusive destination image library" },
-      ],
-      cta: "🚀 Access My Platform",
-      ctaSubtext: "Tap the button to start creating",
-      accessTitle: "🔐 Your Secure Access:",
-      accessText: "Just enter your email on the login screen and we'll send you a Magic Link. No complicated passwords to remember!",
-      footer: "Transforming agents into digital authorities.",
-      support: "Need VIP support?",
-    },
-    es: {
-      subject: "🚀 Acceso Liberado: ¡Bienvenido al Futuro del Marketing de Viajes! 🌴",
-      heading: "¡Bienvenido a Canva Viagens!",
-      subheading: "Tu agencia acaba de ganar superpoderes.",
-      confirmed: "¡Pago Confirmado con Éxito! ✅",
-      intro: "Es oficial: ahora formas parte del grupo selecto de agentes que usan tecnología de punta para vender más. Tu acceso está activo y listo.",
-      arsenal: "Lo que incluye tu arsenal:",
-      features: [
-        { icon: "📹", text: "Videos Reels Virales listos para publicar" },
-        { icon: "🤖", text: "10 Robots de IA trabajando para ti" },
-        { icon: "🎨", text: "Templates Editables de alta conversión" },
-        { icon: "📱", text: "Estrategias para: Instagram, TikTok y YouTube" },
-        { icon: "🌴", text: "Banco de Imágenes exclusivo de destinos" },
-      ],
-      cta: "🚀 Acceder a Mi Plataforma",
-      ctaSubtext: "Toca el botón para empezar a crear",
-      accessTitle: "🔐 Tu Acceso Seguro:",
-      accessText: "Solo ingresa tu email en la pantalla de login y te enviaremos un Link Mágico. ¡Sin contraseñas complicadas!",
-      footer: "Transformando agentes en autoridades digitales.",
-      support: "¿Necesitas soporte VIP?",
-    },
-  },
-  cancellation: {
-    pt: {
-      subject: "💔 Sentiremos sua falta (e seus resultados também...)",
-      heading: "Sua assinatura foi pausada",
-      goodbye: "Não é um adeus, é um 'até logo'!",
-      intro: "Confirmamos o cancelamento da sua assinatura. Seu acesso às ferramentas de IA, templates e artes de viagem foi encerrado por enquanto.",
-      lostTitle: "⚠️ O que você acaba de perder:",
-      lostItems: ["Atualizações semanais de Reels", "Acesso aos novos Robôs de Atendimento", "Suporte prioritário de marketing"],
-      outro: "Sabemos que a vida de agente é corrida. Quando estiver pronto para automatizar seu marketing novamente, estaremos te esperando de portas abertas (e com novidades!).",
-      cta: "🔙 Quero Reativar Agora",
-      error: "Foi um erro?",
-    },
-    en: {
-      subject: "💔 We'll miss you (and your results too...)",
-      heading: "Your subscription has been paused",
-      goodbye: "This isn't goodbye, it's 'see you later'!",
-      intro: "We confirm the cancellation of your subscription. Your access to AI tools, templates, and travel designs has ended for now.",
-      lostTitle: "⚠️ What you just lost:",
-      lostItems: ["Weekly Reels updates", "Access to new Service Robots", "Priority marketing support"],
-      outro: "We know an agent's life is busy. When you're ready to automate your marketing again, we'll be waiting with open doors (and news!).",
-      cta: "🔙 I Want to Reactivate Now",
-      error: "Was this a mistake?",
-    },
-    es: {
-      subject: "💔 Te extrañaremos (y tus resultados también...)",
-      heading: "Tu suscripción ha sido pausada",
-      goodbye: "¡No es un adiós, es un 'hasta pronto'!",
-      intro: "Confirmamos la cancelación de tu suscripción. Tu acceso a las herramientas de IA, templates y diseños de viaje ha terminado por ahora.",
-      lostTitle: "⚠️ Lo que acabas de perder:",
-      lostItems: ["Actualizaciones semanales de Reels", "Acceso a los nuevos Robots de Atención", "Soporte prioritario de marketing"],
-      outro: "Sabemos que la vida de agente es ajetreada. Cuando estés listo para automatizar tu marketing nuevamente, te estaremos esperando con las puertas abiertas (¡y con novedades!).",
-      cta: "🔙 Quiero Reactivar Ahora",
-      error: "¿Fue un error?",
-    },
-  },
-  paymentFailed: {
-    pt: {
-      subject: "🔴 Ação Necessária: Evite o bloqueio do seu marketing",
-      alert: "⚠️ ALERTA DE SISTEMA",
-      heading: "O pagamento falhou",
-      intro: "Olá! Tivemos um probleminha ao processar a renovação da sua assinatura do Canva Viagens.",
-      warning: "Consequência: Seus acessos aos templates, robôs e downloads ilimitados podem ser suspensos temporariamente nas próximas 24h.",
-      reason: "Geralmente isso acontece por: cartão vencido, limite insuficiente ou bloqueio preventivo do banco.",
-      cta: "🔄 Atualizar Cartão Agora",
-      urgency: "Não deixe sua agência parar de vender! Resolva isso em menos de 1 minuto.",
-      altPayment: "Precisa de um boleto ou PIX?",
-    },
-    en: {
-      subject: "🔴 Action Required: Avoid blocking your marketing",
-      alert: "⚠️ SYSTEM ALERT",
-      heading: "Payment failed",
-      intro: "Hi! We had a small problem processing your Canva Viagens subscription renewal.",
-      warning: "Consequence: Your access to templates, robots, and unlimited downloads may be temporarily suspended in the next 24 hours.",
-      reason: "This usually happens due to: expired card, insufficient limit, or preventive bank block.",
-      cta: "🔄 Update Card Now",
-      urgency: "Don't let your agency stop selling! Solve this in less than 1 minute.",
-      altPayment: "Need a different payment method?",
-    },
-    es: {
-      subject: "🔴 Acción Requerida: Evita el bloqueo de tu marketing",
-      alert: "⚠️ ALERTA DEL SISTEMA",
-      heading: "El pago falló",
-      intro: "¡Hola! Tuvimos un pequeño problema al procesar la renovación de tu suscripción de Canva Viagens.",
-      warning: "Consecuencia: Tu acceso a templates, robots y descargas ilimitadas puede ser suspendido temporalmente en las próximas 24 horas.",
-      reason: "Esto generalmente sucede por: tarjeta vencida, límite insuficiente o bloqueo preventivo del banco.",
-      cta: "🔄 Actualizar Tarjeta Ahora",
-      urgency: "¡No dejes que tu agencia deje de vender! Resuelve esto en menos de 1 minuto.",
-      altPayment: "¿Necesitas otro método de pago?",
-    },
-  },
-};
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -195,6 +48,7 @@ serve(async (req) => {
 
   const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
   const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+  // Modificado para aceitar maiúsculo ou minúsculo
   const resendKey = Deno.env.get("RESEND_API_KEY") || Deno.env.get("resend");
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -215,7 +69,7 @@ serve(async (req) => {
     });
   }
 
-  const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+  const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
   const resend = resendKey ? new Resend(resendKey) : null;
   const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
@@ -297,148 +151,83 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
 
   const rawEmail = session.customer_email || session.customer_details?.email;
   
+  // Validate email format before processing
   if (!isValidEmail(rawEmail)) {
     logStep("ERROR: Invalid or missing email in session", { rawEmail: rawEmail ? "[REDACTED]" : "null" });
     return;
   }
   
-  const email = rawEmail.toLowerCase();
+  const email = rawEmail;
+
   const stripeCustomerId = session.customer as string;
   const stripeSubscriptionId = session.subscription as string;
-  
-  // Detectar idioma do metadata
-  const userLanguage = detectLanguage(session.metadata);
 
-  logStep("Checkout details", { 
-    email: redactEmail(email), 
-    stripeCustomerId, 
-    stripeSubscriptionId,
-    language: userLanguage 
-  });
+  logStep("Checkout details", { email: redactEmail(email), stripeCustomerId, stripeSubscriptionId });
 
-  // ARQUITETURA NOVA: NÃO criar usuário via Admin API
-  // Apenas popular tabelas customizadas - Magic Link cria usuário
+  // Check if user already exists
+  const { data: existingUsers } = await supabase.auth.admin.listUsers();
+  const existingUser = existingUsers?.users?.find((u: any) => u.email === email);
 
-  // Verificar se já existe profile com este stripe_customer_id
-  const { data: existingProfile } = await supabase
-    .from("profiles")
-    .select("id, user_id")
-    .eq("stripe_customer_id", stripeCustomerId)
-    .maybeSingle();
+  let userId: string;
 
-  if (existingProfile) {
-    // Atualizar profile existente
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .update({
-        email,
-        language: userLanguage,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("stripe_customer_id", stripeCustomerId);
-
-    if (profileError) {
-      logStep("ERROR: Failed to update profile", { error: profileError.message });
-    } else {
-      logStep("Profile updated successfully");
-    }
-
-    // Atualizar subscription existente
-    const { error: subError } = await supabase
-      .from("subscriptions")
-      .update({
-        stripe_subscription_id: stripeSubscriptionId,
-        status: "active",
-        product_id: "prod_TkvaozfpkAcbpM",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("stripe_customer_id", stripeCustomerId);
-
-    if (subError) {
-      logStep("ERROR: Failed to update subscription", { error: subError.message });
-    }
+  if (existingUser) {
+    logStep("Existing user found", { userId: existingUser.id });
+    userId = existingUser.id;
   } else {
-    // Verificar se existe profile por email (usuário existente via Magic Link)
-    const { data: profileByEmail } = await supabase
-      .from("profiles")
-      .select("id, user_id")
-      .eq("email", email)
-      .maybeSingle();
+    // Create new user with email
+    const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+      email,
+      email_confirm: true,
+    });
 
-    if (profileByEmail) {
-      // Atualizar profile existente com stripe_customer_id
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          stripe_customer_id: stripeCustomerId,
-          language: userLanguage,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("email", email);
-
-      if (profileError) {
-        logStep("ERROR: Failed to update profile with stripe_customer_id", { error: profileError.message });
-      }
-
-      // Criar ou atualizar subscription
-      const { error: subError } = await supabase
-        .from("subscriptions")
-        .upsert({
-          user_id: profileByEmail.user_id,
-          stripe_customer_id: stripeCustomerId,
-          stripe_subscription_id: stripeSubscriptionId,
-          status: "active",
-          product_id: "prod_TkvaozfpkAcbpM",
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: "user_id",
-        });
-
-      if (subError) {
-        logStep("ERROR: Failed to upsert subscription", { error: subError.message });
-      }
-    } else {
-      // Novo cliente - criar profile placeholder (user_id será atualizado no Magic Link)
-      // Usar um UUID temporário que será substituído quando o usuário fizer login
-      const tempUserId = crypto.randomUUID();
-      
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert({
-          user_id: tempUserId,
-          email,
-          stripe_customer_id: stripeCustomerId,
-          language: userLanguage,
-        });
-
-      if (profileError) {
-        logStep("ERROR: Failed to create placeholder profile", { error: profileError.message });
-      } else {
-        logStep("Placeholder profile created for new customer");
-      }
-
-      // Criar subscription para novo cliente
-      const { error: subError } = await supabase
-        .from("subscriptions")
-        .insert({
-          user_id: tempUserId,
-          stripe_customer_id: stripeCustomerId,
-          stripe_subscription_id: stripeSubscriptionId,
-          status: "active",
-          product_id: "prod_TkvaozfpkAcbpM",
-        });
-
-      if (subError) {
-        logStep("ERROR: Failed to create subscription", { error: subError.message });
-      }
+    if (createError) {
+      logStep("ERROR: Failed to create user", { error: createError.message });
+      return;
     }
+
+    userId = newUser.user.id;
+    logStep("New user created", { userId });
   }
 
-  logStep("Profile and subscription processed successfully");
+  // Update or create profile
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .upsert({
+      user_id: userId,
+      email,
+      stripe_customer_id: stripeCustomerId,
+      updated_at: new Date().toISOString(),
+    }, {
+      onConflict: "user_id",
+    });
 
-  // Enviar e-mail de boas-vindas no idioma correto
+  if (profileError) {
+    logStep("ERROR: Failed to upsert profile", { error: profileError.message });
+  }
+
+  // Create or update subscription
+  const { error: subError } = await supabase
+    .from("subscriptions")
+    .upsert({
+      user_id: userId,
+      stripe_customer_id: stripeCustomerId,
+      stripe_subscription_id: stripeSubscriptionId,
+      status: "active",
+      product_id: "prod_TkvaozfpkAcbpM",
+      updated_at: new Date().toISOString(),
+    }, {
+      onConflict: "user_id",
+    });
+
+  if (subError) {
+    logStep("ERROR: Failed to upsert subscription", { error: subError.message });
+  }
+
+  logStep("User and subscription created/updated successfully");
+
+  // Send welcome email
   if (resend) {
-    await sendWelcomeEmail(resend, email, userLanguage);
+    await sendWelcomeEmail(resend, email);
   }
 }
 
@@ -476,10 +265,10 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supa
 
   const stripeCustomerId = subscription.customer as string;
 
-  // Get user profile for notification (with language)
+  // Get user email for notification
   const { data: profile } = await supabase
     .from("profiles")
-    .select("email, language")
+    .select("email")
     .eq("stripe_customer_id", stripeCustomerId)
     .single();
 
@@ -497,10 +286,9 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supa
     logStep("Subscription marked as canceled");
   }
 
-  // Send cancellation email in user's language
+  // Send cancellation email
   if (resend && profile?.email) {
-    const lang = (profile.language as Language) || 'pt';
-    await sendCancellationEmail(resend, profile.email, lang);
+    await sendCancellationEmail(resend, profile.email);
   }
 }
 
@@ -529,10 +317,10 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, supabase: any, resen
 
   const stripeCustomerId = invoice.customer as string;
 
-  // Get user profile for notification (with language)
+  // Get user email for notification
   const { data: profile } = await supabase
     .from("profiles")
-    .select("email, language")
+    .select("email")
     .eq("stripe_customer_id", stripeCustomerId)
     .single();
 
@@ -550,31 +338,20 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, supabase: any, resen
     logStep("Subscription marked as past_due");
   }
 
-  // Send payment failed email in user's language
+  // Send payment failed email
   if (resend && profile?.email) {
-    const lang = (profile.language as Language) || 'pt';
-    await sendPaymentFailedEmail(resend, profile.email, lang);
+    await sendPaymentFailedEmail(resend, profile.email);
   }
 }
 
-// ============= EMAIL SENDING FUNCTIONS (i18n) =============
-
-async function sendWelcomeEmail(resend: any, email: string, language: Language = 'pt') {
-  const appUrl = Deno.env.get("APP_URL") || "https://canvaviagem.lovable.app";
-  const t = emailTemplates.welcome[language] || emailTemplates.welcome.pt;
+async function sendWelcomeEmail(resend: any, email: string) {
+  const appUrl = Deno.env.get("APP_URL") || "https://canvatrip.lovable.app";
 
   try {
-    const featuresHtml = t.features.map(f => `
-      <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
-        <span style="font-size: 24px;">${f.icon}</span>
-        <span style="color: #4b5563;">${f.text}</span>
-      </div>
-    `).join('');
-
     await resend.emails.send({
       from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
       to: [email],
-      subject: t.subject,
+      subject: "🚀 Acesso Liberado: Bem-vindo ao Futuro do Marketing de Viagens! 🌴",
       html: `
         <!DOCTYPE html>
         <html>
@@ -586,34 +363,55 @@ async function sendWelcomeEmail(resend: any, email: string, language: Language =
           <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 40px 20px; text-align: center;">
               <p style="font-size: 40px; margin: 0;">✈️ 🤖 📱</p>
-              <h1 style="color: white; margin: 10px 0; font-size: 28px;">${t.heading}</h1>
-              <p style="color: rgba(255,255,255,0.9); margin-top: 10px; font-size: 16px;">${t.subheading}</p>
+              <h1 style="color: white; margin: 10px 0; font-size: 28px;">Bem-vindo ao Canva Viagens!</h1>
+              <p style="color: rgba(255,255,255,0.9); margin-top: 10px; font-size: 16px;">Sua agência acaba de ganhar superpoderes.</p>
             </div>
             
             <div style="padding: 40px 30px;">
-              <h2 style="color: #1f2937; margin-top: 0;">${t.confirmed}</h2>
+              <h2 style="color: #1f2937; margin-top: 0;">Pagamento Confirmado com Sucesso! ✅</h2>
               
-              <p style="color: #4b5563; line-height: 1.6;">${t.intro}</p>
+              <p style="color: #4b5563; line-height: 1.6;">
+                É oficial: você faz parte do grupo seleto de agentes que usam tecnologia de ponta para vender mais. Seu acesso está ativo e liberado.
+              </p>
               
-              <h3 style="color: #1f2937;">${t.arsenal}</h3>
+              <h3 style="color: #1f2937;">O que está incluso no seu arsenal:</h3>
               
               <div style="display: grid; gap: 12px;">
-                ${featuresHtml}
+                <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
+                  <span style="font-size: 24px;">📹</span>
+                  <span style="color: #4b5563;">Vídeos Reels Virais prontos para postar</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
+                  <span style="font-size: 24px;">🤖</span>
+                  <span style="color: #4b5563;">10 Robôs de IA trabalhando por você</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
+                  <span style="font-size: 24px;">🎨</span>
+                  <span style="color: #4b5563;">Templates Editáveis de alta conversão</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
+                  <span style="font-size: 24px;">📱</span>
+                  <span style="color: #4b5563;">Estratégias para: Instagram, TikTok e YouTube</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
+                  <span style="font-size: 24px;">🌴</span>
+                  <span style="color: #4b5563;">Banco de Imagens exclusivo de destinos</span>
+                </div>
               </div>
               
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${appUrl}/auth" 
                    style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
-                  ${t.cta}
+                  🚀 Acessar Minha Plataforma
                 </a>
-                <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">${t.ctaSubtext}</p>
+                <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">Toque no botão para começar a criar</p>
               </div>
               
               <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-top: 20px;">
                 <p style="color: #6b7280; font-size: 14px; margin: 0;">
-                  <strong>${t.accessTitle}</strong><br><br>
-                  Email: <strong>${email}</strong><br><br>
-                  ${t.accessText}
+                  <strong>🔐 Seu Acesso Seguro:</strong><br><br>
+                  Email cadastrado: <strong>${email}</strong><br><br>
+                  Basta digitar seu email na tela de login e enviaremos um Link Mágico. Sem senhas complicadas para decorar!
                 </p>
               </div>
             </div>
@@ -622,10 +420,10 @@ async function sendWelcomeEmail(resend: any, email: string, language: Language =
               <p style="font-size: 24px; margin: 0 0 10px 0;">🌍 ✈️ 📸</p>
               <p style="color: #6b7280; font-size: 12px; margin: 0;">
                 © 2025 Canva Viagens & Marketing.<br>
-                ${t.footer}
+                Transformando agentes em autoridades digitais.
               </p>
               <p style="color: #9ca3af; font-size: 12px; margin-top: 10px;">
-                ${t.support} <a href="https://wa.me/5585986411294" style="color: #6366f1;">WhatsApp</a>
+                Precisa de suporte VIP? <a href="https://wa.me/5585986411294" style="color: #6366f1;">Chame no WhatsApp</a>
               </p>
             </div>
           </div>
@@ -633,23 +431,20 @@ async function sendWelcomeEmail(resend: any, email: string, language: Language =
         </html>
       `,
     });
-    logStep("Welcome email sent successfully", { email: redactEmail(email), language });
+    logStep("Welcome email sent successfully", { email: redactEmail(email) });
   } catch (error: unknown) {
     logStep("ERROR: Failed to send welcome email", { error: error instanceof Error ? error.message : String(error), email: redactEmail(email) });
   }
 }
 
-async function sendCancellationEmail(resend: any, email: string, language: Language = 'pt') {
-  const appUrl = Deno.env.get("APP_URL") || "https://canvaviagem.lovable.app";
-  const t = emailTemplates.cancellation[language] || emailTemplates.cancellation.pt;
+async function sendCancellationEmail(resend: any, email: string) {
+  const appUrl = Deno.env.get("APP_URL") || "https://canvatrip.lovable.app";
 
   try {
-    const lostItemsHtml = t.lostItems.map(item => `<li>${item}</li>`).join('');
-
     await resend.emails.send({
       from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
       to: [email],
-      subject: t.subject,
+      subject: "💔 Sentiremos sua falta (e seus resultados também...)",
       html: `
         <!DOCTYPE html>
         <html>
@@ -661,34 +456,40 @@ async function sendCancellationEmail(resend: any, email: string, language: Langu
           <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 40px 20px; text-align: center;">
               <p style="font-size: 50px; margin: 0;">😢</p>
-              <h1 style="color: white; margin: 10px 0; font-size: 28px;">${t.heading}</h1>
+              <h1 style="color: white; margin: 10px 0; font-size: 28px;">Sua assinatura foi pausada</h1>
             </div>
             
             <div style="padding: 40px 30px;">
-              <h2 style="color: #1f2937; margin-top: 0;">${t.goodbye}</h2>
+              <h2 style="color: #1f2937; margin-top: 0;">Não é um adeus, é um "até logo"!</h2>
               
-              <p style="color: #4b5563; line-height: 1.6;">${t.intro}</p>
+              <p style="color: #4b5563; line-height: 1.6;">
+                Confirmamos o cancelamento da sua assinatura. Seu acesso às ferramentas de IA, templates e artes de viagem foi encerrado por enquanto.
+              </p>
               
               <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <p style="color: #991b1b; font-weight: bold; margin: 0 0 10px 0;">${t.lostTitle}</p>
+                <p style="color: #991b1b; font-weight: bold; margin: 0 0 10px 0;">⚠️ O que você acaba de perder:</p>
                 <ul style="color: #991b1b; margin: 0; padding-left: 20px; line-height: 1.8;">
-                  ${lostItemsHtml}
+                  <li>Atualizações semanais de Reels</li>
+                  <li>Acesso aos novos Robôs de Atendimento</li>
+                  <li>Suporte prioritário de marketing</li>
                 </ul>
               </div>
               
-              <p style="color: #4b5563; line-height: 1.6;">${t.outro}</p>
+              <p style="color: #4b5563; line-height: 1.6;">
+                Sabemos que a vida de agente é corrida. Quando estiver pronto para automatizar seu marketing novamente, estaremos te esperando de portas abertas (e com novidades!).
+              </p>
               
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${appUrl}/planos" 
                    style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
-                  ${t.cta}
+                  🔙 Quero Reativar Agora
                 </a>
               </div>
             </div>
             
             <div style="background-color: #f9fafb; padding: 20px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                ${t.error} <a href="https://wa.me/5585986411294" style="color: #6366f1;">WhatsApp</a>
+                Foi um erro? <a href="https://wa.me/5585986411294" style="color: #6366f1;">Fale conosco no WhatsApp</a>
               </p>
             </div>
           </div>
@@ -696,21 +497,20 @@ async function sendCancellationEmail(resend: any, email: string, language: Langu
         </html>
       `,
     });
-    logStep("Cancellation email sent successfully", { email: redactEmail(email), language });
+    logStep("Cancellation email sent successfully", { email: redactEmail(email) });
   } catch (error: unknown) {
     logStep("ERROR: Failed to send cancellation email", { error: error instanceof Error ? error.message : String(error), email: redactEmail(email) });
   }
 }
 
-async function sendPaymentFailedEmail(resend: any, email: string, language: Language = 'pt') {
-  const appUrl = Deno.env.get("APP_URL") || "https://canvaviagem.lovable.app";
-  const t = emailTemplates.paymentFailed[language] || emailTemplates.paymentFailed.pt;
+async function sendPaymentFailedEmail(resend: any, email: string) {
+  const appUrl = Deno.env.get("APP_URL") || "https://canvatrip.lovable.app";
 
   try {
     await resend.emails.send({
       from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
       to: [email],
-      subject: t.subject,
+      subject: "🔴 Ação Necessária: Evite o bloqueio do seu marketing",
       html: `
         <!DOCTYPE html>
         <html>
@@ -721,7 +521,7 @@ async function sendPaymentFailedEmail(resend: any, email: string, language: Lang
         <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
           <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px 20px; text-align: center;">
-              <p style="color: white; font-size: 14px; font-weight: bold; margin: 0;">${t.alert}</p>
+              <p style="color: white; font-size: 14px; font-weight: bold; margin: 0;">⚠️ ALERTA DE SISTEMA</p>
             </div>
             
             <div style="padding: 40px 30px;">
@@ -729,29 +529,37 @@ async function sendPaymentFailedEmail(resend: any, email: string, language: Lang
                 <p style="font-size: 50px; margin: 0;">💳 🚫</p>
               </div>
               
-              <h2 style="color: #1f2937; margin-top: 0; text-align: center;">${t.heading}</h2>
+              <h2 style="color: #1f2937; margin-top: 0; text-align: center;">O pagamento falhou</h2>
               
-              <p style="color: #4b5563; line-height: 1.6;">${t.intro}</p>
+              <p style="color: #4b5563; line-height: 1.6;">
+                Olá! Tivemos um probleminha ao processar a renovação da sua assinatura do Canva Viagens.
+              </p>
               
               <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
-                <p style="color: #92400e; margin: 0; font-weight: bold;">${t.warning}</p>
+                <p style="color: #92400e; margin: 0; font-weight: bold;">
+                  Consequência: Seus acessos aos templates, robôs e downloads ilimitados podem ser suspensos temporariamente nas próximas 24h.
+                </p>
               </div>
               
-              <p style="color: #4b5563; line-height: 1.6;">${t.reason}</p>
+              <p style="color: #4b5563; line-height: 1.6;">
+                Geralmente isso acontece por: cartão vencido, limite insuficiente ou bloqueio preventivo do banco.
+              </p>
               
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${appUrl}/planos" 
                    style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
-                  ${t.cta}
+                  🔄 Atualizar Cartão Agora
                 </a>
               </div>
               
-              <p style="color: #4b5563; line-height: 1.6; text-align: center;">${t.urgency}</p>
+              <p style="color: #4b5563; line-height: 1.6; text-align: center;">
+                Não deixe sua agência parar de vender! Resolva isso em menos de 1 minuto.
+              </p>
             </div>
             
             <div style="background-color: #f9fafb; padding: 20px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                ${t.altPayment} <a href="https://wa.me/5585986411294" style="color: #6366f1;">WhatsApp</a>
+                Precisa de um boleto ou PIX? <a href="https://wa.me/5585986411294" style="color: #6366f1;">Chame o Suporte</a>
               </p>
             </div>
           </div>
@@ -759,7 +567,7 @@ async function sendPaymentFailedEmail(resend: any, email: string, language: Lang
         </html>
       `,
     });
-    logStep("Payment failed email sent successfully", { email: redactEmail(email), language });
+    logStep("Payment failed email sent successfully", { email: redactEmail(email) });
   } catch (error: unknown) {
     logStep("ERROR: Failed to send payment failed email", { error: error instanceof Error ? error.message : String(error), email: redactEmail(email) });
   }
