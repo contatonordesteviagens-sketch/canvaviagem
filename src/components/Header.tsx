@@ -19,6 +19,7 @@ import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
 
@@ -122,6 +123,9 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Language Selector - Desktop */}
+          <LanguageSelector variant="compact" />
+
           {/* Theme Toggle - Desktop */}
           <ThemeToggle />
           
@@ -154,6 +158,11 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
           </SheetTrigger>
           <SheetContent side="right" className="w-[280px] sm:w-[320px]">
             <nav className="flex flex-col gap-1 mt-8">
+              {/* Language Selector - Mobile */}
+              <LanguageSelector variant="mobile" />
+              
+              <DropdownMenuSeparator className="my-3" />
+              
               {/* Theme Toggle - Mobile */}
               <ThemeToggleMobile />
               
