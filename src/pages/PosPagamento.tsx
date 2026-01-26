@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle, Mail, Loader2, ArrowRight, MessageCircle, Sparkles, RefreshCw, Clock, CreditCard, FileText } from "lucide-react";
+import { CheckCircle, Mail, Loader2, ArrowRight, MessageCircle, Sparkles, RefreshCw, CreditCard } from "lucide-react";
 import { trackPurchase, trackSubscribe } from "@/lib/meta-pixel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -16,11 +16,13 @@ const PosPagamento = () => {
   const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   useEffect(() => {
-    // Dispara evento de compra ao carregar a página
+    // Debug: verificar se o Pixel está carregado
+    console.log('[Meta Debug] window.fbq exists:', typeof window.fbq !== 'undefined');
+    
     trackPurchase(9.90, 'BRL');
     trackSubscribe(9.90, 'BRL', 9.90 * 12);
     
-    console.log('Meta Pixel: Purchase event fired (R$ 9,90)');
+    console.log('[Meta Debug] Purchase & Subscribe events dispatched (R$ 9,90)');
   }, []);
 
   const handleSendMagicLink = async (e: React.FormEvent) => {
@@ -122,38 +124,17 @@ const PosPagamento = () => {
             </p>
           </div>
 
-          {/* Payment Method Notice */}
-          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-5 space-y-4">
-            <h3 className="font-semibold text-amber-800 dark:text-amber-200 flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Prazo de liberação do acesso
-            </h3>
-            
-            <div className="space-y-3 text-sm">
-              {/* Credit Card */}
-              <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
-                <CreditCard className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                <div className="text-left">
-                  <p className="font-medium text-green-800 dark:text-green-200">Cartão de Crédito</p>
-                  <p className="text-green-700 dark:text-green-300">Acesso liberado <strong>imediatamente</strong> após a confirmação.</p>
-                </div>
-              </div>
-              
-              {/* Boleto */}
-              <div className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-800">
-                <FileText className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
-                <div className="text-left">
-                  <p className="font-medium text-orange-800 dark:text-orange-200">Boleto Bancário</p>
-                  <p className="text-orange-700 dark:text-orange-300">
-                    Acesso liberado após o pagamento compensado pelo banco.
-                  </p>
-                </div>
+          {/* Access Notice */}
+          <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl p-5">
+            <div className="flex items-center gap-3">
+              <CreditCard className="h-6 w-6 text-green-600 dark:text-green-400 flex-shrink-0" />
+              <div className="text-left">
+                <p className="font-semibold text-green-800 dark:text-green-200">Acesso Imediato</p>
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  Seu acesso foi liberado automaticamente após a confirmação do pagamento.
+                </p>
               </div>
             </div>
-            
-            <p className="text-xs text-amber-700 dark:text-amber-400 text-center">
-              Envie o link de acesso abaixo para verificar se seu acesso está liberado.
-            </p>
           </div>
 
           {/* Magic Link Form */}
