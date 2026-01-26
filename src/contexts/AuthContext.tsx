@@ -105,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const checkSubscription = useCallback(async (accessToken: string, currentUser: User | null, forceRefresh = false) => {
+  const checkSubscription = useCallback(async (_accessToken: string, currentUser: User | null, forceRefresh = false) => {
     const now = Date.now();
     const userId = currentUser?.id || null;
     
@@ -161,9 +161,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log('[AuthContext] Checking subscription status...');
       
+      // Always get fresh session to ensure token is valid
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !sessionData?.session?.access_token) {
+        console.error('[AuthContext] Failed to get fresh session:', sessionError);
+        setSubscription({
+          subscribed: false,
+          productId: null,
+          subscriptionEnd: null,
+          loading: false,
+        });
+        return;
+      }
+      
+      const freshToken = sessionData.session.access_token;
+      
       const { data, error } = await supabase.functions.invoke('check-subscription', {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${freshToken}`,
         },
       });
 
