@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Instagram, Facebook, Youtube } from "lucide-react";
+import logoImage from "@/assets/logo.png";
 
 // TikTok icon (lucide doesn't have it)
 const TikTokIcon = ({ className }: { className?: string }) => (
@@ -54,9 +55,9 @@ export const Footer = () => {
           <div className="flex flex-col items-center md:items-start gap-4">
             <div className="flex items-center gap-3">
               <img
-                src="/favicon.webp"
+                src={logoImage}
                 alt="Canva Viagem"
-                className="h-10 w-10 rounded-lg"
+                className="h-10 w-10 rounded-xl shadow-lg object-cover"
               />
               <h3 className="text-xl font-bold text-foreground">
                 Canva Viagem
