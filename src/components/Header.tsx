@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, User, Home, Calendar, CreditCard, 
   Video, Image, LayoutGrid, FileText, Download, Bot, 
-  GraduationCap, Heart, ChevronDown, Sun, Moon, Star
+  GraduationCap, Heart, ChevronDown, Sun, Moon, Star, Settings
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useIsAdmin } from "@/hooks/useContent";
 
 type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
 
@@ -32,6 +33,7 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { data: isAdmin } = useIsAdmin();
 
   // Mobile theme toggle button component
   const ThemeToggleMobile = () => (
@@ -138,6 +140,18 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
             <span>{proximoNivelItem.label}</span>
           </NavLink>
 
+          {/* Admin Link - Only visible for admins */}
+          {isAdmin && (
+            <NavLink
+              to="/gestao"
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10 flex items-center gap-1.5"
+              activeClassName="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Settings className="w-4 h-4" />
+              <span>Gestão</span>
+            </NavLink>
+          )}
+
           {/* Theme Toggle - Desktop */}
           <ThemeToggle />
           
@@ -202,6 +216,19 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
                 <Star className="h-5 w-5 text-orange-500 fill-orange-500" />
                 {proximoNivelItem.label}
               </NavLink>
+
+              {/* Admin Link - Mobile - Only visible for admins */}
+              {isAdmin && (
+                <NavLink
+                  to="/gestao"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
+                  activeClassName="bg-primary text-primary-foreground"
+                >
+                  <Settings className="h-5 w-5" />
+                  Gestão
+                </NavLink>
+              )}
 
               <DropdownMenuSeparator className="my-3" />
 

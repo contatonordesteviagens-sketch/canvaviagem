@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -270,6 +270,16 @@ const Auth = () => {
               <MessageCircle className="h-4 w-4" />
               WhatsApp: (85) 9 8641-1294
             </a>
+          </div>
+
+          {/* Admin Access Link */}
+          <div className="text-center pt-2 border-t border-muted">
+            <Link 
+              to="/admin-login" 
+              className="text-xs text-muted-foreground hover:text-primary transition-colors"
+            >
+              Acesso administrativo
+            </Link>
           </div>
         </CardContent>
       </Card>
