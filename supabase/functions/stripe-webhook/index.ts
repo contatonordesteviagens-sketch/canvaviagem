@@ -41,6 +41,50 @@ function isValidEmail(email: string | null | undefined): email is string {
   return emailRegex.test(email) && email.length <= 254;
 }
 
+// =====================
+// ZAIA WEBHOOK HELPER
+// =====================
+async function triggerZaiaWebhook(
+  webhookEnvVar: string, 
+  data: { email: string; name?: string }
+) {
+  const webhookUrl = Deno.env.get(webhookEnvVar);
+  if (!webhookUrl) {
+    logStep(`ZAIA webhook not configured: ${webhookEnvVar}`);
+    return;
+  }
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: data.email,
+        name: data.name || data.email.split("@")[0],
+        timestamp: new Date().toISOString(),
+      }),
+    });
+    
+    // Consume response body to prevent resource leak
+    const responseText = await response.text();
+    
+    if (!response.ok) {
+      logStep(`ZAIA webhook error: ${webhookEnvVar}`, { 
+        status: response.status, 
+        error: responseText.substring(0, 200)
+      });
+    } else {
+      logStep(`ZAIA webhook success: ${webhookEnvVar}`, { 
+        status: response.status 
+      });
+    }
+  } catch (error) {
+    logStep(`ERROR triggering ZAIA webhook: ${webhookEnvVar}`, { 
+      error: error instanceof Error ? error.message : String(error) 
+    });
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -162,6 +206,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
   }
   
   const email = rawEmail;
+  const customerName = session.customer_details?.name || email.split("@")[0];
 
   const stripeCustomerId = session.customer as string;
   const stripeSubscriptionId = session.subscription as string;
@@ -199,6 +244,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
     .upsert({
       user_id: userId,
       email,
+      name: customerName,
       stripe_customer_id: stripeCustomerId,
       updated_at: new Date().toISOString(),
     }, {
@@ -233,6 +279,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
   if (resend) {
     await sendWelcomeEmail(resend, email);
   }
+
+  // Trigger Zaia welcome webhook for WhatsApp automation
+  await triggerZaiaWebhook("ZAIA_WEBHOOK_WELCOME", { email, name: customerName });
 }
 
 async function handleSubscriptionCreated(subscription: Stripe.Subscription, supabase: any) {
@@ -269,10 +318,10 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supa
 
   const stripeCustomerId = subscription.customer as string;
 
-  // Get user email for notification
+  // Get user profile for email and name
   const { data: profile } = await supabase
     .from("profiles")
-    .select("email")
+    .select("email, name")
     .eq("stripe_customer_id", stripeCustomerId)
     .single();
 
@@ -293,6 +342,14 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supa
   // Send cancellation email
   if (resend && profile?.email) {
     await sendCancellationEmail(resend, profile.email);
+  }
+
+  // Trigger Zaia cancellation webhook for WhatsApp automation
+  if (profile?.email) {
+    await triggerZaiaWebhook("ZAIA_WEBHOOK_CANCELLATION", { 
+      email: profile.email, 
+      name: profile.name 
+    });
   }
 }
 
@@ -321,10 +378,10 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, supabase: any, resen
 
   const stripeCustomerId = invoice.customer as string;
 
-  // Get user email for notification
+  // Get user profile for email and name
   const { data: profile } = await supabase
     .from("profiles")
-    .select("email")
+    .select("email, name")
     .eq("stripe_customer_id", stripeCustomerId)
     .single();
 
@@ -345,6 +402,14 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, supabase: any, resen
   // Send payment failed email
   if (resend && profile?.email) {
     await sendPaymentFailedEmail(resend, profile.email);
+  }
+
+  // Trigger Zaia payment failed webhook for WhatsApp automation
+  if (profile?.email) {
+    await triggerZaiaWebhook("ZAIA_WEBHOOK_PAYMENT_FAILED", { 
+      email: profile.email, 
+      name: profile.name 
+    });
   }
 }
 
@@ -615,6 +680,9 @@ async function handleCheckoutExpired(session: Stripe.Checkout.Session, supabase:
   if (resend) {
     await sendRecoveryEmail(resend, email);
   }
+
+  // Trigger Zaia recovery webhook for WhatsApp automation
+  await triggerZaiaWebhook("ZAIA_WEBHOOK_RECOVERY", { email });
 }
 
 async function sendRecoveryEmail(resend: any, email: string) {
