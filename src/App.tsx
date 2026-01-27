@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { useTrackUtm } from "@/hooks/useTrackUtm";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
 import Calendar from "./pages/Calendar";
@@ -26,6 +27,12 @@ import ProximoNivel from "./pages/ProximoNivel";
 
 const queryClient = new QueryClient();
 
+// Componente para rastreamento de UTM
+const UtmTracker = () => {
+  useTrackUtm();
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -34,6 +41,7 @@ const App = () => (
           <Toaster />
           <Sonner />
         <BrowserRouter>
+          <UtmTracker />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/calendar" element={<Calendar />} />

@@ -2,7 +2,8 @@ import { useEmailDashboard } from "@/hooks/useEmailDashboard";
 import { useAdminDashboard, usePageViews } from "@/hooks/useAdminDashboard";
 import { useStripeDashboard } from "@/hooks/useStripeDashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Users, MousePointer, TrendingUp, Activity, DollarSign, Percent, CreditCard, BarChart3, Wallet, Target, UserX, Clock } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Users, MousePointer, TrendingUp, Activity, DollarSign, Percent, CreditCard, BarChart3, Wallet, Target, UserX, Clock, Mail, Globe } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -17,10 +18,14 @@ import {
   LineChart,
   Line,
 } from "recharts";
+import { MarketingFunnelSection } from "./MarketingFunnelSection";
+import { EmailPerformanceSection } from "./EmailPerformanceSection";
+import { AttributionSection } from "./AttributionSection";
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
-export const DashboardSection = () => {
+// Componente da aba Visão Geral
+const OverviewTab = () => {
   const { data: stats, isLoading } = useAdminDashboard();
   const { data: pageViews } = usePageViews();
   const { metrics: emailStats, isLoading: emailLoading } = useEmailDashboard();
@@ -435,6 +440,49 @@ export const DashboardSection = () => {
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+};
+
+export const DashboardSection = () => {
+  return (
+    <div className="space-y-6">
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Visão Geral</span>
+          </TabsTrigger>
+          <TabsTrigger value="funnel" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            <span className="hidden sm:inline">Funil</span>
+          </TabsTrigger>
+          <TabsTrigger value="email" className="flex items-center gap-2">
+            <Mail className="h-4 w-4" />
+            <span className="hidden sm:inline">E-mail</span>
+          </TabsTrigger>
+          <TabsTrigger value="sources" className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            <span className="hidden sm:inline">Fontes</span>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview">
+          <OverviewTab />
+        </TabsContent>
+
+        <TabsContent value="funnel">
+          <MarketingFunnelSection />
+        </TabsContent>
+
+        <TabsContent value="email">
+          <EmailPerformanceSection />
+        </TabsContent>
+
+        <TabsContent value="sources">
+          <AttributionSection />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

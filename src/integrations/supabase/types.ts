@@ -323,6 +323,7 @@ export type Database = {
           status: string
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
+          traffic_source_id: string | null
           updated_at: string
           user_id: string
         }
@@ -334,6 +335,7 @@ export type Database = {
           status?: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          traffic_source_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -345,8 +347,59 @@ export type Database = {
           status?: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          traffic_source_id?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_traffic_source_id_fkey"
+            columns: ["traffic_source_id"]
+            isOneToOne: false
+            referencedRelation: "traffic_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      traffic_sources: {
+        Row: {
+          created_at: string | null
+          id: string
+          landing_page: string | null
+          referrer: string | null
+          session_id: string
+          user_id: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          landing_page?: string | null
+          referrer?: string | null
+          session_id: string
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          landing_page?: string | null
+          referrer?: string | null
+          session_id?: string
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Relationships: []
       }
