@@ -17,11 +17,57 @@ import {
   Video,
   Megaphone,
   Clock,
-  ArrowDown
+  ArrowDown,
+  ShieldCheck,
+  UserSearch,
+  Building2
 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 const HOTMART_CHECKOUT_URL = "https://pay.hotmart.com/X100779687E?checkoutMode=10";
 const YOUTUBE_VIDEO_ID = "0uPJm4FNRfI";
+
+// Countdown Timer Component
+const CountdownTimer = () => {
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 15, seconds: 0 });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        const totalSeconds = prev.hours * 3600 + prev.minutes * 60 + prev.seconds - 1;
+        if (totalSeconds <= 0) {
+          return { hours: 0, minutes: 15, seconds: 0 }; // Reset timer
+        }
+        return {
+          hours: Math.floor(totalSeconds / 3600),
+          minutes: Math.floor((totalSeconds % 3600) / 60),
+          seconds: totalSeconds % 60
+        };
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="flex items-center justify-center gap-3">
+      <div className="flex items-center gap-1">
+        <span className="bg-muted/20 text-white px-3 py-2 rounded-lg font-mono text-lg font-bold">
+          {String(timeLeft.hours).padStart(2, '0')}
+        </span>
+        <span className="text-muted-foreground">:</span>
+        <span className="bg-muted/20 text-white px-3 py-2 rounded-lg font-mono text-lg font-bold">
+          {String(timeLeft.minutes).padStart(2, '0')}
+        </span>
+        <span className="text-muted-foreground">:</span>
+        <span className="bg-muted/20 text-white px-3 py-2 rounded-lg font-mono text-lg font-bold">
+          {String(timeLeft.seconds).padStart(2, '0')}
+        </span>
+      </div>
+      <span className="text-accent text-xs font-semibold uppercase tracking-wider">Oferta expira em</span>
+    </div>
+  );
+};
 
 const ProximoNivel = () => {
   const handleCTAClick = () => {
@@ -392,96 +438,69 @@ const ProximoNivel = () => {
         </section>
 
         {/* Who is it for Section */}
-        <section className="py-12 md:py-16">
+        <section className="py-12 md:py-16 bg-background">
           <div className="container mx-auto px-4 max-w-4xl">
-            <div className="text-center space-y-6">
-              <div className="inline-flex items-center gap-2 text-primary">
-                <Users className="h-8 w-8" />
-                <h2 className="text-2xl md:text-3xl font-bold">
-                  PARA QUEM ESSE TREINAMENTO É IDEAL
-                </h2>
-              </div>
+            <div className="text-center space-y-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                Para quem é este <span className="underline decoration-primary decoration-2 underline-offset-4">treinamento?</span>
+              </h2>
 
-              <div className="grid md:grid-cols-2 gap-4 pt-4">
-                <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200/50 dark:border-green-900/30">
-                  <CardContent className="p-6 text-left">
-                    <ul className="space-y-3">
-                      <li className="flex items-center gap-3">
-                        <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                        <span>Agentes de viagem autônomos</span>
-                      </li>
-                      <li className="flex items-center gap-3">
-                        <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                        <span>Donos de pequenas e médias agências</span>
-                      </li>
-                    </ul>
-                  </CardContent>
-                </Card>
-                <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200/50 dark:border-green-900/30">
-                  <CardContent className="p-6 text-left">
-                    <ul className="space-y-3">
-                      <li className="flex items-center gap-3">
-                        <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                        <span>Quem já cria conteúdo, mas não vende de forma consistente</span>
-                      </li>
-                      <li className="flex items-center gap-3">
-                        <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                        <span>Quem quer parar de perder dinheiro com anúncio mal feito</span>
-                      </li>
-                    </ul>
-                  </CardContent>
-                </Card>
+              <div className="flex justify-center gap-8 pt-4">
+                <div className="flex flex-col items-center gap-3 p-6 rounded-2xl border border-border bg-card hover:shadow-lg transition-shadow">
+                  <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center">
+                    <UserSearch className="h-8 w-8 text-accent" />
+                  </div>
+                  <p className="font-semibold text-foreground">Agentes<br/>Autônomos</p>
+                </div>
+                <div className="flex flex-col items-center gap-3 p-6 rounded-2xl border border-border bg-card hover:shadow-lg transition-shadow">
+                  <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center">
+                    <Building2 className="h-8 w-8 text-accent" />
+                  </div>
+                  <p className="font-semibold text-foreground">Donos de<br/>Agência</p>
+                </div>
               </div>
-
-              <p className="text-xl font-semibold text-foreground pt-4">
-                Se você vende viagem, isso é pra você.
-              </p>
             </div>
           </div>
         </section>
 
         {/* Pricing & CTA Section */}
-        <section id="pricing" className="py-16 md:py-24 bg-gradient-to-br from-primary to-accent">
-          <div className="container mx-auto px-4 max-w-4xl">
-            <div className="text-center text-white space-y-8">
-              <h2 className="text-3xl md:text-4xl font-bold">
-                💰 INVESTIMENTO
-              </h2>
-              <p className="text-lg opacity-90">
-                (Upgrade dentro do Canva Viagem)
-              </p>
+        <section id="pricing" className="py-16 md:py-24 bg-background">
+          <div className="container mx-auto px-4 max-w-md">
+            <Card className="bg-gradient-to-br from-[hsl(220,20%,15%)] to-[hsl(220,20%,10%)] border-0 shadow-2xl overflow-hidden">
+              <CardContent className="p-8 text-center space-y-6">
+                {/* Countdown Timer */}
+                <CountdownTimer />
+                
+                <h3 className="text-2xl md:text-3xl font-bold text-white">
+                  Garante a sua vaga agora
+                </h3>
 
-              <div className="flex flex-col md:flex-row items-center justify-center gap-6 py-6">
-                <div className="text-center">
-                  <p className="text-5xl md:text-6xl font-bold">12x</p>
-                  <p className="text-2xl md:text-3xl font-semibold">de R$ 10</p>
+                {/* Price Display */}
+                <div className="space-y-2">
+                  <p className="text-muted-foreground line-through text-lg">De R$ 997</p>
+                  <div className="flex items-baseline justify-center gap-2">
+                    <span className="text-white text-xl font-medium">12x de</span>
+                    <span className="text-5xl md:text-6xl font-bold text-accent">R$ 10</span>
+                  </div>
+                  <p className="text-muted-foreground">ou R$ 97 à vista/ano</p>
                 </div>
-                <div className="text-3xl font-light opacity-60">ou</div>
-                <div className="text-center">
-                  <p className="text-5xl md:text-6xl font-bold">R$ 97</p>
-                  <p className="text-xl">por ano</p>
-                </div>
-              </div>
 
-              <p className="text-lg opacity-90">
-                Um único pacote vendido já paga o acesso.
-              </p>
-
-              <div className="pt-4">
+                {/* CTA Button */}
                 <Button 
                   onClick={handleCTAClick}
                   size="lg"
-                  className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6 h-auto font-bold shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground text-lg px-8 py-6 h-auto font-bold shadow-lg transition-all hover:scale-105"
                 >
-                  <Rocket className="mr-2 h-6 w-6" />
-                  ATIVAR AGENTE LUCRATIVO®
+                  QUERO GARANTIR MEU ACESSO
                 </Button>
-              </div>
 
-              <p className="text-sm opacity-75 pt-4">
-                Você já tem a ferramenta. Agora precisa do método certo para vender com ela.
-              </p>
-            </div>
+                {/* Guarantee */}
+                <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm pt-2">
+                  <ShieldCheck className="h-5 w-5 text-accent" />
+                  <span>7 DIAS DE GARANTIA INCONDICIONAL</span>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </section>
 
