@@ -35,6 +35,36 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          created_at: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          session_id: string | null
+          url_path: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          session_id?: string | null
+          url_path?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          session_id?: string | null
+          url_path?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string
@@ -288,29 +318,44 @@ export type Database = {
         Row: {
           created_at: string
           email: string | null
+          first_visit_at: string | null
           id: string
           language: string | null
+          referrer_url: string | null
           stripe_customer_id: string | null
           updated_at: string
           user_id: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
         }
         Insert: {
           created_at?: string
           email?: string | null
+          first_visit_at?: string | null
           id?: string
           language?: string | null
+          referrer_url?: string | null
           stripe_customer_id?: string | null
           updated_at?: string
           user_id: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Update: {
           created_at?: string
           email?: string | null
+          first_visit_at?: string | null
           id?: string
           language?: string | null
+          referrer_url?: string | null
           stripe_customer_id?: string | null
           updated_at?: string
           user_id?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Relationships: []
       }
@@ -489,7 +534,19 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      marketing_stats: {
+        Row: {
+          campaign: string | null
+          conversion_rate: number | null
+          leads: number | null
+          medium: string | null
+          revenue: number | null
+          source: string | null
+          subscribers: number | null
+          visitors: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {

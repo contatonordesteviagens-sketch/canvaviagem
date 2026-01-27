@@ -21,6 +21,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import ContentManager from "./pages/admin/ContentManager";
 import CaptionsManager from "./pages/admin/CaptionsManager";
 import ToolsManager from "./pages/admin/ToolsManager";
+import Marketing from "./pages/admin/Marketing";
 import Termos from "./pages/Termos";
 import Privacidade from "./pages/Privacidade";
 import ProximoNivel from "./pages/ProximoNivel";
@@ -59,6 +60,7 @@ const App = () => (
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminLayout />}>
               <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="marketing" element={<Marketing />} />
               <Route path="content" element={<ContentManager />} />
               <Route path="captions" element={<CaptionsManager />} />
               <Route path="tools" element={<ToolsManager />} />
