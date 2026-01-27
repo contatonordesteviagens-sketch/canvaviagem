@@ -12,6 +12,12 @@ export interface StripeDashboardData {
   growth: number;
   revenueChartData: { month: string; revenue: number }[];
   subscriptionChartData: { month: string; subscriptions: number }[];
+  // Novas métricas
+  totalRevenue: number;
+  averageTicket: number;
+  estimatedLTV: number;
+  monthlyChurns: number;
+  trialingCount: number;
 }
 
 export const useStripeDashboard = () => {

@@ -272,15 +272,6 @@ const Auth = () => {
             </a>
           </div>
 
-          {/* Admin Access Link */}
-          <div className="text-center pt-2 border-t border-muted">
-            <Link 
-              to="/admin-login" 
-              className="text-xs text-muted-foreground hover:text-primary transition-colors"
-            >
-              Acesso administrativo
-            </Link>
-          </div>
         </CardContent>
       </Card>
     </div>
