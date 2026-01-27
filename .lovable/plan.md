@@ -1,164 +1,218 @@
 
 
-# Plano: Corrigir E-mails + Adicionar Nome do Usuário
+# Plano: Integração dos Webhooks Zaia para Automação de Suporte via WhatsApp
 
-## Diagnóstico do Problema de E-mail
+## Objetivo
 
-Após análise dos logs, **os e-mails estão sendo enviados com sucesso**:
-- Edge function retorna `{"success":true}` 
-- Tabela `email_events` registra envios
-- Tabela `magic_link_tokens` cria tokens
+Disparar conversas automáticas da Zaia (IA no WhatsApp) quando ocorrerem os seguintes eventos:
 
-**Causa provável**: E-mails estão indo para **SPAM** ou há problema no Resend (limite atingido, domínio não verificado, etc).
-
-**Recomendação**: Verificar no painel do Resend (resend.com) o status dos e-mails enviados e confirmar que o domínio `rochadigitalmidia.com.br` está verificado.
+| Webhook | Evento | Quando Dispara |
+|---------|--------|----------------|
+| `ZAIA_WEBHOOK_WELCOME` | Boas-vindas | Após pagamento confirmado (novo assinante) |
+| `ZAIA_WEBHOOK_RECOVERY` | Recuperação de Carrinho | Checkout expirado (abandono) |
+| `ZAIA_WEBHOOK_PAYMENT_FAILED` | Pagamento Falhou | Quando renovação falha |
+| `ZAIA_WEBHOOK_CANCELLATION` | Cancelamento | Quando assinatura é cancelada |
 
 ---
 
-## Alterações a Implementar
+## Como Funciona
 
-### 1. Página Pós-Pagamento (`src/pages/PosPagamento.tsx`)
+Quando o evento ocorre no Stripe, o webhook `stripe-webhook` já processa e envia e-mail. Agora ele também vai disparar uma requisição HTTP para a Zaia, que inicia uma conversa automática no WhatsApp com o cliente.
 
-**Mudanças de texto:**
-- Alterar "Acesso Imediato" → "Libere Seu Acesso"
-- Alterar descrição → "Preencha abaixo e envie o e-mail para liberar automaticamente seu acesso"
+---
 
-**Adicionar campo de nome:**
-- Novo input para nome do usuário antes do e-mail
-- Enviar nome junto com e-mail para a edge function
+## Alterações
 
-### 2. Database Migration
+### 1. Adicionar Segredos (4 URLs de Webhook)
 
-**Adicionar coluna `name` na tabela `profiles`:**
-```sql
-ALTER TABLE profiles ADD COLUMN name TEXT;
+| Nome do Segredo | Valor |
+|-----------------|-------|
+| `ZAIA_WEBHOOK_WELCOME` | `https://api.zaia.app/v1/webhook/agent-incoming-webhook-event/create?agentIncomingWebhookId=5557&key=77002eac-c569-4311-ab6f-781e59561fc8` |
+| `ZAIA_WEBHOOK_RECOVERY` | `https://api.zaia.app/v1/webhook/agent-incoming-webhook-event/create?agentIncomingWebhookId=5558&key=71180ef4-54fb-4b41-9272-deb53194609c` |
+| `ZAIA_WEBHOOK_PAYMENT_FAILED` | `https://api.zaia.app/v1/webhook/agent-incoming-webhook-event/create?agentIncomingWebhookId=5559&key=6b80870a-cd44-41db-87dc-a7051be4ca16` |
+| `ZAIA_WEBHOOK_CANCELLATION` | `https://api.zaia.app/v1/webhook/agent-incoming-webhook-event/create?agentIncomingWebhookId=5560&key=a55cea2a-b1f1-4b58-b7c5-429ed63ef686` |
+
+### 2. Modificar Edge Function `stripe-webhook`
+
+**Arquivo:** `supabase/functions/stripe-webhook/index.ts`
+
+**Adicionar função utilitária para chamar webhooks Zaia:**
+
+```typescript
+async function triggerZaiaWebhook(webhookEnvVar: string, data: { email: string; name?: string }) {
+  const webhookUrl = Deno.env.get(webhookEnvVar);
+  if (!webhookUrl) {
+    logStep(`ZAIA webhook not configured: ${webhookEnvVar}`);
+    return;
+  }
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: data.email,
+        name: data.name || data.email.split("@")[0],
+        // Zaia pode usar para personalizar a mensagem
+      }),
+    });
+    logStep(`ZAIA webhook triggered: ${webhookEnvVar}`, { status: response.status });
+  } catch (error) {
+    logStep(`ERROR triggering ZAIA webhook: ${webhookEnvVar}`, { error: error.message });
+  }
+}
 ```
 
-### 3. Edge Function `send-magic-link`
+**Modificar handlers existentes para incluir chamada Zaia:**
 
-**Alterações:**
-- Receber `name` além de `email`
-- Salvar nome na tabela `magic_link_tokens` (nova coluna)
-
-### 4. Edge Function `verify-magic-link`
-
-**Alterações:**
-- Recuperar nome do token
-- Salvar nome na tabela `profiles` ao criar/atualizar usuário
-
-### 5. Tabela `magic_link_tokens`
-
-**Adicionar coluna:**
-```sql
-ALTER TABLE magic_link_tokens ADD COLUMN name TEXT;
-```
-
-### 6. Header/Index - Saudação Personalizada
-
-**Exibir "Olá, [Nome]" no Header:**
-- Buscar nome do perfil do usuário logado
-- Mostrar saudação no lugar de "Entrar" quando logado
+| Handler | Webhook Zaia |
+|---------|--------------|
+| `handleCheckoutCompleted` | `ZAIA_WEBHOOK_WELCOME` |
+| `handleCheckoutExpired` | `ZAIA_WEBHOOK_RECOVERY` |
+| `handlePaymentFailed` | `ZAIA_WEBHOOK_PAYMENT_FAILED` |
+| `handleSubscriptionDeleted` | `ZAIA_WEBHOOK_CANCELLATION` |
 
 ---
 
-## Arquivos a Modificar
-
-| Arquivo | Alteração |
-|---------|-----------|
-| `src/pages/PosPagamento.tsx` | Adicionar campo nome, alterar textos |
-| `supabase/functions/send-magic-link/index.ts` | Receber e salvar nome |
-| `supabase/functions/verify-magic-link/index.ts` | Salvar nome no perfil |
-| `src/components/Header.tsx` | Exibir "Olá, [Nome]" |
-| `src/contexts/AuthContext.tsx` | Buscar nome do perfil |
-| Database | 2 migrations (profiles.name + magic_link_tokens.name) |
-
----
-
-## Fluxo Após Implementação
+## Fluxo de Automação
 
 ```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    NOVO FLUXO PÓS-PAGAMENTO                             │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│   1. Usuário preenche:                                                  │
-│      ┌─────────────────────────────────────────────┐                   │
-│      │ Nome:  [João da Silva                    ]  │                   │
-│      │ Email: [joao@email.com                   ]  │                   │
-│      │ [    Liberar Meu Acesso    ]                │                   │
-│      └─────────────────────────────────────────────┘                   │
-│                                                                         │
-│   2. Sistema salva nome + email no token                               │
-│                                                                         │
-│   3. Usuário clica no link do e-mail                                   │
-│                                                                         │
-│   4. Sistema cria/atualiza perfil COM o nome                           │
-│                                                                         │
-│   5. Na plataforma, Header exibe:                                      │
-│      ┌──────────────────────────────────────────┐                      │
-│      │  🏠 Canva Viagem         Olá, João! 👋   │                      │
-│      └──────────────────────────────────────────┘                      │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                        FLUXO DE AUTOMAÇÃO ZAIA                                  │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│   EVENTO STRIPE              EMAIL RESEND              WHATSAPP ZAIA            │
+│   ═══════════════            ════════════              ══════════════           │
+│                                                                                 │
+│   ┌───────────────┐         ┌──────────────┐         ┌───────────────┐         │
+│   │ checkout.     │────────▶│ Welcome      │────────▶│ WEBHOOK       │         │
+│   │ completed     │         │ Email        │         │ WELCOME       │         │
+│   └───────────────┘         └──────────────┘         └───────────────┘         │
+│                                                                                 │
+│   ┌───────────────┐         ┌──────────────┐         ┌───────────────┐         │
+│   │ checkout.     │────────▶│ Recovery     │────────▶│ WEBHOOK       │         │
+│   │ expired       │         │ Email        │         │ RECOVERY      │         │
+│   └───────────────┘         └──────────────┘         └───────────────┘         │
+│                                                                                 │
+│   ┌───────────────┐         ┌──────────────┐         ┌───────────────┐         │
+│   │ invoice.      │────────▶│ Payment      │────────▶│ WEBHOOK       │         │
+│   │ payment_failed│         │ Failed Email │         │ PAYMENT_FAILED│         │
+│   └───────────────┘         └──────────────┘         └───────────────┘         │
+│                                                                                 │
+│   ┌───────────────┐         ┌──────────────┐         ┌───────────────┐         │
+│   │ subscription. │────────▶│ Cancellation │────────▶│ WEBHOOK       │         │
+│   │ deleted       │         │ Email        │         │ CANCELLATION  │         │
+│   └───────────────┘         └──────────────┘         └───────────────┘         │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Dados Enviados para Zaia
+
+Cada webhook receberá um JSON com:
+
+```json
+{
+  "email": "cliente@email.com",
+  "name": "Nome do Cliente"
+}
+```
+
+A Zaia usará o e-mail para buscar o número de WhatsApp cadastrado e iniciar a conversa.
+
+---
+
+## Pré-requisito
+
+**Importante:** Para que a Zaia consiga enviar mensagem no WhatsApp, o cliente precisa ter o número de telefone associado ao e-mail na Zaia ou ter interagido previamente com o número (85) 9 8641-1294.
+
+Se o cliente nunca conversou com o número, a Zaia não conseguirá iniciar a conversa (limitação do WhatsApp Business).
 
 ---
 
 ## Seção Técnica
 
-### Migration 1: Adicionar coluna `name` em `profiles`
-```sql
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS name TEXT;
-```
+### Estrutura da Função `triggerZaiaWebhook`
 
-### Migration 2: Adicionar coluna `name` em `magic_link_tokens`
-```sql
-ALTER TABLE magic_link_tokens ADD COLUMN IF NOT EXISTS name TEXT;
-```
-
-### Código do PosPagamento (resumo das mudanças)
-```tsx
-// Novo state para nome
-const [name, setName] = useState("");
-
-// Novo input antes do email
-<Input
-  type="text"
-  placeholder="Seu nome"
-  value={name}
-  onChange={(e) => setName(e.target.value)}
-  required
-/>
-
-// Enviar nome na request
-const { data, error } = await supabase.functions.invoke("send-magic-link", {
-  body: { email: email.toLowerCase().trim(), name: name.trim() },
-});
-```
-
-### Código do Header (exibir nome)
-```tsx
-// Buscar perfil com nome
-const [userName, setUserName] = useState<string | null>(null);
-
-useEffect(() => {
-  if (user) {
-    supabase
-      .from("profiles")
-      .select("name")
-      .eq("user_id", user.id)
-      .single()
-      .then(({ data }) => setUserName(data?.name));
+```typescript
+async function triggerZaiaWebhook(
+  webhookEnvVar: string, 
+  data: { email: string; name?: string; phone?: string }
+) {
+  const webhookUrl = Deno.env.get(webhookEnvVar);
+  if (!webhookUrl) {
+    logStep(`ZAIA webhook not configured: ${webhookEnvVar}`);
+    return;
   }
-}, [user]);
 
-// No JSX
-{user ? (
-  <span className="text-sm font-medium">
-    Olá, {userName || user.email?.split("@")[0]}! 👋
-  </span>
-) : (
-  <Link to="/auth">Entrar</Link>
-)}
+  try {
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: data.email,
+        name: data.name || data.email.split("@")[0],
+        phone: data.phone, // opcional, se disponível
+        timestamp: new Date().toISOString(),
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      logStep(`ZAIA webhook error: ${webhookEnvVar}`, { 
+        status: response.status, 
+        error: errorText 
+      });
+    } else {
+      logStep(`ZAIA webhook success: ${webhookEnvVar}`, { 
+        status: response.status 
+      });
+    }
+  } catch (error) {
+    logStep(`ERROR triggering ZAIA webhook: ${webhookEnvVar}`, { 
+      error: error instanceof Error ? error.message : String(error) 
+    });
+  }
+}
+```
+
+### Modificações nos Handlers
+
+**handleCheckoutCompleted:**
+```typescript
+// Após enviar welcome email
+await triggerZaiaWebhook("ZAIA_WEBHOOK_WELCOME", { email, name: customerName });
+```
+
+**handleCheckoutExpired:**
+```typescript
+// Após enviar recovery email
+await triggerZaiaWebhook("ZAIA_WEBHOOK_RECOVERY", { email });
+```
+
+**handlePaymentFailed:**
+```typescript
+// Após enviar payment failed email
+await triggerZaiaWebhook("ZAIA_WEBHOOK_PAYMENT_FAILED", { email: profile.email });
+```
+
+**handleSubscriptionDeleted:**
+```typescript
+// Após enviar cancellation email
+await triggerZaiaWebhook("ZAIA_WEBHOOK_CANCELLATION", { email: profile.email });
+```
+
+### Segredos a Adicionar
+
+```
+ZAIA_WEBHOOK_WELCOME = https://api.zaia.app/v1/webhook/agent-incoming-webhook-event/create?agentIncomingWebhookId=5557&key=77002eac-c569-4311-ab6f-781e59561fc8
+
+ZAIA_WEBHOOK_RECOVERY = https://api.zaia.app/v1/webhook/agent-incoming-webhook-event/create?agentIncomingWebhookId=5558&key=71180ef4-54fb-4b41-9272-deb53194609c
+
+ZAIA_WEBHOOK_PAYMENT_FAILED = https://api.zaia.app/v1/webhook/agent-incoming-webhook-event/create?agentIncomingWebhookId=5559&key=6b80870a-cd44-41db-87dc-a7051be4ca16
+
+ZAIA_WEBHOOK_CANCELLATION = https://api.zaia.app/v1/webhook/agent-incoming-webhook-event/create?agentIncomingWebhookId=5560&key=a55cea2a-b1f1-4b58-b7c5-429ed63ef686
 ```
 
