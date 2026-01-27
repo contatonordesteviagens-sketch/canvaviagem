@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export interface ActiveUser {
   user_id: string;
   email: string;
+  name: string | null;
   status: "active" | "canceled" | "past_due" | "trialing" | "inactive";
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
@@ -15,7 +16,7 @@ export const useActiveUsers = () => {
   return useQuery({
     queryKey: ["active-users"],
     queryFn: async () => {
-      // Buscar dados de subscriptions com profiles
+      // Buscar dados de subscriptions
       const { data: subscriptions, error: subError } = await supabase
         .from("subscriptions")
         .select("*")
@@ -23,19 +24,29 @@ export const useActiveUsers = () => {
 
       if (subError) throw subError;
 
-      // Buscar profiles para obter emails
-      const { data: profiles, error: profError } = await supabase
+      // Buscar emails de user_email_automations (onde os emails realmente estão)
+      const { data: emailData, error: emailError } = await supabase
+        .from("user_email_automations")
+        .select("user_id, email, name");
+
+      if (emailError) {
+        console.error("Erro ao buscar emails:", emailError);
+      }
+
+      // Também tentar buscar de profiles como fallback
+      const { data: profiles } = await supabase
         .from("profiles")
         .select("user_id, email");
 
-      if (profError) throw profError;
-
-      // Combinar dados
+      // Combinar dados - priorizar user_email_automations, depois profiles
       const users: ActiveUser[] = subscriptions.map((sub) => {
-        const profile = profiles.find((p) => p.user_id === sub.user_id);
+        const emailRecord = emailData?.find((e) => e.user_id === sub.user_id);
+        const profileRecord = profiles?.find((p) => p.user_id === sub.user_id);
+        
         return {
           user_id: sub.user_id,
-          email: profile?.email || "Email não disponível",
+          email: emailRecord?.email || profileRecord?.email || "Email não disponível",
+          name: emailRecord?.name || null,
           status: sub.status as ActiveUser["status"],
           stripe_customer_id: sub.stripe_customer_id,
           stripe_subscription_id: sub.stripe_subscription_id,

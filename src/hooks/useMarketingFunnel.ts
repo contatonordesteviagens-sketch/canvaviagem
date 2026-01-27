@@ -54,10 +54,40 @@ export interface EmailMetrics {
   bounceRate: number;
 }
 
-export const useMarketingFunnel = () => {
+export interface DateRangeParam {
+  from?: Date;
+  to?: Date;
+}
+
+export const useMarketingFunnel = (dateRange?: DateRangeParam) => {
   return useQuery<FunnelMetrics>({
-    queryKey: ["marketing-funnel"],
+    queryKey: ["marketing-funnel", dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
     queryFn: async () => {
+      // Construir queries com filtro de data
+      let trafficQuery = supabase.from("traffic_sources").select("*").order("created_at", { ascending: false });
+      let automationsQuery = supabase.from("user_email_automations").select("*");
+      let subscriptionsQuery = supabase.from("subscriptions").select("*").eq("status", "active");
+      let emailEventsQuery = supabase.from("email_events").select("*");
+      let pageViewsQuery = supabase.from("page_views").select("*");
+
+      // Aplicar filtro de data se existir
+      if (dateRange?.from) {
+        const fromISO = dateRange.from.toISOString();
+        trafficQuery = trafficQuery.gte("created_at", fromISO);
+        automationsQuery = automationsQuery.gte("created_at", fromISO);
+        subscriptionsQuery = subscriptionsQuery.gte("created_at", fromISO);
+        emailEventsQuery = emailEventsQuery.gte("created_at", fromISO);
+        pageViewsQuery = pageViewsQuery.gte("viewed_at", fromISO);
+      }
+      if (dateRange?.to) {
+        const toISO = dateRange.to.toISOString();
+        trafficQuery = trafficQuery.lte("created_at", toISO);
+        automationsQuery = automationsQuery.lte("created_at", toISO);
+        subscriptionsQuery = subscriptionsQuery.lte("created_at", toISO);
+        emailEventsQuery = emailEventsQuery.lte("created_at", toISO);
+        pageViewsQuery = pageViewsQuery.lte("viewed_at", toISO);
+      }
+
       // Buscar dados em paralelo
       const [
         trafficResult,
@@ -66,11 +96,11 @@ export const useMarketingFunnel = () => {
         emailEventsResult,
         pageViewsResult,
       ] = await Promise.all([
-        supabase.from("traffic_sources").select("*").order("created_at", { ascending: false }),
-        supabase.from("user_email_automations").select("*"),
-        supabase.from("subscriptions").select("*").eq("status", "active"),
-        supabase.from("email_events").select("*"),
-        supabase.from("page_views").select("*"),
+        trafficQuery,
+        automationsQuery,
+        subscriptionsQuery,
+        emailEventsQuery,
+        pageViewsQuery,
       ]);
 
       const traffic = trafficResult.data || [];

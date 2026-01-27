@@ -1,7 +1,8 @@
-import { useMarketingFunnel } from "@/hooks/useMarketingFunnel";
+import { useMarketingFunnel, DateRangeParam } from "@/hooks/useMarketingFunnel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Users, Mail, MailOpen, MousePointer, CreditCard, ArrowDown, TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { DateRange } from "react-day-picker";
 
 interface FunnelStepProps {
   icon: React.ReactNode;
@@ -54,8 +55,13 @@ const FunnelStep = ({ icon, label, value, conversionRate, color, isLast }: Funne
   );
 };
 
-export const MarketingFunnelSection = () => {
-  const { data: funnel, isLoading, error } = useMarketingFunnel();
+interface MarketingFunnelSectionProps {
+  dateRange?: DateRange;
+}
+
+export const MarketingFunnelSection = ({ dateRange }: MarketingFunnelSectionProps) => {
+  const dateRangeParam: DateRangeParam | undefined = dateRange ? { from: dateRange.from, to: dateRange.to } : undefined;
+  const { data: funnel, isLoading, error } = useMarketingFunnel(dateRangeParam);
 
   if (isLoading) {
     return (

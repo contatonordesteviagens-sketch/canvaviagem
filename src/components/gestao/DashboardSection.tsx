@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useEmailDashboard } from "@/hooks/useEmailDashboard";
 import { useAdminDashboard, usePageViews } from "@/hooks/useAdminDashboard";
 import { useStripeDashboard } from "@/hooks/useStripeDashboard";
+import { useMarketingFunnel } from "@/hooks/useMarketingFunnel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Users, MousePointer, TrendingUp, Activity, DollarSign, Percent, CreditCard, BarChart3, Wallet, Target, UserX, Clock, Mail, Globe } from "lucide-react";
@@ -21,15 +23,24 @@ import {
 import { MarketingFunnelSection } from "./MarketingFunnelSection";
 import { EmailPerformanceSection } from "./EmailPerformanceSection";
 import { AttributionSection } from "./AttributionSection";
+import { DateRangeFilter } from "./DateRangeFilter";
+import { subDays, endOfDay, startOfDay } from "date-fns";
+import type { DateRange } from "react-day-picker";
+import { cn } from "@/lib/utils";
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 // Componente da aba Visão Geral
-const OverviewTab = () => {
+interface OverviewTabProps {
+  dateRange?: DateRange;
+}
+
+const OverviewTab = ({ dateRange }: OverviewTabProps) => {
   const { data: stats, isLoading } = useAdminDashboard();
   const { data: pageViews } = usePageViews();
   const { metrics: emailStats, isLoading: emailLoading } = useEmailDashboard();
   const { data: stripeData, isLoading: stripeLoading } = useStripeDashboard();
+  const { data: funnel } = useMarketingFunnel(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
 
   if (isLoading) {
     return (
@@ -440,15 +451,86 @@ const OverviewTab = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Top Fontes de Tráfego - Integrado na Visão Geral */}
+      {funnel && funnel.sourceData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Top Fontes de Tráfego
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Gráfico de Visitantes por Fonte */}
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart 
+                  data={funnel.sourceData.slice(0, 5).map(s => ({
+                    name: s.source.length > 12 ? s.source.slice(0, 12) + "..." : s.source,
+                    visitantes: s.visitors,
+                  }))} 
+                  layout="vertical"
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis dataKey="name" type="category" width={90} tick={{ fontSize: 11 }} />
+                  <Tooltip />
+                  <Bar dataKey="visitantes" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+
+              {/* Tabela resumida das fontes */}
+              <div className="space-y-2">
+                {funnel.sourceData.slice(0, 5).map((source, i) => (
+                  <div 
+                    key={i} 
+                    className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-bold text-muted-foreground w-5">{i + 1}</span>
+                      <div>
+                        <p className="font-medium text-sm">{source.source}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {source.visitors} visit. • {source.leads} leads
+                        </p>
+                      </div>
+                    </div>
+                    <span className={cn(
+                      "text-xs font-medium px-2 py-1 rounded",
+                      source.conversionRate >= 5 ? "bg-green-100 text-green-700" :
+                      source.conversionRate >= 2 ? "bg-yellow-100 text-yellow-700" :
+                      "bg-red-100 text-red-700"
+                    )}>
+                      {source.conversionRate.toFixed(1)}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
 
 export const DashboardSection = () => {
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: startOfDay(subDays(new Date(), 6)),
+    to: endOfDay(new Date()),
+  });
+
   return (
     <div className="space-y-6">
+      {/* Date Range Filter */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h2 className="text-lg font-semibold">Analytics</h2>
+        <DateRangeFilter value={dateRange} onChange={setDateRange} />
+      </div>
+
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-6">
+        <TabsList className="grid w-full grid-cols-3 mb-6">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Visão Geral</span>
@@ -461,26 +543,18 @@ export const DashboardSection = () => {
             <Mail className="h-4 w-4" />
             <span className="hidden sm:inline">E-mail</span>
           </TabsTrigger>
-          <TabsTrigger value="sources" className="flex items-center gap-2">
-            <Globe className="h-4 w-4" />
-            <span className="hidden sm:inline">Fontes</span>
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
-          <OverviewTab />
+          <OverviewTab dateRange={dateRange} />
         </TabsContent>
 
         <TabsContent value="funnel">
-          <MarketingFunnelSection />
+          <MarketingFunnelSection dateRange={dateRange} />
         </TabsContent>
 
         <TabsContent value="email">
           <EmailPerformanceSection />
-        </TabsContent>
-
-        <TabsContent value="sources">
-          <AttributionSection />
         </TabsContent>
       </Tabs>
     </div>
