@@ -1,306 +1,232 @@
 
-
-# Plano: Redesign da Seção "O que você vai aprender"
+# Plano: Otimizacao Mobile da Pagina Proximo Nivel
 
 ## Resumo
 
-Redesenhar completamente a seção de módulos (linhas 343-438) com:
-1. Novo design visual inspirado na imagem (cards arredondados com ícones coloridos)
-2. Novo conteúdo fornecido pelo usuário (3 módulos com descrições detalhadas)
-3. Manter as cores do design system (branco, azul/cyan, roxo)
+Aplicar otimizacoes especificas para mobile (telas < 768px) na pagina `/proximo-nivel` para:
+1. Eliminar scroll horizontal
+2. Maximizar densidade de informacao acima da dobra
+3. Melhorar areas de toque para botoes
+4. Remover secoes e elementos conforme solicitado
 
 ---
 
-## Novo Conteúdo dos Módulos
+## Alteracoes Detalhadas
 
-### MÓDULO 01 - Inteligência Artificial para Vender Viagens
-**Subtítulo:** Use I.A como uma equipe de vendas trabalhando para você 24 horas por dia.
+### 1. Hero Section (linhas 88-155)
 
-**Bullet points:**
-- Criar anúncios, roteiros, textos e criativos com IA
-- Construir páginas, sistemas e estruturas de venda com IA
-- Atender viajantes no WhatsApp com agentes de IA
-- Operar como se tivesse vários assistentes vendendo por você
+**Remover:**
+- Os 2 botoes CTA da primeira tela em mobile (manter apenas 1 botao compacto para scroll)
 
-**Conclusão:** Com IA é possível ter mais produtividade com menos esforço e mais vendas.
+**Ajustar Mobile:**
 
----
+| Propriedade | Antes | Depois (Mobile) |
+|-------------|-------|-----------------|
+| Padding seção | `py-12` | `py-6 md:py-20` |
+| Container space-y | `space-y-6` | `space-y-3 md:space-y-6` |
+| Badge padding | `px-4 py-2` | `px-3 py-1.5 md:px-4 md:py-2` |
+| Titulo | `text-4xl` | `text-2xl md:text-4xl lg:text-5xl` |
+| Subtitulo | `text-xl md:text-2xl` | `text-base md:text-xl` |
+| Video container | `max-w-sm pt-4` | `max-w-[280px] md:max-w-sm pt-2 md:pt-4` |
+| Texto apoio | `text-lg` / `text-xl` | `text-sm md:text-lg` / `text-base md:text-xl` |
+| Botoes | 2 botoes empilhados | 1 botao unico full-width (VER INVESTIMENTO) |
+| Botao height | `py-6` | `py-3 md:py-6 h-12 md:h-auto` |
 
-### MÓDULO 02 - Onde e Para Quem Vender
-**Subtítulo:** Precisão Máxima, Menos Desperdício com Anúncios
-
-**Descrição:** Públicos que mais compram viagens pra você parar de gastar dinheiro tentando acertar no escuro. Aqui você aprende a anunciar com estratégia reduzindo erros e economizando verba.
-
-**Bullet points:**
-- Como evitar curiosos e focar em quem realmente compra
-- Como reduzir desperdício em Meta, Google e outras plataformas
-- Como anunciar com mais resultado mesmo com orçamento baixo
-- Como jogar o jogo das plataformas sem cair na armadilha de gastar cada vez mais
-
-**Conclusão:** Menos prejuízo. Mais controle. Mais resultado.
-
----
-
-### MÓDULO 03 - Os 3 Pilares da Venda de Viagens
-**Subtítulo:** A estrutura que transforma interesse em confiança, e confiança em vendas, mesmo quando você não está online.
-
-**Bullet points:**
-- Como tornar o viajante seguro para comprar pela internet
-- Como construir uma presença profissional e confiável
-- Como organizar conteúdo, anúncios e atendimento em um único sistema
-- Como fazer sua estrutura trabalhar enquanto você foca nas vendas
-
-**Conclusão:** Vou te dar uma máquina de vendas rodando todos os dias.
-
----
-
-## Design Visual (Baseado na Imagem)
-
-### Estrutura Geral
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│   CONTEÚDO EXCLUSIVO (badge roxo)                                │
-│                                                                  │
-│   O que você vai                                                 │
-│   aprender   (aprender em verde/accent)                          │
-│                                                                  │
-│   Um passo a passo completo do básico ao avançado...            │
-│                                                                  │
-│   ┌─────────────────────────────────────────────────────────┐   │
-│   │  [🤖]  MÓDULO 01                                        │   │
-│   │        Inteligência Artificial para Vender Viagens      │   │
-│   │        ...descrição e bullets...                        │   │
-│   └─────────────────────────────────────────────────────────┘   │
-│                                                                  │
-│   ┌─────────────────────────────────────────────────────────┐   │
-│   │  [🎯]  MÓDULO 02                                        │   │
-│   │        Onde e Para Quem Vender                          │   │
-│   │        ...descrição e bullets...                        │   │
-│   └─────────────────────────────────────────────────────────────┘   │
-│                                                                  │
-│   ┌─────────────────────────────────────────────────────────┐   │
-│   │  [🔑]  MÓDULO 03                                        │   │
-│   │        Os 3 Pilares da Venda de Viagens                 │   │
-│   │        ...descrição e bullets...                        │   │
-│   └─────────────────────────────────────────────────────────┘   │
-└──────────────────────────────────────────────────────────────────┘
-```
-
-### Estilo dos Cards (similar à imagem)
-
-- **Fundo:** Cards brancos com bordas arredondadas (`rounded-2xl`)
-- **Ícone:** Círculo colorido com gradiente (`bg-gradient-to-br from-primary to-accent`) contendo ícone branco
-- **Badge do módulo:** Tag pequena em verde/accent (`bg-accent/10 text-accent`)
-- **Título:** Texto bold preto/foreground
-- **Descrição:** Texto muted-foreground
-- **Bullets:** Ícones check verdes com texto
-
-### Ícones por Módulo
-
-| Módulo | Ícone Lucide | Cor |
-|--------|--------------|-----|
-| 01 - IA | `Bot` ou `Cpu` | primary → accent |
-| 02 - Anúncios | `Target` ou `Megaphone` | primary → accent |
-| 03 - Pilares | `Key` ou `Layers` | primary → accent |
-
----
-
-## Alterações no Código
-
-### 1. Adicionar novos ícones nos imports (linha 5-24)
-
-```typescript
-import { 
-  // ... existentes ...
-  Bot,
-  Key,
-  Layers
-} from "lucide-react";
-```
-
-### 2. Redesenhar a Seção de Módulos (linhas 343-438)
-
-**Novo código:**
-
+**Codigo simplificado dos botoes em mobile:**
 ```tsx
-{/* Modules Section */}
-<section className="py-12 md:py-16 bg-muted/30">
-  <div className="container mx-auto px-4 max-w-4xl">
-    <div className="text-center space-y-6">
-      {/* Badge */}
-      <div className="inline-block">
-        <span className="text-primary text-sm font-semibold uppercase tracking-wider">
-          Conteúdo Exclusivo
-        </span>
-      </div>
-      
-      {/* Title */}
-      <h2 className="text-3xl md:text-4xl font-bold">
-        O que você vai{" "}
-        <span className="text-accent">aprender</span>
-      </h2>
-      
-      <p className="text-muted-foreground max-w-xl mx-auto">
-        Um passo a passo completo do básico ao avançado para acelerar suas vendas.
-      </p>
+{/* CTA Buttons - single button on mobile */}
+<div className="pt-4 md:pt-6">
+  <Button 
+    onClick={scrollToPricing}
+    size="lg"
+    className="w-full md:w-auto bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white text-sm md:text-lg px-6 md:px-8 py-3 md:py-6 h-12 md:h-auto font-bold shadow-lg"
+  >
+    <ArrowDown className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+    VER INVESTIMENTO
+  </Button>
+</div>
+```
 
-      {/* Module Cards */}
-      <div className="grid gap-6 pt-4">
-        
-        {/* Module 1 - IA */}
-        <Card className="text-left border-0 shadow-md bg-card">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0">
-                <Bot className="h-7 w-7 text-white" />
-              </div>
-              <div className="space-y-3">
-                <span className="inline-block px-3 py-1 bg-accent/10 text-accent text-xs font-semibold rounded-full uppercase">
-                  Módulo 01
-                </span>
-                <h3 className="text-xl font-bold">
-                  Inteligência Artificial para Vender Viagens Todos os Dias
-                </h3>
-                <p className="text-muted-foreground">
-                  Use I.A como uma equipe de vendas trabalhando para você 24 horas por dia.
-                </p>
-                <ul className="space-y-2 pt-2">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Criar anúncios, roteiros, textos e criativos com IA</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Construir páginas, sistemas e estruturas de venda com IA</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Atender viajantes no WhatsApp com agentes de IA</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Operar como se tivesse vários assistentes vendendo por você</span>
-                  </li>
-                </ul>
-                <p className="text-sm font-medium text-primary pt-2">
-                  Com IA é possível ter mais produtividade com menos esforço e mais vendas.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+---
 
-        {/* Module 2 - Anúncios */}
-        <Card className="text-left border-0 shadow-md bg-card">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0">
-                <Target className="h-7 w-7 text-white" />
-              </div>
-              <div className="space-y-3">
-                <span className="inline-block px-3 py-1 bg-accent/10 text-accent text-xs font-semibold rounded-full uppercase">
-                  Módulo 02
-                </span>
-                <h3 className="text-xl font-bold">
-                  Onde e Para Quem Vender: Precisão Máxima, Menos Desperdício
-                </h3>
-                <p className="text-muted-foreground">
-                  Públicos que mais compram viagens pra você parar de gastar dinheiro tentando acertar no escuro. Aqui você aprende a anunciar com estratégia reduzindo erros e economizando verba.
-                </p>
-                <ul className="space-y-2 pt-2">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Como evitar curiosos e focar em quem realmente compra</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Como reduzir desperdício em Meta, Google e outras plataformas</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Como anunciar com mais resultado mesmo com orçamento baixo</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Como jogar o jogo das plataformas sem cair na armadilha de gastar cada vez mais</span>
-                  </li>
-                </ul>
-                <p className="text-sm font-medium text-primary pt-2">
-                  Menos prejuízo. Mais controle. Mais resultado.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+### 2. Problem Section (linhas 157-212)
 
-        {/* Module 3 - Pilares */}
-        <Card className="text-left border-0 shadow-md bg-card">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0">
-                <Key className="h-7 w-7 text-white" />
-              </div>
-              <div className="space-y-3">
-                <span className="inline-block px-3 py-1 bg-accent/10 text-accent text-xs font-semibold rounded-full uppercase">
-                  Módulo 03
-                </span>
-                <h3 className="text-xl font-bold">
-                  Os 3 Pilares da Venda de Viagens no Piloto Automático
-                </h3>
-                <p className="text-muted-foreground">
-                  A estrutura que transforma interesse em confiança, e confiança em vendas, mesmo quando você não está online.
-                </p>
-                <ul className="space-y-2 pt-2">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Como tornar o viajante seguro para comprar pela internet</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Como construir uma presença profissional e confiável</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Como organizar conteúdo, anúncios e atendimento em um único sistema</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Como fazer sua estrutura trabalhar enquanto você foca nas vendas</span>
-                  </li>
-                </ul>
-                <p className="text-sm font-medium text-primary pt-2">
-                  Vou te dar uma máquina de vendas rodando todos os dias.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+**Ajustar Mobile:**
 
-      </div>
-    </div>
-  </div>
+| Propriedade | Antes | Depois (Mobile) |
+|-------------|-------|-----------------|
+| Padding seção | `py-12` | `py-8 md:py-12` |
+| Icone header | `h-8 w-8` | `h-6 w-6 md:h-8 md:w-8` |
+| Titulo h2 | `text-2xl md:text-3xl` | `text-lg md:text-2xl` |
+| Subtitulo | `text-xl md:text-2xl` | `text-base md:text-xl` |
+| Grid cards | `gap-4` | `gap-3 md:gap-4` |
+| Card padding | `p-6` | `p-4 md:p-6` |
+| Texto items | padrao | `text-sm md:text-base` |
+
+---
+
+### 3. Solution Section (linhas 214-245)
+
+**Ajustar Mobile:**
+
+| Propriedade | Antes | Depois (Mobile) |
+|-------------|-------|-----------------|
+| Padding seção | `py-12 md:py-16` | `py-8 md:py-16` |
+| Icone header | `h-8 w-8` | `h-6 w-6 md:h-8 md:w-8` |
+| Titulo h2 | `text-2xl md:text-3xl` | `text-lg md:text-2xl` |
+| Texto apoio | `text-lg` | `text-sm md:text-lg` |
+| Badges | `px-4 py-2` | `px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm` |
+
+---
+
+### 4. Simple Idea Section (linhas 247-300) - REMOVER EM MOBILE
+
+**Acao:** Remover completamente a secao "A IDEIA E SIMPLES" que contem os 3 cards (O que postar, Que tipo de video, Como anunciar).
+
+**Implementacao:**
+```tsx
+{/* Simple Idea Section - Hidden on mobile */}
+<section className="hidden md:block py-12 bg-gradient-to-br from-primary/5 to-accent/5">
+  {/* ... conteudo existente ... */}
 </section>
 ```
 
 ---
 
-## Resumo das Mudanças
+### 5. Fast Section (linhas 302-343)
 
-| Item | Alteração |
-|------|-----------|
-| **Imports** | Adicionar `Bot`, `Key` |
-| **Título** | "O que você vai **aprender**" com "aprender" em accent (cyan) |
-| **Badge** | "CONTEÚDO EXCLUSIVO" em roxo |
-| **Cards** | Novo design com ícones em círculos gradiente, badges de módulo, bullets com check cyan |
-| **Conteúdo** | Novos textos conforme fornecido pelo usuário |
-| **Cores** | Primary (roxo), Accent (cyan), checks em accent |
+**Ajustar Mobile:**
+
+| Propriedade | Antes | Depois (Mobile) |
+|-------------|-------|-----------------|
+| Padding seção | `py-12 md:py-16` | `py-8 md:py-16` |
+| Icone header | `h-8 w-8` | `h-6 w-6 md:h-8 md:w-8` |
+| Titulo h2 | `text-2xl md:text-3xl` | `text-lg md:text-2xl` |
+| Texto apoio | `text-lg` | `text-sm md:text-lg` |
+| Grid icons | `gap-6` | `gap-3 md:gap-6` |
+| Circulos icons | `w-16 h-16` | `w-12 h-12 md:w-16 md:h-16` |
+| Icones internos | `h-8 w-8` | `h-5 w-5 md:h-8 md:w-8` |
+| Labels | padrao | `text-sm md:text-base` |
+
+---
+
+### 6. Modules Section (linhas 345-501)
+
+**Ajustar Mobile:**
+
+| Propriedade | Antes | Depois (Mobile) |
+|-------------|-------|-----------------|
+| Padding seção | `py-12 md:py-16` | `py-8 md:py-16` |
+| Titulo | `text-3xl md:text-4xl` | `text-xl md:text-3xl` |
+| Subtitulo | padrao | `text-sm md:text-base` |
+| Grid gap | `gap-6` | `gap-4 md:gap-6` |
+| Card padding | `p-6` | `p-4 md:p-6` |
+| Icon container | `w-14 h-14` | `w-10 h-10 md:w-14 md:h-14` |
+| Icon interno | `h-7 w-7` | `h-5 w-5 md:h-7 md:w-7` |
+| Titulo modulo | `text-xl` | `text-base md:text-xl` |
+| Descricao | padrao | `text-sm` |
+| Bullet text | `text-sm` | `text-xs md:text-sm` |
+| Bullet spacing | `space-y-2` | `space-y-1.5 md:space-y-2` |
+
+---
+
+### 7. Who is it for Section (linhas 503-527)
+
+**Ajustar Mobile:**
+
+| Propriedade | Antes | Depois (Mobile) |
+|-------------|-------|-----------------|
+| Padding seção | `py-12 md:py-16` | `py-8 md:py-16` |
+| Titulo | `text-2xl md:text-3xl` | `text-lg md:text-2xl` |
+| Container cards | `gap-8` | `gap-4 md:gap-8` |
+| Card padding | `p-6` | `p-4 md:p-6` |
+| Icon container | `w-16 h-16` | `w-12 h-12 md:w-16 md:h-16` |
+| Icon interno | `h-8 w-8` | `h-6 w-6 md:h-8 md:w-8` |
+| Labels | padrao | `text-sm md:text-base` |
+
+---
+
+### 8. Pricing Section (linhas 529-568)
+
+**Ajustar Mobile:**
+
+| Propriedade | Antes | Depois (Mobile) |
+|-------------|-------|-----------------|
+| Padding seção | `py-16 md:py-24` | `py-10 md:py-24` |
+| Container | `max-w-md` | `max-w-[95%] md:max-w-md` |
+| Card padding | `p-8` | `p-5 md:p-8` |
+| Space-y interno | `space-y-6` | `space-y-4 md:space-y-6` |
+| Titulo | `text-2xl md:text-3xl` | `text-xl md:text-2xl` |
+| Preco | `text-5xl md:text-6xl` | `text-4xl md:text-5xl` |
+| Botao | `text-lg py-6` | `text-base md:text-lg py-4 md:py-6` |
+
+**CountdownTimer ajustes:**
+```tsx
+<span className="bg-muted/20 text-white px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-mono text-base md:text-lg font-bold">
+```
+
+---
+
+### 9. Final CTA Section (linhas 570-588)
+
+**Ajustar Mobile:**
+
+| Propriedade | Antes | Depois (Mobile) |
+|-------------|-------|-----------------|
+| Padding seção | `py-12 md:py-16` | `py-8 md:py-16` |
+| Titulo | `text-2xl md:text-3xl` | `text-lg md:text-2xl` |
+| Texto apoio | `text-lg` | `text-sm md:text-lg` |
+| Botao | `text-lg px-8 py-6` | `w-full md:w-auto text-sm md:text-lg px-6 md:px-8 py-3 md:py-6` |
+
+---
+
+## Resumo Visual das Mudancas Mobile
+
+```
+ANTES (Mobile)                    DEPOIS (Mobile)
+┌─────────────────────┐           ┌─────────────────────┐
+│  [badge grande]     │           │ [badge compacto]    │
+│                     │           │ AGENTE LUCRATIVO    │
+│ AGENTE LUCRATIVO®   │           │ [texto menor]       │
+│ [texto grande]      │           │ ┌─────────────────┐ │
+│ ┌─────────────────┐ │           │ │    VIDEO        │ │
+│ │                 │ │           │ │   (menor)       │ │
+│ │    VIDEO        │ │           │ └─────────────────┘ │
+│ │                 │ │           │ [texto compacto]    │
+│ └─────────────────┘ │           │ [1 BOTAO FULL]      │
+│ [texto grande]      │           └─────────────────────┘
+│ [BOTAO 1]           │           ↓ scroll
+│ [BOTAO 2]           │           ┌─────────────────────┐
+└─────────────────────┘           │ PROBLEMA (compacto) │
+↓ muito scroll                    │ cards menores       │
+┌─────────────────────┐           └─────────────────────┘
+│ PROBLEMA            │           ↓
+│ ...                 │           (SEM secao IDEIA)
+└─────────────────────┘           ↓
+↓                                 ┌─────────────────────┐
+┌─────────────────────┐           │ MODULOS compactos   │
+│ IDEIA (3 cards)     │           └─────────────────────┘
+└─────────────────────┘           ↓
+↓                                 ┌─────────────────────┐
+...                               │ PRICING (full-width)│
+                                  └─────────────────────┘
+```
 
 ---
 
 ## Arquivo a Modificar
 
-| Arquivo | Ação |
+| Arquivo | Acao |
 |---------|------|
-| `src/pages/ProximoNivel.tsx` | **MODIFICAR** - Atualizar imports e redesenhar seção de módulos (linhas 5-24 e 343-438) |
+| `src/pages/ProximoNivel.tsx` | MODIFICAR - Aplicar classes responsivas e ocultar secao "Ideia e Simples" em mobile |
 
+---
+
+## Criterios de Sucesso
+
+- Sem scroll horizontal em nenhum elemento
+- CTA visivel acima da dobra ou com 1-2 scrolls maximos
+- Botoes com area de toque adequada (min 44x44px)
+- Tipografia legivel sem quebras feias
+- Secao "A ideia e simples" removida em mobile
+- Apenas 1 botao no hero em mobile
