@@ -1,105 +1,140 @@
 
-## O que está acontecendo (explicação simples)
+# Plano: Proteger Área de Gestão e Corrigir Dashboard
 
-- A “pasta de gestão” que você usava é uma **página interna** do app chamada **Gestão**, acessível pela URL: **/gestao**.
-- Ela é “secreta” no sentido de que **não aparece no menu para usuários comuns** e tem **proteção**:
-  1) Você precisa estar **logado**  
-  2) Seu usuário precisa ter permissão de **administrador** no backend  
-- Quando você tenta entrar e cai na Home, isso acontece porque o app está entendendo (mesmo que por poucos instantes) que você **não é admin** — e te redireciona.
+## Resumo das Correções
 
-## Onde está a página de Gestão hoje
+Vou fazer 3 correções principais:
+1. **Remover links visíveis** da área de gestão do site - mantendo acesso 100% secreto via URL direta
+2. **Corrigir Edge Function** do Stripe Dashboard que está falhando
+3. **Melhorar Dashboard** com mais métricas e tudo em português
 
-- **Página principal de gestão**: `/gestao` (painel com abas: Dashboard, Conteúdo, Importar, Notas, Preview, Histórico, Usuários)
-- **Login administrativo (email + senha)**: `/admin-login`
+---
 
-Hoje, o app **não tem um botão visível** no menu para te levar até `/gestao`, e isso torna “difícil de achar”.
+## 1. Remover Links Visíveis da Área de Gestão
 
-## Por que você está sendo redirecionado para a página inicial
+### O que será removido:
 
-No arquivo `src/pages/Gestao.tsx`, a regra atual é:
+**Arquivo: `src/components/Header.tsx`**
+- Remover o link "Gestão" do menu desktop (linhas 143-153)
+- Remover o link "Gestão" do menu mobile (linhas 220-231)
+- Remover import do `useIsAdmin` que não será mais necessário aqui
 
-- Se não estiver logado → vai para `/admin-login`
-- Se estiver logado mas **isAdmin** vier como `false` → vai para `/` (Home)
+**Arquivo: `src/pages/Auth.tsx`**
+- Remover o link "Acesso administrativo" que adicionamos (linhas 275-283)
 
-O problema: o `isAdmin` é carregado de forma assíncrona (leva alguns instantes para confirmar no backend). Nesse intervalo, ele começa como `false`, e a página **redireciona cedo demais**.
+### Como você vai acessar a gestão:
+- Acessar diretamente a URL: `/admin-login`
+- Fazer login com seu email e senha única: `rickbread`
+- Após login, acessar `/gestao`
 
-Isso explica exatamente o seu sintoma: “eu clico e volto para a home”.
+A proteção continua funcionando:
+- Backend valida role `admin` na tabela `user_roles`
+- Só você (lucashenriquephd@gmail.com) tem essa permissão
+- Nenhum usuário comum consegue ver ou acessar essa área
 
-## Como essa “página secreta” foi criada e protegida (bem direto)
+---
 
-### 1) Ela foi criada como rota do app
-Em `src/App.tsx` existe:
-- `<Route path="/gestao" element={<Gestao />} />`
+## 2. Corrigir Edge Function Stripe Dashboard
 
-### 2) A proteção funciona em 2 camadas
-1) **Na interface (frontend)**: a página `/gestao` faz checagens e redireciona se não for admin.  
-2) **No backend (o mais importante)**: as tabelas usadas pela gestão (conteúdos, legendas, ferramentas, etc.) têm regras de segurança por função (admin) e não deixam um usuário comum “editar” mesmo que ele tente forçar a interface.
+### Problema atual:
+O erro `Deno.core.runMicrotasks() is not supported` ocorre porque a biblioteca Stripe está usando uma versão incompatível com o ambiente Deno do Lovable Cloud.
 
-## O que vou implementar para resolver e deixar fácil de acessar
+### Solução:
 
-### A) Corrigir o acesso à `/gestao` (parar o redirecionamento “cedo demais”)
-Objetivo: quando você abrir `/gestao`, ela deve:
-- Mostrar um carregamento curto (“Verificando permissões…”)
-- Só depois decidir:
-  - Admin → entra
-  - Não-admin → não entra
+**Arquivo: `supabase/functions/stripe-dashboard/index.ts`**
 
-Implementação (opção mais segura e simples):
-- Em `src/pages/Gestao.tsx`, trocar a checagem `isAdmin` do `AuthContext` por uma checagem que já tem estado de carregamento (`useIsAdmin()`), igual o `AdminLayout` faz.
-- Enquanto estiver carregando, mostrar spinner (ao invés de redirecionar).
+```text
+ANTES (linha 3):
+import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 
-Resultado esperado:
-- Você não será mais jogado para a Home enquanto o status de admin está sendo verificado.
+DEPOIS:
+import Stripe from "https://esm.sh/stripe@14.21.0";
+```
 
-### B) Criar um acesso “simples e fácil” no menu (só aparece para admin)
-Objetivo: você não precisar lembrar URL.
+Remover o `?target=deno` resolve o problema de compatibilidade.
 
-Implementação:
-- Em `src/components/Header.tsx`, adicionar um item “Gestão” apontando para `/gestao`:
-  - Desktop: na barra do topo
-  - Mobile: dentro do menu lateral
-- Esse item só aparece quando o usuário for admin.
+---
 
-Resultado esperado:
-- Logou como admin → aparece “Gestão” no menu → 1 clique.
+## 3. Melhorar Dashboard com Mais Métricas
 
-### C) Adicionar atalho na tela de login comum para admins
-Objetivo: se você estiver na tela `/auth` (login normal por link no email), você enxergar um link “Acesso administrativo”.
+### Novos KPIs que serão adicionados:
 
-Implementação:
-- Em `src/pages/Auth.tsx`, incluir um link discreto tipo:
-  - “Acesso administrativo” → leva para `/admin-login`
+| Métrica | Descrição |
+|---------|-----------|
+| Total de Clientes | Clientes únicos no Stripe |
+| Ticket Médio | Valor médio por assinatura |
+| Taxa de Conversão | % de visitantes que assinaram |
+| LTV Estimado | Lifetime Value baseado no churn |
+| Receita Total | Faturamento acumulado |
+| Cancelamentos | Assinaturas canceladas no mês |
 
-Resultado esperado:
-- Você encontra o login admin sem precisar “caçar”.
+### Labels em Português (já existentes, vou manter):
+- MRR → Receita Recorrente Mensal
+- Assinantes Ativos
+- Churn Rate → Taxa de Cancelamento
+- Fat. Mensal → Faturamento Mensal
+- Crescimento
 
-### (Opcional) D) Criar um caminho único “/dashboard” que sempre te leva ao lugar certo
-Se você quiser algo ainda mais simples:
-- Criar rota `/dashboard` que:
-  - Se admin → manda para `/gestao`
-  - Se não logado → manda para `/admin-login`
-  - Se logado sem permissão → manda para `/` (ou mostra aviso)
+### Melhorias no Dashboard UI:
 
-Eu posso incluir isso para virar seu “atalho oficial”.
+**Arquivo: `src/components/gestao/DashboardSection.tsx`**
 
-## Checklist de testes (eu vou validar após implementar)
+1. Adicionar novos cards de KPI:
+   - Total de Clientes
+   - Cancelamentos do Mês
+   - LTV Estimado
+   - Receita Total (acumulada)
 
-1) Deslogado → abrir `/gestao` → redireciona para `/admin-login`
-2) Logado como admin → abrir `/gestao` → entra (sem cair na Home)
-3) Logado como não-admin → abrir `/gestao` → bloqueia corretamente
-4) Menu (desktop e mobile):
-   - Admin vê “Gestão”
-   - Usuário comum não vê
-5) Login comum (`/auth`) mostra link “Acesso administrativo” → `/admin-login`
+2. Traduzir labels restantes para português:
+   - "Page Views" → "Visualizações de Página"
+   - "Churn Rate" → "Taxa de Cancelamento"
 
-## Observação importante (para você conseguir usar já)
-Mesmo antes das melhorias de menu, o caminho correto é:
-- entrar em **/admin-login** → fazer login → ir para **/gestao**  
-O que está quebrando hoje é só o “timing” do carregamento do admin; vou corrigir isso na etapa A.
+3. Adicionar seção de conversões:
+   - Mostrar eventos do Meta Pixel (se disponíveis)
+   - Funil: Visitantes → Leads → Assinantes
 
-## Arquivos que serão alterados
+### Dados adicionais da Edge Function:
 
-- `src/pages/Gestao.tsx` (corrigir timing do gate de admin)
-- `src/components/Header.tsx` (adicionar link “Gestão” para admin no topo e no menu mobile)
-- `src/pages/Auth.tsx` (adicionar link “Acesso administrativo”)
-- (Opcional) `src/App.tsx` (adicionar rota `/dashboard`)
+**Arquivo: `supabase/functions/stripe-dashboard/index.ts`**
+
+Adicionar no retorno:
+```typescript
+{
+  // Existentes...
+  mrr,
+  activeSubscribers,
+  churnRate,
+  
+  // NOVOS
+  totalRevenue: // soma de todas as invoices pagas
+  averageTicket: // mrr / assinantes ativos
+  estimatedLTV: // mrr * (1 / churnRate em decimal)
+  monthlyChurns: // cancelamentos no mês atual
+  trialingCount: // assinaturas em trial
+}
+```
+
+---
+
+## Arquivos a Modificar
+
+| Arquivo | Ação |
+|---------|------|
+| `src/components/Header.tsx` | Remover links de Gestão (desktop e mobile) |
+| `src/pages/Auth.tsx` | Remover link "Acesso administrativo" |
+| `supabase/functions/stripe-dashboard/index.ts` | Corrigir import Stripe + adicionar métricas |
+| `src/components/gestao/DashboardSection.tsx` | Adicionar novos KPIs + traduzir labels |
+| `src/hooks/useStripeDashboard.ts` | Atualizar interface com novos campos |
+
+---
+
+## Resultado Esperado
+
+1. **Segurança**: Nenhum link visível para a área de gestão - acesso apenas via URL direta `/admin-login`
+2. **Dashboard Funcional**: Edge function corrigida, dados do Stripe carregando corretamente
+3. **Mais Métricas**: 
+   - Total de clientes
+   - LTV estimado
+   - Taxa de cancelamento detalhada
+   - Receita total acumulada
+4. **100% Português**: Todos os labels traduzidos
