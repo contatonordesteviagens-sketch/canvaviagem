@@ -40,9 +40,6 @@ const socialLinks = [
 const quickLinks = [
   { name: "Início", to: "/" },
   { name: "Calendário", to: "/calendar" },
-  { name: "Planos", to: "/planos" },
-  { name: "Modelos", to: "/#artes" },
-  { name: "Contato", to: "mailto:contato@canvaviagem.com", external: true },
 ];
 
 export const Footer = () => {
@@ -74,25 +71,15 @@ export const Footer = () => {
               Links Rápidos
             </h4>
             <nav className="flex flex-col items-center md:items-start gap-2">
-              {quickLinks.map((link) =>
-                link.external ? (
-                  <a
-                    key={link.name}
-                    href={link.to}
-                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
-                  >
-                    {link.name}
-                  </a>
-                ) : (
-                  <Link
-                    key={link.name}
-                    to={link.to}
-                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
-                  >
-                    {link.name}
-                  </Link>
-                )
-              )}
+              {quickLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.to}
+                  className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                >
+                  {link.name}
+                </Link>
+              ))}
             </nav>
           </div>
 

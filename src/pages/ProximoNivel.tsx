@@ -24,52 +24,8 @@ import {
   Bot,
   Key
 } from "lucide-react";
-import { useState, useEffect } from "react";
-
 const HOTMART_CHECKOUT_URL = "https://pay.hotmart.com/X100779687E?checkoutMode=10";
 const YOUTUBE_VIDEO_ID = "0uPJm4FNRfI";
-
-// Countdown Timer Component
-const CountdownTimer = () => {
-  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 15, seconds: 0 });
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        const totalSeconds = prev.hours * 3600 + prev.minutes * 60 + prev.seconds - 1;
-        if (totalSeconds <= 0) {
-          return { hours: 0, minutes: 15, seconds: 0 }; // Reset timer
-        }
-        return {
-          hours: Math.floor(totalSeconds / 3600),
-          minutes: Math.floor((totalSeconds % 3600) / 60),
-          seconds: totalSeconds % 60
-        };
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div className="flex items-center justify-center gap-2 md:gap-3">
-      <div className="flex items-center gap-1">
-        <span className="bg-muted/20 text-white px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-mono text-base md:text-lg font-bold">
-          {String(timeLeft.hours).padStart(2, '0')}
-        </span>
-        <span className="text-muted-foreground">:</span>
-        <span className="bg-muted/20 text-white px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-mono text-base md:text-lg font-bold">
-          {String(timeLeft.minutes).padStart(2, '0')}
-        </span>
-        <span className="text-muted-foreground">:</span>
-        <span className="bg-muted/20 text-white px-2 md:px-3 py-1.5 md:py-2 rounded-lg font-mono text-base md:text-lg font-bold">
-          {String(timeLeft.seconds).padStart(2, '0')}
-        </span>
-      </div>
-      <span className="text-accent text-[10px] md:text-xs font-semibold uppercase tracking-wider">Oferta expira em</span>
-    </div>
-  );
-};
 
 const ProximoNivel = () => {
   const handleCTAClick = () => {
@@ -521,9 +477,6 @@ const ProximoNivel = () => {
           <div className="container mx-auto px-4 max-w-[95%] md:max-w-md">
             <Card className="bg-gradient-to-br from-[hsl(220,20%,15%)] to-[hsl(220,20%,10%)] border-0 shadow-2xl overflow-hidden">
               <CardContent className="p-5 md:p-8 text-center space-y-4 md:space-y-6">
-                {/* Countdown Timer */}
-                <CountdownTimer />
-                
                 <h3 className="text-xl md:text-2xl font-bold text-white">
                   Garante a sua vaga agora
                 </h3>
