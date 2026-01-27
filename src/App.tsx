@@ -25,6 +25,7 @@ import Marketing from "./pages/admin/Marketing";
 import Termos from "./pages/Termos";
 import Privacidade from "./pages/Privacidade";
 import ProximoNivel from "./pages/ProximoNivel";
+import AuthVerify from "./pages/AuthVerify";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/verify" element={<AuthVerify />} />
             <Route path="/planos" element={<Planos />} />
             <Route path="/sucesso" element={<Sucesso />} />
             <Route path="/obrigado" element={<Obrigado />} />

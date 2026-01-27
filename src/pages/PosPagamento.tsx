@@ -44,20 +44,18 @@ const PosPagamento = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-        },
+      const { data, error } = await supabase.functions.invoke("send-magic-link", {
+        body: { email: email.toLowerCase().trim() },
       });
 
-      if (error) {
-        if (error.message.includes("rate limit")) {
+      if (error || !data?.success) {
+        const errorMsg = data?.error || error?.message || "Erro ao enviar link";
+        if (errorMsg.includes("rate limit") || errorMsg.includes("muitas tentativas")) {
           toast.error("Muitas tentativas. Aguarde alguns minutos.");
         } else {
-          toast.error("Erro ao enviar link. Tente novamente.");
+          toast.error(errorMsg);
         }
-        console.error("Magic link error:", error);
+        console.error("Magic link error:", error || data?.error);
         return;
       }
 
@@ -76,15 +74,12 @@ const PosPagamento = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-        },
+      const { data, error } = await supabase.functions.invoke("send-magic-link", {
+        body: { email: email.toLowerCase().trim() },
       });
 
-      if (error) {
-        toast.error("Erro ao reenviar link.");
+      if (error || !data?.success) {
+        toast.error(data?.error || "Erro ao reenviar link.");
         return;
       }
 
