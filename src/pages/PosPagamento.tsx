@@ -3,10 +3,11 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle, Mail, Loader2, ArrowRight, MessageCircle, Sparkles, RefreshCw, CreditCard } from "lucide-react";
+import { CheckCircle, Mail, Loader2, ArrowRight, MessageCircle, Sparkles, RefreshCw, CreditCard, Phone } from "lucide-react";
 import { trackPurchase, trackSubscribe } from "@/lib/meta-pixel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { formatPhoneBR, cleanPhone, isValidBRPhone } from "@/lib/phone-utils";
 
 const PosPagamento = () => {
   const navigate = useNavigate();
@@ -15,7 +16,9 @@ const PosPagamento = () => {
   const nameFromUrl = searchParams.get('name');
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingWhatsApp, setIsLoadingWhatsApp] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   // Auto-fill name and email from URL parameters
@@ -38,6 +41,11 @@ const PosPagamento = () => {
     console.log('[Meta Debug] Purchase & Subscribe events dispatched (R$ 9,90)');
   }, []);
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneBR(e.target.value);
+    setPhone(formatted);
+  };
+
   const handleSendMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -51,11 +59,21 @@ const PosPagamento = () => {
       return;
     }
 
+    // Validate phone if provided
+    if (phone && !isValidBRPhone(phone)) {
+      toast.error("Telefone inválido. Use DDD + número.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const { data, error } = await supabase.functions.invoke("send-magic-link", {
-        body: { email: email.toLowerCase().trim(), name: name.trim() },
+        body: { 
+          email: email.toLowerCase().trim(), 
+          name: name.trim(),
+          phone: phone ? cleanPhone(phone) : null
+        },
       });
 
       if (error || !data?.success) {
@@ -79,13 +97,66 @@ const PosPagamento = () => {
     }
   };
 
+  const handleWhatsAppAccess = async () => {
+    if (!name.trim()) {
+      toast.error("Por favor, insira seu nome.");
+      return;
+    }
+    
+    if (!email) {
+      toast.error("Por favor, insira seu email.");
+      return;
+    }
+
+    if (!phone) {
+      toast.error("Por favor, insira seu WhatsApp.");
+      return;
+    }
+    
+    if (!isValidBRPhone(phone)) {
+      toast.error("Telefone inválido. Use DDD + número (10-11 dígitos).");
+      return;
+    }
+
+    setIsLoadingWhatsApp(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("trigger-zaia-welcome", {
+        body: { 
+          email: email.toLowerCase().trim(), 
+          name: name.trim(),
+          phone: cleanPhone(phone)
+        },
+      });
+
+      if (error || !data?.success) {
+        toast.error(data?.error || "Erro ao acionar WhatsApp.");
+        console.error("WhatsApp error:", error || data?.error);
+        return;
+      }
+
+      // Open WhatsApp
+      window.open(data.whatsappUrl, "_blank");
+      toast.success("WhatsApp aberto! Aguarde a mensagem.");
+    } catch (error) {
+      console.error("Error triggering WhatsApp:", error);
+      toast.error("Erro ao processar. Tente novamente.");
+    } finally {
+      setIsLoadingWhatsApp(false);
+    }
+  };
+
   const handleResendLink = async () => {
     setMagicLinkSent(false);
     setIsLoading(true);
 
     try {
       const { data, error } = await supabase.functions.invoke("send-magic-link", {
-        body: { email: email.toLowerCase().trim(), name: name.trim() },
+        body: { 
+          email: email.toLowerCase().trim(), 
+          name: name.trim(),
+          phone: phone ? cleanPhone(phone) : null
+        },
       });
 
       if (error || !data?.success) {
@@ -122,7 +193,7 @@ const PosPagamento = () => {
               <Sparkles className="h-6 w-6" />
             </h1>
             <p className="text-xl text-foreground">
-              Agora digite o e-mail usado na compra para receber seu link de acesso
+              Preencha seus dados para receber seu acesso
             </p>
           </div>
 
@@ -133,7 +204,7 @@ const PosPagamento = () => {
               <div className="text-left">
                 <p className="font-semibold text-green-800 dark:text-green-200">Libere Seu Acesso</p>
                 <p className="text-sm text-green-700 dark:text-green-300">
-                  Preencha abaixo e envie o e-mail para liberar automaticamente seu acesso.
+                  Escolha receber por e-mail ou WhatsApp.
                 </p>
               </div>
             </div>
@@ -150,14 +221,15 @@ const PosPagamento = () => {
                   Use <strong>exatamente o mesmo e-mail</strong> que você usou para fazer o pagamento:
                 </p>
               </div>
-              <form onSubmit={handleSendMagicLink} className="space-y-3">
+              
+              <div className="space-y-3">
                 <Input
                   type="text"
                   placeholder="Seu nome"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || isLoadingWhatsApp}
                   className="text-center text-lg h-12 border-primary/30 focus:border-primary"
                 />
                 <Input
@@ -166,28 +238,72 @@ const PosPagamento = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || isLoadingWhatsApp}
                   className="text-center text-lg h-12 border-primary/30 focus:border-primary"
                 />
-                <Button
-                  type="submit" 
-                  className="w-full h-12 text-base" 
-                  size="lg"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Enviando...
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="mr-2 h-5 w-5" />
-                      Enviar Link de Acesso
-                    </>
-                  )}
-                </Button>
-              </form>
+                <Input
+                  type="tel"
+                  placeholder="(85) 98641-1294 (opcional)"
+                  value={phone}
+                  onChange={handlePhoneChange}
+                  disabled={isLoading || isLoadingWhatsApp}
+                  className="text-center text-lg h-12 border-primary/30 focus:border-primary"
+                />
+              </div>
+
+              {/* Email Button */}
+              <Button
+                onClick={handleSendMagicLink} 
+                className="w-full h-12 text-base" 
+                size="lg"
+                disabled={isLoading || isLoadingWhatsApp}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="mr-2 h-5 w-5" />
+                    Enviar Link por E-mail
+                  </>
+                )}
+              </Button>
+
+              {/* Separator */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-muted"></div>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-primary/5 px-2 text-muted-foreground">ou</span>
+                </div>
+              </div>
+
+              {/* WhatsApp Button */}
+              <Button
+                onClick={handleWhatsAppAccess}
+                variant="outline"
+                className="w-full h-12 text-base border-green-500 text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950/30"
+                size="lg"
+                disabled={isLoading || isLoadingWhatsApp}
+              >
+                {isLoadingWhatsApp ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Abrindo WhatsApp...
+                  </>
+                ) : (
+                  <>
+                    <Phone className="mr-2 h-5 w-5" />
+                    Receber no WhatsApp
+                  </>
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Fale com nossa IA e receba o link de acesso no WhatsApp
+              </p>
             </div>
           ) : (
             <div className="space-y-4">

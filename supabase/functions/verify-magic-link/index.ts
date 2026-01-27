@@ -73,6 +73,7 @@ serve(async (req) => {
 
     const email = tokenData.email;
     const userName = tokenData.name;
+    const userPhone = tokenData.phone;
 
     // Verificar se o usuário existe
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
@@ -85,11 +86,15 @@ serve(async (req) => {
     if (existingUser) {
       userId = existingUser.id;
       
-      // Atualizar nome no perfil se fornecido
-      if (userName) {
+      // Atualizar nome e telefone no perfil se fornecidos
+      const profileUpdates: Record<string, string> = {};
+      if (userName) profileUpdates.name = userName;
+      if (userPhone) profileUpdates.phone = userPhone;
+      
+      if (Object.keys(profileUpdates).length > 0) {
         await supabaseAdmin
           .from("profiles")
-          .update({ name: userName })
+          .update(profileUpdates)
           .eq("user_id", userId);
       }
     } else {
@@ -109,13 +114,17 @@ serve(async (req) => {
 
       userId = newUser.user.id;
       
-      // Salvar nome no perfil do novo usuário
-      if (userName) {
+      // Salvar nome e telefone no perfil do novo usuário
+      const newProfileUpdates: Record<string, string> = {};
+      if (userName) newProfileUpdates.name = userName;
+      if (userPhone) newProfileUpdates.phone = userPhone;
+      
+      if (Object.keys(newProfileUpdates).length > 0) {
         // Aguardar um momento para o trigger criar o perfil
         await new Promise(resolve => setTimeout(resolve, 500));
         await supabaseAdmin
           .from("profiles")
-          .update({ name: userName })
+          .update(newProfileUpdates)
           .eq("user_id", userId);
       }
     }
