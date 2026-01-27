@@ -22,6 +22,7 @@ import CaptionsManager from "./pages/admin/CaptionsManager";
 import ToolsManager from "./pages/admin/ToolsManager";
 import Termos from "./pages/Termos";
 import Privacidade from "./pages/Privacidade";
+import ProximoNivel from "./pages/ProximoNivel";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/gestao" element={<Gestao />} />
             <Route path="/termos" element={<Termos />} />
             <Route path="/privacidade" element={<Privacidade />} />
+            <Route path="/proximo-nivel" element={<ProximoNivel />} />
             <Route path="/admin-login" element={<AdminLogin />} />
             
             {/* Admin Routes */}

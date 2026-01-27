@@ -11,9 +11,17 @@ import { toast } from "sonner";
 const PosPagamento = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const emailFromUrl = searchParams.get('email');
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+
+  // Auto-fill email from URL parameter
+  useEffect(() => {
+    if (emailFromUrl) {
+      setEmail(decodeURIComponent(emailFromUrl));
+    }
+  }, [emailFromUrl]);
 
   useEffect(() => {
     // Debug: verificar se o Pixel está carregado
@@ -109,18 +117,7 @@ const PosPagamento = () => {
               <Sparkles className="h-6 w-6" />
             </h1>
             <p className="text-xl text-foreground">
-              Sua assinatura foi ativada com sucesso!
-            </p>
-          </div>
-
-          {/* Info Box */}
-          <div className="bg-primary/10 rounded-xl p-6 space-y-3">
-            <div className="flex items-center justify-center gap-2 text-primary font-semibold">
-              <Mail className="h-5 w-5" />
-              <span>Verifique seu email</span>
-            </div>
-            <p className="text-muted-foreground text-sm">
-              Enviamos um email de boas-vindas com as instruções de acesso para o email usado na compra.
+              Agora digite o e-mail usado na compra para receber seu link de acesso
             </p>
           </div>
 
@@ -139,10 +136,15 @@ const PosPagamento = () => {
 
           {/* Magic Link Form */}
           {!magicLinkSent ? (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Digite o email usado na compra para receber o link de acesso:
-              </p>
+            <div className="space-y-4 bg-primary/5 rounded-xl p-6 border border-primary/20">
+              <div className="space-y-2">
+                <p className="font-semibold text-foreground">
+                  📧 Receba seu link de acesso
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Use <strong>exatamente o mesmo e-mail</strong> que você usou para fazer o pagamento:
+                </p>
+              </div>
               <form onSubmit={handleSendMagicLink} className="space-y-3">
                 <Input
                   type="email"
@@ -151,22 +153,22 @@ const PosPagamento = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="text-center"
+                  className="text-center text-lg h-12 border-primary/30 focus:border-primary"
                 />
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className="w-full h-12 text-base" 
                   size="lg"
                   disabled={isLoading}
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                       Enviando...
                     </>
                   ) : (
                     <>
-                      <Mail className="mr-2 h-4 w-4" />
+                      <Mail className="mr-2 h-5 w-5" />
                       Enviar Link de Acesso
                     </>
                   )}
