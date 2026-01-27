@@ -26,3 +26,9 @@ verify_jwt = false
 
 [functions.generate-thumbnail]
 verify_jwt = false
+
+[functions.send-magic-link]
+verify_jwt = false
+
+[functions.verify-magic-link]
+verify_jwt = false
