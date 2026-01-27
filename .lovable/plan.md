@@ -1,140 +1,280 @@
 
-# Plano: Proteger Área de Gestão e Corrigir Dashboard
+# Plano: Dashboard de Funil de Marketing Completo
 
-## Resumo das Correções
+## Resumo
 
-Vou fazer 3 correções principais:
-1. **Remover links visíveis** da área de gestão do site - mantendo acesso 100% secreto via URL direta
-2. **Corrigir Edge Function** do Stripe Dashboard que está falhando
-3. **Melhorar Dashboard** com mais métricas e tudo em português
+Vou criar um dashboard de marketing completo que mostra todo o funil desde a fonte de tráfego até a conversão, com métricas claras de cada etapa e taxas de conversão para identificar gargalos.
 
 ---
 
-## 1. Remover Links Visíveis da Área de Gestão
+## 1. Rastreamento de Fontes de Tráfego (UTM Tracking)
 
-### O que será removido:
-
-**Arquivo: `src/components/Header.tsx`**
-- Remover o link "Gestão" do menu desktop (linhas 143-153)
-- Remover o link "Gestão" do menu mobile (linhas 220-231)
-- Remover import do `useIsAdmin` que não será mais necessário aqui
-
-**Arquivo: `src/pages/Auth.tsx`**
-- Remover o link "Acesso administrativo" que adicionamos (linhas 275-283)
-
-### Como você vai acessar a gestão:
-- Acessar diretamente a URL: `/admin-login`
-- Fazer login com seu email e senha única: `rickbread`
-- Após login, acessar `/gestao`
-
-A proteção continua funcionando:
-- Backend valida role `admin` na tabela `user_roles`
-- Só você (lucashenriquephd@gmail.com) tem essa permissão
-- Nenhum usuário comum consegue ver ou acessar essa área
-
----
-
-## 2. Corrigir Edge Function Stripe Dashboard
-
-### Problema atual:
-O erro `Deno.core.runMicrotasks() is not supported` ocorre porque a biblioteca Stripe está usando uma versão incompatível com o ambiente Deno do Lovable Cloud.
-
-### Solução:
-
-**Arquivo: `supabase/functions/stripe-dashboard/index.ts`**
-
-```text
-ANTES (linha 3):
-import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
-
-DEPOIS:
-import Stripe from "https://esm.sh/stripe@14.21.0";
+### Nova tabela: `traffic_sources`
+```sql
+CREATE TABLE traffic_sources (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id),
+  session_id TEXT NOT NULL,
+  utm_source TEXT,
+  utm_medium TEXT,
+  utm_campaign TEXT,
+  utm_content TEXT,
+  utm_term TEXT,
+  referrer TEXT,
+  landing_page TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
 ```
 
-Remover o `?target=deno` resolve o problema de compatibilidade.
+### Hook de Rastreamento
+- Capturar UTM parameters da URL quando visitante chega
+- Salvar no localStorage e depois associar ao user_id quando converter
+
+### Associação com Assinatura
+- Adicionar coluna `traffic_source_id` na tabela `subscriptions` para saber de onde veio cada assinante
 
 ---
 
-## 3. Melhorar Dashboard com Mais Métricas
+## 2. Melhorar Dados de Email (Resend Webhooks)
 
-### Novos KPIs que serão adicionados:
+### Configuração Necessária (você precisa fazer no Resend):
+1. Acessar https://resend.com/webhooks
+2. Adicionar webhook para a URL: `https://zdjtcwtakgizbsbbwtgc.supabase.co/functions/v1/resend-webhook`
+3. Selecionar eventos: `email.sent`, `email.delivered`, `email.opened`, `email.clicked`, `email.bounced`
 
-| Métrica | Descrição |
-|---------|-----------|
-| Total de Clientes | Clientes únicos no Stripe |
-| Ticket Médio | Valor médio por assinatura |
-| Taxa de Conversão | % de visitantes que assinaram |
-| LTV Estimado | Lifetime Value baseado no churn |
-| Receita Total | Faturamento acumulado |
-| Cancelamentos | Assinaturas canceladas no mês |
+### Atualização do Dashboard
+- Mostrar taxa de abertura real (opened/sent)
+- Mostrar taxa de cliques real (clicked/opened)
+- Mostrar bounces e problemas de entrega
 
-### Labels em Português (já existentes, vou manter):
-- MRR → Receita Recorrente Mensal
-- Assinantes Ativos
-- Churn Rate → Taxa de Cancelamento
-- Fat. Mensal → Faturamento Mensal
-- Crescimento
+---
 
-### Melhorias no Dashboard UI:
+## 3. Nova Seção: Funil de Conversão Visual
 
-**Arquivo: `src/components/gestao/DashboardSection.tsx`**
+### Arquivo: `src/components/gestao/MarketingFunnelSection.tsx` (NOVO)
 
-1. Adicionar novos cards de KPI:
-   - Total de Clientes
-   - Cancelamentos do Mês
-   - LTV Estimado
-   - Receita Total (acumulada)
+Componente que mostra o funil completo em formato visual:
 
-2. Traduzir labels restantes para português:
-   - "Page Views" → "Visualizações de Página"
-   - "Churn Rate" → "Taxa de Cancelamento"
+```text
+┌─────────────────────────────────────────────────────┐
+│  VISUALIZAÇÕES DE PÁGINA                            │
+│  1.500 visitantes                                    │
+└───────────────────────────┬─────────────────────────┘
+                            │ 2.4% conversão
+┌───────────────────────────▼─────────────────────────┐
+│  CADASTROS (LEADS)                                  │
+│  36 usuários                                        │
+└───────────────────────────┬─────────────────────────┘
+                            │ 100% (email 1)
+┌───────────────────────────▼─────────────────────────┐
+│  EMAIL 1 ENVIADO                                    │
+│  36 emails                                          │
+└───────────────────────────┬─────────────────────────┘
+                            │ 55% (email 2)
+┌───────────────────────────▼─────────────────────────┐
+│  EMAIL 2 ENVIADO                                    │
+│  20 emails                                          │
+└───────────────────────────┬─────────────────────────┘
+                            │ 55% conversão final
+┌───────────────────────────▼─────────────────────────┐
+│  ASSINANTES                                         │
+│  20 pagantes                                        │
+└─────────────────────────────────────────────────────┘
+```
 
-3. Adicionar seção de conversões:
-   - Mostrar eventos do Meta Pixel (se disponíveis)
-   - Funil: Visitantes → Leads → Assinantes
+### Métricas em cada etapa:
+- Número absoluto
+- Porcentagem de conversão da etapa anterior
+- Variação vs. período anterior (seta verde/vermelha)
 
-### Dados adicionais da Edge Function:
+---
 
-**Arquivo: `supabase/functions/stripe-dashboard/index.ts`**
+## 4. Nova Seção: Performance de E-mail Marketing
 
-Adicionar no retorno:
+### Arquivo: `src/components/gestao/EmailPerformanceSection.tsx` (NOVO)
+
+Cards detalhados:
+- **Emails Enviados**: Total por tipo (Email 1, 2, 3)
+- **Taxa de Entrega**: delivered/sent
+- **Taxa de Abertura**: opened/delivered
+- **Taxa de Cliques**: clicked/opened
+- **Taxa de Bounce**: bounced/sent
+- **Descadastros**: unsubscribed count
+
+### Gráficos:
+- Linha: Evolução de envios por dia (últimos 7 dias)
+- Barras: Performance por tipo de email
+- Pizza: Distribuição do funil de emails
+
+---
+
+## 5. Nova Seção: Atribuição e Fontes
+
+### Arquivo: `src/components/gestao/AttributionSection.tsx` (NOVO)
+
+Tabela mostrando:
+| Fonte | Visitantes | Cadastros | Assinantes | Taxa Conv. | Receita |
+|-------|------------|-----------|------------|------------|---------|
+| Google Ads | 500 | 15 | 8 | 1.6% | R$ 79,20 |
+| Orgânico | 800 | 12 | 5 | 0.6% | R$ 49,50 |
+| Instagram | 200 | 9 | 7 | 3.5% | R$ 69,30 |
+
+### Filtros:
+- Por período (hoje, 7 dias, 30 dias, custom)
+- Por fonte (utm_source)
+- Por campanha (utm_campaign)
+
+---
+
+## 6. Reorganização do Dashboard
+
+### Arquivo: `src/components/gestao/DashboardSection.tsx` (ATUALIZAR)
+
+Nova estrutura com abas:
+1. **Visão Geral** - KPIs principais (já existe)
+2. **Funil** - Visualização do funil completo (NOVO)
+3. **E-mail** - Performance de email marketing (NOVO)
+4. **Fontes** - Atribuição por fonte de tráfego (NOVO)
+
+---
+
+## 7. Hook para Métricas de Funil
+
+### Arquivo: `src/hooks/useMarketingFunnel.ts` (NOVO)
+
 ```typescript
-{
-  // Existentes...
-  mrr,
-  activeSubscribers,
-  churnRate,
-  
-  // NOVOS
-  totalRevenue: // soma de todas as invoices pagas
-  averageTicket: // mrr / assinantes ativos
-  estimatedLTV: // mrr * (1 / churnRate em decimal)
-  monthlyChurns: // cancelamentos no mês atual
-  trialingCount: // assinaturas em trial
+interface FunnelMetrics {
+  visitors: number;
+  leads: number;
+  email1Sent: number;
+  email1Opened: number;
+  email2Sent: number;
+  email2Opened: number;
+  email3Sent: number;
+  email3Opened: number;
+  subscribers: number;
+  conversionRates: {
+    visitorToLead: number;
+    leadToEmail1Open: number;
+    email1ToEmail2: number;
+    email2ToSubscriber: number;
+    overallConversion: number;
+  };
 }
 ```
 
 ---
 
-## Arquivos a Modificar
+## 8. Captura de UTM no Frontend
+
+### Arquivo: `src/hooks/useTrackUtm.ts` (NOVO)
+
+```typescript
+// Captura UTMs da URL e salva
+const useTrackUtm = () => {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const utmData = {
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      referrer: document.referrer,
+      landing_page: window.location.pathname,
+    };
+    if (utmData.utm_source) {
+      localStorage.setItem('utm_data', JSON.stringify(utmData));
+    }
+  }, []);
+};
+```
+
+---
+
+## Arquivos a Criar/Modificar
 
 | Arquivo | Ação |
 |---------|------|
-| `src/components/Header.tsx` | Remover links de Gestão (desktop e mobile) |
-| `src/pages/Auth.tsx` | Remover link "Acesso administrativo" |
-| `supabase/functions/stripe-dashboard/index.ts` | Corrigir import Stripe + adicionar métricas |
-| `src/components/gestao/DashboardSection.tsx` | Adicionar novos KPIs + traduzir labels |
-| `src/hooks/useStripeDashboard.ts` | Atualizar interface com novos campos |
+| `src/components/gestao/MarketingFunnelSection.tsx` | CRIAR - Funil visual |
+| `src/components/gestao/EmailPerformanceSection.tsx` | CRIAR - Métricas de email |
+| `src/components/gestao/AttributionSection.tsx` | CRIAR - Fontes de tráfego |
+| `src/hooks/useMarketingFunnel.ts` | CRIAR - Hook para dados do funil |
+| `src/hooks/useTrackUtm.ts` | CRIAR - Captura de UTMs |
+| `src/components/gestao/DashboardSection.tsx` | ATUALIZAR - Adicionar abas |
+| `src/hooks/useEmailDashboard.ts` | ATUALIZAR - Mais métricas de email |
+| Migration SQL | CRIAR - Tabela traffic_sources |
 
 ---
 
 ## Resultado Esperado
 
-1. **Segurança**: Nenhum link visível para a área de gestão - acesso apenas via URL direta `/admin-login`
-2. **Dashboard Funcional**: Edge function corrigida, dados do Stripe carregando corretamente
-3. **Mais Métricas**: 
-   - Total de clientes
-   - LTV estimado
-   - Taxa de cancelamento detalhada
-   - Receita total acumulada
-4. **100% Português**: Todos os labels traduzidos
+### Antes:
+- Métricas isoladas sem conexão
+- Sem visualização de funil
+- Sem rastreamento de fontes
+- Difícil identificar gargalos
+
+### Depois:
+- Funil visual completo (Visitantes → Leads → Emails → Assinantes)
+- Taxa de conversão em cada etapa
+- Identificação clara de gargalos (etapa com menor %)
+- Atribuição por fonte de tráfego
+- Performance detalhada de email marketing
+- Tudo em português
+
+---
+
+## Ação Necessária da Sua Parte
+
+Para ter dados completos de email (aberturas, cliques), você precisa:
+
+1. Acessar https://resend.com/webhooks
+2. Clicar "Add Webhook"
+3. Colar a URL: `https://zdjtcwtakgizbsbbwtgc.supabase.co/functions/v1/resend-webhook`
+4. Selecionar todos os eventos: sent, delivered, opened, clicked, bounced
+5. Salvar
+
+Sem isso, só teremos dados de "enviados", não de "abertos" e "clicados".
+
+---
+
+## Diagrama do Funil Proposto
+
+```text
+TRÁFEGO
+   │
+   ├── Google Ads (utm_source=google)
+   ├── Instagram (utm_source=instagram)
+   ├── Orgânico (sem UTM)
+   │
+   ▼
+LANDING PAGE
+   │
+   ├── /planos (principais conversões)
+   ├── / (home)
+   │
+   ▼
+CADASTRO (Lead)
+   │
+   ▼
+EMAIL 1: Boas-vindas
+   │
+   ├── Abriu? (taxa de abertura)
+   │
+   ▼
+EMAIL 2: Curso (3 dias)
+   │
+   ├── Abriu? (taxa de abertura)
+   │
+   ▼
+EMAIL 3: Oferta (5 dias)
+   │
+   ├── Clicou? (taxa de clique)
+   │
+   ▼
+CHECKOUT STRIPE
+   │
+   ▼
+ASSINANTE ATIVO
+```
+
+Este é o funil completo que vou implementar no dashboard.
