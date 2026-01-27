@@ -1,387 +1,274 @@
 
-# Plano: Sistema Completo de Marketing Analytics & Atribuicao (UTM)
+# Plano: Filtros de Data no Dashboard + Corrigir Emails dos Usuarios
 
-## Resumo Executivo
+## Resumo das Alteracoes
 
-Voce ja tem uma base solida de tracking implementada. Vou expandir significativamente o sistema para criar uma "Visao de Deus" do seu funil de marketing, com atribuicao de receita por canal e metricas de ROI.
-
----
-
-## 1. Banco de Dados - Alteracoes
-
-### 1.1 Adicionar colunas UTM na tabela `profiles`
-
-```sql
-ALTER TABLE public.profiles 
-ADD COLUMN IF NOT EXISTS utm_source text,
-ADD COLUMN IF NOT EXISTS utm_medium text,
-ADD COLUMN IF NOT EXISTS utm_campaign text,
-ADD COLUMN IF NOT EXISTS referrer_url text,
-ADD COLUMN IF NOT EXISTS first_visit_at timestamptz DEFAULT now();
-
-CREATE INDEX IF NOT EXISTS idx_profiles_utm_source ON public.profiles(utm_source);
-```
-
-Motivo: Guardar a origem de cada usuario de forma permanente para calculo de ROI.
-
-### 1.2 Criar tabela `analytics_events`
-
-```sql
-CREATE TABLE IF NOT EXISTS public.analytics_events (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid REFERENCES auth.users(id),
-  session_id text,
-  event_type text NOT NULL,
-  event_data jsonb DEFAULT '{}',
-  url_path text,
-  created_at timestamptz DEFAULT now()
-);
-
-CREATE INDEX IF NOT EXISTS idx_events_type ON public.analytics_events(event_type);
-CREATE INDEX IF NOT EXISTS idx_events_created_at ON public.analytics_events(created_at);
-
--- RLS Policies
-ALTER TABLE public.analytics_events ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Allow insert for all" ON public.analytics_events
-FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "Admins can read all events" ON public.analytics_events
-FOR SELECT USING (public.is_admin());
-```
-
-Eventos que serao rastreados:
-- `page_view` - Visualizacao de pagina
-- `cta_click` - Clique em botao de acao
-- `checkout_start` - Inicio do checkout
-- `signup_complete` - Cadastro finalizado
-
-### 1.3 Criar View SQL `marketing_stats`
-
-```sql
-CREATE OR REPLACE VIEW public.marketing_stats AS
-SELECT 
-  COALESCE(ts.utm_source, 'Direto') as source,
-  COALESCE(ts.utm_medium, '-') as medium,
-  COALESCE(ts.utm_campaign, '-') as campaign,
-  COUNT(DISTINCT ts.session_id) as visitors,
-  COUNT(DISTINCT CASE WHEN ts.user_id IS NOT NULL THEN ts.user_id END) as leads,
-  COUNT(DISTINCT s.user_id) as subscribers,
-  COALESCE(SUM(CASE WHEN s.status = 'active' THEN 9.90 ELSE 0 END), 0) as revenue,
-  CASE 
-    WHEN COUNT(DISTINCT ts.session_id) > 0 
-    THEN ROUND((COUNT(DISTINCT s.user_id)::numeric / COUNT(DISTINCT ts.session_id)::numeric) * 100, 2)
-    ELSE 0 
-  END as conversion_rate
-FROM traffic_sources ts
-LEFT JOIN subscriptions s ON ts.user_id = s.user_id AND s.status = 'active'
-GROUP BY ts.utm_source, ts.utm_medium, ts.utm_campaign
-ORDER BY visitors DESC;
-```
-
-Esta view agrega todos os dados pesados no backend, evitando calculos no navegador.
+Vou implementar 3 melhorias principais:
+1. Adicionar filtros de periodo (Ontem, 3D, 7D, 1 Mes, Mes Passado, Maximo + Calendario customizado)
+2. Integrar a secao de "Fontes" junto com a "Visao Geral" do dashboard
+3. Corrigir a exibicao dos emails dos usuarios (buscar de `user_email_automations` em vez de `profiles`)
 
 ---
 
-## 2. Frontend - Hook de Tracking Aprimorado
+## 1. Problema Identificado: Emails nao Aparecem
 
-### 2.1 Atualizar `src/hooks/useTrackUtm.ts`
+### Causa Raiz
+O hook `useActiveUsers` busca emails da tabela `profiles`, que esta **vazia**.
+Os emails estao salvos na tabela `user_email_automations`.
 
-Melhorias:
-- Persistencia em `localStorage` com validade de 30 dias
-- Funcao para associar UTM ao perfil no momento do cadastro
-- Tracking de eventos granulares
+### Solucao
+Atualizar o hook para buscar emails de `user_email_automations`:
 
-```typescript
-// Estrutura do dado salvo
-interface MarketingAttribution {
-  utm_source: string | null;
-  utm_medium: string | null;
-  utm_campaign: string | null;
-  referrer: string;
-  landing_page: string;
-  timestamp: number; // Para controle de validade
-  session_id: string;
-}
-
-// Validade: 30 dias
-const ATTRIBUTION_TTL = 30 * 24 * 60 * 60 * 1000;
-```
-
-### 2.2 Criar `src/hooks/useAnalyticsEvents.ts`
-
-Hook para rastrear eventos do funil:
+**Arquivo: `src/hooks/useActiveUsers.ts`**
 
 ```typescript
-export const useTrackEvent = () => {
-  const trackEvent = async (eventType: string, eventData?: object) => {
-    const sessionId = sessionStorage.getItem("utm_session_id");
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    await supabase.from("analytics_events").insert({
-      user_id: user?.id || null,
-      session_id: sessionId,
-      event_type: eventType,
-      event_data: eventData,
-      url_path: window.location.pathname,
-    });
+// ANTES: Busca de profiles (vazio)
+const { data: profiles } = await supabase
+  .from("profiles")
+  .select("user_id, email");
+
+// DEPOIS: Busca de user_email_automations (com dados)
+const { data: emailData } = await supabase
+  .from("user_email_automations")
+  .select("user_id, email, name");
+
+// Combinar com subscriptions
+const users = subscriptions.map((sub) => {
+  const userData = emailData.find((e) => e.user_id === sub.user_id);
+  return {
+    user_id: sub.user_id,
+    email: userData?.email || "Email nao disponivel",
+    name: userData?.name || null,
+    // ...resto dos campos
   };
-  
-  return { trackEvent };
-};
+});
 ```
 
 ---
 
-## 3. Atribuicao no Cadastro
+## 2. Filtros de Data no Dashboard
 
-### 3.1 Modificar `src/pages/Auth.tsx`
+### Componente de Filtro de Periodo
 
-Quando o usuario faz cadastro/login:
-1. Buscar dados UTM do `localStorage`
-2. Atualizar o perfil do usuario com a origem
+Criar um componente reutilizavel de filtro de datas com botoes rapidos e calendario:
 
-```typescript
-// Apos login bem-sucedido
-const utmData = getMarketingAttribution();
-if (utmData) {
-  await supabase.from("profiles").update({
-    utm_source: utmData.utm_source,
-    utm_medium: utmData.utm_medium,
-    utm_campaign: utmData.utm_campaign,
-    referrer_url: utmData.referrer,
-  }).eq("user_id", user.id);
-}
-```
-
----
-
-## 4. Nova Pagina de Marketing Analytics
-
-### 4.1 Criar `src/pages/admin/Marketing.tsx`
-
-Dashboard dedicado com layout profissional:
+**Arquivo: `src/components/gestao/DateRangeFilter.tsx` (NOVO)**
 
 ```text
-┌────────────────────────────────────────────────────────┐
-│  MARKETING ANALYTICS                                    │
-├────────────────────────────────────────────────────────┤
-│                                                        │
-│  [KPIs Principais]                                     │
-│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐        │
-│  │Visit.│ │Leads │ │Clien.│ │Receita│ │Conv. │        │
-│  │1.500 │ │ 120  │ │  45  │ │R$446 │ │ 3.0% │        │
-│  └──────┘ └──────┘ └──────┘ └──────┘ └──────┘        │
-│                                                        │
-│  [Funil Visual - Grafico de Funil]                    │
-│  ▼ 1.500 Visitantes                                   │
-│  ▼   120 Leads (8% conversao)                         │
-│  ▼    80 Engajados (66% abriram email)               │
-│  ▼    45 Assinantes (56% conversao)                  │
-│                                                        │
-│  [Tabela de ROI por Canal]                            │
-│  ┌─────────────────────────────────────────────────┐  │
-│  │ Origem    │ Visit │ Leads │ $ │ Conv │ ROI    │  │
-│  │ Instagram │ 800   │ 50    │ 247 │ 5.0% │ 🟢   │  │
-│  │ Google    │ 400   │ 40    │ 148 │ 3.7% │ 🟡   │  │
-│  │ Direto    │ 300   │ 30    │ 51  │ 1.7% │ 🔴   │  │
-│  └─────────────────────────────────────────────────┘  │
-│                                                        │
-│  [Metricas de Email]                                  │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐              │
-│  │ Abertura │ │ Cliques  │ │ Top Email│              │
-│  │  45.2%   │ │  12.8%   │ │ Oferta   │              │
-│  └──────────┘ └──────────┘ └──────────┘              │
-│                                                        │
-└────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│  [ Ontem ] [ 3D ] [ 7D ] [ 1 Mes ] [ Mes Passado ] [ Max ] [ 📅 ]   │
+└─────────────────────────────────────────────────────────────────────┘
+                                                          │
+                                                          ▼
+                                              ┌───────────────────┐
+                                              │  Calendario       │
+                                              │  (Data inicial -  │
+                                              │   Data final)     │
+                                              └───────────────────┘
 ```
 
-### 4.2 Componentes da Pagina
+### Botoes de Periodo
+| Botao | Descricao |
+|-------|-----------|
+| Ontem | Dados de ontem apenas |
+| 3D | Ultimos 3 dias |
+| 7D | Ultimos 7 dias |
+| 1 Mes | Ultimos 30 dias |
+| Mes Passado | Mes anterior completo |
+| Max | Todos os dados disponiveis |
+| Calendario | Selecao customizada de periodo |
 
-| Componente | Descricao |
-|------------|-----------|
-| `FunnelChart.tsx` | Grafico de funil usando Recharts (FunnelChart) |
-| `ROITable.tsx` | Tabela de atribuicao com calculo de receita por fonte |
-| `ConversionKPIs.tsx` | Cards com numeros grandes e coloridos |
-| `EmailInsights.tsx` | Metricas de email com destaque para melhor performer |
+### Integracao com Dashboard
+
+O filtro de data sera adicionado no topo do `DashboardSection` e afetara:
+- Metricas de visitantes, leads, assinantes
+- Graficos de receita e assinaturas
+- Dados de fontes de trafego
+- Emails enviados/abertos
+
+**Arquivo: `src/components/gestao/DashboardSection.tsx` (ATUALIZAR)**
+
+```typescript
+const [dateRange, setDateRange] = useState<DateRange>({
+  from: subDays(new Date(), 7), // Padrao: ultimos 7 dias
+  to: new Date(),
+});
+
+// Passar o filtro para os componentes filhos
+<OverviewTab dateRange={dateRange} />
+<MarketingFunnelSection dateRange={dateRange} />
+<AttributionSection dateRange={dateRange} />
+```
 
 ---
 
-## 5. Hook para Dados de Marketing
+## 3. Integrar Fontes com Visao Geral
 
-### 5.1 Criar `src/hooks/useMarketingStats.ts`
+### Mudanca na Estrutura de Abas
 
-Hook que consome a view SQL:
+Atualmente existem 4 abas separadas:
+- Visao Geral
+- Funil
+- E-mail
+- **Fontes** (sera integrada)
+
+### Nova Estrutura
+
+Mover os principais dados de "Fontes" para dentro da "Visao Geral":
+
+**Arquivo: `src/components/gestao/DashboardSection.tsx`**
+
+Adicionar na aba "Visao Geral" (OverviewTab):
+1. Tabela resumida das top 5 fontes de trafego
+2. Mini grafico de visitantes por fonte
+
+```text
+┌─────────────────────────────────────────────────────────────────────┐
+│  VISAO GERAL                                                        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  [Filtro de Periodo: Ontem | 3D | 7D | 1 Mes | Mes Passado | Max]  │
+│                                                                     │
+│  [KPIs Stripe]  [KPIs Engagement]  [KPIs Email]                    │
+│                                                                     │
+│  ┌─────────────────┐  ┌─────────────────────────────────────────┐  │
+│  │ Top 5 Fontes    │  │ Grafico de Receita                      │  │
+│  │ Instagram: 45%  │  │ [Barras mensais]                        │  │
+│  │ Google: 30%     │  │                                          │  │
+│  │ Direto: 25%     │  │                                          │  │
+│  └─────────────────┘  └─────────────────────────────────────────┘  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 4. Hooks Atualizados para Suportar Filtro de Data
+
+### Arquivo: `src/hooks/useMarketingFunnel.ts` (ATUALIZAR)
 
 ```typescript
-export const useMarketingStats = () => {
+export const useMarketingFunnel = (dateRange?: { from: Date; to: Date }) => {
   return useQuery({
-    queryKey: ["marketing-stats"],
+    queryKey: ["marketing-funnel", dateRange?.from, dateRange?.to],
     queryFn: async () => {
-      // Buscar dados da view
-      const { data: stats } = await supabase
-        .from("marketing_stats")
-        .select("*");
+      let trafficQuery = supabase.from("traffic_sources").select("*");
       
-      // Buscar emails para calcular taxas
-      const { data: emailEvents } = await supabase
-        .from("email_events")
-        .select("*");
+      // Aplicar filtro de data se existir
+      if (dateRange?.from) {
+        trafficQuery = trafficQuery.gte("created_at", dateRange.from.toISOString());
+      }
+      if (dateRange?.to) {
+        trafficQuery = trafficQuery.lte("created_at", dateRange.to.toISOString());
+      }
       
-      // Calcular metricas
-      return {
-        sources: stats,
-        totalVisitors: stats.reduce((a, s) => a + s.visitors, 0),
-        totalLeads: stats.reduce((a, s) => a + s.leads, 0),
-        totalSubscribers: stats.reduce((a, s) => a + s.subscribers, 0),
-        totalRevenue: stats.reduce((a, s) => a + s.revenue, 0),
-        overallConversion: calculateConversion(stats),
-        emailMetrics: calculateEmailMetrics(emailEvents),
-        topSource: findTopSource(stats),
-        topEmail: findTopEmail(emailEvents),
-      };
+      // ... resto da logica
     },
-    staleTime: 1000 * 60 * 2,
   });
 };
 ```
 
----
+### Arquivo: `src/hooks/useAdminDashboard.ts` (ATUALIZAR)
 
-## 6. Adicionar Rota no Admin
-
-### 6.1 Atualizar `src/App.tsx`
-
-```typescript
-import Marketing from "./pages/admin/Marketing";
-
-// Dentro das rotas admin
-<Route path="marketing" element={<Marketing />} />
-```
-
-### 6.2 Atualizar `src/components/admin/AdminLayout.tsx`
-
-Adicionar item no menu lateral:
-
-```typescript
-const navItems = [
-  { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/admin/marketing", label: "Marketing", icon: TrendingUp }, // NOVO
-  { path: "/admin/content", label: "Conteudos", icon: FileText },
-  // ...
-];
-```
+Adicionar suporte a filtro de periodo nas queries de cliques e page views.
 
 ---
 
-## 7. Resumo dos Arquivos
+## 5. Arquivos a Modificar/Criar
 
 | Arquivo | Acao |
 |---------|------|
-| Migration SQL | CRIAR - Colunas profiles + tabela analytics_events + view |
-| `src/hooks/useTrackUtm.ts` | ATUALIZAR - Persistencia 30 dias + associacao perfil |
-| `src/hooks/useAnalyticsEvents.ts` | CRIAR - Tracking de eventos granulares |
-| `src/hooks/useMarketingStats.ts` | CRIAR - Consumir view marketing_stats |
-| `src/pages/admin/Marketing.tsx` | CRIAR - Pagina completa de analytics |
-| `src/components/admin/FunnelChart.tsx` | CRIAR - Grafico de funil visual |
-| `src/components/admin/ROITable.tsx` | CRIAR - Tabela de ROI por canal |
-| `src/pages/Auth.tsx` | ATUALIZAR - Associar UTM ao perfil no cadastro |
-| `src/App.tsx` | ATUALIZAR - Adicionar rota /admin/marketing |
-| `src/components/admin/AdminLayout.tsx` | ATUALIZAR - Menu lateral com Marketing |
+| `src/components/gestao/DateRangeFilter.tsx` | CRIAR - Componente de filtro de periodo |
+| `src/hooks/useActiveUsers.ts` | ATUALIZAR - Buscar email de user_email_automations |
+| `src/components/gestao/DashboardSection.tsx` | ATUALIZAR - Adicionar filtro + integrar fontes |
+| `src/hooks/useMarketingFunnel.ts` | ATUALIZAR - Suportar filtro de data |
+| `src/hooks/useAdminDashboard.ts` | ATUALIZAR - Suportar filtro de data |
+| `src/components/gestao/UsersSection.tsx` | ATUALIZAR - Melhorar exibicao de email |
 
 ---
 
-## 8. Diagrama do Fluxo de Dados
+## 6. Detalhes Tecnicos
 
-```text
-VISITANTE CHEGA
-    │
-    ├── URL: ?utm_source=instagram&utm_campaign=janeiro
-    │
-    ▼
-[useTrackUtm Hook]
-    │
-    ├── Salva no localStorage (30 dias)
-    ├── Insere em traffic_sources
-    │
-    ▼
-NAVEGACAO NO SITE
-    │
-    ├── [useAnalyticsEvents] → analytics_events
-    │   - page_view
-    │   - cta_click
-    │
-    ▼
-CADASTRO/LOGIN
-    │
-    ├── [Auth.tsx] Atualiza profiles com UTM
-    │
-    ▼
-COMPRA (Stripe Webhook)
-    │
-    ├── Cria subscription
-    ├── traffic_source_id associado
-    │
-    ▼
-VIEW SQL AGREGA TUDO
-    │
-    ├── marketing_stats (visitantes, leads, receita por fonte)
-    │
-    ▼
-DASHBOARD /admin/marketing
-    │
-    ├── Funil visual
-    ├── Tabela ROI por canal
-    ├── Metricas de email
+### Componente DateRangeFilter
+
+```typescript
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { subDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
+
+interface DateRangeFilterProps {
+  value: { from: Date; to: Date };
+  onChange: (range: { from: Date; to: Date }) => void;
+}
+
+const presets = [
+  { label: "Ontem", getValue: () => ({ from: subDays(new Date(), 1), to: subDays(new Date(), 1) }) },
+  { label: "3D", getValue: () => ({ from: subDays(new Date(), 3), to: new Date() }) },
+  { label: "7D", getValue: () => ({ from: subDays(new Date(), 7), to: new Date() }) },
+  { label: "1 Mes", getValue: () => ({ from: subDays(new Date(), 30), to: new Date() }) },
+  { label: "Mes Passado", getValue: () => ({ 
+    from: startOfMonth(subMonths(new Date(), 1)), 
+    to: endOfMonth(subMonths(new Date(), 1)) 
+  }) },
+  { label: "Max", getValue: () => ({ from: new Date(2020, 0, 1), to: new Date() }) },
+];
+```
+
+### Integracao com Calendar do Shadcn
+
+Usar o componente Calendar existente com `mode="range"` para selecao de periodo customizado:
+
+```typescript
+<Calendar
+  mode="range"
+  selected={{ from: value.from, to: value.to }}
+  onSelect={(range) => {
+    if (range?.from && range?.to) {
+      onChange({ from: range.from, to: range.to });
+    }
+  }}
+  className="pointer-events-auto"
+/>
 ```
 
 ---
 
-## 9. Resultado Esperado
+## 7. Interface Atualizada dos Usuarios
 
-| Antes | Depois |
-|-------|--------|
-| Dados soltos sem conexao | Funil completo conectado |
-| Sem saber origem das vendas | Receita por canal (ROI) |
-| Calculo no navegador | View SQL no backend |
-| Dashboard basico | Dashboard profissional de marketing |
-| UTM sem persistencia | 30 dias de atribuicao |
-| Sem eventos granulares | Tracking de CTAs e checkout |
+### Antes (Problema)
+```text
+Email: "Email nao disponivel"
+```
+
+### Depois (Corrigido)
+```text
+Email: "usuario@exemplo.com"
+Nome: "Nome do Usuario" (novo campo)
+```
+
+A tabela de usuarios mostrara:
+- Email real do usuario
+- Nome (extraido do email antes do @)
+- Status da assinatura
+- Datas de inscricao e validade
 
 ---
 
-## 10. Secao Tecnica
+## 8. Resultado Esperado
 
-### Arquitetura de Dados
+| Problema | Solucao |
+|----------|---------|
+| Emails nao aparecem | Buscar de user_email_automations |
+| Sem filtros de data | Componente DateRangeFilter com presets |
+| Fontes separadas do dashboard | Integrar resumo de fontes na Visao Geral |
+| Graficos sem periodo | Queries filtradas por data |
 
-```text
-┌─────────────────┐     ┌──────────────────┐
-│ traffic_sources │──┬──│ profiles         │
-│ (utm, session)  │  │  │ (utm persistente)│
-└─────────────────┘  │  └──────────────────┘
-                     │
-                     ▼
-              ┌──────────────┐
-              │ marketing_   │
-              │ stats (VIEW) │
-              └──────────────┘
-                     │
-                     ▼
-              ┌──────────────┐
-              │ subscriptions│
-              │ (receita)    │
-              └──────────────┘
-```
+### Novo Fluxo de Uso
 
-### Performance
-
-- View SQL faz agregacao no Postgres (muito mais rapido)
-- Frontend apenas consome dados prontos
-- Indices em `utm_source`, `created_at`, `event_type`
-- Cache de 2 minutos nas queries TanStack
-
-### Seguranca
-
-- RLS em `analytics_events`: qualquer um insere, so admin le
-- View `marketing_stats` acessivel apenas para admins
-- Dados sensiveis (emails) nao expostos nos relatorios
+1. Admin acessa `/gestao`
+2. Clica na aba "Dashboard"
+3. Seleciona periodo: "Ontem", "7D", "1 Mes", etc.
+4. Todos os graficos e metricas atualizam automaticamente
+5. Ve as principais fontes de trafego junto com os KPIs
+6. Na aba "Usuarios" ve os emails reais de cada assinante
