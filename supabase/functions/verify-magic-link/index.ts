@@ -72,6 +72,7 @@ serve(async (req) => {
     }
 
     const email = tokenData.email;
+    const userName = tokenData.name;
 
     // Verificar se o usuário existe
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
@@ -83,6 +84,14 @@ serve(async (req) => {
 
     if (existingUser) {
       userId = existingUser.id;
+      
+      // Atualizar nome no perfil se fornecido
+      if (userName) {
+        await supabaseAdmin
+          .from("profiles")
+          .update({ name: userName })
+          .eq("user_id", userId);
+      }
     } else {
       // Criar novo usuário
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -99,6 +108,16 @@ serve(async (req) => {
       }
 
       userId = newUser.user.id;
+      
+      // Salvar nome no perfil do novo usuário
+      if (userName) {
+        // Aguardar um momento para o trigger criar o perfil
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await supabaseAdmin
+          .from("profiles")
+          .update({ name: userName })
+          .eq("user_id", userId);
+      }
     }
 
     // Gerar link de login para o usuário

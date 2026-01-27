@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, User, Home, Calendar, CreditCard, 
@@ -19,6 +19,7 @@ import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
+import { supabase } from "@/integrations/supabase/client";
 
 type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
 
@@ -28,10 +29,30 @@ interface HeaderProps {
 
 export const Header = ({ onCategoryChange }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+
+  // Fetch user name from profile
+  useEffect(() => {
+    const fetchUserName = async () => {
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("name")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        
+        setUserName(data?.name || null);
+      } else {
+        setUserName(null);
+      }
+    };
+    
+    fetchUserName();
+  }, [user]);
 
   // Mobile theme toggle button component
   const ThemeToggleMobile = () => (
@@ -142,15 +163,19 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
           <ThemeToggle />
           
           {user ? (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={signOut}
-              className="ml-2"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sair
-            </Button>
+            <div className="flex items-center gap-2 ml-2">
+              <span className="text-sm font-medium text-foreground">
+                Olá, {userName || user.email?.split("@")[0]}! 👋
+              </span>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={signOut}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
+            </div>
           ) : (
             <Link to="/auth">
               <Button variant="outline" size="sm" className="ml-2">
@@ -223,17 +248,22 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
               <DropdownMenuSeparator className="my-3" />
               
               {user ? (
-                <Button 
-                  variant="ghost" 
-                  onClick={() => {
-                    signOut();
-                    setIsOpen(false);
-                  }}
-                  className="justify-start gap-3 px-3"
-                >
-                  <LogOut className="h-5 w-5" />
-                  Sair
-                </Button>
+                <>
+                  <div className="px-3 py-2 text-sm font-medium text-foreground">
+                    Olá, {userName || user.email?.split("@")[0]}! 👋
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => {
+                      signOut();
+                      setIsOpen(false);
+                    }}
+                    className="justify-start gap-3 px-3"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    Sair
+                  </Button>
+                </>
               ) : (
                 <Link to="/auth" onClick={() => setIsOpen(false)}>
                   <Button variant="outline" className="w-full justify-start gap-3 px-3">

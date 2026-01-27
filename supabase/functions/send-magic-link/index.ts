@@ -98,7 +98,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email } = await req.json();
+    const { email, name } = await req.json();
 
     if (!email || typeof email !== "string") {
       return new Response(
@@ -126,13 +126,14 @@ serve(async (req) => {
     const token = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
 
-    // Salvar token no banco
+    // Salvar token no banco com nome
     const { error: insertError } = await supabaseAdmin
       .from("magic_link_tokens")
       .insert({
         email: email.toLowerCase().trim(),
         token,
         expires_at: expiresAt.toISOString(),
+        name: name?.trim() || null,
       });
 
     if (insertError) {
