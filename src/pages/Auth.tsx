@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import { Loader2, Mail, ArrowLeft, CheckCircle, MessageCircle } from "lucide-react";
 import { trackCompleteRegistration, trackViewContent } from "@/lib/meta-pixel";
+import { getMarketingAttribution, useAssociateUtmToUser } from "@/hooks/useTrackUtm";
+import { trackEvent, ANALYTICS_EVENTS } from "@/hooks/useAnalyticsEvents";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -41,11 +43,36 @@ const Auth = () => {
     trackViewContent('Página de Login');
   }, []);
 
+  // Associate UTM data to user profile after login
+  useAssociateUtmToUser();
+
   // Redirect based on subscription status after login
   useEffect(() => {
     if (!loading && !subscription.loading && user) {
-      // Track registration if coming from signup flow
+      // Track registration and login events
       trackCompleteRegistration();
+      trackEvent(ANALYTICS_EVENTS.LOGIN_COMPLETE, { 
+        userId: user.id, 
+        email: user.email 
+      });
+
+      // Associate UTM data to profile
+      const attribution = getMarketingAttribution();
+      if (attribution && (attribution.utm_source || attribution.utm_medium || attribution.utm_campaign)) {
+        supabase
+          .from("profiles")
+          .update({
+            utm_source: attribution.utm_source,
+            utm_medium: attribution.utm_medium,
+            utm_campaign: attribution.utm_campaign,
+            referrer_url: attribution.referrer,
+          })
+          .eq("user_id", user.id)
+          .is("utm_source", null) // Only update if not already set
+          .then(() => {
+            console.log("UTM data associated to profile");
+          });
+      }
       
       // If there's a redirect param, use it
       if (redirectTo) {

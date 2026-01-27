@@ -12,12 +12,20 @@ interface UtmData {
   landing_page: string;
 }
 
-// Gera um ID de sessão único
+interface MarketingAttribution extends UtmData {
+  timestamp: number;
+}
+
+// Attribution validity: 30 days
+const ATTRIBUTION_TTL = 30 * 24 * 60 * 60 * 1000;
+const ATTRIBUTION_KEY = "marketing_attribution";
+
+// Generate unique session ID
 const generateSessionId = () => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 };
 
-// Recupera ou cria o session_id
+// Get or create session ID
 const getOrCreateSessionId = () => {
   let sessionId = sessionStorage.getItem("utm_session_id");
   if (!sessionId) {
@@ -27,16 +35,50 @@ const getOrCreateSessionId = () => {
   return sessionId;
 };
 
+// Save attribution with 30-day validity
+const saveMarketingAttribution = (data: UtmData) => {
+  const attribution: MarketingAttribution = {
+    ...data,
+    timestamp: Date.now(),
+  };
+  localStorage.setItem(ATTRIBUTION_KEY, JSON.stringify(attribution));
+};
+
+// Get valid attribution (within 30 days)
+export const getMarketingAttribution = (): MarketingAttribution | null => {
+  try {
+    const stored = localStorage.getItem(ATTRIBUTION_KEY);
+    if (!stored) return null;
+
+    const attribution: MarketingAttribution = JSON.parse(stored);
+    const isValid = Date.now() - attribution.timestamp < ATTRIBUTION_TTL;
+    
+    if (!isValid) {
+      localStorage.removeItem(ATTRIBUTION_KEY);
+      return null;
+    }
+    
+    return attribution;
+  } catch {
+    return null;
+  }
+};
+
+// Clear attribution after it's been used
+export const clearMarketingAttribution = () => {
+  localStorage.removeItem(ATTRIBUTION_KEY);
+};
+
 export const useTrackUtm = () => {
   useEffect(() => {
     const trackUtm = async () => {
-      // Verifica se já rastreou nesta sessão
+      // Check if already tracked this session
       const alreadyTracked = sessionStorage.getItem("utm_tracked");
       if (alreadyTracked) return;
 
       const params = new URLSearchParams(window.location.search);
       
-      // Captura dados UTM
+      // Capture UTM data
       const utmData: UtmData = {
         session_id: getOrCreateSessionId(),
         utm_source: params.get("utm_source"),
@@ -48,12 +90,12 @@ export const useTrackUtm = () => {
         landing_page: window.location.pathname,
       };
 
-      // Só salva se tiver algum UTM ou referrer
+      // Only save if there's UTM or referrer data
       if (utmData.utm_source || utmData.utm_medium || utmData.utm_campaign || utmData.referrer) {
-        // Salva no localStorage para associar depois
-        localStorage.setItem("utm_data", JSON.stringify(utmData));
+        // Save to localStorage with 30-day validity
+        saveMarketingAttribution(utmData);
 
-        // Tenta salvar no banco
+        // Save to database
         try {
           const { data: { user } } = await supabase.auth.getUser();
           
@@ -71,7 +113,7 @@ export const useTrackUtm = () => {
 
           sessionStorage.setItem("utm_tracked", "true");
         } catch (error) {
-          console.error("Erro ao rastrear UTM:", error);
+          console.error("Error tracking UTM:", error);
         }
       }
     };
@@ -80,30 +122,39 @@ export const useTrackUtm = () => {
   }, []);
 };
 
-// Hook para associar UTM ao usuário após login/signup
+// Hook to associate UTM to user after login/signup
 export const useAssociateUtmToUser = () => {
   useEffect(() => {
     const associateUtm = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const utmDataStr = localStorage.getItem("utm_data");
-      if (!utmDataStr) return;
+      const attribution = getMarketingAttribution();
+      if (!attribution) return;
 
       try {
-        const utmData: UtmData = JSON.parse(utmDataStr);
-        
-        // Atualiza o registro com o user_id
+        // Update traffic_sources with user_id
         await supabase
           .from("traffic_sources")
           .update({ user_id: user.id })
-          .eq("session_id", utmData.session_id)
+          .eq("session_id", attribution.session_id)
           .is("user_id", null);
 
-        // Limpa o localStorage
-        localStorage.removeItem("utm_data");
+        // Update user profile with permanent UTM attribution
+        if (attribution.utm_source || attribution.utm_medium || attribution.utm_campaign) {
+          await supabase
+            .from("profiles")
+            .update({
+              utm_source: attribution.utm_source,
+              utm_medium: attribution.utm_medium,
+              utm_campaign: attribution.utm_campaign,
+              referrer_url: attribution.referrer,
+            })
+            .eq("user_id", user.id)
+            .is("utm_source", null); // Only update if not already set
+        }
       } catch (error) {
-        console.error("Erro ao associar UTM ao usuário:", error);
+        console.error("Error associating UTM to user:", error);
       }
     };
 
@@ -111,7 +162,7 @@ export const useAssociateUtmToUser = () => {
   }, []);
 };
 
-// Função para obter o session_id atual (para usar no checkout)
+// Get current session ID (for checkout)
 export const getCurrentSessionId = () => {
   return sessionStorage.getItem("utm_session_id");
 };
