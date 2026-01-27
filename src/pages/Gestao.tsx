@@ -13,6 +13,7 @@ import {
   useDeleteContentItem,
   useDeleteCaption,
   useDeleteMarketingTool,
+  useIsAdmin,
 } from "@/hooks/useContent";
 import { toast } from "sonner";
 
@@ -44,7 +45,9 @@ type EditableCaption = {
 };
 
 const Gestao = () => {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
+  
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [captionModalOpen, setCaptionModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -63,11 +66,14 @@ const Gestao = () => {
   const deleteCaptionMutation = useDeleteCaption();
   const deleteTool = useDeleteMarketingTool();
 
-  // Loading state
-  if (loading) {
+  // Loading state - wait for both auth and admin check
+  if (authLoading || adminLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Verificando permissões...</p>
+        </div>
       </div>
     );
   }
@@ -77,7 +83,7 @@ const Gestao = () => {
     return <Navigate to="/admin-login" replace />;
   }
 
-  // Redirect if not admin
+  // Redirect if not admin (only after loading is complete)
   if (!isAdmin) {
     return <Navigate to="/" replace />;
   }
