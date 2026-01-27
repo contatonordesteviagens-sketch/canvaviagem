@@ -226,7 +226,7 @@ const PosPagamento = () => {
           <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
             <p className="font-medium mb-2">Precisa de ajuda?</p>
             <a 
-              href="https://wa.me/5585986411294" 
+              href="https://wa.me/5585986411294?text=Ol%C3%A1%20adquiri%20o%20Canva%20Viagem.%20" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-primary hover:underline"
