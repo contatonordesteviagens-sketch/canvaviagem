@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, User, Home, Calendar, CreditCard, 
   Video, Image, LayoutGrid, FileText, Download, Bot, 
-  GraduationCap, Heart, ChevronDown, Sun, Moon
+  GraduationCap, Heart, ChevronDown, Sun, Moon, Star
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,12 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
     { to: "/calendar", label: "Calendário", icon: Calendar },
     { to: "/planos", label: "Planos", icon: CreditCard },
   ];
+
+  const proximoNivelItem = {
+    to: "/proximo-nivel",
+    label: "Próximo Nível",
+    icon: Star,
+  };
 
   const contentCategories: { category: CategoryType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { category: "videos", label: "Vídeos", icon: Video },
@@ -122,6 +128,16 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Próximo Nível - Highlighted Link */}
+          <NavLink
+            to={proximoNivelItem.to}
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10 flex items-center gap-1.5"
+            activeClassName="bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            <Star className="w-4 h-4 text-orange-500 fill-orange-500 animate-pulse" />
+            <span>{proximoNivelItem.label}</span>
+          </NavLink>
+
           {/* Theme Toggle - Desktop */}
           <ThemeToggle />
           
@@ -175,6 +191,17 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
                   {item.label}
                 </NavLink>
               ))}
+
+              {/* Próximo Nível - Mobile */}
+              <NavLink
+                to={proximoNivelItem.to}
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
+                activeClassName="bg-primary text-primary-foreground"
+              >
+                <Star className="h-5 w-5 text-orange-500 fill-orange-500" />
+                {proximoNivelItem.label}
+              </NavLink>
 
               <DropdownMenuSeparator className="my-3" />
 
