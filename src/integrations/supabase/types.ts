@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      abandoned_checkouts: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          email: string
+          id: string
+          recovered: boolean | null
+          recovered_at: string | null
+          session_id: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          email: string
+          id?: string
+          recovered?: boolean | null
+          recovered_at?: string | null
+          session_id: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          recovered?: boolean | null
+          recovered_at?: string | null
+          session_id?: string
+        }
+        Relationships: []
+      }
       admin_notes: {
         Row: {
           content: string
