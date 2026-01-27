@@ -12,16 +12,21 @@ const PosPagamento = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const emailFromUrl = searchParams.get('email');
+  const nameFromUrl = searchParams.get('name');
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
 
-  // Auto-fill email from URL parameter
+  // Auto-fill name and email from URL parameters
   useEffect(() => {
     if (emailFromUrl) {
       setEmail(decodeURIComponent(emailFromUrl));
     }
-  }, [emailFromUrl]);
+    if (nameFromUrl) {
+      setName(decodeURIComponent(nameFromUrl));
+    }
+  }, [emailFromUrl, nameFromUrl]);
 
   useEffect(() => {
     // Debug: verificar se o Pixel está carregado
@@ -36,6 +41,11 @@ const PosPagamento = () => {
   const handleSendMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!name.trim()) {
+      toast.error("Por favor, insira seu nome.");
+      return;
+    }
+    
     if (!email) {
       toast.error("Por favor, insira seu email.");
       return;
@@ -45,7 +55,7 @@ const PosPagamento = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("send-magic-link", {
-        body: { email: email.toLowerCase().trim() },
+        body: { email: email.toLowerCase().trim(), name: name.trim() },
       });
 
       if (error || !data?.success) {
@@ -75,7 +85,7 @@ const PosPagamento = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("send-magic-link", {
-        body: { email: email.toLowerCase().trim() },
+        body: { email: email.toLowerCase().trim(), name: name.trim() },
       });
 
       if (error || !data?.success) {
@@ -121,9 +131,9 @@ const PosPagamento = () => {
             <div className="flex items-center gap-3">
               <CreditCard className="h-6 w-6 text-green-600 dark:text-green-400 flex-shrink-0" />
               <div className="text-left">
-                <p className="font-semibold text-green-800 dark:text-green-200">Acesso Imediato</p>
+                <p className="font-semibold text-green-800 dark:text-green-200">Libere Seu Acesso</p>
                 <p className="text-sm text-green-700 dark:text-green-300">
-                  Seu acesso foi liberado automaticamente após a confirmação do pagamento.
+                  Preencha abaixo e envie o e-mail para liberar automaticamente seu acesso.
                 </p>
               </div>
             </div>
@@ -142,6 +152,15 @@ const PosPagamento = () => {
               </div>
               <form onSubmit={handleSendMagicLink} className="space-y-3">
                 <Input
+                  type="text"
+                  placeholder="Seu nome"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  className="text-center text-lg h-12 border-primary/30 focus:border-primary"
+                />
+                <Input
                   type="email"
                   placeholder="seu@email.com"
                   value={email}
@@ -150,7 +169,7 @@ const PosPagamento = () => {
                   disabled={isLoading}
                   className="text-center text-lg h-12 border-primary/30 focus:border-primary"
                 />
-                <Button 
+                <Button
                   type="submit" 
                   className="w-full h-12 text-base" 
                   size="lg"
