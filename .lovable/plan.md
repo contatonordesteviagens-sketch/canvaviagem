@@ -1,183 +1,189 @@
 
 
-# Plano: Página "Próximo Nível" + Correções na Página Pós-Pagamento
+# Plano: Redesign da Página "Próximo Nível" com Identidade Visual Canva
 
 ## Resumo
 
-Implementação de 3 funcionalidades principais:
-
-1. **Nova página "Próximo Nível"** - Página de upsell com vídeo do YouTube e oferta do curso Agente Lucrativo
-2. **Nova aba no Header** - Com ícone de estrela laranja em destaque
-3. **Correções na página Pós-Pagamento** - Mensagens mais claras sobre o fluxo de Magic Link
-
----
-
-## 1. Nova Página: Próximo Nível
-
-### Arquivo: `src/pages/ProximoNivel.tsx`
-
-Criar uma landing page focada em conversão com:
-
-**Estrutura da página:**
-- Hero com título "AGENTE LUCRATIVO®" e subtítulo impactante
-- Embed do vídeo do YouTube (shorts/0uPJm4FNRfI)
-- Seções de copy conforme fornecido:
-  - O problema (não saber o que vende)
-  - A solução (Agente Lucrativo)
-  - Módulos do treinamento
-  - Para quem é ideal
-  - Investimento (12x R$10 ou R$97/ano)
-- Botão CTA direcionando para Hotmart: `https://pay.hotmart.com/X100779687E?off=1b820216&checkoutMode=10`
-
-**Design:**
-- Visual premium com gradientes e destaque em laranja/dourado
-- Responsivo para mobile e desktop
-- Ícones ilustrativos para cada seção
+Redesenhar completamente a página `/proximo-nivel` para:
+1. Aplicar a identidade visual do Canva Viagem (tons de branco, azul/cyan e roxo)
+2. Adicionar botão secundário no Hero que ancora para a seção de preços
+3. Atualizar o link principal para: `https://pay.hotmart.com/X100779687E?checkoutMode=10`
+4. Manter todo o texto e copy existente
 
 ---
 
-## 2. Navegação: Aba com Estrela Laranja
+## Alterações Detalhadas
 
-### Arquivo: `src/components/Header.tsx`
+### 1. Atualizar URL do Hotmart (Linha 22)
 
-**Alterações:**
-- Adicionar novo link "Próximo Nível" no menu de navegação
-- Ícone de estrela (Star do Lucide) com cor laranja (#F97316)
-- Badge ou destaque visual para chamar atenção
-- Posicionar após os links existentes, antes do dropdown de usuário
-
-**Exemplo visual:**
-```
-[Início] [Calendário] [Conteúdos ▼] [⭐ Próximo Nível] [Planos]
-```
-
-O ícone de estrela terá animação sutil (pulse) para destacar
-
----
-
-## 3. Rota no App.tsx
-
-### Arquivo: `src/App.tsx`
-
-Adicionar a nova rota:
 ```typescript
-import ProximoNivel from "./pages/ProximoNivel";
+// De:
+const HOTMART_CHECKOUT_URL = "https://pay.hotmart.com/X100779687E?off=1b820216&checkoutMode=10";
 
-// Na seção de Routes:
-<Route path="/proximo-nivel" element={<ProximoNivel />} />
+// Para:
+const HOTMART_CHECKOUT_URL = "https://pay.hotmart.com/X100779687E?checkoutMode=10";
 ```
 
----
+### 2. Adicionar Função de Scroll + Novo Import
 
-## 4. Correções na Página Pós-Pagamento
+Adicionar `ArrowDown` nos imports e criar função `scrollToPricing`:
 
-### Arquivo: `src/pages/PosPagamento.tsx`
-
-**Mensagens atuais (problemáticas):**
-- "Pagamento Confirmado! Sua assinatura foi ativada com sucesso!"
-- "Verifique seu email"
-
-**Novas mensagens (mais claras):**
-- Título: "Pagamento Confirmado!"
-- Subtítulo: "Agora digite o e-mail usado na compra para receber seu link de acesso"
-- Remover texto que confunde sobre "verificar email" antes de enviar o magic link
-
-**Fluxo corrigido:**
-1. Usuário chega na página após pagamento
-2. Texto explica claramente: "Digite abaixo o mesmo e-mail usado na compra"
-3. Campo de email em destaque
-4. Botão "Enviar Link de Acesso"
-5. Após envio: "Link enviado! Verifique sua caixa de entrada e spam"
-
-**Melhoria de UX:**
-- Destacar visualmente o formulário de email
-- Tornar as instruções mais diretas e menos confusas
-- Adicionar texto explicativo: "Use exatamente o mesmo e-mail que você usou para fazer o pagamento"
-
----
-
-## 5. Melhoria no Fluxo de Login Automático
-
-### Contexto do Problema
-
-Usuários que pagam mas têm dificuldade para fazer login. O fluxo atual:
-1. Usuário paga no Stripe
-2. Stripe webhook cria/atualiza o perfil no banco
-3. Usuário precisa fazer login manualmente via Magic Link
-
-### Solução Proposta
-
-**Opção A - Parâmetro de email na URL (implementar agora):**
-
-Quando o Stripe redireciona para `/pos-pagamento`, podemos passar o email como parâmetro:
-- URL: `/pos-pagamento?email=usuario@email.com`
-- O campo de email já vem preenchido automaticamente
-- Usuário só precisa clicar em "Enviar Link"
-
-**Alteração no `src/pages/PosPagamento.tsx`:**
 ```typescript
-const [searchParams] = useSearchParams();
-const emailFromUrl = searchParams.get('email');
+import { ArrowDown } from "lucide-react";
 
-useEffect(() => {
-  if (emailFromUrl) {
-    setEmail(emailFromUrl);
-  }
-}, [emailFromUrl]);
+const scrollToPricing = () => {
+  document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+};
 ```
 
-**Nota:** O redirecionamento com email depende da configuração do Stripe Checkout. Se o checkout já estiver configurado para redirecionar para `/pos-pagamento`, podemos adicionar o `{CHECKOUT_SESSION_ID}` e buscar o email via API.
+### 3. Redesign do Hero Section (Linhas 35-80)
+
+**Mudanças visuais:**
+- Gradiente de fundo: `from-primary/10 via-background to-accent/10`
+- Badge: `bg-primary/10 text-primary border-primary/20`
+- Título: gradiente `from-primary to-accent`
+- Borda do vídeo: `border-primary/20`
+
+**Adicionar dois botões:**
+```typescript
+<div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+  <Button 
+    onClick={handleCTAClick}
+    size="lg"
+    className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white text-lg px-8 py-6 h-auto font-bold shadow-lg"
+  >
+    <Rocket className="mr-2 h-5 w-5" />
+    ATIVAR AGENTE LUCRATIVO AGORA
+  </Button>
+  
+  <Button 
+    onClick={scrollToPricing}
+    variant="outline"
+    size="lg"
+    className="border-primary/30 text-primary hover:bg-primary/10 text-lg px-8 py-6 h-auto font-semibold"
+  >
+    <ArrowDown className="mr-2 h-5 w-5" />
+    VER INVESTIMENTO
+  </Button>
+</div>
+```
+
+### 4. Substituições de Cores em Massa
+
+| Atual (Laranja) | Novo (Canva) |
+|-----------------|--------------|
+| `from-orange-500/10` | `from-primary/10` |
+| `to-amber-500/10` | `to-accent/10` |
+| `bg-orange-500/10` | `bg-primary/10` |
+| `border-orange-500/20` | `border-primary/20` |
+| `text-orange-600` | `text-primary` |
+| `text-orange-500` | `text-primary` |
+| `text-amber-600` | `text-accent` |
+| `from-orange-500` | `from-primary` |
+| `to-amber-500` | `to-accent` |
+| `bg-orange-100` | `bg-primary/10` |
+| `bg-orange-900/30` | `bg-primary/20` |
+| `from-orange-50` | `from-primary/5` |
+| `to-amber-50` | `to-accent/5` |
+| `from-orange-950/20` | `from-primary/10` |
+| `to-amber-950/20` | `to-accent/10` |
+| `border-orange-200/50` | `border-primary/20` |
+| `border-orange-900/30` | `border-primary/30` |
+
+### 5. Seção de Preços - Adicionar ID (Linha 417)
+
+```typescript
+// De:
+<section className="py-16 md:py-24 bg-gradient-to-br from-orange-500 to-amber-500">
+
+// Para:
+<section id="pricing" className="py-16 md:py-24 bg-gradient-to-br from-primary to-accent">
+```
+
+E atualizar o botão dentro da seção de preços:
+```typescript
+<Button 
+  onClick={handleCTAClick}
+  size="lg"
+  className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6 h-auto font-bold shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+>
+```
+
+### 6. CTA Final (Linha 473)
+
+```typescript
+// De:
+className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+
+// Para:
+className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
+```
 
 ---
 
-## Arquivos a Criar/Modificar
+## Mapeamento de Cores
 
-| Arquivo | Ação |
-|---------|------|
-| `src/pages/ProximoNivel.tsx` | **CRIAR** - Nova página de upsell |
-| `src/components/Header.tsx` | **MODIFICAR** - Adicionar aba com estrela |
-| `src/App.tsx` | **MODIFICAR** - Adicionar rota /proximo-nivel |
-| `src/pages/PosPagamento.tsx` | **MODIFICAR** - Corrigir mensagens e UX |
+As cores do design system Canva Viagem:
+- **Primary (Roxo)**: `hsl(265 78% 54%)` → classes `primary`
+- **Accent (Cyan)**: `hsl(180 100% 40%)` → classes `accent`
+- **Background**: branco claro
+- **Gradientes**: `from-primary to-accent` ou `from-primary/10 to-accent/10`
 
 ---
 
-## Recursos Utilizados
+## Seções Afetadas
 
-- **Vídeo YouTube:** `https://youtube.com/shorts/0uPJm4FNRfI`
-- **Link de Compra Hotmart:** `https://pay.hotmart.com/X100779687E?off=1b820216&checkoutMode=10`
-- **Ícone:** Star (Lucide React) com cor laranja (#F97316)
+| Seção | Alteração |
+|-------|-----------|
+| Hero | Cores + 2 botões |
+| Problem | Mantém vermelho (intencional) |
+| Solution | `text-primary` nos ícones |
+| Simple Idea | `from-primary/5 to-accent/5` no fundo |
+| Fast Section | Ícones e círculos `primary` |
+| Modules | Cards com bordas `primary/20`, números com gradiente `from-primary to-accent` |
+| Who is it for | Mantém verde (intencional) |
+| Pricing | `id="pricing"` + gradiente `from-primary to-accent` |
+| Final CTA | Gradiente `from-primary to-accent` |
 
 ---
 
 ## Preview Visual
 
-**Header com nova aba:**
+**Hero Redesenhado:**
 ```
-┌────────────────────────────────────────────────────────────────┐
-│ [Logo] [Início] [Calendário] [Conteúdos▼] [⭐Próximo Nível] [Planos] │
-└────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  [✨ Treinamento Exclusivo] (badge roxo)                    │
+│                                                             │
+│        AGENTE LUCRATIVO®                                    │
+│   (gradiente roxo → cyan)                                   │
+│                                                             │
+│   ┌────────────────┐                                        │
+│   │  [VÍDEO 9:16] │  (borda roxa)                          │
+│   └────────────────┘                                        │
+│                                                             │
+│   [🚀 ATIVAR AGORA]     [↓ VER INVESTIMENTO]               │
+│    (botão roxo→cyan)     (outline roxo, scroll)            │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**Página Próximo Nível:**
+**Seção de Preços:**
 ```
-┌────────────────────────────────────────────────────────────────┐
-│                    AGENTE LUCRATIVO®                           │
-│     O próximo nível para quem quer vender viagens...          │
-│                                                                │
-│              ┌─────────────────────┐                          │
-│              │   [VÍDEO YOUTUBE]   │                          │
-│              │    shorts embed     │                          │
-│              └─────────────────────┘                          │
-│                                                                │
-│     ❌ O PROBLEMA NÃO É CRIAR CONTEÚDO                        │
-│        É NÃO SABER O QUE REALMENTE VENDE                      │
-│                                                                │
-│     🔥 É AQUI QUE ENTRA O AGENTE LUCRATIVO®                   │
-│        ... (seções de copy) ...                               │
-│                                                                │
-│     💰 12x de R$ 10 ou R$ 97 por ano                          │
-│                                                                │
-│     [🚀 ATIVAR AGENTE LUCRATIVO - HOTMART]                    │
-└────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  (fundo gradiente roxo → cyan)                              │
+│                                                             │
+│           💰 INVESTIMENTO                                   │
+│           12x de R$ 10  ou  R$ 97/ano                       │
+│                                                             │
+│           [ATIVAR AGENTE LUCRATIVO®]                        │
+│            (botão branco, texto roxo)                       │
+└─────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Arquivo Modificado
+
+| Arquivo | Ação |
+|---------|------|
+| `src/pages/ProximoNivel.tsx` | **MODIFICAR** - Redesign completo de cores e adição de botão anchor |
 
