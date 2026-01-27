@@ -2,7 +2,7 @@ import { useEmailDashboard } from "@/hooks/useEmailDashboard";
 import { useAdminDashboard, usePageViews } from "@/hooks/useAdminDashboard";
 import { useStripeDashboard } from "@/hooks/useStripeDashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Users, MousePointer, TrendingUp, Activity, DollarSign, Percent, CreditCard, BarChart3 } from "lucide-react";
+import { Loader2, Users, MousePointer, TrendingUp, Activity, DollarSign, Percent, CreditCard, BarChart3, Wallet, Target, UserX, Clock } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -52,7 +52,7 @@ export const DashboardSection = () => {
 
   return (
     <div className="space-y-6">
-      {/* Stripe KPI Cards */}
+      {/* Stripe KPI Cards - Principais */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
           <CardContent className="p-6">
@@ -96,7 +96,7 @@ export const DashboardSection = () => {
                 <p className="text-2xl font-bold">
                   {stripeLoading ? "..." : `${stripeData?.churnRate || 0}%`}
                 </p>
-                <p className="text-sm text-muted-foreground">Churn Rate</p>
+                <p className="text-sm text-muted-foreground">Taxa de Cancelamento</p>
               </div>
             </div>
           </CardContent>
@@ -112,7 +112,90 @@ export const DashboardSection = () => {
                 <p className="text-2xl font-bold">
                   {stripeLoading ? "..." : formatCurrency(stripeData?.currentMonthRevenue || 0)}
                 </p>
-                <p className="text-sm text-muted-foreground">Fat. Mensal</p>
+                <p className="text-sm text-muted-foreground">Faturamento Mensal</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Novas Métricas Stripe */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-emerald-500/10 rounded-full">
+                <Wallet className="h-6 w-6 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">
+                  {stripeLoading ? "..." : formatCurrency(stripeData?.totalRevenue || 0)}
+                </p>
+                <p className="text-sm text-muted-foreground">Receita Total</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-violet-500/10 rounded-full">
+                <Target className="h-6 w-6 text-violet-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">
+                  {stripeLoading ? "..." : formatCurrency(stripeData?.averageTicket || 0)}
+                </p>
+                <p className="text-sm text-muted-foreground">Ticket Médio</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-amber-500/10 rounded-full">
+                <TrendingUp className="h-6 w-6 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">
+                  {stripeLoading ? "..." : formatCurrency(stripeData?.estimatedLTV || 0)}
+                </p>
+                <p className="text-sm text-muted-foreground">LTV Estimado</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-rose-500/10 rounded-full">
+                <UserX className="h-6 w-6 text-rose-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">
+                  {stripeLoading ? "..." : stripeData?.monthlyChurns || 0}
+                </p>
+                <p className="text-sm text-muted-foreground">Cancelamentos (Mês)</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-cyan-500/10 rounded-full">
+                <Clock className="h-6 w-6 text-cyan-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">
+                  {stripeLoading ? "..." : stripeData?.trialingCount || 0}
+                </p>
+                <p className="text-sm text-muted-foreground">Em Trial</p>
               </div>
             </div>
           </CardContent>
@@ -143,7 +226,7 @@ export const DashboardSection = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold">{pageViews?.reduce((acc, p) => acc + p.count, 0) || 0}</p>
-                <p className="text-sm text-muted-foreground">Page Views</p>
+                <p className="text-sm text-muted-foreground">Visualizações de Página</p>
               </div>
             </div>
           </CardContent>
@@ -171,7 +254,7 @@ export const DashboardSection = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold">
-                  {stripeLoading ? "..." : `${stripeData?.growth > 0 ? '+' : ''}${stripeData?.growth || 0}%`}
+                  {stripeLoading ? "..." : `${stripeData?.growth && stripeData.growth > 0 ? '+' : ''}${stripeData?.growth || 0}%`}
                 </p>
                 <p className="text-sm text-muted-foreground">Crescimento</p>
               </div>

@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
+import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -41,7 +41,6 @@ serve(async (req) => {
     }
 
     // ============ ADMIN CHECK ============
-    // Use service role to check admin status
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false }
@@ -72,10 +71,9 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: "2023-10-16",
-      httpClient: Stripe.createFetchHttpClient(),
     });
 
-    // Fetch subscriptions (active and all)
+    // Fetch subscriptions
     const activeSubscriptions = await stripe.subscriptions.list({
       status: "active",
       limit: 100,
@@ -85,9 +83,13 @@ serve(async (req) => {
       limit: 100,
     });
 
-    // Fetch canceled subscriptions for churn calculation
     const canceledSubscriptions = await stripe.subscriptions.list({
       status: "canceled",
+      limit: 100,
+    });
+
+    const trialingSubscriptions = await stripe.subscriptions.list({
+      status: "trialing",
       limit: 100,
     });
 
@@ -96,7 +98,7 @@ serve(async (req) => {
       limit: 100,
     });
 
-    // Fetch invoices for revenue calculation (last 2 months)
+    // Fetch invoices for revenue calculation
     const now = new Date();
     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -109,6 +111,12 @@ serve(async (req) => {
       limit: 100,
     });
 
+    // Fetch ALL paid invoices for total revenue
+    const allPaidInvoices = await stripe.invoices.list({
+      status: "paid",
+      limit: 100,
+    });
+
     // Calculate MRR from active subscriptions
     let mrr = 0;
     for (const sub of activeSubscriptions.data) {
@@ -117,7 +125,6 @@ serve(async (req) => {
         const amount = item.price?.unit_amount || 0;
         const interval = item.price?.recurring?.interval || "month";
         
-        // Normalize to monthly
         if (interval === "year") {
           mrr += amount / 12;
         } else if (interval === "month") {
@@ -125,7 +132,7 @@ serve(async (req) => {
         }
       }
     }
-    mrr = mrr / 100; // Convert from cents to currency
+    mrr = mrr / 100;
 
     // Calculate revenue for current and last month
     let currentMonthRevenue = 0;
@@ -140,15 +147,35 @@ serve(async (req) => {
       }
     }
 
+    // Calculate total revenue (all time)
+    let totalRevenue = 0;
+    for (const invoice of allPaidInvoices.data) {
+      totalRevenue += invoice.amount_paid / 100;
+    }
+
     // Calculate churn rate
     const totalSubscriptions = allSubscriptions.data.length || 1;
     const canceledCount = canceledSubscriptions.data.length;
     const churnRate = (canceledCount / totalSubscriptions) * 100;
 
+    // Calculate monthly churns (canceled this month)
+    const monthlyChurns = canceledSubscriptions.data.filter((sub: { canceled_at: number | null }) => {
+      const canceledAt = sub.canceled_at ? new Date(sub.canceled_at * 1000) : null;
+      return canceledAt && canceledAt >= currentMonthStart;
+    }).length;
+
     // Calculate growth
     const growth = lastMonthRevenue > 0 
       ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 
       : 0;
+
+    // Calculate average ticket
+    const activeCount = activeSubscriptions.data.length || 1;
+    const averageTicket = mrr / activeCount;
+
+    // Calculate estimated LTV
+    const churnRateDecimal = churnRate / 100 || 0.01;
+    const estimatedLTV = mrr / churnRateDecimal;
 
     // Get recent invoices for chart data (last 6 months)
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
@@ -197,6 +224,12 @@ serve(async (req) => {
       growth: Math.round(growth * 100) / 100,
       revenueChartData,
       subscriptionChartData,
+      // Novas métricas
+      totalRevenue: Math.round(totalRevenue * 100) / 100,
+      averageTicket: Math.round(averageTicket * 100) / 100,
+      estimatedLTV: Math.round(estimatedLTV * 100) / 100,
+      monthlyChurns,
+      trialingCount: trialingSubscriptions.data.length,
     };
 
     return new Response(JSON.stringify(dashboardData), {
