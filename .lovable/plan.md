@@ -1,148 +1,183 @@
 
-# Plano: Correcao do Meta Pixel e Remocao do Boleto
+
+# Plano: Página "Próximo Nível" + Correções na Página Pós-Pagamento
 
 ## Resumo
 
-Duas alteracoes serao feitas na pagina `/pos-pagamento`:
+Implementação de 3 funcionalidades principais:
 
-1. **Remover aviso de Boleto Bancario** - Eliminar toda a secao que menciona pagamento via boleto
-2. **Adicionar debug do Meta Pixel** - Incluir logs para verificar se o `window.fbq` existe e se os eventos estao sendo disparados corretamente
-
----
-
-## Problema Identificado com o Meta Pixel
-
-O Pixel esta instalado corretamente no `index.html` com os 3 IDs:
-- 1599242897762192
-- 1152272353771099 (o seu principal)
-- 4254631328136179
-
-O console mostra `Meta Pixel: Purchase event fired (R$ 9,90)` - **o codigo esta funcionando**.
-
-**Porem**, nao ha requisicoes de rede para o Facebook nos logs. Isso geralmente acontece quando:
-- O script do Facebook esta sendo bloqueado por um **adblocker** (uBlock, AdBlock, etc.)
-- O navegador tem protecao de rastreamento ativada
-
-**Solucao**: Adicionar logs de debug mais detalhados para confirmar se `window.fbq` existe no momento do disparo.
+1. **Nova página "Próximo Nível"** - Página de upsell com vídeo do YouTube e oferta do curso Agente Lucrativo
+2. **Nova aba no Header** - Com ícone de estrela laranja em destaque
+3. **Correções na página Pós-Pagamento** - Mensagens mais claras sobre o fluxo de Magic Link
 
 ---
 
-## Alteracoes no Arquivo
+## 1. Nova Página: Próximo Nível
 
-### src/pages/PosPagamento.tsx
+### Arquivo: `src/pages/ProximoNivel.tsx`
 
-#### 1. Remover imports nao utilizados (linha 6)
-Remover `FileText` pois nao sera mais usado (era o icone do boleto)
+Criar uma landing page focada em conversão com:
 
-**De:**
-```typescript
-import { CheckCircle, Mail, Loader2, ArrowRight, MessageCircle, Sparkles, RefreshCw, Clock, CreditCard, FileText } from "lucide-react";
+**Estrutura da página:**
+- Hero com título "AGENTE LUCRATIVO®" e subtítulo impactante
+- Embed do vídeo do YouTube (shorts/0uPJm4FNRfI)
+- Seções de copy conforme fornecido:
+  - O problema (não saber o que vende)
+  - A solução (Agente Lucrativo)
+  - Módulos do treinamento
+  - Para quem é ideal
+  - Investimento (12x R$10 ou R$97/ano)
+- Botão CTA direcionando para Hotmart: `https://pay.hotmart.com/X100779687E?off=1b820216&checkoutMode=10`
+
+**Design:**
+- Visual premium com gradientes e destaque em laranja/dourado
+- Responsivo para mobile e desktop
+- Ícones ilustrativos para cada seção
+
+---
+
+## 2. Navegação: Aba com Estrela Laranja
+
+### Arquivo: `src/components/Header.tsx`
+
+**Alterações:**
+- Adicionar novo link "Próximo Nível" no menu de navegação
+- Ícone de estrela (Star do Lucide) com cor laranja (#F97316)
+- Badge ou destaque visual para chamar atenção
+- Posicionar após os links existentes, antes do dropdown de usuário
+
+**Exemplo visual:**
+```
+[Início] [Calendário] [Conteúdos ▼] [⭐ Próximo Nível] [Planos]
 ```
 
-**Para:**
+O ícone de estrela terá animação sutil (pulse) para destacar
+
+---
+
+## 3. Rota no App.tsx
+
+### Arquivo: `src/App.tsx`
+
+Adicionar a nova rota:
 ```typescript
-import { CheckCircle, Mail, Loader2, ArrowRight, MessageCircle, Sparkles, RefreshCw, CreditCard } from "lucide-react";
+import ProximoNivel from "./pages/ProximoNivel";
+
+// Na seção de Routes:
+<Route path="/proximo-nivel" element={<ProximoNivel />} />
 ```
 
-#### 2. Melhorar log de debug no useEffect (linhas 18-24)
-Adicionar verificacao se `window.fbq` existe para identificar bloqueadores
+---
 
-**De:**
+## 4. Correções na Página Pós-Pagamento
+
+### Arquivo: `src/pages/PosPagamento.tsx`
+
+**Mensagens atuais (problemáticas):**
+- "Pagamento Confirmado! Sua assinatura foi ativada com sucesso!"
+- "Verifique seu email"
+
+**Novas mensagens (mais claras):**
+- Título: "Pagamento Confirmado!"
+- Subtítulo: "Agora digite o e-mail usado na compra para receber seu link de acesso"
+- Remover texto que confunde sobre "verificar email" antes de enviar o magic link
+
+**Fluxo corrigido:**
+1. Usuário chega na página após pagamento
+2. Texto explica claramente: "Digite abaixo o mesmo e-mail usado na compra"
+3. Campo de email em destaque
+4. Botão "Enviar Link de Acesso"
+5. Após envio: "Link enviado! Verifique sua caixa de entrada e spam"
+
+**Melhoria de UX:**
+- Destacar visualmente o formulário de email
+- Tornar as instruções mais diretas e menos confusas
+- Adicionar texto explicativo: "Use exatamente o mesmo e-mail que você usou para fazer o pagamento"
+
+---
+
+## 5. Melhoria no Fluxo de Login Automático
+
+### Contexto do Problema
+
+Usuários que pagam mas têm dificuldade para fazer login. O fluxo atual:
+1. Usuário paga no Stripe
+2. Stripe webhook cria/atualiza o perfil no banco
+3. Usuário precisa fazer login manualmente via Magic Link
+
+### Solução Proposta
+
+**Opção A - Parâmetro de email na URL (implementar agora):**
+
+Quando o Stripe redireciona para `/pos-pagamento`, podemos passar o email como parâmetro:
+- URL: `/pos-pagamento?email=usuario@email.com`
+- O campo de email já vem preenchido automaticamente
+- Usuário só precisa clicar em "Enviar Link"
+
+**Alteração no `src/pages/PosPagamento.tsx`:**
 ```typescript
+const [searchParams] = useSearchParams();
+const emailFromUrl = searchParams.get('email');
+
 useEffect(() => {
-  trackPurchase(9.90, 'BRL');
-  trackSubscribe(9.90, 'BRL', 9.90 * 12);
-  
-  console.log('Meta Pixel: Purchase event fired (R$ 9,90)');
-}, []);
+  if (emailFromUrl) {
+    setEmail(emailFromUrl);
+  }
+}, [emailFromUrl]);
 ```
 
-**Para:**
-```typescript
-useEffect(() => {
-  // Debug: verificar se o Pixel esta carregado
-  console.log('[Meta Debug] window.fbq exists:', typeof window.fbq !== 'undefined');
-  
-  trackPurchase(9.90, 'BRL');
-  trackSubscribe(9.90, 'BRL', 9.90 * 12);
-  
-  console.log('[Meta Debug] Purchase & Subscribe events dispatched (R$ 9,90)');
-}, []);
-```
-
-#### 3. Remover secao de Boleto Bancario (linhas 125-157)
-Substituir toda a secao "Payment Method Notice" por uma versao simplificada apenas com cartao de credito
-
-**Remover completamente:**
-```typescript
-{/* Payment Method Notice */}
-<div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-5 space-y-4">
-  <h3 className="font-semibold text-amber-800 dark:text-amber-200 flex items-center gap-2">
-    <Clock className="h-5 w-5" />
-    Prazo de liberação do acesso
-  </h3>
-  
-  <div className="space-y-3 text-sm">
-    {/* Credit Card */}
-    <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-800">
-      <CreditCard className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-      <div className="text-left">
-        <p className="font-medium text-green-800 dark:text-green-200">Cartão de Crédito</p>
-        <p className="text-green-700 dark:text-green-300">Acesso liberado <strong>imediatamente</strong> após a confirmação.</p>
-      </div>
-    </div>
-    
-    {/* Boleto - REMOVER COMPLETAMENTE */}
-    <div className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-800">
-      ...
-    </div>
-  </div>
-  
-  <p className="text-xs text-amber-700 dark:text-amber-400 text-center">
-    Envie o link de acesso abaixo para verificar se seu acesso está liberado.
-  </p>
-</div>
-```
-
-**Substituir por uma versao simples:**
-```typescript
-{/* Access Notice */}
-<div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl p-5">
-  <div className="flex items-center gap-3">
-    <CreditCard className="h-6 w-6 text-green-600 dark:text-green-400 flex-shrink-0" />
-    <div className="text-left">
-      <p className="font-semibold text-green-800 dark:text-green-200">Acesso Imediato</p>
-      <p className="text-sm text-green-700 dark:text-green-300">
-        Seu acesso foi liberado automaticamente apos a confirmacao do pagamento.
-      </p>
-    </div>
-  </div>
-</div>
-```
+**Nota:** O redirecionamento com email depende da configuração do Stripe Checkout. Se o checkout já estiver configurado para redirecionar para `/pos-pagamento`, podemos adicionar o `{CHECKOUT_SESSION_ID}` e buscar o email via API.
 
 ---
 
-## Resultado Final
+## Arquivos a Criar/Modificar
 
-| Antes | Depois |
-|-------|--------|
-| Aviso de Boleto + Cartao | Apenas aviso de acesso imediato |
-| Icones Clock, FileText usados | Apenas CreditCard |
-| Log simples do Pixel | Log com debug de `window.fbq` |
+| Arquivo | Ação |
+|---------|------|
+| `src/pages/ProximoNivel.tsx` | **CRIAR** - Nova página de upsell |
+| `src/components/Header.tsx` | **MODIFICAR** - Adicionar aba com estrela |
+| `src/App.tsx` | **MODIFICAR** - Adicionar rota /proximo-nivel |
+| `src/pages/PosPagamento.tsx` | **MODIFICAR** - Corrigir mensagens e UX |
 
 ---
 
-## Sobre o Rastreamento Meta
+## Recursos Utilizados
 
-O problema de "nao marcar conversao" provavelmente e causado por:
+- **Vídeo YouTube:** `https://youtube.com/shorts/0uPJm4FNRfI`
+- **Link de Compra Hotmart:** `https://pay.hotmart.com/X100779687E?off=1b820216&checkoutMode=10`
+- **Ícone:** Star (Lucide React) com cor laranja (#F97316)
 
-1. **Adblockers** - Teste desativando extensoes do navegador
-2. **Brave/Firefox** - Navegadores com protecao de rastreamento bloqueiam o Facebook Pixel por padrao
-3. **Modo de navegacao privada** - Tambem pode bloquear
+---
 
-Para verificar se o Pixel esta funcionando:
-- Abra o console do navegador (F12)
-- Procure por `[Meta Debug] window.fbq exists: true`
-- Se mostrar `false`, o script do Facebook esta sendo bloqueado
+## Preview Visual
 
-A conversao server-side (via Edge Function) so funciona para usuarios autenticados, entao para novos compradores apenas o browser-side sera utilizado.
+**Header com nova aba:**
+```
+┌────────────────────────────────────────────────────────────────┐
+│ [Logo] [Início] [Calendário] [Conteúdos▼] [⭐Próximo Nível] [Planos] │
+└────────────────────────────────────────────────────────────────┘
+```
+
+**Página Próximo Nível:**
+```
+┌────────────────────────────────────────────────────────────────┐
+│                    AGENTE LUCRATIVO®                           │
+│     O próximo nível para quem quer vender viagens...          │
+│                                                                │
+│              ┌─────────────────────┐                          │
+│              │   [VÍDEO YOUTUBE]   │                          │
+│              │    shorts embed     │                          │
+│              └─────────────────────┘                          │
+│                                                                │
+│     ❌ O PROBLEMA NÃO É CRIAR CONTEÚDO                        │
+│        É NÃO SABER O QUE REALMENTE VENDE                      │
+│                                                                │
+│     🔥 É AQUI QUE ENTRA O AGENTE LUCRATIVO®                   │
+│        ... (seções de copy) ...                               │
+│                                                                │
+│     💰 12x de R$ 10 ou R$ 97 por ano                          │
+│                                                                │
+│     [🚀 ATIVAR AGENTE LUCRATIVO - HOTMART]                    │
+└────────────────────────────────────────────────────────────────┘
+```
+
