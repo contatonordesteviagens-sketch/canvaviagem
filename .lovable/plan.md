@@ -1,274 +1,269 @@
 
-# Plano: Filtros de Data no Dashboard + Corrigir Emails dos Usuarios
+# Plano: Magic Link Personalizado via Resend
 
-## Resumo das Alteracoes
-
-Vou implementar 3 melhorias principais:
-1. Adicionar filtros de periodo (Ontem, 3D, 7D, 1 Mes, Mes Passado, Maximo + Calendario customizado)
-2. Integrar a secao de "Fontes" junto com a "Visao Geral" do dashboard
-3. Corrigir a exibicao dos emails dos usuarios (buscar de `user_email_automations` em vez de `profiles`)
+## Objetivo
+Substituir o email de Magic Link padrão do sistema por um email personalizado enviado via Resend, com o design da marca Canva Viagem.
 
 ---
 
-## 1. Problema Identificado: Emails nao Aparecem
+## Arquitetura da Solucao
 
-### Causa Raiz
-O hook `useActiveUsers` busca emails da tabela `profiles`, que esta **vazia**.
-Os emails estao salvos na tabela `user_email_automations`.
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         FLUXO ATUAL (Problema)                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Usuario → Solicita Magic Link → Sistema envia email generico → Usuario    │
+│                                  (sem personalizacao)                       │
+└─────────────────────────────────────────────────────────────────────────────┘
 
-### Solucao
-Atualizar o hook para buscar emails de `user_email_automations`:
+                                    ↓
 
-**Arquivo: `src/hooks/useActiveUsers.ts`**
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         FLUXO NOVO (Solucao)                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Usuario → Solicita Magic Link → Edge Function gera token                   │
+│                                → Salva token no banco                       │
+│                                → Envia email via Resend (template custom)   │
+│                                                                             │
+│  Usuario clica no link → Edge Function valida token                         │
+│                        → Gera sessao de autenticacao                        │
+│                        → Redireciona para o app                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 1. Criar Tabela de Tokens
+
+**Migracao SQL**
+
+```sql
+CREATE TABLE magic_link_tokens (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT NOT NULL,
+  token TEXT NOT NULL UNIQUE,
+  expires_at TIMESTAMPTZ NOT NULL,
+  used_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Indice para busca rapida por token
+CREATE INDEX idx_magic_link_tokens_token ON magic_link_tokens(token);
+
+-- RLS: Apenas o sistema pode acessar
+ALTER TABLE magic_link_tokens ENABLE ROW LEVEL SECURITY;
+```
+
+---
+
+## 2. Edge Function: send-magic-link
+
+**Arquivo: `supabase/functions/send-magic-link/index.ts`**
+
+Funcionalidades:
+- Recebe o email do usuario
+- Gera um token unico (UUID + hash)
+- Salva o token no banco com expiracao de 1 hora
+- Envia email via Resend com template personalizado
 
 ```typescript
-// ANTES: Busca de profiles (vazio)
-const { data: profiles } = await supabase
-  .from("profiles")
-  .select("user_id, email");
+// Pseudocodigo
+const token = crypto.randomUUID();
+const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
 
-// DEPOIS: Busca de user_email_automations (com dados)
-const { data: emailData } = await supabase
-  .from("user_email_automations")
-  .select("user_id, email, name");
+// Salvar no banco
+await supabase.from("magic_link_tokens").insert({
+  email,
+  token,
+  expires_at: expiresAt,
+});
 
-// Combinar com subscriptions
-const users = subscriptions.map((sub) => {
-  const userData = emailData.find((e) => e.user_id === sub.user_id);
-  return {
-    user_id: sub.user_id,
-    email: userData?.email || "Email nao disponivel",
-    name: userData?.name || null,
-    // ...resto dos campos
-  };
+// Criar link
+const magicLink = `https://canvaviagem.lovable.app/auth/verify?token=${token}`;
+
+// Enviar via Resend com template personalizado
+await resend.emails.send({
+  from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+  to: email,
+  subject: "Seu Link de Acesso - Canva Viagem",
+  html: templateHTML, // Template personalizado
 });
 ```
 
 ---
 
-## 2. Filtros de Data no Dashboard
+## 3. Edge Function: verify-magic-link
 
-### Componente de Filtro de Periodo
+**Arquivo: `supabase/functions/verify-magic-link/index.ts`**
 
-Criar um componente reutilizavel de filtro de datas com botoes rapidos e calendario:
-
-**Arquivo: `src/components/gestao/DateRangeFilter.tsx` (NOVO)**
-
-```text
-┌─────────────────────────────────────────────────────────────────────┐
-│  [ Ontem ] [ 3D ] [ 7D ] [ 1 Mes ] [ Mes Passado ] [ Max ] [ 📅 ]   │
-└─────────────────────────────────────────────────────────────────────┘
-                                                          │
-                                                          ▼
-                                              ┌───────────────────┐
-                                              │  Calendario       │
-                                              │  (Data inicial -  │
-                                              │   Data final)     │
-                                              └───────────────────┘
-```
-
-### Botoes de Periodo
-| Botao | Descricao |
-|-------|-----------|
-| Ontem | Dados de ontem apenas |
-| 3D | Ultimos 3 dias |
-| 7D | Ultimos 7 dias |
-| 1 Mes | Ultimos 30 dias |
-| Mes Passado | Mes anterior completo |
-| Max | Todos os dados disponiveis |
-| Calendario | Selecao customizada de periodo |
-
-### Integracao com Dashboard
-
-O filtro de data sera adicionado no topo do `DashboardSection` e afetara:
-- Metricas de visitantes, leads, assinantes
-- Graficos de receita e assinaturas
-- Dados de fontes de trafego
-- Emails enviados/abertos
-
-**Arquivo: `src/components/gestao/DashboardSection.tsx` (ATUALIZAR)**
+Funcionalidades:
+- Recebe o token via URL
+- Valida se o token existe e nao expirou
+- Marca o token como usado
+- Cria ou atualiza o usuario no auth.users
+- Retorna um token de sessao valido
 
 ```typescript
-const [dateRange, setDateRange] = useState<DateRange>({
-  from: subDays(new Date(), 7), // Padrao: ultimos 7 dias
-  to: new Date(),
+// Pseudocodigo
+const { data: tokenData } = await supabase
+  .from("magic_link_tokens")
+  .select("*")
+  .eq("token", token)
+  .single();
+
+if (!tokenData || tokenData.expires_at < new Date() || tokenData.used_at) {
+  return { error: "Token invalido ou expirado" };
+}
+
+// Marcar como usado
+await supabase.from("magic_link_tokens").update({ used_at: new Date() });
+
+// Gerar sessao para o usuario usando Admin API
+const { data: { user, session } } = await supabaseAdmin.auth.admin.generateLink({
+  type: 'magiclink',
+  email: tokenData.email,
+});
+```
+
+---
+
+## 4. Template de Email Personalizado
+
+Design baseado na identidade Canva Viagem:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px;
+    }
+    .container { 
+      max-width: 600px; 
+      margin: 0 auto; 
+      background: white; 
+      border-radius: 16px;
+      padding: 40px;
+    }
+    .logo { text-align: center; margin-bottom: 30px; }
+    .button { 
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 16px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="logo-canva-viagem.png" alt="Canva Viagem" width="150">
+    </div>
+    <h1>Seu Link de Acesso</h1>
+    <p>Clique no botao abaixo para acessar sua conta:</p>
+    <p style="text-align: center;">
+      <a href="{{MAGIC_LINK}}" class="button">Acessar Minha Conta</a>
+    </p>
+    <p><small>Este link expira em 1 hora.</small></p>
+  </div>
+</body>
+</html>
+```
+
+---
+
+## 5. Atualizar Pagina pos-pagamento
+
+**Arquivo: `src/pages/PosPagamento.tsx`**
+
+Alterar para chamar a nova Edge Function em vez do `signInWithOtp`:
+
+```typescript
+// ANTES
+const { error } = await supabase.auth.signInWithOtp({
+  email,
+  options: { emailRedirectTo: `${window.location.origin}/` },
 });
 
-// Passar o filtro para os componentes filhos
-<OverviewTab dateRange={dateRange} />
-<MarketingFunnelSection dateRange={dateRange} />
-<AttributionSection dateRange={dateRange} />
+// DEPOIS
+const { data, error } = await supabase.functions.invoke("send-magic-link", {
+  body: { email },
+});
 ```
 
 ---
 
-## 3. Integrar Fontes com Visao Geral
+## 6. Criar Pagina de Verificacao
 
-### Mudanca na Estrutura de Abas
+**Arquivo: `src/pages/AuthVerify.tsx` (NOVO)**
 
-Atualmente existem 4 abas separadas:
-- Visao Geral
-- Funil
-- E-mail
-- **Fontes** (sera integrada)
-
-### Nova Estrutura
-
-Mover os principais dados de "Fontes" para dentro da "Visao Geral":
-
-**Arquivo: `src/components/gestao/DashboardSection.tsx`**
-
-Adicionar na aba "Visao Geral" (OverviewTab):
-1. Tabela resumida das top 5 fontes de trafego
-2. Mini grafico de visitantes por fonte
-
-```text
-┌─────────────────────────────────────────────────────────────────────┐
-│  VISAO GERAL                                                        │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  [Filtro de Periodo: Ontem | 3D | 7D | 1 Mes | Mes Passado | Max]  │
-│                                                                     │
-│  [KPIs Stripe]  [KPIs Engagement]  [KPIs Email]                    │
-│                                                                     │
-│  ┌─────────────────┐  ┌─────────────────────────────────────────┐  │
-│  │ Top 5 Fontes    │  │ Grafico de Receita                      │  │
-│  │ Instagram: 45%  │  │ [Barras mensais]                        │  │
-│  │ Google: 30%     │  │                                          │  │
-│  │ Direto: 25%     │  │                                          │  │
-│  └─────────────────┘  └─────────────────────────────────────────┘  │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 4. Hooks Atualizados para Suportar Filtro de Data
-
-### Arquivo: `src/hooks/useMarketingFunnel.ts` (ATUALIZAR)
+Pagina que recebe o token e autentica o usuario:
 
 ```typescript
-export const useMarketingFunnel = (dateRange?: { from: Date; to: Date }) => {
-  return useQuery({
-    queryKey: ["marketing-funnel", dateRange?.from, dateRange?.to],
-    queryFn: async () => {
-      let trafficQuery = supabase.from("traffic_sources").select("*");
-      
-      // Aplicar filtro de data se existir
-      if (dateRange?.from) {
-        trafficQuery = trafficQuery.gte("created_at", dateRange.from.toISOString());
-      }
-      if (dateRange?.to) {
-        trafficQuery = trafficQuery.lte("created_at", dateRange.to.toISOString());
-      }
-      
-      // ... resto da logica
-    },
-  });
-};
+// Extrair token da URL
+const token = searchParams.get("token");
+
+// Verificar token via Edge Function
+const { data, error } = await supabase.functions.invoke("verify-magic-link", {
+  body: { token },
+});
+
+if (data.session) {
+  // Setar sessao no Supabase client
+  await supabase.auth.setSession(data.session);
+  navigate("/"); // Redirecionar para home
+} else {
+  // Mostrar erro
+}
 ```
-
-### Arquivo: `src/hooks/useAdminDashboard.ts` (ATUALIZAR)
-
-Adicionar suporte a filtro de periodo nas queries de cliques e page views.
 
 ---
 
-## 5. Arquivos a Modificar/Criar
+## 7. Adicionar Rota
+
+**Arquivo: `src/App.tsx`**
+
+```typescript
+<Route path="/auth/verify" element={<AuthVerify />} />
+```
+
+---
+
+## Arquivos a Criar/Modificar
 
 | Arquivo | Acao |
 |---------|------|
-| `src/components/gestao/DateRangeFilter.tsx` | CRIAR - Componente de filtro de periodo |
-| `src/hooks/useActiveUsers.ts` | ATUALIZAR - Buscar email de user_email_automations |
-| `src/components/gestao/DashboardSection.tsx` | ATUALIZAR - Adicionar filtro + integrar fontes |
-| `src/hooks/useMarketingFunnel.ts` | ATUALIZAR - Suportar filtro de data |
-| `src/hooks/useAdminDashboard.ts` | ATUALIZAR - Suportar filtro de data |
-| `src/components/gestao/UsersSection.tsx` | ATUALIZAR - Melhorar exibicao de email |
+| `supabase/functions/send-magic-link/index.ts` | CRIAR |
+| `supabase/functions/verify-magic-link/index.ts` | CRIAR |
+| `src/pages/PosPagamento.tsx` | ATUALIZAR |
+| `src/pages/AuthVerify.tsx` | CRIAR |
+| `src/pages/Auth.tsx` | ATUALIZAR (usar novo fluxo) |
+| `src/App.tsx` | ATUALIZAR (adicionar rota) |
+| Migracao SQL | CRIAR tabela magic_link_tokens |
 
 ---
 
-## 6. Detalhes Tecnicos
+## Beneficios
 
-### Componente DateRangeFilter
-
-```typescript
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { subDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
-
-interface DateRangeFilterProps {
-  value: { from: Date; to: Date };
-  onChange: (range: { from: Date; to: Date }) => void;
-}
-
-const presets = [
-  { label: "Ontem", getValue: () => ({ from: subDays(new Date(), 1), to: subDays(new Date(), 1) }) },
-  { label: "3D", getValue: () => ({ from: subDays(new Date(), 3), to: new Date() }) },
-  { label: "7D", getValue: () => ({ from: subDays(new Date(), 7), to: new Date() }) },
-  { label: "1 Mes", getValue: () => ({ from: subDays(new Date(), 30), to: new Date() }) },
-  { label: "Mes Passado", getValue: () => ({ 
-    from: startOfMonth(subMonths(new Date(), 1)), 
-    to: endOfMonth(subMonths(new Date(), 1)) 
-  }) },
-  { label: "Max", getValue: () => ({ from: new Date(2020, 0, 1), to: new Date() }) },
-];
-```
-
-### Integracao com Calendar do Shadcn
-
-Usar o componente Calendar existente com `mode="range"` para selecao de periodo customizado:
-
-```typescript
-<Calendar
-  mode="range"
-  selected={{ from: value.from, to: value.to }}
-  onSelect={(range) => {
-    if (range?.from && range?.to) {
-      onChange({ from: range.from, to: range.to });
-    }
-  }}
-  className="pointer-events-auto"
-/>
-```
+| Antes | Depois |
+|-------|--------|
+| Email generico do sistema | Email com design Canva Viagem |
+| Remetente: no-reply@auth.lovable.cloud | Remetente: lucas@rochadigitalmidia.com.br |
+| Sem controle sobre o conteudo | Controle total do HTML/CSS |
+| Nao rastreia aberturas | Rastreia via Resend (opens/clicks) |
 
 ---
 
-## 7. Interface Atualizada dos Usuarios
+## Seguranca
 
-### Antes (Problema)
-```text
-Email: "Email nao disponivel"
-```
-
-### Depois (Corrigido)
-```text
-Email: "usuario@exemplo.com"
-Nome: "Nome do Usuario" (novo campo)
-```
-
-A tabela de usuarios mostrara:
-- Email real do usuario
-- Nome (extraido do email antes do @)
-- Status da assinatura
-- Datas de inscricao e validade
-
----
-
-## 8. Resultado Esperado
-
-| Problema | Solucao |
-|----------|---------|
-| Emails nao aparecem | Buscar de user_email_automations |
-| Sem filtros de data | Componente DateRangeFilter com presets |
-| Fontes separadas do dashboard | Integrar resumo de fontes na Visao Geral |
-| Graficos sem periodo | Queries filtradas por data |
-
-### Novo Fluxo de Uso
-
-1. Admin acessa `/gestao`
-2. Clica na aba "Dashboard"
-3. Seleciona periodo: "Ontem", "7D", "1 Mes", etc.
-4. Todos os graficos e metricas atualizam automaticamente
-5. Ve as principais fontes de trafego junto com os KPIs
-6. Na aba "Usuarios" ve os emails reais de cada assinante
+- Tokens tem expiracao de 1 hora
+- Tokens sao marcados como usados apos primeiro uso
+- Validacao server-side via Edge Function
+- Uso de Service Role Key apenas no backend
