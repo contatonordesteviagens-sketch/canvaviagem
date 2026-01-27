@@ -128,6 +128,10 @@ serve(async (req) => {
         await handlePaymentFailed(event.data.object, supabaseAdmin, resend);
         break;
 
+      case "checkout.session.expired":
+        await handleCheckoutExpired(event.data.object, supabaseAdmin, resend);
+        break;
+
       default:
         logStep("Unhandled event type", { type: event.type });
     }
@@ -570,5 +574,128 @@ async function sendPaymentFailedEmail(resend: any, email: string) {
     logStep("Payment failed email sent successfully", { email: redactEmail(email) });
   } catch (error: unknown) {
     logStep("ERROR: Failed to send payment failed email", { error: error instanceof Error ? error.message : String(error), email: redactEmail(email) });
+  }
+}
+
+async function handleCheckoutExpired(session: Stripe.Checkout.Session, supabase: any, resend: any) {
+  logStep("Processing checkout.session.expired", { sessionId: session.id });
+
+  const email = session.customer_details?.email || session.customer_email;
+  
+  if (!email) {
+    logStep("No email in expired session, skipping recovery");
+    return;
+  }
+
+  // Validate email format
+  if (!isValidEmail(email)) {
+    logStep("Invalid email format in expired session", { email: "[REDACTED]" });
+    return;
+  }
+
+  // Save abandoned checkout to database for analytics
+  const { error: insertError } = await supabase
+    .from("abandoned_checkouts")
+    .insert({
+      email,
+      session_id: session.id,
+      amount: session.amount_total,
+    });
+
+  if (insertError) {
+    // Ignore duplicate session_id errors (already processed)
+    if (!insertError.message?.includes("duplicate")) {
+      logStep("ERROR: Failed to insert abandoned checkout", { error: insertError.message });
+    }
+  } else {
+    logStep("Abandoned checkout saved", { email: redactEmail(email) });
+  }
+
+  // Send recovery email with WhatsApp contact
+  if (resend) {
+    await sendRecoveryEmail(resend, email);
+  }
+}
+
+async function sendRecoveryEmail(resend: any, email: string) {
+  const checkoutUrl = "https://buy.stripe.com/cNi28s2PEa2Q6aD9wU8so03";
+
+  try {
+    await resend.emails.send({
+      from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+      to: [email],
+      subject: "🛒 Você esqueceu algo... Finalize sua compra!",
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+        </head>
+        <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 20px; text-align: center;">
+              <p style="font-size: 40px; margin: 0;">🛒 💔</p>
+              <h1 style="color: white; margin: 10px 0; font-size: 24px;">Você esqueceu algo...</h1>
+            </div>
+            
+            <!-- Conteúdo -->
+            <div style="padding: 30px;">
+              <p style="color: #333; font-size: 16px; line-height: 1.6;">
+                Oi! Percebemos que você estava prestes a desbloquear o arsenal completo 
+                do <strong>Canva Viagens</strong>, mas algo interrompeu o processo.
+              </p>
+              
+              <p style="color: #333; font-size: 16px; line-height: 1.6;">
+                Acontece! Cartão deu problema? Precisou sair correndo? Estamos aqui para ajudar.
+              </p>
+
+              <!-- CTA Principal -->
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${checkoutUrl}" 
+                   style="display: inline-block; background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                  🚀 Finalizar Minha Compra
+                </a>
+              </div>
+
+              <!-- WhatsApp -->
+              <div style="background: #dcfce7; padding: 20px; border-radius: 8px; border-left: 4px solid #22c55e; margin: 20px 0;">
+                <p style="color: #166534; font-weight: bold; margin: 0 0 10px 0;">
+                  📞 Precisa de Ajuda?
+                </p>
+                <p style="color: #166534; margin: 0;">
+                  Fale diretamente com nossa equipe pelo WhatsApp:<br>
+                  <a href="https://wa.me/5585986411294" style="color: #22c55e; font-weight: bold; font-size: 18px; text-decoration: none;">
+                    (85) 9 8641-1294
+                  </a>
+                </p>
+              </div>
+
+              <!-- Urgência -->
+              <div style="background: #fef3c7; padding: 15px; border-radius: 8px; text-align: center;">
+                <p style="color: #92400e; margin: 0; font-size: 14px;">
+                  ⏰ Não perca o acesso aos templates e robôs de IA!
+                </p>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="background: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                © 2025 Canva Viagens & Marketing.<br>
+                Você recebeu este email porque iniciou uma compra.
+              </p>
+            </div>
+            
+          </div>
+        </body>
+        </html>
+      `,
+    });
+    logStep("Recovery email sent successfully", { email: redactEmail(email) });
+  } catch (error: unknown) {
+    logStep("ERROR: Failed to send recovery email", { error: error instanceof Error ? error.message : String(error), email: redactEmail(email) });
   }
 }
