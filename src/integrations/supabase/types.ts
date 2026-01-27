@@ -288,6 +288,7 @@ export type Database = {
           expires_at: string
           id: string
           name: string | null
+          phone: string | null
           token: string
           used_at: string | null
         }
@@ -297,6 +298,7 @@ export type Database = {
           expires_at: string
           id?: string
           name?: string | null
+          phone?: string | null
           token: string
           used_at?: string | null
         }
@@ -306,6 +308,7 @@ export type Database = {
           expires_at?: string
           id?: string
           name?: string | null
+          phone?: string | null
           token?: string
           used_at?: string | null
         }
@@ -382,6 +385,7 @@ export type Database = {
           id: string
           language: string | null
           name: string | null
+          phone: string | null
           referrer_url: string | null
           stripe_customer_id: string | null
           updated_at: string
@@ -397,6 +401,7 @@ export type Database = {
           id?: string
           language?: string | null
           name?: string | null
+          phone?: string | null
           referrer_url?: string | null
           stripe_customer_id?: string | null
           updated_at?: string
@@ -412,6 +417,7 @@ export type Database = {
           id?: string
           language?: string | null
           name?: string | null
+          phone?: string | null
           referrer_url?: string | null
           stripe_customer_id?: string | null
           updated_at?: string
