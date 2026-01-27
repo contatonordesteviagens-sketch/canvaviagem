@@ -155,7 +155,31 @@ serve(async (req) => {
       html: generateEmailTemplate(magicLink),
     });
 
-    console.log("Magic link email sent:", emailResponse);
+    console.log("[MAGIC-LINK] Email sent:", JSON.stringify({ 
+      email, 
+      emailId: emailResponse.data?.id,
+      error: emailResponse.error 
+    }));
+
+    // Verificar se o Resend retornou erro
+    if (emailResponse.error) {
+      console.error("[MAGIC-LINK] Resend error:", emailResponse.error);
+      return new Response(
+        JSON.stringify({ error: "Erro ao enviar email. Tente novamente." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Registrar evento de email enviado
+    await supabaseAdmin
+      .from("email_events")
+      .insert({
+        email_id: emailResponse.data?.id || token,
+        type: "sent",
+        email_type: "magic_link",
+        recipient_email: email,
+        metadata: { token_id: token }
+      });
 
     return new Response(
       JSON.stringify({ success: true, message: "Link enviado com sucesso" }),
