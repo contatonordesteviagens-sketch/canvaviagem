@@ -16,15 +16,20 @@ import {
   MessageCircle,
   Video,
   Megaphone,
-  Clock
+  Clock,
+  ArrowDown
 } from "lucide-react";
 
-const HOTMART_CHECKOUT_URL = "https://pay.hotmart.com/X100779687E?off=1b820216&checkoutMode=10";
+const HOTMART_CHECKOUT_URL = "https://pay.hotmart.com/X100779687E?checkoutMode=10";
 const YOUTUBE_VIDEO_ID = "0uPJm4FNRfI";
 
 const ProximoNivel = () => {
   const handleCTAClick = () => {
     window.open(HOTMART_CHECKOUT_URL, "_blank", "noopener,noreferrer");
+  };
+
+  const scrollToPricing = () => {
+    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -34,16 +39,16 @@ const ProximoNivel = () => {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="relative py-12 md:py-20 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-background to-amber-500/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
           <div className="container mx-auto px-4 max-w-4xl relative z-10">
             <div className="text-center space-y-6">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-sm font-medium">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
                 <Sparkles className="h-4 w-4" />
                 Treinamento Exclusivo
               </div>
               
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">
-                <span className="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   AGENTE LUCRATIVO®
                 </span>
               </h1>
@@ -54,7 +59,7 @@ const ProximoNivel = () => {
 
               {/* YouTube Video Embed */}
               <div className="max-w-sm mx-auto pt-4">
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-orange-500/20">
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-primary/20">
                   <div className="aspect-[9/16]">
                     <iframe
                       src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=0&rel=0`}
@@ -74,6 +79,28 @@ const ProximoNivel = () => {
                 <p className="text-xl font-semibold text-foreground">
                   👉 Mas você sabe exatamente o que postar, anunciar e falar para isso virar venda?
                 </p>
+              </div>
+
+              {/* Hero CTAs */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+                <Button 
+                  onClick={handleCTAClick}
+                  size="lg"
+                  className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white text-lg px-8 py-6 h-auto font-bold shadow-lg"
+                >
+                  <Rocket className="mr-2 h-5 w-5" />
+                  ATIVAR AGORA
+                </Button>
+                
+                <Button 
+                  onClick={scrollToPricing}
+                  variant="outline"
+                  size="lg"
+                  className="border-primary/30 text-primary hover:bg-primary/10 text-lg px-8 py-6 h-auto font-semibold"
+                >
+                  <ArrowDown className="mr-2 h-5 w-5" />
+                  Ver Investimento
+                </Button>
               </div>
             </div>
           </div>
@@ -140,7 +167,7 @@ const ProximoNivel = () => {
         <section className="py-12 md:py-16">
           <div className="container mx-auto px-4 max-w-4xl">
             <div className="text-center space-y-6">
-              <div className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400">
+              <div className="inline-flex items-center gap-2 text-primary">
                 <Flame className="h-8 w-8" />
                 <h2 className="text-2xl md:text-3xl font-bold">
                   É AQUI QUE ENTRA O AGENTE LUCRATIVO®
@@ -170,10 +197,10 @@ const ProximoNivel = () => {
         </section>
 
         {/* Simple Idea Section */}
-        <section className="py-12 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20">
+        <section className="py-12 bg-gradient-to-br from-primary/5 to-accent/5">
           <div className="container mx-auto px-4 max-w-4xl">
             <div className="text-center space-y-6">
-              <div className="inline-flex items-center gap-2 text-amber-600 dark:text-amber-400">
+              <div className="inline-flex items-center gap-2 text-accent">
                 <Brain className="h-8 w-8" />
                 <h2 className="text-2xl md:text-3xl font-bold">
                   A IDEIA É SIMPLES (E FUNCIONA)
@@ -187,19 +214,19 @@ const ProximoNivel = () => {
               <div className="grid md:grid-cols-3 gap-4">
                 <Card className="bg-background/80">
                   <CardContent className="p-4 text-center">
-                    <MessageCircle className="h-8 w-8 mx-auto mb-2 text-orange-500" />
+                    <MessageCircle className="h-8 w-8 mx-auto mb-2 text-primary" />
                     <p className="font-medium">O que postar</p>
                   </CardContent>
                 </Card>
                 <Card className="bg-background/80">
                   <CardContent className="p-4 text-center">
-                    <Video className="h-8 w-8 mx-auto mb-2 text-orange-500" />
+                    <Video className="h-8 w-8 mx-auto mb-2 text-primary" />
                     <p className="font-medium">Que tipo de vídeo funciona</p>
                   </CardContent>
                 </Card>
                 <Card className="bg-background/80">
                   <CardContent className="p-4 text-center">
-                    <Megaphone className="h-8 w-8 mx-auto mb-2 text-orange-500" />
+                    <Megaphone className="h-8 w-8 mx-auto mb-2 text-primary" />
                     <p className="font-medium">Como anunciar sem perder dinheiro</p>
                   </CardContent>
                 </Card>
@@ -228,7 +255,7 @@ const ProximoNivel = () => {
         <section className="py-12 md:py-16">
           <div className="container mx-auto px-4 max-w-4xl">
             <div className="text-center space-y-6">
-              <div className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400">
+              <div className="inline-flex items-center gap-2 text-primary">
                 <Clock className="h-8 w-8" />
                 <h2 className="text-2xl md:text-3xl font-bold">
                   RÁPIDO DE CONSUMIR. RÁPIDO DE APLICAR.
@@ -241,20 +268,20 @@ const ProximoNivel = () => {
 
               <div className="grid md:grid-cols-3 gap-6 pt-4">
                 <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                    <Zap className="h-8 w-8 text-orange-500" />
+                  <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Zap className="h-8 w-8 text-primary" />
                   </div>
                   <p className="font-semibold">Conteúdo direto</p>
                 </div>
                 <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                    <Target className="h-8 w-8 text-orange-500" />
+                  <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Target className="h-8 w-8 text-primary" />
                   </div>
                   <p className="font-semibold">Aplicação prática</p>
                 </div>
                 <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                    <TrendingUp className="h-8 w-8 text-orange-500" />
+                  <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-primary/10 flex items-center justify-center">
+                    <TrendingUp className="h-8 w-8 text-primary" />
                   </div>
                   <p className="font-semibold">Foco total em resultado</p>
                 </div>
@@ -271,7 +298,7 @@ const ProximoNivel = () => {
         <section className="py-12 md:py-16 bg-muted/30">
           <div className="container mx-auto px-4 max-w-4xl">
             <div className="text-center space-y-6">
-              <div className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400">
+              <div className="inline-flex items-center gap-2 text-primary">
                 <Target className="h-8 w-8" />
                 <h2 className="text-2xl md:text-3xl font-bold">
                   O QUE VOCÊ VAI APRENDER
@@ -280,10 +307,10 @@ const ProximoNivel = () => {
 
               <div className="grid gap-6 pt-4">
                 {/* Module 1 */}
-                <Card className="text-left border-orange-200/50 dark:border-orange-900/30">
+                <Card className="text-left border-primary/20">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white font-bold flex-shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold flex-shrink-0">
                         01
                       </div>
                       <div>
@@ -297,10 +324,10 @@ const ProximoNivel = () => {
                 </Card>
 
                 {/* Module 2 */}
-                <Card className="text-left border-orange-200/50 dark:border-orange-900/30">
+                <Card className="text-left border-primary/20">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white font-bold flex-shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold flex-shrink-0">
                         02
                       </div>
                       <div>
@@ -329,10 +356,10 @@ const ProximoNivel = () => {
                 </Card>
 
                 {/* Module 3 */}
-                <Card className="text-left border-orange-200/50 dark:border-orange-900/30">
+                <Card className="text-left border-primary/20">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white font-bold flex-shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold flex-shrink-0">
                         03
                       </div>
                       <div>
@@ -368,7 +395,7 @@ const ProximoNivel = () => {
         <section className="py-12 md:py-16">
           <div className="container mx-auto px-4 max-w-4xl">
             <div className="text-center space-y-6">
-              <div className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400">
+              <div className="inline-flex items-center gap-2 text-primary">
                 <Users className="h-8 w-8" />
                 <h2 className="text-2xl md:text-3xl font-bold">
                   PARA QUEM ESSE TREINAMENTO É IDEAL
@@ -414,7 +441,7 @@ const ProximoNivel = () => {
         </section>
 
         {/* Pricing & CTA Section */}
-        <section className="py-16 md:py-24 bg-gradient-to-br from-orange-500 to-amber-500">
+        <section id="pricing" className="py-16 md:py-24 bg-gradient-to-br from-primary to-accent">
           <div className="container mx-auto px-4 max-w-4xl">
             <div className="text-center text-white space-y-8">
               <h2 className="text-3xl md:text-4xl font-bold">
@@ -444,7 +471,7 @@ const ProximoNivel = () => {
                 <Button 
                   onClick={handleCTAClick}
                   size="lg"
-                  className="bg-white text-orange-600 hover:bg-white/90 text-lg px-8 py-6 h-auto font-bold shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+                  className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6 h-auto font-bold shadow-xl hover:shadow-2xl transition-all hover:scale-105"
                 >
                   <Rocket className="mr-2 h-6 w-6" />
                   ATIVAR AGENTE LUCRATIVO®
@@ -470,7 +497,7 @@ const ProximoNivel = () => {
             <Button 
               onClick={handleCTAClick}
               size="lg"
-              className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-lg px-8 py-6 h-auto font-bold shadow-lg"
+              className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white text-lg px-8 py-6 h-auto font-bold shadow-lg"
             >
               <Sparkles className="mr-2 h-5 w-5" />
               Ativar Agente Lucrativo® Agora
