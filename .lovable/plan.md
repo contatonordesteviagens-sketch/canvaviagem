@@ -1,183 +1,203 @@
 
 
-# Plano: Página "Próximo Nível" + Correções na Página Pós-Pagamento
+# Plano: Redesign da Página "Próximo Nível"
 
-## Resumo
+## Resumo das Alterações
 
-Implementação de 3 funcionalidades principais:
-
-1. **Nova página "Próximo Nível"** - Página de upsell com vídeo do YouTube e oferta do curso Agente Lucrativo
-2. **Nova aba no Header** - Com ícone de estrela laranja em destaque
-3. **Correções na página Pós-Pagamento** - Mensagens mais claras sobre o fluxo de Magic Link
-
----
-
-## 1. Nova Página: Próximo Nível
-
-### Arquivo: `src/pages/ProximoNivel.tsx`
-
-Criar uma landing page focada em conversão com:
-
-**Estrutura da página:**
-- Hero com título "AGENTE LUCRATIVO®" e subtítulo impactante
-- Embed do vídeo do YouTube (shorts/0uPJm4FNRfI)
-- Seções de copy conforme fornecido:
-  - O problema (não saber o que vende)
-  - A solução (Agente Lucrativo)
-  - Módulos do treinamento
-  - Para quem é ideal
-  - Investimento (12x R$10 ou R$97/ano)
-- Botão CTA direcionando para Hotmart: `https://pay.hotmart.com/X100779687E?off=1b820216&checkoutMode=10`
-
-**Design:**
-- Visual premium com gradientes e destaque em laranja/dourado
-- Responsivo para mobile e desktop
-- Ícones ilustrativos para cada seção
+Redesenhar a página `/proximo-nivel` para:
+1. Aplicar a identidade visual do Canva Viagem (branco, azul, roxo)
+2. Adicionar botão CTA no Hero que ancora para a seção de preços
+3. Atualizar o link do botão principal para: `https://pay.hotmart.com/X100779687E?checkoutMode=10`
 
 ---
 
-## 2. Navegação: Aba com Estrela Laranja
+## Mudanças Visuais Principais
 
-### Arquivo: `src/components/Header.tsx`
+### Cores Atuais → Cores Novas
+
+| Elemento | Atual (Laranja) | Novo (Canva) |
+|----------|-----------------|--------------|
+| Gradiente Hero | `from-orange-500 to-amber-500` | `from-primary to-accent` (roxo → cyan) |
+| Badges/Tags | `bg-orange-500/10 text-orange-600` | `bg-primary/10 text-primary` |
+| Ícones | `text-orange-500` | `text-primary` ou `text-accent` |
+| Cards módulos | `border-orange-200/50` | `border-primary/20` |
+| Seção problema | `bg-red-50` | `bg-red-50` (mantém - é intencional) |
+| CTA principal | `from-orange-500 to-amber-500` | `from-primary to-accent` |
+
+---
+
+## Estrutura da Página Redesenhada
+
+### 1. Hero Section
+
+**Novo layout:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  [Badge: Treinamento Exclusivo]                             │
+│                                                             │
+│        AGENTE LUCRATIVO®                                    │
+│   O próximo nível para quem quer vender viagens...         │
+│                                                             │
+│   ┌────────────────┐                                        │
+│   │  [VÍDEO 9:16] │                                        │
+│   └────────────────┘                                        │
+│                                                             │
+│   [🚀 ATIVAR AGORA]  [📍 VER INVESTIMENTO ↓]               │
+│    (Hotmart)          (Scroll para #pricing)               │
+└─────────────────────────────────────────────────────────────┘
+```
 
 **Alterações:**
-- Adicionar novo link "Próximo Nível" no menu de navegação
-- Ícone de estrela (Star do Lucide) com cor laranja (#F97316)
-- Badge ou destaque visual para chamar atenção
-- Posicionar após os links existentes, antes do dropdown de usuário
-
-**Exemplo visual:**
-```
-[Início] [Calendário] [Conteúdos ▼] [⭐ Próximo Nível] [Planos]
-```
-
-O ícone de estrela terá animação sutil (pulse) para destacar
+- Gradiente de fundo: `from-primary/10 via-background to-accent/10`
+- Badge: `bg-primary/10 text-primary border-primary/20`
+- Título: `bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent`
+- **2 botões lado a lado:**
+  - Botão primário: "ATIVAR AGENTE LUCRATIVO AGORA" → link Hotmart
+  - Botão secundário: "VER INVESTIMENTO" → ancora para `#pricing`
 
 ---
 
-## 3. Rota no App.tsx
+### 2. Seções de Conteúdo
 
-### Arquivo: `src/App.tsx`
+Atualizar todas as seções para usar cores do design system:
 
-Adicionar a nova rota:
-```typescript
-import ProximoNivel from "./pages/ProximoNivel";
+**Cards de Módulos:**
+```tsx
+// De:
+<div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500">
 
-// Na seção de Routes:
-<Route path="/proximo-nivel" element={<ProximoNivel />} />
+// Para:
+<div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent">
+```
+
+**Ícones:**
+```tsx
+// De:
+<Zap className="h-8 w-8 text-orange-500" />
+
+// Para:
+<Zap className="h-8 w-8 text-primary" />
+```
+
+**Seção "Ideia Simples":**
+```tsx
+// De:
+<section className="py-12 bg-gradient-to-br from-orange-50 to-amber-50">
+
+// Para:
+<section className="py-12 bg-gradient-to-br from-primary/5 to-accent/5">
 ```
 
 ---
 
-## 4. Correções na Página Pós-Pagamento
+### 3. Seção de Preços (id="pricing")
 
-### Arquivo: `src/pages/PosPagamento.tsx`
+Adicionar `id="pricing"` para permitir scroll anchor:
 
-**Mensagens atuais (problemáticas):**
-- "Pagamento Confirmado! Sua assinatura foi ativada com sucesso!"
-- "Verifique seu email"
+```tsx
+<section id="pricing" className="py-16 md:py-24 bg-gradient-to-br from-primary to-accent">
+```
 
-**Novas mensagens (mais claras):**
-- Título: "Pagamento Confirmado!"
-- Subtítulo: "Agora digite o e-mail usado na compra para receber seu link de acesso"
-- Remover texto que confunde sobre "verificar email" antes de enviar o magic link
-
-**Fluxo corrigido:**
-1. Usuário chega na página após pagamento
-2. Texto explica claramente: "Digite abaixo o mesmo e-mail usado na compra"
-3. Campo de email em destaque
-4. Botão "Enviar Link de Acesso"
-5. Após envio: "Link enviado! Verifique sua caixa de entrada e spam"
-
-**Melhoria de UX:**
-- Destacar visualmente o formulário de email
-- Tornar as instruções mais diretas e menos confusas
-- Adicionar texto explicativo: "Use exatamente o mesmo e-mail que você usou para fazer o pagamento"
+Manter o design de preços mas com cores consistentes.
 
 ---
 
-## 5. Melhoria no Fluxo de Login Automático
+## Arquivo a Modificar
 
-### Contexto do Problema
+### `src/pages/ProximoNivel.tsx`
 
-Usuários que pagam mas têm dificuldade para fazer login. O fluxo atual:
-1. Usuário paga no Stripe
-2. Stripe webhook cria/atualiza o perfil no banco
-3. Usuário precisa fazer login manualmente via Magic Link
+**Alteração 1 - URL do Hotmart:**
+```tsx
+// De:
+const HOTMART_CHECKOUT_URL = "https://pay.hotmart.com/X100779687E?off=1b820216&checkoutMode=10";
 
-### Solução Proposta
-
-**Opção A - Parâmetro de email na URL (implementar agora):**
-
-Quando o Stripe redireciona para `/pos-pagamento`, podemos passar o email como parâmetro:
-- URL: `/pos-pagamento?email=usuario@email.com`
-- O campo de email já vem preenchido automaticamente
-- Usuário só precisa clicar em "Enviar Link"
-
-**Alteração no `src/pages/PosPagamento.tsx`:**
-```typescript
-const [searchParams] = useSearchParams();
-const emailFromUrl = searchParams.get('email');
-
-useEffect(() => {
-  if (emailFromUrl) {
-    setEmail(emailFromUrl);
-  }
-}, [emailFromUrl]);
+// Para:
+const HOTMART_CHECKOUT_URL = "https://pay.hotmart.com/X100779687E?checkoutMode=10";
 ```
 
-**Nota:** O redirecionamento com email depende da configuração do Stripe Checkout. Se o checkout já estiver configurado para redirecionar para `/pos-pagamento`, podemos adicionar o `{CHECKOUT_SESSION_ID}` e buscar o email via API.
+**Alteração 2 - Função de scroll:**
+```tsx
+const scrollToPricing = () => {
+  document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+};
+```
+
+**Alteração 3 - Hero com 2 botões:**
+```tsx
+<div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+  <Button 
+    onClick={handleCTAClick}
+    size="lg"
+    className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white text-lg px-8 py-6 h-auto font-bold shadow-lg"
+  >
+    <Rocket className="mr-2 h-5 w-5" />
+    ATIVAR AGORA
+  </Button>
+  
+  <Button 
+    onClick={scrollToPricing}
+    variant="outline"
+    size="lg"
+    className="border-primary/30 text-primary hover:bg-primary/10 text-lg px-8 py-6 h-auto font-semibold"
+  >
+    <ArrowDown className="mr-2 h-5 w-5" />
+    Ver Investimento
+  </Button>
+</div>
+```
+
+**Alteração 4 - Cores do design system:**
+
+Substituições em massa:
+- `from-orange-500` → `from-primary`
+- `to-amber-500` → `to-accent`
+- `text-orange-600` → `text-primary`
+- `text-orange-500` → `text-primary`
+- `text-amber-600` → `text-accent`
+- `bg-orange-500/10` → `bg-primary/10`
+- `border-orange-500/20` → `border-primary/20`
+- `bg-orange-100` → `bg-primary/10`
+- `bg-orange-50` → `bg-primary/5`
+- `from-orange-950/20` → `from-primary/10`
+
+**Alteração 5 - Seção de preços:**
+```tsx
+<section id="pricing" className="py-16 md:py-24 bg-gradient-to-br from-primary to-accent">
+  {/* Conteúdo existente mantido */}
+</section>
+```
 
 ---
 
-## Arquivos a Criar/Modificar
+## Novo Import Necessário
 
-| Arquivo | Ação |
-|---------|------|
-| `src/pages/ProximoNivel.tsx` | **CRIAR** - Nova página de upsell |
-| `src/components/Header.tsx` | **MODIFICAR** - Adicionar aba com estrela |
-| `src/App.tsx` | **MODIFICAR** - Adicionar rota /proximo-nivel |
-| `src/pages/PosPagamento.tsx` | **MODIFICAR** - Corrigir mensagens e UX |
+```tsx
+import { ArrowDown } from "lucide-react";
+```
 
 ---
 
-## Recursos Utilizados
+## Resultado Visual Esperado
 
-- **Vídeo YouTube:** `https://youtube.com/shorts/0uPJm4FNRfI`
-- **Link de Compra Hotmart:** `https://pay.hotmart.com/X100779687E?off=1b820216&checkoutMode=10`
-- **Ícone:** Star (Lucide React) com cor laranja (#F97316)
+A página terá:
+- ✅ Identidade visual consistente com o resto do app (roxo/cyan)
+- ✅ Botão de ação principal visível no Hero
+- ✅ Botão secundário que leva para a seção de preços
+- ✅ Cards e ícones usando cores do brand
+- ✅ Link correto para o Hotmart (sem parâmetro `off`)
 
 ---
 
-## Preview Visual
+## Comparação Visual
 
-**Header com nova aba:**
-```
-┌────────────────────────────────────────────────────────────────┐
-│ [Logo] [Início] [Calendário] [Conteúdos▼] [⭐Próximo Nível] [Planos] │
-└────────────────────────────────────────────────────────────────┘
-```
+**Antes (Laranja/Amber):**
+- Hero com gradiente laranja
+- Badges e ícones laranja
+- CTA laranja no final da página
 
-**Página Próximo Nível:**
-```
-┌────────────────────────────────────────────────────────────────┐
-│                    AGENTE LUCRATIVO®                           │
-│     O próximo nível para quem quer vender viagens...          │
-│                                                                │
-│              ┌─────────────────────┐                          │
-│              │   [VÍDEO YOUTUBE]   │                          │
-│              │    shorts embed     │                          │
-│              └─────────────────────┘                          │
-│                                                                │
-│     ❌ O PROBLEMA NÃO É CRIAR CONTEÚDO                        │
-│        É NÃO SABER O QUE REALMENTE VENDE                      │
-│                                                                │
-│     🔥 É AQUI QUE ENTRA O AGENTE LUCRATIVO®                   │
-│        ... (seções de copy) ...                               │
-│                                                                │
-│     💰 12x de R$ 10 ou R$ 97 por ano                          │
-│                                                                │
-│     [🚀 ATIVAR AGENTE LUCRATIVO - HOTMART]                    │
-└────────────────────────────────────────────────────────────────┘
-```
+**Depois (Roxo/Cyan - Canva):**
+- Hero com gradiente roxo → cyan
+- Badges roxos, ícones roxos
+- 2 CTAs no Hero (um para compra, outro para scroll)
+- Visual consistente com `/planos` e resto do app
 
