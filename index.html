@@ -70,12 +70,19 @@
     <style>
       /* Ajuste do widget Zaia para não sobrepor navegação mobile */
       @media (max-width: 768px) {
+        /* Seletores específicos para Zaia */
         #zaia-widget-container,
         [id*="zaia"],
-        iframe[src*="zaia"] {
-          bottom: 80px !important;
-          right: 12px !important;
-          transform: scale(0.85) !important;
+        [class*="zaia"],
+        iframe[src*="zaia"],
+        /* Seletores genéricos para widgets de chat fixos no canto inferior direito */
+        body > div[style*="position: fixed"][style*="bottom"],
+        body > div[style*="position:fixed"][style*="bottom"],
+        body > iframe[style*="position: fixed"],
+        body > iframe[style*="position:fixed"] {
+          bottom: 90px !important;
+          right: 16px !important;
+          transform: scale(0.8) !important;
           transform-origin: bottom right !important;
         }
       }
