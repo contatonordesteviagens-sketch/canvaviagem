@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Sparkles, Heart, Mail, Phone, MessageCircle, ArrowRight, ExternalLink } from "lucide-react";
+import { CheckCircle, Sparkles, Heart, Mail, Phone, MessageCircle, ArrowRight } from "lucide-react";
 import { trackPurchase, trackSubscribe } from "@/lib/meta-pixel";
 
 const Obrigado = () => {
@@ -13,7 +13,6 @@ const Obrigado = () => {
   const [tracked, setTracked] = useState(false);
 
   useEffect(() => {
-    // Track conversion only once when coming from checkout
     if (!tracked && source === 'checkout') {
       console.log('[Meta Debug] Tracking conversion on /obrigado');
       trackPurchase(9.90, 'BRL');
@@ -21,25 +20,6 @@ const Obrigado = () => {
       setTracked(true);
     }
   }, [tracked, source]);
-
-  const openEmailClient = () => {
-    // Try to detect email provider and open it
-    if (email) {
-      const domain = email.split('@')[1]?.toLowerCase();
-      if (domain?.includes('gmail')) {
-        window.open('https://mail.google.com', '_blank');
-      } else if (domain?.includes('outlook') || domain?.includes('hotmail') || domain?.includes('live')) {
-        window.open('https://outlook.live.com', '_blank');
-      } else if (domain?.includes('yahoo')) {
-        window.open('https://mail.yahoo.com', '_blank');
-      } else {
-        // Generic fallback - open Gmail as most common
-        window.open('https://mail.google.com', '_blank');
-      }
-    } else {
-      window.open('https://mail.google.com', '_blank');
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10 flex items-center justify-center p-4">
@@ -87,14 +67,17 @@ const Obrigado = () => {
             </div>
           </div>
 
-          {/* Instructions */}
+          {/* Clear Instructions - NO EMAIL BUTTON */}
           <div className="bg-primary/10 rounded-xl p-6 space-y-3">
             <div className="flex items-center justify-center gap-2 text-primary font-semibold">
               <Heart className="h-5 w-5" />
               <span>Próximo Passo</span>
             </div>
             <p className="text-muted-foreground">
-              Verifique sua <strong>caixa de entrada</strong> (ou spam) e clique no link para acessar a plataforma.
+              Acesse seu email (Gmail, Outlook, Yahoo ou qualquer outro) e clique no link que enviamos.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              <strong>Dica:</strong> Verifique também a pasta de spam.
             </p>
           </div>
 
@@ -110,15 +93,8 @@ const Obrigado = () => {
             </ul>
           </div>
 
-          {/* CTA - Check email */}
-          <Button onClick={openEmailClient} className="w-full" size="lg">
-            <Mail className="mr-2 h-4 w-4" />
-            Abrir Meu Email
-            <ExternalLink className="ml-2 h-4 w-4" />
-          </Button>
-
-          {/* Already logged in */}
-          <Button variant="ghost" onClick={() => navigate("/")} className="w-full">
+          {/* Already logged in - PRIMARY CTA */}
+          <Button variant="default" onClick={() => navigate("/")} className="w-full" size="lg">
             <ArrowRight className="mr-2 h-4 w-4" />
             Já estou logado - Acessar Plataforma
           </Button>
