@@ -67,6 +67,37 @@
       };
     </script>
     <script src="https://platform.zaia.app/script/widget-loader.js"></script>
+    
+    <!-- MutationObserver to fix Zaia widget position on mobile -->
+    <script>
+      (function() {
+        const adjustZaiaWidget = () => {
+          if (window.innerWidth > 768) return;
+          const selectors = [
+            '[id*="zaia"]', '[class*="zaia"]', '.zaia-widget',
+            '#chatbot-fab', '#chatbot-container', '[id*="chatbot"]',
+            'iframe[src*="zaia"]', '[class*="chat-widget"]'
+          ];
+          selectors.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => {
+              el.style.setProperty('bottom', '100px', 'important');
+              el.style.setProperty('z-index', '45', 'important');
+            });
+          });
+        };
+        
+        const observer = new MutationObserver(adjustZaiaWidget);
+        if (document.body) {
+          observer.observe(document.body, { childList: true, subtree: true });
+        } else {
+          document.addEventListener('DOMContentLoaded', () => {
+            observer.observe(document.body, { childList: true, subtree: true });
+          });
+        }
+        window.addEventListener('resize', adjustZaiaWidget);
+        setInterval(adjustZaiaWidget, 2000);
+      })();
+    </script>
     <style>
       /* Ajuste do widget Zaia para não sobrepor navegação mobile */
       @media (max-width: 768px) {

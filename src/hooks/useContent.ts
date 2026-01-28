@@ -20,6 +20,10 @@ export interface ContentItem {
   language: string | null;
   created_at: string;
   updated_at: string;
+  // External media fields
+  media_url: string | null;
+  media_type: 'gif' | 'video' | null;
+  is_highlighted: boolean;
 }
 
 export interface Caption {
@@ -99,7 +103,7 @@ export const useNewestItemIds = () => {
   });
 };
 
-// Hook para buscar itens em destaque
+// Hook para buscar itens em destaque (is_featured)
 export const useFeaturedItems = () => {
   return useQuery({
     queryKey: ["featured-items"],
@@ -117,6 +121,26 @@ export const useFeaturedItems = () => {
       return data as ContentItem[];
     },
     staleTime: 1000 * 60 * 5,
+  });
+};
+
+// Hook para buscar itens destacados (is_highlighted) - seção especial na home
+export const useHighlightedItems = () => {
+  return useQuery({
+    queryKey: ["highlighted-items"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("content_items")
+        .select("*")
+        .eq("is_active", true)
+        .eq("is_highlighted", true)
+        .order("created_at", { ascending: false })
+        .limit(3);
+      
+      if (error) throw error;
+      return data as ContentItem[];
+    },
+    staleTime: 1000 * 60 * 2,
   });
 };
 

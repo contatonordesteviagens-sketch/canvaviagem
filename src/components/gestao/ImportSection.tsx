@@ -4,6 +4,8 @@ import { useImportContent, ContentType, ParsedItem, getDefaultIconByType } from 
 import { useCreateContentItem } from "@/hooks/useContent";
 import { useScheduleContent } from "@/hooks/useCalendarEntries";
 import { useImportCaptions } from "@/hooks/useImportCaptions";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, FileText, Loader2, Trash2, Check, X, Sparkles, Globe, MapPin, Users, Calendar, Wand2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Upload, FileText, Loader2, Trash2, Check, X, Sparkles, Globe, MapPin, Users, Calendar, Wand2, Image, Video, Star } from "lucide-react";
 import { toast } from "sonner";
 import { CaptionMatchTable } from "@/components/gestao/CaptionMatchTable";
 
@@ -113,9 +116,18 @@ export const ImportSection = () => {
   const [autoSchedule, setAutoSchedule] = useState<boolean>(true);
   const [importMode, setImportMode] = useState<"single" | "bulk">("single");
   
+  // Media and automation options
+  const [mediaUrl, setMediaUrl] = useState<string>("");
+  const [mediaType, setMediaType] = useState<"gif" | "video" | null>(null);
+  const [autoFavorite, setAutoFavorite] = useState<boolean>(false);
+  const [autoHighlight, setAutoHighlight] = useState<boolean>(false);
+  
   // Bulk captions import
   const [bulkCaptionsText, setBulkCaptionsText] = useState<string>("");
   const [includeWithCaption, setIncludeWithCaption] = useState<boolean>(false);
+  
+  const { user } = useAuth();
+  const { toggleFavorite, MAX_FAVORITES, favoritesCount } = useFavorites();
   
   const queryClient = useQueryClient();
   const createContentItem = useCreateContentItem();
@@ -452,7 +464,7 @@ export const ImportSection = () => {
     }
   };
 
-  // Single item import with separate fields (Title, URL, Caption)
+  // Single item import with separate fields (Title, URL, Caption, Media, Automation)
   const handleSingleImport = async () => {
     if (!quickTitle.trim() || !quickUrl.trim()) {
       toast.error("Preencha o título e o link do vídeo");
@@ -467,7 +479,7 @@ export const ImportSection = () => {
     setIsQuickImporting(true);
 
     try {
-      // Create the content item
+      // Create the content item with new media fields
       const { data: createdItem, error } = await supabase
         .from("content_items")
         .insert({
@@ -479,13 +491,16 @@ export const ImportSection = () => {
           category: influencer || location || null,
           language: language,
           is_active: true,
+          media_url: mediaUrl.trim() || null,
+          media_type: mediaType,
+          is_highlighted: autoHighlight,
         })
         .select("id")
         .single();
 
       if (error) throw error;
 
-      let scheduledMessage = "";
+      let actions: string[] = [];
 
       // Auto-schedule to calendar if enabled
       if (autoSchedule && selectedType === 'video' && createdItem) {
@@ -495,23 +510,49 @@ export const ImportSection = () => {
             caption: quickCaption.trim() || undefined,
           });
           if (result.scheduled) {
-            scheduledMessage = " e agendado no calendário";
+            actions.push("agendado");
           }
         } catch (scheduleError) {
           console.error("Error scheduling:", scheduleError);
         }
       }
 
-      toast.success(`"${quickTitle}" importado com sucesso${scheduledMessage}!`);
+      // Auto-favorite if enabled
+      if (autoFavorite && createdItem && user) {
+        try {
+          await toggleFavorite.mutateAsync({
+            contentType: "content_item",
+            contentId: createdItem.id,
+          });
+          actions.push("favoritado");
+        } catch (favoriteError) {
+          console.error("Error favoriting:", favoriteError);
+        }
+      }
+
+      // Build success message
+      let successMessage = `"${quickTitle}" importado com sucesso`;
+      if (actions.length > 0) {
+        successMessage += ` (${actions.join(", ")})`;
+      }
+      if (autoHighlight) {
+        successMessage += " ✨";
+      }
+      toast.success(successMessage + "!");
       
       // Clear fields
       setQuickTitle("");
       setQuickUrl("");
       setQuickCaption("");
+      setMediaUrl("");
+      setMediaType(null);
+      setAutoFavorite(false);
+      setAutoHighlight(false);
       
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ["content-items"] });
       queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
+      queryClient.invalidateQueries({ queryKey: ["highlighted-items"] });
     } catch (error) {
       console.error("Single import error:", error);
       toast.error("Erro ao importar vídeo.");
@@ -784,8 +825,75 @@ export const ImportSection = () => {
                   placeholder="Digite a legenda que será usada no calendário..."
                   value={quickCaption}
                   onChange={(e) => setQuickCaption(e.target.value)}
-                  rows={4}
+                  rows={3}
                 />
+              </div>
+
+              {/* External Media Section */}
+              <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
+                <Label className="text-base font-medium flex items-center gap-2">
+                  <Video className="h-4 w-4" />
+                  Mídia de Destaque (Opcional)
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Adicione um GIF ou vídeo curto para aparecer na seção de destaques
+                </p>
+                
+                <Tabs defaultValue="gif" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="gif" className="text-xs">
+                      <Image className="h-3 w-3 mr-1" />
+                      GIF Animado
+                    </TabsTrigger>
+                    <TabsTrigger value="video" className="text-xs">
+                      <Video className="h-3 w-3 mr-1" />
+                      Vídeo Curto
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="gif" className="mt-2">
+                    <Input 
+                      placeholder="Link do GIF (Giphy, Tenor...)"
+                      value={mediaType === "gif" ? mediaUrl : ""}
+                      onChange={(e) => { setMediaUrl(e.target.value); setMediaType("gif"); }}
+                    />
+                  </TabsContent>
+                  <TabsContent value="video" className="mt-2">
+                    <Input 
+                      placeholder="Link do vídeo (máx 30s)"
+                      value={mediaType === "video" ? mediaUrl : ""}
+                      onChange={(e) => { setMediaUrl(e.target.value); setMediaType("video"); }}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </div>
+
+              {/* Automation Options */}
+              <div className="space-y-3 p-4 border rounded-lg bg-muted/50">
+                <Label className="text-base font-medium">Ações Automáticas</Label>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="auto-favorite" 
+                    checked={autoFavorite} 
+                    onCheckedChange={(checked) => setAutoFavorite(checked === true)}
+                  />
+                  <Label htmlFor="auto-favorite" className="text-sm font-normal cursor-pointer flex items-center gap-1">
+                    <Star className="h-3 w-3 text-yellow-500" />
+                    Adicionar aos Favoritos ({favoritesCount}/{MAX_FAVORITES})
+                  </Label>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="auto-highlight" 
+                    checked={autoHighlight} 
+                    onCheckedChange={(checked) => setAutoHighlight(checked === true)}
+                  />
+                  <Label htmlFor="auto-highlight" className="text-sm font-normal cursor-pointer flex items-center gap-1">
+                    <Sparkles className="h-3 w-3 text-primary" />
+                    Marcar como Destaque na Tela Principal
+                  </Label>
+                </div>
               </div>
             </div>
           ) : (
@@ -850,7 +958,15 @@ export const ImportSection = () => {
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={() => { setQuickTitle(""); setQuickUrl(""); setQuickCaption(""); }} 
+                  onClick={() => { 
+                    setQuickTitle(""); 
+                    setQuickUrl(""); 
+                    setQuickCaption(""); 
+                    setMediaUrl(""); 
+                    setMediaType(null);
+                    setAutoFavorite(false);
+                    setAutoHighlight(false);
+                  }} 
                   disabled={isQuickImporting}
                 >
                   Limpar
