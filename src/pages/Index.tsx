@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
@@ -32,6 +32,9 @@ import {
 } from "@/hooks/useContent";
 import { useTrackPageView } from "@/hooks/useAdminDashboard";
 import { useFavorites } from "@/hooks/useFavorites";
+
+// Utilities
+import { applyDynamicIsNew, sortByRecent } from "@/lib/content-utils";
 
 // Static resources (downloads and resources that don't need DB management)
 import { resources, videoDownloads } from "@/data/templates";
@@ -206,12 +209,9 @@ const Index = () => {
   const renderContent = () => {
     switch (activeCategory) {
       case 'videos':
-        // Ordenar: featured primeiro, depois por display_order
-        const sortedVideos = [...filteredVideos].sort((a, b) => {
-          if (a.is_featured && !b.is_featured) return -1;
-          if (!a.is_featured && b.is_featured) return 1;
-          return (a.display_order || 0) - (b.display_order || 0);
-        });
+        // Aplicar lógica dinâmica de "Novo" (últimas 3 atualizações) e ordenar por recentes
+        const videosWithDynamicNew = applyDynamicIsNew(filteredVideos);
+        const sortedVideos = sortByRecent(videosWithDynamicNew, true);
         const displayedSortedVideos = showAllVideos ? sortedVideos : sortedVideos.slice(0, 10);
         
         return (
@@ -243,7 +243,7 @@ const Index = () => {
                       id={template.id}
                       title={template.title}
                       url={template.url}
-                      isNew={template.is_new}
+                      isNew={template.isRecentlyAdded || template.is_new}
                       icon={getIcon(template.type, template.icon)}
                       // Os 10 primeiros (featured) podem ter imagem personalizada
                       imageUrl={index < 10 && template.image_url ? template.image_url : undefined}

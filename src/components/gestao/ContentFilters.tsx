@@ -16,6 +16,9 @@ interface ContentFiltersProps {
   categoryFilter: string;
   onCategoryChange: (value: string) => void;
   showTypeFilter?: boolean;
+  showFavoritesFilter?: boolean;
+  favoritesOnly?: boolean;
+  onFavoritesChange?: (value: boolean) => void;
 }
 
 const contentTypes = [
@@ -44,6 +47,9 @@ export const ContentFilters = ({
   categoryFilter,
   onCategoryChange,
   showTypeFilter = true,
+  showFavoritesFilter = false,
+  favoritesOnly = false,
+  onFavoritesChange,
 }: ContentFiltersProps) => {
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -86,6 +92,20 @@ export const ContentFilters = ({
           ))}
         </SelectContent>
       </Select>
+
+      {showFavoritesFilter && onFavoritesChange && (
+        <button
+          type="button"
+          onClick={() => onFavoritesChange(!favoritesOnly)}
+          className={`flex items-center gap-2 px-3 py-2 rounded-md border transition-colors text-sm font-medium ${
+            favoritesOnly 
+              ? "bg-primary text-primary-foreground border-primary" 
+              : "bg-background border-border hover:bg-muted"
+          }`}
+        >
+          ❤️ Favoritos
+        </button>
+      )}
     </div>
   );
 };
