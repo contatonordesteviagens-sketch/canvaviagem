@@ -70,13 +70,32 @@
     <style>
       /* Ajuste do widget Zaia para não sobrepor navegação mobile */
       @media (max-width: 768px) {
+        /* Seletores mais específicos para o widget Zaia */
         #zaia-widget-container,
+        #chatbot-fab,
+        #chatbot-container,
         [id*="zaia"],
-        iframe[src*="zaia"] {
-          bottom: 80px !important;
-          right: 12px !important;
-          transform: scale(0.85) !important;
+        [class*="zaia"],
+        div[style*="zaia"],
+        iframe[src*="zaia"],
+        .zaia-widget,
+        .chatbot-widget {
+          bottom: 100px !important;
+          right: 16px !important;
+          max-width: 56px !important;
+          max-height: 56px !important;
+          transform: scale(0.8) !important;
           transform-origin: bottom right !important;
+          z-index: 45 !important;
+        }
+        
+        /* Container do chat aberto */
+        #chatbot-container,
+        [id*="chatbot-container"],
+        .zaia-chat-container {
+          bottom: 100px !important;
+          max-height: calc(100vh - 180px) !important;
+          z-index: 45 !important;
         }
       }
     </style>

@@ -57,7 +57,8 @@ export const useContentItems = (type?: string | string[], featuredOnly?: boolean
         .from("content_items")
         .select("*")
         .eq("is_active", true)
-        .order("display_order", { ascending: true });
+        .order("is_featured", { ascending: false })
+        .order("created_at", { ascending: false });
       
       if (type) {
         if (Array.isArray(type)) {
@@ -76,6 +77,25 @@ export const useContentItems = (type?: string | string[], featuredOnly?: boolean
       return data as ContentItem[];
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
+  });
+};
+
+// Hook para buscar os 3 IDs mais recentes (para badge "Novo" dinâmico)
+export const useNewestItemIds = () => {
+  return useQuery({
+    queryKey: ["newest-item-ids"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("content_items")
+        .select("id")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(3);
+      
+      if (error) throw error;
+      return data?.map(item => item.id) || [];
+    },
+    staleTime: 1000 * 60 * 2, // 2 minutos
   });
 };
 

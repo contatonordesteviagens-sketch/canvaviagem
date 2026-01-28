@@ -1,6 +1,9 @@
 import { useState, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useImportContent, ContentType, ParsedItem, getDefaultIconByType } from "@/hooks/useImportContent";
 import { useCreateContentItem } from "@/hooks/useContent";
+import { useScheduleContent } from "@/hooks/useCalendarEntries";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,7 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Upload, FileText, Loader2, Trash2, Check, X, Sparkles, Globe, MapPin, Users } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Upload, FileText, Loader2, Trash2, Check, X, Sparkles, Globe, MapPin, Users, Calendar } from "lucide-react";
 import { toast } from "sonner";
 
 // Icon options by category
@@ -98,8 +102,12 @@ export const ImportSection = () => {
   
   // Quick import text
   const [quickImportText, setQuickImportText] = useState<string>("");
+  const [quickCaption, setQuickCaption] = useState<string>("");
+  const [autoSchedule, setAutoSchedule] = useState<boolean>(true);
   
+  const queryClient = useQueryClient();
   const createContentItem = useCreateContentItem();
+  const scheduleContent = useScheduleContent();
   
   const {
     parseFile,
@@ -343,20 +351,45 @@ export const ImportSection = () => {
       // Create items in database
       let successCount = 0;
       let errorCount = 0;
+      let scheduledCount = 0;
 
       for (const item of items) {
         try {
-          await createContentItem.mutateAsync({
-            title: item.title,
-            url: item.url,
-            type: selectedType,
-            icon: getDefaultIconByType(selectedType),
-            category: influencer || location || null,
-            language: language,
-            is_active: true,
-          });
-          successCount++;
-          console.log("Item created:", item.title);
+          // Create the content item and get the ID
+          const { data: createdItem } = await supabase
+            .from("content_items")
+            .insert({
+              title: item.title,
+              url: item.url,
+              type: selectedType,
+              icon: getDefaultIconByType(selectedType),
+              category: influencer || location || null,
+              language: language,
+              is_active: true,
+            })
+            .select("id")
+            .single();
+
+          if (createdItem) {
+            successCount++;
+            console.log("Item created:", item.title, createdItem.id);
+
+            // Auto-schedule to calendar if enabled
+            if (autoSchedule && selectedType === 'video') {
+              try {
+                const result = await scheduleContent.mutateAsync({
+                  contentItemId: createdItem.id,
+                  caption: quickCaption || undefined,
+                });
+                if (result.scheduled) {
+                  scheduledCount++;
+                  console.log("Scheduled for day:", result.day);
+                }
+              } catch (scheduleError) {
+                console.error("Error scheduling:", scheduleError);
+              }
+            }
+          }
         } catch (error) {
           errorCount++;
           console.error("Error creating item:", item.title, error);
@@ -364,8 +397,16 @@ export const ImportSection = () => {
       }
 
       if (successCount > 0) {
-        toast.success(`${successCount} item(s) importado(s) com sucesso!`);
+        let message = `${successCount} item(s) importado(s) com sucesso!`;
+        if (scheduledCount > 0) {
+          message += ` ${scheduledCount} agendado(s) no calendário.`;
+        }
+        toast.success(message);
         setQuickImportText("");
+        setQuickCaption("");
+        // Invalidate queries to refresh data
+        queryClient.invalidateQueries({ queryKey: ["content-items"] });
+        queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
       }
       
       if (errorCount > 0) {
@@ -507,7 +548,7 @@ export const ImportSection = () => {
             Cole o texto com títulos e links do Canva. Aceita título na linha acima do link ou na mesma linha.
           </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <Textarea
             placeholder={"Istambul\nhttps://canva.com/design/xxx...\n\nVancouver\nhttps://canva.com/design/yyy...\n\nDubai\nhttps://canva.com/design/zzz..."}
             value={quickImportText}
@@ -515,7 +556,41 @@ export const ImportSection = () => {
             rows={6}
             className="font-mono text-sm"
           />
-          <div className="flex gap-2 mt-3">
+          
+          {/* Campo de Legenda */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Legenda (Opcional)
+            </Label>
+            <Textarea
+              placeholder="Digite uma legenda padrão que será usada no calendário..."
+              value={quickCaption}
+              onChange={(e) => setQuickCaption(e.target.value)}
+              rows={3}
+            />
+          </div>
+          
+          {/* Toggle de agendamento automático */}
+          {selectedType === 'video' && (
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">Agendar automaticamente no calendário</p>
+                  <p className="text-xs text-muted-foreground">
+                    O vídeo será agendado no primeiro dia livre dos próximos 7 dias
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={autoSchedule}
+                onCheckedChange={setAutoSchedule}
+              />
+            </div>
+          )}
+          
+          <div className="flex gap-2">
             <Button 
               onClick={handleQuickImport} 
               disabled={!quickImportText.trim() || isQuickImporting}
@@ -527,7 +602,7 @@ export const ImportSection = () => {
               )}
               {isQuickImporting ? "Importando..." : "Processar e Importar"}
             </Button>
-            <Button variant="outline" onClick={() => setQuickImportText("")} disabled={isQuickImporting}>
+            <Button variant="outline" onClick={() => { setQuickImportText(""); setQuickCaption(""); }} disabled={isQuickImporting}>
               Limpar
             </Button>
           </div>
