@@ -96,8 +96,8 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      // Redirect to pos-pagamento with pre-filled email and name
-      success_url: `${origin}/pos-pagamento?email=${encodeURIComponent(user.email || '')}&name=${encodeURIComponent(userName)}`,
+      // Redirect to /obrigado with email for tracking (simplified flow)
+      success_url: `${origin}/obrigado?email=${encodeURIComponent(user.email || '')}&source=checkout`,
       cancel_url: `${origin}/planos?canceled=true`,
       metadata: {
         user_id: user.id,
