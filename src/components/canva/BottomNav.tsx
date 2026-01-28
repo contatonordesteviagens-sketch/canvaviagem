@@ -29,7 +29,7 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border/40 md:hidden">
+    <nav id="mobile-bottom-nav" className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border/40 md:hidden">
       {/* Safe area padding for iOS devices */}
       <div className="flex items-center justify-around h-16 pb-safe">
         {navItems.map((item) => {
