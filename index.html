@@ -70,105 +70,15 @@
     <style>
       /* Ajuste do widget Zaia para não sobrepor navegação mobile */
       @media (max-width: 768px) {
-        /* Seletores específicos para Zaia */
         #zaia-widget-container,
         [id*="zaia"],
-        [class*="zaia"],
-        iframe[src*="zaia"],
-        /* Seletores genéricos para widgets de chat fixos no canto inferior direito */
-        body > div[style*="position: fixed"][style*="bottom"],
-        body > div[style*="position:fixed"][style*="bottom"],
-        body > iframe[style*="position: fixed"],
-        body > iframe[style*="position:fixed"] {
-          bottom: 120px !important;
-          right: 16px !important;
-          transform: scale(0.75) !important;
+        iframe[src*="zaia"] {
+          bottom: 80px !important;
+          right: 12px !important;
+          transform: scale(0.85) !important;
           transform-origin: bottom right !important;
         }
       }
     </style>
-    <script>
-      // Fallback JavaScript para garantir posicionamento do widget Zaia no mobile
-      (function() {
-        if (window.innerWidth > 768) return;
-        
-        function getOffset() {
-          var nav = document.getElementById('mobile-bottom-nav');
-          if (nav) {
-            return nav.offsetHeight + 24;
-          }
-          return 120;
-        }
-        
-        function isZaiaWidget(el) {
-          if (!el || el.tagName === 'NAV') return false;
-          if (el.id === 'mobile-bottom-nav') return false;
-          
-          // Check for Zaia identifiers
-          var id = (el.id || '').toLowerCase();
-          var cls = (el.className || '').toLowerCase();
-          var src = el.src || '';
-          
-          if (id.indexOf('zaia') !== -1) return true;
-          if (cls.indexOf('zaia') !== -1) return true;
-          if (src.indexOf('zaia') !== -1) return true;
-          
-          // Check for fixed positioned small elements in bottom-right
-          var style = window.getComputedStyle(el);
-          if (style.position !== 'fixed') return false;
-          
-          var rect = el.getBoundingClientRect();
-          var isSmall = rect.width < 220 && rect.height < 220;
-          var isBottomRight = rect.right > window.innerWidth - 100 && rect.bottom > window.innerHeight - 200;
-          var isNotFullWidth = rect.width < window.innerWidth * 0.5;
-          
-          return isSmall && isBottomRight && isNotFullWidth;
-        }
-        
-        function applyStyles() {
-          if (window.innerWidth > 768) return;
-          
-          var offset = getOffset();
-          var candidates = document.querySelectorAll('iframe, div, button');
-          
-          candidates.forEach(function(el) {
-            if (isZaiaWidget(el)) {
-              el.style.setProperty('bottom', offset + 'px', 'important');
-              el.style.setProperty('right', '16px', 'important');
-              el.style.setProperty('transform-origin', 'bottom right', 'important');
-              
-              var currentTransform = el.style.transform || '';
-              if (currentTransform.indexOf('scale') === -1) {
-                el.style.setProperty('transform', currentTransform + ' scale(0.75)', 'important');
-              }
-            }
-          });
-        }
-        
-        // Apply on load and with delays
-        setTimeout(applyStyles, 300);
-        setTimeout(applyStyles, 1200);
-        setTimeout(applyStyles, 3000);
-        
-        // MutationObserver for dynamic changes
-        var observer = new MutationObserver(function(mutations) {
-          applyStyles();
-        });
-        
-        observer.observe(document.body, {
-          childList: true,
-          subtree: true,
-          attributes: true,
-          attributeFilter: ['style', 'class']
-        });
-        
-        // Handle resize
-        var resizeTimeout;
-        window.addEventListener('resize', function() {
-          clearTimeout(resizeTimeout);
-          resizeTimeout = setTimeout(applyStyles, 100);
-        });
-      })();
-    </script>
   </body>
 </html>

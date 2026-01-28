@@ -55,13 +55,6 @@ const iconsByCategory: Record<ContentType, { value: string; label: string }[]> =
     { value: "📄", label: "📄 Documento" },
     { value: "🏷️", label: "🏷️ Tag" },
   ],
-  calendar: [
-    { value: "📅", label: "📅 Calendário" },
-    { value: "📝", label: "📝 Nota" },
-    { value: "✍️", label: "✍️ Escrita" },
-    { value: "🗓️", label: "🗓️ Agenda" },
-    { value: "📆", label: "📆 Data" },
-  ],
 };
 
 // Category filter options
@@ -395,7 +388,6 @@ export const ImportSection = () => {
     { value: 'feed', label: '🖼️ Arte Feed' },
     { value: 'story', label: '📱 Story' },
     { value: 'caption', label: '📝 Legenda' },
-    { value: 'calendar', label: '📅 Legenda Calendário' },
     { value: 'tool', label: '🤖 Ferramenta' },
     { value: 'resource', label: '📚 Recurso' },
   ];

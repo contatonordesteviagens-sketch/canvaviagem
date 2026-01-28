@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type ContentType = 'video' | 'feed' | 'story' | 'caption' | 'tool' | 'resource' | 'calendar';
+export type ContentType = 'video' | 'feed' | 'story' | 'caption' | 'tool' | 'resource';
 
 export interface ParsedItem {
   title: string;
@@ -21,7 +21,6 @@ export const getDefaultIconByType = (type: ContentType): string => {
     feed: "🖼️",
     story: "📱",
     caption: "📝",
-    calendar: "📅",
     tool: "🤖",
     resource: "📥",
   };
@@ -109,8 +108,8 @@ export const useImportContent = () => {
   // Import content items
   const importContentMutation = useMutation({
     mutationFn: async ({ items, type }: { items: ParsedItem[]; type: ContentType }) => {
-      if (type === 'caption' || type === 'calendar') {
-        // Insert captions (calendar legendas também vão para captions)
+      if (type === 'caption') {
+        // Insert captions
         const { error } = await supabase.from("captions").insert(
           items.map((item, index) => ({
             destination: item.destination || item.title,
@@ -157,7 +156,6 @@ export const useImportContent = () => {
       queryClient.invalidateQueries({ queryKey: ["content-items"] });
       queryClient.invalidateQueries({ queryKey: ["captions"] });
       queryClient.invalidateQueries({ queryKey: ["marketing-tools"] });
-      queryClient.invalidateQueries({ queryKey: ["calendar-entries"] });
       setParsedItems([]);
     },
   });
