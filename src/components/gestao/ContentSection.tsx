@@ -43,6 +43,7 @@ type EditableItem = {
   id: string;
   title: string;
   url: string;
+  description?: string | null;
   is_active?: boolean;
 };
 
@@ -511,6 +512,8 @@ export const ContentSection = ({
                 title={item.title}
                 url={item.url}
                 icon={item.icon}
+                description={item.description}
+                hasCaption={!!item.description?.trim()}
                 isActive={item.is_active}
                 isNew={item.is_new}
                 isFeatured={item.is_featured}
@@ -540,6 +543,8 @@ export const ContentSection = ({
                 title={item.title}
                 url={item.url}
                 icon={item.icon}
+                description={item.description}
+                hasCaption={!!item.description?.trim()}
                 isActive={item.is_active}
                 isNew={item.is_new}
                 onEdit={onEditItem}

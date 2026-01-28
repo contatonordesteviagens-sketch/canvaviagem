@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 
 interface EditModalProps {
   open: boolean;
@@ -18,9 +19,10 @@ interface EditModalProps {
     id: string;
     title: string;
     url: string;
+    description?: string | null;
     is_active?: boolean;
   } | null;
-  onSave: (id: string, data: { title: string; url: string; is_active: boolean }) => void;
+  onSave: (id: string, data: { title: string; url: string; description: string; is_active: boolean }) => void;
   isSaving?: boolean;
 }
 
@@ -33,19 +35,21 @@ export const EditModal = ({
 }: EditModalProps) => {
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
+  const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
     if (item) {
       setTitle(item.title);
       setUrl(item.url);
+      setDescription(item.description || "");
       setIsActive(item.is_active ?? true);
     }
   }, [item]);
 
   const handleSave = () => {
     if (item) {
-      onSave(item.id, { title, url, is_active: isActive });
+      onSave(item.id, { title, url, description, is_active: isActive });
     }
   };
 
@@ -74,6 +78,17 @@ export const EditModal = ({
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://..."
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Legenda do Vídeo</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Digite a legenda que será usada no calendário..."
+              rows={4}
             />
           </div>
           

@@ -312,7 +312,8 @@ export const useUpdateContentItem = () => {
     mutationFn: async (data: { 
       id: string; 
       title?: string; 
-      url?: string; 
+      url?: string;
+      description?: string | null;
       is_active?: boolean 
     }) => {
       const { id, ...updateData } = data;
