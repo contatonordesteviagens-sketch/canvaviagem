@@ -660,6 +660,36 @@ export type Database = {
       }
     }
     Views: {
+      abandoned_checkouts_masked: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          email_masked: string | null
+          id: string | null
+          recovered: boolean | null
+          recovered_at: string | null
+          session_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          email_masked?: never
+          id?: string | null
+          recovered?: boolean | null
+          recovered_at?: string | null
+          session_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          email_masked?: never
+          id?: string | null
+          recovered?: boolean | null
+          recovered_at?: string | null
+          session_id?: string | null
+        }
+        Relationships: []
+      }
       marketing_stats: {
         Row: {
           campaign: string | null
@@ -673,8 +703,60 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles_admin_view: {
+        Row: {
+          created_at: string | null
+          email_masked: string | null
+          first_visit_at: string | null
+          id: string | null
+          language: string | null
+          name: string | null
+          phone_masked: string | null
+          referrer_url: string | null
+          stripe_id_masked: string | null
+          user_id: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email_masked?: never
+          first_visit_at?: string | null
+          id?: string | null
+          language?: string | null
+          name?: string | null
+          phone_masked?: never
+          referrer_url?: string | null
+          stripe_id_masked?: never
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email_masked?: never
+          first_visit_at?: string | null
+          id?: string | null
+          language?: string | null
+          name?: string | null
+          phone_masked?: never
+          referrer_url?: string | null
+          stripe_id_masked?: never
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      get_customer_email_audited: {
+        Args: { p_reason: string; p_record_id: string; p_table_name: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
