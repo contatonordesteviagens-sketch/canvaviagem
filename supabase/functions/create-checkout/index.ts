@@ -80,6 +80,12 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://lovable.dev";
     
+    // Get user name from metadata with fallbacks
+    const userName = user.user_metadata?.name || 
+                     user.user_metadata?.full_name || 
+                     user.email?.split('@')[0] || 
+                     'usuário';
+    
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -90,7 +96,8 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${origin}/obrigado`,
+      // Redirect to pos-pagamento with pre-filled email and name
+      success_url: `${origin}/pos-pagamento?email=${encodeURIComponent(user.email || '')}&name=${encodeURIComponent(userName)}`,
       cancel_url: `${origin}/planos?canceled=true`,
       metadata: {
         user_id: user.id,
