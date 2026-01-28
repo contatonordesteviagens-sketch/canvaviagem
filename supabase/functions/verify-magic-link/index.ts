@@ -129,6 +129,8 @@ serve(async (req) => {
       }
     }
 
+    console.log("[VERIFY-MAGIC-LINK] Processing token verification for:", email);
+
     // Gerar link de login para o usuário
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: "magiclink",
@@ -136,27 +138,44 @@ serve(async (req) => {
     });
 
     if (linkError || !linkData) {
-      console.error("Error generating link:", linkError);
+      console.error("[VERIFY-MAGIC-LINK] Error generating link:", linkError);
       return new Response(
         JSON.stringify({ error: "Erro ao gerar sessão" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Extrair tokens da URL gerada
-    const hashParams = new URL(linkData.properties.action_link).hash.substring(1);
-    const params = new URLSearchParams(hashParams);
-    
-    const accessToken = params.get("access_token");
-    const refreshToken = params.get("refresh_token");
+    // Extrair hashed_token das propriedades (novo fluxo PKCE)
+    const hashedToken = linkData.properties?.hashed_token;
 
-    if (!accessToken || !refreshToken) {
-      console.error("Tokens not found in link");
+    if (!hashedToken) {
+      console.error("[VERIFY-MAGIC-LINK] Hashed token not found in link properties:", JSON.stringify(linkData.properties));
       return new Response(
         JSON.stringify({ error: "Erro ao processar autenticação" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log("[VERIFY-MAGIC-LINK] Hashed token obtained, verifying OTP...");
+
+    // Verificar OTP para criar sessão diretamente no servidor
+    const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.verifyOtp({
+      token_hash: hashedToken,
+      type: "email",
+    });
+
+    if (sessionError || !sessionData.session) {
+      console.error("[VERIFY-MAGIC-LINK] Error verifying OTP:", sessionError);
+      return new Response(
+        JSON.stringify({ error: "Erro ao criar sessão" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const accessToken = sessionData.session.access_token;
+    const refreshToken = sessionData.session.refresh_token;
+
+    console.log("[VERIFY-MAGIC-LINK] Session created successfully for:", email);
 
     return new Response(
       JSON.stringify({
