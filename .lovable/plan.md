@@ -1,67 +1,225 @@
 
-Objetivo: no mobile, o ícone flutuante do widget Zaia não pode cobrir a barra inferior (especialmente o “Favoritos”) e deve ficar um pouco menor, de forma confiável mesmo quando o widget aplica estilos inline/dinâmicos.
+# Plano: Sistema de Filtros, Ordenação e Calendário Dinâmico
 
-Por que ainda está sobrepondo
-- O Zaia injeta elementos via script e pode:
-  - criar containers sem “zaia” no id/class (então nossos seletores não pegam),
-  - aplicar/alterar inline styles após o load (ganhando da regra CSS),
-  - usar estruturas diferentes por dispositivo (ex.: botão fora do iframe).
+## Resumo Executivo
 
-Solução proposta (robusta): CSS + “fallback” em JavaScript com observação do DOM
-1) Dar um “gancho” estável para medir a altura da BottomNav (para calcular a distância correta)
-   - Alterar `src/components/canva/BottomNav.tsx` para adicionar um identificador no `<nav>`:
-     - Ex.: `id="mobile-bottom-nav"` (ou `data-mobile-bottom-nav="true"`)
-   - Benefício: o script consegue medir a altura real da barra e elevar o widget com margem segura (incluindo casos com safe-area iOS).
+Este plano implementa um conjunto de melhorias para a gestão de conteúdo, incluindo:
+1. Filtros de ordenação e favoritos padronizados
+2. Ordenação por "mais recentes" como padrão
+3. Sistema de etiqueta "Novo" automático (últimas 3 atualizações)
+4. Importação de legendas para o calendário
+5. Calendário dinâmico com conteúdo do banco de dados
 
-2) Ajustar o CSS do `index.html` para uma margem maior (primeira linha de defesa)
-   - Manter os seletores amplos, porém aumentar o “padrão” para algo mais seguro:
-     - `bottom: 120px !important;`
-     - `transform: scale(0.75) !important;`
-   - Motivo: mesmo que o CSS só pegue “às vezes”, quando pegar já resolve.
+---
 
-3) Adicionar fallback JavaScript no `index.html` (a parte que garante 100%)
-   - Inserir um `<script>` logo após o `widget-loader.js` (ou após o CSS), com lógica:
-     a) Rodar apenas em telas mobile (ex.: `window.innerWidth <= 768`)
-     b) Calcular o offset ideal:
-        - Encontrar a BottomNav via `#mobile-bottom-nav`
-        - `offset = navHeight + 24` (margem extra)
-        - Se não achar nav, usar fallback fixo (ex.: 120px)
-     c) Encontrar o “elemento real” do widget:
-        - Procurar candidatos diretos: `iframe[src*="zaia"]`, `iframe[src*="zaia.app"]`
-        - Procurar candidatos genéricos: elementos com `position: fixed` no canto inferior direito e tamanho pequeno (ex.: width/height < 220px), ignorando `<nav>` e elementos que ocupam a largura toda (para não mexer na BottomNav).
-     d) Aplicar estilos via JS com prioridade:
-        - `el.style.setProperty('bottom', '<offset>px', 'important')`
-        - `el.style.setProperty('right', '16px', 'important')`
-        - `el.style.setProperty('transform-origin', 'bottom right', 'important')`
-        - `el.style.setProperty('transform', '<transformExistente + scale(0.75)>', 'important')`
-          - Se já existir transform, concatenar (ex.: `"matrix(...) scale(0.75)"`) para não quebrar animações do widget.
-     e) Reaplicar porque o widget muda depois:
-        - `setTimeout` em sequência (ex.: 300ms, 1200ms, 3000ms)
-        - `MutationObserver` no `document.body` para detectar novos nós/alterações de atributo (`style`, `class`) e reaplicar quando o widget for recriado/atualizado.
-        - `resize` / `orientationchange` com debounce para recalcular offset.
+## 1. Ordenação por Mais Recentes (Padrão)
 
-4) Critérios de segurança (para não afetar outros elementos)
-   - Só aplicar em elementos que:
-     - estejam no canto inferior direito (por boundingClientRect),
-     - sejam “pequenos” (não full-width),
-     - tenham `position: fixed` e z-index alto (quando disponível),
-     - não sejam a BottomNav (excluir `#mobile-bottom-nav` e `nav`).
+### Comportamento Atual
+- O `sortOrder` está configurado como `"custom"` por padrão
+- Itens são ordenados por `display_order` (ordem manual)
 
-5) Testes de validação (no preview)
-   - Abrir em largura ~375px
-   - Confirmar:
-     - botão Favoritos clicável,
-     - ícone do Zaia acima da barra com folga,
-     - ícone visivelmente menor,
-     - não “pula” de posição ao carregar (observer resolve).
-   - Se ainda encostar, aumentar margem (ex.: `+32px`) sem mexer no layout geral.
+### Alterações Propostas
 
-Arquivos que serão alterados
-- `index.html`
-  - Ajustar valores do CSS (bottom/scale)
-  - Adicionar script JS com MutationObserver + cálculo pela BottomNav
-- `src/components/canva/BottomNav.tsx`
-  - Adicionar `id`/`data-attribute` no `<nav>` para o script medir a altura e evitar heurísticas frágeis
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/components/gestao/ContentSection.tsx` | Mudar `sortOrder` padrão de `"custom"` para `"recent"` |
+| `src/pages/Index.tsx` | Ordenar vídeos por `created_at` descendente por padrão |
+| `src/hooks/useContent.ts` | Atualizar queries para ordenar por `created_at DESC` como padrão |
 
-Observação importante
-- Se o Zaia renderizar o botão dentro de um iframe cross-domain, não dá para alterar “dentro” do iframe, mas mover/escala do iframe/container funciona. O fallback proposto atua exatamente nesse nível (container/iframe), por isso é o caminho mais confiável.
+---
+
+## 2. Filtro de Favoritos na Gestão
+
+### Comportamento Atual
+- Não existe filtro de favoritos na área de gestão
+- Favoritos só aparecem na aba dedicada do cliente
+
+### Alterações Propostas
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/components/gestao/ContentFilters.tsx` | Adicionar toggle "Apenas Favoritos" |
+| `src/components/gestao/ContentSection.tsx` | Integrar hook `useFavorites` e filtrar itens |
+
+---
+
+## 3. Sistema de Etiqueta "Novo" Automático
+
+### Lógica Proposta
+- Itens criados nas **últimas 3 atualizações** (não dias) recebem etiqueta "Novo"
+- Ao adicionar um novo item, os mais antigos perdem a etiqueta automaticamente
+- Usar campo `created_at` para identificar as 3 atualizações mais recentes
+
+### Implementação
+
+```text
++------------------+     +------------------+     +------------------+
+|  Item adicionado |     |  Sistema calcula |     |  3 mais recentes |
+|  hoje            | --> |  datas únicas de | --> |  recebem is_new  |
+|                  |     |  created_at      |     |  = true          |
++------------------+     +------------------+     +------------------+
+```
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/hooks/useContent.ts` | Criar função `calculateNewItems()` que identifica as 3 datas de criação mais recentes |
+| `src/pages/Index.tsx` | Aplicar lógica de `is_new` baseada nas últimas 3 "atualizações" (datas únicas) |
+| `src/components/canva/PremiumCard.tsx` | Exibir badge "Novo" quando item está nas últimas 3 atualizações |
+
+---
+
+## 4. Importação de Legendas para Calendário
+
+### Comportamento Atual
+- A aba "Importar" suporta apenas: vídeo, feed, story, caption, tool, resource
+- O calendário usa dados estáticos de `src/data/templates.ts` e `src/data/captions.ts`
+
+### Alterações Propostas
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/components/gestao/ImportSection.tsx` | Adicionar tipo "calendar" para legendas do calendário |
+| Nova tabela `calendar_entries` | Armazenar legendas vinculadas a dias específicos |
+
+### Nova Tabela de Banco de Dados
+
+```sql
+CREATE TABLE calendar_entries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  content_item_id UUID REFERENCES content_items(id) ON DELETE SET NULL,
+  caption_id UUID REFERENCES captions(id) ON DELETE SET NULL,
+  day_of_year INTEGER NOT NULL,
+  year INTEGER NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(day_of_year, year)
+);
+```
+
+---
+
+## 5. Calendário Dinâmico
+
+### Comportamento Atual
+- Usa dados estáticos de `templates` e `captions` importados de arquivos `.ts`
+- Distribui conteúdo por índice: `dayOfYear % templates.length`
+
+### Alterações Propostas
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/pages/Calendar.tsx` | Consumir dados do Supabase em vez de arquivos estáticos |
+| `src/hooks/useCalendarContent.ts` | Novo hook para buscar entradas do calendário |
+
+### Lógica de Auto-Distribuição
+Quando um vídeo novo é adicionado:
+1. Verificar os próximos 7 dias do calendário
+2. Se não houver conteúdo atribuído, adicionar o novo vídeo
+3. Remover duplicatas automaticamente
+
+---
+
+## 6. Arquivos a Serem Modificados
+
+| Arquivo | Tipo de Alteração |
+|---------|-------------------|
+| `src/components/gestao/ContentSection.tsx` | Modificar (sortOrder padrão, filtro favoritos) |
+| `src/components/gestao/ContentFilters.tsx` | Modificar (adicionar toggle favoritos) |
+| `src/components/gestao/ImportSection.tsx` | Modificar (adicionar tipo legenda calendário) |
+| `src/pages/Index.tsx` | Modificar (ordenação por recentes, lógica is_new) |
+| `src/pages/Calendar.tsx` | Modificar (consumir dados dinâmicos) |
+| `src/hooks/useContent.ts` | Modificar (ordenação padrão, cálculo is_new) |
+| `src/hooks/useCalendarContent.ts` | **Novo** (hook para calendário) |
+| Migração SQL | **Novo** (tabela calendar_entries) |
+
+---
+
+## Seção Técnica
+
+### Lógica de "Últimas 3 Atualizações"
+
+```typescript
+// Em useContent.ts
+export const getRecentUpdateDates = (items: ContentItem[]): Date[] => {
+  // Extrair datas únicas de criação (apenas a parte da data, sem hora)
+  const uniqueDates = [...new Set(
+    items.map(item => new Date(item.created_at).toDateString())
+  )].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+  
+  // Retornar as 3 datas mais recentes
+  return uniqueDates.slice(0, 3).map(d => new Date(d));
+};
+
+export const isItemNew = (item: ContentItem, recentDates: Date[]): boolean => {
+  const itemDate = new Date(item.created_at).toDateString();
+  return recentDates.some(d => d.toDateString() === itemDate);
+};
+```
+
+### Migração do Calendário
+
+```sql
+-- Criar tabela para entradas do calendário
+CREATE TABLE calendar_entries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  content_item_id UUID REFERENCES content_items(id) ON DELETE SET NULL,
+  caption_id UUID REFERENCES captions(id) ON DELETE SET NULL,
+  day_of_year INTEGER NOT NULL CHECK (day_of_year >= 1 AND day_of_year <= 366),
+  year INTEGER NOT NULL CHECK (year >= 2024),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(day_of_year, year)
+);
+
+-- RLS Policies
+ALTER TABLE calendar_entries ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public can read calendar entries" 
+  ON calendar_entries FOR SELECT 
+  USING (true);
+
+CREATE POLICY "Admins can manage calendar entries"
+  ON calendar_entries FOR ALL
+  USING (is_admin());
+```
+
+### Auto-Distribuição no Calendário
+
+Quando um novo vídeo é importado:
+1. Identificar a data atual
+2. Verificar os próximos 7 dias no calendário
+3. Para cada dia sem conteúdo, atribuir o novo vídeo
+4. Vincular uma legenda correspondente (por categoria ou aleatória)
+
+### Ordenação na UI do Cliente
+
+```typescript
+// Em Index.tsx - Vídeos ordenados por data de criação (mais recentes primeiro)
+const sortedVideos = useMemo(() => {
+  return [...filteredVideos].sort((a, b) => {
+    // Featured sempre primeiro
+    if (a.is_featured && !b.is_featured) return -1;
+    if (!a.is_featured && b.is_featured) return 1;
+    // Depois por data de criação (mais recente primeiro)
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+}, [filteredVideos]);
+```
+
+---
+
+## Fluxo de Uso
+
+1. **Administrador importa vídeo novo** via Gestão > Importar
+2. **Sistema marca como "Novo"** automaticamente (baseado nas últimas 3 atualizações)
+3. **Vídeo aparece no topo** da lista do cliente (mais recentes primeiro)
+4. **Calendário é atualizado** com o novo conteúdo nos próximos 7 dias
+5. **Após 4ª atualização**, o item mais antigo perde a etiqueta "Novo"
+
+---
+
+## Dependências
+
+- Nenhuma nova dependência de pacote necessária
+- Requer migração de banco de dados para `calendar_entries`
