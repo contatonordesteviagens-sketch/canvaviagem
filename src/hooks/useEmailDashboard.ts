@@ -5,10 +5,18 @@ interface EmailEvent {
   id: string;
   email_id: string;
   type: string;
-  recipient_email: string | null;
+  recipient_email: string | null; // Now masked in the view
   email_type: string | null;
   created_at: string;
 }
+
+// Helper to mask email (client-side fallback)
+const maskEmail = (email: string | null): string | null => {
+  if (!email) return null;
+  const [local, domain] = email.split("@");
+  if (!domain) return email;
+  return `${local.slice(0, 2)}***@${domain}`;
+};
 
 interface UserEmailAutomation {
   id: string;
@@ -37,7 +45,7 @@ export const useEmailDashboard = () => {
     refetchInterval: 30000, // Atualiza a cada 30 segundos
   });
 
-  // Eventos recentes - usando fetch direto na tabela
+  // Eventos recentes - mascarar emails no cliente
   const eventsQuery = useQuery({
     queryKey: ["email-events"],
     queryFn: async () => {
@@ -48,7 +56,12 @@ export const useEmailDashboard = () => {
         .limit(50);
       
       if (error) throw error;
-      return (data || []) as EmailEvent[];
+      
+      // Mascarar emails no resultado
+      return (data || []).map(event => ({
+        ...event,
+        recipient_email: maskEmail(event.recipient_email),
+      })) as EmailEvent[];
     },
     refetchInterval: 30000,
   });
