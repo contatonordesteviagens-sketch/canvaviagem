@@ -27,6 +27,7 @@ import {
   useMarketingTools,
   useTrackClick,
   useFeaturedItems,
+  useNewestItemIds,
   ContentItem,
   Caption,
 } from "@/hooks/useContent";
@@ -37,12 +38,13 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { resources, videoDownloads } from "@/data/templates";
 import { trackViewContent } from "@/lib/meta-pixel";
 
-type VideoFilter = 'todos' | 'nacionais' | 'internacionais' | 'eva' | 'mel' | 'bia';
+type VideoFilter = 'todos' | 'nacionais' | 'internacionais' | 'favoritos' | 'eva' | 'mel' | 'bia';
 
 const videoFilters = [
   { id: 'todos' as const, label: 'Todos' },
   { id: 'nacionais' as const, label: 'Nacionais' },
   { id: 'internacionais' as const, label: 'Internacionais' },
+  { id: 'favoritos' as const, label: '⭐ Favoritos' },
 ];
 
 const Index = () => {
@@ -61,6 +63,7 @@ const Index = () => {
   const { data: storyTemplates, isLoading: storiesLoading } = useContentItems(['story', 'weekly-story']);
   const { data: captionsData, isLoading: captionsLoading } = useCaptions();
   const { data: toolsData, isLoading: toolsLoading } = useMarketingTools();
+  const { data: newestIds = [] } = useNewestItemIds();
   const { trackClick } = useTrackClick();
   const { trackPageView } = useTrackPageView();
   const { favorites, isFavorite, toggleFavorite } = useFavorites();
@@ -119,7 +122,9 @@ const Index = () => {
     );
 
     // Aplicar filtro de categoria
-    if (videoFilter === 'nacionais') {
+    if (videoFilter === 'favoritos') {
+      filtered = filtered.filter(item => isFavorite("content_item", item.id));
+    } else if (videoFilter === 'nacionais') {
       filtered = filtered.filter(item => isNacional(item.title, item.category));
     } else if (videoFilter === 'internacionais') {
       filtered = filtered.filter(item => !isNacional(item.title, item.category) && item.type === 'video');
@@ -206,11 +211,12 @@ const Index = () => {
   const renderContent = () => {
     switch (activeCategory) {
       case 'videos':
-        // Ordenar: featured primeiro, depois por display_order
+        // Ordenar: featured primeiro, depois por data (mais recente primeiro)
         const sortedVideos = [...filteredVideos].sort((a, b) => {
           if (a.is_featured && !b.is_featured) return -1;
           if (!a.is_featured && b.is_featured) return 1;
-          return (a.display_order || 0) - (b.display_order || 0);
+          // Ordenar por data - mais recente primeiro
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         });
         const displayedSortedVideos = showAllVideos ? sortedVideos : sortedVideos.slice(0, 10);
         
@@ -243,7 +249,7 @@ const Index = () => {
                       id={template.id}
                       title={template.title}
                       url={template.url}
-                      isNew={template.is_new}
+                      isNew={newestIds.includes(template.id)}
                       icon={getIcon(template.type, template.icon)}
                       // Os 10 primeiros (featured) podem ter imagem personalizada
                       imageUrl={index < 10 && template.image_url ? template.image_url : undefined}
@@ -299,6 +305,7 @@ const Index = () => {
                     id={template.id}
                     title={template.title}
                     url={template.url}
+                    isNew={newestIds.includes(template.id)}
                     icon={getIcon(template.type, template.icon)}
                     aspectRatio="4/5"
                     onClick={() => handleCardClick(template)}
@@ -356,6 +363,7 @@ const Index = () => {
                         id={template.id}
                         title={template.title}
                         url={template.url}
+                        isNew={newestIds.includes(template.id)}
                         icon={getIcon(template.type, template.icon)}
                         aspectRatio="9/16"
                         onClick={() => handleCardClick(template)}

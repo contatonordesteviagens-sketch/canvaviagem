@@ -2,28 +2,34 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, ExternalLink, Copy } from "lucide-react";
-import { templates } from "@/data/templates";
-import { captions } from "@/data/captions";
+import { ChevronLeft, ChevronRight, ExternalLink, Copy, Loader2 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PremiumGate } from "@/components/PremiumGate";
+import { useCalendarEntries, getDayOfYear, getDateFromDayOfYear, CalendarEntry } from "@/hooks/useCalendarEntries";
+import { useContentItems, useCaptions } from "@/hooks/useContent";
+import { toast } from "sonner";
 
 const Calendar = () => {
-  const [currentDate, setCurrentDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(0);
   const [currentYear, setCurrentYear] = useState(2024);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Inicializar com fuso horário de São Paulo
+  // Initialize with São Paulo timezone
   useEffect(() => {
     const now = new Date();
     const saoPauloTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
-    setCurrentDate(saoPauloTime);
     setCurrentMonth(saoPauloTime.getMonth());
     setCurrentYear(saoPauloTime.getFullYear());
   }, []);
+
+  // Fetch calendar entries from database
+  const { data: calendarEntries, isLoading: entriesLoading } = useCalendarEntries(currentYear, currentMonth);
+  
+  // Fallback: fetch all videos and captions for days without entries
+  const { data: allVideos } = useContentItems(['video', 'seasonal']);
+  const { data: allCaptions } = useCaptions();
 
   const monthNames = [
     "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -56,23 +62,72 @@ const Calendar = () => {
     }
   };
 
-  const getDayOfYear = (day: number, month: number, year: number) => {
-    const start = new Date(year, 0, 0);
-    const diff = new Date(year, month, day).getTime() - start.getTime();
-    return Math.floor(diff / (1000 * 60 * 60 * 24));
+  const getDayOfYearForDate = (day: number, month: number, year: number) => {
+    return getDayOfYear(new Date(year, month, day));
   };
 
-  const getContentForDay = (dayOfYear: number) => {
-    const templateIndex = dayOfYear % templates.length;
-    const template = templates[templateIndex];
+  // Get content for a specific day - first check database, then fallback to rotation
+  const getContentForDay = (day: number): { 
+    template: { title: string; url: string; icon?: string } | null; 
+    caption: { destination: string; text: string; hashtags: string } | null;
+    notes: string | null;
+    isFromDatabase: boolean;
+  } => {
+    const dayOfYear = getDayOfYearForDate(day, currentMonth, currentYear);
     
-    // Tentar encontrar uma legenda correspondente ao destino
-    const caption = captions.find(c => 
-      template.title.toLowerCase().includes(c.destination.toLowerCase().split(' - ')[0].toLowerCase()) ||
-      c.destination.toLowerCase().includes(template.title.toLowerCase().split(' ')[0].toLowerCase())
-    ) || captions[templateIndex % captions.length];
-
-    return { template, caption };
+    // Check if there's a database entry for this day
+    const dbEntry = calendarEntries?.find(
+      entry => entry.day_of_year === dayOfYear && entry.year === currentYear
+    );
+    
+    if (dbEntry) {
+      return {
+        template: dbEntry.content_item ? {
+          title: dbEntry.content_item.title,
+          url: dbEntry.content_item.url,
+          icon: dbEntry.content_item.icon,
+        } : null,
+        caption: dbEntry.caption ? {
+          destination: dbEntry.caption.destination,
+          text: dbEntry.caption.text,
+          hashtags: dbEntry.caption.hashtags,
+        } : null,
+        notes: dbEntry.notes,
+        isFromDatabase: true,
+      };
+    }
+    
+    // Fallback: rotate through available content
+    if (allVideos && allVideos.length > 0) {
+      const templateIndex = dayOfYear % allVideos.length;
+      const video = allVideos[templateIndex];
+      
+      // Try to find a matching caption
+      let caption = null;
+      if (allCaptions && allCaptions.length > 0) {
+        caption = allCaptions.find(c => 
+          video.title.toLowerCase().includes(c.destination.toLowerCase().split(' - ')[0].toLowerCase()) ||
+          c.destination.toLowerCase().includes(video.title.toLowerCase().split(' ')[0].toLowerCase())
+        ) || allCaptions[templateIndex % allCaptions.length];
+      }
+      
+      return {
+        template: {
+          title: video.title,
+          url: video.url,
+          icon: video.icon,
+        },
+        caption: caption ? {
+          destination: caption.destination,
+          text: caption.text,
+          hashtags: caption.hashtags,
+        } : null,
+        notes: null,
+        isFromDatabase: false,
+      };
+    }
+    
+    return { template: null, caption: null, notes: null, isFromDatabase: false };
   };
 
   const handleDayClick = (day: number) => {
@@ -88,7 +143,7 @@ const Calendar = () => {
            currentYear === saoPauloTime.getFullYear();
   };
 
-  const selectedDayContent = selectedDay ? getContentForDay(getDayOfYear(selectedDay, currentMonth, currentYear)) : null;
+  const selectedDayContent = selectedDay ? getContentForDay(selectedDay) : null;
 
   const renderCalendar = () => {
     const daysInMonth = getDaysInMonth(currentMonth, currentYear);
@@ -100,16 +155,16 @@ const Calendar = () => {
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
-      const dayOfYear = getDayOfYear(day, currentMonth, currentYear);
-      const { template } = getContentForDay(dayOfYear);
+      const content = getContentForDay(day);
       const today = isToday(day);
+      const hasDbContent = content.isFromDatabase;
 
       days.push(
         <Card 
           key={day} 
           className={`p-1.5 md:p-3 min-h-[60px] md:min-h-[120px] hover:shadow-lg transition-all duration-300 border-border/50 cursor-pointer ${
             today ? 'ring-2 ring-primary bg-primary/5' : ''
-          }`}
+          } ${hasDbContent ? 'border-l-2 border-l-green-500' : ''}`}
           onClick={() => handleDayClick(day)}
         >
           <div className="space-y-0.5 md:space-y-2">
@@ -117,27 +172,38 @@ const Calendar = () => {
               <span className={`text-xs md:text-lg font-bold ${today ? 'text-primary' : ''}`}>
                 {day}
               </span>
-              <span className="text-[8px] md:text-xs">🎬</span>
+              <span className="text-[8px] md:text-xs">
+                {content.template?.icon || '🎬'}
+              </span>
             </div>
             {today && (
               <span className="text-[8px] md:text-xs bg-primary text-primary-foreground px-1 rounded block w-fit">
                 Hoje
               </span>
             )}
+            {hasDbContent && (
+              <span className="text-[6px] md:text-[10px] bg-green-500/20 text-green-700 px-1 rounded block w-fit">
+                Agendado
+              </span>
+            )}
             <div className="hidden md:block space-y-1">
-              <p className="text-[10px] md:text-xs font-medium text-foreground line-clamp-2">{template.title}</p>
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                className="w-full text-[10px] md:text-xs h-6 md:h-7 mt-1 p-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.open(template.url, '_blank');
-                }}
-              >
-                <ExternalLink className="h-3 w-3 mr-1" />
-                <span className="hidden md:inline">Editar</span>
-              </Button>
+              <p className="text-[10px] md:text-xs font-medium text-foreground line-clamp-2">
+                {content.template?.title || 'Sem conteúdo'}
+              </p>
+              {content.template && (
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="w-full text-[10px] md:text-xs h-6 md:h-7 mt-1 p-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.open(content.template!.url, '_blank');
+                  }}
+                >
+                  <ExternalLink className="h-3 w-3 mr-1" />
+                  <span className="hidden md:inline">Editar</span>
+                </Button>
+              )}
             </div>
           </div>
         </Card>
@@ -154,8 +220,18 @@ const Calendar = () => {
           📅 Calendário de Postagens
         </h1>
         <p className="text-sm md:text-base text-muted-foreground">
-          Planeje seu conteúdo com 365 dias de templates e legendas prontas
+          Planeje seu conteúdo com templates e legendas prontas
         </p>
+        <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+            Agendado
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 bg-muted rounded-full"></span>
+            Sugestão automática
+          </span>
+        </div>
       </div>
 
       <Card className="p-3 md:p-6 shadow-[var(--shadow-card)]">
@@ -179,9 +255,15 @@ const Calendar = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-1 md:gap-2">
-          {renderCalendar()}
-        </div>
+        {entriesLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-7 gap-1 md:gap-2">
+            {renderCalendar()}
+          </div>
+        )}
       </Card>
 
       {/* Dialog para mostrar conteúdo do dia */}
@@ -195,52 +277,83 @@ const Calendar = () => {
           
           {selectedDayContent && (
             <div className="space-y-4 md:space-y-6">
+              {/* Status badge */}
+              {selectedDayContent.isFromDatabase && (
+                <div className="bg-green-500/10 text-green-700 text-sm p-2 rounded-lg flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  Conteúdo agendado manualmente
+                </div>
+              )}
+              
+              {/* Notas do admin */}
+              {selectedDayContent.notes && (
+                <div className="bg-muted/50 p-3 rounded-lg">
+                  <h4 className="font-medium text-sm mb-1">📝 Notas:</h4>
+                  <p className="text-sm text-muted-foreground">{selectedDayContent.notes}</p>
+                </div>
+              )}
+              
               {/* Vídeo */}
-              <div className="space-y-2 md:space-y-3">
-                <h3 className="font-bold text-base md:text-lg flex items-center gap-2">
-                  🎬 Vídeo do Dia
-                </h3>
-                <Card className="p-3 md:p-4 bg-muted/30">
-                  <p className="font-medium mb-2 md:mb-3 text-sm md:text-base">{selectedDayContent.template.title}</p>
-                  <Button 
-                    className="w-full"
-                    size="sm"
-                    onClick={() => window.open(selectedDayContent.template.url, '_blank')}
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Editar no Canva
-                  </Button>
-                </Card>
-              </div>
+              {selectedDayContent.template && (
+                <div className="space-y-2 md:space-y-3">
+                  <h3 className="font-bold text-base md:text-lg flex items-center gap-2">
+                    🎬 Vídeo do Dia
+                  </h3>
+                  <Card className="p-3 md:p-4 bg-muted/30">
+                    <p className="font-medium mb-2 md:mb-3 text-sm md:text-base">
+                      {selectedDayContent.template.title}
+                    </p>
+                    <Button 
+                      className="w-full"
+                      size="sm"
+                      onClick={() => window.open(selectedDayContent.template!.url, '_blank')}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Editar no Canva
+                    </Button>
+                  </Card>
+                </div>
+              )}
 
               {/* Legenda */}
-              <div className="space-y-2 md:space-y-3">
-                <h3 className="font-bold text-base md:text-lg flex items-center gap-2">
-                  📝 Legenda do Dia
-                </h3>
-                <Card className="p-3 md:p-4 bg-muted/30 space-y-2 md:space-y-3">
-                  <p className="font-medium text-primary text-sm md:text-base">{selectedDayContent.caption.destination}</p>
-                  <p className="text-xs md:text-sm text-muted-foreground whitespace-pre-line">
-                    {selectedDayContent.caption.text}
-                  </p>
-                  <p className="text-[10px] md:text-xs text-accent font-medium">
-                    {selectedDayContent.caption.hashtags}
-                  </p>
-                  <Button 
-                    variant="outline"
-                    className="w-full"
-                    size="sm"
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        `${selectedDayContent.caption.text}\n\n${selectedDayContent.caption.hashtags}`
-                      );
-                    }}
-                  >
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copiar Legenda
-                  </Button>
-                </Card>
-              </div>
+              {selectedDayContent.caption && (
+                <div className="space-y-2 md:space-y-3">
+                  <h3 className="font-bold text-base md:text-lg flex items-center gap-2">
+                    📝 Legenda do Dia
+                  </h3>
+                  <Card className="p-3 md:p-4 bg-muted/30 space-y-2 md:space-y-3">
+                    <p className="font-medium text-primary text-sm md:text-base">
+                      {selectedDayContent.caption.destination}
+                    </p>
+                    <p className="text-xs md:text-sm text-muted-foreground whitespace-pre-line">
+                      {selectedDayContent.caption.text}
+                    </p>
+                    <p className="text-[10px] md:text-xs text-accent font-medium">
+                      {selectedDayContent.caption.hashtags}
+                    </p>
+                    <Button 
+                      variant="outline"
+                      className="w-full"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          `${selectedDayContent.caption!.text}\n\n${selectedDayContent.caption!.hashtags}`
+                        );
+                        toast.success("Legenda copiada!");
+                      }}
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copiar Legenda
+                    </Button>
+                  </Card>
+                </div>
+              )}
+              
+              {!selectedDayContent.template && !selectedDayContent.caption && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>Nenhum conteúdo disponível para este dia.</p>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
