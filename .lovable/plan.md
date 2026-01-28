@@ -1,233 +1,395 @@
 
-# Plano: Importacao Inteligente de Legendas com IA
 
-## Resumo
+# Plano de Implementacao: Canva Viagem - Melhorias Pendentes
 
-Implementar sistema que analisa os 2 arquivos de legendas enviados e faz match automatico com os 96 videos existentes no banco de dados, aplicando as legendas correspondentes.
+## Analise do Estado Atual
 
----
+Apos revisar o codigo, identifiquei que **grande parte das funcionalidades ja foram implementadas**:
 
-## Arquivos de Legendas Analisados
-
-### Arquivo 1: LEGENDAS_-_AGENCIAS_DE_VIAGENS_VIDEOS.txt (1507 linhas)
-Contem legendas especificas por destino:
-- Destinos Nacionais: Maragogi, Salvador, Trancoso, Jalapao, Foz do Iguacu, Florianopolis, Gramado, Natal, Fortaleza, Pantanal, Recife, Balneario Camboriu, Alter do Chao, Arraial do Cabo, Rota das Emocoes, Maceio, Lencois Maranhenses, Fernando de Noronha, Angra dos Reis, Jericoacoara, Porto de Galinhas, Amazonia, Rio de Janeiro, Alagoas, Ouro Preto, Genipabu...
-- Destinos Internacionais: Cuzumel, Filipinas, Namibia, Montevideu, Fort Lauderdale, Lisboa, Paris, Nova Zelandia, Taiwan, Cusco, Egito, Washington, Chicago, Ushuaia, Boston, Machu Picchu, Salar de Uyuni, Cancun, Israel, Bruxelas, Dublin, Jordania, Africa, Punta Cana, Praga, New York, Grecia, Singapura, Maldivas, Berlim, Roma, Istambul, Santiago, Frankfurt, Bangkok, Munique, Dubai, Buenos Aires, Phuket, Ilha de Pascoa, Bali, Havana, Toronto, Sydney, Londres, Amsterda, Madri, Cartagena, Veneza, Milao, Hong Kong, Barcelona, Atenas, Italia, Tulum, Los Angeles, Tokyo, Miami, Las Vegas, Vancouver, Playa del Carmen, Florenca, Riviera Maya...
-
-### Arquivo 2: LEGENDAS_AGENCIA_DE_VIAGEM.txt (482 linhas)
-Contem legendas genericas numeradas (ARTE 1 a ARTE 33+):
-- Legendas para dicas de viagem
-- Legendas de promocoes
-- Legendas de destinos especificos (Maragogi, Rio de Janeiro, Jericoacoara, Maldivas, Cancun, Ibiza...)
+| Tarefa | Status | Observacoes |
+|--------|--------|-------------|
+| TAREFA 1: Widget Zaia vs NavBar Mobile | ✅ Parcial | CSS implementado em index.html, mas persiste o problema |
+| TAREFA 2A: Filtro Favoritos | ✅ Completo | Implementado em Index.tsx e BottomNav |
+| TAREFA 2B: Ordenacao "Mais Recente" | ✅ Completo | Ordenacao por created_at DESC ja funciona |
+| TAREFA 3: Badge "Novo" (3 mais recentes) | ✅ Completo | Hook useNewestItemIds implementado |
+| TAREFA 4: Importacao + Calendario | ✅ Completo | Sistema de agendamento automatico funcionando |
+| TAREFA 5: Midia Externa + Auto-Destaque | ❌ Pendente | Nao implementado |
 
 ---
 
-## Videos no Banco de Dados (96 videos)
+## Implementacoes Pendentes
 
-### Videos SEM legenda (description = null): ~95 videos
-Exemplos: Jericoacoara Takes 2, Miami, Madri, Fortaleza - CE, Maceio - AL 2, Pantanal, Trancoso - BA, Florianopolis - SC, Alagoas, Alter do Chao, Foz do Iguacu, Joao Pessoa, Tailandia, Ouro Preto, Munique, Havana 2, Salvador - BA, Rio de Janeiro 2, Las Vegas, Balneario Camboriu, Maragogi - AL, 5 Praias Floripa, Orlando, Santiago, Fernando de Noronha, Arraial do Cabo, Maragogi, Angra dos Reis, Lencois Maranhenses, Amazonia, Paris, Rio de Janeiro, Ushuaia, Lima, Vale Sagrado, Washington, Jordania, Amsterda 2, Rota das Emocoes 2, Veneza, Porto de Galinhas, Recife, Jericoacoara - CE, Rota das Emocoes, Taiwan, Punta Cana, Natal -, Lisboa, Genipabu, Natal - RN, Maldivas, Sydney, Machu Picchu, Nova Zelandia, Montevideu, New York, Namibia, Playa Del Carmen, Sao Francisco, Jericoacoara, Jericoacoara takes, Green Island, Vancouver, Dubai, Vale Sagrado, 5 Lugares Europa...
+### 1. Resolver Definitivamente Widget Zaia (TAREFA 1)
 
-### Videos COM legenda: 1 video
-- Mel Africa (ja possui legenda completa sobre Africa do Sul)
+O CSS atual no index.html tenta ajustar o widget, mas o script do Zaia pode estar sobrescrevendo. Solucao mais robusta:
 
----
+**Arquivo: `index.html`**
+- Adicionar observador de mutacoes (MutationObserver) para garantir que o widget seja ajustado mesmo apos carregamento dinamico
+- Aumentar especificidade dos seletores CSS
 
-## Implementacao Tecnica
-
-### 1. Nova Edge Function: match-captions-to-videos
-
-| Arquivo | Descricao |
-|---------|-----------|
-| `supabase/functions/match-captions-to-videos/index.ts` | Processa arquivo de legendas e usa IA para fazer match com videos |
-
-Funcionalidades:
-- Recebe conteudo do arquivo de legendas
-- Busca videos sem legenda do banco de dados
-- Usa Lovable AI (google/gemini-3-flash-preview) para:
-  - Identificar destinos nas legendas
-  - Fazer match inteligente com titulos de videos
-  - Adaptar legendas removendo telefones genericos
-- Retorna sugestoes de match para revisao
-
-### 2. Novo Hook: useImportCaptions
-
-| Arquivo | Descricao |
-|---------|-----------|
-| `src/hooks/useImportCaptions.ts` | Gerencia estado e chamadas para importacao de legendas |
-
-Funcionalidades:
-- `processFile()`: Envia arquivo para edge function
-- `toggleVideoSelection()`: Seleciona/deseleciona videos
-- `updateVideoCaption()`: Edita legenda sugerida
-- `applyMatches()`: Aplica legendas selecionadas ao banco
-- `getStats()`: Retorna estatisticas de selecao
-
-### 3. Novo Componente: CaptionMatchTable
-
-| Arquivo | Descricao |
-|---------|-----------|
-| `src/components/gestao/CaptionMatchTable.tsx` | UI para revisar e aplicar matches |
-
-Funcionalidades:
-- Lista matches agrupados por destino
-- Checkbox para selecionar/deselecionar videos
-- Badge de confianca (Exato/Parcial/Contexto)
-- Edicao inline da legenda antes de aplicar
-- Botao "Aplicar Selecionados"
-
-### 4. Atualizar ImportSection
-
-| Arquivo | Alteracao |
-|---------|-----------|
-| `src/components/gestao/ImportSection.tsx` | Adicionar aba "Legendas em Massa" |
-
-Nova aba com:
-- Upload/paste de arquivo de legendas
-- Checkbox "Incluir videos que ja tem legenda"
-- Botao "Processar com IA"
-- Tabela de matches sugeridos
-
-### 5. Atualizar config.toml
-
-| Arquivo | Alteracao |
-|---------|-----------|
-| `supabase/config.toml` | Adicionar configuracao da nova function |
-
-```toml
-[functions.match-captions-to-videos]
-verify_jwt = false
+```html
+<script>
+  // Observar DOM e ajustar widget Zaia quando aparecer
+  const adjustZaiaWidget = () => {
+    const widgets = document.querySelectorAll('[id*="zaia"], [class*="chat"], .zaia-widget, #chatbot-fab');
+    widgets.forEach(el => {
+      if (window.innerWidth <= 768) {
+        el.style.setProperty('bottom', '100px', 'important');
+        el.style.setProperty('z-index', '45', 'important');
+      }
+    });
+  };
+  
+  // MutationObserver para detectar quando widget e inserido
+  const observer = new MutationObserver(adjustZaiaWidget);
+  observer.observe(document.body, { childList: true, subtree: true });
+  window.addEventListener('resize', adjustZaiaWidget);
+</script>
 ```
 
+**Arquivo: `src/components/canva/BottomNav.tsx`**
+- Confirmar z-index z-[60] (ja implementado)
+- Adicionar classe safe-area-inset para iOS
+
 ---
 
-## Fluxo de Uso
+### 2. Sistema de Midia Externa (GIF/Video) - TAREFA 5A
 
-```text
-GESTAO > IMPORTAR > Aba "Legendas em Massa"
-        |
-        v
-  [Cole ou upload arquivo de legendas]
-        |
-        v
-  [Clique "Processar com IA"]
-        |
-        v
-  IA analisa e retorna matches:
-  +----------------------------------+
-  | Destino: Jericoacoara            |
-  | Videos: 4 encontrados            |
-  |----------------------------------|
-  | [x] Jericoacoara - CE     [Exato]|
-  | [x] Jericoacoara Takes 2  [Exato]|
-  | [x] Jericoacoara takes    [Exato]|
-  | [x] Jericoacoara          [Exato]|
-  |----------------------------------|
-  | Legenda: "Relaxe em Jericoa..."  |
-  +----------------------------------+
-        |
-        v
-  [Revisar, editar se necessario]
-        |
-        v
-  [Clique "Aplicar Selecionados"]
-        |
-        v
-  Videos atualizados com badge "Com legenda"
+**2.1 Migrar schema do banco (nova coluna)**
+
+```sql
+ALTER TABLE content_items 
+ADD COLUMN media_url TEXT DEFAULT NULL,
+ADD COLUMN media_type TEXT DEFAULT NULL CHECK (media_type IN ('gif', 'video', NULL)),
+ADD COLUMN is_highlighted BOOLEAN DEFAULT false;
 ```
 
----
+**2.2 Arquivo: `src/components/gestao/ImportSection.tsx`**
 
-## Matches Esperados (Exemplos)
-
-| Destino no Arquivo | Videos que fazem Match |
-|--------------------|------------------------|
-| Jericoacoara - CE | Jericoacoara - CE, Jericoacoara, Jericoacoara takes, Jericoacoara Takes 2 |
-| Maragogi - AL | Maragogi - AL, Maragogi |
-| Salvador - BA | Salvador - BA |
-| Florianopolis - SC | Florianopolis - SC, 5 Praias Floripa |
-| Fernando de Noronha | Fernando de Noronha |
-| Rio de Janeiro | Rio de Janeiro, Rio de Janeiro 2 |
-| Foz do Iguacu | Foz do Iguacu |
-| Paris | Paris |
-| Dubai | Dubai |
-| Maldivas | Maldivas |
-| Cancun | (se existir) |
-| Las Vegas | Las Vegas |
-| Miami | Miami |
-| New York | New York |
-| Munique | Munique |
-| Punta Cana | Punta Cana |
-| Santiago | Santiago |
-| Ushuaia | Ushuaia |
-| Machu Picchu | Machu Picchu |
-| Jordania | Jordania |
-| Taiwan | Taiwan |
-| Sydney | Sydney |
-| Lisboa | Lisboa |
-| Veneza | Veneza |
-| Havana | Havana 2 |
-| Amsterda | Amsterda 2 |
-
----
-
-## Arquivos a Criar/Modificar
-
-| Arquivo | Tipo | Descricao |
-|---------|------|-----------|
-| `supabase/functions/match-captions-to-videos/index.ts` | Novo | Edge function com IA |
-| `src/hooks/useImportCaptions.ts` | Novo | Hook para gerenciar importacao |
-| `src/components/gestao/CaptionMatchTable.tsx` | Novo | Componente de tabela de matches |
-| `src/components/gestao/ImportSection.tsx` | Modificar | Adicionar aba de legendas |
-| `supabase/config.toml` | Modificar | Adicionar funcao |
-
----
-
-## Secao Tecnica
-
-### Prompt da IA para Matching
-
-A edge function usara o seguinte prompt para fazer o match:
-
-```text
-TAREFA: Analise legendas e faca match com videos disponiveis.
-
-REGRAS DE MATCHING:
-1. Identifique o destino principal de cada legenda
-2. Faca match com videos que tenham o mesmo destino ou similares
-3. Regras de similaridade:
-   - "Jericoacoara", "Jeri", "Jericoacoara - CE" = mesmo destino
-   - "Maragogi", "Maragogi - AL" = mesmo destino
-   - Variacoes com "2", "Takes", "Pacote" = mesmo destino
-4. Remova telefones genericos (99) 9 9999-9999 e substitua por (00) 00000-0000
-5. Confidence score: 100 (exato), 80 (parcial), 60 (contexto)
-```
-
-### Interface de Tipos
+Adicionar na aba de importacao:
 
 ```typescript
-interface CaptionMatch {
-  destination: string;
-  caption: string;
-  matchedVideos: Array<{
-    videoId: string;
-    videoTitle: string;
-    adaptedCaption: string;
-    confidence: number;
-    selected?: boolean;
-  }>;
+// Novos estados
+const [mediaUrl, setMediaUrl] = useState("");
+const [mediaType, setMediaType] = useState<"gif" | "video" | null>(null);
+const [autoHighlight, setAutoHighlight] = useState(false);
+const [autoFavorite, setAutoFavorite] = useState(false);
+
+// Nova UI - Tabs para GIF/Video
+<Tabs defaultValue="gif">
+  <TabsList>
+    <TabsTrigger value="gif">GIF Animado</TabsTrigger>
+    <TabsTrigger value="video">Video Curto</TabsTrigger>
+  </TabsList>
+  <TabsContent value="gif">
+    <Input 
+      placeholder="Link do GIF (Giphy, Tenor...)"
+      value={mediaUrl}
+      onChange={(e) => { setMediaUrl(e.target.value); setMediaType("gif"); }}
+    />
+  </TabsContent>
+  <TabsContent value="video">
+    <Input 
+      placeholder="Link do video (max 30s)"
+      value={mediaUrl}
+      onChange={(e) => { setMediaUrl(e.target.value); setMediaType("video"); }}
+    />
+  </TabsContent>
+</Tabs>
+
+// Checkboxes de automacao
+<div className="space-y-2 border p-4 rounded-lg bg-muted/50">
+  <Label>Acoes Automaticas</Label>
+  <Checkbox id="auto-favorite" checked={autoFavorite} onChange={setAutoFavorite}>
+    ⭐ Adicionar aos Favoritos
+  </Checkbox>
+  <Checkbox id="auto-calendar" checked={autoSchedule} onChange={setAutoSchedule}>
+    📅 Agendar no Calendario
+  </Checkbox>
+  <Checkbox id="auto-highlight" checked={autoHighlight} onChange={setAutoHighlight}>
+    ✨ Marcar como Destaque
+  </Checkbox>
+</div>
+```
+
+**2.3 Atualizar logica de insercao**
+
+```typescript
+// Ao criar item, incluir novos campos
+await supabase.from("content_items").insert({
+  title: quickTitle.trim(),
+  url: quickUrl.trim(),
+  description: quickCaption.trim() || null,
+  media_url: mediaUrl || null,
+  media_type: mediaType,
+  is_highlighted: autoHighlight,
+  // ...outros campos
+});
+
+// Se auto-favorite, adicionar aos favoritos
+if (autoFavorite && createdItem) {
+  await supabase.from("user_favorites").insert({
+    user_id: user.id,
+    content_type: "content_item",
+    content_id: createdItem.id,
+  });
 }
+```
+
+---
+
+### 3. Secao Destaques na Tela Principal - TAREFA 5D
+
+**Arquivo: `src/pages/Index.tsx`**
+
+Adicionar secao especial antes do conteudo normal:
+
+```typescript
+// Buscar itens destacados
+const { data: highlightedItems } = useQuery({
+  queryKey: ["highlighted-items"],
+  queryFn: async () => {
+    const { data } = await supabase
+      .from("content_items")
+      .select("*")
+      .eq("is_highlighted", true)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(3);
+    return data;
+  },
+});
+
+// Renderizar antes do conteudo principal
+{highlightedItems && highlightedItems.length > 0 && (
+  <section className="mb-8 animate-fade-in">
+    <SectionHeader 
+      title="✨ Destaques da Semana" 
+      subtitle="Conteudos em destaque selecionados para voce"
+    />
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {highlightedItems.map(item => (
+        <Card key={item.id} className="overflow-hidden border-primary/50 shadow-lg">
+          {/* Midia animada (GIF ou Video) */}
+          {item.media_url && (
+            <div className="aspect-video">
+              {item.media_type === 'gif' ? (
+                <img src={item.media_url} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+              ) : (
+                <video src={item.media_url} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+              )}
+            </div>
+          )}
+          <CardContent className="p-4">
+            <Badge className="mb-2 bg-gradient-to-r from-primary to-accent">Destaque</Badge>
+            <h3 className="font-bold text-lg">{item.title}</h3>
+            {item.description && (
+              <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
+            )}
+            <Button className="w-full mt-3" onClick={() => window.open(item.url, '_blank')}>
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Editar no Canva
+            </Button>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  </section>
+)}
+```
+
+---
+
+### 4. Limite de Favoritos com FIFO - TAREFA 5C
+
+**Arquivo: `src/hooks/useFavorites.ts`**
+
+Atualizar mutacao para implementar limite deslizante:
+
+```typescript
+const MAX_FAVORITES = 10;
+
+const toggleFavorite = useMutation({
+  mutationFn: async ({ contentType, contentId }) => {
+    if (!user) throw new Error("User not authenticated");
+
+    const existing = favorites.data?.find(
+      (f) => f.content_type === contentType && f.content_id === contentId
+    );
+
+    if (existing) {
+      // Remover favorito
+      await supabase.from("user_favorites").delete().eq("id", existing.id);
+      return { action: "removed" };
+    } else {
+      // Verificar limite antes de adicionar
+      const { data: currentFavorites } = await supabase
+        .from("user_favorites")
+        .select("id, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true });
+
+      // Se atingiu limite, remover o mais antigo (FIFO)
+      if (currentFavorites && currentFavorites.length >= MAX_FAVORITES) {
+        const oldest = currentFavorites[0];
+        await supabase.from("user_favorites").delete().eq("id", oldest.id);
+      }
+
+      // Adicionar novo favorito
+      await supabase.from("user_favorites").insert({
+        user_id: user.id,
+        content_type: contentType,
+        content_id: contentId,
+      });
+      
+      return { action: "added" };
+    }
+  },
+  // ...
+});
+
+// Exportar contador
+return {
+  favorites: favorites.data || [],
+  favoritesCount: favorites.data?.length || 0,
+  MAX_FAVORITES,
+  // ...
+};
+```
+
+**UI de feedback (Index.tsx ou Header):**
+
+```typescript
+// Mostrar contador
+<Badge variant="outline" className="gap-1">
+  ⭐ {favoritesCount}/{MAX_FAVORITES}
+</Badge>
+```
+
+---
+
+### 5. Atualizar Hook useContent (novos campos)
+
+**Arquivo: `src/hooks/useContent.ts`**
+
+Incluir novos campos na interface:
+
+```typescript
+export interface ContentItem {
+  // campos existentes...
+  media_url: string | null;
+  media_type: 'gif' | 'video' | null;
+  is_highlighted: boolean;
+}
+```
+
+---
+
+## Resumo de Arquivos a Modificar
+
+| Arquivo | Alteracoes |
+|---------|------------|
+| `index.html` | Adicionar MutationObserver para widget Zaia |
+| `src/components/gestao/ImportSection.tsx` | Adicionar campos midia + checkboxes automacao |
+| `src/pages/Index.tsx` | Adicionar secao Destaques |
+| `src/hooks/useFavorites.ts` | Implementar limite FIFO de 10 favoritos |
+| `src/hooks/useContent.ts` | Atualizar interface com novos campos |
+
+---
+
+## Migracoes de Banco de Dados
+
+```sql
+-- Adicionar campos para midia externa e destaque
+ALTER TABLE content_items 
+ADD COLUMN IF NOT EXISTS media_url TEXT DEFAULT NULL,
+ADD COLUMN IF NOT EXISTS media_type TEXT DEFAULT NULL,
+ADD COLUMN IF NOT EXISTS is_highlighted BOOLEAN DEFAULT false;
+
+-- Constraint para validar tipo de midia
+ALTER TABLE content_items 
+ADD CONSTRAINT valid_media_type 
+CHECK (media_type IS NULL OR media_type IN ('gif', 'video'));
+```
+
+---
+
+## Fluxo de Importacao Atualizado
+
+```text
+GESTAO > IMPORTAR > Item Unico
+        |
+        v
+  Titulo: [________________]
+  Link Canva: [______________]
+  Legenda: [________________]
+        |
+        v
+  Midia de Destaque (Opcional)
+  [GIF] [Video]
+  Link: [____________________]
+        |
+        v
+  Acoes Automaticas:
+  [x] Adicionar aos Favoritos
+  [x] Agendar no Calendario
+  [x] Marcar como Destaque
+        |
+        v
+  [IMPORTAR]
+        |
+        v
+  Item criado + agendado + favoritado + destacado
 ```
 
 ---
 
 ## Criterios de Aceitacao
 
-- [ ] Upload/paste de arquivo de legendas funciona
-- [ ] IA identifica destinos corretamente nas legendas
-- [ ] Match inteligente com titulos de videos
-- [ ] Usuario pode revisar e editar matches antes de aplicar
-- [ ] Usuario pode selecionar/deselecionar videos individuais
-- [ ] Atualizacao em massa funciona corretamente
-- [ ] Videos atualizados mostram badge "Com legenda"
-- [ ] Telefones genericos sao substituidos
+- [ ] Widget Zaia nao sobrepoe navegacao mobile em nenhum cenario
+- [ ] Campo de midia externa (GIF/Video) funciona na importacao
+- [ ] Checkbox "Auto-Destaque" cria secao especial na home
+- [ ] Limite de 10 favoritos com FIFO (mais antigo removido)
+- [ ] Contador de favoritos visivel (X/10)
+- [ ] Secao "Destaques da Semana" renderiza GIF/video animado
+- [ ] Performance: GIFs carregam com lazy loading
+- [ ] Fallback: se midia falhar, mostrar placeholder
+
+---
+
+## Secao Tecnica
+
+### Tipos Atualizados
+
+```typescript
+// ContentItem atualizado
+interface ContentItem {
+  id: string;
+  title: string;
+  url: string;
+  type: string;
+  category: string | null;
+  description: string | null;
+  icon: string;
+  image_url: string | null;
+  is_new: boolean;
+  is_active: boolean;
+  is_featured: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+  language: string;
+  // NOVOS
+  media_url: string | null;
+  media_type: 'gif' | 'video' | null;
+  is_highlighted: boolean;
+}
+```
+
+### Performance de Midia
+
+Para GIFs e videos externos, aplicar:
+- `loading="lazy"` em imgs
+- `playsInline muted autoPlay loop` em videos
+- Fallback `onerror` para placeholder
 
