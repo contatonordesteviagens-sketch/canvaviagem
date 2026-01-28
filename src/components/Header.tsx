@@ -35,23 +35,46 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
-  // Fetch user name from profile
+  // Fetch user name from profile with realtime updates
   useEffect(() => {
+    if (!user) {
+      setUserName(null);
+      return;
+    }
+
     const fetchUserName = async () => {
-      if (user) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("name")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        
-        setUserName(data?.name || null);
-      } else {
-        setUserName(null);
-      }
+      const { data } = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      
+      setUserName(data?.name || null);
     };
     
     fetchUserName();
+
+    // Subscribe to realtime updates on the user's profile
+    const channel = supabase
+      .channel(`profile-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('[Header] Profile updated:', payload);
+          setUserName((payload.new as { name?: string })?.name || null);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   // Mobile theme toggle button component
