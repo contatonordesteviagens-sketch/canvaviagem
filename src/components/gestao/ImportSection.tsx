@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useImportContent, ContentType, ParsedItem, getDefaultIconByType } from "@/hooks/useImportContent";
 import { useCreateContentItem } from "@/hooks/useContent";
 import { useScheduleContent } from "@/hooks/useCalendarEntries";
+import { useImportCaptions } from "@/hooks/useImportCaptions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,8 +13,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
-import { Upload, FileText, Loader2, Trash2, Check, X, Sparkles, Globe, MapPin, Users, Calendar } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Upload, FileText, Loader2, Trash2, Check, X, Sparkles, Globe, MapPin, Users, Calendar, Wand2 } from "lucide-react";
 import { toast } from "sonner";
+import { CaptionMatchTable } from "@/components/gestao/CaptionMatchTable";
 
 // Icon options by category
 const iconsByCategory: Record<ContentType, { value: string; label: string }[]> = {
@@ -110,9 +113,29 @@ export const ImportSection = () => {
   const [autoSchedule, setAutoSchedule] = useState<boolean>(true);
   const [importMode, setImportMode] = useState<"single" | "bulk">("single");
   
+  // Bulk captions import
+  const [bulkCaptionsText, setBulkCaptionsText] = useState<string>("");
+  const [includeWithCaption, setIncludeWithCaption] = useState<boolean>(false);
+  
   const queryClient = useQueryClient();
   const createContentItem = useCreateContentItem();
   const scheduleContent = useScheduleContent();
+  
+  // Hook for AI caption matching
+  const {
+    matches: captionMatches,
+    stats: captionStats,
+    isProcessing: isProcessingCaptions,
+    isApplying: isApplyingCaptions,
+    processText: processCaptionsText,
+    toggleVideoSelection,
+    toggleDestinationVideos,
+    updateVideoCaption,
+    updateDestinationCaption,
+    applyMatches: applyCaptionMatches,
+    getSelectionStats,
+    clearMatches,
+  } = useImportCaptions();
   
   const {
     parseFile,
@@ -516,7 +539,98 @@ export const ImportSection = () => {
   ];
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <Tabs defaultValue="content" className="space-y-6 max-w-5xl mx-auto">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="content" className="flex items-center gap-2">
+          <Upload className="h-4 w-4" />
+          Importar Conteúdo
+        </TabsTrigger>
+        <TabsTrigger value="bulk-captions" className="flex items-center gap-2">
+          <Wand2 className="h-4 w-4" />
+          Legendas em Massa
+        </TabsTrigger>
+      </TabsList>
+
+      {/* TAB: Bulk Captions Import with AI */}
+      <TabsContent value="bulk-captions" className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wand2 className="h-5 w-5 text-primary" />
+              Importar Legendas com IA
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Cole o texto com legendas e a IA vai associar automaticamente aos vídeos existentes.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Cole aqui o texto com legendas</Label>
+              <Textarea
+                placeholder={"Cole o conteúdo do arquivo de legendas aqui...\n\nExemplo:\n\nJericoacoara - CE\nRelaxe em Jericoacoara, um dos destinos mais charmosos do Brasil!\n#Jericoacoara #Viagem\n\nMaragogi - AL\nDescubra as maravilhas de Maragogi!\n#Maragogi #Nordeste"}
+                value={bulkCaptionsText}
+                onChange={(e) => setBulkCaptionsText(e.target.value)}
+                rows={10}
+                className="font-mono text-sm"
+              />
+              <p className="text-xs text-muted-foreground">
+                {bulkCaptionsText.length} caracteres
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="include-with-caption"
+                  checked={includeWithCaption}
+                  onCheckedChange={setIncludeWithCaption}
+                />
+                <Label htmlFor="include-with-caption" className="text-sm cursor-pointer">
+                  Incluir vídeos que já têm legenda
+                </Label>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={() => processCaptionsText(bulkCaptionsText, includeWithCaption)}
+                disabled={!bulkCaptionsText.trim() || isProcessingCaptions}
+              >
+                {isProcessingCaptions ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Wand2 className="h-4 w-4 mr-2" />
+                )}
+                {isProcessingCaptions ? "Processando com IA..." : "Processar com IA"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setBulkCaptionsText("")}
+                disabled={isProcessingCaptions}
+              >
+                Limpar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Results Table */}
+        <CaptionMatchTable
+          matches={captionMatches}
+          stats={captionStats}
+          isApplying={isApplyingCaptions}
+          onToggleVideo={toggleVideoSelection}
+          onToggleDestination={toggleDestinationVideos}
+          onUpdateCaption={updateVideoCaption}
+          onUpdateDestinationCaption={updateDestinationCaption}
+          onApply={applyCaptionMatches}
+          onClear={clearMatches}
+          getSelectionStats={getSelectionStats}
+        />
+      </TabsContent>
+
+      {/* TAB: Content Import (existing functionality) */}
+      <TabsContent value="content" className="space-y-6">
       {/* Type Selection */}
       <Card>
         <CardHeader>
@@ -1026,6 +1140,7 @@ export const ImportSection = () => {
           </CardContent>
         </Card>
       )}
-    </div>
+      </TabsContent>
+    </Tabs>
   );
 };
