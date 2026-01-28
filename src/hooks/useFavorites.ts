@@ -39,7 +39,9 @@ export const useFavorites = () => {
     ) ?? false;
   };
 
-  // Toggle favorito (adicionar ou remover)
+  const MAX_FAVORITES = 10;
+
+  // Toggle favorito (adicionar ou remover) com limite FIFO
   const toggleFavorite = useMutation({
     mutationFn: async ({
       contentType,
@@ -64,7 +66,20 @@ export const useFavorites = () => {
         if (error) throw error;
         return { action: "removed" };
       } else {
-        // Adicionar favorito
+        // Verificar limite antes de adicionar (FIFO - First In, First Out)
+        const { data: currentFavorites } = await supabase
+          .from("user_favorites")
+          .select("id, created_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true });
+
+        // Se atingiu limite, remover o mais antigo
+        if (currentFavorites && currentFavorites.length >= MAX_FAVORITES) {
+          const oldest = currentFavorites[0];
+          await supabase.from("user_favorites").delete().eq("id", oldest.id);
+        }
+
+        // Adicionar novo favorito
         const { error } = await supabase
           .from("user_favorites")
           .insert({
@@ -74,7 +89,7 @@ export const useFavorites = () => {
           });
 
         if (error) throw error;
-        return { action: "added" };
+        return { action: "added", reachedLimit: (currentFavorites?.length || 0) >= MAX_FAVORITES };
       }
     },
     onSuccess: () => {
@@ -84,6 +99,8 @@ export const useFavorites = () => {
 
   return {
     favorites: favorites.data || [],
+    favoritesCount: favorites.data?.length || 0,
+    MAX_FAVORITES,
     isLoading: favorites.isLoading,
     isFavorite,
     toggleFavorite,

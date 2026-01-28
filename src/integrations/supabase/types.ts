@@ -253,8 +253,11 @@ export type Database = {
           image_url: string | null
           is_active: boolean | null
           is_featured: boolean | null
+          is_highlighted: boolean | null
           is_new: boolean | null
           language: string | null
+          media_type: string | null
+          media_url: string | null
           subcategory: string | null
           title: string
           type: string
@@ -271,8 +274,11 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_highlighted?: boolean | null
           is_new?: boolean | null
           language?: string | null
+          media_type?: string | null
+          media_url?: string | null
           subcategory?: string | null
           title: string
           type: string
@@ -289,8 +295,11 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_highlighted?: boolean | null
           is_new?: boolean | null
           language?: string | null
+          media_type?: string | null
+          media_url?: string | null
           subcategory?: string | null
           title?: string
           type?: string

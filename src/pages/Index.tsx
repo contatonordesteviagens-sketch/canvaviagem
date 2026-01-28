@@ -28,11 +28,15 @@ import {
   useTrackClick,
   useFeaturedItems,
   useNewestItemIds,
+  useHighlightedItems,
   ContentItem,
   Caption,
 } from "@/hooks/useContent";
 import { useTrackPageView } from "@/hooks/useAdminDashboard";
 import { useFavorites } from "@/hooks/useFavorites";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ExternalLink } from "lucide-react";
 
 // Static resources (downloads and resources that don't need DB management)
 import { resources, videoDownloads } from "@/data/templates";
@@ -64,9 +68,10 @@ const Index = () => {
   const { data: captionsData, isLoading: captionsLoading } = useCaptions();
   const { data: toolsData, isLoading: toolsLoading } = useMarketingTools();
   const { data: newestIds = [] } = useNewestItemIds();
+  const { data: highlightedItems, isLoading: highlightsLoading } = useHighlightedItems();
   const { trackClick } = useTrackClick();
   const { trackPageView } = useTrackPageView();
-  const { favorites, isFavorite, toggleFavorite } = useFavorites();
+  const { favorites, isFavorite, toggleFavorite, favoritesCount, MAX_FAVORITES } = useFavorites();
 
   // Track view content when user is logged in
   useEffect(() => {
@@ -222,6 +227,82 @@ const Index = () => {
         
         return (
           <section className="animate-fade-in">
+            {/* Highlights Section - Show at top if there are highlighted items */}
+            {highlightedItems && highlightedItems.length > 0 && (
+              <div className="mb-8">
+                <SectionHeader 
+                  title="✨ Destaques da Semana" 
+                  subtitle="Conteúdos em destaque selecionados para você"
+                />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {highlightedItems.map(item => (
+                    <Card key={item.id} className="overflow-hidden border-primary/30 shadow-lg hover:shadow-xl transition-shadow">
+                      {/* Animated Media (GIF or Video) */}
+                      {item.media_url ? (
+                        <div className="aspect-video bg-muted">
+                          {item.media_type === 'gif' ? (
+                            <img 
+                              src={item.media_url} 
+                              alt={item.title} 
+                              className="w-full h-full object-cover" 
+                              loading="lazy"
+                              onError={(e) => {
+                                e.currentTarget.src = '/placeholder.svg';
+                              }}
+                            />
+                          ) : (
+                            <video 
+                              src={item.media_url} 
+                              autoPlay 
+                              loop 
+                              muted 
+                              playsInline
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          )}
+                        </div>
+                      ) : item.image_url ? (
+                        <div className="aspect-video bg-muted">
+                          <img 
+                            src={item.image_url} 
+                            alt={item.title} 
+                            className="w-full h-full object-cover" 
+                            loading="lazy"
+                          />
+                        </div>
+                      ) : (
+                        <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                          <span className="text-4xl">{item.icon || "✨"}</span>
+                        </div>
+                      )}
+                      <CardContent className="p-4">
+                        <Badge className="mb-2 bg-gradient-to-r from-primary to-accent text-primary-foreground">
+                          Destaque
+                        </Badge>
+                        <h3 className="font-bold text-lg line-clamp-1">{item.title}</h3>
+                        {item.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{item.description}</p>
+                        )}
+                        <Button 
+                          className="w-full mt-3" 
+                          onClick={() => {
+                            trackClick(item.type, item.id);
+                            window.open(item.url, '_blank');
+                          }}
+                        >
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Editar no Canva
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             <SectionHeader 
               title="Vídeos Reels Editáveis" 
               subtitle="Templates prontos para editar no Canva e publicar"
