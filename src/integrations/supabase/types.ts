@@ -134,6 +134,54 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_entries: {
+        Row: {
+          caption_id: string | null
+          content_item_id: string | null
+          created_at: string | null
+          day_of_year: number
+          id: string
+          notes: string | null
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          caption_id?: string | null
+          content_item_id?: string | null
+          created_at?: string | null
+          day_of_year: number
+          id?: string
+          notes?: string | null
+          updated_at?: string | null
+          year: number
+        }
+        Update: {
+          caption_id?: string | null
+          content_item_id?: string | null
+          created_at?: string | null
+          day_of_year?: number
+          id?: string
+          notes?: string | null
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_entries_caption_id_fkey"
+            columns: ["caption_id"]
+            isOneToOne: false
+            referencedRelation: "captions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_entries_content_item_id_fkey"
+            columns: ["content_item_id"]
+            isOneToOne: false
+            referencedRelation: "content_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       captions: {
         Row: {
           category: string | null

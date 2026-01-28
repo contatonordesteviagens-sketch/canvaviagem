@@ -85,7 +85,8 @@ export const ContentSection = ({
   const [bulkAddModalOpen, setBulkAddModalOpen] = useState(false);
   const [createType, setCreateType] = useState<"content" | "tool">("content");
   const [currentTab, setCurrentTab] = useState("videos");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("custom");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("recent");
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
   
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
