@@ -1,395 +1,306 @@
 
+# Plano: Hardening de Seguranca para Tabelas com PII
 
-# Plano de Implementacao: Canva Viagem - Melhorias Pendentes
+## Contexto do Problema
 
-## Analise do Estado Atual
+Os alertas de seguranca apontam dois riscos principais:
 
-Apos revisar o codigo, identifiquei que **grande parte das funcionalidades ja foram implementadas**:
+| Tabela | Dados Sensiveis | Risco |
+|--------|----------------|-------|
+| `abandoned_checkouts` | email, amount, recovered | Harvesting de emails, phishing direcionado |
+| `profiles` | email, phone, name, stripe_customer_id | Roubo de dados de clientes, fraude |
 
-| Tarefa | Status | Observacoes |
-|--------|--------|-------------|
-| TAREFA 1: Widget Zaia vs NavBar Mobile | ✅ Parcial | CSS implementado em index.html, mas persiste o problema |
-| TAREFA 2A: Filtro Favoritos | ✅ Completo | Implementado em Index.tsx e BottomNav |
-| TAREFA 2B: Ordenacao "Mais Recente" | ✅ Completo | Ordenacao por created_at DESC ja funciona |
-| TAREFA 3: Badge "Novo" (3 mais recentes) | ✅ Completo | Hook useNewestItemIds implementado |
-| TAREFA 4: Importacao + Calendario | ✅ Completo | Sistema de agendamento automatico funcionando |
-| TAREFA 5: Midia Externa + Auto-Destaque | ❌ Pendente | Nao implementado |
-
----
-
-## Implementacoes Pendentes
-
-### 1. Resolver Definitivamente Widget Zaia (TAREFA 1)
-
-O CSS atual no index.html tenta ajustar o widget, mas o script do Zaia pode estar sobrescrevendo. Solucao mais robusta:
-
-**Arquivo: `index.html`**
-- Adicionar observador de mutacoes (MutationObserver) para garantir que o widget seja ajustado mesmo apos carregamento dinamico
-- Aumentar especificidade dos seletores CSS
-
-```html
-<script>
-  // Observar DOM e ajustar widget Zaia quando aparecer
-  const adjustZaiaWidget = () => {
-    const widgets = document.querySelectorAll('[id*="zaia"], [class*="chat"], .zaia-widget, #chatbot-fab');
-    widgets.forEach(el => {
-      if (window.innerWidth <= 768) {
-        el.style.setProperty('bottom', '100px', 'important');
-        el.style.setProperty('z-index', '45', 'important');
-      }
-    });
-  };
-  
-  // MutationObserver para detectar quando widget e inserido
-  const observer = new MutationObserver(adjustZaiaWidget);
-  observer.observe(document.body, { childList: true, subtree: true });
-  window.addEventListener('resize', adjustZaiaWidget);
-</script>
-```
-
-**Arquivo: `src/components/canva/BottomNav.tsx`**
-- Confirmar z-index z-[60] (ja implementado)
-- Adicionar classe safe-area-inset para iOS
+**Situacao Atual:**
+- Admins podem ler TODOS os registros via `is_admin()`
+- Emails armazenados em texto plano
+- Nenhum audit log para acesso a dados sensiveis
+- Se credenciais admin forem comprometidas, atacante tem acesso total
 
 ---
 
-### 2. Sistema de Midia Externa (GIF/Video) - TAREFA 5A
+## Solucao Proposta: Defesa em Profundidade
 
-**2.1 Migrar schema do banco (nova coluna)**
+### 1. Criar Views com Mascaramento de Email
+
+Em vez de expor emails completos, criar views que mascararem dados sensiveis:
 
 ```sql
-ALTER TABLE content_items 
-ADD COLUMN media_url TEXT DEFAULT NULL,
-ADD COLUMN media_type TEXT DEFAULT NULL CHECK (media_type IN ('gif', 'video', NULL)),
-ADD COLUMN is_highlighted BOOLEAN DEFAULT false;
+-- View mascarada para abandoned_checkouts
+CREATE VIEW public.abandoned_checkouts_masked
+WITH (security_invoker=on) AS
+SELECT 
+  id,
+  session_id,
+  -- Mascara email: lu***@gmail.com
+  CONCAT(
+    LEFT(email, 2), 
+    '***@', 
+    SPLIT_PART(email, '@', 2)
+  ) as email_masked,
+  created_at,
+  recovered_at,
+  recovered,
+  amount
+FROM public.abandoned_checkouts;
+
+-- View mascarada para profiles (admin)
+CREATE VIEW public.profiles_admin_view
+WITH (security_invoker=on) AS
+SELECT 
+  id,
+  user_id,
+  CONCAT(LEFT(email, 2), '***@', SPLIT_PART(email, '@', 2)) as email_masked,
+  name,
+  -- Mascara telefone: (85) 9****-1234
+  CASE 
+    WHEN phone IS NOT NULL THEN 
+      CONCAT(LEFT(phone, 5), '****-', RIGHT(phone, 4))
+    ELSE NULL 
+  END as phone_masked,
+  created_at,
+  first_visit_at,
+  utm_source,
+  utm_medium,
+  utm_campaign,
+  -- Mascara stripe ID parcialmente
+  CASE 
+    WHEN stripe_customer_id IS NOT NULL THEN 
+      CONCAT('cus_***', RIGHT(stripe_customer_id, 4))
+    ELSE NULL 
+  END as stripe_id_masked
+FROM public.profiles;
 ```
 
-**2.2 Arquivo: `src/components/gestao/ImportSection.tsx`**
+### 2. Bloquear Acesso Direto as Tabelas Base
 
-Adicionar na aba de importacao:
+Atualizar RLS para que admins usem APENAS as views mascaradas:
 
-```typescript
-// Novos estados
-const [mediaUrl, setMediaUrl] = useState("");
-const [mediaType, setMediaType] = useState<"gif" | "video" | null>(null);
-const [autoHighlight, setAutoHighlight] = useState(false);
-const [autoFavorite, setAutoFavorite] = useState(false);
+```sql
+-- Remover politica permissiva de admin em abandoned_checkouts
+DROP POLICY IF EXISTS "Admins can read abandoned checkouts" ON abandoned_checkouts;
 
-// Nova UI - Tabs para GIF/Video
-<Tabs defaultValue="gif">
-  <TabsList>
-    <TabsTrigger value="gif">GIF Animado</TabsTrigger>
-    <TabsTrigger value="video">Video Curto</TabsTrigger>
-  </TabsList>
-  <TabsContent value="gif">
-    <Input 
-      placeholder="Link do GIF (Giphy, Tenor...)"
-      value={mediaUrl}
-      onChange={(e) => { setMediaUrl(e.target.value); setMediaType("gif"); }}
-    />
-  </TabsContent>
-  <TabsContent value="video">
-    <Input 
-      placeholder="Link do video (max 30s)"
-      value={mediaUrl}
-      onChange={(e) => { setMediaUrl(e.target.value); setMediaType("video"); }}
-    />
-  </TabsContent>
-</Tabs>
+-- Criar politica mais restritiva
+CREATE POLICY "Admins read via masked view only" 
+ON abandoned_checkouts FOR SELECT
+USING (false);  -- Bloqueia SELECT direto
 
-// Checkboxes de automacao
-<div className="space-y-2 border p-4 rounded-lg bg-muted/50">
-  <Label>Acoes Automaticas</Label>
-  <Checkbox id="auto-favorite" checked={autoFavorite} onChange={setAutoFavorite}>
-    ⭐ Adicionar aos Favoritos
-  </Checkbox>
-  <Checkbox id="auto-calendar" checked={autoSchedule} onChange={setAutoSchedule}>
-    📅 Agendar no Calendario
-  </Checkbox>
-  <Checkbox id="auto-highlight" checked={autoHighlight} onChange={setAutoHighlight}>
-    ✨ Marcar como Destaque
-  </Checkbox>
-</div>
+-- Dar acesso apenas a view
+GRANT SELECT ON public.abandoned_checkouts_masked TO authenticated;
 ```
 
-**2.3 Atualizar logica de insercao**
+### 3. Funcao para Acesso Completo com Auditoria
+
+Para casos onde o admin PRECISA do email completo (ex: suporte), criar funcao auditada:
+
+```sql
+-- Funcao que retorna email completo E registra no audit_log
+CREATE OR REPLACE FUNCTION public.get_customer_email_audited(
+  p_record_id uuid,
+  p_table_name text,
+  p_reason text
+)
+RETURNS text
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_email text;
+  v_user_id uuid;
+BEGIN
+  -- Verificar se e admin
+  IF NOT is_admin() THEN
+    RAISE EXCEPTION 'Unauthorized';
+  END IF;
+  
+  v_user_id := auth.uid();
+  
+  -- Buscar email conforme tabela
+  IF p_table_name = 'abandoned_checkouts' THEN
+    SELECT email INTO v_email 
+    FROM abandoned_checkouts 
+    WHERE id = p_record_id;
+  ELSIF p_table_name = 'profiles' THEN
+    SELECT email INTO v_email 
+    FROM profiles 
+    WHERE id = p_record_id;
+  ELSE
+    RAISE EXCEPTION 'Invalid table';
+  END IF;
+  
+  -- Registrar acesso no audit_log
+  INSERT INTO audit_log (
+    table_name, 
+    record_id, 
+    action, 
+    user_id,
+    user_email,
+    new_data
+  ) VALUES (
+    p_table_name,
+    p_record_id,
+    'PII_ACCESS',
+    v_user_id,
+    (SELECT email FROM auth.users WHERE id = v_user_id),
+    jsonb_build_object('reason', p_reason, 'accessed_at', now())
+  );
+  
+  RETURN v_email;
+END;
+$$;
+```
+
+### 4. Atualizar Frontend para Usar Views Mascaradas
+
+**Arquivo: `src/hooks/useAdminDashboard.ts`**
+
+Atualizar queries para usar views mascaradas:
 
 ```typescript
-// Ao criar item, incluir novos campos
-await supabase.from("content_items").insert({
-  title: quickTitle.trim(),
-  url: quickUrl.trim(),
-  description: quickCaption.trim() || null,
-  media_url: mediaUrl || null,
-  media_type: mediaType,
-  is_highlighted: autoHighlight,
-  // ...outros campos
-});
+// Exemplo: buscar checkouts abandonados
+const { data: abandonedCheckouts } = await supabase
+  .from("abandoned_checkouts_masked")  // <- View mascarada
+  .select("*")
+  .order("created_at", { ascending: false });
 
-// Se auto-favorite, adicionar aos favoritos
-if (autoFavorite && createdItem) {
-  await supabase.from("user_favorites").insert({
-    user_id: user.id,
-    content_type: "content_item",
-    content_id: createdItem.id,
+// Se precisar email completo (com auditoria)
+const getFullEmail = async (recordId: string, reason: string) => {
+  const { data, error } = await supabase.rpc('get_customer_email_audited', {
+    p_record_id: recordId,
+    p_table_name: 'abandoned_checkouts',
+    p_reason: reason
   });
-}
-```
-
----
-
-### 3. Secao Destaques na Tela Principal - TAREFA 5D
-
-**Arquivo: `src/pages/Index.tsx`**
-
-Adicionar secao especial antes do conteudo normal:
-
-```typescript
-// Buscar itens destacados
-const { data: highlightedItems } = useQuery({
-  queryKey: ["highlighted-items"],
-  queryFn: async () => {
-    const { data } = await supabase
-      .from("content_items")
-      .select("*")
-      .eq("is_highlighted", true)
-      .eq("is_active", true)
-      .order("created_at", { ascending: false })
-      .limit(3);
-    return data;
-  },
-});
-
-// Renderizar antes do conteudo principal
-{highlightedItems && highlightedItems.length > 0 && (
-  <section className="mb-8 animate-fade-in">
-    <SectionHeader 
-      title="✨ Destaques da Semana" 
-      subtitle="Conteudos em destaque selecionados para voce"
-    />
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {highlightedItems.map(item => (
-        <Card key={item.id} className="overflow-hidden border-primary/50 shadow-lg">
-          {/* Midia animada (GIF ou Video) */}
-          {item.media_url && (
-            <div className="aspect-video">
-              {item.media_type === 'gif' ? (
-                <img src={item.media_url} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
-              ) : (
-                <video src={item.media_url} autoPlay loop muted playsInline className="w-full h-full object-cover" />
-              )}
-            </div>
-          )}
-          <CardContent className="p-4">
-            <Badge className="mb-2 bg-gradient-to-r from-primary to-accent">Destaque</Badge>
-            <h3 className="font-bold text-lg">{item.title}</h3>
-            {item.description && (
-              <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
-            )}
-            <Button className="w-full mt-3" onClick={() => window.open(item.url, '_blank')}>
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Editar no Canva
-            </Button>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  </section>
-)}
-```
-
----
-
-### 4. Limite de Favoritos com FIFO - TAREFA 5C
-
-**Arquivo: `src/hooks/useFavorites.ts`**
-
-Atualizar mutacao para implementar limite deslizante:
-
-```typescript
-const MAX_FAVORITES = 10;
-
-const toggleFavorite = useMutation({
-  mutationFn: async ({ contentType, contentId }) => {
-    if (!user) throw new Error("User not authenticated");
-
-    const existing = favorites.data?.find(
-      (f) => f.content_type === contentType && f.content_id === contentId
-    );
-
-    if (existing) {
-      // Remover favorito
-      await supabase.from("user_favorites").delete().eq("id", existing.id);
-      return { action: "removed" };
-    } else {
-      // Verificar limite antes de adicionar
-      const { data: currentFavorites } = await supabase
-        .from("user_favorites")
-        .select("id, created_at")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: true });
-
-      // Se atingiu limite, remover o mais antigo (FIFO)
-      if (currentFavorites && currentFavorites.length >= MAX_FAVORITES) {
-        const oldest = currentFavorites[0];
-        await supabase.from("user_favorites").delete().eq("id", oldest.id);
-      }
-
-      // Adicionar novo favorito
-      await supabase.from("user_favorites").insert({
-        user_id: user.id,
-        content_type: contentType,
-        content_id: contentId,
-      });
-      
-      return { action: "added" };
-    }
-  },
-  // ...
-});
-
-// Exportar contador
-return {
-  favorites: favorites.data || [],
-  favoritesCount: favorites.data?.length || 0,
-  MAX_FAVORITES,
-  // ...
+  return data;
 };
 ```
 
-**UI de feedback (Index.tsx ou Header):**
-
-```typescript
-// Mostrar contador
-<Badge variant="outline" className="gap-1">
-  ⭐ {favoritesCount}/{MAX_FAVORITES}
-</Badge>
-```
-
----
-
-### 5. Atualizar Hook useContent (novos campos)
-
-**Arquivo: `src/hooks/useContent.ts`**
-
-Incluir novos campos na interface:
-
-```typescript
-export interface ContentItem {
-  // campos existentes...
-  media_url: string | null;
-  media_type: 'gif' | 'video' | null;
-  is_highlighted: boolean;
-}
-```
-
----
-
-## Resumo de Arquivos a Modificar
-
-| Arquivo | Alteracoes |
-|---------|------------|
-| `index.html` | Adicionar MutationObserver para widget Zaia |
-| `src/components/gestao/ImportSection.tsx` | Adicionar campos midia + checkboxes automacao |
-| `src/pages/Index.tsx` | Adicionar secao Destaques |
-| `src/hooks/useFavorites.ts` | Implementar limite FIFO de 10 favoritos |
-| `src/hooks/useContent.ts` | Atualizar interface com novos campos |
-
----
-
-## Migracoes de Banco de Dados
+### 5. Adicionar Trigger de Alerta para Acessos Suspeitos
 
 ```sql
--- Adicionar campos para midia externa e destaque
-ALTER TABLE content_items 
-ADD COLUMN IF NOT EXISTS media_url TEXT DEFAULT NULL,
-ADD COLUMN IF NOT EXISTS media_type TEXT DEFAULT NULL,
-ADD COLUMN IF NOT EXISTS is_highlighted BOOLEAN DEFAULT false;
+-- Funcao que alerta sobre multiplos acessos PII
+CREATE OR REPLACE FUNCTION public.check_pii_access_pattern()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_access_count integer;
+BEGIN
+  -- Contar acessos PII nos ultimos 5 minutos
+  SELECT COUNT(*) INTO v_access_count
+  FROM audit_log
+  WHERE action = 'PII_ACCESS'
+    AND user_id = NEW.user_id
+    AND created_at > now() - interval '5 minutes';
+  
+  -- Se mais de 10 acessos em 5 min, registrar alerta
+  IF v_access_count > 10 THEN
+    INSERT INTO audit_log (
+      table_name, record_id, action, user_id, new_data
+    ) VALUES (
+      'security_alert', gen_random_uuid(), 'EXCESSIVE_PII_ACCESS',
+      NEW.user_id,
+      jsonb_build_object(
+        'alert', 'Excessive PII access detected',
+        'count', v_access_count,
+        'period', '5 minutes'
+      )
+    );
+  END IF;
+  
+  RETURN NEW;
+END;
+$$;
 
--- Constraint para validar tipo de midia
-ALTER TABLE content_items 
-ADD CONSTRAINT valid_media_type 
-CHECK (media_type IS NULL OR media_type IN ('gif', 'video'));
+CREATE TRIGGER audit_pii_access_pattern
+AFTER INSERT ON audit_log
+FOR EACH ROW
+WHEN (NEW.action = 'PII_ACCESS')
+EXECUTE FUNCTION check_pii_access_pattern();
 ```
 
 ---
 
-## Fluxo de Importacao Atualizado
+## Arquivos a Modificar
+
+| Arquivo | Alteracao |
+|---------|-----------|
+| Migration SQL | Criar views mascaradas, funcoes auditadas, triggers |
+| `src/hooks/useAdminDashboard.ts` | Usar views mascaradas |
+| `src/hooks/useEmailDashboard.ts` | Usar views mascaradas |
+| `src/pages/Gestao.tsx` | Adicionar botao "Ver email completo" com confirmacao |
+
+---
+
+## Resumo da Migracao SQL
+
+```sql
+-- 1. Criar views mascaradas
+CREATE VIEW abandoned_checkouts_masked ...
+CREATE VIEW profiles_admin_view ...
+
+-- 2. Dar permissao as views
+GRANT SELECT ON abandoned_checkouts_masked TO authenticated;
+GRANT SELECT ON profiles_admin_view TO authenticated;
+
+-- 3. Criar funcao de acesso auditado
+CREATE FUNCTION get_customer_email_audited(...) ...
+
+-- 4. Criar trigger de alerta
+CREATE FUNCTION check_pii_access_pattern() ...
+CREATE TRIGGER audit_pii_access_pattern ...
+
+-- 5. Atualizar RLS para bloquear acesso direto (opcional, mais restritivo)
+-- DROP POLICY "Admins can read abandoned checkouts" ON abandoned_checkouts;
+```
+
+---
+
+## Fluxo de Acesso Admin Atualizado
 
 ```text
-GESTAO > IMPORTAR > Item Unico
-        |
-        v
-  Titulo: [________________]
-  Link Canva: [______________]
-  Legenda: [________________]
-        |
-        v
-  Midia de Destaque (Opcional)
-  [GIF] [Video]
-  Link: [____________________]
-        |
-        v
-  Acoes Automaticas:
-  [x] Adicionar aos Favoritos
-  [x] Agendar no Calendario
-  [x] Marcar como Destaque
-        |
-        v
-  [IMPORTAR]
-        |
-        v
-  Item criado + agendado + favoritado + destacado
+ADMIN LOGADO
+      |
+      v
+[Dashboard Gestao]
+      |
+      +---> Lista abandonos: usa VIEW mascarada
+      |     email_masked: "lu***@gmail.com"
+      |
+      +---> Precisa email completo?
+            |
+            v
+      [Modal de Confirmacao]
+      "Motivo do acesso: [__________]"
+      [Confirmar]
+            |
+            v
+      [RPC: get_customer_email_audited]
+            |
+            +---> Retorna email
+            +---> Registra no audit_log
+            +---> Verifica padrao de acesso
 ```
 
 ---
 
 ## Criterios de Aceitacao
 
-- [ ] Widget Zaia nao sobrepoe navegacao mobile em nenhum cenario
-- [ ] Campo de midia externa (GIF/Video) funciona na importacao
-- [ ] Checkbox "Auto-Destaque" cria secao especial na home
-- [ ] Limite de 10 favoritos com FIFO (mais antigo removido)
-- [ ] Contador de favoritos visivel (X/10)
-- [ ] Secao "Destaques da Semana" renderiza GIF/video animado
-- [ ] Performance: GIFs carregam com lazy loading
-- [ ] Fallback: se midia falhar, mostrar placeholder
+- [ ] Views mascaradas criadas para `abandoned_checkouts` e `profiles`
+- [ ] Dashboards admin usam views mascaradas por padrao
+- [ ] Funcao `get_customer_email_audited` registra todos os acessos PII
+- [ ] Trigger alerta sobre padroes suspeitos (>10 acessos em 5 min)
+- [ ] Emails completos so acessiveis com motivo registrado
+- [ ] Audit log mostra historico de acessos PII
 
 ---
 
-## Secao Tecnica
+## Secao Tecnica: Porque Esta Abordagem
 
-### Tipos Atualizados
+1. **Views com `security_invoker=on`**: Herdam permissoes do usuario chamador, respeitando RLS
+2. **SECURITY DEFINER nas funcoes**: Permite acesso controlado as tabelas base
+3. **Audit trail**: Rastreabilidade completa de quem acessou o que
+4. **Deteccao de anomalias**: Trigger identifica comportamento de harvesting
+5. **Principio do minimo privilegio**: Admin so ve dados completos quando necessario
 
-```typescript
-// ContentItem atualizado
-interface ContentItem {
-  id: string;
-  title: string;
-  url: string;
-  type: string;
-  category: string | null;
-  description: string | null;
-  icon: string;
-  image_url: string | null;
-  is_new: boolean;
-  is_active: boolean;
-  is_featured: boolean;
-  display_order: number;
-  created_at: string;
-  updated_at: string;
-  language: string;
-  // NOVOS
-  media_url: string | null;
-  media_type: 'gif' | 'video' | null;
-  is_highlighted: boolean;
-}
-```
-
-### Performance de Midia
-
-Para GIFs e videos externos, aplicar:
-- `loading="lazy"` em imgs
-- `playsInline muted autoPlay loop` em videos
-- Fallback `onerror` para placeholder
-
+Esta solucao mantem a funcionalidade do dashboard mas adiciona camadas de protecao contra comprometimento de credenciais admin.
