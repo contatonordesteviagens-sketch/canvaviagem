@@ -367,7 +367,7 @@ const Planos = () => {
             Oferta por tempo limitado
           </Badge>
           <h1 className="md:text-5xl font-bold mb-4 text-2xl">
-            Praticamente um time de marketing de viagens mais barato que uma pizza        
+            Praticamente um time de marketing de viagens <span className="text-primary">mais barato que um cafezinho ☕</span>        
           </h1>
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
             São centenas de templates exclusivos para você vender viagens o ano inteiro.
