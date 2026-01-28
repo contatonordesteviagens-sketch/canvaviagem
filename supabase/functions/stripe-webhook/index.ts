@@ -46,7 +46,7 @@ function isValidEmail(email: string | null | undefined): email is string {
 // =====================
 async function triggerZaiaWebhook(
   webhookEnvVar: string, 
-  data: { email: string; name?: string }
+  data: { email: string; name?: string; phone?: string }
 ) {
   const webhookUrl = Deno.env.get(webhookEnvVar);
   if (!webhookUrl) {
@@ -55,14 +55,21 @@ async function triggerZaiaWebhook(
   }
 
   try {
+    const payload: Record<string, string> = {
+      email: data.email,
+      name: data.name || data.email.split("@")[0],
+      timestamp: new Date().toISOString(),
+    };
+    
+    // Include phone only if available
+    if (data.phone) {
+      payload.phone = data.phone;
+    }
+    
     const response = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: data.email,
-        name: data.name || data.email.split("@")[0],
-        timestamp: new Date().toISOString(),
-      }),
+      body: JSON.stringify(payload),
     });
     
     // Consume response body to prevent resource leak
@@ -208,10 +215,19 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
   const email = rawEmail;
   const customerName = session.customer_details?.name || email.split("@")[0];
 
+  // Extract phone from customer_details (if available from Stripe checkout)
+  const customerPhone = session.customer_details?.phone || null;
+  const cleanedPhone = customerPhone ? customerPhone.replace(/\D/g, '') : null;
+
   const stripeCustomerId = session.customer as string;
   const stripeSubscriptionId = session.subscription as string;
 
-  logStep("Checkout details", { email: redactEmail(email), stripeCustomerId, stripeSubscriptionId });
+  logStep("Checkout details", { 
+    email: redactEmail(email), 
+    stripeCustomerId, 
+    stripeSubscriptionId,
+    hasPhone: !!cleanedPhone
+  });
 
   // Check if user already exists
   const { data: existingUsers } = await supabase.auth.admin.listUsers();
@@ -238,16 +254,22 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
     logStep("New user created", { userId });
   }
 
-  // Update or create profile
+  // Update or create profile (include phone if available)
+  const profileData: Record<string, any> = {
+    user_id: userId,
+    email,
+    name: customerName,
+    stripe_customer_id: stripeCustomerId,
+    updated_at: new Date().toISOString(),
+  };
+  
+  if (cleanedPhone) {
+    profileData.phone = cleanedPhone;
+  }
+
   const { error: profileError } = await supabase
     .from("profiles")
-    .upsert({
-      user_id: userId,
-      email,
-      name: customerName,
-      stripe_customer_id: stripeCustomerId,
-      updated_at: new Date().toISOString(),
-    }, {
+    .upsert(profileData, {
       onConflict: "user_id",
     });
 
@@ -280,8 +302,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
     await sendWelcomeEmail(resend, email);
   }
 
-  // Trigger Zaia welcome webhook for WhatsApp automation
-  await triggerZaiaWebhook("ZAIA_WEBHOOK_WELCOME", { email, name: customerName });
+  // Trigger Zaia welcome webhook for WhatsApp automation (include phone if available)
+  await triggerZaiaWebhook("ZAIA_WEBHOOK_WELCOME", { 
+    email, 
+    name: customerName,
+    phone: cleanedPhone || undefined
+  });
 }
 
 async function handleSubscriptionCreated(subscription: Stripe.Subscription, supabase: any) {
