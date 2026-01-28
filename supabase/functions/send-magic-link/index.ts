@@ -100,6 +100,12 @@ serve(async (req) => {
   try {
     const { email, name, phone } = await req.json();
 
+    console.log("[MAGIC-LINK] Processing request:", { 
+      email: email ? email.substring(0, 5) + "***" : "missing",
+      hasName: !!name,
+      hasPhone: !!phone 
+    });
+
     if (!email || typeof email !== "string") {
       return new Response(
         JSON.stringify({ error: "Email é obrigatório" }),
@@ -150,7 +156,9 @@ serve(async (req) => {
 
     // Criar link de verificação
     const baseUrl = Deno.env.get("SITE_URL") || "https://canvaviagem.lovable.app";
+    console.log("[MAGIC-LINK] Using base URL:", baseUrl);
     const magicLink = `${baseUrl}/auth/verify?token=${token}`;
+    console.log("[MAGIC-LINK] Magic link generated successfully");
 
     // Enviar email via Resend
     const emailResponse = await resend.emails.send({
@@ -168,7 +176,7 @@ serve(async (req) => {
 
     // Verificar se o Resend retornou erro
     if (emailResponse.error) {
-      console.error("[MAGIC-LINK] Resend error:", emailResponse.error);
+      console.error("[MAGIC-LINK] Resend error details:", JSON.stringify(emailResponse.error));
       return new Response(
         JSON.stringify({ error: "Erro ao enviar email. Tente novamente." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
