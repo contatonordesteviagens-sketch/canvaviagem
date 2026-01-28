@@ -8,11 +8,13 @@ interface EditableCardProps {
   title: string;
   url: string;
   icon?: string;
+  description?: string | null;
+  hasCaption?: boolean;
   isActive?: boolean;
   isNew?: boolean;
   isFeatured?: boolean;
   onToggleFeatured?: (id: string) => void;
-  onEdit: (item: { id: string; title: string; url: string; is_active?: boolean }) => void;
+  onEdit: (item: { id: string; title: string; url: string; description?: string | null; is_active?: boolean }) => void;
   onDelete?: (id: string, title: string) => void;
 }
 
@@ -21,6 +23,8 @@ export const EditableCard = ({
   title,
   url,
   icon = "📄",
+  description,
+  hasCaption = false,
   isActive = true,
   isNew = false,
   isFeatured = false,
@@ -57,7 +61,7 @@ export const EditableCard = ({
       )}
 
       {/* Status badges */}
-      <div className="absolute top-2 right-2 flex gap-1">
+      <div className="absolute top-2 right-2 flex flex-wrap gap-1 max-w-[120px] justify-end">
         {isNew && (
           <Badge variant="secondary" className="text-xs">
             Novo
@@ -66,6 +70,15 @@ export const EditableCard = ({
         {!isActive && (
           <Badge variant="destructive" className="text-xs">
             Inativo
+          </Badge>
+        )}
+        {hasCaption ? (
+          <Badge variant="outline" className="text-xs border-green-500 text-green-600 bg-green-50">
+            📝 Legenda
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="text-xs border-amber-500 text-amber-600 bg-amber-50">
+            Sem legenda
           </Badge>
         )}
       </div>
@@ -93,7 +106,7 @@ export const EditableCard = ({
           size="sm"
           variant="outline"
           className="flex-1"
-          onClick={() => onEdit({ id, title, url, is_active: isActive })}
+          onClick={() => onEdit({ id, title, url, description, is_active: isActive })}
         >
           <Pencil className="h-4 w-4 mr-2" />
           Editar

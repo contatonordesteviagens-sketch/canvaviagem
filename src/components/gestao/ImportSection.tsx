@@ -100,10 +100,15 @@ export const ImportSection = () => {
   const [location, setLocation] = useState<string>("");
   const [language, setLanguage] = useState<string>("pt");
   
-  // Quick import text
+  // Quick import text (bulk mode)
   const [quickImportText, setQuickImportText] = useState<string>("");
+  
+  // Quick import single mode (separated fields)
+  const [quickTitle, setQuickTitle] = useState<string>("");
+  const [quickUrl, setQuickUrl] = useState<string>("");
   const [quickCaption, setQuickCaption] = useState<string>("");
   const [autoSchedule, setAutoSchedule] = useState<boolean>(true);
+  const [importMode, setImportMode] = useState<"single" | "bulk">("single");
   
   const queryClient = useQueryClient();
   const createContentItem = useCreateContentItem();
@@ -424,6 +429,74 @@ export const ImportSection = () => {
     }
   };
 
+  // Single item import with separate fields (Title, URL, Caption)
+  const handleSingleImport = async () => {
+    if (!quickTitle.trim() || !quickUrl.trim()) {
+      toast.error("Preencha o título e o link do vídeo");
+      return;
+    }
+
+    if (isQuickImporting) {
+      toast.error("Aguarde, importação em andamento...");
+      return;
+    }
+
+    setIsQuickImporting(true);
+
+    try {
+      // Create the content item
+      const { data: createdItem, error } = await supabase
+        .from("content_items")
+        .insert({
+          title: quickTitle.trim(),
+          url: quickUrl.trim(),
+          description: quickCaption.trim() || null,
+          type: selectedType,
+          icon: getDefaultIconByType(selectedType),
+          category: influencer || location || null,
+          language: language,
+          is_active: true,
+        })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+
+      let scheduledMessage = "";
+
+      // Auto-schedule to calendar if enabled
+      if (autoSchedule && selectedType === 'video' && createdItem) {
+        try {
+          const result = await scheduleContent.mutateAsync({
+            contentItemId: createdItem.id,
+            caption: quickCaption.trim() || undefined,
+          });
+          if (result.scheduled) {
+            scheduledMessage = " e agendado no calendário";
+          }
+        } catch (scheduleError) {
+          console.error("Error scheduling:", scheduleError);
+        }
+      }
+
+      toast.success(`"${quickTitle}" importado com sucesso${scheduledMessage}!`);
+      
+      // Clear fields
+      setQuickTitle("");
+      setQuickUrl("");
+      setQuickCaption("");
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["content-items"] });
+      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
+    } catch (error) {
+      console.error("Single import error:", error);
+      toast.error("Erro ao importar vídeo.");
+    } finally {
+      setIsQuickImporting(false);
+    }
+  };
+
   const typeOptions = [
     { value: 'video', label: '🎬 Vídeo Reels' },
     { value: 'feed', label: '🖼️ Arte Feed' },
@@ -542,34 +615,91 @@ export const ImportSection = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Importação Rápida via Texto
+            Importação Rápida
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Cole o texto com títulos e links do Canva. Aceita título na linha acima do link ou na mesma linha.
+            Adicione vídeos rapidamente - individualmente ou em massa.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Textarea
-            placeholder={"Istambul\nhttps://canva.com/design/xxx...\n\nVancouver\nhttps://canva.com/design/yyy...\n\nDubai\nhttps://canva.com/design/zzz..."}
-            value={quickImportText}
-            onChange={(e) => setQuickImportText(e.target.value)}
-            rows={6}
-            className="font-mono text-sm"
-          />
-          
-          {/* Campo de Legenda */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Legenda (Opcional)
-            </Label>
-            <Textarea
-              placeholder="Digite uma legenda padrão que será usada no calendário..."
-              value={quickCaption}
-              onChange={(e) => setQuickCaption(e.target.value)}
-              rows={3}
-            />
+          {/* Mode Selector */}
+          <div className="flex gap-2">
+            <Button
+              variant={importMode === "single" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setImportMode("single")}
+            >
+              Item Único
+            </Button>
+            <Button
+              variant={importMode === "bulk" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setImportMode("bulk")}
+            >
+              Múltiplos Itens
+            </Button>
           </div>
+
+          {importMode === "single" ? (
+            /* Single Item Mode - Separated Fields */
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Título do Vídeo *</Label>
+                <Input
+                  placeholder="Ex: Istambul - Turquia"
+                  value={quickTitle}
+                  onChange={(e) => setQuickTitle(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Link do Canva *</Label>
+                <Input
+                  placeholder="https://canva.com/design/..."
+                  value={quickUrl}
+                  onChange={(e) => setQuickUrl(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Legenda do Vídeo (Opcional)
+                </Label>
+                <Textarea
+                  placeholder="Digite a legenda que será usada no calendário..."
+                  value={quickCaption}
+                  onChange={(e) => setQuickCaption(e.target.value)}
+                  rows={4}
+                />
+              </div>
+            </div>
+          ) : (
+            /* Bulk Mode - Original Text Area */
+            <div className="space-y-4">
+              <Textarea
+                placeholder={"Istambul\nhttps://canva.com/design/xxx...\n\nVancouver\nhttps://canva.com/design/yyy...\n\nDubai\nhttps://canva.com/design/zzz..."}
+                value={quickImportText}
+                onChange={(e) => setQuickImportText(e.target.value)}
+                rows={6}
+                className="font-mono text-sm"
+              />
+              
+              {/* Campo de Legenda para bulk */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Legenda Padrão (Opcional)
+                </Label>
+                <Textarea
+                  placeholder="Legenda que será aplicada a todos os vídeos importados..."
+                  value={quickCaption}
+                  onChange={(e) => setQuickCaption(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </div>
+          )}
           
           {/* Toggle de agendamento automático */}
           {selectedType === 'video' && (
@@ -591,20 +721,49 @@ export const ImportSection = () => {
           )}
           
           <div className="flex gap-2">
-            <Button 
-              onClick={handleQuickImport} 
-              disabled={!quickImportText.trim() || isQuickImporting}
-            >
-              {isQuickImporting ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Upload className="h-4 w-4 mr-2" />
-              )}
-              {isQuickImporting ? "Importando..." : "Processar e Importar"}
-            </Button>
-            <Button variant="outline" onClick={() => { setQuickImportText(""); setQuickCaption(""); }} disabled={isQuickImporting}>
-              Limpar
-            </Button>
+            {importMode === "single" ? (
+              <>
+                <Button 
+                  onClick={handleSingleImport} 
+                  disabled={!quickTitle.trim() || !quickUrl.trim() || isQuickImporting}
+                >
+                  {isQuickImporting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4 mr-2" />
+                  )}
+                  {isQuickImporting ? "Importando..." : "Importar Vídeo"}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => { setQuickTitle(""); setQuickUrl(""); setQuickCaption(""); }} 
+                  disabled={isQuickImporting}
+                >
+                  Limpar
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  onClick={handleQuickImport} 
+                  disabled={!quickImportText.trim() || isQuickImporting}
+                >
+                  {isQuickImporting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4 mr-2" />
+                  )}
+                  {isQuickImporting ? "Importando..." : "Processar e Importar"}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => { setQuickImportText(""); setQuickCaption(""); }} 
+                  disabled={isQuickImporting}
+                >
+                  Limpar
+                </Button>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
