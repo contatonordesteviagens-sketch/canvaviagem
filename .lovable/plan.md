@@ -1,127 +1,67 @@
 
+Objetivo: no mobile, o ícone flutuante do widget Zaia não pode cobrir a barra inferior (especialmente o “Favoritos”) e deve ficar um pouco menor, de forma confiável mesmo quando o widget aplica estilos inline/dinâmicos.
 
-# Plano: Corrigir Posicionamento do Widget Zaia no Mobile
+Por que ainda está sobrepondo
+- O Zaia injeta elementos via script e pode:
+  - criar containers sem “zaia” no id/class (então nossos seletores não pegam),
+  - aplicar/alterar inline styles após o load (ganhando da regra CSS),
+  - usar estruturas diferentes por dispositivo (ex.: botão fora do iframe).
 
-## Problema Identificado
+Solução proposta (robusta): CSS + “fallback” em JavaScript com observação do DOM
+1) Dar um “gancho” estável para medir a altura da BottomNav (para calcular a distância correta)
+   - Alterar `src/components/canva/BottomNav.tsx` para adicionar um identificador no `<nav>`:
+     - Ex.: `id="mobile-bottom-nav"` (ou `data-mobile-bottom-nav="true"`)
+   - Benefício: o script consegue medir a altura real da barra e elevar o widget com margem segura (incluindo casos com safe-area iOS).
 
-O widget da Zaia ainda está sobrepondo o botão "Favoritos" na barra de navegação inferior porque:
+2) Ajustar o CSS do `index.html` para uma margem maior (primeira linha de defesa)
+   - Manter os seletores amplos, porém aumentar o “padrão” para algo mais seguro:
+     - `bottom: 120px !important;`
+     - `transform: scale(0.75) !important;`
+   - Motivo: mesmo que o CSS só pegue “às vezes”, quando pegar já resolve.
 
-1. **O widget usa inline styles** com `position: fixed` e valores específicos de `bottom`/`right`
-2. **Os seletores CSS atuais não são específicos o suficiente** para sobrescrever os inline styles
-3. **O script carrega dinamicamente** e pode criar elementos com IDs/classes diferentes
+3) Adicionar fallback JavaScript no `index.html` (a parte que garante 100%)
+   - Inserir um `<script>` logo após o `widget-loader.js` (ou após o CSS), com lógica:
+     a) Rodar apenas em telas mobile (ex.: `window.innerWidth <= 768`)
+     b) Calcular o offset ideal:
+        - Encontrar a BottomNav via `#mobile-bottom-nav`
+        - `offset = navHeight + 24` (margem extra)
+        - Se não achar nav, usar fallback fixo (ex.: 120px)
+     c) Encontrar o “elemento real” do widget:
+        - Procurar candidatos diretos: `iframe[src*="zaia"]`, `iframe[src*="zaia.app"]`
+        - Procurar candidatos genéricos: elementos com `position: fixed` no canto inferior direito e tamanho pequeno (ex.: width/height < 220px), ignorando `<nav>` e elementos que ocupam a largura toda (para não mexer na BottomNav).
+     d) Aplicar estilos via JS com prioridade:
+        - `el.style.setProperty('bottom', '<offset>px', 'important')`
+        - `el.style.setProperty('right', '16px', 'important')`
+        - `el.style.setProperty('transform-origin', 'bottom right', 'important')`
+        - `el.style.setProperty('transform', '<transformExistente + scale(0.75)>', 'important')`
+          - Se já existir transform, concatenar (ex.: `"matrix(...) scale(0.75)"`) para não quebrar animações do widget.
+     e) Reaplicar porque o widget muda depois:
+        - `setTimeout` em sequência (ex.: 300ms, 1200ms, 3000ms)
+        - `MutationObserver` no `document.body` para detectar novos nós/alterações de atributo (`style`, `class`) e reaplicar quando o widget for recriado/atualizado.
+        - `resize` / `orientationchange` com debounce para recalcular offset.
 
-## Solução
+4) Critérios de segurança (para não afetar outros elementos)
+   - Só aplicar em elementos que:
+     - estejam no canto inferior direito (por boundingClientRect),
+     - sejam “pequenos” (não full-width),
+     - tenham `position: fixed` e z-index alto (quando disponível),
+     - não sejam a BottomNav (excluir `#mobile-bottom-nav` e `nav`).
 
-### CSS mais agressivo com múltiplos seletores
+5) Testes de validação (no preview)
+   - Abrir em largura ~375px
+   - Confirmar:
+     - botão Favoritos clicável,
+     - ícone do Zaia acima da barra com folga,
+     - ícone visivelmente menor,
+     - não “pula” de posição ao carregar (observer resolve).
+   - Se ainda encostar, aumentar margem (ex.: `+32px`) sem mexer no layout geral.
 
-Aplicar estilos a todos os possíveis containers do widget usando seletores mais amplos:
+Arquivos que serão alterados
+- `index.html`
+  - Ajustar valores do CSS (bottom/scale)
+  - Adicionar script JS com MutationObserver + cálculo pela BottomNav
+- `src/components/canva/BottomNav.tsx`
+  - Adicionar `id`/`data-attribute` no `<nav>` para o script medir a altura e evitar heurísticas frágeis
 
-```css
-@media (max-width: 768px) {
-  /* Container principal do widget Zaia */
-  #zaia-widget-container,
-  [id*="zaia"],
-  [class*="zaia"],
-  iframe[src*="zaia"],
-  /* Widgets de chat genéricos que o Zaia pode criar */
-  div[style*="position: fixed"][style*="z-index: 9999"],
-  div[style*="position: fixed"][style*="bottom: 20px"],
-  div[style*="position: fixed"][style*="bottom: 24px"],
-  div[style*="position:fixed"][style*="right: 20px"],
-  div[style*="position:fixed"][style*="right: 24px"] {
-    bottom: 90px !important;
-    right: 16px !important;
-    transform: scale(0.8) !important;
-    transform-origin: bottom right !important;
-  }
-}
-```
-
-### Valores ajustados
-
-| Propriedade | Valor Anterior | Novo Valor |
-|-------------|----------------|------------|
-| `bottom` | 80px | **90px** (mais espaço para a barra de 64px + margem) |
-| `right` | 12px | **16px** (margem padrão) |
-| `scale` | 0.85 | **0.8** (20% menor para ocupar menos espaço) |
-
----
-
-## Alteração no Arquivo
-
-| Arquivo | Alteração |
-|---------|-----------|
-| `index.html` | Atualizar bloco `<style>` com seletores mais amplos e valores ajustados |
-
----
-
-## Código Atualizado
-
-```html
-<style>
-  /* Ajuste do widget Zaia para não sobrepor navegação mobile */
-  @media (max-width: 768px) {
-    /* Seletores específicos para Zaia */
-    #zaia-widget-container,
-    [id*="zaia"],
-    [class*="zaia"],
-    iframe[src*="zaia"],
-    /* Seletores genéricos para widgets de chat fixos no canto inferior direito */
-    body > div[style*="position: fixed"][style*="bottom"],
-    body > div[style*="position:fixed"][style*="bottom"],
-    body > iframe[style*="position: fixed"],
-    body > iframe[style*="position:fixed"] {
-      bottom: 90px !important;
-      right: 16px !important;
-      transform: scale(0.8) !important;
-      transform-origin: bottom right !important;
-    }
-  }
-</style>
-```
-
----
-
-## Seção Técnica
-
-### Por que os estilos anteriores não funcionaram?
-
-O widget Zaia carrega via JavaScript externo e pode:
-
-1. **Criar elementos dinâmicos** com IDs gerados automaticamente
-2. **Aplicar inline styles** que têm alta especificidade
-3. **Usar shadow DOM** ou iframes que isolam estilos
-
-### Estratégia de fallback
-
-Os novos seletores usam:
-
-- **Seletores de atributo parcial** (`[id*="zaia"]`) para capturar qualquer ID contendo "zaia"
-- **Seletores genéricos** para divs/iframes fixos posicionados no canto inferior
-- **`!important`** para sobrescrever inline styles
-
-### Alternativa se não funcionar
-
-Se o CSS ainda não funcionar, a alternativa seria adicionar JavaScript para manipular o DOM após o widget carregar:
-
-```javascript
-// Fallback: ajustar widget via JavaScript após carregamento
-setTimeout(() => {
-  const widgets = document.querySelectorAll('[id*="zaia"], iframe[src*="zaia"]');
-  widgets.forEach(w => {
-    if (window.innerWidth < 768) {
-      w.style.setProperty('bottom', '90px', 'important');
-      w.style.setProperty('transform', 'scale(0.8)', 'important');
-    }
-  });
-}, 2000);
-```
-
----
-
-## Resultado Esperado
-
-- Widget Zaia posicionado 90px acima da borda inferior (acima da barra de navegação de 64px)
-- Widget 20% menor no mobile para ocupar menos espaço visual
-- Botão "Favoritos" totalmente visível e clicável
-
+Observação importante
+- Se o Zaia renderizar o botão dentro de um iframe cross-domain, não dá para alterar “dentro” do iframe, mas mover/escala do iframe/container funciona. O fallback proposto atua exatamente nesse nível (container/iframe), por isso é o caminho mais confiável.
