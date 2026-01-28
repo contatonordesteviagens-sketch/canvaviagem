@@ -297,8 +297,35 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
 
   logStep("User and subscription created/updated successfully");
 
-  // Send welcome email
+  // Send Magic Link email automatically (for instant access after payment)
   if (resend) {
+    try {
+      const siteUrl = Deno.env.get("SITE_URL") || "https://canvaviagem.lovable.app";
+      const token = crypto.randomUUID();
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+      
+      // Save token to database
+      const { error: tokenError } = await supabase.from("magic_link_tokens").insert({
+        email: email.toLowerCase().trim(),
+        token,
+        expires_at: expiresAt.toISOString(),
+        name: customerName,
+        phone: cleanedPhone,
+      });
+      
+      if (tokenError) {
+        logStep("ERROR: Failed to create magic link token", { error: tokenError.message });
+      } else {
+        const magicLink = `${siteUrl}/auth/verify?token=${token}`;
+        await sendAutoMagicLinkEmail(resend, email, magicLink, customerName);
+        logStep("Magic link sent automatically", { email: redactEmail(email) });
+      }
+    } catch (mlError) {
+      logStep("ERROR: Failed to send auto magic link", { error: mlError instanceof Error ? mlError.message : String(mlError) });
+      // Don't block flow if magic link fails - user can request manually
+    }
+    
+    // Also send welcome email with platform info
     await sendWelcomeEmail(resend, email);
   }
 
@@ -439,6 +466,77 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, supabase: any, resen
   }
 }
 
+// Send auto magic link email (sent automatically after checkout)
+async function sendAutoMagicLinkEmail(resend: any, email: string, magicLink: string, customerName: string) {
+  try {
+    await resend.emails.send({
+      from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+      to: [email],
+      subject: "🔐 Seu Link de Acesso - Canva Viagem",
+      html: `
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Seu Link de Acesso - Canva Viagem</title>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+          <table role="presentation" width="100%" style="padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table width="600" style="max-width: 600px; background: #ffffff; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);">
+                  <tr>
+                    <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center; border-radius: 20px 20px 0 0;">
+                      <p style="font-size: 40px; margin: 0;">✈️ 🎉</p>
+                      <h1 style="color: #ffffff; font-size: 28px; margin: 10px 0;">Canva Viagem</h1>
+                      <p style="color: rgba(255,255,255,0.9); margin: 0;">Seu acesso está pronto!</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 50px 40px; text-align: center;">
+                      <h2 style="color: #1a1a2e; margin: 0 0 20px 0;">Olá, ${customerName}! 👋</h2>
+                      <p style="color: #4a4a68; font-size: 16px; line-height: 1.6;">
+                        Seu pagamento foi confirmado com sucesso!<br>
+                        Clique no botão abaixo para acessar a plataforma:
+                      </p>
+                      <a href="${magicLink}" style="display: inline-block; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; padding: 18px 50px; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 16px; margin: 25px 0; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);">
+                        Acessar Minha Conta →
+                      </a>
+                      <p style="color: #667eea; font-size: 14px; margin: 0;">⏱️ Este link expira em 1 hora</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="background: #f8f9ff; padding: 25px 40px; text-align: center;">
+                      <p style="color: #667eea; font-weight: bold; margin: 0 0 10px 0;">✅ O que você desbloqueou:</p>
+                      <p style="color: #4a4a68; font-size: 14px; margin: 0; line-height: 1.8;">
+                        Vídeos Reels • Artes Feed/Stories • Legendas • Ferramentas IA
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+                      <p style="color: #9999b3; font-size: 12px; margin: 0;">
+                        Se você não fez esta compra, ignore este email.<br>
+                        Precisa de ajuda? <a href="https://wa.me/5585986411294" style="color: #667eea;">WhatsApp (85) 9 8641-1294</a>
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    });
+    logStep("Auto magic link email sent", { email: redactEmail(email) });
+  } catch (error: unknown) {
+    logStep("ERROR: Failed to send auto magic link email", { error: error instanceof Error ? error.message : String(error), email: redactEmail(email) });
+    throw error; // Re-throw to be caught by caller
+  }
+}
+
 async function sendWelcomeEmail(resend: any, email: string) {
   const appUrl = Deno.env.get("APP_URL") || "https://canvatrip.lovable.app";
 
@@ -446,7 +544,7 @@ async function sendWelcomeEmail(resend: any, email: string) {
     await resend.emails.send({
       from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
       to: [email],
-      subject: "🚀 Acesso Liberado: Bem-vindo ao Futuro do Marketing de Viagens! 🌴",
+      subject: "🚀 Bem-vindo ao Canva Viagens - Seu Arsenal Está Pronto! 🌴",
       html: `
         <!DOCTYPE html>
         <html>
@@ -463,10 +561,10 @@ async function sendWelcomeEmail(resend: any, email: string) {
             </div>
             
             <div style="padding: 40px 30px;">
-              <h2 style="color: #1f2937; margin-top: 0;">Pagamento Confirmado com Sucesso! ✅</h2>
+              <h2 style="color: #1f2937; margin-top: 0;">Você Faz Parte do Time! ✅</h2>
               
               <p style="color: #4b5563; line-height: 1.6;">
-                É oficial: você faz parte do grupo seleto de agentes que usam tecnologia de ponta para vender mais. Seu acesso está ativo e liberado.
+                É oficial: você faz parte do grupo seleto de agentes que usam tecnologia de ponta para vender mais.
               </p>
               
               <h3 style="color: #1f2937;">O que está incluso no seu arsenal:</h3>
@@ -488,27 +586,11 @@ async function sendWelcomeEmail(resend: any, email: string) {
                   <span style="font-size: 24px;">📱</span>
                   <span style="color: #4b5563;">Estratégias para: Instagram, TikTok e YouTube</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
-                  <span style="font-size: 24px;">🌴</span>
-                  <span style="color: #4b5563;">Banco de Imagens exclusivo de destinos</span>
-                </div>
               </div>
               
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${appUrl}/auth" 
-                   style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
-                  🚀 Acessar Minha Plataforma
-                </a>
-                <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">Toque no botão para começar a criar</p>
-              </div>
-              
-              <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-top: 20px;">
-                <p style="color: #6b7280; font-size: 14px; margin: 0;">
-                  <strong>🔐 Seu Acesso Seguro:</strong><br><br>
-                  Email cadastrado: <strong>${email}</strong><br><br>
-                  Basta digitar seu email na tela de login e enviaremos um Link Mágico. Sem senhas complicadas para decorar!
-                </p>
-              </div>
+              <p style="color: #6b7280; font-size: 14px; margin-top: 20px; text-align: center;">
+                📧 Enviamos um email separado com seu link de acesso direto!
+              </p>
             </div>
             
             <div style="background-color: #f9fafb; padding: 20px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
