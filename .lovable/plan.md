@@ -1,135 +1,78 @@
 
 
-# Plano: Corrigir Entregabilidade de E-mails + Configurar SITE_URL
+# Plano: Configurar SITE_URL e Atualizar Edge Function
 
-## Diagnóstico
+## Resumo
 
-Os e-mails **estão sendo enviados com sucesso** (confirmado pelos logs). O problema é de **entregabilidade**:
-
-| Item | Atual | Problema |
-|------|-------|----------|
-| Remetente | `lucas@rochadigitalmidia.com.br` | ✅ Domínio verificado |
-| Link no e-mail | `canvaviagem.lovable.app` | ⚠️ Domínio diferente |
-| Resultado | E-mails vão para spam | Incompatibilidade de domínios |
-
-O Resend alertou exatamente isso: "URLs incompatíveis podem acionar filtros de spam"
+Configurar o segredo `SITE_URL` com o valor `https://canvaviagem.com` para que os links de acesso nos e-mails usem seu domínio personalizado, melhorando a entregabilidade.
 
 ---
 
-## Solução
+## O que será feito
 
-### 1. Adicionar Segredo `SITE_URL`
+### 1. Adicionar Segredo SITE_URL
 
-Adicionar a variável de ambiente `SITE_URL` para garantir que o link correto seja usado:
+| Campo | Valor |
+|-------|-------|
+| Nome | `SITE_URL` |
+| Valor | `https://canvaviagem.com` |
 
+Este segredo será usado pela Edge Function para gerar links como:
 ```
-SITE_URL = https://canvaviagem.lovable.app
+https://canvaviagem.com/auth/verify?token=abc123...
 ```
 
 ### 2. Atualizar Edge Function `send-magic-link`
 
-Modificar para usar o domínio correto e adicionar logs de diagnóstico:
-
-**Alterações:**
-- Adicionar log do URL base usado
-- Melhorar tratamento de erros
-- Adicionar verificação de limites
-
-### 3. Recomendação (Opcional mas Ideal)
-
-Para máxima entregabilidade, o ideal seria:
-
-**Opção A - Verificar novo domínio no Resend:**
-- Adicionar `canvaviagem.com` (ou subdomínio) no Resend
-- Usar remetente `noreply@canvaviagem.com`
-
-**Opção B - Usar domínio existente no link:**
-- Se você tiver `rochadigitalmidia.com.br` apontando para o app
-- Configurar redirect para o Lovable app
-
----
-
-## Arquivos a Modificar
-
-| Arquivo | Alteração |
-|---------|-----------|
-| Segredo `SITE_URL` | Adicionar (https://canvaviagem.lovable.app) |
-| `supabase/functions/send-magic-link/index.ts` | Adicionar logs + melhorar tratamento |
-
----
-
-## Código Atualizado
-
-### Edge Function `send-magic-link`
+Adicionar logs de diagnóstico para monitorar o envio:
 
 ```typescript
-// Adicionar no início do try block
-console.log("[MAGIC-LINK] Request received for:", email);
-
-// Alterar a criação do link para logar o URL usado
-const baseUrl = Deno.env.get("SITE_URL") || "https://canvaviagem.lovable.app";
+// Log do URL base usado
 console.log("[MAGIC-LINK] Using base URL:", baseUrl);
-const magicLink = `${baseUrl}/auth/verify?token=${token}`;
 
-// Melhorar log de erro
-if (emailResponse.error) {
-  console.error("[MAGIC-LINK] Resend error details:", JSON.stringify(emailResponse.error));
-  return new Response(
-    JSON.stringify({ error: "Erro ao enviar email. Tente novamente." }),
-    { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-  );
-}
+// Log detalhado em caso de erro
+console.error("[MAGIC-LINK] Resend error details:", JSON.stringify(emailResponse.error));
 ```
 
 ---
 
-## Passos para Verificar Entrega
+## Resultado Esperado
 
-1. **Verifique o Resend Dashboard:**
-   - Acesse [resend.com](https://resend.com)
-   - Vá em "Logs" ou "Activity"
-   - Veja o status do último e-mail enviado
+- Links nos e-mails usarão `canvaviagem.com` (seu domínio)
+- Compatibilidade entre remetente e links
+- Menos chance de cair no spam
+- Logs detalhados para diagnóstico
 
-2. **Verifique a Pasta Spam:**
-   - Os e-mails podem estar chegando, mas na pasta de spam
-   - Marque como "Não é spam" para treinar o filtro
+---
 
-3. **Verificação de Domínio:**
-   - Em "Domains" no Resend, confirme que `rochadigitalmidia.com.br` está totalmente verificado (SPF, DKIM, DMARC)
+## Arquivo a Modificar
+
+| Arquivo | Alteração |
+|---------|-----------|
+| Segredo `SITE_URL` | Criar com valor `https://canvaviagem.com` |
+| `supabase/functions/send-magic-link/index.ts` | Adicionar logs de diagnóstico |
 
 ---
 
 ## Seção Técnica
 
-### Logs Adicionais
+### Alterações na Edge Function
+
+A função já usa `Deno.env.get("SITE_URL")` com fallback. Vamos adicionar logs para facilitar debug:
 
 ```typescript
-// No início da função
+// Após receber request
 console.log("[MAGIC-LINK] Processing request:", { 
-  email: email.substring(0, 5) + "***", // Parcialmente mascarado por segurança
+  email: email.substring(0, 5) + "***",
   hasName: !!name,
   hasPhone: !!phone 
 });
 
-// Após inserir token
-console.log("[MAGIC-LINK] Token created:", { tokenId: token.substring(0, 8) + "..." });
+// Após gerar link
+console.log("[MAGIC-LINK] Using base URL:", baseUrl);
+console.log("[MAGIC-LINK] Magic link generated");
 
-// Antes de enviar email
-console.log("[MAGIC-LINK] Sending email to:", email);
-console.log("[MAGIC-LINK] Magic link URL:", magicLink.replace(token, "TOKEN_MASKED"));
-
-// Após sucesso
-console.log("[MAGIC-LINK] Email sent successfully:", {
-  emailId: emailResponse.data?.id,
-  recipient: email
-});
+// Em caso de erro do Resend
+console.error("[MAGIC-LINK] Resend error details:", JSON.stringify(emailResponse.error));
 ```
-
-### Verificar Status no Resend
-
-Os possíveis status são:
-- `sent` - Email foi aceito pelo servidor
-- `delivered` - Email foi entregue na caixa de entrada
-- `bounced` - Email foi rejeitado
-- `complained` - Marcado como spam pelo destinatário
 
