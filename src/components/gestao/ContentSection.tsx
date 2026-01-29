@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Video, Image, BookOpen, FileText, Wrench, Download, Plus, ArrowUpDown, Clock, ArrowDown, ArrowUp, Sparkles, ChevronDown, FileStack } from "lucide-react";
+import { Video, Image, BookOpen, FileText, Wrench, Download, Plus, ArrowUpDown, Clock, ArrowDown, ArrowUp, Sparkles, ChevronDown, FileStack, Globe } from "lucide-react";
 import { EditableCard } from "./EditableCard";
 import { CaptionCard } from "./CaptionCard";
 import { SortableCard } from "./SortableCard";
@@ -86,7 +86,8 @@ export const ContentSection = ({
   const [bulkAddModalOpen, setBulkAddModalOpen] = useState(false);
   const [createType, setCreateType] = useState<"content" | "tool">("content");
   const [currentTab, setCurrentTab] = useState("videos");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("custom");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("recent"); // Default to recent
+  const [languageFilter, setLanguageFilter] = useState<"all" | "pt" | "es">("all");
   
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");

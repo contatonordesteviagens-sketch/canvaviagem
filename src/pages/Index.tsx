@@ -41,24 +41,40 @@ import { ExternalLink } from "lucide-react";
 // Static resources (downloads and resources that don't need DB management)
 import { resources, videoDownloads } from "@/data/templates";
 import { trackViewContent } from "@/lib/meta-pixel";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type VideoFilter = 'todos' | 'nacionais' | 'internacionais' | 'favoritos' | 'eva' | 'mel' | 'bia';
-
-const videoFilters = [
-  { id: 'todos' as const, label: 'Todos' },
-  { id: 'nacionais' as const, label: 'Nacionais' },
-  { id: 'internacionais' as const, label: 'Internacionais' },
-  { id: 'favoritos' as const, label: '⭐ Favoritos' },
-];
 
 const Index = () => {
   const navigate = useNavigate();
   const { user, loading, subscription } = useAuth();
+  const { language, t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [showAllCaptions, setShowAllCaptions] = useState(false);
   const [videoFilter, setVideoFilter] = useState<VideoFilter>('todos');
   const [activeCategory, setActiveCategory] = useState<CategoryType>('videos');
+
+  // Video filters - conditionally remove "Nacionais" for Spanish
+  const videoFilters = language === 'es'
+    ? [
+        { id: 'todos' as const, label: t('filter.all') },
+        { id: 'internacionais' as const, label: t('filter.international') },
+        { id: 'favoritos' as const, label: '⭐ ' + t('category.favorites') },
+      ]
+    : [
+        { id: 'todos' as const, label: t('filter.all') },
+        { id: 'nacionais' as const, label: t('filter.national') },
+        { id: 'internacionais' as const, label: t('filter.international') },
+        { id: 'favoritos' as const, label: '⭐ ' + t('category.favorites') },
+      ];
+
+  // Reset filter if user switches to ES while on 'nacionais'
+  useEffect(() => {
+    if (language === 'es' && videoFilter === 'nacionais') {
+      setVideoFilter('todos');
+    }
+  }, [language, videoFilter]);
 
   // Database hooks
   const { data: videoTemplates, isLoading: videosLoading } = useContentItems(['video', 'seasonal']);

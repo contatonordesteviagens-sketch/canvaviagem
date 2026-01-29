@@ -25,6 +25,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
 
+// Flag to show/hide "Próximo Nível" based on language
+
 interface HeaderProps {
   onCategoryChange?: (category: CategoryType) => void;
 }
@@ -36,7 +38,10 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  // Show "Próximo Nível" only for Portuguese
+  const showProximoNivel = language === 'pt';
 
   // Fetch user name from profile with realtime updates
   useEffect(() => {
@@ -175,15 +180,17 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Próximo Nível - Highlighted Link */}
-          <NavLink
-            to={proximoNivelItem.to}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10 flex items-center gap-1.5"
-            activeClassName="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            <Star className="w-4 h-4 text-orange-500 fill-orange-500 animate-pulse" />
-            <span>{proximoNivelItem.label}</span>
-          </NavLink>
+          {/* Próximo Nível - Highlighted Link - Only for Portuguese */}
+          {showProximoNivel && (
+            <NavLink
+              to={proximoNivelItem.to}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10 flex items-center gap-1.5"
+              activeClassName="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Star className="w-4 h-4 text-orange-500 fill-orange-500 animate-pulse" />
+              <span>{proximoNivelItem.label}</span>
+            </NavLink>
+          )}
 
           {/* Language Switcher - Desktop */}
           <LanguageSwitcher variant="desktop" />
@@ -251,16 +258,18 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
                 </NavLink>
               ))}
 
-              {/* Próximo Nível - Mobile */}
-              <NavLink
-                to={proximoNivelItem.to}
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
-                activeClassName="bg-primary text-primary-foreground"
-              >
-                <Star className="h-5 w-5 text-orange-500 fill-orange-500" />
-                {proximoNivelItem.label}
-              </NavLink>
+              {/* Próximo Nível - Mobile - Only for Portuguese */}
+              {showProximoNivel && (
+                <NavLink
+                  to={proximoNivelItem.to}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
+                  activeClassName="bg-primary text-primary-foreground"
+                >
+                  <Star className="h-5 w-5 text-orange-500 fill-orange-500" />
+                  {proximoNivelItem.label}
+                </NavLink>
+              )}
 
               <DropdownMenuSeparator className="my-3" />
 

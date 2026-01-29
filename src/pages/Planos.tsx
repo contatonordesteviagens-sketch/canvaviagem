@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -36,47 +37,16 @@ const youtubeVideos = [
   { id: "QcwzHP3Y3Nc", title: "Jalapão" },
 ];
 
-// Benefícios com destaque
-const benefits = [
-  { icon: Video, text: "+ 250 Vídeos Prontos", highlight: true },
-  { icon: MessageSquare, text: "Suporte WhatsApp", highlight: false },
-  { icon: Calendar, text: "Calendário Anual de Posts", highlight: false },
-  { icon: FileText, text: "Texto e Legendas", highlight: false },
-  { icon: Sparkles, text: "Aula Edição no Canva", highlight: false },
-  { icon: Shield, text: "Livres de direitos autorais", highlight: false },
-  { icon: Bot, text: "10 Agentes de I.A de Marketing", highlight: true },
-  { icon: Image, text: "Bônus: 200 Artes de Viagens", highlight: false },
-  { icon: Users, text: "Bônus: 3 Influenciadoras", highlight: false },
-  { icon: Infinity, text: "Atualizações e Garantia", highlight: false },
-];
-
-// FAQs reduzido focado em objeções
-const faqs = [
-  {
-    question: "Como funciona o acesso?",
-    answer: "Após a confirmação do pagamento, você recebe um email com o link de acesso. É instantâneo! Você entra na plataforma e já pode baixar todos os 250+ vídeos."
-  },
-  {
-    question: "Posso cancelar quando quiser?",
-    answer: "Sim! Não há fidelidade. Você pode cancelar a qualquer momento e continua tendo acesso até o final do período pago."
-  },
-  {
-    question: "Os vídeos têm direitos autorais?",
-    answer: "Não! Todos os vídeos são livres de direitos autorais para uso comercial. Você pode usar em seus clientes sem problemas."
-  },
-  {
-    question: "Como funciona o suporte?",
-    answer: "Você tem acesso direto ao nosso WhatsApp de suporte. Respondemos em até 24h úteis e ajudamos com qualquer dúvida sobre a plataforma."
-  },
-  {
-    question: "Preciso de conhecimento técnico?",
-    answer: "Não! Tudo é simples. Baixe os vídeos, edite no Canva (temos aula ensinando) e poste. Em 2 minutos você tem conteúdo profissional pronto."
-  }
-];
+// Checkout links by language
+const STRIPE_LINKS = {
+  pt: "https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00",
+  es: "https://buy.stripe.com/bJedRa3TIej6cz15gE8so04",
+};
 
 const Planos = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { language, t } = useLanguage();
   const {
     user,
     loading: authLoading,
@@ -86,6 +56,29 @@ const Planos = () => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
+
+  // Benefits with icons - translated
+  const benefits = [
+    { icon: Video, text: t('plans.benefit.videos'), highlight: true },
+    { icon: MessageSquare, text: t('plans.benefit.whatsapp'), highlight: false },
+    { icon: Calendar, text: t('plans.benefit.calendar'), highlight: false },
+    { icon: FileText, text: t('plans.benefit.captions'), highlight: false },
+    { icon: Sparkles, text: t('plans.benefit.canva'), highlight: false },
+    { icon: Shield, text: t('plans.benefit.copyright'), highlight: false },
+    { icon: Bot, text: t('plans.benefit.ai'), highlight: true },
+    { icon: Image, text: t('plans.benefit.arts'), highlight: false },
+    { icon: Users, text: t('plans.benefit.influencers'), highlight: false },
+    { icon: Infinity, text: t('plans.benefit.updates'), highlight: false },
+  ];
+
+  // FAQs - translated
+  const faqs = [
+    { question: t('plans.faq.1.question'), answer: t('plans.faq.1.answer') },
+    { question: t('plans.faq.2.question'), answer: t('plans.faq.2.answer') },
+    { question: t('plans.faq.3.question'), answer: t('plans.faq.3.answer') },
+    { question: t('plans.faq.4.question'), answer: t('plans.faq.4.answer') },
+    { question: t('plans.faq.5.question'), answer: t('plans.faq.5.answer') },
+  ];
 
   // Track view content
   useEffect(() => {
@@ -106,10 +99,11 @@ const Planos = () => {
     }
   }, [searchParams, refreshSubscription, navigate]);
 
-  const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00";
-
   const handleCheckout = async () => {
-    trackInitiateCheckout(37.90, 'BRL');
+    // Track with correct currency based on language
+    const price = language === 'es' ? 9.09 : 37.90;
+    const currency = language === 'es' ? 'USD' : 'BRL';
+    trackInitiateCheckout(price, currency);
     setCheckoutLoading(true);
 
     if (user) {
@@ -119,7 +113,8 @@ const Planos = () => {
           const { data, error } = await supabase.functions.invoke("create-checkout", {
             headers: {
               Authorization: `Bearer ${session.access_token}`
-            }
+            },
+            body: { language }
           });
           if (!error && data?.url) {
             window.open(data.url, '_blank');
@@ -133,7 +128,8 @@ const Planos = () => {
       }
     }
 
-    window.open(STRIPE_PAYMENT_LINK, '_blank');
+    // Fallback to direct Stripe link based on language
+    window.open(STRIPE_LINKS[language], '_blank');
     toast.info("O checkout foi aberto em uma nova aba. Após o pagamento, verifique seu email!");
     setCheckoutLoading(false);
   };
@@ -203,11 +199,11 @@ const Planos = () => {
           <div className="text-center mb-8 md:mb-12">
             <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
               <Sparkles className="h-3 w-3 mr-1" />
-              Assinante Ativo
+              {t('plans.subscribedBadge')}
             </Badge>
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">Você está a bordo! ✈️</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">{t('plans.subscribedTitle')}</h1>
             <p className="text-muted-foreground text-base md:text-lg">
-              Aproveite todos os recursos do Canva Viagens
+              {t('plans.subscribedSubtitle')}
             </p>
           </div>
 
@@ -216,18 +212,18 @@ const Planos = () => {
               <div className="h-16 w-16 md:h-20 md:w-20 mx-auto rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4">
                 <Plane className="h-8 w-8 md:h-10 md:w-10 text-white" />
               </div>
-              <CardTitle className="text-xl md:text-2xl">Assinatura Mensal</CardTitle>
-              <p className="text-sm md:text-base text-muted-foreground">Plano ativo: Decolando ✈️</p>
+              <CardTitle className="text-xl md:text-2xl">{t('plans.subscriptionPlan')}</CardTitle>
+              <p className="text-sm md:text-base text-muted-foreground">{t('plans.activePlan')}</p>
             </CardHeader>
             <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6">
               <div className="p-3 md:p-4 bg-primary/10 rounded-lg text-center">
                 <p className="font-semibold text-primary flex items-center justify-center gap-2 text-sm md:text-base">
                   <Check className="h-4 w-4 md:h-5 md:w-5" />
-                  Acesso completo liberado
+                  {t('plans.fullAccess')}
                 </p>
                 {subscription.subscriptionEnd && (
                   <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                    Próxima renovação: {new Date(subscription.subscriptionEnd).toLocaleDateString('pt-BR')}
+                    {t('plans.nextRenewal').replace('{date}', new Date(subscription.subscriptionEnd).toLocaleDateString(language === 'es' ? 'es-ES' : 'pt-BR'))}
                   </p>
                 )}
               </div>
@@ -235,19 +231,19 @@ const Planos = () => {
               <div className="flex flex-col gap-3">
                 <Button onClick={() => navigate("/")} className="w-full" size="lg">
                   <Plane className="mr-2 h-4 w-4" />
-                  Acessar Plataforma
+                  {t('plans.accessPlatform')}
                 </Button>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button variant="outline" onClick={handleManageSubscription} disabled={portalLoading} className="flex-1">
                     {portalLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Carregando...
+                        {t('common.loading')}
                       </>
                     ) : (
                       <>
                         <Settings className="mr-2 h-4 w-4" />
-                        Gerenciar Assinatura
+                        {t('plans.manageSubscription')}
                       </>
                     )}
                   </Button>
@@ -255,12 +251,12 @@ const Planos = () => {
                     {refreshLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Atualizando...
+                        {t('plans.refreshing')}
                       </>
                     ) : (
                       <>
                         <RefreshCw className="mr-2 h-4 w-4" />
-                        Atualizar Status
+                        {t('plans.refreshStatus')}
                       </>
                     )}
                   </Button>
@@ -284,22 +280,21 @@ const Planos = () => {
         <section className="text-center mb-12 md:mb-20">
           <Badge className="mb-6 px-6 py-2 bg-gradient-to-r from-primary to-accent text-white animate-pulse border-0">
             <Sparkles className="h-4 w-4 mr-2" />
-            OFERTA EXCLUSIVA - Apenas R$37,90/mês
+            {t('plans.badge')}
           </Badge>
           
           {/* Headline com Gradiente */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-4">
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              VENDA + VIAGENS
+              {t('plans.heroTitle')}
             </span>
             <br />
-            <span className="text-foreground">O ANO INTEIRO!</span>
+            <span className="text-foreground">{t('plans.heroTitleLine2')}</span>
           </h1>
           
           {/* Subheadline */}
           <p className="text-xl md:text-2xl text-muted-foreground mb-8">
-            Tenha acesso a <span className="text-primary font-bold">250 vídeos de viagens</span>
-            <br />e poste em <span className="text-accent font-bold">2 minutos</span>.
+            {t('plans.heroSubtitle')}
           </p>
           
           {/* GIF Hero */}
@@ -313,11 +308,11 @@ const Planos = () => {
           <div className="flex flex-col md:flex-row items-center justify-center gap-4">
             <Badge variant="outline" className="px-4 py-2 text-sm">
               <Check className="h-4 w-4 mr-2 text-primary" />
-              Menos de R$ 0,50 por vídeo
+              {t('plans.lessThanPerVideo')}
             </Badge>
             <Badge variant="outline" className="px-4 py-2 text-sm">
               <Shield className="h-4 w-4 mr-2 text-accent" />
-              Aprovado por +500 Agências
+              {t('plans.approvedAgencies')}
             </Badge>
           </div>
         </section>
@@ -325,7 +320,7 @@ const Planos = () => {
         {/* GRID DE GIFS FORMATO REELS */}
         <section className="mb-12 md:mb-20">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
-            SEU PERFIL BONITO E PROFISSIONAL EM 1 DIA!
+            {t('plans.proofTitle')}
           </h2>
           <div className="grid grid-cols-2 gap-3 md:gap-4 max-w-2xl mx-auto">
             {proofGifs.map((gif, index) => (
@@ -344,10 +339,10 @@ const Planos = () => {
         <section className="mb-12 md:mb-20">
           <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-8 md:p-12 rounded-3xl">
             <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">
-              O que é o Pack de Vídeos?
+              {t('plans.whatYouGet')}
             </h2>
             <p className="text-center text-muted-foreground text-lg mb-8">
-              Você recebe o link para baixar mais de 250 vídeos de destinos nacionais e internacionais para publicar.
+              {t('plans.whatYouGetDesc')}
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -371,7 +366,7 @@ const Planos = () => {
         {/* VÍDEOS YOUTUBE COM OVERLAY */}
         <section className="mb-12 md:mb-20">
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
-            Veja Exemplos Reais dos Vídeos
+            {t('plans.examplesTitle')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {youtubeVideos.map((video) => (
@@ -395,10 +390,10 @@ const Planos = () => {
         <section className="mb-12 md:mb-20">
           <Card className="max-w-2xl mx-auto border-2 border-primary/20 shadow-xl">
             <CardContent className="p-8 md:p-12 text-center">
-              <p className="text-2xl line-through text-muted-foreground mb-2">de R$ 197,00</p>
+              <p className="text-2xl line-through text-muted-foreground mb-2">{t('plans.originalPrice')}</p>
               <div className="flex items-baseline justify-center mb-6">
-                <span className="text-5xl md:text-6xl font-black text-primary">R$ 37,90</span>
-                <span className="text-xl text-muted-foreground ml-2">/mês</span>
+                <span className="text-5xl md:text-6xl font-black text-primary">{t('plans.price')}</span>
+                <span className="text-xl text-muted-foreground ml-2">{t('plans.period')}</span>
               </div>
               
               <Button 
@@ -412,21 +407,21 @@ const Planos = () => {
                 ) : (
                   <>
                     <Sparkles className="mr-2 h-5 w-5" />
-                    Quero meu acesso!
+                    {t('plans.cta')}
                   </>
                 )}
               </Button>
               
               <div className="flex flex-col md:flex-row items-center justify-center gap-4 mt-6 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
-                  <Shield className="h-4 w-4" /> garantia de 7 dias
+                  <Shield className="h-4 w-4" /> {t('plans.guarantee')}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" /> pagamento seguro
+                  <Clock className="h-4 w-4" /> {t('plans.paymentSecure')}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground mt-2">
-                Cancele quando quiser • Acesso imediato após confirmação
+                {t('plans.cancelAnytime')}
               </p>
             </CardContent>
           </Card>
@@ -441,10 +436,9 @@ const Planos = () => {
                 alt="Garantia 7 dias incondicional"
                 className="w-20 md:w-28 mb-4"
               />
-              <h3 className="text-2xl md:text-3xl font-bold mb-4">Garantia Total de 7 Dias</h3>
+              <h3 className="text-2xl md:text-3xl font-bold mb-4">{t('plans.guaranteeTitle')}</h3>
               <p className="text-lg text-muted-foreground max-w-xl">
-                Em 3 dias seu perfil vai ter o dobro de engajamento ou{' '}
-                <span className="font-bold text-accent">devolvo seu dinheiro</span>.
+                {t('plans.guaranteeDesc')}
               </p>
             </div>
           </div>
@@ -453,9 +447,7 @@ const Planos = () => {
         {/* SOCIAL PROOF CVC/DECOLAR */}
         <section className="mb-12 md:mb-20 text-center">
           <p className="text-xl md:text-2xl font-semibold">
-            Seu perfil vai ficar parecido com o da{' '}
-            <span className="text-primary font-bold">CVC</span> e{' '}
-            <span className="text-accent font-bold">Decolar</span>, concorda?
+            {t('plans.socialProof')}
           </p>
         </section>
 
@@ -467,19 +459,19 @@ const Planos = () => {
                 <Plane className="h-4 w-4 md:h-5 md:w-5 text-primary" />
               </div>
               <p className="text-foreground text-sm md:text-base">
-                <strong>Você ainda não possui um plano ativo.</strong> Assine agora para liberar todos os recursos!
+                <strong>{t('plans.noActivePlan')}</strong>
               </p>
             </div>
             <Button variant="outline" size="sm" onClick={handleRefreshSubscription} disabled={refreshLoading} className="w-full sm:w-auto">
               {refreshLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Atualizando...
+                  {t('plans.refreshing')}
                 </>
               ) : (
                 <>
                   <RefreshCw className="mr-2 h-4 w-4" />
-                  Atualizar status da assinatura
+                  {t('plans.refreshStatus')}
                 </>
               )}
             </Button>
@@ -488,7 +480,7 @@ const Planos = () => {
 
         {/* FAQ REDUZIDO - 5 PERGUNTAS ESSENCIAIS */}
         <section className="mb-12 md:mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Perguntas Frequentes</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">{t('plans.faqTitle')}</h2>
           <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
             {faqs.map((faq, index) => (
               <AccordionItem key={index} value={`item-${index}`}>
@@ -515,12 +507,12 @@ const Planos = () => {
               ) : (
                 <>
                   <Sparkles className="mr-2 h-6 w-6" />
-                  Começar Agora por R$ 37,90/mês
+                  {t('plans.ctaFinal')}
                 </>
               )}
             </Button>
             <p className="text-sm text-muted-foreground mt-4">
-              ✨ Acesso imediato • 🔒 Pagamento 100% seguro • ✅ Cancele quando quiser
+              {t('plans.instantAccess')}
             </p>
           </div>
         </section>
