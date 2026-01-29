@@ -106,7 +106,7 @@ const Planos = () => {
     }
   }, [searchParams, refreshSubscription, navigate]);
 
-  const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi28s2PEa2Q6aD9wU8so03";
+  const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00";
 
   const handleCheckout = async () => {
     trackInitiateCheckout(37.90, 'BRL');
