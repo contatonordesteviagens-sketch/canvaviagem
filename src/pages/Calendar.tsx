@@ -8,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import { PremiumGate } from "@/components/PremiumGate";
 import { useCalendarEntries, getDayOfYear, getDateFromDayOfYear, CalendarEntry } from "@/hooks/useCalendarEntries";
 import { useContentItems, useCaptions } from "@/hooks/useContent";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 
 const Calendar = () => {
@@ -15,6 +16,7 @@ const Calendar = () => {
   const [currentYear, setCurrentYear] = useState(2024);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { language, t } = useLanguage();
 
   // Initialize with São Paulo timezone
   useEffect(() => {
@@ -31,9 +33,19 @@ const Calendar = () => {
   const { data: allVideos } = useContentItems(['video', 'seasonal']);
   const { data: allCaptions } = useCaptions();
 
+  // Month names by language
   const monthNames = [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    t('calendar.month.0'), t('calendar.month.1'), t('calendar.month.2'),
+    t('calendar.month.3'), t('calendar.month.4'), t('calendar.month.5'),
+    t('calendar.month.6'), t('calendar.month.7'), t('calendar.month.8'),
+    t('calendar.month.9'), t('calendar.month.10'), t('calendar.month.11')
+  ];
+
+  // Day names by language
+  const dayNames = [
+    t('calendar.day.sun'), t('calendar.day.mon'), t('calendar.day.tue'),
+    t('calendar.day.wed'), t('calendar.day.thu'), t('calendar.day.fri'),
+    t('calendar.day.sat')
   ];
 
   const getDaysInMonth = (month: number, year: number) => {
@@ -178,17 +190,17 @@ const Calendar = () => {
             </div>
             {today && (
               <span className="text-[8px] md:text-xs bg-primary text-primary-foreground px-1 rounded block w-fit">
-                Hoje
+                {t('calendar.today')}
               </span>
             )}
             {hasDbContent && (
               <span className="text-[6px] md:text-[10px] bg-green-500/20 text-green-700 px-1 rounded block w-fit">
-                Agendado
+                {t('calendar.scheduled')}
               </span>
             )}
             <div className="hidden md:block space-y-1">
               <p className="text-[10px] md:text-xs font-medium text-foreground line-clamp-2">
-                {content.template?.title || 'Sem conteúdo'}
+                {content.template?.title || t('calendar.noContentTitle')}
               </p>
               {content.template && (
                 <Button 
@@ -201,7 +213,7 @@ const Calendar = () => {
                   }}
                 >
                   <ExternalLink className="h-3 w-3 mr-1" />
-                  <span className="hidden md:inline">Editar</span>
+                  <span className="hidden md:inline">{language === 'es' ? 'Editar' : 'Editar'}</span>
                 </Button>
               )}
             </div>
@@ -217,19 +229,19 @@ const Calendar = () => {
     <>
       <div className="mb-6 md:mb-8">
         <h1 className="text-2xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-          📅 Calendário de Postagens
+          📅 {t('calendar.title')}
         </h1>
         <p className="text-sm md:text-base text-muted-foreground">
-          Planeje seu conteúdo com templates e legendas prontas
+          {t('calendar.subtitle')}
         </p>
         <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-            Agendado
+            {t('calendar.scheduled')}
           </span>
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 bg-muted rounded-full"></span>
-            Sugestão automática
+            {t('calendar.autoSuggestion')}
           </span>
         </div>
       </div>
@@ -248,7 +260,7 @@ const Calendar = () => {
         </div>
 
         <div className="grid grid-cols-7 gap-1 md:gap-2 mb-2 md:mb-4">
-          {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(day => (
+          {dayNames.map(day => (
             <div key={day} className="text-center font-semibold text-[10px] md:text-sm text-muted-foreground py-1 md:py-2">
               {day}
             </div>
@@ -271,7 +283,7 @@ const Calendar = () => {
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto mx-4">
           <DialogHeader>
             <DialogTitle className="text-lg md:text-xl">
-              📅 {selectedDay} de {monthNames[currentMonth]} de {currentYear}
+              📅 {selectedDay} {language === 'es' ? 'de' : 'de'} {monthNames[currentMonth]} {language === 'es' ? 'de' : 'de'} {currentYear}
             </DialogTitle>
           </DialogHeader>
           
@@ -281,14 +293,14 @@ const Calendar = () => {
               {selectedDayContent.isFromDatabase && (
                 <div className="bg-green-500/10 text-green-700 text-sm p-2 rounded-lg flex items-center gap-2">
                   <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  Conteúdo agendado manualmente
+                  {t('calendar.scheduledManually')}
                 </div>
               )}
               
               {/* Notas do admin */}
               {selectedDayContent.notes && (
                 <div className="bg-muted/50 p-3 rounded-lg">
-                  <h4 className="font-medium text-sm mb-1">📝 Notas:</h4>
+                  <h4 className="font-medium text-sm mb-1">{t('calendar.notes')}</h4>
                   <p className="text-sm text-muted-foreground">{selectedDayContent.notes}</p>
                 </div>
               )}
@@ -297,7 +309,7 @@ const Calendar = () => {
               {selectedDayContent.template && (
                 <div className="space-y-2 md:space-y-3">
                   <h3 className="font-bold text-base md:text-lg flex items-center gap-2">
-                    🎬 Vídeo do Dia
+                    {t('calendar.videoOfDay')}
                   </h3>
                   <Card className="p-3 md:p-4 bg-muted/30">
                     <p className="font-medium mb-2 md:mb-3 text-sm md:text-base">
@@ -309,7 +321,7 @@ const Calendar = () => {
                       onClick={() => window.open(selectedDayContent.template!.url, '_blank')}
                     >
                       <ExternalLink className="h-4 w-4 mr-2" />
-                      Editar no Canva
+                      {t('button.editCanva')}
                     </Button>
                   </Card>
                 </div>
@@ -319,7 +331,7 @@ const Calendar = () => {
               {selectedDayContent.caption && (
                 <div className="space-y-2 md:space-y-3">
                   <h3 className="font-bold text-base md:text-lg flex items-center gap-2">
-                    📝 Legenda do Dia
+                    {t('calendar.captionOfDay')}
                   </h3>
                   <Card className="p-3 md:p-4 bg-muted/30 space-y-2 md:space-y-3">
                     <p className="font-medium text-primary text-sm md:text-base">
@@ -339,11 +351,11 @@ const Calendar = () => {
                         navigator.clipboard.writeText(
                           `${selectedDayContent.caption!.text}\n\n${selectedDayContent.caption!.hashtags}`
                         );
-                        toast.success("Legenda copiada!");
+                        toast.success(t('button.copied'));
                       }}
                     >
                       <Copy className="h-4 w-4 mr-2" />
-                      Copiar Legenda
+                      {t('calendar.copyCaption')}
                     </Button>
                   </Card>
                 </div>
@@ -351,7 +363,7 @@ const Calendar = () => {
               
               {!selectedDayContent.template && !selectedDayContent.caption && (
                 <div className="text-center py-8 text-muted-foreground">
-                  <p>Nenhum conteúdo disponível para este dia.</p>
+                  <p>{t('calendar.noContent')}</p>
                 </div>
               )}
             </div>
