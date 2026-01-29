@@ -28,48 +28,42 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Buscar token no banco
+    // Atomic token fetch: Only select unused and non-expired tokens
+    const now = new Date();
     const { data: tokenData, error: fetchError } = await supabaseAdmin
       .from("magic_link_tokens")
       .select("*")
       .eq("token", token)
+      .is("used_at", null)  // Only select unused tokens (prevents race condition)
+      .gt("expires_at", now.toISOString())  // Only select non-expired tokens
       .single();
 
     if (fetchError || !tokenData) {
-      console.error("Token not found:", fetchError);
+      console.error("Token not found or already used:", fetchError);
       return new Response(
-        JSON.stringify({ error: "Token inválido ou não encontrado" }),
+        JSON.stringify({ error: "Token inválido, já utilizado ou expirado" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Verificar se o token já foi usado
-    if (tokenData.used_at) {
+    // Atomically mark token as used with WHERE clause to prevent race condition
+    // This ensures only one request can successfully mark the token as used
+    const { data: updateResult, error: updateError } = await supabaseAdmin
+      .from("magic_link_tokens")
+      .update({ used_at: now.toISOString() })
+      .eq("id", tokenData.id)
+      .is("used_at", null)  // Critical: Only update if still unused
+      .select("id");
+
+    if (updateError || !updateResult || updateResult.length === 0) {
+      console.error("Token already used (race condition prevented):", updateError);
       return new Response(
         JSON.stringify({ error: "Este link já foi utilizado" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Verificar se o token expirou
-    const now = new Date();
-    const expiresAt = new Date(tokenData.expires_at);
-    if (now > expiresAt) {
-      return new Response(
-        JSON.stringify({ error: "Este link expirou. Solicite um novo." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Marcar token como usado
-    const { error: updateError } = await supabaseAdmin
-      .from("magic_link_tokens")
-      .update({ used_at: now.toISOString() })
-      .eq("id", tokenData.id);
-
-    if (updateError) {
-      console.error("Error updating token:", updateError);
-    }
+    console.log("[VERIFY-MAGIC-LINK] Token atomically marked as used:", tokenData.id);
 
     const email = tokenData.email;
     const userName = tokenData.name;
