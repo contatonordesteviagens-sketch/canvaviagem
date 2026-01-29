@@ -322,18 +322,18 @@ const Planos = () => {
           </div>
         </section>
 
-        {/* GRID DE GIFS COM HOVER EFFECTS */}
+        {/* GRID DE GIFS FORMATO REELS */}
         <section className="mb-12 md:mb-20">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
             SEU PERFIL BONITO E PROFISSIONAL EM 1 DIA!
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 gap-3 md:gap-4 max-w-2xl mx-auto">
             {proofGifs.map((gif, index) => (
-              <div key={index} className="rounded-xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300">
+              <div key={index} className="rounded-2xl overflow-hidden shadow-lg hover:scale-[1.02] transition-transform duration-300">
                 <img 
                   src={gif} 
                   alt={`Exemplo de vídeo ${index + 1}`}
-                  className="w-full h-48 md:h-64 object-cover"
+                  className="w-full aspect-[9/16] object-cover"
                 />
               </div>
             ))}
