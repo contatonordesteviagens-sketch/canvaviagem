@@ -10,7 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { UserInfoCard } from "@/components/UserInfoCard";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
-import { Loader2, Check, Plane, Settings, Video, Image, MessageSquare, Bot, Calendar, Sparkles, RefreshCw, Users, FileText } from "lucide-react";
+import { 
+  Loader2, Check, Plane, Settings, Video, Image, MessageSquare, 
+  Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity 
+} from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import garantia7dias from "@/assets/garantia-7-dias.png";
 
@@ -28,22 +31,47 @@ const proofGifs = [
 
 const youtubeVideos = [
   { id: "dvInvZZ7fLY", title: "Fernando de Noronha Takes" },
-  { id: "vUgCtB-yUPg", title: "Veneza Italia" },
+  { id: "vUgCtB-yUPg", title: "Veneza Itália" },
   { id: "KsGg1kWgFjA", title: "Fernando de Noronha" },
-  { id: "QcwzHP3Y3Nc", title: "Jalapao" },
+  { id: "QcwzHP3Y3Nc", title: "Jalapão" },
 ];
 
-const deliverables = [
-  { icon: Video, text: "+ 250 Vídeos Prontos" },
-  { icon: MessageSquare, text: "Suporte Whatsapp" },
-  { icon: Calendar, text: "Calendário Anual de Posts" },
-  { icon: FileText, text: "Texto e Legendas" },
-  { icon: Image, text: "Aula Edição no Canva" },
-  { icon: Check, text: "Livres de direitos autorais" },
-  { icon: Bot, text: "10 Agentes de I.A de Marketing" },
-  { icon: Sparkles, text: "Bônus: 200 Artes de Viagens" },
-  { icon: Users, text: "Bônus: 3 Influenciadoras" },
-  { icon: RefreshCw, text: "Atualizações e Garantia" },
+// Benefícios com destaque
+const benefits = [
+  { icon: Video, text: "+ 250 Vídeos Prontos", highlight: true },
+  { icon: MessageSquare, text: "Suporte WhatsApp", highlight: false },
+  { icon: Calendar, text: "Calendário Anual de Posts", highlight: false },
+  { icon: FileText, text: "Texto e Legendas", highlight: false },
+  { icon: Sparkles, text: "Aula Edição no Canva", highlight: false },
+  { icon: Shield, text: "Livres de direitos autorais", highlight: false },
+  { icon: Bot, text: "10 Agentes de I.A de Marketing", highlight: true },
+  { icon: Image, text: "Bônus: 200 Artes de Viagens", highlight: false },
+  { icon: Users, text: "Bônus: 3 Influenciadoras", highlight: false },
+  { icon: Infinity, text: "Atualizações e Garantia", highlight: false },
+];
+
+// FAQs reduzido focado em objeções
+const faqs = [
+  {
+    question: "Como funciona o acesso?",
+    answer: "Após a confirmação do pagamento, você recebe um email com o link de acesso. É instantâneo! Você entra na plataforma e já pode baixar todos os 250+ vídeos."
+  },
+  {
+    question: "Posso cancelar quando quiser?",
+    answer: "Sim! Não há fidelidade. Você pode cancelar a qualquer momento e continua tendo acesso até o final do período pago."
+  },
+  {
+    question: "Os vídeos têm direitos autorais?",
+    answer: "Não! Todos os vídeos são livres de direitos autorais para uso comercial. Você pode usar em seus clientes sem problemas."
+  },
+  {
+    question: "Como funciona o suporte?",
+    answer: "Você tem acesso direto ao nosso WhatsApp de suporte. Respondemos em até 24h úteis e ajudamos com qualquer dúvida sobre a plataforma."
+  },
+  {
+    question: "Preciso de conhecimento técnico?",
+    answer: "Não! Tudo é simples. Baixe os vídeos, edite no Canva (temos aula ensinando) e poste. Em 2 minutos você tem conteúdo profissional pronto."
+  }
 ];
 
 const Planos = () => {
@@ -152,57 +180,6 @@ const Planos = () => {
     }
   };
 
-  const faqs = [
-    {
-      question: "O que é um Canva Viagem?",
-      answer: "São conteúdos prontos em vídeos no formato Reels, fotos, artes, feed, carrosseis e agentes de IA que você pode personalizar com as informações da sua Agência adicionando o logotipo ou publicar da forma que está."
-    },
-    {
-      question: "É fácil de utilizar?",
-      answer: "Sim! Todos os modelos são editáveis no CANVA PRO e estão prontos para garantir que você aproveite ao máximo e comece a usar hoje mesmo!"
-    },
-    {
-      question: "Preciso de conhecimento em Design?",
-      answer: "Não! Todos os Reels estão 100% prontos com vídeos, escrita e transições, caso queira você ainda pode personalizar tudo facilmente com o CANVA PRO."
-    },
-    {
-      question: "E se eu precisar de suporte?",
-      answer: "Nossa equipe está disponível para tirar todas as suas dúvidas e garantir que você utilize os Reels da melhor forma possível."
-    },
-    {
-      question: "Como eu vou acessar os Canva Viagem para minha Agência?",
-      answer: "Nós vamos te enviar o login de acesso via plataforma no seu email e para que você possa ter acesso aos vídeos, mídias e links de com todos as entregáveis."
-    },
-    {
-      question: "Posso usar com o CANVA GRÁTIS?",
-      answer: "Não! Será necessário ter o CANVA PRO para realizar as edições e downloads dos Reels. Isso ocorre pois os vídeos sem direitos autorais possuem licença especial para utilização com o CANVA PRO."
-    },
-    {
-      question: "Posso cancelar a qualquer momento?",
-      answer: "Sim! Você pode cancelar sua assinatura quando quiser, sem multas ou taxas adicionais. O acesso permanece ativo até o final do período pago."
-    },
-    {
-      question: "Como funciona o pagamento?",
-      answer: "O pagamento é mensal e renovado automaticamente. Você pode usar cartão de crédito ou débito via Stripe, a plataforma de pagamentos mais segura do mundo."
-    },
-    {
-      question: "Os templates são realmente editáveis?",
-      answer: "Sim! Todos os templates são editáveis diretamente no Canva. Basta clicar, editar o que quiser e baixar pronto para postar."
-    },
-    {
-      question: "Posso usar para minha agência de viagens?",
-      answer: "Absolutamente! O Canva Viagens foi criado especialmente para agentes de viagens e profissionais do turismo que querem produzir conteúdo profissional."
-    },
-    {
-      question: "Quanto tempo leva para ter acesso?",
-      answer: "O acesso é liberado imediatamente após a confirmação do pagamento. Você já pode começar a usar todos os recursos na hora!"
-    },
-    {
-      question: "Vocês oferecem garantia?",
-      answer: "Sim! Se por qualquer motivo você não ficar satisfeito, pode cancelar sua assinatura dentro dos primeiros 7 dias e solicitar reembolso."
-    }
-  ];
-
   if (authLoading || subscription.loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -303,156 +280,193 @@ const Planos = () => {
       <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl">
         {user && <UserInfoCard />}
 
-        {/* SEÇÃO 1: Hero Principal */}
-        <section className="text-center mb-10 md:mb-16">
-          <h1 className="text-3xl md:text-5xl font-extrabold mb-4">
-            <span className="text-primary">VENDA + VIAGENS</span>
+        {/* HERO SECTION - Badge de Urgência Animado */}
+        <section className="text-center mb-12 md:mb-20">
+          <Badge className="mb-6 px-6 py-2 bg-gradient-to-r from-primary to-accent text-white animate-pulse border-0">
+            <Sparkles className="h-4 w-4 mr-2" />
+            OFERTA EXCLUSIVA - Apenas R$9,90/mês
+          </Badge>
+          
+          {/* Headline com Gradiente */}
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-4">
+            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+              VENDA + VIAGENS
+            </span>
             <br />
-            O ANO INTEIRO!
+            <span className="text-foreground">O ANO INTEIRO!</span>
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-6">
-            Tenha acesso a 250 vídeos de viagens e poste em 2 minutos.
+          
+          {/* Subheadline */}
+          <p className="text-xl md:text-2xl text-muted-foreground mb-8">
+            Tenha acesso a <span className="text-primary font-bold">250 vídeos de viagens</span>
+            <br />e poste em <span className="text-accent font-bold">2 minutos</span>.
           </p>
+          
+          {/* GIF Hero */}
           <img 
             src={heroGif} 
-            alt="Vídeos de viagens" 
-            className="mx-auto rounded-2xl shadow-lg max-w-xs md:max-w-md"
+            alt="Vídeos de viagens profissionais" 
+            className="mx-auto rounded-2xl shadow-2xl max-w-xs md:max-w-2xl mb-6"
           />
-          <Badge className="mt-4 bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800">
-            Menos de R$ 0,50 centavos por vídeo
-          </Badge>
+          
+          {/* Badges de Prova Social */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+            <Badge variant="outline" className="px-4 py-2 text-sm">
+              <Check className="h-4 w-4 mr-2 text-primary" />
+              Menos de R$ 0,50 por vídeo
+            </Badge>
+            <Badge variant="outline" className="px-4 py-2 text-sm">
+              <Shield className="h-4 w-4 mr-2 text-accent" />
+              Aprovado por +500 Agências
+            </Badge>
+          </div>
         </section>
 
-        {/* SEÇÃO 2: Prova Social GIFs */}
-        <section className="mb-10 md:mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">
-            Mais de 500 mídias e Vídeos Aprovados
-            <span className="block text-primary">por Agências de Viagens</span>
+        {/* GRID DE GIFS COM HOVER EFFECTS */}
+        <section className="mb-12 md:mb-20">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
+            SEU PERFIL BONITO E PROFISSIONAL EM 1 DIA!
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
             {proofGifs.map((gif, index) => (
-              <img 
-                key={index}
-                src={gif} 
-                alt={`Exemplo de vídeo ${index + 1}`}
-                className="w-full rounded-xl shadow-md aspect-[9/16] object-cover"
-              />
-            ))}
-          </div>
-        </section>
-
-        {/* SEÇÃO 3: Perfil Profissional */}
-        <section className="text-center mb-10 md:mb-16 bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl p-6 md:p-10">
-          <h2 className="text-2xl md:text-4xl font-bold mb-2">
-            SEU PERFIL BONITO
-          </h2>
-          <h3 className="text-xl md:text-3xl font-bold text-primary mb-6">
-            E PROFISSIONAL EM 1 DIA!
-          </h3>
-          <img 
-            src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmo1NGh5cGxiZG1vdHl3bmZxNTBxd2h0aDBsbXkxa2xhNWk4bmE4aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MpVJ9IjphA5p6sO8Zr/giphy.gif"
-            alt="Perfil profissional"
-            className="mx-auto rounded-xl shadow-lg max-w-[200px] md:max-w-[280px]"
-          />
-        </section>
-
-        {/* SEÇÃO 4: O que é o Pack + Lista de Entregáveis */}
-        <section className="mb-10 md:mb-16">
-          <Card className="border-2 border-primary/20">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl md:text-3xl">
-                O que é o Pack de Vídeos?
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-center text-muted-foreground text-lg mb-8">
-                Você recebe o link para baixar mais de 250 vídeos de destinos nacionais 
-                e internacionais para publicar.
-              </p>
-              
-              <h3 className="text-xl font-semibold text-center mb-6">O que você vai receber:</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {deliverables.map((item, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                    <div className="bg-primary/10 rounded-lg p-2">
-                      <item.icon className="h-5 w-5 text-primary" />
-                    </div>
-                    <span className="font-medium">{item.text}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* SEÇÃO 5: Preço com Garantia */}
-        <section className="mb-10 md:mb-16 text-center">
-          <div className="bg-gradient-to-r from-primary to-accent rounded-3xl p-8 md:p-12 text-white">
-            <p className="text-lg opacity-80 line-through mb-2">de R$ 197</p>
-            <p className="text-xl mb-2">por apenas</p>
-            <div className="flex items-baseline justify-center mb-4">
-              <span className="text-3xl font-bold">R$</span>
-              <span className="text-7xl md:text-8xl font-extrabold mx-1">9</span>
-              <span className="text-3xl font-bold">,90</span>
-              <span className="text-xl opacity-80 ml-2">/mês</span>
-            </div>
-            
-            <img 
-              src={garantia7dias}
-              alt="Garantia 7 dias incondicional"
-              className="mx-auto w-24 md:w-32 mb-4"
-            />
-            
-            <div className="flex items-center justify-center gap-4 text-sm opacity-80 mb-6">
-              <span>garantia de 7 dias</span>
-              <span>|</span>
-              <span>pagamento seguro</span>
-            </div>
-            
-            <Button 
-              size="lg" 
-              onClick={handleCheckout} 
-              disabled={checkoutLoading}
-              className="bg-orange-500 hover:bg-orange-600 text-white pulse px-8 py-6 text-xl"
-            >
-              {checkoutLoading ? (
-                <Loader2 className="h-6 w-6 animate-spin" />
-              ) : (
-                "Quero meu acesso!"
-              )}
-            </Button>
-          </div>
-        </section>
-
-        {/* SEÇÃO 6: Vídeos YouTube */}
-        <section className="mb-10 md:mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">
-            Veja exemplos de vídeos inclusos
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            {youtubeVideos.map((video) => (
-              <div key={video.id} className="aspect-[9/16] rounded-xl overflow-hidden shadow-lg">
-                <iframe
-                  src={`https://www.youtube.com/embed/${video.id}`}
-                  title={video.title}
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
+              <div key={index} className="rounded-xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300">
+                <img 
+                  src={gif} 
+                  alt={`Exemplo de vídeo ${index + 1}`}
+                  className="w-full h-48 md:h-64 object-cover"
                 />
               </div>
             ))}
           </div>
         </section>
 
+        {/* SEÇÃO "O QUE VOCÊ RECEBE" MELHORADA */}
+        <section className="mb-12 md:mb-20">
+          <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-8 md:p-12 rounded-3xl">
+            <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">
+              O que é o Pack de Vídeos?
+            </h2>
+            <p className="text-center text-muted-foreground text-lg mb-8">
+              Você recebe o link para baixar mais de 250 vídeos de destinos nacionais e internacionais para publicar.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {benefits.map((item, index) => (
+                <div 
+                  key={index} 
+                  className={`flex items-center gap-3 p-4 rounded-lg transition-all duration-200 ${
+                    item.highlight 
+                      ? 'bg-gradient-to-r from-primary to-accent text-white font-semibold shadow-lg' 
+                      : 'bg-background/50 hover:bg-background/80'
+                  }`}
+                >
+                  <item.icon className={`h-5 w-5 shrink-0 ${item.highlight ? 'text-white' : 'text-primary'}`} />
+                  <span>{item.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* VÍDEOS YOUTUBE COM OVERLAY */}
+        <section className="mb-12 md:mb-20">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
+            Veja Exemplos Reais dos Vídeos
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {youtubeVideos.map((video) => (
+              <div key={video.id} className="bg-black rounded-xl overflow-hidden shadow-xl relative group">
+                <iframe
+                  className="w-full aspect-[9/16]"
+                  src={`https://www.youtube.com/embed/${video.id}`}
+                  title={video.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 pointer-events-none">
+                  <p className="text-white text-sm font-medium">{video.title}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* CARD DE PREÇO APRIMORADO */}
+        <section className="mb-12 md:mb-20">
+          <Card className="max-w-2xl mx-auto border-2 border-primary/20 shadow-xl">
+            <CardContent className="p-8 md:p-12 text-center">
+              <p className="text-2xl line-through text-muted-foreground mb-2">de R$ 197,00</p>
+              <div className="flex items-baseline justify-center mb-6">
+                <span className="text-5xl md:text-6xl font-black text-primary">R$ 9,90</span>
+                <span className="text-xl text-muted-foreground ml-2">/mês</span>
+              </div>
+              
+              <Button 
+                size="lg" 
+                onClick={handleCheckout}
+                disabled={checkoutLoading}
+                className="w-full h-14 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                {checkoutLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-5 w-5" />
+                    Quero meu acesso!
+                  </>
+                )}
+              </Button>
+              
+              <div className="flex flex-col md:flex-row items-center justify-center gap-4 mt-6 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <Shield className="h-4 w-4" /> garantia de 7 dias
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" /> pagamento seguro
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                Cancele quando quiser • Acesso imediato após confirmação
+              </p>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* SEÇÃO DE GARANTIA */}
+        <section className="mb-12 md:mb-20">
+          <div className="bg-accent/10 border-l-4 border-accent p-6 md:p-8 rounded-xl">
+            <div className="flex flex-col items-center text-center">
+              <img 
+                src={garantia7dias}
+                alt="Garantia 7 dias incondicional"
+                className="w-20 md:w-28 mb-4"
+              />
+              <h3 className="text-2xl md:text-3xl font-bold mb-4">Garantia Total de 7 Dias</h3>
+              <p className="text-lg text-muted-foreground max-w-xl">
+                Em 3 dias seu perfil vai ter o dobro de engajamento ou{' '}
+                <span className="font-bold text-accent">devolvo seu dinheiro</span>.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* SOCIAL PROOF CVC/DECOLAR */}
+        <section className="mb-12 md:mb-20 text-center">
+          <p className="text-xl md:text-2xl font-semibold">
+            Seu perfil vai ficar parecido com o da{' '}
+            <span className="text-primary font-bold">CVC</span> e{' '}
+            <span className="text-accent font-bold">Decolar</span>, concorda?
+          </p>
+        </section>
+
         {/* Alert para usuários logados sem assinatura */}
         {user && (
-          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 md:p-4 mb-6 md:mb-8">
+          <div className="bg-secondary border border-border rounded-lg p-3 md:p-4 mb-6 md:mb-8">
             <div className="flex items-center gap-3 mb-3">
-              <div className="bg-amber-100 dark:bg-amber-900 rounded-full p-2 shrink-0">
-                <Plane className="h-4 w-4 md:h-5 md:w-5 text-amber-600 dark:text-amber-400" />
+              <div className="bg-primary/10 rounded-full p-2 shrink-0">
+                <Plane className="h-4 w-4 md:h-5 md:w-5 text-primary" />
               </div>
-              <p className="text-amber-800 dark:text-amber-200 text-sm md:text-base">
+              <p className="text-foreground text-sm md:text-base">
                 <strong>Você ainda não possui um plano ativo.</strong> Assine agora para liberar todos os recursos!
               </p>
             </div>
@@ -472,49 +486,44 @@ const Planos = () => {
           </div>
         )}
 
-        {/* SEÇÃO 7: FAQ */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-center mb-8">Perguntas Frequentes</h2>
-          <Accordion type="single" collapsible className="w-full">
+        {/* FAQ REDUZIDO - 5 PERGUNTAS ESSENCIAIS */}
+        <section className="mb-12 md:mb-16">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Perguntas Frequentes</h2>
+          <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
             {faqs.map((faq, index) => (
               <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
+                <AccordionTrigger className="text-left text-base md:text-lg">{faq.question}</AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
-        </div>
+        </section>
 
-        {/* SEÇÃO 8: CTA Final */}
-        <Card className="bg-gradient-to-r from-primary to-accent text-white">
-          <CardContent className="p-8 text-center">
-            <h2 className="text-2xl font-bold mb-4">Acesse hoje com 82% de DESCONTO</h2>
-            <p className="mb-6 opacity-90">
-              Isso aqui não é gatilho mental, essa oferta de lançamento do plano premium + atualização vitalícia pode mudar a qualquer momento.
-              Clica aqui e aproveita 👇
-            </p>
+        {/* CTA FINAL COM PULSE */}
+        <section className="mb-12">
+          <div className="text-center">
             <Button 
               size="lg" 
-              onClick={handleCheckout} 
-              disabled={checkoutLoading} 
-              className="bg-orange-500 hover:bg-orange-600 text-white pulse flex flex-col items-center h-auto py-3 px-12"
+              onClick={handleCheckout}
+              disabled={checkoutLoading}
+              className="text-xl px-12 h-16 bg-gradient-to-r from-primary to-accent animate-pulse shadow-2xl hover:shadow-3xl transition-all duration-300"
             >
               {checkoutLoading ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  <span className="text-xs opacity-60 font-light mt-1">Abrindo...</span>
-                </>
+                <Loader2 className="h-6 w-6 animate-spin" />
               ) : (
                 <>
-                  <span className="text-xl font-semibold">Quero meu acesso!</span>
-                  <span className="opacity-60 font-light mt-0.5 text-sm">Canva Viagem Premium por R$ 9,90</span>
+                  <Sparkles className="mr-2 h-6 w-6" />
+                  Começar Agora por R$ 9,90/mês
                 </>
               )}
             </Button>
-          </CardContent>
-        </Card>
+            <p className="text-sm text-muted-foreground mt-4">
+              ✨ Acesso imediato • 🔒 Pagamento 100% seguro • ✅ Cancele quando quiser
+            </p>
+          </div>
+        </section>
       </div>
       <Footer />
     </div>
