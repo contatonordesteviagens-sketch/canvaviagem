@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-
-// Types
+import { useLanguage } from "@/contexts/LanguageContext";
+import { sortByLanguagePriority } from "@/lib/language-utils";
 export interface ContentItem {
   id: string;
   title: string;
@@ -34,6 +34,7 @@ export interface Caption {
   category: 'nacional' | 'internacional' | null;
   is_active: boolean;
   display_order: number;
+  language: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -48,14 +49,17 @@ export interface MarketingTool {
   is_featured: boolean;
   is_active: boolean;
   display_order: number;
+  language: string | null;
   created_at: string;
   updated_at: string;
 }
 
-// Hook para buscar content items por tipo
+// Hook para buscar content items por tipo with language priority ordering
 export const useContentItems = (type?: string | string[], featuredOnly?: boolean) => {
+  const { language } = useLanguage();
+  
   return useQuery({
-    queryKey: ["content-items", type, featuredOnly],
+    queryKey: ["content-items", type, featuredOnly, language],
     queryFn: async () => {
       let query = supabase
         .from("content_items")
@@ -78,7 +82,9 @@ export const useContentItems = (type?: string | string[], featuredOnly?: boolean
       
       const { data, error } = await query;
       if (error) throw error;
-      return data as ContentItem[];
+      
+      // Apply language priority ordering
+      return sortByLanguagePriority(data as ContentItem[], language);
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
   });
@@ -105,8 +111,10 @@ export const useNewestItemIds = () => {
 
 // Hook para buscar itens em destaque (is_featured)
 export const useFeaturedItems = () => {
+  const { language } = useLanguage();
+  
   return useQuery({
-    queryKey: ["featured-items"],
+    queryKey: ["featured-items", language],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("content_items")
@@ -118,7 +126,7 @@ export const useFeaturedItems = () => {
         .limit(10);
       
       if (error) throw error;
-      return data as ContentItem[];
+      return sortByLanguagePriority(data as ContentItem[], language);
     },
     staleTime: 1000 * 60 * 5,
   });
@@ -126,8 +134,10 @@ export const useFeaturedItems = () => {
 
 // Hook para buscar itens destacados (is_highlighted) - seção especial na home
 export const useHighlightedItems = () => {
+  const { language } = useLanguage();
+  
   return useQuery({
-    queryKey: ["highlighted-items"],
+    queryKey: ["highlighted-items", language],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("content_items")
@@ -138,7 +148,7 @@ export const useHighlightedItems = () => {
         .limit(3);
       
       if (error) throw error;
-      return data as ContentItem[];
+      return sortByLanguagePriority(data as ContentItem[], language);
     },
     staleTime: 1000 * 60 * 2,
   });
@@ -146,8 +156,10 @@ export const useHighlightedItems = () => {
 
 // Hook para buscar vídeos (templates)
 export const useVideoTemplates = (category?: string) => {
+  const { language } = useLanguage();
+  
   return useQuery({
-    queryKey: ["video-templates", category],
+    queryKey: ["video-templates", category, language],
     queryFn: async () => {
       let query = supabase
         .from("content_items")
@@ -162,7 +174,7 @@ export const useVideoTemplates = (category?: string) => {
       
       const { data, error } = await query;
       if (error) throw error;
-      return data as ContentItem[];
+      return sortByLanguagePriority(data as ContentItem[], language);
     },
     staleTime: 1000 * 60 * 5,
   });
@@ -170,8 +182,10 @@ export const useVideoTemplates = (category?: string) => {
 
 // Hook para buscar captions
 export const useCaptions = (category?: 'nacional' | 'internacional') => {
+  const { language } = useLanguage();
+  
   return useQuery({
-    queryKey: ["captions", category],
+    queryKey: ["captions", category, language],
     queryFn: async () => {
       let query = supabase
         .from("captions")
@@ -185,7 +199,7 @@ export const useCaptions = (category?: 'nacional' | 'internacional') => {
       
       const { data, error } = await query;
       if (error) throw error;
-      return data as Caption[];
+      return sortByLanguagePriority(data as Caption[], language);
     },
     staleTime: 1000 * 60 * 5,
   });
@@ -193,8 +207,10 @@ export const useCaptions = (category?: 'nacional' | 'internacional') => {
 
 // Hook para buscar marketing tools
 export const useMarketingTools = () => {
+  const { language } = useLanguage();
+  
   return useQuery({
-    queryKey: ["marketing-tools"],
+    queryKey: ["marketing-tools", language],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("marketing_tools")
@@ -203,7 +219,7 @@ export const useMarketingTools = () => {
         .order("display_order", { ascending: true });
       
       if (error) throw error;
-      return data as MarketingTool[];
+      return sortByLanguagePriority(data as MarketingTool[], language);
     },
     staleTime: 1000 * 60 * 5,
   });

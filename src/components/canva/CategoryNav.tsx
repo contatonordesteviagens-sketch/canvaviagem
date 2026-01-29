@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
 
@@ -10,22 +11,23 @@ interface CategoryNavProps {
   showFavorites?: boolean;
 }
 
-const categories: { id: CategoryType; label: string; icon: React.ReactNode }[] = [
-  { id: 'videos', label: 'Vídeos Reels', icon: <Video className="w-6 h-6" /> },
-  { id: 'feed', label: 'Arte Agência', icon: <Image className="w-6 h-6" /> },
-  { id: 'stories', label: 'Stories', icon: <LayoutGrid className="w-6 h-6" /> },
-  { id: 'captions', label: 'Legendas', icon: <FileText className="w-6 h-6" /> },
-  { id: 'downloads', label: 'Downloads', icon: <Download className="w-6 h-6" /> },
-  { id: 'tools', label: 'IA Tools', icon: <Bot className="w-6 h-6" /> },
-  { id: 'videoaula', label: 'Videoaula', icon: <GraduationCap className="w-6 h-6" /> },
-  { id: 'favorites', label: 'Favoritos', icon: <Heart className="w-6 h-6" /> },
-];
-
 export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = true }: CategoryNavProps) => {
+  const { t } = useLanguage();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
+
+  const categories: { id: CategoryType; label: string; icon: React.ReactNode }[] = [
+    { id: 'videos', label: t('category.videos'), icon: <Video className="w-6 h-6" /> },
+    { id: 'feed', label: t('category.feed'), icon: <Image className="w-6 h-6" /> },
+    { id: 'stories', label: t('category.stories'), icon: <LayoutGrid className="w-6 h-6" /> },
+    { id: 'captions', label: t('category.captions'), icon: <FileText className="w-6 h-6" /> },
+    { id: 'downloads', label: t('category.downloads'), icon: <Download className="w-6 h-6" /> },
+    { id: 'tools', label: t('category.tools'), icon: <Bot className="w-6 h-6" /> },
+    { id: 'videoaula', label: t('category.videoaula'), icon: <GraduationCap className="w-6 h-6" /> },
+    { id: 'favorites', label: t('category.favorites'), icon: <Heart className="w-6 h-6" /> },
+  ];
 
   const displayCategories = showFavorites 
     ? categories 

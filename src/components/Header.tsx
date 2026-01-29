@@ -19,6 +19,8 @@ import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 
 type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
@@ -34,6 +36,7 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { t } = useLanguage();
 
   // Fetch user name from profile with realtime updates
   useEffect(() => {
@@ -82,7 +85,7 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
     <button
       onClick={toggleTheme}
       className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10 text-left w-full"
-      aria-label={theme === 'dark' ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
+      aria-label={theme === 'dark' ? t('header.lightMode') : t('header.darkMode')}
     >
       {theme === 'dark' ? (
         <Sun className="h-5 w-5" />
@@ -94,9 +97,9 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
   );
 
   const mainNavItems = [
-    { to: "/", label: "Início", icon: Home },
-    { to: "/calendar", label: "Calendário", icon: Calendar },
-    { to: "/planos", label: "Planos", icon: CreditCard },
+    { to: "/", label: t('header.home'), icon: Home },
+    { to: "/calendar", label: t('header.calendar'), icon: Calendar },
+    { to: "/planos", label: t('header.plans'), icon: CreditCard },
   ];
 
   const proximoNivelItem = {
@@ -106,14 +109,14 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
   };
 
   const contentCategories: { category: CategoryType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { category: "videos", label: "Vídeos", icon: Video },
-    { category: "feed", label: "Artes", icon: Image },
-    { category: "stories", label: "Stories", icon: LayoutGrid },
-    { category: "captions", label: "Legendas", icon: FileText },
-    { category: "downloads", label: "Downloads", icon: Download },
-    { category: "tools", label: "IA Tools", icon: Bot },
-    { category: "videoaula", label: "Videoaula", icon: GraduationCap },
-    { category: "favorites", label: "Favoritos", icon: Heart },
+    { category: "videos", label: t('category.videos'), icon: Video },
+    { category: "feed", label: t('category.feed'), icon: Image },
+    { category: "stories", label: t('category.stories'), icon: LayoutGrid },
+    { category: "captions", label: t('category.captions'), icon: FileText },
+    { category: "downloads", label: t('category.downloads'), icon: Download },
+    { category: "tools", label: t('category.tools'), icon: Bot },
+    { category: "videoaula", label: t('category.videoaula'), icon: GraduationCap },
+    { category: "favorites", label: t('category.favorites'), icon: Heart },
   ];
 
   const handleCategoryClick = (category: CategoryType) => {
@@ -182,6 +185,9 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
             <span>{proximoNivelItem.label}</span>
           </NavLink>
 
+          {/* Language Switcher - Desktop */}
+          <LanguageSwitcher variant="desktop" />
+
           {/* Theme Toggle - Desktop */}
           <ThemeToggle />
           
@@ -196,14 +202,14 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
                 onClick={signOut}
               >
                 <LogOut className="h-4 w-4 mr-2" />
-                Sair
+                {t('header.logout')}
               </Button>
             </div>
           ) : (
             <Link to="/auth">
               <Button variant="outline" size="sm" className="ml-2">
                 <User className="h-4 w-4 mr-2" />
-                Entrar
+                {t('header.login')}
               </Button>
             </Link>
           )}
@@ -218,6 +224,11 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
           </SheetTrigger>
           <SheetContent side="right" className="w-[280px] sm:w-[320px]">
             <nav className="flex flex-col gap-1 mt-8">
+              {/* Language Switcher - Mobile */}
+              <LanguageSwitcher variant="mobile" />
+              
+              <DropdownMenuSeparator className="my-3" />
+
               {/* Theme Toggle - Mobile */}
               <ThemeToggleMobile />
               
@@ -284,14 +295,14 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
                     className="justify-start gap-3 px-3"
                   >
                     <LogOut className="h-5 w-5" />
-                    Sair
+                    {t('header.logout')}
                   </Button>
                 </>
               ) : (
                 <Link to="/auth" onClick={() => setIsOpen(false)}>
                   <Button variant="outline" className="w-full justify-start gap-3 px-3">
                     <User className="h-5 w-5" />
-                    Entrar
+                    {t('header.login')}
                   </Button>
                 </Link>
               )}

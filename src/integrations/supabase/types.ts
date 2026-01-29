@@ -191,6 +191,7 @@ export type Database = {
           hashtags: string
           id: string
           is_active: boolean | null
+          language: string | null
           text: string
           updated_at: string
         }
@@ -202,6 +203,7 @@ export type Database = {
           hashtags: string
           id?: string
           is_active?: boolean | null
+          language?: string | null
           text: string
           updated_at?: string
         }
@@ -213,6 +215,7 @@ export type Database = {
           hashtags?: string
           id?: string
           is_active?: boolean | null
+          language?: string | null
           text?: string
           updated_at?: string
         }
@@ -381,6 +384,7 @@ export type Database = {
           is_active: boolean | null
           is_featured: boolean | null
           is_new: boolean | null
+          language: string | null
           title: string
           updated_at: string
           url: string
@@ -394,6 +398,7 @@ export type Database = {
           is_active?: boolean | null
           is_featured?: boolean | null
           is_new?: boolean | null
+          language?: string | null
           title: string
           updated_at?: string
           url: string
@@ -407,6 +412,7 @@ export type Database = {
           is_active?: boolean | null
           is_featured?: boolean | null
           is_new?: boolean | null
+          language?: string | null
           title?: string
           updated_at?: string
           url?: string

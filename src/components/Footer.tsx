@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Instagram, Facebook, Youtube } from "lucide-react";
 import logoImage from "@/assets/logo.png";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // TikTok icon (lucide doesn't have it)
 const TikTokIcon = ({ className }: { className?: string }) => (
@@ -37,12 +38,14 @@ const socialLinks = [
   },
 ];
 
-const quickLinks = [
-  { name: "Início", to: "/" },
-  { name: "Calendário", to: "/calendar" },
-];
-
 export const Footer = () => {
+  const { t } = useLanguage();
+
+  const quickLinks = [
+    { name: t('header.home'), to: "/" },
+    { name: t('header.calendar'), to: "/calendar" },
+  ];
+
   return (
     <footer className="mt-16 border-t border-border/50 bg-gradient-to-br from-background to-muted/30">
       {/* Main Content */}
@@ -114,21 +117,21 @@ export const Footer = () => {
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground text-center md:text-left">
-            © 2026 Canva Viagem. Todos os direitos reservados.
+            {t('footer.copyright')}
           </p>
           <div className="flex items-center gap-4">
             <Link
               to="/termos"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              Termos de Uso
+              {t('footer.terms')}
             </Link>
             <span className="text-muted-foreground/50">•</span>
             <Link
               to="/privacidade"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              Política de Privacidade
+              {t('footer.privacy')}
             </Link>
           </div>
         </div>
