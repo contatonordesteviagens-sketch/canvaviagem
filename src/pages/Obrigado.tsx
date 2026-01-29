@@ -15,8 +15,8 @@ const Obrigado = () => {
   useEffect(() => {
     if (!tracked && source === 'checkout') {
       console.log('[Meta Debug] Tracking conversion on /obrigado');
-      trackPurchase(9.90, 'BRL');
-      trackSubscribe(9.90, 'BRL', 9.90 * 12);
+      trackPurchase(37.90, 'BRL');
+      trackSubscribe(37.90, 'BRL', 37.90 * 12);
       setTracked(true);
     }
   }, [tracked, source]);

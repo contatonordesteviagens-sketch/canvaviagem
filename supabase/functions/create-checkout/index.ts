@@ -19,8 +19,8 @@ const GENERIC_ERRORS = {
   configError: "Service configuration error",
 };
 
-// Price ID for the monthly subscription - R$ 9,90/month
-const PRICE_ID = "price_1Sr8tOLXUoWoiE4TaKqmrSG5";
+// Price ID for the monthly subscription - R$ 37,90/month
+const PRICE_ID = "price_1SnPjZLXUoWoiE4TWVWEP6TZ";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
