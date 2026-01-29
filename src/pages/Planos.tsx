@@ -109,7 +109,7 @@ const Planos = () => {
   const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/cNi28s2PEa2Q6aD9wU8so03";
 
   const handleCheckout = async () => {
-    trackInitiateCheckout(9.90, 'BRL');
+    trackInitiateCheckout(37.90, 'BRL');
     setCheckoutLoading(true);
 
     if (user) {
@@ -284,7 +284,7 @@ const Planos = () => {
         <section className="text-center mb-12 md:mb-20">
           <Badge className="mb-6 px-6 py-2 bg-gradient-to-r from-primary to-accent text-white animate-pulse border-0">
             <Sparkles className="h-4 w-4 mr-2" />
-            OFERTA EXCLUSIVA - Apenas R$9,90/mês
+            OFERTA EXCLUSIVA - Apenas R$37,90/mês
           </Badge>
           
           {/* Headline com Gradiente */}
@@ -397,7 +397,7 @@ const Planos = () => {
             <CardContent className="p-8 md:p-12 text-center">
               <p className="text-2xl line-through text-muted-foreground mb-2">de R$ 197,00</p>
               <div className="flex items-baseline justify-center mb-6">
-                <span className="text-5xl md:text-6xl font-black text-primary">R$ 9,90</span>
+                <span className="text-5xl md:text-6xl font-black text-primary">R$ 37,90</span>
                 <span className="text-xl text-muted-foreground ml-2">/mês</span>
               </div>
               
@@ -515,7 +515,7 @@ const Planos = () => {
               ) : (
                 <>
                   <Sparkles className="mr-2 h-6 w-6" />
-                  Começar Agora por R$ 9,90/mês
+                  Começar Agora por R$ 37,90/mês
                 </>
               )}
             </Button>
