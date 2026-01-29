@@ -128,6 +128,24 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Rate limiting: Check if email has too many recent requests (max 3 per 15 minutes)
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const normalizedEmail = email.toLowerCase().trim();
+    
+    const { data: recentTokens, error: rateCheckError } = await supabaseAdmin
+      .from("magic_link_tokens")
+      .select("created_at")
+      .eq("email", normalizedEmail)
+      .gte("created_at", fifteenMinutesAgo);
+
+    if (!rateCheckError && recentTokens && recentTokens.length >= 3) {
+      console.log("[MAGIC-LINK] Rate limit exceeded for:", normalizedEmail.substring(0, 5) + "***");
+      return new Response(
+        JSON.stringify({ error: "Muitas solicitações. Aguarde alguns minutos e tente novamente." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Gerar token único
     const token = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
