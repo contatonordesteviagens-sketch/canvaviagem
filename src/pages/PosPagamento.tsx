@@ -14,12 +14,14 @@ const PosPagamento = () => {
   const [searchParams] = useSearchParams();
   const emailFromUrl = searchParams.get('email');
   const nameFromUrl = searchParams.get('name');
+  const sourceFromUrl = searchParams.get('source');
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingWhatsApp, setIsLoadingWhatsApp] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [tracked, setTracked] = useState(false);
 
   // Auto-fill name and email from URL parameters
   useEffect(() => {
@@ -31,15 +33,19 @@ const PosPagamento = () => {
     }
   }, [emailFromUrl, nameFromUrl]);
 
+  // Track conversion ONLY when coming from checkout (source=checkout)
   useEffect(() => {
-    // Debug: verificar se o Pixel está carregado
-    console.log('[Meta Debug] window.fbq exists:', typeof window.fbq !== 'undefined');
-    
-    trackPurchase(9.90, 'BRL');
-    trackSubscribe(9.90, 'BRL', 9.90 * 12);
-    
-    console.log('[Meta Debug] Purchase & Subscribe events dispatched (R$ 9,90)');
-  }, []);
+    if (!tracked && sourceFromUrl === 'checkout') {
+      console.log('[Meta Debug] window.fbq exists:', typeof window.fbq !== 'undefined');
+      console.log('[Meta Debug] source=checkout detected, tracking conversion');
+      trackPurchase(9.90, 'BRL');
+      trackSubscribe(9.90, 'BRL', 9.90 * 12);
+      console.log('[Meta Debug] Purchase & Subscribe events dispatched (R$ 9,90)');
+      setTracked(true);
+    } else if (!sourceFromUrl || sourceFromUrl !== 'checkout') {
+      console.log('[Meta Debug] No checkout source, skipping pixel tracking');
+    }
+  }, [tracked, sourceFromUrl]);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneBR(e.target.value);
@@ -121,7 +127,8 @@ const PosPagamento = () => {
     setIsLoadingWhatsApp(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("trigger-zaia-welcome", {
+      // Gerar Magic Link URL diretamente (sem enviar email)
+      const { data, error } = await supabase.functions.invoke("generate-magic-link-url", {
         body: { 
           email: email.toLowerCase().trim(), 
           name: name.trim(),
@@ -129,18 +136,26 @@ const PosPagamento = () => {
         },
       });
 
-      if (error || !data?.success) {
-        toast.error(data?.error || "Erro ao acionar WhatsApp.");
+      if (error || !data?.success || !data?.magicLink) {
+        toast.error("Erro ao gerar link. Tente por email.");
         console.error("WhatsApp error:", error || data?.error);
         return;
       }
 
-      // Open WhatsApp
-      window.open(data.whatsappUrl, "_blank");
-      toast.success("WhatsApp aberto! Aguarde a mensagem.");
+      // Abrir WhatsApp com o Magic Link já na mensagem
+      const whatsappMessage = encodeURIComponent(
+        `Olá! Sou ${name.trim()} e acabei de adquirir o Canva Viagem!\n\n` +
+        `Meu link de acesso:\n${data.magicLink}\n\n` +
+        `Clique no link acima para entrar na plataforma!`
+      );
+      const whatsappUrl = `https://wa.me/${cleanPhone(phone)}?text=${whatsappMessage}`;
+      
+      window.open(whatsappUrl, "_blank");
+      toast.success("WhatsApp aberto com seu link de acesso!");
+      setMagicLinkSent(true);
     } catch (error) {
-      console.error("Error triggering WhatsApp:", error);
-      toast.error("Erro ao processar. Tente novamente.");
+      console.error("Error generating WhatsApp link:", error);
+      toast.error("Erro ao processar. Tente por email.");
     } finally {
       setIsLoadingWhatsApp(false);
     }
