@@ -1,226 +1,125 @@
 
 
-# Plano: Simplificar Pagina de Confirmacao de Pagamento
+# Plano: Corrigir Fluxo Pos-Pagamento com Pixels + WhatsApp Confiavel
 
-## Problema Atual
+## Resumo
 
-A pagina `/obrigado` tem um botao "Abrir Meu Email" que:
-- Tenta detectar Gmail/Outlook/Yahoo pelo dominio do email
-- Se nao reconhece, abre Gmail como fallback (incorreto)
-- Nao faz sentido - usuario pode usar qualquer provedor
-
-O fluxo esta confuso com multiplas paginas que fazem coisas similares.
+Reverter para o fluxo com a pagina `/pos-pagamento` como destino apos pagamento, adicionar rastreamento de pixels **somente quando vem do checkout**, e implementar WhatsApp com link de acesso **pronto na mensagem** (100% confiavel, sem depender da Zaia).
 
 ---
 
-## Solucao Proposta
+## Problemas Identificados
 
-Transformar `/obrigado` em uma pagina de **confirmacao pura** que:
-1. Rastreia conversao do Meta Pixel (manter)
-2. Mostra confirmacao de pagamento (manter)
-3. Instrui claramente: "Verifique seu email" (sem tentar abrir)
-4. Oferece link de suporte via WhatsApp (manter)
-5. Botao opcional: "Ja estou logado - Acessar Plataforma" (manter)
-
-**Remover:** Botao "Abrir Meu Email" que tenta adivinhar provedor.
+| Problema | Causa |
+|----------|-------|
+| WhatsApp nao foi enviado automaticamente | O Payment Link do Stripe nao passa pelo Edge Function `create-checkout`. O webhook do Stripe deveria disparar, mas pode nao estar configurado corretamente no painel do Stripe |
+| Pixels podem disparar em acessos manuais | A pagina `/pos-pagamento` dispara Purchase/Subscribe sempre que e aberta, sem verificar se veio do checkout |
+| Zaia nao e 100% confiavel | Depende de resposta externa; usuario nao tem garantia de receber mensagem |
 
 ---
 
-## Alteracoes na Pagina `/obrigado`
+## Solucao
 
-### Remover
+### 1. Redirecionar Payment Link para /pos-pagamento
 
-| Elemento | Motivo |
-|----------|--------|
-| Funcao `openEmailClient()` | Nao funciona para todos os provedores |
-| Botao "Abrir Meu Email" | Confuso e impreciso |
+**Acao no Stripe Dashboard:**
+- Acessar Stripe > Payment Links
+- Editar o link `https://buy.stripe.com/cNi28s2PEa2Q6aD9wU8so03`
+- Alterar Success URL para: `https://canvaviagem.lovable.app/pos-pagamento?source=checkout`
 
-### Manter
+### 2. Adicionar Pixels com Condicao (somente apos checkout)
 
-| Elemento | Funcao |
-|----------|--------|
-| Meta Pixel tracking | Conversao |
-| Confirmacao visual | "Pagamento Confirmado!" |
-| Aviso de Email/WhatsApp enviados | Transparencia |
-| "Ja estou logado - Acessar Plataforma" | Para quem ja tem sessao |
-| Link WhatsApp de suporte | Fallback de suporte |
+**Arquivo:** `src/pages/PosPagamento.tsx`
 
-### Adicionar/Melhorar
-
-| Elemento | Proposito |
-|----------|-----------|
-| Instrucao mais clara | "Acesse seu email (qualquer provedor) e clique no link" |
-| Destaque visual | Caixa com o email do usuario para ele lembrar |
-
----
-
-## Codigo Atualizado para `src/pages/Obrigado.tsx`
-
+Atualmente dispara sempre:
 ```typescript
-import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { CheckCircle, Sparkles, Heart, Mail, Phone, MessageCircle, ArrowRight } from "lucide-react";
-import { trackPurchase, trackSubscribe } from "@/lib/meta-pixel";
-
-const Obrigado = () => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const email = searchParams.get('email');
-  const source = searchParams.get('source');
-  const [tracked, setTracked] = useState(false);
-
-  useEffect(() => {
-    if (!tracked && source === 'checkout') {
-      console.log('[Meta Debug] Tracking conversion on /obrigado');
-      trackPurchase(9.90, 'BRL');
-      trackSubscribe(9.90, 'BRL', 9.90 * 12);
-      setTracked(true);
-    }
-  }, [tracked, source]);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10 flex items-center justify-center p-4">
-      <Card className="w-full max-w-lg text-center border-primary/20 shadow-2xl">
-        <CardContent className="pt-12 pb-8 px-8 space-y-6">
-          {/* Success Icon */}
-          <div className="relative mx-auto w-24 h-24">
-            <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping" />
-            <div className="relative w-24 h-24 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center">
-              <CheckCircle className="h-12 w-12 text-white" />
-            </div>
-          </div>
-
-          {/* Title */}
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-primary flex items-center justify-center gap-2">
-              <Sparkles className="h-6 w-6" />
-              Pagamento Confirmado!
-              <Sparkles className="h-6 w-6" />
-            </h1>
-            <p className="text-xl text-foreground">
-              Seu acesso foi liberado com sucesso!
-            </p>
-          </div>
-
-          {/* Email and WhatsApp Sent Notice */}
-          <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl p-5 space-y-3">
-            <div className="flex items-center gap-3">
-              <Mail className="h-6 w-6 text-green-600 dark:text-green-400 flex-shrink-0" />
-              <div className="text-left">
-                <p className="font-semibold text-green-800 dark:text-green-200">Email Enviado!</p>
-                <p className="text-sm text-green-700 dark:text-green-300">
-                  Enviamos seu link de acesso para {email ? <strong>{email}</strong> : "seu email"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Phone className="h-6 w-6 text-green-600 dark:text-green-400 flex-shrink-0" />
-              <div className="text-left">
-                <p className="font-semibold text-green-800 dark:text-green-200">WhatsApp Enviado!</p>
-                <p className="text-sm text-green-700 dark:text-green-300">
-                  Nossa IA enviou uma mensagem no seu WhatsApp
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Clear Instructions - NO EMAIL BUTTON */}
-          <div className="bg-primary/10 rounded-xl p-6 space-y-3">
-            <div className="flex items-center justify-center gap-2 text-primary font-semibold">
-              <Heart className="h-5 w-5" />
-              <span>Proximo Passo</span>
-            </div>
-            <p className="text-muted-foreground">
-              Acesse seu email (Gmail, Outlook, Yahoo ou qualquer outro) e clique no link que enviamos.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              <strong>Dica:</strong> Verifique tambem a pasta de spam.
-            </p>
-          </div>
-
-          {/* Features unlocked */}
-          <div className="text-left space-y-2 bg-muted/50 rounded-lg p-4">
-            <p className="font-semibold text-sm text-foreground mb-3">Recursos liberados:</p>
-            <ul className="space-y-1 text-sm text-muted-foreground">
-              <li>• Videos Reels editaveis</li>
-              <li>• Artes para Feed e Stories</li>
-              <li>• Legendas prontas</li>
-              <li>• Ferramentas de IA</li>
-              <li>• Downloads ilimitados</li>
-            </ul>
-          </div>
-
-          {/* Already logged in - KEEP THIS */}
-          <Button variant="default" onClick={() => navigate("/")} className="w-full" size="lg">
-            <ArrowRight className="mr-2 h-4 w-4" />
-            Ja estou logado - Acessar Plataforma
-          </Button>
-
-          {/* Support */}
-          <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
-            <p className="font-medium mb-2">Nao recebeu o email?</p>
-            <a 
-              href="https://wa.me/5585986411294?text=Ol%C3%A1%20adquiri%20o%20Canva%20Viagem.%20" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-primary hover:underline"
-            >
-              <MessageCircle className="h-4 w-4" />
-              Fale conosco no WhatsApp
-            </a>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-export default Obrigado;
+useEffect(() => {
+  trackPurchase(9.90, 'BRL');
+  trackSubscribe(9.90, 'BRL', 9.90 * 12);
+}, []);
 ```
 
----
+Alterar para verificar `?source=checkout`:
+```typescript
+const [searchParams] = useSearchParams();
+const sourceFromUrl = searchParams.get('source');
+const [tracked, setTracked] = useState(false);
 
-## Fluxo Simplificado Final
+useEffect(() => {
+  if (!tracked && sourceFromUrl === 'checkout') {
+    console.log('[Meta Debug] Tracking conversion - source=checkout');
+    trackPurchase(9.90, 'BRL');
+    trackSubscribe(9.90, 'BRL', 9.90 * 12);
+    setTracked(true);
+  }
+}, [tracked, sourceFromUrl]);
+```
 
-```text
-USUARIO COMPLETA PAGAMENTO NO STRIPE
-           |
-           v
-WEBHOOK DO STRIPE
-           |
-           +---> Cria usuario
-           +---> Envia EMAIL com Magic Link (automatico)
-           +---> Envia WHATSAPP via Zaia (automatico)
-           |
-           v
-STRIPE REDIRECIONA PARA:
-  /obrigado?email=usuario@email.com&source=checkout
-           |
-           v
-[Pagina /obrigado]
-           |
-           +---> Dispara Meta Pixel
-           +---> Mostra: "Pagamento confirmado! Email e WhatsApp enviados!"
-           +---> Instrui: "Acesse seu email e clique no link"
-           +---> Botao: "Ja estou logado - Acessar Plataforma"
-           |
-           v
-USUARIO ABRE SEU PROPRIO EMAIL (qualquer provedor)
-           |
-           v
-CLICA NO LINK DO EMAIL
-           |
-           v
-[/auth/verify?token=xxx]
-           |
-           +---> Verifica token
-           +---> Configura sessao
-           +---> Redireciona para Dashboard
-           |
-           v
-ACESSO COMPLETO
+### 3. WhatsApp com Link de Acesso Pronto (100% Confiavel)
+
+**Problema atual:** O botao "Receber no WhatsApp" chama a Zaia, que pode nao responder.
+
+**Solucao:** Gerar o Magic Link localmente e abrir o WhatsApp com a mensagem ja pronta contendo o link de acesso.
+
+**Fluxo novo:**
+1. Usuario clica em "Receber no WhatsApp"
+2. Sistema gera o Magic Link (via `send-magic-link`)
+3. Abre o WhatsApp com mensagem pre-preenchida: "Ola, sou [nome] e meu link de acesso e: [magic-link]"
+4. Usuario envia a mensagem para si mesmo ou para suporte
+5. O link de acesso ja esta na mensagem - garantido funcionar
+
+**Alteracao em `src/pages/PosPagamento.tsx`:**
+
+```typescript
+const handleWhatsAppAccess = async () => {
+  // ... validacoes existentes ...
+
+  setIsLoadingWhatsApp(true);
+
+  try {
+    // Gerar Magic Link via edge function existente
+    const { data, error } = await supabase.functions.invoke("send-magic-link", {
+      body: { 
+        email: email.toLowerCase().trim(), 
+        name: name.trim(),
+        phone: cleanPhone(phone)
+      },
+    });
+
+    if (error || !data?.success) {
+      toast.error("Erro ao gerar link. Tente por email.");
+      return;
+    }
+
+    // Buscar o token gerado para montar o link
+    // Como send-magic-link ja envia email, vamos apenas abrir WhatsApp
+    // com mensagem de suporte + instrucao
+    const whatsappMessage = encodeURIComponent(
+      `Ola! Sou ${name.trim()} e acabei de adquirir o Canva Viagem.\n\n` +
+      `Meu email: ${email.toLowerCase().trim()}\n\n` +
+      `Enviamos o link de acesso para seu email. Verifique sua caixa de entrada!`
+    );
+    const whatsappUrl = `https://wa.me/5585986411294?text=${whatsappMessage}`;
+    
+    window.open(whatsappUrl, "_blank");
+    toast.success("Link enviado por email! WhatsApp aberto para suporte.");
+    setMagicLinkSent(true);
+  } catch (error) {
+    toast.error("Erro ao processar.");
+  } finally {
+    setIsLoadingWhatsApp(false);
+  }
+};
+```
+
+**Alternativa mais robusta** (gerar link e incluir na mensagem do WhatsApp):
+
+Para isso, precisamos criar uma nova Edge Function que retorna o Magic Link (em vez de so enviar email):
+
+```typescript
+// Nova Edge Function: generate-magic-link-url
+// Retorna o link em vez de enviar email
+// Assim o WhatsApp pode incluir o link diretamente
 ```
 
 ---
@@ -229,7 +128,223 @@ ACESSO COMPLETO
 
 | Arquivo | Alteracao |
 |---------|-----------|
-| `src/pages/Obrigado.tsx` | Remover botao "Abrir Meu Email" e funcao `openEmailClient` |
+| `src/pages/PosPagamento.tsx` | Adicionar condicao `source=checkout` para pixels; modificar WhatsApp para gerar link pronto |
+| `supabase/functions/generate-magic-link-url/index.ts` | (Novo) Retorna o Magic Link URL sem enviar email |
+
+---
+
+## Fluxo Final
+
+```text
+USUARIO FAZ PAGAMENTO NO STRIPE (Payment Link)
+           |
+           v
+STRIPE REDIRECIONA PARA:
+  /pos-pagamento?source=checkout
+           |
+           v
+[Pagina /pos-pagamento]
+           |
+           +---> Verifica source=checkout -> Dispara Meta Pixels (Purchase + Subscribe)
+           |
+           +---> Usuario preenche: Nome, Email, Telefone
+           |
+           +---> Botao "Enviar Link por Email" -> Envia Magic Link por email
+           |     OU
+           +---> Botao "Receber no WhatsApp" -> Gera Magic Link + Abre WhatsApp com link pronto
+           |
+           v
+USUARIO CLICA NO LINK (email ou WhatsApp)
+           |
+           v
+[/auth/verify?token=xxx]
+           |
+           v
+ACESSO COMPLETO
+```
+
+---
+
+## Secao Tecnica
+
+### Nova Edge Function: generate-magic-link-url
+
+```typescript
+// supabase/functions/generate-magic-link-url/index.ts
+// Gera token, salva no banco, retorna a URL (sem enviar email)
+// Usado pelo WhatsApp para ter o link pronto na mensagem
+
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { email, name, phone } = await req.json();
+
+    if (!email) {
+      return new Response(
+        JSON.stringify({ error: "Email e obrigatorio" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const token = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+    const cleanPhone = phone ? phone.replace(/\D/g, '') : null;
+
+    const { error: insertError } = await supabaseAdmin
+      .from("magic_link_tokens")
+      .insert({
+        email: email.toLowerCase().trim(),
+        token,
+        expires_at: expiresAt.toISOString(),
+        name: name?.trim() || null,
+        phone: cleanPhone,
+      });
+
+    if (insertError) {
+      return new Response(
+        JSON.stringify({ error: "Erro ao gerar link" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const baseUrl = Deno.env.get("SITE_URL") || "https://canvaviagem.lovable.app";
+    const magicLink = `${baseUrl}/auth/verify?token=${token}`;
+
+    return new Response(
+      JSON.stringify({ success: true, magicLink }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: "Erro interno" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});
+```
+
+### Alteracao em PosPagamento.tsx - Pixel com Condicao
+
+Linhas a modificar (atuais ~34-42):
+
+```typescript
+// ANTES:
+useEffect(() => {
+  console.log('[Meta Debug] window.fbq exists:', typeof window.fbq !== 'undefined');
+  trackPurchase(9.90, 'BRL');
+  trackSubscribe(9.90, 'BRL', 9.90 * 12);
+  console.log('[Meta Debug] Purchase & Subscribe events dispatched (R$ 9,90)');
+}, []);
+
+// DEPOIS:
+const sourceFromUrl = searchParams.get('source');
+const [tracked, setTracked] = useState(false);
+
+useEffect(() => {
+  // Rastrear conversao SOMENTE quando vem do checkout
+  if (!tracked && sourceFromUrl === 'checkout') {
+    console.log('[Meta Debug] window.fbq exists:', typeof window.fbq !== 'undefined');
+    console.log('[Meta Debug] source=checkout detected, tracking conversion');
+    trackPurchase(9.90, 'BRL');
+    trackSubscribe(9.90, 'BRL', 9.90 * 12);
+    console.log('[Meta Debug] Purchase & Subscribe events dispatched (R$ 9,90)');
+    setTracked(true);
+  } else if (!sourceFromUrl || sourceFromUrl !== 'checkout') {
+    console.log('[Meta Debug] No checkout source, skipping pixel tracking');
+  }
+}, [tracked, sourceFromUrl]);
+```
+
+### Alteracao em PosPagamento.tsx - WhatsApp com Link Pronto
+
+Substituir a funcao `handleWhatsAppAccess` (linhas ~100-147):
+
+```typescript
+const handleWhatsAppAccess = async () => {
+  if (!name.trim()) {
+    toast.error("Por favor, insira seu nome.");
+    return;
+  }
+  
+  if (!email) {
+    toast.error("Por favor, insira seu email.");
+    return;
+  }
+
+  if (!phone) {
+    toast.error("Por favor, insira seu WhatsApp.");
+    return;
+  }
+  
+  if (!isValidBRPhone(phone)) {
+    toast.error("Telefone invalido. Use DDD + numero.");
+    return;
+  }
+
+  setIsLoadingWhatsApp(true);
+
+  try {
+    // Gerar Magic Link URL diretamente (sem enviar email)
+    const { data, error } = await supabase.functions.invoke("generate-magic-link-url", {
+      body: { 
+        email: email.toLowerCase().trim(), 
+        name: name.trim(),
+        phone: cleanPhone(phone)
+      },
+    });
+
+    if (error || !data?.success || !data?.magicLink) {
+      toast.error("Erro ao gerar link. Tente por email.");
+      console.error("WhatsApp error:", error || data?.error);
+      return;
+    }
+
+    // Abrir WhatsApp com o Magic Link ja na mensagem
+    const whatsappMessage = encodeURIComponent(
+      `Ola! Sou ${name.trim()} e acabei de adquirir o Canva Viagem!\n\n` +
+      `Meu link de acesso:\n${data.magicLink}\n\n` +
+      `Clique no link acima para entrar na plataforma!`
+    );
+    const whatsappUrl = `https://wa.me/${cleanPhone(phone)}?text=${whatsappMessage}`;
+    
+    window.open(whatsappUrl, "_blank");
+    toast.success("WhatsApp aberto com seu link de acesso!");
+    setMagicLinkSent(true);
+  } catch (error) {
+    console.error("Error generating WhatsApp link:", error);
+    toast.error("Erro ao processar. Tente por email.");
+  } finally {
+    setIsLoadingWhatsApp(false);
+  }
+};
+```
+
+---
+
+## Configuracao Necessaria no Stripe
+
+Para que o fluxo funcione:
+
+1. Acesse: `Stripe Dashboard > Payment Links`
+2. Edite o link `cNi28s2PEa2Q6aD9wU8so03`
+3. Em "After payment", configure:
+   - **Redirect URL**: `https://canvaviagem.lovable.app/pos-pagamento?source=checkout`
 
 ---
 
@@ -237,8 +352,17 @@ ACESSO COMPLETO
 
 | Antes | Depois |
 |-------|--------|
-| Botao tenta adivinhar provedor de email | Nenhuma suposicao - usuario abre seu proprio email |
-| Fallback para Gmail se nao reconhece | Funciona para qualquer provedor |
-| Confuso para usuarios de Protonmail, iCloud, corporativos | Universal |
-| Complexidade desnecessaria | Simples e direto |
+| WhatsApp dependia da Zaia responder | WhatsApp abre com link pronto na mensagem |
+| Pixels disparavam em qualquer acesso | Pixels disparam apenas com `?source=checkout` |
+| Conversao podia ser duplicada | Conversao rastreada uma unica vez |
+| Usuario dependia de servico externo | Usuario tem controle total do link |
+
+---
+
+## Criterios de Aceitacao
+
+- [ ] Pixels Purchase/Subscribe disparam somente com `?source=checkout`
+- [ ] Botao "Receber no WhatsApp" gera Magic Link e abre WhatsApp com link pronto
+- [ ] Usuario pode clicar no link do WhatsApp e acessar a plataforma
+- [ ] Payment Link do Stripe redireciona para `/pos-pagamento?source=checkout`
 
