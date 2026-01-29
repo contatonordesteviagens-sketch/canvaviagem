@@ -22,6 +22,7 @@ const PosPagamento = () => {
   const [isLoadingWhatsApp, setIsLoadingWhatsApp] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [tracked, setTracked] = useState(false);
+  const [sentVia, setSentVia] = useState<'email' | 'whatsapp' | null>(null);
 
   // Auto-fill name and email from URL parameters
   useEffect(() => {
@@ -94,6 +95,7 @@ const PosPagamento = () => {
       }
 
       setMagicLinkSent(true);
+      setSentVia('email');
       toast.success("Link de acesso enviado! Verifique seu email.");
     } catch (error) {
       console.error("Error sending magic link:", error);
@@ -136,23 +138,16 @@ const PosPagamento = () => {
         },
       });
 
-      if (error || !data?.success || !data?.magicLink) {
-        toast.error("Erro ao gerar link. Tente por email.");
-        console.error("WhatsApp error:", error || data?.error);
-        return;
-      }
+    if (error || !data?.success || !data?.magicLink) {
+      toast.error("Erro ao gerar link. Tente por email.");
+      console.error("WhatsApp error:", error || data?.error);
+      return;
+    }
 
-      // Abrir WhatsApp com o Magic Link já na mensagem
-      const whatsappMessage = encodeURIComponent(
-        `Olá! Sou ${name.trim()} e acabei de adquirir o Canva Viagem!\n\n` +
-        `Meu link de acesso:\n${data.magicLink}\n\n` +
-        `Clique no link acima para entrar na plataforma!`
-      );
-      const whatsappUrl = `https://wa.me/${cleanPhone(phone)}?text=${whatsappMessage}`;
-      
-      window.open(whatsappUrl, "_blank");
-      toast.success("WhatsApp aberto com seu link de acesso!");
-      setMagicLinkSent(true);
+    // Apenas mostrar confirmação na página (sem redirecionar para WhatsApp)
+    setMagicLinkSent(true);
+    setSentVia('whatsapp');
+    toast.success("Link de acesso gerado! Verifique seu WhatsApp.");
     } catch (error) {
       console.error("Error generating WhatsApp link:", error);
       toast.error("Erro ao processar. Tente por email.");
@@ -323,12 +318,27 @@ const PosPagamento = () => {
           ) : (
             <div className="space-y-4">
               <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                <p className="text-green-800 dark:text-green-200 font-medium">
-                  ✉️ Link enviado para {email}
-                </p>
-                <p className="text-green-600 dark:text-green-400 text-sm mt-1">
-                  Verifique sua caixa de entrada e spam. O link expira em 1 hora.
-                </p>
+                {sentVia === 'whatsapp' ? (
+                  <>
+                    <p className="text-green-800 dark:text-green-200 font-medium flex items-center gap-2">
+                      <Phone className="h-5 w-5" />
+                      Link enviado para seu WhatsApp!
+                    </p>
+                    <p className="text-green-600 dark:text-green-400 text-sm mt-1">
+                      Verifique seu WhatsApp e clique no link de acesso. O link expira em 1 hora.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-green-800 dark:text-green-200 font-medium flex items-center gap-2">
+                      <Mail className="h-5 w-5" />
+                      Link enviado para {email}
+                    </p>
+                    <p className="text-green-600 dark:text-green-400 text-sm mt-1">
+                      Verifique sua caixa de entrada e spam. O link expira em 1 hora.
+                    </p>
+                  </>
+                )}
               </div>
               
               <Button 
@@ -345,7 +355,7 @@ const PosPagamento = () => {
                 ) : (
                   <>
                     <RefreshCw className="mr-2 h-4 w-4" />
-                    Reenviar Link
+                    Reenviar Link por Email
                   </>
                 )}
               </Button>
