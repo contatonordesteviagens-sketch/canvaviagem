@@ -1,21 +1,24 @@
 import { Bot, Image, GraduationCap, Heart, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CategoryType } from "./CategoryNav";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface BottomNavProps {
   activeCategory: CategoryType;
   onCategoryChange: (category: CategoryType) => void;
 }
 
-const navItems: { category: CategoryType | "home"; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { category: "home", label: "Início", icon: Home },
-  { category: "tools", label: "IA", icon: Bot },
-  { category: "feed", label: "Artes", icon: Image },
-  { category: "videoaula", label: "Aula", icon: GraduationCap },
-  { category: "favorites", label: "Favoritos", icon: Heart },
-];
-
 export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) => {
+  const { t } = useLanguage();
+
+  const navItems: { category: CategoryType | "home"; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { category: "home", label: t('nav.home'), icon: Home },
+    { category: "tools", label: t('nav.ai'), icon: Bot },
+    { category: "feed", label: t('nav.arts'), icon: Image },
+    { category: "videoaula", label: t('nav.class'), icon: GraduationCap },
+    { category: "favorites", label: t('nav.favorites'), icon: Heart },
+  ];
+
   const handleTabClick = (category: CategoryType | "home") => {
     // Scroll to top when changing tabs
     window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface HeroBannerProps {
   searchValue: string;
@@ -7,6 +8,8 @@ interface HeroBannerProps {
 }
 
 export const HeroBanner = ({ searchValue, onSearchChange }: HeroBannerProps) => {
+  const { t } = useLanguage();
+
   return (
     <div className="relative overflow-hidden rounded-3xl mb-6">
       {/* Gradient Background */}
@@ -25,7 +28,7 @@ export const HeroBanner = ({ searchValue, onSearchChange }: HeroBannerProps) => 
         {/* Content */}
         <div className="relative z-10 text-center space-y-6">
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white leading-tight tracking-tight">
-            O que você vai criar hoje?
+            {t('hero.title')}
           </h1>
           
           {/* Glassmorphism Search Bar */}
@@ -34,7 +37,7 @@ export const HeroBanner = ({ searchValue, onSearchChange }: HeroBannerProps) => 
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Busque conteúdo seu ou do Canva"
+                placeholder={t('hero.searchPlaceholder')}
                 value={searchValue}
                 onChange={(e) => onSearchChange(e.target.value)}
                 className="w-full pl-12 pr-4 h-14 rounded-full bg-white shadow-lg border-0 text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-white/50"

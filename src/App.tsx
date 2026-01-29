@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useTrackUtm } from "@/hooks/useTrackUtm";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
 import Calendar from "./pages/Calendar";
 import Auth from "./pages/Auth";
@@ -40,38 +41,40 @@ const App = () => (
     <ThemeProvider>
       <TooltipProvider>
         <AuthProvider>
-          <Toaster />
-          <Sonner />
-        <BrowserRouter>
-          <UtmTracker />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/auth/verify" element={<AuthVerify />} />
-            <Route path="/planos" element={<Planos />} />
-            <Route path="/sucesso" element={<Sucesso />} />
-            <Route path="/obrigado" element={<Obrigado />} />
-            <Route path="/pos-pagamento" element={<PosPagamento />} />
-            <Route path="/gestao" element={<Gestao />} />
-            <Route path="/termos" element={<Termos />} />
-            <Route path="/privacidade" element={<Privacidade />} />
-            <Route path="/proximo-nivel" element={<ProximoNivel />} />
-            <Route path="/admin-login" element={<AdminLogin />} />
-            
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="marketing" element={<Marketing />} />
-              <Route path="content" element={<ContentManager />} />
-              <Route path="captions" element={<CaptionsManager />} />
-              <Route path="tools" element={<ToolsManager />} />
-            </Route>
-            
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+          <LanguageProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <UtmTracker />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/calendar" element={<Calendar />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/auth/verify" element={<AuthVerify />} />
+                <Route path="/planos" element={<Planos />} />
+                <Route path="/sucesso" element={<Sucesso />} />
+                <Route path="/obrigado" element={<Obrigado />} />
+                <Route path="/pos-pagamento" element={<PosPagamento />} />
+                <Route path="/gestao" element={<Gestao />} />
+                <Route path="/termos" element={<Termos />} />
+                <Route path="/privacidade" element={<Privacidade />} />
+                <Route path="/proximo-nivel" element={<ProximoNivel />} />
+                <Route path="/admin-login" element={<AdminLogin />} />
+                
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route path="dashboard" element={<AdminDashboard />} />
+                  <Route path="marketing" element={<Marketing />} />
+                  <Route path="content" element={<ContentManager />} />
+                  <Route path="captions" element={<CaptionsManager />} />
+                  <Route path="tools" element={<ToolsManager />} />
+                </Route>
+                
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </LanguageProvider>
         </AuthProvider>
       </TooltipProvider>
     </ThemeProvider>
