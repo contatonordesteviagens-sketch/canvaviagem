@@ -1,378 +1,486 @@
+Plano de Implementação: Suporte Completo para Espanhol com Checkout Separado
+Resumo do que você pediu
+Remover aba "Próximo Nível" - Apenas na versão em espanhol
+Traduzir todas as páginas - Calendário, Planos (com nova página ES com preços em dólar)
+Checkouts separados - PT: R$ 37,90 (existente) | ES: $9,09 USD (novo link Stripe)
+Gestão aprimorada - Filtros de idioma, ordenação (mais recente padrão), destaques separados por idioma
+Remover filtro "Nacionais" - Apenas na versão em espanhol
+URLs em /es - Não vamos mudar isso (já está usando estado, não URL)
+Remover popup inicial - Permitir navegação livre, popup só ao clicar para usar conteúdo, com botão de checkout por idioma
+Dados Fornecidos
+Idioma	Preço	Link Stripe	Product ID
+Português	R$ 37,90/mês	https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00	(existente)
+Espanhol	$9,09 USD	https://buy.stripe.com/bJedRa3TIej6cz15gE8so04	prod_TsnHjECj482iVM
+Fase 1: Remover "Próximo Nível" em Espanhol
+Arquivo: 
+src/components/Header.tsx
 
-# Implementation Plan: Spanish Language Support with Priority Ordering
+Mudança:
 
-## Overview
+O link "Próximo Nível" só aparece quando language === 'pt'
+No mobile e desktop, condicionalmente renderizar com base no idioma
+// Antes (desktop, linha ~179-186):
+<NavLink to="/proximo-nivel">...</NavLink>
+// Depois:
+{language === 'pt' && (
+  <NavLink to="/proximo-nivel">...</NavLink>
+)}
+O mesmo para a versão mobile (linhas ~254-263).
 
-This plan implements a comprehensive internationalization (i18n) system for Canva Viagem, adding Spanish (`es`) language support alongside Portuguese (`pt`). The key strategy is **priority ordering, not filtering** - all content remains visible regardless of language selection, but content matching the selected language appears first.
+Fase 2: Traduzir Página de Planos + Checkout Separado
+2.1 Atualizar Traduções
+Arquivo: src/lib/translations.ts
 
----
+Novas chaves para Planos (ES):
 
-## Core Strategy Summary
+// Preço atualizado para dólar
+'plans.price': '$9,09',
+'plans.period': '/mes',
+'plans.currency': 'USD',
+'plans.priceOriginal': '$19,90',
+// Novos textos para versão ES
+'plans.heroTitle': '¡VENDE MÁS VIAJES TODO EL AÑO!',
+'plans.heroSubtitle': 'Accede a +250 videos de viajes y publica en 2 minutos',
+'plans.badgeOffer': 'OFERTA EXCLUSIVA',
+'plans.lessThanPerVideo': 'Menos de $0,05 por video',
+'plans.approvedAgencies': 'Aprobado por +500 Agencias',
+// ... demais textos da página Planos
+2.2 Modificar Página de Planos
+Arquivo: 
+src/pages/Planos.tsx
 
-| User Action | UI Effect | Content Effect |
-|------------|-----------|----------------|
-| Select 🇧🇷 PT | All labels in Portuguese | PT content first, then ES, then EN, then null |
-| Select 🇪🇸 ES | All labels in Spanish | ES content first, then PT, then EN, then null |
+Mudanças principais:
 
-**Result**: ALL 275+ items always visible, just reordered by language priority.
+Importar useLanguage:
+import { useLanguage } from "@/contexts/LanguageContext";
+const { language, t } = useLanguage();
+Checkout condicional por idioma:
+// Links de checkout
+const STRIPE_PAYMENT_LINK_PT = "https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00";
+const STRIPE_PAYMENT_LINK_ES = "https://buy.stripe.com/bJedRa3TIej6cz15gE8so04";
+// Na função handleCheckout:
+const checkoutLink = language === 'es' 
+  ? STRIPE_PAYMENT_LINK_ES 
+  : STRIPE_PAYMENT_LINK_PT;
+// Track com moeda correta
+trackInitiateCheckout(
+  language === 'es' ? 9.09 : 37.90, 
+  language === 'es' ? 'USD' : 'BRL'
+);
+Preços dinâmicos na UI:
+// Antes: <span>R$ 37,90</span>
+// Depois:
+<span>{t('plans.price')}</span>
+<span>{t('plans.period')}</span>
+// Preço riscado (antes de desconto)
+// PT: de R$ 197,00
+// ES: de $19,90
+Traduzir todos os textos estáticos:
+Hero section
+Benefícios (benefits array)
+FAQs
+Botões CTA
+Badges de prova social
+Fase 3: Traduzir Página do Calendário
+Arquivo: 
+src/pages/Calendar.tsx
 
----
+Mudanças:
 
-## Current State Analysis
+Importar useLanguage:
+import { useLanguage } from "@/contexts/LanguageContext";
+const { t, language } = useLanguage();
+Traduzir nomes dos meses:
+const monthNames = language === 'es' 
+  ? ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+  : ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+     "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+Traduzir dias da semana:
+const dayNames = language === 'es'
+  ? ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
+  : ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+Traduzir textos estáticos:
+Título: "Calendário de Postagens" → "Calendario de Publicaciones"
+"Hoje" → "Hoy"
+"Agendado" → "Programado"
+"Sugestão automática" → "Sugerencia automática"
+Modal de dia: traduzir labels
+Fase 4: Remover Filtro "Nacionais" em Espanhol
+Arquivo: 
+src/pages/Index.tsx
 
-### Database Schema Status
+Mudança:
 
-| Table | `language` Column | Action Needed |
-|-------|-------------------|---------------|
-| `content_items` | ✅ Exists | None |
-| `captions` | ❌ Missing | Add column |
-| `marketing_tools` | ❌ Missing | Add column |
+Importar idioma e filtrar array:
+import { useLanguage } from "@/contexts/LanguageContext";
+const { language, t } = useLanguage();
+// Filtros condicionais
+const videoFilters = language === 'es'
+  ? [
+      { id: 'todos' as const, label: t('filter.all') },
+      { id: 'internacionais' as const, label: t('filter.international') },
+      { id: 'favoritos' as const, label: '⭐ ' + t('category.favorites') },
+    ]
+  : [
+      { id: 'todos' as const, label: t('filter.all') },
+      { id: 'nacionais' as const, label: t('filter.national') },
+      { id: 'internacionais' as const, label: t('filter.international') },
+      { id: 'favoritos' as const, label: '⭐ ' + t('category.favorites') },
+    ];
+Ajustar estado inicial:
+// Se usuário está em ES e tinha 'nacionais' selecionado, voltar para 'todos'
+useEffect(() => {
+  if (language === 'es' && videoFilter === 'nacionais') {
+    setVideoFilter('todos');
+  }
+}, [language]);
+Fase 5: Gestão Aprimorada com Filtros de Idioma
+5.1 Atualizar ContentSection
+Arquivo: 
+src/components/gestao/ContentSection.tsx
 
-### Files to Create (4 new files)
+Novas funcionalidades:
 
-| File | Purpose |
-|------|---------|
-| `src/contexts/LanguageContext.tsx` | Language state + localStorage + translation helper |
-| `src/lib/translations.ts` | Complete PT/ES translation dictionary |
-| Migration SQL | Add `language` column to missing tables |
+Adicionar filtro de idioma:
+const [languageFilter, setLanguageFilter] = useState<"all" | "pt" | "es">("all");
+// Componente de filtro
+<Select value={languageFilter} onValueChange={(v) => setLanguageFilter(v)}>
+  <SelectTrigger className="w-36">
+    <Globe className="w-4 h-4 mr-2" />
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="all">Todos idiomas</SelectItem>
+    <SelectItem value="pt">🇧🇷 Português</SelectItem>
+    <SelectItem value="es">🇪🇸 Espanhol</SelectItem>
+  </SelectContent>
+</Select>
+Aplicar filtro nos itens:
+const filterByLanguage = <T extends { language?: string | null }>(items: T[]): T[] => {
+  if (languageFilter === "all") return items;
+  return items.filter(item => (item.language || 'pt') === languageFilter);
+};
+Alterar ordenação padrão para "mais recentes":
+// Antes: const [sortOrder, setSortOrder] = useState<SortOrder>("custom");
+// Depois:
+const [sortOrder, setSortOrder] = useState<SortOrder>("recent");
+5.2 Seção de Destaques por Idioma
+Arquivo: 
+src/components/gestao/ContentSection.tsx
 
-### Files to Modify (9 files)
+Nova seção de Destaques com abas por idioma:
 
-| File | Changes |
-|------|---------|
-| `src/App.tsx` | Wrap with LanguageProvider |
-| `src/hooks/useContent.ts` | Add language-aware ordering |
-| `src/components/Header.tsx` | Add language switcher + translate labels |
-| `src/pages/Index.tsx` | Translate section headers, buttons, filters |
-| `src/pages/Planos.tsx` | Translate pricing, benefits, FAQs |
-| `src/pages/Auth.tsx` | Translate form labels, messages |
-| `src/components/canva/HeroBanner.tsx` | Accept translated props |
-| `src/components/canva/CategoryNav.tsx` | Accept translated labels |
-| `src/components/canva/BottomNav.tsx` | Translate nav labels |
+// Destaques separados por idioma
+const featuredPT = useMemo(() => 
+  contentItems.filter(item => item.is_featured && (item.language || 'pt') === 'pt'),
+  [contentItems]
+);
+const featuredES = useMemo(() => 
+  contentItems.filter(item => item.is_featured && item.language === 'es'),
+  [contentItems]
+);
+// UI com tabs
+<Tabs defaultValue="pt">
+  <TabsList>
+    <TabsTrigger value="pt">🇧🇷 Destaques PT ({featuredPT.length}/10)</TabsTrigger>
+    <TabsTrigger value="es">🇪🇸 Destaques ES ({featuredES.length}/10)</TabsTrigger>
+  </TabsList>
+  <TabsContent value="pt">
+    {/* Grid de destaques PT */}
+  </TabsContent>
+  <TabsContent value="es">
+    {/* Grid de destaques ES */}
+  </TabsContent>
+</Tabs>
+5.3 Adicionar campo de idioma no modal de criação
+Arquivo: 
+src/components/gestao/CreateItemModal.tsx
 
----
+Adicionar seletor de idioma:
 
-## Phase 1: Database Migration
+<Select value={language} onValueChange={setLanguage}>
+  <SelectTrigger>
+    <SelectValue placeholder="Idioma" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="pt">🇧🇷 Português</SelectItem>
+    <SelectItem value="es">🇪🇸 Espanhol</SelectItem>
+  </SelectContent>
+</Select>
+Fase 6: Atualizar Edge Function de Checkout (Opcional)
+Arquivo: 
+supabase/functions/create-checkout/index.ts
 
-Add `language` column to `captions` and `marketing_tools` tables:
+Se quiser usar checkout via edge function para ES:
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│  ALTER TABLE captions                                           │
-│    ADD COLUMN language TEXT DEFAULT 'pt';                       │
-│                                                                 │
-│  ALTER TABLE marketing_tools                                    │
-│    ADD COLUMN language TEXT DEFAULT 'pt';                       │
-│                                                                 │
-│  -- Update existing rows to 'pt'                               │
-│  UPDATE captions SET language = 'pt' WHERE language IS NULL;    │
-│  UPDATE marketing_tools SET language = 'pt'                     │
-│    WHERE language IS NULL;                                      │
-│                                                                 │
-│  -- Index for performance                                       │
-│  CREATE INDEX idx_captions_language ON captions(language);      │
-│  CREATE INDEX idx_marketing_tools_language                      │
-│    ON marketing_tools(language);                                │
-└─────────────────────────────────────────────────────────────────┘
-```
+// Receber idioma do body
+const { language = 'pt' } = await req.json();
+// Price IDs por idioma
+const PRICE_IDS = {
+  pt: "price_1SnPjZLXUoWoiE4TWVWEP6TZ", // R$ 37,90
+  es: "price_XXXXXXXX", // $9.09 USD - você precisa criar o Price ID
+};
+const priceId = PRICE_IDS[language] || PRICE_IDS.pt;
+// Criar sessão com o price ID correto
+const session = await stripe.checkout.sessions.create({
+  line_items: [{ price: priceId, quantity: 1 }],
+  // ...
+});
+Nota: Como você forneceu um link de pagamento direto do Stripe, podemos usar ele diretamente no frontend sem precisar modificar a edge function.
 
----
+Fase 7: Remover Popup Inicial e Bloquear ao Uso
+7.1 Comportamento Atual vs Novo
+Estado Atual	Novo Comportamento
+Popup aparece na tela inicial para não-assinantes	❌ Remover popup inicial
+Bloqueia acesso imediato	✅ Permitir navegação livre no app
+Não há popup ao clicar em ações	✅ Mostrar popup APENAS ao tentar usar conteúdo
+Sem botão de checkout no popup	✅ Adicionar botão de checkout por idioma
+7.2 Lógica do Novo Popup
+Trigger para mostrar popup:
 
-## Phase 2: Language Infrastructure
+Usuário NÃO assinante clica em:
+"Copiar" legenda
+"Usar Template" (abrir no Canva)
+"Baixar" vídeo/recurso
+Qualquer ferramenta de marketing
+Qualquer ação que use conteúdo premium
+Conteúdo do popup por idioma:
 
-### New File: `src/contexts/LanguageContext.tsx`
+Idioma	Título	Descrição	Botão
+PT	"Conteúdo Exclusivo"	"Este conteúdo é exclusivo para assinantes Premium"	"Assinar Premium - R$ 37,90/mês" → Link PT
+ES	"Contenido Exclusivo"	"Este contenido es exclusivo para suscriptores Premium"	"Suscribirse Premium - $9,09/mes" → Link ES
+7.3 Modificações de Código
+Arquivo: 
+src/pages/Index.tsx
 
-**Features:**
-- Type-safe `Language` type: `'pt' | 'es'`
-- localStorage persistence (default: `'pt'`)
-- `setLanguage(lang)` updates state + saves to localStorage
-- `t(key)` translation helper with fallback chain: ES → PT → key
+Mudanças:
 
-**Implementation Logic:**
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│  On Mount:                                                      │
-│    const stored = localStorage.getItem('language');             │
-│    return stored === 'es' ? 'es' : 'pt'; // Validated fallback  │
-│                                                                 │
-│  On Language Change:                                            │
-│    setLanguage(newLang);                                        │
-│    localStorage.setItem('language', newLang);                   │
-│                                                                 │
-│  Translation Fallback:                                          │
-│    t('key') → ES[key] || PT[key] || key                        │
-└─────────────────────────────────────────────────────────────────┘
-```
+Remover PromoPopup da renderização inicial:
+// Antes (linha ~640-650):
+<PromoPopup 
+  isOpen={showPromoPopup}
+  onClose={() => setShowPromoPopup(false)}
+/>
+// REMOVER completamente da página inicial
+Adicionar PremiumGate com checkout por idioma:
+import { useLanguage } from "@/contexts/LanguageContext";
+// No componente Index:
+const { language } = useLanguage();
+const [showPremiumGate, setShowPremiumGate] = useState(false);
+const [gateAction, setGateAction] = useState<string>('');
+// Função para verificar e bloquear ação
+const handlePremiumAction = (action: string, callback: () => void) => {
+  if (!subscription.subscribed) {
+    setGateAction(action);
+    setShowPremiumGate(true);
+    return;
+  }
+  callback();
+};
+// Renderizar PremiumGate com checkout
+<PremiumGate
+  isOpen={showPremiumGate}
+  onClose={() => setShowPremiumGate(false)}
+  checkoutUrl={
+    language === 'es' 
+      ? 'https://buy.stripe.com/bJedRa3TIej6cz15gE8so04'
+      : 'https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00'
+  }
+  language={language}
+/>
+Aplicar verificação em todas as ações:
+// Exemplo: botão "Copiar" de legenda
+<Button onClick={() => handlePremiumAction('copy_caption', () => {
+  navigator.clipboard.writeText(caption.text);
+  toast.success("Legenda copiada!");
+})}>
+  Copiar
+</Button>
+// Exemplo: link "Usar Template"
+<a onClick={(e) => {
+  if (!subscription.subscribed) {
+    e.preventDefault();
+    handlePremiumAction('use_template', () => {});
+  }
+}} href={item.url}>
+  Usar Template
+</a>
+Arquivo: 
+src/components/PremiumGate.tsx
 
-### New File: `src/lib/translations.ts`
+Atualizar componente para aceitar checkout por idioma:
 
-Complete dictionary with 100+ keys organized by section:
-
-| Section | Example Keys | Count |
-|---------|-------------|-------|
-| Header | `header.home`, `header.login`, `header.logout` | ~12 |
-| Hero | `hero.title`, `hero.subtitle`, `hero.searchPlaceholder` | ~5 |
-| Categories | `category.videos`, `category.feed`, `category.stories` | ~8 |
-| Sections | `section.videos.title`, `section.captions.subtitle` | ~20 |
-| Filters | `filter.all`, `filter.national`, `filter.international` | ~5 |
-| Buttons | `button.showMore`, `button.copy`, `button.copied` | ~10 |
-| Auth | `auth.title`, `auth.sendLink`, `auth.checkEmail` | ~15 |
-| Plans | `plans.title`, `plans.price`, `plans.benefits.*` | ~25 |
-| Empty States | `favorites.empty.title`, `content.loading` | ~10 |
-
----
-
-## Phase 3: Data Fetching with Priority Ordering
-
-### Modify: `src/hooks/useContent.ts`
-
-**Pattern for ALL hooks** (client-side ordering):
-
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│  const { language } = useLanguage();                            │
-│                                                                 │
-│  queryKey: ["content-items", type, featuredOnly, language]      │
-│                                                                 │
-│  // After fetching, sort by language priority:                  │
-│  const ordered = data.sort((a, b) => {                         │
-│    const aMatch = a.language === language;                     │
-│    const bMatch = b.language === language;                     │
-│    if (aMatch && !bMatch) return -1;                           │
-│    if (!aMatch && bMatch) return 1;                            │
-│    // Tie-breaker: created_at DESC                             │
-│    return new Date(b.created_at) - new Date(a.created_at);     │
-│  });                                                            │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**Hooks to update:**
-- `useContentItems`
-- `useFeaturedItems`
-- `useHighlightedItems`
-- `useVideoTemplates`
-- `useNewestItemIds`
-- `useCaptions`
-- `useMarketingTools`
-
-**TypeScript interface updates:**
-- Add `language?: string | null` to `Caption` interface
-- Add `language?: string | null` to `MarketingTool` interface
-
----
-
-## Phase 4: App Structure
-
-### Modify: `src/App.tsx`
-
-**No route duplication needed** - language is state-based, not URL-based.
-
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│  <QueryClientProvider client={queryClient}>                     │
-│    <ThemeProvider>                                              │
-│      <TooltipProvider>                                          │
-│        <AuthProvider>                                           │
-│          <LanguageProvider> ← ADD THIS                          │
-│            <Toaster />                                          │
-│            <BrowserRouter>                                      │
-│              <Routes>                                           │
-│                {/* Routes stay EXACTLY the same */}             │
-│              </Routes>                                          │
-│            </BrowserRouter>                                     │
-│          </LanguageProvider>                                    │
-│        </AuthProvider>                                          │
-│      </TooltipProvider>                                         │
-│    </ThemeProvider>                                             │
-│  </QueryClientProvider>                                         │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Phase 5: UI Component Updates
-
-### Modify: `src/components/Header.tsx`
-
-**Changes:**
-1. Import `useLanguage` hook
-2. Add language switcher button (flag toggle)
-3. Translate all navigation labels
-4. Translate login/logout text
-5. Translate content category dropdown
-
-**Language Switcher Design:**
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│  Desktop (in nav bar):                                          │
-│  ┌──────────────┐                                               │
-│  │  🇧🇷 PT ▾    │  ← Dropdown or toggle button                  │
-│  └──────────────┘                                               │
-│                                                                 │
-│  Mobile (in Sheet):                                             │
-│  ┌────────────────────────────────────┐                         │
-│  │  🌐 Idioma                          │                         │
-│  │  🇧🇷 Português  |  🇪🇸 Español       │                         │
-│  └────────────────────────────────────┘                         │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Modify: `src/pages/Index.tsx`
-
-**Sections to translate:**
-- Video section header: "Vídeos Reels Editáveis" → "Videos Reels Editables"
-- Feed section: "Arte para Agência de Viagens" → "Arte para Agencia de Viajes"
-- Stories section: "Stories Semanais" → "Stories Semanales"
-- Captions section: "Legendas Prontas" → "Subtítulos Listos"
-- Downloads section: "Downloads de Vídeos" → "Descargas de Videos"
-- Tools section: "Ferramentas de Marketing" → "Herramientas de Marketing"
-- Favorites empty state
-- Filter chips: "Todos", "Nacionais", "Internacionais"
-- Buttons: "Ver mais", "Mostrar menos"
-
-### Modify: `src/pages/Planos.tsx`
-
-**Sections to translate:**
-- Page title and hero text
-- Benefits list (10 items)
-- FAQ questions and answers
-- CTA buttons
-- Subscription status messages
-- Price display (keep R$ currency)
-
-### Modify: `src/pages/Auth.tsx`
-
-**Elements to translate:**
-- Page title and subtitle
-- Email field label and placeholder
-- Send magic link button
-- Success message with email confirmation
-- Resend link button
-- Support text
-
-### Modify: Components accepting translated props
-
-| Component | Changes |
-|-----------|---------|
-| `HeroBanner.tsx` | Accept `title`, `placeholder` props or use `useLanguage` |
-| `CategoryNav.tsx` | Accept translated labels via prop or translate internally |
-| `BottomNav.tsx` | Translate nav labels using `useLanguage` |
-| `SectionHeader.tsx` | Already accepts props, no change needed |
-
----
-
-## Phase 6: Edge Cases & Error Handling
-
-### 1. localStorage Unavailable (Safari Private Mode)
-```text
-try {
-  localStorage.setItem('language', newLang);
-} catch {
-  // Fallback: language state still works, just won't persist
-  console.warn('localStorage unavailable');
+interface PremiumGateProps {
+  isOpen: boolean;
+  onClose: () => void;
+  checkoutUrl: string;
+  language: 'pt' | 'es';
 }
-```
+export const PremiumGate = ({ isOpen, onClose, checkoutUrl, language }: PremiumGateProps) => {
+  const translations = {
+    pt: {
+      title: "Conteúdo Exclusivo 🔒",
+      description: "Este conteúdo é exclusivo para assinantes Premium",
+      cta: "Assinar Premium - R$ 37,90/mês",
+      close: "Voltar",
+    },
+    es: {
+      title: "Contenido Exclusivo 🔒",
+      description: "Este contenido es exclusivo para suscriptores Premium",
+      cta: "Suscribirse Premium - $9,09/mes",
+      close: "Volver",
+    }
+  };
+  const t = translations[language];
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold">{t.title}</DialogTitle>
+          <DialogDescription className="text-lg">
+            {t.description}
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="flex flex-col gap-3 mt-4">
+          <Button 
+            onClick={() => window.open(checkoutUrl, '_blank')}
+            size="lg"
+            className="w-full"
+          >
+            {t.cta}
+          </Button>
+          
+          <Button 
+            onClick={onClose}
+            variant="ghost"
+            size="lg"
+          >
+            {t.close}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+Arquivo: src/components/canva/VideoTemplateCard.tsx
 
-### 2. Missing Translation Key
-```text
-t('missing.key')
-  → Check ES translations
-  → Fallback to PT translations  
-  → Return key itself (helps debugging)
-```
+Bloquear clique em card de vídeo:
 
-### 3. Database Column Missing (Before Migration)
-```text
-// In hooks, wrap ordering logic in try-catch
-// If language column doesn't exist, return data with default ordering
-```
+<Card 
+  onClick={() => {
+    if (!subscription.subscribed) {
+      onPremiumRequired?.();
+      return;
+    }
+    window.open(item.url, '_blank');
+  }}
+  className="cursor-pointer hover:shadow-lg transition-shadow"
+>
+  {/* ... conteúdo do card */}
+</Card>
+7.4 Componentes a Modificar
+Componente	Tipo de Bloqueio	Ação Premium
+VideoTemplateCard.tsx	Clique no card	Abrir template no Canva
+CaptionCard.tsx	Botão "Copiar"	Copiar texto da legenda
+ToolCard.tsx	Clique no card	Acessar ferramenta
+DownloadCard.tsx	Botão "Baixar"	Download de vídeo
+FeedCard.tsx	Clique no card	Abrir arte no Canva
+StoryCard.tsx	Clique no card	Abrir story no Canva
+7.5 Adicionar Traduções para o Popup
+Arquivo: src/lib/translations.ts
 
-### 4. All Content is One Language
-- No visual change - all items shown in default order
-- Priority ordering has no effect (all same priority)
+// Adicionar chaves de premium gate
+pt: {
+  // ... chaves existentes
+  'premium.title': 'Conteúdo Exclusivo 🔒',
+  'premium.description': 'Este conteúdo é exclusivo para assinantes Premium',
+  'premium.cta': 'Assinar Premium - R$ 37,90/mês',
+  'premium.close': 'Voltar',
+},
+es: {
+  // ... chaves existentes
+  'premium.title': 'Contenido Exclusivo 🔒',
+  'premium.description': 'Este contenido es exclusivo para suscriptores Premium',
+  'premium.cta': 'Suscribirse Premium - $9,09/mes',
+  'premium.close': 'Volver',
+}
+Arquivos a Criar
+Arquivo	Descrição
+Nenhum	Todas as mudanças são em arquivos existentes
+Arquivos a Modificar
+Arquivo	Mudanças
+src/lib/translations.ts	Adicionar ~60 novas chaves (Planos, Calendário, Premium Gate)
+src/components/Header.tsx
+Esconder "Próximo Nível" em ES
+src/pages/Planos.tsx
+Traduzir toda a UI + checkout separado por idioma
+src/pages/Calendar.tsx
+Traduzir meses, dias, labels
+src/pages/Index.tsx
+Remover filtro "Nacionais" em ES + remover PromoPopup inicial + adicionar verificação premium
+src/components/PremiumGate.tsx
+Atualizar para aceitar checkout por idioma
+src/components/canva/VideoTemplateCard.tsx	Bloquear clique para não-assinantes
+src/components/canva/CaptionCard.tsx
+Bloquear botão "Copiar" para não-assinantes
+src/components/canva/ToolCard.tsx
+Bloquear acesso a ferramentas
+src/components/canva/DownloadCard.tsx	Bloquear downloads
+src/components/canva/FeedCard.tsx	Bloquear clique para não-assinantes
+src/components/canva/StoryCard.tsx	Bloquear clique para não-assinantes
+src/components/gestao/ContentSection.tsx
+Filtro de idioma, ordenação padrão "recentes", destaques por idioma
+src/components/gestao/CreateItemModal.tsx
+Campo de seleção de idioma ao criar item
+Resumo Visual das Diferenças PT vs ES
+Feature	Português (PT)	Espanhol (ES)
+Aba "Próximo Nível"	✅ Visível	❌ Oculta
+Filtro "Nacionais"	✅ Visível	❌ Oculto
+Preço	R$ 37,90/mês	$9,09/mês (USD)
+Checkout Link	Link PT existente	Novo link ES
+Moeda no tracking	BRL	USD
+Popup Premium	"Assinar Premium - R$ 37,90"	"Suscribirse Premium - $9,09"
+Ordem de Implementação
+✅ Atualizar translations.ts com novas chaves (Planos, Calendário, Premium)
+✅ Modificar 
+Header.tsx
+ - esconder Próximo Nível em ES
+✅ Modificar 
+Index.tsx
+ - remover filtro Nacionais em ES + remover PromoPopup inicial
+✅ Modificar PremiumGate.tsx - adicionar checkout por idioma
+✅ Modificar cards (VideoTemplate, Caption, Tool, Download, Feed, Story) - bloquear ações premium
+✅ Modificar Planos.tsx - traduzir + checkout separado
+✅ Modificar Calendar.tsx - traduzir interface
+✅ Modificar ContentSection.tsx - filtros de idioma e ordenação
+✅ Modificar CreateItemModal.tsx - campo de idioma
+✅ Testar fluxo completo (navegação livre → clique → popup → checkout)
+Verificação Final
+Comportamento Geral:
 
----
+ Não-assinante pode navegar livremente no app (ver todos os cards, abas, filtros)
+ Popup NÃO aparece na tela inicial
+ Popup aparece APENAS ao clicar para usar conteúdo premium
+Verificação por Idioma:
 
-## Implementation Order
+ PT: Aba "Próximo Nível" visível, filtro "Nacionais" visível
+ ES: Aba "Próximo Nível" oculta, filtro "Nacionais" oculto
+ PT: Popup mostra "R$ 37,90/mês" e link PT
+ ES: Popup mostra "$9,09/mes" e link ES
+ Calendário traduzido corretamente em ambos idiomas
+ Planos traduzidos e preços corretos
+Verificação Premium:
 
-| Step | Task | Dependencies |
-|------|------|--------------|
-| 1 | Database migration | None |
-| 2 | Create `translations.ts` | None |
-| 3 | Create `LanguageContext.tsx` | translations.ts |
-| 4 | Modify `App.tsx` | LanguageContext |
-| 5 | Update TypeScript interfaces in `useContent.ts` | Migration |
-| 6 | Add language ordering to hooks | LanguageContext |
-| 7 | Modify `Header.tsx` | LanguageContext |
-| 8 | Modify `Index.tsx` | LanguageContext |
-| 9 | Modify `Planos.tsx` | LanguageContext |
-| 10 | Modify `Auth.tsx` | LanguageContext |
-| 11 | Update remaining components | LanguageContext |
-| 12 | Test all scenarios | All above |
+ Clicar em "Copiar legenda" → Popup (não-assinante)
+ Clicar em "Usar Template" → Popup (não-assinante)
+ Clicar em "Baixar vídeo" → Popup (não-assinante)
+ Clicar em card de ferramenta → Popup (não-assinante)
+ Assinante pode usar tudo sem popup
+Verificação Admin:
 
----
-
-## Verification Checklist
-
-### Phase 1: Language Toggle
-- [ ] Click 🇧🇷→🇪🇸: All UI text changes to Spanish
-- [ ] Click 🇪🇸→🇧🇷: All UI text changes to Portuguese
-- [ ] Refresh page: Language preference persists
-- [ ] Check localStorage has correct value
-
-### Phase 2: Content Ordering
-- [ ] Select PT: Portuguese content appears first
-- [ ] Select ES: Spanish content (15 items) appears first
-- [ ] Verify ALL 275 items still visible (not filtered)
-- [ ] Verify ordering respects featured flags within language groups
-
-### Phase 3: UI Translation
-- [ ] Header navigation translated
-- [ ] Section headers translated
-- [ ] Buttons translated
-- [ ] Filter chips translated
-- [ ] Empty states translated
-- [ ] Auth page translated
-- [ ] Planos page translated (including FAQs)
-
-### Phase 4: Edge Cases
-- [ ] Missing translation shows PT fallback
-- [ ] localStorage unavailable: Still works (no persistence)
-- [ ] Mobile: Language switcher accessible in hamburger menu
-- [ ] Mobile: BottomNav labels translated
-
-### Phase 5: Performance
-- [ ] Language switch is instant (<100ms)
-- [ ] Content reorders smoothly (no flicker)
-- [ ] React Query cache properly separated by language key
-- [ ] No infinite re-render loops
-
----
-
-## Estimated Effort
-
-| Task | Complexity | Approx. Lines |
-|------|------------|---------------|
-| Database migration | Low | ~15 SQL |
-| translations.ts | Medium | ~350 |
-| LanguageContext.tsx | Medium | ~80 |
-| App.tsx | Low | ~5 |
-| useContent.ts updates | Medium | ~100 |
-| Header.tsx | Medium | ~80 |
-| Index.tsx translations | High | ~150 |
-| Planos.tsx translations | High | ~120 |
-| Auth.tsx translations | Medium | ~60 |
-| Other components | Low | ~50 |
-| **Total** | | **~1,000 lines** |
-
----
-
-## Notes for Future Enhancement
-
-1. **SEO**: Since we're NOT using `/es` routes, basic SEO is simpler. Future enhancement could add `<html lang="...">` and `hreflang` meta tags.
-
-2. **Additional Languages**: The architecture supports adding more languages (EN, FR) by extending the `Language` type and `translations` object.
-
-3. **RTL Support**: Not needed for PT/ES, but the pattern is extensible for Arabic/Hebrew in the future.
-
-4. **Admin Pages**: Remain in Portuguese only (internal use). Can be translated later if needed.
+ Gestão: filtro de idioma funciona
+ Gestão: ordenação padrão é "mais recentes"
+ Gestão: destaques separados por idioma (PT/ES)
+ Ao criar item, pode selecionar idioma
