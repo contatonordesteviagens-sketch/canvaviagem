@@ -1,100 +1,122 @@
 
-# Plano: Corrigir Navegação do Header nas Páginas ES
+# Plano: Atualizar Preço para R$ 29,00
 
-## Problema Identificado
+## Resumo da Mudança
 
-O `Header.tsx` usa links fixos que **sempre apontam para as rotas PT**, independente de qual versão da página o usuário está:
-
-```typescript
-// Linha 104-108 do Header.tsx
-const mainNavItems = [
-  { to: "/", label: t('header.home'), icon: Home },        // ❌ Sempre PT
-  { to: "/calendar", label: t('header.calendar'), icon: Calendar },  // ❌ Sempre PT
-  { to: "/planos", label: t('header.plans'), icon: CreditCard },    // ❌ Sempre PT
-];
-```
-
-**Resultado**: Na página `/es/planos`, clicar em "Inicio" leva para `/` (PT) em vez de `/es` (ES).
+Atualizar o preço da assinatura mensal de **R$ 37,90** para **R$ 29,00**, incluindo:
+- Novo Price ID: `price_1SvPypLXUoWoiE4T9zd9mbfR`
+- Novo link de pagamento PT: `https://buy.stripe.com/8x26oIgGuej656zaAY8so05`
 
 ---
 
-## Solução
+## Arquivos a Serem Modificados
 
-Modificar o `Header.tsx` para:
-1. Detectar se está nas rotas ES (`location.pathname.startsWith('/es')`)
-2. Gerar links dinâmicos baseados no idioma da rota atual
-3. Fazer o logo também navegar para a home correta do idioma
+### 1. Edge Function - Create Checkout
+**Arquivo:** `supabase/functions/create-checkout/index.ts`
 
----
-
-## Mudanças Necessárias
-
-### Arquivo: `src/components/Header.tsx`
-
-**1. Detectar se está na versão ES:**
-```typescript
-const isESRoute = location.pathname.startsWith('/es');
-```
-
-**2. Gerar links dinâmicos baseados na rota:**
-```typescript
-const mainNavItems = [
-  { to: isESRoute ? "/es" : "/", label: t('header.home'), icon: Home },
-  { to: isESRoute ? "/es/calendar" : "/calendar", label: t('header.calendar'), icon: Calendar },
-  { to: isESRoute ? "/es/planos" : "/planos", label: t('header.plans'), icon: CreditCard },
-];
-```
-
-**3. Atualizar o link do logo:**
-```typescript
-<Link to={isESRoute ? "/es" : "/"} className="flex items-center gap-2 ...">
-```
-
-**4. Atualizar handleCategoryClick para navegar para a home correta:**
-```typescript
-const handleCategoryClick = (category: CategoryType) => {
-  const homeRoute = isESRoute ? "/es" : "/";
-  if (!location.pathname.endsWith('/es') && location.pathname !== "/") {
-    navigate(homeRoute, { state: { category } });
-  }
-  onCategoryChange?.(category);
-  setIsOpen(false);
-};
-```
+| Linha | De | Para |
+|-------|-----|------|
+| 22-23 | `// Price ID for the monthly subscription - R$ 37,90/month`<br>`const PRICE_ID = "price_1SnPjZLXUoWoiE4TWVWEP6TZ";` | `// Price ID for the monthly subscription - R$ 29,00/month`<br>`const PRICE_ID = "price_1SvPypLXUoWoiE4T9zd9mbfR";` |
 
 ---
 
-## Resumo das Mudanças
+### 2. Traduções (PT)
+**Arquivo:** `src/lib/translations.ts`
 
-| Arquivo | Mudança |
-|---------|---------|
-| `src/components/Header.tsx` | Detectar rota ES e gerar links dinâmicos (`/es`, `/es/calendar`, `/es/planos`) |
+| Linha | De | Para |
+|-------|-----|------|
+| 100 | `'plans.price': 'R$ 37,90',` | `'plans.price': 'R$ 29,00',` |
+| 104 | `'plans.ctaFinal': 'Começar Agora por R$ 37,90/mês',` | `'plans.ctaFinal': 'Começar Agora por R$ 29,00/mês',` |
+| 109 | `'plans.badge': 'OFERTA EXCLUSIVA - Apenas R$37,90/mês',` | `'plans.badge': 'OFERTA EXCLUSIVA - Apenas R$29,00/mês',` |
+| 163 | `'premium.cta': 'Assinar Premium - R$ 37,90/mês',` | `'premium.cta': 'Assinar Premium - R$ 29,00/mês',` |
 
 ---
 
-## Fluxo Corrigido
+### 3. Página de Planos (PT)
+**Arquivo:** `src/pages/Planos.tsx`
+
+| Linha | De | Para |
+|-------|-----|------|
+| 42 | `pt: "https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00",` | `pt: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",` |
+| 111 | `const price = 37.90;` | `const price = 29.00;` |
+
+---
+
+### 4. Premium Gate (Overlay)
+**Arquivo:** `src/components/PremiumGate.tsx`
+
+| Linha | De | Para |
+|-------|-----|------|
+| 7 | `pt: "https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00",` | `pt: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",` |
+
+---
+
+### 5. Premium Gate Modal
+**Arquivo:** `src/components/PremiumGateModal.tsx`
+
+| Linha | De | Para |
+|-------|-----|------|
+| 8 | `pt: "https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00",` | `pt: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",` |
+| 24 | `price: "R$ 37,90",` | `price: "R$ 29,00",` |
+
+---
+
+### 6. Página Obrigado (Tracking)
+**Arquivo:** `src/pages/Obrigado.tsx`
+
+| Linha | De | Para |
+|-------|-----|------|
+| 18 | `trackPurchase(37.90, 'BRL');` | `trackPurchase(29.00, 'BRL');` |
+| 19 | `trackSubscribe(37.90, 'BRL', 37.90 * 12);` | `trackSubscribe(29.00, 'BRL', 29.00 * 12);` |
+
+---
+
+### 7. Página Pós-Pagamento (Tracking)
+**Arquivo:** `src/pages/PosPagamento.tsx`
+
+| Linha | De | Para |
+|-------|-----|------|
+| 42 | `trackPurchase(37.90, 'BRL');` | `trackPurchase(29.00, 'BRL');` |
+| 43 | `trackSubscribe(37.90, 'BRL', 37.90 * 12);` | `trackSubscribe(29.00, 'BRL', 29.00 * 12);` |
+| 44 | `console.log('[Meta Debug] Purchase & Subscribe events dispatched (R$ 37,90)');` | `console.log('[Meta Debug] Purchase & Subscribe events dispatched (R$ 29,00)');` |
+
+---
+
+### 8. Stripe Webhook - Recovery Email (Opcional)
+**Arquivo:** `supabase/functions/stripe-webhook/index.ts`
+
+| Linha | De | Para |
+|-------|-----|------|
+| 797 | `const checkoutUrl = "https://buy.stripe.com/cNi28s2PEa2Q6aD9wU8so03";` | `const checkoutUrl = "https://buy.stripe.com/8x26oIgGuej656zaAY8so05";` |
+
+---
+
+## Resumo Visual das Mudanças
 
 ```text
-Usuário em /es/planos:
-  ↓
-Clica em "Inicio" no Header
-  ↓
-isESRoute = true (pois pathname começa com /es)
-  ↓
-Link aponta para "/es" (não mais "/")
-  ↓
-Usuário vai para home em Espanhol ✅
+┌─────────────────────────────────────────────────────────────┐
+│                    ANTES → DEPOIS                            │
+├─────────────────────────────────────────────────────────────┤
+│ Preço:          R$ 37,90  →  R$ 29,00                       │
+│ Price ID:       price_1SnP... → price_1SvPyp...             │
+│ Link Stripe PT: buy.stripe.com/5kQ... → buy.stripe.com/8x2..│
+├─────────────────────────────────────────────────────────────┤
+│ Arquivos afetados: 8 arquivos                               │
+│ Modificações totais: ~15 linhas                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Testes Esperados
+## Versão ES (Espanhol)
 
-| Teste | Esperado |
-|-------|----------|
-| Em `/es` clicar em "Planes" | Navega para `/es/planos` |
-| Em `/es` clicar em "Calendario" | Navega para `/es/calendar` |
-| Em `/es/planos` clicar em "Inicio" | Navega para `/es` |
-| Em `/` clicar em "Planos" | Navega para `/planos` (comportamento PT mantido) |
-| Em `/es` clicar no logo | Navega para `/es` |
-| Em `/` clicar no logo | Navega para `/` |
+O preço em dólar ($9,09 USD) e o link ES **não serão alterados** pois esta mudança é específica para o mercado brasileiro (PT).
+
+---
+
+## Após Implementação
+
+Testar o fluxo completo:
+1. Acessar `/planos` e verificar se exibe R$ 29,00
+2. Clicar no botão de checkout e verificar se abre o link correto
+3. Verificar se o rastreamento do Meta Pixel reporta 29.00 BRL
