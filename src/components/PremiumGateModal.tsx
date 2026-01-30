@@ -5,7 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 // Checkout links by language
 const STRIPE_LINKS = {
-  pt: "https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00",
+  pt: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
   es: "https://buy.stripe.com/bJedRa3TIej6cz15gE8so04",
 };
 
@@ -21,7 +21,7 @@ export const PremiumGateModal = ({ isOpen, onClose }: PremiumGateModalProps) => 
     pt: {
       title: "Conteúdo Exclusivo Premium",
       description: "Este recurso é exclusivo para assinantes Premium. Assine agora e tenha acesso ilimitado a todo o conteúdo!",
-      price: "R$ 37,90",
+      price: "R$ 29,00",
       period: "/mês",
       cta: "Assinar Premium Agora",
       close: "Voltar",

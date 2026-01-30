@@ -39,9 +39,9 @@ const PosPagamento = () => {
     if (!tracked && sourceFromUrl === 'checkout') {
       console.log('[Meta Debug] window.fbq exists:', typeof window.fbq !== 'undefined');
       console.log('[Meta Debug] source=checkout detected, tracking conversion');
-      trackPurchase(37.90, 'BRL');
-      trackSubscribe(37.90, 'BRL', 37.90 * 12);
-      console.log('[Meta Debug] Purchase & Subscribe events dispatched (R$ 37,90)');
+      trackPurchase(29.00, 'BRL');
+      trackSubscribe(29.00, 'BRL', 29.00 * 12);
+      console.log('[Meta Debug] Purchase & Subscribe events dispatched (R$ 29,00)');
       setTracked(true);
     } else if (!sourceFromUrl || sourceFromUrl !== 'checkout') {
       console.log('[Meta Debug] No checkout source, skipping pixel tracking');
