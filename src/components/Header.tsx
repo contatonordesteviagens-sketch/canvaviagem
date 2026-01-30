@@ -40,6 +40,9 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
   const { theme, toggleTheme } = useTheme();
   const { t, language } = useLanguage();
 
+  // Detect if we're on ES routes to generate correct navigation links
+  const isESRoute = location.pathname.startsWith('/es');
+
   // Show "Próximo Nível" only for Portuguese
   const showProximoNivel = language === 'pt';
 
@@ -102,9 +105,9 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
   );
 
   const mainNavItems = [
-    { to: "/", label: t('header.home'), icon: Home },
-    { to: "/calendar", label: t('header.calendar'), icon: Calendar },
-    { to: "/planos", label: t('header.plans'), icon: CreditCard },
+    { to: isESRoute ? "/es" : "/", label: t('header.home'), icon: Home },
+    { to: isESRoute ? "/es/calendar" : "/calendar", label: t('header.calendar'), icon: Calendar },
+    { to: isESRoute ? "/es/planos" : "/planos", label: t('header.plans'), icon: CreditCard },
   ];
 
   const proximoNivelItem = {
@@ -125,8 +128,10 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
   ];
 
   const handleCategoryClick = (category: CategoryType) => {
-    if (location.pathname !== "/") {
-      navigate("/", { state: { category } });
+    const homeRoute = isESRoute ? "/es" : "/";
+    const isOnHome = location.pathname === "/" || location.pathname === "/es";
+    if (!isOnHome) {
+      navigate(homeRoute, { state: { category } });
     }
     onCategoryChange?.(category);
     setIsOpen(false);
@@ -135,7 +140,7 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
-        <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <Link to={isESRoute ? "/es" : "/"} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <img 
             src={logoImage} 
             alt="Canva Viagem" 
