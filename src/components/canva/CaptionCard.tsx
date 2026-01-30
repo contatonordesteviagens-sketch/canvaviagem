@@ -9,6 +9,7 @@ interface CaptionCardProps {
   hashtags: string;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
+  onPremiumRequired?: () => void;
 }
 
 export const CaptionCard = ({ 
@@ -17,11 +18,17 @@ export const CaptionCard = ({
   text, 
   hashtags,
   isFavorite = false,
-  onToggleFavorite
+  onToggleFavorite,
+  onPremiumRequired
 }: CaptionCardProps) => {
   const [copied, setCopied] = useState(false);
   
   const handleCopy = async () => {
+    // Check if premium gate should be triggered
+    if (onPremiumRequired) {
+      onPremiumRequired();
+      return;
+    }
     await navigator.clipboard.writeText(`${text}\n\n${hashtags}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);

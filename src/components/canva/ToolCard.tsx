@@ -11,6 +11,7 @@ interface ToolCardProps {
   onClick?: () => void;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
+  onPremiumRequired?: () => void;
 }
 
 export const ToolCard = ({ 
@@ -22,7 +23,8 @@ export const ToolCard = ({
   isNew, 
   onClick,
   isFavorite = false,
-  onToggleFavorite
+  onToggleFavorite,
+  onPremiumRequired
 }: ToolCardProps) => {
   // Generate gradient based on title
   const getGradient = () => {
@@ -39,6 +41,11 @@ export const ToolCard = ({
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    // Check if premium gate should be triggered
+    if (onPremiumRequired) {
+      onPremiumRequired();
+      return;
+    }
     if (onClick) {
       onClick();
     }

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { PremiumGate } from "@/components/PremiumGate";
+import { PremiumGateModal } from "@/components/PremiumGateModal";
 import { ResourceSection } from "@/components/ResourceSection";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles } from "lucide-react";
@@ -54,6 +54,7 @@ const Index = () => {
   const [showAllCaptions, setShowAllCaptions] = useState(false);
   const [videoFilter, setVideoFilter] = useState<VideoFilter>('todos');
   const [activeCategory, setActiveCategory] = useState<CategoryType>('videos');
+  const [showPremiumGate, setShowPremiumGate] = useState(false);
 
   // Video filters - conditionally remove "Nacionais" for Spanish
   const videoFilters = language === 'es'
@@ -109,7 +110,11 @@ const Index = () => {
   // Check if user is subscribed for showing premium content (logged in + active subscription)
   const isSubscribed = user && subscription.subscribed;
 
-  // Destinos nacionais conhecidos
+  // Function to get the premium required callback (only for non-subscribers)
+  const getPremiumCallback = () => {
+    if (isSubscribed) return undefined;
+    return () => setShowPremiumGate(true);
+  };
   const destinosNacionais = [
     'Maragogi', 'Salvador', 'Trancoso', 'Jalapão', 'Foz do Iguaçu', 'Florianópolis',
     'Gramado', 'Natal', 'Fortaleza', 'Pantanal', 'Rio de Janeiro', 'Recife',
@@ -354,6 +359,7 @@ const Index = () => {
                       onClick={() => handleCardClick(template)}
                       isFavorite={isFavorite("content_item", template.id)}
                       onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
+                      onPremiumRequired={getPremiumCallback()}
                     />
                   ))}
                 </div>
@@ -408,6 +414,7 @@ const Index = () => {
                     onClick={() => handleCardClick(template)}
                     isFavorite={isFavorite("content_item", template.id)}
                     onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
+                    onPremiumRequired={getPremiumCallback()}
                   />
                 ))}
               </div>
@@ -441,6 +448,7 @@ const Index = () => {
                           onClick={() => handleCardClick(story)}
                           isFavorite={isFavorite("content_item", story.id)}
                           onToggleFavorite={() => handleToggleFavorite("content_item", story.id)}
+                          onPremiumRequired={getPremiumCallback()}
                         />
                       ))}
                     </div>
@@ -466,6 +474,7 @@ const Index = () => {
                         onClick={() => handleCardClick(template)}
                         isFavorite={isFavorite("content_item", template.id)}
                         onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
+                        onPremiumRequired={getPremiumCallback()}
                       />
                     ))}
                   </div>
@@ -501,6 +510,7 @@ const Index = () => {
                         hashtags={caption.hashtags}
                         isFavorite={isFavorite("caption", caption.id)}
                         onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
+                        onPremiumRequired={getPremiumCallback()}
                       />
                     </div>
                   ))}
@@ -582,6 +592,7 @@ const Index = () => {
                     onClick={() => trackClick('tool', tool.id)}
                     isFavorite={isFavorite("marketing_tool", tool.id)}
                     onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
+                    onPremiumRequired={getPremiumCallback()}
                   />
                 ))}
               </div>
@@ -661,6 +672,7 @@ const Index = () => {
                             onClick={() => handleCardClick(template)}
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
+                            onPremiumRequired={getPremiumCallback()}
                           />
                         ))}
                       </div>
@@ -687,6 +699,7 @@ const Index = () => {
                             onClick={() => handleCardClick(template)}
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
+                            onPremiumRequired={getPremiumCallback()}
                           />
                         ))}
                       </div>
@@ -713,6 +726,7 @@ const Index = () => {
                             onClick={() => handleCardClick(template)}
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
+                            onPremiumRequired={getPremiumCallback()}
                           />
                         ))}
                       </div>
@@ -737,6 +751,7 @@ const Index = () => {
                             hashtags={caption.hashtags}
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
+                            onPremiumRequired={getPremiumCallback()}
                           />
                         ))}
                       </div>
@@ -762,6 +777,7 @@ const Index = () => {
                             description={tool.description || ""}
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
+                            onPremiumRequired={getPremiumCallback()}
                           />
                         ))}
                       </div>
@@ -803,7 +819,7 @@ const Index = () => {
       <Header onCategoryChange={setActiveCategory} />
       
       <main className="container mx-auto px-4 py-4 md:py-6 max-w-7xl">
-        {isSubscribed ? mainContent : <PremiumGate>{mainContent}</PremiumGate>}
+        {mainContent}
       </main>
       
       <Footer />
@@ -812,6 +828,12 @@ const Index = () => {
       <BottomNav 
         activeCategory={activeCategory} 
         onCategoryChange={setActiveCategory} 
+      />
+
+      {/* Premium Gate Modal - triggered by action */}
+      <PremiumGateModal 
+        isOpen={showPremiumGate} 
+        onClose={() => setShowPremiumGate(false)} 
       />
     </div>
   );
