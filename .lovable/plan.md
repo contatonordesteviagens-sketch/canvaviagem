@@ -1,109 +1,105 @@
 
-# Plano FINAL: URLs Independentes por Idioma
+# Plano: Corrigir Sistema de Idiomas (PT como Padrão)
 
-## Problema Atual
-- `/es` e `/pt` usam `LanguageRedirect` que tem problemas de sincronização
-- LanguageSwitcher apenas muda estado, **não muda a URL**
-- Destaques ES não aparecem corretamente por causa de race conditions
+## Problemas Identificados
 
-## Solução: Páginas Duplicadas + URLs Diretas
-
-Esta abordagem é **100% garantida** porque cada página força seu próprio idioma sem depender de redirects.
-
----
-
-## Arquivos a Criar/Modificar
-
-| Arquivo | Ação | Descrição |
-|---------|------|-----------|
-| `src/pages/IndexES.tsx` | **CRIAR** | Cópia de Index.tsx forçando `language='es'` |
-| `src/pages/PlanosES.tsx` | **CRIAR** | Cópia de Planos.tsx com preço USD |
-| `src/pages/CalendarES.tsx` | **CRIAR** | Cópia de Calendar.tsx em espanhol |
-| `src/hooks/useContent.ts` | **MODIFICAR** | Hooks aceitam `forcedLanguage` opcional |
-| `src/components/LanguageSwitcher.tsx` | **MODIFICAR** | Usar `window.location.href` para navegação |
-| `src/App.tsx` | **MODIFICAR** | Adicionar rotas diretas `/es`, `/es/planos`, `/es/calendar` |
+| Problema | Causa | Impacto |
+|----------|-------|---------|
+| PT não é mais o padrão | `IndexES.tsx` salva 'es' no localStorage, que persiste quando volta para `/` | Usuário vê ES mesmo em `/` |
+| Botão PT não funciona | `/` não força idioma PT - depende do localStorage | Fica preso em ES |
+| `/pt` não existe | Rota não definida no App.tsx | Erro 404 |
 
 ---
 
-## Parte 1: Modificar Hooks para Aceitar Idioma Forçado
+## Solução
 
-Os hooks `useFeaturedItems`, `useHighlightedItems`, `useContentItems`, `useCaptions` e `useMarketingTools` serão modificados para aceitar um parâmetro `forcedLanguage` opcional.
+### Lógica Correta
+- Cada página deve **forçar seu próprio idioma** sem depender do localStorage
+- A página PT (`Index.tsx`) deve definir `setLanguage('pt')` igual como `IndexES.tsx` faz com 'es'
+- Adicionar rota `/pt` apontando para `Index.tsx`
 
-Exemplo de mudança:
+---
+
+## Mudanças Necessárias
+
+### 1. Modificar `src/pages/Index.tsx` - Forçar PT
+
+Adicionar `useEffect` que força o idioma PT ao montar a página (igual ao que `IndexES.tsx` faz):
+
 ```typescript
-export const useFeaturedItems = (forcedLanguage?: string) => {
-  const { language: contextLanguage } = useLanguage();
-  const language = forcedLanguage || contextLanguage; // Usa forçado se existir
-  
-  return useQuery({
-    queryKey: ["featured-items", language],
-    // ... resto da query usa `language`
-  });
-};
+// Linha ~51, depois de const { language, t } = useLanguage();
+// Trocar para:
+const { setLanguage, t } = useLanguage();
+
+// Adicionar useEffect após as declarações de estado (após linha ~60):
+useEffect(() => {
+  document.documentElement.lang = 'pt';
+  setLanguage('pt');
+}, [setLanguage]);
 ```
 
----
+### 2. Adicionar Rota `/pt` no `src/App.tsx`
 
-## Parte 2: Criar IndexES.tsx (Home Espanhol)
+Adicionar rota que aponta para a mesma página `Index.tsx`:
 
-Uma cópia de `Index.tsx` que:
-1. Força todos os hooks a usar `'es'`
-2. Define `document.documentElement.lang = 'es'` no mount
-3. Remove filtro "Nacionais" (apenas mostra 'Español', 'Todos', 'Favoritos')
-
-Chamadas dos hooks:
 ```typescript
-const { data: featuredVideos } = useFeaturedItems('es');
-const { data: highlightedItems } = useHighlightedItems('es');
-const { data: videoTemplates } = useContentItems(['video', 'seasonal'], undefined, 'es');
-const { data: captionsData } = useCaptions(undefined, 'es');
-// ... etc
+{/* ROTAS PORTUGUÊS */}
+<Route path="/" element={<Index />} />
+<Route path="/pt" element={<Index />} />  {/* ⭐ ADICIONAR */}
+<Route path="/calendar" element={<Calendar />} />
+<Route path="/pt/calendar" element={<Calendar />} />  {/* ⭐ ADICIONAR */}
+<Route path="/planos" element={<Planos />} />
+<Route path="/pt/planos" element={<Planos />} />  {/* ⭐ ADICIONAR */}
 ```
 
----
+### 3. Atualizar `src/pages/Calendar.tsx` - Forçar PT
 
-## Parte 3: Criar PlanosES.tsx (Planos Espanhol)
+Adicionar a mesma lógica para forçar PT:
 
-Uma cópia de `Planos.tsx` que:
-1. Força `language = 'es'` diretamente
-2. Usa o link de checkout USD: `https://buy.stripe.com/bJedRa3TIej6cz15gE8so04`
-3. Mostra preço: `$9,09/mes`
+```typescript
+useEffect(() => {
+  document.documentElement.lang = 'pt';
+  setLanguage('pt');
+}, [setLanguage]);
+```
 
----
+### 4. Atualizar `src/pages/Planos.tsx` - Forçar PT
 
-## Parte 4: Criar CalendarES.tsx (Calendário Espanhol)
+Adicionar a mesma lógica para forçar PT:
 
-Uma cópia de `Calendar.tsx` que:
-1. Usa nomes de meses/dias em espanhol
-2. Força idioma ES nos textos
+```typescript
+useEffect(() => {
+  document.documentElement.lang = 'pt';
+  setLanguage('pt');
+}, [setLanguage]);
+```
 
----
+### 5. Atualizar `src/components/LanguageSwitcher.tsx` - Melhorar Navegação
 
-## Parte 5: Modificar LanguageSwitcher
-
-Usar navegação direta via `window.location.href` (mais confiável que React Router):
+Atualizar para incluir suporte às novas rotas `/pt`:
 
 ```typescript
 const switchToLanguage = (targetLang: 'pt' | 'es') => {
   const currentPath = window.location.pathname;
+  const searchParams = window.location.search;
   
   if (targetLang === 'es') {
-    // Navegar para versão ES
-    if (currentPath.includes('planos')) {
-      window.location.href = '/es/planos';
-    } else if (currentPath.includes('calendar')) {
-      window.location.href = '/es/calendar';
+    // Navigate to ES version
+    if (currentPath.includes('/planos')) {
+      window.location.href = '/es/planos' + searchParams;
+    } else if (currentPath.includes('/calendar')) {
+      window.location.href = '/es/calendar' + searchParams;
     } else {
-      window.location.href = '/es';
+      window.location.href = '/es' + searchParams;
     }
   } else {
-    // Navegar para versão PT
-    if (currentPath.includes('planos')) {
-      window.location.href = '/planos';
-    } else if (currentPath.includes('calendar')) {
-      window.location.href = '/calendar';
+    // Navigate to PT version - usar /pt para garantir que força o idioma
+    if (currentPath.includes('/planos')) {
+      window.location.href = '/pt/planos' + searchParams;
+    } else if (currentPath.includes('/calendar')) {
+      window.location.href = '/pt/calendar' + searchParams;
     } else {
-      window.location.href = '/';
+      window.location.href = '/pt' + searchParams;
     }
   }
 };
@@ -111,51 +107,63 @@ const switchToLanguage = (targetLang: 'pt' | 'es') => {
 
 ---
 
-## Parte 6: Atualizar Rotas no App.tsx
+## Resumo das Mudanças
 
-Adicionar rotas diretas para as páginas ES:
+| Arquivo | Ação | Mudança |
+|---------|------|---------|
+| `src/pages/Index.tsx` | **MODIFICAR** | Adicionar `useEffect` que força `setLanguage('pt')` |
+| `src/pages/Calendar.tsx` | **MODIFICAR** | Adicionar `useEffect` que força `setLanguage('pt')` |
+| `src/pages/Planos.tsx` | **MODIFICAR** | Adicionar `useEffect` que força `setLanguage('pt')` |
+| `src/App.tsx` | **MODIFICAR** | Adicionar rotas `/pt`, `/pt/calendar`, `/pt/planos` |
+| `src/components/LanguageSwitcher.tsx` | **MODIFICAR** | Navegar para `/pt` em vez de `/` |
 
-```typescript
-import IndexES from "./pages/IndexES";
-import PlanosES from "./pages/PlanosES";
-import CalendarES from "./pages/CalendarES";
+---
 
-// Dentro de <Routes>:
-{/* ROTAS PORTUGUÊS */}
-<Route path="/" element={<Index />} />
-<Route path="/planos" element={<Planos />} />
-<Route path="/calendar" element={<Calendar />} />
+## Fluxo Corrigido
 
-{/* ROTAS ESPANHOL - DIRETAS, SEM REDIRECT */}
-<Route path="/es" element={<IndexES />} />
-<Route path="/es/planos" element={<PlanosES />} />
-<Route path="/es/calendar" element={<CalendarES />} />
+```text
+1. Usuário acessa canvaviagem.com/
+   ↓
+   Index.tsx monta
+   ↓
+   useEffect: setLanguage('pt') + document.lang = 'pt'
+   ↓
+   Página em Português ✅
 
-{/* Remover rotas LanguageRedirect antigas */}
+2. Usuário clica em "🇪🇸 ES"
+   ↓
+   LanguageSwitcher: window.location.href = '/es'
+   ↓
+   IndexES.tsx monta
+   ↓
+   useEffect: setLanguage('es') + document.lang = 'es'
+   ↓
+   Página em Espanhol ✅
+
+3. Usuário clica em "🇧🇷 PT"
+   ↓
+   LanguageSwitcher: window.location.href = '/pt'
+   ↓
+   Index.tsx monta
+   ↓
+   useEffect: setLanguage('pt') + document.lang = 'pt'
+   ↓
+   Página em Português ✅ (volta funciona!)
 ```
 
 ---
 
-## Resultado Final
+## URLs Finais Disponíveis
 
-| URL | Página | Idioma | Conteúdo |
-|-----|--------|--------|----------|
-| `canvaviagem.com/` | Index.tsx | PT | Destaques PT |
-| `canvaviagem.com/planos` | Planos.tsx | PT | R$ 37,90 |
-| `canvaviagem.com/calendar` | Calendar.tsx | PT | Calendário PT |
-| `canvaviagem.com/es` | IndexES.tsx | ES | Destaques ES |
-| `canvaviagem.com/es/planos` | PlanosES.tsx | ES | $9,09 USD |
-| `canvaviagem.com/es/calendar` | CalendarES.tsx | ES | Calendário ES |
-
----
-
-## Por que Esta Abordagem Funciona 100%
-
-1. **Sem race conditions**: Cada página sabe seu idioma na hora do render
-2. **Sem dependência de contexto**: Os hooks recebem idioma diretamente
-3. **Navegação simples**: `window.location.href` garante page reload completo
-4. **Fácil debug**: Cada página é independente
-5. **SEO-friendly**: URLs únicas para cada idioma
+| URL | Página | Idioma |
+|-----|--------|--------|
+| `/` | Index.tsx | PT |
+| `/pt` | Index.tsx | PT |
+| `/pt/planos` | Planos.tsx | PT |
+| `/pt/calendar` | Calendar.tsx | PT |
+| `/es` | IndexES.tsx | ES |
+| `/es/planos` | PlanosES.tsx | ES |
+| `/es/calendar` | CalendarES.tsx | ES |
 
 ---
 
@@ -163,9 +171,9 @@ import CalendarES from "./pages/CalendarES";
 
 | Teste | Esperado |
 |-------|----------|
-| Acessar `/es` | Home em espanhol, destaques ES |
-| Acessar `/es/planos` | Preço $9,09 USD |
-| Clicar "ES" em `/` | Navega para `/es` |
-| Clicar "PT" em `/es` | Navega para `/` |
-| Gestão > Destaques ES | Aparece em `/es` |
-| Gestão > Destaques PT | Aparece em `/` |
+| Acessar `/` | Página em PT |
+| Acessar `/pt` | Página em PT |
+| Acessar `/es` | Página em ES |
+| Clicar ES em `/` | Navega para `/es`, mostra ES |
+| Clicar PT em `/es` | Navega para `/pt`, mostra PT |
+| Alternar PT/ES várias vezes | Funciona corretamente |
