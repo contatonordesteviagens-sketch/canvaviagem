@@ -34,18 +34,18 @@ export const SelectFeaturedModal = ({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            Adicionar Destaque {language === 'pt' ? '🇧🇷 Português' : '🇪🇸 Espanhol'}
+            Adicionar Prévia {language === 'pt' ? '🇧🇷 Português' : '🇪🇸 Espanhol'}
           </DialogTitle>
           <DialogDescription>
-            Selecione um vídeo em {language === 'pt' ? 'Português' : 'Espanhol'} para destacar.
+            Selecione um vídeo em {language === 'pt' ? 'Português' : 'Espanhol'} para a prévia.
           </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh]">
           {availableVideos.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p>Nenhum vídeo disponível para destaque em {language === 'pt' ? 'Português' : 'Espanhol'}.</p>
-              <p className="text-sm mt-1">Todos os vídeos já estão em destaque ou não há vídeos cadastrados neste idioma.</p>
+              <p>Nenhum vídeo disponível para prévia em {language === 'pt' ? 'Português' : 'Espanhol'}.</p>
+              <p className="text-sm mt-1">Todos os vídeos já estão na prévia ou não há vídeos cadastrados neste idioma.</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-1">
