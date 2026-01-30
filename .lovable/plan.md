@@ -1,111 +1,44 @@
 
-# Plano: Corrigir Sistema de URLs de Idioma
+# Plano: URLs de Idioma para Todas as Páginas
 
-## Resumo dos Problemas
+## URLs para Anúncios
 
-| Problema | Componente | Causa |
-|----------|------------|-------|
-| Switcher não muda URL | `LanguageSwitcher.tsx` | Apenas muda estado, não navega para `/es` |
-| `/es` não funciona | `LanguageRedirect.tsx` | Redireciona antes do contexto atualizar |
-| Destaques ES não aparecem | Hooks + race condition | Idioma não está definido quando query executa |
-
----
-
-## Correção 1: LanguageSwitcher com Navegação
-
-**Arquivo: `src/components/LanguageSwitcher.tsx`**
-
-Modificar para usar `navigate()` em vez de apenas `setLanguage()`:
-
-```typescript
-import { useNavigate, useLocation } from 'react-router-dom';
-
-export const LanguageSwitcher = ({ variant = "desktop" }: LanguageSwitcherProps) => {
-  const { language } = useLanguage();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const switchToLanguage = (targetLang: 'pt' | 'es') => {
-    const currentPath = location.pathname;
-    const searchParams = location.search;
-    
-    // Gerar URL com prefixo de idioma
-    const targetPath = currentPath === '/' 
-      ? `/${targetLang}${searchParams}`
-      : `/${targetLang}${currentPath}${searchParams}`;
-    
-    navigate(targetPath);
-  };
-
-  // Desktop dropdown
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2">
-          {language === 'pt' ? '🇧🇷' : '🇪🇸'}
-          <span className="hidden sm:inline">{language.toUpperCase()}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem 
-          onClick={() => switchToLanguage('pt')}
-          className={language === 'pt' ? 'bg-accent' : ''}
-        >
-          🇧🇷 Português
-        </DropdownMenuItem>
-        <DropdownMenuItem 
-          onClick={() => switchToLanguage('es')}
-          className={language === 'es' ? 'bg-accent' : ''}
-        >
-          🇪🇸 Español
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
-```
+| Página | Português | Espanhol |
+|--------|-----------|----------|
+| **Home** | `canvaviagem.com/pt` | `canvaviagem.com/es` |
+| **Planos** | `canvaviagem.com/pt/planos` | `canvaviagem.com/es/planos` |
+| **Calendário** | `canvaviagem.com/pt/calendar` | `canvaviagem.com/es/calendar` |
+| **Pós-Pagamento** | `canvaviagem.com/pt/pos-pagamento` | `canvaviagem.com/es/pos-pagamento` |
+| **Obrigado** | `canvaviagem.com/pt/obrigado` | `canvaviagem.com/es/obrigado` |
 
 ---
 
-## Correção 2: LanguageRedirect com Sincronização
+## Implementação
 
-**Arquivo: `src/components/LanguageRedirect.tsx`**
+### 1. Criar Componente de Redirecionamento
 
-Separar em dois `useEffect` para garantir que o contexto atualize antes do redirect:
+**Arquivo: `src/components/LanguageRedirect.tsx`** (NOVO)
 
 ```typescript
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage, type Language } from '@/contexts/LanguageContext';
 
 const LanguageRedirect = () => {
   const { lang, '*': restPath } = useParams();
-  const { language, setLanguage } = useLanguage();
+  const { setLanguage } = useLanguage();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [hasSetLanguage, setHasSetLanguage] = useState(false);
 
-  // Passo 1: Definir o idioma
   useEffect(() => {
-    if ((lang === 'es' || lang === 'pt') && !hasSetLanguage) {
-      console.log(`🌍 Setting language to: ${lang}`);
+    if (lang === 'es' || lang === 'pt') {
+      // Define o idioma
       setLanguage(lang as Language);
-      setHasSetLanguage(true);
-    }
-  }, [lang, setLanguage, hasSetLanguage]);
-
-  // Passo 2: Redirecionar DEPOIS que o contexto foi atualizado
-  useEffect(() => {
-    if (hasSetLanguage && language === lang) {
-      const searchParams = location.search; // Preservar UTMs
-      const targetPath = restPath 
-        ? `/${restPath}${searchParams}` 
-        : `/${searchParams}`;
       
-      console.log(`🔀 Redirecting to: ${targetPath} (language: ${language})`);
+      // Redireciona para a página destino (ou home se não houver)
+      const targetPath = restPath ? `/${restPath}` : '/';
       navigate(targetPath, { replace: true });
     }
-  }, [hasSetLanguage, language, lang, restPath, navigate, location.search]);
+  }, [lang, restPath, setLanguage, navigate]);
 
   return null;
 };
@@ -113,46 +46,57 @@ const LanguageRedirect = () => {
 export default LanguageRedirect;
 ```
 
----
+### 2. Adicionar Rotas no App.tsx
 
-## Fluxo Corrigido
+**Arquivo: `src/App.tsx`**
 
-### Cenário 1: Acesso Direto via `/es`
+```typescript
+import LanguageRedirect from "./components/LanguageRedirect";
 
-```text
-Usuário acessa: canvaviagem.com/es
-    ↓
-Rota /es → LanguageRedirect renderiza
-    ↓
-useEffect 1: setLanguage('es'), setHasSetLanguage(true)
-    ↓
-React re-renderiza, LanguageContext atualiza: language = 'es'
-    ↓
-useEffect 2: hasSetLanguage=true && language='es' === lang
-    ↓
-navigate('/', { replace: true })
-    ↓
-Index.tsx renderiza com useLanguage() retornando 'es'
-    ↓
-useFeaturedItems() busca: WHERE language = 'es'
-    ↓
-Destaques ES aparecem ✅
+// Adicionar ANTES da rota catch-all "*"
+<Route path="/es/*" element={<LanguageRedirect />} />
+<Route path="/pt/*" element={<LanguageRedirect />} />
+<Route path="/es" element={<LanguageRedirect />} />
+<Route path="/pt" element={<LanguageRedirect />} />
 ```
 
-### Cenário 2: Clique no LanguageSwitcher
+---
+
+## Exemplos de URLs para Anúncios
+
+### Facebook/Instagram Ads
+
+| Campanha | URL de Destino |
+|----------|----------------|
+| Brasil - Home | `https://canvaviagem.com/pt` |
+| Brasil - Planos | `https://canvaviagem.com/pt/planos` |
+| Latam - Home | `https://canvaviagem.com/es` |
+| Latam - Planos | `https://canvaviagem.com/es/planos` |
+
+### Com UTMs
+
+```
+https://canvaviagem.com/es/planos?utm_source=facebook&utm_campaign=latam
+```
+
+---
+
+## Fluxo
 
 ```text
-Usuário está em: canvaviagem.com/ (PT)
+Usuário clica: canvaviagem.com/es/planos
     ↓
-Clica em "🇪🇸 ES" no header
+Rota /es/* captura
     ↓
-switchToLanguage('es') executa
+LanguageRedirect extrai: lang="es", restPath="planos"
     ↓
-navigate('/es') é chamado
+Define idioma = Espanhol
     ↓
-LanguageRedirect processa (mesmo fluxo do cenário 1)
+Salva no localStorage
     ↓
-URL final: canvaviagem.com/ com idioma ES ✅
+Redireciona → canvaviagem.com/planos
+    ↓
+Usuário vê página de Planos em Espanhol ✅
 ```
 
 ---
@@ -161,31 +105,19 @@ URL final: canvaviagem.com/ com idioma ES ✅
 
 | Arquivo | Ação | Mudança |
 |---------|------|---------|
-| `src/components/LanguageSwitcher.tsx` | **MODIFICAR** | Adicionar `navigate()` para `/es` ou `/pt` |
-| `src/components/LanguageRedirect.tsx` | **MODIFICAR** | Separar em 2 `useEffect` para evitar race condition |
+| `src/components/LanguageRedirect.tsx` | CRIAR | Componente que lê idioma e página da URL, define idioma e redireciona |
+| `src/App.tsx` | MODIFICAR | Adicionar rotas `/es/*`, `/pt/*`, `/es`, `/pt` |
 
 ---
 
-## Testes Após Implementação
+## Todas as URLs Disponíveis
 
-### Teste 1: URL `/es` funciona
-- Acessar `canvaviagem.com/es`
-- Verificar que a página abre em Espanhol
-- Verificar console: `🌍 Setting language to: es`
+| Rota Original | URL PT | URL ES |
+|---------------|--------|--------|
+| `/` | `/pt` | `/es` |
+| `/planos` | `/pt/planos` | `/es/planos` |
+| `/calendar` | `/pt/calendar` | `/es/calendar` |
+| `/pos-pagamento` | `/pt/pos-pagamento` | `/es/pos-pagamento` |
+| `/obrigado` | `/pt/obrigado` | `/es/obrigado` |
+| `/sucesso` | `/pt/sucesso` | `/es/sucesso` |
 
-### Teste 2: LanguageSwitcher navega
-- Estar em `/`
-- Clicar em "🇪🇸 ES"
-- URL deve mudar para `/es` (temporariamente)
-- Depois redireciona para `/` com idioma ES
-
-### Teste 3: Destaques ES aparecem
-- Configurar destaque em Gestão > Destaques ES
-- Acessar `/es`
-- Verificar que o destaque ES aparece
-- Verificar que destaques PT NÃO aparecem
-
-### Teste 4: UTMs preservados
-- Acessar `canvaviagem.com/es?utm_source=facebook`
-- Após redirect: `canvaviagem.com/?utm_source=facebook`
-- Idioma deve ser ES
