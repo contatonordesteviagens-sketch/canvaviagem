@@ -35,6 +35,7 @@ type EditableItem = {
   url: string;
   description?: string | null;
   is_active?: boolean;
+  language?: string | null;
 };
 
 type EditableCaption = {
@@ -123,7 +124,7 @@ const Gestao = () => {
     });
   };
 
-  const handleSaveItem = (id: string, data: { title: string; url: string; description: string; is_active: boolean }) => {
+  const handleSaveItem = (id: string, data: { title: string; url: string; description: string; is_active: boolean; language: string }) => {
     updateContent.mutate(
       { id, ...data },
       {
@@ -139,7 +140,7 @@ const Gestao = () => {
     );
   };
 
-  const handleSaveTool = (id: string, data: { title: string; url: string; description: string; is_active: boolean }) => {
+  const handleSaveTool = (id: string, data: { title: string; url: string; description: string; is_active: boolean; language: string }) => {
     updateTool.mutate(
       { id, ...data },
       {

@@ -133,10 +133,19 @@ export const ContentSection = ({
   };
 
   // Filter and sort content by type
-  const videoItems = useMemo(() => 
-    sortItems(filterItems(contentItems.filter(item => ['video', 'seasonal'].includes(item.type)))),
-    [contentItems, sortOrder, searchQuery, categoryFilter]
-  );
+  const videoItems = useMemo(() => {
+    let filtered = contentItems.filter(item => ['video', 'seasonal'].includes(item.type));
+    
+    // Apply language filter
+    if (languageFilter !== 'all') {
+      filtered = filtered.filter(item => {
+        const itemLang = item.language || 'pt';
+        return itemLang === languageFilter;
+      });
+    }
+    
+    return sortItems(filterItems(filtered));
+  }, [contentItems, sortOrder, searchQuery, categoryFilter, languageFilter]);
   const feedItems = useMemo(() => 
     sortItems(filterItems(contentItems.filter(item => item.type === 'feed'))),
     [contentItems, sortOrder, searchQuery, categoryFilter]
@@ -811,7 +820,10 @@ export const ContentSection = ({
               onTypeChange={setTypeFilter}
               categoryFilter={categoryFilter}
               onCategoryChange={setCategoryFilter}
+              languageFilter={languageFilter}
+              onLanguageChange={(v) => setLanguageFilter(v as "all" | "pt" | "es")}
               showTypeFilter={false}
+              showLanguageFilter={true}
             />
           </div>
           {renderVideoGrid(videoItems, "content_items")}

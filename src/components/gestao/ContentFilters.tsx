@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { Search, Globe } from "lucide-react";
 
 interface ContentFiltersProps {
   searchQuery: string;
@@ -15,7 +15,10 @@ interface ContentFiltersProps {
   onTypeChange: (value: string) => void;
   categoryFilter: string;
   onCategoryChange: (value: string) => void;
+  languageFilter?: string;
+  onLanguageChange?: (value: string) => void;
   showTypeFilter?: boolean;
+  showLanguageFilter?: boolean;
 }
 
 const contentTypes = [
@@ -43,7 +46,10 @@ export const ContentFilters = ({
   onTypeChange,
   categoryFilter,
   onCategoryChange,
+  languageFilter = "all",
+  onLanguageChange,
   showTypeFilter = true,
+  showLanguageFilter = false,
 }: ContentFiltersProps) => {
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -86,6 +92,20 @@ export const ContentFilters = ({
           ))}
         </SelectContent>
       </Select>
+
+      {showLanguageFilter && onLanguageChange && (
+        <Select value={languageFilter} onValueChange={onLanguageChange}>
+          <SelectTrigger className="w-[160px]">
+            <Globe className="w-4 h-4 mr-2" />
+            <SelectValue placeholder="Idioma" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos idiomas</SelectItem>
+            <SelectItem value="pt">🇧🇷 Português</SelectItem>
+            <SelectItem value="es">🇪🇸 Espanhol/Int.</SelectItem>
+          </SelectContent>
+        </Select>
+      )}
     </div>
   );
 };
