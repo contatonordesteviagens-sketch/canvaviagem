@@ -147,16 +147,25 @@ export const useHighlightedItems = () => {
   return useQuery({
     queryKey: ["highlighted-items", language],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("content_items")
         .select("*")
         .eq("is_active", true)
-        .eq("is_highlighted", true)
-        .order("created_at", { ascending: false })
+        .eq("is_highlighted", true);
+      
+      // ⭐ FILTRAR POR IDIOMA NO BANCO ⭐
+      if (language === 'pt') {
+        query = query.or('language.eq.pt,language.is.null');
+      } else {
+        query = query.eq('language', language);
+      }
+      
+      const { data, error } = await query
+        .order("display_order", { ascending: true })
         .limit(3);
       
       if (error) throw error;
-      return sortByLanguagePriority(data as ContentItem[], language);
+      return data as ContentItem[];
     },
     staleTime: 0, // Always refetch
   });
