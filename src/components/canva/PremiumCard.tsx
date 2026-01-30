@@ -14,6 +14,7 @@ interface PremiumCardProps {
   onClick?: () => void;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
+  onPremiumRequired?: () => void;
 }
 
 export const PremiumCard = ({ 
@@ -28,7 +29,8 @@ export const PremiumCard = ({
   icon = "📱",
   onClick,
   isFavorite = false,
-  onToggleFavorite
+  onToggleFavorite,
+  onPremiumRequired
 }: PremiumCardProps) => {
   // Generate a placeholder gradient based on title
   const getPlaceholderGradient = () => {
@@ -46,6 +48,11 @@ export const PremiumCard = ({
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    // Check if premium gate should be triggered
+    if (onPremiumRequired) {
+      onPremiumRequired();
+      return;
+    }
     if (onClick) {
       onClick();
     }
