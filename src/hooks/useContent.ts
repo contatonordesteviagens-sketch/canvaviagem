@@ -109,14 +109,14 @@ export const useNewestItemIds = () => {
   });
 };
 
-// Hook para buscar itens em destaque (is_featured)
+// Hook para buscar itens em destaque (is_featured) - filtered by language
 export const useFeaturedItems = () => {
   const { language } = useLanguage();
   
   return useQuery({
     queryKey: ["featured-items", language],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("content_items")
         .select("*")
         .eq("is_active", true)
@@ -125,8 +125,16 @@ export const useFeaturedItems = () => {
         .order("display_order", { ascending: true })
         .limit(10);
       
+      // Filter by language in database
+      if (language === 'pt') {
+        query = query.or('language.eq.pt,language.is.null');
+      } else {
+        query = query.eq('language', language);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
-      return sortByLanguagePriority(data as ContentItem[], language);
+      return data as ContentItem[];
     },
     staleTime: 1000 * 60 * 5,
   });

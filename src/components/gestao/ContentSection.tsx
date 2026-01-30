@@ -88,6 +88,7 @@ export const ContentSection = ({
   const [currentTab, setCurrentTab] = useState("videos");
   const [sortOrder, setSortOrder] = useState<SortOrder>("recent"); // Default to recent
   const [languageFilter, setLanguageFilter] = useState<"all" | "pt" | "es">("all");
+  const [featuredLanguageTab, setFeaturedLanguageTab] = useState<"pt" | "es">("pt");
   
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -149,17 +150,42 @@ export const ContentSection = ({
     [contentItems, sortOrder, searchQuery, categoryFilter]
   );
 
-  // Featured items (videos with is_featured = true)
-  const featuredItems = useMemo(() => 
-    contentItems.filter(item => item.is_featured && ['video', 'seasonal'].includes(item.type)),
+  // Featured items separated by language
+  const featuredPT = useMemo(() => 
+    contentItems.filter(item => 
+      item.is_featured && 
+      ['video', 'seasonal'].includes(item.type) &&
+      (item.language === 'pt' || !item.language)
+    ),
     [contentItems]
   );
 
-  // Available videos for featuring (not already featured)
-  const availableForFeatured = useMemo(() => 
-    videoItems.filter(item => !item.is_featured),
-    [videoItems]
+  const featuredES = useMemo(() => 
+    contentItems.filter(item => 
+      item.is_featured && 
+      ['video', 'seasonal'].includes(item.type) &&
+      item.language === 'es'
+    ),
+    [contentItems]
   );
+
+  // Legacy: total featured items for backwards compatibility
+  const featuredItems = useMemo(() => 
+    [...featuredPT, ...featuredES],
+    [featuredPT, featuredES]
+  );
+
+  // Available videos for featuring (filtered by active language tab)
+  const availableForFeaturedByLanguage = useMemo(() => {
+    const lang = featuredLanguageTab;
+    return videoItems.filter(item => 
+      !item.is_featured && 
+      (lang === 'pt' 
+        ? (item.language === 'pt' || !item.language) 
+        : item.language === 'es'
+      )
+    );
+  }, [videoItems, featuredLanguageTab]);
 
   // Filter captions
   const filterCaptions = (captionList: Caption[]): Caption[] => {
@@ -466,11 +492,14 @@ export const ContentSection = ({
     const item = contentItems.find(i => i.id === id);
     if (!item) return;
     
-    // Check if marking as featured and limit is reached
-    if (!item.is_featured && featuredItems.length >= 10) {
+    // Check if marking as featured and limit is reached per language
+    const itemLanguage = item.language || 'pt';
+    const featuredForLanguage = itemLanguage === 'es' ? featuredES : featuredPT;
+    
+    if (!item.is_featured && featuredForLanguage.length >= 10) {
       toast({
         title: "Limite atingido",
-        description: "Você já possui 10 mídias em destaque. Remova uma para adicionar outra.",
+        description: `Você já possui 10 destaques em ${itemLanguage === 'es' ? 'Espanhol' : 'Português'}. Remova um para adicionar outro.`,
         variant: "destructive",
       });
       return;
@@ -617,7 +646,7 @@ export const ContentSection = ({
         <TabsList className="w-full flex-wrap h-auto gap-2 bg-muted/50 p-2">
           <TabsTrigger value="destaque" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
-            Destaque ({featuredItems.length}/10)
+            Destaques (PT: {featuredPT.length} | ES: {featuredES.length})
           </TabsTrigger>
           <TabsTrigger value="videos" className="flex items-center gap-2">
             <Video className="h-4 w-4" />
@@ -655,39 +684,99 @@ export const ContentSection = ({
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-amber-500" />
-                Mídias em Destaque
+                Mídias em Destaque por Idioma
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Estas {featuredItems.length}/10 mídias aparecem com imagens personalizadas na plataforma.
-                As demais mídias usam apenas ícones.
+                Gerencie até 10 destaques para cada idioma. Os usuários verão apenas os destaques do idioma selecionado.
               </p>
             </CardHeader>
           </Card>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {featuredItems.map(item => (
-              <FeaturedCard
-                key={item.id}
-                item={item}
-                onUploadImage={handleUploadFeaturedImage}
-                onUpdateImageUrl={handleUpdateImageUrl}
-                onRemoveFromFeatured={handleRemoveFromFeatured}
-                onEdit={onEditItem}
-              />
-            ))}
+          {/* Sub-tabs by language */}
+          <Tabs value={featuredLanguageTab} onValueChange={(v) => setFeaturedLanguageTab(v as "pt" | "es")}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="pt" className="flex items-center gap-2">
+                🇧🇷 Destaques PT ({featuredPT.length}/10)
+              </TabsTrigger>
+              <TabsTrigger value="es" className="flex items-center gap-2">
+                🇪🇸 Destaques ES ({featuredES.length}/10)
+              </TabsTrigger>
+            </TabsList>
             
-            {/* Slot to add new featured item (if < 10) */}
-            {featuredItems.length < 10 && (
-              <Button
-                variant="outline"
-                className="aspect-[9/16] h-auto border-dashed flex flex-col items-center justify-center gap-2"
-                onClick={() => setSelectFeaturedModalOpen(true)}
-              >
-                <Plus className="h-8 w-8" />
-                <span className="text-sm">Adicionar</span>
-              </Button>
-            )}
-          </div>
+            {/* PT Content */}
+            <TabsContent value="pt">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {featuredPT.map(item => (
+                  <FeaturedCard
+                    key={item.id}
+                    item={item}
+                    onUploadImage={handleUploadFeaturedImage}
+                    onUpdateImageUrl={handleUpdateImageUrl}
+                    onRemoveFromFeatured={handleRemoveFromFeatured}
+                    onEdit={onEditItem}
+                  />
+                ))}
+                
+                {/* Slot to add new featured item (if < 10) */}
+                {featuredPT.length < 10 && (
+                  <Button
+                    variant="outline"
+                    className="aspect-[9/16] h-auto border-dashed flex flex-col items-center justify-center gap-2"
+                    onClick={() => setSelectFeaturedModalOpen(true)}
+                  >
+                    <Plus className="h-8 w-8" />
+                    <span className="text-sm">Adicionar</span>
+                    <span className="text-xs text-muted-foreground">({featuredPT.length}/10)</span>
+                  </Button>
+                )}
+                
+                {featuredPT.length === 0 && (
+                  <div className="col-span-full text-center py-8 text-muted-foreground">
+                    <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p>Nenhum destaque em Português</p>
+                    <p className="text-sm">Clique em "Adicionar" para selecionar um vídeo.</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+            
+            {/* ES Content */}
+            <TabsContent value="es">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {featuredES.map(item => (
+                  <FeaturedCard
+                    key={item.id}
+                    item={item}
+                    onUploadImage={handleUploadFeaturedImage}
+                    onUpdateImageUrl={handleUpdateImageUrl}
+                    onRemoveFromFeatured={handleRemoveFromFeatured}
+                    onEdit={onEditItem}
+                  />
+                ))}
+                
+                {/* Slot to add new featured item (if < 10) */}
+                {featuredES.length < 10 && (
+                  <Button
+                    variant="outline"
+                    className="aspect-[9/16] h-auto border-dashed flex flex-col items-center justify-center gap-2"
+                    onClick={() => setSelectFeaturedModalOpen(true)}
+                  >
+                    <Plus className="h-8 w-8" />
+                    <span className="text-sm">Adicionar</span>
+                    <span className="text-xs text-muted-foreground">({featuredES.length}/10)</span>
+                  </Button>
+                )}
+                
+                {featuredES.length === 0 && (
+                  <div className="col-span-full text-center py-8 text-muted-foreground">
+                    <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p>Nenhum destaque em Espanhol</p>
+                    <p className="text-sm">Clique em "Adicionar" para selecionar um vídeo.</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         {/* Videos Tab */}
@@ -930,8 +1019,9 @@ export const ContentSection = ({
       <SelectFeaturedModal
         isOpen={selectFeaturedModalOpen}
         onClose={() => setSelectFeaturedModalOpen(false)}
-        availableVideos={availableForFeatured}
+        availableVideos={availableForFeaturedByLanguage}
         onSelect={handleSelectFeatured}
+        language={featuredLanguageTab}
       />
 
       <BulkAddModal
