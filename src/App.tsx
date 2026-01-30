@@ -27,7 +27,6 @@ import Termos from "./pages/Termos";
 import Privacidade from "./pages/Privacidade";
 import ProximoNivel from "./pages/ProximoNivel";
 import AuthVerify from "./pages/AuthVerify";
-import LanguageRedirect from "./components/LanguageRedirect";
 
 const queryClient = new QueryClient();
 
@@ -70,12 +69,6 @@ const App = () => (
                   <Route path="captions" element={<CaptionsManager />} />
                   <Route path="tools" element={<ToolsManager />} />
                 </Route>
-                
-                {/* Language Routes - Redirect with language setting */}
-                <Route path="/es/*" element={<LanguageRedirect />} />
-                <Route path="/pt/*" element={<LanguageRedirect />} />
-                <Route path="/es" element={<LanguageRedirect />} />
-                <Route path="/pt" element={<LanguageRedirect />} />
                 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

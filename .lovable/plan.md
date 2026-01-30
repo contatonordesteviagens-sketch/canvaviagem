@@ -1,123 +1,104 @@
 
-# Plano: URLs de Idioma para Todas as Páginas
+# Plano: Corrigir Destaques Misturados PT/ES
 
-## URLs para Anúncios
+## Diagnóstico
 
-| Página | Português | Espanhol |
-|--------|-----------|----------|
-| **Home** | `canvaviagem.com/pt` | `canvaviagem.com/es` |
-| **Planos** | `canvaviagem.com/pt/planos` | `canvaviagem.com/es/planos` |
-| **Calendário** | `canvaviagem.com/pt/calendar` | `canvaviagem.com/es/calendar` |
-| **Pós-Pagamento** | `canvaviagem.com/pt/pos-pagamento` | `canvaviagem.com/es/pos-pagamento` |
-| **Obrigado** | `canvaviagem.com/pt/obrigado` | `canvaviagem.com/es/obrigado` |
+| Hook | Filtro por Idioma | Status |
+|------|-------------------|--------|
+| `useFeaturedItems` | ✅ Filtra no banco com `.or()` e `.eq()` | **CORRETO** |
+| `useHighlightedItems` | ❌ Apenas reordena client-side | **QUEBRADO** |
+
+### O Problema
+
+`useHighlightedItems` usa apenas `sortByLanguagePriority()` que **reordena** os itens mas **não remove** os de outros idiomas. Por isso, highlighted items de PT e ES aparecem misturados.
 
 ---
 
-## Implementação
+## Solução
 
-### 1. Criar Componente de Redirecionamento
+### Arquivo: `src/hooks/useContent.ts`
 
-**Arquivo: `src/components/LanguageRedirect.tsx`** (NOVO)
-
+**Localizar** (linhas 143-162):
 ```typescript
-import { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useLanguage, type Language } from '@/contexts/LanguageContext';
-
-const LanguageRedirect = () => {
-  const { lang, '*': restPath } = useParams();
-  const { setLanguage } = useLanguage();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (lang === 'es' || lang === 'pt') {
-      // Define o idioma
-      setLanguage(lang as Language);
+export const useHighlightedItems = () => {
+  const { language } = useLanguage();
+  
+  return useQuery({
+    queryKey: ["highlighted-items", language],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("content_items")
+        .select("*")
+        .eq("is_active", true)
+        .eq("is_highlighted", true)
+        .order("created_at", { ascending: false })
+        .limit(3);
       
-      // Redireciona para a página destino (ou home se não houver)
-      const targetPath = restPath ? `/${restPath}` : '/';
-      navigate(targetPath, { replace: true });
-    }
-  }, [lang, restPath, setLanguage, navigate]);
-
-  return null;
+      if (error) throw error;
+      return sortByLanguagePriority(data as ContentItem[], language);
+    },
+    staleTime: 0,
+  });
 };
-
-export default LanguageRedirect;
 ```
 
-### 2. Adicionar Rotas no App.tsx
-
-**Arquivo: `src/App.tsx`**
-
+**Substituir por:**
 ```typescript
-import LanguageRedirect from "./components/LanguageRedirect";
-
-// Adicionar ANTES da rota catch-all "*"
-<Route path="/es/*" element={<LanguageRedirect />} />
-<Route path="/pt/*" element={<LanguageRedirect />} />
-<Route path="/es" element={<LanguageRedirect />} />
-<Route path="/pt" element={<LanguageRedirect />} />
+export const useHighlightedItems = () => {
+  const { language } = useLanguage();
+  
+  return useQuery({
+    queryKey: ["highlighted-items", language],
+    queryFn: async () => {
+      let query = supabase
+        .from("content_items")
+        .select("*")
+        .eq("is_active", true)
+        .eq("is_highlighted", true);
+      
+      // ⭐ FILTRAR POR IDIOMA NO BANCO ⭐
+      if (language === 'pt') {
+        query = query.or('language.eq.pt,language.is.null');
+      } else {
+        query = query.eq('language', language);
+      }
+      
+      const { data, error } = await query
+        .order("display_order", { ascending: true })
+        .limit(3);
+      
+      if (error) throw error;
+      return data as ContentItem[];
+    },
+    staleTime: 0,
+  });
+};
 ```
 
 ---
 
-## Exemplos de URLs para Anúncios
+## Mudanças Aplicadas
 
-### Facebook/Instagram Ads
-
-| Campanha | URL de Destino |
-|----------|----------------|
-| Brasil - Home | `https://canvaviagem.com/pt` |
-| Brasil - Planos | `https://canvaviagem.com/pt/planos` |
-| Latam - Home | `https://canvaviagem.com/es` |
-| Latam - Planos | `https://canvaviagem.com/es/planos` |
-
-### Com UTMs
-
-```
-https://canvaviagem.com/es/planos?utm_source=facebook&utm_campaign=latam
-```
+| Antes | Depois |
+|-------|--------|
+| Busca **todos** highlighted e ordena client-side | Filtra por idioma **no banco** antes de retornar |
+| PT vê PT + ES misturados | PT vê **apenas** PT (e NULL) |
+| ES vê PT + ES misturados | ES vê **apenas** ES |
 
 ---
 
-## Fluxo
+## Resumo
 
-```text
-Usuário clica: canvaviagem.com/es/planos
-    ↓
-Rota /es/* captura
-    ↓
-LanguageRedirect extrai: lang="es", restPath="planos"
-    ↓
-Define idioma = Espanhol
-    ↓
-Salva no localStorage
-    ↓
-Redireciona → canvaviagem.com/planos
-    ↓
-Usuário vê página de Planos em Espanhol ✅
-```
+| Arquivo | Mudança |
+|---------|---------|
+| `src/hooks/useContent.ts` | Adicionar filtro por idioma em `useHighlightedItems` (mesmo padrão de `useFeaturedItems`) |
 
 ---
 
-## Resumo das Mudanças
+## Verificação
 
-| Arquivo | Ação | Mudança |
-|---------|------|---------|
-| `src/components/LanguageRedirect.tsx` | CRIAR | Componente que lê idioma e página da URL, define idioma e redireciona |
-| `src/App.tsx` | MODIFICAR | Adicionar rotas `/es/*`, `/pt/*`, `/es`, `/pt` |
-
----
-
-## Todas as URLs Disponíveis
-
-| Rota Original | URL PT | URL ES |
-|---------------|--------|--------|
-| `/` | `/pt` | `/es` |
-| `/planos` | `/pt/planos` | `/es/planos` |
-| `/calendar` | `/pt/calendar` | `/es/calendar` |
-| `/pos-pagamento` | `/pt/pos-pagamento` | `/es/pos-pagamento` |
-| `/obrigado` | `/pt/obrigado` | `/es/obrigado` |
-| `/sucesso` | `/pt/sucesso` | `/es/sucesso` |
-
+1. **Adicionar highlight PT:** Vídeo "Rio de Janeiro" (language='pt')
+2. **Adicionar highlight ES:** Vídeo "Buenos Aires" (language='es')
+3. **Usuário em PT:** Vê APENAS "Rio de Janeiro"
+4. **Usuário em ES:** Vê APENAS "Buenos Aires"
+5. **Trocar idioma:** Highlights mudam automaticamente
