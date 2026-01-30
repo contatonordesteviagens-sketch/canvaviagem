@@ -14,6 +14,7 @@ interface SelectFeaturedModalProps {
   onClose: () => void;
   availableVideos: ContentItem[];
   onSelect: (id: string) => void;
+  language: "pt" | "es";
 }
 
 export const SelectFeaturedModal = ({
@@ -21,6 +22,7 @@ export const SelectFeaturedModal = ({
   onClose,
   availableVideos,
   onSelect,
+  language,
 }: SelectFeaturedModalProps) => {
   const handleSelect = (id: string) => {
     onSelect(id);
@@ -31,17 +33,19 @@ export const SelectFeaturedModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Selecionar Vídeo para Destaque</DialogTitle>
+          <DialogTitle>
+            Adicionar Destaque {language === 'pt' ? '🇧🇷 Português' : '🇪🇸 Espanhol'}
+          </DialogTitle>
           <DialogDescription>
-            Escolha um vídeo para aparecer na seção de destaques com imagem personalizada.
+            Selecione um vídeo em {language === 'pt' ? 'Português' : 'Espanhol'} para destacar.
           </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh]">
           {availableVideos.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p>Nenhum vídeo disponível para destaque.</p>
-              <p className="text-sm mt-1">Todos os vídeos já estão em destaque ou não há vídeos cadastrados.</p>
+              <p>Nenhum vídeo disponível para destaque em {language === 'pt' ? 'Português' : 'Espanhol'}.</p>
+              <p className="text-sm mt-1">Todos os vídeos já estão em destaque ou não há vídeos cadastrados neste idioma.</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-1">

@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Upload, Pencil, X, ImagePlus, Download, Link, Code } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { ContentItem } from "@/hooks/useContent";
 import { toast } from "sonner";
 
@@ -120,6 +121,13 @@ export const FeaturedCard = ({
   return (
     <>
       <Card className="relative overflow-hidden group">
+        {/* Language Badge */}
+        <div className="absolute top-2 left-2 z-10">
+          <Badge variant="secondary" className="text-xs">
+            {item.language === 'es' ? '🇪🇸' : '🇧🇷'}
+          </Badge>
+        </div>
+        
         {/* Image or Placeholder */}
         <div className="aspect-[9/16] relative">
           {item.image_url ? (
