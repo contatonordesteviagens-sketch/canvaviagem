@@ -4,7 +4,7 @@ import { Lock, Loader2 } from "lucide-react";
 
 // Checkout links by language
 const STRIPE_LINKS = {
-  pt: "https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00",
+  pt: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
   es: "https://buy.stripe.com/bJedRa3TIej6cz15gE8so04",
 };
 

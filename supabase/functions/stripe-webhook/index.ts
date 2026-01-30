@@ -794,7 +794,7 @@ async function handleCheckoutExpired(session: Stripe.Checkout.Session, supabase:
 }
 
 async function sendRecoveryEmail(resend: any, email: string) {
-  const checkoutUrl = "https://buy.stripe.com/cNi28s2PEa2Q6aD9wU8so03";
+  const checkoutUrl = "https://buy.stripe.com/8x26oIgGuej656zaAY8so05";
 
   try {
     await resend.emails.send({
