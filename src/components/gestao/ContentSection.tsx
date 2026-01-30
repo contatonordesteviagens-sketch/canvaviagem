@@ -401,13 +401,13 @@ export const ContentSection = ({
       
       invalidateAll(); // Invalidate all caches for immediate sync
       toast({
-        title: "Destaque adicionado",
-        description: "O vídeo foi marcado como destaque.",
+        title: "Prévia adicionada",
+        description: "O vídeo foi adicionado à prévia.",
       });
     } catch (error) {
       toast({
         title: "Erro",
-        description: "Não foi possível marcar como destaque.",
+        description: "Não foi possível adicionar à prévia.",
         variant: "destructive",
       });
     }
@@ -422,13 +422,13 @@ export const ContentSection = ({
       
       invalidateAll(); // Invalidate all caches for immediate sync
       toast({
-        title: "Destaque removido",
-        description: "O vídeo foi removido dos destaques.",
+        title: "Prévia removida",
+        description: "O vídeo foi removido da prévia.",
       });
     } catch (error) {
       toast({
         title: "Erro",
-        description: "Não foi possível remover dos destaques.",
+        description: "Não foi possível remover da prévia.",
         variant: "destructive",
       });
     }
@@ -463,7 +463,7 @@ export const ContentSection = ({
       invalidateAll(); // Invalidate all caches for immediate sync
       toast({
         title: "Imagem atualizada",
-        description: "A imagem do destaque foi atualizada com sucesso.",
+        description: "A imagem da prévia foi atualizada com sucesso.",
       });
     } catch (error) {
       toast({
@@ -510,7 +510,7 @@ export const ContentSection = ({
     if (!item.is_featured && featuredForLanguage.length >= 10) {
       toast({
         title: "Limite atingido",
-        description: `Você já possui 10 destaques em ${itemLanguage === 'es' ? 'Espanhol' : 'Português'}. Remova um para adicionar outro.`,
+        description: `Você já possui 10 itens de prévia em ${itemLanguage === 'es' ? 'Espanhol' : 'Português'}. Remova um para adicionar outro.`,
         variant: "destructive",
       });
       return;
@@ -524,15 +524,15 @@ export const ContentSection = ({
       
       invalidateAll(); // Invalidate all caches for immediate sync
       toast({
-        title: item.is_featured ? "Destaque removido" : "Destaque adicionado",
+        title: item.is_featured ? "Prévia removida" : "Prévia adicionada",
         description: item.is_featured 
-          ? "O vídeo foi removido dos destaques." 
-          : "O vídeo foi marcado como destaque.",
+          ? "O vídeo foi removido da prévia." 
+          : "O vídeo foi adicionado à prévia.",
       });
     } catch (error) {
       toast({
         title: "Erro",
-        description: "Não foi possível atualizar o destaque.",
+        description: "Não foi possível atualizar a prévia.",
         variant: "destructive",
       });
     }
@@ -657,7 +657,7 @@ export const ContentSection = ({
         <TabsList className="w-full flex-wrap h-auto gap-2 bg-muted/50 p-2">
           <TabsTrigger value="destaque" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
-            Destaques (PT: {featuredPT.length} | ES: {featuredES.length})
+            Prévia (PT: {featuredPT.length} | ES: {featuredES.length})
           </TabsTrigger>
           <TabsTrigger value="videos" className="flex items-center gap-2">
             <Video className="h-4 w-4" />
@@ -695,10 +695,10 @@ export const ContentSection = ({
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-amber-500" />
-                Mídias em Destaque por Idioma
+                Prévia de Mídias por Idioma
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Gerencie até 10 destaques para cada idioma. Os usuários verão apenas os destaques do idioma selecionado.
+                Gerencie até 10 itens de prévia para cada idioma. Os usuários verão apenas os itens do idioma selecionado.
               </p>
             </CardHeader>
           </Card>
@@ -707,10 +707,10 @@ export const ContentSection = ({
           <Tabs value={featuredLanguageTab} onValueChange={(v) => setFeaturedLanguageTab(v as "pt" | "es")}>
             <TabsList className="mb-4">
               <TabsTrigger value="pt" className="flex items-center gap-2">
-                🇧🇷 Destaques PT ({featuredPT.length}/10)
+                🇧🇷 Prévia PT ({featuredPT.length}/10)
               </TabsTrigger>
               <TabsTrigger value="es" className="flex items-center gap-2">
-                🇪🇸 Destaques ES ({featuredES.length}/10)
+                🇪🇸 Prévia ES ({featuredES.length}/10)
               </TabsTrigger>
             </TabsList>
             
@@ -744,7 +744,7 @@ export const ContentSection = ({
                 {featuredPT.length === 0 && (
                   <div className="col-span-full text-center py-8 text-muted-foreground">
                     <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>Nenhum destaque em Português</p>
+                    <p>Nenhuma prévia em Português</p>
                     <p className="text-sm">Clique em "Adicionar" para selecionar um vídeo.</p>
                   </div>
                 )}
@@ -781,7 +781,7 @@ export const ContentSection = ({
                 {featuredES.length === 0 && (
                   <div className="col-span-full text-center py-8 text-muted-foreground">
                     <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>Nenhum destaque em Espanhol</p>
+                    <p>Nenhuma prévia em Espanhol</p>
                     <p className="text-sm">Clique em "Adicionar" para selecionar um vídeo.</p>
                   </div>
                 )}
