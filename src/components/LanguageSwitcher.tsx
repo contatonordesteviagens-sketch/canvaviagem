@@ -1,3 +1,4 @@
+import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Globe } from "lucide-react";
@@ -13,7 +14,37 @@ interface LanguageSwitcherProps {
 }
 
 export const LanguageSwitcher = ({ variant = "desktop" }: LanguageSwitcherProps) => {
-  const { language, setLanguage, t } = useLanguage();
+  const { language, t } = useLanguage();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  /**
+   * Navigate to the equivalent URL in the target language
+   * - ES: adds /es prefix
+   * - PT: removes /es prefix (PT is the default)
+   * - Preserves query params (UTMs, etc.)
+   */
+  const switchToLanguage = (targetLang: 'pt' | 'es') => {
+    const currentPath = location.pathname;
+    const searchParams = location.search;
+
+    // Remove any existing language prefix
+    let basePath = currentPath
+      .replace(/^\/es/, '')
+      .replace(/^\/pt/, '') || '/';
+
+    // Build new URL
+    let newPath: string;
+    if (targetLang === 'es') {
+      // ES always uses /es prefix
+      newPath = basePath === '/' ? '/es' : `/es${basePath}`;
+    } else {
+      // PT uses no prefix (default)
+      newPath = basePath;
+    }
+
+    navigate(newPath + searchParams);
+  };
 
   if (variant === "mobile") {
     return (
@@ -24,7 +55,7 @@ export const LanguageSwitcher = ({ variant = "desktop" }: LanguageSwitcherProps)
           <Button
             variant={language === 'pt' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setLanguage('pt')}
+            onClick={() => switchToLanguage('pt')}
             className="h-8 px-3"
           >
             🇧🇷 PT
@@ -32,7 +63,7 @@ export const LanguageSwitcher = ({ variant = "desktop" }: LanguageSwitcherProps)
           <Button
             variant={language === 'es' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setLanguage('es')}
+            onClick={() => switchToLanguage('es')}
             className="h-8 px-3"
           >
             🇪🇸 ES
@@ -52,13 +83,13 @@ export const LanguageSwitcher = ({ variant = "desktop" }: LanguageSwitcherProps)
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem 
-          onClick={() => setLanguage('pt')}
+          onClick={() => switchToLanguage('pt')}
           className={language === 'pt' ? 'bg-accent' : ''}
         >
           🇧🇷 Português
         </DropdownMenuItem>
         <DropdownMenuItem 
-          onClick={() => setLanguage('es')}
+          onClick={() => switchToLanguage('es')}
           className={language === 'es' ? 'bg-accent' : ''}
         >
           🇪🇸 Español
