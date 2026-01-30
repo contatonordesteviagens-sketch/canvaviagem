@@ -1,107 +1,64 @@
 
-# Plano: Corrigir Sistema de Idiomas (PT como Padrão)
+# Plano: Corrigir Navegação do Header nas Páginas ES
 
-## Problemas Identificados
+## Problema Identificado
 
-| Problema | Causa | Impacto |
-|----------|-------|---------|
-| PT não é mais o padrão | `IndexES.tsx` salva 'es' no localStorage, que persiste quando volta para `/` | Usuário vê ES mesmo em `/` |
-| Botão PT não funciona | `/` não força idioma PT - depende do localStorage | Fica preso em ES |
-| `/pt` não existe | Rota não definida no App.tsx | Erro 404 |
+O `Header.tsx` usa links fixos que **sempre apontam para as rotas PT**, independente de qual versão da página o usuário está:
+
+```typescript
+// Linha 104-108 do Header.tsx
+const mainNavItems = [
+  { to: "/", label: t('header.home'), icon: Home },        // ❌ Sempre PT
+  { to: "/calendar", label: t('header.calendar'), icon: Calendar },  // ❌ Sempre PT
+  { to: "/planos", label: t('header.plans'), icon: CreditCard },    // ❌ Sempre PT
+];
+```
+
+**Resultado**: Na página `/es/planos`, clicar em "Inicio" leva para `/` (PT) em vez de `/es` (ES).
 
 ---
 
 ## Solução
 
-### Lógica Correta
-- Cada página deve **forçar seu próprio idioma** sem depender do localStorage
-- A página PT (`Index.tsx`) deve definir `setLanguage('pt')` igual como `IndexES.tsx` faz com 'es'
-- Adicionar rota `/pt` apontando para `Index.tsx`
+Modificar o `Header.tsx` para:
+1. Detectar se está nas rotas ES (`location.pathname.startsWith('/es')`)
+2. Gerar links dinâmicos baseados no idioma da rota atual
+3. Fazer o logo também navegar para a home correta do idioma
 
 ---
 
 ## Mudanças Necessárias
 
-### 1. Modificar `src/pages/Index.tsx` - Forçar PT
+### Arquivo: `src/components/Header.tsx`
 
-Adicionar `useEffect` que força o idioma PT ao montar a página (igual ao que `IndexES.tsx` faz):
-
+**1. Detectar se está na versão ES:**
 ```typescript
-// Linha ~51, depois de const { language, t } = useLanguage();
-// Trocar para:
-const { setLanguage, t } = useLanguage();
-
-// Adicionar useEffect após as declarações de estado (após linha ~60):
-useEffect(() => {
-  document.documentElement.lang = 'pt';
-  setLanguage('pt');
-}, [setLanguage]);
+const isESRoute = location.pathname.startsWith('/es');
 ```
 
-### 2. Adicionar Rota `/pt` no `src/App.tsx`
-
-Adicionar rota que aponta para a mesma página `Index.tsx`:
-
+**2. Gerar links dinâmicos baseados na rota:**
 ```typescript
-{/* ROTAS PORTUGUÊS */}
-<Route path="/" element={<Index />} />
-<Route path="/pt" element={<Index />} />  {/* ⭐ ADICIONAR */}
-<Route path="/calendar" element={<Calendar />} />
-<Route path="/pt/calendar" element={<Calendar />} />  {/* ⭐ ADICIONAR */}
-<Route path="/planos" element={<Planos />} />
-<Route path="/pt/planos" element={<Planos />} />  {/* ⭐ ADICIONAR */}
+const mainNavItems = [
+  { to: isESRoute ? "/es" : "/", label: t('header.home'), icon: Home },
+  { to: isESRoute ? "/es/calendar" : "/calendar", label: t('header.calendar'), icon: Calendar },
+  { to: isESRoute ? "/es/planos" : "/planos", label: t('header.plans'), icon: CreditCard },
+];
 ```
 
-### 3. Atualizar `src/pages/Calendar.tsx` - Forçar PT
-
-Adicionar a mesma lógica para forçar PT:
-
+**3. Atualizar o link do logo:**
 ```typescript
-useEffect(() => {
-  document.documentElement.lang = 'pt';
-  setLanguage('pt');
-}, [setLanguage]);
+<Link to={isESRoute ? "/es" : "/"} className="flex items-center gap-2 ...">
 ```
 
-### 4. Atualizar `src/pages/Planos.tsx` - Forçar PT
-
-Adicionar a mesma lógica para forçar PT:
-
+**4. Atualizar handleCategoryClick para navegar para a home correta:**
 ```typescript
-useEffect(() => {
-  document.documentElement.lang = 'pt';
-  setLanguage('pt');
-}, [setLanguage]);
-```
-
-### 5. Atualizar `src/components/LanguageSwitcher.tsx` - Melhorar Navegação
-
-Atualizar para incluir suporte às novas rotas `/pt`:
-
-```typescript
-const switchToLanguage = (targetLang: 'pt' | 'es') => {
-  const currentPath = window.location.pathname;
-  const searchParams = window.location.search;
-  
-  if (targetLang === 'es') {
-    // Navigate to ES version
-    if (currentPath.includes('/planos')) {
-      window.location.href = '/es/planos' + searchParams;
-    } else if (currentPath.includes('/calendar')) {
-      window.location.href = '/es/calendar' + searchParams;
-    } else {
-      window.location.href = '/es' + searchParams;
-    }
-  } else {
-    // Navigate to PT version - usar /pt para garantir que força o idioma
-    if (currentPath.includes('/planos')) {
-      window.location.href = '/pt/planos' + searchParams;
-    } else if (currentPath.includes('/calendar')) {
-      window.location.href = '/pt/calendar' + searchParams;
-    } else {
-      window.location.href = '/pt' + searchParams;
-    }
+const handleCategoryClick = (category: CategoryType) => {
+  const homeRoute = isESRoute ? "/es" : "/";
+  if (!location.pathname.endsWith('/es') && location.pathname !== "/") {
+    navigate(homeRoute, { state: { category } });
   }
+  onCategoryChange?.(category);
+  setIsOpen(false);
 };
 ```
 
@@ -109,61 +66,25 @@ const switchToLanguage = (targetLang: 'pt' | 'es') => {
 
 ## Resumo das Mudanças
 
-| Arquivo | Ação | Mudança |
-|---------|------|---------|
-| `src/pages/Index.tsx` | **MODIFICAR** | Adicionar `useEffect` que força `setLanguage('pt')` |
-| `src/pages/Calendar.tsx` | **MODIFICAR** | Adicionar `useEffect` que força `setLanguage('pt')` |
-| `src/pages/Planos.tsx` | **MODIFICAR** | Adicionar `useEffect` que força `setLanguage('pt')` |
-| `src/App.tsx` | **MODIFICAR** | Adicionar rotas `/pt`, `/pt/calendar`, `/pt/planos` |
-| `src/components/LanguageSwitcher.tsx` | **MODIFICAR** | Navegar para `/pt` em vez de `/` |
+| Arquivo | Mudança |
+|---------|---------|
+| `src/components/Header.tsx` | Detectar rota ES e gerar links dinâmicos (`/es`, `/es/calendar`, `/es/planos`) |
 
 ---
 
 ## Fluxo Corrigido
 
 ```text
-1. Usuário acessa canvaviagem.com/
-   ↓
-   Index.tsx monta
-   ↓
-   useEffect: setLanguage('pt') + document.lang = 'pt'
-   ↓
-   Página em Português ✅
-
-2. Usuário clica em "🇪🇸 ES"
-   ↓
-   LanguageSwitcher: window.location.href = '/es'
-   ↓
-   IndexES.tsx monta
-   ↓
-   useEffect: setLanguage('es') + document.lang = 'es'
-   ↓
-   Página em Espanhol ✅
-
-3. Usuário clica em "🇧🇷 PT"
-   ↓
-   LanguageSwitcher: window.location.href = '/pt'
-   ↓
-   Index.tsx monta
-   ↓
-   useEffect: setLanguage('pt') + document.lang = 'pt'
-   ↓
-   Página em Português ✅ (volta funciona!)
+Usuário em /es/planos:
+  ↓
+Clica em "Inicio" no Header
+  ↓
+isESRoute = true (pois pathname começa com /es)
+  ↓
+Link aponta para "/es" (não mais "/")
+  ↓
+Usuário vai para home em Espanhol ✅
 ```
-
----
-
-## URLs Finais Disponíveis
-
-| URL | Página | Idioma |
-|-----|--------|--------|
-| `/` | Index.tsx | PT |
-| `/pt` | Index.tsx | PT |
-| `/pt/planos` | Planos.tsx | PT |
-| `/pt/calendar` | Calendar.tsx | PT |
-| `/es` | IndexES.tsx | ES |
-| `/es/planos` | PlanosES.tsx | ES |
-| `/es/calendar` | CalendarES.tsx | ES |
 
 ---
 
@@ -171,9 +92,9 @@ const switchToLanguage = (targetLang: 'pt' | 'es') => {
 
 | Teste | Esperado |
 |-------|----------|
-| Acessar `/` | Página em PT |
-| Acessar `/pt` | Página em PT |
-| Acessar `/es` | Página em ES |
-| Clicar ES em `/` | Navega para `/es`, mostra ES |
-| Clicar PT em `/es` | Navega para `/pt`, mostra PT |
-| Alternar PT/ES várias vezes | Funciona corretamente |
+| Em `/es` clicar em "Planes" | Navega para `/es/planos` |
+| Em `/es` clicar em "Calendario" | Navega para `/es/calendar` |
+| Em `/es/planos` clicar em "Inicio" | Navega para `/es` |
+| Em `/` clicar em "Planos" | Navega para `/planos` (comportamento PT mantido) |
+| Em `/es` clicar no logo | Navega para `/es` |
+| Em `/` clicar no logo | Navega para `/` |
