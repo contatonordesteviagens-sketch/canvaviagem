@@ -11,6 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface EditModalProps {
   open: boolean;
@@ -21,8 +28,9 @@ interface EditModalProps {
     url: string;
     description?: string | null;
     is_active?: boolean;
+    language?: string | null;
   } | null;
-  onSave: (id: string, data: { title: string; url: string; description: string; is_active: boolean }) => void;
+  onSave: (id: string, data: { title: string; url: string; description: string; is_active: boolean; language: string }) => void;
   isSaving?: boolean;
 }
 
@@ -37,6 +45,7 @@ export const EditModal = ({
   const [url, setUrl] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [language, setLanguage] = useState("pt");
 
   useEffect(() => {
     if (item) {
@@ -44,12 +53,13 @@ export const EditModal = ({
       setUrl(item.url);
       setDescription(item.description || "");
       setIsActive(item.is_active ?? true);
+      setLanguage(item.language || "pt");
     }
   }, [item]);
 
   const handleSave = () => {
     if (item) {
-      onSave(item.id, { title, url, description, is_active: isActive });
+      onSave(item.id, { title, url, description, is_active: isActive, language });
     }
   };
 
@@ -99,6 +109,19 @@ export const EditModal = ({
               checked={isActive}
               onCheckedChange={setIsActive}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="language">Idioma</Label>
+            <Select value={language} onValueChange={setLanguage}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pt">🇧🇷 Português</SelectItem>
+                <SelectItem value="es">🇪🇸 Espanhol</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
         

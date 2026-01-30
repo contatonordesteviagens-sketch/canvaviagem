@@ -362,7 +362,8 @@ export const useUpdateContentItem = () => {
       title?: string; 
       url?: string;
       description?: string | null;
-      is_active?: boolean 
+      is_active?: boolean;
+      language?: string;
     }) => {
       const { id, ...updateData } = data;
       const { error } = await supabase
@@ -376,6 +377,7 @@ export const useUpdateContentItem = () => {
       queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
       queryClient.invalidateQueries({ queryKey: ["content-items"] });
       queryClient.invalidateQueries({ queryKey: ["video-templates"] });
+      queryClient.invalidateQueries({ queryKey: ["featured-items"] });
     },
   });
 };
