@@ -20,7 +20,6 @@ import { SelectFeaturedModal } from "./SelectFeaturedModal";
 import { BulkAddModal } from "./BulkAddModal";
 import { ContentFilters } from "./ContentFilters";
 import { ContentItem, Caption, MarketingTool, useCreateContentItem, useCreateCaption, useCreateMarketingTool, useUpdateDisplayOrder, useUpdateContentItem } from "@/hooks/useContent";
-import { useInvalidateContent } from "@/hooks/useInvalidateContent";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -101,7 +100,6 @@ export const ContentSection = ({
   const createMarketingTool = useCreateMarketingTool();
   const updateDisplayOrder = useUpdateDisplayOrder();
   const updateContentItem = useUpdateContentItem();
-  const { invalidateAll } = useInvalidateContent();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -399,7 +397,7 @@ export const ContentSection = ({
         .update({ is_featured: true })
         .eq("id", id);
       
-      invalidateAll(); // Invalidate all caches for immediate sync
+      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
       toast({
         title: "Destaque adicionado",
         description: "O vídeo foi marcado como destaque.",
@@ -420,7 +418,7 @@ export const ContentSection = ({
         .update({ is_featured: false })
         .eq("id", id);
       
-      invalidateAll(); // Invalidate all caches for immediate sync
+      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
       toast({
         title: "Destaque removido",
         description: "O vídeo foi removido dos destaques.",
@@ -460,7 +458,7 @@ export const ContentSection = ({
       
       if (updateError) throw updateError;
       
-      invalidateAll(); // Invalidate all caches for immediate sync
+      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
       toast({
         title: "Imagem atualizada",
         description: "A imagem do destaque foi atualizada com sucesso.",
@@ -484,7 +482,7 @@ export const ContentSection = ({
       
       if (error) throw error;
       
-      invalidateAll(); // Invalidate all caches for immediate sync
+      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
       toast({
         title: "Imagem atualizada",
         description: "A URL da imagem foi salva com sucesso.",
@@ -522,7 +520,7 @@ export const ContentSection = ({
         .update({ is_featured: !item.is_featured })
         .eq("id", id);
       
-      invalidateAll(); // Invalidate all caches for immediate sync
+      queryClient.invalidateQueries({ queryKey: ["all-content-items"] });
       toast({
         title: item.is_featured ? "Destaque removido" : "Destaque adicionado",
         description: item.is_featured 

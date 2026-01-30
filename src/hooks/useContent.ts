@@ -86,7 +86,7 @@ export const useContentItems = (type?: string | string[], featuredOnly?: boolean
       // Apply language priority ordering
       return sortByLanguagePriority(data as ContentItem[], language);
     },
-    staleTime: 0, // Always refetch to ensure fresh data
+    staleTime: 1000 * 60 * 5, // 5 minutos
   });
 };
 
@@ -105,7 +105,7 @@ export const useNewestItemIds = () => {
       if (error) throw error;
       return data?.map(item => item.id) || [];
     },
-    staleTime: 0, // Always refetch
+    staleTime: 1000 * 60 * 2, // 2 minutos
   });
 };
 
@@ -136,7 +136,7 @@ export const useFeaturedItems = () => {
       if (error) throw error;
       return data as ContentItem[];
     },
-    staleTime: 0, // Always refetch
+    staleTime: 1000 * 60 * 5,
   });
 };
 
@@ -158,7 +158,7 @@ export const useHighlightedItems = () => {
       if (error) throw error;
       return sortByLanguagePriority(data as ContentItem[], language);
     },
-    staleTime: 0, // Always refetch
+    staleTime: 1000 * 60 * 2,
   });
 };
 
@@ -184,7 +184,7 @@ export const useVideoTemplates = (category?: string) => {
       if (error) throw error;
       return sortByLanguagePriority(data as ContentItem[], language);
     },
-    staleTime: 0, // Always refetch
+    staleTime: 1000 * 60 * 5,
   });
 };
 
@@ -209,7 +209,7 @@ export const useCaptions = (category?: 'nacional' | 'internacional') => {
       if (error) throw error;
       return sortByLanguagePriority(data as Caption[], language);
     },
-    staleTime: 0, // Always refetch
+    staleTime: 1000 * 60 * 5,
   });
 };
 
@@ -229,7 +229,7 @@ export const useMarketingTools = () => {
       if (error) throw error;
       return sortByLanguagePriority(data as MarketingTool[], language);
     },
-    staleTime: 0, // Always refetch
+    staleTime: 1000 * 60 * 5,
   });
 };
 
@@ -535,8 +535,6 @@ export const useCreateMarketingTool = () => {
 
 // Update display order mutation
 export const useUpdateDisplayOrder = () => {
-  const queryClient = useQueryClient();
-  
   return useMutation({
     mutationFn: async ({ 
       table, 
@@ -555,20 +553,7 @@ export const useUpdateDisplayOrder = () => {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
-      // Invalidate ALL caches to ensure user-facing pages update
-      queryClient.invalidateQueries({ queryKey: ['all-content-items'] });
-      queryClient.invalidateQueries({ queryKey: ['content-items'] });
-      queryClient.invalidateQueries({ queryKey: ['featured-items'] });
-      queryClient.invalidateQueries({ queryKey: ['highlighted-items'] });
-      queryClient.invalidateQueries({ queryKey: ['video-templates'] });
-      queryClient.invalidateQueries({ queryKey: ['all-captions'] });
-      queryClient.invalidateQueries({ queryKey: ['captions'] });
-      queryClient.invalidateQueries({ queryKey: ['all-marketing-tools'] });
-      queryClient.invalidateQueries({ queryKey: ['marketing-tools'] });
-      
-      console.log('✅ Display order updated and caches invalidated');
-    },
+    // No onSuccess invalidation - optimistic updates handle UI immediately
   });
 };
 

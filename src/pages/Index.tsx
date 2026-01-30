@@ -59,8 +59,8 @@ const Index = () => {
   // Video filters - conditionally remove "Nacionais" for Spanish
   const videoFilters = language === 'es'
     ? [
-        { id: 'internacionais' as const, label: '🇪🇸 Español' },
         { id: 'todos' as const, label: t('filter.all') },
+        { id: 'internacionais' as const, label: t('filter.international') },
         { id: 'favoritos' as const, label: '⭐ ' + t('category.favorites') },
       ]
     : [
