@@ -16,7 +16,14 @@ const Calendar = () => {
   const [currentYear, setCurrentYear] = useState(2024);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { language, t } = useLanguage();
+  const { setLanguage, t } = useLanguage();
+  
+  // Force PT language on this page
+  const language = 'pt';
+  useEffect(() => {
+    document.documentElement.lang = 'pt';
+    setLanguage('pt');
+  }, [setLanguage]);
 
   // Initialize with São Paulo timezone
   useEffect(() => {
@@ -213,7 +220,7 @@ const Calendar = () => {
                   }}
                 >
                   <ExternalLink className="h-3 w-3 mr-1" />
-                  <span className="hidden md:inline">{language === 'es' ? 'Editar' : 'Editar'}</span>
+                  <span className="hidden md:inline">Editar</span>
                 </Button>
               )}
             </div>
@@ -283,7 +290,7 @@ const Calendar = () => {
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto mx-4">
           <DialogHeader>
             <DialogTitle className="text-lg md:text-xl">
-              📅 {selectedDay} {language === 'es' ? 'de' : 'de'} {monthNames[currentMonth]} {language === 'es' ? 'de' : 'de'} {currentYear}
+              📅 {selectedDay} de {monthNames[currentMonth]} de {currentYear}
             </DialogTitle>
           </DialogHeader>
           

@@ -46,7 +46,14 @@ const STRIPE_LINKS = {
 const Planos = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { language, t } = useLanguage();
+  const { setLanguage, t } = useLanguage();
+  
+  // Force PT language on this page
+  const language = 'pt';
+  useEffect(() => {
+    document.documentElement.lang = 'pt';
+    setLanguage('pt');
+  }, [setLanguage]);
   const {
     user,
     loading: authLoading,
@@ -100,9 +107,9 @@ const Planos = () => {
   }, [searchParams, refreshSubscription, navigate]);
 
   const handleCheckout = async () => {
-    // Track with correct currency based on language
-    const price = language === 'es' ? 9.09 : 37.90;
-    const currency = language === 'es' ? 'USD' : 'BRL';
+    // Track with BRL currency for PT version
+    const price = 37.90;
+    const currency = 'BRL';
     trackInitiateCheckout(price, currency);
     setCheckoutLoading(true);
 
@@ -223,7 +230,7 @@ const Planos = () => {
                 </p>
                 {subscription.subscriptionEnd && (
                   <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                    {t('plans.nextRenewal').replace('{date}', new Date(subscription.subscriptionEnd).toLocaleDateString(language === 'es' ? 'es-ES' : 'pt-BR'))}
+                    {t('plans.nextRenewal').replace('{date}', new Date(subscription.subscriptionEnd).toLocaleDateString('pt-BR'))}
                   </p>
                 )}
               </div>

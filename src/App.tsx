@@ -52,8 +52,11 @@ const App = () => (
               <Routes>
                 {/* ROTAS PORTUGUÊS */}
                 <Route path="/" element={<Index />} />
+                <Route path="/pt" element={<Index />} />
                 <Route path="/calendar" element={<Calendar />} />
+                <Route path="/pt/calendar" element={<Calendar />} />
                 <Route path="/planos" element={<Planos />} />
+                <Route path="/pt/planos" element={<Planos />} />
                 
                 {/* ROTAS ESPANHOL - PÁGINAS INDEPENDENTES */}
                 <Route path="/es" element={<IndexES />} />

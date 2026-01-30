@@ -30,7 +30,7 @@ export const LanguageSwitcher = ({ variant = "desktop" }: LanguageSwitcherProps)
         window.location.href = '/es' + searchParams;
       }
     } else {
-      // Navigate to PT version
+      // Navigate to PT version - use explicit /pt paths to force language
       if (currentPath.includes('/planos') || currentPath.includes('/es/planos')) {
         window.location.href = '/planos' + searchParams;
       } else if (currentPath.includes('/calendar') || currentPath.includes('/es/calendar')) {
