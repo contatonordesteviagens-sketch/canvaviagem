@@ -48,7 +48,13 @@ type VideoFilter = 'todos' | 'nacionais' | 'internacionais' | 'favoritos' | 'eva
 const Index = () => {
   const navigate = useNavigate();
   const { user, loading, subscription } = useAuth();
-  const { language, t } = useLanguage();
+  const { setLanguage, t } = useLanguage();
+  
+  // Force PT language on this page
+  useEffect(() => {
+    document.documentElement.lang = 'pt';
+    setLanguage('pt');
+  }, [setLanguage]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [showAllCaptions, setShowAllCaptions] = useState(false);
@@ -56,26 +62,13 @@ const Index = () => {
   const [activeCategory, setActiveCategory] = useState<CategoryType>('videos');
   const [showPremiumGate, setShowPremiumGate] = useState(false);
 
-  // Video filters - conditionally remove "Nacionais" for Spanish
-  const videoFilters = language === 'es'
-    ? [
-        { id: 'internacionais' as const, label: '🇪🇸 Español' },
-        { id: 'todos' as const, label: t('filter.all') },
-        { id: 'favoritos' as const, label: '⭐ ' + t('category.favorites') },
-      ]
-    : [
-        { id: 'todos' as const, label: t('filter.all') },
-        { id: 'nacionais' as const, label: t('filter.national') },
-        { id: 'internacionais' as const, label: t('filter.international') },
-        { id: 'favoritos' as const, label: '⭐ ' + t('category.favorites') },
-      ];
-
-  // Reset filter if user switches to ES while on 'nacionais'
-  useEffect(() => {
-    if (language === 'es' && videoFilter === 'nacionais') {
-      setVideoFilter('todos');
-    }
-  }, [language, videoFilter]);
+  // Video filters - PT version always has all options
+  const videoFilters: { id: VideoFilter; label: string }[] = [
+    { id: 'todos', label: t('filter.all') },
+    { id: 'nacionais', label: t('filter.national') },
+    { id: 'internacionais', label: t('filter.international') },
+    { id: 'favoritos', label: '⭐ ' + t('category.favorites') },
+  ];
 
   // Database hooks
   const { data: videoTemplates, isLoading: videosLoading } = useContentItems(['video', 'seasonal']);
