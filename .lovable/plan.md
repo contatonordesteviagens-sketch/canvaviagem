@@ -1,486 +1,426 @@
-Plano de Implementação: Suporte Completo para Espanhol com Checkout Separado
-Resumo do que você pediu
-Remover aba "Próximo Nível" - Apenas na versão em espanhol
-Traduzir todas as páginas - Calendário, Planos (com nova página ES com preços em dólar)
-Checkouts separados - PT: R$ 37,90 (existente) | ES: $9,09 USD (novo link Stripe)
-Gestão aprimorada - Filtros de idioma, ordenação (mais recente padrão), destaques separados por idioma
-Remover filtro "Nacionais" - Apenas na versão em espanhol
-URLs em /es - Não vamos mudar isso (já está usando estado, não URL)
-Remover popup inicial - Permitir navegação livre, popup só ao clicar para usar conteúdo, com botão de checkout por idioma
-Dados Fornecidos
-Idioma	Preço	Link Stripe	Product ID
-Português	R$ 37,90/mês	https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00	(existente)
-Espanhol	$9,09 USD	https://buy.stripe.com/bJedRa3TIej6cz15gE8so04	prod_TsnHjECj482iVM
-Fase 1: Remover "Próximo Nível" em Espanhol
-Arquivo: 
-src/components/Header.tsx
 
-Mudança:
+# Plano de Implementação: Sistema de Destaques Separados por Idioma
 
-O link "Próximo Nível" só aparece quando language === 'pt'
-No mobile e desktop, condicionalmente renderizar com base no idioma
-// Antes (desktop, linha ~179-186):
-<NavLink to="/proximo-nivel">...</NavLink>
-// Depois:
-{language === 'pt' && (
-  <NavLink to="/proximo-nivel">...</NavLink>
-)}
-O mesmo para a versão mobile (linhas ~254-263).
+## Resumo
 
-Fase 2: Traduzir Página de Planos + Checkout Separado
-2.1 Atualizar Traduções
-Arquivo: src/lib/translations.ts
+Implementar um sistema de gestão de destaques com abas separadas por idioma (PT/ES) no painel administrativo, permitindo gerenciar até 10 destaques independentes para cada idioma. Na página inicial, os usuários verão apenas os destaques do idioma selecionado.
 
-Novas chaves para Planos (ES):
+---
 
-// Preço atualizado para dólar
-'plans.price': '$9,09',
-'plans.period': '/mes',
-'plans.currency': 'USD',
-'plans.priceOriginal': '$19,90',
-// Novos textos para versão ES
-'plans.heroTitle': '¡VENDE MÁS VIAJES TODO EL AÑO!',
-'plans.heroSubtitle': 'Accede a +250 videos de viajes y publica en 2 minutos',
-'plans.badgeOffer': 'OFERTA EXCLUSIVA',
-'plans.lessThanPerVideo': 'Menos de $0,05 por video',
-'plans.approvedAgencies': 'Aprobado por +500 Agencias',
-// ... demais textos da página Planos
-2.2 Modificar Página de Planos
-Arquivo: 
-src/pages/Planos.tsx
+## Estado Atual
 
-Mudanças principais:
+| Componente | Situação Atual |
+|------------|---------------|
+| `ContentSection.tsx` | Destaques sem separação por idioma (apenas 1 lista de 10 itens) |
+| `useFeaturedItems` | Busca todos os destaques e aplica ordenação por idioma (não filtra) |
+| `SelectFeaturedModal` | Não considera idioma ao mostrar itens disponíveis |
+| `FeaturedCard` | Não mostra badge de idioma |
 
-Importar useLanguage:
-import { useLanguage } from "@/contexts/LanguageContext";
-const { language, t } = useLanguage();
-Checkout condicional por idioma:
-// Links de checkout
-const STRIPE_PAYMENT_LINK_PT = "https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00";
-const STRIPE_PAYMENT_LINK_ES = "https://buy.stripe.com/bJedRa3TIej6cz15gE8so04";
-// Na função handleCheckout:
-const checkoutLink = language === 'es' 
-  ? STRIPE_PAYMENT_LINK_ES 
-  : STRIPE_PAYMENT_LINK_PT;
-// Track com moeda correta
-trackInitiateCheckout(
-  language === 'es' ? 9.09 : 37.90, 
-  language === 'es' ? 'USD' : 'BRL'
-);
-Preços dinâmicos na UI:
-// Antes: <span>R$ 37,90</span>
-// Depois:
-<span>{t('plans.price')}</span>
-<span>{t('plans.period')}</span>
-// Preço riscado (antes de desconto)
-// PT: de R$ 197,00
-// ES: de $19,90
-Traduzir todos os textos estáticos:
-Hero section
-Benefícios (benefits array)
-FAQs
-Botões CTA
-Badges de prova social
-Fase 3: Traduzir Página do Calendário
-Arquivo: 
-src/pages/Calendar.tsx
+---
 
-Mudanças:
+## Arquitetura da Solução
 
-Importar useLanguage:
-import { useLanguage } from "@/contexts/LanguageContext";
-const { t, language } = useLanguage();
-Traduzir nomes dos meses:
-const monthNames = language === 'es' 
-  ? ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
-     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
-  : ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-     "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-Traduzir dias da semana:
-const dayNames = language === 'es'
-  ? ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
-  : ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-Traduzir textos estáticos:
-Título: "Calendário de Postagens" → "Calendario de Publicaciones"
-"Hoje" → "Hoy"
-"Agendado" → "Programado"
-"Sugestão automática" → "Sugerencia automática"
-Modal de dia: traduzir labels
-Fase 4: Remover Filtro "Nacionais" em Espanhol
-Arquivo: 
-src/pages/Index.tsx
+```text
+┌────────────────────────────────────────────────────────────────────┐
+│                       PAINEL DE GESTÃO                             │
+│                                                                    │
+│  ┌───────────────────────────────────────────────────────────────┐ │
+│  │  ⭐ DESTAQUES PRINCIPAIS                                      │ │
+│  │                                                               │ │
+│  │  ┌─────────────────────┬─────────────────────┐                │ │
+│  │  │ 🇧🇷 Destaques PT     │ 🇪🇸 Destaques ES     │  ← Abas       │ │
+│  │  │    (5/10)           │    (3/10)           │                │ │
+│  │  └─────────────────────┴─────────────────────┘                │ │
+│  │                                                               │ │
+│  │  [Aba PT ativa]                                              │ │
+│  │  ┌────┐  ┌────┐  ┌────┐  ┌────┐  ┌────┐  ┌──────────┐        │ │
+│  │  │ #1 │  │ #2 │  │ #3 │  │ #4 │  │ #5 │  │ + Add PT │        │ │
+│  │  └────┘  └────┘  └────┘  └────┘  └────┘  └──────────┘        │ │
+│  └───────────────────────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────────────────┘
+```
 
-Mudança:
+---
 
-Importar idioma e filtrar array:
-import { useLanguage } from "@/contexts/LanguageContext";
-const { language, t } = useLanguage();
-// Filtros condicionais
-const videoFilters = language === 'es'
-  ? [
-      { id: 'todos' as const, label: t('filter.all') },
-      { id: 'internacionais' as const, label: t('filter.international') },
-      { id: 'favoritos' as const, label: '⭐ ' + t('category.favorites') },
-    ]
-  : [
-      { id: 'todos' as const, label: t('filter.all') },
-      { id: 'nacionais' as const, label: t('filter.national') },
-      { id: 'internacionais' as const, label: t('filter.international') },
-      { id: 'favoritos' as const, label: '⭐ ' + t('category.favorites') },
-    ];
-Ajustar estado inicial:
-// Se usuário está em ES e tinha 'nacionais' selecionado, voltar para 'todos'
-useEffect(() => {
-  if (language === 'es' && videoFilter === 'nacionais') {
-    setVideoFilter('todos');
-  }
-}, [language]);
-Fase 5: Gestão Aprimorada com Filtros de Idioma
-5.1 Atualizar ContentSection
-Arquivo: 
-src/components/gestao/ContentSection.tsx
+## Fase 1: Atualizar `ContentSection.tsx` - Separar Destaques por Idioma
 
-Novas funcionalidades:
+### 1.1 Adicionar estado para controle da aba de destaque
 
-Adicionar filtro de idioma:
-const [languageFilter, setLanguageFilter] = useState<"all" | "pt" | "es">("all");
-// Componente de filtro
-<Select value={languageFilter} onValueChange={(v) => setLanguageFilter(v)}>
-  <SelectTrigger className="w-36">
-    <Globe className="w-4 h-4 mr-2" />
-    <SelectValue />
-  </SelectTrigger>
-  <SelectContent>
-    <SelectItem value="all">Todos idiomas</SelectItem>
-    <SelectItem value="pt">🇧🇷 Português</SelectItem>
-    <SelectItem value="es">🇪🇸 Espanhol</SelectItem>
-  </SelectContent>
-</Select>
-Aplicar filtro nos itens:
-const filterByLanguage = <T extends { language?: string | null }>(items: T[]): T[] => {
-  if (languageFilter === "all") return items;
-  return items.filter(item => (item.language || 'pt') === languageFilter);
-};
-Alterar ordenação padrão para "mais recentes":
-// Antes: const [sortOrder, setSortOrder] = useState<SortOrder>("custom");
-// Depois:
-const [sortOrder, setSortOrder] = useState<SortOrder>("recent");
-5.2 Seção de Destaques por Idioma
-Arquivo: 
-src/components/gestao/ContentSection.tsx
+**Arquivo:** `src/components/gestao/ContentSection.tsx`
 
-Nova seção de Destaques com abas por idioma:
+**Mudanças:**
 
+1. **Adicionar estado para aba de idioma ativa nos destaques:**
+```typescript
+const [featuredLanguageTab, setFeaturedLanguageTab] = useState<"pt" | "es">("pt");
+```
+
+2. **Criar variáveis para separar destaques por idioma:**
+```typescript
 // Destaques separados por idioma
 const featuredPT = useMemo(() => 
-  contentItems.filter(item => item.is_featured && (item.language || 'pt') === 'pt'),
+  contentItems.filter(item => 
+    item.is_featured && 
+    ['video', 'seasonal'].includes(item.type) &&
+    (item.language === 'pt' || !item.language)
+  ),
   [contentItems]
 );
+
 const featuredES = useMemo(() => 
-  contentItems.filter(item => item.is_featured && item.language === 'es'),
+  contentItems.filter(item => 
+    item.is_featured && 
+    ['video', 'seasonal'].includes(item.type) &&
+    item.language === 'es'
+  ),
   [contentItems]
 );
-// UI com tabs
-<Tabs defaultValue="pt">
-  <TabsList>
-    <TabsTrigger value="pt">🇧🇷 Destaques PT ({featuredPT.length}/10)</TabsTrigger>
-    <TabsTrigger value="es">🇪🇸 Destaques ES ({featuredES.length}/10)</TabsTrigger>
-  </TabsList>
-  <TabsContent value="pt">
-    {/* Grid de destaques PT */}
-  </TabsContent>
-  <TabsContent value="es">
-    {/* Grid de destaques ES */}
-  </TabsContent>
-</Tabs>
-5.3 Adicionar campo de idioma no modal de criação
-Arquivo: 
-src/components/gestao/CreateItemModal.tsx
+```
 
-Adicionar seletor de idioma:
+3. **Atualizar `availableForFeatured` para filtrar por idioma:**
+```typescript
+// Itens disponíveis para o idioma da aba ativa
+const availableForFeaturedByLanguage = useMemo(() => {
+  const lang = featuredLanguageTab;
+  return videoItems.filter(item => 
+    !item.is_featured && 
+    (lang === 'pt' 
+      ? (item.language === 'pt' || !item.language) 
+      : item.language === 'es'
+    )
+  );
+}, [videoItems, featuredLanguageTab]);
+```
 
-<Select value={language} onValueChange={setLanguage}>
-  <SelectTrigger>
-    <SelectValue placeholder="Idioma" />
-  </SelectTrigger>
-  <SelectContent>
-    <SelectItem value="pt">🇧🇷 Português</SelectItem>
-    <SelectItem value="es">🇪🇸 Espanhol</SelectItem>
-  </SelectContent>
-</Select>
-Fase 6: Atualizar Edge Function de Checkout (Opcional)
-Arquivo: 
-supabase/functions/create-checkout/index.ts
+### 1.2 Atualizar a aba "Destaque" com sub-abas de idioma
 
-Se quiser usar checkout via edge function para ES:
+**Substituir o conteúdo de `TabsContent value="destaque"`:**
 
-// Receber idioma do body
-const { language = 'pt' } = await req.json();
-// Price IDs por idioma
-const PRICE_IDS = {
-  pt: "price_1SnPjZLXUoWoiE4TWVWEP6TZ", // R$ 37,90
-  es: "price_XXXXXXXX", // $9.09 USD - você precisa criar o Price ID
+```tsx
+<TabsContent value="destaque" className="mt-6">
+  <Card className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-200 dark:border-amber-800">
+    <CardHeader>
+      <CardTitle className="flex items-center gap-2">
+        <Sparkles className="h-5 w-5 text-amber-500" />
+        Mídias em Destaque por Idioma
+      </CardTitle>
+      <p className="text-sm text-muted-foreground">
+        Gerencie até 10 destaques para cada idioma. Os usuários verão apenas os destaques do idioma selecionado.
+      </p>
+    </CardHeader>
+  </Card>
+  
+  {/* Sub-abas por idioma */}
+  <Tabs value={featuredLanguageTab} onValueChange={(v) => setFeaturedLanguageTab(v as "pt" | "es")}>
+    <TabsList className="mb-4">
+      <TabsTrigger value="pt" className="flex items-center gap-2">
+        🇧🇷 Destaques PT ({featuredPT.length}/10)
+      </TabsTrigger>
+      <TabsTrigger value="es" className="flex items-center gap-2">
+        🇪🇸 Destaques ES ({featuredES.length}/10)
+      </TabsTrigger>
+    </TabsList>
+    
+    {/* Conteúdo PT */}
+    <TabsContent value="pt">
+      <FeaturedLanguageGrid
+        items={featuredPT}
+        language="pt"
+        maxItems={10}
+        onOpenSelectModal={() => setSelectFeaturedModalOpen(true)}
+        onUploadImage={handleUploadFeaturedImage}
+        onUpdateImageUrl={handleUpdateImageUrl}
+        onRemoveFromFeatured={handleRemoveFromFeatured}
+        onEdit={onEditItem}
+      />
+    </TabsContent>
+    
+    {/* Conteúdo ES */}
+    <TabsContent value="es">
+      <FeaturedLanguageGrid
+        items={featuredES}
+        language="es"
+        maxItems={10}
+        onOpenSelectModal={() => setSelectFeaturedModalOpen(true)}
+        onUploadImage={handleUploadFeaturedImage}
+        onUpdateImageUrl={handleUpdateImageUrl}
+        onRemoveFromFeatured={handleRemoveFromFeatured}
+        onEdit={onEditItem}
+      />
+    </TabsContent>
+  </Tabs>
+</TabsContent>
+```
+
+### 1.3 Criar componente `FeaturedLanguageGrid`
+
+**Adicionar no mesmo arquivo ou criar componente separado:**
+
+```tsx
+interface FeaturedLanguageGridProps {
+  items: ContentItem[];
+  language: "pt" | "es";
+  maxItems: number;
+  onOpenSelectModal: () => void;
+  onUploadImage: (id: string, file: File) => void;
+  onUpdateImageUrl: (id: string, url: string) => void;
+  onRemoveFromFeatured: (id: string) => void;
+  onEdit: (item: EditableItem) => void;
+}
+
+const FeaturedLanguageGrid = ({
+  items,
+  language,
+  maxItems,
+  onOpenSelectModal,
+  onUploadImage,
+  onUpdateImageUrl,
+  onRemoveFromFeatured,
+  onEdit,
+}: FeaturedLanguageGridProps) => {
+  const canAddMore = items.length < maxItems;
+  
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      {items.map(item => (
+        <FeaturedCard
+          key={item.id}
+          item={item}
+          onUploadImage={onUploadImage}
+          onUpdateImageUrl={onUpdateImageUrl}
+          onRemoveFromFeatured={onRemoveFromFeatured}
+          onEdit={onEdit}
+        />
+      ))}
+      
+      {/* Botão adicionar (se < 10) */}
+      {canAddMore && (
+        <Button
+          variant="outline"
+          className="aspect-[9/16] h-auto border-dashed flex flex-col items-center justify-center gap-2"
+          onClick={onOpenSelectModal}
+        >
+          <Plus className="h-8 w-8" />
+          <span className="text-sm">Adicionar</span>
+          <span className="text-xs text-muted-foreground">
+            ({items.length}/{maxItems})
+          </span>
+        </Button>
+      )}
+      
+      {/* Mensagem se vazio */}
+      {items.length === 0 && (
+        <div className="col-span-full text-center py-8 text-muted-foreground">
+          <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <p>Nenhum destaque em {language === 'pt' ? 'Português' : 'Espanhol'}</p>
+          <p className="text-sm">Clique em "Adicionar" para selecionar um vídeo.</p>
+        </div>
+      )}
+    </div>
+  );
 };
-const priceId = PRICE_IDS[language] || PRICE_IDS.pt;
-// Criar sessão com o price ID correto
-const session = await stripe.checkout.sessions.create({
-  line_items: [{ price: priceId, quantity: 1 }],
-  // ...
-});
-Nota: Como você forneceu um link de pagamento direto do Stripe, podemos usar ele diretamente no frontend sem precisar modificar a edge function.
+```
 
-Fase 7: Remover Popup Inicial e Bloquear ao Uso
-7.1 Comportamento Atual vs Novo
-Estado Atual	Novo Comportamento
-Popup aparece na tela inicial para não-assinantes	❌ Remover popup inicial
-Bloqueia acesso imediato	✅ Permitir navegação livre no app
-Não há popup ao clicar em ações	✅ Mostrar popup APENAS ao tentar usar conteúdo
-Sem botão de checkout no popup	✅ Adicionar botão de checkout por idioma
-7.2 Lógica do Novo Popup
-Trigger para mostrar popup:
+### 1.4 Atualizar validação de limite no `handleToggleFeatured`
 
-Usuário NÃO assinante clica em:
-"Copiar" legenda
-"Usar Template" (abrir no Canva)
-"Baixar" vídeo/recurso
-Qualquer ferramenta de marketing
-Qualquer ação que use conteúdo premium
-Conteúdo do popup por idioma:
+**Modificar a função para considerar o idioma do item:**
 
-Idioma	Título	Descrição	Botão
-PT	"Conteúdo Exclusivo"	"Este conteúdo é exclusivo para assinantes Premium"	"Assinar Premium - R$ 37,90/mês" → Link PT
-ES	"Contenido Exclusivo"	"Este contenido es exclusivo para suscriptores Premium"	"Suscribirse Premium - $9,09/mes" → Link ES
-7.3 Modificações de Código
-Arquivo: 
-src/pages/Index.tsx
-
-Mudanças:
-
-Remover PromoPopup da renderização inicial:
-// Antes (linha ~640-650):
-<PromoPopup 
-  isOpen={showPromoPopup}
-  onClose={() => setShowPromoPopup(false)}
-/>
-// REMOVER completamente da página inicial
-Adicionar PremiumGate com checkout por idioma:
-import { useLanguage } from "@/contexts/LanguageContext";
-// No componente Index:
-const { language } = useLanguage();
-const [showPremiumGate, setShowPremiumGate] = useState(false);
-const [gateAction, setGateAction] = useState<string>('');
-// Função para verificar e bloquear ação
-const handlePremiumAction = (action: string, callback: () => void) => {
-  if (!subscription.subscribed) {
-    setGateAction(action);
-    setShowPremiumGate(true);
+```typescript
+const handleToggleFeatured = async (id: string) => {
+  const item = contentItems.find(i => i.id === id);
+  if (!item) return;
+  
+  // Verificar limite por idioma
+  const itemLanguage = item.language || 'pt';
+  const featuredForLanguage = itemLanguage === 'es' ? featuredES : featuredPT;
+  
+  if (!item.is_featured && featuredForLanguage.length >= 10) {
+    toast({
+      title: "Limite atingido",
+      description: `Você já possui 10 destaques em ${itemLanguage === 'es' ? 'Espanhol' : 'Português'}. Remova um para adicionar outro.`,
+      variant: "destructive",
+    });
     return;
   }
-  callback();
+  
+  // ... resto da lógica
 };
-// Renderizar PremiumGate com checkout
-<PremiumGate
-  isOpen={showPremiumGate}
-  onClose={() => setShowPremiumGate(false)}
-  checkoutUrl={
-    language === 'es' 
-      ? 'https://buy.stripe.com/bJedRa3TIej6cz15gE8so04'
-      : 'https://buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00'
-  }
-  language={language}
+```
+
+### 1.5 Atualizar o `SelectFeaturedModal` para usar idioma
+
+**Modificar a chamada do modal para passar o idioma correto:**
+
+```tsx
+<SelectFeaturedModal
+  isOpen={selectFeaturedModalOpen}
+  onClose={() => setSelectFeaturedModalOpen(false)}
+  availableVideos={availableForFeaturedByLanguage}
+  onSelect={handleSelectFeatured}
+  language={featuredLanguageTab}
 />
-Aplicar verificação em todas as ações:
-// Exemplo: botão "Copiar" de legenda
-<Button onClick={() => handlePremiumAction('copy_caption', () => {
-  navigator.clipboard.writeText(caption.text);
-  toast.success("Legenda copiada!");
-})}>
-  Copiar
-</Button>
-// Exemplo: link "Usar Template"
-<a onClick={(e) => {
-  if (!subscription.subscribed) {
-    e.preventDefault();
-    handlePremiumAction('use_template', () => {});
-  }
-}} href={item.url}>
-  Usar Template
-</a>
-Arquivo: 
-src/components/PremiumGate.tsx
+```
 
-Atualizar componente para aceitar checkout por idioma:
+---
 
-interface PremiumGateProps {
+## Fase 2: Atualizar `SelectFeaturedModal.tsx`
+
+### 2.1 Adicionar prop de idioma e ajustar UI
+
+**Arquivo:** `src/components/gestao/SelectFeaturedModal.tsx`
+
+```tsx
+interface SelectFeaturedModalProps {
   isOpen: boolean;
   onClose: () => void;
-  checkoutUrl: string;
-  language: 'pt' | 'es';
+  availableVideos: ContentItem[];
+  onSelect: (id: string) => void;
+  language: "pt" | "es";  // Nova prop
 }
-export const PremiumGate = ({ isOpen, onClose, checkoutUrl, language }: PremiumGateProps) => {
-  const translations = {
-    pt: {
-      title: "Conteúdo Exclusivo 🔒",
-      description: "Este conteúdo é exclusivo para assinantes Premium",
-      cta: "Assinar Premium - R$ 37,90/mês",
-      close: "Voltar",
-    },
-    es: {
-      title: "Contenido Exclusivo 🔒",
-      description: "Este contenido es exclusivo para suscriptores Premium",
-      cta: "Suscribirse Premium - $9,09/mes",
-      close: "Volver",
-    }
-  };
-  const t = translations[language];
+
+export const SelectFeaturedModal = ({
+  isOpen,
+  onClose,
+  availableVideos,
+  onSelect,
+  language,
+}: SelectFeaturedModalProps) => {
+  // ...
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">{t.title}</DialogTitle>
-          <DialogDescription className="text-lg">
-            {t.description}
+          <DialogTitle>
+            Adicionar Destaque {language === 'pt' ? '🇧🇷 Português' : '🇪🇸 Espanhol'}
+          </DialogTitle>
+          <DialogDescription>
+            Selecione um vídeo em {language === 'pt' ? 'Português' : 'Espanhol'} para destacar.
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex flex-col gap-3 mt-4">
-          <Button 
-            onClick={() => window.open(checkoutUrl, '_blank')}
-            size="lg"
-            className="w-full"
-          >
-            {t.cta}
-          </Button>
-          
-          <Button 
-            onClick={onClose}
-            variant="ghost"
-            size="lg"
-          >
-            {t.close}
-          </Button>
-        </div>
+        {/* ... resto igual, usando availableVideos já filtrado */}
       </DialogContent>
     </Dialog>
   );
 };
-Arquivo: src/components/canva/VideoTemplateCard.tsx
+```
 
-Bloquear clique em card de vídeo:
+---
 
-<Card 
-  onClick={() => {
-    if (!subscription.subscribed) {
-      onPremiumRequired?.();
-      return;
-    }
-    window.open(item.url, '_blank');
-  }}
-  className="cursor-pointer hover:shadow-lg transition-shadow"
->
-  {/* ... conteúdo do card */}
+## Fase 3: Atualizar `useFeaturedItems` para Filtrar por Idioma
+
+**Arquivo:** `src/hooks/useContent.ts`
+
+### 3.1 Modificar a query para filtrar por idioma no banco
+
+```typescript
+export const useFeaturedItems = () => {
+  const { language } = useLanguage();
+  
+  return useQuery({
+    queryKey: ["featured-items", language],
+    queryFn: async () => {
+      let query = supabase
+        .from("content_items")
+        .select("*")
+        .eq("is_active", true)
+        .eq("is_featured", true)
+        .in("type", ["video", "seasonal"])
+        .order("display_order", { ascending: true })
+        .limit(10);
+      
+      // Filtrar por idioma no banco
+      if (language === 'pt') {
+        query = query.or('language.eq.pt,language.is.null');
+      } else {
+        query = query.eq('language', language);
+      }
+      
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as ContentItem[];
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+};
+```
+
+---
+
+## Fase 4: Atualizar `FeaturedCard.tsx` com Badge de Idioma (Opcional)
+
+**Arquivo:** `src/components/gestao/FeaturedCard.tsx`
+
+### 4.1 Adicionar badge visual de idioma
+
+```tsx
+// No componente FeaturedCard, adicionar badge de idioma
+<Card className="relative overflow-hidden group">
+  {/* Badge de idioma */}
+  <div className="absolute top-2 left-2 z-10">
+    <Badge variant="secondary" className="text-xs">
+      {item.language === 'es' ? '🇪🇸' : '🇧🇷'}
+    </Badge>
+  </div>
+  
+  {/* ... resto igual */}
 </Card>
-7.4 Componentes a Modificar
-Componente	Tipo de Bloqueio	Ação Premium
-VideoTemplateCard.tsx	Clique no card	Abrir template no Canva
-CaptionCard.tsx	Botão "Copiar"	Copiar texto da legenda
-ToolCard.tsx	Clique no card	Acessar ferramenta
-DownloadCard.tsx	Botão "Baixar"	Download de vídeo
-FeedCard.tsx	Clique no card	Abrir arte no Canva
-StoryCard.tsx	Clique no card	Abrir story no Canva
-7.5 Adicionar Traduções para o Popup
-Arquivo: src/lib/translations.ts
+```
 
-// Adicionar chaves de premium gate
-pt: {
-  // ... chaves existentes
-  'premium.title': 'Conteúdo Exclusivo 🔒',
-  'premium.description': 'Este conteúdo é exclusivo para assinantes Premium',
-  'premium.cta': 'Assinar Premium - R$ 37,90/mês',
-  'premium.close': 'Voltar',
-},
-es: {
-  // ... chaves existentes
-  'premium.title': 'Contenido Exclusivo 🔒',
-  'premium.description': 'Este contenido es exclusivo para suscriptores Premium',
-  'premium.cta': 'Suscribirse Premium - $9,09/mes',
-  'premium.close': 'Volver',
-}
-Arquivos a Criar
-Arquivo	Descrição
-Nenhum	Todas as mudanças são em arquivos existentes
-Arquivos a Modificar
-Arquivo	Mudanças
-src/lib/translations.ts	Adicionar ~60 novas chaves (Planos, Calendário, Premium Gate)
-src/components/Header.tsx
-Esconder "Próximo Nível" em ES
-src/pages/Planos.tsx
-Traduzir toda a UI + checkout separado por idioma
-src/pages/Calendar.tsx
-Traduzir meses, dias, labels
-src/pages/Index.tsx
-Remover filtro "Nacionais" em ES + remover PromoPopup inicial + adicionar verificação premium
-src/components/PremiumGate.tsx
-Atualizar para aceitar checkout por idioma
-src/components/canva/VideoTemplateCard.tsx	Bloquear clique para não-assinantes
-src/components/canva/CaptionCard.tsx
-Bloquear botão "Copiar" para não-assinantes
-src/components/canva/ToolCard.tsx
-Bloquear acesso a ferramentas
-src/components/canva/DownloadCard.tsx	Bloquear downloads
-src/components/canva/FeedCard.tsx	Bloquear clique para não-assinantes
-src/components/canva/StoryCard.tsx	Bloquear clique para não-assinantes
-src/components/gestao/ContentSection.tsx
-Filtro de idioma, ordenação padrão "recentes", destaques por idioma
-src/components/gestao/CreateItemModal.tsx
-Campo de seleção de idioma ao criar item
-Resumo Visual das Diferenças PT vs ES
-Feature	Português (PT)	Espanhol (ES)
-Aba "Próximo Nível"	✅ Visível	❌ Oculta
-Filtro "Nacionais"	✅ Visível	❌ Oculto
-Preço	R$ 37,90/mês	$9,09/mês (USD)
-Checkout Link	Link PT existente	Novo link ES
-Moeda no tracking	BRL	USD
-Popup Premium	"Assinar Premium - R$ 37,90"	"Suscribirse Premium - $9,09"
-Ordem de Implementação
-✅ Atualizar translations.ts com novas chaves (Planos, Calendário, Premium)
-✅ Modificar 
-Header.tsx
- - esconder Próximo Nível em ES
-✅ Modificar 
-Index.tsx
- - remover filtro Nacionais em ES + remover PromoPopup inicial
-✅ Modificar PremiumGate.tsx - adicionar checkout por idioma
-✅ Modificar cards (VideoTemplate, Caption, Tool, Download, Feed, Story) - bloquear ações premium
-✅ Modificar Planos.tsx - traduzir + checkout separado
-✅ Modificar Calendar.tsx - traduzir interface
-✅ Modificar ContentSection.tsx - filtros de idioma e ordenação
-✅ Modificar CreateItemModal.tsx - campo de idioma
-✅ Testar fluxo completo (navegação livre → clique → popup → checkout)
-Verificação Final
-Comportamento Geral:
+---
 
- Não-assinante pode navegar livremente no app (ver todos os cards, abas, filtros)
- Popup NÃO aparece na tela inicial
- Popup aparece APENAS ao clicar para usar conteúdo premium
-Verificação por Idioma:
+## Fase 5: Atualizar contador na TabsList principal
 
- PT: Aba "Próximo Nível" visível, filtro "Nacionais" visível
- ES: Aba "Próximo Nível" oculta, filtro "Nacionais" oculto
- PT: Popup mostra "R$ 37,90/mês" e link PT
- ES: Popup mostra "$9,09/mes" e link ES
- Calendário traduzido corretamente em ambos idiomas
- Planos traduzidos e preços corretos
-Verificação Premium:
+**Arquivo:** `src/components/gestao/ContentSection.tsx`
 
- Clicar em "Copiar legenda" → Popup (não-assinante)
- Clicar em "Usar Template" → Popup (não-assinante)
- Clicar em "Baixar vídeo" → Popup (não-assinante)
- Clicar em card de ferramenta → Popup (não-assinante)
- Assinante pode usar tudo sem popup
-Verificação Admin:
+Atualizar o texto do trigger para mostrar contagem total:
 
- Gestão: filtro de idioma funciona
- Gestão: ordenação padrão é "mais recentes"
- Gestão: destaques separados por idioma (PT/ES)
- Ao criar item, pode selecionar idioma
+```tsx
+<TabsTrigger value="destaque" className="flex items-center gap-2">
+  <Sparkles className="h-4 w-4" />
+  Destaques (PT: {featuredPT.length} | ES: {featuredES.length})
+</TabsTrigger>
+```
+
+---
+
+## Resumo das Mudanças
+
+| Arquivo | Mudanças |
+|---------|----------|
+| `src/components/gestao/ContentSection.tsx` | Adicionar sub-abas PT/ES, separar destaques por idioma, componente FeaturedLanguageGrid |
+| `src/components/gestao/SelectFeaturedModal.tsx` | Adicionar prop `language`, atualizar título |
+| `src/components/gestao/FeaturedCard.tsx` | Adicionar badge de idioma |
+| `src/hooks/useContent.ts` | Filtrar `useFeaturedItems` por idioma no banco |
+
+---
+
+## Verificação Final
+
+### No Painel de Gestão:
+- [ ] Aparece aba "Destaques" com sub-abas "🇧🇷 Destaques PT" e "🇪🇸 Destaques ES"
+- [ ] Cada aba mostra contador (X/10)
+- [ ] Clicar em "Adicionar" na aba PT mostra apenas vídeos em PT
+- [ ] Clicar em "Adicionar" na aba ES mostra apenas vídeos em ES
+- [ ] Limite de 10 é respeitado por idioma independentemente
+- [ ] Remover destaque funciona corretamente
+- [ ] Upload de imagem funciona corretamente
+
+### Na Página Inicial (Index.tsx):
+- [ ] Usuário em PT vê apenas destaques PT
+- [ ] Usuário em ES vê apenas destaques ES
+- [ ] Trocar idioma atualiza destaques automaticamente
+- [ ] Máximo 10 destaques visíveis por idioma
+
+---
+
+## Dependências
+
+| Fase | Depende de |
+|------|------------|
+| 1 (ContentSection) | Nenhuma |
+| 2 (SelectFeaturedModal) | Fase 1 |
+| 3 (useFeaturedItems) | Nenhuma (pode ser feito em paralelo) |
+| 4 (FeaturedCard badge) | Nenhuma (opcional) |
+| 5 (Contador) | Fase 1 |
