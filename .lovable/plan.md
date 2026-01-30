@@ -1,386 +1,229 @@
 
-# Plano de Implementação: Sistema de Destaques Separados por Idioma
+# Plano: Filtro de Idioma + Seletor no EditModal + Drag-and-Drop Melhorado
 
 ## Resumo
 
-Implementar um sistema de gestão de destaques com abas separadas por idioma (PT/ES) no painel administrativo, permitindo gerenciar até 10 destaques independentes para cada idioma. Na página inicial, os usuários verão apenas os destaques do idioma selecionado.
+Implementar três melhorias na gestão de vídeos:
+1. **Adicionar filtro de idioma** na aba de Vídeos (Internacionais/Todos/Favoritos equivale a ES/Todos)
+2. **Adicionar seletor de idioma no EditModal** para alterar o idioma de um vídeo
+3. **Manter o drag-and-drop funcional** que já existe (quando ordenação é "manual")
 
 ---
 
 ## Estado Atual
 
-| Componente | Situação Atual |
-|------------|---------------|
-| `ContentSection.tsx` | Destaques sem separação por idioma (apenas 1 lista de 10 itens) |
-| `useFeaturedItems` | Busca todos os destaques e aplica ordenação por idioma (não filtra) |
-| `SelectFeaturedModal` | Não considera idioma ao mostrar itens disponíveis |
-| `FeaturedCard` | Não mostra badge de idioma |
+| Componente | Situação |
+|------------|----------|
+| `ContentSection.tsx` | Tem `languageFilter` mas **não está sendo usado** na aba de Vídeos |
+| `ContentFilters.tsx` | **Não tem filtro de idioma** |
+| `EditModal.tsx` | **Não tem seletor de idioma** |
+| Banco de dados | Já tem coluna `language` funcionando (pt/es) |
+| Drag-and-drop | Já funciona quando `sortOrder === "custom"` |
 
 ---
 
-## Arquitetura da Solução
+## Fase 1: Adicionar Filtro de Idioma no ContentFilters
 
-```text
-┌────────────────────────────────────────────────────────────────────┐
-│                       PAINEL DE GESTÃO                             │
-│                                                                    │
-│  ┌───────────────────────────────────────────────────────────────┐ │
-│  │  ⭐ DESTAQUES PRINCIPAIS                                      │ │
-│  │                                                               │ │
-│  │  ┌─────────────────────┬─────────────────────┐                │ │
-│  │  │ 🇧🇷 Destaques PT     │ 🇪🇸 Destaques ES     │  ← Abas       │ │
-│  │  │    (5/10)           │    (3/10)           │                │ │
-│  │  └─────────────────────┴─────────────────────┘                │ │
-│  │                                                               │ │
-│  │  [Aba PT ativa]                                              │ │
-│  │  ┌────┐  ┌────┐  ┌────┐  ┌────┐  ┌────┐  ┌──────────┐        │ │
-│  │  │ #1 │  │ #2 │  │ #3 │  │ #4 │  │ #5 │  │ + Add PT │        │ │
-│  │  └────┘  └────┘  └────┘  └────┘  └────┘  └──────────┘        │ │
-│  └───────────────────────────────────────────────────────────────┘ │
-└────────────────────────────────────────────────────────────────────┘
+**Arquivo:** `src/components/gestao/ContentFilters.tsx`
+
+### Mudanças:
+
+1. Adicionar nova prop `languageFilter` e `onLanguageChange`
+2. Adicionar Select para idioma com opções:
+   - Todos
+   - Português (PT)
+   - Espanhol/Internacionais (ES)
+
+```tsx
+interface ContentFiltersProps {
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+  typeFilter: string;
+  onTypeChange: (value: string) => void;
+  categoryFilter: string;
+  onCategoryChange: (value: string) => void;
+  languageFilter?: string;           // Nova prop
+  onLanguageChange?: (value: string) => void;  // Nova prop
+  showTypeFilter?: boolean;
+  showLanguageFilter?: boolean;      // Nova prop
+}
+
+// Adicionar no JSX:
+{showLanguageFilter && (
+  <Select value={languageFilter} onValueChange={onLanguageChange}>
+    <SelectTrigger className="w-[160px]">
+      <Globe className="w-4 h-4 mr-2" />
+      <SelectValue placeholder="Idioma" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="all">Todos idiomas</SelectItem>
+      <SelectItem value="pt">Português</SelectItem>
+      <SelectItem value="es">Espanhol/Int.</SelectItem>
+    </SelectContent>
+  </Select>
+)}
 ```
 
 ---
 
-## Fase 1: Atualizar `ContentSection.tsx` - Separar Destaques por Idioma
-
-### 1.1 Adicionar estado para controle da aba de destaque
+## Fase 2: Aplicar Filtro na Aba de Vídeos
 
 **Arquivo:** `src/components/gestao/ContentSection.tsx`
 
-**Mudanças:**
+### Mudanças:
 
-1. **Adicionar estado para aba de idioma ativa nos destaques:**
-```typescript
-const [featuredLanguageTab, setFeaturedLanguageTab] = useState<"pt" | "es">("pt");
-```
-
-2. **Criar variáveis para separar destaques por idioma:**
-```typescript
-// Destaques separados por idioma
-const featuredPT = useMemo(() => 
-  contentItems.filter(item => 
-    item.is_featured && 
-    ['video', 'seasonal'].includes(item.type) &&
-    (item.language === 'pt' || !item.language)
-  ),
-  [contentItems]
-);
-
-const featuredES = useMemo(() => 
-  contentItems.filter(item => 
-    item.is_featured && 
-    ['video', 'seasonal'].includes(item.type) &&
-    item.language === 'es'
-  ),
-  [contentItems]
-);
-```
-
-3. **Atualizar `availableForFeatured` para filtrar por idioma:**
-```typescript
-// Itens disponíveis para o idioma da aba ativa
-const availableForFeaturedByLanguage = useMemo(() => {
-  const lang = featuredLanguageTab;
-  return videoItems.filter(item => 
-    !item.is_featured && 
-    (lang === 'pt' 
-      ? (item.language === 'pt' || !item.language) 
-      : item.language === 'es'
-    )
-  );
-}, [videoItems, featuredLanguageTab]);
-```
-
-### 1.2 Atualizar a aba "Destaque" com sub-abas de idioma
-
-**Substituir o conteúdo de `TabsContent value="destaque"`:**
+1. Modificar `videoItems` para filtrar por idioma:
 
 ```tsx
-<TabsContent value="destaque" className="mt-6">
-  <Card className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-200 dark:border-amber-800">
-    <CardHeader>
-      <CardTitle className="flex items-center gap-2">
-        <Sparkles className="h-5 w-5 text-amber-500" />
-        Mídias em Destaque por Idioma
-      </CardTitle>
-      <p className="text-sm text-muted-foreground">
-        Gerencie até 10 destaques para cada idioma. Os usuários verão apenas os destaques do idioma selecionado.
-      </p>
-    </CardHeader>
-  </Card>
+const videoItems = useMemo(() => {
+  let filtered = contentItems.filter(item => ['video', 'seasonal'].includes(item.type));
   
-  {/* Sub-abas por idioma */}
-  <Tabs value={featuredLanguageTab} onValueChange={(v) => setFeaturedLanguageTab(v as "pt" | "es")}>
-    <TabsList className="mb-4">
-      <TabsTrigger value="pt" className="flex items-center gap-2">
-        🇧🇷 Destaques PT ({featuredPT.length}/10)
-      </TabsTrigger>
-      <TabsTrigger value="es" className="flex items-center gap-2">
-        🇪🇸 Destaques ES ({featuredES.length}/10)
-      </TabsTrigger>
-    </TabsList>
-    
-    {/* Conteúdo PT */}
-    <TabsContent value="pt">
-      <FeaturedLanguageGrid
-        items={featuredPT}
-        language="pt"
-        maxItems={10}
-        onOpenSelectModal={() => setSelectFeaturedModalOpen(true)}
-        onUploadImage={handleUploadFeaturedImage}
-        onUpdateImageUrl={handleUpdateImageUrl}
-        onRemoveFromFeatured={handleRemoveFromFeatured}
-        onEdit={onEditItem}
-      />
-    </TabsContent>
-    
-    {/* Conteúdo ES */}
-    <TabsContent value="es">
-      <FeaturedLanguageGrid
-        items={featuredES}
-        language="es"
-        maxItems={10}
-        onOpenSelectModal={() => setSelectFeaturedModalOpen(true)}
-        onUploadImage={handleUploadFeaturedImage}
-        onUpdateImageUrl={handleUpdateImageUrl}
-        onRemoveFromFeatured={handleRemoveFromFeatured}
-        onEdit={onEditItem}
-      />
-    </TabsContent>
-  </Tabs>
-</TabsContent>
-```
-
-### 1.3 Criar componente `FeaturedLanguageGrid`
-
-**Adicionar no mesmo arquivo ou criar componente separado:**
-
-```tsx
-interface FeaturedLanguageGridProps {
-  items: ContentItem[];
-  language: "pt" | "es";
-  maxItems: number;
-  onOpenSelectModal: () => void;
-  onUploadImage: (id: string, file: File) => void;
-  onUpdateImageUrl: (id: string, url: string) => void;
-  onRemoveFromFeatured: (id: string) => void;
-  onEdit: (item: EditableItem) => void;
-}
-
-const FeaturedLanguageGrid = ({
-  items,
-  language,
-  maxItems,
-  onOpenSelectModal,
-  onUploadImage,
-  onUpdateImageUrl,
-  onRemoveFromFeatured,
-  onEdit,
-}: FeaturedLanguageGridProps) => {
-  const canAddMore = items.length < maxItems;
-  
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-      {items.map(item => (
-        <FeaturedCard
-          key={item.id}
-          item={item}
-          onUploadImage={onUploadImage}
-          onUpdateImageUrl={onUpdateImageUrl}
-          onRemoveFromFeatured={onRemoveFromFeatured}
-          onEdit={onEdit}
-        />
-      ))}
-      
-      {/* Botão adicionar (se < 10) */}
-      {canAddMore && (
-        <Button
-          variant="outline"
-          className="aspect-[9/16] h-auto border-dashed flex flex-col items-center justify-center gap-2"
-          onClick={onOpenSelectModal}
-        >
-          <Plus className="h-8 w-8" />
-          <span className="text-sm">Adicionar</span>
-          <span className="text-xs text-muted-foreground">
-            ({items.length}/{maxItems})
-          </span>
-        </Button>
-      )}
-      
-      {/* Mensagem se vazio */}
-      {items.length === 0 && (
-        <div className="col-span-full text-center py-8 text-muted-foreground">
-          <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
-          <p>Nenhum destaque em {language === 'pt' ? 'Português' : 'Espanhol'}</p>
-          <p className="text-sm">Clique em "Adicionar" para selecionar um vídeo.</p>
-        </div>
-      )}
-    </div>
-  );
-};
-```
-
-### 1.4 Atualizar validação de limite no `handleToggleFeatured`
-
-**Modificar a função para considerar o idioma do item:**
-
-```typescript
-const handleToggleFeatured = async (id: string) => {
-  const item = contentItems.find(i => i.id === id);
-  if (!item) return;
-  
-  // Verificar limite por idioma
-  const itemLanguage = item.language || 'pt';
-  const featuredForLanguage = itemLanguage === 'es' ? featuredES : featuredPT;
-  
-  if (!item.is_featured && featuredForLanguage.length >= 10) {
-    toast({
-      title: "Limite atingido",
-      description: `Você já possui 10 destaques em ${itemLanguage === 'es' ? 'Espanhol' : 'Português'}. Remova um para adicionar outro.`,
-      variant: "destructive",
+  // Aplicar filtro de idioma
+  if (languageFilter !== 'all') {
+    filtered = filtered.filter(item => {
+      const itemLang = item.language || 'pt';
+      return itemLang === languageFilter;
     });
-    return;
   }
   
-  // ... resto da lógica
-};
+  return sortItems(filterItems(filtered));
+}, [contentItems, sortOrder, searchQuery, categoryFilter, languageFilter]);
 ```
 
-### 1.5 Atualizar o `SelectFeaturedModal` para usar idioma
-
-**Modificar a chamada do modal para passar o idioma correto:**
+2. Passar as props para ContentFilters na aba de vídeos:
 
 ```tsx
-<SelectFeaturedModal
-  isOpen={selectFeaturedModalOpen}
-  onClose={() => setSelectFeaturedModalOpen(false)}
-  availableVideos={availableForFeaturedByLanguage}
-  onSelect={handleSelectFeatured}
-  language={featuredLanguageTab}
+<ContentFilters
+  searchQuery={searchQuery}
+  onSearchChange={setSearchQuery}
+  typeFilter={typeFilter}
+  onTypeChange={setTypeFilter}
+  categoryFilter={categoryFilter}
+  onCategoryChange={setCategoryFilter}
+  languageFilter={languageFilter}
+  onLanguageChange={setLanguageFilter}
+  showTypeFilter={false}
+  showLanguageFilter={true}
 />
 ```
 
 ---
 
-## Fase 2: Atualizar `SelectFeaturedModal.tsx`
+## Fase 3: Adicionar Seletor de Idioma no EditModal
 
-### 2.1 Adicionar prop de idioma e ajustar UI
+**Arquivo:** `src/components/gestao/EditModal.tsx`
 
-**Arquivo:** `src/components/gestao/SelectFeaturedModal.tsx`
+### Mudanças:
+
+1. Adicionar prop `language` no item e no callback `onSave`
+2. Adicionar estado e Select para idioma:
 
 ```tsx
-interface SelectFeaturedModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  availableVideos: ContentItem[];
-  onSelect: (id: string) => void;
-  language: "pt" | "es";  // Nova prop
+interface EditModalProps {
+  item: {
+    id: string;
+    title: string;
+    url: string;
+    description?: string | null;
+    is_active?: boolean;
+    language?: string | null;  // Nova prop
+  } | null;
+  onSave: (id: string, data: { 
+    title: string; 
+    url: string; 
+    description: string; 
+    is_active: boolean;
+    language: string;  // Nova prop
+  }) => void;
 }
 
-export const SelectFeaturedModal = ({
-  isOpen,
-  onClose,
-  availableVideos,
-  onSelect,
-  language,
-}: SelectFeaturedModalProps) => {
-  // ...
-  
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
-            Adicionar Destaque {language === 'pt' ? '🇧🇷 Português' : '🇪🇸 Espanhol'}
-          </DialogTitle>
-          <DialogDescription>
-            Selecione um vídeo em {language === 'pt' ? 'Português' : 'Espanhol'} para destacar.
-          </DialogDescription>
-        </DialogHeader>
-        
-        {/* ... resto igual, usando availableVideos já filtrado */}
-      </DialogContent>
-    </Dialog>
-  );
-};
+// Adicionar estado:
+const [language, setLanguage] = useState("pt");
+
+// No useEffect:
+setLanguage(item.language || "pt");
+
+// Adicionar no JSX (após o campo "Ativo"):
+<div className="space-y-2">
+  <Label htmlFor="language">Idioma</Label>
+  <Select value={language} onValueChange={setLanguage}>
+    <SelectTrigger>
+      <SelectValue />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="pt">Português</SelectItem>
+      <SelectItem value="es">Espanhol</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
+// No handleSave:
+onSave(item.id, { title, url, description, is_active: isActive, language });
 ```
 
 ---
 
-## Fase 3: Atualizar `useFeaturedItems` para Filtrar por Idioma
+## Fase 4: Atualizar Hook useUpdateContentItem
 
 **Arquivo:** `src/hooks/useContent.ts`
 
-### 3.1 Modificar a query para filtrar por idioma no banco
+### Mudanças:
 
-```typescript
-export const useFeaturedItems = () => {
-  const { language } = useLanguage();
-  
-  return useQuery({
-    queryKey: ["featured-items", language],
-    queryFn: async () => {
-      let query = supabase
-        .from("content_items")
-        .select("*")
-        .eq("is_active", true)
-        .eq("is_featured", true)
-        .in("type", ["video", "seasonal"])
-        .order("display_order", { ascending: true })
-        .limit(10);
-      
-      // Filtrar por idioma no banco
-      if (language === 'pt') {
-        query = query.or('language.eq.pt,language.is.null');
-      } else {
-        query = query.eq('language', language);
-      }
-      
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as ContentItem[];
+Adicionar `language` nos campos aceitos pela mutation:
+
+```tsx
+export const useUpdateContentItem = () => {
+  return useMutation({
+    mutationFn: async (data: { 
+      id: string; 
+      title?: string; 
+      url?: string;
+      description?: string | null;
+      is_active?: boolean;
+      language?: string;  // Adicionar
+    }) => {
+      // ... resto igual
     },
-    staleTime: 1000 * 60 * 5,
   });
 };
 ```
 
 ---
 
-## Fase 4: Atualizar `FeaturedCard.tsx` com Badge de Idioma (Opcional)
+## Fase 5: Atualizar Gestao.tsx para Passar Language
 
-**Arquivo:** `src/components/gestao/FeaturedCard.tsx`
+**Arquivo:** `src/pages/Gestao.tsx`
 
-### 4.1 Adicionar badge visual de idioma
+### Mudanças:
+
+1. Atualizar tipo `EditableItem` para incluir `language`:
 
 ```tsx
-// No componente FeaturedCard, adicionar badge de idioma
-<Card className="relative overflow-hidden group">
-  {/* Badge de idioma */}
-  <div className="absolute top-2 left-2 z-10">
-    <Badge variant="secondary" className="text-xs">
-      {item.language === 'es' ? '🇪🇸' : '🇧🇷'}
-    </Badge>
-  </div>
-  
-  {/* ... resto igual */}
-</Card>
+type EditableItem = {
+  id: string;
+  title: string;
+  url: string;
+  description?: string | null;
+  is_active?: boolean;
+  language?: string | null;  // Adicionar
+};
 ```
 
----
-
-## Fase 5: Atualizar contador na TabsList principal
-
-**Arquivo:** `src/components/gestao/ContentSection.tsx`
-
-Atualizar o texto do trigger para mostrar contagem total:
+2. Atualizar `handleSaveItem` para incluir `language`:
 
 ```tsx
-<TabsTrigger value="destaque" className="flex items-center gap-2">
-  <Sparkles className="h-4 w-4" />
-  Destaques (PT: {featuredPT.length} | ES: {featuredES.length})
-</TabsTrigger>
+const handleSaveItem = (id: string, data: { 
+  title: string; 
+  url: string; 
+  description: string; 
+  is_active: boolean;
+  language: string;  // Adicionar
+}) => {
+  updateContent.mutate(
+    { id, ...data },
+    { /* callbacks */ }
+  );
+};
 ```
 
 ---
@@ -389,38 +232,73 @@ Atualizar o texto do trigger para mostrar contagem total:
 
 | Arquivo | Mudanças |
 |---------|----------|
-| `src/components/gestao/ContentSection.tsx` | Adicionar sub-abas PT/ES, separar destaques por idioma, componente FeaturedLanguageGrid |
-| `src/components/gestao/SelectFeaturedModal.tsx` | Adicionar prop `language`, atualizar título |
-| `src/components/gestao/FeaturedCard.tsx` | Adicionar badge de idioma |
-| `src/hooks/useContent.ts` | Filtrar `useFeaturedItems` por idioma no banco |
+| `src/components/gestao/ContentFilters.tsx` | Adicionar filtro de idioma (PT/ES/Todos) |
+| `src/components/gestao/ContentSection.tsx` | Aplicar filtro de idioma nos vídeos, passar props |
+| `src/components/gestao/EditModal.tsx` | Adicionar seletor de idioma |
+| `src/hooks/useContent.ts` | Adicionar `language` no `useUpdateContentItem` |
+| `src/pages/Gestao.tsx` | Atualizar tipos e handlers para incluir language |
+
+---
+
+## Comportamento Final
+
+### Na Aba de Vídeos:
+
+```text
+┌──────────────────────────────────────────────────────────┐
+│  [+ Adicionar ▼]  [Ordenar: Mais recentes ▼]             │
+│                                                          │
+│  [🔍 Pesquisar...]  [Categoria ▼]  [🌐 Idioma ▼]        │
+│                                     ├─ Todos idiomas     │
+│                                     ├─ 🇧🇷 Português    │
+│                                     └─ 🇪🇸 Espanhol/Int. │
+│                                                          │
+│  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐         │
+│  │ Vídeo  │  │ Vídeo  │  │ Vídeo  │  │ Vídeo  │         │
+│  │   PT   │  │   ES   │  │   PT   │  │   ES   │         │
+│  │[Editar]│  │[Editar]│  │[Editar]│  │[Editar]│         │
+│  └────────┘  └────────┘  └────────┘  └────────┘         │
+└──────────────────────────────────────────────────────────┘
+```
+
+### No Modal de Edição:
+
+```text
+┌──────────────────────────────────────┐
+│  Editar Item                         │
+├──────────────────────────────────────┤
+│  Título: [________________]          │
+│  URL:    [________________]          │
+│  Legenda: [_______________]          │
+│                                      │
+│  Ativo:  [x]                         │
+│                                      │
+│  Idioma: [🇧🇷 Português ▼]           │
+│          ├─ 🇧🇷 Português            │
+│          └─ 🇪🇸 Espanhol             │
+│                                      │
+│  [Cancelar]          [Salvar]        │
+└──────────────────────────────────────┘
+```
+
+---
+
+## Drag-and-Drop
+
+O drag-and-drop **já está implementado** e funciona quando:
+1. O usuário seleciona "Ordem manual (drag)" no filtro de ordenação
+2. Aparece o ícone de arrastar (⋮⋮) no canto dos cards
+3. Ao arrastar, a ordem é salva no campo `display_order`
+
+**Não precisa de mudanças** nesta funcionalidade - apenas garantir que continua funcionando após as modificações.
 
 ---
 
 ## Verificação Final
 
-### No Painel de Gestão:
-- [ ] Aparece aba "Destaques" com sub-abas "🇧🇷 Destaques PT" e "🇪🇸 Destaques ES"
-- [ ] Cada aba mostra contador (X/10)
-- [ ] Clicar em "Adicionar" na aba PT mostra apenas vídeos em PT
-- [ ] Clicar em "Adicionar" na aba ES mostra apenas vídeos em ES
-- [ ] Limite de 10 é respeitado por idioma independentemente
-- [ ] Remover destaque funciona corretamente
-- [ ] Upload de imagem funciona corretamente
-
-### Na Página Inicial (Index.tsx):
-- [ ] Usuário em PT vê apenas destaques PT
-- [ ] Usuário em ES vê apenas destaques ES
-- [ ] Trocar idioma atualiza destaques automaticamente
-- [ ] Máximo 10 destaques visíveis por idioma
-
----
-
-## Dependências
-
-| Fase | Depende de |
-|------|------------|
-| 1 (ContentSection) | Nenhuma |
-| 2 (SelectFeaturedModal) | Fase 1 |
-| 3 (useFeaturedItems) | Nenhuma (pode ser feito em paralelo) |
-| 4 (FeaturedCard badge) | Nenhuma (opcional) |
-| 5 (Contador) | Fase 1 |
+- [ ] Filtro de idioma aparece na aba de Vídeos
+- [ ] Selecionar "Espanhol" mostra apenas vídeos em ES
+- [ ] Selecionar "Português" mostra apenas vídeos em PT
+- [ ] Ao editar um vídeo, aparece seletor de idioma
+- [ ] Alterar idioma e salvar persiste a mudança
+- [ ] Drag-and-drop continua funcionando em "Ordem manual"
