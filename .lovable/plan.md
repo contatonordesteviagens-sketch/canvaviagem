@@ -1,252 +1,102 @@
 
+# Plano: URLs de Idioma para Todas as Páginas
 
-# Plano: URLs Permanentes por Idioma (Sem Redirect)
+## URLs para Anúncios
 
-## Situação Atual
-
-| Componente | Comportamento Atual | Problema |
-|------------|---------------------|----------|
-| `LanguageRedirect.tsx` | `/es/planos` → redireciona para `/planos` | Remove o prefixo `/es` da URL |
-| `LanguageSwitcher.tsx` | Apenas chama `setLanguage()` | Não navega para URLs diferentes |
-| Rotas ES | Não existem (`IndexES.tsx`, etc.) | Todas as rotas vão para mesma página |
-| URLs finais | Sempre sem prefixo (`/planos`) | Não funciona para anúncios segmentados |
-
-## Solução
-
-Manter URLs permanentes com prefixo de idioma, renderizando as mesmas páginas mas passando o idioma via contexto de rota.
-
-### Abordagem Escolhida
-
-Em vez de duplicar páginas (o que aumenta manutenção), vamos:
-1. Criar um **wrapper** que detecta o idioma da URL e define no contexto
-2. Renderizar as mesmas páginas existentes (Index, Planos, Calendar)
-3. Os hooks já usam `useLanguage()` e filtram conteúdo corretamente
+| Página | Português | Espanhol |
+|--------|-----------|----------|
+| **Home** | `canvaviagem.com/pt` | `canvaviagem.com/es` |
+| **Planos** | `canvaviagem.com/pt/planos` | `canvaviagem.com/es/planos` |
+| **Calendário** | `canvaviagem.com/pt/calendar` | `canvaviagem.com/es/calendar` |
+| **Pós-Pagamento** | `canvaviagem.com/pt/pos-pagamento` | `canvaviagem.com/es/pos-pagamento` |
+| **Obrigado** | `canvaviagem.com/pt/obrigado` | `canvaviagem.com/es/obrigado` |
 
 ---
 
 ## Implementação
 
-### Fase 1: Modificar LanguageRedirect para Não Redirecionar
+### 1. Criar Componente de Redirecionamento
 
-**Arquivo: `src/components/LanguageRedirect.tsx`**
-
-Transformar em um **wrapper transparente** que:
-- Define o idioma baseado na URL (`/es/*` → ES, `/pt/*` → PT)
-- Renderiza a página apropriada SEM redirecionar
-- Mantém a URL original
+**Arquivo: `src/components/LanguageRedirect.tsx`** (NOVO)
 
 ```typescript
 import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useLanguage, type Language } from '@/contexts/LanguageContext';
 
-// Importar páginas
-import Index from '@/pages/Index';
-import Planos from '@/pages/Planos';
-import Calendar from '@/pages/Calendar';
-import Auth from '@/pages/Auth';
-import PosPagamento from '@/pages/PosPagamento';
-import Obrigado from '@/pages/Obrigado';
-import Sucesso from '@/pages/Sucesso';
-
-const LanguageWrapper = () => {
+const LanguageRedirect = () => {
   const { lang, '*': restPath } = useParams();
   const { setLanguage } = useLanguage();
+  const navigate = useNavigate();
 
-  // Definir idioma baseado na URL
   useEffect(() => {
     if (lang === 'es' || lang === 'pt') {
+      // Define o idioma
       setLanguage(lang as Language);
+      
+      // Redireciona para a página destino (ou home se não houver)
+      const targetPath = restPath ? `/${restPath}` : '/';
+      navigate(targetPath, { replace: true });
     }
-  }, [lang, setLanguage]);
+  }, [lang, restPath, setLanguage, navigate]);
 
-  // Renderizar página baseada no path
-  const path = restPath || '';
-  
-  switch (path) {
-    case 'planos':
-      return <Planos />;
-    case 'calendar':
-      return <Calendar />;
-    case 'auth':
-      return <Auth />;
-    case 'pos-pagamento':
-      return <PosPagamento />;
-    case 'obrigado':
-      return <Obrigado />;
-    case 'sucesso':
-      return <Sucesso />;
-    default:
-      return <Index />;
-  }
+  return null;
 };
 
-export default LanguageWrapper;
+export default LanguageRedirect;
 ```
 
-### Fase 2: Atualizar Rotas no App.tsx
+### 2. Adicionar Rotas no App.tsx
 
 **Arquivo: `src/App.tsx`**
 
-Manter as rotas `/es/*` e `/pt/*` mas usando o wrapper:
-
 ```typescript
-// Renomear import
-import LanguageWrapper from "./components/LanguageRedirect";
+import LanguageRedirect from "./components/LanguageRedirect";
 
-// Rotas com wrapper
-<Route path="/es/*" element={<LanguageWrapper />} />
-<Route path="/pt/*" element={<LanguageWrapper />} />
-<Route path="/es" element={<LanguageWrapper />} />
-<Route path="/pt" element={<LanguageWrapper />} />
-```
-
-### Fase 3: Atualizar LanguageSwitcher para Navegar
-
-**Arquivo: `src/components/LanguageSwitcher.tsx`**
-
-Modificar para navegar entre URLs ao invés de apenas mudar estado:
-
-```typescript
-import { useNavigate, useLocation } from 'react-router-dom';
-
-export const LanguageSwitcher = ({ variant = "desktop" }) => {
-  const { language, t } = useLanguage();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Detectar se já está em rota ES
-  const isESRoute = location.pathname.startsWith('/es');
-  const isPTRoute = location.pathname.startsWith('/pt');
-  
-  const switchToLanguage = (targetLang: 'pt' | 'es') => {
-    const currentPath = location.pathname;
-    const searchParams = location.search;
-    
-    // Remover prefixo atual se existir
-    let basePath = currentPath
-      .replace(/^\/es/, '')
-      .replace(/^\/pt/, '') || '/';
-    
-    // Construir nova URL
-    let newPath: string;
-    if (targetLang === 'es') {
-      // ES sempre usa prefixo /es
-      newPath = basePath === '/' ? '/es' : `/es${basePath}`;
-    } else {
-      // PT pode usar sem prefixo (padrão) ou /pt
-      newPath = basePath;
-    }
-    
-    navigate(newPath + searchParams);
-  };
-
-  // Versão Mobile
-  if (variant === "mobile") {
-    return (
-      <div className="flex items-center gap-2 px-3 py-2">
-        <Globe className="h-5 w-5 text-muted-foreground" />
-        <span className="text-sm font-medium">{t('header.changeLanguage')}</span>
-        <div className="flex gap-2 ml-auto">
-          <Button
-            variant={language === 'pt' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => switchToLanguage('pt')}
-            className="h-8 px-3"
-          >
-            🇧🇷 PT
-          </Button>
-          <Button
-            variant={language === 'es' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => switchToLanguage('es')}
-            className="h-8 px-3"
-          >
-            🇪🇸 ES
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Versão Desktop
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2">
-          {language === 'pt' ? '🇧🇷' : '🇪🇸'}
-          <span className="hidden sm:inline">{language.toUpperCase()}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem 
-          onClick={() => switchToLanguage('pt')}
-          className={language === 'pt' ? 'bg-accent' : ''}
-        >
-          🇧🇷 Português
-        </DropdownMenuItem>
-        <DropdownMenuItem 
-          onClick={() => switchToLanguage('es')}
-          className={language === 'es' ? 'bg-accent' : ''}
-        >
-          🇪🇸 Español
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
-```
-
-### Fase 4: Atualizar Links no Header
-
-**Arquivo: `src/components/Header.tsx`**
-
-Os links internos precisam manter o prefixo de idioma:
-
-```typescript
-// Hook para gerar links com prefixo de idioma
-const getLocalizedPath = (path: string) => {
-  const isESRoute = location.pathname.startsWith('/es');
-  if (isESRoute && !path.startsWith('/es')) {
-    return `/es${path === '/' ? '' : path}`;
-  }
-  return path;
-};
-
-// Usar nos links
-const mainNavItems = [
-  { to: getLocalizedPath("/"), label: t('header.home'), icon: Home },
-  { to: getLocalizedPath("/calendar"), label: t('header.calendar'), icon: Calendar },
-  { to: getLocalizedPath("/planos"), label: t('header.plans'), icon: CreditCard },
-];
+// Adicionar ANTES da rota catch-all "*"
+<Route path="/es/*" element={<LanguageRedirect />} />
+<Route path="/pt/*" element={<LanguageRedirect />} />
+<Route path="/es" element={<LanguageRedirect />} />
+<Route path="/pt" element={<LanguageRedirect />} />
 ```
 
 ---
 
-## Fluxo Corrigido
+## Exemplos de URLs para Anúncios
+
+### Facebook/Instagram Ads
+
+| Campanha | URL de Destino |
+|----------|----------------|
+| Brasil - Home | `https://canvaviagem.com/pt` |
+| Brasil - Planos | `https://canvaviagem.com/pt/planos` |
+| Latam - Home | `https://canvaviagem.com/es` |
+| Latam - Planos | `https://canvaviagem.com/es/planos` |
+
+### Com UTMs
+
+```
+https://canvaviagem.com/es/planos?utm_source=facebook&utm_campaign=latam
+```
+
+---
+
+## Fluxo
 
 ```text
-Anúncio Brasil: canvaviagem.com/planos
+Usuário clica: canvaviagem.com/es/planos
     ↓
-Rota /planos renderiza <Planos />
+Rota /es/* captura
     ↓
-useLanguage() retorna 'pt' (localStorage)
+LanguageRedirect extrai: lang="es", restPath="planos"
     ↓
-URL permanece: canvaviagem.com/planos ✅
+Define idioma = Espanhol
     ↓
-Preço: R$ 37,90
-
-Anúncio México: canvaviagem.com/es/planos
+Salva no localStorage
     ↓
-Rota /es/* captura, LanguageWrapper renderiza
+Redireciona → canvaviagem.com/planos
     ↓
-useEffect define language = 'es'
-    ↓
-Renderiza <Planos /> diretamente (SEM redirect)
-    ↓
-URL permanece: canvaviagem.com/es/planos ✅
-    ↓
-Preço: $9,09 USD
+Usuário vê página de Planos em Espanhol ✅
 ```
 
 ---
@@ -255,40 +105,19 @@ Preço: $9,09 USD
 
 | Arquivo | Ação | Mudança |
 |---------|------|---------|
-| `src/components/LanguageRedirect.tsx` | **REESCREVER** | Wrapper que define idioma e renderiza página (sem redirect) |
-| `src/components/LanguageSwitcher.tsx` | **MODIFICAR** | Usar `navigate()` para trocar entre `/` e `/es` |
-| `src/components/Header.tsx` | **MODIFICAR** | Links internos mantêm prefixo `/es` quando necessário |
-| `src/App.tsx` | **MANTER** | Rotas já estão corretas |
+| `src/components/LanguageRedirect.tsx` | CRIAR | Componente que lê idioma e página da URL, define idioma e redireciona |
+| `src/App.tsx` | MODIFICAR | Adicionar rotas `/es/*`, `/pt/*`, `/es`, `/pt` |
 
 ---
 
-## URLs para Anúncios (Após Implementação)
+## Todas as URLs Disponíveis
 
-| Público | URL | Preço |
-|---------|-----|-------|
-| Brasil/Portugal | `canvaviagem.com/` | R$ 37,90 |
-| Brasil/Portugal | `canvaviagem.com/planos` | R$ 37,90 |
-| LATAM/Espanha | `canvaviagem.com/es` | $9,09 USD |
-| LATAM/Espanha | `canvaviagem.com/es/planos` | $9,09 USD |
-
----
-
-## Testes a Realizar
-
-1. **URLs Permanecem Diferentes**
-   - Acessar `/es` → URL permanece `/es`
-   - Acessar `/es/planos` → URL permanece `/es/planos`
-
-2. **LanguageSwitcher Navega Corretamente**
-   - Em `/` → Clicar ES → Navega para `/es`
-   - Em `/planos` → Clicar ES → Navega para `/es/planos`
-   - Em `/es/calendar` → Clicar PT → Navega para `/calendar`
-
-3. **Conteúdo Correto por Idioma**
-   - `/` mostra conteúdo PT
-   - `/es` mostra conteúdo ES
-
-4. **UTMs Preservados**
-   - Acessar `/es?utm_source=facebook`
-   - Trocar para PT → `/`?utm_source=facebook`
+| Rota Original | URL PT | URL ES |
+|---------------|--------|--------|
+| `/` | `/pt` | `/es` |
+| `/planos` | `/pt/planos` | `/es/planos` |
+| `/calendar` | `/pt/calendar` | `/es/calendar` |
+| `/pos-pagamento` | `/pt/pos-pagamento` | `/es/pos-pagamento` |
+| `/obrigado` | `/pt/obrigado` | `/es/obrigado` |
+| `/sucesso` | `/pt/sucesso` | `/es/sucesso` |
 
