@@ -141,12 +141,12 @@ export const BulkAddModal = ({
 
           <div className="grid gap-2">
             <Label>Categoria (opcional)</Label>
-            <Select value={category || ""} onValueChange={(v) => setCategory(v || null)}>
+            <Select value={category || "none"} onValueChange={(v) => setCategory(v === "none" ? null : v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Nenhuma</SelectItem>
+                <SelectItem value="none">Nenhuma</SelectItem>
                 {categories.map((c) => (
                   <SelectItem key={c.value} value={c.value}>
                     {c.label}
