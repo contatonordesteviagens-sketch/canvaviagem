@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, type Language } from "@/contexts/LanguageContext";
 import { sortByLanguagePriority } from "@/lib/language-utils";
 export interface ContentItem {
   id: string;
@@ -55,8 +55,9 @@ export interface MarketingTool {
 }
 
 // Hook para buscar content items por tipo with language priority ordering
-export const useContentItems = (type?: string | string[], featuredOnly?: boolean) => {
-  const { language } = useLanguage();
+export const useContentItems = (type?: string | string[], featuredOnly?: boolean, forcedLanguage?: Language) => {
+  const { language: contextLanguage } = useLanguage();
+  const language = forcedLanguage || contextLanguage;
   
   return useQuery({
     queryKey: ["content-items", type, featuredOnly, language],
@@ -110,8 +111,9 @@ export const useNewestItemIds = () => {
 };
 
 // Hook para buscar itens em destaque (is_featured) - filtered by language
-export const useFeaturedItems = () => {
-  const { language } = useLanguage();
+export const useFeaturedItems = (forcedLanguage?: Language) => {
+  const { language: contextLanguage } = useLanguage();
+  const language = forcedLanguage || contextLanguage;
   
   return useQuery({
     queryKey: ["featured-items", language],
@@ -141,8 +143,9 @@ export const useFeaturedItems = () => {
 };
 
 // Hook para buscar itens destacados (is_highlighted) - seção especial na home
-export const useHighlightedItems = () => {
-  const { language } = useLanguage();
+export const useHighlightedItems = (forcedLanguage?: Language) => {
+  const { language: contextLanguage } = useLanguage();
+  const language = forcedLanguage || contextLanguage;
   
   return useQuery({
     queryKey: ["highlighted-items", language],
@@ -198,8 +201,9 @@ export const useVideoTemplates = (category?: string) => {
 };
 
 // Hook para buscar captions
-export const useCaptions = (category?: 'nacional' | 'internacional') => {
-  const { language } = useLanguage();
+export const useCaptions = (category?: 'nacional' | 'internacional', forcedLanguage?: Language) => {
+  const { language: contextLanguage } = useLanguage();
+  const language = forcedLanguage || contextLanguage;
   
   return useQuery({
     queryKey: ["captions", category, language],
@@ -223,8 +227,9 @@ export const useCaptions = (category?: 'nacional' | 'internacional') => {
 };
 
 // Hook para buscar marketing tools
-export const useMarketingTools = () => {
-  const { language } = useLanguage();
+export const useMarketingTools = (forcedLanguage?: Language) => {
+  const { language: contextLanguage } = useLanguage();
+  const language = forcedLanguage || contextLanguage;
   
   return useQuery({
     queryKey: ["marketing-tools", language],

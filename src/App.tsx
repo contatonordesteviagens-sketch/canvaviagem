@@ -8,9 +8,12 @@ import { useTrackUtm } from "@/hooks/useTrackUtm";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
+import IndexES from "./pages/IndexES";
 import Calendar from "./pages/Calendar";
+import CalendarES from "./pages/CalendarES";
 import Auth from "./pages/Auth";
 import Planos from "./pages/Planos";
+import PlanosES from "./pages/PlanosES";
 import Sucesso from "./pages/Sucesso";
 import Obrigado from "./pages/Obrigado";
 import PosPagamento from "./pages/PosPagamento";
@@ -27,7 +30,6 @@ import Termos from "./pages/Termos";
 import Privacidade from "./pages/Privacidade";
 import ProximoNivel from "./pages/ProximoNivel";
 import AuthVerify from "./pages/AuthVerify";
-import LanguageRedirect from "./components/LanguageRedirect";
 
 const queryClient = new QueryClient();
 
@@ -48,11 +50,19 @@ const App = () => (
             <BrowserRouter>
               <UtmTracker />
               <Routes>
+                {/* ROTAS PORTUGUÊS */}
                 <Route path="/" element={<Index />} />
                 <Route path="/calendar" element={<Calendar />} />
+                <Route path="/planos" element={<Planos />} />
+                
+                {/* ROTAS ESPANHOL - PÁGINAS INDEPENDENTES */}
+                <Route path="/es" element={<IndexES />} />
+                <Route path="/es/calendar" element={<CalendarES />} />
+                <Route path="/es/planos" element={<PlanosES />} />
+                
+                {/* Auth e outras rotas compartilhadas */}
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/verify" element={<AuthVerify />} />
-                <Route path="/planos" element={<Planos />} />
                 <Route path="/sucesso" element={<Sucesso />} />
                 <Route path="/obrigado" element={<Obrigado />} />
                 <Route path="/pos-pagamento" element={<PosPagamento />} />
@@ -70,12 +80,6 @@ const App = () => (
                   <Route path="captions" element={<CaptionsManager />} />
                   <Route path="tools" element={<ToolsManager />} />
                 </Route>
-                
-                {/* Language Routes - Redirect with language setting */}
-                <Route path="/es/*" element={<LanguageRedirect />} />
-                <Route path="/pt/*" element={<LanguageRedirect />} />
-                <Route path="/es" element={<LanguageRedirect />} />
-                <Route path="/pt" element={<LanguageRedirect />} />
                 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
