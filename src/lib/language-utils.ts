@@ -4,7 +4,11 @@ import type { Language } from "@/contexts/LanguageContext";
  * Sort items by language priority. Items matching the selected language appear first.
  * Fallback order: selected language → 'pt' → 'en' → null/undefined
  */
-export function sortByLanguagePriority<T extends { language?: string | null; created_at?: string }>(
+export function sortByLanguagePriority<T extends { 
+  language?: string | null; 
+  created_at?: string;
+  display_order?: number | null;
+}>(
   items: T[],
   language: Language
 ): T[] {
@@ -26,7 +30,12 @@ export function sortByLanguagePriority<T extends { language?: string | null; cre
       if (!aPt && bPt) return 1;
     }
     
-    // Priority 3: Sort by created_at (most recent first)
+    // Priority 3: display_order (admin-defined order)
+    const aOrder = a.display_order ?? 9999;
+    const bOrder = b.display_order ?? 9999;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    
+    // Priority 4: Sort by created_at (most recent first) as fallback
     if (a.created_at && b.created_at) {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     }
