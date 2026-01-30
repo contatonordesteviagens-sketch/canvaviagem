@@ -1,104 +1,312 @@
+Plano: Corrigir Drag-and-Drop + Cache Invalidation + Featured Items
+Diagnóstico
+Analisando o código atual, identifiquei os seguintes problemas:
 
-# Plano: Garantir Funcionamento do Drag-and-Drop na Gestão
+Problema	Causa	Impacto
+Drag salva mas usuário não vê	
+useUpdateDisplayOrder
+ não invalida caches do frontend	Mudanças só aparecem após refresh
+Cache admin vs frontend	handleDragEnd atualiza apenas all-content-items	Página do usuário usa content-items
+Featured/Highlighted não atualizam	Falta invalidar featured-items, highlighted-items	Destaques não refletem mudanças
+Destaques ES não aparecem	Query de featuredItems não filtra por idioma	Destaques em espanhol não exibem
+Outras mutations não invalidam	Toggle featured, create, delete não invalidam cache	Mudanças não aparecem
+O que já funciona:
 
-## Situação Atual
+sortByLanguagePriority já considera display_order (corrigido na última edição)
+O drag-and-drop salva no banco corretamente
+O que NÃO funciona:
 
-O sistema de drag-and-drop **já está implementado** no painel de gestão! Quando você seleciona **"Ordem manual (drag)"** no dropdown de ordenação, o ícone de arrastar (⋮⋮) aparece nos cards e você pode reorganizá-los.
+useFeaturedItems
+ NÃO filtra por idioma (precisa correção)
+Mutations de toggle featured não invalidam cache
+staleTime alto impede refetch automático
+Solução em 4 Fases
+Fase 1: Criar Hook de Invalidação Centralizado
+Criar um novo hook que invalida todos os caches relevantes de uma vez.
 
-### O que já funciona:
-- Vídeos, Artes, Stories, Legendas (Nac e Int), Ferramentas e Recursos têm drag-and-drop
-- A ordem é salva no banco via `display_order`
-- O ícone de arrastar aparece quando `sortOrder === "custom"`
+Arquivo a criar: src/hooks/useInvalidateContent.ts
 
-### O problema identificado:
-A ordem salva pelo admin **não é aplicada corretamente** na página do usuário porque a função `sortByLanguagePriority` ignora o `display_order`.
-
----
-
-## Solução
-
-Modificar a função `sortByLanguagePriority` para considerar `display_order` como critério de ordenação **dentro** de cada grupo de idioma.
-
-### Arquivo: `src/lib/language-utils.ts`
-
-```typescript
-export function sortByLanguagePriority<T extends { 
-  language?: string | null; 
-  created_at?: string;
-  display_order?: number;  // Adicionar
-}>(
-  items: T[],
-  language: Language
-): T[] {
-  return [...items].sort((a, b) => {
-    const aLang = a.language || 'pt';
-    const bLang = b.language || 'pt';
+import { useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
+export const useInvalidateContent = () => {
+  const queryClient = useQueryClient();
+  const invalidateAll = useCallback(() => {
+    // Admin caches
+    queryClient.invalidateQueries({ queryKey: ['all-content-items'] });
+    queryClient.invalidateQueries({ queryKey: ['all-captions'] });
+    queryClient.invalidateQueries({ queryKey: ['all-marketing-tools'] });
     
-    // Prioridade 1: Idioma selecionado primeiro
-    const aMatch = aLang === language;
-    const bMatch = bLang === language;
-    if (aMatch && !bMatch) return -1;
-    if (!aMatch && bMatch) return 1;
+    // User-facing caches
+    queryClient.invalidateQueries({ queryKey: ['content-items'] });
+    queryClient.invalidateQueries({ queryKey: ['featured-items'] });
+    queryClient.invalidateQueries({ queryKey: ['highlighted-items'] });
+    queryClient.invalidateQueries({ queryKey: ['video-templates'] });
+    queryClient.invalidateQueries({ queryKey: ['captions'] });
+    queryClient.invalidateQueries({ queryKey: ['marketing-tools'] });
+    queryClient.invalidateQueries({ queryKey: ['newest-item-ids'] });
     
-    // Prioridade 2: Português como secundário (se não for o selecionado)
-    if (language !== 'pt') {
-      const aPt = aLang === 'pt';
-      const bPt = bLang === 'pt';
-      if (aPt && !bPt) return -1;
-      if (!aPt && bPt) return 1;
-    }
-    
-    // Prioridade 3: display_order (ordem definida pelo admin)
-    const aOrder = a.display_order ?? 9999;
-    const bOrder = b.display_order ?? 9999;
-    if (aOrder !== bOrder) return aOrder - bOrder;
-    
-    // Prioridade 4: created_at como fallback
-    if (a.created_at && b.created_at) {
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    }
-    
-    return 0;
+    console.log('🔄 All content caches invalidated');
+  }, [queryClient]);
+  return { invalidateAll };
+};
+Fase 2: Atualizar useUpdateDisplayOrder
+Modificar para invalidar caches após salvar a ordem.
+
+Arquivo: 
+src/hooks/useContent.ts
+
+LOCALIZAR 
+useUpdateDisplayOrder
+ e MODIFICAR:
+
+export const useUpdateDisplayOrder = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ table, items }: {
+      table: 'content_items' | 'captions' | 'marketing_tools';
+      items: { id: string; display_order: number }[];
+    }) => {
+      for (const item of items) {
+        const { error } = await supabase
+          .from(table)
+          .update({ display_order: item.display_order })
+          .eq('id', item.id);
+        
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      // ⭐ Invalidar TODOS os caches relevantes ⭐
+      queryClient.invalidateQueries({ queryKey: ['all-content-items'] });
+      queryClient.invalidateQueries({ queryKey: ['content-items'] });
+      queryClient.invalidateQueries({ queryKey: ['featured-items'] });
+      queryClient.invalidateQueries({ queryKey: ['highlighted-items'] });
+      queryClient.invalidateQueries({ queryKey: ['video-templates'] });
+      queryClient.invalidateQueries({ queryKey: ['all-captions'] });
+      queryClient.invalidateQueries({ queryKey: ['captions'] });
+      queryClient.invalidateQueries({ queryKey: ['all-marketing-tools'] });
+      queryClient.invalidateQueries({ queryKey: ['marketing-tools'] });
+      
+      console.log('✅ Display order updated and caches invalidated');
+    },
   });
-}
-```
+};
+Fase 3: Corrigir Query de Featured Items (CRÍTICO)
+PROBLEMA: 
+useFeaturedItems
+ NÃO está filtrando por idioma, por isso destaques ES não aparecem.
 
----
+Arquivo: 
+src/hooks/useContent.ts
 
-## Como Usar o Drag-and-Drop (Instrução para o Admin)
+LOCALIZAR 
+useFeaturedItems
+ e SUBSTITUIR COMPLETAMENTE:
 
-### Passo a passo:
-1. Acesse `/gestao` → Aba "Conteúdo"
-2. Escolha a aba do conteúdo que deseja reordenar (Vídeos, Artes, Stories, etc.)
-3. No dropdown de ordenação, selecione **"Ordem manual (drag)"**
-4. O ícone ⋮⋮ aparecerá no canto superior esquerdo de cada card
-5. Clique e arraste o ícone para reposicionar os itens
-6. A ordem é salva automaticamente
+export const useFeaturedItems = () => {
+  const { language } = useLanguage();
+  
+  return useQuery({
+    queryKey: ['featured-items', language],
+    queryFn: async () => {
+      let query = supabase
+        .from('content_items')
+        .select('*')
+        .eq('is_featured', true)
+        .eq('is_active', true);
+      // ⭐ FILTRAR POR IDIOMA ⭐
+      if (language === 'pt') {
+        // PT: mostrar itens PT ou sem idioma (NULL)
+        query = query.or('language.eq.pt,language.is.null');
+      } else {
+        // ES: mostrar APENAS itens ES
+        query = query.eq('language', language);
+      }
+      const { data, error } = await query
+        .order('display_order', { ascending: true })
+        .limit(10);
+      if (error) throw error;
+      // Aplicar ordenação client-side para garantir
+      return sortByLanguagePriority(data || [], language);
+    },
+    staleTime: 0, // ⭐ IMPORTANTE: sempre refetch
+  });
+};
+Fase 4: Adicionar Invalidação em TODAS as Mutations
+PROBLEMA: Toggle featured, create, update, delete não invalidam cache.
 
-### Comportamento esperado:
-- Ao arrastar e soltar, a nova ordem é salva no banco (`display_order`)
-- Na página do usuário, os itens aparecem na ordem definida pelo admin
-- A ordenação respeita o idioma: itens do idioma selecionado aparecem primeiro, mantendo a ordem do admin dentro de cada grupo
+Arquivo: 
+src/components/gestao/ContentSection.tsx
 
----
+ADICIONAR após imports:
 
-## Resumo das Mudanças
+import { useInvalidateContent } from '@/hooks/useInvalidateContent';
+ADICIONAR no início do componente:
 
-| Arquivo | Mudança |
-|---------|---------|
-| `src/lib/language-utils.ts` | Adicionar `display_order` como critério de ordenação |
+const { invalidateAll } = useInvalidateContent();
+MODIFICAR todas as funções de mutation:
 
----
+Toggle Featured:
+const handleToggleFeatured = async (id: string, currentValue: boolean) => {
+  const { error } = await supabase
+    .from('content_items')
+    .update({ is_featured: !currentValue })
+    .eq('id', id);
+  if (error) {
+    toast({ title: "Erro", description: "Falha ao atualizar destaque" });
+    return;
+  }
+  invalidateAll(); // ⭐ ADICIONAR
+  toast({ title: "Sucesso", description: "Destaque atualizado" });
+};
+Create Item:
+const handleCreate = async (newItem: any) => {
+  const { error } = await supabase
+    .from('content_items')
+    .insert(newItem);
+  if (error) {
+    toast({ title: "Erro", description: "Falha ao criar item" });
+    return;
+  }
+  invalidateAll(); // ⭐ ADICIONAR
+  toast({ title: "Sucesso", description: "Item criado" });
+};
+Update Item:
+const handleUpdate = async (id: string, updates: any) => {
+  const { error } = await supabase
+    .from('content_items')
+    .update(updates)
+    .eq('id', id);
+  if (error) {
+    toast({ title: "Erro", description: "Falha ao atualizar" });
+    return;
+  }
+  invalidateAll(); // ⭐ ADICIONAR
+  toast({ title: "Sucesso", description: "Item atualizado" });
+};
+Delete Item:
+const handleDelete = async (id: string) => {
+  const { error } = await supabase
+    .from('content_items')
+    .delete()
+    .eq('id', id);
+  if (error) {
+    toast({ title: "Erro", description: "Falha ao deletar" });
+    return;
+  }
+  invalidateAll(); // ⭐ ADICIONAR
+  toast({ title: "Sucesso", description: "Item deletado" });
+};
+Fase 5: Garantir staleTime Correto
+PROBLEMA: staleTime alto (5 minutos) impede refetch automático.
 
-## Verificação Final
+Arquivo: 
+src/hooks/useContent.ts
 
-### No Painel de Gestão:
-- [ ] Selecionar "Ordem manual (drag)" mostra ícone ⋮⋮ nos cards
-- [ ] Arrastar card funciona em todas as abas (Vídeos, Artes, Stories, Legendas, Ferramentas, Recursos)
-- [ ] Toast "Ordem atualizada" aparece após arrastar
-- [ ] Filtro de idioma funciona (PT/ES) na aba de Vídeos
+MODIFICAR TODOS os hooks principais para:
 
-### Na Página do Usuário:
-- [ ] Itens aparecem na ordem definida pelo admin
-- [ ] Idioma selecionado tem prioridade (PT primeiro se usuário está em PT)
-- [ ] Dentro de cada idioma, respeita `display_order`
+// Em useContentItems, useVideoTemplates, useCaptions, useMarketingTools:
+staleTime: 0, // ⭐ Mudar de 1000 * 60 * 5 para 0
+Exemplo em 
+useContentItems
+:
+
+export const useContentItems = (type?: string | string[], featuredOnly?: boolean) => {
+  const { language } = useLanguage();
+  
+  return useQuery({
+    queryKey: ['content-items', type, featuredOnly, language],
+    queryFn: async () => {
+      // ... código existente
+      const ordered = sortByLanguagePriority(data || [], language);
+      return ordered;
+    },
+    staleTime: 0, // ⭐ MUDAR AQUI
+  });
+};
+Resumo das Mudanças
+Arquivo	Ação	Mudança	Prioridade
+src/hooks/useInvalidateContent.ts	CRIAR	Hook centralizado para invalidar caches	🔴 CRÍTICO
+src/hooks/useContent.ts
+MODIFICAR	Adicionar invalidação no 
+useUpdateDisplayOrder
+🔴 CRÍTICO
+src/hooks/useContent.ts
+MODIFICAR	Corrigir 
+useFeaturedItems
+ para filtrar por idioma	🔴 CRÍTICO
+src/hooks/useContent.ts
+MODIFICAR	Mudar staleTime de 300000 para 0 em todos hooks	🔴 CRÍTICO
+src/components/gestao/ContentSection.tsx
+MODIFICAR	Adicionar invalidateAll() em toggle/create/update/delete	🟡 IMPORTANTE
+Fluxo Após Correção
+Admin arrasta vídeo
+    ↓
+arrayMove() reordena localmente (UI atualiza instantâneo)
+    ↓
+updateDisplayOrder.mutate() salva no Supabase
+    ↓
+onSuccess: invalidateQueries() invalida TODOS os caches
+    ↓
+React Query refetch automático (staleTime: 0)
+    ↓
+Página do usuário exibe nova ordem ✅
+Admin adiciona destaque ES
+    ↓
+handleToggleFeatured() atualiza no Supabase
+    ↓
+invalidateAll() invalida caches
+    ↓
+useFeaturedItems filtra por language === 'es'
+    ↓
+Usuário em ES vê destaque ✅
+Verificação Final
+Teste 1: Drag-and-Drop
+Acesse /gestao → Vídeos
+Selecione "Ordem manual (drag)"
+Arraste vídeo para nova posição
+Verifique toast "Ordem atualizada"
+Abra DevTools → Console: deve mostrar "✅ Display order updated"
+Abra nova aba anônima em /
+VERIFICAR: Vídeo aparece na nova posição ✅
+Teste 2: Destaques ES
+Acesse /gestao → Destaques → Aba 🇪🇸 ES
+Adicione 3 vídeos aos destaques ES
+Abra nova aba em /
+Mude idioma para ES (🇪🇸)
+VERIFICAR: 3 destaques ES aparecem ✅
+Mude para PT (🇧🇷)
+VERIFICAR: Destaques mudam para PT ✅
+Teste 3: Toggle Featured
+Acesse /gestao → Vídeos
+Clique na estrela de um vídeo (toggle featured)
+Abra DevTools → Console: "🔄 All caches invalidated"
+Abra página / em outra aba
+VERIFICAR: Mudança aparece imediatamente ✅
+Teste 4: Mudança de Idioma
+Usuário em / (português)
+Vídeos PT aparecem primeiro
+Clica em 🇪🇸 ES
+VERIFICAR: Vídeos ES aparecem PRIMEIRO ✅
+Clica em 🇧🇷 PT
+VERIFICAR: Vídeos PT voltam para PRIMEIRO ✅
+Diferenças do Plano Original do Lovable
+Item	Plano Lovable	Plano Corrigido
+Hook invalidação	✅ Correto	✅ Mesmo
+useUpdateDisplayOrder	✅ Correto	✅ Mesmo
+useFeaturedItems	❌ Não menciona	✅ CORRIGIDO: filtro por idioma
+staleTime	❌ Não menciona	✅ ADICIONADO: staleTime: 0
+Outras mutations	❌ Não menciona	✅ ADICIONADO: invalidateAll()
+Teste de destaques ES	❌ Não testa	✅ ADICIONADO
+Por Que Essas Mudanças São Críticas
+1. 
+useFeaturedItems
+ sem filtro por idioma
+Problema: Mesmo adicionando destaques ES, eles não aparecem porque a query busca TODOS sem filtrar por language. Solução: Adicionar .or() para PT e .eq() para ES.
+
+2. staleTime: 5 minutos
+Problema: React Query não refaz query automaticamente por 5 minutos, então mudanças não aparecem. Solução: staleTime: 0 força refetch sempre que cache for invalidado.
+
+3. Mutations sem invalidação
+Problema: Toggle featured, create, delete não invalidam cache, então mudanças não aparecem. Solução: Adicionar invalidateAll() em TODAS as mutations.
