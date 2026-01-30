@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, X, LogOut, User, Home, Calendar, CreditCard, 
@@ -101,14 +101,23 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
     </button>
   );
 
+  // Helper to generate localized paths (maintains /es prefix when in ES mode)
+  const getLocalizedPath = useCallback((path: string) => {
+    const isESRoute = location.pathname.startsWith('/es');
+    if (isESRoute && !path.startsWith('/es')) {
+      return `/es${path === '/' ? '' : path}`;
+    }
+    return path;
+  }, [location.pathname]);
+
   const mainNavItems = [
-    { to: "/", label: t('header.home'), icon: Home },
-    { to: "/calendar", label: t('header.calendar'), icon: Calendar },
-    { to: "/planos", label: t('header.plans'), icon: CreditCard },
+    { to: getLocalizedPath("/"), label: t('header.home'), icon: Home },
+    { to: getLocalizedPath("/calendar"), label: t('header.calendar'), icon: Calendar },
+    { to: getLocalizedPath("/planos"), label: t('header.plans'), icon: CreditCard },
   ];
 
   const proximoNivelItem = {
-    to: "/proximo-nivel",
+    to: getLocalizedPath("/proximo-nivel"),
     label: "Próximo Nível",
     icon: Star,
   };
@@ -125,8 +134,9 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
   ];
 
   const handleCategoryClick = (category: CategoryType) => {
-    if (location.pathname !== "/") {
-      navigate("/", { state: { category } });
+    const targetPath = getLocalizedPath("/");
+    if (location.pathname !== "/" && location.pathname !== "/es" && location.pathname !== "/es/") {
+      navigate(targetPath, { state: { category } });
     }
     onCategoryChange?.(category);
     setIsOpen(false);
@@ -135,7 +145,7 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
-        <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <Link to={getLocalizedPath("/")} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <img 
             src={logoImage} 
             alt="Canva Viagem" 
@@ -213,7 +223,7 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
               </Button>
             </div>
           ) : (
-            <Link to="/auth">
+            <Link to={getLocalizedPath("/auth")}>
               <Button variant="outline" size="sm" className="ml-2">
                 <User className="h-4 w-4 mr-2" />
                 {t('header.login')}
@@ -308,7 +318,7 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
                   </Button>
                 </>
               ) : (
-                <Link to="/auth" onClick={() => setIsOpen(false)}>
+                <Link to={getLocalizedPath("/auth")} onClick={() => setIsOpen(false)}>
                   <Button variant="outline" className="w-full justify-start gap-3 px-3">
                     <User className="h-5 w-5" />
                     {t('header.login')}
