@@ -63,16 +63,16 @@ const PlanosES = () => {
 
   // Benefits with icons - Spanish
   const benefits = [
-    { icon: Video, text: "+250 plantillas de videos editables", highlight: true },
-    { icon: MessageSquare, text: "Soporte por WhatsApp", highlight: false },
-    { icon: Calendar, text: "Calendario de publicaciones", highlight: false },
-    { icon: FileText, text: "Subtítulos listos para copiar", highlight: false },
-    { icon: Sparkles, text: "Integración con Canva Pro", highlight: false },
-    { icon: Shield, text: "Sin derechos de autor", highlight: false },
-    { icon: Bot, text: "Herramientas de IA exclusivas", highlight: true },
-    { icon: Image, text: "Artes para feed y stories", highlight: false },
-    { icon: Users, text: "Contenido con influencers", highlight: false },
-    { icon: Infinity, text: "Actualizaciones semanales", highlight: false },
+    { icon: Video, text: "+250 plantillas de videos editables", description: "Videos profesionales listos para editar en Canva con música y transiciones", highlight: true },
+    { icon: MessageSquare, text: "Soporte por WhatsApp", description: "Resuelve tus dudas directamente con nuestro equipo", highlight: false },
+    { icon: Calendar, text: "Calendario de publicaciones", description: "Planifica tu contenido con fechas especiales y festivos", highlight: false },
+    { icon: FileText, text: "Subtítulos listos para copiar", description: "Textos optimizados para Instagram, Facebook y TikTok", highlight: false },
+    { icon: Sparkles, text: "Integración con Canva Pro", description: "Compatibilidad total con Canva para edición fácil", highlight: false },
+    { icon: Shield, text: "Sin derechos de autor", description: "Usa todo el contenido sin preocupaciones legales", highlight: false },
+    { icon: Bot, text: "Herramientas de IA exclusivas", description: "Crea subtítulos y descripciones automáticamente con IA", highlight: true },
+    { icon: Image, text: "Artes para feed y stories", description: "Diseños estáticos para complementar tus videos", highlight: false },
+    { icon: Users, text: "Contenido con influencers", description: "Videos con creadores de viajes reconocidos", highlight: false },
+    { icon: Infinity, text: "Actualizaciones semanales", description: "Nuevo contenido cada semana para mantenerte actualizado", highlight: false },
   ];
 
   // FAQs - Spanish
@@ -369,14 +369,19 @@ const PlanosES = () => {
               {benefits.map((item, index) => (
                 <div 
                   key={index} 
-                  className={`flex items-center gap-3 p-4 rounded-lg transition-all duration-200 ${
+                  className={`flex flex-col gap-2 p-4 rounded-lg transition-all duration-200 ${
                     item.highlight 
-                      ? 'bg-gradient-to-r from-primary to-accent text-white font-semibold shadow-lg' 
+                      ? 'bg-gradient-to-r from-primary to-accent text-white shadow-lg' 
                       : 'bg-background/50 hover:bg-background/80'
                   }`}
                 >
-                  <item.icon className={`h-5 w-5 shrink-0 ${item.highlight ? 'text-white' : 'text-primary'}`} />
-                  <span>{item.text}</span>
+                  <div className="flex items-center gap-3">
+                    <item.icon className={`h-5 w-5 shrink-0 ${item.highlight ? 'text-white' : 'text-primary'}`} />
+                    <span className="font-semibold">{item.text}</span>
+                  </div>
+                  <p className={`text-sm pl-8 ${item.highlight ? 'text-white/90' : 'text-muted-foreground'}`}>
+                    {item.description}
+                  </p>
                 </div>
               ))}
             </div>
@@ -414,6 +419,34 @@ const PlanosES = () => {
               <div className="flex items-baseline justify-center mb-6">
                 <span className="text-5xl md:text-6xl font-black text-primary">$9,09</span>
                 <span className="text-xl text-muted-foreground ml-2">/mes</span>
+              </div>
+              
+              {/* Resumo de entregáveis */}
+              <div className="text-left bg-muted/30 rounded-xl p-4 mb-6 space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 text-primary shrink-0" />
+                  <span>+250 videos editables en Canva</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 text-primary shrink-0" />
+                  <span>Herramientas de IA exclusivas</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 text-primary shrink-0" />
+                  <span>Calendario con fechas especiales</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 text-primary shrink-0" />
+                  <span>Subtítulos listos para copiar</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 text-primary shrink-0" />
+                  <span>Actualizaciones semanales</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 text-primary shrink-0" />
+                  <span>Soporte por WhatsApp</span>
+                </div>
               </div>
               
               <Button 
