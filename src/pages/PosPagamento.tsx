@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CheckCircle, Mail, Loader2, ArrowRight, MessageCircle, Sparkles, RefreshCw, CreditCard, Phone } from "lucide-react";
 import { trackPurchase, trackSubscribe } from "@/lib/meta-pixel";
+import { trackESPurchase, trackESSubscribe } from "@/lib/meta-pixel-es";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatPhoneBR, cleanPhone, isValidBRPhone } from "@/lib/phone-utils";
+import { SpanishPixel } from "@/components/SpanishPixel";
 
 const PosPagamento = () => {
   const navigate = useNavigate();
@@ -39,9 +41,17 @@ const PosPagamento = () => {
     if (!tracked && sourceFromUrl === 'checkout') {
       console.log('[Meta Debug] window.fbq exists:', typeof window.fbq !== 'undefined');
       console.log('[Meta Debug] source=checkout detected, tracking conversion');
+      
+      // PT tracking (R$ 29,00 BRL)
       trackPurchase(29.00, 'BRL');
       trackSubscribe(29.00, 'BRL', 29.00 * 12);
-      console.log('[Meta Debug] Purchase & Subscribe events dispatched (R$ 29,00)');
+      console.log('[Meta Debug] PT Purchase & Subscribe events dispatched (R$ 29,00)');
+      
+      // ES tracking ($9,09 USD) - Spanish pixel
+      trackESPurchase(9.09, 'USD');
+      trackESSubscribe(9.09, 'USD', 9.09 * 12);
+      console.log('[Meta Debug] ES Purchase & Subscribe events dispatched ($9,09)');
+      
       setTracked(true);
     } else if (!sourceFromUrl || sourceFromUrl !== 'checkout') {
       console.log('[Meta Debug] No checkout source, skipping pixel tracking');
@@ -185,6 +195,7 @@ const PosPagamento = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10 flex items-center justify-center p-4">
+      <SpanishPixel />
       <Card className="w-full max-w-lg text-center border-primary/20 shadow-2xl">
         <CardContent className="pt-12 pb-8 px-8 space-y-6">
           {/* Success Icon */}

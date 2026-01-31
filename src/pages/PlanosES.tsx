@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import garantia7dias from "@/assets/garantia-7-dias.png";
+import { SpanishPixel } from "@/components/SpanishPixel";
 
 // GIFs e Videos constants
 const heroGif = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm5kcmcybmE2aTFkOTU3ZDNqYmZkbHQ2YjRibjB1NjFtN2RoNWdrMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6osnZ6joYcPfERZsaE/giphy.gif";
@@ -195,6 +196,7 @@ const PlanosES = () => {
   if (authLoading || subscription.loading) {
     return (
       <div className="min-h-screen bg-background">
+        <SpanishPixel />
         <Header />
         <div className="container mx-auto px-4 py-16 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -208,6 +210,7 @@ const PlanosES = () => {
   if (subscription.subscribed) {
     return (
       <div className="min-h-screen bg-background">
+        <SpanishPixel />
         <Header />
         <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-4xl">
           <UserInfoCard />
@@ -288,6 +291,7 @@ const PlanosES = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SpanishPixel />
       <Header />
       <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl">
         {user && <UserInfoCard />}

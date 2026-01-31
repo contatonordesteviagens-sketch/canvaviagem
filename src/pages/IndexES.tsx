@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { SpanishPixel } from "@/components/SpanishPixel";
 
 // Canva-style components
 import { HeroBanner } from "@/components/canva/HeroBanner";
@@ -777,6 +778,7 @@ const IndexES = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
+      <SpanishPixel />
       <Header onCategoryChange={setActiveCategory} />
       
       <main className="container mx-auto px-4 py-4 md:py-6 max-w-7xl">

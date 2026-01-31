@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.trigger-zaia-welcome]
 verify_jwt = false
+
+[functions.meta-conversions-api-es]
+verify_jwt = false
