@@ -8,6 +8,7 @@ import {
 import logoImage from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -234,93 +235,95 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
               {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[280px] sm:w-[320px]">
-            <nav className="flex flex-col gap-1 mt-8">
-              {/* Language Switcher - Mobile */}
-              <LanguageSwitcher variant="mobile" />
-              
-              <DropdownMenuSeparator className="my-3" />
+          <SheetContent side="right" className="w-[280px] sm:w-[320px] p-0">
+            <ScrollArea className="h-full px-6 py-6">
+              <nav className="flex flex-col gap-1 mt-8">
+                {/* Language Switcher - Mobile */}
+                <LanguageSwitcher variant="mobile" />
+                
+                <DropdownMenuSeparator className="my-3" />
 
-              {/* Theme Toggle - Mobile */}
-              <ThemeToggleMobile />
-              
-              <DropdownMenuSeparator className="my-3" />
+                {/* Theme Toggle - Mobile */}
+                <ThemeToggleMobile />
+                
+                <DropdownMenuSeparator className="my-3" />
 
-              {/* Navegação Principal */}
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
-                Navegação
-              </p>
-              {mainNavItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
-                  activeClassName="bg-primary text-primary-foreground"
-                >
-                  <item.icon className="h-5 w-5" />
-                  {item.label}
-                </NavLink>
-              ))}
-
-              {/* Próximo Nível - Mobile - Only for Portuguese */}
-              {showProximoNivel && (
-                <NavLink
-                  to={proximoNivelItem.to}
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
-                  activeClassName="bg-primary text-primary-foreground"
-                >
-                  <Star className="h-5 w-5 text-orange-500 fill-orange-500" />
-                  {proximoNivelItem.label}
-                </NavLink>
-              )}
-
-              <DropdownMenuSeparator className="my-3" />
-
-              {/* Conteúdos */}
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
-                Conteúdos
-              </p>
-              {contentCategories.map((item) => (
-                <button
-                  key={item.category}
-                  onClick={() => handleCategoryClick(item.category)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10 text-left w-full"
-                >
-                  <item.icon className="h-5 w-5" />
-                  {item.label}
-                </button>
-              ))}
-
-              <DropdownMenuSeparator className="my-3" />
-              
-              {user ? (
-                <>
-                  <div className="px-3 py-2 text-sm font-medium text-foreground">
-                    Olá, {userName || user.email?.split("@")[0]}! 👋
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => {
-                      signOut();
-                      setIsOpen(false);
-                    }}
-                    className="justify-start gap-3 px-3"
+                {/* Navegação Principal */}
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+                  Navegação
+                </p>
+                {mainNavItems.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
+                    activeClassName="bg-primary text-primary-foreground"
                   >
-                    <LogOut className="h-5 w-5" />
-                    {t('header.logout')}
-                  </Button>
-                </>
-              ) : (
-                <Link to="/auth" onClick={() => setIsOpen(false)}>
-                  <Button variant="outline" className="w-full justify-start gap-3 px-3">
-                    <User className="h-5 w-5" />
-                    {t('header.login')}
-                  </Button>
-                </Link>
-              )}
-            </nav>
+                    <item.icon className="h-5 w-5" />
+                    {item.label}
+                  </NavLink>
+                ))}
+
+                {/* Próximo Nível - Mobile - Only for Portuguese */}
+                {showProximoNivel && (
+                  <NavLink
+                    to={proximoNivelItem.to}
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
+                    activeClassName="bg-primary text-primary-foreground"
+                  >
+                    <Star className="h-5 w-5 text-orange-500 fill-orange-500" />
+                    {proximoNivelItem.label}
+                  </NavLink>
+                )}
+
+                <DropdownMenuSeparator className="my-3" />
+
+                {/* Conteúdos */}
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+                  Conteúdos
+                </p>
+                {contentCategories.map((item) => (
+                  <button
+                    key={item.category}
+                    onClick={() => handleCategoryClick(item.category)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10 text-left w-full"
+                  >
+                    <item.icon className="h-5 w-5" />
+                    {item.label}
+                  </button>
+                ))}
+
+                <DropdownMenuSeparator className="my-3" />
+                
+                {user ? (
+                  <>
+                    <div className="px-3 py-2 text-sm font-medium text-foreground">
+                      Olá, {userName || user.email?.split("@")[0]}! 👋
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => {
+                        signOut();
+                        setIsOpen(false);
+                      }}
+                      className="justify-start gap-3 px-3"
+                    >
+                      <LogOut className="h-5 w-5" />
+                      {t('header.logout')}
+                    </Button>
+                  </>
+                ) : (
+                  <Link to="/auth" onClick={() => setIsOpen(false)}>
+                    <Button variant="outline" className="w-full justify-start gap-3 px-3">
+                      <User className="h-5 w-5" />
+                      {t('header.login')}
+                    </Button>
+                  </Link>
+                )}
+              </nav>
+            </ScrollArea>
           </SheetContent>
         </Sheet>
       </div>
