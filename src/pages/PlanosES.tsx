@@ -290,10 +290,10 @@ const PlanosES = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <SpanishPixel />
       <Header />
-      <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl">
+      <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl overflow-x-hidden">
         {user && <UserInfoCard />}
 
         {/* HERO SECTION */}
