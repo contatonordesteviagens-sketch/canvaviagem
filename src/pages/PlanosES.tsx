@@ -23,7 +23,7 @@ import { SpanishPixel } from "@/components/SpanishPixel";
 const heroGif = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm5kcmcybmE2aTFkOTU3ZDNqYmZkbHQ2YjRibjB1NjFtN2RoNWdrMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6osnZ6joYcPfERZsaE/giphy.gif";
 
 const proofGifs = [
-  "https://media.giphy.com/media/cA9Hq7AaawDVrbP4pn/giphy.gif",
+  "https://media.giphy.com/media/OEXnFVFMGCAoIuvcfs/giphy.gif",
   "https://media.giphy.com/media/cA9Hq7AaawDVrbP4pn/giphy.gif",
   "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3J2anV0aTVkYWowbDl1ZXFtNnB4ZWUwcnVnZTVzOW91ZzNncGNvNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mbylDFYWSU46XeLcsS/giphy.gif",
   "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXQ1dHAxM2JxcWM0N3VqdWhibnBtcDR5eWVmNTZwaGI1NTJjeml3diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VcFJaM72FG76eG75In/giphy.gif",
@@ -32,10 +32,10 @@ const proofGifs = [
 ];
 
 const youtubeVideos = [
-  { id: "dvInvZZ7fLY", title: "Fernando de Noronha Takes" },
-  { id: "vUgCtB-yUPg", title: "Venecia Italia" },
-  { id: "KsGg1kWgFjA", title: "Fernando de Noronha" },
-  { id: "QcwzHP3Y3Nc", title: "Jalapão" },
+  { id: "WQHy13ySG-g", title: "Video 1" },
+  { id: "NYkxwcI2Cr0", title: "Video 2" },
+  { id: "QYjziquV-YU", title: "Video 3" },
+  { id: "VmX1raYC96E", title: "Video 4" },
 ];
 
 // ⭐ CHECKOUT LINK USD FIXED ⭐
