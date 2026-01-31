@@ -10,6 +10,7 @@ import { useCalendarEntries, getDayOfYear, CalendarEntry } from "@/hooks/useCale
 import { useContentItems, useCaptions } from "@/hooks/useContent";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { SpanishPixel } from "@/components/SpanishPixel";
 
 // ⭐ FORCE SPANISH LANGUAGE ⭐
 const FORCED_LANGUAGE = 'es' as const;
@@ -378,6 +379,7 @@ const CalendarES = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <SpanishPixel />
       <Header />
       
       <div className="flex-1 container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-7xl">
