@@ -1,11 +1,12 @@
 
-# Plano: Atualizar GIF e Vídeos do YouTube na Página ES/Planos
+
+# Plano: Melhorar Descrições dos Entregáveis e Resumo no Card de Preço
 
 ## Resumo
 
-Atualizar a página de planos em espanhol (`/es/planos`) com:
-1. **Primeiro GIF** substituído por novo URL
-2. **4 vídeos do YouTube** substituídos por novos YouTube Shorts
+Atualizar a página de planos em espanhol (`/es/planos`) para:
+1. **Adicionar descrições** detalhadas em cada benefício na seção "¿Qué recibes?"
+2. **Adicionar resumo com ícones de verificação** no card de preço com os principais entregáveis
 
 ---
 
@@ -13,61 +14,201 @@ Atualizar a página de planos em espanhol (`/es/planos`) com:
 
 ### src/pages/PlanosES.tsx
 
-#### 1. Atualizar primeiro GIF (Linha 26)
+---
 
-| Posição | De | Para |
-|---------|-----|------|
-| 1º GIF | `https://media.giphy.com/media/cA9Hq7AaawDVrbP4pn/giphy.gif` | `https://media.giphy.com/media/OEXnFVFMGCAoIuvcfs/giphy.gif` |
+## Mudança 1: Adicionar descrições aos benefícios (Linhas 65-76)
 
-**Código atualizado:**
+Atualizar o array `benefits` para incluir uma propriedade `description` em cada item:
+
 ```typescript
-const proofGifs = [
-  "https://media.giphy.com/media/OEXnFVFMGCAoIuvcfs/giphy.gif", // ← ATUALIZADO
-  "https://media.giphy.com/media/cA9Hq7AaawDVrbP4pn/giphy.gif",
-  // ... resto permanece igual
+const benefits = [
+  { 
+    icon: Video, 
+    text: "+250 plantillas de videos editables", 
+    description: "Videos profesionales listos para editar en Canva con música y transiciones",
+    highlight: true 
+  },
+  { 
+    icon: MessageSquare, 
+    text: "Soporte por WhatsApp", 
+    description: "Resuelve tus dudas directamente con nuestro equipo",
+    highlight: false 
+  },
+  { 
+    icon: Calendar, 
+    text: "Calendario de publicaciones", 
+    description: "Planifica tu contenido con fechas especiales y festivos",
+    highlight: false 
+  },
+  { 
+    icon: FileText, 
+    text: "Subtítulos listos para copiar", 
+    description: "Textos optimizados para Instagram, Facebook y TikTok",
+    highlight: false 
+  },
+  { 
+    icon: Sparkles, 
+    text: "Integración con Canva Pro", 
+    description: "Compatibilidad total con Canva para edición fácil",
+    highlight: false 
+  },
+  { 
+    icon: Shield, 
+    text: "Sin derechos de autor", 
+    description: "Usa todo el contenido sin preocupaciones legales",
+    highlight: false 
+  },
+  { 
+    icon: Bot, 
+    text: "Herramientas de IA exclusivas", 
+    description: "Crea subtítulos y descripciones automáticamente con IA",
+    highlight: true 
+  },
+  { 
+    icon: Image, 
+    text: "Artes para feed y stories", 
+    description: "Diseños estáticos para complementar tus videos",
+    highlight: false 
+  },
+  { 
+    icon: Users, 
+    text: "Contenido con influencers", 
+    description: "Videos con creadores de viajes reconocidos",
+    highlight: false 
+  },
+  { 
+    icon: Infinity, 
+    text: "Actualizaciones semanales", 
+    description: "Nuevo contenido cada semana para mantenerte actualizado",
+    highlight: false 
+  },
 ];
 ```
 
 ---
 
-#### 2. Atualizar vídeos do YouTube (Linhas 34-39)
+## Mudança 2: Atualizar layout dos benefícios (Linhas 368-381)
 
-Os YouTube Shorts usam IDs curtos. Extraindo os IDs das URLs fornecidas:
+Modificar o grid para mostrar a descrição abaixo de cada item:
 
-| URL Fornecida | ID Extraído |
-|--------------|-------------|
-| `https://youtube.com/shorts/WQHy13ySG-g` | `WQHy13ySG-g` |
-| `https://youtube.com/shorts/NYkxwcI2Cr0` | `NYkxwcI2Cr0` |
-| `https://youtube.com/shorts/QYjziquV-YU` | `QYjziquV-YU` |
-| `https://youtube.com/shorts/VmX1raYC96E` | `VmX1raYC96E` |
-
-**Código atualizado:**
-```typescript
-const youtubeVideos = [
-  { id: "WQHy13ySG-g", title: "Video 1" },
-  { id: "NYkxwcI2Cr0", title: "Video 2" },
-  { id: "QYjziquV-YU", title: "Video 3" },
-  { id: "VmX1raYC96E", title: "Video 4" },
-];
+```tsx
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  {benefits.map((item, index) => (
+    <div 
+      key={index} 
+      className={`flex flex-col gap-2 p-4 rounded-lg transition-all duration-200 ${
+        item.highlight 
+          ? 'bg-gradient-to-r from-primary to-accent text-white shadow-lg' 
+          : 'bg-background/50 hover:bg-background/80'
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        <item.icon className={`h-5 w-5 shrink-0 ${item.highlight ? 'text-white' : 'text-primary'}`} />
+        <span className="font-semibold">{item.text}</span>
+      </div>
+      <p className={`text-sm pl-8 ${item.highlight ? 'text-white/90' : 'text-muted-foreground'}`}>
+        {item.description}
+      </p>
+    </div>
+  ))}
+</div>
 ```
 
 ---
 
-## Resumo Visual
+## Mudança 3: Adicionar resumo no Card de Preço (Linhas 409-447)
+
+Adicionar uma lista de entregáveis resumidos com ícones de check antes do botão:
+
+```tsx
+<section className="mb-12 md:mb-20">
+  <Card className="max-w-2xl mx-auto border-2 border-primary/20 shadow-xl">
+    <CardContent className="p-8 md:p-12 text-center">
+      <p className="text-2xl line-through text-muted-foreground mb-2">$29,90</p>
+      <div className="flex items-baseline justify-center mb-6">
+        <span className="text-5xl md:text-6xl font-black text-primary">$9,09</span>
+        <span className="text-xl text-muted-foreground ml-2">/mes</span>
+      </div>
+      
+      {/* NOVO: Resumo de entregáveis */}
+      <div className="text-left bg-muted/30 rounded-xl p-4 mb-6 space-y-2">
+        <div className="flex items-center gap-2 text-sm">
+          <Check className="h-4 w-4 text-primary shrink-0" />
+          <span>+250 videos editables en Canva</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <Check className="h-4 w-4 text-primary shrink-0" />
+          <span>Herramientas de IA exclusivas</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <Check className="h-4 w-4 text-primary shrink-0" />
+          <span>Calendario con fechas especiales</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <Check className="h-4 w-4 text-primary shrink-0" />
+          <span>Subtítulos listos para copiar</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <Check className="h-4 w-4 text-primary shrink-0" />
+          <span>Actualizaciones semanales</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <Check className="h-4 w-4 text-primary shrink-0" />
+          <span>Soporte por WhatsApp</span>
+        </div>
+      </div>
+      
+      <Button 
+        size="lg" 
+        onClick={handleCheckout}
+        disabled={checkoutLoading}
+        className="w-full h-14 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300"
+      >
+        {/* ... botão existente */}
+      </Button>
+      
+      {/* ... badges de segurança existentes */}
+    </CardContent>
+  </Card>
+</section>
+```
+
+---
+
+## Resumo Visual das Mudanças
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│                    MUDANÇAS                                  │
+│                    ANTES → DEPOIS                           │
 ├─────────────────────────────────────────────────────────────┤
-│ GIFS (proofGifs):                                           │
-│   • 1º: cA9Hq7... → OEXnFVF...                              │
-│   • 2º-6º: SEM ALTERAÇÃO                                    │
+│ SEÇÃO "¿Qué recibes?":                                      │
+│                                                             │
+│ ANTES:                                                      │
+│ ┌────────────────────────────────────┐                      │
+│ │ 📹 +250 plantillas de videos       │                      │
+│ └────────────────────────────────────┘                      │
+│                                                             │
+│ DEPOIS:                                                     │
+│ ┌────────────────────────────────────┐                      │
+│ │ 📹 +250 plantillas de videos       │                      │
+│ │    Videos profesionales listos     │                      │
+│ │    para editar en Canva...         │                      │
+│ └────────────────────────────────────┘                      │
 ├─────────────────────────────────────────────────────────────┤
-│ YOUTUBE (youtubeVideos):                                    │
-│   • dvInvZZ7fLY → WQHy13ySG-g                               │
-│   • vUgCtB-yUPg → NYkxwcI2Cr0                               │
-│   • KsGg1kWgFjA → QYjziquV-YU                               │
-│   • QcwzHP3Y3Nc → VmX1raYC96E                               │
+│ CARD DE PREÇO:                                              │
+│                                                             │
+│ ANTES:           DEPOIS:                                    │
+│ ┌────────────┐   ┌────────────────────────┐                 │
+│ │  $9,09/mes │   │      $9,09/mes         │                 │
+│ │            │   │ ✓ +250 videos          │                 │
+│ │ [BOTÃO]    │   │ ✓ Herramientas de IA   │                 │
+│ └────────────┘   │ ✓ Calendario           │                 │
+│                  │ ✓ Subtítulos           │                 │
+│                  │ ✓ Actualizaciones      │                 │
+│                  │ ✓ Soporte WhatsApp     │                 │
+│                  │                        │                 │
+│                  │ [BOTÃO]                │                 │
+│                  └────────────────────────┘                 │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -75,4 +216,5 @@ const youtubeVideos = [
 
 ## Arquivo Afetado
 
-- `src/pages/PlanosES.tsx` (2 blocos de código modificados, ~10 linhas)
+- `src/pages/PlanosES.tsx` (3 blocos de código modificados)
+
