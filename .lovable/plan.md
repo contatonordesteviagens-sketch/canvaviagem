@@ -1,70 +1,101 @@
 
 
-# Plano: Instalar Pixel 1560736461820497 com API de Conversão
+# Plano: Mostrar APENAS Conteúdo ES na Página Espanhola
 
-## Resumo
+## Problema
 
-Vou instalar o novo pixel Meta `1560736461820497` e configurar o token da API de Conversão que você forneceu.
+Na página `/es`, o conteúdo em português (como "Mel África", "Japão Mel", "Bia Pacotes", "Eva Destinos", etc.) está aparecendo misturado e até antes do conteúdo em espanhol.
 
----
+A função `sortByLanguagePriority` ordena itens ES primeiro, mas depois inclui conteúdo PT como fallback secundário.
 
-## Mudança 1: Adicionar Pixel no index.html
+## Solução
 
-**Arquivo:** `index.html`
-
-**Adicionar na linha 24** (antes do `fbq('track', 'PageView')`):
-```javascript
-fbq('init', '1560736461820497');
-```
-
-**Adicionar após linha 58** (após o último noscript):
-```html
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=1560736461820497&ev=PageView&noscript=1"
-/></noscript>
-```
+Modificar o hook `useContentItems` para **filtrar estritamente por idioma ES no banco de dados** quando `forcedLanguage = 'es'`, em vez de apenas ordenar os resultados.
 
 ---
 
-## Mudança 2: Atualizar Edge Function meta-conversions-api
+## Mudança 1: Atualizar useContentItems para Filtrar por Idioma
 
-**Arquivo:** `supabase/functions/meta-conversions-api/index.ts`
+**Arquivo:** `src/hooks/useContent.ts`
 
-Adicionar o novo pixel ID na lista de PIXEL_IDS:
-
+**Lógica atual (linhas 64-88):**
 ```typescript
-const PIXEL_IDS = [
-  '1599242897762192',
-  '1152272353771099',
-  '4254631328136179',
-  '1560736461820497'  // NOVO PIXEL
-];
+let query = supabase
+  .from("content_items")
+  .select("*")
+  .eq("is_active", true)
+  .order("is_featured", { ascending: false })
+  .order("created_at", { ascending: false });
+
+// ... filtra por tipo ...
+
+const { data, error } = await query;
+// Apply language priority ordering (inclui PT como fallback!)
+return sortByLanguagePriority(data as ContentItem[], language);
+```
+
+**Nova lógica:**
+```typescript
+let query = supabase
+  .from("content_items")
+  .select("*")
+  .eq("is_active", true)
+  .order("is_featured", { ascending: false })
+  .order("created_at", { ascending: false });
+
+// ... filtra por tipo ...
+
+// FILTRAR POR IDIOMA NO BANCO DE DADOS
+if (language === 'pt') {
+  query = query.or('language.eq.pt,language.is.null');
+} else {
+  query = query.eq('language', language); // ES = apenas itens ES
+}
+
+const { data, error } = await query;
+// Ordenar por display_order/created_at (sem fallback de idioma)
+return (data as ContentItem[]).sort((a, b) => {
+  const aOrder = a.display_order ?? 9999;
+  const bOrder = b.display_order ?? 9999;
+  if (aOrder !== bOrder) return aOrder - bOrder;
+  return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+});
 ```
 
 ---
 
-## Nota sobre API de Conversão
+## Mudança 2: Aplicar o Mesmo Filtro aos Outros Hooks
 
-O projeto já possui um secret `META_CONVERSIONS_API_TOKEN` configurado. Se este novo token for para um pixel diferente e você quiser usá-lo especificamente para o pixel `1560736461820497`, posso:
+Aplicar a mesma lógica de filtragem estrita para:
 
-1. **Usar o token existente** - Se todos os pixels estiverem na mesma conta Business Manager
-2. **Adicionar novo secret** - Criar `META_CONVERSIONS_API_TOKEN_NEW` para o novo pixel
-
-Por enquanto, vou adicionar o pixel à lista existente, que usará o token já configurado.
+1. **useCaptions** - Filtrar legendas por idioma
+2. **useMarketingTools** - Filtrar ferramentas por idioma
 
 ---
 
-## Resultado Final
+## Resultado Esperado
 
-Após a implementação:
+**Antes:**
+```
+Página ES:
+├── Mel África (PT) ❌
+├── Japão Mel (PT) ❌
+├── Bia Pacotes (PT) ❌
+├── Cancun - es (ES) 
+├── Portugal - es (ES)
+└── ... outros PT misturados ❌
+```
 
-- **5 pixels PT** serão inicializados no `index.html`:
-  - `1599242897762192`
-  - `1152272353771099`
-  - `4254631328136179`
-  - `1560736461820497` (NOVO)
-  
-- Todos receberão eventos `PageView`, `Purchase` e `Subscribe` automaticamente
+**Depois:**
+```
+Página ES:
+├── Cancun - es (ES) ✅
+├── Dublin - es (ES) ✅
+├── Portugal - es (ES) ✅
+├── Cozumel - es (ES) ✅
+├── Stories ES ✅
+└── ... apenas conteúdo ES ✅
+```
 
 ---
 
@@ -72,6 +103,13 @@ Após a implementação:
 
 | Arquivo | Tipo de Mudança |
 |---------|-----------------|
-| `index.html` | Adicionar init + noscript |
-| `supabase/functions/meta-conversions-api/index.ts` | Adicionar pixel à lista |
+| `src/hooks/useContent.ts` | Adicionar filtro de idioma no banco para useContentItems, useCaptions, useMarketingTools |
+
+---
+
+## Detalhes Técnicos
+
+A mudança afeta apenas a página ES (`/es`). A página PT (`/` e `/pt`) continuará funcionando normalmente, pois o filtro `or('language.eq.pt,language.is.null')` mantém o comportamento de incluir conteúdo português e conteúdo legado sem idioma definido.
+
+Isso resolve definitivamente a exibição de conteúdo misturado na versão espanhola.
 
