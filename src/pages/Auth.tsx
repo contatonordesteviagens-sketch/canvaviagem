@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -7,16 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Mail, ArrowLeft, CheckCircle, MessageCircle } from "lucide-react";
+import { Loader2, Mail, ArrowLeft, CheckCircle, MessageCircle, User, Phone } from "lucide-react";
 import { trackCompleteRegistration, trackViewContent } from "@/lib/meta-pixel";
 import { getMarketingAttribution, useAssociateUtmToUser } from "@/hooks/useTrackUtm";
 import { trackEvent, ANALYTICS_EVENTS } from "@/hooks/useAnalyticsEvents";
+import { formatPhoneBR, cleanPhone, isValidBRPhone } from "@/lib/phone-utils";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, loading, subscription } = useAuth();
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   
@@ -85,6 +88,11 @@ const Auth = () => {
     }
   }, [user, loading, subscription, navigate, redirectTo]);
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneBR(e.target.value);
+    setPhone(formatted);
+  };
+
   const handleSendMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -100,11 +108,21 @@ const Auth = () => {
       return;
     }
 
+    // Validate phone if provided
+    if (phone && !isValidBRPhone(phone)) {
+      toast.error("Telefone inválido. Use DDD + número.");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const { data, error } = await supabase.functions.invoke("send-magic-link", {
-        body: { email: email.toLowerCase().trim() },
+        body: { 
+          email: email.toLowerCase().trim(),
+          name: name.trim() || null,
+          phone: phone ? cleanPhone(phone) : null
+        },
       });
 
       if (error || !data?.success) {
@@ -135,7 +153,11 @@ const Auth = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("send-magic-link", {
-        body: { email: email.toLowerCase().trim() },
+        body: { 
+          email: email.toLowerCase().trim(),
+          name: name.trim() || null,
+          phone: phone ? cleanPhone(phone) : null
+        },
       });
 
       if (error || !data?.success) {
@@ -177,19 +199,55 @@ const Auth = () => {
           {!magicLinkSent ? (
             <form onSubmit={handleSendMagicLink} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
+                <Label htmlFor="email">Email *</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    className="pl-10"
+                  />
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Use o mesmo email que você usou na compra
                 </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome (opcional)</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Seu nome"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={isLoading}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">WhatsApp (opcional)</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="(85) 98641-1294"
+                    value={phone}
+                    onChange={handlePhoneChange}
+                    disabled={isLoading}
+                    className="pl-10"
+                  />
+                </div>
               </div>
               
               <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
@@ -220,7 +278,7 @@ const Auth = () => {
 
               <div className="text-center space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Verifique sua caixa de entrada e também a pasta de spam.
+                  Verifique sua caixa de entrada e também a <strong>pasta de spam</strong>.
                 </p>
                 <p className="text-sm text-muted-foreground">
                   O link expira em <strong>1 hora</strong>.
