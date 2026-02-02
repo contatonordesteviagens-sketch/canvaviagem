@@ -19,7 +19,8 @@ const getCorsHeaders = (origin: string | null) => {
 const PIXEL_IDS = [
   '1599242897762192',
   '1152272353771099',
-  '4254631328136179'
+  '4254631328136179',
+  '1560736461820497'
 ];
 
 interface EventData {
