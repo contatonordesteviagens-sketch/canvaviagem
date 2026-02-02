@@ -86,10 +86,24 @@ serve(async (req) => {
       if (userPhone) profileUpdates.phone = userPhone;
       
       if (Object.keys(profileUpdates).length > 0) {
-        await supabaseAdmin
-          .from("profiles")
-          .update(profileUpdates)
-          .eq("user_id", userId);
+        // Tentar atualizar com retry para garantir que o profile existe
+        let attempts = 0;
+        let updated = false;
+        while (!updated && attempts < 3) {
+          const { error } = await supabaseAdmin
+            .from("profiles")
+            .update(profileUpdates)
+            .eq("user_id", userId);
+          
+          if (!error) {
+            updated = true;
+            console.log("[VERIFY-MAGIC-LINK] Profile updated with name:", userName);
+          } else {
+            attempts++;
+            console.log("[VERIFY-MAGIC-LINK] Retry attempt", attempts, "for profile update");
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
       }
     } else {
       // Criar novo usuário
@@ -115,11 +129,26 @@ serve(async (req) => {
       
       if (Object.keys(newProfileUpdates).length > 0) {
         // Aguardar um momento para o trigger criar o perfil
-        await new Promise(resolve => setTimeout(resolve, 500));
-        await supabaseAdmin
-          .from("profiles")
-          .update(newProfileUpdates)
-          .eq("user_id", userId);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Tentar atualizar com retry
+        let attempts = 0;
+        let updated = false;
+        while (!updated && attempts < 3) {
+          const { error } = await supabaseAdmin
+            .from("profiles")
+            .update(newProfileUpdates)
+            .eq("user_id", userId);
+          
+          if (!error) {
+            updated = true;
+            console.log("[VERIFY-MAGIC-LINK] New user profile updated with name:", userName);
+          } else {
+            attempts++;
+            console.log("[VERIFY-MAGIC-LINK] Retry attempt", attempts, "for new user profile update");
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
       }
     }
 

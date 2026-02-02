@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { HeroBanner } from "@/components/canva/HeroBanner";
 import { CategoryNav, CategoryType } from "@/components/canva/CategoryNav";
 import { PremiumCard } from "@/components/canva/PremiumCard";
-import { FilterChips } from "@/components/canva/FilterChips";
+import { ContentFilterDropdown, ContentFilterType } from "@/components/canva/ContentFilterDropdown";
 import { SectionHeader } from "@/components/canva/SectionHeader";
 import { CaptionCard } from "@/components/canva/CaptionCard";
 import { ToolCard } from "@/components/canva/ToolCard";
@@ -43,7 +43,7 @@ import { resources, videoDownloads } from "@/data/templates";
 import { trackViewContent } from "@/lib/meta-pixel";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-type VideoFilter = 'todos' | 'nacionais' | 'internacionais' | 'favoritos' | 'eva' | 'mel' | 'bia';
+
 
 const Index = () => {
   const navigate = useNavigate();
@@ -58,17 +58,9 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [showAllCaptions, setShowAllCaptions] = useState(false);
-  const [videoFilter, setVideoFilter] = useState<VideoFilter>('todos');
+  const [contentFilters, setContentFilters] = useState<ContentFilterType[]>([]);
   const [activeCategory, setActiveCategory] = useState<CategoryType>('videos');
   const [showPremiumGate, setShowPremiumGate] = useState(false);
-
-  // Video filters - PT version always has all options
-  const videoFilters: { id: VideoFilter; label: string }[] = [
-    { id: 'todos', label: t('filter.all') },
-    { id: 'nacionais', label: t('filter.national') },
-    { id: 'internacionais', label: t('filter.international') },
-    { id: 'favoritos', label: '⭐ ' + t('category.favorites') },
-  ];
 
   // Database hooks
   const { data: videoTemplates, isLoading: videosLoading } = useContentItems(['video', 'seasonal']);
@@ -140,19 +132,27 @@ const Index = () => {
       item.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Aplicar filtro de categoria
-    if (videoFilter === 'favoritos') {
-      filtered = filtered.filter(item => isFavorite("content_item", item.id));
-    } else if (videoFilter === 'nacionais') {
-      filtered = filtered.filter(item => isNacional(item.title, item.category));
-    } else if (videoFilter === 'internacionais') {
-      filtered = filtered.filter(item => !isNacional(item.title, item.category) && item.type === 'video');
-    } else if (videoFilter === 'eva') {
-      filtered = filtered.filter(item => isInfluencer(item.title, 'Eva') || item.category === 'influencer-eva');
-    } else if (videoFilter === 'mel') {
-      filtered = filtered.filter(item => isInfluencer(item.title, 'Mel') || item.category === 'influencer-mel');
-    } else if (videoFilter === 'bia') {
-      filtered = filtered.filter(item => isInfluencer(item.title, 'Bia') || item.category === 'influencer-bia');
+    // Aplicar filtro multi-select
+    if (contentFilters.length > 0) {
+      filtered = filtered.filter(item => {
+        // Se nenhum filtro selecionado, mostra todos
+        let matches = false;
+        
+        if (contentFilters.includes('nacionais') && isNacional(item.title, item.category)) {
+          matches = true;
+        }
+        if (contentFilters.includes('internacionais') && !isNacional(item.title, item.category) && item.type === 'video') {
+          matches = true;
+        }
+        if (contentFilters.includes('artes') && item.type === 'feed') {
+          matches = true;
+        }
+        if (contentFilters.includes('stories') && (item.type === 'story' || item.type === 'weekly-story')) {
+          matches = true;
+        }
+        
+        return matches;
+      });
     }
 
     return filtered;
@@ -322,11 +322,12 @@ const Index = () => {
               subtitle="Templates prontos para editar no Canva e publicar"
             />
             
-            <FilterChips<VideoFilter>
-              filters={videoFilters}
-              activeFilter={videoFilter}
-              onFilterChange={(filter) => setVideoFilter(filter)}
-            />
+            <div className="flex justify-center mb-6">
+              <ContentFilterDropdown
+                selectedFilters={contentFilters}
+                onFiltersChange={setContentFilters}
+              />
+            </div>
             
             {videosLoading ? (
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
@@ -377,6 +378,18 @@ const Index = () => {
                       )}
                     </Button>
                   </div>
+                )}
+                
+                {/* Floating minimize button when expanded */}
+                {showAllVideos && (
+                  <Button
+                    onClick={() => setShowAllVideos(false)}
+                    className="fixed bottom-24 md:bottom-8 right-4 z-50 rounded-full shadow-xl gap-2"
+                    size="lg"
+                  >
+                    <ChevronUp className="h-5 w-5" />
+                    Minimizar
+                  </Button>
                 )}
               </>
             )}
