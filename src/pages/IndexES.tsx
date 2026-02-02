@@ -15,7 +15,7 @@ import { SpanishPixel } from "@/components/SpanishPixel";
 import { HeroBanner } from "@/components/canva/HeroBanner";
 import { CategoryNav, CategoryType } from "@/components/canva/CategoryNav";
 import { PremiumCard } from "@/components/canva/PremiumCard";
-import { FilterChips } from "@/components/canva/FilterChips";
+// FilterChips removed for ES version
 import { SectionHeader } from "@/components/canva/SectionHeader";
 import { CaptionCard } from "@/components/canva/CaptionCard";
 import { ToolCard } from "@/components/canva/ToolCard";
@@ -47,7 +47,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 // ⭐ FORCE SPANISH LANGUAGE ⭐
 const FORCED_LANGUAGE = 'es' as const;
 
-type VideoFilter = 'todos' | 'internacionais' | 'favoritos';
+// VideoFilter type removed - ES version shows all content without filters
 
 const IndexES = () => {
   const navigate = useNavigate();
@@ -56,7 +56,7 @@ const IndexES = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [showAllCaptions, setShowAllCaptions] = useState(false);
-  const [videoFilter, setVideoFilter] = useState<VideoFilter>('todos');
+  // Filters removed for ES - showing all content
   const [activeCategory, setActiveCategory] = useState<CategoryType>('videos');
   const [showPremiumGate, setShowPremiumGate] = useState(false);
 
@@ -66,12 +66,7 @@ const IndexES = () => {
     setLanguage('es');
   }, [setLanguage]);
 
-  // Video filters - ES version (no "Nacionais" filter)
-  const videoFilters = [
-    { id: 'internacionais' as const, label: '🇪🇸 Español' },
-    { id: 'todos' as const, label: 'Todos' },
-    { id: 'favoritos' as const, label: '⭐ Favoritos' },
-  ];
+  // Video filters removed for ES version - show all content directly
 
   // ⭐ ALL HOOKS FORCED TO 'es' ⭐
   const { data: videoTemplates, isLoading: videosLoading } = useContentItems(['video', 'seasonal'], undefined, FORCED_LANGUAGE);
@@ -118,14 +113,7 @@ const IndexES = () => {
       item.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Aplicar filtro de categoria
-    if (videoFilter === 'favoritos') {
-      filtered = filtered.filter(item => isFavorite("content_item", item.id));
-    } else if (videoFilter === 'internacionais') {
-      // Para ES, mostrar apenas internacionais
-      filtered = filtered.filter(item => item.category !== 'nacional');
-    }
-
+    // Para ES, mostrar todo o conteúdo (sem filtro de nacionais)
     return filtered;
   };
 
@@ -292,11 +280,7 @@ const IndexES = () => {
               subtitle="Plantillas listas para editar en Canva y publicar"
             />
             
-            <FilterChips<VideoFilter>
-              filters={videoFilters}
-              activeFilter={videoFilter}
-              onFilterChange={(filter) => setVideoFilter(filter)}
-            />
+            {/* FilterChips removed - ES version shows all content without filters */}
             
             {videosLoading ? (
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
