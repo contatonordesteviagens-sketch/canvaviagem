@@ -1,153 +1,70 @@
 
 
-# Plano: Reorganização de Pixels e Consolidação de Páginas
+# Plano: Instalar Pixel 1560736461820497 com API de Conversão
 
-## Resumo das Mudanças
+## Resumo
 
-O plano aborda os seguintes problemas:
-
-1. **Pixel 4254631328136179** - O pixel está instalado e deveria funcionar, mas verificaremos se os eventos estão sendo disparados corretamente
-2. **Remover pixels de compra da PosPagamento** - Mover todos os eventos Purchase/Subscribe exclusivamente para a página Obrigado
-3. **Transformar página Obrigado** - Clonar funcionalidade de coleta de dados (nome, email, telefone) da PosPagamento
-4. **Corrigir página Auth** - Adicionar campos de nome e telefone para permitir login completo
+Vou instalar o novo pixel Meta `1560736461820497` e configurar o token da API de Conversão que você forneceu.
 
 ---
 
-## Mudança 1: Remover Eventos de Compra da PosPagamento
+## Mudança 1: Adicionar Pixel no index.html
 
-**Arquivo:** `src/pages/PosPagamento.tsx`
+**Arquivo:** `index.html`
 
-**Remover:**
-- Linhas 7-8: Imports de `trackPurchase`, `trackSubscribe`, `trackESPurchase`, `trackESSubscribe`
-- Linhas 12, 26: Estado `tracked` e `setTracked`
-- Linhas 39-59: Todo o `useEffect` que dispara os eventos de conversão
-- Linha 198: Componente `<SpanishPixel />`
-- Linha 12: Import do `SpanishPixel`
-
-**Resultado:** A página PosPagamento passa a ser APENAS para coleta de dados, sem tracking de conversão.
-
----
-
-## Mudança 2: Transformar Página Obrigado em Clone da PosPagamento
-
-**Arquivo:** `src/pages/Obrigado.tsx`
-
-**Adicionar:**
-- Formulário completo com Nome, Email e Telefone
-- Lógica de envio de Magic Link (via email e WhatsApp)
-- Estados de loading e sucesso
-- Tracking de conversão apenas quando `source=checkout` (já existe)
-- Import do `SpanishPixel` para pixel ES
-
-**Nova estrutura:**
-```text
-┌──────────────────────────────────────────┐
-│           PÁGINA OBRIGADO                │
-├──────────────────────────────────────────┤
-│  ✓ Pagamento Confirmado!                 │
-│                                          │
-│  [Campo Nome]                            │
-│  [Campo Email] (preenchido se vindo URL) │
-│  [Campo Telefone]                        │
-│                                          │
-│  [Enviar por Email]                      │
-│  ── ou ──                                │
-│  [Receber no WhatsApp]                   │
-│                                          │
-│  ── ou ──                                │
-│  [Já tenho conta - Fazer Login]          │
-│                                          │
-│  Suporte WhatsApp                        │
-└──────────────────────────────────────────┘
+**Adicionar na linha 24** (antes do `fbq('track', 'PageView')`):
+```javascript
+fbq('init', '1560736461820497');
 ```
 
-**Tracking mantido:**
-- `trackPurchase(29.00, 'BRL')` - PT
-- `trackSubscribe(29.00, 'BRL')` - PT
-- `trackESPurchase(9.09, 'USD')` - ES
-- `trackESSubscribe(9.09, 'USD')` - ES
-
----
-
-## Mudança 3: Corrigir Página de Auth com Nome e Telefone
-
-**Arquivo:** `src/pages/Auth.tsx`
-
-**Adicionar:**
-- Campo de Nome (opcional - apenas para novos cadastros)
-- Campo de Telefone (opcional)
-- Passar nome e telefone para a função `send-magic-link`
-
-**Nova estrutura do formulário:**
-```text
-┌──────────────────────────────────────────┐
-│          CANVA VIAGENS                   │
-├──────────────────────────────────────────┤
-│  Acesse com seu email (sem senha!)       │
-│                                          │
-│  [Campo Email]                           │
-│  [Campo Nome] (opcional)                 │
-│  [Campo Telefone] (opcional)             │
-│                                          │
-│  [Enviar Link de Acesso]                 │
-│                                          │
-│  ── ainda não tem conta? ──              │
-│  [Ver Planos e Assinar]                  │
-└──────────────────────────────────────────┘
+**Adicionar após linha 58** (após o último noscript):
+```html
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1560736461820497&ev=PageView&noscript=1"
+/></noscript>
 ```
 
 ---
 
-## Mudança 4: Verificação do Pixel 4254631328136179
+## Mudança 2: Atualizar Edge Function meta-conversions-api
 
-**Análise:** O pixel está corretamente instalado no `index.html`. O problema pode estar em:
+**Arquivo:** `supabase/functions/meta-conversions-api/index.ts`
 
-1. **Condição `source=checkout`** - Se o Stripe não redireciona com esse parâmetro, os eventos não disparam
-2. **Usuário bloqueando pixels** - Ad blockers
+Adicionar o novo pixel ID na lista de PIXEL_IDS:
 
-**Ação:** Adicionar log mais detalhado e garantir que os eventos disparem
-
-**Arquivo:** `src/pages/Obrigado.tsx` - Adicionar console.log específico:
 ```typescript
-console.log('[Meta Debug] Tracking for pixel 4254631328136179');
+const PIXEL_IDS = [
+  '1599242897762192',
+  '1152272353771099',
+  '4254631328136179',
+  '1560736461820497'  // NOVO PIXEL
+];
 ```
 
 ---
 
-## Resumo Visual do Fluxo
+## Nota sobre API de Conversão
 
-```text
-FLUXO ATUAL (PROBLEMÁTICO):
-┌──────────┐     ┌──────────────────┐     ┌──────────┐
-│ Checkout │ --> │  PosPagamento    │ --> │ Obrigado │
-│ (Stripe) │     │  ⚠️ Dispara Pixel │     │ Simples  │
-└──────────┘     └──────────────────┘     └──────────┘
-                        ↓
-                 [Usuário reenvia link]
-                        ↓
-                 ⚠️ Dispara pixel NOVAMENTE!
+O projeto já possui um secret `META_CONVERSIONS_API_TOKEN` configurado. Se este novo token for para um pixel diferente e você quiser usá-lo especificamente para o pixel `1560736461820497`, posso:
 
+1. **Usar o token existente** - Se todos os pixels estiverem na mesma conta Business Manager
+2. **Adicionar novo secret** - Criar `META_CONVERSIONS_API_TOKEN_NEW` para o novo pixel
 
-NOVO FLUXO (CORRIGIDO):
-┌──────────┐     ┌──────────────────┐
-│ Checkout │ --> │     Obrigado     │
-│ (Stripe) │     │  ✅ Dispara Pixel │
-└──────────┘     │  ✅ Coleta dados  │
-                 │  ✅ Envia Magic   │
-                 └──────────────────┘
+Por enquanto, vou adicionar o pixel à lista existente, que usará o token já configurado.
 
-                 ┌──────────────────┐
-                 │  PosPagamento    │  (Ainda existe para links antigos)
-                 │  ❌ Sem pixel     │
-                 │  ✅ Coleta dados  │
-                 └──────────────────┘
+---
 
-                 ┌──────────────────┐
-                 │      Auth        │  (Login normal)
-                 │  ❌ Sem pixel     │
-                 │  ✅ Nome/Telefone │
-                 └──────────────────┘
-```
+## Resultado Final
+
+Após a implementação:
+
+- **5 pixels PT** serão inicializados no `index.html`:
+  - `1599242897762192`
+  - `1152272353771099`
+  - `4254631328136179`
+  - `1560736461820497` (NOVO)
+  
+- Todos receberão eventos `PageView`, `Purchase` e `Subscribe` automaticamente
 
 ---
 
@@ -155,26 +72,6 @@ NOVO FLUXO (CORRIGIDO):
 
 | Arquivo | Tipo de Mudança |
 |---------|-----------------|
-| `src/pages/PosPagamento.tsx` | Remover tracking |
-| `src/pages/Obrigado.tsx` | Reescrever (clone da PosPagamento + tracking) |
-| `src/pages/Auth.tsx` | Adicionar campos nome e telefone |
-
----
-
-## Detalhes Técnicos
-
-### Sobre o Pixel 4254631328136179:
-- O pixel está inicializado no `index.html` linha 23: `fbq('init', '4254631328136179');`
-- Quando usamos `fbq('track', 'Purchase', ...)` sem `trackSingle`, o evento é enviado para TODOS os pixels inicializados
-- Portanto, o evento DEVERIA estar disparando para os 3 pixels (PT) + 1 pixel (ES via SpanishPixel)
-
-### Por que o pixel pode não estar marcando:
-1. O usuário pode estar acessando `/obrigado` sem o parâmetro `?source=checkout`
-2. O Stripe pode estar redirecionando para outra URL
-3. Ad blockers podem estar bloqueando
-
-### Solução:
-- Consolidar TODO o tracking na página `/obrigado`
-- Garantir que o Stripe redirecione com `?source=checkout`
-- Adicionar logs detalhados para debug
+| `index.html` | Adicionar init + noscript |
+| `supabase/functions/meta-conversions-api/index.ts` | Adicionar pixel à lista |
 
