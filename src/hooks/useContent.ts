@@ -81,11 +81,23 @@ export const useContentItems = (type?: string | string[], featuredOnly?: boolean
         query = query.eq("is_featured", true);
       }
       
+      // ⭐ FILTRAR POR IDIOMA NO BANCO ⭐
+      if (language === 'pt') {
+        query = query.or('language.eq.pt,language.is.null');
+      } else {
+        query = query.eq('language', language);
+      }
+      
       const { data, error } = await query;
       if (error) throw error;
       
-      // Apply language priority ordering
-      return sortByLanguagePriority(data as ContentItem[], language);
+      // Ordenar por display_order e created_at (sem fallback de idioma)
+      return (data as ContentItem[]).sort((a, b) => {
+        const aOrder = a.display_order ?? 9999;
+        const bOrder = b.display_order ?? 9999;
+        if (aOrder !== bOrder) return aOrder - bOrder;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
     },
     staleTime: 0, // Always refetch to ensure fresh data
   });
@@ -218,9 +230,16 @@ export const useCaptions = (category?: 'nacional' | 'internacional', forcedLangu
         query = query.eq("category", category);
       }
       
+      // ⭐ FILTRAR POR IDIOMA NO BANCO ⭐
+      if (language === 'pt') {
+        query = query.or('language.eq.pt,language.is.null');
+      } else {
+        query = query.eq('language', language);
+      }
+      
       const { data, error } = await query;
       if (error) throw error;
-      return sortByLanguagePriority(data as Caption[], language);
+      return data as Caption[];
     },
     staleTime: 0, // Always refetch
   });
@@ -234,14 +253,22 @@ export const useMarketingTools = (forcedLanguage?: Language) => {
   return useQuery({
     queryKey: ["marketing-tools", language],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("marketing_tools")
         .select("*")
         .eq("is_active", true)
         .order("display_order", { ascending: true });
       
+      // ⭐ FILTRAR POR IDIOMA NO BANCO ⭐
+      if (language === 'pt') {
+        query = query.or('language.eq.pt,language.is.null');
+      } else {
+        query = query.eq('language', language);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
-      return sortByLanguagePriority(data as MarketingTool[], language);
+      return data as MarketingTool[];
     },
     staleTime: 0, // Always refetch
   });
