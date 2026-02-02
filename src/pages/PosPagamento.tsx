@@ -199,21 +199,21 @@ const PosPagamento = () => {
       <Card className="w-full max-w-lg text-center border-primary/20 shadow-2xl">
         <CardContent className="pt-12 pb-8 px-8 space-y-6">
           {/* Success Icon */}
-          <div className="relative mx-auto w-24 h-24">
+          <div className="relative mx-auto w-16 h-16 md:w-24 md:h-24">
             <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping" />
-            <div className="relative w-24 h-24 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center">
-              <CheckCircle className="h-12 w-12 text-white" />
+            <div className="relative w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center">
+              <CheckCircle className="h-8 w-8 md:h-12 md:w-12 text-white" />
             </div>
           </div>
 
           {/* Title */}
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-primary flex items-center justify-center gap-2">
-              <Sparkles className="h-6 w-6" />
+            <h1 className="text-xl md:text-3xl font-bold text-primary flex items-center justify-center gap-1 md:gap-2">
+              <Sparkles className="h-4 w-4 md:h-6 md:w-6" />
               Pagamento Confirmado!
-              <Sparkles className="h-6 w-6" />
+              <Sparkles className="h-4 w-4 md:h-6 md:w-6" />
             </h1>
-            <p className="text-xl text-foreground">
+            <p className="text-base md:text-xl text-foreground">
               Preencha seus dados para receber seu acesso
             </p>
           </div>
@@ -346,7 +346,7 @@ const PosPagamento = () => {
                       Link enviado para {email}
                     </p>
                     <p className="text-green-600 dark:text-green-400 text-sm mt-1">
-                      Verifique sua caixa de entrada e spam. O link expira em 1 hora.
+                      Verifique sua caixa de entrada. <strong>Não esqueça de verificar a pasta de spam ou lixo eletrônico!</strong> O link expira em 1 hora.
                     </p>
                   </>
                 )}
