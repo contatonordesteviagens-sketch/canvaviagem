@@ -1,96 +1,120 @@
 
-# Plano: Botão Flutuante do WhatsApp
 
-## Resumo
+# Plano: Correção de Alertas de Segurança
 
-Vou criar um botão flutuante pequeno, verde, com o ícone do WhatsApp, posicionado no canto inferior direito da tela. Ao clicar, abrirá o WhatsApp com o número **85 98641-1294** e a mensagem padrão já configurada no projeto.
+## Resumo dos Problemas Identificados
+
+O scanner de segurança identificou 3 alertas que precisam de atenção:
+
+| Severidade | Problema | Tabela |
+|------------|----------|--------|
+| 🔴 Error | Emails de clientes podem ser expostos | `abandoned_checkouts` |
+| 🔴 Error | Dados pessoais de clientes podem ser expostos | `profiles` |
+| 🟡 Warning | Extensão instalada no schema `public` | `pg_net` |
 
 ---
 
-## Componente a Criar
+## Problema 1: Tabela `abandoned_checkouts`
 
-**Arquivo:** `src/components/WhatsAppButton.tsx`
+**Situação Atual:**
+```
+- "Admins can read abandoned checkouts" (PERMISSIVE para authenticated)
+- "Block anonymous select" (PERMISSIVE para anon → false)
+```
 
-```tsx
-import { MessageCircle } from "lucide-react";
+**Análise:** A política atual funciona tecnicamente, mas a estrutura é confusa. Cada role tem sua própria política PERMISSIVE. O `anon` role só pode acessar via sua política que retorna `false`, então está bloqueado. Porém, vou reforçar com uma política RESTRICTIVE para maior clareza e segurança.
 
-const WhatsAppButton = () => {
-  const whatsappUrl = "https://wa.me/5585986411294?text=Ol%C3%A1%20adquiri%20o%20Canva%20Viagem.%20";
-  
-  return (
-    <a
-      href={whatsappUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-12 h-12 bg-green-500 hover:bg-green-600 rounded-full shadow-lg transition-all hover:scale-110"
-      aria-label="Fale conosco no WhatsApp"
-    >
-      {/* Ícone SVG do WhatsApp */}
-      <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white">
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967..." />
-      </svg>
-    </a>
-  );
-};
+**Solução:**
+```sql
+-- Adicionar política RESTRICTIVE para bloquear anon explicitamente
+CREATE POLICY "Deny all anonymous access on abandoned_checkouts"
+  ON public.abandoned_checkouts
+  AS RESTRICTIVE
+  FOR ALL
+  TO anon
+  USING (false)
+  WITH CHECK (false);
 
-export default WhatsAppButton;
+-- Remover a política PERMISSIVE redundante
+DROP POLICY IF EXISTS "Block anonymous select on abandoned_checkouts" ON public.abandoned_checkouts;
 ```
 
 ---
 
-## Integração Global
+## Problema 2: Tabela `profiles`
 
-**Arquivo:** `src/App.tsx`
+**Situação Atual:**
+```
+- "Block anonymous access to profiles" (RESTRICTIVE para public → auth.uid() IS NOT NULL)
+- "Block anonymous select on profiles" (PERMISSIVE para anon → false)
+- Várias políticas para authenticated users
+```
 
-Adicionar o componente dentro do `BrowserRouter`, logo após o `<UtmTracker />`:
+**Análise:** Já existe uma política RESTRICTIVE que bloqueia acesso anônimo. A política PERMISSIVE adicional para `anon` é redundante e pode causar confusão no scanner.
 
-```tsx
-import WhatsAppButton from "@/components/WhatsAppButton";
+**Solução:**
+```sql
+-- Remover política redundante que confunde o scanner
+DROP POLICY IF EXISTS "Block anonymous select on profiles" ON public.profiles;
 
-// Dentro do App:
-<BrowserRouter>
-  <UtmTracker />
-  <WhatsAppButton />  {/* ← NOVO */}
-  <Routes>
-    ...
-  </Routes>
-</BrowserRouter>
+-- A política RESTRICTIVE existente já cobre o bloqueio:
+-- "Block anonymous access to profiles" → auth.uid() IS NOT NULL
 ```
 
 ---
 
-## Especificações do Design
+## Problema 3: Extensão `pg_net` no Schema Public
 
-| Propriedade | Valor |
-|-------------|-------|
-| Posição | `fixed bottom-6 right-6` |
-| Tamanho | `w-12 h-12` (48x48px) |
-| Cor | `bg-green-500` (Verde WhatsApp) |
-| Hover | `hover:bg-green-600 hover:scale-110` |
-| Z-index | `z-50` (acima de outros elementos) |
-| Sombra | `shadow-lg` |
-| Ícone | SVG oficial do WhatsApp (branco) |
+**Situação Atual:**
+A extensão `pg_net` está instalada no schema `public` em vez de um schema dedicado.
 
----
+**Análise:** Este é um warning de boas práticas. A extensão deveria estar em um schema separado (ex: `extensions`) para isolamento, mas mover extensões existentes pode quebrar funcionalidades.
 
-## Comportamento
-
-- **Desktop**: Botão pequeno no canto inferior direito
-- **Mobile**: Mesmo tamanho e posição (48x48px)
-- **Clique**: Abre `wa.me/5585986411294` com mensagem pré-preenchida
-- **Acessibilidade**: `aria-label` para leitores de tela
+**Solução Recomendada:**
+- Marcar como ignorado no scanner com justificativa
+- A extensão `pg_net` é usada para chamadas HTTP em Edge Functions e foi instalada automaticamente pelo Lovable Cloud
 
 ---
 
-## Arquivos Afetados
+## Resumo das Mudanças
 
-| Arquivo | Ação |
-|---------|------|
-| `src/components/WhatsAppButton.tsx` | Criar componente |
-| `src/App.tsx` | Importar e adicionar o componente |
+| Tabela | Ação | Tipo |
+|--------|------|------|
+| `abandoned_checkouts` | Adicionar política RESTRICTIVE + remover redundante | SQL Migration |
+| `profiles` | Remover política PERMISSIVE redundante | SQL Migration |
+| `pg_net` extension | Ignorar alerta com justificativa | Update Finding |
 
 ---
 
-## Nota sobre Conflito com BottomNav (Mobile)
+## Script SQL Completo
 
-O botão ficará posicionado em `bottom-6 right-6` (~24px do canto). No mobile, onde existe a `BottomNav` fixa, o botão ficará **acima** da barra de navegação para não haver sobreposição. Se necessário, posso ajustar para `bottom-20` no mobile.
+```sql
+-- 1. Reforçar bloqueio em abandoned_checkouts
+CREATE POLICY "Deny all anonymous access on abandoned_checkouts"
+  ON public.abandoned_checkouts
+  AS RESTRICTIVE
+  FOR ALL
+  TO anon
+  USING (false)
+  WITH CHECK (false);
+
+DROP POLICY IF EXISTS "Block anonymous select on abandoned_checkouts" ON public.abandoned_checkouts;
+
+-- 2. Limpar política redundante em profiles
+DROP POLICY IF EXISTS "Block anonymous select on profiles" ON public.profiles;
+```
+
+---
+
+## Notas Técnicas
+
+**Por que usar RESTRICTIVE para bloqueio?**
+- Políticas RESTRICTIVE são avaliadas com lógica AND
+- Se qualquer política RESTRICTIVE retorna `false`, o acesso é negado
+- Isso garante que mesmo se outras políticas forem adicionadas no futuro, o bloqueio permanece
+
+**Por que remover as políticas PERMISSIVE de bloqueio?**
+- Políticas PERMISSIVE com `USING (false)` para roles específicos funcionam, mas são confusas
+- O scanner de segurança não consegue validar facilmente essa estrutura
+- Manter apenas a abordagem RESTRICTIVE é mais clara e segura
+
