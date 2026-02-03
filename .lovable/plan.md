@@ -1,115 +1,96 @@
 
+# Plano: Botão Flutuante do WhatsApp
 
-# Plano: Mostrar APENAS Conteúdo ES na Página Espanhola
+## Resumo
 
-## Problema
-
-Na página `/es`, o conteúdo em português (como "Mel África", "Japão Mel", "Bia Pacotes", "Eva Destinos", etc.) está aparecendo misturado e até antes do conteúdo em espanhol.
-
-A função `sortByLanguagePriority` ordena itens ES primeiro, mas depois inclui conteúdo PT como fallback secundário.
-
-## Solução
-
-Modificar o hook `useContentItems` para **filtrar estritamente por idioma ES no banco de dados** quando `forcedLanguage = 'es'`, em vez de apenas ordenar os resultados.
+Vou criar um botão flutuante pequeno, verde, com o ícone do WhatsApp, posicionado no canto inferior direito da tela. Ao clicar, abrirá o WhatsApp com o número **85 98641-1294** e a mensagem padrão já configurada no projeto.
 
 ---
 
-## Mudança 1: Atualizar useContentItems para Filtrar por Idioma
+## Componente a Criar
 
-**Arquivo:** `src/hooks/useContent.ts`
+**Arquivo:** `src/components/WhatsAppButton.tsx`
 
-**Lógica atual (linhas 64-88):**
-```typescript
-let query = supabase
-  .from("content_items")
-  .select("*")
-  .eq("is_active", true)
-  .order("is_featured", { ascending: false })
-  .order("created_at", { ascending: false });
+```tsx
+import { MessageCircle } from "lucide-react";
 
-// ... filtra por tipo ...
+const WhatsAppButton = () => {
+  const whatsappUrl = "https://wa.me/5585986411294?text=Ol%C3%A1%20adquiri%20o%20Canva%20Viagem.%20";
+  
+  return (
+    <a
+      href={whatsappUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-12 h-12 bg-green-500 hover:bg-green-600 rounded-full shadow-lg transition-all hover:scale-110"
+      aria-label="Fale conosco no WhatsApp"
+    >
+      {/* Ícone SVG do WhatsApp */}
+      <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967..." />
+      </svg>
+    </a>
+  );
+};
 
-const { data, error } = await query;
-// Apply language priority ordering (inclui PT como fallback!)
-return sortByLanguagePriority(data as ContentItem[], language);
-```
-
-**Nova lógica:**
-```typescript
-let query = supabase
-  .from("content_items")
-  .select("*")
-  .eq("is_active", true)
-  .order("is_featured", { ascending: false })
-  .order("created_at", { ascending: false });
-
-// ... filtra por tipo ...
-
-// FILTRAR POR IDIOMA NO BANCO DE DADOS
-if (language === 'pt') {
-  query = query.or('language.eq.pt,language.is.null');
-} else {
-  query = query.eq('language', language); // ES = apenas itens ES
-}
-
-const { data, error } = await query;
-// Ordenar por display_order/created_at (sem fallback de idioma)
-return (data as ContentItem[]).sort((a, b) => {
-  const aOrder = a.display_order ?? 9999;
-  const bOrder = b.display_order ?? 9999;
-  if (aOrder !== bOrder) return aOrder - bOrder;
-  return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-});
+export default WhatsAppButton;
 ```
 
 ---
 
-## Mudança 2: Aplicar o Mesmo Filtro aos Outros Hooks
+## Integração Global
 
-Aplicar a mesma lógica de filtragem estrita para:
+**Arquivo:** `src/App.tsx`
 
-1. **useCaptions** - Filtrar legendas por idioma
-2. **useMarketingTools** - Filtrar ferramentas por idioma
+Adicionar o componente dentro do `BrowserRouter`, logo após o `<UtmTracker />`:
+
+```tsx
+import WhatsAppButton from "@/components/WhatsAppButton";
+
+// Dentro do App:
+<BrowserRouter>
+  <UtmTracker />
+  <WhatsAppButton />  {/* ← NOVO */}
+  <Routes>
+    ...
+  </Routes>
+</BrowserRouter>
+```
 
 ---
 
-## Resultado Esperado
+## Especificações do Design
 
-**Antes:**
-```
-Página ES:
-├── Mel África (PT) ❌
-├── Japão Mel (PT) ❌
-├── Bia Pacotes (PT) ❌
-├── Cancun - es (ES) 
-├── Portugal - es (ES)
-└── ... outros PT misturados ❌
-```
+| Propriedade | Valor |
+|-------------|-------|
+| Posição | `fixed bottom-6 right-6` |
+| Tamanho | `w-12 h-12` (48x48px) |
+| Cor | `bg-green-500` (Verde WhatsApp) |
+| Hover | `hover:bg-green-600 hover:scale-110` |
+| Z-index | `z-50` (acima de outros elementos) |
+| Sombra | `shadow-lg` |
+| Ícone | SVG oficial do WhatsApp (branco) |
 
-**Depois:**
-```
-Página ES:
-├── Cancun - es (ES) ✅
-├── Dublin - es (ES) ✅
-├── Portugal - es (ES) ✅
-├── Cozumel - es (ES) ✅
-├── Stories ES ✅
-└── ... apenas conteúdo ES ✅
-```
+---
+
+## Comportamento
+
+- **Desktop**: Botão pequeno no canto inferior direito
+- **Mobile**: Mesmo tamanho e posição (48x48px)
+- **Clique**: Abre `wa.me/5585986411294` com mensagem pré-preenchida
+- **Acessibilidade**: `aria-label` para leitores de tela
 
 ---
 
 ## Arquivos Afetados
 
-| Arquivo | Tipo de Mudança |
-|---------|-----------------|
-| `src/hooks/useContent.ts` | Adicionar filtro de idioma no banco para useContentItems, useCaptions, useMarketingTools |
+| Arquivo | Ação |
+|---------|------|
+| `src/components/WhatsAppButton.tsx` | Criar componente |
+| `src/App.tsx` | Importar e adicionar o componente |
 
 ---
 
-## Detalhes Técnicos
+## Nota sobre Conflito com BottomNav (Mobile)
 
-A mudança afeta apenas a página ES (`/es`). A página PT (`/` e `/pt`) continuará funcionando normalmente, pois o filtro `or('language.eq.pt,language.is.null')` mantém o comportamento de incluir conteúdo português e conteúdo legado sem idioma definido.
-
-Isso resolve definitivamente a exibição de conteúdo misturado na versão espanhola.
-
+O botão ficará posicionado em `bottom-6 right-6` (~24px do canto). No mobile, onde existe a `BottomNav` fixa, o botão ficará **acima** da barra de navegação para não haver sobreposição. Se necessário, posso ajustar para `bottom-20` no mobile.
