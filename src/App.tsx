@@ -30,6 +30,7 @@ import Termos from "./pages/Termos";
 import Privacidade from "./pages/Privacidade";
 import ProximoNivel from "./pages/ProximoNivel";
 import AuthVerify from "./pages/AuthVerify";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <UtmTracker />
+              <WhatsAppButton />
               <Routes>
                 {/* ROTAS PORTUGUÊS */}
                 <Route path="/" element={<Index />} />
