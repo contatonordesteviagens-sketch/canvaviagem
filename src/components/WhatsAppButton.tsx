@@ -1,5 +1,5 @@
 const WhatsAppButton = () => {
-  const whatsappUrl = "https://wa.me/5585986411294?text=Ol%C3%A1%20adquiri%20o%20Canva%20Viagem.%20";
+  const whatsappUrl = "https://api.whatsapp.com/send/?phone=5585986411294&text=Canva+Viagem";
   
   return (
     <a
