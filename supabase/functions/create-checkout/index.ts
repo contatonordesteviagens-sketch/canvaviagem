@@ -96,8 +96,7 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      payment_method_types: ["card", "boleto"],
-      // Redirect to /obrigado with email for tracking (simplified flow)
+      // Redirect to /obrigado with email for tracking
       success_url: `${origin}/obrigado?email=${encodeURIComponent(user.email || '')}&source=checkout`,
       cancel_url: `${origin}/planos?canceled=true`,
       metadata: {

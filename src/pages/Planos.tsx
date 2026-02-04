@@ -11,11 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { UserInfoCard } from "@/components/UserInfoCard";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
-import { 
-  Loader2, Check, Plane, Settings, Video, Image, MessageSquare, 
-  Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity 
+import {
+  Loader2, Check, Plane, Settings, Video, Image, MessageSquare,
+  Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { PaymentModal } from "@/components/PaymentModal";
 import garantia7dias from "@/assets/garantia-7-dias.png";
 
 // GIFs e Videos constants
@@ -47,7 +48,7 @@ const Planos = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { setLanguage, t } = useLanguage();
-  
+
   // Force PT language on this page
   const language = 'pt';
   useEffect(() => {
@@ -63,6 +64,7 @@ const Planos = () => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   // Benefits with icons - translated
   const benefits = [
@@ -202,7 +204,7 @@ const Planos = () => {
         <Header />
         <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-4xl">
           <UserInfoCard />
-          
+
           <div className="text-center mb-8 md:mb-12">
             <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
               <Sparkles className="h-3 w-3 mr-1" />
@@ -289,7 +291,7 @@ const Planos = () => {
             <Sparkles className="h-4 w-4 mr-2" />
             {t('plans.badge')}
           </Badge>
-          
+
           {/* Headline com Gradiente */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-4">
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
@@ -298,19 +300,19 @@ const Planos = () => {
             <br />
             <span className="text-foreground">{t('plans.heroTitleLine2')}</span>
           </h1>
-          
+
           {/* Subheadline */}
           <p className="text-xl md:text-2xl text-muted-foreground mb-8">
             {t('plans.heroSubtitle')}
           </p>
-          
+
           {/* GIF Hero */}
-          <img 
-            src={heroGif} 
-            alt="Vídeos de viagens profissionais" 
+          <img
+            src={heroGif}
+            alt="Vídeos de viagens profissionais"
             className="mx-auto rounded-2xl shadow-2xl max-w-xs md:max-w-2xl mb-6"
           />
-          
+
           {/* Badges de Prova Social */}
           <div className="flex flex-col md:flex-row items-center justify-center gap-4">
             <Badge variant="outline" className="px-4 py-2 text-sm">
@@ -332,8 +334,8 @@ const Planos = () => {
           <div className="grid grid-cols-2 gap-3 md:gap-4 max-w-2xl mx-auto">
             {proofGifs.map((gif, index) => (
               <div key={index} className="rounded-2xl overflow-hidden shadow-lg hover:scale-[1.02] transition-transform duration-300">
-                <img 
-                  src={gif} 
+                <img
+                  src={gif}
                   alt={`Exemplo de vídeo ${index + 1}`}
                   className="w-full aspect-[9/16] object-cover"
                 />
@@ -351,16 +353,15 @@ const Planos = () => {
             <p className="text-center text-muted-foreground text-lg mb-8">
               {t('plans.whatYouGetDesc')}
             </p>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {benefits.map((item, index) => (
-                <div 
-                  key={index} 
-                  className={`flex items-center gap-3 p-4 rounded-lg transition-all duration-200 ${
-                    item.highlight 
-                      ? 'bg-gradient-to-r from-primary to-accent text-white font-semibold shadow-lg' 
-                      : 'bg-background/50 hover:bg-background/80'
-                  }`}
+                <div
+                  key={index}
+                  className={`flex items-center gap-3 p-4 rounded-lg transition-all duration-200 ${item.highlight
+                    ? 'bg-gradient-to-r from-primary to-accent text-white font-semibold shadow-lg'
+                    : 'bg-background/50 hover:bg-background/80'
+                    }`}
                 >
                   <item.icon className={`h-5 w-5 shrink-0 ${item.highlight ? 'text-white' : 'text-primary'}`} />
                   <span>{item.text}</span>
@@ -402,9 +403,9 @@ const Planos = () => {
                 <span className="text-5xl md:text-6xl font-black text-primary">{t('plans.price')}</span>
                 <span className="text-xl text-muted-foreground ml-2">{t('plans.period')}</span>
               </div>
-              
-              <Button 
-                size="lg" 
+
+              <Button
+                size="lg"
                 onClick={handleCheckout}
                 disabled={checkoutLoading}
                 className="w-full h-14 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300"
@@ -418,7 +419,7 @@ const Planos = () => {
                   </>
                 )}
               </Button>
-              
+
               <div className="flex flex-col md:flex-row items-center justify-center gap-4 mt-6 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Shield className="h-4 w-4" /> {t('plans.guarantee')}
@@ -438,7 +439,7 @@ const Planos = () => {
         <section className="mb-12 md:mb-20">
           <div className="bg-accent/10 border-l-4 border-accent p-6 md:p-8 rounded-xl">
             <div className="flex flex-col items-center text-center">
-              <img 
+              <img
                 src={garantia7dias}
                 alt="Garantia 7 dias incondicional"
                 className="w-20 md:w-28 mb-4"
@@ -503,9 +504,9 @@ const Planos = () => {
         {/* CTA FINAL COM PULSE */}
         <section className="mb-12">
           <div className="text-center">
-            <Button 
-              size="lg" 
-              onClick={handleCheckout}
+            <Button
+              size="lg"
+              onClick={() => setIsPaymentModalOpen(true)}
               disabled={checkoutLoading}
               className="text-xl px-12 h-16 bg-gradient-to-r from-primary to-accent animate-pulse shadow-2xl hover:shadow-3xl transition-all duration-300"
             >
@@ -525,6 +526,13 @@ const Planos = () => {
         </section>
       </div>
       <Footer />
+
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        onConfirmCard={handleCheckout}
+        isLoading={checkoutLoading}
+      />
     </div>
   );
 };
