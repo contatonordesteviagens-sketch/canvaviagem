@@ -1,0 +1,43 @@
+project_id = "zdjtcwtakgizbsbbwtgc"
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.check-subscription]
+verify_jwt = false
+
+[functions.customer-portal]
+verify_jwt = false
+
+[functions.send-drip-campaign]
+verify_jwt = false
+
+[functions.resend-webhook]
+verify_jwt = false
+
+[functions.parse-content-file]
+verify_jwt = false
+
+[functions.stripe-dashboard]
+verify_jwt = false
+
+[functions.generate-thumbnail]
+verify_jwt = false
+
+[functions.send-magic-link]
+verify_jwt = false
+
+[functions.verify-magic-link]
+verify_jwt = false
+
+[functions.generate-magic-link-url]
+verify_jwt = false
+
+[functions.trigger-zaia-welcome]
+verify_jwt = false
+
+[functions.meta-conversions-api-es]
+verify_jwt = false
