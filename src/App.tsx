@@ -31,6 +31,7 @@ import Privacidade from "./pages/Privacidade";
 import ProximoNivel from "./pages/ProximoNivel";
 import AuthVerify from "./pages/AuthVerify";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -55,37 +56,61 @@ const App = () => (
                 {/* ROTAS PORTUGUÊS */}
                 <Route path="/" element={<Index />} />
                 <Route path="/pt" element={<Index />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/pt/calendar" element={<Calendar />} />
+                <Route path="/calendar" element={
+                  <ProtectedRoute requireSubscription>
+                    <Calendar />
+                  </ProtectedRoute>
+                } />
+                <Route path="/pt/calendar" element={
+                  <ProtectedRoute requireSubscription>
+                    <Calendar />
+                  </ProtectedRoute>
+                } />
                 <Route path="/planos" element={<Planos />} />
                 <Route path="/pt/planos" element={<Planos />} />
-                
+
                 {/* ROTAS ESPANHOL - PÁGINAS INDEPENDENTES */}
                 <Route path="/es" element={<IndexES />} />
-                <Route path="/es/calendar" element={<CalendarES />} />
+                <Route path="/es/calendar" element={
+                  <ProtectedRoute requireSubscription>
+                    <CalendarES />
+                  </ProtectedRoute>
+                } />
                 <Route path="/es/planos" element={<PlanosES />} />
-                
+
                 {/* Auth e outras rotas compartilhadas */}
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/verify" element={<AuthVerify />} />
                 <Route path="/sucesso" element={<Sucesso />} />
                 <Route path="/obrigado" element={<Obrigado />} />
                 <Route path="/pos-pagamento" element={<PosPagamento />} />
-                <Route path="/gestao" element={<Gestao />} />
+                <Route path="/gestao" element={
+                  <ProtectedRoute requireSubscription>
+                    <Gestao />
+                  </ProtectedRoute>
+                } />
                 <Route path="/termos" element={<Termos />} />
                 <Route path="/privacidade" element={<Privacidade />} />
-                <Route path="/proximo-nivel" element={<ProximoNivel />} />
+                <Route path="/proximo-nivel" element={
+                  <ProtectedRoute requireSubscription>
+                    <ProximoNivel />
+                  </ProtectedRoute>
+                } />
                 <Route path="/admin-login" element={<AdminLogin />} />
-                
+
                 {/* Admin Routes */}
-                <Route path="/admin" element={<AdminLayout />}>
+                <Route path="/admin" element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminLayout />
+                  </ProtectedRoute>
+                }>
                   <Route path="dashboard" element={<AdminDashboard />} />
                   <Route path="marketing" element={<Marketing />} />
                   <Route path="content" element={<ContentManager />} />
                   <Route path="captions" element={<CaptionsManager />} />
                   <Route path="tools" element={<ToolsManager />} />
                 </Route>
-                
+
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
