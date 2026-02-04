@@ -53,7 +53,7 @@ serve(async (req) => {
         status: 401,
       });
     }
-    
+
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
@@ -67,7 +67,7 @@ serve(async (req) => {
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    
+
     // Check if customer already exists
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;
@@ -79,13 +79,13 @@ serve(async (req) => {
     }
 
     const origin = req.headers.get("origin") || "https://lovable.dev";
-    
+
     // Get user name from metadata with fallbacks
-    const userName = user.user_metadata?.name || 
-                     user.user_metadata?.full_name || 
-                     user.email?.split('@')[0] || 
-                     'usuário';
-    
+    const userName = user.user_metadata?.name ||
+      user.user_metadata?.full_name ||
+      user.email?.split('@')[0] ||
+      'usuário';
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -96,6 +96,7 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
+      payment_method_types: ["card", "boleto"],
       // Redirect to /obrigado with email for tracking (simplified flow)
       success_url: `${origin}/obrigado?email=${encodeURIComponent(user.email || '')}&source=checkout`,
       cancel_url: `${origin}/planos?canceled=true`,
