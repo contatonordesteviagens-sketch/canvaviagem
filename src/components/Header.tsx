@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { 
-  Menu, X, LogOut, User, Home, Calendar, CreditCard, 
-  Video, Image, LayoutGrid, FileText, Download, Bot, 
+import {
+  Menu, X, LogOut, User, Home, Calendar, CreditCard,
+  Video, Image, LayoutGrid, FileText, Download, Bot,
   GraduationCap, Heart, ChevronDown, Sun, Moon, Star
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
@@ -60,10 +60,10 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
         .select("name")
         .eq("user_id", user.id)
         .maybeSingle();
-      
+
       setUserName(data?.name || null);
     };
-    
+
     fetchUserName();
 
     // Subscribe to realtime updates on the user's profile
@@ -142,12 +142,12 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
         <Link to={isESRoute ? "/es" : "/"} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <img 
-            src={logoImage} 
-            alt="Canva Viagem" 
+          <img
+            src={logoImage}
+            alt="Canva Viagem"
             className="h-10 w-10 rounded-xl shadow-lg object-cover"
           />
-          <span className="font-bold text-xl hidden sm:inline">Canva Viagem ⭐</span>
+          <span className="font-bold text-xl hidden sm:inline">Canva Viagem ⭐⭐</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -203,15 +203,15 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
 
           {/* Theme Toggle - Desktop */}
           <ThemeToggle />
-          
+
           {user ? (
             <div className="flex items-center gap-2 ml-2">
               <span className="text-sm font-medium text-foreground">
                 Olá, {userName || user.email?.split("@")[0]}! 👋
               </span>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={signOut}
               >
                 <LogOut className="h-4 w-4 mr-2" />
@@ -240,12 +240,12 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
               <nav className="flex flex-col gap-1 mt-8">
                 {/* Language Switcher - Mobile */}
                 <LanguageSwitcher variant="mobile" />
-                
+
                 <DropdownMenuSeparator className="my-3" />
 
                 {/* Theme Toggle - Mobile */}
                 <ThemeToggleMobile />
-                
+
                 <DropdownMenuSeparator className="my-3" />
 
                 {/* Navegação Principal */}
@@ -296,14 +296,14 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
                 ))}
 
                 <DropdownMenuSeparator className="my-3" />
-                
+
                 {user ? (
                   <>
                     <div className="px-3 py-2 text-sm font-medium text-foreground">
                       Olá, {userName || user.email?.split("@")[0]}! 👋
                     </div>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       onClick={() => {
                         signOut();
                         setIsOpen(false);
