@@ -148,6 +148,7 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
             className="h-10 w-10 rounded-xl shadow-lg object-cover"
           />
           <span className="font-bold text-xl hidden sm:inline">Canva Viagem</span>
+          <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 hidden md:block" />
         </Link>
 
         {/* Desktop Navigation */}
