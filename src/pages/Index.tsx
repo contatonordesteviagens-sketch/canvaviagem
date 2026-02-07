@@ -21,9 +21,9 @@ import { ToolCard } from "@/components/canva/ToolCard";
 import { BottomNav } from "@/components/canva/BottomNav";
 
 // Database hooks
-import { 
-  useContentItems, 
-  useCaptions, 
+import {
+  useContentItems,
+  useCaptions,
   useMarketingTools,
   useTrackClick,
   useFeaturedItems,
@@ -42,6 +42,7 @@ import { ExternalLink } from "lucide-react";
 import { resources, videoDownloads } from "@/data/templates";
 import { trackViewContent } from "@/lib/meta-pixel";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useGamification } from "@/hooks/useGamification";
 
 
 
@@ -49,7 +50,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { user, loading, subscription } = useAuth();
   const { setLanguage, t } = useLanguage();
-  
+
   // Force PT language on this page
   useEffect(() => {
     document.documentElement.lang = 'pt';
@@ -74,6 +75,7 @@ const Index = () => {
   const { trackClick } = useTrackClick();
   const { trackPageView } = useTrackPageView();
   const { favorites, isFavorite, toggleFavorite, favoritesCount, MAX_FAVORITES } = useFavorites();
+  const { trackActivity } = useGamification();
 
   // Track view content when user is logged in
   useEffect(() => {
@@ -113,13 +115,13 @@ const Index = () => {
   const isNacional = (title: string, category?: string | null) => {
     if (category === 'nacional') return true;
     if (category === 'internacional') return false;
-    return destinosNacionais.some(destino => 
+    return destinosNacionais.some(destino =>
       title.toLowerCase().includes(destino.toLowerCase())
-    ) || title.includes('- AL') || title.includes('- BA') || title.includes('- CE') || 
-    title.includes('- SC') || title.includes('- RN') || title.includes('- TO') ||
-    title.includes('- PE') || title.includes('- PB') || title.includes('- MG') ||
-    title.includes('- PR') || title.includes('- AM') || title.includes('- PA') ||
-    title.includes('- MS');
+    ) || title.includes('- AL') || title.includes('- BA') || title.includes('- CE') ||
+      title.includes('- SC') || title.includes('- RN') || title.includes('- TO') ||
+      title.includes('- PE') || title.includes('- PB') || title.includes('- MG') ||
+      title.includes('- PR') || title.includes('- AM') || title.includes('- PA') ||
+      title.includes('- MS');
   };
 
   const isInfluencer = (title: string, influencer: string) => {
@@ -137,7 +139,7 @@ const Index = () => {
       filtered = filtered.filter(item => {
         // Se nenhum filtro selecionado, mostra todos
         let matches = false;
-        
+
         if (contentFilters.includes('nacionais') && isNacional(item.title, item.category)) {
           matches = true;
         }
@@ -150,7 +152,7 @@ const Index = () => {
         if (contentFilters.includes('stories') && (item.type === 'story' || item.type === 'weekly-story')) {
           matches = true;
         }
-        
+
         return matches;
       });
     }
@@ -178,6 +180,16 @@ const Index = () => {
 
   const handleCardClick = (item: ContentItem) => {
     trackClick(item.type, item.id);
+
+    // Gamification tracking
+    if (item.type === 'video' || item.type === 'seasonal') {
+      trackActivity('video'); // +10 pts
+    } else if (item.type === 'feed') {
+      trackActivity('art'); // +5 pts
+    } else if (item.type === 'story' || item.type === 'weekly-story') {
+      trackActivity('art'); // +5 pts
+    }
+
     // Nota: a abertura da aba agora é controlada pelo PremiumCard
   };
 
@@ -238,14 +250,14 @@ const Index = () => {
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         });
         const displayedSortedVideos = showAllVideos ? sortedVideos : sortedVideos.slice(0, 10);
-        
+
         return (
           <section className="animate-fade-in">
             {/* Highlights Section - Show at top if there are highlighted items */}
             {highlightedItems && highlightedItems.length > 0 && (
               <div className="mb-8">
-                <SectionHeader 
-                  title="✨ Destaques da Semana" 
+                <SectionHeader
+                  title="✨ Destaques da Semana"
                   subtitle="Conteúdos em destaque selecionados para você"
                 />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -255,21 +267,21 @@ const Index = () => {
                       {item.media_url ? (
                         <div className="aspect-video bg-muted">
                           {item.media_type === 'gif' ? (
-                            <img 
-                              src={item.media_url} 
-                              alt={item.title} 
-                              className="w-full h-full object-cover" 
+                            <img
+                              src={item.media_url}
+                              alt={item.title}
+                              className="w-full h-full object-cover"
                               loading="lazy"
                               onError={(e) => {
                                 e.currentTarget.src = '/placeholder.svg';
                               }}
                             />
                           ) : (
-                            <video 
-                              src={item.media_url} 
-                              autoPlay 
-                              loop 
-                              muted 
+                            <video
+                              src={item.media_url}
+                              autoPlay
+                              loop
+                              muted
                               playsInline
                               className="w-full h-full object-cover"
                               onError={(e) => {
@@ -280,10 +292,10 @@ const Index = () => {
                         </div>
                       ) : item.image_url ? (
                         <div className="aspect-video bg-muted">
-                          <img 
-                            src={item.image_url} 
-                            alt={item.title} 
-                            className="w-full h-full object-cover" 
+                          <img
+                            src={item.image_url}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
                             loading="lazy"
                           />
                         </div>
@@ -300,8 +312,8 @@ const Index = () => {
                         {item.description && (
                           <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{item.description}</p>
                         )}
-                        <Button 
-                          className="w-full mt-3" 
+                        <Button
+                          className="w-full mt-3"
                           onClick={() => {
                             trackClick(item.type, item.id);
                             window.open(item.url, '_blank');
@@ -316,19 +328,19 @@ const Index = () => {
                 </div>
               </div>
             )}
-            
-            <SectionHeader 
-              title="Vídeos Reels Editáveis" 
+
+            <SectionHeader
+              title="Vídeos Reels Editáveis"
               subtitle="Templates prontos para editar no Canva e publicar"
             />
-            
+
             <div className="flex justify-center mb-6">
               <ContentFilterDropdown
                 selectedFilters={contentFilters}
                 onFiltersChange={setContentFilters}
               />
             </div>
-            
+
             {videosLoading ? (
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
                 {[...Array(10)].map((_, i) => (
@@ -357,11 +369,11 @@ const Index = () => {
                     />
                   ))}
                 </div>
-                
+
                 {sortedVideos.length > 10 && (
                   <div className="flex justify-center mt-8">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => setShowAllVideos(!showAllVideos)}
                       className="gap-2 rounded-full px-6"
                     >
@@ -379,7 +391,7 @@ const Index = () => {
                     </Button>
                   </div>
                 )}
-                
+
                 {/* Floating minimize button when expanded */}
                 {showAllVideos && (
                   <Button
@@ -399,11 +411,11 @@ const Index = () => {
       case 'feed':
         return (
           <section className="animate-fade-in">
-            <SectionHeader 
-              title="Arte para Agência de Viagens" 
+            <SectionHeader
+              title="Arte para Agência de Viagens"
               subtitle="Posts prontos para engajar seu público"
             />
-            
+
             {feedLoading ? (
               <ContentSkeleton />
             ) : (
@@ -437,11 +449,11 @@ const Index = () => {
               <>
                 {weeklyStories.length > 0 && (
                   <div>
-                    <SectionHeader 
-                      title="Stories Semanais" 
+                    <SectionHeader
+                      title="Stories Semanais"
                       subtitle="Planejamento semanal de conteúdo"
                     />
-                    
+
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {weeklyStories.map((story) => (
                         <PremiumCard
@@ -462,11 +474,11 @@ const Index = () => {
                 )}
 
                 <div>
-                  <SectionHeader 
-                    title="Templates de Stories" 
+                  <SectionHeader
+                    title="Templates de Stories"
                     subtitle="Artes individuais para stories"
                   />
-                  
+
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {filterTemplates(regularStories).map((template) => (
                       <PremiumCard
@@ -493,11 +505,11 @@ const Index = () => {
       case 'captions':
         return (
           <section className="animate-fade-in">
-            <SectionHeader 
-              title="Legendas Prontas" 
+            <SectionHeader
+              title="Legendas Prontas"
               subtitle="Copie e cole legendas profissionais para seus posts"
             />
-            
+
             {captionsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[...Array(6)].map((_, i) => (
@@ -521,11 +533,11 @@ const Index = () => {
                     </div>
                   ))}
                 </div>
-                
+
                 {filteredCaptions.length > 8 && (
                   <div className="flex justify-center mt-8">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => setShowAllCaptions(!showAllCaptions)}
                       className="gap-2 rounded-full px-6"
                     >
@@ -551,11 +563,11 @@ const Index = () => {
       case 'downloads':
         return (
           <section className="animate-fade-in">
-            <SectionHeader 
-              title="Downloads de Vídeos" 
+            <SectionHeader
+              title="Downloads de Vídeos"
               subtitle="Acesse vídeos prontos para usar"
             />
-            
+
             <div className="max-w-2xl mx-auto bg-card rounded-3xl shadow-canva p-6">
               <ResourceSection
                 title="📥 Biblioteca de Vídeos"
@@ -569,15 +581,15 @@ const Index = () => {
       case 'tools':
         return (
           <section className="animate-fade-in">
-            <SectionHeader 
-              title="Ferramentas de Marketing" 
+            <SectionHeader
+              title="Ferramentas de Marketing"
               subtitle="Robôs de IA e recursos para agências"
             />
-            
+
             <h3 className="font-bold text-foreground mb-5 text-xl">
               Robôs de IA para Marketing
             </h3>
-            
+
             {toolsLoading ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {[...Array(6)].map((_, i) => (
@@ -595,7 +607,10 @@ const Index = () => {
                     icon={tool.icon}
                     description={tool.description || "Ferramenta de IA para marketing"}
                     isNew={tool.is_new}
-                    onClick={() => trackClick('tool', tool.id)}
+                    onClick={() => {
+                      trackClick('tool', tool.id);
+                      trackActivity('tool'); // +20 pts
+                    }}
                     isFavorite={isFavorite("marketing_tool", tool.id)}
                     onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
                     onPremiumRequired={getPremiumCallback()}
@@ -603,7 +618,7 @@ const Index = () => {
                 ))}
               </div>
             )}
-            
+
             <div className="bg-card rounded-3xl shadow-canva p-6">
               <ResourceSection
                 title="📚 Materiais e Recursos"
@@ -617,11 +632,11 @@ const Index = () => {
       case 'videoaula':
         return (
           <section className="animate-fade-in">
-            <SectionHeader 
-              title="Videoaulas" 
+            <SectionHeader
+              title="Videoaulas"
               subtitle="Aprenda a criar conteúdo profissional"
             />
-            
+
             <div className="space-y-6">
               {/* Primeira Videoaula */}
               <div className="bg-card rounded-3xl shadow-canva p-6">
@@ -646,11 +661,11 @@ const Index = () => {
       case 'favorites':
         return (
           <section className="animate-fade-in">
-            <SectionHeader 
-              title="Meus Favoritos" 
+            <SectionHeader
+              title="Meus Favoritos"
               subtitle="Itens salvos para acesso rápido"
             />
-            
+
             {favorites.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Heart className="h-16 w-16 mx-auto mb-4 opacity-30" />
@@ -803,18 +818,18 @@ const Index = () => {
   const mainContent = (
     <>
       {/* Hero Banner with Search */}
-      <HeroBanner 
+      <HeroBanner
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
       />
-      
+
       {/* Category Navigation - Horizontal scroll with icons */}
-      <CategoryNav 
+      <CategoryNav
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}
         showFavorites={!!user}
       />
-      
+
       {/* Dynamic Content based on category */}
       {renderContent()}
     </>
@@ -823,23 +838,23 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <Header onCategoryChange={setActiveCategory} />
-      
+
       <main className="container mx-auto px-4 py-4 md:py-6 max-w-7xl">
         {mainContent}
       </main>
-      
+
       <Footer />
-      
+
       {/* Bottom Navigation - Mobile only */}
-      <BottomNav 
-        activeCategory={activeCategory} 
-        onCategoryChange={setActiveCategory} 
+      <BottomNav
+        activeCategory={activeCategory}
+        onCategoryChange={setActiveCategory}
       />
 
       {/* Premium Gate Modal - triggered by action */}
-      <PremiumGateModal 
-        isOpen={showPremiumGate} 
-        onClose={() => setShowPremiumGate(false)} 
+      <PremiumGateModal
+        isOpen={showPremiumGate}
+        onClose={() => setShowPremiumGate(false)}
       />
     </div>
   );

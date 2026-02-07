@@ -10,6 +10,7 @@ import { useCalendarEntries, getDayOfYear, getDateFromDayOfYear, CalendarEntry }
 import { useContentItems, useCaptions } from "@/hooks/useContent";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { useGamification } from "@/hooks/useGamification";
 
 const Calendar = () => {
   const [currentMonth, setCurrentMonth] = useState(0);
@@ -17,7 +18,8 @@ const Calendar = () => {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { setLanguage, t } = useLanguage();
-  
+  const { trackActivity } = useGamification();
+
   // Force PT language on this page
   const language = 'pt';
   useEffect(() => {
@@ -35,7 +37,7 @@ const Calendar = () => {
 
   // Fetch calendar entries from database
   const { data: calendarEntries, isLoading: entriesLoading } = useCalendarEntries(currentYear, currentMonth);
-  
+
   // Fallback: fetch all videos and captions for days without entries
   const { data: allVideos } = useContentItems(['video', 'seasonal']);
   const { data: allCaptions } = useCaptions();
@@ -86,19 +88,19 @@ const Calendar = () => {
   };
 
   // Get content for a specific day - first check database, then fallback to rotation
-  const getContentForDay = (day: number): { 
-    template: { title: string; url: string; icon?: string } | null; 
+  const getContentForDay = (day: number): {
+    template: { title: string; url: string; icon?: string } | null;
     caption: { destination: string; text: string; hashtags: string } | null;
     notes: string | null;
     isFromDatabase: boolean;
   } => {
     const dayOfYear = getDayOfYearForDate(day, currentMonth, currentYear);
-    
+
     // Check if there's a database entry for this day
     const dbEntry = calendarEntries?.find(
       entry => entry.day_of_year === dayOfYear && entry.year === currentYear
     );
-    
+
     if (dbEntry) {
       return {
         template: dbEntry.content_item ? {
@@ -115,21 +117,21 @@ const Calendar = () => {
         isFromDatabase: true,
       };
     }
-    
+
     // Fallback: rotate through available content
     if (allVideos && allVideos.length > 0) {
       const templateIndex = dayOfYear % allVideos.length;
       const video = allVideos[templateIndex];
-      
+
       // Try to find a matching caption
       let caption = null;
       if (allCaptions && allCaptions.length > 0) {
-        caption = allCaptions.find(c => 
+        caption = allCaptions.find(c =>
           video.title.toLowerCase().includes(c.destination.toLowerCase().split(' - ')[0].toLowerCase()) ||
           c.destination.toLowerCase().includes(video.title.toLowerCase().split(' ')[0].toLowerCase())
         ) || allCaptions[templateIndex % allCaptions.length];
       }
-      
+
       return {
         template: {
           title: video.title,
@@ -145,21 +147,24 @@ const Calendar = () => {
         isFromDatabase: false,
       };
     }
-    
+
     return { template: null, caption: null, notes: null, isFromDatabase: false };
   };
 
   const handleDayClick = (day: number) => {
     setSelectedDay(day);
     setIsDialogOpen(true);
+
+    // Gamification: user opened calendar content
+    trackActivity('calendar'); // +15 pts
   };
 
   const isToday = (day: number) => {
     const now = new Date();
     const saoPauloTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
-    return day === saoPauloTime.getDate() && 
-           currentMonth === saoPauloTime.getMonth() && 
-           currentYear === saoPauloTime.getFullYear();
+    return day === saoPauloTime.getDate() &&
+      currentMonth === saoPauloTime.getMonth() &&
+      currentYear === saoPauloTime.getFullYear();
   };
 
   const selectedDayContent = selectedDay ? getContentForDay(selectedDay) : null;
@@ -179,11 +184,10 @@ const Calendar = () => {
       const hasDbContent = content.isFromDatabase;
 
       days.push(
-        <Card 
-          key={day} 
-          className={`p-1.5 md:p-3 min-h-[60px] md:min-h-[120px] hover:shadow-lg transition-all duration-300 border-border/50 cursor-pointer ${
-            today ? 'ring-2 ring-primary bg-primary/5' : ''
-          } ${hasDbContent ? 'border-l-2 border-l-green-500' : ''}`}
+        <Card
+          key={day}
+          className={`p-1.5 md:p-3 min-h-[60px] md:min-h-[120px] hover:shadow-lg transition-all duration-300 border-border/50 cursor-pointer ${today ? 'ring-2 ring-primary bg-primary/5' : ''
+            } ${hasDbContent ? 'border-l-2 border-l-green-500' : ''}`}
           onClick={() => handleDayClick(day)}
         >
           <div className="space-y-0.5 md:space-y-2">
@@ -210,9 +214,9 @@ const Calendar = () => {
                 {content.template?.title || t('calendar.noContentTitle')}
               </p>
               {content.template && (
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
+                <Button
+                  size="sm"
+                  variant="ghost"
                   className="w-full text-[10px] md:text-xs h-6 md:h-7 mt-1 p-0"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -293,7 +297,7 @@ const Calendar = () => {
               📅 {selectedDay} de {monthNames[currentMonth]} de {currentYear}
             </DialogTitle>
           </DialogHeader>
-          
+
           {selectedDayContent && (
             <div className="space-y-4 md:space-y-6">
               {/* Status badge */}
@@ -303,7 +307,7 @@ const Calendar = () => {
                   {t('calendar.scheduledManually')}
                 </div>
               )}
-              
+
               {/* Notas do admin */}
               {selectedDayContent.notes && (
                 <div className="bg-muted/50 p-3 rounded-lg">
@@ -311,7 +315,7 @@ const Calendar = () => {
                   <p className="text-sm text-muted-foreground">{selectedDayContent.notes}</p>
                 </div>
               )}
-              
+
               {/* Vídeo */}
               {selectedDayContent.template && (
                 <div className="space-y-2 md:space-y-3">
@@ -322,7 +326,7 @@ const Calendar = () => {
                     <p className="font-medium mb-2 md:mb-3 text-sm md:text-base">
                       {selectedDayContent.template.title}
                     </p>
-                    <Button 
+                    <Button
                       className="w-full"
                       size="sm"
                       onClick={() => window.open(selectedDayContent.template!.url, '_blank')}
@@ -350,7 +354,7 @@ const Calendar = () => {
                     <p className="text-[10px] md:text-xs text-accent font-medium">
                       {selectedDayContent.caption.hashtags}
                     </p>
-                    <Button 
+                    <Button
                       variant="outline"
                       className="w-full"
                       size="sm"
@@ -367,7 +371,7 @@ const Calendar = () => {
                   </Card>
                 </div>
               )}
-              
+
               {!selectedDayContent.template && !selectedDayContent.caption && (
                 <div className="text-center py-8 text-muted-foreground">
                   <p>{t('calendar.noContent')}</p>
@@ -383,7 +387,7 @@ const Calendar = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      
+
       <div className="flex-1 container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-7xl">
         <PremiumGate>
           {calendarContent}
