@@ -11,43 +11,39 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { UserInfoCard } from "@/components/UserInfoCard";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
-import {
-  Loader2, Check, Plane, Settings, Video, Image, MessageSquare,
-  Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity, GraduationCap
-} from "lucide-react";
+import { Loader2, Check, Plane, Settings, Video, Image, MessageSquare, Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity, GraduationCap } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-
 import garantia7dias from "@/assets/garantia-7-dias.png";
 
 // GIFs e Videos constants
 const heroGif = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZm5kcmcybmE2aTFkOTU3ZDNqYmZkbHQ2YjRibjB1NjFtN2RoNWdrMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/6osnZ6joYcPfERZsaE/giphy.gif";
-
-const proofGifs = [
-  "https://media4.giphy.com/media/tJPdq4gvTvr8CgIyWI/giphy.gif",
-  "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWt3MGhsd3g1MnJtbzlkMDloczlhdTJvNWhubjZ4Z3FtNnJkeDd1aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ZQZVm01DFW3qHY0ZKs/giphy.gif",
-  "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3J2anV0aTVkYWowbDl1ZXFtNnB4ZWUwcnVnZTVzOW91ZzNncGNvNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mbylDFYWSU46XeLcsS/giphy.gif",
-  "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXQ1dHAxM2JxcWM0N3VqdWhibnBtcDR5eWVmNTZwaGI1NTJjeml3diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VcFJaM72FG76eG75In/giphy.gif",
-  "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExa24wbWJoa2swZXVyY3h5eDgxY3FhdWR2cHg5MDhrN3p2ZGExYWtpNiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/22QqF0ECtSnOvpiQLZ/giphy.gif",
-  "https://media4.giphy.com/media/VVMI7dobalrJhKmQOZ/giphy.gif",
-];
-
-const youtubeVideos = [
-  { id: "dvInvZZ7fLY", title: "Fernando de Noronha Takes" },
-  { id: "vUgCtB-yUPg", title: "Veneza Itália" },
-  { id: "KsGg1kWgFjA", title: "Fernando de Noronha" },
-  { id: "QcwzHP3Y3Nc", title: "Jalapão" },
-];
+const proofGifs = ["https://media4.giphy.com/media/tJPdq4gvTvr8CgIyWI/giphy.gif", "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWt3MGhsd3g1MnJtbzlkMDloczlhdTJvNWhubjZ4Z3FtNnJkeDd1aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ZQZVm01DFW3qHY0ZKs/giphy.gif", "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3J2anV0aTVkYWowbDl1ZXFtNnB4ZWUwcnVnZTVzOW91ZzNncGNvNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mbylDFYWSU46XeLcsS/giphy.gif", "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXQ1dHAxM2JxcWM0N3VqdWhibnBtcDR5eWVmNTZwaGI1NTJjeml3diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VcFJaM72FG76eG75In/giphy.gif", "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExa24wbWJoa2swZXVyY3h5eDgxY3FhdWR2cHg5MDhrN3p2ZGExYWtpNiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/22QqF0ECtSnOvpiQLZ/giphy.gif", "https://media4.giphy.com/media/VVMI7dobalrJhKmQOZ/giphy.gif"];
+const youtubeVideos = [{
+  id: "dvInvZZ7fLY",
+  title: "Fernando de Noronha Takes"
+}, {
+  id: "vUgCtB-yUPg",
+  title: "Veneza Itália"
+}, {
+  id: "KsGg1kWgFjA",
+  title: "Fernando de Noronha"
+}, {
+  id: "QcwzHP3Y3Nc",
+  title: "Jalapão"
+}];
 
 // Checkout links by language
 const STRIPE_LINKS = {
   pt: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
-  es: "https://buy.stripe.com/bJedRa3TIej6cz15gE8so04",
+  es: "https://buy.stripe.com/bJedRa3TIej6cz15gE8so04"
 };
-
 const Planos = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { setLanguage, t } = useLanguage();
+  const {
+    setLanguage,
+    t
+  } = useLanguage();
 
   // Force PT language on this page
   const language = 'pt';
@@ -59,35 +55,72 @@ const Planos = () => {
     user,
     loading: authLoading,
     subscription,
-    refreshSubscription,
+    refreshSubscription
   } = useAuth();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
 
-
   // Benefits with icons - translated
-  const benefits = [
-    { icon: Video, text: t('plans.benefit.videos'), highlight: true },
-    { icon: MessageSquare, text: t('plans.benefit.whatsapp'), highlight: false },
-    { icon: Calendar, text: t('plans.benefit.calendar'), highlight: false },
-    { icon: FileText, text: t('plans.benefit.captions'), highlight: false },
-    { icon: Sparkles, text: t('plans.benefit.canva'), highlight: false },
-    { icon: Shield, text: t('plans.benefit.copyright'), highlight: false },
-    { icon: Bot, text: t('plans.benefit.ai'), highlight: true },
-    { icon: Image, text: t('plans.benefit.arts'), highlight: false },
-    { icon: Users, text: t('plans.benefit.influencers'), highlight: false },
-    { icon: Infinity, text: t('plans.benefit.updates'), highlight: false },
-  ];
+  const benefits = [{
+    icon: Video,
+    text: t('plans.benefit.videos'),
+    highlight: true
+  }, {
+    icon: MessageSquare,
+    text: t('plans.benefit.whatsapp'),
+    highlight: false
+  }, {
+    icon: Calendar,
+    text: t('plans.benefit.calendar'),
+    highlight: false
+  }, {
+    icon: FileText,
+    text: t('plans.benefit.captions'),
+    highlight: false
+  }, {
+    icon: Sparkles,
+    text: t('plans.benefit.canva'),
+    highlight: false
+  }, {
+    icon: Shield,
+    text: t('plans.benefit.copyright'),
+    highlight: false
+  }, {
+    icon: Bot,
+    text: t('plans.benefit.ai'),
+    highlight: true
+  }, {
+    icon: Image,
+    text: t('plans.benefit.arts'),
+    highlight: false
+  }, {
+    icon: Users,
+    text: t('plans.benefit.influencers'),
+    highlight: false
+  }, {
+    icon: Infinity,
+    text: t('plans.benefit.updates'),
+    highlight: false
+  }];
 
   // FAQs - translated
-  const faqs = [
-    { question: t('plans.faq.1.question'), answer: t('plans.faq.1.answer') },
-    { question: t('plans.faq.2.question'), answer: t('plans.faq.2.answer') },
-    { question: t('plans.faq.3.question'), answer: t('plans.faq.3.answer') },
-    { question: t('plans.faq.4.question'), answer: t('plans.faq.4.answer') },
-    { question: t('plans.faq.5.question'), answer: t('plans.faq.5.answer') },
-  ];
+  const faqs = [{
+    question: t('plans.faq.1.question'),
+    answer: t('plans.faq.1.answer')
+  }, {
+    question: t('plans.faq.2.question'),
+    answer: t('plans.faq.2.answer')
+  }, {
+    question: t('plans.faq.3.question'),
+    answer: t('plans.faq.3.answer')
+  }, {
+    question: t('plans.faq.4.question'),
+    answer: t('plans.faq.4.answer')
+  }, {
+    question: t('plans.faq.5.question'),
+    answer: t('plans.faq.5.answer')
+  }];
 
   // Track view content
   useEffect(() => {
@@ -107,7 +140,6 @@ const Planos = () => {
       window.history.replaceState({}, "", "/planos");
     }
   }, [searchParams, refreshSubscription, navigate]);
-
   const handleCheckout = () => {
     // Track with BRL currency for PT version
     const price = 29.00;
@@ -117,7 +149,6 @@ const Planos = () => {
     // Redirect directly to Stripe Payment Link
     window.location.href = STRIPE_LINKS.pt;
   };
-
   const handleRefreshSubscription = async () => {
     setRefreshLoading(true);
     try {
@@ -129,17 +160,23 @@ const Planos = () => {
       setRefreshLoading(false);
     }
   };
-
   const handleManageSubscription = async () => {
     setPortalLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       if (!session?.access_token) {
         toast.error("Você precisa estar logado.");
         navigate("/auth");
         return;
       }
-      const { data, error } = await supabase.functions.invoke("customer-portal", {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke("customer-portal", {
         headers: {
           Authorization: `Bearer ${session.access_token}`
         }
@@ -159,23 +196,19 @@ const Planos = () => {
       setPortalLoading(false);
     }
   };
-
   if (authLoading || subscription.loading) {
-    return (
-      <div className="min-h-screen bg-background">
+    return <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto px-4 py-16 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
         <Footer />
-      </div>
-    );
+      </div>;
   }
 
   // If user has active subscription, show different view
   if (subscription.subscribed) {
-    return (
-      <div className="min-h-screen bg-background">
+    return <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-4xl">
           <UserInfoCard />
@@ -205,11 +238,9 @@ const Planos = () => {
                   <Check className="h-4 w-4 md:h-5 md:w-5" />
                   {t('plans.fullAccess')}
                 </p>
-                {subscription.subscriptionEnd && (
-                  <p className="text-xs md:text-sm text-muted-foreground mt-1">
+                {subscription.subscriptionEnd && <p className="text-xs md:text-sm text-muted-foreground mt-1">
                     {t('plans.nextRenewal').replace('{date}', new Date(subscription.subscriptionEnd).toLocaleDateString('pt-BR'))}
-                  </p>
-                )}
+                  </p>}
               </div>
 
               <div className="flex flex-col gap-3">
@@ -219,30 +250,22 @@ const Planos = () => {
                 </Button>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button variant="outline" onClick={handleManageSubscription} disabled={portalLoading} className="flex-1">
-                    {portalLoading ? (
-                      <>
+                    {portalLoading ? <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         {t('common.loading')}
-                      </>
-                    ) : (
-                      <>
+                      </> : <>
                         <Settings className="mr-2 h-4 w-4" />
                         {t('plans.manageSubscription')}
-                      </>
-                    )}
+                      </>}
                   </Button>
                   <Button variant="ghost" onClick={handleRefreshSubscription} disabled={refreshLoading} className="flex-1">
-                    {refreshLoading ? (
-                      <>
+                    {refreshLoading ? <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         {t('plans.refreshing')}
-                      </>
-                    ) : (
-                      <>
+                      </> : <>
                         <RefreshCw className="mr-2 h-4 w-4" />
                         {t('plans.refreshStatus')}
-                      </>
-                    )}
+                      </>}
                   </Button>
                 </div>
               </div>
@@ -250,12 +273,9 @@ const Planos = () => {
           </Card>
         </div>
         <Footer />
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl">
         {user && <UserInfoCard />}
@@ -282,11 +302,7 @@ const Planos = () => {
           </p>
 
           {/* GIF Hero */}
-          <img
-            src={heroGif}
-            alt="Vídeos de viagens profissionais"
-            className="mx-auto rounded-2xl shadow-2xl max-w-xs md:max-w-2xl mb-6"
-          />
+          <img src={heroGif} alt="Vídeos de viagens profissionais" className="mx-auto rounded-2xl shadow-2xl max-w-xs md:max-w-2xl mb-6" />
 
           {/* Badges de Prova Social */}
           <div className="flex flex-col md:flex-row items-center justify-center gap-4">
@@ -302,10 +318,7 @@ const Planos = () => {
 
           {/* CTA Button below pricing text - Green Anchor */}
           <a href="#preco" className="inline-block mt-6">
-            <Button
-              size="lg"
-              className="px-8 py-6 text-base md:text-lg font-bold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300 text-white"
-            >
+            <Button size="lg" className="px-8 py-6 text-base md:text-lg font-bold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300 text-white">
               <Sparkles className="mr-2 h-5 w-5" />
               Ver Preços
             </Button>
@@ -318,15 +331,9 @@ const Planos = () => {
             {t('plans.proofTitle')}
           </h2>
           <div className="grid grid-cols-2 gap-3 md:gap-4 max-w-2xl mx-auto">
-            {proofGifs.map((gif, index) => (
-              <div key={index} className="rounded-2xl overflow-hidden shadow-lg hover:scale-[1.02] transition-transform duration-300">
-                <img
-                  src={gif}
-                  alt={`Exemplo de vídeo ${index + 1}`}
-                  className="w-full aspect-[9/16] object-cover"
-                />
-              </div>
-            ))}
+            {proofGifs.map((gif, index) => <div key={index} className="rounded-2xl overflow-hidden shadow-lg hover:scale-[1.02] transition-transform duration-300">
+                <img src={gif} alt={`Exemplo de vídeo ${index + 1}`} className="w-full aspect-[9/16] object-cover" />
+              </div>)}
           </div>
         </section>
 
@@ -418,20 +425,12 @@ const Planos = () => {
             Veja Exemplos Reais dos Vídeos
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 max-w-4xl mx-auto">
-            {youtubeVideos.map((video) => (
-              <div key={video.id} className="bg-black rounded-xl overflow-hidden shadow-xl relative group">
-                <iframe
-                  className="w-full aspect-[9/16]"
-                  src={`https://www.youtube.com/embed/${video.id}`}
-                  title={video.title}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
+            {youtubeVideos.map(video => <div key={video.id} className="bg-black rounded-xl overflow-hidden shadow-xl relative group">
+                <iframe className="w-full aspect-[9/16]" src={`https://www.youtube.com/embed/${video.id}`} title={video.title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 md:p-3 pointer-events-none">
                   <p className="text-white text-xs md:text-sm font-medium">{video.title}</p>
                 </div>
-              </div>
-            ))}
+              </div>)}
           </div>
         </section>
 
@@ -461,20 +460,11 @@ const Planos = () => {
                 <span className="text-xl md:text-2xl text-muted-foreground ml-1">/mês</span>
               </div>
 
-              <Button
-                size="lg"
-                onClick={handleCheckout}
-                disabled={checkoutLoading}
-                className="w-full h-14 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-sm md:text-base font-bold shadow-lg hover:shadow-xl transition-all duration-300 text-white"
-              >
-                {checkoutLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <>
+              <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="w-full h-14 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-sm md:text-base font-bold shadow-lg hover:shadow-xl transition-all duration-300 text-white">
+                {checkoutLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>
                     <Sparkles className="mr-2 h-4 w-4 md:h-5 md:w-5" />
                     Começar Teste Grátis de 3 Dias
-                  </>
-                )}
+                  </>}
               </Button>
 
               <p className="text-xs font-medium text-center mt-4 flex items-center justify-center gap-1.5">
@@ -492,11 +482,7 @@ const Planos = () => {
         <section className="mb-12 md:mb-20">
           <div className="bg-accent/10 border-l-4 border-accent p-6 md:p-8 rounded-xl">
             <div className="flex flex-col items-center text-center">
-              <img
-                src={garantia7dias}
-                alt="Garantia 7 dias incondicional"
-                className="w-20 md:w-28 mb-4"
-              />
+              <img src={garantia7dias} alt="Garantia 7 dias incondicional" className="w-20 md:w-28 mb-4" />
               <h3 className="text-2xl md:text-3xl font-bold mb-4">{t('plans.guaranteeTitle')}</h3>
               <p className="text-lg text-muted-foreground max-w-xl">
                 {t('plans.guaranteeDesc')}
@@ -507,19 +493,12 @@ const Planos = () => {
 
         {/* SOCIAL PROOF CVC/DECOLAR */}
         <section className="mb-8 md:mb-12 text-center">
-          <p className="text-xl md:text-2xl font-semibold mb-3 md:mb-4">
-            Seu perfil vai ficar melhor do que o da CVC e Decolar? 😅
-          </p>
-          <img
-            src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmo1NGh5cGxiZG1vdHl3bmZxNTBxd2h0aDBsbXkxa2xhNWk4bmE4aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MpVJ9IjphA5p6sO8Zr/giphy.gif"
-            alt="Perfil profissional"
-            className="mx-auto rounded-xl shadow-lg max-w-full w-full md:max-w-md"
-          />
+          <p className="text-xl md:text-2xl font-semibold mb-3 md:mb-4">Seu perfil melhor do que o da CVC e Decolar? 😅</p>
+          <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmo1NGh5cGxiZG1vdHl3bmZxNTBxd2h0aDBsbXkxa2xhNWk4bmE4aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MpVJ9IjphA5p6sO8Zr/giphy.gif" alt="Perfil profissional" className="mx-auto rounded-xl shadow-lg max-w-full w-full md:max-w-md" />
         </section>
 
         {/* Alert para usuários logados sem assinatura */}
-        {user && (
-          <div className="bg-secondary border border-border rounded-lg p-3 md:p-4 mb-6 md:mb-8">
+        {user && <div className="bg-secondary border border-border rounded-lg p-3 md:p-4 mb-6 md:mb-8">
             <div className="flex items-center gap-3 mb-3">
               <div className="bg-primary/10 rounded-full p-2 shrink-0">
                 <Plane className="h-4 w-4 md:h-5 md:w-5 text-primary" />
@@ -529,53 +508,37 @@ const Planos = () => {
               </p>
             </div>
             <Button variant="outline" size="sm" onClick={handleRefreshSubscription} disabled={refreshLoading} className="w-full sm:w-auto">
-              {refreshLoading ? (
-                <>
+              {refreshLoading ? <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   {t('plans.refreshing')}
-                </>
-              ) : (
-                <>
+                </> : <>
                   <RefreshCw className="mr-2 h-4 w-4" />
                   {t('plans.refreshStatus')}
-                </>
-              )}
+                </>}
             </Button>
-          </div>
-        )}
+          </div>}
 
         {/* FAQ REDUZIDO - 5 PERGUNTAS ESSENCIAIS */}
         <section className="mb-12 md:mb-16">
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">{t('plans.faqTitle')}</h2>
           <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
-            {faqs.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`}>
+            {faqs.map((faq, index) => <AccordionItem key={index} value={`item-${index}`}>
                 <AccordionTrigger className="text-left text-base md:text-lg">{faq.question}</AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
                   {faq.answer}
                 </AccordionContent>
-              </AccordionItem>
-            ))}
+              </AccordionItem>)}
           </Accordion>
         </section>
 
         {/* CTA FINAL COM PULSE */}
         <section className="mb-12">
           <div className="text-center">
-            <Button
-              size="lg"
-              onClick={handleCheckout}
-              disabled={checkoutLoading}
-              className="text-xl px-12 h-16 bg-gradient-to-r from-primary to-accent animate-pulse shadow-2xl hover:shadow-3xl transition-all duration-300"
-            >
-              {checkoutLoading ? (
-                <Loader2 className="h-6 w-6 animate-spin" />
-              ) : (
-                <>
+            <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="text-xl px-12 h-16 bg-gradient-to-r from-primary to-accent animate-pulse shadow-2xl hover:shadow-3xl transition-all duration-300">
+              {checkoutLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : <>
                   <Sparkles className="mr-2 h-6 w-6" />
                   {t('plans.ctaFinal')}
-                </>
-              )}
+                </>}
             </Button>
             <p className="text-sm font-medium mt-4 flex items-center justify-center gap-2">
               <Shield className="h-4 w-4 text-green-600" />
@@ -588,8 +551,6 @@ const Planos = () => {
         </section>
       </div>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Planos;
