@@ -282,7 +282,14 @@ const Planos = () => {
 
       {/* HERO SECTION - Minimalista Apple Style */}
       <section className="text-center mb-16 md:mb-24 px-4">
-        {/* Headline Principal - Clean */}
+        {/* Selo Pequeno - 1° App */}
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30 border border-amber-300 dark:border-amber-700 rounded-full mb-4">
+          <span className="text-xs font-semibold text-amber-800 dark:text-amber-200">
+            🏆 1° App Travel Marketing Completo do Mundo
+          </span>
+        </div>
+
+        {/* Headline Principal - Clean */
         <h1 className="text-5xl md:text-7xl font-semibold tracking-tight leading-tight mb-4 text-foreground" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif' }}>
           Venda Mais Viagens
         </h1>
