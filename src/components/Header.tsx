@@ -114,8 +114,8 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
 
   // Additional nav items for logged-in users
   const userNavItems = user ? [
-    { to: "/progresso", label: "Meu Progresso", icon: TrendingUp },
-    { to: "/sugestoes", label: "Sugestões", icon: Lightbulb },
+    { to: isESRoute ? "/es/progresso" : "/progresso", label: "Progresso", icon: TrendingUp },
+    { to: isESRoute ? "/es/sugestoes" : "/sugestoes", label: "Sugestões", icon: MessageSquare },
   ] : [];
 
   const proximoNivelItem = {
