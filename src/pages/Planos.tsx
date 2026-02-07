@@ -16,6 +16,7 @@ import {
   Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { StripeCheckoutModal } from "@/components/stripe/StripeCheckoutModal";
 
 import garantia7dias from "@/assets/garantia-7-dias.png";
 
@@ -64,6 +65,7 @@ const Planos = () => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
 
   // Benefits with icons - translated
@@ -108,39 +110,19 @@ const Planos = () => {
     }
   }, [searchParams, refreshSubscription, navigate]);
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
+    if (!user) {
+      toast.error("Você precisa estar logado para assinar.");
+      navigate("/auth");
+      return;
+    }
+
     // Track with BRL currency for PT version
     const price = 29.00;
     const currency = 'BRL';
     trackInitiateCheckout(price, currency);
-    setCheckoutLoading(true);
 
-    if (user) {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          const { data, error } = await supabase.functions.invoke("create-checkout", {
-            headers: {
-              Authorization: `Bearer ${session.access_token}`
-            },
-            body: { language }
-          });
-          if (!error && data?.url) {
-            window.open(data.url, '_blank');
-            toast.info("O checkout foi aberto em uma nova aba. Complete o pagamento e volte aqui!");
-            setCheckoutLoading(false);
-            return;
-          }
-        }
-      } catch (error) {
-        console.error("Checkout error:", error);
-      }
-    }
-
-    // Fallback to direct Stripe link based on language
-    window.open(STRIPE_LINKS[language], '_blank');
-    toast.info("O checkout foi aberto em uma nova aba. Após o pagamento, verifique seu email!");
-    setCheckoutLoading(false);
+    setIsCheckoutOpen(true);
   };
 
   const handleRefreshSubscription = async () => {
@@ -526,8 +508,7 @@ const Planos = () => {
         </section>
       </div>
       <Footer />
-
-
+      <StripeCheckoutModal isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} />
     </div>
   );
 };
