@@ -16,7 +16,7 @@ import {
   Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { PaymentModal } from "@/components/PaymentModal";
+
 import garantia7dias from "@/assets/garantia-7-dias.png";
 
 // GIFs e Videos constants
@@ -64,7 +64,7 @@ const Planos = () => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+
 
   // Benefits with icons - translated
   const benefits = [
@@ -406,7 +406,7 @@ const Planos = () => {
 
               <Button
                 size="lg"
-                onClick={() => setIsPaymentModalOpen(true)}
+                onClick={handleCheckout}
                 disabled={checkoutLoading}
                 className="w-full h-14 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300"
               >
@@ -420,16 +420,12 @@ const Planos = () => {
                 )}
               </Button>
 
-              <div className="flex flex-col md:flex-row items-center justify-center gap-4 mt-6 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Shield className="h-4 w-4" /> {t('plans.guarantee')}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" /> {t('plans.paymentSecure')}
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                {t('plans.cancelAnytime')}
+              <p className="text-sm font-medium text-center mt-4 flex items-center justify-center gap-2">
+                <Shield className="h-4 w-4 text-green-600" />
+                <span className="text-foreground">🔒 Pagamento 100% Seguro e Criptografado</span>
+              </p>
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                {t('plans.instantAccess')}
               </p>
             </CardContent>
           </Card>
@@ -506,7 +502,7 @@ const Planos = () => {
           <div className="text-center">
             <Button
               size="lg"
-              onClick={() => setIsPaymentModalOpen(true)}
+              onClick={handleCheckout}
               disabled={checkoutLoading}
               className="text-xl px-12 h-16 bg-gradient-to-r from-primary to-accent animate-pulse shadow-2xl hover:shadow-3xl transition-all duration-300"
             >
@@ -519,7 +515,11 @@ const Planos = () => {
                 </>
               )}
             </Button>
-            <p className="text-sm text-muted-foreground mt-4">
+            <p className="text-sm font-medium mt-4 flex items-center justify-center gap-2">
+              <Shield className="h-4 w-4 text-green-600" />
+              <span>🔒 Pagamento Seguro</span>
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
               {t('plans.instantAccess')}
             </p>
           </div>
@@ -527,12 +527,7 @@ const Planos = () => {
       </div>
       <Footer />
 
-      <PaymentModal
-        isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-        onConfirmCard={handleCheckout}
-        isLoading={checkoutLoading}
-      />
+
     </div>
   );
 };
