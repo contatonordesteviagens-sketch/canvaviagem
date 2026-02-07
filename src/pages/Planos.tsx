@@ -506,10 +506,15 @@ const Planos = () => {
         </section>
 
         {/* SOCIAL PROOF CVC/DECOLAR */}
-        <section className="mb-12 md:mb-20 text-center">
-          <p className="text-xl md:text-2xl font-semibold">
-            {t('plans.socialProof')}
+        <section className="mb-8 md:mb-12 text-center">
+          <p className="text-xl md:text-2xl font-semibold mb-3 md:mb-4">
+            Seu perfil vai ficar melhor do que o da CVC e Decolar? 😅
           </p>
+          <img
+            src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmo1NGh5cGxiZG1vdHl3bmZxNTBxd2h0aDBsbXkxa2xhNWk4bmE4aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MpVJ9IjphA5p6sO8Zr/giphy.gif"
+            alt="Perfil profissional"
+            className="mx-auto rounded-xl shadow-lg max-w-full w-full md:max-w-md"
+          />
         </section>
 
         {/* Alert para usuários logados sem assinatura */}
