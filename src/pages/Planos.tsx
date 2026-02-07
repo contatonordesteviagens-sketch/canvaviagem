@@ -111,12 +111,6 @@ const Planos = () => {
   }, [searchParams, refreshSubscription, navigate]);
 
   const handleCheckout = () => {
-    if (!user) {
-      toast.error("Você precisa estar logado para assinar.");
-      navigate("/auth");
-      return;
-    }
-
     // Track with BRL currency for PT version
     const price = 29.00;
     const currency = 'BRL';

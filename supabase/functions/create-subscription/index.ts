@@ -20,14 +20,30 @@ serve(async (req) => {
             Deno.env.get("SUPABASE_ANON_KEY") ?? ""
         );
 
+        let email = "";
+        let userId = "";
+
+        // Check for Authorization header first
         const authHeader = req.headers.get("Authorization");
-        if (!authHeader) {
-            throw new Error("No authorization header");
+        if (authHeader) {
+            const { data: { user } } = await supabaseClient.auth.getUser(authHeader.replace("Bearer ", ""));
+            if (user && user.email) {
+                email = user.email;
+                userId = user.id;
+            }
         }
 
-        const { data: { user } } = await supabaseClient.auth.getUser(authHeader.replace("Bearer ", ""));
-        if (!user || !user.email) {
-            throw new Error("Unauthorized");
+        // If no auth, check body for email (Guest Checkout)
+        const reqBody = await req.json().catch(() => ({}));
+        if (!email && reqBody.email) {
+            email = reqBody.email;
+            // userId remains empty or we generate a placeholder? 
+            // Metadata requires user_id usually for reconciliation?
+            // Webhook handles reconciliation via email if user_id is missing.
+        }
+
+        if (!email) {
+            throw new Error("Email is required for checkout");
         }
 
         const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -35,37 +51,44 @@ serve(async (req) => {
         });
 
         // 1. Get or Create Customer
-        const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+        const customers = await stripe.customers.list({ email: email, limit: 1 });
         let customerId = customers.data[0]?.id;
 
         if (!customerId) {
-            const userName = user.user_metadata?.name || user.user_metadata?.full_name || 'Usuário';
-            const newCustomer = await stripe.customers.create({
-                email: user.email,
-                name: userName,
-                metadata: {
-                    user_id: user.id
-                }
-            });
+            // Create new customer
+            const customerData: any = {
+                email: email,
+                name: email.split('@')[0], // Placeholder name
+            };
+            if (userId) {
+                customerData.metadata = { user_id: userId };
+            }
+
+            const newCustomer = await stripe.customers.create(customerData);
             customerId = newCustomer.id;
         }
 
         // 2. Create Subscription
-        const subscription = await stripe.subscriptions.create({
+        const subscriptionParams: any = {
             customer: customerId,
             items: [{ price: PRICE_ID }],
             payment_behavior: 'default_incomplete',
             payment_settings: { save_default_payment_method: 'on_subscription' },
-            expand: ['latest_invoice.payment_intent', 'pending_setup_intent'], // Fixed expansion
+            expand: ['latest_invoice.payment_intent', 'pending_setup_intent'],
             trial_period_days: 3,
             metadata: {
-                user_id: user.id,
+                // If userId is present, pass it. If not, webhook matches by email.
             },
-        });
+        };
+
+        if (userId) {
+            subscriptionParams.metadata.user_id = userId;
+        }
+
+        const subscription = await stripe.subscriptions.create(subscriptionParams);
 
         // 3. Extract Client Secret
         const invoice = subscription.latest_invoice as any;
-        // Check both PI (payment) and SI (trial setup)
         let clientSecret = invoice?.payment_intent?.client_secret;
 
         if (!clientSecret) {
@@ -73,7 +96,7 @@ serve(async (req) => {
         }
 
         if (!clientSecret) {
-            throw new Error("Could not generate client secret for checkout");
+            throw new Error("Could not generate client secret");
         }
 
         return new Response(
