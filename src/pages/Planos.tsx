@@ -260,20 +260,20 @@ const Planos = () => {
       <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl">
         {user && <UserInfoCard />}
 
-        {/* HERO SECTION - Badge de Urgência Animado */}
+        {/* HERO SECTION - Badge de Marketing */}
         <section className="text-center mb-12 md:mb-20">
-          <Badge className="mb-6 px-6 py-2 bg-gradient-to-r from-primary to-accent text-white animate-pulse border-0">
+          <Badge className="mb-6 px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 text-sm md:text-base font-semibold">
             <Sparkles className="h-4 w-4 mr-2" />
-            {t('plans.badge')}
+            🏆 A Primeira Ferramenta de Marketing Completa do Brasil
           </Badge>
 
           {/* Headline com Gradiente */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-4">
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              {t('plans.heroTitle')}
+              Venda Mais Viagens
             </span>
             <br />
-            <span className="text-foreground">{t('plans.heroTitleLine2')}</span>
+            <span className="text-foreground">O Ano Inteiro</span>
           </h1>
 
           {/* Subheadline */}
@@ -300,22 +300,16 @@ const Planos = () => {
             </Badge>
           </div>
 
-          {/* CTA Button below pricing text */}
-          <Button
-            size="lg"
-            onClick={handleCheckout}
-            disabled={checkoutLoading}
-            className="mt-6 px-8 py-6 text-lg font-bold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            {checkoutLoading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-5 w-5" />
-                Ver Preços
-              </>
-            )}
-          </Button>
+          {/* CTA Button below pricing text - Green Anchor */}
+          <a href="#preco" className="inline-block mt-6">
+            <Button
+              size="lg"
+              className="px-8 py-6 text-base md:text-lg font-bold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300 text-white"
+            >
+              <Sparkles className="mr-2 h-5 w-5" />
+              Ver Preços
+            </Button>
+          </a>
         </section>
 
         {/* GRID DE GIFS FORMATO REELS */}
@@ -387,7 +381,7 @@ const Planos = () => {
         </section>
 
         {/* CARD DE PREÇO APRIMORADO */}
-        <section className="mb-12 md:mb-20">
+        <section id="preco" className="mb-12 md:mb-20 scroll-mt-20">
           <Card className="max-w-2xl mx-auto border-2 border-primary/20 shadow-xl">
             <CardContent className="p-8 md:p-12 text-center">
               <p className="text-2xl line-through text-muted-foreground mb-2">{t('plans.originalPrice')}</p>
@@ -400,14 +394,14 @@ const Planos = () => {
                 size="lg"
                 onClick={handleCheckout}
                 disabled={checkoutLoading}
-                className="w-full h-14 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300"
+                className="w-full h-14 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-sm md:text-base font-bold shadow-lg hover:shadow-xl transition-all duration-300 text-white"
               >
                 {checkoutLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <>
-                    <Sparkles className="mr-2 h-5 w-5" />
-                    {t('plans.cta')}
+                    <Sparkles className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+                    Começar Teste Grátis de 3 Dias
                   </>
                 )}
               </Button>
