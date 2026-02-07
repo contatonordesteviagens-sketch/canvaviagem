@@ -113,7 +113,7 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
 
   const proximoNivelItem = {
     to: "/proximo-nivel",
-    label: "Próximo Nível",
+    label: "Turbo",
     icon: Star,
   };
 
