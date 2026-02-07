@@ -167,41 +167,55 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
           )}
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
-            {mainNavItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
-                activeClassName="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                <item.icon className="w-4 h-4 mr-2 inline" />
-                {item.label}
-              </NavLink>
-            ))}
+          <nav className="hidden md:flex items-center gap-2">
+            {/* Progress Bar - Desktop */}
+            {user && <ProgressBar />}
 
-            {/* User Nav Items (Progresso, Sugestoes) */}
-            {userNavItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
-                activeClassName="bg-accent text-accent-foreground"
-              >
-                <item.icon className="w-4 h-4 mr-2 inline" />
-                {item.label}
-              </NavLink>
-            ))}
+            {/* Theme Toggle - Desktop */}
+            <ThemeToggle />
 
-            {/* Dropdown Conteúdos */}
+            {/* Language Switcher - Desktop */}
+            <LanguageSwitcher variant="desktop" />
+
+            {/* Dropdown Mais - All Content */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="px-4 py-2 text-sm font-medium">
-                  Conteúdos
-                  <ChevronDown className="w-4 h-4 ml-1" />
+                <Button variant="ghost" size="sm" className="px-3 py-2">
+                  <MoreHorizontal className="w-4 h-4 mr-1.5" />
+                  <span className="text-sm font-medium">Mais</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-56">
+                {/* Navigation Pages */}
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">PÁGINAS</div>
+                {mainNavItems.map((item) => (
+                  <DropdownMenuItem
+                    key={item.to}
+                    onClick={() => window.location.href = item.to}
+                    className="cursor-pointer"
+                  >
+                    <item.icon className="w-4 h-4 mr-2" />
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+
+                {/* User Items if logged in */}
+                {user && userNavItems.map((item) => (
+                  <DropdownMenuItem
+                    key={item.to}
+                    onClick={() => window.location.href = item.to}
+                    className="cursor-pointer"
+                  >
+                    <item.icon className="w-4 h-4 mr-2" />
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+
+                {/* Separator before content categories */}
+                <div className="border-t my-1.5" />
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">CONTEÚDOS</div>
+
+                {/* Content Categories */}
                 {contentCategories.map((item) => (
                   <DropdownMenuItem
                     key={item.category}
@@ -214,27 +228,6 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-
-            {/* Próximo Nível - Highlighted Link - Only for Portuguese */}
-            {showProximoNivel && (
-              <NavLink
-                to={proximoNivelItem.to}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10 flex items-center gap-1.5"
-                activeClassName="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                <Star className="w-4 h-4 text-orange-500 fill-orange-500 animate-pulse" />
-                <span>{proximoNivelItem.label}</span>
-              </NavLink>
-            )}
-
-            {/* Language Switcher - Desktop */}
-            <LanguageSwitcher variant="desktop" />
-
-            {/* Theme Toggle - Desktop */}
-            <ThemeToggle />
-
-            {/* Progress Bar - Desktop */}
-            {user && <ProgressBar />}
 
             {user ? (
               <div className="flex items-center gap-2 ml-2">
