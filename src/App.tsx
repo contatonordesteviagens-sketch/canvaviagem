@@ -29,6 +29,8 @@ import Marketing from "./pages/admin/Marketing";
 import Termos from "./pages/Termos";
 import Privacidade from "./pages/Privacidade";
 import ProximoNivel from "./pages/ProximoNivel";
+import Progresso from "./pages/Progresso";
+import Sugestoes from "./pages/Sugestoes";
 import AuthVerify from "./pages/AuthVerify";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -96,6 +98,12 @@ const App = () => (
                     <ProximoNivel />
                   </ProtectedRoute>
                 } />
+                <Route path="/progresso" element={
+                  <ProtectedRoute>
+                    <Progresso />
+                  </ProtectedRoute>
+                } />
+                <Route path="/sugestoes" element={<Sugestoes />} />
                 <Route path="/admin-login" element={<AdminLogin />} />
 
                 {/* Admin Routes */}

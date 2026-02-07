@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu, X, LogOut, User, Home, Calendar, CreditCard,
   Video, Image, LayoutGrid, FileText, Download, Bot,
-  GraduationCap, Heart, ChevronDown, Sun, Moon, Star
+  GraduationCap, Heart, ChevronDown, Sun, Moon, Star, TrendingUp, Lightbulb
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { supabase } from "@/integrations/supabase/client";
+import { ProgressBar } from "@/components/ProgressBar";
 
 type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
 
@@ -111,6 +112,12 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
     { to: isESRoute ? "/es/planos" : "/planos", label: t('header.plans'), icon: CreditCard },
   ];
 
+  // Additional nav items for logged-in users
+  const userNavItems = user ? [
+    { to: "/progresso", label: "Meu Progresso", icon: TrendingUp },
+    { to: "/sugestoes", label: "Sugestões", icon: Lightbulb },
+  ] : [];
+
   const proximoNivelItem = {
     to: "/proximo-nivel",
     label: "Turbo",
@@ -166,6 +173,19 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
             </NavLink>
           ))}
 
+          {/* User Nav Items (Progresso, Sugestoes) */}
+          {userNavItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
+              activeClassName="bg-accent text-accent-foreground"
+            >
+              <item.icon className="w-4 h-4 mr-2 inline" />
+              {item.label}
+            </NavLink>
+          ))}
+
           {/* Dropdown Conteúdos */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -205,6 +225,9 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
 
           {/* Theme Toggle - Desktop */}
           <ThemeToggle />
+
+          {/* Progress Bar - Desktop */}
+          {user && <ProgressBar />}
 
           {user ? (
             <div className="flex items-center gap-2 ml-2">
