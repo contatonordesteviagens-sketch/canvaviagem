@@ -280,54 +280,27 @@ const Planos = () => {
     <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl">
       {user && <UserInfoCard />}
 
-      {/* HERO SECTION - Badge de Marketing */}
-      <section className="text-center mb-12 md:mb-20">
-        <div className="mb-6 px-4 md:px-6 py-2 md:py-2.5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border-2 border-blue-400/30 rounded-full inline-block shadow-lg">
-          <p className="text-blue-700 dark:text-blue-300 text-xs md:text-sm font-bold flex items-center gap-2">
-            🏆 A primeira ferramenta de marketing turístico mais completa do mundo
-          </p>
-        </div>
-
-        {/* Headline com Gradiente */}
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-2">
-          <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-            TravelMarketing
-          </span>
+      {/* HERO SECTION - Minimalista Apple Style */}
+      <section className="text-center mb-16 md:mb-24 px-4">
+        {/* Headline Principal - Clean */}
+        <h1 className="text-5xl md:text-7xl font-semibold tracking-tight leading-tight mb-4 text-foreground" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif' }}>
+          Venda Mais Viagens
         </h1>
-        <p className="text-lg md:text-xl text-muted-foreground mb-4 font-medium">
-          Marketing Profissional para Turismo
-        </p>
-        <h2 className="text-3xl md:text-5xl font-bold mb-4">
-          Venda Mais Viagens O Ano Inteiro
-        </h2>
 
-        {/* Subheadline */}
-        <p className="text-xl md:text-2xl text-muted-foreground mb-8">
-          {t('plans.heroSubtitle')}
+        <p className="text-xl md:text-2xl text-muted-foreground mb-12 font-normal max-w-2xl mx-auto" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif' }}>
+          Tudo que você precisa para crescer sua agência
         </p>
 
-        {/* GIF Hero */}
-        <img src={heroGif} alt="Vídeos de viagens profissionais" className="mx-auto rounded-2xl shadow-2xl max-w-xs md:max-w-2xl mb-6" />
+        {/* GIF Hero - Mais espaçamento */}
+        <img loading="lazy" src={heroGif} alt="Vídeos de viagens profissionais" className="mx-auto rounded-3xl shadow-2xl max-w-xs md:max-w-2xl mb-12" />
 
-        {/* Badges de Prova Social */}
-        <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-          <Badge variant="outline" className="px-4 py-2 text-sm">
-            <Check className="h-4 w-4 mr-2 text-primary" />
-            {t('plans.lessThanPerVideo')}
-          </Badge>
-          <Badge variant="outline" className="px-4 py-2 text-sm">
-            <Shield className="h-4 w-4 mr-2 text-accent" />
-            {t('plans.approvedAgencies')}
-          </Badge>
-        </div>
-
-        {/* CTA Button below pricing text - Green Anchor */}
-        <a href="#preco" className="inline-block mt-6">
-          <Button size="lg" className="px-8 py-6 text-base md:text-lg font-bold bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300 text-white">
-            <Sparkles className="mr-2 h-5 w-5" />
-            Ver Preços
+        {/* CTA Principal - Simple */}
+        <a href="#preco">
+          <Button size="lg" className="px-8 py-4 text-lg font-medium rounded-full bg-black dark:bg-white text-white dark:text-black hover:opacity-90 transition-opacity mb-3">
+            Testar por 7 dias grátis
           </Button>
         </a>
+        <p className="text-sm text-muted-foreground">A partir de R$ 29/mês</p>
       </section>
 
       {/* GRID DE GIFS FORMATO REELS */}
