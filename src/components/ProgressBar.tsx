@@ -3,10 +3,28 @@ import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export const ProgressBar = () => {
+interface ProgressBarProps {
+    compact?: boolean;
+}
+
+export const ProgressBar = ({ compact = false }: ProgressBarProps) => {
     const { level, levelName, progressPercent, progress, pointsToNext } = useGamification();
 
     if (!progress) return null;
+
+    // Compact version for mobile greeting
+    if (compact) {
+        return (
+            <Link
+                to="/progresso"
+                className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/10 hover:bg-primary/20 transition-colors text-xs"
+            >
+                <span className="font-bold text-primary">{levelName}</span>
+                <span className="text-muted-foreground">·</span>
+                <span className="font-semibold text-foreground">{progress.total_points} pts</span>
+            </Link>
+        );
+    }
 
     return (
         <Link

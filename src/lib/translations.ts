@@ -26,7 +26,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'category.stories': 'Stories',
     'category.captions': 'Legendas',
     'category.downloads': 'Downloads',
-    'category.tools': 'IA Tools',
+    'category.tools': 'Ferramentas de IA',
     'category.videoaula': 'Videoaula',
     'category.favorites': 'Favoritos',
 
@@ -239,7 +239,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'category.stories': 'Stories',
     'category.captions': 'Subtítulos',
     'category.downloads': 'Descargas',
-    'category.tools': 'IA Tools',
+    'category.tools': 'Herramientas de IA',
     'category.videoaula': 'Videoclases',
     'category.favorites': 'Favoritos',
 

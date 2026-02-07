@@ -49,8 +49,8 @@ export const Footer = () => {
   return (
     <footer className="mt-16 border-t border-border/50 bg-gradient-to-br from-background to-muted/30">
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-12 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
+      <div className="container mx-auto px-4 py-6 md:py-8 max-w-7xl">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {/* Brand Column */}
           <div className="flex flex-col items-center md:items-start gap-4">
             <div className="flex items-center gap-3">
@@ -114,7 +114,7 @@ export const Footer = () => {
       <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 
       {/* Bottom Footer */}
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
+      <div className="container mx-auto px-4 py-3 md:py-4 max-w-7xl">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground text-center md:text-left">
             {t('footer.copyright')}
