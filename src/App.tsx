@@ -16,6 +16,7 @@ import Planos from "./pages/Planos";
 import PlanosES from "./pages/PlanosES";
 import Sucesso from "./pages/Sucesso";
 import Obrigado from "./pages/Obrigado";
+import ObrigadoES from "./pages/ObrigadoES";
 import PosPagamento from "./pages/PosPagamento";
 import NotFound from "./pages/NotFound";
 import Gestao from "./pages/Gestao";
@@ -79,6 +80,7 @@ const App = () => (
                   </ProtectedRoute>
                 } />
                 <Route path="/es/planos" element={<PlanosES />} />
+                <Route path="/es/obrigado" element={<ObrigadoES />} />
 
                 {/* Auth e outras rotas compartilhadas */}
                 <Route path="/auth" element={<Auth />} />
