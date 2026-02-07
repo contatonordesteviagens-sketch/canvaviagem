@@ -837,7 +837,123 @@ const Planos = () => {
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">Compare e Veja o Quanto Você Economiza</h2>
         <p className="text-center text-muted-foreground mb-8">Investir R$ 29/mês vs contratar profissionais</p>
 
-        <div className="max-w-4xl mx-auto overflow-x-auto">
+        {/* MOBILE: Cards Empilhados */}
+        <div className="md:hidden space-y-4 mb-8">
+          {/* Card TravelMarketing - DESTAQUE */}
+          <Card className="border-2 border-primary bg-gradient-to-br from-primary/5 to-accent/5">
+            <CardContent className="p-5">
+              <div className="text-center mb-4">
+                <Sparkles className="h-8 w-8 mx-auto text-primary mb-2" />
+                <p className="font-black text-xl">TravelMarketing</p>
+                <p className="text-3xl font-black text-green-600 mt-2">R$ 29/mês</p>
+                <p className="text-xs text-green-600 font-semibold">✨ Tudo incluso</p>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="h-5 w-5 text-green-600 shrink-0" />
+                  <span>Vídeos ilimitados</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="h-5 w-5 text-green-600 shrink-0" />
+                  <span>Artes/Posts ilimitados</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="h-5 w-5 text-green-600 shrink-0" />
+                  <span>10 Robôs de IA Marketing</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="h-5 w-5 text-green-600 shrink-0" />
+                  <span>3 Influencers IA de Viagens</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="h-5 w-5 text-green-600 shrink-0" />
+                  <span>Calendário de Conteúdo</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="h-5 w-5 text-green-600 shrink-0" />
+                  <span>Suporte WhatsApp</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card Designer Freelancer */}
+          <Card className="border opacity-70">
+            <CardContent className="p-5">
+              <div className="text-center mb-4">
+                <p className="font-bold text-lg">Designer Freelancer</p>
+                <p className="text-2xl font-bold text-red-600 mt-2">R$ 600+/mês</p>
+                <p className="text-xs text-muted-foreground">por projeto</p>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-red-600">❌</span>
+                  <span>R$ 300/vídeo</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-red-600">❌</span>
+                  <span>R$ 50/arte</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-red-600">❌</span>
+                  <span>Sem IA</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-red-600">❌</span>
+                  <span>Sem Influencers IA</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-red-600">❌</span>
+                  <span>Sem Calendário</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">⚠️</span>
+                  <span className="text-muted-foreground">Suporte por projeto</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card Agência de Marketing */}
+          <Card className="border opacity-60">
+            <CardContent className="p-5">
+              <div className="text-center mb-4">
+                <p className="font-bold text-lg">Agência Marketing</p>
+                <p className="text-2xl font-bold text-red-600 mt-2">R$ 2.000+/mês</p>
+                <p className="text-xs text-muted-foreground">mensalidade</p>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-red-600">❌</span>
+                  <span>R$ 500/vídeo</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-red-600">❌</span>
+                  <span>R$ 100/arte</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-red-600">❌</span>
+                  <span>Sem IA</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-red-600">❌</span>
+                  <span>Sem Influencers IA</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-600">✅</span>
+                  <span>Calendário R$ 200/mês</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">⚠️</span>
+                  <span className="text-muted-foreground">Email only</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* DESKTOP: Tabela (hidden mobile) */}
+        <div className="hidden md:block max-w-4xl mx-auto overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b-2">
