@@ -1219,7 +1219,7 @@ const Planos = () => {
             disabled={checkoutLoading}
           >
             {checkoutLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>
-              🔥 COMEÇAR GRÁTIS - R$ 29/MÊS
+              🔥 TESTAR POR 7 DIAS GRÁTIS
             </>}
           </Button>
           <p className="text-center text-xs text-muted-foreground mt-2 flex items-center justify-center gap-3">
