@@ -282,9 +282,9 @@ const Planos = () => {
 
       {/* HERO SECTION - Badge de Marketing */}
       <section className="text-center mb-12 md:mb-20">
-        <Badge className="mb-6 px-4 md:px-6 py-1.5 md:py-2.5 bg-blue-500/10 backdrop-blur-sm border border-blue-400/20 text-blue-700 dark:text-blue-300 shadow-sm text-xs md:text-sm font-semibold">
-          🏆 #1 A primeira ferramenta de marketing turístico para venda de viagens completa do mundo
-        </Badge>
+        <div className="mb-6 px-4 md:px-6 py-1.5 md:py-2 bg-blue-500/5 backdrop-blur-sm border border-blue-400/10 rounded-full inline-block text-blue-600/70 dark:text-blue-400/70 text-[10px] md:text-xs font-light tracking-wide">
+          🏆 A primeira ferramenta de marketing de turismo para vendas de viagem completa do mundo
+        </div>
 
         {/* Headline com Gradiente */}
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-4">
