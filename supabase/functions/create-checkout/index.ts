@@ -96,6 +96,10 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
+      // 3-day free trial period
+      subscription_data: {
+        trial_period_days: 3,
+      },
       // Redirect to /obrigado with email for tracking
       success_url: `${origin}/obrigado?email=${encodeURIComponent(user.email || '')}&source=checkout`,
       cancel_url: `${origin}/planos?canceled=true`,
