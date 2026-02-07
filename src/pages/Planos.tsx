@@ -500,6 +500,266 @@ const Planos = () => {
         </Card>
       </section>
 
+      {/* TESTIMONIALS - PROVA SOCIAL */}
+      <section className="mb-12 md:mb-20">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">O Que Dizem Nossos Clientes</h2>
+        <p className="text-center text-muted-foreground mb-8">Agências que já estão vendendo mais com Canva Viagem</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {/* Testimonial 1 */}
+          <Card className="border-2 border-primary/20">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-3">
+                {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
+              </div>
+              <p className="text-sm md:text-base mb-4 italic">
+                "Aumentei meu engajamento em 300% no primeiro mês. Consigo postar todo dia e meus clientes adoram!"
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white font-bold">
+                  M
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Maria Silva</p>
+                  <p className="text-xs text-muted-foreground">Agência Viagens dos Sonhos</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Testimonial 2 */}
+          <Card className="border-2 border-accent/20">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-3">
+                {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
+              </div>
+              <p className="text-sm md:text-base mb-4 italic">
+                "Fechei 5 pacotes extras este mês só com os vídeos do Canva Viagem. Melhor investimento!"
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center text-white font-bold">
+                  J
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">João Santos</p>
+                  <p className="text-xs text-muted-foreground">Travel Expert</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Testimonial 3 */}
+          <Card className="border-2 border-green-500/20">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-3">
+                {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
+              </div>
+              <p className="text-sm md:text-base mb-4 italic">
+                "Economizei R$ 800/mês que gastava com designer. Agora crio tudo sozinha em minutos!"
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                  A
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Ana Costa</p>
+                  <p className="text-xs text-muted-foreground">Mundo Viagens</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* COMPARISON TABLE */}
+      <section className="mb-12 md:mb-20">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">Compare e Veja o Quanto Você Economiza</h2>
+        <p className="text-center text-muted-foreground mb-8">Investir R$ 29/mês vs contratar profissionais</p>
+
+        <div className="max-w-4xl mx-auto overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b-2">
+                <th className="text-left p-3 md:p-4 text-sm md:text-base font-bold">Recurso</th>
+                <th className="p-3 md:p-4 text-center bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/30 text-sm md:text-base font-bold">
+                  <div className="flex flex-col items-center gap-1">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    Canva Viagem
+                  </div>
+                </th>
+                <th className="p-3 md:p-4 text-center text-sm md:text-base">Designer<br /><span className="text-xs text-muted-foreground">Freelancer</span></th>
+                <th className="p-3 md:p-4 text-center text-sm md:text-base">Agência<br /><span className="text-xs text-muted-foreground">Marketing</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b">
+                <td className="p-3 md:p-4 text-sm md:text-base">Vídeos ilimitados</td>
+                <td className="p-3 md:p-4 text-center bg-primary/5">
+                  <Check className="h-5 w-5 text-green-600 mx-auto" />
+                </td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">R$ 300/vídeo</td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">R$ 500/vídeo</td>
+              </tr>
+              <tr className="border-b">
+                <td className="p-3 md:p-4 text-sm md:text-base">Artes/Posts ilimitados</td>
+                <td className="p-3 md:p-4 text-center bg-primary/5">
+                  <Check className="h-5 w-5 text-green-600 mx-auto" />
+                </td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">R$ 50/arte</td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">R$ 100/arte</td>
+              </tr>
+              <tr className="border-b">
+                <td className="p-3 md:p-4 text-sm md:text-base">10 Robôs de IA Marketing</td>
+                <td className="p-3 md:p-4 text-center bg-primary/5">
+                  <Check className="h-5 w-5 text-green-600 mx-auto" />
+                </td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm">❌</td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm">❌</td>
+              </tr>
+              <tr className="border-b">
+                <td className="p-3 md:p-4 text-sm md:text-base">3 Influencers IA de Viagens</td>
+                <td className="p-3 md:p-4 text-center bg-primary/5">
+                  <Check className="h-5 w-5 text-green-600 mx-auto" />
+                </td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm">❌</td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm">❌</td>
+              </tr>
+              <tr className="border-b">
+                <td className="p-3 md:p-4 text-sm md:text-base">Calendário de Conteúdo</td>
+                <td className="p-3 md:p-4 text-center bg-primary/5">
+                  <Check className="h-5 w-5 text-green-600 mx-auto" />
+                </td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm">❌</td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">R$ 200/mês</td>
+              </tr>
+              <tr className="border-b">
+                <td className="p-3 md:p-4 text-sm md:text-base">Suporte WhatsApp</td>
+                <td className="p-3 md:p-4 text-center bg-primary/5">
+                  <Check className="h-5 w-5 text-green-600 mx-auto" />
+                </td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm">Por projeto</td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm">Email only</td>
+              </tr>
+              <tr className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 font-bold">
+                <td className="p-3 md:p-4 text-sm md:text-base">💰 Total por mês</td>
+                <td className="p-3 md:p-4 text-center text-lg md:text-xl text-green-600">
+                  <div className="flex flex-col items-center">
+                    <span className="text-2xl md:text-3xl font-black">R$ 29</span>
+                    <span className="text-xs">✨ Tudo incluso</span>
+                  </div>
+                </td>
+                <td className="p-3 md:p-4 text-center text-base md:text-lg text-red-600">
+                  <div className="flex flex-col items-center">
+                    <span className="font-bold">R$ 600+</span>
+                    <span className="text-xs">por projeto</span>
+                  </div>
+                </td>
+                <td className="p-3 md:p-4 text-center text-base md:text-lg text-red-600">
+                  <div className="flex flex-col items-center">
+                    <span className="font-bold">R$ 2.000+</span>
+                    <span className="text-xs">mensalidade</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mt-6 text-center">
+          <p className="text-lg md:text-xl font-bold text-green-600">
+            🎉 Economize até R$ 1.971/mês = R$ 23.652/ano!
+          </p>
+        </div>
+      </section>
+
+      {/* FAQ MATADOR - Remove Objeções */}
+      <section className="mb-12 md:mb-20">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">Perguntas Frequentes</h2>
+        <p className="text-center text-muted-foreground mb-8">Tudo o que você precisa saber</p>
+
+        <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
+          <AccordionItem value="item-1">
+            <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+              ❓ Preciso saber design para usar?
+            </AccordionTrigger>
+            <AccordionContent className="text-muted-foreground text-sm md:text-base">
+              <strong className="text-foreground">Não!</strong> A ferramenta é super intuitiva. Tudo já vem pronto: vídeos, artes, legendas.
+              Você só escolhe o que quer e baixa. Em 2 minutos você cria um post profissional.
+              Temos também uma aula completa mostrando como usar.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-2">
+            <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+              📱 Funciona no celular?
+            </AccordionTrigger>
+            <AccordionContent className="text-muted-foreground text-sm md:text-base">
+              <strong className="text-foreground">Sim!</strong> Canva Viagem funciona perfeitamente no celular, tablet e computador.
+              Acesse de qualquer lugar, a qualquer hora. Ideal para quem trabalha em movimento.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-3">
+            <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+              ❌ Posso cancelar quando quiser?
+            </AccordionTrigger>
+            <AccordionContent className="text-muted-foreground text-sm md:text-base">
+              <strong className="text-foreground">Sim, sem letras miúdas!</strong> Você pode cancelar a qualquer momento, sem burocracias.
+              E se cancelar nos primeiros 7 dias, devolvemos 100% do seu dinheiro. Risco ZERO.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-4">
+            <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+              ⏱️ Quanto tempo leva para criar um post?
+            </AccordionTrigger>
+            <AccordionContent className="text-muted-foreground text-sm md:text-base">
+              <strong className="text-foreground">2 minutos!</strong> Escolha o vídeo ou arte → Personalize (opcional) → Baixe → Poste.
+              Você pode criar conteúdo para a semana inteira em menos de 15 minutos.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-5">
+            <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+              📹 Os vídeos têm copyright?
+            </AccordionTrigger>
+            <AccordionContent className="text-muted-foreground text-sm md:text-base">
+              <strong className="text-foreground">Não!</strong> Todos os vídeos e artes são 100% livres de direitos autorais.
+              Você pode usar com segurança no seu marketing sem preocupações.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-6">
+            <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+              🔄 Vocês adicionam conteúdo novo?
+            </AccordionTrigger>
+            <AccordionContent className="text-muted-foreground text-sm md:text-base">
+              <strong className="text-foreground">Toda semana!</strong> Adicionamos novos vídeos, artes e ferramentas de IA constantemente.
+              Seu acesso garante todas as atualizações futuras sem custo adicional.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-7">
+            <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+              💬 Como funciona o suporte?
+            </AccordionTrigger>
+            <AccordionContent className="text-muted-foreground text-sm md:text-base">
+              Suporte direto via WhatsApp durante horário comercial. Respondemos rápido e ajudamos com qualquer dúvida!
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-8">
+            <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+              🚀 Quando recebo o acesso?
+            </AccordionTrigger>
+            <AccordionContent className="text-muted-foreground text-sm md:text-base">
+              <strong className="text-foreground">Imediatamente!</strong> Assim que o pagamento for confirmado (geralmente instantâneo),
+              você recebe o link de acesso por email. Em 2 minutos já está criando conteúdo!
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </section>
+
       {/* SEÇÃO DE GARANTIA */}
       <section className="mb-12 md:mb-20">
         <div className="bg-accent/10 border-l-4 border-accent p-6 md:p-8 rounded-xl">
