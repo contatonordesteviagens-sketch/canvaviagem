@@ -330,29 +330,84 @@ const Planos = () => {
           </div>
         </section>
 
-        {/* SEÇÃO "O QUE VOCÊ RECEBE" MELHORADA */}
+        {/* SEÇÃO "O QUE É CANVA VIAGEM?" */}
         <section className="mb-12 md:mb-20">
           <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-8 md:p-12 rounded-3xl">
             <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">
-              {t('plans.whatYouGet')}
+              O que é o Canva Viagem?
             </h2>
-            <p className="text-center text-muted-foreground text-lg mb-8">
-              {t('plans.whatYouGetDesc')}
+            <p className="text-center text-muted-foreground text-base md:text-lg mb-8 max-w-3xl mx-auto">
+              Você recebe acesso à plataforma completa de marketing, que tem tudo o que você precisa pra vender mais viagens, pra você só usar e publicar.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {benefits.map((item, index) => (
-                <div
-                  key={index}
-                  className={`flex items-center gap-3 p-4 rounded-lg transition-all duration-200 ${item.highlight
-                    ? 'bg-gradient-to-r from-primary to-accent text-white font-semibold shadow-lg'
-                    : 'bg-background/50 hover:bg-background/80'
-                    }`}
-                >
-                  <item.icon className={`h-5 w-5 shrink-0 ${item.highlight ? 'text-white' : 'text-primary'}`} />
-                  <span>{item.text}</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 max-w-4xl mx-auto">
+              <div className="flex items-start gap-3 p-3 md:p-4 rounded-lg bg-background/50 hover:bg-background/80 transition-all">
+                <Video className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+                <div>
+                  <p className="font-semibold text-sm md:text-base">Mais de 250 vídeos prontos</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">Pega e publica</p>
                 </div>
-              ))}
+              </div>
+
+              <div className="flex items-start gap-3 p-3 md:p-4 rounded-lg bg-background/50 hover:bg-background/80 transition-all">
+                <Calendar className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+                <div>
+                  <p className="font-semibold text-sm md:text-base">Calendário com posts organizados</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">Anual</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 md:p-4 rounded-lg bg-background/50 hover:bg-background/80 transition-all">
+                <FileText className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+                <div>
+                  <p className="font-semibold text-sm md:text-base">Legendas para copiar e colar</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 md:p-4 rounded-lg bg-background/50 hover:bg-background/80 transition-all">
+                <Image className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+                <div>
+                  <p className="font-semibold text-sm md:text-base">Artes de conteúdos e promoções</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">100% editáveis no Canva, livres de direitos autorais</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 md:p-4 rounded-lg bg-gradient-to-r from-primary to-accent text-white shadow-lg">
+                <Bot className="h-5 w-5 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-sm md:text-base">10 agentes de IA de marketing</p>
+                  <p className="text-xs md:text-sm opacity-90">Para viagens</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 md:p-4 rounded-lg bg-gradient-to-r from-primary to-accent text-white shadow-lg">
+                <Users className="h-5 w-5 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-sm md:text-base">3 influenciadoras de IA</p>
+                  <p className="text-xs md:text-sm opacity-90">De viagens</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 md:p-4 rounded-lg bg-background/50 hover:bg-background/80 transition-all">
+                <RefreshCw className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+                <div>
+                  <p className="font-semibold text-sm md:text-base">Atualizações semanais</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 md:p-4 rounded-lg bg-background/50 hover:bg-background/80 transition-all">
+                <MessageSquare className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+                <div>
+                  <p className="font-semibold text-sm md:text-base">Suporte no WhatsApp</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 md:p-4 rounded-lg bg-background/50 hover:bg-background/80 transition-all md:col-span-2">
+                <GraduationCap className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+                <div>
+                  <p className="font-semibold text-sm md:text-base">Aula de como usar a ferramenta e postar em 2 minutos</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -382,12 +437,28 @@ const Planos = () => {
 
         {/* CARD DE PREÇO APRIMORADO */}
         <section id="preco" className="mb-12 md:mb-20 scroll-mt-20">
-          <Card className="max-w-2xl mx-auto border-2 border-primary/20 shadow-xl">
-            <CardContent className="p-8 md:p-12 text-center">
-              <p className="text-2xl line-through text-muted-foreground mb-2">{t('plans.originalPrice')}</p>
-              <div className="flex items-baseline justify-center mb-6">
-                <span className="text-5xl md:text-6xl font-black text-primary">{t('plans.price')}</span>
-                <span className="text-xl text-muted-foreground ml-2">{t('plans.period')}</span>
+          <Card className="max-w-2xl mx-auto border-2 border-primary/20 shadow-xl relative">
+            {/* Floating Badge */}
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+              <div className="bg-green-500/90 backdrop-blur-sm text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full shadow-lg text-xs md:text-sm font-semibold whitespace-nowrap">
+                ✨ 3 Dias Grátis
+              </div>
+            </div>
+
+            <CardContent className="p-8 md:p-12 text-center pt-10 md:pt-12">
+              <h3 className="text-lg md:text-xl font-bold mb-3">Tenha acesso a todas as ferramentas</h3>
+              <p className="text-sm md:text-base text-muted-foreground mb-6">
+                Vídeos, artes, robôs, influencers e todo o acesso
+              </p>
+
+              <p className="text-xl md:text-2xl line-through text-muted-foreground mb-2">De R$197</p>
+
+              {/* Custom Price Display */}
+              <div className="flex items-baseline justify-center mb-6 gap-1">
+                <span className="text-2xl md:text-3xl font-bold text-primary opacity-70">R$</span>
+                <span className="text-5xl md:text-6xl font-black text-primary">29</span>
+                <span className="text-2xl md:text-3xl font-bold text-primary opacity-70">,00</span>
+                <span className="text-xl md:text-2xl text-muted-foreground ml-1">/mês</span>
               </div>
 
               <Button
@@ -406,9 +477,9 @@ const Planos = () => {
                 )}
               </Button>
 
-              <p className="text-sm font-medium text-center mt-4 flex items-center justify-center gap-2">
-                <Shield className="h-4 w-4 text-green-600" />
-                <span className="text-foreground">🔒 Pagamento 100% Seguro e Criptografado</span>
+              <p className="text-xs font-medium text-center mt-4 flex items-center justify-center gap-1.5">
+                <Shield className="h-3 w-3 text-green-600" />
+                <span className="text-muted-foreground">🔒 Pagamento seguro</span>
               </p>
               <p className="text-xs text-center text-muted-foreground mt-2">
                 {t('plans.instantAccess')}
