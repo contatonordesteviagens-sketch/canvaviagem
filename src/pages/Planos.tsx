@@ -548,14 +548,19 @@ const Planos = () => {
               </p>
             </div>
 
-            {/* Guarantee - Risk Free */}
-            <div className="mt-4 bg-green-50 dark:bg-green-950/20 border-2 border-green-300 dark:border-green-700 rounded-lg p-4">
-              <p className="text-sm md:text-base font-bold text-green-700 dark:text-green-300 flex items-center justify-center gap-2 mb-1">
-                <Shield className="h-5 w-5" />
-                ✅ Garantia de 7 Dias - Risco ZERO
+            {/* Garantia ZERO Risco - Mensagem Clara */}
+            <div className="p-5 md:p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-2xl border-2 border-green-200 dark:border-green-800 mt-6">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <Shield className="h-6 w-6 text-green-600" />
+                <p className="font-bold text-lg md:text-xl text-green-900 dark:text-green-100">
+                  Risco ZERO
+                </p>
+              </div>
+              <p className="text-sm md:text-base text-center text-foreground leading-relaxed px-2">
+                Se por <strong>qualquer motivo</strong> você não gostar, cancele dentro de <strong>7 dias</strong> e <strong className="text-green-600">não paga nada</strong>. Absolutamente nada.
               </p>
-              <p className="text-xs text-green-600 dark:text-green-400">
-                Não gostou? Cancele em 7 dias e receba 100% do seu dinheiro de volta
+              <p className="text-sm text-center text-muted-foreground mt-3 italic">
+                O risco é meu. Teste agora sem preocupação.
               </p>
             </div>
 

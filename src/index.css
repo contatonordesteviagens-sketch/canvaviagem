@@ -2,6 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Apple-style Typography */
+  :root {
+    --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, system-ui, sans-serif;
+    --font-text: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif;
+    
+    /* Mobile-optimized spacing scale */
+    --spacing-section-mobile: 3rem;
+    --spacing-section-desktop: 5rem;
+    --spacing-element-mobile: 1.5rem;
+    --spacing-element-desktop: 2rem;
+    
+    /* Touch-friendly sizes */
+    --min-touch-target: 44px;
+  }
+
+  body {
+    font-family: var(--font-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  /* Mobile-first spacing utilities */
+  .section-spacing {
+    margin-bottom: var(--spacing-section-mobile);
+  }
+
+  @media (min-width: 768px) {
+    .section-spacing {
+      margin-bottom: var(--spacing-section-desktop);
+    }
+  }
+}
+
 /* Import Inter font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
