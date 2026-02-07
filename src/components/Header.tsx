@@ -149,14 +149,17 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
     <>
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
-          <Link to={isESRoute ? "/es" : "/"} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <Link to={isESRoute ? "/es" : "/"} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <img
               src={logoImage}
-              alt="Canva Viagem"
+              alt="TravelMarketing"
               className="h-10 w-10 rounded-xl shadow-lg md:shadow-lg hover:shadow-xl transition-shadow object-cover"
               style={{ boxShadow: 'var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), 0 4px 12px -2px rgba(0, 0, 0, 0.15)' }}
             />
-            <span className="font-bold text-lg sm:text-xl hidden sm:inline">Canva Viagem</span>
+            <div className="hidden sm:block">
+              <span className="font-black text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">TravelMarketing</span>
+              <p className="text-[10px] text-muted-foreground font-medium -mt-1">by Canva Viagem</p>
+            </div>
           </Link>
 
           {/* Mobile Progress Bar - Compact next to logo */}

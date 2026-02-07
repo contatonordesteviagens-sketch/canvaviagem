@@ -289,13 +289,17 @@ const Planos = () => {
         </div>
 
         {/* Headline com Gradiente */}
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-4">
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-2">
           <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-            Venda Mais Viagens
+            TravelMarketing
           </span>
-          <br />
-          <span className="text-foreground">O Ano Inteiro</span>
         </h1>
+        <p className="text-lg md:text-xl text-muted-foreground mb-4 font-medium">
+          Marketing Profissional para Turismo
+        </p>
+        <h2 className="text-3xl md:text-5xl font-bold mb-4">
+          Venda Mais Viagens O Ano Inteiro
+        </h2>
 
         {/* Subheadline */}
         <p className="text-xl md:text-2xl text-muted-foreground mb-8">
