@@ -662,56 +662,6 @@ const Planos = () => {
             </CardContent>
           </Card>
         </div>
-
-        {/* WhatsApp Screenshots - PROVA SOCIAL REAL */}
-        <div className="mt-12">
-          <h3 className="text-xl md:text-2xl font-bold text-center mb-6">📱 Mensagens Reais dos Nossos Clientes</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
-            {/* WhatsApp Screenshot 1 */}
-            <div className="rounded-2xl overflow-hidden shadow-xl border-2 border-green-500/20 hover:scale-105 transition-transform">
-              <img
-                src="https://i.imgur.com/placeholder1.jpg"
-                alt="Depoimento WhatsApp 1 - Cliente satisfeito"
-                className="w-full h-auto"
-                loading="lazy"
-              />
-            </div>
-
-            {/* WhatsApp Screenshot 2 */}
-            <div className="rounded-2xl overflow-hidden shadow-xl border-2 border-green-500/20 hover:scale-105 transition-transform">
-              <img
-                src="https://i.imgur.com/placeholder2.jpg"
-                alt="Depoimento WhatsApp 2 - Gostou dos vídeos"
-                className="w-full h-auto"
-                loading="lazy"
-              />
-            </div>
-
-            {/* WhatsApp Screenshot 3 */}
-            <div className="rounded-2xl overflow-hidden shadow-xl border-2 border-green-500/20 hover:scale-105 transition-transform">
-              <img
-                src="https://i.imgur.com/placeholder3.jpg"
-                alt="Depoimento WhatsApp 3 - Comentário Instagram"
-                className="w-full h-auto"
-                loading="lazy"
-              />
-            </div>
-
-            {/* WhatsApp Screenshot 4 */}
-            <div className="rounded-2xl overflow-hidden shadow-xl border-2 border-green-500/20 hover:scale-105 transition-transform">
-              <img
-                src="https://i.imgur.com/placeholder4.jpg"
-                alt="Depoimento WhatsApp 4 - Seguidores e edição fácil"
-                className="w-full h-auto"
-                loading="lazy"
-              />
-            </div>
-          </div>
-
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            💬 Prints reais de conversas no WhatsApp com nossos clientes
-          </p>
-        </div>
       </section>
 
       {/* COMPARISON TABLE */}
