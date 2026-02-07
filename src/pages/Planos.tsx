@@ -598,6 +598,81 @@ const Planos = () => {
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">O Que as Agências de Viagens Estão Falando?</h2>
         <p className="text-center text-muted-foreground mb-8">Depoimentos reais de quem já está usando o TravelMarketing</p>
 
+        {/* WhatsApp/Instagram Style Notifications */}
+        <div className="mb-10 max-w-4xl mx-auto space-y-3">
+          {/* WhatsApp Notification 1 */}
+          <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/30 border-l-4 border-green-500 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xl">💬</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-green-700 dark:text-green-400 font-semibold mb-1">WhatsApp • há 2 horas</p>
+                <p className="text-sm md:text-base font-medium text-foreground">
+                  "Parabéns pelo trabalho, ajudou muito aqui. Tava batendo cabeça para criar vídeos dos lugares para postar"
+                </p>
+                <p className="text-xs text-muted-foreground mt-2 italic">- Cliente via WhatsApp</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Instagram Notification 2 */}
+          <div className="bg-gradient-to-r from-pink-50 to-purple-100 dark:from-pink-950/30 dark:to-purple-900/30 border-l-4 border-pink-500 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xl">📱</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-pink-700 dark:text-pink-400 font-semibold mb-1">Instagram • há 5 horas</p>
+                <p className="text-sm md:text-base font-medium text-foreground">
+                  "vleviagens comentou: Eu comprei, estou usando e é maravilhoso o conteúdo 🙏"
+                </p>
+                <p className="text-xs text-muted-foreground mt-2 italic">- @vleviagens</p>
+              </div>
+            </div>
+          </div>
+
+          {/* WhatsApp Notification 3 */}
+          <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/30 border-l-4 border-green-500 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xl">💬</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-green-700 dark:text-green-400 font-semibold mb-1">WhatsApp • ontem</p>
+                <p className="text-sm md:text-base font-medium text-foreground">
+                  "Gostou dos vídeos de viagens? Ficou muito bom, né? Obrigado 🙏"
+                </p>
+                <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                  "Top demais da conta meu amigo!!!"
+                </p>
+                <p className="text-xs text-muted-foreground mt-2 italic">- Agência de Turismo</p>
+              </div>
+            </div>
+          </div>
+
+          {/* WhatsApp Notification 4 */}
+          <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/30 border-l-4 border-green-500 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xl">💬</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-green-700 dark:text-green-400 font-semibold mb-1">WhatsApp • há 1 dia</p>
+                <p className="text-sm md:text-base font-medium text-foreground">
+                  "Eu me surpreendi com o tanto de seguidores que consegui em poucas horas"
+                </p>
+                <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                  "Ainda bem que eu peguei seu material, dá para eu ir editando fácil e postando nesse começo 👏"
+                </p>
+                <p className="text-xs text-muted-foreground mt-2 italic">- Agente de Viagens</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Cards de Depoimentos Tradicionais (ABAIXO) */}
+        <p className="text-center text-sm text-muted-foreground mb-6">⭐ Avaliações Verificadas</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {/* Testimonial 1 */}
           <Card className="border-2 border-primary/20">
