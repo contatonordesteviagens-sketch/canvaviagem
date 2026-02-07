@@ -29,11 +29,25 @@ const Obrigado = () => {
 
   useEffect(() => {
     if (!tracked && sourceFromUrl === 'checkout') {
+      console.log('[Meta Debug] === CONVERSION TRACKING (Portuguese) ===');
+      console.log('[Meta Debug] Page: /obrigado');
+      console.log('[Meta Debug] Pixel 4254631328136179 (PT) initialized in index.html');
+      console.log('[Meta Debug] window.fbq exists:', typeof window.fbq !== 'undefined');
+
+      // PT tracking (R$ 29,00 BRL) - Goes to ALL initialized pixels including 4254631328136179
       trackPurchase(29.00, 'BRL');
       trackSubscribe(29.00, 'BRL', 29.00 * 12);
+      console.log('[Meta Debug] PT Purchase & Subscribe events dispatched (R$ 29,00 BRL)');
+      console.log('[Meta Debug] These events go to pixel 4254631328136179');
+
+      // ES tracking ($9,09 USD) - Spanish pixel only via trackSingle
       trackESPurchase(9.09, 'USD');
       trackESSubscribe(9.09, 'USD', 9.09 * 12);
+      console.log('[Meta Debug] ES Purchase & Subscribe events dispatched ($9.09 USD)');
+      console.log('[Meta Debug] These events go to pixel 1560736461820497');
+
       setTracked(true);
+      console.log('[Meta Debug] === TRACKING COMPLETE ===');
     }
   }, [tracked, sourceFromUrl]);
 
