@@ -104,11 +104,11 @@ export default function Progresso() {
             <Header />
             <main className="container mx-auto px-4 py-8 pt-24">
                 {/* Hero Section */}
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <div className="text-center mb-8">
+                    <h1 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                         Seu Progresso 🚀
                     </h1>
-                    <p className="text-muted-foreground text-lg">
+                    <p className="text-muted-foreground text-sm md:text-base">
                         Acompanhe sua evolução e desbloqueie novos níveis!
                     </p>
                 </div>
@@ -120,11 +120,11 @@ export default function Progresso() {
                             <div className="flex items-center gap-3">
                                 <Trophy className={cn('h-12 w-12', `text-${currentLevelDetail.color.split('-')[1]}-500`)} />
                                 <div>
-                                    <CardTitle className="text-2xl">{levelName}</CardTitle>
-                                    <CardDescription>{currentLevelDetail.description}</CardDescription>
+                                    <CardTitle className="text-lg md:text-xl">{levelName}</CardTitle>
+                                    <CardDescription className="text-xs md:text-sm">{currentLevelDetail.description}</CardDescription>
                                 </div>
                             </div>
-                            <Badge className={cn('text-lg px-4 py-2 bg-gradient-to-r', currentLevelDetail.color)}>
+                            <Badge className={cn('text-sm md:text-base px-3 py-1 bg-gradient-to-r', currentLevelDetail.color)}>
                                 {progress?.total_points || 0} pts
                             </Badge>
                         </div>
@@ -148,23 +148,23 @@ export default function Progresso() {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                             <div className="text-center p-4 bg-accent/10 rounded-lg">
                                 <Video className="h-6 w-6 mx-auto mb-2 text-primary" />
-                                <p className="text-2xl font-bold">{progress?.videos_opened || 0}</p>
-                                <p className="text-xs text-muted-foreground">Vídeos Acessados</p>
+                                <p className="text-xl md:text-2xl font-bold">{progress?.videos_opened || 0}</p>
+                                <p className="text-[10px] md:text-xs text-muted-foreground">Vídeos Acessados</p>
                             </div>
                             <div className="text-center p-4 bg-accent/10 rounded-lg">
                                 <ImageIcon className="h-6 w-6 mx-auto mb-2 text-primary" />
-                                <p className="text-2xl font-bold">{progress?.arts_clicked || 0}</p>
-                                <p className="text-xs text-muted-foreground">Artes Usadas</p>
+                                <p className="text-xl md:text-2xl font-bold">{progress?.arts_clicked || 0}</p>
+                                <p className="text-[10px] md:text-xs text-muted-foreground">Artes Usadas</p>
                             </div>
                             <div className="text-center p-4 bg-accent/10 rounded-lg">
                                 <CalendarIcon className="h-6 w-6 mx-auto mb-2 text-primary" />
-                                <p className="text-2xl font-bold">{progress?.calendar_used || 0}</p>
-                                <p className="text-xs text-muted-foreground">Calendário Usado</p>
+                                <p className="text-xl md:text-2xl font-bold">{progress?.calendar_used || 0}</p>
+                                <p className="text-[10px] md:text-xs text-muted-foreground">Calendário Usado</p>
                             </div>
                             <div className="text-center p-4 bg-accent/10 rounded-lg">
                                 <Wand2 className="h-6 w-6 mx-auto mb-2 text-primary" />
-                                <p className="text-2xl font-bold">{progress?.tools_used || 0}</p>
-                                <p className="text-xs text-muted-foreground">Ferramentas Usadas</p>
+                                <p className="text-xl md:text-2xl font-bold">{progress?.tools_used || 0}</p>
+                                <p className="text-[10px] md:text-xs text-muted-foreground">Ferramentas Usadas</p>
                             </div>
                         </div>
                     </CardContent>
@@ -172,8 +172,8 @@ export default function Progresso() {
 
                 {/* Missions/Tips Section */}
                 <div className="mb-8">
-                    <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                        <Target className="h-6 w-6 text-primary" />
+                    <h2 className="text-lg md:text-xl font-bold mb-3 flex items-center gap-2">
+                        <Target className="h-5 w-5 text-primary" />
                         Missões & Dicas de Sucesso
                     </h2>
                     <div className="grid md:grid-cols-2 gap-4">
@@ -188,8 +188,8 @@ export default function Progresso() {
                                                     <Icon className="h-5 w-5 text-primary" />
                                                 </div>
                                                 <div>
-                                                    <CardTitle className="text-lg">{mission.title}</CardTitle>
-                                                    <CardDescription className="text-sm">
+                                                    <CardTitle className="text-base md:text-lg">{mission.title}</CardTitle>
+                                                    <CardDescription className="text-xs md:text-sm">
                                                         {mission.description}
                                                     </CardDescription>
                                                 </div>
@@ -209,8 +209,8 @@ export default function Progresso() {
 
                 {/* All Levels Overview */}
                 <div>
-                    <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                        <TrendingUp className="h-6 w-6 text-primary" />
+                    <h2 className="text-lg md:text-xl font-bold mb-3 flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 text-primary" />
                         Todos os Níveis
                     </h2>
                     <div className="grid md:grid-cols-3 gap-4">
@@ -249,7 +249,7 @@ export default function Progresso() {
                     <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
                         <CardContent className="py-8">
                             <Sparkles className="h-12 w-12 mx-auto mb-4 text-primary animate-pulse" />
-                            <h3 className="text-2xl font-bold mb-2">Continue criando!</h3>
+                            <h3 className="text-lg md:text-xl font-bold mb-2">Continue criando!</h3>
                             <p className="text-muted-foreground mb-4">
                                 Quanto mais você usa a plataforma, mais pontos você ganha!
                             </p>

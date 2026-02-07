@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu, X, LogOut, User, Home, Calendar, CreditCard,
   Video, Image, LayoutGrid, FileText, Download, Bot,
-  GraduationCap, Heart, ChevronDown, Sun, Moon, Star, TrendingUp, Lightbulb
+  GraduationCap, Heart, ChevronDown, Sun, Moon, Star, TrendingUp, MessageSquare, MoreHorizontal
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -160,6 +160,13 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
             <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 hidden md:block" />
             <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 hidden md:block" />
           </Link>
+
+          {/* Mobile Progress Bar - Compact next to logo */}
+          {user && (
+            <div className="md:hidden">
+              <ProgressBar compact />
+            </div>
+          )}
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
@@ -364,8 +371,8 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
       {/* Mobile Greeting Bar with Gamification - Only on Mobile */}
       {user && (
         <div className="md:hidden bg-gradient-to-r from-primary/5 to-accent/5 border-b border-border/30">
-          <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-2">
-            <span className="text-sm font-medium text-foreground">
+          <div className="container mx-auto px-4 py-2 flex flex-col items-center justify-center gap-1">
+            <span className="text-xs font-medium text-foreground">
               Olá, {userName?.split(' ')[0] || user.email?.split('@')[0]}!
             </span>
             <ProgressBar compact />
