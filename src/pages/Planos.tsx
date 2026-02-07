@@ -16,7 +16,6 @@ import {
   Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { StripeCheckoutModal } from "@/components/stripe/StripeCheckoutModal";
 
 import garantia7dias from "@/assets/garantia-7-dias.png";
 
@@ -65,7 +64,6 @@ const Planos = () => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
 
   // Benefits with icons - translated
@@ -116,7 +114,8 @@ const Planos = () => {
     const currency = 'BRL';
     trackInitiateCheckout(price, currency);
 
-    setIsCheckoutOpen(true);
+    // Redirect directly to Stripe Payment Link
+    window.location.href = STRIPE_LINKS.pt;
   };
 
   const handleRefreshSubscription = async () => {
@@ -519,7 +518,6 @@ const Planos = () => {
         </section>
       </div>
       <Footer />
-      <StripeCheckoutModal open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen} />
     </div>
   );
 };
