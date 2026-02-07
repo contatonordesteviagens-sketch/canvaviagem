@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { UserInfoCard } from "@/components/UserInfoCard";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
-import { Loader2, Check, Plane, Settings, Video, Image, MessageSquare, Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity, GraduationCap } from "lucide-react";
+import { Loader2, Check, Plane, Settings, Video, Image, MessageSquare, Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity, GraduationCap, Star } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import garantia7dias from "@/assets/garantia-7-dias.png";
 
@@ -342,6 +342,92 @@ const Planos = () => {
         </div>
       </section>
 
+      {/* PLUG-AND-PLAY & EXCLUSIVIDADE - Nova Seção */}
+      <section className="mb-12 md:mb-20">
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-2 border-green-200 dark:border-green-800 rounded-3xl p-6 md:p-10">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-black mb-3 text-green-700 dark:text-green-300">
+              ⚡ Pegou, Usou e Postou em 2 Minutos
+            </h2>
+            <p className="text-lg md:text-xl text-muted-foreground">
+              Sem design. Sem complicação. Só pegar e usar.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* Plug and Play */}
+            <Card className="border-2 border-green-300 dark:border-green-700 bg-background/80">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-12 w-12 rounded-full bg-green-500 flex items-center justify-center text-2xl">
+                    🎯
+                  </div>
+                  <h3 className="text-xl font-bold">100% Plug-and-Play</h3>
+                </div>
+                <ul className="space-y-3 text-sm md:text-base">
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                    <span><strong>Não precisa</strong> saber design</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                    <span><strong>Não precisa</strong> saber marketing</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                    <span>Tudo <strong>100% pronto</strong> pra postar</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                    <span><strong>2 minutos</strong> pra criar e publicar</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Exclusividade */}
+            <Card className="border-2 border-purple-300 dark:border-purple-700 bg-background/80">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-12 w-12 rounded-full bg-purple-500 flex items-center justify-center text-2xl">
+                    ✨
+                  </div>
+                  <h3 className="text-xl font-bold">Conteúdo Exclusivo</h3>
+                </div>
+                <ul className="space-y-3 text-sm md:text-base">
+                  <li className="flex items-start gap-2">
+                    <Sparkles className="h-5 w-5 text-purple-600 shrink-0 mt-0.5" />
+                    <span><strong>+250 vídeos</strong> únicos e exclusivos</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Sparkles className="h-5 w-5 text-purple-600 shrink-0 mt-0.5" />
+                    <span><strong>Pode personalizar</strong> tudo que quiser</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Sparkles className="h-5 w-5 text-purple-600 shrink-0 mt-0.5" />
+                    <span><strong>Conteúdo novo</strong> toda semana</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Sparkles className="h-5 w-5 text-purple-600 shrink-0 mt-0.5" />
+                    <span><strong>Impossível</strong> todo mundo usar o mesmo</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* CTA Box */}
+          <div className="mt-8 text-center bg-gradient-to-r from-green-500/10 to-purple-500/10 rounded-xl p-6 border-2 border-dashed border-green-300 dark:border-green-700">
+            <p className="text-base md:text-lg font-bold text-foreground mb-2">
+              🚀 <strong>Plataforma nova = Poucas pessoas usando</strong>
+            </p>
+            <p className="text-sm md:text-base text-muted-foreground">
+              Aproveite agora e seja um dos primeiros a ter acesso ao conteúdo que <strong>ninguém mais tem</strong>
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* SEÇÃO "O QUE É CANVA VIAGEM?" */}
       <section className="mb-12 md:mb-20">
         <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-8 md:p-12 rounded-3xl">
@@ -479,10 +565,13 @@ const Planos = () => {
               </>}
             </Button>
 
-            {/* Urgency - Limited spots */}
-            <div className="mt-3 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
-              <p className="text-xs md:text-sm font-bold text-orange-600 dark:text-orange-400 flex items-center justify-center gap-1.5">
-                ⚡ Apenas 23 vagas restantes este mês
+            {/* Launch Phase - Exclusivity */}
+            <div className="mt-3 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 border-2 border-purple-300 dark:border-purple-700 rounded-lg p-4">
+              <p className="text-xs md:text-sm font-bold text-purple-700 dark:text-purple-300 flex items-center justify-center gap-1.5 mb-1">
+                🚀 Plataforma em Fase de Lançamento
+              </p>
+              <p className="text-xs text-purple-600 dark:text-purple-400 text-center">
+                Seja um dos primeiros • Conteúdo exclusivo que você não viu em lugar nenhum
               </p>
             </div>
 
@@ -851,7 +940,7 @@ const Planos = () => {
           </Button>
           <p className="text-center text-xs text-muted-foreground mt-2 flex items-center justify-center gap-3">
             <span className="flex items-center gap-1">
-              ⚡ 23 vagas
+              🚀 Fase de lançamento
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
