@@ -13,7 +13,7 @@ import { UserInfoCard } from "@/components/UserInfoCard";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
 import {
   Loader2, Check, Plane, Settings, Video, Image, MessageSquare,
-  Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity
+  Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity, GraduationCap
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 

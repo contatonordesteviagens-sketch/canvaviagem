@@ -39,7 +39,7 @@ export default function Sugestoes() {
         setLoading(true);
 
         try {
-            const { error } = await supabase.from('user_suggestions').insert({
+            const { error } = await (supabase.from('user_suggestions') as any).insert({
                 user_id: user?.id || null,
                 user_name: formData.name || null,
                 user_email: formData.email,
