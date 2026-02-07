@@ -157,8 +157,6 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
               style={{ boxShadow: 'var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), 0 4px 12px -2px rgba(0, 0, 0, 0.15)' }}
             />
             <span className="font-bold text-lg sm:text-xl hidden sm:inline">Canva Viagem</span>
-            <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 hidden md:block" />
-            <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 hidden md:block" />
           </Link>
 
           {/* Mobile Progress Bar - Compact next to logo */}
