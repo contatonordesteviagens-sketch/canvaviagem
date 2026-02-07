@@ -115,8 +115,8 @@ const ObrigadoES = () => {
         }
     };
 
-    const supportWhatsAppUrl = "https://wa.me/5585986411294?text=Hice%20la%20compra%20de%20Canva%20Viagem%20y%20necesito%20soporte";
-    const generalWhatsAppUrl = "https://wa.me/5585986411294?text=Me%20gustaria%20hablar%20sobre%20Canva%20Viagem";
+    const supportWhatsAppUrl = "https://wa.me/5585986411294?text=Hola%2C%20realic%C3%A9%20la%20compra%20de%20Canva%20Viagem%20y%20necesito%20soporte.%20%C2%BFMe%20puedes%20ayudar%3F";
+    const generalWhatsAppUrl = "https://wa.me/5585986411294?text=Hola%2C%20me%20gustar%C3%ADa%20obtener%20informaci%C3%B3n%20sobre%20Canva%20Viagem.";
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10 flex items-center justify-center p-4">
