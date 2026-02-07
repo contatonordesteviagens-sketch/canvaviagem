@@ -282,8 +282,10 @@ const Planos = () => {
 
       {/* HERO SECTION - Badge de Marketing */}
       <section className="text-center mb-12 md:mb-20">
-        <div className="mb-6 px-4 md:px-6 py-1.5 md:py-2 bg-blue-500/5 backdrop-blur-sm border border-blue-400/10 rounded-full inline-block text-blue-600/70 dark:text-blue-400/70 text-[10px] md:text-xs font-light tracking-wide">
-          🏆 A primeira ferramenta de marketing de turismo para vendas de viagem completa do mundo
+        <div className="mb-6 px-4 md:px-6 py-2 md:py-2.5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border-2 border-blue-400/30 rounded-full inline-block shadow-lg">
+          <p className="text-blue-700 dark:text-blue-300 text-xs md:text-sm font-bold flex items-center gap-2">
+            🏆 #1 Economize R$ 471/mês vs contratar designer
+          </p>
         </div>
 
         {/* Headline com Gradiente */}
@@ -449,29 +451,50 @@ const Planos = () => {
               Vídeos, artes, robôs, influencers e todo o acesso
             </p>
 
-            <p className="text-xl md:text-2xl line-through text-muted-foreground mb-2">De R$197</p>
+            {/* Price Comparison - Show Value */}
+            <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 rounded-lg p-4 mb-4 border border-red-200 dark:border-red-800">
+              <p className="text-sm font-semibold text-red-600 dark:text-red-400 mb-1">Quanto você pagaria?</p>
+              <p className="text-xs text-muted-foreground mb-2">Designer freelancer cobra:</p>
+              <p className="text-2xl font-bold line-through text-red-500">R$ 500/mês</p>
+              <p className="text-xs text-green-600 dark:text-green-400 font-semibold mt-1">↓ Economize R$ 471 por mês = R$ 5.652/ano</p>
+            </div>
 
             {/* Custom Price Display */}
-            <div className="flex items-baseline justify-center mb-6 gap-1">
+            <div className="flex items-baseline justify-center mb-2 gap-1">
               <span className="text-2xl md:text-3xl font-bold text-primary opacity-70">R$</span>
               <span className="text-5xl md:text-6xl font-black text-primary">29</span>
               <span className="text-2xl md:text-3xl font-bold text-primary opacity-70">,00</span>
               <span className="text-xl md:text-2xl text-muted-foreground ml-1">/mês</span>
             </div>
+            <p className="text-sm text-green-600 dark:text-green-400 font-bold mb-6">94% mais barato que designer!</p>
 
-            <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="w-full h-14 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-sm md:text-base font-bold shadow-lg hover:shadow-xl transition-all duration-300 text-white">
+            <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="w-full h-16 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-base md:text-lg font-black shadow-xl hover:shadow-2xl transition-all duration-300 text-white animate-pulse hover:animate-none">
               {checkoutLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>
-                <Sparkles className="mr-2 h-4 w-4 md:h-5 md:w-5" />
-                Começar Teste Grátis de 3 Dias
+                <Sparkles className="mr-2 h-5 w-5" />
+                🔥 COMEÇAR TESTE GRÁTIS AGORA
               </>}
             </Button>
 
+            {/* Urgency - Limited spots */}
+            <div className="mt-3 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
+              <p className="text-xs md:text-sm font-bold text-orange-600 dark:text-orange-400 flex items-center justify-center gap-1.5">
+                ⚡ Apenas 23 vagas restantes este mês
+              </p>
+            </div>
+
+            {/* Guarantee - Risk Free */}
+            <div className="mt-4 bg-green-50 dark:bg-green-950/20 border-2 border-green-300 dark:border-green-700 rounded-lg p-4">
+              <p className="text-sm md:text-base font-bold text-green-700 dark:text-green-300 flex items-center justify-center gap-2 mb-1">
+                <Shield className="h-5 w-5" />
+                ✅ Garantia de 7 Dias - Risco ZERO
+              </p>
+              <p className="text-xs text-green-600 dark:text-green-400">
+                Não gostou? Cancele em 7 dias e receba 100% do seu dinheiro de volta
+              </p>
+            </div>
+
             <p className="text-xs font-medium text-center mt-4 flex items-center justify-center gap-1.5">
-              <Shield className="h-3 w-3 text-green-600" />
-              <span className="text-muted-foreground">🔒 Pagamento seguro</span>
-            </p>
-            <p className="text-xs text-center text-muted-foreground mt-2">
-              {t('plans.instantAccess')}
+              <span className="text-muted-foreground">🔒 Pagamento 100% seguro via Stripe</span>
             </p>
           </CardContent>
         </Card>
