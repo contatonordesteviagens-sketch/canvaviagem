@@ -11,9 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { UserInfoCard } from "@/components/UserInfoCard";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
-import { 
-  Loader2, Check, Plane, Settings, Video, Image, MessageSquare, 
-  Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity 
+import {
+  Loader2, Check, Plane, Settings, Video, Image, MessageSquare,
+  Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import garantia7dias from "@/assets/garantia-7-dias.png";
@@ -77,25 +77,25 @@ const PlanosES = () => {
 
   // FAQs - Spanish
   const faqs = [
-    { 
-      question: "¿Cómo accedo a las plantillas?", 
-      answer: "Después del pago, recibirás acceso inmediato a la plataforma con todas las plantillas editables en Canva." 
+    {
+      question: "¿Cómo accedo a las plantillas?",
+      answer: "Después del pago, recibirás acceso inmediato a la plataforma con todas las plantillas editables en Canva."
     },
-    { 
-      question: "¿Necesito Canva Pro?", 
-      answer: "No es obligatorio, pero recomendamos Canva Pro para acceder a todas las funcionalidades de las plantillas." 
+    {
+      question: "¿Necesito Canva Pro?",
+      answer: "No es obligatorio, pero recomendamos Canva Pro para acceder a todas las funcionalidades de las plantillas."
     },
-    { 
-      question: "¿Puedo cancelar en cualquier momento?", 
-      answer: "Sí, puedes cancelar tu suscripción cuando quieras sin cargos adicionales." 
+    {
+      question: "¿Puedo cancelar en cualquier momento?",
+      answer: "Sí, puedes cancelar tu suscripción cuando quieras sin cargos adicionales."
     },
-    { 
-      question: "¿Las plantillas son exclusivas?", 
-      answer: "Sí, todas las plantillas son creadas exclusivamente para nuestra plataforma." 
+    {
+      question: "¿Las plantillas son exclusivas?",
+      answer: "Sí, todas las plantillas son creadas exclusivamente para nuestra plataforma."
     },
-    { 
-      question: "¿Cómo funciona la garantía?", 
-      answer: "Tienes 7 días para probar. Si no te gusta, te devolvemos el 100% de tu dinero." 
+    {
+      question: "¿Cómo funciona la garantía?",
+      answer: "Tienes 7 días para probar. Si no te gusta, te devolvemos el 100% de tu dinero."
     },
   ];
 
@@ -214,7 +214,7 @@ const PlanosES = () => {
         <Header />
         <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-4xl">
           <UserInfoCard />
-          
+
           <div className="text-center mb-8 md:mb-12">
             <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
               <Sparkles className="h-3 w-3 mr-1" />
@@ -296,34 +296,39 @@ const PlanosES = () => {
       <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl overflow-x-hidden">
         {user && <UserInfoCard />}
 
-        {/* HERO SECTION */}
+        {/* HERO SECTION - Badge de Marketing */}
         <section className="text-center mb-12 md:mb-20">
-          <Badge className="mb-6 px-6 py-2 bg-gradient-to-r from-primary to-accent text-white animate-pulse border-0">
-            <Sparkles className="h-4 w-4 mr-2" />
-            ⚡ ¡OFERTA ESPECIAL!
-          </Badge>
-          
+          <div className="mb-6 px-4 md:px-6 py-2 md:py-2.5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border-2 border-blue-400/30 rounded-full inline-block shadow-lg">
+            <p className="text-blue-700 dark:text-blue-300 text-xs md:text-sm font-bold flex items-center gap-2">
+              🏆 #1 Ahorra $490/mes vs contratar diseñador
+            </p>
+          </div>
+
           {/* Headline con Gradiente */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-4">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-2">
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              ¡Vende Más Viajes
+              TravelMarketing
             </span>
-            <br />
-            <span className="text-foreground">Todo el Año!</span>
           </h1>
-          
+          <p className="text-lg md:text-xl text-muted-foreground mb-4 font-medium">
+            Marketing Profesional para Turismo
+          </p>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4">
+            ¡Vende Más Viajes Todo el Año!
+          </h2>
+
           {/* Subheadline */}
           <p className="text-xl md:text-2xl text-muted-foreground mb-8">
             +250 plantillas de video editables en Canva
           </p>
-          
+
           {/* GIF Hero */}
-          <img 
-            src={heroGif} 
-            alt="Videos de viajes profesionales" 
+          <img
+            src={heroGif}
+            alt="Videos de viajes profesionales"
             className="mx-auto rounded-2xl shadow-2xl max-w-xs md:max-w-2xl mb-6"
           />
-          
+
           {/* Badges de Prova Social */}
           <div className="flex flex-col md:flex-row items-center justify-center gap-4">
             <Badge variant="outline" className="px-4 py-2 text-sm">
@@ -345,8 +350,8 @@ const PlanosES = () => {
           <div className="grid grid-cols-2 gap-3 md:gap-4 max-w-2xl mx-auto">
             {proofGifs.map((gif, index) => (
               <div key={index} className="rounded-2xl overflow-hidden shadow-lg hover:scale-[1.02] transition-transform duration-300">
-                <img 
-                  src={gif} 
+                <img
+                  src={gif}
                   alt={`Ejemplo de video ${index + 1}`}
                   className="w-full aspect-[9/16] object-cover"
                 />
@@ -364,16 +369,15 @@ const PlanosES = () => {
             <p className="text-center text-muted-foreground text-lg mb-8">
               Todo lo que necesitas para crear contenido profesional
             </p>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {benefits.map((item, index) => (
-                <div 
-                  key={index} 
-                  className={`flex flex-col gap-2 p-4 rounded-lg transition-all duration-200 ${
-                    item.highlight 
-                      ? 'bg-gradient-to-r from-primary to-accent text-white shadow-lg' 
+                <div
+                  key={index}
+                  className={`flex flex-col gap-2 p-4 rounded-lg transition-all duration-200 ${item.highlight
+                      ? 'bg-gradient-to-r from-primary to-accent text-white shadow-lg'
                       : 'bg-background/50 hover:bg-background/80'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <item.icon className={`h-5 w-5 shrink-0 ${item.highlight ? 'text-white' : 'text-primary'}`} />
@@ -411,70 +415,238 @@ const PlanosES = () => {
           </div>
         </section>
 
-        {/* CARD DE PREÇO - USD */}
+        {/* TESTIMONIOS - PROVA SOCIAL */}
         <section className="mb-12 md:mb-20">
-          <Card className="max-w-2xl mx-auto border-2 border-primary/20 shadow-xl">
-            <CardContent className="p-8 md:p-12 text-center">
-              <p className="text-2xl line-through text-muted-foreground mb-2">$29,90</p>
-              <div className="flex items-baseline justify-center mb-6">
-                <span className="text-5xl md:text-6xl font-black text-primary">$9,09</span>
-                <span className="text-xl text-muted-foreground ml-2">/mes</span>
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">Lo Que Dicen Nuestros Clientes</h2>
+          <p className="text-center text-muted-foreground mb-8">Agencias que ya están vendiendo más con TravelMarketing</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Testimonial 1 */}
+            <Card className="border-2 border-primary/20">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
+                </div>
+                <p className="text-sm md:text-base mb-4 italic">
+                  "Aumenté mi engagement en 300% el primer mes. ¡Puedo publicar todos los días y mis clientes lo aman!"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white font-bold">
+                    M
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">María García</p>
+                    <p className="text-xs text-muted-foreground">Agencia Viajes Soñados</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Testimonial 2 */}
+            <Card className="border-2 border-accent/20">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
+                </div>
+                <p className="text-sm md:text-base mb-4 italic">
+                  "Cerré 5 paquetes extra este mes solo con los videos de TravelMarketing. ¡Mejor inversión!"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center text-white font-bold">
+                    J
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">Juan López</p>
+                    <p className="text-xs text-muted-foreground">Travel Expert</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Testimonial 3 */}
+            <Card className="border-2 border-green-500/20">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
+                </div>
+                <p className="text-sm md:text-base mb-4 italic">
+                  "Ahorré $800/mes que gastaba en diseñador. ¡Ahora creo todo yo misma en minutos!"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                    A
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">Ana Rodríguez</p>
+                    <p className="text-xs text-muted-foreground">Mundo Viajes</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* COMPARISON TABLE */}
+        <section className="mb-12 md:mb-20">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">Compara y Ve Cuánto Ahorras</h2>
+          <p className="text-center text-muted-foreground mb-8">Invertir $9.09/mes vs contratar profesionales</p>
+
+          <div className="max-w-4xl mx-auto overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b-2">
+                  <th className="text-left p-3 md:p-4 text-sm md:text-base font-bold">Recurso</th>
+                  <th className="p-3 md:p-4 text-center bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/30 text-sm md:text-base font-bold">
+                    <div className="flex flex-col items-center gap-1">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                      TravelMarketing
+                    </div>
+                  </th>
+                  <th className="p-3 md:p-4 text-center text-sm md:text-base">Diseñador<br /><span className="text-xs text-muted-foreground">Freelancer</span></th>
+                  <th className="p-3 md:p-4 text-center text-sm md:text-base">Agencia<br /><span className="text-xs text-muted-foreground">Marketing</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b">
+                  <td className="p-3 md:p-4 text-sm md:text-base">Videos ilimitados</td>
+                  <td className="p-3 md:p-4 text-center bg-primary/5">
+                    <Check className="h-5 w-5 text-green-600 mx-auto" />
+                  </td>
+                  <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">$300/video</td>
+                  <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">$500/video</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-3 md:p-4 text-sm md:text-base">Artes/Posts ilimitados</td>
+                  <td className="p-3 md:p-4 text-center bg-primary/5">
+                    <Check className="h-5 w-5 text-green-600 mx-auto" />
+                  </td>
+                  <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">$50/arte</td>
+                  <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">$100/arte</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-3 md:p-4 text-sm md:text-base">10 Robots de IA Marketing</td>
+                  <td className="p-3 md:p-4 text-center bg-primary/5">
+                    <Check className="h-5 w-5 text-green-600 mx-auto" />
+                  </td>
+                  <td className="p-3 md:p-4 text-center text-xs md:text-sm">❌</td>
+                  <td className="p-3 md:p-4 text-center text-xs md:text-sm">❌</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-3 md:p-4 text-sm md:text-base">3 Influencers IA de Viajes</td>
+                  <td className="p-3 md:p-4 text-center bg-primary/5">
+                    <Check className="h-5 w-5 text-green-600 mx-auto" />
+                  </td>
+                  <td className="p-3 md:p-4 text-center text-xs md:text-sm">❌</td>
+                  <td className="p-3 md:p-4 text-center text-xs md:text-sm">❌</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-3 md:p-4 text-sm md:text-base">Calendario de Contenido</td>
+                  <td className="p-3 md:p-4 text-center bg-primary/5">
+                    <Check className="h-5 w-5 text-green-600 mx-auto" />
+                  </td>
+                  <td className="p-3 md:p-4 text-center text-xs md:text-sm">❌</td>
+                  <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">$200/mes</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="p-3 md:p-4 text-sm md:text-base">Soporte WhatsApp</td>
+                  <td className="p-3 md:p-4 text-center bg-primary/5">
+                    <Check className="h-5 w-5 text-green-600 mx-auto" />
+                  </td>
+                  <td className="p-3 md:p-4 text-center text-xs md:text-sm">Por proyecto</td>
+                  <td className="p-3 md:p-4 text-center text-xs md:text-sm">Solo email</td>
+                </tr>
+                <tr className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 font-bold">
+                  <td className="p-3 md:p-4 text-sm md:text-base">💰 Total por mes</td>
+                  <td className="p-3 md:p-4 text-center text-lg md:text-xl text-green-600">
+                    <div className="flex flex-col items-center">
+                      <span className="text-2xl md:text-3xl font-black">$9.09</span>
+                      <span className="text-xs">✨ Todo incluido</span>
+                    </div>
+                  </td>
+                  <td className="p-3 md:p-4 text-center text-base md:text-lg text-red-600">
+                    <div className="flex flex-col items-center">
+                      <span className="font-bold">$600+</span>
+                      <span className="text-xs">por proyecto</span>
+                    </div>
+                  </td>
+                  <td className="p-3 md:p-4 text-center text-base md:text-lg text-red-600">
+                    <div className="flex flex-col items-center">
+                      <span className="font-bold">$2.000+</span>
+                      <span className="text-xs">mensualidad</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-6 text-center">
+            <p className="text-lg md:text-xl font-bold text-green-600">
+              🎉 ¡Ahorra hasta $1.970/mes = $23.640/año!
+            </p>
+          </div>
+        </section>
+
+        {/* CARD DE PREÇO - USD */}
+        <section id="precio" className="mb-12 md:mb-20 scroll-mt-20">
+          <Card className="max-w-2xl mx-auto border-2 border-primary/20 shadow-xl relative">
+            {/* Floating Badge */}
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+              <div className="bg-green-500/90 backdrop-blur-sm text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full shadow-lg text-xs md:text-sm font-semibold whitespace-nowrap">
+                ✨ 3 Días Gratis
               </div>
-              
-              {/* Resumo de entregáveis */}
-              <div className="text-left bg-muted/30 rounded-xl p-4 mb-6 space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <Check className="h-4 w-4 text-primary shrink-0" />
-                  <span>+250 videos editables en Canva</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Check className="h-4 w-4 text-primary shrink-0" />
-                  <span>Herramientas de IA exclusivas</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Check className="h-4 w-4 text-primary shrink-0" />
-                  <span>Calendario con fechas especiales</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Check className="h-4 w-4 text-primary shrink-0" />
-                  <span>Subtítulos listos para copiar</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Check className="h-4 w-4 text-primary shrink-0" />
-                  <span>Actualizaciones semanales</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Check className="h-4 w-4 text-primary shrink-0" />
-                  <span>Soporte por WhatsApp</span>
-                </div>
+            </div>
+
+            <CardContent className="p-8 md:p-12 text-center pt-10 md:pt-12">
+              <h3 className="text-lg md:text-xl font-bold mb-3">Ten acceso a todas las herramientas</h3>
+              <p className="text-sm md:text-base text-muted-foreground mb-6">
+                Videos, artes, robots, influencers y todo el acceso
+              </p>
+
+              {/* Price Comparison - Show Value */}
+              <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 rounded-lg p-4 mb-4 border border-red-200 dark:border-red-800">
+                <p className="text-sm font-semibold text-red-600 dark:text-red-400 mb-1">¿Cuánto pagarías?</p>
+                <p className="text-xs text-muted-foreground mb-2">Diseñador freelancer cobra:</p>
+                <p className="text-2xl font-bold line-through text-red-500">$500/mes</p>
+                <p className="text-xs text-green-600 dark:text-green-400 font-semibold mt-1">↓ Ahorra $490 por mes = $5.880/año</p>
               </div>
-              
-              <Button 
-                size="lg" 
-                onClick={handleCheckout}
-                disabled={checkoutLoading}
-                className="w-full h-14 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                {checkoutLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-5 w-5" />
-                    Suscribirse Ahora
-                  </>
-                )}
+
+              {/* Custom Price Display */}
+              <div className="flex items-baseline justify-center mb-2 gap-1">
+                <span className="text-2xl md:text-3xl font-bold text-primary opacity-70">$</span>
+                <span className="text-5xl md:text-6xl font-black text-primary">9,09</span>
+                <span className="text-xl md:text-2xl text-muted-foreground ml-1">/mes</span>
+              </div>
+              <p className="text-sm text-green-600 dark:text-green-400 font-bold mb-6">¡98% más barato que diseñador!</p>
+
+              <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="w-full h-16 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-base md:text-lg font-black shadow-xl hover:shadow-2xl transition-all duration-300 text-white animate-pulse hover:animate-none">
+                {checkoutLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  🔥 EMPEZAR PRUEBA GRATIS AHORA
+                </>}
               </Button>
-              
-              <div className="flex flex-col md:flex-row items-center justify-center gap-4 mt-6 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Shield className="h-4 w-4" />
-                  Pago seguro
-                </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  Acceso inmediato
-                </span>
+
+              {/* Urgency - Limited spots */}
+              <div className="mt-3 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
+                <p className="text-xs md:text-sm font-bold text-orange-600 dark:text-orange-400 flex items-center justify-center gap-1.5">
+                  ⚡ Solo 23 cupos restantes este mes
+                </p>
               </div>
+
+              {/* Guarantee - Risk Free */}
+              <div className="mt-4 bg-green-50 dark:bg-green-950/20 border-2 border-green-300 dark:border-green-700 rounded-lg p-4">
+                <p className="text-sm md:text-base font-bold text-green-700 dark:text-green-300 flex items-center justify-center gap-2 mb-1">
+                  <Shield className="h-5 w-5" />
+                  ✅ Garantía de 7 Días - Riesgo CERO
+                </p>
+                <p className="text-xs text-green-600 dark:text-green-400">
+                  ¿No te gusta? Cancela en 7 días y recibe el 100% de tu dinero
+                </p>
+              </div>
+
+              <p className="text-xs font-medium text-center mt-4 flex items-center justify-center gap-1.5">
+                <span className="text-muted-foreground">🔒 Pago 100% seguro vía Stripe</span>
+              </p>
             </CardContent>
           </Card>
         </section>
@@ -482,44 +654,107 @@ const PlanosES = () => {
         {/* GARANTIA */}
         <section className="mb-12 md:mb-20">
           <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 p-8 md:p-12 rounded-3xl text-center">
-            <img 
-              src={garantia7dias} 
-              alt="Garantía de 7 días" 
+            <img
+              src={garantia7dias}
+              alt="Garantía de 7 días"
               className="mx-auto w-32 md:w-40 mb-6"
             />
             <h2 className="text-2xl md:text-3xl font-bold mb-4">
               Garantía de 7 Días
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Si no estás satisfecho con la plataforma, te devolvemos el 100% de tu dinero. 
+              Si no estás satisfecho con la plataforma, te devolvemos el 100% de tu dinero.
               Sin preguntas, sin complicaciones.
             </p>
           </div>
         </section>
 
-        {/* FAQ */}
+        {/* FAQ MEJORADO - Remove Objeciones */}
         <section className="mb-12 md:mb-20">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
-            ❓ Preguntas Frecuentes
-          </h2>
-          <div className="max-w-3xl mx-auto">
-            <Accordion type="single" collapsible className="space-y-4">
-              {faqs.map((faq, index) => (
-                <AccordionItem 
-                  key={index} 
-                  value={`faq-${index}`} 
-                  className="bg-card rounded-lg border shadow-sm"
-                >
-                  <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                    <span className="text-left font-semibold">{faq.question}</span>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-6 pb-4">
-                    <p className="text-muted-foreground">{faq.answer}</p>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">Preguntas Frecuentes</h2>
+          <p className="text-center text-muted-foreground mb-8">Todo lo que necesitas saber</p>
+
+          <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
+            <AccordionItem value="item-1">
+              <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+                ❓ ¿Necesito saber diseño para usar?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground text-sm md:text-base">
+                <strong className="text-foreground">¡No!</strong> La herramienta es super intuitiva. Todo viene listo: videos, artes, subtítulos.
+                Tú solo eliges lo que quieres y descargas. En 2 minutos creas un post profesional.
+                También tenemos una clase completa mostrando cómo usar.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-2">
+              <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+                📱 ¿Funciona en el móvil?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground text-sm md:text-base">
+                <strong className="text-foreground">¡Sí!</strong> TravelMarketing funciona perfectamente en móvil, tablet y computadora.
+                Accede desde cualquier lugar, a cualquier hora. Ideal para quien trabaja en movimiento.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3">
+              <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+                ❌ ¿Puedo cancelar cuando quiera?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground text-sm md:text-base">
+                <strong className="text-foreground">¡Sí, sin letra pequeña!</strong> Puedes cancelar en cualquier momento, sin burocracias.
+                Y si cancelas en los primeros 7 días, devolvemos el 100% de tu dinero. Riesgo CERO.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4">
+              <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+                ⏱️ ¿Cuánto tiempo lleva crear un post?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground text-sm md:text-base">
+                <strong className="text-foreground">¡2 minutos!</strong> Elige el video o arte → Personaliza (opcional) → Descarga → Publica.
+                Puedes crear contenido para toda la semana en menos de 15 minutos.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5">
+              <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+                📹 ¿Los videos tienen copyright?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground text-sm md:text-base">
+                <strong className="text-foreground">¡No!</strong> Todos los videos y artes son 100% libres de derechos de autor.
+                Puedes usar con seguridad en tu marketing sin preocupaciones.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-6">
+              <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+                🔄 ¿Agregan contenido nuevo?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground text-sm md:text-base">
+                <strong className="text-foreground">¡Cada semana!</strong> Agregamos nuevos videos, artes y herramientas de IA constantemente.
+                Tu acceso garantiza todas las actualizaciones futuras sin costo adicional.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-7">
+              <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+                💬 ¿Cómo funciona el soporte?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground text-sm md:text-base">
+                Soporte directo vía WhatsApp durante horario comercial. ¡Respondemos rápido y ayudamos con cualquier duda!
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-8">
+              <AccordionTrigger className="text-left text-base md:text-lg font-semibold">
+                🚀 ¿Cuándo recibo el acceso?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground text-sm md:text-base">
+                <strong className="text-foreground">¡Inmediatamente!</strong> Tan pronto como se confirme el pago (generalmente instantáneo),
+                recibes el link de acceso por email. ¡En 2 minutos ya estás creando contenido!
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </section>
 
         {/* CTA FINAL */}
@@ -527,8 +762,8 @@ const PlanosES = () => {
           <h2 className="text-2xl md:text-3xl font-bold mb-6">
             ¿Listo para vender más viajes?
           </h2>
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             onClick={handleCheckout}
             disabled={checkoutLoading}
             className="h-14 px-12 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300"
