@@ -593,6 +593,99 @@ const Planos = () => {
         </Card>
       </section>
 
+      {/* MARKETING 360° - Tudo Incluído */}
+      <section className="mb-12 md:mb-20">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 border-2 border-primary rounded-3xl p-8 md:p-10 shadow-2xl">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="inline-block mb-4">
+                <div className="bg-gradient-to-r from-primary to-accent text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                  🚀 EXCLUSIVO
+                </div>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-black mb-3">
+                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  O Primeiro APP de Marketing Turístico 360°
+                </span>
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Tudo que você precisa para vender mais viagens, em um único lugar
+              </p>
+            </div>
+
+            {/* Grid de Features */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Feature 1 */}
+              <div className="text-center p-4 bg-white/50 dark:bg-background/50 rounded-xl hover:scale-105 transition-transform">
+                <div className="text-3xl mb-2">🎬</div>
+                <p className="font-bold text-sm">Vídeos Prontos</p>
+                <p className="text-xs text-muted-foreground">+250 templates</p>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="text-center p-4 bg-white/50 dark:bg-background/50 rounded-xl hover:scale-105 transition-transform">
+                <div className="text-3xl mb-2">🎨</div>
+                <p className="font-bold text-sm">Artes & Design</p>
+                <p className="text-xs text-muted-foreground">Stories, posts, feeds</p>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="text-center p-4 bg-white/50 dark:bg-background/50 rounded-xl hover:scale-105 transition-transform">
+                <div className="text-3xl mb-2">📸</div>
+                <p className="font-bold text-sm">Banco de Fotos</p>
+                <p className="text-xs text-muted-foreground">Alta qualidade</p>
+              </div>
+
+              {/* Feature 4 */}
+              <div className="text-center p-4 bg-white/50 dark:bg-background/50 rounded-xl hover:scale-105 transition-transform">
+                <div className="text-3xl mb-2">📱</div>
+                <p className="font-bold text-sm">Social Media</p>
+                <p className="text-xs text-muted-foreground">Calendário anual</p>
+              </div>
+
+              {/* Feature 5 */}
+              <div className="text-center p-4 bg-white/50 dark:bg-background/50 rounded-xl hover:scale-105 transition-transform">
+                <div className="text-3xl mb-2">✍️</div>
+                <p className="font-bold text-sm">Copywriting</p>
+                <p className="text-xs text-muted-foreground">Legendas prontas</p>
+              </div>
+
+              {/* Feature 6 */}
+              <div className="text-center p-4 bg-white/50 dark:bg-background/50 rounded-xl hover:scale-105 transition-transform">
+                <div className="text-3xl mb-2">🎯</div>
+                <p className="font-bold text-sm">Estratégias</p>
+                <p className="text-xs text-muted-foreground">Tráfego & vendas</p>
+              </div>
+
+              {/* Feature 7 */}
+              <div className="text-center p-4 bg-white/50 dark:bg-background/50 rounded-xl hover:scale-105 transition-transform">
+                <div className="text-3xl mb-2">🤖</div>
+                <p className="font-bold text-sm">IA Integrada</p>
+                <p className="text-xs text-muted-foreground">Edição assistida</p>
+              </div>
+
+              {/* Feature 8 */}
+              <div className="text-center p-4 bg-white/50 dark:bg-background/50 rounded-xl hover:scale-105 transition-transform">
+                <div className="text-3xl mb-2">⚡</div>
+                <p className="font-bold text-sm">Automação</p>
+                <p className="text-xs text-muted-foreground">Publique rápido</p>
+              </div>
+            </div>
+
+            {/* CTA Bottom */}
+            <div className="mt-8 text-center bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-6 border-2 border-dashed border-primary/30">
+              <p className="text-base md:text-lg font-bold mb-2">
+                ✨ Tudo isso por <span className="text-2xl text-primary">R$ 29/mês</span>
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Sem custo extra. Sem módulos separados. Tudo incluído.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* TESTIMONIALS - PROVA SOCIAL */}
       <section className="mb-12 md:mb-20">
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">O Que as Agências de Viagens Estão Falando?</h2>
