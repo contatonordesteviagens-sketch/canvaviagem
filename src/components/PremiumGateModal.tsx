@@ -14,7 +14,10 @@ interface PremiumGateModalProps {
   onClose: () => void;
 }
 
+import { useNavigate } from "react-router-dom";
+
 export const PremiumGateModal = ({ isOpen, onClose }: PremiumGateModalProps) => {
+  const navigate = useNavigate();
   const { language, t } = useLanguage();
 
   const translations = {
@@ -96,7 +99,8 @@ export const PremiumGateModal = ({ isOpen, onClose }: PremiumGateModalProps) => 
           {/* CTA Button */}
           <Button
             onClick={() => {
-              window.open(checkoutUrl, '_blank');
+              // Navigate to plans page instead of direct checkout
+              navigate("/planos");
               onClose();
             }}
             size="lg"
