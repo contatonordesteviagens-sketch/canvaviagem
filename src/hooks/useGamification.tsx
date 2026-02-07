@@ -49,8 +49,8 @@ export function useGamification(): GamificationState & GamificationActions {
             setLoading(true);
             setError(null);
 
-            const { data, error: fetchError } = await supabase
-                .from('user_progress')
+            const { data, error: fetchError } = await (supabase
+                .from('user_progress') as any)
                 .select('*')
                 .eq('user_id', user.id)
                 .maybeSingle();
@@ -59,8 +59,8 @@ export function useGamification(): GamificationState & GamificationActions {
 
             if (!data) {
                 // Create initial progress if doesn't exist
-                const { data: newProgress, error: insertError } = await supabase
-                    .from('user_progress')
+                const { data: newProgress, error: insertError } = await (supabase
+                    .from('user_progress') as any)
                     .insert({
                         user_id: user.id,
                         level: 1,
@@ -74,9 +74,9 @@ export function useGamification(): GamificationState & GamificationActions {
                     .single();
 
                 if (insertError) throw insertError;
-                setProgress(newProgress);
+                setProgress(newProgress as UserProgress);
             } else {
-                setProgress(data);
+                setProgress(data as UserProgress);
             }
         } catch (err) {
             console.error('Error fetching gamification progress:', err);
@@ -95,8 +95,8 @@ export function useGamification(): GamificationState & GamificationActions {
 
             try {
                 // Insert activity log
-                const { error: activityError } = await supabase
-                    .from('user_activities')
+                const { error: activityError } = await (supabase
+                    .from('user_activities') as any)
                     .insert({
                         user_id: user.id,
                         activity_type: activityType,
@@ -131,8 +131,8 @@ export function useGamification(): GamificationState & GamificationActions {
                         break;
                 }
 
-                const { data: updatedProgress, error: updateError } = await supabase
-                    .from('user_progress')
+                const { data: updatedProgress, error: updateError } = await (supabase
+                    .from('user_progress') as any)
                     .update(updates)
                     .eq('user_id', user.id)
                     .select()
@@ -140,7 +140,7 @@ export function useGamification(): GamificationState & GamificationActions {
 
                 if (updateError) throw updateError;
 
-                setProgress(updatedProgress);
+                setProgress(updatedProgress as UserProgress);
 
                 // Show level up toast
                 if (newLevel > progress.level) {

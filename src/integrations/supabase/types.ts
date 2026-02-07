@@ -580,6 +580,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_activities: {
+        Row: {
+          activity_type: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          points_earned: number
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          points_earned: number
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          points_earned?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_email_automations: {
         Row: {
           created_at: string
@@ -643,6 +670,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_progress: {
+        Row: {
+          arts_clicked: number
+          calendar_used: number
+          created_at: string
+          id: string
+          level: number
+          tools_used: number
+          total_points: number
+          updated_at: string
+          user_id: string
+          videos_opened: number
+        }
+        Insert: {
+          arts_clicked?: number
+          calendar_used?: number
+          created_at?: string
+          id?: string
+          level?: number
+          tools_used?: number
+          total_points?: number
+          updated_at?: string
+          user_id: string
+          videos_opened?: number
+        }
+        Update: {
+          arts_clicked?: number
+          calendar_used?: number
+          created_at?: string
+          id?: string
+          level?: number
+          tools_used?: number
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+          videos_opened?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -661,6 +727,39 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_suggestions: {
+        Row: {
+          created_at: string
+          id: string
+          status: string
+          suggestion_text: string
+          updated_at: string
+          user_email: string
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: string
+          suggestion_text: string
+          updated_at?: string
+          user_email: string
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: string
+          suggestion_text?: string
+          updated_at?: string
+          user_email?: string
+          user_id?: string | null
+          user_name?: string | null
         }
         Relationships: []
       }
