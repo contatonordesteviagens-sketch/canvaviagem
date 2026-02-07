@@ -19,31 +19,35 @@ export const PremiumGateModal = ({ isOpen, onClose }: PremiumGateModalProps) => 
 
   const translations = {
     pt: {
-      title: "Conteúdo Exclusivo Premium",
-      description: "Este recurso é exclusivo para assinantes Premium. Assine agora e tenha acesso ilimitado a todo o conteúdo!",
+      title: "🎁 Teste Grátis por 3 Dias!",
+      description: "Experimente TUDO sem pagar nada! Cancele quando quiser.",
       price: "R$ 29,00",
       period: "/mês",
-      cta: "Assinar Premium Agora",
+      trial: "Após 3 dias de teste grátis",
+      cta: "Começar Teste Grátis Agora",
       close: "Voltar",
       features: [
+        "✅ 3 dias grátis para testar tudo",
         "+250 templates de vídeos editáveis",
         "Legendas prontas ilimitadas",
         "Ferramentas de IA exclusivas",
-        "Novos conteúdos toda semana",
+        "Cancele quando quiser, sem taxas",
       ],
     },
     es: {
-      title: "Contenido Exclusivo Premium",
-      description: "Esta función es exclusiva para suscriptores Premium. ¡Suscríbete ahora y obtén acceso ilimitado a todo el contenido!",
+      title: "🎁 ¡Prueba Gratis por 3 Días!",
+      description: "¡Prueba TODO sin pagar nada! Cancela cuando quieras.",
       price: "$9,09",
       period: "/mes",
-      cta: "Suscribirse Premium Ahora",
+      trial: "Después de 3 días de prueba gratis",
+      cta: "Comenzar Prueba Gratis Ahora",
       close: "Volver",
       features: [
+        "✅ 3 días gratis para probar todo",
         "+250 plantillas de videos editables",
         "Subtítulos listos ilimitados",
         "Herramientas de IA exclusivas",
-        "Contenido nuevo cada semana",
+        "Cancela cuando quieras, sin cargos",
       ],
     },
   };
@@ -80,11 +84,13 @@ export const PremiumGateModal = ({ isOpen, onClose }: PremiumGateModalProps) => 
           </div>
 
           {/* Price */}
-          <div className="text-center py-4 bg-secondary/50 rounded-xl">
+          <div className="text-center py-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-xl border-2 border-green-200 dark:border-green-800">
+            <p className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">🎁 Teste Grátis por 3 Dias</p>
             <div className="flex items-baseline justify-center gap-1">
               <span className="text-4xl font-bold text-primary">{content.price}</span>
               <span className="text-muted-foreground">{content.period}</span>
             </div>
+            <p className="text-xs text-muted-foreground mt-1">{content.trial}</p>
           </div>
 
           {/* CTA Button */}
