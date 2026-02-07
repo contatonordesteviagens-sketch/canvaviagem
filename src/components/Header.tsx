@@ -157,6 +157,7 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
               style={{ boxShadow: 'var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), 0 4px 12px -2px rgba(0, 0, 0, 0.15)' }}
             />
             <span className="font-bold text-lg sm:text-xl hidden sm:inline">Canva Viagem 🍌</span>
+            <span className="md:hidden text-xl">🍌</span> {/* Banana visible on mobile for check */}
           </Link>
 
           {/* Mobile Progress Bar - Compact next to logo */}
@@ -259,8 +260,7 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="shadow-md hover:shadow-lg transition-shadow"
-                style={{ boxShadow: '0 2px 8px -1px rgba(0, 0, 0, 0.12)' }}
+                className="shadow-sm border border-input/20 bg-background/50 backdrop-blur-sm active:scale-95 transition-all"
               >
                 {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
