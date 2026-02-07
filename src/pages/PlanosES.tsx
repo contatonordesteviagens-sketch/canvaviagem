@@ -300,7 +300,7 @@ const PlanosES = () => {
         <section className="text-center mb-12 md:mb-20">
           <div className="mb-6 px-4 md:px-6 py-2 md:py-2.5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border-2 border-blue-400/30 rounded-full inline-block shadow-lg">
             <p className="text-blue-700 dark:text-blue-300 text-xs md:text-sm font-bold flex items-center gap-2">
-              🏆 #1 Ahorra $490/mes vs contratar diseñador
+              🏆 La primera herramienta de marketing turístico más completa del mundo
             </p>
           </div>
 
@@ -375,8 +375,8 @@ const PlanosES = () => {
                 <div
                   key={index}
                   className={`flex flex-col gap-2 p-4 rounded-lg transition-all duration-200 ${item.highlight
-                      ? 'bg-gradient-to-r from-primary to-accent text-white shadow-lg'
-                      : 'bg-background/50 hover:bg-background/80'
+                    ? 'bg-gradient-to-r from-primary to-accent text-white shadow-lg'
+                    : 'bg-background/50 hover:bg-background/80'
                     }`}
                 >
                   <div className="flex items-center gap-3">

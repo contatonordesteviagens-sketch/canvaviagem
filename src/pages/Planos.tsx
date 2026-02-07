@@ -284,7 +284,7 @@ const Planos = () => {
       <section className="text-center mb-12 md:mb-20">
         <div className="mb-6 px-4 md:px-6 py-2 md:py-2.5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border-2 border-blue-400/30 rounded-full inline-block shadow-lg">
           <p className="text-blue-700 dark:text-blue-300 text-xs md:text-sm font-bold flex items-center gap-2">
-            🏆 #1 Economize R$ 471/mês vs contratar designer
+            🏆 A primeira ferramenta de marketing turístico mais completa do mundo
           </p>
         </div>
 
