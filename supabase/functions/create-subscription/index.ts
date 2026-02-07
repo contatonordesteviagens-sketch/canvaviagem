@@ -7,7 +7,7 @@ const corsHeaders = {
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Use the Product ID provided by the user for Live Mode
+// Use the Product ID provided by the user
 const PRODUCT_ID = "prod_TkvaozfpkAcbpM";
 
 serve(async (req) => {
@@ -20,29 +20,6 @@ serve(async (req) => {
             Deno.env.get("SUPABASE_URL") ?? "",
             Deno.env.get("SUPABASE_ANON_KEY") ?? ""
         );
-
-        let email = "";
-        let userId = "";
-
-        // Check for Authorization header first
-        const authHeader = req.headers.get("Authorization");
-        if (authHeader) {
-            const { data: { user } } = await supabaseClient.auth.getUser(authHeader.replace("Bearer ", ""));
-            if (user && user.email) {
-                email = user.email;
-                userId = user.id;
-            }
-        }
-
-        // If no auth, check body for email (Guest Checkout)
-        const reqBody = await req.json().catch(() => ({}));
-        if (!email && reqBody.email) {
-            email = reqBody.email;
-        }
-
-        if (!email) {
-            throw new Error("Email is required for checkout");
-        }
 
         const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
         if (!stripeKey) {
@@ -67,59 +44,47 @@ serve(async (req) => {
             throw new Error("Plan configuration error: No active price found.");
         }
 
-        // 1. Get or Create Customer
-        const customers = await stripe.customers.list({ email: email, limit: 1 });
-        let customerId = customers.data[0]?.id;
+        // Determine Origin for Return URL
+        const origin = req.headers.get("origin") || "https://canvaviagem.lovable.app";
 
-        if (!customerId) {
-            const customerData: any = {
-                email: email,
-                name: email.split('@')[0],
-            };
-            if (userId) customerData.metadata = { user_id: userId };
+        // 1. Create Embedded Checkout Session
+        // We don't need customer ID here, functionality (email collection) is handled by Stripe UI.
+        // If we have user ID, we can pass it in metadata.
 
-            const newCustomer = await stripe.customers.create(customerData);
-            customerId = newCustomer.id;
+        // Check for Auth (optional, for metadata)
+        let userId = "";
+        const authHeader = req.headers.get("Authorization");
+        if (authHeader) {
+            const { data: { user } } = await supabaseClient.auth.getUser(authHeader.replace("Bearer ", ""));
+            if (user) userId = user.id;
         }
 
-        // 2. Create Subscription
-        const subscriptionParams: any = {
-            customer: customerId,
-            items: [{ price: priceId }], // Use resolved priceId
-            payment_behavior: 'default_incomplete',
-            payment_settings: { save_default_payment_method: 'on_subscription' },
-            expand: ['latest_invoice.payment_intent', 'pending_setup_intent'],
-            trial_period_days: 3,
-            metadata: {},
-        };
-
-        if (userId) {
-            subscriptionParams.metadata.user_id = userId;
-        }
-
-        const subscription = await stripe.subscriptions.create(subscriptionParams);
-
-        // 3. Extract Client Secret
-        const invoice = subscription.latest_invoice as any;
-        let clientSecret = invoice?.payment_intent?.client_secret;
-
-        if (!clientSecret) {
-            clientSecret = (subscription.pending_setup_intent as any)?.client_secret;
-        }
-
-        if (!clientSecret) {
-            throw new Error("Could not generate client secret");
-        }
+        const session = await stripe.checkout.sessions.create({
+            ui_mode: 'embedded',
+            mode: 'subscription',
+            line_items: [
+                {
+                    price: priceId,
+                    quantity: 1,
+                },
+            ],
+            subscription_data: {
+                trial_period_days: 3,
+            },
+            return_url: `${origin}/sucesso?session_id={CHECKOUT_SESSION_ID}`,
+            metadata: userId ? { user_id: userId } : {},
+            allows_promotion_codes: true,
+        });
 
         return new Response(
             JSON.stringify({
-                subscriptionId: subscription.id,
-                clientSecret: clientSecret
+                clientSecret: session.client_secret
             }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
+
     } catch (error: any) {
-        console.error("Error creating subscription:", error);
+        console.error("Error creating session:", error);
         return new Response(JSON.stringify({ error: error.message }), {
             status: 400,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
