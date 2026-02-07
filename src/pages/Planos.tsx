@@ -300,6 +300,23 @@ const Planos = () => {
               {t('plans.approvedAgencies')}
             </Badge>
           </div>
+
+          {/* CTA Button below pricing text */}
+          <Button
+            size="lg"
+            onClick={handleCheckout}
+            disabled={checkoutLoading}
+            className="mt-6 px-8 py-6 text-lg font-bold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            {checkoutLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-5 w-5" />
+                Ver Preços
+              </>
+            )}
+          </Button>
         </section>
 
         {/* GRID DE GIFS FORMATO REELS */}
@@ -347,12 +364,12 @@ const Planos = () => {
           </div>
         </section>
 
-        {/* VÍDEOS YOUTUBE COM OVERLAY */}
+        {/* VÍDEOS YOUTUBE COM OVERLAY - 2 por linha no mobile */}
         <section className="mb-12 md:mb-20">
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
-            {t('plans.examplesTitle')}
+            Veja Exemplos Reais dos Vídeos
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 max-w-4xl mx-auto">
             {youtubeVideos.map((video) => (
               <div key={video.id} className="bg-black rounded-xl overflow-hidden shadow-xl relative group">
                 <iframe
@@ -362,8 +379,8 @@ const Planos = () => {
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 pointer-events-none">
-                  <p className="text-white text-sm font-medium">{video.title}</p>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 md:p-3 pointer-events-none">
+                  <p className="text-white text-xs md:text-sm font-medium">{video.title}</p>
                 </div>
               </div>
             ))}
@@ -502,7 +519,7 @@ const Planos = () => {
         </section>
       </div>
       <Footer />
-      <StripeCheckoutModal isOpen={isCheckoutOpen} onClose={() => setIsCheckoutOpen(false)} />
+      <StripeCheckoutModal open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen} />
     </div>
   );
 };
