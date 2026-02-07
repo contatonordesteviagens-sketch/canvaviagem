@@ -152,9 +152,10 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
           <img
             src={logoImage}
             alt="Canva Viagem"
-            className="h-10 w-10 rounded-xl shadow-lg object-cover"
+            className="h-10 w-10 rounded-xl shadow-lg md:shadow-lg hover:shadow-xl transition-shadow object-cover"
+            style={{ boxShadow: 'var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), 0 4px 12px -2px rgba(0, 0, 0, 0.15)' }}
           />
-          <span className="font-bold text-xl hidden sm:inline">Canva Viagem</span>
+          <span className="font-bold text-lg sm:text-xl hidden sm:inline">Canva Viagem</span>
           <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 hidden md:block" />
           <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 hidden md:block" />
         </Link>
@@ -256,7 +257,12 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
         {/* Mobile Navigation */}
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="shadow-md hover:shadow-lg transition-shadow"
+              style={{ boxShadow: '0 2px 8px -1px rgba(0, 0, 0, 0.12)' }}
+            >
               {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </SheetTrigger>
