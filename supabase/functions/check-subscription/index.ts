@@ -210,20 +210,32 @@ serve(async (req) => {
 
     // No active subscription, check for one-off payments (checkout sessions)
     logStep("No active subscription, checking for one-off payments");
-    
+
+    // Check for valid one-off payments (within last 30 days)
     const checkoutSessions = await stripe.checkout.sessions.list({
       customer: customerId,
       status: 'complete',
-      limit: 100,
+      limit: 10, // Check last 10 payments
     });
 
-    const hasValidOneOffPayment = checkoutSessions.data.some((session: { payment_status: string; mode: string }) => 
-      session.payment_status === 'paid' && 
-      session.mode === 'payment'
-    );
+    // Find the most recent valid payment
+    const validSession = checkoutSessions.data.find((session: any) => {
+      if (session.payment_status !== 'paid' || session.mode !== 'payment') return false;
 
-    if (hasValidOneOffPayment) {
-      logStep("Found valid one-off payment", { customerId });
+      // Check if within 30 days
+      const created = session.created * 1000; // Stripe uses seconds
+      const now = Date.now();
+      const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+
+      return (now - created) < thirtyDaysMs;
+    });
+
+    if (validSession) {
+      logStep("Found valid one-off payment (< 30 days)", { sessionId: validSession.id });
+
+      // Calculate end date (Payment Date + 30 Days)
+      const paymentDate = new Date(validSession.created * 1000);
+      const endDate = new Date(paymentDate.getTime() + (30 * 24 * 60 * 60 * 1000));
 
       // Best-effort DB update
       if (dbClient) {
@@ -235,8 +247,8 @@ serve(async (req) => {
               status: "active",
               stripe_customer_id: customerId,
               stripe_subscription_id: null,
-              product_id: "one_off_payment",
-              current_period_end: null,
+              product_id: "monthly_access_pix",
+              current_period_end: endDate.toISOString(),
             },
             { onConflict: "user_id" }
           );
@@ -244,8 +256,8 @@ serve(async (req) => {
 
       return new Response(JSON.stringify({
         subscribed: true,
-        product_id: "one_off_payment",
-        subscription_end: null
+        product_id: "monthly_access_pix",
+        subscription_end: endDate.toISOString()
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
