@@ -286,10 +286,17 @@ const Planos = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-pink-600/10 to-orange-600/10 -z-10" />
 
         <div className="text-center max-w-4xl mx-auto">
-          {/* Selo Dourado Destaque */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-black rounded-full shadow-xl mb-6 animate-pulse">
-            <Sparkles className="h-4 w-4" />
+          {/* URGÊNCIA/ESCASSEZ - CRÍTICO PARA CONVERSÃO */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full shadow-xl mb-4 animate-pulse">
             <span className="text-sm md:text-base font-black">
+              🔥 PROMOÇÃO LANÇAMENTO - Apenas 23 vagas restantes a R$ 29/mês
+            </span>
+          </div>
+
+          {/* Selo Dourado */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-black rounded-full shadow-lg mb-6">
+            <Sparkles className="h-3 w-3" />
+            <span className="text-xs md:text-sm font-bold">
               🏆 1° App Travel Marketing Completo do Mundo
             </span>
           </div>
@@ -325,20 +332,20 @@ const Planos = () => {
             />
           </div>
 
-          {/* CTAs Duplos */}
+          {/* CTA LARANJA - AÇÃO IMEDIATA */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-4">
             <a href="#preco" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full sm:w-auto px-10 py-6 text-lg font-black rounded-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-2xl transform hover:scale-105 transition-all"
+                className="w-full sm:w-auto px-10 py-6 text-lg font-black rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-2xl transform hover:scale-105 transition-all animate-pulse hover:animate-none"
               >
                 <Sparkles className="mr-2 h-5 w-5" />
-                Testar 7 Dias Grátis
+                COMEÇAR AGORA - GRÁTIS POR 7 DIAS
               </Button>
             </a>
             <div className="text-center sm:text-left">
-              <p className="text-sm font-semibold text-foreground">A partir de R$ 29/mês</p>
-              <p className="text-xs text-green-600 dark:text-green-400 font-bold">✓ Cancele quando quiser</p>
+              <p className="text-sm font-semibold text-foreground">Apenas R$ 29/mês depois</p>
+              <p className="text-xs text-green-600 dark:text-green-400 font-bold">✓ Cancele com 1 clique • Sem compromisso</p>
             </div>
           </div>
 
@@ -353,6 +360,30 @@ const Planos = () => {
               <span className="font-bold text-foreground">+50 agências</span> já usam
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* PROVA SOCIAL IMEDIATA - DEPOIMENTO FORTE */}
+      <section className="mb-16 px-4">
+        <div className="max-w-2xl mx-auto">
+          <p className="text-center text-sm font-semibold text-muted-foreground mb-4">Agências que já usam:</p>
+
+          <Card className="border-2 border-green-500 bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row items-start gap-4">
+                <div className="flex gap-0.5 mx-auto md:mx-0">
+                  {[...Array(5)].map((_, i) => <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />)}
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <p className="text-base md:text-lg font-medium italic mb-3">
+                    "Eu me surpreendi com o tanto de seguidores que consegui em poucas horas. Ainda bem que eu peguei seu material, dá para eu ir editando fácil e postando nesse começo 👏"
+                  </p>
+                  <p className="text-sm font-semibold text-foreground">Agente de Viagens</p>
+                  <p className="text-xs text-muted-foreground">Cliente verificado via WhatsApp</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
