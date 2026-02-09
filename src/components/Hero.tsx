@@ -30,7 +30,7 @@ export const Hero = () => {
             </div>
 
             <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
-              Tudo que você precisa para criar conteúdo profissional e impulsionar suas vendas.
+              Usando os vídeos, artes e IA e tudo que precisa pra crescer sua agência de viagens.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
