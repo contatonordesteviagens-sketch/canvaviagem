@@ -289,7 +289,7 @@ const Planos = () => {
           </span>
         </div>
 
-        {/* Headline Principal - Clean */
+        {/* Headline Principal - Clean */}
         <h1 className="text-5xl md:text-7xl font-semibold tracking-tight leading-tight mb-4 text-foreground" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif' }}>
           Venda Mais Viagens
         </h1>
