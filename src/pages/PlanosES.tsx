@@ -12,8 +12,8 @@ import { toast } from "sonner";
 import { UserInfoCard } from "@/components/UserInfoCard";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
 import {
-  Loader2, Check, Plane, Settings, Video, Image, MessageSquare,
-  Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity
+   Loader2, Check, Plane, Settings, Video, Image, MessageSquare,
+   Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity, Star
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import garantia7dias from "@/assets/garantia-7-dias.png";
