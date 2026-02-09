@@ -155,7 +155,6 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
               alt="TravelMarketing"
               className="h-10 w-10 rounded-xl shadow-lg md:shadow-lg hover:shadow-xl transition-shadow object-cover"
             />
-            <span className="text-2xl">🍌</span>
             <div className="hidden sm:block">
               <span className="font-black text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">TravelMarketing</span>
               <p className="text-[10px] text-muted-foreground font-medium -mt-1">by Canva Viagem</p>
