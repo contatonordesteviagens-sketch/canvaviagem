@@ -90,7 +90,7 @@ export const ContentSection = ({
   const [sortOrder, setSortOrder] = useState<SortOrder>("recent"); // Default to recent
   const [languageFilter, setLanguageFilter] = useState<"all" | "pt" | "es">("all");
   const [featuredLanguageTab, setFeaturedLanguageTab] = useState<"pt" | "es">("pt");
-  
+
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -127,7 +127,7 @@ export const ContentSection = ({
   // Apply search and category filters
   const filterItems = <T extends { title?: string; category?: string | null }>(items: T[]): T[] => {
     return items.filter(item => {
-      const matchesSearch = !searchQuery || 
+      const matchesSearch = !searchQuery ||
         (item.title?.toLowerCase().includes(searchQuery.toLowerCase()));
       const matchesCategory = categoryFilter === "all" || item.category === categoryFilter;
       return matchesSearch && matchesCategory;
@@ -137,7 +137,7 @@ export const ContentSection = ({
   // Filter and sort content by type
   const videoItems = useMemo(() => {
     let filtered = contentItems.filter(item => ['video', 'seasonal'].includes(item.type));
-    
+
     // Apply language filter
     if (languageFilter !== 'all') {
       filtered = filtered.filter(item => {
@@ -145,35 +145,35 @@ export const ContentSection = ({
         return itemLang === languageFilter;
       });
     }
-    
+
     return sortItems(filterItems(filtered));
   }, [contentItems, sortOrder, searchQuery, categoryFilter, languageFilter]);
-  const feedItems = useMemo(() => 
+  const feedItems = useMemo(() =>
     sortItems(filterItems(contentItems.filter(item => item.type === 'feed'))),
     [contentItems, sortOrder, searchQuery, categoryFilter]
   );
-  const storyItems = useMemo(() => 
+  const storyItems = useMemo(() =>
     sortItems(filterItems(contentItems.filter(item => ['story', 'weekly-story'].includes(item.type)))),
     [contentItems, sortOrder, searchQuery, categoryFilter]
   );
-  const resourceItems = useMemo(() => 
+  const resourceItems = useMemo(() =>
     sortItems(filterItems(contentItems.filter(item => ['resource', 'download'].includes(item.type)))),
     [contentItems, sortOrder, searchQuery, categoryFilter]
   );
 
   // Featured items separated by language
-  const featuredPT = useMemo(() => 
-    contentItems.filter(item => 
-      item.is_featured && 
+  const featuredPT = useMemo(() =>
+    contentItems.filter(item =>
+      item.is_featured &&
       ['video', 'seasonal'].includes(item.type) &&
       (item.language === 'pt' || !item.language)
     ),
     [contentItems]
   );
 
-  const featuredES = useMemo(() => 
-    contentItems.filter(item => 
-      item.is_featured && 
+  const featuredES = useMemo(() =>
+    contentItems.filter(item =>
+      item.is_featured &&
       ['video', 'seasonal'].includes(item.type) &&
       item.language === 'es'
     ),
@@ -181,7 +181,7 @@ export const ContentSection = ({
   );
 
   // Legacy: total featured items for backwards compatibility
-  const featuredItems = useMemo(() => 
+  const featuredItems = useMemo(() =>
     [...featuredPT, ...featuredES],
     [featuredPT, featuredES]
   );
@@ -189,10 +189,10 @@ export const ContentSection = ({
   // Available videos for featuring (filtered by active language tab)
   const availableForFeaturedByLanguage = useMemo(() => {
     const lang = featuredLanguageTab;
-    return videoItems.filter(item => 
-      !item.is_featured && 
-      (lang === 'pt' 
-        ? (item.language === 'pt' || !item.language) 
+    return videoItems.filter(item =>
+      !item.is_featured &&
+      (lang === 'pt'
+        ? (item.language === 'pt' || !item.language)
         : item.language === 'es'
       )
     );
@@ -201,25 +201,25 @@ export const ContentSection = ({
   // Filter captions
   const filterCaptions = (captionList: Caption[]): Caption[] => {
     return captionList.filter(caption => {
-      const matchesSearch = !searchQuery || 
+      const matchesSearch = !searchQuery ||
         caption.destination?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         caption.text?.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesSearch;
     });
   };
 
-  const nacionalCaptions = useMemo(() => 
+  const nacionalCaptions = useMemo(() =>
     sortItems(filterCaptions(captions.filter(c => c.category === 'nacional'))),
     [captions, sortOrder, searchQuery]
   );
-  const internacionalCaptions = useMemo(() => 
+  const internacionalCaptions = useMemo(() =>
     sortItems(filterCaptions(captions.filter(c => c.category === 'internacional'))),
     [captions, sortOrder, searchQuery]
   );
 
   const sortedTools = useMemo(() => {
     const filtered = tools.filter(tool => {
-      const matchesSearch = !searchQuery || 
+      const matchesSearch = !searchQuery ||
         tool.title?.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesSearch;
     });
@@ -271,14 +271,14 @@ export const ContentSection = ({
         }));
 
         // Determine query key based on table
-        const queryKey = table === "content_items" 
-          ? ["all-content-items"] 
-          : table === "captions" 
-          ? ["all-captions"] 
-          : ["all-marketing-tools"];
+        const queryKey = table === "content_items"
+          ? ["all-content-items"]
+          : table === "captions"
+            ? ["all-captions"]
+            : ["all-marketing-tools"];
 
         // OPTIMISTIC UPDATE - update cache immediately
-        queryClient.setQueryData(queryKey, (old: any[] | undefined) => {
+        queryClient.setQueryData(queryKey, (old: (ContentItem | Caption | MarketingTool)[] | undefined) => {
           if (!old) return old;
           const updated = [...old];
           updates.forEach((update) => {
@@ -314,7 +314,15 @@ export const ContentSection = ({
     }
   };
 
-  const handleCreateContent = async (data: any) => {
+  const handleCreateContent = async (data: {
+    title: string;
+    url: string;
+    type: string;
+    category: string | null;
+    icon: string;
+    is_new: boolean;
+    is_active: boolean;
+  }) => {
     try {
       if (createType === "tool") {
         await createMarketingTool.mutateAsync({
@@ -341,7 +349,7 @@ export const ContentSection = ({
     }
   };
 
-  const handleCreateCaption = async (data: any) => {
+  const handleCreateCaption = async (data: Omit<Caption, "id" | "created_at" | "updated_at">) => {
     try {
       await createCaption.mutateAsync(data);
       toast({
@@ -398,7 +406,7 @@ export const ContentSection = ({
         .from("content_items")
         .update({ is_featured: true })
         .eq("id", id);
-      
+
       invalidateAll(); // Invalidate all caches for immediate sync
       toast({
         title: "Prévia adicionada",
@@ -419,7 +427,7 @@ export const ContentSection = ({
         .from("content_items")
         .update({ is_featured: false })
         .eq("id", id);
-      
+
       invalidateAll(); // Invalidate all caches for immediate sync
       toast({
         title: "Prévia removida",
@@ -439,27 +447,27 @@ export const ContentSection = ({
       // Generate unique filename
       const ext = file.name.split('.').pop();
       const fileName = `featured/${id}_${Date.now()}.${ext}`;
-      
+
       // Upload to Storage
       const { error: uploadError } = await supabase.storage
         .from("thumbnails")
         .upload(fileName, file, { upsert: true });
-      
+
       if (uploadError) throw uploadError;
-      
+
       // Get public URL
       const { data: urlData } = supabase.storage
         .from("thumbnails")
         .getPublicUrl(fileName);
-      
+
       // Update content_item with new image_url
       const { error: updateError } = await supabase
         .from("content_items")
         .update({ image_url: urlData.publicUrl })
         .eq("id", id);
-      
+
       if (updateError) throw updateError;
-      
+
       invalidateAll(); // Invalidate all caches for immediate sync
       toast({
         title: "Imagem atualizada",
@@ -481,9 +489,9 @@ export const ContentSection = ({
         .from("content_items")
         .update({ image_url: imageUrl })
         .eq("id", id);
-      
+
       if (error) throw error;
-      
+
       invalidateAll(); // Invalidate all caches for immediate sync
       toast({
         title: "Imagem atualizada",
@@ -502,11 +510,11 @@ export const ContentSection = ({
   const handleToggleFeatured = async (id: string) => {
     const item = contentItems.find(i => i.id === id);
     if (!item) return;
-    
+
     // Check if marking as featured and limit is reached per language
     const itemLanguage = item.language || 'pt';
     const featuredForLanguage = itemLanguage === 'es' ? featuredES : featuredPT;
-    
+
     if (!item.is_featured && featuredForLanguage.length >= 10) {
       toast({
         title: "Limite atingido",
@@ -515,18 +523,18 @@ export const ContentSection = ({
       });
       return;
     }
-    
+
     try {
       await supabase
         .from("content_items")
         .update({ is_featured: !item.is_featured })
         .eq("id", id);
-      
+
       invalidateAll(); // Invalidate all caches for immediate sync
       toast({
         title: item.is_featured ? "Prévia removida" : "Prévia adicionada",
-        description: item.is_featured 
-          ? "O vídeo foi removido da prévia." 
+        description: item.is_featured
+          ? "O vídeo foi removido da prévia."
           : "O vídeo foi adicionado à prévia.",
       });
     } catch (error) {
@@ -702,7 +710,7 @@ export const ContentSection = ({
               </p>
             </CardHeader>
           </Card>
-          
+
           {/* Sub-tabs by language */}
           <Tabs value={featuredLanguageTab} onValueChange={(v) => setFeaturedLanguageTab(v as "pt" | "es")}>
             <TabsList className="mb-4">
@@ -713,7 +721,7 @@ export const ContentSection = ({
                 🇪🇸 Prévia ES ({featuredES.length}/10)
               </TabsTrigger>
             </TabsList>
-            
+
             {/* PT Content */}
             <TabsContent value="pt">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -727,7 +735,7 @@ export const ContentSection = ({
                     onEdit={onEditItem}
                   />
                 ))}
-                
+
                 {/* Slot to add new featured item (if < 10) */}
                 {featuredPT.length < 10 && (
                   <Button
@@ -740,7 +748,7 @@ export const ContentSection = ({
                     <span className="text-xs text-muted-foreground">({featuredPT.length}/10)</span>
                   </Button>
                 )}
-                
+
                 {featuredPT.length === 0 && (
                   <div className="col-span-full text-center py-8 text-muted-foreground">
                     <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -750,7 +758,7 @@ export const ContentSection = ({
                 )}
               </div>
             </TabsContent>
-            
+
             {/* ES Content */}
             <TabsContent value="es">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -764,7 +772,7 @@ export const ContentSection = ({
                     onEdit={onEditItem}
                   />
                 ))}
-                
+
                 {/* Slot to add new featured item (if < 10) */}
                 {featuredES.length < 10 && (
                   <Button
@@ -777,7 +785,7 @@ export const ContentSection = ({
                     <span className="text-xs text-muted-foreground">({featuredES.length}/10)</span>
                   </Button>
                 )}
-                
+
                 {featuredES.length === 0 && (
                   <div className="col-span-full text-center py-8 text-muted-foreground">
                     <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />

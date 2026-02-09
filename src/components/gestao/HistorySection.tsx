@@ -110,9 +110,8 @@ export const HistorySection = () => {
       const result = await batchRollbackMutation.mutateAsync(selectedEntries);
       toast({
         title: "Alterações desfeitas!",
-        description: `${result.success.length} alteração(ões) revertida(s) com sucesso.${
-          result.failed.length > 0 ? ` ${result.failed.length} falharam.` : ""
-        }`,
+        description: `${result.success.length} alteração(ões) revertida(s) com sucesso.${result.failed.length > 0 ? ` ${result.failed.length} falharam.` : ""
+          }`,
       });
       setIsBatchModalOpen(false);
       setSelectedIds(new Set());
@@ -295,7 +294,7 @@ export const HistorySection = () => {
                     <TableHead className="w-10">
                       <Checkbox
                         checked={isAllSelected}
-                        // @ts-ignore - indeterminate is valid but not typed
+                        // @ts-expect-error - indeterminate is valid but not typed
                         indeterminate={isSomeSelected}
                         onCheckedChange={handleSelectAll}
                         aria-label="Selecionar todos"

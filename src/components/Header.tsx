@@ -154,9 +154,8 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
               src={logoImage}
               alt="TravelMarketing"
               className="h-10 w-10 rounded-xl shadow-lg md:shadow-lg hover:shadow-xl transition-shadow object-cover"
-              style={{ boxShadow: 'var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), 0 4px 12px -2px rgba(0, 0, 0, 0.15)' }}
             />
-            <span className="text-xl animate-bounce">🍌</span>
+            <span className="text-xl">⭐</span>
             <div className="hidden sm:block">
               <span className="font-black text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">TravelMarketing</span>
               <p className="text-[10px] text-muted-foreground font-medium -mt-1">by Canva Viagem</p>

@@ -39,6 +39,7 @@ export default function Sugestoes() {
         setLoading(true);
 
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { error } = await (supabase.from('user_suggestions') as any).insert({
                 user_id: user?.id || null,
                 user_name: formData.name || null,
@@ -48,6 +49,25 @@ export default function Sugestoes() {
             });
 
             if (error) throw error;
+
+            // Send email notification
+            try {
+                const { error: emailError } = await supabase.functions.invoke('send-suggestion', {
+                    body: {
+                        name: formData.name,
+                        email: formData.email,
+                        suggestion: formData.suggestion,
+                    }
+                });
+
+                if (emailError) {
+                    console.error('Error sending email notification:', emailError);
+                    // Continue even if email fails
+                }
+            } catch (emailErr) {
+                console.error('Email notification failed:', emailErr);
+                // Continue even if email fails
+            }
 
             setSubmitted(true);
             toast.success('Sugestão enviada com sucesso! Obrigado pelo feedback! 🎉');
