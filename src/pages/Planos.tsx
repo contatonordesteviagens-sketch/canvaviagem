@@ -295,7 +295,7 @@ const Planos = () => {
           </div>
 
           {/* Headline Principal - Gradiente Roxo-Azul (Logo) */}
-          <h1 className="text-4xl md:text-6xl font-black leading-tight mb-6">
+          <h1 className="text-3xl md:text-5xl font-black leading-tight mb-6">
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Venda Mais Viagens
             </span>
@@ -365,10 +365,10 @@ const Planos = () => {
           </div>
 
           {/* Headline Impacto */}
-          <h2 className="text-3xl md:text-5xl font-bold leading-tight mb-3">
+          <h2 className="text-2xl md:text-4xl font-bold leading-tight mb-3">
             <span className="text-muted-foreground">Enquanto Outras Agências de Viagem Lutam...</span>
           </h2>
-          <h2 className="text-4xl md:text-6xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 bg-clip-text text-transparent leading-tight mb-8">
+          <h2 className="text-3xl md:text-5xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent leading-tight mb-8">
             Você Já Está Vendendo Mais Pacotes
           </h2>
         </div>
