@@ -280,34 +280,80 @@ const Planos = () => {
     <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl">
       {user && <UserInfoCard />}
 
-      {/* HERO SECTION - Minimalista Apple Style */}
-      <section className="text-center mb-16 md:mb-24 px-4">
-        {/* Selo Pequeno - 1° App */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30 border border-amber-300 dark:border-amber-700 rounded-full mb-4">
-          <span className="text-xs font-semibold text-amber-800 dark:text-amber-200">
-            🏆 1° App Travel Marketing Completo do Mundo
-          </span>
+      {/* HERO SECTION - Impactante e Profissional */}
+      <section className="relative mb-16 md:mb-24 px-4 overflow-hidden">
+        {/* Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-pink-600/10 to-orange-600/10 -z-10" />
+
+        <div className="text-center max-w-4xl mx-auto">
+          {/* Selo Dourado Destaque */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-black rounded-full shadow-xl mb-6 animate-pulse">
+            <Sparkles className="h-4 w-4" />
+            <span className="text-sm md:text-base font-black">
+              🏆 1° App Travel Marketing Completo do Mundo
+            </span>
+          </div>
+
+          {/* Headline Principal - Gradiente Vibrante */}
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black leading-[1.1] mb-6">
+            <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 bg-clip-text text-transparent">
+              Venda Mais Viagens
+            </span>
+            <br />
+            <span className="bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
+              O Ano Inteiro
+            </span>
+          </h1>
+
+          {/* Benefício Principal */}
+          <p className="text-xl md:text-3xl font-bold text-foreground mb-4">
+            + de 250 vídeos de destinos prontos para postar
+          </p>
+
+          <p className="text-base md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Calendário anual, robôs de IA, influencers virtuais e tudo que você precisa para crescer sua agência de viagens
+          </p>
+
+          {/* GIF Hero com efeito */}
+          <div className="relative mb-8 group">
+            <div className="absolute -inset-4 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 rounded-3xl opacity-30 blur-2xl group-hover:opacity-50 transition-opacity" />
+            <img
+              loading="lazy"
+              src={heroGif}
+              alt="Vídeos de viagens profissionais"
+              className="relative mx-auto rounded-3xl shadow-2xl max-w-xs md:max-w-2xl transform group-hover:scale-[1.02] transition-transform"
+            />
+          </div>
+
+          {/* CTAs Duplos */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-4">
+            <a href="#preco" className="w-full sm:w-auto">
+              <Button
+                size="lg"
+                className="w-full sm:w-auto px-10 py-6 text-lg font-black rounded-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-2xl transform hover:scale-105 transition-all"
+              >
+                <Sparkles className="mr-2 h-5 w-5" />
+                Testar 7 Dias Grátis
+              </Button>
+            </a>
+            <div className="text-center sm:text-left">
+              <p className="text-sm font-semibold text-foreground">A partir de R$ 29/mês</p>
+              <p className="text-xs text-green-600 dark:text-green-400 font-bold">✓ Cancele quando quiser</p>
+            </div>
+          </div>
+
+          {/* Mini Social Proof */}
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <div className="flex -space-x-2">
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 border-2 border-background flex items-center justify-center text-white text-xs font-bold">A</div>
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-pink-500 to-red-500 border-2 border-background flex items-center justify-center text-white text-xs font-bold">M</div>
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-500 to-teal-500 border-2 border-background flex items-center justify-center text-white text-xs font-bold">J</div>
+            </div>
+            <p className="font-medium">
+              <span className="font-bold text-foreground">+50 agências</span> já usam
+            </p>
+          </div>
         </div>
-
-        {/* Headline Principal - Clean */}
-        <h1 className="text-5xl md:text-7xl font-semibold tracking-tight leading-tight mb-4 text-foreground" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif' }}>
-          Venda Mais Viagens
-        </h1>
-
-        <p className="text-xl md:text-2xl text-muted-foreground mb-12 font-normal max-w-2xl mx-auto" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif' }}>
-          Tudo que você precisa para crescer sua agência
-        </p>
-
-        {/* GIF Hero - Mais espaçamento */}
-        <img loading="lazy" src={heroGif} alt="Vídeos de viagens profissionais" className="mx-auto rounded-3xl shadow-2xl max-w-xs md:max-w-2xl mb-12" />
-
-        {/* CTA Principal - Simple */}
-        <a href="#preco">
-          <Button size="lg" className="px-8 py-4 text-lg font-medium rounded-full bg-black dark:bg-white text-white dark:text-black hover:opacity-90 transition-opacity mb-3">
-            Testar por 7 dias grátis
-          </Button>
-        </a>
-        <p className="text-sm text-muted-foreground">A partir de R$ 29/mês</p>
       </section>
 
       {/* TELA DE PODER - VANTAGEM COMPETITIVA */}
@@ -422,16 +468,16 @@ const Planos = () => {
           </p>
 
           <div className="space-y-4">
-            {/* Depoimento 1 */}
+            {/* Depoimento 1 - REAL (WhatsApp) */}
             <Card className="border-l-4 border-l-green-500">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">💬</span>
                   <div className="flex-1">
                     <p className="text-sm md:text-base italic mb-2">
-                      "Outras agências de viagem estão perguntando como faço tanto conteúdo profissional de destinos"
+                      "Parabéns pelo trabalho, ajudou muito aqui. Tava batendo cabeça para criar vídeos dos lugares para postar"
                     </p>
-                    <p className="text-xs text-muted-foreground">- @viagensexclusivas ✓</p>
+                    <p className="text-xs text-muted-foreground">- Cliente via WhatsApp</p>
                   </div>
                   <div className="flex gap-0.5">
                     {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
@@ -440,16 +486,16 @@ const Planos = () => {
               </CardContent>
             </Card>
 
-            {/* Depoimento 2 */}
+            {/* Depoimento 2 - REAL (Instagram) */}
             <Card className="border-l-4 border-l-purple-500">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">✨</span>
                   <div className="flex-1">
                     <p className="text-sm md:text-base italic mb-2">
-                      "Minha agência de turismo parece 10x maior do que realmente é"
+                      "Eu comprei, estou usando e é maravilhoso o conteúdo 🙏"
                     </p>
-                    <p className="text-xs text-muted-foreground">- Agência Sonhos de Viagem</p>
+                    <p className="text-xs text-muted-foreground">- @vleviagens</p>
                   </div>
                   <div className="flex gap-0.5">
                     {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
@@ -458,16 +504,16 @@ const Planos = () => {
               </CardContent>
             </Card>
 
-            {/* Depoimento 3 */}
+            {/* Depoimento 3 - REAL (WhatsApp) */}
             <Card className="border-l-4 border-l-blue-500">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">🎯</span>
                   <div className="flex-1">
                     <p className="text-sm md:text-base italic mb-2">
-                      "Fechei 3 pacotes extras só com os vídeos de destinos turísticos"
+                      "Eu me surpreendi com o tanto de seguidores que consegui em poucas horas. Ainda bem que eu peguei seu material, dá para eu ir editando fácil e postando nesse começo 👏"
                     </p>
-                    <p className="text-xs text-muted-foreground">- João, Agente de Viagens</p>
+                    <p className="text-xs text-muted-foreground">- Agente de Viagens via WhatsApp</p>
                   </div>
                   <div className="flex gap-0.5">
                     {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
