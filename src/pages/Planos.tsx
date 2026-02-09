@@ -310,6 +310,191 @@ const Planos = () => {
         <p className="text-sm text-muted-foreground">A partir de R$ 29/mês</p>
       </section>
 
+      {/* TELA DE PODER - VANTAGEM COMPETITIVA */}
+      <section className="mb-16 md:mb-24 px-4">
+        {/* Selo de Vantagem Desleal */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full shadow-lg mb-6">
+            <span className="text-sm md:text-base font-bold">⚡ VANTAGEM COMPETITIVA DESLEAL</span>
+          </div>
+
+          {/* Headline Impacto */}
+          <h2 className="text-3xl md:text-5xl font-bold leading-tight mb-3">
+            <span className="text-muted-foreground">Enquanto Outras Agências de Viagem Lutam...</span>
+          </h2>
+          <h2 className="text-4xl md:text-6xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 bg-clip-text text-transparent leading-tight mb-8">
+            Você Já Está Vendendo Mais Pacotes
+          </h2>
+        </div>
+
+        {/* Comparação Visual */}
+        <div className="grid grid-cols-2 gap-4 max-w-3xl mx-auto mb-12">
+          {/* Eles (Outras Agências) */}
+          <Card className="border-2 border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20">
+            <CardContent className="p-4 md:p-6">
+              <div className="text-center mb-3">
+                <span className="text-3xl">❌</span>
+                <p className="font-bold text-sm md:text-base mt-2">Outras Agências</p>
+              </div>
+              <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
+                <li>⏰ Horas editando</li>
+                <li>💸 Gastando com designer</li>
+                <li>😰 Sem ideia do que postar</li>
+                <li>📉 Perfil parado</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* Você (Com TravelMarketing) */}
+          <Card className="border-2 border-green-500 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 shadow-xl">
+            <CardContent className="p-4 md:p-6">
+              <div className="text-center mb-3">
+                <span className="text-3xl">✅</span>
+                <p className="font-bold text-sm md:text-base mt-2 text-green-700 dark:text-green-300">VOCÊ</p>
+              </div>
+              <ul className="space-y-2 text-xs md:text-sm font-medium">
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-600" />
+                  <span>2 min vendendo</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-600" />
+                  <span>Economizando R$ 500/mês</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-600" />
+                  <span>Conteúdo todo dia</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-600" />
+                  <span>Instagram bombando</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tabela: O Que Outras Agências NÃO TÊM */}
+        <div className="max-w-2xl mx-auto mb-12">
+          <Card className="border-2 border-purple-300 dark:border-purple-700 bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-purple-950/20 dark:via-blue-950/20 dark:to-pink-950/20">
+            <CardContent className="p-6 md:p-8">
+              <h3 className="text-xl md:text-2xl font-black text-center mb-6">
+                O Que Outras Agências NÃO TÊM<br />(E Você Terá)
+              </h3>
+
+              <ul className="space-y-3 mb-6">
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 shrink-0 text-green-600 mt-0.5" />
+                  <span className="text-sm md:text-base"><strong>250+ vídeos de viagens</strong> profissionais prontos</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 shrink-0 text-green-600 mt-0.5" />
+                  <span className="text-sm md:text-base"><strong>Calendário anual</strong> com posts organizados</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 shrink-0 text-green-600 mt-0.5" />
+                  <span className="text-sm md:text-base"><strong>3 influencers de IA</strong> exclusivas de turismo</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 shrink-0 text-green-600 mt-0.5" />
+                  <span className="text-sm md:text-base"><strong>10 robôs de turismo</strong> para criar conteúdo</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="h-5 w-5 shrink-0 text-green-600 mt-0.5" />
+                  <span className="text-sm md:text-base"><strong>Tudo editável em 2 minutos</strong> e pronto pra postar</span>
+                </li>
+              </ul>
+
+              {/* Destaque Final */}
+              <div className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 border-2 border-dashed border-orange-400 dark:border-orange-600 rounded-lg p-4 text-center">
+                <p className="text-base md:text-lg font-black text-orange-700 dark:text-orange-300">
+                  🔥 Seus clientes vão pensar que você tem uma<br className="hidden md:block" /> EQUIPE INTEIRA de marketing!
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Prova Social - Depoimentos Competitivos */}
+        <div className="max-w-3xl mx-auto mb-8">
+          <p className="text-center text-lg md:text-xl font-semibold mb-6">
+            O Que Agências de Viagem Estão Dizendo:
+          </p>
+
+          <div className="space-y-4">
+            {/* Depoimento 1 */}
+            <Card className="border-l-4 border-l-green-500">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">💬</span>
+                  <div className="flex-1">
+                    <p className="text-sm md:text-base italic mb-2">
+                      "Outras agências de viagem estão perguntando como faço tanto conteúdo profissional de destinos"
+                    </p>
+                    <p className="text-xs text-muted-foreground">- @viagensexclusivas ✓</p>
+                  </div>
+                  <div className="flex gap-0.5">
+                    {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Depoimento 2 */}
+            <Card className="border-l-4 border-l-purple-500">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">✨</span>
+                  <div className="flex-1">
+                    <p className="text-sm md:text-base italic mb-2">
+                      "Minha agência de turismo parece 10x maior do que realmente é"
+                    </p>
+                    <p className="text-xs text-muted-foreground">- Agência Sonhos de Viagem</p>
+                  </div>
+                  <div className="flex gap-0.5">
+                    {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Depoimento 3 */}
+            <Card className="border-l-4 border-l-blue-500">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🎯</span>
+                  <div className="flex-1">
+                    <p className="text-sm md:text-base italic mb-2">
+                      "Fechei 3 pacotes extras só com os vídeos de destinos turísticos"
+                    </p>
+                    <p className="text-xs text-muted-foreground">- João, Agente de Viagens</p>
+                  </div>
+                  <div className="flex gap-0.5">
+                    {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* CTA Final Agressivo */}
+        <div className="text-center">
+          <a href="#preco">
+            <Button
+              size="lg"
+              className="w-full max-w-md h-16 md:h-20 text-base md:text-xl font-black bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-2xl animate-pulse hover:animate-none transition-all"
+            >
+              <Sparkles className="mr-2 h-5 w-5 md:h-6 md:w-6" />
+              🔥 QUERO ESSA VANTAGEM AGORA
+            </Button>
+          </a>
+          <p className="text-xs md:text-sm text-muted-foreground mt-3">
+            ⚡ Acesso imediato • 🔒 Cancele quando quiser
+          </p>
+        </div>
+      </section>
+
       {/* GRID DE GIFS FORMATO REELS */}
       <section className="mb-12 md:mb-20">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
