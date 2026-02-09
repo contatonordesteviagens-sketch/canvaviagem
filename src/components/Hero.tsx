@@ -15,10 +15,10 @@ export const Hero = () => {
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-5xl md:text-7xl font-semibold leading-tight tracking-tight bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-7xl font-bold leading-tight tracking-tight bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 bg-clip-text text-transparent">
               Venda Mais Viagens
             </h1>
-            <p className="text-2xl md:text-3xl font-light bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <p className="text-2xl md:text-3xl font-semibold bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
               O Ano Inteiro
             </p>
           </div>
@@ -29,7 +29,7 @@ export const Hero = () => {
               <span className="text-sm font-medium">📅 2 anos de postagens prontas</span>
             </div>
 
-            <p className="text-lg leading-relaxed max-w-lg bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent font-medium">
+            <p className="text-lg leading-relaxed max-w-lg bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent font-semibold">
               Usando os vídeos, artes e IA e tudo que precisa pra crescer sua agência de viagens.
             </p>
 
