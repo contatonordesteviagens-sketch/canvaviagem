@@ -294,19 +294,19 @@ const Planos = () => {
             </span>
           </div>
 
-          {/* Headline Principal - Gradiente Vibrante */}
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black leading-[1.1] mb-6">
-            <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 bg-clip-text text-transparent">
+          {/* Headline Principal - Gradiente Roxo-Azul (Logo) */}
+          <h1 className="text-4xl md:text-6xl font-black leading-tight mb-6">
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Venda Mais Viagens
             </span>
             <br />
-            <span className="bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               O Ano Inteiro
             </span>
           </h1>
 
           {/* Benefício Principal */}
-          <p className="text-xl md:text-3xl font-bold text-foreground mb-4">
+          <p className="text-lg md:text-2xl font-bold text-foreground mb-3">
             + de 250 vídeos de destinos prontos para postar
           </p>
 
