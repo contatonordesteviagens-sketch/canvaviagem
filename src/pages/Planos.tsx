@@ -1236,7 +1236,7 @@ const Planos = () => {
 
         <div className="mt-6 text-center">
           <p className="text-lg md:text-xl font-bold text-green-600">
-            🎉 Economize até R$ 1.971/mês = R$ 23.652/ano!
+            🍕 Mais barato que uma pizza!
           </p>
         </div>
       </section >
