@@ -280,81 +280,71 @@ const Planos = () => {
     <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl">
       {user && <UserInfoCard />}
 
-      {/* HERO SECTION - Impactante e Profissional */}
-      <section className="relative mb-16 md:mb-24 px-4 overflow-hidden">
-        {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-pink-600/10 to-orange-600/10 -z-10" />
-
+      {/* HERO SECTION - Minimalista e Compacto */}
+      <section className="relative mb-12 px-4">
         <div className="text-center max-w-4xl mx-auto">
-          {/* URGÊNCIA/ESCASSEZ - CRÍTICO PARA CONVERSÃO */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full shadow-xl mb-4 animate-pulse">
-            <span className="text-sm md:text-base font-black">
-              🔥 PROMOÇÃO LANÇAMENTO - Apenas 23 vagas restantes a R$ 29/mês
+          {/* URGÊNCIA/ESCASSEZ */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full shadow-lg mb-3 animate-pulse">
+            <span className="text-xs md:text-sm font-black">
+              🔥 PROMOÇÃO LANÇAMENTO - Apenas 23 vagas a R$ 29/mês
             </span>
           </div>
 
-          {/* Selo Dourado */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-black rounded-full shadow-lg mb-6">
-            <Sparkles className="h-3 w-3" />
-            <span className="text-xs md:text-sm font-bold">
+          {/* Badge Minimalista - Uma linha */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-full mb-4">
+            <span className="text-xs font-semibold text-amber-800 dark:text-amber-200">
               🏆 1° App Travel Marketing Completo do Mundo
             </span>
           </div>
 
-          {/* Headline Principal - Gradiente Roxo-Azul (Logo) */}
-          <h1 className="text-3xl md:text-5xl font-black leading-tight mb-6">
+          {/* Headline - Compacto */}
+          <h1 className="text-3xl md:text-4xl font-black leading-tight mb-3">
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Venda Mais Viagens
-            </span>
-            <br />
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              O Ano Inteiro
+              Venda Mais Viagens O Ano Inteiro
             </span>
           </h1>
 
-          {/* Benefício Principal */}
-          <p className="text-lg md:text-2xl font-bold text-foreground mb-3">
+          {/* Benefício - Uma linha */}
+          <p className="text-base md:text-lg font-bold text-foreground mb-2">
             + de 250 vídeos de destinos prontos para postar
           </p>
 
-          <p className="text-base md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Calendário anual, robôs de IA, influencers virtuais e tudo que você precisa para crescer sua agência de viagens
+          {/* Descrição - Menor */}
+          <p className="text-sm md:text-base text-muted-foreground mb-6 max-w-2xl mx-auto">
+            Artes, stories, calendário de posts anuais, robôs, influencers e tudo que você precisa pra crescer sua agência de viagens
           </p>
 
-          {/* GIF Hero com efeito */}
-          <div className="relative mb-8 group">
-            <div className="absolute -inset-4 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 rounded-3xl opacity-30 blur-2xl group-hover:opacity-50 transition-opacity" />
+          {/* GIF - SEM cor de fundo */}
+          <div className="relative mb-6">
             <img
               loading="lazy"
               src={heroGif}
               alt="Vídeos de viagens profissionais"
-              className="relative mx-auto rounded-3xl shadow-2xl max-w-xs md:max-w-2xl transform group-hover:scale-[1.02] transition-transform"
+              className="mx-auto rounded-2xl shadow-xl max-w-xs md:max-w-xl"
             />
           </div>
 
-          {/* CTA LARANJA - AÇÃO IMEDIATA */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-4">
-            <a href="#preco" className="w-full sm:w-auto">
+          {/* CTA Principal - Compacto */}
+          <div className="flex flex-col items-center gap-2 mb-3">
+            <a href="#preco" className="w-full max-w-sm">
               <Button
                 size="lg"
-                className="w-full sm:w-auto px-10 py-6 text-lg font-black rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-2xl transform hover:scale-105 transition-all animate-pulse hover:animate-none"
+                className="w-full px-8 py-5 text-base md:text-lg font-black rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-xl transform hover:scale-105 transition-all animate-pulse hover:animate-none"
               >
-                <Sparkles className="mr-2 h-5 w-5" />
-                COMEÇAR AGORA - GRÁTIS POR 7 DIAS
+                <Sparkles className="mr-2 h-4 w-4" />
+                COMEÇAR AGORA - 3 DIAS GRÁTIS
               </Button>
             </a>
-            <div className="text-center sm:text-left">
-              <p className="text-sm font-semibold text-foreground">Apenas R$ 29/mês depois</p>
-              <p className="text-xs text-green-600 dark:text-green-400 font-bold">✓ Cancele com 1 clique • Sem compromisso</p>
-            </div>
+            <p className="text-xs md:text-sm font-semibold text-foreground">Apenas R$ 29/mês depois</p>
+            <p className="text-xs text-green-600 dark:text-green-400 font-bold">✓ Cancele com 1 clique • Sem compromisso</p>
           </div>
 
           {/* Mini Social Proof */}
-          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
             <div className="flex -space-x-2">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 border-2 border-background flex items-center justify-center text-white text-xs font-bold">A</div>
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-pink-500 to-red-500 border-2 border-background flex items-center justify-center text-white text-xs font-bold">M</div>
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-500 to-teal-500 border-2 border-background flex items-center justify-center text-white text-xs font-bold">J</div>
+              <div className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 border-2 border-background flex items-center justify-center text-white text-[10px] font-bold">A</div>
+              <div className="h-6 w-6 rounded-full bg-gradient-to-br from-pink-500 to-red-500 border-2 border-background flex items-center justify-center text-white text-[10px] font-bold">M</div>
+              <div className="h-6 w-6 rounded-full bg-gradient-to-br from-green-500 to-teal-500 border-2 border-background flex items-center justify-center text-white text-[10px] font-bold">J</div>
             </div>
             <p className="font-medium">
               <span className="font-bold text-foreground">+50 agências</span> já usam
@@ -389,17 +379,12 @@ const Planos = () => {
 
       {/* TELA DE PODER - VANTAGEM COMPETITIVA */}
       <section className="mb-16 md:mb-24 px-4">
-        {/* Selo de Vantagem Desleal */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full shadow-lg mb-6">
-            <span className="text-sm md:text-base font-bold">⚡ VANTAGEM COMPETITIVA DESLEAL</span>
-          </div>
-
           {/* Headline Impacto */}
-          <h2 className="text-2xl md:text-4xl font-bold leading-tight mb-3">
+          <h2 className="text-xl md:text-3xl font-bold leading-tight mb-3">
             <span className="text-muted-foreground">Enquanto Outras Agências de Viagem Lutam...</span>
           </h2>
-          <h2 className="text-3xl md:text-5xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent leading-tight mb-8">
+          <h2 className="text-2xl md:text-4xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent leading-tight mb-8">
             Você Já Está Vendendo Mais Pacotes
           </h2>
         </div>
@@ -826,7 +811,7 @@ const Planos = () => {
                 </p>
               </div>
               <p className="text-sm md:text-base text-center text-foreground leading-relaxed px-2">
-                Se por <strong>qualquer motivo</strong> você não gostar, cancele dentro de <strong>7 dias</strong> e <strong className="text-green-600">não paga nada</strong>. Absolutamente nada.
+                Se por <strong>qualquer motivo</strong> você não gostar, cancele dentro de <strong>3 dias</strong> e <strong className="text-green-600">não paga nada</strong>. Absolutamente nada.
               </p>
               <p className="text-sm text-center text-muted-foreground mt-3 italic">
                 O risco é meu. Teste agora sem preocupação.
@@ -1329,7 +1314,7 @@ const Planos = () => {
             </AccordionTrigger>
             <AccordionContent className="text-muted-foreground text-sm md:text-base">
               <strong className="text-foreground">Sim, sem letras miúdas!</strong> Você pode cancelar a qualquer momento, sem burocracias.
-              E se cancelar nos primeiros 7 dias, devolvemos 100% do seu dinheiro. Risco ZERO.
+              E se cancelar nos primeiros 3 dias, devolvemos 100% do seu dinheiro. Risco ZERO.
             </AccordionContent>
           </AccordionItem>
 
@@ -1388,7 +1373,7 @@ const Planos = () => {
       <section className="mb-12 md:mb-20">
         <div className="bg-accent/10 border-l-4 border-accent p-6 md:p-8 rounded-xl">
           <div className="flex flex-col items-center text-center">
-            <img src={garantia7dias} alt="Garantia 7 dias incondicional" className="w-20 md:w-28 mb-4" />
+            <img src={garantia7dias} alt="Garantia 3 dias incondicional" className="w-20 md:w-28 mb-4" />
             <h3 className="text-2xl md:text-3xl font-bold mb-4">{t('plans.guaranteeTitle')}</h3>
             <p className="text-lg text-muted-foreground max-w-xl">
               {t('plans.guaranteeDesc')}
@@ -1466,7 +1451,7 @@ const Planos = () => {
             disabled={checkoutLoading}
           >
             {checkoutLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>
-              🔥 TESTAR POR 7 DIAS GRÁTIS
+              🔥 TESTAR POR 3 dias GRÁTIS
             </>}
           </Button>
           <p className="text-center text-xs text-muted-foreground mt-2 flex items-center justify-center gap-3">
@@ -1475,7 +1460,7 @@ const Planos = () => {
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
-              ✅ 7 dias garantia
+              ✅ 3 dias garantia
             </span>
           </p>
         </div>

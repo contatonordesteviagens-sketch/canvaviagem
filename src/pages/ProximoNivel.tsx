@@ -503,7 +503,7 @@ const ProximoNivel = () => {
                 {/* Guarantee */}
                 <div className="flex items-center justify-center gap-2 text-muted-foreground text-xs md:text-sm pt-1 md:pt-2">
                   <ShieldCheck className="h-4 w-4 md:h-5 md:w-5 text-accent" />
-                  <span>7 DIAS DE GARANTIA INCONDICIONAL</span>
+                  <span>3 DIAS DE GARANTIA INCONDICIONAL</span>
                 </div>
               </CardContent>
             </Card>
@@ -537,3 +537,4 @@ const ProximoNivel = () => {
 };
 
 export default ProximoNivel;
+
