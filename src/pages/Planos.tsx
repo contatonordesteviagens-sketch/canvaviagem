@@ -1378,18 +1378,7 @@ const Planos = () => {
         </div>
       }
 
-      {/* FAQ REDUZIDO - 5 PERGUNTAS ESSENCIAIS */}
-      <section className="mb-12 md:mb-16">
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">{t('plans.faqTitle')}</h2>
-        <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
-          {faqs.map((faq, index) => <AccordionItem key={index} value={`item-${index}`}>
-            <AccordionTrigger className="text-left text-base md:text-lg">{faq.question}</AccordionTrigger>
-            <AccordionContent className="text-muted-foreground">
-              {faq.answer}
-            </AccordionContent>
-          </AccordionItem>)}
-        </Accordion>
-      </section>
+
 
       {/* CTA FINAL - ULTIMATUM */}
       <section className="mb-20 px-4">
@@ -1431,7 +1420,7 @@ const Planos = () => {
       </section>
 
       {/* MOBILE STICKY CTA - Always visible on mobile */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/98 backdrop-blur-xl border-t-2 border-primary/20 shadow-2xl pb-safe">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[999] bg-background/98 backdrop-blur-xl border-t-2 border-primary/20 shadow-2xl pb-safe">
         <div className="p-4">
           <Button
             size="lg"
@@ -1440,7 +1429,7 @@ const Planos = () => {
             disabled={checkoutLoading}
           >
             {checkoutLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>
-              🔥 TESTAR POR 3 dias GRÁTIS
+              🔥 TESTAR (7 dias RISCO ZERO)
             </>}
           </Button>
           <p className="text-center text-xs text-muted-foreground mt-2 flex items-center justify-center gap-3">
@@ -1449,7 +1438,7 @@ const Planos = () => {
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
-              ✅ 3 dias garantia
+              ✅ 7 dias garantia
             </span>
           </p>
         </div>
