@@ -1420,24 +1420,24 @@ const Planos = () => {
       </section>
 
       {/* MOBILE STICKY CTA - Always visible on mobile */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[999] bg-background/98 backdrop-blur-xl border-t-2 border-primary/20 shadow-2xl pb-safe">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/98 backdrop-blur-xl border-t-2 border-primary/20 shadow-2xl pb-safe pt-2">
         <div className="p-4">
           <Button
             size="lg"
-            className="w-full h-16 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-lg font-black shadow-xl text-white"
+            className="w-full h-auto py-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-lg font-black shadow-xl text-white whitespace-normal leading-tight rounded-2xl"
             onClick={handleCheckout}
             disabled={checkoutLoading}
           >
-            {checkoutLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>
+            {checkoutLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : <>
               🔥 TESTAR (7 dias RISCO ZERO)
             </>}
           </Button>
-          <p className="text-center text-xs text-muted-foreground mt-2 flex items-center justify-center gap-3">
-            <span className="flex items-center gap-1">
+          <p className="text-center text-xs text-muted-foreground mt-3 flex items-center justify-center gap-3 pb-1">
+            <span className="flex items-center gap-1 font-medium">
               🚀 Fase de lançamento
             </span>
             <span>•</span>
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 font-medium text-green-600 dark:text-green-400">
               ✅ 7 dias garantia
             </span>
           </p>
