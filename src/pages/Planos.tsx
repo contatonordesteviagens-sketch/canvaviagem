@@ -283,13 +283,6 @@ const Planos = () => {
       {/* HERO SECTION - Minimalista e Compacto */}
       <section className="relative mb-12 px-4">
         <div className="text-center max-w-4xl mx-auto">
-          {/* URGÊNCIA/ESCASSEZ */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full shadow-lg mb-3 animate-pulse">
-            <span className="text-xs md:text-sm font-black">
-              🔥 PROMOÇÃO LANÇAMENTO - Apenas 23 vagas a R$ 29/mês
-            </span>
-          </div>
-
           {/* Badge Minimalista - Uma linha */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-full mb-4">
             <span className="text-xs font-semibold text-amber-800 dark:text-amber-200">
