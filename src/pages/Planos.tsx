@@ -280,294 +280,251 @@ const Planos = () => {
     <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl">
       {user && <UserInfoCard />}
 
-      {/* HERO SECTION - Minimalista e Compacto */}
-      <section className="relative mb-12 px-4">
-        <div className="text-center max-w-4xl mx-auto">
-          {/* Badge Minimalista - Uma linha */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-full mb-4">
-            <span className="text-xs font-semibold text-amber-800 dark:text-amber-200">
-              🏆 1° App Travel Marketing Completo do Mundo
+      {/* HERO SECTION - G4 Professional Style */}
+      <section className="relative mb-16 px-4">
+        {/* Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#FF6B6B]/10 via-[#4FC3F7]/10 to-background rounded-3xl -mx-4 -my-8" />
+
+        <div className="relative text-center max-w-4xl mx-auto">
+          {/* Golden Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 border border-amber-300 dark:border-amber-700 mb-6 shadow-md">
+            <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <span className="text-sm font-bold text-amber-800 dark:text-amber-200 tracking-wide">
+              1° PLATAFORMA COMPLETA DE MARKETING PARA VIAGENS
             </span>
           </div>
 
-          {/* Headline - Compacto */}
-          <h1 className="text-3xl md:text-4xl font-black leading-tight mb-3">
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Venda Mais Viagens O Ano Inteiro
+          {/* Main Headline */}
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-4">
+            <span className="bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#4FC3F7] bg-clip-text text-transparent">
+              Venda Mais Viagens
+            </span>
+            <br />
+            <span className="bg-gradient-to-r from-[#4FC3F7] to-[#FF6B6B] bg-clip-text text-transparent">
+              O Ano Inteiro
             </span>
           </h1>
 
-          {/* Benefício - Uma linha */}
-          <p className="text-base md:text-lg font-bold text-foreground mb-2">
-            + de 250 vídeos de destinos prontos para postar
+          {/* Value Prop Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 mb-4">
+            <Video className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <span className="text-base font-semibold text-blue-900 dark:text-blue-100">
+              250+ Vídeos Prontos + IA Integrada
+            </span>
+          </div>
+
+          {/* Subtitle */}
+          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
+            Vídeos, artes, stories, robôs de IA, calendário anual e tudo que você precisa para crescer sua agência
           </p>
 
-          {/* Descrição - Menor */}
-          <p className="text-sm md:text-base text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Artes, stories, calendário de posts anuais, robôs, influencers e tudo que você precisa pra crescer sua agência de viagens
-          </p>
-
-          {/* GIF - SEM cor de fundo */}
-          <div className="relative mb-6">
+          {/* Hero Visual - Placeholder Gradient (replace with generated team image) */}
+          <div className="relative mb-8 group">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#FF6B6B]/20 to-[#4FC3F7]/20 rounded-2xl blur-2xl group-hover:blur-3xl transition-all" />
             <img
               loading="lazy"
               src={heroGif}
-              alt="Vídeos de viagens profissionais"
-              className="mx-auto rounded-2xl shadow-xl max-w-xs md:max-w-xl"
+              alt="Plataforma CanvaViagem - Vídeos profissionais de viagens"
+              className="relative mx-auto rounded-2xl shadow-2xl max-w-sm md:max-w-2xl w-full transform group-hover:scale-[1.02] transition-transform duration-500"
             />
           </div>
 
-          {/* CTA Principal - Compacto */}
-          <div className="flex flex-col items-center gap-2 mb-3">
-            <a href="#preco" className="w-full max-w-sm">
+          {/* Primary CTA */}
+          <div className="flex flex-col items-center gap-3 mb-6">
+            <a href="#preco" className="w-full max-w-md">
               <Button
                 size="lg"
-                className="w-full px-8 py-5 text-base md:text-lg font-black rounded-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-xl transform hover:scale-105 transition-all animate-pulse hover:animate-none"
+                className="w-full h-14 md:h-16 px-8 text-lg md:text-xl font-black rounded-full bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] hover:from-[#FF5252] hover:to-[#FF7F43] text-white shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
               >
-                <Sparkles className="mr-2 h-4 w-4" />
-                COMEÇAR AGORA - 3 DIAS GRÁTIS
+                <Sparkles className="mr-2 h-5 w-5 md:h-6 md:w-6" />
+                COMEÇAR TESTE GRÁTIS
               </Button>
             </a>
-            <p className="text-xs md:text-sm font-semibold text-foreground">Apenas R$ 29/mês depois</p>
-            <p className="text-xs text-green-600 dark:text-green-400 font-bold">✓ Cancele com 1 clique • Sem compromisso</p>
-          </div>
-
-          {/* Mini Social Proof */}
-          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-            <div className="flex -space-x-2">
-              <div className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 border-2 border-background flex items-center justify-center text-white text-[10px] font-bold">A</div>
-              <div className="h-6 w-6 rounded-full bg-gradient-to-br from-pink-500 to-red-500 border-2 border-background flex items-center justify-center text-white text-[10px] font-bold">M</div>
-              <div className="h-6 w-6 rounded-full bg-gradient-to-br from-green-500 to-teal-500 border-2 border-background flex items-center justify-center text-white text-[10px] font-bold">J</div>
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-sm md:text-base font-bold text-foreground">
+                3 dias grátis • Depois <span className="text-[#FF6B6B]">R$ 29/mês</span>
+              </p>
+              <p className="text-xs md:text-sm text-green-600 dark:text-green-400 font-semibold">
+                ✓ Cancele quando quiser • Garantia de 7 dias
+              </p>
             </div>
-            <p className="font-medium">
-              <span className="font-bold text-foreground">+50 agências</span> já usam
-            </p>
+          </div>
+
+          {/* Trust Indicators - Clean Badges (No User Counts) */}
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs md:text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/80 border border-border">
+              <Shield className="h-4 w-4 text-primary" />
+              <span>Pagamento Seguro</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/80 border border-border">
+              <Clock className="h-4 w-4 text-primary" />
+              <span>Acesso Imediato</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/80 border border-border">
+              <RefreshCw className="h-4 w-4 text-primary" />
+              <span>Atualização Semanal</span>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* PROVA SOCIAL IMEDIATA - DEPOIMENTO FORTE */}
-      <section className="mb-16 px-4">
-        <div className="max-w-2xl mx-auto">
-          <p className="text-center text-sm font-semibold text-muted-foreground mb-4">Agências que já usam:</p>
+      {/* TELA DE DOR - RED FLAG MODERADA */}
+      <section className="mb-16 md:mb-24 px-4">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl md:text-4xl font-black mb-4">
+            <span className="text-red-600 dark:text-red-500">❌ Você está cansado disso?</span>
+          </h2>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+            A realidade de quem tenta fazer tudo sozinho sem as ferramentas certas...
+          </p>
+        </div>
 
-          <Card className="border-2 border-green-500 bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row items-start gap-4">
-                <div className="flex gap-0.5 mx-auto md:mx-0">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />)}
-                </div>
-                <div className="flex-1 text-center md:text-left">
-                  <p className="text-base md:text-lg font-medium italic mb-3">
-                    "Eu me surpreendi com o tanto de seguidores que consegui em poucas horas. Ainda bem que eu peguei seu material, dá para eu ir editando fácil e postando nesse começo 👏"
-                  </p>
-                  <p className="text-sm font-semibold text-foreground">Agente de Viagens</p>
-                  <p className="text-xs text-muted-foreground">Cliente verificado via WhatsApp</p>
-                </div>
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+          <Card className="border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20 hover:border-red-300 transition-all">
+            <CardContent className="p-6 text-center">
+              <div className="text-4xl mb-3">⏰</div>
+              <p className="font-bold mb-2">Horas editando</p>
+              <p className="text-sm text-muted-foreground">Perder tardes inteiras no CapCut ou Premiere para fazer 1 vídeo</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20 hover:border-red-300 transition-all">
+            <CardContent className="p-6 text-center">
+              <div className="text-4xl mb-3">💸</div>
+              <p className="font-bold mb-2">Gastando muito</p>
+              <p className="text-sm text-muted-foreground">R$ 500 a R$ 2.000 por mês com equipe ou freelancers</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20 hover:border-red-300 transition-all sm:col-span-2 md:col-span-1">
+            <CardContent className="p-6 text-center">
+              <div className="text-4xl mb-3">😰</div>
+              <p className="font-bold mb-2">Sem ideias</p>
+              <p className="text-sm text-muted-foreground">Ficar olhando pra tela em branco sem saber o que postar hoje</p>
             </CardContent>
           </Card>
         </div>
       </section>
 
-      {/* TELA DE PODER - VANTAGEM COMPETITIVA */}
-      <section className="mb-16 md:mb-24 px-4">
-        <div className="text-center mb-8">
-          {/* Headline Impacto */}
-          <h2 className="text-xl md:text-3xl font-bold leading-tight mb-3">
-            <span className="text-muted-foreground">Enquanto Outras Agências de Viagem Lutam...</span>
+      {/* APRESENTANDO A SOLUÇÃO - VISUAL */}
+      <section className="mb-16 md:mb-24 text-center px-4">
+        <div className="inline-block mb-4 px-4 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold text-sm tracking-wide">
+          ✨ APRESENTANDO A SOLUÇÃO
+        </div>
+        <h2 className="text-3xl md:text-5xl font-black mb-6 bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+          CanvaViagem
+        </h2>
+        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
+          A primeira plataforma do mundo com 250+ vídeos de destinos prontos e editáveis.
+        </p>
+
+        {/* GRID DE GIFS FORMATO REELS */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto mb-10">
+          {proofGifs.slice(0, 4).map((gif, index) => <div key={index} className="rounded-xl overflow-hidden shadow-lg border-2 border-primary/10">
+            <img src={gif} alt={`Exemplo de conteúdo ${index + 1}`} className="w-full aspect-[9/16] object-cover hover:scale-105 transition-transform duration-500" />
+          </div>)}
+        </div>
+
+        {/* COMO FUNCIONA - 3 PASSOS SIMPLES */}
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-xl md:text-2xl font-bold mb-8">Como funciona? (Simples assim)</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+            <div className="relative pl-4 border-l-4 border-primary/30">
+              <div className="text-5xl font-black text-primary/20 absolute -top-4 -left-3">1</div>
+              <h4 className="text-lg font-bold mb-2">Escolha</h4>
+              <p className="text-sm text-muted-foreground">Navegue por 250+ destinos: Disney, Maldivas, Paris, Nordeste...</p>
+            </div>
+            <div className="relative pl-4 border-l-4 border-primary/30">
+              <div className="text-5xl font-black text-primary/20 absolute -top-4 -left-3">2</div>
+              <h4 className="text-lg font-bold mb-2">Edite (se quiser)</h4>
+              <p className="text-sm text-muted-foreground">Abra no Canva e coloque seu logo e cores em 1 clique.</p>
+            </div>
+            <div className="relative pl-4 border-l-4 border-primary/30">
+              <div className="text-5xl font-black text-primary/20 absolute -top-4 -left-3">3</div>
+              <h4 className="text-lg font-bold mb-2">Publique</h4>
+              <p className="text-sm text-muted-foreground">Baixe e poste. Pronto! Seu perfil profissional em minutos.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PROVA SOCIAL - DEPOIMENTOS ESPECÍFICOS */}
+      <section className="mb-16 md:mb-24 px-4 bg-muted/30 py-12 -mx-4">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-10">
+            Quem usa, recomenda 👇
           </h2>
-          <h2 className="text-2xl md:text-4xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent leading-tight mb-8">
-            Você Já Está Vendendo Mais Pacotes
-          </h2>
-        </div>
 
-        {/* Comparação Visual */}
-        <div className="grid grid-cols-2 gap-4 max-w-3xl mx-auto mb-12">
-          {/* Eles (Outras Agências) */}
-          <Card className="border-2 border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20">
-            <CardContent className="p-4 md:p-6">
-              <div className="text-center mb-3">
-                <span className="text-3xl">❌</span>
-                <p className="font-bold text-sm md:text-base mt-2">Outras Agências</p>
-              </div>
-              <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
-                <li>⏰ Horas editando</li>
-                <li>💸 Gastando com designer</li>
-                <li>😰 Sem ideia do que postar</li>
-                <li>📉 Perfil parado</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          {/* Você (Com TravelMarketing) */}
-          <Card className="border-2 border-green-500 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 shadow-xl">
-            <CardContent className="p-4 md:p-6">
-              <div className="text-center mb-3">
-                <span className="text-3xl">✅</span>
-                <p className="font-bold text-sm md:text-base mt-2 text-green-700 dark:text-green-300">VOCÊ</p>
-              </div>
-              <ul className="space-y-2 text-xs md:text-sm font-medium">
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-600" />
-                  <span>2 min vendendo</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-600" />
-                  <span>Economizando R$ 500/mês</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-600" />
-                  <span>Conteúdo todo dia</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-600" />
-                  <span>Instagram bombando</span>
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Tabela: O Que Outras Agências NÃO TÊM */}
-        <div className="max-w-2xl mx-auto mb-12">
-          <Card className="border-2 border-purple-300 dark:border-purple-700 bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-purple-950/20 dark:via-blue-950/20 dark:to-pink-950/20">
-            <CardContent className="p-6 md:p-8">
-              <h3 className="text-xl md:text-2xl font-black text-center mb-6">
-                O Que Outras Agências NÃO TÊM<br />(E Você Terá)
-              </h3>
-
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 shrink-0 text-green-600 mt-0.5" />
-                  <span className="text-sm md:text-base"><strong>250+ vídeos de viagens</strong> profissionais prontos</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 shrink-0 text-green-600 mt-0.5" />
-                  <span className="text-sm md:text-base"><strong>Calendário anual</strong> com posts organizados</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 shrink-0 text-green-600 mt-0.5" />
-                  <span className="text-sm md:text-base"><strong>3 influencers de IA</strong> exclusivas de turismo</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 shrink-0 text-green-600 mt-0.5" />
-                  <span className="text-sm md:text-base"><strong>10 robôs de turismo</strong> para criar conteúdo</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 shrink-0 text-green-600 mt-0.5" />
-                  <span className="text-sm md:text-base"><strong>Tudo editável em 2 minutos</strong> e pronto pra postar</span>
-                </li>
-              </ul>
-
-              {/* Destaque Final */}
-              <div className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 border-2 border-dashed border-orange-400 dark:border-orange-600 rounded-lg p-4 text-center">
-                <p className="text-base md:text-lg font-black text-orange-700 dark:text-orange-300">
-                  🔥 Seus clientes vão pensar que você tem uma<br className="hidden md:block" /> EQUIPE INTEIRA de marketing!
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Prova Social - Depoimentos Competitivos */}
-        <div className="max-w-3xl mx-auto mb-8">
-          <p className="text-center text-lg md:text-xl font-semibold mb-6">
-            O Que Agências de Viagem Estão Dizendo:
-          </p>
-
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Depoimento 1 - REAL (WhatsApp) */}
-            <Card className="border-l-4 border-l-green-500 bg-gradient-to-br from-green-50/30 to-emerald-50/30 dark:from-green-950/10 dark:to-emerald-950/10">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">💬</span>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="flex gap-0.5">
-                        {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
-                      </div>
-                      <span className="text-xs text-green-600 dark:text-green-400 font-semibold">WhatsApp • há 2 horas</span>
-                    </div>
-                    <p className="text-sm md:text-base italic mb-2">
-                      "Parabéns pelo trabalho, ajudou muito aqui. Tava batendo cabeça para criar vídeos dos lugares para postar"
-                    </p>
-                    <p className="text-xs font-semibold text-foreground">Agente de Viagens</p>
+            <Card className="border-none shadow-md bg-white dark:bg-card relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-[#25D366]"></div>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="bg-[#25D366] text-white p-1.5 rounded-full">
+                    <MessageSquare className="h-4 w-4" />
                   </div>
+                  <span className="font-semibold text-sm">Agente de Viagens</span>
+                  <span className="text-xs text-muted-foreground ml-auto">Via WhatsApp</span>
+                </div>
+                <p className="text-base italic text-foreground/80 leading-relaxed">
+                  "Parabéns pelo trabalho, ajudou muito aqui. Tava batendo cabeça para criar vídeos dos lugares para postar"
+                </p>
+                <div className="mt-4 flex gap-1">
+                  {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
                 </div>
               </CardContent>
             </Card>
 
             {/* Depoimento 2 - REAL (Instagram) */}
-            <Card className="border-l-4 border-l-purple-500 bg-gradient-to-br from-purple-50/30 to-pink-50/30 dark:from-purple-950/10 dark:to-pink-950/10">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">✨</span>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="flex gap-0.5">
-                        {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
-                      </div>
-                      <span className="text-xs text-purple-600 dark:text-purple-400 font-semibold">Instagram • ontem</span>
-                    </div>
-                    <p className="text-sm md:text-base italic mb-2">
-                      "Eu comprei, estou usando e é maravilhoso o conteúdo 🙏"
-                    </p>
-                    <p className="text-xs font-semibold text-foreground">@vleviagens</p>
+            <Card className="border-none shadow-md bg-white dark:bg-card relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#833AB4] via-[#FD1D1D] to-[#F77737]"></div>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 text-white p-1.5 rounded-full">
+                    <Users className="h-4 w-4" />
                   </div>
+                  <span className="font-semibold text-sm">@vleviagens</span>
+                  <span className="text-xs text-muted-foreground ml-auto">Via Instagram</span>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Depoimento 3 - REAL (WhatsApp) */}
-            <Card className="border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50/30 to-cyan-50/30 dark:from-blue-950/10 dark:to-cyan-950/10">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">🎯</span>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="flex gap-0.5">
-                        {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
-                      </div>
-                      <span className="text-xs text-blue-600 dark:text-blue-400 font-semibold">WhatsApp • há 1 dia</span>
-                    </div>
-                    <p className="text-sm md:text-base italic mb-2">
-                      "Eu me surpreendi com o tanto de seguidores que consegui em poucas horas. Ainda bem que eu peguei seu material, dá para eu ir editando fácil e postando nesse começo 👏"
-                    </p>
-                    <p className="text-xs font-semibold text-foreground">Agência de Turismo</p>
-                  </div>
+                <p className="text-base italic text-foreground/80 leading-relaxed">
+                  "Eu comprei, estou usando e é maravilhoso o conteúdo 🙏"
+                </p>
+                <div className="mt-4 flex gap-1">
+                  {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
-
-        {/* CTA Final Agressivo */}
-        <div className="text-center">
-          <a href="#preco">
-            <Button
-              size="lg"
-              className="w-full max-w-md h-16 md:h-20 text-base md:text-xl font-black bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-2xl animate-pulse hover:animate-none transition-all"
-            >
-              <Sparkles className="mr-2 h-5 w-5 md:h-6 md:w-6" />
-              🔥 QUERO ESSA VANTAGEM AGORA
-            </Button>
-          </a>
-          <p className="text-xs md:text-sm text-muted-foreground mt-3">
-            ⚡ Acesso imediato • 🔒 Cancele quando quiser
-          </p>
-        </div>
       </section>
 
-      {/* GRID DE GIFS FORMATO REELS */}
-      <section className="mb-12 md:mb-20">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
-          {t('plans.proofTitle')}
-        </h2>
-        <div className="grid grid-cols-2 gap-3 md:gap-4 max-w-2xl mx-auto">
-          {proofGifs.map((gif, index) => <div key={index} className="rounded-2xl overflow-hidden shadow-lg hover:scale-[1.02] transition-transform duration-300">
-            <img src={gif} alt={`Exemplo de vídeo ${index + 1}`} className="w-full aspect-[9/16] object-cover" />
-          </div>)}
+      {/* BENEFÍCIOS GRID - 'USE IA' */}
+      <section className="mb-16 md:mb-24 px-4">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Tudo incluso na plataforma</h2>
+          <p className="text-muted-foreground">Sem pegadinhas. Você tem acesso a tudo.</p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
+          {[
+            { icon: Video, title: "250+ Vídeos", desc: "Completos e editáveis" },
+            { icon: Bot, title: "Use IA", desc: "Marketing automático" },
+            { icon: Calendar, title: "Calendário", desc: "365 dias prontos" },
+            { icon: MessageSquare, title: "Legendas", desc: "Copywriting incluso" },
+            { icon: Users, title: "Influencers", desc: "Avatares de turismo" },
+            { icon: Image, title: "Banco Fotos", desc: "Alta qualidade" },
+            { icon: Sparkles, title: "Artes/Stories", desc: "Templates prontos" },
+            { icon: RefreshCw, title: "Updates", desc: "Novos toda semana" }
+          ].map((item, i) => (
+            <div key={i} className="flex flex-col items-center text-center p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors border border-border/50">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-3">
+                <item.icon className="h-5 w-5" />
+              </div>
+              <h3 className="font-bold text-sm md:text-base mb-1">{item.title}</h3>
+              <p className="text-xs text-muted-foreground">{item.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -658,7 +615,7 @@ const Planos = () => {
       </section>
 
       {/* SEÇÃO "O QUE É CANVA VIAGEM?" */}
-      <section className="mb-12 md:mb-20">
+      < section className="mb-12 md:mb-20" >
         <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-8 md:p-12 rounded-3xl">
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">
             O que é o Canva Viagem?
@@ -737,10 +694,10 @@ const Planos = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* VÍDEOS YOUTUBE COM OVERLAY - 2 por linha no mobile */}
-      <section className="mb-12 md:mb-20">
+      < section className="mb-12 md:mb-20" >
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
           Veja Exemplos Reais dos Vídeos
         </h2>
@@ -752,83 +709,150 @@ const Planos = () => {
             </div>
           </div>)}
         </div>
-      </section>
+      </section >
 
-      {/* CARD DE PREÇO APRIMORADO */}
-      <section id="preco" className="mb-12 md:mb-20 scroll-mt-20">
-        <Card className="max-w-2xl mx-auto border-2 border-primary/20 shadow-xl relative">
+      {/* CARD DE PREÇO - G4 PROFESSIONAL STYLE */}
+      < section id="preco" className="mb-16 md:mb-24 scroll-mt-20 px-4" >
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-5xl font-black mb-4">
+            <span className="bg-gradient-to-r from-[#FF6B6B] to-[#4FC3F7] bg-clip-text text-transparent">
+              Comece Hoje
+            </span>
+          </h2>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+            Tudo que você precisa para vender mais viagens, em um único plano simples
+          </p>
+        </div>
+
+        <Card className="max-w-2xl mx-auto border-2 border-[#FF6B6B]/30 shadow-2xl relative overflow-hidden">
+          {/* Background Accent */}
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#4FC3F7]" />
+
           {/* Floating Badge */}
           <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-            <div className="bg-green-500/90 backdrop-blur-sm text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full shadow-lg text-xs md:text-sm font-semibold whitespace-nowrap">
-              ✨ 3 Dias Grátis
+            <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-2 rounded-full shadow-lg text-sm font-bold whitespace-nowrap flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              3 DIAS GRÁTIS
             </div>
           </div>
 
-          <CardContent className="p-8 md:p-12 text-center pt-10 md:pt-12">
-            <h3 className="text-lg md:text-xl font-bold mb-3">Tenha acesso a todas as ferramentas</h3>
-            <p className="text-sm md:text-base text-muted-foreground mb-6">
-              Vídeos, artes, robôs, influencers e todo o acesso
+          <CardContent className="p-8 md:p-12 text-center pt-12 md:pt-14">
+            {/* Plan Title */}
+            <h3 className="text-2xl md:text-3xl font-bold mb-2">Plano Completo</h3>
+            <p className="text-base md:text-lg text-muted-foreground mb-8">
+              Acesso total à plataforma
             </p>
 
-            {/* Price Comparison - Show Value */}
-            <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 rounded-lg p-4 mb-4 border border-red-200 dark:border-red-800">
-              <p className="text-sm font-semibold text-red-600 dark:text-red-400 mb-1">Quanto você pagaria?</p>
-              <p className="text-xs text-muted-foreground mb-2">Designer freelancer cobra:</p>
-              <p className="text-2xl font-bold line-through text-red-500">R$ 500/mês</p>
-              <p className="text-xs text-green-600 dark:text-green-400 font-semibold mt-1">↓ Economize R$ 471 por mês = R$ 5.652/ano</p>
+            {/* Value Comparison */}
+            <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 rounded-xl p-6 mb-6 border border-red-200 dark:border-red-800">
+              <p className="text-sm font-semibold text-red-600 dark:text-red-400 mb-2">🚫 Contratar Pessoas:</p>
+              <p className="text-xs text-muted-foreground mb-3">
+                Editor de Vídeo + Social Media cobram em média:
+              </p>
+              <p className="text-3xl font-bold line-through text-red-500 mb-2">R$ 2.500/mês</p>
+              <div className="flex items-center justify-center gap-2 text-sm">
+                <span className="text-muted-foreground">+ R$ 300 por vídeo</span>
+                <span className="text-muted-foreground">+ R$ 50 por arte</span>
+              </div>
             </div>
 
-            {/* Custom Price Display */}
-            <div className="flex items-baseline justify-center mb-2 gap-1">
-              <span className="text-2xl md:text-3xl font-bold text-primary opacity-70">R$</span>
-              <span className="text-5xl md:text-6xl font-black text-primary">29</span>
-              <span className="text-2xl md:text-3xl font-bold text-primary opacity-70">,00</span>
-              <span className="text-xl md:text-2xl text-muted-foreground ml-1">/mês</span>
+            {/* Price Display */}
+            <div className="mb-8">
+              <div className="flex items-baseline justify-center gap-2 mb-2">
+                <span className="text-3xl md:text-4xl font-bold text-muted-foreground opacity-70">R$</span>
+                <span className="text-6xl md:text-7xl font-black bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] bg-clip-text text-transparent">
+                  29
+                </span>
+                <span className="text-2xl md:text-3xl text-muted-foreground">/mês</span>
+              </div>
+              <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                💰 Economize R$ 471/mês = R$ 5.652/ano!
+              </p>
             </div>
-            <p className="text-sm text-green-600 dark:text-green-400 font-bold mb-6">94% mais barato que designer!</p>
 
-            <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="w-full h-14 md:h-16 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-sm md:text-lg font-black shadow-xl hover:shadow-2xl transition-all duration-300 text-white animate-pulse hover:animate-none">
-              {checkoutLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>
-                <Sparkles className="mr-2 h-4 w-4 md:h-5 md:w-5" />
-                COMEÇAR TESTE GRÁTIS
-              </>}
+            {/* What's Included */}
+            <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-xl p-6 mb-8 text-left border border-blue-200 dark:border-blue-800">
+              <p className="font-bold text-center text-lg mb-4">✨ Tudo Incluído:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-green-600 shrink-0" />
+                  <span className="text-sm md:text-base">250+ Vídeos Editáveis</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-green-600 shrink-0" />
+                  <span className="text-sm md:text-base">Artes & Stories</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-green-600 shrink-0" />
+                  <span className="text-sm md:text-base">10 Robôs de IA</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-green-600 shrink-0" />
+                  <span className="text-sm md:text-base">3 Influencers de IA</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-green-600 shrink-0" />
+                  <span className="text-sm md:text-base">Calendário Anual</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-green-600 shrink-0" />
+                  <span className="text-sm md:text-base">Legendas Prontas</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-green-600 shrink-0" />
+                  <span className="text-sm md:text-base">Atualização Semanal</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-green-600 shrink-0" />
+                  <span className="text-sm md:text-base">Suporte WhatsApp</span>
+                </div>
+              </div>
+            </div>
+
+            {/* CTA Button */}
+            <Button
+              size="lg"
+              onClick={handleCheckout}
+              disabled={checkoutLoading}
+              className="w-full h-16 md:h-20 bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] hover:from-[#FF5252] hover:to-[#FF7F43] text-lg md:text-xl font-black shadow-2xl hover:shadow-3xl transition-all duration-300 text-white mb-6"
+            >
+              {checkoutLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-5 w-5 md:h-6 md:w-6" />
+                  COMEÇAR TESTE GRÁTIS AGORA
+                </>
+              )}
             </Button>
 
-            {/* Launch Phase - Exclusivity */}
-            <div className="mt-3 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 border-2 border-purple-300 dark:border-purple-700 rounded-lg p-4">
-              <p className="text-xs md:text-sm font-bold text-purple-700 dark:text-purple-300 flex items-center justify-center gap-1.5 mb-1">
-                🚀 Plataforma em Fase de Lançamento
-              </p>
-              <p className="text-xs text-purple-600 dark:text-purple-400 text-center">
-                Seja um dos primeiros • Conteúdo exclusivo que você não viu em lugar nenhum
-              </p>
-            </div>
-
-            {/* Garantia ZERO Risco - Mensagem Clara */}
-            <div className="p-5 md:p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-2xl border-2 border-green-200 dark:border-green-800 mt-6">
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <Shield className="h-6 w-6 text-green-600" />
-                <p className="font-bold text-lg md:text-xl text-green-900 dark:text-green-100">
-                  Risco ZERO
+            {/* Guarantee Section */}
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-xl p-6 border-2 border-green-200 dark:border-green-800">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <Shield className="h-8 w-8 text-green-600" />
+                <p className="font-black text-xl md:text-2xl text-green-900 dark:text-green-100">
+                  Garantia de 7 Dias
                 </p>
               </div>
-              <p className="text-sm md:text-base text-center text-foreground leading-relaxed px-2">
-                Se por <strong>qualquer motivo</strong> você não gostar, cancele dentro de <strong>3 dias</strong> e <strong className="text-green-600">não paga nada</strong>. Absolutamente nada.
+              <p className="text-sm md:text-base text-center text-foreground leading-relaxed">
+                Teste por <strong>7 dias completos</strong>. Se não gostar, <strong className="text-green-600">devolvemos 100%</strong> do seu dinheiro. Sem perguntas, sem burocracia.
               </p>
               <p className="text-sm text-center text-muted-foreground mt-3 italic">
-                O risco é meu. Teste agora sem preocupação.
+                O risco é todo nosso. Você só tem a ganhar.
               </p>
             </div>
 
-            <p className="text-xs font-medium text-center mt-4 flex items-center justify-center gap-1.5">
-              <span className="text-muted-foreground">🔒 Pagamento 100% seguro via Stripe</span>
-            </p>
+            {/* Security Badge */}
+            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Shield className="h-4 w-4" />
+              <span>🔒 Pagamento 100% Seguro via Stripe</span>
+            </div>
           </CardContent>
         </Card>
-      </section>
+      </section >
 
       {/* MARKETING 360° - Tudo Incluído */}
-      <section className="mb-12 md:mb-20">
+      < section className="mb-12 md:mb-20" >
         <div className="max-w-4xl mx-auto">
           <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 border-2 border-primary rounded-3xl p-8 md:p-10 shadow-2xl">
             {/* Header */}
@@ -918,10 +942,10 @@ const Planos = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* TESTIMONIALS - PROVA SOCIAL */}
-      <section className="mb-12 md:mb-20">
+      < section className="mb-12 md:mb-20" >
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">O Que as Agências de Viagens Estão Falando?</h2>
         <p className="text-center text-muted-foreground mb-8">Depoimentos reais de quem já está usando o TravelMarketing</p>
 
@@ -998,76 +1022,10 @@ const Planos = () => {
           </div>
         </div>
 
-        {/* Cards de Depoimentos Tradicionais (ABAIXO) */}
-        <p className="text-center text-sm text-muted-foreground mb-6">⭐ Avaliações Verificadas</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {/* Testimonial 1 */}
-          <Card className="border-2 border-primary/20">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-3">
-                {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
-              </div>
-              <p className="text-sm md:text-base mb-4 italic">
-                "Aumentei meu engajamento em 300% no primeiro mês. Consigo postar todo dia e meus clientes adoram!"
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white font-bold">
-                  M
-                </div>
-                <div>
-                  <p className="font-semibold text-sm">Maria Silva</p>
-                  <p className="text-xs text-muted-foreground">Agência Viagens dos Sonhos</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Testimonial 2 */}
-          <Card className="border-2 border-accent/20">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-3">
-                {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
-              </div>
-              <p className="text-sm md:text-base mb-4 italic">
-                "Fechei 5 pacotes extras este mês só com os vídeos do TravelMarketing. Melhor investimento!"
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center text-white font-bold">
-                  J
-                </div>
-                <div>
-                  <p className="font-semibold text-sm">João Santos</p>
-                  <p className="text-xs text-muted-foreground">Travel Expert</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Testimonial 3 */}
-          <Card className="border-2 border-green-500/20">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-3">
-                {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
-              </div>
-              <p className="text-sm md:text-base mb-4 italic">
-                "Economizei R$ 800/mês que gastava com designer. Agora crio tudo sozinha em minutos!"
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold">
-                  A
-                </div>
-                <div>
-                  <p className="font-semibold text-sm">Ana Costa</p>
-                  <p className="text-xs text-muted-foreground">Mundo Viagens</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </section>
 
       {/* COMPARISON TABLE */}
-      <section className="mb-12 md:mb-20">
+      < section className="mb-12 md:mb-20" >
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">Compare e Veja o Quanto Você Economiza</h2>
         <p className="text-center text-muted-foreground mb-8">Investir R$ 29/mês vs contratar profissionais</p>
 
@@ -1111,38 +1069,38 @@ const Planos = () => {
             </CardContent>
           </Card>
 
-          {/* Card Designer Freelancer */}
+          {/* Card Contratar Pessoas */}
           <Card className="border opacity-70">
             <CardContent className="p-5">
               <div className="text-center mb-4">
-                <p className="font-bold text-lg">Designer Freelancer</p>
-                <p className="text-2xl font-bold text-red-600 mt-2">R$ 600+/mês</p>
-                <p className="text-xs text-muted-foreground">por projeto</p>
+                <p className="font-bold text-lg">Contratar Pessoas</p>
+                <p className="text-2xl font-bold text-red-600 mt-2">R$ 2.500/mês</p>
+                <p className="text-xs text-muted-foreground">Salário Médio Jr.</p>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-red-600">❌</span>
-                  <span>R$ 300/vídeo</span>
+                  <span>Salário + Encargos</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-red-600">❌</span>
-                  <span>R$ 50/arte</span>
+                  <span>Precisa Treinar</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-red-600">❌</span>
-                  <span>Sem IA</span>
+                  <span>Feriados e Folgas</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-red-600">❌</span>
-                  <span>Sem Influencers IA</span>
+                  <span>Gestão de Pessoas</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-red-600">❌</span>
-                  <span>Sem Calendário</span>
+                  <span>Equipamentos Caros</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">⚠️</span>
-                  <span className="text-muted-foreground">Suporte por projeto</span>
+                  <span className="text-muted-foreground">Risco Trabalhista</span>
                 </div>
               </div>
             </CardContent>
@@ -1198,7 +1156,7 @@ const Planos = () => {
                     Canva Viagem
                   </div>
                 </th>
-                <th className="p-3 md:p-4 text-center text-sm md:text-base">Designer<br /><span className="text-xs text-muted-foreground">Freelancer</span></th>
+                <th className="p-3 md:p-4 text-center text-sm md:text-base">Contratar Equipe<br /><span className="text-xs text-muted-foreground">Editor + Social Media</span></th>
                 <th className="p-3 md:p-4 text-center text-sm md:text-base">Agência<br /><span className="text-xs text-muted-foreground">Marketing</span></th>
               </tr>
             </thead>
@@ -1208,16 +1166,16 @@ const Planos = () => {
                 <td className="p-3 md:p-4 text-center bg-primary/5">
                   <Check className="h-5 w-5 text-green-600 mx-auto" />
                 </td>
-                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">R$ 300/vídeo</td>
-                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">R$ 500/vídeo</td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">Limitado ao tempo</td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">Custo extra por vídeo</td>
               </tr>
               <tr className="border-b">
                 <td className="p-3 md:p-4 text-sm md:text-base">Artes/Posts ilimitados</td>
                 <td className="p-3 md:p-4 text-center bg-primary/5">
                   <Check className="h-5 w-5 text-green-600 mx-auto" />
                 </td>
-                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">R$ 50/arte</td>
-                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">R$ 100/arte</td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">Demora na entrega</td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">Pacotes limitados</td>
               </tr>
               <tr className="border-b">
                 <td className="p-3 md:p-4 text-sm md:text-base">10 Robôs de IA Marketing</td>
@@ -1240,16 +1198,16 @@ const Planos = () => {
                 <td className="p-3 md:p-4 text-center bg-primary/5">
                   <Check className="h-5 w-5 text-green-600 mx-auto" />
                 </td>
-                <td className="p-3 md:p-4 text-center text-xs md:text-sm">❌</td>
-                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">R$ 200/mês</td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">Você que cria</td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm text-red-600">Pago à parte</td>
               </tr>
               <tr className="border-b">
                 <td className="p-3 md:p-4 text-sm md:text-base">Suporte WhatsApp</td>
                 <td className="p-3 md:p-4 text-center bg-primary/5">
                   <Check className="h-5 w-5 text-green-600 mx-auto" />
                 </td>
-                <td className="p-3 md:p-4 text-center text-xs md:text-sm">Por projeto</td>
-                <td className="p-3 md:p-4 text-center text-xs md:text-sm">Email only</td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm">Fins de semana off</td>
+                <td className="p-3 md:p-4 text-center text-xs md:text-sm">Chatbot / Email</td>
               </tr>
               <tr className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 font-bold">
                 <td className="p-3 md:p-4 text-sm md:text-base">💰 Total por mês</td>
@@ -1261,8 +1219,8 @@ const Planos = () => {
                 </td>
                 <td className="p-3 md:p-4 text-center text-base md:text-lg text-red-600">
                   <div className="flex flex-col items-center">
-                    <span className="font-bold">R$ 600+</span>
-                    <span className="text-xs">por projeto</span>
+                    <span className="font-bold">R$ 2.500+</span>
+                    <span className="text-xs">Salário + Encargos</span>
                   </div>
                 </td>
                 <td className="p-3 md:p-4 text-center text-base md:text-lg text-red-600">
@@ -1281,10 +1239,10 @@ const Planos = () => {
             🎉 Economize até R$ 1.971/mês = R$ 23.652/ano!
           </p>
         </div>
-      </section>
+      </section >
 
       {/* FAQ MATADOR - Remove Objeções */}
-      <section className="mb-12 md:mb-20">
+      < section className="mb-12 md:mb-20" >
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">Perguntas Frequentes</h2>
         <p className="text-center text-muted-foreground mb-8">Tudo o que você precisa saber</p>
 
@@ -1369,47 +1327,56 @@ const Planos = () => {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-      </section>
+      </section >
 
       {/* SEÇÃO DE GARANTIA */}
       <section className="mb-12 md:mb-20">
-        <div className="bg-accent/10 border-l-4 border-accent p-6 md:p-8 rounded-xl">
+        <div className="bg-green-50 dark:bg-green-950/20 border-2 border-green-500 p-8 rounded-3xl max-w-3xl mx-auto">
           <div className="flex flex-col items-center text-center">
-            <img src={garantia7dias} alt="Garantia 3 dias incondicional" className="w-20 md:w-28 mb-4" />
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">{t('plans.guaranteeTitle')}</h3>
-            <p className="text-lg text-muted-foreground max-w-xl">
-              {t('plans.guaranteeDesc')}
+            <div className="bg-green-100 dark:bg-green-900 rounded-full p-4 mb-4">
+              <Shield className="h-12 w-12 text-green-600 dark:text-green-400" />
+            </div>
+            <h3 className="text-2xl md:text-3xl font-black mb-4 text-green-800 dark:text-green-200">
+              RISCO ZERO: Garantia de 7 Dias
+            </h3>
+            <p className="text-lg text-muted-foreground mb-6">
+              Você entra, usa tudo, baixa os vídeos, posta... Se em <strong>7 dias</strong> você achar que não valeu a pena, nós devolvemos <strong>100% do seu dinheiro</strong>.
+            </p>
+            <p className="text-sm font-bold text-green-600 dark:text-green-400">
+              Sem letras miúdas. Sem perguntas. É só pedir e reembolsamos.
             </p>
           </div>
         </div>
       </section>
 
       {/* SOCIAL PROOF CVC/DECOLAR */}
-      <section className="mb-8 md:mb-12 text-center">
+      < section className="mb-8 md:mb-12 text-center" >
         <p className="text-xl md:text-2xl font-semibold mb-3 md:mb-4">Seu perfil melhor do que o da CVC e Decolar? 😅</p>
         <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmo1NGh5cGxiZG1vdHl3bmZxNTBxd2h0aDBsbXkxa2xhNWk4bmE4aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MpVJ9IjphA5p6sO8Zr/giphy.gif" alt="Perfil profissional" className="mx-auto rounded-xl shadow-lg max-w-full w-full md:max-w-md" />
-      </section>
+      </section >
 
       {/* Alert para usuários logados sem assinatura */}
-      {user && <div className="bg-secondary border border-border rounded-lg p-3 md:p-4 mb-6 md:mb-8">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="bg-primary/10 rounded-full p-2 shrink-0">
-            <Plane className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+      {
+        user && <div className="bg-secondary border border-border rounded-lg p-3 md:p-4 mb-6 md:mb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-primary/10 rounded-full p-2 shrink-0">
+              <Plane className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+            </div>
+            <p className="text-foreground text-sm md:text-base">
+              <strong>{t('plans.noActivePlan')}</strong>
+            </p>
           </div>
-          <p className="text-foreground text-sm md:text-base">
-            <strong>{t('plans.noActivePlan')}</strong>
-          </p>
+          <Button variant="outline" size="sm" onClick={handleRefreshSubscription} disabled={refreshLoading} className="w-full sm:w-auto">
+            {refreshLoading ? <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {t('plans.refreshing')}
+            </> : <>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {t('plans.refreshStatus')}
+            </>}
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={handleRefreshSubscription} disabled={refreshLoading} className="w-full sm:w-auto">
-          {refreshLoading ? <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {t('plans.refreshing')}
-          </> : <>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            {t('plans.refreshStatus')}
-          </>}
-        </Button>
-      </div>}
+      }
 
       {/* FAQ REDUZIDO - 5 PERGUNTAS ESSENCIAIS */}
       <section className="mb-12 md:mb-16">
@@ -1424,22 +1391,42 @@ const Planos = () => {
         </Accordion>
       </section>
 
-      {/* CTA FINAL COM PULSE */}
-      <section className="mb-12">
-        <div className="text-center">
-          <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="text-xl px-12 h-16 bg-gradient-to-r from-primary to-accent animate-pulse shadow-2xl hover:shadow-3xl transition-all duration-300">
-            {checkoutLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : <>
-              <Sparkles className="mr-2 h-6 w-6" />
-              {t('plans.ctaFinal')}
+      {/* CTA FINAL - ULTIMATUM */}
+      <section className="mb-20 px-4">
+        <div className="max-w-4xl mx-auto text-center bg-gradient-to-b from-transparent to-primary/5 rounded-3xl p-8 border border-primary/10">
+          <h2 className="text-3xl md:text-5xl font-black mb-6">
+            Pronto para mudar o nível do seu marketing?
+          </h2>
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Não deixe para depois. O preço promocional pode acabar a qualquer momento.
+          </p>
+
+          <Button
+            size="lg"
+            onClick={handleCheckout}
+            disabled={checkoutLoading}
+            className="w-full max-w-md h-20 text-xl md:text-2xl font-black bg-[#25D366] hover:bg-[#128C7E] text-white shadow-xl hover:shadow-2xl transition-all scale-100 hover:scale-105 active:scale-95"
+          >
+            {checkoutLoading ? <Loader2 className="h-8 w-8 animate-spin" /> : <>
+              <Sparkles className="mr-3 h-6 w-6" />
+              QUERO VENDER MAIS AGORA
             </>}
           </Button>
-          <p className="text-sm font-medium mt-4 flex items-center justify-center gap-2">
-            <Shield className="h-4 w-4 text-green-600" />
-            <span>🔒 Pagamento Seguro</span>
-          </p>
-          <p className="text-xs text-muted-foreground mt-2">
-            {t('plans.instantAccess')}
-          </p>
+
+          <div className="mt-6 flex flex-col md:flex-row items-center justify-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Check className="h-4 w-4 text-green-500" />
+              <span>Acesso Imediato</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="h-4 w-4 text-green-500" />
+              <span>Garantia de 7 dias</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="h-4 w-4 text-green-500" />
+              <span>Cancelamento fácil</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1467,8 +1454,8 @@ const Planos = () => {
           </p>
         </div>
       </div>
-    </div>
+    </div >
     <Footer />
-  </div>;
+  </div >;
 };
 export default Planos;
