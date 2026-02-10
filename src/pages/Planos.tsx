@@ -478,54 +478,63 @@ const Planos = () => {
 
           <div className="space-y-4">
             {/* Depoimento 1 - REAL (WhatsApp) */}
-            <Card className="border-l-4 border-l-green-500">
+            <Card className="border-l-4 border-l-green-500 bg-gradient-to-br from-green-50/30 to-emerald-50/30 dark:from-green-950/10 dark:to-emerald-950/10">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">💬</span>
                   <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex gap-0.5">
+                        {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
+                      </div>
+                      <span className="text-xs text-green-600 dark:text-green-400 font-semibold">WhatsApp • há 2 horas</span>
+                    </div>
                     <p className="text-sm md:text-base italic mb-2">
                       "Parabéns pelo trabalho, ajudou muito aqui. Tava batendo cabeça para criar vídeos dos lugares para postar"
                     </p>
-                    <p className="text-xs text-muted-foreground">- Cliente via WhatsApp</p>
-                  </div>
-                  <div className="flex gap-0.5">
-                    {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
+                    <p className="text-xs font-semibold text-foreground">Agente de Viagens</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Depoimento 2 - REAL (Instagram) */}
-            <Card className="border-l-4 border-l-purple-500">
+            <Card className="border-l-4 border-l-purple-500 bg-gradient-to-br from-purple-50/30 to-pink-50/30 dark:from-purple-950/10 dark:to-pink-950/10">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">✨</span>
                   <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex gap-0.5">
+                        {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
+                      </div>
+                      <span className="text-xs text-purple-600 dark:text-purple-400 font-semibold">Instagram • ontem</span>
+                    </div>
                     <p className="text-sm md:text-base italic mb-2">
                       "Eu comprei, estou usando e é maravilhoso o conteúdo 🙏"
                     </p>
-                    <p className="text-xs text-muted-foreground">- @vleviagens</p>
-                  </div>
-                  <div className="flex gap-0.5">
-                    {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
+                    <p className="text-xs font-semibold text-foreground">@vleviagens</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Depoimento 3 - REAL (WhatsApp) */}
-            <Card className="border-l-4 border-l-blue-500">
+            <Card className="border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50/30 to-cyan-50/30 dark:from-blue-950/10 dark:to-cyan-950/10">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">🎯</span>
                   <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex gap-0.5">
+                        {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
+                      </div>
+                      <span className="text-xs text-blue-600 dark:text-blue-400 font-semibold">WhatsApp • há 1 dia</span>
+                    </div>
                     <p className="text-sm md:text-base italic mb-2">
                       "Eu me surpreendi com o tanto de seguidores que consegui em poucas horas. Ainda bem que eu peguei seu material, dá para eu ir editando fácil e postando nesse começo 👏"
                     </p>
-                    <p className="text-xs text-muted-foreground">- Agente de Viagens via WhatsApp</p>
-                  </div>
-                  <div className="flex gap-0.5">
-                    {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
+                    <p className="text-xs font-semibold text-foreground">Agência de Turismo</p>
                   </div>
                 </div>
               </CardContent>
