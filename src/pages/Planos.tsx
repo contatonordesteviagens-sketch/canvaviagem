@@ -785,10 +785,10 @@ const Planos = () => {
             </div>
             <p className="text-sm text-green-600 dark:text-green-400 font-bold mb-6">94% mais barato que designer!</p>
 
-            <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="w-full h-16 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-base md:text-lg font-black shadow-xl hover:shadow-2xl transition-all duration-300 text-white animate-pulse hover:animate-none">
+            <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="w-full h-14 md:h-16 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-sm md:text-lg font-black shadow-xl hover:shadow-2xl transition-all duration-300 text-white animate-pulse hover:animate-none">
               {checkoutLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>
-                <Sparkles className="mr-2 h-5 w-5" />
-                🔥 COMEÇAR TESTE GRÁTIS AGORA
+                <Sparkles className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+                COMEÇAR TESTE GRÁTIS
               </>}
             </Button>
 

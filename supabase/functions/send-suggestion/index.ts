@@ -2,8 +2,8 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
 
 const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -67,58 +67,83 @@ const generateEmailTemplate = (name: string, email: string, suggestion: string) 
 `;
 
 serve(async (req) => {
-    // Handle CORS preflight
-    if (req.method === "OPTIONS") {
-        return new Response(null, { headers: corsHeaders });
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { name, email, suggestion } = await req.json();
+
+    console.log("[SEND-SUGGESTION] Processing request:", {
+      email: email ? email.substring(0, 5) + "***" : "missing",
+      hasName: !!name,
+      hasSuggestion: !!suggestion
+    });
+
+    // Validation: Required fields
+    if (!email || !suggestion) {
+      return new Response(
+        JSON.stringify({ error: "Email e sugestão são obrigatórios" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    try {
-        const { name, email, suggestion } = await req.json();
-
-        console.log("[SEND-SUGGESTION] Processing request:", {
-            email: email ? email.substring(0, 5) + "***" : "missing",
-            hasName: !!name,
-            hasSuggestion: !!suggestion
-        });
-
-        if (!email || !suggestion) {
-            return new Response(
-                JSON.stringify({ error: "Email e sugestão são obrigatórios" }),
-                { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
-        }
-
-        // Send email via Resend to admin
-        const emailResponse = await resend.emails.send({
-            from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
-            to: ["agenciarochadigitalmidia@gmail.com"],
-            replyTo: email,
-            subject: `💡 Nova Sugestão de ${name || email}`,
-            html: generateEmailTemplate(name || '', email, suggestion),
-        });
-
-        console.log("[SEND-SUGGESTION] Email sent:", JSON.stringify({
-            emailId: emailResponse.data?.id,
-            error: emailResponse.error
-        }));
-
-        if (emailResponse.error) {
-            console.error("[SEND-SUGGESTION] Resend error:", JSON.stringify(emailResponse.error));
-            return new Response(
-                JSON.stringify({ error: "Erro ao enviar email" }),
-                { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
-        }
-
-        return new Response(
-            JSON.stringify({ success: true, message: "Sugestão enviada com sucesso" }),
-            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-    } catch (error) {
-        console.error("[SEND-SUGGESTION] Error:", error);
-        return new Response(
-            JSON.stringify({ error: "Erro interno do servidor" }),
-            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+    // Validation: Email format
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      return new Response(
+        JSON.stringify({ error: "Email inválido" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    // Validation: Suggestion length (10-1000 characters)
+    const cleanSuggestion = suggestion.trim();
+    if (cleanSuggestion.length < 10 || cleanSuggestion.length > 1000) {
+      return new Response(
+        JSON.stringify({ error: "Sugestão deve ter entre 10 e 1000 caracteres" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Sanitize inputs to prevent XSS/injection
+    const sanitize = (str: string) => str.replace(/[<>]/g, '');
+    const safeName = name ? sanitize(name.substring(0, 100)) : '';
+    const safeEmail = sanitize(email.substring(0, 255));
+    const safeSuggestion = sanitize(cleanSuggestion);
+
+    // Send email via Resend to admin
+    const emailResponse = await resend.emails.send({
+      from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+      to: ["agenciarochadigitalmidia@gmail.com"],
+      replyTo: email,
+      subject: `💡 Nova Sugestão de ${name || email}`,
+      html: generateEmailTemplate(name || '', email, suggestion),
+    });
+
+    console.log("[SEND-SUGGESTION] Email sent:", JSON.stringify({
+      emailId: emailResponse.data?.id,
+      error: emailResponse.error
+    }));
+
+    if (emailResponse.error) {
+      console.error("[SEND-SUGGESTION] Resend error:", JSON.stringify(emailResponse.error));
+      return new Response(
+        JSON.stringify({ error: "Erro ao enviar email" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ success: true, message: "Sugestão enviada com sucesso" }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    console.error("[SEND-SUGGESTION] Error:", error);
+    return new Response(
+      JSON.stringify({ error: "Erro interno do servidor" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
 });
