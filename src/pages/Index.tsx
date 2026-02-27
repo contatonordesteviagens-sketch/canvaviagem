@@ -475,7 +475,7 @@ const Index = () => {
                           isFavorite={isFavorite("content_item", story.id)}
                           onToggleFavorite={() => handleToggleFavorite("content_item", story.id)}
                           onPremiumRequired={getPremiumCallback(activeCategory)}
-                          isPremium={!['captions', 'tools', 'videoaula', 'contracts'].includes(activeCategory || regularStories[0]?.type)}
+                          isPremium={true}
                         />
                       ))}
                     </div>
