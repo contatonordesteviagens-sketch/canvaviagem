@@ -22,33 +22,33 @@ export const PremiumGateModal = ({ isOpen, onClose }: PremiumGateModalProps) => 
 
   const translations = {
     pt: {
-      title: "🎁 Teste Grátis por 3 Dias!",
-      description: "Experimente TUDO sem pagar nada! Cancele quando quiser.",
+      title: "Desbloqueie o Conteúdo Pro 🚀",
+      description: "Tenha acesso a todos os templates, vídeos e artes ilimitadas.",
       price: "R$ 29,00",
       period: "/mês",
-      trial: "Após 3 dias de teste grátis",
-      cta: "Começar Teste Grátis Agora",
+      trial: "Acesso imediato após a assinatura",
+      cta: "Assinar Plano Agora",
       close: "Voltar",
       features: [
-        "✅ 3 dias grátis para testar tudo",
-        "+250 templates de vídeos editáveis",
+        "✅ +250 templates de vídeos editáveis",
         "Legendas prontas ilimitadas",
+        "Artes para Agência e Stories",
         "Ferramentas de IA exclusivas",
         "Cancele quando quiser, sem taxas",
       ],
     },
     es: {
-      title: "🎁 ¡Prueba Gratis por 3 Días!",
-      description: "¡Prueba TODO sin pagar nada! Cancela cuando quieras.",
+      title: "Desbloquea el Contenido Pro 🚀",
+      description: "Obtén acceso a todas las plantillas, videos y artes ilimitadas.",
       price: "$9,09",
       period: "/mes",
-      trial: "Después de 3 días de prueba gratis",
-      cta: "Comenzar Prueba Gratis Ahora",
+      trial: "Acceso inmediato después de la suscripción",
+      cta: "Suscribirse Ahora",
       close: "Volver",
       features: [
-        "✅ 3 días gratis para probar todo",
-        "+250 plantillas de videos editables",
+        "✅ +250 plantillas de videos editables",
         "Subtítulos listos ilimitados",
+        "Artes para Agencia y Stories",
         "Herramientas de IA exclusivas",
         "Cancela cuando quieras, sin cargos",
       ],
@@ -88,7 +88,7 @@ export const PremiumGateModal = ({ isOpen, onClose }: PremiumGateModalProps) => 
 
           {/* Price */}
           <div className="text-center py-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-xl border-2 border-green-200 dark:border-green-800">
-            <p className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">🎁 Teste Grátis por 3 Dias</p>
+            <p className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">Acesso Ilimitado</p>
             <div className="flex items-baseline justify-center gap-1">
               <span className="text-4xl font-bold text-primary">{content.price}</span>
               <span className="text-muted-foreground">{content.period}</span>

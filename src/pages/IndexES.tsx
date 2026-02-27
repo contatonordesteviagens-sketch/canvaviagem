@@ -22,9 +22,9 @@ import { ToolCard } from "@/components/canva/ToolCard";
 import { BottomNav } from "@/components/canva/BottomNav";
 
 // Database hooks
-import { 
-  useContentItems, 
-  useCaptions, 
+import {
+  useContentItems,
+  useCaptions,
   useMarketingTools,
   useTrackClick,
   useFeaturedItems,
@@ -101,9 +101,14 @@ const IndexES = () => {
   // Check if user is subscribed for showing premium content (logged in + active subscription)
   const isSubscribed = user && subscription.subscribed;
 
-  // Function to get the premium required callback (only for non-subscribers)
-  const getPremiumCallback = () => {
+  // Function to get the premium required callback
+  const getPremiumCallback = (category?: CategoryType) => {
     if (isSubscribed) return undefined;
+
+    // Categorias Gratuitas (Livre acesso)
+    const freeCategories: CategoryType[] = ['captions', 'tools', 'videoaula', 'contracts'];
+    if (category && freeCategories.includes(category)) return undefined;
+
     return () => setShowPremiumGate(true);
   };
 
@@ -196,14 +201,14 @@ const IndexES = () => {
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         });
         const displayedSortedVideos = showAllVideos ? sortedVideos : sortedVideos.slice(0, 10);
-        
+
         return (
           <section className="animate-fade-in">
             {/* Highlights Section - Show at top if there are highlighted items */}
             {highlightedItems && highlightedItems.length > 0 && (
               <div className="mb-8">
-                <SectionHeader 
-                  title="✨ Destacados de la Semana" 
+                <SectionHeader
+                  title="✨ Destacados de la Semana"
                   subtitle="Contenidos destacados seleccionados para ti"
                 />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -213,21 +218,21 @@ const IndexES = () => {
                       {item.media_url ? (
                         <div className="aspect-video bg-muted">
                           {item.media_type === 'gif' ? (
-                            <img 
-                              src={item.media_url} 
-                              alt={item.title} 
-                              className="w-full h-full object-cover" 
+                            <img
+                              src={item.media_url}
+                              alt={item.title}
+                              className="w-full h-full object-cover"
                               loading="lazy"
                               onError={(e) => {
                                 e.currentTarget.src = '/placeholder.svg';
                               }}
                             />
                           ) : (
-                            <video 
-                              src={item.media_url} 
-                              autoPlay 
-                              loop 
-                              muted 
+                            <video
+                              src={item.media_url}
+                              autoPlay
+                              loop
+                              muted
                               playsInline
                               className="w-full h-full object-cover"
                               onError={(e) => {
@@ -238,10 +243,10 @@ const IndexES = () => {
                         </div>
                       ) : item.image_url ? (
                         <div className="aspect-video bg-muted">
-                          <img 
-                            src={item.image_url} 
-                            alt={item.title} 
-                            className="w-full h-full object-cover" 
+                          <img
+                            src={item.image_url}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
                             loading="lazy"
                           />
                         </div>
@@ -258,8 +263,8 @@ const IndexES = () => {
                         {item.description && (
                           <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{item.description}</p>
                         )}
-                        <Button 
-                          className="w-full mt-3" 
+                        <Button
+                          className="w-full mt-3"
                           onClick={() => {
                             trackClick(item.type, item.id);
                             window.open(item.url, '_blank');
@@ -274,14 +279,14 @@ const IndexES = () => {
                 </div>
               </div>
             )}
-            
-            <SectionHeader 
-              title="Videos Reels Editables" 
+
+            <SectionHeader
+              title="Videos Reels Editables"
               subtitle="Plantillas listas para editar en Canva y publicar"
             />
-            
+
             {/* FilterChips removed - ES version shows all content without filters */}
-            
+
             {videosLoading ? (
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
                 {[...Array(10)].map((_, i) => (
@@ -306,15 +311,15 @@ const IndexES = () => {
                       onClick={() => handleCardClick(template)}
                       isFavorite={isFavorite("content_item", template.id)}
                       onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                      onPremiumRequired={getPremiumCallback()}
+                      onPremiumRequired={getPremiumCallback(activeCategory)}
                     />
                   ))}
                 </div>
-                
+
                 {sortedVideos.length > 10 && (
                   <div className="flex justify-center mt-8">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => setShowAllVideos(!showAllVideos)}
                       className="gap-2 rounded-full px-6"
                     >
@@ -340,11 +345,11 @@ const IndexES = () => {
       case 'feed':
         return (
           <section className="animate-fade-in">
-            <SectionHeader 
-              title="Arte para Agencia de Viajes" 
+            <SectionHeader
+              title="Arte para Agencia de Viajes"
               subtitle="Posts listos para enganchar a tu público"
             />
-            
+
             {feedLoading ? (
               <ContentSkeleton />
             ) : (
@@ -361,7 +366,7 @@ const IndexES = () => {
                     onClick={() => handleCardClick(template)}
                     isFavorite={isFavorite("content_item", template.id)}
                     onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                    onPremiumRequired={getPremiumCallback()}
+                    onPremiumRequired={getPremiumCallback(activeCategory)}
                   />
                 ))}
               </div>
@@ -378,11 +383,11 @@ const IndexES = () => {
               <>
                 {weeklyStories.length > 0 && (
                   <div>
-                    <SectionHeader 
-                      title="Stories Semanales" 
+                    <SectionHeader
+                      title="Stories Semanales"
                       subtitle="Planificación semanal de contenido"
                     />
-                    
+
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {weeklyStories.map((story) => (
                         <PremiumCard
@@ -395,7 +400,7 @@ const IndexES = () => {
                           onClick={() => handleCardClick(story)}
                           isFavorite={isFavorite("content_item", story.id)}
                           onToggleFavorite={() => handleToggleFavorite("content_item", story.id)}
-                          onPremiumRequired={getPremiumCallback()}
+                          onPremiumRequired={getPremiumCallback(activeCategory)}
                         />
                       ))}
                     </div>
@@ -403,11 +408,11 @@ const IndexES = () => {
                 )}
 
                 <div>
-                  <SectionHeader 
-                    title="Plantillas de Stories" 
+                  <SectionHeader
+                    title="Plantillas de Stories"
                     subtitle="Artes individuales para stories"
                   />
-                  
+
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {filterTemplates(regularStories).map((template) => (
                       <PremiumCard
@@ -421,7 +426,7 @@ const IndexES = () => {
                         onClick={() => handleCardClick(template)}
                         isFavorite={isFavorite("content_item", template.id)}
                         onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                        onPremiumRequired={getPremiumCallback()}
+                        onPremiumRequired={getPremiumCallback(activeCategory)}
                       />
                     ))}
                   </div>
@@ -434,11 +439,11 @@ const IndexES = () => {
       case 'captions':
         return (
           <section className="animate-fade-in">
-            <SectionHeader 
-              title="Subtítulos Listos" 
+            <SectionHeader
+              title="Subtítulos Listos"
               subtitle="Copia y pega subtítulos profesionales para tus posts"
             />
-            
+
             {captionsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[...Array(6)].map((_, i) => (
@@ -457,16 +462,16 @@ const IndexES = () => {
                         hashtags={caption.hashtags}
                         isFavorite={isFavorite("caption", caption.id)}
                         onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
-                        onPremiumRequired={getPremiumCallback()}
+                        onPremiumRequired={getPremiumCallback(activeCategory)}
                       />
                     </div>
                   ))}
                 </div>
-                
+
                 {filteredCaptions.length > 8 && (
                   <div className="flex justify-center mt-8">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => setShowAllCaptions(!showAllCaptions)}
                       className="gap-2 rounded-full px-6"
                     >
@@ -492,11 +497,11 @@ const IndexES = () => {
       case 'downloads':
         return (
           <section className="animate-fade-in">
-            <SectionHeader 
-              title="Descargas de Videos" 
+            <SectionHeader
+              title="Descargas de Videos"
               subtitle="Accede a videos listos para usar"
             />
-            
+
             <div className="max-w-2xl mx-auto bg-card rounded-3xl shadow-canva p-6">
               <ResourceSection
                 title="📥 Biblioteca de Videos"
@@ -510,15 +515,15 @@ const IndexES = () => {
       case 'tools':
         return (
           <section className="animate-fade-in">
-            <SectionHeader 
-              title="Herramientas de Marketing" 
+            <SectionHeader
+              title="Herramientas de Marketing"
               subtitle="Robots de IA y recursos para agencias"
             />
-            
+
             <h3 className="font-bold text-foreground mb-5 text-xl">
               Robots de IA para Marketing
             </h3>
-            
+
             {toolsLoading ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {[...Array(6)].map((_, i) => (
@@ -539,16 +544,20 @@ const IndexES = () => {
                     onClick={() => trackClick('tool', tool.id)}
                     isFavorite={isFavorite("marketing_tool", tool.id)}
                     onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                    onPremiumRequired={getPremiumCallback()}
+                    onPremiumRequired={getPremiumCallback(activeCategory)}
                   />
                 ))}
               </div>
             )}
-            
+
             <div className="bg-card rounded-3xl shadow-canva p-6">
               <ResourceSection
                 title="📚 Materiales y Recursos"
-                resources={resources}
+                resources={resources.map(r =>
+                  r.name === "Calendário Editorial"
+                    ? { ...r, onPremiumRequired: getPremiumCallback('videos') }
+                    : r
+                )}
                 description="PDFs, comunidad y calendario editorial"
               />
             </div>
@@ -558,11 +567,11 @@ const IndexES = () => {
       case 'videoaula':
         return (
           <section className="animate-fade-in">
-            <SectionHeader 
-              title="Videoclases" 
+            <SectionHeader
+              title="Videoclases"
               subtitle="Aprende a crear contenido profesional"
             />
-            
+
             <div className="space-y-6">
               <div className="bg-card rounded-3xl shadow-canva p-6">
                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
@@ -586,11 +595,11 @@ const IndexES = () => {
       case 'favorites':
         return (
           <section className="animate-fade-in">
-            <SectionHeader 
-              title="Mis Favoritos" 
+            <SectionHeader
+              title="Mis Favoritos"
               subtitle="Elementos guardados para acceso rápido"
             />
-            
+
             {favorites.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Heart className="h-16 w-16 mx-auto mb-4 opacity-30" />
@@ -618,7 +627,7 @@ const IndexES = () => {
                             onClick={() => handleCardClick(template)}
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                            onPremiumRequired={getPremiumCallback()}
+                            onPremiumRequired={getPremiumCallback(activeCategory)}
                           />
                         ))}
                       </div>
@@ -645,7 +654,7 @@ const IndexES = () => {
                             onClick={() => handleCardClick(template)}
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                            onPremiumRequired={getPremiumCallback()}
+                            onPremiumRequired={getPremiumCallback(activeCategory)}
                           />
                         ))}
                       </div>
@@ -672,7 +681,7 @@ const IndexES = () => {
                             onClick={() => handleCardClick(template)}
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                            onPremiumRequired={getPremiumCallback()}
+                            onPremiumRequired={getPremiumCallback(activeCategory)}
                           />
                         ))}
                       </div>
@@ -697,7 +706,7 @@ const IndexES = () => {
                             hashtags={caption.hashtags}
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
-                            onPremiumRequired={getPremiumCallback()}
+                            onPremiumRequired={getPremiumCallback(activeCategory)}
                           />
                         ))}
                       </div>
@@ -743,18 +752,18 @@ const IndexES = () => {
   const mainContent = (
     <>
       {/* Hero Banner with Search */}
-      <HeroBanner 
+      <HeroBanner
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
       />
-      
+
       {/* Category Navigation - Horizontal scroll with icons */}
-      <CategoryNav 
+      <CategoryNav
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}
         showFavorites={!!user}
       />
-      
+
       {/* Dynamic Content based on category */}
       {renderContent()}
     </>
@@ -764,23 +773,23 @@ const IndexES = () => {
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <SpanishPixel />
       <Header onCategoryChange={setActiveCategory} />
-      
+
       <main className="container mx-auto px-4 py-4 md:py-6 max-w-7xl">
         {mainContent}
       </main>
-      
+
       <Footer />
-      
+
       {/* Bottom Navigation - Mobile only */}
-      <BottomNav 
-        activeCategory={activeCategory} 
-        onCategoryChange={setActiveCategory} 
+      <BottomNav
+        activeCategory={activeCategory}
+        onCategoryChange={setActiveCategory}
       />
 
       {/* Premium Gate Modal - triggered by action */}
-      <PremiumGateModal 
-        isOpen={showPremiumGate} 
-        onClose={() => setShowPremiumGate(false)} 
+      <PremiumGateModal
+        isOpen={showPremiumGate}
+        onClose={() => setShowPremiumGate(false)}
       />
     </div>
   );
