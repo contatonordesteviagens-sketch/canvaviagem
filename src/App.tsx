@@ -55,10 +55,7 @@ const App = () => (
             <BrowserRouter>
               <UtmTracker />
               <WhatsAppButton />
-              {/* 🍌 TESTE DE CONEXÃO - REMOVER DEPOIS */}
-              <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 999999, background: "#ff0000", color: "white", textAlign: "center", padding: "10px", fontWeight: "bold", fontSize: "20px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}>
-                🍌 CONEXÃO ATIVA - LOVABLE SYNC 🍌
-              </div>
+
               <Routes>
                 {/* ROTAS PORTUGUÊS */}
                 <Route path="/" element={<Index />} />
