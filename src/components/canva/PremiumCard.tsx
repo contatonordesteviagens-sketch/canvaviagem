@@ -1,4 +1,4 @@
-import { ExternalLink, Heart } from "lucide-react";
+import { ExternalLink, Heart, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PremiumCardProps {
@@ -8,6 +8,7 @@ interface PremiumCardProps {
   imageUrl?: string;
   category?: string;
   isNew?: boolean;
+  isPremium?: boolean; // New prop
   aspectRatio?: "9/16" | "4/5" | "1/1" | "16/10";
   variant?: "image" | "icon";
   icon?: string;
@@ -17,13 +18,13 @@ interface PremiumCardProps {
   onPremiumRequired?: () => void;
 }
 
-export const PremiumCard = ({ 
+export const PremiumCard = ({
   id,
-  title, 
-  url, 
+  title,
+  url,
   imageUrl,
   category,
-  isNew, 
+  isNew,
   aspectRatio = "9/16",
   variant = "icon",
   icon = "📱",
@@ -69,13 +70,13 @@ export const PremiumCard = ({
   };
 
   return (
-    <a 
-      href={url} 
+    <a
+      href={url}
       rel="noopener noreferrer"
       className="group block relative"
       onClick={handleClick}
     >
-      <div 
+      <div
         className={cn(
           "relative overflow-hidden rounded-2xl border-none transition-all duration-300",
           "shadow-canva hover:shadow-canva-hover",
@@ -89,7 +90,7 @@ export const PremiumCard = ({
             onClick={handleFavoriteClick}
             className="absolute top-2 md:top-3 right-2 md:right-3 z-30 p-1.5 md:p-2 rounded-full bg-black/30 backdrop-blur-sm transition-all hover:bg-black/50"
           >
-            <Heart 
+            <Heart
               className={cn(
                 "w-4 h-4 md:w-5 md:h-5 transition-colors",
                 isFavorite ? "fill-red-500 text-red-500" : "text-white"
@@ -107,19 +108,26 @@ export const PremiumCard = ({
             Novo
           </span>
         )}
-        
+
         {/* Category Badge */}
         {category && !isNew && (
           <span className="absolute top-2 md:top-3 left-2 md:left-3 z-20 bg-primary/90 text-primary-foreground text-[10px] md:text-xs font-medium px-2 md:px-3 py-1 md:py-1.5 rounded-full backdrop-blur-sm">
             {category}
           </span>
         )}
-        
+
+        {/* Premium Badge (Crown) */}
+        {isPremium && (
+          <div className="absolute bottom-16 md:bottom-20 left-2 md:left-3 z-30 p-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 shadow-lg group-hover:bg-black/60 transition-all duration-300">
+            <Crown className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400 fill-amber-400" />
+          </div>
+        )}
+
         {/* Image or Placeholder */}
         {imageUrl ? (
           <>
-            <img 
-              src={imageUrl} 
+            <img
+              src={imageUrl}
               alt={title}
               className="w-full h-full object-cover transition-all duration-500 group-hover:brightness-110"
             />
@@ -134,14 +142,14 @@ export const PremiumCard = ({
             <span className="text-3xl md:text-5xl mb-2">{icon}</span>
           </div>
         )}
-        
+
         {/* Content overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 z-10">
           {/* Title */}
           <h3 className="text-white font-bold text-base md:text-lg mb-2 md:mb-3 drop-shadow-lg line-clamp-2">
             {title}
           </h3>
-          
+
           {/* CTA Button - Compacto e elegante */}
           <button className="w-full bg-white/95 backdrop-blur-sm text-foreground font-medium py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 text-sm transition-all duration-300 hover:bg-white active:scale-95 shadow-sm">
             <ExternalLink className="w-3.5 h-3.5" />

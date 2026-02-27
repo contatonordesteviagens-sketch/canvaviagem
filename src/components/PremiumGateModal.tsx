@@ -1,125 +1,114 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Lock, Sparkles, Check } from "lucide-react";
+import { Crown, Sparkles, Check, X, Shield, Download, Bot, Star } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-
-// Checkout links by language
-const STRIPE_LINKS = {
-  pt: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
-  es: "https://buy.stripe.com/bJedRa3TIej6cz15gE8so04",
-};
-
-interface PremiumGateModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
 import { useNavigate } from "react-router-dom";
 
-export const PremiumGateModal = ({ isOpen, onClose }: PremiumGateModalProps) => {
+// Standardize fonts and spacing for a premium feel
+export const PremiumGateModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const navigate = useNavigate();
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
 
-  const translations = {
-    pt: {
-      title: "Desbloqueie o Conteúdo Pro 🚀",
-      description: "Tenha acesso a todos os templates, vídeos e artes ilimitadas.",
-      price: "R$ 29,00",
-      period: "/mês",
-      trial: "Acesso imediato após a assinatura",
-      cta: "Assinar Plano Agora",
-      close: "Voltar",
-      features: [
-        "✅ +250 templates de vídeos editáveis",
-        "Legendas prontas ilimitadas",
-        "Artes para Agência e Stories",
-        "Ferramentas de IA exclusivas",
-        "Cancele quando quiser, sem taxas",
-      ],
-    },
-    es: {
-      title: "Desbloquea el Contenido Pro 🚀",
-      description: "Obtén acceso a todas las plantillas, videos y artes ilimitadas.",
-      price: "$9,09",
-      period: "/mes",
-      trial: "Acceso inmediato después de la suscripción",
-      cta: "Suscribirse Ahora",
-      close: "Volver",
-      features: [
-        "✅ +250 plantillas de videos editables",
-        "Subtítulos listos ilimitados",
-        "Artes para Agencia y Stories",
-        "Herramientas de IA exclusivas",
-        "Cancela cuando quieras, sin cargos",
-      ],
-    },
+  const handleSubscribe = () => {
+    navigate("/planos");
+    onClose();
   };
 
-  const content = translations[language] || translations.pt;
-  const checkoutUrl = STRIPE_LINKS[language] || STRIPE_LINKS.pt;
+  const isPT = language === 'pt';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md mx-4">
-        <DialogHeader className="text-center">
-          <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4">
-            <Lock className="h-8 w-8 text-primary-foreground" />
-          </div>
-          <DialogTitle className="text-2xl font-bold text-center">
-            {content.title}
-          </DialogTitle>
-          <DialogDescription className="text-center text-base mt-2">
-            {content.description}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-6 mt-4">
-          {/* Features */}
-          <div className="space-y-3">
-            {content.features.map((feature, idx) => (
-              <div key={idx} className="flex items-center gap-3 text-sm">
-                <div className="h-5 w-5 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
-                  <Check className="h-3 w-3 text-accent" />
-                </div>
-                <span>{feature}</span>
+      <DialogContent className="max-w-[700px] p-0 overflow-hidden border-none bg-white rounded-[32px] shadow-2xl">
+        <div className="flex flex-col md:flex-row min-h-[450px]">
+          {/* Left Side: Content */}
+          <div className="flex-1 p-8 md:p-10 flex flex-col justify-between">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h2 className="text-3xl md:text-3xl font-black text-[#1A1A1A] leading-tight">
+                  {isPT ? "Desbloquear funcionalidades e conteúdo Premium" : "Desbloquea funcionalidades y contenido Premium"}
+                </h2>
               </div>
-            ))}
-          </div>
 
-          {/* Price */}
-          <div className="text-center py-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-xl border-2 border-green-200 dark:border-green-800">
-            <p className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">Acesso Ilimitado</p>
-            <div className="flex items-baseline justify-center gap-1">
-              <span className="text-4xl font-bold text-primary">{content.price}</span>
-              <span className="text-muted-foreground">{content.period}</span>
+              {/* Benefits List */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
+                {[
+                  { icon: Bot, text: isPT ? "Ferramentas de IA" : "Herramientas de IA" },
+                  { icon: Crown, text: isPT ? "Conteúdo Premium" : "Contenido Premium" },
+                  { icon: Download, text: isPT ? "Downloads ilimitados" : "Descargas ilimitadas" },
+                  { icon: Shield, text: isPT ? "Garantia de 7 dias" : "Garantía de 7 días" },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 text-[#4A4A4A] font-medium text-sm">
+                    <item.icon className="w-4 h-4 text-[#8B5CF6]" />
+                    <span>{item.text}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Price / Tabs Placeholder */}
+              <div className="space-y-4 pt-4">
+                <div className="flex bg-[#F5F5F5] rounded-lg p-1 w-fit">
+                  <div className="px-6 py-1.5 text-sm font-semibold text-[#4A4A4A]">Mensal</div>
+                  <div className="px-6 py-1.5 text-sm font-bold text-white bg-[#1A1A1A] rounded-md shadow-md">
+                    Anual
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-black text-[#1A1A1A]">R$ 29,00</span>
+                    <span className="text-[#6B7280] font-medium text-lg">/mês</span>
+                    <div className="ml-2 bg-[#1A1A1A] text-white text-[10px] font-bold px-2 py-0.5 rounded leading-none">
+                      39% DESC.
+                    </div>
+                  </div>
+                  <p className="text-sm text-[#6B7280] font-medium">Pagamento recorrente mensal</p>
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">{content.trial}</p>
+
+            <div className="space-y-4 pt-8">
+              <Button
+                onClick={handleSubscribe}
+                className="w-full bg-[#FFB800] hover:bg-[#E6A600] text-[#1A1A1A] font-black py-7 text-xl rounded-xl shadow-[0_4px_0_rgb(204,147,0)] hover:shadow-none translate-y-[-4px] hover:translate-y-0 transition-all"
+              >
+                {isPT ? "Seja Premium" : "Hazte Premium"}
+              </Button>
+
+              <button
+                onClick={handleSubscribe}
+                className="w-full text-center text-sm font-bold text-[#1A1A1A] hover:underline"
+              >
+                {isPT ? "Ver planos com geração ilimitada" : "Ver planes con generación ilimitada"}
+              </button>
+            </div>
           </div>
 
-          {/* CTA Button */}
-          <Button
-            onClick={() => {
-              // Navigate to plans page instead of direct checkout
-              navigate("/planos");
-              onClose();
-            }}
-            size="lg"
-            className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-bold py-6 text-lg"
-          >
-            <Sparkles className="w-5 h-5 mr-2" />
-            {content.cta}
-          </Button>
+          {/* Right Side: Decorative Image/Pattern */}
+          <div className="hidden md:flex flex-1 bg-gradient-to-br from-[#8B5CF6] to-[#D946EF] relative items-center justify-center p-12 overflow-hidden">
+            {/* Mock design representation */}
+            <div className="relative z-10 w-full aspect-square bg-white rounded-2xl shadow-2xl p-4 rotate-3 transform">
+              <div className="w-full h-2/3 bg-slate-100 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
+                <div className="text-6xl">📸</div>
+              </div>
+              <div className="space-y-2">
+                <div className="h-4 w-3/4 bg-slate-200 rounded"></div>
+                <div className="h-3 w-1/2 bg-slate-100 rounded"></div>
+              </div>
+            </div>
 
-          {/* Close Button */}
-          <Button
-            onClick={onClose}
-            variant="ghost"
-            size="lg"
-            className="w-full"
-          >
-            {content.close}
-          </Button>
+            {/* Decorative circles */}
+            <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-white/20 rounded-full blur-3xl"></div>
+          </div>
         </div>
+
+        {/* Close Button Override */}
+        <button
+          onClick={onClose}
+          className="absolute top-5 right-5 p-2 rounded-full hover:bg-black/5 transition-colors z-50 text-slate-400 hover:text-slate-600"
+        >
+          <X className="w-6 h-6" />
+        </button>
       </DialogContent>
     </Dialog>
   );

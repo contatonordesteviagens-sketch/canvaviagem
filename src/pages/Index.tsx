@@ -372,6 +372,7 @@ const Index = () => {
                       isFavorite={isFavorite("content_item", template.id)}
                       onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
                       onPremiumRequired={getPremiumCallback(activeCategory)}
+                      isPremium={!['captions', 'tools', 'videoaula', 'contracts'].includes(activeCategory || template.type)}
                     />
                   ))}
                 </div>
