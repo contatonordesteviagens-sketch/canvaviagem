@@ -97,9 +97,14 @@ const Index = () => {
   // Check if user is subscribed for showing premium content (logged in + active subscription)
   const isSubscribed = user && subscription.subscribed;
 
-  // Function to get the premium required callback (only for non-subscribers)
-  const getPremiumCallback = () => {
+  // Function to get the premium required callback
+  const getPremiumCallback = (category?: CategoryType) => {
     if (isSubscribed) return undefined;
+
+    // Categorias Gratuitas (Livre acesso)
+    const freeCategories: CategoryType[] = ['captions', 'tools', 'videoaula', 'contracts'];
+    if (category && freeCategories.includes(category)) return undefined;
+
     return () => setShowPremiumGate(true);
   };
   const destinosNacionais = [
@@ -365,7 +370,7 @@ const Index = () => {
                       onClick={() => handleCardClick(template)}
                       isFavorite={isFavorite("content_item", template.id)}
                       onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                      onPremiumRequired={getPremiumCallback()}
+                      onPremiumRequired={getPremiumCallback(activeCategory)}
                     />
                   ))}
                 </div>
@@ -432,7 +437,7 @@ const Index = () => {
                     onClick={() => handleCardClick(template)}
                     isFavorite={isFavorite("content_item", template.id)}
                     onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                    onPremiumRequired={getPremiumCallback()}
+                    onPremiumRequired={getPremiumCallback(activeCategory)}
                   />
                 ))}
               </div>
@@ -466,7 +471,7 @@ const Index = () => {
                           onClick={() => handleCardClick(story)}
                           isFavorite={isFavorite("content_item", story.id)}
                           onToggleFavorite={() => handleToggleFavorite("content_item", story.id)}
-                          onPremiumRequired={getPremiumCallback()}
+                          onPremiumRequired={getPremiumCallback(activeCategory)}
                         />
                       ))}
                     </div>
@@ -492,7 +497,7 @@ const Index = () => {
                         onClick={() => handleCardClick(template)}
                         isFavorite={isFavorite("content_item", template.id)}
                         onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                        onPremiumRequired={getPremiumCallback()}
+                        onPremiumRequired={getPremiumCallback(activeCategory)}
                       />
                     ))}
                   </div>
@@ -528,7 +533,7 @@ const Index = () => {
                         hashtags={caption.hashtags}
                         isFavorite={isFavorite("caption", caption.id)}
                         onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
-                        onPremiumRequired={getPremiumCallback()}
+                        onPremiumRequired={getPremiumCallback(activeCategory)}
                       />
                     </div>
                   ))}
@@ -613,7 +618,7 @@ const Index = () => {
                     }}
                     isFavorite={isFavorite("marketing_tool", tool.id)}
                     onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                    onPremiumRequired={getPremiumCallback()}
+                    onPremiumRequired={getPremiumCallback(activeCategory)}
                   />
                 ))}
               </div>
@@ -622,13 +627,33 @@ const Index = () => {
             <div className="bg-card rounded-3xl shadow-canva p-6">
               <ResourceSection
                 title="📚 Materiais e Recursos"
-                resources={resources}
+                resources={resources.map(r =>
+                  r.name === "Calendário Editorial"
+                    ? { ...r, onPremiumRequired: getPremiumCallback('videos') }
+                    : r
+                )}
                 description="PDFs, comunidade e calendário editorial"
               />
             </div>
           </section>
         );
 
+      case 'contracts':
+        return (
+          <section className="animate-fade-in text-center py-12">
+            <SectionHeader
+              title="Modelos de Contratos"
+              subtitle="Documentos jurídicos para sua agência de viagens"
+            />
+            <div className="bg-muted/30 rounded-3xl p-12 border-2 border-dashed border-muted-foreground/20">
+              <div className="text-6xl mb-4">📄</div>
+              <h3 className="text-2xl font-bold mb-2">Em breve</h3>
+              <p className="text-muted-foreground">
+                Estamos preparando modelos de contratos profissionais para você utilizar na sua agência.
+              </p>
+            </div>
+          </section>
+        );
       case 'videoaula':
         return (
           <section className="animate-fade-in">
@@ -693,7 +718,7 @@ const Index = () => {
                             onClick={() => handleCardClick(template)}
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                            onPremiumRequired={getPremiumCallback()}
+                            onPremiumRequired={getPremiumCallback(activeCategory)}
                           />
                         ))}
                       </div>
@@ -720,7 +745,7 @@ const Index = () => {
                             onClick={() => handleCardClick(template)}
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                            onPremiumRequired={getPremiumCallback()}
+                            onPremiumRequired={getPremiumCallback(activeCategory)}
                           />
                         ))}
                       </div>
@@ -747,7 +772,7 @@ const Index = () => {
                             onClick={() => handleCardClick(template)}
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                            onPremiumRequired={getPremiumCallback()}
+                            onPremiumRequired={getPremiumCallback(activeCategory)}
                           />
                         ))}
                       </div>
@@ -772,7 +797,7 @@ const Index = () => {
                             hashtags={caption.hashtags}
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
-                            onPremiumRequired={getPremiumCallback()}
+                            onPremiumRequired={getPremiumCallback('videos')}
                           />
                         ))}
                       </div>
@@ -798,7 +823,7 @@ const Index = () => {
                             description={tool.description || ""}
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                            onPremiumRequired={getPremiumCallback()}
+                            onPremiumRequired={getPremiumCallback('tools')}
                           />
                         ))}
                       </div>

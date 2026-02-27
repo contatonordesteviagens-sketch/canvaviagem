@@ -3,7 +3,7 @@ import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-export type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
+export type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'contracts' | 'favorites';
 
 interface CategoryNavProps {
   activeCategory: CategoryType;
@@ -19,25 +19,30 @@ export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = 
   const [hasAnimated, setHasAnimated] = useState(false);
 
   const categories: { id: CategoryType; label: string; icon: React.ReactNode }[] = [
+    // Recursos PRO
     { id: 'videos', label: t('category.videos'), icon: <Video className="w-6 h-6" /> },
     { id: 'feed', label: t('category.feed'), icon: <Image className="w-6 h-6" /> },
     { id: 'stories', label: t('category.stories'), icon: <LayoutGrid className="w-6 h-6" /> },
-    { id: 'captions', label: t('category.captions'), icon: <FileText className="w-6 h-6" /> },
     { id: 'downloads', label: t('category.downloads'), icon: <Download className="w-6 h-6" /> },
+
+    // Ferramentas Gratuitas
+    { id: 'captions', label: t('category.captions'), icon: <FileText className="w-6 h-6" /> },
     { id: 'tools', label: t('category.tools'), icon: <Bot className="w-6 h-6" /> },
     { id: 'videoaula', label: t('category.videoaula'), icon: <GraduationCap className="w-6 h-6" /> },
+    { id: 'contracts', label: "Contratos", icon: <FileText className="w-6 h-6" /> }, // New
+
     { id: 'favorites', label: t('category.favorites'), icon: <Heart className="w-6 h-6" /> },
   ];
 
-  const displayCategories = showFavorites 
-    ? categories 
+  const displayCategories = showFavorites
+    ? categories
     : categories.filter(c => c.id !== 'favorites');
 
   // Check scroll position and update arrow visibility
   const checkScrollPosition = useCallback(() => {
     const container = scrollRef.current;
     if (!container) return;
-    
+
     const { scrollLeft, scrollWidth, clientWidth } = container;
     setCanScrollLeft(scrollLeft > 5);
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
@@ -72,7 +77,7 @@ export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = 
     const timer = setTimeout(() => {
       // Animate scroll to the right then back
       container.scrollTo({ left: 60, behavior: 'smooth' });
-      
+
       setTimeout(() => {
         container.scrollTo({ left: 0, behavior: 'smooth' });
         setHasAnimated(true);
@@ -86,7 +91,7 @@ export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = 
   const scroll = (direction: 'left' | 'right') => {
     const container = scrollRef.current;
     if (!container) return;
-    
+
     const scrollAmount = 200;
     container.scrollBy({
       left: direction === 'left' ? -scrollAmount : scrollAmount,
@@ -111,21 +116,21 @@ export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = 
       {/* Categories container with fade edges */}
       <div className="relative">
         {/* Left fade gradient */}
-        <div 
+        <div
           className={cn(
             "absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none transition-opacity duration-200",
             canScrollLeft ? "opacity-100" : "opacity-0"
           )}
         />
-        
+
         {/* Right fade gradient - visual only */}
-        <div 
+        <div
           className={cn(
             "absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none transition-opacity duration-200",
             canScrollRight ? "opacity-100" : "opacity-0"
           )}
         />
-        
+
         {/* Clickable scroll button - mobile & desktop */}
         <button
           onClick={() => scroll('right')}
@@ -138,14 +143,14 @@ export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = 
           <ChevronRight className="w-5 h-5 text-muted-foreground animate-pulse" />
         </button>
 
-        <div 
+        <div
           ref={scrollRef}
           className="overflow-x-auto scrollbar-hide -mx-4 px-4"
         >
           <div className="flex gap-4 pb-2 snap-x-mandatory min-w-max">
             {displayCategories.map((category) => {
               const isActive = activeCategory === category.id;
-              
+
               return (
                 <button
                   key={category.id}
@@ -156,14 +161,14 @@ export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = 
                   <div
                     className={cn(
                       "w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300",
-                      isActive 
-                        ? "bg-primary/10 ring-[3px] ring-primary text-primary" 
+                      isActive
+                        ? "bg-primary/10 ring-[3px] ring-primary text-primary"
                         : "bg-secondary text-muted-foreground hover:bg-secondary/80 group-hover:scale-105"
                     )}
                   >
                     {category.icon}
                   </div>
-                  
+
                   {/* Label */}
                   <span
                     className={cn(
