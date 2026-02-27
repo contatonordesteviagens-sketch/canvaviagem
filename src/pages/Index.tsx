@@ -502,6 +502,7 @@ const Index = () => {
                         isFavorite={isFavorite("content_item", template.id)}
                         onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
                         onPremiumRequired={getPremiumCallback(activeCategory)}
+                        isPremium={true}
                       />
                     ))}
                   </div>
@@ -723,6 +724,7 @@ const Index = () => {
                             isFavorite={true}
                             onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
                             onPremiumRequired={getPremiumCallback(activeCategory)}
+                            isPremium={true}
                           />
                         ))}
                       </div>
