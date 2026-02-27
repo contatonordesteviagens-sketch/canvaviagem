@@ -72,9 +72,9 @@ async function ensureUserAndOnboarding(
 ) {
   logStep("Starting onboarding for", { email: redactEmail(email) });
 
-  // 1. Check/Create User
-  const { data: existingUsers } = await supabase.auth.admin.listUsers();
-  const existingUser = existingUsers?.users?.find((u: any) => u.email === email);
+  // 1. Check/Create User de forma escalável
+  const { data: userData } = await supabase.auth.admin.getUserByEmail(email);
+  const existingUser = userData?.user;
   let userId: string;
 
   if (existingUser) {

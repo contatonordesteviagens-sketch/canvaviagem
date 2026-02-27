@@ -32,9 +32,24 @@ const AuthVerify = () => {
         body: { token },
       });
 
-      if (error || !data?.success) {
+      if (error) {
+        let detailedError = "Erro ao verificar token";
+        try {
+          // Tentar extrair o erro do JSON se for um erro de Edge Function (non-2xx)
+          const errorBody = JSON.parse(error.message);
+          detailedError = errorBody.error || detailedError;
+        } catch (e) {
+          detailedError = error.message;
+        }
+
         setStatus("error");
-        setErrorMessage(data?.error || error?.message || "Erro ao verificar token");
+        setErrorMessage(detailedError);
+        return;
+      }
+
+      if (!data?.success) {
+        setStatus("error");
+        setErrorMessage(data?.error || "Erro ao verificar token");
         return;
       }
 

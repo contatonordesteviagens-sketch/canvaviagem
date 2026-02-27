@@ -69,22 +69,20 @@ serve(async (req) => {
     const userName = tokenData.name;
     const userPhone = tokenData.phone;
 
-    // Verificar se o usuário existe
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const existingUser = existingUsers?.users?.find(
-      (u) => u.email?.toLowerCase() === email.toLowerCase()
-    );
+    // Verificar se o usuário existe de forma escalável
+    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserByEmail(email);
+    const existingUser = userData?.user;
 
     let userId: string;
 
     if (existingUser) {
       userId = existingUser.id;
-      
+
       // Atualizar nome e telefone no perfil se fornecidos
       const profileUpdates: Record<string, string> = {};
       if (userName) profileUpdates.name = userName;
       if (userPhone) profileUpdates.phone = userPhone;
-      
+
       if (Object.keys(profileUpdates).length > 0) {
         // Tentar atualizar com retry para garantir que o profile existe
         let attempts = 0;
@@ -94,7 +92,7 @@ serve(async (req) => {
             .from("profiles")
             .update(profileUpdates)
             .eq("user_id", userId);
-          
+
           if (!error) {
             updated = true;
             console.log("[VERIFY-MAGIC-LINK] Profile updated with name:", userName);
@@ -121,16 +119,16 @@ serve(async (req) => {
       }
 
       userId = newUser.user.id;
-      
+
       // Salvar nome e telefone no perfil do novo usuário
       const newProfileUpdates: Record<string, string> = {};
       if (userName) newProfileUpdates.name = userName;
       if (userPhone) newProfileUpdates.phone = userPhone;
-      
+
       if (Object.keys(newProfileUpdates).length > 0) {
         // Aguardar um momento para o trigger criar o perfil
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         // Tentar atualizar com retry
         let attempts = 0;
         let updated = false;
@@ -139,7 +137,7 @@ serve(async (req) => {
             .from("profiles")
             .update(newProfileUpdates)
             .eq("user_id", userId);
-          
+
           if (!error) {
             updated = true;
             console.log("[VERIFY-MAGIC-LINK] New user profile updated with name:", userName);
