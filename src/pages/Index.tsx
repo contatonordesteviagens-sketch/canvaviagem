@@ -440,6 +440,7 @@ const Index = () => {
                     isFavorite={isFavorite("content_item", template.id)}
                     onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
                     onPremiumRequired={getPremiumCallback(activeCategory)}
+                    isPremium={!['captions', 'tools', 'videoaula', 'contracts'].includes(activeCategory || template.type)}
                   />
                 ))}
               </div>
@@ -474,6 +475,7 @@ const Index = () => {
                           isFavorite={isFavorite("content_item", story.id)}
                           onToggleFavorite={() => handleToggleFavorite("content_item", story.id)}
                           onPremiumRequired={getPremiumCallback(activeCategory)}
+                          isPremium={!['captions', 'tools', 'videoaula', 'contracts'].includes(activeCategory || regularStories[0]?.type)}
                         />
                       ))}
                     </div>

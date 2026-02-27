@@ -25,6 +25,7 @@ export const PremiumCard = ({
   imageUrl,
   category,
   isNew,
+  isPremium,
   aspectRatio = "9/16",
   variant = "icon",
   icon = "📱",
