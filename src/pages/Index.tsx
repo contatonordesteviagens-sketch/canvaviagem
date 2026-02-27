@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+// Build trigger: Freemium Transition - 2026-02-27
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
