@@ -141,26 +141,20 @@ const Index = () => {
   };
 
   const checkIfItemIsPremium = (type: string, title?: string) => {
-    const itemTitle = title?.toLowerCase() || '';
-
-    // Explicit FREE keywords in title override everything
-    if (itemTitle.includes('(grátis)') || itemTitle.includes('(gratis)') || itemTitle.includes('gratuito')) {
-      return false;
-    }
-
-    // AI Tools and Videos are always Premium (per user request)
+    // ALL content is premium except specific AI tools
+    // Videos, Reels, Arts, Stories → always Pro
     if (type === 'video' || type === 'seasonal') return true;
+    if (type === 'feed' || type === 'story' || type === 'weekly-story') return true;
+    if (type === 'resource') return true;
 
+    // AI Tools: only "Vendedor de Viagem" is premium, rest are free
     if (type === 'tool' || type === 'marketing_tool') {
+      const itemTitle = title?.toLowerCase() || '';
       return itemTitle.includes('vendedor') || itemTitle.includes('viaje');
     }
 
-    // Weekly stories and heavy resources are premium
-    if (type === 'weekly-story' || type === 'resource') return true;
-
-    // Default: Feed and Story templates are free (unless specified premium in title/category later)
-    // This ensures "Grátis" filter shows content.
-    if (type === 'feed' || type === 'story') return false;
+    // Captions are always free
+    if (type === 'caption') return false;
 
     return true;
   };
@@ -327,9 +321,12 @@ const Index = () => {
             </div>
 
             {showOnlyFree ? (
-              // Show only free tools when gratis filter active
-              <div className="space-y-6">
-                <h3 className="font-bold text-foreground text-base">Ferramentas Gratuitas de IA</h3>
+              // Show only FREE AI Tools when gratis filter active
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Ferramentas gratuitas disponíveis na plataforma. Para vídeos, artes e stories —{" "}
+                  <button onClick={() => setAccessFilters([])} className="underline font-semibold text-foreground">veja o plano Pro</button>.
+                </p>
                 {toolsLoading ? (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-32 rounded-xl" />)}
@@ -357,37 +354,18 @@ const Index = () => {
                     })}
                   </div>
                 )}
-                {filterTemplates(feedTemplates).length > 0 && (
-                  <>
-                    <h3 className="font-bold text-foreground text-base mt-4">Artes e Templates Gratuitos</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {filterTemplates(feedTemplates).map(t => (
-                        <PremiumCard
-                          key={t.id} id={t.id} title={t.title} url={t.url}
-                          imageUrl={t.image_url} isNew={t.is_new}
-                          icon={getIcon(t.type, t.icon)} aspectRatio="4/5"
-                          onClick={() => handleCardClick(t)}
-                          isFavorite={isFavorite("content_item", t.id)}
-                          onToggleFavorite={() => handleToggleFavorite("content_item", t.id)}
-                          onPremiumRequired={getPremiumCallback(activeCategory, false, t.type)}
-                          isPremium={checkIfItemIsPremium(t.type, t.title)}
-                        />
-                      ))}
-                    </div>
-                  </>
-                )}
               </div>
             ) : (
-              // Default interleaved layout
-              <div className="space-y-8">
+              // Default interleaved layout — desktop-friendly
+              <div className="space-y-10">
                 {/* First 2 videos */}
                 {!videosLoading && firstTwoVideos.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
-                    {firstTwoVideos.map((template, index) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    {firstTwoVideos.map((template) => (
                       <PremiumCard
                         key={template.id} id={template.id} title={template.title} url={template.url}
                         isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
-                        imageUrl={index < 10 && template.image_url ? template.image_url : undefined}
+                        imageUrl={template.image_url || undefined}
                         aspectRatio="9/16"
                         onClick={() => handleCardClick(template)}
                         isFavorite={isFavorite("content_item", template.id)}
@@ -399,12 +377,12 @@ const Index = () => {
                   </div>
                 )}
 
-                {/* First 2 AI Tools */}
-                {!toolsLoading && firstTwoTools.length > 0 && (
+                {/* AI Tools block */}
+                {!toolsLoading && firstFourTools.length > 0 && (
                   <div>
-                    <h3 className="font-bold text-foreground mb-3 text-base">Robôs de IA para Marketing</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {firstTwoTools.map(tool => {
+                    <h3 className="font-bold text-foreground mb-3 text-sm uppercase tracking-widest text-muted-foreground">Robôs de IA</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {firstFourTools.map(tool => {
                         const isToolPremium = tool.title.toLowerCase().includes('vendedor') || tool.title.toLowerCase().includes('viaje');
                         return (
                           <ToolCard
@@ -423,35 +401,14 @@ const Index = () => {
                   </div>
                 )}
 
-                {/* Next 2 AI Tools */}
-                {!toolsLoading && nextTwoTools.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {nextTwoTools.map(tool => {
-                      const isToolPremium = tool.title.toLowerCase().includes('vendedor') || tool.title.toLowerCase().includes('viaje');
-                      return (
-                        <ToolCard
-                          key={tool.id} id={tool.id} title={tool.title} url={tool.url}
-                          icon={tool.icon} description={tool.description || "Ferramenta de IA"}
-                          isNew={tool.is_new}
-                          onClick={() => { trackClick('tool', tool.id); trackActivity('tool'); }}
-                          isFavorite={isFavorite("marketing_tool", tool.id)}
-                          onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                          onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium)}
-                          isPremium={isToolPremium}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
-
                 {/* Remaining videos */}
                 {!videosLoading && remainingVideos.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
-                    {remainingVideos.map((template, index) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    {remainingVideos.map((template) => (
                       <PremiumCard
                         key={template.id} id={template.id} title={template.title} url={template.url}
                         isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
-                        imageUrl={index < 10 && template.image_url ? template.image_url : undefined}
+                        imageUrl={template.image_url || undefined}
                         aspectRatio="9/16"
                         onClick={() => handleCardClick(template)}
                         isFavorite={isFavorite("content_item", template.id)}

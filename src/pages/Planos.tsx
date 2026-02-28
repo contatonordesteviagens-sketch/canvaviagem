@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -231,87 +231,22 @@ const Planos = () => {
       <section className="border-y border-zinc-100 bg-zinc-50 py-16 px-6">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-black mb-6 leading-snug">
-            Aqui está o problema que ninguém fala:
-          </h2>
-          <div className="space-y-5 text-base text-zinc-600 leading-relaxed">
-            <p>
-              O agente de viagem hoje sabe vender pacotes. O que ele <em>não sabe</em> — e ninguém ensina — é como usar as redes sociais para atrair clientes sem virar editor de vídeo, social media e copywriter ao mesmo tempo.
-            </p>
-            <p>
-              O resultado? Tardes inteiras editando um reels que dura 24 horas. Meses pagando freelancer por R$ 800, R$ 1.200, R$ 2.000. Semanas com o Instagram parado porque "não sabe o que postar". E meanwhile, o concorrente postando todo dia.
-            </p>
-            <p className="font-semibold text-black">
-              Não é falta de empenho. É falta da ferramenta certa.
-            </p>
-          </div>
-        </div>
-      </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          PROVA SOCIAL — Prova antes do produto (Bencivenga)
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 px-6 bg-white">
-        <div className="max-w-3xl mx-auto">
-          <p className="text-[11px] font-bold tracking-widest text-zinc-400 uppercase mb-10 text-center">
-            O que dizem quem já usa
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {PROOFS.map((p) => (
-              <div key={p.name} className="bg-zinc-950 text-white rounded-2xl p-6 flex flex-col gap-4">
-                <div className="flex gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-sm text-zinc-300 italic leading-relaxed flex-1">"{p.text}"</p>
-                <div className="pt-2 border-t border-zinc-800">
-                  <p className="text-xs font-bold text-white">{p.name}</p>
-                  <p className="text-xs text-zinc-500">via {p.source}</p>
-                </div>
+      {/* ===== DEPOIMENTOS ===== */}
+      <section className="py-10 px-6 bg-white border-b border-zinc-100">
+        <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
+          {PROOFS.map((p) => (
+            <div key={p.name} className="bg-zinc-950 text-white rounded-2xl p-5 flex flex-col gap-3">
+              <div className="flex gap-0.5">
+                {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
               </div>
-            ))}
-          </div>
+              <p className="text-sm text-zinc-300 italic leading-relaxed flex-1">&ldquo;{p.text}&rdquo;</p>
+              <p className="text-xs font-bold text-white border-t border-zinc-800 pt-2">{`${p.name}  ${p.source}`}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          GIFs — Prova visual do conteúdo real
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 px-6 bg-zinc-950">
-        <div className="max-w-3xl mx-auto">
-          <p className="text-[11px] font-bold tracking-widest text-zinc-500 uppercase mb-4 text-center">
-            Exemplos reais do conteúdo
-          </p>
-          <h2 className="text-2xl md:text-3xl font-black text-center text-white mb-3 leading-snug">
-            É isso que você vai ter na mão hoje
-          </h2>
-          <p className="text-zinc-400 text-center mb-10 text-sm max-w-lg mx-auto">
-            Cada um desses vídeos foi criado para agentes postarem diretamente no Instagram, TikTok ou WhatsApp — sem editar nada.
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              "https://media4.giphy.com/media/tJPdq4gvTvr8CgIyWI/giphy.gif",
-              "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWt3MGhsd3g1MnJtbzlkMDloczlhdTJvNWhubjZ4Z3FtNnJkeDd1aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ZQZVm01DFW3qHY0ZKs/giphy.gif",
-              "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3J2anV0aTVkYWowbDl1ZXFtNnB4ZWUwcnVnZTVzOW91ZzNncGNvNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mbylDFYWSU46XeLcsS/giphy.gif",
-              "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXQ1dHAxM2JxcWM0N3VqdWhibnBtcDR5eWVmNTZwaGI1NTJjeml3diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VcFJaM72FG76eG75In/giphy.gif",
-            ].map((gif, i) => (
-              <div key={i} className="rounded-2xl overflow-hidden border border-zinc-800 aspect-[9/16]">
-                <img
-                  src={gif}
-                  loading="lazy"
-                  alt={`Exemplo de vídeo de viagem ${i + 1}`}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-            ))}
-          </div>
-          <p className="text-zinc-500 text-xs text-center mt-6">
-            250+ vídeos disponíveis · Novos toda semana
-          </p>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════════════
           COMO FUNCIONA — 3 passos simples
       ══════════════════════════════════════════════════════════════════════ */}
       <section className="py-16 px-6 bg-white border-b border-zinc-100">
@@ -419,61 +354,6 @@ const Planos = () => {
                 </a>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-y border-zinc-100 bg-zinc-50 py-16 px-6">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-black mb-3 leading-snug">
-            Quando você entrar na plataforma, você vai descobrir:
-          </h2>
-          <p className="text-zinc-500 mb-10 text-base">
-            (Alguns desses insights valem sozinhos mais do que a assinatura)
-          </p>
-          <ul className="space-y-5">
-            {FASCINATIONS.map((f, i) => (
-              <li key={i} className="flex items-start gap-4">
-                <span className="w-6 h-6 rounded-full bg-black text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
-                  {i + 1}
-                </span>
-                <p className="text-sm md:text-base text-zinc-700 leading-relaxed">{f}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          O QUE ESTÁ INCLUÍDO — Especificidade (Bencivenga)
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 px-6 bg-white">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-black mb-3">
-            Tudo que você acessa a partir de hoje:
-          </h2>
-          <p className="text-zinc-500 mb-10 text-base">
-            Sem cobranças extras. Sem módulos "avançados" trancados.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {[
-              { n: "250+", label: "Vídeos de destinos prontos e editáveis" },
-              { n: "10", label: "Agentes de IA de marketing para viagens" },
-              { n: "365", label: "Sugestões de post no calendário anual" },
-              { n: "100+", label: "Artes e Stories editáveis no Canva" },
-              { n: "∞", label: "Legendas prontas para copiar e usar" },
-              { n: "✓", label: "Novos conteúdos adicionados toda semana" },
-              { n: "✓", label: "Suporte via WhatsApp" },
-              { n: "✓", label: "Uso comercial sem restrições de direitos" },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center gap-4 border border-zinc-200 rounded-xl p-4 hover:border-zinc-400 transition-colors"
-              >
-                <span className="text-xl font-black text-black w-8 shrink-0 text-center">{item.n}</span>
-                <p className="text-sm text-zinc-700 leading-tight">{item.label}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -627,45 +507,23 @@ const Planos = () => {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          CLOSE — O custo da inação (Bencivenga)
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section className="bg-zinc-950 text-white py-20 px-6 text-center">
-        <div className="max-w-2xl mx-auto">
-          <p className="text-[11px] font-bold tracking-[0.3em] text-zinc-500 uppercase mb-6">
-            Antes de sair
-          </p>
-          <h2 className="text-3xl md:text-4xl font-black mb-6 leading-tight">
-            Em 30 dias você vai estar em um de dois lugares:
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12 text-left">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-              <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mb-4">Sem a plataforma</p>
-              <ul className="space-y-3 text-sm text-zinc-400">
-                <li>→ Ainda perdendo tardes editando vídeos</li>
-                <li>→ Ainda sem saber o que postar amanhã</li>
-                <li>→ Ainda vendo o concorrente crescer no Instagram</li>
-              </ul>
-            </div>
-            <div className="bg-white text-black rounded-2xl p-6">
-              <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mb-4">Com a plataforma</p>
-              <ul className="space-y-3 text-sm text-zinc-700">
-                <li className="flex gap-2"><Check className="h-4 w-4 text-black shrink-0 mt-0.5" />Postando todo dia em menos de 5 minutos</li>
-                <li className="flex gap-2"><Check className="h-4 w-4 text-black shrink-0 mt-0.5" />Com um perfil que parece de grande agência</li>
-                <li className="flex gap-2"><Check className="h-4 w-4 text-black shrink-0 mt-0.5" />Com clientes chegando pelo Instagram</li>
-              </ul>
-            </div>
-          </div>
 
+      {/* ===== CTA FINAL ===== */}
+      <section className="bg-black text-white py-14 px-6 text-center">
+        <div className="max-w-xl mx-auto">
+          <h2 className="text-2xl md:text-3xl font-black mb-4 leading-tight">
+            Comece hoje. Poste amanhã.
+          </h2>
+          <p className="text-zinc-400 text-sm mb-8">Garantia de 7 dias  Acesso imediato  Cancele quando quiser</p>
           <button
             onClick={handleCheckout}
-            className="bg-white text-black font-black text-lg px-10 py-4 rounded-full hover:bg-zinc-100 transition-all shadow-xl inline-block mb-4"
+            className="bg-yellow-400 text-black font-black text-lg px-10 py-4 rounded-full hover:bg-yellow-300 transition-all shadow-xl inline-block"
           >
-            Começar agora — {isAnnual ? "R$ 16,41/mês" : "R$ 29/mês"} →
+            {isAnnual ? "Assinar por R$ 197/ano →" : "Assinar por R$ 29/mês →"}
           </button>
-          <p className="text-zinc-600 text-sm">Garantia de 7 dias · Acesso imediato · Cancele quando quiser</p>
         </div>
       </section>
+
 
       <Footer />
     </div>
