@@ -63,8 +63,8 @@ const Index = () => {
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [showAllCaptions, setShowAllCaptions] = useState(false);
   const [contentFilters, setContentFilters] = useState<ContentFilterType[]>([]);
-  const [accessFilters, setAccessFilters] = useState<AccessFilterType[]>(['premium']);
-  const [activeCategory, setActiveCategory] = useState<CategoryType>('videos');
+  const [accessFilters, setAccessFilters] = useState<AccessFilterType[]>([]);
+  const [activeCategory, setActiveCategory] = useState<CategoryType>('all');
   const [showPremiumGate, setShowPremiumGate] = useState(false);
 
   // Database hooks
@@ -290,6 +290,200 @@ const Index = () => {
   // Content sections based on active category
   const renderContent = () => {
     switch (activeCategory) {
+      case 'all': {
+        // Interleaved layout: 2 videos → 2 AI tools → 2 AI tools → rest of videos
+        const firstTwoVideos = displayedSortedVideos.slice(0, 2);
+        const remainingVideos = displayedSortedVideos.slice(2);
+        const firstFourTools = (toolsData || []).slice(0, 4);
+        const firstTwoTools = firstFourTools.slice(0, 2);
+        const nextTwoTools = firstFourTools.slice(2, 4);
+
+        // Filter by access if selected
+        const allFilterTools = (toolsData || []).filter(tool => {
+          if (accessFilters.length === 0) return true;
+          const isToolPremium = tool.title.toLowerCase().includes('vendedor') || tool.title.toLowerCase().includes('viaje');
+          if (accessFilters.includes('premium') && isToolPremium) return true;
+          if (accessFilters.includes('gratis') && !isToolPremium) return true;
+          return false;
+        });
+
+        const showOnlyFree = accessFilters.includes('gratis');
+
+        return (
+          <section className="animate-fade-in">
+            <SectionHeader
+              title="Tudo"
+              subtitle="Todo o conteúdo da plataforma em um lugar"
+            />
+            <div className="flex justify-between items-center mb-6 gap-4">
+              <AccessFilter
+                selectedFilters={accessFilters}
+                onFiltersChange={(newFilters) => {
+                  // Exclusive toggle: if clicking the same filter, deselect; otherwise select only that one
+                  if (newFilters.length === 0) {
+                    setAccessFilters([]);
+                  } else {
+                    const last = newFilters[newFilters.length - 1];
+                    setAccessFilters(accessFilters.includes(last as AccessFilterType) ? [] : [last as AccessFilterType]);
+                  }
+                }}
+              />
+              <ContentFilterDropdown
+                selectedFilters={contentFilters}
+                onFiltersChange={setContentFilters}
+              />
+            </div>
+
+            {showOnlyFree ? (
+              // Show only free tools when gratis filter active
+              <div className="space-y-6">
+                <h3 className="font-bold text-foreground text-base">Ferramentas Gratuitas de IA</h3>
+                {toolsLoading ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-32 rounded-xl" />)}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {allFilterTools.map(tool => {
+                      const isToolPremium = tool.title.toLowerCase().includes('vendedor') || tool.title.toLowerCase().includes('viaje');
+                      return (
+                        <ToolCard
+                          key={tool.id}
+                          id={tool.id}
+                          title={tool.title}
+                          url={tool.url}
+                          icon={tool.icon}
+                          description={tool.description || "Ferramenta de IA para marketing"}
+                          isNew={tool.is_new}
+                          onClick={() => { trackClick('tool', tool.id); trackActivity('tool'); }}
+                          isFavorite={isFavorite("marketing_tool", tool.id)}
+                          onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
+                          onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium)}
+                          isPremium={isToolPremium}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+                {filterTemplates(feedTemplates).length > 0 && (
+                  <>
+                    <h3 className="font-bold text-foreground text-base mt-4">Artes e Templates Gratuitos</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {filterTemplates(feedTemplates).map(t => (
+                        <PremiumCard
+                          key={t.id} id={t.id} title={t.title} url={t.url}
+                          imageUrl={t.image_url} isNew={t.is_new}
+                          icon={getIcon(t.type, t.icon)} aspectRatio="4/5"
+                          onClick={() => handleCardClick(t)}
+                          isFavorite={isFavorite("content_item", t.id)}
+                          onToggleFavorite={() => handleToggleFavorite("content_item", t.id)}
+                          onPremiumRequired={getPremiumCallback(activeCategory, false, t.type)}
+                          isPremium={checkIfItemIsPremium(t.type, t.title)}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              // Default interleaved layout
+              <div className="space-y-8">
+                {/* First 2 videos */}
+                {!videosLoading && firstTwoVideos.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+                    {firstTwoVideos.map((template, index) => (
+                      <PremiumCard
+                        key={template.id} id={template.id} title={template.title} url={template.url}
+                        isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
+                        imageUrl={index < 10 && template.image_url ? template.image_url : undefined}
+                        aspectRatio="9/16"
+                        onClick={() => handleCardClick(template)}
+                        isFavorite={isFavorite("content_item", template.id)}
+                        onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
+                        onPremiumRequired={getPremiumCallback(activeCategory, false, template.type)}
+                        isPremium={checkIfItemIsPremium(template.type, template.title)}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* First 2 AI Tools */}
+                {!toolsLoading && firstTwoTools.length > 0 && (
+                  <div>
+                    <h3 className="font-bold text-foreground mb-3 text-base">Robôs de IA para Marketing</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {firstTwoTools.map(tool => {
+                        const isToolPremium = tool.title.toLowerCase().includes('vendedor') || tool.title.toLowerCase().includes('viaje');
+                        return (
+                          <ToolCard
+                            key={tool.id} id={tool.id} title={tool.title} url={tool.url}
+                            icon={tool.icon} description={tool.description || "Ferramenta de IA"}
+                            isNew={tool.is_new}
+                            onClick={() => { trackClick('tool', tool.id); trackActivity('tool'); }}
+                            isFavorite={isFavorite("marketing_tool", tool.id)}
+                            onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
+                            onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium)}
+                            isPremium={isToolPremium}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Next 2 AI Tools */}
+                {!toolsLoading && nextTwoTools.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {nextTwoTools.map(tool => {
+                      const isToolPremium = tool.title.toLowerCase().includes('vendedor') || tool.title.toLowerCase().includes('viaje');
+                      return (
+                        <ToolCard
+                          key={tool.id} id={tool.id} title={tool.title} url={tool.url}
+                          icon={tool.icon} description={tool.description || "Ferramenta de IA"}
+                          isNew={tool.is_new}
+                          onClick={() => { trackClick('tool', tool.id); trackActivity('tool'); }}
+                          isFavorite={isFavorite("marketing_tool", tool.id)}
+                          onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
+                          onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium)}
+                          isPremium={isToolPremium}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Remaining videos */}
+                {!videosLoading && remainingVideos.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+                    {remainingVideos.map((template, index) => (
+                      <PremiumCard
+                        key={template.id} id={template.id} title={template.title} url={template.url}
+                        isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
+                        imageUrl={index < 10 && template.image_url ? template.image_url : undefined}
+                        aspectRatio="9/16"
+                        onClick={() => handleCardClick(template)}
+                        isFavorite={isFavorite("content_item", template.id)}
+                        onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
+                        onPremiumRequired={getPremiumCallback(activeCategory, false, template.type)}
+                        isPremium={checkIfItemIsPremium(template.type, template.title)}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {sortedVideos.length > 10 && (
+                  <div className="flex justify-center mt-4">
+                    <Button variant="outline" onClick={() => setShowAllVideos(!showAllVideos)} className="gap-2 rounded-full px-6">
+                      {showAllVideos ? <><ChevronUp className="h-4 w-4" />Mostrar menos</> : <><ChevronDown className="h-4 w-4" />Ver mais vídeos ({sortedVideos.length - 10} restantes)</>}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        );
+      }
+
       case 'videos':
         return (
           <section className="animate-fade-in">
@@ -377,7 +571,14 @@ const Index = () => {
             <div className="flex justify-between items-center mb-6 gap-4">
               <AccessFilter
                 selectedFilters={accessFilters}
-                onFiltersChange={setAccessFilters}
+                onFiltersChange={(newFilters) => {
+                  if (newFilters.length === 0) {
+                    setAccessFilters([]);
+                  } else {
+                    const last = newFilters[newFilters.length - 1];
+                    setAccessFilters(accessFilters.includes(last as AccessFilterType) ? [] : [last as AccessFilterType]);
+                  }
+                }}
               />
               <ContentFilterDropdown
                 selectedFilters={contentFilters}

@@ -3,7 +3,7 @@ import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-export type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'contracts' | 'favorites';
+export type CategoryType = 'all' | 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'contracts' | 'favorites';
 
 interface CategoryNavProps {
   activeCategory: CategoryType;
@@ -19,6 +19,7 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
   const [hasAnimated, setHasAnimated] = useState(false);
 
   const categories: { id: CategoryType; label: string; icon: React.ReactNode }[] = [
+    { id: 'all', label: 'Tudo', icon: <LayoutGrid className="w-6 h-6" /> },
     // Recursos PRO
     { id: 'videos', label: t('category.videos'), icon: <Video className="w-6 h-6" /> },
     { id: 'feed', label: t('category.feed'), icon: <Image className="w-6 h-6" /> },
