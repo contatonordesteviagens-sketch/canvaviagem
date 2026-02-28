@@ -198,9 +198,66 @@ serve(async (req) => {
 
     console.log("[VERIFY-MAGIC-LINK] Session created successfully for:", email);
 
+    // --- STRIPE SUBSCRIPTION CHECK ---
+    let isSubscribed = false;
+    try {
+      const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+      if (stripeKey) {
+        const Stripe = (await import("https://esm.sh/stripe@18.5.0")).default;
+        const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+
+        const customers = await stripe.customers.list({
+          email: email.toLowerCase(),
+          limit: 1
+        });
+
+        if (customers.data.length > 0) {
+          const customerId = customers.data[0].id;
+
+          // Check for active or trialing subscriptions
+          const subscriptions = await stripe.subscriptions.list({
+            customer: customerId,
+            status: "active",
+            limit: 1,
+          });
+
+          if (subscriptions.data.length > 0) {
+            isSubscribed = true;
+          } else {
+            const trialing = await stripe.subscriptions.list({
+              customer: customerId,
+              status: "trialing",
+              limit: 1,
+            });
+            isSubscribed = trialing.data.length > 0;
+          }
+
+          // Check for recent one-off payments if no subscription
+          if (!isSubscribed) {
+            const checkoutSessions = await stripe.checkout.sessions.list({
+              customer: customerId,
+              status: 'complete',
+              limit: 5,
+            });
+
+            const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
+            isSubscribed = checkoutSessions.data.some((s: any) =>
+              s.payment_status === 'paid' &&
+              s.mode === 'payment' &&
+              s.created > thirtyDaysAgo
+            );
+          }
+        }
+      }
+    } catch (stripeErr) {
+      console.error("[VERIFY-MAGIC-LINK] Error checking Stripe (continuing anyway):", stripeErr);
+    }
+    // ---------------------------------
+
     return new Response(
       JSON.stringify({
         success: true,
+        subscribed: isSubscribed,
         session: {
           access_token: accessToken,
           refresh_token: refreshToken,

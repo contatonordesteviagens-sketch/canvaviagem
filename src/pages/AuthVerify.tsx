@@ -12,6 +12,7 @@ const AuthVerify = () => {
 
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSubscribed, setIsSubscribed] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -35,9 +36,11 @@ const AuthVerify = () => {
       if (error) {
         let detailedError = "Erro ao verificar token";
         try {
-          // Tentar extrair o erro do JSON se for um erro de Edge Function (non-2xx)
-          const errorBody = JSON.parse(error.message);
-          detailedError = errorBody.error || detailedError;
+          // If error message is a JSON string from Edge Function
+          const errorBody = typeof error.message === 'string' && error.message.startsWith('{')
+            ? JSON.parse(error.message)
+            : error;
+          detailedError = errorBody.error || error.message || detailedError;
         } catch (e) {
           detailedError = error.message;
         }
@@ -52,6 +55,9 @@ const AuthVerify = () => {
         setErrorMessage(data?.error || "Erro ao verificar token");
         return;
       }
+
+      // Track subscription status for UI
+      setIsSubscribed(!!data.subscribed);
 
       // Configurar sessão com os tokens recebidos
       const { access_token, refresh_token } = data.session;
@@ -70,10 +76,10 @@ const AuthVerify = () => {
 
       setStatus("success");
 
-      // Redirecionar após 2 segundos
+      // Redirecionar após 3 segundos (mais tempo para ler a mensagem)
       setTimeout(() => {
         navigate("/", { replace: true });
-      }, 2000);
+      }, 3000);
     } catch (error) {
       console.error("Verify error:", error);
       setStatus("error");
@@ -108,9 +114,26 @@ const AuthVerify = () => {
               </div>
               <div className="space-y-2">
                 <h1 className="text-2xl font-bold text-primary">
-                  Acesso Confirmado! ✨
+                  {isSubscribed ? "Acesso Premium Confirmado! ✨" : "Conta Acessada! 👋"}
                 </h1>
                 <p className="text-muted-foreground">
+                  {isSubscribed
+                    ? "Tudo pronto! Aproveite seus recursos exclusivos."
+                    : "Você entrou no Plano Grátis da plataforma."}
+                </p>
+                {!isSubscribed && (
+                  <div className="pt-4">
+                    <Button
+                      variant="outline"
+                      className="w-full border-amber-500 text-amber-600 hover:bg-amber-50"
+                      onClick={() => navigate("/#pricing")}
+                    >
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Ver Planos Premium
+                    </Button>
+                  </div>
+                )}
+                <p className="text-[10px] text-muted-foreground mt-4 italic">
                   Redirecionando para a plataforma...
                 </p>
               </div>
