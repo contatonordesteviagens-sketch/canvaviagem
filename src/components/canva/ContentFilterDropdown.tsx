@@ -98,4 +98,6 @@ const ContentFilterDropdownComponent = ({
       </PopoverContent>
     </Popover>
   );
-}
+};
+
+export const ContentFilterDropdown = memo(ContentFilterDropdownComponent);
