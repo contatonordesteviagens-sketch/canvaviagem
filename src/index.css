@@ -238,4 +238,36 @@
   .animate-gentle-pulse {
     animation: gentle-pulse 2s ease-in-out infinite;
   }
+
+  /* ── Shine sweep effect for CTA buttons ─────────────────── */
+  .btn-shine {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-shine::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -75%;
+    width: 50%;
+    height: 200%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.35) 50%,
+      transparent 100%
+    );
+    transform: skewX(-20deg);
+    transition: none;
+  }
+
+  .btn-shine:hover::before {
+    animation: shine-sweep 0.55s ease forwards;
+  }
+
+  @keyframes shine-sweep {
+    0%   { left: -75%; }
+    100% { left: 125%; }
+  }
 }

@@ -110,7 +110,7 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
             <div className="space-y-4 pt-8">
               <Button
                 onClick={handleSubscribe}
-                className="w-full bg-[#FFB800] hover:bg-[#E6A600] text-[#1A1A1A] font-black py-7 text-xl rounded-xl shadow-[0_4px_0_rgb(204,147,0)] hover:shadow-none translate-y-[-4px] hover:translate-y-0 transition-all active:translate-y-0 active:shadow-none"
+                className="btn-shine w-full bg-[#FFB800] hover:bg-[#E6A600] text-[#1A1A1A] font-black py-7 text-xl rounded-xl shadow-[0_4px_0_rgb(204,147,0)] hover:shadow-none translate-y-[-4px] hover:translate-y-0 transition-all active:translate-y-0 active:shadow-none"
               >
                 {isPT ? "Seja Premium" : "Hazte Premium"}
               </Button>

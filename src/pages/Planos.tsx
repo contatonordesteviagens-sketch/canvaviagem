@@ -197,7 +197,7 @@ const Planos = () => {
           Por menos de <strong className="text-black">R$ 1 por dia</strong>, você deixa de improvisar e começa a aparecer de verdade.
         </p>
         <a href="#preco">
-          <button className="bg-black text-white font-black text-base md:text-lg px-10 py-4 rounded-full hover:bg-zinc-800 transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+          <button className="btn-shine bg-black text-white font-black text-base md:text-lg px-10 py-4 rounded-full hover:bg-zinc-800 transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0">
             Quero resolver isso agora →
           </button>
         </a>
@@ -430,7 +430,7 @@ const Planos = () => {
 
               <button
                 onClick={handleCheckout}
-                className="w-full bg-black text-white font-black text-lg py-5 rounded-2xl hover:bg-zinc-800 transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                className="btn-shine w-full bg-black text-white font-black text-lg py-5 rounded-2xl hover:bg-zinc-800 transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0"
               >
                 {isAnnual ? "Assinar agora por R$ 197/ano →" : "Assinar agora por R$ 29/mês →"}
               </button>
@@ -491,7 +491,7 @@ const Planos = () => {
           <p className="text-zinc-400 text-sm mb-8">Garantia de 7 dias · Acesso imediato · Cancele quando quiser</p>
           <button
             onClick={handleCheckout}
-            className="bg-yellow-400 text-black font-black text-lg px-10 py-4 rounded-full hover:bg-yellow-300 transition-all shadow-xl inline-block"
+            className="btn-shine bg-yellow-400 text-black font-black text-lg px-10 py-4 rounded-full hover:bg-yellow-300 transition-all shadow-xl inline-block"
           >
             {isAnnual ? "Assinar por R$ 197/ano →" : "Assinar por R$ 29/mês →"}
           </button>
