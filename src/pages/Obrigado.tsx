@@ -61,8 +61,7 @@ const ConfettiCanvas = () => {
         ctx.restore();
       });
       frame++;
-      // Longer duration (approx 8 seconds at 60fps)
-      if (frame < 180) { // Approx 3 seconds at 60fps
+      if (frame < 180) { // Approx 3 seconds
         animId = requestAnimationFrame(animate);
       } else {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -107,7 +106,7 @@ const Obrigado = () => {
   }, [tracked, sourceFromUrl]);
 
   useEffect(() => {
-    const t = setTimeout(() => setShowConfetti(false), 3000); // 3s confetti duration
+    const t = setTimeout(() => setShowConfetti(false), 3000);
     return () => clearTimeout(t);
   }, []);
 
@@ -164,123 +163,132 @@ const Obrigado = () => {
     "https://wa.me/5585986411294?text=Fiz%20a%20compra%20do%20Canva%20Viagem%20e%20gostaria%20de%20suporte";
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-zinc-50/50 flex flex-col items-center justify-center p-6 md:p-8 relative overflow-hidden">
       <SpanishPixel />
       {showConfetti && <ConfettiCanvas />}
 
-      <div className="w-full max-w-md relative z-10">
+      <div className="w-full max-w-md flex flex-col items-center relative z-10 gap-8">
         {/* Celebration header */}
-        <div className="flex justify-center mb-6 animate-scale-in" style={{ animationDuration: '3s' }}>
-          <img
-            src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExcjZ4aDh1M3FzYWhodHZ6N294NGQ2OWZxOGRraHN4c2pwZWs5d3ZkdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yoJC2GnSClbPOkV0eA/giphy.gif"
-            alt="Celebração"
-            className="w-56 h-56 md:w-64 md:h-64 object-cover rounded-2xl shadow-xl border-4 border-white"
-          />
+        <div className="text-center space-y-6 animate-fade-in" style={{ animationDuration: '1.2s' }}>
+          <div className="flex justify-center">
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-yellow-400/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <img
+                src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExcjZ4aDh1M3FzYWhodHZ6N294NGQ2OWZxOGRraHN4c2pwZWs5d3ZkdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yoJC2GnSClbPOkV0eA/giphy.gif"
+                alt="Celebração"
+                className="w-52 h-52 md:w-64 md:h-64 object-cover rounded-[2.5rem] shadow-2xl border-4 border-white relative z-10"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-5xl font-black text-zinc-900 leading-[1.1] tracking-tighter">
+              Parabéns!
+            </h1>
+            <p className="text-xl md:text-2xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent italic leading-tight">
+              Agora você tem conteúdos de viagens para sempre!
+            </p>
+          </div>
         </div>
 
-        <h1 className="text-3xl md:text-5xl font-black text-black leading-tight mb-2 animate-fade-in" style={{ animationDuration: '3s' }}>
-          Parabéns!
-          <br />
-          <span className="bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
-            Agora você tem conteúdos de viagens para sempre!
-          </span>
-        </h1>
-      </div>
+        {/* Card */}
+        <div className="w-full bg-white border border-zinc-100 rounded-[3rem] p-8 md:p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] transition-all duration-500 hover:shadow-[0_48px_80px_-24px_rgba(0,0,0,0.15)] animate-scale-in">
+          {!magicLinkSent ? (
+            <div className="space-y-6">
+              <div className="text-center space-y-2">
+                <p className="font-bold text-zinc-800 text-lg md:text-xl">
+                  Digite exatamente o mesmo e-mail da compra
+                </p>
+                <div className="h-1 w-12 bg-yellow-400 mx-auto rounded-full" />
+              </div>
 
-      {/* Card */}
-      <div className="bg-white border border-zinc-100 rounded-[2.5rem] p-6 md:p-10 shadow-2xl mx-2">
+              <Input
+                type="email"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+                className="text-center text-lg h-16 bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:border-yellow-500 rounded-[1.25rem] focus:ring-0 transition-all"
+                onKeyDown={(e) => e.key === "Enter" && handleSendMagicLink(e as any)}
+              />
 
-        {!magicLinkSent ? (
-          <div className="space-y-5">
-            <div className="text-center space-y-2">
-              <p className="font-bold text-zinc-900 text-lg">
-                Digite exatamente o mesmo e-mail da compra
-              </p>
+              <Button
+                onClick={handleSendMagicLink}
+                className="btn-shine w-full h-16 text-lg font-black bg-yellow-400 text-black hover:bg-yellow-300 shadow-xl border-none transition-all duration-300 rounded-[1.25rem] active:scale-95"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <><Loader2 className="mr-2 h-7 w-7 animate-spin" />Enviando...</>
+                ) : (
+                  <><Mail className="mr-2 h-7 w-7" />Receber meu acesso agora</>
+                )}
+              </Button>
             </div>
+          ) : (
+            <div className="space-y-6 text-center">
+              <div className="bg-green-50 border border-green-100 rounded-[2.5rem] p-8 animate-scale-in">
+                <p className="text-green-800 font-bold text-xl mb-2">
+                  Link enviado para {email}!
+                </p>
+                <p className="text-green-700/70 text-sm leading-relaxed">
+                  Verifique sua caixa de entrada e spam. <br /> O link expira em 1 hora.
+                </p>
+              </div>
 
-            <Input
-              type="email"
-              placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isLoading}
-              className="text-center text-lg h-14 bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:border-yellow-500 rounded-2xl focus:ring-0"
-              onKeyDown={(e) => e.key === "Enter" && handleSendMagicLink(e as any)}
-            />
-
-            <Button
-              onClick={handleSendMagicLink}
-              className="btn-shine w-full h-14 text-lg font-black bg-yellow-400 text-black hover:bg-yellow-300 shadow-lg border-none transition-all duration-300 rounded-2xl"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <><Loader2 className="mr-2 h-6 w-6 animate-spin" />Enviando...</>
-              ) : (
-                <><Mail className="mr-2 h-6 w-6" />Receber meu acesso agora</>
-              )}
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-5 text-center">
-            <div className="bg-green-50 border border-green-100 rounded-3xl p-6">
-              <p className="text-green-800 font-bold text-lg mb-1">
-                Link enviado para {email}!
-              </p>
-              <p className="text-green-700/70 text-sm">
-                Verifique sua caixa de entrada e spam. O link expira em 1 hora.
-              </p>
+              <Button
+                variant="outline"
+                onClick={handleResendLink}
+                disabled={isLoading}
+                className="w-full h-14 font-bold border-zinc-200 text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900 rounded-[1.25rem] transition-all"
+              >
+                {isLoading ? (
+                  <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Reenviando...</>
+                ) : (
+                  <><RefreshCw className="mr-2 h-5 w-5" />Reenviar link</>
+                )}
+              </Button>
             </div>
+          )}
 
-            <Button
-              variant="outline"
-              onClick={handleResendLink}
-              disabled={isLoading}
-              className="w-full h-12 font-semibold border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 rounded-2xl"
-            >
-              {isLoading ? (
-                <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Reenviando...</>
-              ) : (
-                <><RefreshCw className="mr-2 h-5 w-5" />Reenviar link</>
-              )}
-            </Button>
+          {/* Divider */}
+          <div className="flex items-center gap-4 py-6">
+            <div className="flex-1 border-t border-zinc-100" />
+            <span className="text-[10px] text-zinc-300 uppercase font-black tracking-widest">ou</span>
+            <div className="flex-1 border-t border-zinc-100" />
           </div>
-        )}
 
-        {/* Divider */}
-        <div className="flex items-center gap-4 py-2">
-          <div className="flex-1 border-t border-zinc-100" />
-          <span className="text-xs text-zinc-300 uppercase font-bold">ou</span>
-          <div className="flex-1 border-t border-zinc-100" />
+          <div className="space-y-3">
+            {/* Login fallback */}
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/auth")}
+              className="w-full h-14 font-black text-sm text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50 rounded-[1.25rem] gap-2"
+            >
+              <ArrowRight className="h-5 w-5" />
+              Já tenho conta — Logar manualmente
+            </Button>
+
+            {/* Support */}
+            <a
+              href={supportWhatsAppUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
+            >
+              <Button className="btn-shine w-full h-14 bg-[#25D366] hover:bg-[#22c35e] text-white font-black shadow-lg border-none rounded-[1.25rem] gap-2">
+                <MessageCircle className="h-6 w-6" />
+                Suporte no WhatsApp
+              </Button>
+            </a>
+          </div>
         </div>
 
-        {/* Login fallback */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/auth")}
-          className="w-full h-12 font-bold text-sm text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50 rounded-2xl"
-        >
-          <ArrowRight className="mr-2 h-5 w-5" />
-          Já tenho conta — Logar manualmente
-        </Button>
-
-        {/* Support */}
-        <a
-          href={supportWhatsAppUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block"
-        >
-          <Button className="btn-shine w-full h-12 bg-green-500 hover:bg-green-600 text-white font-bold shadow-md border-none rounded-2xl">
-            <MessageCircle className="mr-2 h-5 w-5" />
-            Suporte no WhatsApp
-          </Button>
-        </a>
+        {/* Footer info */}
+        <p className="text-center text-xs text-zinc-400 px-10 leading-relaxed font-medium animate-fade-in" style={{ animationDelay: '0.5s', animationDuration: '1.2s' }}>
+          Se o e-mail não chegar em 5 minutos, <br /> fale com o nosso suporte acima.
+        </p>
       </div>
-
-      <p className="text-center text-xs text-zinc-300 mt-6 px-10 leading-relaxed">
-        Se o e-mail não chegar em 5 minutos, fale com o nosso suporte acima.
-      </p>
     </div>
   );
 };
