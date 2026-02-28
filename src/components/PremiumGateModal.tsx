@@ -3,25 +3,48 @@ import { Button } from "@/components/ui/button";
 import { Crown, Sparkles, Check, X, Shield, Download, Bot, Star } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
+import { useState, memo } from "react";
+import premiumBanner from "@/assets/premium-banner.png";
 
-// Standardize fonts and spacing for a premium feel
-export const PremiumGateModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+type BillingCycle = 'monthly' | 'annual';
+
+const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   const navigate = useNavigate();
   const { language } = useLanguage();
-
-  const handleSubscribe = () => {
-    navigate("/planos");
-    onClose();
-  };
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('annual');
 
   const isPT = language === 'pt';
 
+  const prices = {
+    monthly: {
+      value: "R$ 29,00",
+      period: "/mês",
+      description: "Pagamento recorrente mensal",
+      discount: null,
+      stripeLink: "https://buy.stripe.com/5kA7sM1LAd96beT7sz" // Exemplo, ajuste se tiver o link real
+    },
+    annual: {
+      value: "R$ 16,41",
+      period: "/mês",
+      description: "Plano Anual R$ 197,00",
+      discount: "42% DESC.",
+      stripeLink: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09"
+    }
+  };
+
+  const currentPrice = prices[billingCycle];
+
+  const handleSubscribe = () => {
+    window.open(currentPrice.stripeLink, '_blank');
+    onClose();
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[700px] p-0 overflow-hidden border-none bg-white rounded-[32px] shadow-2xl">
-        <div className="flex flex-col md:flex-row min-h-[450px]">
+      <DialogContent className="max-w-[750px] p-0 overflow-hidden border-none bg-white rounded-[32px] shadow-2xl">
+        <div className="flex flex-col md:flex-row min-h-[480px]">
           {/* Left Side: Content */}
-          <div className="flex-1 p-8 md:p-10 flex flex-col justify-between">
+          <div className="flex-1 p-8 md:p-10 flex flex-col justify-between z-10 bg-white">
             <div className="space-y-6">
               <div className="space-y-2">
                 <h2 className="text-3xl md:text-3xl font-black text-[#1A1A1A] leading-tight">
@@ -44,38 +67,50 @@ export const PremiumGateModal = ({ isOpen, onClose }: { isOpen: boolean; onClose
                 ))}
               </div>
 
-              {/* Price / Tabs Placeholder */}
+              {/* Price Selectors */}
               <div className="space-y-4 pt-4">
-                <div className="flex bg-[#F5F5F5] rounded-lg p-1 w-fit">
-                  <div className="px-6 py-1.5 text-sm font-semibold text-[#4A4A4A]">Mensal</div>
-                  <div className="px-6 py-1.5 text-sm font-bold text-white bg-[#1A1A1A] rounded-md shadow-md">
+                <div className="flex bg-[#F5F5F5] rounded-full p-1 w-fit border border-black/5">
+                  <button
+                    onClick={() => setBillingCycle('monthly')}
+                    className={`px-6 py-2 text-sm font-bold rounded-full transition-all ${billingCycle === 'monthly' ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#6B7280] hover:text-[#4A4A4A]"
+                      }`}
+                  >
+                    Mensal
+                  </button>
+                  <button
+                    onClick={() => setBillingCycle('annual')}
+                    className={`px-6 py-2 text-sm font-bold rounded-full transition-all ${billingCycle === 'annual' ? "bg-[#1A1A1A] text-white shadow-mdScale select-none" : "text-[#6B7280] hover:text-[#4A4A4A]"
+                      }`}
+                  >
                     Anual
-                  </div>
+                  </button>
                 </div>
 
                 <div className="space-y-1">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-black text-[#1A1A1A]">R$ 16,41</span>
-                    <span className="text-[#6B7280] font-medium text-lg">/mês</span>
-                    <div className="ml-2 bg-[#1A1A1A] text-white text-[10px] font-bold px-2 py-0.5 rounded leading-none">
-                      42% DESC.
-                    </div>
+                    <span className="text-4xl font-black text-[#1A1A1A]">{currentPrice.value}</span>
+                    <span className="text-[#6B7280] font-medium text-lg">{currentPrice.period}</span>
+                    {currentPrice.discount && (
+                      <div className="ml-2 bg-[#1A1A1A] text-white text-[10px] font-bold px-2 py-1 rounded leading-none uppercase tracking-wider">
+                        {currentPrice.discount}
+                      </div>
+                    )}
                   </div>
-                  <p className="text-sm text-[#6B7280] font-medium">Plano Anual R$ 197,00</p>
+                  <p className="text-sm text-[#6B7280] font-medium">{currentPrice.description}</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-4 pt-8">
               <Button
-                onClick={() => window.open('https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09', '_blank')}
-                className="w-full bg-[#FFB800] hover:bg-[#E6A600] text-[#1A1A1A] font-black py-7 text-xl rounded-xl shadow-[0_4px_0_rgb(204,147,0)] hover:shadow-none translate-y-[-4px] hover:translate-y-0 transition-all"
+                onClick={handleSubscribe}
+                className="w-full bg-[#FFB800] hover:bg-[#E6A600] text-[#1A1A1A] font-black py-7 text-xl rounded-xl shadow-[0_4px_0_rgb(204,147,0)] hover:shadow-none translate-y-[-4px] hover:translate-y-0 transition-all active:translate-y-0 active:shadow-none"
               >
                 {isPT ? "Seja Premium" : "Hazte Premium"}
               </Button>
 
               <button
-                onClick={() => navigate("/planos")}
+                onClick={() => { navigate("/planos"); onClose(); }}
                 className="w-full text-center text-sm font-bold text-[#1A1A1A] hover:underline"
               >
                 {isPT ? "Ver planos com geração ilimitada" : "Ver planes con generación ilimitada"}
@@ -83,29 +118,22 @@ export const PremiumGateModal = ({ isOpen, onClose }: { isOpen: boolean; onClose
             </div>
           </div>
 
-          {/* Right Side: Decorative Image/Pattern */}
-          <div className="hidden md:flex flex-1 bg-gradient-to-br from-[#8B5CF6] to-[#D946EF] relative items-center justify-center p-12 overflow-hidden">
-            {/* Mock design representation */}
-            <div className="relative z-10 w-full aspect-square bg-white rounded-2xl shadow-2xl p-4 rotate-3 transform">
-              <div className="w-full h-2/3 bg-slate-100 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
-                <div className="text-6xl">📸</div>
-              </div>
-              <div className="space-y-2">
-                <div className="h-4 w-3/4 bg-slate-200 rounded"></div>
-                <div className="h-3 w-1/2 bg-slate-100 rounded"></div>
-              </div>
-            </div>
-
-            {/* Decorative circles */}
-            <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-white/20 rounded-full blur-3xl"></div>
+          {/* Right Side: Professional Banner */}
+          <div className="hidden md:flex flex-1 relative bg-slate-50 overflow-hidden group">
+            <img
+              src={premiumBanner}
+              alt="Plataforma Canva Viagem"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            {/* Soft Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/10" />
           </div>
         </div>
 
-        {/* Close Button Override */}
+        {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full hover:bg-black/5 transition-colors z-50 text-slate-400 hover:text-slate-600"
+          className="absolute top-5 right-5 p-2 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/40 border border-white/20 transition-all z-50 text-white md:text-slate-400 md:hover:text-slate-600 md:bg-transparent md:border-none"
         >
           <X className="w-6 h-6" />
         </button>
@@ -113,3 +141,5 @@ export const PremiumGateModal = ({ isOpen, onClose }: { isOpen: boolean; onClose
     </Dialog>
   );
 };
+
+export const PremiumGateModal = memo(PremiumGateModalComponent);
