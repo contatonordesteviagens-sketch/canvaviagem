@@ -286,9 +286,17 @@ const Index = () => {
   const renderContent = () => {
     switch (activeCategory) {
       case 'all': {
-        // Layout: 4 videos → 4 AI tools → remaining videos → 8 captions + ver mais
-        const firstFourVideos = displayedSortedVideos.slice(0, 4);
-        const remainingVideos = displayedSortedVideos.slice(4);
+        // Split by cover: only videos WITH image_url shown in main display
+        // Videos WITHOUT image_url go behind "Ver mais"
+        const coveredVideos = sortedVideos.filter(v => v.image_url);
+        const uncoveredVideos = sortedVideos.filter(v => !v.image_url);
+
+        const firstFourVideos = coveredVideos.slice(0, 4);
+        // After AI tools: remaining covered (always shown) — uncovered only when expanded
+        const remainingVideos = showAllVideos
+          ? [...coveredVideos.slice(4), ...uncoveredVideos]
+          : coveredVideos.slice(4, 20);
+
         const firstFourTools = (toolsData || []).slice(0, 4);
         const initialCaptions = filteredCaptions.slice(0, 8);
 
@@ -441,8 +449,8 @@ const Index = () => {
                   </div>
                 )}
 
-                {/* Ver mais vídeos — sem número */}
-                {sortedVideos.length > 20 && (
+                {/* Ver mais vídeos — aparece quando há sem capa ou muitos cobertos */}
+                {(uncoveredVideos.length > 0 || coveredVideos.length > 20) && (
                   <div className="flex justify-center">
                     <Button variant="outline" onClick={() => setShowAllVideos(!showAllVideos)} className="gap-2 rounded-full px-6">
                       {showAllVideos
