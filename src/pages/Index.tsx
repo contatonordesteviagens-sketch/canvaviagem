@@ -141,17 +141,28 @@ const Index = () => {
   };
 
   const checkIfItemIsPremium = (type: string, title?: string) => {
-    // Vídeos são sempre Premium por padrão
-    if (type === 'video' || type === 'feed' || type === 'story' || type === 'seasonal' || type === 'weekly-story' || type === 'resource') {
-      return true;
+    const itemTitle = title?.toLowerCase() || '';
+
+    // Explicit FREE keywords in title override everything
+    if (itemTitle.includes('(grátis)') || itemTitle.includes('(gratis)') || itemTitle.includes('gratuito')) {
+      return false;
     }
-    // Ferramentas: apenas "Vendedor" ou "Viaje" são Premium
+
+    // AI Tools and Videos are always Premium (per user request)
+    if (type === 'video' || type === 'seasonal') return true;
+
     if (type === 'tool' || type === 'marketing_tool') {
-      const toolTitle = title?.toLowerCase() || '';
-      return toolTitle.includes('vendedor') || toolTitle.includes('viaje');
+      return itemTitle.includes('vendedor') || itemTitle.includes('viaje');
     }
-    // Outros (legendas, aulas, contratos) são gratuitos
-    return false;
+
+    // Weekly stories and heavy resources are premium
+    if (type === 'weekly-story' || type === 'resource') return true;
+
+    // Default: Feed and Story templates are free (unless specified premium in title/category later)
+    // This ensures "Grátis" filter shows content.
+    if (type === 'feed' || type === 'story') return false;
+
+    return true;
   };
 
   const isInfluencer = (title: string, influencer: string) => {
