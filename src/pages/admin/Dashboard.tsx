@@ -91,22 +91,29 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[hsl(220,15%,8%)] pb-12">
       {/* Header */}
       <div className="bg-gradient-to-r from-primary/10 via-purple-500/10 to-accent/10 border-b">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate("/")}
+                className="hover:bg-slate-800 text-slate-400"
+              >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">📊 Dashboard de Email Marketing</h1>
-                <p className="text-muted-foreground text-sm">Acompanhe a performance da sua Drip Campaign</p>
+                <h1 className="text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  📊 Dashboard de Email Marketing
+                </h1>
+                <p className="text-slate-500 text-sm font-medium">Acompanhe a performance da sua Drip Campaign</p>
               </div>
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => {
                 eventsQuery.refetch();
@@ -122,64 +129,64 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+          <Card className="bg-slate-900/40 backdrop-blur-md border-primary/20 shadow-xl">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-muted-foreground text-sm font-medium">Total Enviados</p>
-                  <p className="text-3xl font-bold text-foreground">{metrics.totalSent}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-slate-400 text-sm font-bold uppercase tracking-wider">Total Enviados</p>
+                  <p className="text-3xl font-black text-slate-100 mt-1">{metrics.totalSent}</p>
+                  <p className="text-[10px] text-slate-500 mt-1 font-mono">
                     E1: {metrics.totalEmail1} | E2: {metrics.totalEmail2} | E3: {metrics.totalEmail3}
                   </p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
                   <Mail className="h-6 w-6 text-primary" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-500/5 to-green-500/10 border-green-500/20">
+          <Card className="bg-slate-900/40 backdrop-blur-md border-green-500/20 shadow-xl">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-muted-foreground text-sm font-medium">Taxa de Abertura</p>
-                  <p className="text-3xl font-bold text-foreground">{metrics.openRate}%</p>
-                  <p className="text-xs text-muted-foreground mt-1">Baseado em eventos do Resend</p>
+                  <p className="text-slate-400 text-sm font-bold uppercase tracking-wider">Taxa de Abertura</p>
+                  <p className="text-3xl font-black text-green-400 mt-1">{metrics.openRate}%</p>
+                  <p className="text-[10px] text-slate-500 mt-1">Eventos Resend</p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
-                  <Eye className="h-6 w-6 text-green-600" />
+                <div className="h-12 w-12 rounded-2xl bg-green-500/10 flex items-center justify-center border border-green-500/20">
+                  <Eye className="h-6 w-6 text-green-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-amber-500/5 to-amber-500/10 border-amber-500/20">
+          <Card className="bg-slate-900/40 backdrop-blur-md border-amber-500/20 shadow-xl">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-muted-foreground text-sm font-medium">Próximos Envios</p>
-                  <p className="text-3xl font-bold text-foreground">{metrics.upcomingSends}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Aguardando na fila</p>
+                  <p className="text-slate-400 text-sm font-bold uppercase tracking-wider">Próximos Envios</p>
+                  <p className="text-3xl font-black text-amber-400 mt-1">{metrics.upcomingSends}</p>
+                  <p className="text-[10px] text-slate-500 mt-1 font-mono">Fila de espera</p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-amber-500/10 flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-amber-600" />
+                <div className="h-12 w-12 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                  <Clock className="h-6 w-6 text-amber-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-accent/5 to-accent/10 border-accent/20">
+          <Card className="bg-slate-900/40 backdrop-blur-md border-accent/20 shadow-xl">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-muted-foreground text-sm font-medium">Total de Usuários</p>
-                  <p className="text-3xl font-bold text-foreground">{metrics.totalUsers}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-slate-400 text-sm font-bold uppercase tracking-wider">Total Usuários</p>
+                  <p className="text-3xl font-black text-accent mt-1">{metrics.totalUsers}</p>
+                  <p className="text-[10px] text-slate-500 mt-1">
                     {metrics.unsubscribed} descadastrados
                   </p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center">
+                <div className="h-12 w-12 rounded-2xl bg-accent/10 flex items-center justify-center border border-accent/20">
                   <Users className="h-6 w-6 text-accent" />
                 </div>
               </div>
@@ -192,7 +199,7 @@ const Dashboard = () => {
           {/* Bar Chart - Envios por Dia */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">📈 Envios por Dia (Últimos 7 dias)</CardTitle>
+              <CardTitle className="text-lg text-slate-100">📈 Envios por Dia (Últimos 7 dias)</CardTitle>
             </CardHeader>
             <CardContent>
               <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -263,9 +270,9 @@ const Dashboard = () => {
                       <TableCell>
                         {event.email_type ? (
                           <Badge variant="outline">
-                            {event.email_type === "email_1" ? "Boas-vindas" : 
-                             event.email_type === "email_2" ? "Curso" : 
-                             event.email_type === "email_3" ? "Oferta Final" : event.email_type}
+                            {event.email_type === "email_1" ? "Boas-vindas" :
+                              event.email_type === "email_2" ? "Curso" :
+                                event.email_type === "email_3" ? "Oferta Final" : event.email_type}
                           </Badge>
                         ) : "—"}
                       </TableCell>

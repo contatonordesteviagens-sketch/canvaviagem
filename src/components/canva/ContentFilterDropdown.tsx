@@ -9,7 +9,7 @@ import {
 import { Filter, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type ContentFilterType = 'nacionais' | 'internacionais' | 'artes' | 'stories';
+export type ContentFilterType = 'nacionais' | 'internacionais' | 'artes' | 'stories' | 'premium' | 'gratis';
 
 interface ContentFilterDropdownProps {
   selectedFilters: ContentFilterType[];
@@ -17,15 +17,17 @@ interface ContentFilterDropdownProps {
 }
 
 const filterOptions: { id: ContentFilterType; label: string; icon: string }[] = [
+  { id: 'premium', label: 'Conteúdo Premium', icon: '👑' },
+  { id: 'gratis', label: 'Conteúdo Gratuito', icon: '✨' },
   { id: 'nacionais', label: 'Destinos Nacionais', icon: '🇧🇷' },
   { id: 'internacionais', label: 'Destinos Internacionais', icon: '🌎' },
   { id: 'artes', label: 'Artes para Feed', icon: '🖼️' },
   { id: 'stories', label: 'Stories', icon: '📱' },
 ];
 
-export function ContentFilterDropdown({ 
-  selectedFilters, 
-  onFiltersChange 
+export function ContentFilterDropdown({
+  selectedFilters,
+  onFiltersChange
 }: ContentFilterDropdownProps) {
   const [open, setOpen] = useState(false);
 
@@ -46,8 +48,8 @@ export function ContentFilterDropdown({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className={cn(
             "gap-2 rounded-full",
             hasFilters && "bg-primary text-primary-foreground hover:bg-primary/90"
@@ -68,7 +70,7 @@ export function ContentFilterDropdown({
           <div className="flex items-center justify-between">
             <p className="font-semibold text-sm">Filtrar por:</p>
             {hasFilters && (
-              <button 
+              <button
                 onClick={clearAll}
                 className="text-xs text-muted-foreground hover:text-foreground"
               >
@@ -76,7 +78,7 @@ export function ContentFilterDropdown({
               </button>
             )}
           </div>
-          
+
           <div className="space-y-2">
             {filterOptions.map((option) => (
               <label

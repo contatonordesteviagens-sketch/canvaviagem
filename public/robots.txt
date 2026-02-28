@@ -1,14 +1,9 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+Allow: /pt
+Allow: /es
+Disallow: /admin
+Disallow: /auth
+Disallow: /auth/verify
+
+Sitemap: https://canvaviagem.com.br/sitemap.xml

@@ -36,6 +36,8 @@ import AuthVerify from "./pages/AuthVerify";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
+import { HelmetProvider } from "react-helmet-async";
+
 const queryClient = new QueryClient();
 
 // Componente para rastreamento de UTM
@@ -45,92 +47,94 @@ const UtmTracker = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <TooltipProvider>
-        <AuthProvider>
-          <LanguageProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <UtmTracker />
-              <WhatsAppButton />
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <AuthProvider>
+            <LanguageProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <UtmTracker />
+                <WhatsAppButton />
 
-              <Routes>
-                {/* ROTAS PORTUGUÊS */}
-                <Route path="/" element={<Index />} />
-                <Route path="/pt" element={<Index />} />
-                <Route path="/calendar" element={
-                  <ProtectedRoute requireSubscription>
-                    <Calendar />
-                  </ProtectedRoute>
-                } />
-                <Route path="/pt/calendar" element={
-                  <ProtectedRoute requireSubscription>
-                    <Calendar />
-                  </ProtectedRoute>
-                } />
-                <Route path="/planos" element={<Planos />} />
-                <Route path="/pt/planos" element={<Planos />} />
+                <Routes>
+                  {/* ROTAS PORTUGUÊS */}
+                  <Route path="/" element={<Index />} />
+                  <Route path="/pt" element={<Index />} />
+                  <Route path="/calendar" element={
+                    <ProtectedRoute requireSubscription>
+                      <Calendar />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/pt/calendar" element={
+                    <ProtectedRoute requireSubscription>
+                      <Calendar />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/planos" element={<Planos />} />
+                  <Route path="/pt/planos" element={<Planos />} />
 
-                {/* ROTAS ESPANHOL - PÁGINAS INDEPENDENTES */}
-                <Route path="/es" element={<IndexES />} />
-                <Route path="/es/calendar" element={
-                  <ProtectedRoute requireSubscription>
-                    <CalendarES />
-                  </ProtectedRoute>
-                } />
-                <Route path="/es/planos" element={<PlanosES />} />
-                <Route path="/es/obrigado" element={<ObrigadoES />} />
+                  {/* ROTAS ESPANHOL - PÁGINAS INDEPENDENTES */}
+                  <Route path="/es" element={<IndexES />} />
+                  <Route path="/es/calendar" element={
+                    <ProtectedRoute requireSubscription>
+                      <CalendarES />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/es/planos" element={<PlanosES />} />
+                  <Route path="/es/obrigado" element={<ObrigadoES />} />
 
-                {/* Auth e outras rotas compartilhadas */}
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/auth/verify" element={<AuthVerify />} />
-                <Route path="/sucesso" element={<Sucesso />} />
-                <Route path="/obrigado" element={<Obrigado />} />
-                <Route path="/pos-pagamento" element={<PosPagamento />} />
-                <Route path="/gestao" element={
-                  <ProtectedRoute requireSubscription>
-                    <Gestao />
-                  </ProtectedRoute>
-                } />
-                <Route path="/termos" element={<Termos />} />
-                <Route path="/privacidade" element={<Privacidade />} />
-                <Route path="/proximo-nivel" element={
-                  <ProtectedRoute requireSubscription>
-                    <ProximoNivel />
-                  </ProtectedRoute>
-                } />
-                <Route path="/progresso" element={
-                  <ProtectedRoute>
-                    <Progresso />
-                  </ProtectedRoute>
-                } />
-                <Route path="/sugestoes" element={<Sugestoes />} />
-                <Route path="/admin-login" element={<AdminLogin />} />
+                  {/* Auth e outras rotas compartilhadas */}
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/auth/verify" element={<AuthVerify />} />
+                  <Route path="/sucesso" element={<Sucesso />} />
+                  <Route path="/obrigado" element={<Obrigado />} />
+                  <Route path="/pos-pagamento" element={<PosPagamento />} />
+                  <Route path="/gestao" element={
+                    <ProtectedRoute requireSubscription>
+                      <Gestao />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/termos" element={<Termos />} />
+                  <Route path="/privacidade" element={<Privacidade />} />
+                  <Route path="/proximo-nivel" element={
+                    <ProtectedRoute requireSubscription>
+                      <ProximoNivel />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/progresso" element={
+                    <ProtectedRoute>
+                      <Progresso />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/sugestoes" element={<Sugestoes />} />
+                  <Route path="/admin-login" element={<AdminLogin />} />
 
-                {/* Admin Routes */}
-                <Route path="/admin" element={
-                  <ProtectedRoute requireAdmin>
-                    <AdminLayout />
-                  </ProtectedRoute>
-                }>
-                  <Route path="dashboard" element={<AdminDashboard />} />
-                  <Route path="marketing" element={<Marketing />} />
-                  <Route path="content" element={<ContentManager />} />
-                  <Route path="captions" element={<CaptionsManager />} />
-                  <Route path="tools" element={<ToolsManager />} />
-                </Route>
+                  {/* Admin Routes */}
+                  <Route path="/admin" element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route path="dashboard" element={<AdminDashboard />} />
+                    <Route path="marketing" element={<Marketing />} />
+                    <Route path="content" element={<ContentManager />} />
+                    <Route path="captions" element={<CaptionsManager />} />
+                    <Route path="tools" element={<ToolsManager />} />
+                  </Route>
 
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </LanguageProvider>
-        </AuthProvider>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </LanguageProvider>
+          </AuthProvider>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;

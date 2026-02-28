@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
+import SeoMetadata from "@/components/SeoMetadata";
 import { Footer } from "@/components/Footer";
 import { PremiumGateModal } from "@/components/PremiumGateModal";
 import { ResourceSection } from "@/components/ResourceSection";
@@ -60,7 +61,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [showAllCaptions, setShowAllCaptions] = useState(false);
-  const [contentFilters, setContentFilters] = useState<ContentFilterType[]>([]);
+  const [contentFilters, setContentFilters] = useState<ContentFilterType[]>(['premium']);
   const [activeCategory, setActiveCategory] = useState<CategoryType>('videos');
   const [showPremiumGate, setShowPremiumGate] = useState(false);
 
@@ -99,8 +100,11 @@ const Index = () => {
   const isSubscribed = user && subscription.subscribed;
 
   // Function to get the premium required callback
-  const getPremiumCallback = (category?: CategoryType) => {
+  const getPremiumCallback = (category?: CategoryType, isItemPremium?: boolean) => {
     if (isSubscribed) return undefined;
+
+    // Se o item for explicitamente premium (ex: ferramenta específica)
+    if (isItemPremium) return () => setShowPremiumGate(true);
 
     // Categorias Gratuitas (Livre acesso)
     const freeCategories: CategoryType[] = ['captions', 'tools', 'videoaula', 'contracts'];
@@ -143,9 +147,22 @@ const Index = () => {
     // Aplicar filtro multi-select
     if (contentFilters.length > 0) {
       filtered = filtered.filter(item => {
-        // Se nenhum filtro selecionado, mostra todos
+        // Categorias Premium/Gratis (conforme lógica do PremiumCard)
+        const isItemPremium = !['captions', 'tools', 'videoaula', 'contracts'].includes(item.type);
+
+        // Se apenas premium/gratis selecionados, filtrar por eles
+        // Se categorias selecionadas junto, tratamos como OR para as categorias, 
+        // mas podemos considerar premium/gratis como limitadores se desejado.
+        // Seguindo o código original de 'matches = true', faremos OR.
+
         let matches = false;
 
+        if (contentFilters.includes('premium') && isItemPremium) {
+          matches = true;
+        }
+        if (contentFilters.includes('gratis') && !isItemPremium) {
+          matches = true;
+        }
         if (contentFilters.includes('nacionais') && isNacional(item.title, item.category)) {
           matches = true;
         }
@@ -340,7 +357,7 @@ const Index = () => {
               subtitle="Templates prontos para editar no Canva e publicar"
             />
 
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-end mb-6">
               <ContentFilterDropdown
                 selectedFilters={contentFilters}
                 onFiltersChange={setContentFilters}
@@ -608,24 +625,28 @@ const Index = () => {
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-12">
-                {toolsData?.map((tool) => (
-                  <ToolCard
-                    key={tool.id}
-                    id={tool.id}
-                    title={tool.title}
-                    url={tool.url}
-                    icon={tool.icon}
-                    description={tool.description || "Ferramenta de IA para marketing"}
-                    isNew={tool.is_new}
-                    onClick={() => {
-                      trackClick('tool', tool.id);
-                      trackActivity('tool'); // +20 pts
-                    }}
-                    isFavorite={isFavorite("marketing_tool", tool.id)}
-                    onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                    onPremiumRequired={getPremiumCallback(activeCategory)}
-                  />
-                ))}
+                {toolsData?.map((tool) => {
+                  const isToolPremium = tool.title.toLowerCase().includes('vendedor') || tool.title.toLowerCase().includes('viaje');
+                  return (
+                    <ToolCard
+                      key={tool.id}
+                      id={tool.id}
+                      title={tool.title}
+                      url={tool.url}
+                      icon={tool.icon}
+                      description={tool.description || "Ferramenta de IA para marketing"}
+                      isNew={tool.is_new}
+                      onClick={() => {
+                        trackClick('tool', tool.id);
+                        trackActivity('tool'); // +20 pts
+                      }}
+                      isFavorite={isFavorite("marketing_tool", tool.id)}
+                      onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
+                      onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium)}
+                      isPremium={isToolPremium}
+                    />
+                  );
+                })}
               </div>
             )}
 
@@ -869,8 +890,13 @@ const Index = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
-      <Header onCategoryChange={setActiveCategory} />
+    <div className="min-h-screen bg-background flex flex-col">
+      <SeoMetadata
+        title="Início"
+        description="Acesse centenas de templates de vídeos Reels e artes para agências de viagens. Conteúdo premium pronto para editar no Canva."
+        keywords="templates canva viagens, reels turismo, artes agência de viagens, marketing turístico"
+      />
+      <Header />
 
       <main className="container mx-auto px-4 py-4 md:py-6 max-w-7xl">
         {mainContent}

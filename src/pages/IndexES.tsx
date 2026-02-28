@@ -15,11 +15,12 @@ import { SpanishPixel } from "@/components/SpanishPixel";
 import { HeroBanner } from "@/components/canva/HeroBanner";
 import { CategoryNav, CategoryType } from "@/components/canva/CategoryNav";
 import { PremiumCard } from "@/components/canva/PremiumCard";
-// FilterChips removed for ES version
+import { ContentFilterDropdown, ContentFilterType } from "@/components/canva/ContentFilterDropdown";
 import { SectionHeader } from "@/components/canva/SectionHeader";
 import { CaptionCard } from "@/components/canva/CaptionCard";
 import { ToolCard } from "@/components/canva/ToolCard";
 import { BottomNav } from "@/components/canva/BottomNav";
+import SeoMetadata from "@/components/SeoMetadata";
 
 // Database hooks
 import {
@@ -56,7 +57,7 @@ const IndexES = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [showAllCaptions, setShowAllCaptions] = useState(false);
-  // Filters removed for ES - showing all content
+  const [contentFilters, setContentFilters] = useState<ContentFilterType[]>(['premium']);
   const [activeCategory, setActiveCategory] = useState<CategoryType>('videos');
   const [showPremiumGate, setShowPremiumGate] = useState(false);
 
@@ -102,8 +103,11 @@ const IndexES = () => {
   const isSubscribed = user && subscription.subscribed;
 
   // Function to get the premium required callback
-  const getPremiumCallback = (category?: CategoryType) => {
+  const getPremiumCallback = (category?: CategoryType, isItemPremium?: boolean) => {
     if (isSubscribed) return undefined;
+
+    // Se o item for explicitamente premium (ex: ferramenta específica)
+    if (isItemPremium) return () => setShowPremiumGate(true);
 
     // Categorias Gratuitas (Livre acesso)
     const freeCategories: CategoryType[] = ['captions', 'tools', 'videoaula', 'contracts'];
@@ -118,7 +122,35 @@ const IndexES = () => {
       item.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Para ES, mostrar todo o conteúdo (sem filtro de nacionais)
+    // Aplicar filtro multi-select
+    if (contentFilters.length > 0) {
+      filtered = filtered.filter(item => {
+        const isItemPremium = !['captions', 'tools', 'videoaula', 'contracts'].includes(item.type);
+        let matches = false;
+
+        if (contentFilters.includes('premium') && isItemPremium) {
+          matches = true;
+        }
+        if (contentFilters.includes('gratis') && !isItemPremium) {
+          matches = true;
+        }
+        if (contentFilters.includes('nacionais') && item.category === 'nacional') {
+          matches = true;
+        }
+        if (contentFilters.includes('internacionais') && item.category === 'internacional') {
+          matches = true;
+        }
+        if (contentFilters.includes('artes') && item.type === 'feed') {
+          matches = true;
+        }
+        if (contentFilters.includes('stories') && (item.type === 'story' || item.type === 'weekly-story')) {
+          matches = true;
+        }
+
+        return matches;
+      });
+    }
+
     return filtered;
   };
 
@@ -285,7 +317,12 @@ const IndexES = () => {
               subtitle="Plantillas listas para editar en Canva y publicar"
             />
 
-            {/* FilterChips removed - ES version shows all content without filters */}
+            <div className="flex justify-end mb-6">
+              <ContentFilterDropdown
+                selectedFilters={contentFilters}
+                onFiltersChange={setContentFilters}
+              />
+            </div>
 
             {videosLoading ? (
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
@@ -535,21 +572,25 @@ const IndexES = () => {
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-12">
-                {toolsData?.map((tool) => (
-                  <ToolCard
-                    key={tool.id}
-                    id={tool.id}
-                    title={tool.title}
-                    url={tool.url}
-                    icon={tool.icon}
-                    description={tool.description || "Herramienta de IA para marketing"}
-                    isNew={tool.is_new}
-                    onClick={() => trackClick('tool', tool.id)}
-                    isFavorite={isFavorite("marketing_tool", tool.id)}
-                    onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                    onPremiumRequired={getPremiumCallback(activeCategory)}
-                  />
-                ))}
+                {toolsData?.map((tool) => {
+                  const isToolPremium = tool.title.toLowerCase().includes('vendedor') || tool.title.toLowerCase().includes('viaje');
+                  return (
+                    <ToolCard
+                      key={tool.id}
+                      id={tool.id}
+                      title={tool.title}
+                      url={tool.url}
+                      icon={tool.icon}
+                      description={tool.description || "Herramienta de IA para marketing"}
+                      isNew={tool.is_new}
+                      onClick={() => trackClick('tool', tool.id)}
+                      isFavorite={isFavorite("marketing_tool", tool.id)}
+                      onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
+                      onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium)}
+                      isPremium={isToolPremium}
+                    />
+                  );
+                })}
               </div>
             )}
 
@@ -776,9 +817,14 @@ const IndexES = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
+    <div className="min-h-screen bg-background flex flex-col">
+      <SeoMetadata
+        title="Inicio"
+        description="Acceda a cientos de plantillas de videos Reels y artes para agencias de viajes. Contenido premium listo para editar en Canva."
+        keywords="plantillas canva viajes, reels turismo, artes agencia de viagens, marketing turístico"
+      />
       <SpanishPixel />
-      <Header onCategoryChange={setActiveCategory} />
+      <Header />
 
       <main className="container mx-auto px-4 py-4 md:py-6 max-w-7xl">
         {mainContent}

@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
+import SeoMetadata from "@/components/SeoMetadata";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,6 +61,7 @@ const Planos = () => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
 
   // Benefits with icons - translated
   const benefits = [{
@@ -198,6 +200,11 @@ const Planos = () => {
   };
   if (authLoading || subscription.loading) {
     return <div className="min-h-screen bg-background">
+      <SeoMetadata
+        title="Planos e Assinaturas"
+        description="Escolha o melhor plano para sua agência de viagens. Acesso ilimitado a templates, vídeos e ferramentas de IA."
+        keywords="assinar canva viagem, planos marketing turístico, assinatura agência de viagens"
+      />
       <Header />
       <div className="container mx-auto px-4 py-16 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -209,6 +216,10 @@ const Planos = () => {
   // If user has active subscription, show different view
   if (subscription.subscribed) {
     return <div className="min-h-screen bg-background">
+      <SeoMetadata
+        title="Minha Assinatura"
+        description="Gerencie sua conta e acesse o conteúdo exclusivo para assinantes da Canva Viagem."
+      />
       <Header />
       <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-4xl">
         <UserInfoCard />
@@ -276,6 +287,11 @@ const Planos = () => {
     </div>;
   }
   return <div className="min-h-screen bg-background">
+    <SeoMetadata
+      title="Planos e Assinaturas"
+      description="Escolha o melhor plano para sua agência de viagens. Acesso ilimitado a templates, vídeos e ferramentas de IA."
+      keywords="assinar canva viagem, planos marketing turístico, assinatura agência de viagens"
+    />
     <Header />
     <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl">
       {user && <UserInfoCard />}
@@ -716,12 +732,25 @@ const Planos = () => {
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-black mb-4">
             <span className="bg-gradient-to-r from-[#FF6B6B] to-[#4FC3F7] bg-clip-text text-transparent">
-              Comece Hoje
+              Escolha seu Plano
             </span>
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Tudo que você precisa para vender mais viagens, em um único plano simples
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+            Tudo que você precisa para vender mais viagens, em um único lugar
           </p>
+
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <span className={`text-sm md:text-base font-bold ${billingCycle === 'monthly' ? 'text-primary' : 'text-muted-foreground'}`}>Mensal</span>
+            <button
+              onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annual' : 'monthly')}
+              className="relative w-14 h-7 bg-muted rounded-full p-1 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <div className={`w-5 h-5 bg-primary rounded-full shadow-md transform transition-transform duration-200 ${billingCycle === 'annual' ? 'translate-x-7' : 'translate-x-0'}`} />
+            </button>
+            <span className={`text-sm md:text-base font-bold ${billingCycle === 'annual' ? 'text-primary' : 'text-muted-foreground'}`}>
+              Anual <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full ml-1">Economize 43%</span>
+            </span>
+          </div>
         </div>
 
         <Card className="max-w-2xl mx-auto border-2 border-[#FF6B6B]/30 shadow-2xl relative overflow-hidden">
@@ -761,12 +790,17 @@ const Planos = () => {
               <div className="flex items-baseline justify-center gap-2 mb-2">
                 <span className="text-3xl md:text-4xl font-bold text-muted-foreground opacity-70">R$</span>
                 <span className="text-6xl md:text-7xl font-black bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] bg-clip-text text-transparent">
-                  29
+                  {billingCycle === 'monthly' ? '29' : '16,41'}
                 </span>
                 <span className="text-2xl md:text-3xl text-muted-foreground">/mês</span>
               </div>
+              {billingCycle === 'annual' && (
+                <p className="text-sm text-muted-foreground mb-2">
+                  R$ 197 cobrados anualmente
+                </p>
+              )}
               <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                💰 Economize R$ 471/mês = R$ 5.652/ano!
+                💰 {billingCycle === 'monthly' ? 'Economize R$ 471/mês vs contratando equipe!' : 'Economia máxima: Menos de R$ 0,55 por dia!'}
               </p>
             </div>
 
@@ -821,7 +855,7 @@ const Planos = () => {
               ) : (
                 <>
                   <Sparkles className="mr-2 h-5 w-5 md:h-6 md:w-6" />
-                  COMEÇAR TESTE GRÁTIS AGORA
+                  ASSINAR AGORA
                 </>
               )}
             </Button>
@@ -1274,7 +1308,7 @@ const Planos = () => {
             </AccordionTrigger>
             <AccordionContent className="text-muted-foreground text-sm md:text-base">
               <strong className="text-foreground">Sim, sem letras miúdas!</strong> Você pode cancelar a qualquer momento, sem burocracias.
-              E se cancelar nos primeiros 3 dias, devolvemos 100% do seu dinheiro. Risco ZERO.
+              E conforme a lei do consumidor, você tem 7 dias de garantia incondicional. Risco ZERO.
             </AccordionContent>
           </AccordionItem>
 

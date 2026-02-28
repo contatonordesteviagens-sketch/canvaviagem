@@ -160,10 +160,10 @@ export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = 
                   {/* Circle Icon Container */}
                   <div
                     className={cn(
-                      "w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300",
+                      "w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm",
                       isActive
-                        ? "bg-primary/10 ring-[3px] ring-primary text-primary"
-                        : "bg-secondary text-muted-foreground hover:bg-secondary/80 group-hover:scale-105"
+                        ? "bg-primary/10 ring-[3px] ring-primary text-primary shadow-md"
+                        : "bg-secondary text-muted-foreground hover:bg-secondary/80 group-hover:scale-105 hover:-translate-y-1 transition-transform"
                     )}
                   >
                     {category.icon}

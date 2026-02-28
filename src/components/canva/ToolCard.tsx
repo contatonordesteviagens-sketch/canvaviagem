@@ -12,19 +12,21 @@ interface ToolCardProps {
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
   onPremiumRequired?: () => void;
+  isPremium?: boolean;
 }
 
-export const ToolCard = ({ 
-  id, 
-  title, 
-  url, 
-  icon = "🤖", 
-  description, 
-  isNew, 
+export const ToolCard = ({
+  id,
+  title,
+  url,
+  icon = "🤖",
+  description,
+  isNew,
   onClick,
   isFavorite = false,
   onToggleFavorite,
-  onPremiumRequired
+  onPremiumRequired,
+  isPremium = false
 }: ToolCardProps) => {
   // Generate gradient based on title
   const getGradient = () => {
@@ -80,7 +82,7 @@ export const ToolCard = ({
               onClick={handleFavoriteClick}
               className="absolute top-2 right-2 z-20 p-1.5 rounded-full bg-black/30 backdrop-blur-sm transition-all hover:bg-black/50"
             >
-              <Heart 
+              <Heart
                 className={cn(
                   "w-4 h-4 transition-colors",
                   isFavorite ? "fill-red-500 text-red-500" : "text-white"
@@ -98,16 +100,21 @@ export const ToolCard = ({
               Novo
             </span>
           )}
-          
+
           {/* Gradient background with icon */}
           <div className={cn(
             "w-full h-full bg-gradient-to-br flex items-center justify-center transition-transform duration-300 group-hover:scale-105",
             getGradient()
           )}>
             <span className="text-5xl">{icon}</span>
+            {isPremium && (
+              <div className="absolute top-2 left-2 bg-gradient-to-r from-amber-400 to-amber-600 text-white p-1.5 rounded-full shadow-lg z-20">
+                <span className="text-xs">👑</span>
+              </div>
+            )}
           </div>
         </div>
-        
+
         {/* Text content */}
         <h4 className="font-bold text-foreground leading-tight mb-1 text-base group-hover:text-primary transition-colors">
           {title}

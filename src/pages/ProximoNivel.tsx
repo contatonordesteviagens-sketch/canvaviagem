@@ -2,14 +2,14 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Rocket, 
-  XCircle, 
-  Flame, 
-  Zap, 
-  Target, 
-  Brain, 
-  Users, 
+import {
+  Rocket,
+  XCircle,
+  Flame,
+  Zap,
+  Target,
+  Brain,
+  Users,
   Check,
   Sparkles,
   TrendingUp,
@@ -39,7 +39,7 @@ const ProximoNivel = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      
+
       <main className="flex-1">
         {/* Hero Section - Mobile Optimized */}
         <section className="relative py-6 md:py-20 overflow-hidden">
@@ -50,13 +50,13 @@ const ProximoNivel = () => {
                 <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
                 Treinamento Exclusivo
               </div>
-              
+
               <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold">
                 <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   AGENTE LUCRATIVO®
                 </span>
               </h1>
-              
+
               <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto">
                 O próximo nível para quem quer <strong className="text-foreground">vender viagens todos os dias</strong>, não só criar conteúdo bonito
               </p>
@@ -87,7 +87,7 @@ const ProximoNivel = () => {
 
               {/* CTA Button - Single button on mobile, full-width */}
               <div className="pt-4 md:pt-6">
-                <Button 
+                <Button
                   onClick={scrollToPricing}
                   size="lg"
                   className="w-full md:w-auto bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white text-sm md:text-lg px-6 md:px-8 py-3 md:py-6 h-12 md:h-auto font-bold shadow-lg"
@@ -113,7 +113,7 @@ const ProximoNivel = () => {
               <p className="text-base md:text-xl font-semibold text-foreground">
                 É não saber o que realmente vende
               </p>
-              
+
               <div className="grid md:grid-cols-2 gap-3 md:gap-4 pt-2 md:pt-4">
                 <Card className="border-red-200/50 dark:border-red-900/30 bg-background/50">
                   <CardContent className="p-4 md:p-6 space-y-2 md:space-y-3">
@@ -138,7 +138,7 @@ const ProximoNivel = () => {
                     </ul>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="border-red-200/50 dark:border-red-900/30 bg-background/50">
                   <CardContent className="p-4 md:p-6 flex flex-col justify-center h-full">
                     <p className="text-base md:text-lg font-semibold mb-3 md:mb-4">Resultado?</p>
@@ -167,7 +167,7 @@ const ProximoNivel = () => {
                   É AQUI QUE ENTRA O AGENTE LUCRATIVO®
                 </h2>
               </div>
-              
+
               <p className="text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto">
                 O Agente Lucrativo® é um <strong className="text-foreground">treinamento prático de aceleração de vendas online</strong>, criado para agentes e agências de viagem que querem transformar conteúdo e anúncios em vendas reais.
               </p>
@@ -200,7 +200,7 @@ const ProximoNivel = () => {
                   A IDEIA É SIMPLES (E FUNCIONA)
                 </h2>
               </div>
-              
+
               <p className="text-lg text-muted-foreground">
                 Em vez de tentar descobrir sozinho:
               </p>
@@ -255,7 +255,7 @@ const ProximoNivel = () => {
                   RÁPIDO DE CONSUMIR. RÁPIDO DE APLICAR.
                 </h2>
               </div>
-              
+
               <p className="text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto">
                 O método foi desenhado para quem vende viagem na vida real, não para quem quer virar "expert em marketing".
               </p>
@@ -298,20 +298,20 @@ const ProximoNivel = () => {
                   Conteúdo Exclusivo
                 </span>
               </div>
-              
+
               {/* Title */}
               <h2 className="text-xl md:text-3xl font-bold">
                 O que você vai{" "}
                 <span className="text-accent">aprender</span>
               </h2>
-              
+
               <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
                 Um passo a passo completo do básico ao avançado para acelerar suas vendas.
               </p>
 
               {/* Module Cards */}
               <div className="grid gap-4 md:gap-6 pt-2 md:pt-4">
-                
+
                 {/* Module 1 - IA */}
                 <Card className="text-left border-0 shadow-md bg-card">
                   <CardContent className="p-4 md:p-6">
@@ -459,13 +459,13 @@ const ProximoNivel = () => {
                   <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-accent/10 flex items-center justify-center">
                     <UserSearch className="h-6 w-6 md:h-8 md:w-8 text-accent" />
                   </div>
-                  <p className="text-sm md:text-base font-semibold text-foreground">Agentes<br/>Autônomos</p>
+                  <p className="text-sm md:text-base font-semibold text-foreground">Agentes<br />Autônomos</p>
                 </div>
                 <div className="flex flex-col items-center gap-2 md:gap-3 p-4 md:p-6 rounded-2xl border border-border bg-card hover:shadow-lg transition-shadow">
                   <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-accent/10 flex items-center justify-center">
                     <Building2 className="h-6 w-6 md:h-8 md:w-8 text-accent" />
                   </div>
-                  <p className="text-sm md:text-base font-semibold text-foreground">Donos de<br/>Agência</p>
+                  <p className="text-sm md:text-base font-semibold text-foreground">Donos de<br />Agência</p>
                 </div>
               </div>
             </div>
@@ -492,7 +492,7 @@ const ProximoNivel = () => {
                 </div>
 
                 {/* CTA Button */}
-                <Button 
+                <Button
                   onClick={handleCTAClick}
                   size="lg"
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground text-base md:text-lg px-6 md:px-8 py-4 md:py-6 h-auto font-bold shadow-lg transition-all hover:scale-105"
@@ -503,7 +503,7 @@ const ProximoNivel = () => {
                 {/* Guarantee */}
                 <div className="flex items-center justify-center gap-2 text-muted-foreground text-xs md:text-sm pt-1 md:pt-2">
                   <ShieldCheck className="h-4 w-4 md:h-5 md:w-5 text-accent" />
-                  <span>3 DIAS DE GARANTIA INCONDICIONAL</span>
+                  <span>7 DIAS DE GARANTIA INCONDICIONAL</span>
                 </div>
               </CardContent>
             </Card>
@@ -519,7 +519,7 @@ const ProximoNivel = () => {
             <p className="text-sm md:text-lg text-muted-foreground">
               Você já tem a ferramenta. Agora precisa do <strong className="text-foreground">método certo</strong> para vender com ela.
             </p>
-            <Button 
+            <Button
               onClick={handleCTAClick}
               size="lg"
               className="w-full md:w-auto bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white text-sm md:text-lg px-6 md:px-8 py-3 md:py-6 h-12 md:h-auto font-bold shadow-lg"

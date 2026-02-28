@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
+import SeoMetadata from "@/components/SeoMetadata";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,8 +13,8 @@ import { toast } from "sonner";
 import { UserInfoCard } from "@/components/UserInfoCard";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
 import {
-   Loader2, Check, Plane, Settings, Video, Image, MessageSquare,
-   Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity, Star
+  Loader2, Check, Plane, Settings, Video, Image, MessageSquare,
+  Bot, Calendar, Sparkles, RefreshCw, Users, FileText, Shield, Clock, Infinity, Star
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import garantia7dias from "@/assets/garantia-7-dias.png";
@@ -210,6 +211,10 @@ const PlanosES = () => {
   if (subscription.subscribed) {
     return (
       <div className="min-h-screen bg-background">
+        <SeoMetadata
+          title="Mi Suscripción"
+          description="Gestione sua cuenta y acceda al contenido exclusivo para suscriptores de Canva Viagem."
+        />
         <SpanishPixel />
         <Header />
         <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-4xl">
@@ -291,6 +296,11 @@ const PlanosES = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
+      <SeoMetadata
+        title="Planes y Suscripciones"
+        description="Elija el mejor plan para su agencia de viajes. Acceso ilimitado a plantillas, videos y herramientas de IA."
+        keywords="suscribirse canva viaje, planes marketing turístico, suscripción agencia de viajes"
+      />
       <SpanishPixel />
       <Header />
       <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-5xl overflow-x-hidden">
@@ -591,11 +601,7 @@ const PlanosES = () => {
         <section id="precio" className="mb-12 md:mb-20 scroll-mt-20">
           <Card className="max-w-2xl mx-auto border-2 border-primary/20 shadow-xl relative">
             {/* Floating Badge */}
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-              <div className="bg-green-500/90 backdrop-blur-sm text-white px-4 md:px-6 py-1.5 md:py-2 rounded-full shadow-lg text-xs md:text-sm font-semibold whitespace-nowrap">
-                ✨ 3 Días Gratis
-              </div>
-            </div>
+            {/* Floating Badge removed - TRIAL REMOVED */}
 
             <CardContent className="p-8 md:p-12 text-center pt-10 md:pt-12">
               <h3 className="text-lg md:text-xl font-bold mb-3">Ten acceso a todas las herramientas</h3>
@@ -622,7 +628,7 @@ const PlanosES = () => {
               <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="w-full h-16 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-base md:text-lg font-black shadow-xl hover:shadow-2xl transition-all duration-300 text-white animate-pulse hover:animate-none">
                 {checkoutLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>
                   <Sparkles className="mr-2 h-5 w-5" />
-                  🔥 EMPEZAR PRUEBA GRATIS AHORA
+                  🔥 EMPEZAR AHORA
                 </>}
               </Button>
 
@@ -773,7 +779,7 @@ const PlanosES = () => {
             ) : (
               <>
                 <Sparkles className="mr-2 h-5 w-5" />
-                ¡Empezar Ahora por $9,09/mes!
+                ¡Empezar Ahora!
               </>
             )}
           </Button>
