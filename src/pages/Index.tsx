@@ -266,7 +266,7 @@ const Index = () => {
     });
   }, [filteredVideos]);
 
-  const displayedSortedVideos = showAllVideos ? sortedVideos : sortedVideos.slice(0, 10);
+  const displayedSortedVideos = showAllVideos ? sortedVideos : sortedVideos.slice(0, 20);
 
   // Get weekly stories from story templates
   const weeklyStories = storyTemplates?.filter(s => s.type === 'weekly-story') || [];
