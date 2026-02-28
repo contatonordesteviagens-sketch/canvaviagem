@@ -452,7 +452,18 @@ const Index = () => {
                 {/* Ver mais vídeos — aparece quando há sem capa ou muitos cobertos */}
                 {(uncoveredVideos.length > 0 || coveredVideos.length > 20) && (
                   <div className="flex justify-center">
-                    <Button variant="outline" onClick={() => setShowAllVideos(!showAllVideos)} className="gap-2 rounded-full px-6">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        if (showAllVideos) {
+                          setShowAllVideos(false);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        } else {
+                          setShowAllVideos(true);
+                        }
+                      }}
+                      className="gap-2 rounded-full px-6"
+                    >
                       {showAllVideos
                         ? <><ChevronUp className="h-4 w-4" />Mostrar menos</>
                         : <><ChevronDown className="h-4 w-4" />Ver mais vídeos</>}
