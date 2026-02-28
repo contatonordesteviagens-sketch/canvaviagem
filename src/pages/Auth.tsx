@@ -1,3 +1,17 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "sonner";
+import { Loader2, Mail, ArrowLeft, CheckCircle, MessageCircle, User, Phone, RefreshCw, Sparkles } from "lucide-react";
+import { trackCompleteRegistration, trackViewContent } from "@/lib/meta-pixel";
+import { getMarketingAttribution, useAssociateUtmToUser } from "@/hooks/useTrackUtm";
+import { trackEvent, ANALYTICS_EVENTS } from "@/hooks/useAnalyticsEvents";
+import { formatPhoneBR, cleanPhone } from "@/lib/phone-utils";
 import logoImage from "@/assets/logo.png";
 
 const Auth = () => {
