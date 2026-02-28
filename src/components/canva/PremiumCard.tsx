@@ -119,7 +119,7 @@ export const PremiumCard = ({
 
         {/* Premium Badge (Crown) */}
         {isPremium && (
-          <div className="absolute bottom-16 md:bottom-20 left-2 md:left-3 z-30 p-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 shadow-lg group-hover:bg-black/60 transition-all duration-300">
+          <div className="absolute bottom-16 md:bottom-20 right-2 md:right-3 z-30 p-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 shadow-lg group-hover:bg-black/60 transition-all duration-300">
             <Crown className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400 fill-amber-400" />
           </div>
         )}
