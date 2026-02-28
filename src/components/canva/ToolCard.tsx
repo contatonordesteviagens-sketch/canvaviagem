@@ -44,8 +44,8 @@ const ToolCardComponent = ({
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Check if premium gate should be triggered
-    if (onPremiumRequired) {
+    // Check if premium gate should be triggered - only if the item is truly premium
+    if (isPremium && onPremiumRequired) {
       onPremiumRequired();
       return;
     }

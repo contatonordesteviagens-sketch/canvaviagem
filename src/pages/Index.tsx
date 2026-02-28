@@ -46,6 +46,7 @@ import { resources, videoDownloads } from "@/data/templates";
 import { trackViewContent } from "@/lib/meta-pixel";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useGamification } from "@/hooks/useGamification";
+import { checkIfItemIsPremium } from "@/lib/premium-utils";
 
 
 
@@ -102,18 +103,12 @@ const Index = () => {
   const isSubscribed = user && subscription.subscribed;
 
   // Function to get the premium required callback
-  const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean, itemType?: string) => {
+  const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean, itemType?: string, itemTitle?: string) => {
     if (isSubscribed) return undefined;
 
-    // Se o item for explicitamente premium (ex: ferramenta específica ou override)
-    if (isItemPremiumOverride) return () => setShowPremiumGate(true);
+    // Check if item is premium using centralized logic or override
+    const isPremium = isItemPremiumOverride || checkIfItemIsPremium(itemType || category || '', itemTitle);
 
-    // Biblioteca de vídeos e Reels são SEMPRE premium
-    const premiumTypes = ['video', 'seasonal', 'reel', 'story', 'weekly-story', 'feed'];
-    if (itemType && premiumTypes.includes(itemType)) return () => setShowPremiumGate(true);
-
-    // Se categoria for premium (legado/fallback)
-    const isPremium = checkIfItemIsPremium(category || '');
     if (isPremium) return () => setShowPremiumGate(true);
 
     return undefined;
@@ -140,25 +135,7 @@ const Index = () => {
       title.includes('- MS');
   };
 
-  const checkIfItemIsPremium = (type: string, title?: string) => {
-    // ALL content is premium except specific AI tools
-    // Videos, Reels, Arts, Stories → always Pro
-    if (type === 'video' || type === 'seasonal') return true;
-    if (type === 'feed' || type === 'story' || type === 'weekly-story') return true;
-    if (type === 'resource' || type === 'download') return true;
-
-    // AI Tools: only "Vendedor de Viagem" is premium, rest are free
-    if (type === 'tool' || type === 'marketing_tool') {
-      const itemTitle = title?.toLowerCase() || '';
-      return itemTitle.includes('vendedor') || itemTitle.includes('viaje');
-    }
-
-    // Captions are always free
-    if (type === 'caption') return false;
-
-    // Everything else (resource, download, etc.) is premium
-    return true;
-  };
+  // Removed local checkIfItemIsPremium implementation to use centralized utility
 
   const isInfluencer = (title: string, influencer: string) => {
     return title.toLowerCase().includes(influencer.toLowerCase());
@@ -355,7 +332,7 @@ const Index = () => {
                           onClick={() => { trackClick('tool', tool.id); trackActivity('tool'); }}
                           isFavorite={isFavorite("marketing_tool", tool.id)}
                           onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                          onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium)}
+                          onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium, tool.type || 'tool', tool.title)}
                           isPremium={isToolPremium}
                         />
                       );
@@ -402,7 +379,7 @@ const Index = () => {
                         onClick={() => handleCardClick(template)}
                         isFavorite={isFavorite("content_item", template.id)}
                         onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                        onPremiumRequired={getPremiumCallback(activeCategory, false, template.type)}
+                        onPremiumRequired={getPremiumCallback(activeCategory, false, template.type, template.title)}
                         isPremium={checkIfItemIsPremium(template.type, template.title)}
                       />
                     ))}
@@ -422,7 +399,7 @@ const Index = () => {
                           onClick={() => { trackClick('tool', tool.id); trackActivity('tool'); }}
                           isFavorite={isFavorite("marketing_tool", tool.id)}
                           onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                          onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium)}
+                          onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium, tool.type || 'tool', tool.title)}
                           isPremium={isToolPremium}
                         />
                       );
@@ -443,7 +420,7 @@ const Index = () => {
                         onClick={() => handleCardClick(template)}
                         isFavorite={isFavorite("content_item", template.id)}
                         onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                        onPremiumRequired={getPremiumCallback(activeCategory, false, template.type)}
+                        onPremiumRequired={getPremiumCallback(activeCategory, false, template.type, template.title)}
                         isPremium={checkIfItemIsPremium(template.type, template.title)}
                       />
                     ))}

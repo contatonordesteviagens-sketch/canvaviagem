@@ -49,6 +49,7 @@ export function useGamification(): GamificationState & GamificationActions {
             setLoading(true);
             setError(null);
 
+            // Using maybeSingle because we expect 0 or 1 rows
             const { data, error: fetchError } = await (supabase
                 .from('user_progress') as any)
                 .select('*')
@@ -58,6 +59,7 @@ export function useGamification(): GamificationState & GamificationActions {
             if (fetchError) throw fetchError;
 
             if (!data) {
+                console.log('[useGamification] No progress found, initializing for user:', user.id);
                 // Create initial progress if doesn't exist
                 const { data: newProgress, error: insertError } = await (supabase
                     .from('user_progress') as any)
@@ -71,11 +73,25 @@ export function useGamification(): GamificationState & GamificationActions {
                         tools_used: 0,
                     })
                     .select()
-                    .single();
+                    .maybeSingle(); // Better than single() if there's a race condition
 
-                if (insertError) throw insertError;
-                setProgress(newProgress as UserProgress);
+                if (insertError) {
+                    // Possible race condition: if another instance inserted it just now
+                    if (insertError.code === '23505') { // unique_violation
+                        console.log('[useGamification] Progress created by another process, refetching...');
+                        return fetchProgress();
+                    }
+                    throw insertError;
+                }
+
+                if (newProgress) {
+                    setProgress(newProgress as UserProgress);
+                } else {
+                    // Refetch as fallback
+                    return fetchProgress();
+                }
             } else {
+                console.log('[useGamification] Loaded existing progress:', data);
                 setProgress(data as UserProgress);
             }
         } catch (err) {
