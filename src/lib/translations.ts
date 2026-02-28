@@ -179,7 +179,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'footer.terms': 'Termos de Uso',
     'footer.privacy': 'Política de Privacidade',
     'footer.support': 'Suporte',
-    'footer.copyright': '© 2025 Canva Viagem. Todos os direitos reservados.',
+    'footer.copyright': '© 2026 Canva Viagem. Todos os direitos reservados.',
 
     // Calendar
     'calendar.title': 'Calendário de Postagens',
@@ -392,7 +392,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'footer.terms': 'Términos de Uso',
     'footer.privacy': 'Política de Privacidad',
     'footer.support': 'Soporte',
-    'footer.copyright': '© 2025 Canva Viagem. Todos los derechos reservados.',
+    'footer.copyright': '© 2026 Canva Viagem. Todos os derechos reservados.',
 
     // Calendar
     'calendar.title': 'Calendario de Publicaciones',
