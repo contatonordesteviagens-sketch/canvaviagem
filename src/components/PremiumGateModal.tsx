@@ -4,7 +4,7 @@ import { Crown, Sparkles, Check, X, Shield, Download, Bot, Star } from "lucide-r
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { useState, memo } from "react";
-import premiumBanner from "@/assets/premium-banner.png";
+
 
 type BillingCycle = 'monthly' | 'annual';
 
@@ -119,14 +119,13 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
           </div>
 
           {/* Right Side: Professional Banner */}
-          <div className="hidden md:flex flex-1 relative bg-slate-50 overflow-hidden group">
-            <img
-              src={premiumBanner}
-              alt="Plataforma Canva Viagem"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            {/* Soft Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/10" />
+          <div className="hidden md:flex flex-1 relative overflow-hidden group bg-gradient-to-br from-[#8B5CF6] via-[#6D28D9] to-[#4C1D95] items-center justify-center">
+            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_30%_40%,rgba(255,255,255,0.3),transparent_60%)]" />
+            <div className="relative z-10 text-center p-8 space-y-4">
+              <Crown className="w-16 h-16 text-amber-400 mx-auto drop-shadow-lg" />
+              <p className="text-white/90 font-bold text-2xl leading-tight">Premium</p>
+              <p className="text-white/60 text-sm">Conteúdo exclusivo para você</p>
+            </div>
           </div>
         </div>
 
