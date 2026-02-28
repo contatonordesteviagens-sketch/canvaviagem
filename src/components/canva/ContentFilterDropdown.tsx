@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -25,10 +25,10 @@ const filterOptions: { id: ContentFilterType; label: string; icon: string }[] = 
   { id: 'stories', label: 'Stories', icon: '📱' },
 ];
 
-export function ContentFilterDropdown({
+const ContentFilterDropdownComponent = ({
   selectedFilters,
   onFiltersChange
-}: ContentFilterDropdownProps) {
+}: ContentFilterDropdownProps) => {
   const [open, setOpen] = useState(false);
 
   const toggleFilter = (filter: ContentFilterType) => {

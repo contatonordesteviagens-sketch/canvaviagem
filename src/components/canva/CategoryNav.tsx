@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, memo } from "react";
 import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -11,7 +11,7 @@ interface CategoryNavProps {
   showFavorites?: boolean;
 }
 
-export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = true }: CategoryNavProps) => {
+const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites = true }: CategoryNavProps) => {
   const { t } = useLanguage();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -199,3 +199,4 @@ export const CategoryNav = ({ activeCategory, onCategoryChange, showFavorites = 
     </div>
   );
 };
+export const CategoryNav = memo(CategoryNavComponent);

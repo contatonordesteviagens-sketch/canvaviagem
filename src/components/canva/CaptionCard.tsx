@@ -1,5 +1,5 @@
 import { Copy, Check, Heart } from "lucide-react";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { cn } from "@/lib/utils";
 
 interface CaptionCardProps {
@@ -12,17 +12,17 @@ interface CaptionCardProps {
   onPremiumRequired?: () => void;
 }
 
-export const CaptionCard = ({ 
-  id, 
-  destination, 
-  text, 
+const CaptionCardComponent = ({
+  id,
+  destination,
+  text,
   hashtags,
   isFavorite = false,
   onToggleFavorite,
   onPremiumRequired
 }: CaptionCardProps) => {
   const [copied, setCopied] = useState(false);
-  
+
   const handleCopy = async () => {
     // Check if premium gate should be triggered
     if (onPremiumRequired) {
@@ -41,7 +41,7 @@ export const CaptionCard = ({
       onToggleFavorite();
     }
   };
-  
+
   return (
     <div className="bg-card rounded-2xl shadow-canva hover:shadow-canva-hover transition-all duration-300 overflow-hidden border-none p-5 space-y-4 relative">
       {/* Favorite Button */}
@@ -50,7 +50,7 @@ export const CaptionCard = ({
           onClick={handleFavoriteClick}
           className="absolute top-3 right-3 p-1.5 rounded-full bg-secondary transition-all hover:bg-secondary/80"
         >
-          <Heart 
+          <Heart
             className={cn(
               "w-4 h-4 transition-colors",
               isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground"
@@ -64,24 +64,24 @@ export const CaptionCard = ({
         <h3 className="text-lg font-bold text-primary">{destination}</h3>
         <span className="text-2xl">✍️</span>
       </div>
-      
+
       {/* Caption preview */}
       <p className="text-sm text-muted-foreground whitespace-pre-line line-clamp-4 leading-relaxed">
         {text}
       </p>
-      
+
       {/* Hashtags */}
       <p className="text-xs text-accent font-medium truncate">
         {hashtags}
       </p>
-      
+
       {/* Copy button */}
-      <button 
+      <button
         onClick={handleCopy}
         className={cn(
           "w-full py-3 px-4 rounded-full font-medium flex items-center justify-center gap-2 transition-all duration-300 min-h-[44px]",
-          copied 
-            ? "bg-green-500 text-white" 
+          copied
+            ? "bg-green-500 text-white"
             : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
         )}
       >
@@ -100,3 +100,4 @@ export const CaptionCard = ({
     </div>
   );
 };
+export const CaptionCard = memo(CaptionCardComponent);

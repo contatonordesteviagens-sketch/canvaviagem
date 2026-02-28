@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -7,7 +8,7 @@ interface HeroBannerProps {
   onSearchChange: (value: string) => void;
 }
 
-export const HeroBanner = ({ searchValue, onSearchChange }: HeroBannerProps) => {
+const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) => {
   const { t } = useLanguage();
 
   return (
@@ -49,3 +50,4 @@ export const HeroBanner = ({ searchValue, onSearchChange }: HeroBannerProps) => 
     </div>
   );
 };
+export const HeroBanner = memo(HeroBannerComponent);

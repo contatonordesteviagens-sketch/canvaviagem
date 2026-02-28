@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { ExternalLink, Heart, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +19,7 @@ interface PremiumCardProps {
   onPremiumRequired?: () => void;
 }
 
-export const PremiumCard = ({
+const PremiumCardComponent = ({
   id,
   title,
   url,
@@ -51,7 +52,7 @@ export const PremiumCard = ({
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     // Check if premium gate should be triggered
-    if (onPremiumRequired) {
+    if (isPremium && onPremiumRequired) { // Only trigger if it's a premium item
       onPremiumRequired();
       return;
     }
@@ -130,6 +131,8 @@ export const PremiumCard = ({
             <img
               src={imageUrl}
               alt={title}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover transition-all duration-500 group-hover:brightness-110"
             />
             {/* Overlay gradient */}
@@ -161,3 +164,5 @@ export const PremiumCard = ({
     </a>
   );
 };
+
+export const PremiumCard = memo(PremiumCardComponent);

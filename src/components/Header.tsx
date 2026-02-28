@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu, X, LogOut, User, Home, Calendar, CreditCard,
@@ -33,7 +33,7 @@ interface HeaderProps {
   onCategoryChange?: (category: CategoryType) => void;
 }
 
-export const Header = ({ onCategoryChange }: HeaderProps) => {
+const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const location = useLocation();
@@ -79,7 +79,6 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          console.log('[Header] Profile updated:', payload);
           setUserName((payload.new as { name?: string })?.name || null);
         }
       )
@@ -374,3 +373,4 @@ export const Header = ({ onCategoryChange }: HeaderProps) => {
     </>
   );
 };
+export const Header = memo(HeaderComponent);

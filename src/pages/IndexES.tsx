@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
@@ -221,11 +221,21 @@ const IndexES = () => {
     );
   };
 
-  const filteredVideos = filterTemplates(videoTemplates);
+  const filteredVideos = useMemo(() => filterTemplates(videoTemplates), [videoTemplates, searchQuery, contentFilters]);
   const displayedVideos = showAllVideos ? filteredVideos : filteredVideos.slice(0, 8);
 
-  const filteredCaptions = filterCaptions();
+  const filteredCaptions = useMemo(() => filterCaptions(), [captionsData, searchQuery]);
   const displayedCaptions = showAllCaptions ? filteredCaptions : filteredCaptions.slice(0, 8);
+
+  const sortedVideos = useMemo(() => {
+    return [...filteredVideos].sort((a, b) => {
+      if (a.is_featured && !b.is_featured) return -1;
+      if (!a.is_featured && b.is_featured) return 1;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [filteredVideos]);
+
+  const displayedSortedVideos = showAllVideos ? sortedVideos : sortedVideos.slice(0, 10);
 
   // Get weekly stories from story templates
   const weeklyStories = storyTemplates?.filter(s => s.type === 'weekly-story') || [];
@@ -244,15 +254,6 @@ const IndexES = () => {
   const renderContent = () => {
     switch (activeCategory) {
       case 'videos':
-        // Ordenar: featured primeiro, depois por data (mais recente primeiro)
-        const sortedVideos = [...filteredVideos].sort((a, b) => {
-          if (a.is_featured && !b.is_featured) return -1;
-          if (!a.is_featured && b.is_featured) return 1;
-          // Ordenar por data - mais recente primeiro
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        });
-        const displayedSortedVideos = showAllVideos ? sortedVideos : sortedVideos.slice(0, 10);
-
         return (
           <section className="animate-fade-in">
             {/* Highlights Section - Show at top if there are highlighted items */}
@@ -346,7 +347,7 @@ const IndexES = () => {
             {videosLoading ? (
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
                 {[...Array(10)].map((_, i) => (
-                  <Skeleton key={i} className="aspect-[9/16] rounded-xl" />
+                  <Skeleton key={i} className="aspect-[9/16] rounded-2xl shadow-canva" />
                 ))}
               </div>
             ) : (

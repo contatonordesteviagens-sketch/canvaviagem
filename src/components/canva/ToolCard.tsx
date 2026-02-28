@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { ExternalLink, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +16,7 @@ interface ToolCardProps {
   isPremium?: boolean;
 }
 
-export const ToolCard = ({
+const ToolCardComponent = ({
   id,
   title,
   url,
@@ -128,3 +129,5 @@ export const ToolCard = ({
     </a>
   );
 };
+
+export const ToolCard = memo(ToolCardComponent);
