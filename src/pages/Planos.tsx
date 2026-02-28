@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { UserInfoCard } from "@/components/UserInfoCard";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
 import {
-  Loader2, Check, Plane, Settings, RefreshCw, Shield, Star,
+  Loader2, Check, Plane, Settings, RefreshCw, Star,
   ChevronDown, ChevronUp
 } from "lucide-react";
 import garantia7dias from "@/assets/garantia-7-dias.png";
@@ -22,16 +22,6 @@ const STRIPE = {
   monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
   annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
 };
-
-// ─── Fascinations (Bencivenga-style bullets) ──────────────────────────────────
-const FASCINATIONS = [
-  "O tipo de vídeo que fez uma agente do interior do Nordeste triplicar o engajamento sem nunca ter aberto o CapCut na vida",
-  "Por que o \"truque\" de postar todo dia NÃO funciona — e o que realmente faz clientes enviar mensagens pedindo pacotes",
-  "A ferramenta de IA que escreve por você a legenda, o roteiro e o e-mail de follow-up do cliente em menos de 40 segundos",
-  "Como uma agente que atende viagem de lua de mel descobriu um atalho para criar 30 posts em 45 minutos",
-  "A tática silenciosa que transforma um vídeo de praia qualquer em conteúdo que os clientes encaminham espontaneamente",
-  "O erro de posicionamento que faz a maioria das agências parecer um catálogo de preços — e como se diferenciar sem gastar nada",
-];
 
 // ─── Depoimentos ──────────────────────────────────────────────────────────────
 const PROOFS = [
@@ -99,33 +89,30 @@ const Planos = () => {
     const success = searchParams.get("success");
     const canceled = searchParams.get("canceled");
     if (success === "true") {
-      toast.success("Pagamento realizado com sucesso!");
+      toast.success("Assinatura ativada com sucesso! Bem-vindo ao Pro 🎉");
       refreshSubscription();
-      navigate("/sucesso");
     } else if (canceled === "true") {
-      toast.info("Pagamento cancelado.");
-      window.history.replaceState({}, "", "/planos");
+      toast.info("Pagamento cancelado. Você pode tentar novamente quando quiser.");
     }
-  }, [searchParams, refreshSubscription, navigate]);
+  }, [searchParams, refreshSubscription]);
 
   const handleCheckout = () => {
-    const price = billingCycle === "annual" ? 197.0 : 29.0;
-    trackInitiateCheckout(price, "BRL");
-    window.location.href = billingCycle === "annual" ? STRIPE.annual : STRIPE.monthly;
+    trackInitiateCheckout(billingCycle === "annual" ? 197 : 29);
+    const url = billingCycle === "annual" ? STRIPE.annual : STRIPE.monthly;
+    window.open(url, "_blank");
   };
 
   const handleManageSubscription = async () => {
     setPortalLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) { toast.error("Você precisa estar logado."); navigate("/auth"); return; }
-      const { data, error } = await supabase.functions.invoke("customer-portal", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      if (error) { toast.error("Erro ao acessar portal. Tente novamente."); return; }
-      if (data?.url) window.location.href = data.url;
-    } catch { toast.error("Erro ao processar. Tente novamente."); }
-    finally { setPortalLoading(false); }
+      const { data, error } = await supabase.functions.invoke("create-portal-session");
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch {
+      toast.error("Erro ao abrir portal. Tente novamente.");
+    } finally {
+      setPortalLoading(false);
+    }
   };
 
   const handleRefreshSubscription = async () => {
@@ -192,31 +179,23 @@ const Planos = () => {
       <Header />
       {user && <div className="max-w-4xl mx-auto px-4 pt-6"><UserInfoCard /></div>}
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          HERO — Grandes promessas exigem grandes provas (Bencivenga)
-      ══════════════════════════════════════════════════════════════════════ */}
+      {/* ─── HERO ─────────────────────────────────────────────────────────── */}
       <section className="relative max-w-3xl mx-auto px-6 pt-16 pb-14 text-center overflow-hidden">
-        {/* Subtle gradient glow */}
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_0%,rgba(250,204,21,0.08)_0%,rgba(255,255,255,0)_70%)] pointer-events-none" />
-
         <p className="text-[11px] font-bold tracking-[0.3em] text-zinc-400 uppercase mb-6">
           Para agentes de viagem que querem crescer
         </p>
-
         <h1 className="text-4xl md:text-[3.5rem] font-black leading-[1.1] mb-6 text-black tracking-tight">
           Sabe aquela sensação de abrir o Instagram{" "}
           <span className="italic">sem saber o que postar</span>?
         </h1>
-
         <p className="text-lg md:text-xl text-zinc-600 max-w-xl mx-auto mb-4 leading-relaxed">
-          Eu sei exatamente como é isso. Criei esta ferramenta porque vi agência após agência travando no mesmo lugar — não por falta de esforço, mas por falta do conteúdo certo na mão certa.
-          Hoje você tem acesso a <strong className="text-black">250+ vídeos de destinos prontos</strong>, artes editáveis, legendas e IA de marketing — especialmente pensados para o seu ritmo.
+          Eu sei exatamente como é isso. Criei esta ferramenta porque vi agência após agência travando no mesmo lugar — não por falta de esforço, mas por falta do conteúdo certo.
+          Hoje você tem acesso a <strong className="text-black">250+ vídeos de destinos prontos</strong>, artes editáveis, legendas e IA de marketing.
         </p>
-
         <p className="text-base text-zinc-500 mb-10">
           Por menos de <strong className="text-black">R$ 1 por dia</strong>, você deixa de improvisar e começa a aparecer de verdade.
         </p>
-
         <a href="#preco">
           <button className="bg-black text-white font-black text-base md:text-lg px-10 py-4 rounded-full hover:bg-zinc-800 transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0">
             Quero resolver isso agora →
@@ -225,14 +204,7 @@ const Planos = () => {
         <p className="text-xs text-zinc-400 mt-3">Garantia de 7 dias · Cancele quando quiser</p>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          PROBLEMA — Empatia profunda (Bencivenga)
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section className="border-y border-zinc-100 bg-zinc-50 py-16 px-6">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-black mb-6 leading-snug">
-
-      {/* ===== DEPOIMENTOS ===== */}
+      {/* ─── DEPOIMENTOS ──────────────────────────────────────────────────── */}
       <section className="py-10 px-6 bg-white border-b border-zinc-100">
         <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
           {PROOFS.map((p) => (
@@ -240,15 +212,49 @@ const Planos = () => {
               <div className="flex gap-0.5">
                 {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />)}
               </div>
-              <p className="text-sm text-zinc-300 italic leading-relaxed flex-1">&ldquo;{p.text}&rdquo;</p>
-              <p className="text-xs font-bold text-white border-t border-zinc-800 pt-2">{`${p.name}  ${p.source}`}</p>
+              <p className="text-sm text-zinc-300 italic leading-relaxed flex-1">"{p.text}"</p>
+              <p className="text-xs font-bold text-white border-t border-zinc-800 pt-2">{p.name} · {p.source}</p>
             </div>
           ))}
         </div>
       </section>
 
-          COMO FUNCIONA — 3 passos simples
-      ══════════════════════════════════════════════════════════════════════ */}
+      {/* ─── GIFs ─────────────────────────────────────────────────────────── */}
+      <section className="py-16 px-6 bg-zinc-950">
+        <div className="max-w-3xl mx-auto">
+          <p className="text-[11px] font-bold tracking-widest text-zinc-500 uppercase mb-4 text-center">
+            Exemplos reais do conteúdo
+          </p>
+          <h2 className="text-2xl md:text-3xl font-black text-center text-white mb-3 leading-snug">
+            É isso que você vai ter na mão hoje
+          </h2>
+          <p className="text-zinc-400 text-center mb-10 text-sm max-w-lg mx-auto">
+            Cada um desses vídeos foi criado para agentes postarem diretamente no Instagram, TikTok ou WhatsApp — sem editar nada.
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              "https://media4.giphy.com/media/tJPdq4gvTvr8CgIyWI/giphy.gif",
+              "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWt3MGhsd3g1MnJtbzlkMDloczlhdTJvNWhubjZ4Z3FtNnJkeDd1aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ZQZVm01DFW3qHY0ZKs/giphy.gif",
+              "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3J2anV0aTVkYWowbDl1ZXFtNnB4ZWUwcnVnZTVzOW91ZzNncGNvNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mbylDFYWSU46XeLcsS/giphy.gif",
+              "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXQ1dHAxM2JxcWM0N3VqdWhibnBtcDR5eWVmNTZwaGI1NTJjeml3diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VcFJaM72FG76eG75In/giphy.gif",
+            ].map((gif, i) => (
+              <div key={i} className="rounded-2xl overflow-hidden border border-zinc-800 aspect-[9/16]">
+                <img
+                  src={gif}
+                  loading="lazy"
+                  alt={`Exemplo de vídeo de viagem ${i + 1}`}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+            ))}
+          </div>
+          <p className="text-zinc-500 text-xs text-center mt-6">
+            250+ vídeos disponíveis · Novos toda semana
+          </p>
+        </div>
+      </section>
+
+      {/* ─── COMO FUNCIONA ─────────────────────────────────────────────────── */}
       <section className="py-16 px-6 bg-white border-b border-zinc-100">
         <div className="max-w-2xl mx-auto">
           <p className="text-[11px] font-bold tracking-widest text-zinc-400 uppercase mb-4 text-center">
@@ -259,21 +265,9 @@ const Planos = () => {
           </h2>
           <div className="space-y-8">
             {[
-              {
-                n: "1",
-                title: "Escolha",
-                desc: "Navegue por 250+ destinos: Disney, Maldivas, Paris, Nordeste, Europa e muito mais.",
-              },
-              {
-                n: "2",
-                title: "Baixe (ou edite, se quiser)",
-                desc: "Abra no Canva em 1 clique, coloque seu logo e suas cores. Ou baixe direto, já está pronto.",
-              },
-              {
-                n: "3",
-                title: "Publique",
-                desc: "Cole no Instagram, TikTok ou WhatsApp. Seu perfil profissional em menos de 2 minutos.",
-              },
+              { n: "1", title: "Escolha", desc: "Navegue por 250+ destinos: Disney, Maldivas, Paris, Nordeste, Europa e muito mais." },
+              { n: "2", title: "Baixe (ou edite, se quiser)", desc: "Abra no Canva em 1 clique, coloque seu logo e suas cores. Ou baixe direto, já está pronto." },
+              { n: "3", title: "Publique", desc: "Cole no Instagram, TikTok ou WhatsApp. Seu perfil profissional em menos de 2 minutos." },
             ].map((step) => (
               <div key={step.n} className="flex gap-6 items-start">
                 <div className="shrink-0 w-12 h-12 bg-black text-white rounded-full flex items-center justify-center font-black text-xl">
@@ -289,9 +283,7 @@ const Planos = () => {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          TABELA COMPARATIVA — Grátis vs Pro
-      ══════════════════════════════════════════════════════════════════════ */}
+      {/* ─── TABELA COMPARATIVA ────────────────────────────────────────────── */}
       <section className="py-16 px-6 bg-zinc-50 border-b border-zinc-100">
         <div className="max-w-2xl mx-auto">
           <p className="text-[11px] font-bold tracking-widest text-zinc-400 uppercase mb-4 text-center">
@@ -301,7 +293,6 @@ const Planos = () => {
             Grátis vs Pro — sem enrolação.
           </h2>
           <div className="overflow-hidden rounded-2xl border border-zinc-200">
-            {/* Header */}
             <div className="grid grid-cols-3 bg-zinc-950 text-white text-center">
               <div className="py-4 px-3 text-left pl-5">
                 <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Recurso</p>
@@ -313,8 +304,6 @@ const Planos = () => {
                 <p className="text-xs font-black text-black uppercase tracking-widest">Pro ⭐</p>
               </div>
             </div>
-
-            {/* Rows */}
             {[
               { label: "Vídeos de destinos", free: "—", pro: "250+" },
               { label: "Stories e Reels prontos", free: "—", pro: "200+" },
@@ -324,7 +313,6 @@ const Planos = () => {
               { label: "Vendedor de Viagem (IA)", free: "—", pro: "✓" },
               { label: "Influencers de IA", free: "—", pro: "✓" },
               { label: "Calendário editorial", free: "—", pro: "365 dias" },
-              { label: "Banco de fotos", free: "—", pro: "✓" },
               { label: "Biblioteca de vídeos", free: "—", pro: "✓" },
               { label: "Novos conteúdos", free: "—", pro: "Toda semana" },
             ].map((row, i) => (
@@ -337,12 +325,8 @@ const Planos = () => {
                 <div className="py-3.5 px-3 text-center border-l border-zinc-100 font-bold text-black bg-yellow-50">{row.pro}</div>
               </div>
             ))}
-
-            {/* Footer CTA */}
             <div className="grid grid-cols-3 bg-zinc-950 border-t border-zinc-800">
-              <div className="py-5 px-5 text-white text-xs font-bold flex items-center">
-                Seu plano:
-              </div>
+              <div className="py-5 px-5 text-white text-xs font-bold flex items-center">Seu plano:</div>
               <div className="py-5 px-3 text-center border-l border-zinc-800">
                 <span className="text-zinc-500 text-xs">Acesso limitado</span>
               </div>
@@ -358,16 +342,14 @@ const Planos = () => {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          PREÇO — Argumento lógico + âncora de valor (Bencivenga)
-      ══════════════════════════════════════════════════════════════════════ */}
+      {/* ─── PREÇO ────────────────────────────────────────────────────────── */}
       <section id="preco" className="bg-zinc-950 text-white py-20 px-6 scroll-mt-20">
         <div className="max-w-xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-black text-center mb-3 leading-tight">
-            Quanto vale para você não precisar criar conteúdo do zero?
+            Quanto vale não precisar criar do zero?
           </h2>
           <p className="text-zinc-400 text-base text-center mb-12 max-w-md mx-auto leading-relaxed">
-            Um social media freelancer cobra em média R$ 800 a R$ 2.000 por mês. A plataforma inteira custa a partir de R$ 16,41/mês.
+            Um social media freelancer cobra em média R$ 800 a R$ 2.000/mês. A plataforma inteira custa a partir de R$ 16,41/mês.
           </p>
 
           {/* Toggle */}
@@ -377,9 +359,7 @@ const Planos = () => {
                 onClick={() => setBillingCycle("monthly")}
                 className={cn(
                   "px-6 py-2.5 rounded-full text-sm font-bold transition-all",
-                  !isAnnual
-                    ? "bg-white text-black shadow"
-                    : "text-zinc-400 hover:text-zinc-200"
+                  !isAnnual ? "bg-white text-black shadow" : "text-zinc-400 hover:text-zinc-200"
                 )}
               >
                 Mensal
@@ -388,9 +368,7 @@ const Planos = () => {
                 onClick={() => setBillingCycle("annual")}
                 className={cn(
                   "px-6 py-2.5 rounded-full text-sm font-bold transition-all flex items-center gap-2",
-                  isAnnual
-                    ? "bg-white text-black shadow"
-                    : "text-zinc-400 hover:text-zinc-200"
+                  isAnnual ? "bg-white text-black shadow" : "text-zinc-400 hover:text-zinc-200"
                 )}
               >
                 Anual
@@ -409,16 +387,22 @@ const Planos = () => {
               </div>
             )}
             <div className="p-8 md:p-10">
-              <div className="mb-1">
-                <p className="text-sm text-zinc-400 font-medium">
-                  {isAnnual ? "Plano Anual" : "Plano Mensal"}
-                </p>
-              </div>
+              <p className="text-sm text-zinc-400 font-medium mb-1">
+                {isAnnual ? "Plano Anual" : "Plano Mensal"}
+              </p>
+              {!isAnnual && (
+                <p className="text-sm text-zinc-400 line-through mb-1">De R$ 44,62/mês</p>
+              )}
               <div className="flex items-baseline gap-2 mb-1">
                 <span className="text-5xl md:text-6xl font-black text-black">
                   R$&nbsp;{isAnnual ? "16,41" : "29,00"}
                 </span>
                 <span className="text-zinc-400 text-lg">/mês</span>
+                {!isAnnual && (
+                  <span className="ml-2 bg-yellow-400 text-black text-[10px] font-black px-2 py-1 rounded leading-none uppercase tracking-wider">
+                    -35% OFF
+                  </span>
+                )}
               </div>
               <p className="text-sm text-zinc-400 mb-8">
                 {isAnnual
@@ -429,11 +413,10 @@ const Planos = () => {
               <ul className="space-y-3 mb-8">
                 {[
                   "Acesso completo a 250+ vídeos de destinos",
-                  "10 agentes de IA de marketing para viagens",
+                  "11 agentes de IA de marketing para viagens",
                   "Artes, stories e legendas prontos",
                   "Calendário editorial com 365 sugestões",
                   "Novos conteúdos toda semana",
-                  "Suporte via WhatsApp",
                   "Garantia de 7 dias — sem perguntas",
                 ].map((f) => (
                   <li key={f} className="flex items-center gap-3 text-sm">
@@ -449,9 +432,7 @@ const Planos = () => {
                 onClick={handleCheckout}
                 className="w-full bg-black text-white font-black text-lg py-5 rounded-2xl hover:bg-zinc-800 transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0"
               >
-                {isAnnual
-                  ? "Assinar agora por R$ 197/ano →"
-                  : "Assinar agora por R$ 29/mês →"}
+                {isAnnual ? "Assinar agora por R$ 197/ano →" : "Assinar agora por R$ 29/mês →"}
               </button>
               <p className="text-center text-xs text-zinc-400 mt-4">
                 Pagamento seguro via Stripe · Acesso imediato após confirmação
@@ -461,24 +442,18 @@ const Planos = () => {
 
           {/* Garantia */}
           <div className="mt-6 flex items-center gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-            <img
-              src={garantia7dias}
-              alt="Garantia 7 dias"
-              className="w-14 h-14 object-contain shrink-0"
-            />
+            <img src={garantia7dias} alt="Garantia 7 dias" className="w-14 h-14 object-contain shrink-0" />
             <div>
               <h4 className="font-black text-sm mb-0.5 text-white">Garantia incondicional de 7 dias</h4>
               <p className="text-xs text-zinc-400 leading-relaxed">
-                Entrou, testou e não gostou? Devolvemos 100% do seu dinheiro. Sem pergunta. Sem burocracia. Esse é o nosso risco, não o seu.
+                Entrou, testou e não gostou? Devolvemos 100% do seu dinheiro. Sem pergunta. Sem burocracia.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          FAQ
-      ══════════════════════════════════════════════════════════════════════ */}
+      {/* ─── FAQ ─────────────────────────────────────────────────────────── */}
       <section className="py-16 px-6 bg-white border-b border-zinc-100">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-black text-center mb-10">
@@ -507,14 +482,13 @@ const Planos = () => {
         </div>
       </section>
 
-
-      {/* ===== CTA FINAL ===== */}
+      {/* ─── CTA FINAL ────────────────────────────────────────────────────── */}
       <section className="bg-black text-white py-14 px-6 text-center">
         <div className="max-w-xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-black mb-4 leading-tight">
             Comece hoje. Poste amanhã.
           </h2>
-          <p className="text-zinc-400 text-sm mb-8">Garantia de 7 dias  Acesso imediato  Cancele quando quiser</p>
+          <p className="text-zinc-400 text-sm mb-8">Garantia de 7 dias · Acesso imediato · Cancele quando quiser</p>
           <button
             onClick={handleCheckout}
             className="bg-yellow-400 text-black font-black text-lg px-10 py-4 rounded-full hover:bg-yellow-300 transition-all shadow-xl inline-block"
@@ -523,7 +497,6 @@ const Planos = () => {
           </button>
         </div>
       </section>
-
 
       <Footer />
     </div>
