@@ -204,9 +204,9 @@ const ObrigadoES = () => {
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
-                                    <><Loader2 className="mr-2 h-7 w-7 animate-spin" />Enviando...</>
+                                    <><Loader2 className="mr-2 h-6 w-6 animate-spin" />Enviando...</>
                                 ) : (
-                                    <><Mail className="mr-2 h-7 w-7" />Recibir mi acceso ahora</>
+                                    <><Mail className="mr-2 h-6 w-6" />Recibir acceso ahora</>
                                 )}
                             </Button>
                         </div>
