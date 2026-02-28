@@ -98,12 +98,12 @@ serve(async (req) => {
   }
 
   try {
-    const { email, name, phone } = await req.json();
+    const { email, name, phone, siteUrl } = await req.json();
 
-    console.log("[MAGIC-LINK] Processing request:", { 
+    console.log("[MAGIC-LINK] Processing request:", {
       email: email ? email.substring(0, 5) + "***" : "missing",
       hasName: !!name,
-      hasPhone: !!phone 
+      hasPhone: !!phone
     });
 
     if (!email || typeof email !== "string") {
@@ -131,7 +131,7 @@ serve(async (req) => {
     // Rate limiting: Check if email has too many recent requests (max 3 per 15 minutes)
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
     const normalizedEmail = email.toLowerCase().trim();
-    
+
     const { data: recentTokens, error: rateCheckError } = await supabaseAdmin
       .from("magic_link_tokens")
       .select("created_at")
@@ -173,7 +173,7 @@ serve(async (req) => {
     }
 
     // Criar link de verificação
-    const baseUrl = Deno.env.get("SITE_URL") || "https://canvaviagem.lovable.app";
+    const baseUrl = siteUrl || Deno.env.get("SITE_URL") || "https://canvaviagem.lovable.app";
     console.log("[MAGIC-LINK] Using base URL:", baseUrl);
     const magicLink = `${baseUrl}/auth/verify?token=${token}`;
     console.log("[MAGIC-LINK] Magic link generated successfully");
@@ -186,10 +186,10 @@ serve(async (req) => {
       html: generateEmailTemplate(magicLink),
     });
 
-    console.log("[MAGIC-LINK] Email sent:", JSON.stringify({ 
-      email, 
+    console.log("[MAGIC-LINK] Email sent:", JSON.stringify({
+      email,
       emailId: emailResponse.data?.id,
-      error: emailResponse.error 
+      error: emailResponse.error
     }));
 
     // Verificar se o Resend retornou erro
