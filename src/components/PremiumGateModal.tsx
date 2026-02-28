@@ -19,8 +19,9 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
     monthly: {
       value: "R$ 29,00",
       period: "/mês",
+      originalValue: "R$ 44,62",
       description: "Pagamento recorrente mensal",
-      discount: null,
+      discount: "-35% OFF",
       stripeLink: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05"
     },
     annual: {
@@ -87,11 +88,16 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
                 </div>
 
                 <div className="space-y-1">
+                  {'originalValue' in currentPrice && (currentPrice as any).originalValue && (
+                    <p className="text-sm text-[#9CA3AF] line-through">
+                      De {(currentPrice as any).originalValue}/mês
+                    </p>
+                  )}
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-black text-[#1A1A1A]">{currentPrice.value}</span>
                     <span className="text-[#6B7280] font-medium text-lg">{currentPrice.period}</span>
                     {currentPrice.discount && (
-                      <div className="ml-2 bg-[#1A1A1A] text-white text-[10px] font-bold px-2 py-1 rounded leading-none uppercase tracking-wider">
+                      <div className="ml-2 bg-[#FFB800] text-[#1A1A1A] text-[10px] font-black px-2 py-1 rounded leading-none uppercase tracking-wider">
                         {currentPrice.discount}
                       </div>
                     )}

@@ -195,27 +195,31 @@ const Planos = () => {
       {/* ═══════════════════════════════════════════════════════════════════
           HERO — Grandes promessas exigem grandes provas (Bencivenga)
       ══════════════════════════════════════════════════════════════════════ */}
-      <section className="max-w-3xl mx-auto px-6 pt-16 pb-14 text-center">
+      <section className="relative max-w-3xl mx-auto px-6 pt-16 pb-14 text-center overflow-hidden">
+        {/* Subtle gradient glow */}
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_0%,rgba(250,204,21,0.08)_0%,rgba(255,255,255,0)_70%)] pointer-events-none" />
+
         <p className="text-[11px] font-bold tracking-[0.3em] text-zinc-400 uppercase mb-6">
           Para agentes de viagem que querem crescer
         </p>
 
         <h1 className="text-4xl md:text-[3.5rem] font-black leading-[1.1] mb-6 text-black tracking-tight">
-          E se você nunca mais precisasse{" "}
-          <span className="italic">pensar</span> no que postar?
+          Sabe aquela sensação de abrir o Instagram{" "}
+          <span className="italic">sem saber o que postar</span>?
         </h1>
 
         <p className="text-lg md:text-xl text-zinc-600 max-w-xl mx-auto mb-4 leading-relaxed">
-          Existe uma plataforma com <strong className="text-black">250+ vídeos de destinos prontos</strong>, artes editáveis, legendas e IA de marketing — especialmente criada para agentes de viagem. Muitos que a descobriram reduziram o tempo de criação de conteúdo de horas para <strong className="text-black">minutos</strong>.
+          Eu sei exatamente como é isso. Criei esta ferramenta porque vi agência após agência travando no mesmo lugar — não por falta de esforço, mas por falta do conteúdo certo na mão certa.
+          Hoje você tem acesso a <strong className="text-black">250+ vídeos de destinos prontos</strong>, artes editáveis, legendas e IA de marketing — especialmente pensados para o seu ritmo.
         </p>
 
         <p className="text-base text-zinc-500 mb-10">
-          Por menos de <strong className="text-black">R$ 1 por dia</strong>, você pode ser o próximo.
+          Por menos de <strong className="text-black">R$ 1 por dia</strong>, você deixa de improvisar e começa a aparecer de verdade.
         </p>
 
         <a href="#preco">
           <button className="bg-black text-white font-black text-base md:text-lg px-10 py-4 rounded-full hover:bg-zinc-800 transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0">
-            Ver como funciona →
+            Quero resolver isso agora →
           </button>
         </a>
         <p className="text-xs text-zinc-400 mt-3">Garantia de 7 dias · Cancele quando quiser</p>
@@ -279,7 +283,7 @@ const Planos = () => {
             Exemplos reais do conteúdo
           </p>
           <h2 className="text-2xl md:text-3xl font-black text-center text-white mb-3 leading-snug">
-            É isso que você vai ter na mão amanhã
+            É isso que você vai ter na mão hoje
           </h2>
           <p className="text-zinc-400 text-center mb-10 text-sm max-w-lg mx-auto">
             Cada um desses vídeos foi criado para agentes postarem diretamente no Instagram, TikTok ou WhatsApp — sem editar nada.
@@ -379,16 +383,15 @@ const Planos = () => {
             {[
               { label: "Vídeos de destinos", free: "—", pro: "250+" },
               { label: "Stories e Reels prontos", free: "—", pro: "200+" },
-              { label: "Artes e Feed editáveis", free: "Limitado", pro: "Ilimitado" },
+              { label: "Artes e Feed editáveis", free: "—", pro: "Ilimitado" },
               { label: "Legendas prontas", free: "✓", pro: "✓" },
-              { label: "Ferramentas de IA", free: "—", pro: "10 agentes" },
+              { label: "Ferramentas de IA", free: "8 agentes", pro: "11 agentes" },
               { label: "Vendedor de Viagem (IA)", free: "—", pro: "✓" },
+              { label: "Influencers de IA", free: "—", pro: "✓" },
               { label: "Calendário editorial", free: "—", pro: "365 dias" },
               { label: "Banco de fotos", free: "—", pro: "✓" },
               { label: "Biblioteca de vídeos", free: "—", pro: "✓" },
               { label: "Novos conteúdos", free: "—", pro: "Toda semana" },
-              { label: "Suporte WhatsApp", free: "—", pro: "✓" },
-              { label: "Uso comercial", free: "—", pro: "✓ Sem restrições" },
             ].map((row, i) => (
               <div
                 key={row.label}
@@ -415,56 +418,6 @@ const Planos = () => {
                   </button>
                 </a>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          PLUG & PLAY — Velocidade e exclusividade (Bencivenga)
-      ══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 px-6 bg-white border-b border-zinc-100">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-black mb-3 leading-snug">
-            Pegou, usou e postou em 2 minutos.
-          </h2>
-          <p className="text-zinc-500 mb-10 text-base leading-relaxed">
-            Sem design. Sem complicação. A plataforma foi construída pra agentes que precisam de resultado rápido — não pra quem tem horas pra passar editando.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="border border-zinc-200 rounded-2xl p-6 hover:border-zinc-400 transition-colors">
-              <div className="text-2xl mb-3">🎯</div>
-              <h3 className="font-black text-base mb-3">100% Plug-and-Play</h3>
-              <ul className="space-y-2.5 text-sm text-zinc-500">
-                {[
-                  "Não precisa saber design",
-                  "Não precisa saber edição de vídeo",
-                  "Não precisa entender de marketing digital",
-                  "2 minutos pra criar e publicar",
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-black shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="border border-zinc-900 bg-zinc-950 text-white rounded-2xl p-6">
-              <div className="text-2xl mb-3">✨</div>
-              <h3 className="font-black text-base mb-3">Conteúdo que ninguém mais tem</h3>
-              <ul className="space-y-2.5 text-sm text-zinc-300">
-                {[
-                  "250+ vídeos criados exclusivamente para a plataforma",
-                  "Pode personalizar com suas cores e logo",
-                  "Impossível todo mundo usar o mesmo — o acervo é enorme",
-                  "Conteúdo novo adicionado toda semana",
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-yellow-400 shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
             </div>
           </div>
         </div>

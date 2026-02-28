@@ -318,15 +318,7 @@ const Index = () => {
             <div className="flex justify-between items-center mb-6 gap-4">
               <AccessFilter
                 selectedFilters={accessFilters}
-                onFiltersChange={(newFilters) => {
-                  // Exclusive toggle: if clicking the same filter, deselect; otherwise select only that one
-                  if (newFilters.length === 0) {
-                    setAccessFilters([]);
-                  } else {
-                    const last = newFilters[newFilters.length - 1];
-                    setAccessFilters(accessFilters.includes(last as AccessFilterType) ? [] : [last as AccessFilterType]);
-                  }
-                }}
+                onFiltersChange={setAccessFilters}
               />
               <ContentFilterDropdown
                 selectedFilters={contentFilters}

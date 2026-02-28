@@ -7,7 +7,7 @@ export type AccessFilterType = 'premium' | 'gratis';
 
 interface AccessFilterProps {
     selectedFilters: string[];
-    onFiltersChange: (filters: any[]) => void;
+    onFiltersChange: (filters: AccessFilterType[]) => void;
 }
 
 const AccessFilterComponent = ({
@@ -15,15 +15,14 @@ const AccessFilterComponent = ({
     onFiltersChange
 }: AccessFilterProps) => {
 
+    // Exclusive toggle: click activates only that filter, click again deselects
     const toggleFilter = (filter: AccessFilterType) => {
         if (selectedFilters.includes(filter)) {
-            // Se tiver os dois e remover um, mantém o outro
-            if (selectedFilters.length > 1) {
-                onFiltersChange(selectedFilters.filter(f => f !== filter));
-            }
-            // Não permite desmarcar os dois ao mesmo tempo para não ficar vazio
+            // Deselect → show everything
+            onFiltersChange([]);
         } else {
-            onFiltersChange([...selectedFilters, filter]);
+            // Select only this one (exclusive)
+            onFiltersChange([filter]);
         }
     };
 
