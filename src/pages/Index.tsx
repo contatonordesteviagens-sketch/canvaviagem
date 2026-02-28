@@ -100,14 +100,18 @@ const Index = () => {
   const isSubscribed = user && subscription.subscribed;
 
   // Function to get the premium required callback
-  const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean) => {
+  const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean, itemType?: string) => {
     if (isSubscribed) return undefined;
 
     // Se o item for explicitamente premium (ex: ferramenta específica ou override)
     if (isItemPremiumOverride) return () => setShowPremiumGate(true);
 
-    // Se categoria ou tipo for premium
-    const isPremium = checkIfItemIsPremium(activeCategory);
+    // Biblioteca de vídeos e Reels são SEMPRE premium
+    const premiumTypes = ['video', 'seasonal', 'reel', 'story', 'weekly-story', 'feed'];
+    if (itemType && premiumTypes.includes(itemType)) return () => setShowPremiumGate(true);
+
+    // Se categoria for premium (legado/fallback)
+    const isPremium = checkIfItemIsPremium(category || '');
     if (isPremium) return () => setShowPremiumGate(true);
 
     return undefined;
@@ -402,8 +406,8 @@ const Index = () => {
                       onClick={() => handleCardClick(template)}
                       isFavorite={isFavorite("content_item", template.id)}
                       onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                      onPremiumRequired={getPremiumCallback(activeCategory)}
-                      isPremium={!['captions', 'tools', 'videoaula', 'contracts'].includes(activeCategory || template.type)}
+                      onPremiumRequired={getPremiumCallback(activeCategory, false, template.type)}
+                      isPremium={checkIfItemIsPremium(template.type, template.title)}
                     />
                   ))}
                 </div>
@@ -464,14 +468,16 @@ const Index = () => {
                     id={template.id}
                     title={template.title}
                     url={template.url}
-                    isNew={newestIds.includes(template.id)}
+                    imageUrl={template.image_url}
+                    category={template.category}
+                    isNew={template.is_new}
                     icon={getIcon(template.type, template.icon)}
                     aspectRatio="4/5"
                     onClick={() => handleCardClick(template)}
                     isFavorite={isFavorite("content_item", template.id)}
                     onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                    onPremiumRequired={getPremiumCallback(activeCategory)}
-                    isPremium={!['captions', 'tools', 'videoaula', 'contracts'].includes(activeCategory || template.type)}
+                    onPremiumRequired={getPremiumCallback(activeCategory, false, template.type)}
+                    isPremium={checkIfItemIsPremium(template.type, template.title)}
                   />
                 ))}
               </div>

@@ -91,26 +91,26 @@ export const ToolCard = ({
             </button>
           )}
 
-          {/* Badge NEW */}
-          {isNew && (
-            <span className={cn(
-              "absolute top-2 z-10 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm",
-              onToggleFavorite ? "left-2" : "right-2"
-            )}>
-              Novo
-            </span>
-          )}
-
           {/* Gradient background with icon */}
           <div className={cn(
             "w-full h-full bg-gradient-to-br flex items-center justify-center transition-transform duration-300 group-hover:scale-105",
             getGradient()
           )}>
             <span className="text-5xl">{icon}</span>
+
             {isPremium && (
               <div className="absolute top-2 left-2 bg-gradient-to-r from-amber-400 to-amber-600 text-white p-1.5 rounded-full shadow-lg z-20">
                 <span className="text-xs">👑</span>
               </div>
+            )}
+
+            {isNew && (
+              <span className={cn(
+                "absolute z-10 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm",
+                isPremium ? "top-2 left-12" : "top-2 left-2"
+              )}>
+                Novo
+              </span>
             )}
           </div>
         </div>

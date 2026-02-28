@@ -103,14 +103,18 @@ const IndexES = () => {
   const isSubscribed = user && subscription.subscribed;
 
   // Function to get the premium required callback
-  const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean) => {
+  const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean, itemType?: string) => {
     if (isSubscribed) return undefined;
 
     // Se o item for explicitamente premium (ex: ferramenta específica ou override)
     if (isItemPremiumOverride) return () => setShowPremiumGate(true);
 
-    // Se categoria ou tipo for premium
-    const isPremium = checkIfItemIsPremium(activeCategory);
+    // Biblioteca de vídeos y Reels son SIEMPRE premium
+    const premiumTypes = ['video', 'seasonal', 'reel', 'story', 'weekly-story', 'feed'];
+    if (itemType && premiumTypes.includes(itemType)) return () => setShowPremiumGate(true);
+
+    // Se categoria for premium (fallback)
+    const isPremium = checkIfItemIsPremium(category || '');
     if (isPremium) return () => setShowPremiumGate(true);
 
     return undefined;
@@ -363,8 +367,8 @@ const IndexES = () => {
                       onClick={() => handleCardClick(template)}
                       isFavorite={isFavorite("content_item", template.id)}
                       onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                      onPremiumRequired={getPremiumCallback(activeCategory)}
-                      isPremium={!['captions', 'tools', 'videoaula', 'contracts'].includes(activeCategory)}
+                      onPremiumRequired={getPremiumCallback(activeCategory, false, template.type)}
+                      isPremium={checkIfItemIsPremium(template.type, template.title)}
                     />
                   ))}
                 </div>
@@ -407,20 +411,22 @@ const IndexES = () => {
               <ContentSkeleton />
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {filterTemplates(feedTemplates).map((template) => (
+                {videoTemplates?.map((template) => (
                   <PremiumCard
                     key={template.id}
                     id={template.id}
                     title={template.title}
                     url={template.url}
-                    isNew={newestIds.includes(template.id)}
+                    imageUrl={template.image_url}
+                    category={template.category}
+                    isNew={template.is_new}
                     icon={getIcon(template.type, template.icon)}
                     aspectRatio="4/5"
                     onClick={() => handleCardClick(template)}
                     isFavorite={isFavorite("content_item", template.id)}
                     onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                    onPremiumRequired={getPremiumCallback(activeCategory)}
-                    isPremium={true}
+                    onPremiumRequired={getPremiumCallback(activeCategory, false, template.type)}
+                    isPremium={checkIfItemIsPremium(template.type, template.title)}
                   />
                 ))}
               </div>
@@ -481,7 +487,8 @@ const IndexES = () => {
                         onClick={() => handleCardClick(template)}
                         isFavorite={isFavorite("content_item", template.id)}
                         onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                        onPremiumRequired={getPremiumCallback(activeCategory)}
+                        onPremiumRequired={getPremiumCallback(activeCategory, false, template.type)}
+                        isPremium={checkIfItemIsPremium(template.type, template.title)}
                       />
                     ))}
                   </div>
@@ -601,7 +608,7 @@ const IndexES = () => {
                       onClick={() => trackClick('tool', tool.id)}
                       isFavorite={isFavorite("marketing_tool", tool.id)}
                       onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                      onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium)}
+                      onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium, 'tool')}
                       isPremium={isToolPremium}
                     />
                   );
