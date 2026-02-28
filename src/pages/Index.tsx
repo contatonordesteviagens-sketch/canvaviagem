@@ -703,12 +703,12 @@ const Index = () => {
                       subtitle="Planejamento semanal de conteúdo"
                     />
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {weeklyStories.map((story) => (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 lg:gap-4">
+                      {weeklyStories.sort((a, b) => a.title.localeCompare(b.title)).map((story) => (
                         <PremiumCard
                           key={story.id}
                           id={story.id}
-                          title={story.title}
+                          title={story.title.replace('Stories Semanais - ', '')}
                           url={story.url}
                           icon="📅"
                           aspectRatio="1/1"
@@ -1120,7 +1120,7 @@ const Index = () => {
         description="Acesse centenas de templates de vídeos Reels e artes para agências de viagens. Conteúdo premium pronto para editar no Canva."
         keywords="templates canva viagens, reels turismo, artes agência de viagens, marketing turístico"
       />
-      <Header />
+      <Header onCategoryChange={setActiveCategory} />
 
       <main className="container mx-auto px-4 py-4 md:py-6 max-w-7xl">
         {mainContent}
