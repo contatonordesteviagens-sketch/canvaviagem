@@ -2,13 +2,15 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Loader2, ArrowRight, MessageCircle, RefreshCw, Sparkles } from "lucide-react";
+import { Mail, Loader2, ArrowRight, MessageCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SpanishPixel } from "@/components/SpanishPixel";
+import { trackPurchase, trackSubscribe } from "@/lib/meta-pixel";
+import { trackESPurchase, trackESSubscribe } from "@/lib/meta-pixel-es";
 
 /**
- * Intensified Confetti Component
+ * Slow & Abundant Confetti Component
  */
 const ConfettiCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -28,17 +30,17 @@ const ConfettiCanvas = () => {
       color: string; size: number; angle: number; spin: number;
     }[] = [];
 
-    // Increased intensity: 280 particles
-    for (let i = 0; i < 280; i++) {
+    // Increase density: 350 particles
+    for (let i = 0; i < 350; i++) {
       particles.push({
         x: Math.random() * canvas.width,
-        y: -50 - Math.random() * 600,
-        vx: (Math.random() - 0.5) * 5,
-        vy: 1 + Math.random() * 7,
+        y: -50 - Math.random() * 800,
+        vx: (Math.random() - 0.5) * 2, // Slower horizontal
+        vy: 0.5 + Math.random() * 2,   // Slower vertical
         color: colors[Math.floor(Math.random() * colors.length)],
         size: 7 + Math.random() * 10,
         angle: Math.random() * Math.PI * 2,
-        spin: (Math.random() - 0.5) * 0.25,
+        spin: (Math.random() - 0.5) * 0.1, // Slower spin
       });
     }
 
@@ -50,7 +52,7 @@ const ConfettiCanvas = () => {
         p.x += p.vx;
         p.y += p.vy;
         p.angle += p.spin;
-        p.vy += 0.08;
+        p.vy += 0.02; // Very low gravity for "floaty" effect
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate(p.angle);
@@ -59,7 +61,8 @@ const ConfettiCanvas = () => {
         ctx.restore();
       });
       frame++;
-      if (frame < 350) {
+      // Longer duration (approx 8 seconds at 60fps)
+      if (frame < 180) { // Approx 3 seconds at 60fps
         animId = requestAnimationFrame(animate);
       } else {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -73,7 +76,7 @@ const ConfettiCanvas = () => {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-50"
-      style={{ width: "100", height: "100vh" }}
+      style={{ width: "100vw", height: "100vh" }}
     />
   );
 };
@@ -104,7 +107,7 @@ const Obrigado = () => {
   }, [tracked, sourceFromUrl]);
 
   useEffect(() => {
-    const t = setTimeout(() => setShowConfetti(false), 7000);
+    const t = setTimeout(() => setShowConfetti(false), 3000); // 3s confetti duration
     return () => clearTimeout(t);
   }, []);
 
@@ -165,132 +168,119 @@ const Obrigado = () => {
       <SpanishPixel />
       {showConfetti && <ConfettiCanvas />}
 
-      {/* Decorative Blur Orbs */}
-      <div className="absolute top-20 left-1/4 w-72 h-72 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-20 right-1/4 w-72 h-72 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
-
       <div className="w-full max-w-md relative z-10">
         {/* Celebration header */}
-        <div className="text-center mb-6 animate-fade-in px-4">
-          <div className="flex justify-center mb-4">
-            <img
-              src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExcjZ4aDh1M3FzYWhodHZ6N294NGQ2OWZxOGRraHN4c2pwZWs5d3ZkdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yoJC2GnSClbPOkV0eA/giphy.gif"
-              alt="Celebração"
-              className="w-32 h-32 object-contain"
-            />
-          </div>
-
-          <h1 className="text-3xl md:text-4xl font-black text-black leading-tight mb-2">
-            🎉 Parabéns!<br />
-            <span className="bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
-              Conteúdo de viagens<br />pra sempre!
-            </span>
-          </h1>
-          <p className="text-zinc-500 text-sm md:text-base mt-2">
-            Seu acesso está garantido. Agora é só receber o link no e-mail! ✈️
-          </p>
+        <div className="flex justify-center mb-6 animate-scale-in" style={{ animationDuration: '3s' }}>
+          <img
+            src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExcjZ4aDh1M3FzYWhodHZ6N294NGQ2OWZxOGRraHN4c2pwZWs5d3ZkdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yoJC2GnSClbPOkV0eA/giphy.gif"
+            alt="Celebração"
+            className="w-56 h-56 md:w-64 md:h-64 object-cover rounded-2xl shadow-xl border-4 border-white"
+          />
         </div>
 
-        {/* Card */}
-        <div className="bg-white border border-zinc-200 rounded-3xl p-6 md:p-8 shadow-2xl space-y-5 mx-2">
-
-          {!magicLinkSent ? (
-            <div className="space-y-4">
-              <div className="text-center space-y-1">
-                <p className="font-bold text-zinc-900 text-base flex items-center justify-center gap-2">
-                  <Sparkles className="h-4 w-4 text-yellow-500" />
-                  Informe o e-mail da compra
-                </p>
-                <p className="text-xs text-zinc-500">
-                  Use <strong className="text-zinc-900">exatamente o mesmo e-mail</strong> usado no Stripe
-                </p>
-              </div>
-
-              <Input
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-                className="text-center text-base h-12 bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:border-yellow-500 focus:ring-0"
-                onKeyDown={(e) => e.key === "Enter" && handleSendMagicLink(e as any)}
-              />
-
-              <Button
-                onClick={handleSendMagicLink}
-                className="btn-shine w-full h-12 text-base font-black bg-yellow-400 text-black hover:bg-yellow-300 shadow-lg py-3 border-none transition-all duration-300"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Enviando...</>
-                ) : (
-                  <><Mail className="mr-2 h-5 w-5" />Receber meu acesso agora →</>
-                )}
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4 text-center">
-              <div className="bg-green-50 border border-green-100 rounded-2xl p-5">
-                <p className="text-green-800 font-bold text-base flex items-center justify-center gap-2 mb-1">
-                  <Mail className="h-5 w-5" />
-                  Link enviado para {email}!
-                </p>
-                <p className="text-green-700/70 text-xs">
-                  Verifique sua caixa de entrada e spam. O link expira em 1 hora.
-                </p>
-              </div>
-
-              <Button
-                variant="outline"
-                onClick={handleResendLink}
-                disabled={isLoading}
-                className="w-full h-11 font-semibold border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
-              >
-                {isLoading ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Reenviando...</>
-                ) : (
-                  <><RefreshCw className="mr-2 h-4 w-4" />Reenviar link</>
-                )}
-              </Button>
-            </div>
-          )}
-
-          {/* Divider */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 border-t border-zinc-100" />
-            <span className="text-px text-zinc-300 uppercase font-semibold">ou</span>
-            <div className="flex-1 border-t border-zinc-100" />
-          </div>
-
-          {/* Login fallback */}
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/auth")}
-            className="w-full h-11 font-bold text-sm text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
-          >
-            <ArrowRight className="mr-2 h-4 w-4" />
-            Já tenho conta — Logar manualmente
-          </Button>
-
-          {/* Support */}
-          <a
-            href={supportWhatsAppUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block"
-          >
-            <Button className="btn-shine w-full h-11 bg-green-500 hover:bg-green-600 text-white font-bold shadow-md border-none">
-              <MessageCircle className="mr-2 h-4 w-4" />
-              Suporte no WhatsApp
-            </Button>
-          </a>
-
-          <p className="text-center text-[10px] text-zinc-400 leading-tight">
-            Se não chegar em 5 min, fale com o nosso suporte.
-          </p>
-        </div>
+        <h1 className="text-3xl md:text-5xl font-black text-black leading-tight mb-2 animate-fade-in" style={{ animationDuration: '3s' }}>
+          Parabéns!
+          <br />
+          <span className="bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
+            Agora você tem conteúdos de viagens para sempre!
+          </span>
+        </h1>
       </div>
+
+      {/* Card */}
+      <div className="bg-white border border-zinc-100 rounded-[2.5rem] p-6 md:p-10 shadow-2xl mx-2">
+
+        {!magicLinkSent ? (
+          <div className="space-y-5">
+            <div className="text-center space-y-2">
+              <p className="font-bold text-zinc-900 text-lg">
+                Digite exatamente o mesmo e-mail da compra
+              </p>
+            </div>
+
+            <Input
+              type="email"
+              placeholder="seu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={isLoading}
+              className="text-center text-lg h-14 bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:border-yellow-500 rounded-2xl focus:ring-0"
+              onKeyDown={(e) => e.key === "Enter" && handleSendMagicLink(e as any)}
+            />
+
+            <Button
+              onClick={handleSendMagicLink}
+              className="btn-shine w-full h-14 text-lg font-black bg-yellow-400 text-black hover:bg-yellow-300 shadow-lg border-none transition-all duration-300 rounded-2xl"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <><Loader2 className="mr-2 h-6 w-6 animate-spin" />Enviando...</>
+              ) : (
+                <><Mail className="mr-2 h-6 w-6" />Receber meu acesso agora</>
+              )}
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-5 text-center">
+            <div className="bg-green-50 border border-green-100 rounded-3xl p-6">
+              <p className="text-green-800 font-bold text-lg mb-1">
+                Link enviado para {email}!
+              </p>
+              <p className="text-green-700/70 text-sm">
+                Verifique sua caixa de entrada e spam. O link expira em 1 hora.
+              </p>
+            </div>
+
+            <Button
+              variant="outline"
+              onClick={handleResendLink}
+              disabled={isLoading}
+              className="w-full h-12 font-semibold border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 rounded-2xl"
+            >
+              {isLoading ? (
+                <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Reenviando...</>
+              ) : (
+                <><RefreshCw className="mr-2 h-5 w-5" />Reenviar link</>
+              )}
+            </Button>
+          </div>
+        )}
+
+        {/* Divider */}
+        <div className="flex items-center gap-4 py-2">
+          <div className="flex-1 border-t border-zinc-100" />
+          <span className="text-xs text-zinc-300 uppercase font-bold">ou</span>
+          <div className="flex-1 border-t border-zinc-100" />
+        </div>
+
+        {/* Login fallback */}
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/auth")}
+          className="w-full h-12 font-bold text-sm text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50 rounded-2xl"
+        >
+          <ArrowRight className="mr-2 h-5 w-5" />
+          Já tenho conta — Logar manualmente
+        </Button>
+
+        {/* Support */}
+        <a
+          href={supportWhatsAppUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block"
+        >
+          <Button className="btn-shine w-full h-12 bg-green-500 hover:bg-green-600 text-white font-bold shadow-md border-none rounded-2xl">
+            <MessageCircle className="mr-2 h-5 w-5" />
+            Suporte no WhatsApp
+          </Button>
+        </a>
+      </div>
+
+      <p className="text-center text-xs text-zinc-300 mt-6 px-10 leading-relaxed">
+        Se o e-mail não chegar em 5 minutos, fale com o nosso suporte acima.
+      </p>
     </div>
   );
 };

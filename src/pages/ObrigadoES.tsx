@@ -1,15 +1,83 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle, Mail, Loader2, ArrowRight, MessageCircle, Sparkles, RefreshCw } from "lucide-react";
+import { Mail, Loader2, ArrowRight, MessageCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SpanishPixel } from "@/components/SpanishPixel";
-import logo from "@/assets/logo.png";
+import { trackESPurchase, trackESSubscribe } from "@/lib/meta-pixel-es";
 
-const ES_PIXEL_ID = "1560736461820497";
+/**
+ * Slow & Abundant Confetti Component
+ */
+const ConfettiCanvas = () => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const colors = ["#FFB800", "#6D28D9", "#EC4899", "#10B981", "#3B82F6", "#F97316"];
+        const particles: {
+            x: number; y: number; vx: number; vy: number;
+            color: string; size: number; angle: number; spin: number;
+        }[] = [];
+
+        // Density: 350 particles (same as PT)
+        for (let i = 0; i < 350; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: -50 - Math.random() * 800,
+                vx: (Math.random() - 0.5) * 2,
+                vy: 0.5 + Math.random() * 2,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                size: 7 + Math.random() * 10,
+                angle: Math.random() * Math.PI * 2,
+                spin: (Math.random() - 0.5) * 0.1,
+            });
+        }
+
+        let animId: number;
+        let frame = 0;
+        const animate = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.angle += p.spin;
+                p.vy += 0.02;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+                ctx.restore();
+            });
+            frame++;
+            if (frame < 180) { // 3 seconds
+                animId = requestAnimationFrame(animate);
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        };
+        animate();
+        return () => cancelAnimationFrame(animId);
+    }, []);
+
+    return (
+        <canvas
+            ref={canvasRef}
+            className="fixed inset-0 pointer-events-none z-50"
+            style={{ width: "100vw", height: "100vh" }}
+        />
+    );
+};
 
 const ObrigadoES = () => {
     const navigate = useNavigate();
@@ -20,72 +88,41 @@ const ObrigadoES = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [magicLinkSent, setMagicLinkSent] = useState(false);
     const [tracked, setTracked] = useState(false);
+    const [showConfetti, setShowConfetti] = useState(true);
 
     useEffect(() => {
-        if (emailFromUrl) {
-            setEmail(decodeURIComponent(emailFromUrl));
-        }
+        if (emailFromUrl) setEmail(decodeURIComponent(emailFromUrl));
     }, [emailFromUrl]);
 
-    // Track conversion for Spanish version
     useEffect(() => {
         if (!tracked && sourceFromUrl === 'checkout') {
-            console.log('[Meta ES Debug] === CONVERSION TRACKING (Spanish) ===');
-            console.log('[Meta ES Debug] Page: /es/obrigado');
-            console.log('[Meta ES Debug] Pixel:', ES_PIXEL_ID);
-
-            if (typeof window !== 'undefined' && window.fbq) {
-                // Track Purchase - $9.09 USD
-                window.fbq('trackSingle', ES_PIXEL_ID, 'Purchase', {
-                    value: 9.09,
-                    currency: 'USD'
-                });
-                console.log('[Meta ES Debug] Purchase tracked: $9.09 USD');
-
-                // Track Subscribe - $9.09 USD
-                window.fbq('trackSingle', ES_PIXEL_ID, 'Subscribe', {
-                    value: 9.09,
-                    currency: 'USD',
-                    predicted_ltv: 9.09 * 12
-                });
-                console.log('[Meta ES Debug] Subscribe tracked: $9.09 USD (LTV: $109.08)');
-            }
-
+            trackESPurchase(9.09, 'USD');
+            trackESSubscribe(9.09, 'USD', 9.09 * 12);
             setTracked(true);
-            console.log('[Meta ES Debug] === TRACKING COMPLETE ===');
         }
     }, [tracked, sourceFromUrl]);
 
+    useEffect(() => {
+        const t = setTimeout(() => setShowConfetti(false), 3000); // 3s
+        return () => clearTimeout(t);
+    }, []);
+
     const handleSendMagicLink = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!email) {
-            toast.error("Por favor, introduce tu email.");
-            return;
-        }
-
+        if (!email) { toast.error("Por favor, introduce tu email."); return; }
         setIsLoading(true);
-
         try {
             const { data, error } = await supabase.functions.invoke("send-magic-link", {
                 body: { email: email.toLowerCase().trim() },
             });
-
             if (error || !data?.success) {
                 const errorMsg = data?.error || error?.message || "Error al enviar el enlace";
-                if (errorMsg.includes("rate limit") || errorMsg.includes("muitas tentativas")) {
-                    toast.error("Demasiados intentos. Espera unos minutos.");
-                } else {
-                    toast.error(errorMsg);
-                }
-                console.error("Magic link error:", error || data?.error);
+                toast.error(errorMsg);
                 return;
             }
-
             setMagicLinkSent(true);
             toast.success("¡Enlace de acceso enviado! Verifica tu email.");
-        } catch (error) {
-            console.error("Error sending magic link:", error);
+        } catch {
             toast.error("Error al procesar. Intenta nuevamente.");
         } finally {
             setIsLoading(false);
@@ -95,20 +132,14 @@ const ObrigadoES = () => {
     const handleResendLink = async () => {
         setMagicLinkSent(false);
         setIsLoading(true);
-
         try {
             const { data, error } = await supabase.functions.invoke("send-magic-link", {
                 body: { email: email.toLowerCase().trim() },
             });
-
-            if (error || !data?.success) {
-                toast.error(data?.error || "Error al reenviar enlace.");
-                return;
-            }
-
+            if (error || !data?.success) { toast.error(data?.error || "Error al reenviar enlace."); return; }
             setMagicLinkSent(true);
             toast.success("¡Enlace reenviado con éxito!");
-        } catch (error) {
+        } catch {
             toast.error("Error al procesar.");
         } finally {
             setIsLoading(false);
@@ -116,49 +147,35 @@ const ObrigadoES = () => {
     };
 
     const supportWhatsAppUrl = "https://wa.me/5585986411294?text=Hola%2C%20realic%C3%A9%20la%20compra%20de%20Canva%20Viagem%20y%20necesito%20soporte.%20%C2%BFMe%20puedes%20ayudar%3F";
-    const generalWhatsAppUrl = "https://wa.me/5585986411294?text=Hola%2C%20me%20gustar%C3%ADa%20obtener%20informaci%C3%B3n%20sobre%20Canva%20Viagem.";
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/10 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-white flex items-center justify-center p-4 relative overflow-hidden text-center">
             <SpanishPixel />
-            <Card className="w-full max-w-lg text-center border-primary/20 shadow-2xl">
-                <CardContent className="pt-12 pb-8 px-6 md:px-8 space-y-6">
-                    {/* Logo */}
-                    <div className="flex justify-center mb-2">
-                        <img src={logo} alt="Canva Viagem" className="h-16 md:h-20 w-auto" />
-                    </div>
+            {showConfetti && <ConfettiCanvas />}
 
-                    {/* Success Icon */}
-                    <div className="relative mx-auto w-16 h-16 md:w-20 md:h-20">
-                        <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping" />
-                        <div className="relative w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center">
-                            <CheckCircle className="h-8 w-8 md:h-10 md:w-10 text-white" />
-                        </div>
-                    </div>
+            <div className="w-full max-w-md relative z-10">
+                <div className="flex justify-center mb-6 animate-scale-in" style={{ animationDuration: '3s' }}>
+                    <img
+                        src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExcjZ4aDh1M3FzYWhodHZ6N294NGQ2OWZxOGRraHN4c2pwZWs5d3ZkdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yoJC2GnSClbPOkV0eA/giphy.gif"
+                        alt="Celebración"
+                        className="w-56 h-56 md:w-64 md:h-64 object-cover rounded-2xl shadow-xl border-4 border-white"
+                    />
+                </div>
 
-                    {/* Title */}
-                    <div className="space-y-2">
-                        <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center justify-center gap-2">
-                            <Sparkles className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-                            ¡Canva Viagem Liberado!
-                            <Sparkles className="h-5 w-5 md:h-6 md:w-6 text-accent" />
-                        </h1>
-                        <p className="text-base md:text-lg text-foreground font-semibold">
-                            Tu acceso está liberado
-                        </p>
-                    </div>
+                <h1 className="text-3xl md:text-5xl font-black text-black leading-tight mb-2 animate-fade-in" style={{ animationDuration: '3s' }}>
+                    ¡Felicidades!
+                    <br />
+                    <span className="bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
+                        ¡Ahora tienes contenidos de viajes para siempre!
+                    </span>
+                </h1>
 
-                    {/* Magic Link Form */}
+                <div className="bg-white border border-zinc-100 rounded-[2.5rem] p-6 md:p-10 shadow-2xl mx-2 mt-6">
                     {!magicLinkSent ? (
-                        <div className="space-y-5 bg-gradient-to-br from-primary/5 to-accent/5 rounded-xl p-5 md:p-6 border-2 border-primary/20">
-                            <div className="space-y-2">
-                                <p className="font-bold text-base md:text-lg text-foreground">
-                                    📧 Introduce tu email para recibir tu acceso
-                                </p>
-                                <p className="text-xs md:text-sm text-muted-foreground">
-                                    Usa <strong>exactamente el mismo email</strong> que usaste para el pago
-                                </p>
-                            </div>
+                        <div className="space-y-5">
+                            <p className="font-bold text-zinc-900 text-lg">
+                                Introduce exactamente el mismo email que usaste para el pago
+                            </p>
 
                             <Input
                                 type="email"
@@ -167,37 +184,30 @@ const ObrigadoES = () => {
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
                                 disabled={isLoading}
-                                className="text-center text-base md:text-lg h-12 md:h-14 border-2 border-primary/30 focus:border-primary font-medium"
+                                className="text-center text-lg h-14 bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:border-yellow-500 rounded-2xl focus:ring-0"
+                                onKeyDown={(e) => e.key === "Enter" && handleSendMagicLink(e as any)}
                             />
 
                             <Button
                                 onClick={handleSendMagicLink}
-                                className="w-full h-12 md:h-14 text-base md:text-lg font-bold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg"
-                                size="lg"
+                                className="btn-shine w-full h-14 text-lg font-black bg-yellow-400 text-black hover:bg-yellow-300 shadow-lg border-none transition-all duration-300 rounded-2xl"
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                        Enviando...
-                                    </>
+                                    <><Loader2 className="mr-2 h-6 w-6 animate-spin" />Enviando...</>
                                 ) : (
-                                    <>
-                                        <Mail className="mr-2 h-5 w-5" />
-                                        Enviar Enlace de Acceso
-                                    </>
+                                    <><Mail className="mr-2 h-6 w-6" />Recibir mi acceso ahora</>
                                 )}
                             </Button>
                         </div>
                     ) : (
-                        <div className="space-y-4">
-                            <div className="bg-green-50 dark:bg-green-950/20 border-2 border-green-300 dark:border-green-700 rounded-lg p-4 md:p-5">
-                                <p className="text-green-800 dark:text-green-200 font-bold text-base md:text-lg flex items-center justify-center gap-2 mb-2">
-                                    <Mail className="h-5 w-5" />
-                                    Enlace enviado a {email}
+                        <div className="space-y-5">
+                            <div className="bg-green-50 border border-green-100 rounded-3xl p-6">
+                                <p className="text-green-800 font-bold text-lg mb-1">
+                                    ¡Enlace enviado a {email}!
                                 </p>
-                                <p className="text-green-700 dark:text-green-300 text-sm md:text-base">
-                                    Verifica tu bandeja de entrada. <strong>¡No olvides revisar la carpeta de spam!</strong> El enlace expira en 1 hora.
+                                <p className="text-green-700/70 text-sm">
+                                    Verifica tu bandeja de entrada y spam. El enlace expira en 1 hora.
                                 </p>
                             </div>
 
@@ -205,76 +215,40 @@ const ObrigadoES = () => {
                                 variant="outline"
                                 onClick={handleResendLink}
                                 disabled={isLoading}
-                                className="w-full h-12 font-semibold border-2"
+                                className="w-full h-12 font-semibold border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 rounded-2xl"
                             >
-                                {isLoading ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Reenviando...
-                                    </>
-                                ) : (
-                                    <>
-                                        <RefreshCw className="mr-2 h-4 w-4" />
-                                        Reenviar Enlace por Email
-                                    </>
-                                )}
+                                <RefreshCw className="mr-2 h-5 w-5" />Reenviar enlace
                             </Button>
                         </div>
                     )}
 
-                    {/* Separator */}
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t-2 border-muted"></div>
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase font-semibold">
-                            <span className="bg-card px-3 text-muted-foreground">o</span>
-                        </div>
+                    <div className="flex items-center gap-4 py-2">
+                        <div className="flex-1 border-t border-zinc-100" />
+                        <span className="text-xs text-zinc-300 uppercase font-bold">o</span>
+                        <div className="flex-1 border-t border-zinc-100" />
                     </div>
 
-                    {/* Already have account */}
                     <Button
-                        variant="outline"
+                        variant="ghost"
                         onClick={() => navigate("/auth")}
-                        className="w-full h-12 font-bold text-base border-2 hover:bg-primary/10"
+                        className="w-full h-12 font-bold text-sm text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50 rounded-2xl"
                     >
                         <ArrowRight className="mr-2 h-5 w-5" />
-                        ¿Ya tienes cuenta? Iniciar Sesión
+                        Ya tengo cuenta — Iniciar sesión manualmente
                     </Button>
 
-                    {/* Support */}
-                    <div className="bg-gradient-to-br from-muted/80 to-muted/50 rounded-xl p-4 md:p-5 border-2 border-muted space-y-3">
-                        <p className="font-bold text-sm md:text-base">¿Necesitas ayuda?</p>
+                    <a href={supportWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="block">
+                        <Button className="btn-shine w-full h-12 bg-green-500 hover:bg-green-600 text-white font-bold shadow-md border-none rounded-2xl">
+                            <MessageCircle className="mr-2 h-5 w-5" />
+                            Soporte en WhatsApp
+                        </Button>
+                    </a>
+                </div>
 
-                        {/* Support Button - Purchase Help */}
-                        <a
-                            href={supportWhatsAppUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block"
-                        >
-                            <Button
-                                variant="default"
-                                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold h-11"
-                            >
-                                <MessageCircle className="mr-2 h-5 w-5" />
-                                Soporte - Hice la Compra
-                            </Button>
-                        </a>
-
-                        {/* General WhatsApp */}
-                        <a
-                            href={generalWhatsAppUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-sm text-primary hover:underline font-semibold w-full justify-center"
-                        >
-                            <MessageCircle className="h-4 w-4" />
-                            WhatsApp: (85) 9 8641-1294
-                        </a>
-                    </div>
-                </CardContent>
-            </Card>
+                <p className="text-center text-xs text-zinc-300 mt-6 px-10 leading-relaxed">
+                    Si el email no llega en 5 minutos, contacta con nuestro soporte arriba.
+                </p>
+            </div>
         </div>
     );
 };
