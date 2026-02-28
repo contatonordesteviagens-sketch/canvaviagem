@@ -55,27 +55,27 @@ export const PremiumGateModal = ({ isOpen, onClose }: { isOpen: boolean; onClose
 
                 <div className="space-y-1">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-black text-[#1A1A1A]">R$ 29,00</span>
+                    <span className="text-4xl font-black text-[#1A1A1A]">R$ 16,41</span>
                     <span className="text-[#6B7280] font-medium text-lg">/mês</span>
                     <div className="ml-2 bg-[#1A1A1A] text-white text-[10px] font-bold px-2 py-0.5 rounded leading-none">
-                      39% DESC.
+                      42% DESC.
                     </div>
                   </div>
-                  <p className="text-sm text-[#6B7280] font-medium">Pagamento recorrente mensal</p>
+                  <p className="text-sm text-[#6B7280] font-medium">Plano Anual R$ 197,00</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-4 pt-8">
               <Button
-                onClick={handleSubscribe}
+                onClick={() => window.open('https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09', '_blank')}
                 className="w-full bg-[#FFB800] hover:bg-[#E6A600] text-[#1A1A1A] font-black py-7 text-xl rounded-xl shadow-[0_4px_0_rgb(204,147,0)] hover:shadow-none translate-y-[-4px] hover:translate-y-0 transition-all"
               >
                 {isPT ? "Seja Premium" : "Hazte Premium"}
               </Button>
 
               <button
-                onClick={handleSubscribe}
+                onClick={() => navigate("/planos")}
                 className="w-full text-center text-sm font-bold text-[#1A1A1A] hover:underline"
               >
                 {isPT ? "Ver planos com geração ilimitada" : "Ver planes con generación ilimitada"}

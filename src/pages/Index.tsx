@@ -17,6 +17,7 @@ import { HeroBanner } from "@/components/canva/HeroBanner";
 import { CategoryNav, CategoryType } from "@/components/canva/CategoryNav";
 import { PremiumCard } from "@/components/canva/PremiumCard";
 import { ContentFilterDropdown, ContentFilterType } from "@/components/canva/ContentFilterDropdown";
+import { AccessFilter, AccessFilterType } from "@/components/canva/AccessFilter";
 import { SectionHeader } from "@/components/canva/SectionHeader";
 import { CaptionCard } from "@/components/canva/CaptionCard";
 import { ToolCard } from "@/components/canva/ToolCard";
@@ -61,7 +62,8 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [showAllCaptions, setShowAllCaptions] = useState(false);
-  const [contentFilters, setContentFilters] = useState<ContentFilterType[]>(['premium']);
+  const [contentFilters, setContentFilters] = useState<ContentFilterType[]>([]);
+  const [accessFilters, setAccessFilters] = useState<AccessFilterType[]>(['premium']);
   const [activeCategory, setActiveCategory] = useState<CategoryType>('videos');
   const [showPremiumGate, setShowPremiumGate] = useState(false);
 
@@ -163,38 +165,23 @@ const Index = () => {
     );
 
     // Aplicar filtro multi-select
+    if (accessFilters.length > 0) {
+      filtered = filtered.filter(item => {
+        const isItemPremium = checkIfItemIsPremium(item.type, item.title);
+        if (accessFilters.includes('premium') && isItemPremium) return true;
+        if (accessFilters.includes('gratis') && !isItemPremium) return true;
+        return false;
+      });
+    }
+
     if (contentFilters.length > 0) {
       filtered = filtered.filter(item => {
-        // Categorias Premium/Gratis unificadas
-        const isItemPremium = checkIfItemIsPremium(item.type, item.title);
-
-        // Se apenas premium/gratis selecionados, filtrar por eles
-        // Se categorias selecionadas junto, tratamos como OR para as categorias, 
-        // mas podemos considerar premium/gratis como limitadores se desejado.
-        // Seguindo o código original de 'matches = true', faremos OR.
-
-        let matches = false;
-
-        if (contentFilters.includes('premium') && isItemPremium) {
-          matches = true;
-        }
-        if (contentFilters.includes('gratis') && !isItemPremium) {
-          matches = true;
-        }
-        if (contentFilters.includes('nacionais') && isNacional(item.title, item.category)) {
-          matches = true;
-        }
-        if (contentFilters.includes('internacionais') && !isNacional(item.title, item.category) && item.type === 'video') {
-          matches = true;
-        }
-        if (contentFilters.includes('artes') && item.type === 'feed') {
-          matches = true;
-        }
-        if (contentFilters.includes('stories') && (item.type === 'story' || item.type === 'weekly-story')) {
-          matches = true;
-        }
-
-        return matches;
+        const itemType = item.type;
+        if (contentFilters.includes('artes') && itemType === 'feed') return true;
+        if (contentFilters.includes('stories') && (itemType === 'story' || itemType === 'weekly-story')) return true;
+        if (contentFilters.includes('nacionais') && isNacional(item.title, item.category)) return true;
+        if (contentFilters.includes('internacionais') && !isNacional(item.title, item.category)) return true;
+        return false;
       });
     }
 
@@ -260,7 +247,7 @@ const Index = () => {
     );
   };
 
-  const filteredVideos = useMemo(() => filterTemplates(videoTemplates), [videoTemplates, searchQuery, contentFilters]);
+  const filteredVideos = useMemo(() => filterTemplates(videoTemplates), [videoTemplates, searchQuery, contentFilters, accessFilters]);
   const displayedVideos = showAllVideos ? filteredVideos : filteredVideos.slice(0, 8);
 
   const filteredCaptions = useMemo(() => filterCaptions(), [captionsData, searchQuery]);
@@ -376,7 +363,11 @@ const Index = () => {
               subtitle="Templates prontos para editar no Canva e publicar"
             />
 
-            <div className="flex justify-end mb-6">
+            <div className="flex justify-between items-center mb-6 gap-4">
+              <AccessFilter
+                selectedFilters={accessFilters}
+                onFiltersChange={setAccessFilters}
+              />
               <ContentFilterDropdown
                 selectedFilters={contentFilters}
                 onFiltersChange={setContentFilters}

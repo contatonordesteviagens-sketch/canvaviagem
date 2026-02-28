@@ -9,7 +9,7 @@ import {
 import { Filter, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type ContentFilterType = 'nacionais' | 'internacionais' | 'artes' | 'stories' | 'premium' | 'gratis';
+export type ContentFilterType = 'nacionais' | 'internacionais' | 'artes' | 'stories';
 
 interface ContentFilterDropdownProps {
   selectedFilters: ContentFilterType[];
@@ -17,8 +17,6 @@ interface ContentFilterDropdownProps {
 }
 
 const filterOptions: { id: ContentFilterType; label: string; icon: string }[] = [
-  { id: 'premium', label: 'Conteúdo Premium', icon: '👑' },
-  { id: 'gratis', label: 'Conteúdo Gratuito', icon: '✨' },
   { id: 'nacionais', label: 'Destinos Nacionais', icon: '🇧🇷' },
   { id: 'internacionais', label: 'Destinos Internacionais', icon: '🌎' },
   { id: 'artes', label: 'Artes para Feed', icon: '🖼️' },
