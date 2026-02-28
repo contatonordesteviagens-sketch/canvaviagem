@@ -271,8 +271,205 @@ const Planos = () => {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          FASCINATIONS — O que você descobre lá dentro (Bencivenga)
+          GIFs — Prova visual do conteúdo real
       ══════════════════════════════════════════════════════════════════════ */}
+      <section className="py-16 px-6 bg-zinc-950">
+        <div className="max-w-3xl mx-auto">
+          <p className="text-[11px] font-bold tracking-widest text-zinc-500 uppercase mb-4 text-center">
+            Exemplos reais do conteúdo
+          </p>
+          <h2 className="text-2xl md:text-3xl font-black text-center text-white mb-3 leading-snug">
+            É isso que você vai ter na mão amanhã
+          </h2>
+          <p className="text-zinc-400 text-center mb-10 text-sm max-w-lg mx-auto">
+            Cada um desses vídeos foi criado para agentes postarem diretamente no Instagram, TikTok ou WhatsApp — sem editar nada.
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              "https://media4.giphy.com/media/tJPdq4gvTvr8CgIyWI/giphy.gif",
+              "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWt3MGhsd3g1MnJtbzlkMDloczlhdTJvNWhubjZ4Z3FtNnJkeDd1aCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ZQZVm01DFW3qHY0ZKs/giphy.gif",
+              "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3J2anV0aTVkYWowbDl1ZXFtNnB4ZWUwcnVnZTVzOW91ZzNncGNvNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mbylDFYWSU46XeLcsS/giphy.gif",
+              "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXQ1dHAxM2JxcWM0N3VqdWhibnBtcDR5eWVmNTZwaGI1NTJjeml3diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VcFJaM72FG76eG75In/giphy.gif",
+            ].map((gif, i) => (
+              <div key={i} className="rounded-2xl overflow-hidden border border-zinc-800 aspect-[9/16]">
+                <img
+                  src={gif}
+                  loading="lazy"
+                  alt={`Exemplo de vídeo de viagem ${i + 1}`}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+            ))}
+          </div>
+          <p className="text-zinc-500 text-xs text-center mt-6">
+            250+ vídeos disponíveis · Novos toda semana
+          </p>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          COMO FUNCIONA — 3 passos simples
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section className="py-16 px-6 bg-white border-b border-zinc-100">
+        <div className="max-w-2xl mx-auto">
+          <p className="text-[11px] font-bold tracking-widest text-zinc-400 uppercase mb-4 text-center">
+            Como funciona?
+          </p>
+          <h2 className="text-2xl md:text-3xl font-black text-center mb-12 leading-snug">
+            Simples assim.
+          </h2>
+          <div className="space-y-8">
+            {[
+              {
+                n: "1",
+                title: "Escolha",
+                desc: "Navegue por 250+ destinos: Disney, Maldivas, Paris, Nordeste, Europa e muito mais.",
+              },
+              {
+                n: "2",
+                title: "Baixe (ou edite, se quiser)",
+                desc: "Abra no Canva em 1 clique, coloque seu logo e suas cores. Ou baixe direto, já está pronto.",
+              },
+              {
+                n: "3",
+                title: "Publique",
+                desc: "Cole no Instagram, TikTok ou WhatsApp. Seu perfil profissional em menos de 2 minutos.",
+              },
+            ].map((step) => (
+              <div key={step.n} className="flex gap-6 items-start">
+                <div className="shrink-0 w-12 h-12 bg-black text-white rounded-full flex items-center justify-center font-black text-xl">
+                  {step.n}
+                </div>
+                <div className="pt-1">
+                  <h3 className="font-black text-lg mb-1">{step.title}</h3>
+                  <p className="text-zinc-500 text-sm leading-relaxed">{step.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          TABELA COMPARATIVA — Grátis vs Pro
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section className="py-16 px-6 bg-zinc-50 border-b border-zinc-100">
+        <div className="max-w-2xl mx-auto">
+          <p className="text-[11px] font-bold tracking-widest text-zinc-400 uppercase mb-4 text-center">
+            O que você tem acesso
+          </p>
+          <h2 className="text-2xl md:text-3xl font-black text-center mb-12 leading-snug">
+            Grátis vs Pro — sem enrolação.
+          </h2>
+          <div className="overflow-hidden rounded-2xl border border-zinc-200">
+            {/* Header */}
+            <div className="grid grid-cols-3 bg-zinc-950 text-white text-center">
+              <div className="py-4 px-3 text-left pl-5">
+                <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Recurso</p>
+              </div>
+              <div className="py-4 px-3 border-l border-zinc-800">
+                <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Grátis</p>
+              </div>
+              <div className="py-4 px-3 border-l border-zinc-800 bg-yellow-400">
+                <p className="text-xs font-black text-black uppercase tracking-widest">Pro ⭐</p>
+              </div>
+            </div>
+
+            {/* Rows */}
+            {[
+              { label: "Vídeos de destinos", free: "—", pro: "250+" },
+              { label: "Stories e Reels prontos", free: "—", pro: "200+" },
+              { label: "Artes e Feed editáveis", free: "Limitado", pro: "Ilimitado" },
+              { label: "Legendas prontas", free: "✓", pro: "✓" },
+              { label: "Ferramentas de IA", free: "—", pro: "10 agentes" },
+              { label: "Vendedor de Viagem (IA)", free: "—", pro: "✓" },
+              { label: "Calendário editorial", free: "—", pro: "365 dias" },
+              { label: "Banco de fotos", free: "—", pro: "✓" },
+              { label: "Biblioteca de vídeos", free: "—", pro: "✓" },
+              { label: "Novos conteúdos", free: "—", pro: "Toda semana" },
+              { label: "Suporte WhatsApp", free: "—", pro: "✓" },
+              { label: "Uso comercial", free: "—", pro: "✓ Sem restrições" },
+            ].map((row, i) => (
+              <div
+                key={row.label}
+                className={`grid grid-cols-3 text-sm ${i % 2 === 0 ? "bg-white" : "bg-zinc-50"} border-t border-zinc-100`}
+              >
+                <div className="py-3.5 px-5 font-medium text-zinc-700">{row.label}</div>
+                <div className="py-3.5 px-3 text-center border-l border-zinc-100 text-zinc-400">{row.free}</div>
+                <div className="py-3.5 px-3 text-center border-l border-zinc-100 font-bold text-black bg-yellow-50">{row.pro}</div>
+              </div>
+            ))}
+
+            {/* Footer CTA */}
+            <div className="grid grid-cols-3 bg-zinc-950 border-t border-zinc-800">
+              <div className="py-5 px-5 text-white text-xs font-bold flex items-center">
+                Seu plano:
+              </div>
+              <div className="py-5 px-3 text-center border-l border-zinc-800">
+                <span className="text-zinc-500 text-xs">Acesso limitado</span>
+              </div>
+              <div className="py-5 px-3 text-center border-l border-zinc-800">
+                <a href="#preco">
+                  <button className="bg-yellow-400 text-black text-xs font-black px-4 py-2 rounded-full hover:bg-yellow-300 transition-all">
+                    Assinar Pro →
+                  </button>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          PLUG & PLAY — Velocidade e exclusividade (Bencivenga)
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section className="py-16 px-6 bg-white border-b border-zinc-100">
+        <div className="max-w-2xl mx-auto">
+          <h2 className="text-2xl md:text-3xl font-black mb-3 leading-snug">
+            Pegou, usou e postou em 2 minutos.
+          </h2>
+          <p className="text-zinc-500 mb-10 text-base leading-relaxed">
+            Sem design. Sem complicação. A plataforma foi construída pra agentes que precisam de resultado rápido — não pra quem tem horas pra passar editando.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="border border-zinc-200 rounded-2xl p-6 hover:border-zinc-400 transition-colors">
+              <div className="text-2xl mb-3">🎯</div>
+              <h3 className="font-black text-base mb-3">100% Plug-and-Play</h3>
+              <ul className="space-y-2.5 text-sm text-zinc-500">
+                {[
+                  "Não precisa saber design",
+                  "Não precisa saber edição de vídeo",
+                  "Não precisa entender de marketing digital",
+                  "2 minutos pra criar e publicar",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-black shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="border border-zinc-900 bg-zinc-950 text-white rounded-2xl p-6">
+              <div className="text-2xl mb-3">✨</div>
+              <h3 className="font-black text-base mb-3">Conteúdo que ninguém mais tem</h3>
+              <ul className="space-y-2.5 text-sm text-zinc-300">
+                {[
+                  "250+ vídeos criados exclusivamente para a plataforma",
+                  "Pode personalizar com suas cores e logo",
+                  "Impossível todo mundo usar o mesmo — o acervo é enorme",
+                  "Conteúdo novo adicionado toda semana",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-yellow-400 shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="border-y border-zinc-100 bg-zinc-50 py-16 px-6">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-black mb-3 leading-snug">
