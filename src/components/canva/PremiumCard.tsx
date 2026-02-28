@@ -9,15 +9,47 @@ interface PremiumCardProps {
   imageUrl?: string;
   category?: string;
   isNew?: boolean;
-  isPremium?: boolean; // New prop
+  isPremium?: boolean;
   aspectRatio?: "9/16" | "4/5" | "1/1" | "16/10";
   variant?: "image" | "icon";
   icon?: string;
+  contentType?: string; // 'video' | 'feed' | 'story' | 'weekly-story' | 'resource' | etc.
   onClick?: () => void;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
   onPremiumRequired?: () => void;
 }
+
+// Color per content type
+const getTypeGradient = (contentType?: string, title?: string) => {
+  if (contentType === 'feed') {
+    // Arts: pink/rosa
+    return "from-pink-400 to-rose-500";
+  }
+  if (contentType === 'story' || contentType === 'weekly-story') {
+    // Stories: orange/laranja
+    return "from-orange-400 to-amber-500";
+  }
+  if (contentType === 'video' || contentType === 'seasonal') {
+    // Videos: purple/violet
+    return "from-violet-500 to-purple-600";
+  }
+  if (contentType === 'resource') {
+    // Downloads: blue
+    return "from-blue-400 to-cyan-500";
+  }
+  // Fallback: vary by title length
+  const gradients = [
+    "from-purple-400 to-pink-500",
+    "from-blue-400 to-cyan-500",
+    "from-orange-400 to-red-500",
+    "from-green-400 to-teal-500",
+    "from-indigo-400 to-purple-500",
+    "from-pink-400 to-rose-500",
+  ];
+  const index = (title?.length || 0) % gradients.length;
+  return gradients[index];
+};
 
 const PremiumCardComponent = ({
   id,
@@ -30,45 +62,28 @@ const PremiumCardComponent = ({
   aspectRatio = "9/16",
   variant = "icon",
   icon = "📱",
+  contentType,
   onClick,
   isFavorite = false,
   onToggleFavorite,
   onPremiumRequired
 }: PremiumCardProps) => {
-  // Generate a placeholder gradient based on title
-  const getPlaceholderGradient = () => {
-    const gradients = [
-      "from-purple-400 to-pink-500",
-      "from-blue-400 to-cyan-500",
-      "from-orange-400 to-red-500",
-      "from-green-400 to-teal-500",
-      "from-indigo-400 to-purple-500",
-      "from-pink-400 to-rose-500",
-    ];
-    const index = title.length % gradients.length;
-    return gradients[index];
-  };
+  const gradient = getTypeGradient(contentType, title);
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Check if premium gate should be triggered
-    if (isPremium && onPremiumRequired) { // Only trigger if it's a premium item
+    if (isPremium && onPremiumRequired) {
       onPremiumRequired();
       return;
     }
-    if (onClick) {
-      onClick();
-    }
-    // Reutiliza a mesma aba externa para templates do Canva
+    if (onClick) onClick();
     window.open(url, 'canva-editor');
   };
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (onToggleFavorite) {
-      onToggleFavorite();
-    }
+    if (onToggleFavorite) onToggleFavorite();
   };
 
   return (
@@ -125,7 +140,7 @@ const PremiumCardComponent = ({
           </div>
         )}
 
-        {/* Image or Placeholder */}
+        {/* Image or Colored Placeholder */}
         {imageUrl ? (
           <>
             <img
@@ -141,7 +156,7 @@ const PremiumCardComponent = ({
         ) : (
           <div className={cn(
             "w-full h-full bg-gradient-to-br flex flex-col items-center justify-center p-3 md:p-4",
-            getPlaceholderGradient()
+            gradient
           )}>
             <span className="text-3xl md:text-5xl mb-2">{icon}</span>
           </div>
@@ -154,7 +169,7 @@ const PremiumCardComponent = ({
             {title}
           </h3>
 
-          {/* CTA Button - Compacto e elegante */}
+          {/* CTA Button */}
           <button className="w-full bg-white/95 backdrop-blur-sm text-foreground font-medium py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 text-sm transition-all duration-300 hover:bg-white active:scale-95 shadow-sm">
             <ExternalLink className="w-3.5 h-3.5" />
             <span>Editar</span>

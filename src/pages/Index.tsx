@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+﻿import { useState, useEffect, useMemo } from "react";
 // Build trigger: Freemium Transition - 2026-02-27
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -145,7 +145,7 @@ const Index = () => {
     // Videos, Reels, Arts, Stories → always Pro
     if (type === 'video' || type === 'seasonal') return true;
     if (type === 'feed' || type === 'story' || type === 'weekly-story') return true;
-    if (type === 'resource') return true;
+    if (type === 'resource' || type === 'download') return true;
 
     // AI Tools: only "Vendedor de Viagem" is premium, rest are free
     if (type === 'tool' || type === 'marketing_tool') {
@@ -156,6 +156,7 @@ const Index = () => {
     // Captions are always free
     if (type === 'caption') return false;
 
+    // Everything else (resource, download, etc.) is premium
     return true;
   };
 
@@ -361,8 +362,10 @@ const Index = () => {
                       {initialCaptions.map(caption => (
                         <CaptionCard
                           key={caption.id}
-                          caption={caption}
-                          onClick={() => handleCaptionClick(caption)}
+                          id={caption.id}
+                          destination={caption.destination}
+                          text={caption.text}
+                          hashtags={caption.hashtags}
                           isFavorite={isFavorite("caption", caption.id)}
                           onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
                         />
@@ -457,8 +460,10 @@ const Index = () => {
                       {initialCaptions.map(caption => (
                         <CaptionCard
                           key={caption.id}
-                          caption={caption}
-                          onClick={() => handleCaptionClick(caption)}
+                          id={caption.id}
+                          destination={caption.destination}
+                          text={caption.text}
+                          hashtags={caption.hashtags}
                           isFavorite={isFavorite("caption", caption.id)}
                           onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
                         />
