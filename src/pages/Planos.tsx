@@ -35,8 +35,10 @@ const youtubeVideos = [{
 
 // Checkout links by language
 const STRIPE_LINKS = {
-  pt: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
-  es: "https://buy.stripe.com/bJedRa3TIej6cz15gE8so04"
+  pt_monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
+  pt_annual: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05", // Placeholder, user will provide or I use same for now
+  es_monthly: "https://buy.stripe.com/bJedRa3TIej6cz15gE8so04",
+  es_annual: "https://buy.stripe.com/bJedRa3TIej6cz15gE8so04" // Placeholder
 };
 const Planos = () => {
   const navigate = useNavigate();
@@ -143,13 +145,14 @@ const Planos = () => {
     }
   }, [searchParams, refreshSubscription, navigate]);
   const handleCheckout = () => {
-    // Track with BRL currency for PT version
-    const price = 29.00;
+    const isAnnual = billingCycle === 'annual';
+    const price = isAnnual ? 197.00 : 29.00;
     const currency = 'BRL';
     trackInitiateCheckout(price, currency);
 
-    // Redirect directly to Stripe Payment Link
-    window.location.href = STRIPE_LINKS.pt;
+    // Redirect directly to Stripe Payment Link based on cycle
+    const link = isAnnual ? STRIPE_LINKS.pt_annual : STRIPE_LINKS.pt_monthly;
+    window.location.href = link;
   };
   const handleRefreshSubscription = async () => {
     setRefreshLoading(true);
@@ -739,17 +742,34 @@ const Planos = () => {
             Tudo que você precisa para vender mais viagens, em um único lugar
           </p>
 
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <span className={`text-sm md:text-base font-bold ${billingCycle === 'monthly' ? 'text-primary' : 'text-muted-foreground'}`}>Mensal</span>
-            <button
-              onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annual' : 'monthly')}
-              className="relative w-14 h-7 bg-muted rounded-full p-1 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              <div className={`w-5 h-5 bg-primary rounded-full shadow-md transform transition-transform duration-200 ${billingCycle === 'annual' ? 'translate-x-7' : 'translate-x-0'}`} />
-            </button>
-            <span className={`text-sm md:text-base font-bold ${billingCycle === 'annual' ? 'text-primary' : 'text-muted-foreground'}`}>
-              Anual <span className="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full ml-1">Economize 43%</span>
-            </span>
+          <div className="flex items-center justify-center gap-0 mb-10">
+            <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-full flex items-center shadow-inner border border-slate-200 dark:border-slate-700">
+              <button
+                onClick={() => setBillingCycle('monthly')}
+                className={cn(
+                  "px-6 py-2 rounded-full text-sm font-bold transition-all duration-200",
+                  billingCycle === 'monthly'
+                    ? "bg-slate-900 text-white shadow-md dark:bg-white dark:text-slate-900"
+                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400"
+                )}
+              >
+                Mensal
+              </button>
+              <button
+                onClick={() => setBillingCycle('annual')}
+                className={cn(
+                  "px-6 py-2 rounded-full text-sm font-bold transition-all duration-200 flex items-center gap-2",
+                  billingCycle === 'annual'
+                    ? "bg-slate-900 text-white shadow-md dark:bg-white dark:text-slate-900"
+                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400"
+                )}
+              >
+                Anual
+                <span className="bg-green-100 text-green-600 text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">
+                  -43%
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -789,19 +809,25 @@ const Planos = () => {
             <div className="mb-8">
               <div className="flex items-baseline justify-center gap-2 mb-2">
                 <span className="text-3xl md:text-4xl font-bold text-muted-foreground opacity-70">R$</span>
-                <span className="text-6xl md:text-7xl font-black bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] bg-clip-text text-transparent">
-                  {billingCycle === 'monthly' ? '29' : '16,41'}
+                <span className="text-6xl md:text-7xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  {billingCycle === 'monthly' ? '29,00' : '16,41'}
                 </span>
                 <span className="text-2xl md:text-3xl text-muted-foreground">/mês</span>
               </div>
-              {billingCycle === 'annual' && (
-                <p className="text-sm text-muted-foreground mb-2">
-                  R$ 197 cobrados anualmente
-                </p>
-              )}
-              <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                💰 {billingCycle === 'monthly' ? 'Economize R$ 471/mês vs contratando equipe!' : 'Economia máxima: Menos de R$ 0,55 por dia!'}
+
+              <p className="text-sm font-medium text-muted-foreground mb-4">
+                {billingCycle === 'monthly'
+                  ? 'Pagamento recorrente mensal'
+                  : 'R$ 197,00 cobrados anualmente (12x de R$ 16,41)'}
               </p>
+
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-lg py-2 px-4 inline-block">
+                <p className="text-xs md:text-sm font-bold text-green-600 dark:text-green-400">
+                  {billingCycle === 'monthly'
+                    ? '💰 Economize R$ 471/mês vs contratando equipe!'
+                    : '🔥 MELHOR OFERTA: Economia máxima de R$ 151 por ano!'}
+                </p>
+              </div>
             </div>
 
             {/* What's Included */}

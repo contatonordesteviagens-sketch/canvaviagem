@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,8 +40,11 @@ const youtubeVideos = [
   { id: "VmX1raYC96E", title: "Video 4" },
 ];
 
-// ⭐ CHECKOUT LINK USD FIXED ⭐
-const STRIPE_LINK_ES = "https://buy.stripe.com/bJedRa3TIej6cz15gE8so04";
+// ⭐ CHECKOUT LINKS USD FIXED ⭐
+const STRIPE_LINKS_ES = {
+  monthly: "https://buy.stripe.com/bJedRa3TIej6cz15gE8so04",
+  annual: "https://buy.stripe.com/bJedRa3TIej6cz15gE8so04" // Placeholder
+};
 
 const PlanosES = () => {
   const navigate = useNavigate();
@@ -55,6 +59,7 @@ const PlanosES = () => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
 
   // ⭐ Set document language on mount ⭐
   useEffect(() => {
@@ -120,35 +125,17 @@ const PlanosES = () => {
   }, [searchParams, refreshSubscription, navigate]);
 
   const handleCheckout = async () => {
-    // Track with USD currency
-    trackInitiateCheckout(9.09, 'USD');
+    const isAnnual = billingCycle === 'annual';
+    const price = isAnnual ? 67.00 : 9.09; // Placeholder ratio for annual USD
+    const currency = 'USD';
+
+    trackInitiateCheckout(price, currency);
     setCheckoutLoading(true);
 
-    if (user) {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          const { data, error } = await supabase.functions.invoke("create-checkout", {
-            headers: {
-              Authorization: `Bearer ${session.access_token}`
-            },
-            body: { language: 'es' }
-          });
-          if (!error && data?.url) {
-            window.open(data.url, '_blank');
-            toast.info("El checkout se abrió en una nueva pestaña. ¡Completa el pago y vuelve aquí!");
-            setCheckoutLoading(false);
-            return;
-          }
-        }
-      } catch (error) {
-        console.error("Checkout error:", error);
-      }
-    }
-
     // Fallback to direct Stripe link
-    window.open(STRIPE_LINK_ES, '_blank');
-    toast.info("El checkout se abrió en una nueva pestaña. ¡Después del pago, revisa tu email!");
+    const link = isAnnual ? STRIPE_LINKS_ES.annual : STRIPE_LINKS_ES.monthly;
+    window.open(link, '_blank');
+    toast.info("¡El checkout se abrió en una nueva pestaña!");
     setCheckoutLoading(false);
   };
 
@@ -617,13 +604,57 @@ const PlanosES = () => {
                 <p className="text-xs text-green-600 dark:text-green-400 font-semibold mt-1">↓ Ahorra $490 por mes = $5.880/año</p>
               </div>
 
+              {/* Toggle Billing Cycle */}
+              <div className="flex items-center justify-center gap-0 mb-8">
+                <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-full flex items-center shadow-inner border border-slate-200 dark:border-slate-700">
+                  <button
+                    onClick={() => setBillingCycle('monthly')}
+                    className={cn(
+                      "px-6 py-2 rounded-full text-sm font-bold transition-all duration-200",
+                      billingCycle === 'monthly'
+                        ? "bg-slate-900 text-white shadow-md dark:bg-white dark:text-slate-900"
+                        : "text-slate-500 hover:text-slate-700 dark:text-slate-400"
+                    )}
+                  >
+                    Mensual
+                  </button>
+                  <button
+                    onClick={() => setBillingCycle('annual')}
+                    className={cn(
+                      "px-6 py-2 rounded-full text-sm font-bold transition-all duration-200 flex items-center gap-2",
+                      billingCycle === 'annual'
+                        ? "bg-slate-900 text-white shadow-md dark:bg-white dark:text-slate-900"
+                        : "text-slate-500 hover:text-slate-700 dark:text-slate-400"
+                    )}
+                  >
+                    Anual
+                    <span className="bg-green-100 text-green-600 text-[10px] px-1.5 py-0.5 rounded-full animate-pulse">
+                      -43%
+                    </span>
+                  </button>
+                </div>
+              </div>
+
               {/* Custom Price Display */}
               <div className="flex items-baseline justify-center mb-2 gap-1">
                 <span className="text-2xl md:text-3xl font-bold text-primary opacity-70">$</span>
-                <span className="text-5xl md:text-6xl font-black text-primary">9,09</span>
+                <span className="text-5xl md:text-6xl font-black text-primary">
+                  {billingCycle === 'monthly' ? '9,09' : '5,58'}
+                </span>
                 <span className="text-xl md:text-2xl text-muted-foreground ml-1">/mes</span>
               </div>
-              <p className="text-sm text-green-600 dark:text-green-400 font-bold mb-6">¡98% más barato que diseñador!</p>
+
+              <p className="text-sm font-medium text-muted-foreground mb-4">
+                {billingCycle === 'monthly'
+                  ? 'Pago recurrente mensual'
+                  : '$ 67,00 cobrados anualmente ($ 5,58/mes)'}
+              </p>
+
+              <p className="text-sm text-green-600 dark:text-green-400 font-bold mb-6">
+                {billingCycle === 'monthly'
+                  ? '¡98% más barato que un diseñador!'
+                  : '🔥 MEJOR OFERTA: ¡Ahorra $42 al año adicionales!'}
+              </p>
 
               <Button size="lg" onClick={handleCheckout} disabled={checkoutLoading} className="w-full h-16 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-base md:text-lg font-black shadow-xl hover:shadow-2xl transition-all duration-300 text-white animate-pulse hover:animate-none">
                 {checkoutLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>

@@ -100,17 +100,17 @@ const Index = () => {
   const isSubscribed = user && subscription.subscribed;
 
   // Function to get the premium required callback
-  const getPremiumCallback = (category?: CategoryType, isItemPremium?: boolean) => {
+  const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean) => {
     if (isSubscribed) return undefined;
 
-    // Se o item for explicitamente premium (ex: ferramenta específica)
-    if (isItemPremium) return () => setShowPremiumGate(true);
+    // Se o item for explicitamente premium (ex: ferramenta específica ou override)
+    if (isItemPremiumOverride) return () => setShowPremiumGate(true);
 
-    // Categorias Gratuitas (Livre acesso)
-    const freeCategories: CategoryType[] = ['captions', 'tools', 'videoaula', 'contracts'];
-    if (category && freeCategories.includes(category)) return undefined;
+    // Se categoria ou tipo for premium
+    const isPremium = checkIfItemIsPremium(activeCategory);
+    if (isPremium) return () => setShowPremiumGate(true);
 
-    return () => setShowPremiumGate(true);
+    return undefined;
   };
   const destinosNacionais = [
     'Maragogi', 'Salvador', 'Trancoso', 'Jalapão', 'Foz do Iguaçu', 'Florianópolis',
@@ -134,6 +134,20 @@ const Index = () => {
       title.includes('- MS');
   };
 
+  const checkIfItemIsPremium = (type: string, title?: string) => {
+    // Vídeos são sempre Premium por padrão
+    if (type === 'video' || type === 'feed' || type === 'story' || type === 'seasonal' || type === 'weekly-story' || type === 'resource') {
+      return true;
+    }
+    // Ferramentas: apenas "Vendedor" ou "Viaje" são Premium
+    if (type === 'tool' || type === 'marketing_tool') {
+      const toolTitle = title?.toLowerCase() || '';
+      return toolTitle.includes('vendedor') || toolTitle.includes('viaje');
+    }
+    // Outros (legendas, aulas, contratos) são gratuitos
+    return false;
+  };
+
   const isInfluencer = (title: string, influencer: string) => {
     return title.toLowerCase().includes(influencer.toLowerCase());
   };
@@ -147,8 +161,8 @@ const Index = () => {
     // Aplicar filtro multi-select
     if (contentFilters.length > 0) {
       filtered = filtered.filter(item => {
-        // Categorias Premium/Gratis (conforme lógica do PremiumCard)
-        const isItemPremium = !['captions', 'tools', 'videoaula', 'contracts'].includes(item.type);
+        // Categorias Premium/Gratis unificadas
+        const isItemPremium = checkIfItemIsPremium(item.type, item.title);
 
         // Se apenas premium/gratis selecionados, filtrar por eles
         // Se categorias selecionadas junto, tratamos como OR para as categorias, 

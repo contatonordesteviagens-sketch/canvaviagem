@@ -103,17 +103,31 @@ const IndexES = () => {
   const isSubscribed = user && subscription.subscribed;
 
   // Function to get the premium required callback
-  const getPremiumCallback = (category?: CategoryType, isItemPremium?: boolean) => {
+  const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean) => {
     if (isSubscribed) return undefined;
 
-    // Se o item for explicitamente premium (ex: ferramenta específica)
-    if (isItemPremium) return () => setShowPremiumGate(true);
+    // Se o item for explicitamente premium (ex: ferramenta específica ou override)
+    if (isItemPremiumOverride) return () => setShowPremiumGate(true);
 
-    // Categorias Gratuitas (Livre acesso)
-    const freeCategories: CategoryType[] = ['captions', 'tools', 'videoaula', 'contracts'];
-    if (category && freeCategories.includes(category)) return undefined;
+    // Se categoria ou tipo for premium
+    const isPremium = checkIfItemIsPremium(activeCategory);
+    if (isPremium) return () => setShowPremiumGate(true);
 
-    return () => setShowPremiumGate(true);
+    return undefined;
+  };
+
+  const checkIfItemIsPremium = (type: string, title?: string) => {
+    // Vídeos siempre son Premium
+    if (type === 'video' || type === 'feed' || type === 'story' || type === 'seasonal' || type === 'weekly-story' || type === 'resource') {
+      return true;
+    }
+    // Herramientas: solo "Vendedor" o "Viaje" son Premium
+    if (type === 'tool' || type === 'marketing_tool') {
+      const toolTitle = title?.toLowerCase() || '';
+      return toolTitle.includes('vendedor') || toolTitle.includes('viaje');
+    }
+    // Otros (leyendas, tutoriales) son gratuitos
+    return false;
   };
 
   const filterTemplates = (items: ContentItem[] | undefined) => {
@@ -125,7 +139,8 @@ const IndexES = () => {
     // Aplicar filtro multi-select
     if (contentFilters.length > 0) {
       filtered = filtered.filter(item => {
-        const isItemPremium = !['captions', 'tools', 'videoaula', 'contracts'].includes(item.type);
+        const isItemPremium = checkIfItemIsPremium(item.type, item.title);
+
         let matches = false;
 
         if (contentFilters.includes('premium') && isItemPremium) {
