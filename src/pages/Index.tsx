@@ -285,12 +285,10 @@ const Index = () => {
   const renderContent = () => {
     switch (activeCategory) {
       case 'all': {
-        // Interleaved layout: 2 videos → 2 AI tools → 2 AI tools → rest of videos
-        const firstTwoVideos = displayedSortedVideos.slice(0, 2);
-        const remainingVideos = displayedSortedVideos.slice(2);
+        // Layout: 8 videos → AI tools block → remaining videos
+        const firstEightVideos = displayedSortedVideos.slice(0, 8);
+        const remainingVideos = displayedSortedVideos.slice(8);
         const firstFourTools = (toolsData || []).slice(0, 4);
-        const firstTwoTools = firstFourTools.slice(0, 2);
-        const nextTwoTools = firstFourTools.slice(2, 4);
 
         // Filter by access if selected
         const allFilterTools = (toolsData || []).filter(tool => {
@@ -324,7 +322,7 @@ const Index = () => {
               // Show only FREE AI Tools when gratis filter active
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Ferramentas gratuitas disponíveis na plataforma. Para vídeos, artes e stories —{" "}
+                  Ferramentas gratuitas disponíveis na plataforma. Para vídeos, artes e stories &mdash;{" "}
                   <button onClick={() => setAccessFilters([])} className="underline font-semibold text-foreground">veja o plano Pro</button>.
                 </p>
                 {toolsLoading ? (
@@ -356,12 +354,12 @@ const Index = () => {
                 )}
               </div>
             ) : (
-              // Default interleaved layout — desktop-friendly
-              <div className="space-y-10">
-                {/* First 2 videos */}
-                {!videosLoading && firstTwoVideos.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                    {firstTwoVideos.map((template) => (
+              // Desktop-organized layout: 8 videos → AI tools → remaining videos
+              <div className="space-y-8">
+                {/* First 8 videos - 2 cols mobile, 3 tablet, 4 desktop */}
+                {!videosLoading && firstEightVideos.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
+                    {firstEightVideos.map((template) => (
                       <PremiumCard
                         key={template.id} id={template.id} title={template.title} url={template.url}
                         isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
@@ -377,10 +375,10 @@ const Index = () => {
                   </div>
                 )}
 
-                {/* AI Tools block */}
+                {/* AI Tools block - 2 cols mobile, 4 desktop */}
                 {!toolsLoading && firstFourTools.length > 0 && (
-                  <div>
-                    <h3 className="font-bold text-foreground mb-3 text-sm uppercase tracking-widest text-muted-foreground">Robôs de IA</h3>
+                  <div className="bg-secondary/30 rounded-2xl p-4 md:p-6">
+                    <h3 className="font-bold text-foreground mb-4 text-sm uppercase tracking-widest text-muted-foreground">🤖 Robôs de IA</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                       {firstFourTools.map(tool => {
                         const isToolPremium = tool.title.toLowerCase().includes('vendedor') || tool.title.toLowerCase().includes('viaje');
@@ -403,7 +401,7 @@ const Index = () => {
 
                 {/* Remaining videos */}
                 {!videosLoading && remainingVideos.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
                     {remainingVideos.map((template) => (
                       <PremiumCard
                         key={template.id} id={template.id} title={template.title} url={template.url}
