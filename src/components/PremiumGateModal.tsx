@@ -21,7 +21,7 @@ const PremiumGateModalComponent = ({ isOpen, onClose }: { isOpen: boolean; onClo
       period: "/mês",
       description: "Pagamento recorrente mensal",
       discount: null,
-      stripeLink: "https://buy.stripe.com/5kA7sM1LAd96beT7sz" // Exemplo, ajuste se tiver o link real
+      stripeLink: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05"
     },
     annual: {
       value: "R$ 16,41",
