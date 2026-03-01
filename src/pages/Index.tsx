@@ -444,25 +444,27 @@ const Index = () => {
                 )}
 
                 {/* Row 2: 4 AI Tools — 2 cols mobile, 4 cols desktop */}
-                {!toolsLoading && firstFourTools.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {firstFourTools.map(tool => {
-                      const isToolPremium = tool.title.toLowerCase().includes('vendedor') || tool.title.toLowerCase().includes('viaje');
-                      return (
-                        <ToolCard
-                          key={tool.id} id={tool.id} title={tool.title} url={tool.url}
-                          icon={tool.icon} description={tool.description || "Ferramenta de IA"}
-                          isNew={tool.is_new}
-                          onClick={() => { trackClick('tool', tool.id); trackActivity('tool'); }}
-                          isFavorite={isFavorite("marketing_tool", tool.id)}
-                          onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                          onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium, 'tool', tool.title)}
-                          isPremium={isToolPremium}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
+                <Suspense fallback={<ToolSkeleton />}>
+                  {!toolsLoading && firstFourTools.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {firstFourTools.map(tool => {
+                        const isToolPremium = tool.title.toLowerCase().includes('vendedor') || tool.title.toLowerCase().includes('viaje');
+                        return (
+                          <ToolCard
+                            key={tool.id} id={tool.id} title={tool.title} url={tool.url}
+                            icon={tool.icon} description={tool.description || "Ferramenta de IA"}
+                            isNew={tool.is_new}
+                            onClick={() => { trackClick('tool', tool.id); trackActivity('tool'); }}
+                            isFavorite={isFavorite("marketing_tool", tool.id)}
+                            onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
+                            onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium, 'tool', tool.title)}
+                            isPremium={isToolPremium}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                </Suspense>
 
                 {/* Remaining videos — 2 cols mobile, 4 cols desktop */}
                 {!videosLoading && remainingVideos.length > 0 && (
