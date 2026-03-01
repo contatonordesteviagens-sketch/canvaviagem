@@ -1033,25 +1033,39 @@ const Index = () => {
           </section>
         );
 
-      case 'offers':
+      case 'offers': {
+        const offerCounts = {
+          offer: contentLibrary.filter(i => i.category === 'offer').length,
+          ranking: contentLibrary.filter(i => i.category === 'ranking').length,
+          script: contentLibrary.filter(i => i.category === 'script').length,
+          cta: contentLibrary.filter(i => i.category === 'cta').length,
+        };
         return (
           <section className="animate-fade-in">
             <SectionHeader
               title="Central de Conteúdo"
-              subtitle="Ofertas, Rankings e Scripts validados para sua agência"
+              subtitle="Ofertas, destinos em alta, scripts e frases de impacto"
             />
 
             <Tabs defaultValue="offer" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-8">
-                <TabsTrigger value="offer">Ofertas</TabsTrigger>
-                <TabsTrigger value="ranking">Rankings</TabsTrigger>
-                <TabsTrigger value="script">Scripts</TabsTrigger>
-                <TabsTrigger value="cta">Frases</TabsTrigger>
+              <TabsList className="flex w-full overflow-x-auto no-scrollbar mb-6 gap-1 bg-muted/50 p-1 rounded-xl">
+                <TabsTrigger value="offer" className="flex-1 min-w-[80px] text-xs md:text-sm gap-1.5 whitespace-nowrap">
+                  📢 Ofertas <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{offerCounts.offer}</Badge>
+                </TabsTrigger>
+                <TabsTrigger value="ranking" className="flex-1 min-w-[80px] text-xs md:text-sm gap-1.5 whitespace-nowrap">
+                  📊 Destinos <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{offerCounts.ranking}</Badge>
+                </TabsTrigger>
+                <TabsTrigger value="script" className="flex-1 min-w-[80px] text-xs md:text-sm gap-1.5 whitespace-nowrap">
+                  📋 Scripts <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{offerCounts.script}</Badge>
+                </TabsTrigger>
+                <TabsTrigger value="cta" className="flex-1 min-w-[80px] text-xs md:text-sm gap-1.5 whitespace-nowrap">
+                  🔥 Frases <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{offerCounts.cta}</Badge>
+                </TabsTrigger>
               </TabsList>
 
-              {['offer', 'ranking', 'script', 'cta'].map((cat) => (
+              {(['offer', 'ranking', 'script', 'cta'] as const).map((cat) => (
                 <TabsContent key={cat} value={cat}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {contentLibrary
                       .filter(item => item.category === cat)
                       .map((item) => (
@@ -1060,6 +1074,7 @@ const Index = () => {
                           id={item.id}
                           title={item.title}
                           text={item.text}
+                          fullText={item.fullText}
                           isFavorite={isFavorite("content_item", item.id)}
                           onToggleFavorite={() => handleToggleFavorite("content_item", item.id)}
                           onPremiumRequired={getPremiumCallback('offers', item.isPremium)}
@@ -1072,6 +1087,7 @@ const Index = () => {
             </Tabs>
           </section>
         );
+      }
 
       case 'contracts':
         return (
