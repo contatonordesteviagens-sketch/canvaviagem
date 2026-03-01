@@ -18,13 +18,13 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
 
-  const categories: { id: CategoryType; label: string; icon: React.ReactNode }[] = [
+  const categories: { id: CategoryType; label: string; icon: React.ReactNode; isNew?: boolean }[] = [
     { id: 'all', label: 'Tudo', icon: <LayoutGrid className="w-6 h-6" /> },
     // Recursos PRO
     { id: 'videos', label: t('category.videos'), icon: <Video className="w-6 h-6" /> },
     { id: 'feed', label: t('category.feed'), icon: <Image className="w-6 h-6" /> },
     { id: 'stories', label: t('category.stories'), icon: <LayoutGrid className="w-6 h-6" /> },
-    { id: 'offers', label: "Ofertas", icon: <Megaphone className="w-6 h-6" /> },
+    { id: 'offers', label: "Ofertas", icon: <Megaphone className="w-6 h-6" />, isNew: true },
     { id: 'downloads', label: t('category.downloads'), icon: <Download className="w-6 h-6" /> },
 
     // Ferramentas Gratuitas
@@ -157,8 +157,15 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
                 <button
                   key={category.id}
                   onClick={() => onCategoryChange(category.id)}
-                  className="flex flex-col items-center gap-2 snap-center min-w-[72px] group"
+                  className="flex flex-col items-center gap-2 snap-center min-w-[72px] group relative"
                 >
+                  {/* "Novo" badge */}
+                  {category.isNew && (
+                    <span className="absolute -top-1 -right-1 z-10 bg-destructive text-destructive-foreground text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide shadow-sm animate-pulse">
+                      Novo
+                    </span>
+                  )}
+
                   {/* Circle Icon Container */}
                   <div
                     className={cn(

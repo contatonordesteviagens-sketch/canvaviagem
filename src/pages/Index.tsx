@@ -889,50 +889,7 @@ const Index = () => {
           </section>
         );
 
-      case 'offers':
-        return (
-          <section className="animate-fade-in">
-            <SectionHeader
-              title="Ofertas Validadas"
-              subtitle="Textos persuasivos prontos para você copiar e vender mais"
-            />
-
-            {offersLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <Skeleton key={i} className="h-64 rounded-2xl" />
-                ))}
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {(offersData || []).map((offer) => (
-                    <OfferCard
-                      key={offer.id}
-                      id={offer.id}
-                      title={offer.title}
-                      text={offer.description || ""}
-                      isFavorite={isFavorite("content_item", offer.id)}
-                      onToggleFavorite={() => handleToggleFavorite("content_item", offer.id)}
-                      onPremiumRequired={getPremiumCallback(activeCategory, true, 'offer', offer.title)}
-                      isPremium={checkIfItemIsPremium(offer.type, offer.title)}
-                    />
-                  ))}
-                </div>
-
-                {!offersLoading && (!offersData || offersData.length === 0) && (
-                  <div className="bg-muted/30 rounded-3xl p-12 text-center border-2 border-dashed border-muted-foreground/20 mt-8">
-                    <div className="text-6xl mb-4">📢</div>
-                    <h3 className="text-2xl font-bold mb-2 text-foreground">Novas Ofertas em Breve</h3>
-                    <p className="text-muted-foreground max-w-md mx-auto">
-                      Estamos validando novas ofertas de alta conversão. Em breve você terá acesso a textos matadores aqui.
-                    </p>
-                  </div>
-                )}
-              </>
-            )}
-          </section>
-        );
+      // offers case handled below after 'tools'
 
       case 'captions':
         return (
