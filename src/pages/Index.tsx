@@ -507,33 +507,35 @@ const Index = () => {
                 )}
 
                 {/* 8 Legendas — 1 col mobile, 2 cols desktop */}
-                {!captionsLoading && initialCaptions.length > 0 && (
-                  <div className="space-y-3 pt-2 border-t border-border">
-                    <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground pt-2">Legendas</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {initialCaptions.map(caption => (
-                        <CaptionCard
-                          key={caption.id}
-                          id={caption.id}
-                          destination={caption.destination}
-                          text={caption.text}
-                          hashtags={caption.hashtags}
-                          isFavorite={isFavorite("caption", caption.id)}
-                          onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
-                        />
-                      ))}
-                    </div>
-                    {filteredCaptions.length > 8 && (
-                      <div className="flex justify-center pt-2">
-                        <Button variant="outline" onClick={() => setShowAllCaptions(!showAllCaptions)} className="gap-2 rounded-full px-6">
-                          {showAllCaptions
-                            ? <><ChevronUp className="h-4 w-4" />Mostrar menos</>
-                            : <><ChevronDown className="h-4 w-4" />Ver mais</>}
-                        </Button>
+                <Suspense fallback={<div className="h-48 bg-muted/10 animate-pulse rounded-2xl" />}>
+                  {!captionsLoading && initialCaptions.length > 0 && (
+                    <div className="space-y-3 pt-2 border-t border-border">
+                      <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground pt-2">Legendas</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {initialCaptions.map(caption => (
+                          <CaptionCard
+                            key={caption.id}
+                            id={caption.id}
+                            destination={caption.destination}
+                            text={caption.text}
+                            hashtags={caption.hashtags}
+                            isFavorite={isFavorite("caption", caption.id)}
+                            onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
+                          />
+                        ))}
                       </div>
-                    )}
-                  </div>
-                )}
+                      {filteredCaptions.length > 8 && (
+                        <div className="flex justify-center pt-2">
+                          <Button variant="outline" onClick={() => setShowAllCaptions(!showAllCaptions)} className="gap-2 rounded-full px-6">
+                            {showAllCaptions
+                              ? <><ChevronUp className="h-4 w-4" />Mostrar menos</>
+                              : <><ChevronDown className="h-4 w-4" />Ver mais</>}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </Suspense>
 
               </div>
             )}
