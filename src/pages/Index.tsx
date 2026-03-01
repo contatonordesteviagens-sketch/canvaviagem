@@ -274,7 +274,19 @@ const Index = () => {
           ? [...coveredVideos.slice(4), ...uncoveredVideos]
           : coveredVideos.slice(4, 20);
 
-        const firstFourTools = (toolsData || []).slice(0, 4);
+        const tools = toolsData || [];
+        const preferredTitles = ['corpo de anúncio', '9 óticas de hooks'];
+        const excludedTitles = ['criador de headline', 'criador de promessas única'];
+
+        const preferredTools = tools.filter(t =>
+          preferredTitles.some(p => t.title.toLowerCase().includes(p))
+        );
+        const otherTools = tools.filter(t =>
+          !preferredTitles.some(p => t.title.toLowerCase().includes(p)) &&
+          !excludedTitles.some(e => t.title.toLowerCase().includes(e))
+        );
+
+        const firstFourTools = [...preferredTools, ...otherTools].slice(0, 4);
         const initialCaptions = filteredCaptions.slice(0, 8);
 
         // Filter by access if selected
