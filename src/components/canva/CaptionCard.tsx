@@ -90,9 +90,15 @@ const CaptionCardComponent = ({
           </button>
         )}
 
-        {/* Header - clickable to expand */}
+        {/* Header - clickable to expand (blocked for premium) */}
         <button
-          onClick={() => setExpanded(!expanded)}
+          onClick={() => {
+            if (isPremium && onPremiumRequired) {
+              onPremiumRequired();
+              return;
+            }
+            setExpanded(!expanded);
+          }}
           className="flex items-center justify-between w-full pr-8 text-left"
         >
           <div className="flex items-center gap-2">
