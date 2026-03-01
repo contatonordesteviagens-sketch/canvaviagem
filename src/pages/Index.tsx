@@ -6,14 +6,15 @@ import { Header } from "@/components/Header";
 import SeoMetadata from "@/components/SeoMetadata";
 const BottomNav = lazy(() => import("@/components/canva/BottomNav").then(module => ({ default: module.BottomNav })));
 const Footer = lazy(() => import("@/components/Footer").then(module => ({ default: module.Footer })));
-import { ResourceSection } from "@/components/ResourceSection";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { Helmet } from "react-helmet-async";
 
 // Lazy load non-critical components
 const PremiumGateModal = lazy(() => import("@/components/PremiumGateModal").then(module => ({ default: module.PremiumGateModal })));
+const ResourceSection = lazy(() => import("@/components/ResourceSection").then(module => ({ default: module.ResourceSection })));
 
 // Canva-style components
 import { HeroBanner } from "@/components/canva/HeroBanner";
@@ -253,6 +254,34 @@ const Index = () => {
 
   const displayedSortedVideos = showAllVideos ? sortedVideos : sortedVideos.slice(0, 20);
 
+  // Top-level preparation for LCP and Sections
+  const coveredVideos = useMemo(() => sortedVideos.filter(v => v.image_url), [sortedVideos]);
+  const uncoveredVideos = useMemo(() => sortedVideos.filter(v => !v.image_url), [sortedVideos]);
+  const firstFourVideos = useMemo(() => coveredVideos.slice(0, 4), [coveredVideos]);
+
+  // Performance: Get LCP image for preloading
+  const lcpImage = useMemo(() => {
+    if (activeCategory === 'all' && firstFourVideos.length > 0) {
+      return firstFourVideos[0].image_url;
+    }
+    return null;
+  }, [activeCategory, firstFourVideos]);
+
+  const firstFourTools = useMemo(() => {
+    if (!toolsData) return [];
+    const prioritizedTitles = ["Corpo de Anúncios", "9 Óticas de Hooks"];
+    const tools = [...toolsData];
+    const filteredTools = tools.filter(t => !t.title.includes("Mr. Beast") && !t.title.includes("Promessas Únicas"));
+    return filteredTools.sort((a, b) => {
+      const aIndex = prioritizedTitles.findIndex(t => a.title.includes(t));
+      const bIndex = prioritizedTitles.findIndex(t => b.title.includes(t));
+      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+      if (aIndex !== -1) return -1;
+      if (bIndex !== -1) return 1;
+      return 0;
+    }).slice(0, 4);
+  }, [toolsData]);
+
   // Get weekly stories from story templates
   const weeklyStories = storyTemplates?.filter(s => s.type === 'weekly-story') || [];
   const regularStories = storyTemplates?.filter(s => s.type === 'story') || [];
@@ -296,11 +325,6 @@ const Index = () => {
       case 'all': {
         // Split by cover: only videos WITH image_url shown in main display
         // Videos WITHOUT image_url go behind "Ver mais"
-        const coveredVideos = sortedVideos.filter(v => v.image_url);
-        const uncoveredVideos = sortedVideos.filter(v => !v.image_url);
-
-        const firstFourVideos = coveredVideos.slice(0, 4);
-        // After AI tools: remaining covered (always shown) — uncovered only when expanded
         // Performance: Reduce initial items on mobile (8 vs 20)
         const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
         const initialRemainingCount = isMobile ? 8 : 20;
@@ -309,22 +333,6 @@ const Index = () => {
           ? [...coveredVideos.slice(4), ...uncoveredVideos]
           : coveredVideos.slice(4, initialRemainingCount);
 
-        const tools = toolsData || [];
-        const preferredTools = tools.filter(t =>
-          ['corpo de anúncio', '9 óticas de hooks'].some(p => t.title.toLowerCase().includes(p))
-        ).sort((a, b) => {
-          // Force definitive order: Corpo de Anúncio first, then 9 óticas
-          if (a.title.toLowerCase().includes('corpo')) return -1;
-          if (b.title.toLowerCase().includes('corpo')) return 1;
-          return 0;
-        });
-
-        const otherTools = tools.filter(t =>
-          !['corpo de anúncio', '9 óticas de hooks'].some(p => t.title.toLowerCase().includes(p)) &&
-          !['criador de headline', 'criador de promessas única'].some(e => t.title.toLowerCase().includes(e))
-        );
-
-        const firstFourTools = [...preferredTools, ...otherTools].slice(0, 4);
         const initialCaptions = filteredCaptions.slice(0, 8);
 
         // Filter by access if selected
@@ -855,6 +863,14 @@ const Index = () => {
                     </Button>
                   </div>
                 )}
+
+                {/* Resources and Downloads — lazy loaded, merged for component compatibility */}
+                <Suspense fallback={<div className="h-48 bg-muted/10 animate-pulse rounded-2xl" />}>
+                  <ResourceSection
+                    title="Recursos e Downloads"
+                    resources={[...resources, ...videoDownloads]}
+                  />
+                </Suspense>
               </>
             )}
           </section>
@@ -1164,6 +1180,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <Helmet>
+        {lcpImage && <link rel="preload" as="image" href={lcpImage} />}
+      </Helmet>
       <SeoMetadata
         title="Início"
         description="Acesse centenas de templates de vídeos Reels e artes para agências de viagens. Conteúdo premium pronto para editar no Canva."

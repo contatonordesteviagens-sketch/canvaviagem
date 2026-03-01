@@ -21,10 +21,10 @@ const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) =
         <div className="absolute top-1/2 right-1/4 w-12 h-12 rounded-full bg-white/5" />
 
         {/* Decorative travel icons */}
-        <div className="absolute top-3 left-1/4 text-4xl opacity-80">✈️</div>
-        <div className="absolute bottom-4 right-1/3 text-3xl opacity-80">🌴</div>
-        <div className="absolute top-1/3 right-8 text-2xl opacity-70">🗺️</div>
-        <div className="absolute bottom-8 left-8 text-2xl opacity-70">🧳</div>
+        <div className="absolute top-3 left-1/4 text-4xl opacity-80" aria-hidden="true">✈️</div>
+        <div className="absolute bottom-4 right-1/3 text-3xl opacity-80" aria-hidden="true">🌴</div>
+        <div className="absolute top-1/3 right-8 text-2xl opacity-70" aria-hidden="true">🗺️</div>
+        <div className="absolute bottom-8 left-8 text-2xl opacity-70" aria-hidden="true">🧳</div>
 
         {/* Content */}
         <div className="relative z-10 text-center space-y-6">
@@ -35,10 +35,11 @@ const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) =
           {/* Glassmorphism Search Bar */}
           <div className="max-w-lg mx-auto relative">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" aria-hidden="true" />
               <Input
                 type="search"
                 placeholder={t('hero.searchPlaceholder')}
+                aria-label={t('hero.searchPlaceholder')}
                 value={searchValue}
                 onChange={(e) => onSearchChange(e.target.value)}
                 className="w-full pl-12 pr-4 h-12 md:h-14 rounded-full bg-white shadow-lg border-0 text-sm md:text-base text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-white/50"
