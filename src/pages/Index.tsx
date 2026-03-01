@@ -327,7 +327,7 @@ const Index = () => {
         // Videos WITHOUT image_url go behind "Ver mais"
         // Performance: Reduce initial items on mobile (8 vs 20)
         const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-        const initialRemainingCount = isMobile ? 8 : 20;
+        const initialRemainingCount = isMobile ? 4 : 20;
 
         const remainingVideos = showAllVideos
           ? [...coveredVideos.slice(4), ...uncoveredVideos]
