@@ -259,8 +259,13 @@ const Index = () => {
   const uncoveredVideos = useMemo(() => sortedVideos.filter(v => !v.image_url), [sortedVideos]);
   const firstFourVideos = useMemo(() => coveredVideos.slice(0, 4), [coveredVideos]);
 
-  // Performance hint: The actual LCP image is the first card's image_url
-  // We'll prioritize its loading via props on the PremiumCard directly.
+  // Performance: Get LCP image for preloading
+  const lcpImage = useMemo(() => {
+    if (activeCategory === 'all' && firstFourVideos.length > 0) {
+      return firstFourVideos[0].image_url;
+    }
+    return null;
+  }, [activeCategory, firstFourVideos]);
 
   const firstFourTools = useMemo(() => {
     if (!toolsData) return [];
@@ -1175,6 +1180,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <Helmet>
+        {lcpImage && <link rel="preload" as="image" href={lcpImage} />}
+      </Helmet>
       <SeoMetadata
         title="Início"
         description="Acesse centenas de templates de vídeos Reels e artes para agências de viagens. Conteúdo premium pronto para editar no Canva."
