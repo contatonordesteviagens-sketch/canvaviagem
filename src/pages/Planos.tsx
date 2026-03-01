@@ -306,13 +306,13 @@ const Planos = () => {
             </div>
             {[
               { label: "Vídeos de destinos", free: "—", pro: "250+" },
+              { label: "100+ Ofertas Validadas", free: "3 itens", pro: "Completo 💎" },
+              { label: "50 Rankings de Destinos", free: "—", pro: "✓" },
               { label: "Stories e Reels prontos", free: "—", pro: "200+" },
+              { label: "Scripts de Venda & Scripts WhatsApp", free: "—", pro: "✓" },
+              { label: "Legendas & CTAs de Alto Impacto", free: "✓", pro: "✓" },
               { label: "Artes e Feed editáveis", free: "—", pro: "Ilimitado" },
-              { label: "Legendas prontas", free: "✓", pro: "✓" },
               { label: "Ferramentas de IA", free: "8 agentes", pro: "11 agentes" },
-              { label: "Vendedor de Viagem (IA)", free: "—", pro: "✓" },
-              { label: "Influencers de IA", free: "—", pro: "✓" },
-              { label: "Calendário editorial", free: "—", pro: "365 dias" },
               { label: "Biblioteca de vídeos", free: "—", pro: "✓" },
               { label: "Novos conteúdos", free: "—", pro: "Toda semana" },
             ].map((row, i) => (
@@ -412,12 +412,13 @@ const Planos = () => {
 
               <ul className="space-y-3 mb-8">
                 {[
-                  "Acesso completo a 250+ vídeos de destinos",
-                  "11 agentes de IA de marketing para viagens",
-                  "Artes, stories e legendas prontos",
-                  "Calendário editorial com 365 sugestões",
+                  "Acesso a 250+ vídeos e 100+ destinos",
+                  "Central de Ofertas 'Copia e Cola'",
+                  "Scripts de Venda e Quebra de Objeções",
+                  "11 agentes de IA de marketing",
+                  "Calendário editorial 365 dias",
                   "Novos conteúdos toda semana",
-                  "Garantia de 7 dias — sem perguntas",
+                  "Garantia de 7 dias ou seu dinheiro de volta",
                 ].map((f) => (
                   <li key={f} className="flex items-center gap-3 text-sm">
                     <span className="w-5 h-5 bg-black rounded-full flex items-center justify-center shrink-0">

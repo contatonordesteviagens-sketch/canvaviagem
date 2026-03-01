@@ -69,16 +69,15 @@ const PlanosES = () => {
 
   // Benefits with icons - Spanish
   const benefits = [
-    { icon: Video, text: "+250 plantillas de videos editables", description: "Videos profesionales listos para editar en Canva con música y transiciones", highlight: true },
-    { icon: MessageSquare, text: "Soporte por WhatsApp", description: "Resuelve tus dudas directamente con nuestro equipo", highlight: false },
-    { icon: Calendar, text: "Calendario de publicaciones", description: "Planifica tu contenido con fechas especiales y festivos", highlight: false },
-    { icon: FileText, text: "Subtítulos listos para copiar", description: "Textos optimizados para Instagram, Facebook y TikTok", highlight: false },
+    { icon: Video, text: "+250 plantillas de videos y 100+ Destinos", description: "Videos profesionales y ofertas listas para usar en cualquier país", highlight: true },
+    { icon: FileText, text: "Central de Contenido 'Copia y Pega'", description: "Ofertas validadas, Rankings y Scripts de Venta en español", highlight: true },
+    { icon: Bot, text: "11 Agentes de IA exclusivos", description: "Crea subtítulos y descripciones automáticamente con IA", highlight: false },
+    { icon: Calendar, text: "Calendario de publicaciones", description: "365 días de sugerencias de contenido para turismo", highlight: false },
+    { icon: MessageSquare, text: "Scripts de WhatsApp y Ventas", description: "Textos listos para cerrar ventas y manejar objeciones", highlight: false },
     { icon: Sparkles, text: "Integración con Canva Pro", description: "Compatibilidad total con Canva para edición fácil", highlight: false },
     { icon: Shield, text: "Sin derechos de autor", description: "Usa todo el contenido sin preocupaciones legales", highlight: false },
-    { icon: Bot, text: "Herramientas de IA exclusivas", description: "Crea subtítulos y descripciones automáticamente con IA", highlight: true },
     { icon: Image, text: "Artes para feed y stories", description: "Diseños estáticos para complementar tus videos", highlight: false },
-    { icon: Users, text: "Contenido con influencers", description: "Videos con creadores de viajes reconocidos", highlight: false },
-    { icon: Infinity, text: "Actualizaciones semanales", description: "Nuevo contenido cada semana para mantenerte actualizado", highlight: false },
+    { icon: Infinity, text: "Actualizaciones semanales", description: "Nuevo contenido cada semana para mantenerte a la vanguardia", highlight: false },
   ];
 
   // FAQs - Spanish
@@ -316,7 +315,7 @@ const PlanosES = () => {
 
           {/* Subheadline */}
           <p className="text-xl md:text-2xl text-muted-foreground mb-8">
-            +250 plantillas de video editables en Canva
+            +250 plantillas de video y 100+ Destinos listos para tu Agencia
           </p>
 
           {/* GIF Hero */}

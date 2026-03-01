@@ -7,6 +7,8 @@ import SeoMetadata from "@/components/SeoMetadata";
 const BottomNav = lazy(() => import("@/components/canva/BottomNav").then(module => ({ default: module.BottomNav })));
 const Footer = lazy(() => import("@/components/Footer").then(module => ({ default: module.Footer })));
 import { Button } from "@/components/ui/button";
+import { contentLibrary } from "@/data/content-library";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -25,6 +27,7 @@ import { AccessFilter, AccessFilterType } from "@/components/canva/AccessFilter"
 import { SectionHeader } from "@/components/canva/SectionHeader";
 import { CaptionCard } from "@/components/canva/CaptionCard";
 import { ToolCard } from "@/components/canva/ToolCard";
+import { OfferCard } from "@/components/canva/OfferCard";
 
 // Database hooks
 import {
@@ -70,6 +73,7 @@ const Index = () => {
   const [contentFilters, setContentFilters] = useState<ContentFilterType[]>([]);
   const [accessFilters, setAccessFilters] = useState<AccessFilterType[]>([]);
   const [activeCategory, setActiveCategory] = useState<CategoryType>('all');
+  const [showAllOffers, setShowAllOffers] = useState(false);
   const [showPremiumGate, setShowPremiumGate] = useState(false);
 
   // Database hooks
@@ -79,6 +83,7 @@ const Index = () => {
   const { data: storyTemplates, isLoading: storiesLoading } = useContentItems(['story', 'weekly-story']);
   const { data: captionsData, isLoading: captionsLoading } = useCaptions();
   const { data: toolsData, isLoading: toolsLoading } = useMarketingTools();
+  const { data: offersData, isLoading: offersLoading } = useContentItems('offer');
   const { data: newestIds = [] } = useNewestItemIds();
   const { data: highlightedItems, isLoading: highlightsLoading } = useHighlightedItems();
   const { trackClick } = useTrackClick();
@@ -334,6 +339,7 @@ const Index = () => {
           : coveredVideos.slice(4, initialRemainingCount);
 
         const initialCaptions = filteredCaptions.slice(0, 8);
+        const initialOffers = (offersData || []).slice(0, 4);
 
         // Filter by access if selected
         const allFilterTools = (toolsData || []).filter(tool => {
@@ -469,11 +475,12 @@ const Index = () => {
                 {/* Remaining videos — 2 cols mobile, 4 cols desktop */}
                 {!videosLoading && remainingVideos.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                    {remainingVideos.map((template) => (
+                    {remainingVideos.map((template, index) => (
                       <PremiumCard
                         key={template.id} id={template.id} title={template.title} url={template.url}
                         isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
-                        imageUrl={template.image_url || undefined}
+                        // Performance: Only load images for the first few remaining items to save 75MB+ payload
+                        imageUrl={(index < 4 || template.is_featured) ? (template.image_url || undefined) : undefined}
                         aspectRatio={template.image_url ? "9/16" : "1/1"}
                         contentType={template.type}
                         onClick={() => handleCardClick(template)}
@@ -515,15 +522,17 @@ const Index = () => {
                       <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground pt-2">Legendas</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {initialCaptions.map(caption => (
-                          <CaptionCard
-                            key={caption.id}
-                            id={caption.id}
-                            destination={caption.destination}
-                            text={caption.text}
-                            hashtags={caption.hashtags}
-                            isFavorite={isFavorite("caption", caption.id)}
-                            onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
-                          />
+                          <div key={caption.id} onClick={() => handleCaptionClick(caption)}>
+                            <CaptionCard
+                              id={caption.id}
+                              destination={caption.destination}
+                              text={caption.text}
+                              hashtags={caption.hashtags}
+                              isFavorite={isFavorite("caption", caption.id)}
+                              onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
+                              onPremiumRequired={getPremiumCallback('all', false, 'caption', caption.destination)}
+                            />
+                          </div>
                         ))}
                       </div>
                       {filteredCaptions.length > 8 && (
@@ -539,6 +548,41 @@ const Index = () => {
                   )}
                 </Suspense>
 
+                {/* Seção de Ofertas Validadas na Home */}
+                <Suspense fallback={<div className="h-48 bg-muted/10 animate-pulse rounded-2xl" />}>
+                  {!offersLoading && initialOffers.length > 0 && (
+                    <div className="space-y-4 pt-4 border-t border-border">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground pt-2">Ofertas Validadas</h3>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-primary hover:text-primary/80"
+                          onClick={() => {
+                            setActiveCategory('offers');
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                        >
+                          Ver todas
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {initialOffers.map(offer => (
+                          <OfferCard
+                            key={offer.id}
+                            id={offer.id}
+                            title={offer.title}
+                            text={offer.description || ""}
+                            isFavorite={isFavorite("content_item", offer.id)}
+                            onToggleFavorite={() => handleToggleFavorite("content_item", offer.id)}
+                            onPremiumRequired={getPremiumCallback('offers', true, 'offer', offer.title)}
+                            isPremium={checkIfItemIsPremium(offer.type, offer.title)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </Suspense>
               </div>
             )}
           </section>
@@ -665,8 +709,8 @@ const Index = () => {
                       url={template.url}
                       isNew={newestIds.includes(template.id)}
                       icon={getIcon(template.type, template.icon)}
-                      // Os 10 primeiros (featured) podem ter imagem personalizada
-                      imageUrl={index < 10 && template.image_url ? template.image_url : undefined}
+                      // Performance: Limit images to first 6 items in category view
+                      imageUrl={index < 6 && template.image_url ? template.image_url : undefined}
                       aspectRatio="9/16"
                       onClick={() => handleCardClick(template)}
                       isFavorite={isFavorite("content_item", template.id)}
@@ -814,6 +858,51 @@ const Index = () => {
           </section>
         );
 
+      case 'offers':
+        return (
+          <section className="animate-fade-in">
+            <SectionHeader
+              title="Ofertas Validadas"
+              subtitle="Textos persuasivos prontos para você copiar e vender mais"
+            />
+
+            {offersLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <Skeleton key={i} className="h-64 rounded-2xl" />
+                ))}
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(offersData || []).map((offer) => (
+                    <OfferCard
+                      key={offer.id}
+                      id={offer.id}
+                      title={offer.title}
+                      text={offer.description || ""}
+                      isFavorite={isFavorite("content_item", offer.id)}
+                      onToggleFavorite={() => handleToggleFavorite("content_item", offer.id)}
+                      onPremiumRequired={getPremiumCallback(activeCategory, true, 'offer', offer.title)}
+                      isPremium={checkIfItemIsPremium(offer.type, offer.title)}
+                    />
+                  ))}
+                </div>
+
+                {!offersLoading && (!offersData || offersData.length === 0) && (
+                  <div className="bg-muted/30 rounded-3xl p-12 text-center border-2 border-dashed border-muted-foreground/20 mt-8">
+                    <div className="text-6xl mb-4">📢</div>
+                    <h3 className="text-2xl font-bold mb-2 text-foreground">Novas Ofertas em Breve</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto">
+                      Estamos validando novas ofertas de alta conversão. Em breve você terá acesso a textos matadores aqui.
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        );
+
       case 'captions':
         return (
           <section className="animate-fade-in">
@@ -942,18 +1031,46 @@ const Index = () => {
                 })}
               </div>
             )}
+          </section>
+        );
 
-            <div className="bg-card rounded-3xl shadow-canva p-6">
-              <ResourceSection
-                title="📚 Materiais e Recursos"
-                resources={resources.map(r =>
-                  r.name === "Calendário Editorial"
-                    ? { ...r, onPremiumRequired: getPremiumCallback('videos') }
-                    : r
-                )}
-                description="PDFs, comunidade e calendário editorial"
-              />
-            </div>
+      case 'offers':
+        return (
+          <section className="animate-fade-in">
+            <SectionHeader
+              title="Central de Conteúdo"
+              subtitle="Ofertas, Rankings e Scripts validados para sua agência"
+            />
+
+            <Tabs defaultValue="offer" className="w-full">
+              <TabsList className="grid w-full grid-cols-4 mb-8">
+                <TabsTrigger value="offer">Ofertas</TabsTrigger>
+                <TabsTrigger value="ranking">Rankings</TabsTrigger>
+                <TabsTrigger value="script">Scripts</TabsTrigger>
+                <TabsTrigger value="cta">Frases</TabsTrigger>
+              </TabsList>
+
+              {['offer', 'ranking', 'script', 'cta'].map((cat) => (
+                <TabsContent key={cat} value={cat}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {contentLibrary
+                      .filter(item => item.category === cat)
+                      .map((item) => (
+                        <OfferCard
+                          key={item.id}
+                          id={item.id}
+                          title={item.title}
+                          text={item.text}
+                          isFavorite={isFavorite("content_item", item.id)}
+                          onToggleFavorite={() => handleToggleFavorite("content_item", item.id)}
+                          onPremiumRequired={getPremiumCallback('offers', item.isPremium)}
+                          isPremium={item.isPremium}
+                        />
+                      ))}
+                  </div>
+                </TabsContent>
+              ))}
+            </Tabs>
           </section>
         );
 
@@ -973,6 +1090,7 @@ const Index = () => {
             </div>
           </section>
         );
+
       case 'videoaula':
         return (
           <section className="animate-fade-in">
@@ -982,7 +1100,6 @@ const Index = () => {
             />
 
             <div className="space-y-6">
-              {/* Primeira Videoaula */}
               <div className="bg-card rounded-3xl shadow-canva p-6">
                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                   <span>🎓</span>
@@ -1009,154 +1126,144 @@ const Index = () => {
               title="Meus Favoritos"
               subtitle="Itens salvos para acesso rápido"
             />
-
-            {favorites.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Heart className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                <p className="text-lg mb-2">Nenhum favorito ainda</p>
-                <p className="text-sm">Clique no coração nos itens para salvá-los aqui</p>
-              </div>
-            ) : (
-              <div className="space-y-8">
-                {/* Favorite Videos */}
-                {(() => {
-                  const favoriteVideos = videoTemplates?.filter(v => isFavorite("content_item", v.id)) || [];
-                  if (favoriteVideos.length === 0) return null;
-                  return (
-                    <div>
-                      <h3 className="font-bold text-foreground mb-4 text-lg">🎬 Vídeos</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {favoriteVideos.map((template) => (
-                          <PremiumCard
-                            key={template.id}
-                            id={template.id}
-                            title={template.title}
-                            url={template.url}
-                            icon={getIcon(template.type, template.icon)}
-                            aspectRatio="9/16"
-                            onClick={() => handleCardClick(template)}
-                            isFavorite={true}
-                            onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                            onPremiumRequired={getPremiumCallback(activeCategory)}
-                            isPremium={true}
-                          />
-                        ))}
-                      </div>
+            <div className="space-y-8">
+              {/* Favorite Videos */}
+              {(() => {
+                const favoriteVideos = videoTemplates?.filter(v => isFavorite("content_item", v.id)) || [];
+                if (favoriteVideos.length === 0) return null;
+                return (
+                  <div>
+                    <h3 className="font-bold text-foreground mb-4 text-lg">🎬 Vídeos</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {favoriteVideos.map((template) => (
+                        <PremiumCard
+                          key={template.id}
+                          id={template.id}
+                          title={template.title}
+                          url={template.url}
+                          icon={getIcon(template.type, template.icon)}
+                          aspectRatio="9/16"
+                          onClick={() => handleCardClick(template)}
+                          isFavorite={true}
+                          onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
+                          onPremiumRequired={getPremiumCallback(activeCategory)}
+                          isPremium={true}
+                        />
+                      ))}
                     </div>
-                  );
-                })()}
+                  </div>
+                );
+              })()}
 
-                {/* Favorite Feed */}
-                {(() => {
-                  const favoriteFeed = feedTemplates?.filter(f => isFavorite("content_item", f.id)) || [];
-                  if (favoriteFeed.length === 0) return null;
-                  return (
-                    <div>
-                      <h3 className="font-bold text-foreground mb-4 text-lg">🖼️ Artes</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {favoriteFeed.map((template) => (
-                          <PremiumCard
-                            key={template.id}
-                            id={template.id}
-                            title={template.title}
-                            url={template.url}
-                            icon={getIcon(template.type, template.icon)}
-                            aspectRatio="4/5"
-                            onClick={() => handleCardClick(template)}
-                            isFavorite={true}
-                            onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                            onPremiumRequired={getPremiumCallback(activeCategory)}
-                            isPremium={true}
-                          />
-                        ))}
-                      </div>
+              {/* Favorite Feed */}
+              {(() => {
+                const favoriteFeed = feedTemplates?.filter(f => isFavorite("content_item", f.id)) || [];
+                if (favoriteFeed.length === 0) return null;
+                return (
+                  <div>
+                    <h3 className="font-bold text-foreground mb-4 text-lg">🖼️ Artes</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {favoriteFeed.map((template) => (
+                        <PremiumCard
+                          key={template.id}
+                          id={template.id}
+                          title={template.title}
+                          url={template.url}
+                          icon={getIcon(template.type, template.icon)}
+                          aspectRatio="4/5"
+                          onClick={() => handleCardClick(template)}
+                          isFavorite={true}
+                          onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
+                          onPremiumRequired={getPremiumCallback(activeCategory)}
+                          isPremium={true}
+                        />
+                      ))}
                     </div>
-                  );
-                })()}
+                  </div>
+                );
+              })()}
 
-                {/* Favorite Stories */}
-                {(() => {
-                  const favoriteStories = storyTemplates?.filter(s => isFavorite("content_item", s.id)) || [];
-                  if (favoriteStories.length === 0) return null;
-                  return (
-                    <div>
-                      <h3 className="font-bold text-foreground mb-4 text-lg">📱 Stories</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {favoriteStories.map((template) => (
-                          <PremiumCard
-                            key={template.id}
-                            id={template.id}
-                            title={template.title}
-                            url={template.url}
-                            icon={getIcon(template.type, template.icon)}
-                            aspectRatio="9/16"
-                            onClick={() => handleCardClick(template)}
-                            isFavorite={true}
-                            onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                            onPremiumRequired={getPremiumCallback(activeCategory)}
-                            isPremium={true}
-                          />
-                        ))}
-                      </div>
+              {/* Favorite Stories */}
+              {(() => {
+                const favoriteStories = storyTemplates?.filter(s => isFavorite("content_item", s.id)) || [];
+                if (favoriteStories.length === 0) return null;
+                return (
+                  <div>
+                    <h3 className="font-bold text-foreground mb-4 text-lg">📱 Stories</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {favoriteStories.map((template) => (
+                        <PremiumCard
+                          key={template.id}
+                          id={template.id}
+                          title={template.title}
+                          url={template.url}
+                          icon={getIcon(template.type, template.icon)}
+                          aspectRatio="9/16"
+                          onClick={() => handleCardClick(template)}
+                          isFavorite={true}
+                          onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
+                          onPremiumRequired={getPremiumCallback(activeCategory)}
+                          isPremium={true}
+                        />
+                      ))}
                     </div>
-                  );
-                })()}
+                  </div>
+                );
+              })()}
 
-                {/* Favorite Captions */}
-                {(() => {
-                  const favoriteCaptions = captionsData?.filter(c => isFavorite("caption", c.id)) || [];
-                  if (favoriteCaptions.length === 0) return null;
-                  return (
-                    <div>
-                      <h3 className="font-bold text-foreground mb-4 text-lg">✍️ Legendas</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {favoriteCaptions.map((caption) => (
-                          <CaptionCard
-                            key={caption.id}
-                            id={caption.id}
-                            destination={caption.destination}
-                            text={caption.text}
-                            hashtags={caption.hashtags}
-                            isFavorite={true}
-                            onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
-                            onPremiumRequired={getPremiumCallback('videos')}
-                          />
-                        ))}
-                      </div>
+              {/* Favorite Captions */}
+              {(() => {
+                const favoriteCaptions = captionsData?.filter(c => isFavorite("caption", c.id)) || [];
+                if (favoriteCaptions.length === 0) return null;
+                return (
+                  <div>
+                    <h3 className="font-bold text-foreground mb-4 text-lg">✍️ Legendas</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {favoriteCaptions.map((caption) => (
+                        <CaptionCard
+                          key={caption.id}
+                          id={caption.id}
+                          destination={caption.destination}
+                          text={caption.text}
+                          hashtags={caption.hashtags}
+                          isFavorite={true}
+                          onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
+                          onPremiumRequired={getPremiumCallback('videos')}
+                        />
+                      ))}
                     </div>
-                  );
-                })()}
+                  </div>
+                );
+              })()}
 
-                {/* Favorite Tools */}
-                {(() => {
-                  const favoriteTools = toolsData?.filter(t => isFavorite("marketing_tool", t.id)) || [];
-                  if (favoriteTools.length === 0) return null;
-                  return (
-                    <div>
-                      <h3 className="font-bold text-foreground mb-4 text-lg">🤖 Ferramentas</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {favoriteTools.map((tool) => (
-                          <ToolCard
-                            key={tool.id}
-                            id={tool.id}
-                            title={tool.title}
-                            url={tool.url}
-                            icon={tool.icon}
-                            description={tool.description || ""}
-                            isFavorite={true}
-                            onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                            onPremiumRequired={getPremiumCallback('tools')}
-                          />
-                        ))}
-                      </div>
+              {/* Favorite Tools */}
+              {(() => {
+                const favoriteTools = toolsData?.filter(t => isFavorite("marketing_tool", t.id)) || [];
+                if (favoriteTools.length === 0) return null;
+                return (
+                  <div>
+                    <h3 className="font-bold text-foreground mb-4 text-lg">🤖 Ferramentas</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {favoriteTools.map((tool) => (
+                        <ToolCard
+                          key={tool.id}
+                          id={tool.id}
+                          title={tool.title}
+                          url={tool.url}
+                          icon={tool.icon}
+                          description={tool.description || ""}
+                          isFavorite={true}
+                          onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
+                          onPremiumRequired={getPremiumCallback('tools')}
+                        />
+                      ))}
                     </div>
-                  );
-                })()}
-              </div>
-            )}
+                  </div>
+                );
+              })()}
+            </div>
           </section>
         );
-
       default:
         return null;
     }
@@ -1164,20 +1271,17 @@ const Index = () => {
 
   const mainContent = (
     <>
-      {/* Hero Banner with Search */}
       <HeroBanner
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
       />
 
-      {/* Category Navigation - Horizontal scroll with icons */}
       <CategoryNav
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}
         showFavorites={!!user}
       />
 
-      {/* Dynamic Content based on category */}
       {renderContent()}
     </>
   );
@@ -1202,7 +1306,6 @@ const Index = () => {
         <Footer />
       </Suspense>
 
-      {/* Floating 'Mostrar menos' button — fixed bottom center when expanded */}
       {showAllVideos && activeCategory === 'all' && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
           <Button
@@ -1216,7 +1319,6 @@ const Index = () => {
         </div>
       )}
 
-      {/* Bottom Navigation - Mobile only */}
       <Suspense fallback={null}>
         <BottomNav
           activeCategory={activeCategory}
@@ -1224,7 +1326,6 @@ const Index = () => {
         />
       </Suspense>
 
-      {/* Premium Gate Modal - lazy loaded */}
       <Suspense fallback={null}>
         <PremiumGateModal
           isOpen={showPremiumGate}

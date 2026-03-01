@@ -21,6 +21,8 @@ import { SectionHeader } from "@/components/canva/SectionHeader";
 import { CaptionCard } from "@/components/canva/CaptionCard";
 import { ToolCard } from "@/components/canva/ToolCard";
 import { BottomNav } from "@/components/canva/BottomNav";
+import { OfferCard } from "@/components/canva/OfferCard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SeoMetadata from "@/components/SeoMetadata";
 
 // Database hooks
@@ -45,6 +47,7 @@ import { ExternalLink } from "lucide-react";
 import { resources, videoDownloads } from "@/data/templates";
 import { trackViewContent } from "@/lib/meta-pixel";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { contentLibraryES } from "@/data/content-library-es";
 
 // ⭐ FORCE SPANISH LANGUAGE ⭐
 const FORCED_LANGUAGE = 'es' as const;
@@ -59,8 +62,8 @@ const IndexES = () => {
   const [showAllVideos, setShowAllVideos] = useState(false);
   const [showAllCaptions, setShowAllCaptions] = useState(false);
   const [contentFilters, setContentFilters] = useState<ContentFilterType[]>([]);
-  const [accessFilters, setAccessFilters] = useState<AccessFilterType[]>(['premium']);
-  const [activeCategory, setActiveCategory] = useState<CategoryType>('videos');
+  const [accessFilters, setAccessFilters] = useState<AccessFilterType[]>([]);
+  const [activeCategory, setActiveCategory] = useState<CategoryType>('all');
   const [showPremiumGate, setShowPremiumGate] = useState(false);
 
   // ⭐ Set document language and context on mount ⭐
@@ -257,6 +260,126 @@ const IndexES = () => {
   // Content sections based on active category
   const renderContent = () => {
     switch (activeCategory) {
+      case 'all': {
+        const firstFourTools = toolsData?.slice(0, 4) || [];
+        const coveredVideos = sortedVideos.filter(v => v.image_url);
+        const uncoveredVideos = sortedVideos.filter(v => !v.image_url);
+        const remainingVideos = showAllVideos ? sortedVideos : uncoveredVideos.slice(0, 8);
+        const initialCaptions = captionsData?.slice(0, 8) || [];
+        const initialOffers = contentLibraryES.offers.slice(0, 2);
+
+        return (
+          <section className="animate-fade-in space-y-8">
+            <div className="flex justify-between items-center mb-6 gap-4">
+              <AccessFilter selectedFilters={accessFilters} onFiltersChange={setAccessFilters} />
+              <ContentFilterDropdown selectedFilters={contentFilters} onFiltersChange={setContentFilters} />
+            </div>
+
+            <div className="space-y-10">
+              {/* Row 1: Featured Videos — 2 cols mobile, 5 cols desktop */}
+              {coveredVideos.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+                  {coveredVideos.slice(0, 10).map((template, idx) => (
+                    <PremiumCard
+                      key={template.id} id={template.id} title={template.title} url={template.url}
+                      isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
+                      imageUrl={template.image_url || undefined} aspectRatio="9/16"
+                      onClick={() => handleCardClick(template)}
+                      isFavorite={isFavorite("content_item", template.id)}
+                      onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
+                      onPremiumRequired={getPremiumCallback('all', false, template.type)}
+                      isPremium={checkIfItemIsPremium(template.type, template.title)}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Row 2: AI Tools — 2 cols mobile, 4 cols desktop */}
+              {!toolsLoading && firstFourTools.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {firstFourTools.map(tool => {
+                    const isToolPremium = tool.title.toLowerCase().includes('vendedor') || tool.title.toLowerCase().includes('viaje');
+                    return (
+                      <ToolCard
+                        key={tool.id} id={tool.id} title={tool.title} url={tool.url}
+                        icon={tool.icon} description={tool.description || "IA Tool"}
+                        isNew={tool.is_new} onClick={() => trackClick('tool', tool.id)}
+                        isFavorite={isFavorite("marketing_tool", tool.id)}
+                        onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
+                        onPremiumRequired={getPremiumCallback('all', isToolPremium, 'tool')}
+                        isPremium={isToolPremium}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Remaining content */}
+              {!videosLoading && remainingVideos.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+                  {remainingVideos.map((template, index) => (
+                    <PremiumCard
+                      key={template.id} id={template.id} title={template.title} url={template.url}
+                      isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
+                      imageUrl={index < 4 ? (template.image_url || undefined) : undefined}
+                      aspectRatio="9/16" onClick={() => handleCardClick(template)}
+                      isFavorite={isFavorite("content_item", template.id)}
+                      onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
+                      onPremiumRequired={getPremiumCallback('all', false, template.type)}
+                      isPremium={checkIfItemIsPremium(template.type, template.title)}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Show more button */}
+              {(uncoveredVideos.length > 8) && (
+                <div className="flex justify-center">
+                  <Button variant="outline" onClick={() => setShowAllVideos(!showAllVideos)} className="gap-2 rounded-full px-6">
+                    {showAllVideos ? <><ChevronUp className="h-4 w-4" />Menos</> : <><ChevronDown className="h-4 w-4" />Más videos</>}
+                  </Button>
+                </div>
+              )}
+
+              {/* Preview Captions and Offers */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-border">
+                <div className="space-y-4">
+                  <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Subtítulos</h3>
+                  <div className="space-y-3">
+                    {initialCaptions.slice(0, 3).map(caption => (
+                      <div key={caption.id} onClick={() => handleCaptionClick(caption)}>
+                        <CaptionCard
+                          id={caption.id} destination={caption.destination} text={caption.text}
+                          hashtags={caption.hashtags} isFavorite={isFavorite("caption", caption.id)}
+                          onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
+                          onPremiumRequired={getPremiumCallback('all')}
+                        />
+                      </div>
+                    ))}
+                    <Button variant="ghost" className="w-full text-primary" onClick={() => setActiveCategory('captions')}>Ver todos</Button>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Ofertas Validadas</h3>
+                  <div className="space-y-3">
+                    {initialOffers.map(offer => (
+                      <OfferCard
+                        key={offer.id} id={offer.id} title={offer.title} text={offer.description}
+                        isFavorite={isFavorite("content_item", offer.id)}
+                        onToggleFavorite={() => handleToggleFavorite("content_item", offer.id)}
+                        onPremiumRequired={getPremiumCallback('offers', true, 'offer')}
+                        isPremium={offer.premium}
+                      />
+                    ))}
+                    <Button variant="ghost" className="w-full text-primary" onClick={() => setActiveCategory('offers')}>Ver todas</Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      }
+
       case 'videos':
         return (
           <section className="animate-fade-in">
@@ -440,6 +563,81 @@ const IndexES = () => {
                 ))}
               </div>
             )}
+          </section>
+        );
+
+      case 'offers':
+        return (
+          <section className="animate-fade-in space-y-8">
+            <SectionHeader
+              title="Central de Contenido"
+              subtitle="Ofertas, Rankings y Scripts listos para tu Agencia"
+            />
+
+            <Tabs defaultValue="ofertas" className="w-full">
+              <TabsList className="grid w-full grid-cols-4 mb-8">
+                <TabsTrigger value="ofertas">Ofertas</TabsTrigger>
+                <TabsTrigger value="rankings">Rankings</TabsTrigger>
+                <TabsTrigger value="scripts">Scripts</TabsTrigger>
+                <TabsTrigger value="frases">Frases</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="ofertas" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {contentLibraryES.offers.map((offer) => (
+                    <OfferCard
+                      key={offer.id} id={offer.id} title={offer.title} text={offer.description}
+                      isFavorite={isFavorite("content_item", offer.id)}
+                      onToggleFavorite={() => handleToggleFavorite("content_item", offer.id)}
+                      onPremiumRequired={getPremiumCallback('offers', offer.premium, 'offer')}
+                      isPremium={offer.premium}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="rankings" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {contentLibraryES.rankings.map((ranking) => (
+                    <OfferCard
+                      key={ranking.id} id={ranking.id} title={ranking.title} text={ranking.description}
+                      isFavorite={isFavorite("content_item", ranking.id)}
+                      onToggleFavorite={() => handleToggleFavorite("content_item", ranking.id)}
+                      onPremiumRequired={getPremiumCallback('offers', ranking.premium, 'offer')}
+                      isPremium={ranking.premium}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="scripts" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {contentLibraryES.scripts.map((script) => (
+                    <OfferCard
+                      key={script.id} id={script.id} title={script.title} text={script.description}
+                      isFavorite={isFavorite("content_item", script.id)}
+                      onToggleFavorite={() => handleToggleFavorite("content_item", script.id)}
+                      onPremiumRequired={getPremiumCallback('offers', script.premium, 'offer')}
+                      isPremium={script.premium}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="frases" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {contentLibraryES.ctas.map((cta) => (
+                    <OfferCard
+                      key={cta.id} id={cta.id} title={cta.title} text={cta.description}
+                      isFavorite={isFavorite("content_item", cta.id)}
+                      onToggleFavorite={() => handleToggleFavorite("content_item", cta.id)}
+                      onPremiumRequired={getPremiumCallback('offers', cta.premium, 'offer')}
+                      isPremium={cta.premium}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
           </section>
         );
 
@@ -635,6 +833,23 @@ const IndexES = () => {
                 )}
                 description="PDFs, comunidad y calendario editorial"
               />
+            </div>
+          </section>
+        );
+
+      case 'contracts':
+        return (
+          <section className="animate-fade-in text-center py-12">
+            <SectionHeader
+              title="Modelos de Contratos"
+              subtitle="Documentos jurídicos para tu agencia de viajes"
+            />
+            <div className="bg-muted/30 rounded-3xl p-12 border-2 border-dashed border-muted-foreground/20">
+              <div className="text-6xl mb-4">📄</div>
+              <h3 className="text-2xl font-bold mb-2">Próximamente</h3>
+              <p className="text-muted-foreground">
+                Estamos preparando modelos de contratos profesionales para que los utilices en tu agencia.
+              </p>
             </div>
           </section>
         );
@@ -874,6 +1089,19 @@ const IndexES = () => {
         isOpen={showPremiumGate}
         onClose={() => setShowPremiumGate(false)}
       />
+
+      {showAllVideos && activeCategory === 'all' && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <Button
+            variant="outline"
+            onClick={() => { setShowAllVideos(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            className="gap-2 rounded-full px-6 py-3 shadow-2xl bg-background border border-border"
+          >
+            <ChevronUp className="h-4 w-4" />
+            Mostrar menos
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

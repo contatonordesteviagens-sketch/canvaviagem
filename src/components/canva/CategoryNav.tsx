@@ -1,9 +1,9 @@
 import { useRef, useState, useEffect, useCallback, memo } from "react";
-import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart, ChevronLeft, ChevronRight, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-export type CategoryType = 'all' | 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'contracts' | 'favorites';
+export type CategoryType = 'all' | 'videos' | 'feed' | 'stories' | 'offers' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'contracts' | 'favorites';
 
 interface CategoryNavProps {
   activeCategory: CategoryType;
@@ -24,6 +24,7 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
     { id: 'videos', label: t('category.videos'), icon: <Video className="w-6 h-6" /> },
     { id: 'feed', label: t('category.feed'), icon: <Image className="w-6 h-6" /> },
     { id: 'stories', label: t('category.stories'), icon: <LayoutGrid className="w-6 h-6" /> },
+    { id: 'offers', label: "Ofertas", icon: <Megaphone className="w-6 h-6" /> },
     { id: 'downloads', label: t('category.downloads'), icon: <Download className="w-6 h-6" /> },
 
     // Ferramentas Gratuitas
@@ -161,19 +162,19 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
                   {/* Circle Icon Container */}
                   <div
                     className={cn(
-                      "w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm",
+                      "w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm",
                       isActive
-                        ? "bg-primary/10 ring-[3px] ring-primary text-primary shadow-md"
+                        ? "bg-primary/10 ring-[2px] sm:ring-[3px] ring-primary text-primary shadow-md"
                         : "bg-secondary text-muted-foreground hover:bg-secondary/80 group-hover:scale-105 hover:-translate-y-1 transition-transform"
                     )}
                   >
-                    {category.icon}
+                    {category.icon && <div className="scale-75 sm:scale-100">{category.icon}</div>}
                   </div>
 
                   {/* Label */}
                   <span
                     className={cn(
-                      "text-xs font-medium text-center transition-colors whitespace-nowrap",
+                      "text-[10px] sm:text-xs font-medium text-center transition-colors whitespace-nowrap",
                       isActive ? "text-primary" : "text-muted-foreground"
                     )}
                   >

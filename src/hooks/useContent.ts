@@ -7,7 +7,7 @@ export interface ContentItem {
   id: string;
   title: string;
   url: string;
-  type: 'video' | 'feed' | 'story' | 'seasonal' | 'weekly-story' | 'resource' | 'download';
+  type: 'video' | 'feed' | 'story' | 'seasonal' | 'weekly-story' | 'resource' | 'download' | 'offer';
   category: string | null;
   subcategory: string | null;
   image_url: string | null;

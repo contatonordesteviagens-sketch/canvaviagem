@@ -34,7 +34,7 @@ const AccessFilterComponent = ({
                 size="sm"
                 onClick={() => toggleFilter(null)}
                 className={cn(
-                    "rounded-full px-5 h-9 transition-all text-xs font-bold uppercase tracking-wider",
+                    "rounded-full px-3 sm:px-5 h-8 sm:h-9 transition-all text-[10px] sm:text-xs font-bold uppercase tracking-wider",
                     isAllSelected
                         ? "bg-white shadow-md text-primary"
                         : "text-muted-foreground/70 hover:bg-white/50"
@@ -47,13 +47,13 @@ const AccessFilterComponent = ({
                 size="sm"
                 onClick={() => toggleFilter('premium')}
                 className={cn(
-                    "rounded-full gap-2 px-5 h-9 transition-all text-xs font-bold uppercase tracking-wider",
+                    "rounded-full gap-1.5 sm:gap-2 px-3 sm:px-5 h-8 sm:h-9 transition-all text-[10px] sm:text-xs font-bold uppercase tracking-wider",
                     selectedFilters.includes('premium')
                         ? "bg-white shadow-md text-primary"
                         : "text-muted-foreground/70 hover:bg-white/50"
                 )}
             >
-                <Crown className={cn("w-3.5 h-3.5", selectedFilters.includes('premium') ? "text-primary fill-primary/20" : "text-muted-foreground/50")} />
+                <Crown className={cn("w-3 h-3 sm:w-3.5 sm:h-3.5", selectedFilters.includes('premium') ? "text-primary fill-primary/20" : "text-muted-foreground/50")} />
                 PRO
             </Button>
             <Button
@@ -61,13 +61,13 @@ const AccessFilterComponent = ({
                 size="sm"
                 onClick={() => toggleFilter('gratis')}
                 className={cn(
-                    "rounded-full gap-2 px-5 h-9 transition-all text-xs font-bold uppercase tracking-wider",
+                    "rounded-full gap-1.5 sm:gap-2 px-3 sm:px-5 h-8 sm:h-9 transition-all text-[10px] sm:text-xs font-bold uppercase tracking-wider",
                     selectedFilters.includes('gratis')
                         ? "bg-white shadow-xl shadow-orange-500/10 text-orange-600 border border-orange-100"
                         : "text-muted-foreground/70 hover:bg-white/50"
                 )}
             >
-                <Sparkles className={cn("w-3.5 h-3.5", selectedFilters.includes('gratis') ? "text-orange-500" : "text-muted-foreground/50")} />
+                <Sparkles className={cn("w-3 h-3 sm:w-3.5 sm:h-3.5", selectedFilters.includes('gratis') ? "text-orange-500" : "text-muted-foreground/50")} />
                 Grátis
             </Button>
         </div>
