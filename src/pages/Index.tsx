@@ -159,7 +159,7 @@ const Index = () => {
     return title.toLowerCase().includes(influencer.toLowerCase());
   };
 
-  const filterTemplates = (items: ContentItem[] | undefined) => {
+  const filterTemplates = (items: any[] | undefined): any[] => {
     if (!items) return [];
     let filtered = items.filter(item =>
       item.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -420,6 +420,31 @@ const Index = () => {
                           hashtags={caption.hashtags}
                           isFavorite={isFavorite("caption", caption.id)}
                           onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* Free feed arts (first 2 are free) */}
+                {!feedLoading && allFeedTemplates.length > 0 && (
+                  <div className="space-y-3 mt-6">
+                    <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Arte para Agência de Viagens</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      {allFeedTemplates.slice(0, 2).map((template: any, index: number) => (
+                        <PremiumCard
+                          key={template.id || `free-feed-${index}`}
+                          id={template.id || `free-feed-${index}`}
+                          title={template.title}
+                          url={template.url}
+                          imageUrl={template.image_url}
+                          category={template.category}
+                          isNew={(template as any).isNew || (template as any).is_new}
+                          icon={getIcon(template.type, template.icon)}
+                          aspectRatio="4/5"
+                          onClick={() => handleCardClick(template as ContentItem)}
+                          isFavorite={template.id ? isFavorite("content_item", template.id) : false}
+                          onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
+                          isPremium={false}
                         />
                       ))}
                     </div>
@@ -785,7 +810,7 @@ const Index = () => {
                     url={template.url}
                     imageUrl={template.image_url}
                     category={template.category}
-                    isNew={template.isNew}
+                    isNew={(template as any).isNew || (template as any).is_new}
                     icon={getIcon(template.type, template.icon)}
                     aspectRatio="4/5"
                     onClick={() => handleCardClick(template as ContentItem)}
