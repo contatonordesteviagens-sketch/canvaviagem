@@ -1,4 +1,4 @@
-import { Copy, Check, Heart } from "lucide-react";
+import { Copy, Check, Heart, Crown } from "lucide-react";
 import { useState, memo } from "react";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +10,7 @@ interface CaptionCardProps {
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
   onPremiumRequired?: () => void;
+  isPremium?: boolean;
 }
 
 const CaptionCardComponent = ({
@@ -19,7 +20,8 @@ const CaptionCardComponent = ({
   hashtags,
   isFavorite = false,
   onToggleFavorite,
-  onPremiumRequired
+  onPremiumRequired,
+  isPremium = false
 }: CaptionCardProps) => {
   const [copied, setCopied] = useState(false);
 
@@ -43,7 +45,14 @@ const CaptionCardComponent = ({
   };
 
   return (
-    <div className="bg-card rounded-2xl shadow-canva hover:shadow-canva-hover transition-all duration-300 overflow-hidden border-none p-5 space-y-4 relative">
+    <div className="bg-card rounded-2xl shadow-canva hover:shadow-canva-hover transition-all duration-300 overflow-hidden border-none p-5 space-y-4 relative group">
+      {/* Premium Badge */}
+      {isPremium && (
+        <div className="absolute top-3 left-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-lg z-10 flex items-center gap-1">
+          <Crown className="w-3 h-3 fill-white" />
+          <span>Premium</span>
+        </div>
+      )}
       {/* Favorite Button */}
       {onToggleFavorite && (
         <button

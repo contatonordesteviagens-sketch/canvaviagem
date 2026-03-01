@@ -48,7 +48,7 @@ import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from "lucide-react";
 
 // Static resources (downloads and resources that don't need DB management)
-import { resources, videoDownloads } from "@/data/templates";
+import { resources, videoDownloads, feedTemplates as localFeedTemplates } from "@/data/templates";
 import { trackViewContent } from "@/lib/meta-pixel";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useGamification } from "@/hooks/useGamification";
@@ -116,11 +116,11 @@ const Index = () => {
   const isSubscribed = user && subscription.subscribed;
 
   // Function to get the premium required callback
-  const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean, itemType?: string, itemTitle?: string) => {
+  const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean, itemType?: string, itemTitle?: string, index?: number) => {
     if (isSubscribed) return undefined;
 
     // Check if item is premium using centralized logic or override
-    const isPremium = isItemPremiumOverride || checkIfItemIsPremium(itemType || category || '', itemTitle);
+    const isPremium = isItemPremiumOverride || checkIfItemIsPremium(itemType || category || '', itemTitle, index);
 
     if (isPremium) return () => setShowPremiumGate(true);
 
@@ -135,6 +135,11 @@ const Index = () => {
     'João Pessoa', 'Ouro Preto', 'Genipabu', '5 Praias Floripa', 'Bonito',
     'Chapada Diamantina', 'Curitiba', 'São Paulo', 'Belo Horizonte', 'Manaus'
   ];
+
+  const allFeedTemplates = useMemo(() => {
+    const fromDb = feedTemplates || [];
+    return [...localFeedTemplates, ...fromDb];
+  }, [feedTemplates]);
 
   const isNacional = (title: string, category?: string | null) => {
     if (category === 'nacional') return true;
@@ -521,7 +526,7 @@ const Index = () => {
                     <div className="space-y-3 pt-2 border-t border-border">
                       <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground pt-2">Legendas</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {initialCaptions.map(caption => (
+                        {initialCaptions.map((caption, index) => (
                           <div key={caption.id} onClick={() => handleCaptionClick(caption)}>
                             <CaptionCard
                               id={caption.id}
@@ -530,7 +535,8 @@ const Index = () => {
                               hashtags={caption.hashtags}
                               isFavorite={isFavorite("caption", caption.id)}
                               onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
-                              onPremiumRequired={getPremiumCallback('all', false, 'caption', caption.destination)}
+                              onPremiumRequired={getPremiumCallback('all', false, 'caption', caption.destination, index)}
+                              isPremium={checkIfItemIsPremium('caption', caption.destination, index)}
                             />
                           </div>
                         ))}
@@ -771,22 +777,22 @@ const Index = () => {
               <FeedSkeleton />
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {filterTemplates(feedTemplates).map((template) => (
+                {filterTemplates(allFeedTemplates).map((template, index) => (
                   <PremiumCard
-                    key={template.id}
-                    id={template.id}
+                    key={template.id || `local-${index}`}
+                    id={template.id || `local-${index}`}
                     title={template.title}
                     url={template.url}
                     imageUrl={template.image_url}
                     category={template.category}
-                    isNew={template.is_new}
+                    isNew={template.isNew}
                     icon={getIcon(template.type, template.icon)}
                     aspectRatio="4/5"
-                    onClick={() => handleCardClick(template)}
-                    isFavorite={isFavorite("content_item", template.id)}
-                    onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                    onPremiumRequired={getPremiumCallback(activeCategory, false, template.type)}
-                    isPremium={checkIfItemIsPremium(template.type, template.title)}
+                    onClick={() => handleCardClick(template as ContentItem)}
+                    isFavorite={template.id ? isFavorite("content_item", template.id) : false}
+                    onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
+                    onPremiumRequired={getPremiumCallback(activeCategory, false, template.type, template.title, index)}
+                    isPremium={checkIfItemIsPremium(template.type, template.title, index)}
                   />
                 ))}
               </div>
@@ -920,7 +926,7 @@ const Index = () => {
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {displayedCaptions.map((caption) => (
+                  {displayedCaptions.map((caption, index) => (
                     <div key={caption.id} onClick={() => handleCaptionClick(caption)}>
                       <CaptionCard
                         id={caption.id}
@@ -929,7 +935,8 @@ const Index = () => {
                         hashtags={caption.hashtags}
                         isFavorite={isFavorite("caption", caption.id)}
                         onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
-                        onPremiumRequired={getPremiumCallback(activeCategory)}
+                        onPremiumRequired={getPremiumCallback(activeCategory, false, 'caption', caption.destination, index)}
+                        isPremium={checkIfItemIsPremium('caption', caption.destination, index)}
                       />
                     </div>
                   ))}
@@ -961,7 +968,10 @@ const Index = () => {
                 <Suspense fallback={<div className="h-48 bg-muted/10 animate-pulse rounded-2xl" />}>
                   <ResourceSection
                     title="Recursos e Downloads"
-                    resources={[...resources, ...videoDownloads]}
+                    resources={[...resources, ...videoDownloads].map(r => ({
+                      ...r,
+                      onPremiumRequired: getPremiumCallback('all', true, 'resource', r.name)
+                    }))}
                   />
                 </Suspense>
               </>
@@ -980,7 +990,10 @@ const Index = () => {
             <div className="max-w-2xl mx-auto bg-card rounded-3xl shadow-canva p-6">
               <ResourceSection
                 title="📥 Biblioteca de Vídeos"
-                resources={videoDownloads}
+                resources={videoDownloads.map(r => ({
+                  ...r,
+                  onPremiumRequired: getPremiumCallback('downloads', true, 'resource', r.name)
+                }))}
                 description="Vídeos prontos organizados por categoria"
               />
             </div>

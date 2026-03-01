@@ -1,23 +1,26 @@
 export interface Template {
+  id?: string;
   title: string;
   url: string;
   type: 'video' | 'feed' | 'story' | 'seasonal';
   category?: 'nacional' | 'internacional' | 'influencer-eva' | 'influencer-mel' | 'influencer-bia' | string;
-  isNew?: boolean;
+  is_new?: boolean;
+  image_url?: string;
+  icon?: string;
 }
 
 export const templates: Template[] = [
   // NOVOS VÍDEOS - marcados com isNew
-  { "title": "Beto Carrero 1", "url": "https://www.canva.com/design/DAG9S3v2-Xs/SlewfwY2SK7tWD8Kh8PQnA/view?utm_content=DAG9S3v2-Xs&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "nacional", "isNew": true },
-  { "title": "Beto Carrero 2", "url": "https://www.canva.com/design/DAG9S-vZM7E/x1W88qKaCcyg7xEgXpB2Xw/view?utm_content=DAG9S-vZM7E&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "nacional", "isNew": true },
-  { "title": "Eva - Destinos", "url": "https://www.canva.com/design/DAG9S4RtOxw/TCkudfkvm9UR0spYybxRgw/view?utm_content=DAG9S4RtOxw&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-eva", "isNew": true },
-  { "title": "Eva - Dubai 2", "url": "https://www.canva.com/design/DAG9TCOrDTY/wKMgRGy0lpWPcMGwiRBpnw/view?utm_content=DAG9TCOrDTY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-eva", "isNew": true },
-  { "title": "Eva - Paris 2", "url": "https://www.canva.com/design/DAG9TO_rCfY/KfeUizKIZ37ELrlcqW__Kg/view?utm_content=DAG9TO_rCfY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-eva", "isNew": true },
-  { "title": "Eva - Roma", "url": "https://www.canva.com/design/DAG9TH2QDlI/e3Dp22xh9ORyokUSoqBbxQ/view?utm_content=DAG9TH2QDlI&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-eva", "isNew": true },
-  { "title": "Eva - Foz do Iguaçu", "url": "https://www.canva.com/design/DAG9Te0N8_4/MS2Pbpjl9eBoPeyrGEaZqw/view?utm_content=DAG9Te0N8_4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-eva", "isNew": true },
-  { "title": "Bia - Ceará", "url": "https://www.canva.com/design/DAG9TZvP9zQ/Iuv0I4ERobM3QdbyCCiQQw/view?utm_content=DAG9TZvP9zQ&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-bia", "isNew": true },
-  { "title": "Bia - Canoa Quebrada", "url": "https://www.canva.com/design/DAG9TYMIt98/sX5SRhcQlvB2Aieh_IiUKw/view?utm_content=DAG9TYMIt98&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-bia", "isNew": true },
-  { "title": "Bia - Jericoacoara", "url": "https://www.canva.com/design/DAG9TfxEuT4/nGCpaJevmQNasD6cHAEf6A/view?utm_content=DAG9TfxEuT4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-bia", "isNew": true },
+  { "title": "Beto Carrero 1", "url": "https://www.canva.com/design/DAG9S3v2-Xs/SlewfwY2SK7tWD8Kh8PQnA/view?utm_content=DAG9S3v2-Xs&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "nacional", "is_new": true },
+  { "title": "Beto Carrero 2", "url": "https://www.canva.com/design/DAG9S-vZM7E/x1W88qKaCcyg7xEgXpB2Xw/view?utm_content=DAG9S-vZM7E&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "nacional", "is_new": true },
+  { "title": "Eva - Destinos", "url": "https://www.canva.com/design/DAG9S4RtOxw/TCkudfkvm9UR0spYybxRgw/view?utm_content=DAG9S4RtOxw&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-eva", "is_new": true },
+  { "title": "Eva - Dubai 2", "url": "https://www.canva.com/design/DAG9TCOrDTY/wKMgRGy0lpWPcMGwiRBpnw/view?utm_content=DAG9TCOrDTY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-eva", "is_new": true },
+  { "title": "Eva - Paris 2", "url": "https://www.canva.com/design/DAG9TO_rCfY/KfeUizKIZ37ELrlcqW__Kg/view?utm_content=DAG9TO_rCfY&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-eva", "is_new": true },
+  { "title": "Eva - Roma", "url": "https://www.canva.com/design/DAG9TH2QDlI/e3Dp22xh9ORyokUSoqBbxQ/view?utm_content=DAG9TH2QDlI&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-eva", "is_new": true },
+  { "title": "Eva - Foz do Iguaçu", "url": "https://www.canva.com/design/DAG9Te0N8_4/MS2Pbpjl9eBoPeyrGEaZqw/view?utm_content=DAG9Te0N8_4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-eva", "is_new": true },
+  { "title": "Bia - Ceará", "url": "https://www.canva.com/design/DAG9TZvP9zQ/Iuv0I4ERobM3QdbyCCiQQw/view?utm_content=DAG9TZvP9zQ&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-bia", "is_new": true },
+  { "title": "Bia - Canoa Quebrada", "url": "https://www.canva.com/design/DAG9TYMIt98/sX5SRhcQlvB2Aieh_IiUKw/view?utm_content=DAG9TYMIt98&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-bia", "is_new": true },
+  { "title": "Bia - Jericoacoara", "url": "https://www.canva.com/design/DAG9TfxEuT4/nGCpaJevmQNasD6cHAEf6A/view?utm_content=DAG9TfxEuT4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video", "category": "influencer-bia", "is_new": true },
   // Vídeos existentes
   { "title": "1ª vez no aeroporto", "url": "https://www.canva.com/design/DAGkwz6Stn8/5DPMi1DhNpaXJI-J3NKGxw/view?utm_content=DAGkwz6Stn8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video" },
   { "title": "5 motivos stopover", "url": "https://www.canva.com/design/DAGgIR03ya4/uIilbTx2KqhMAcvum1zJhA/view?utm_content=DAGgIR03ya4&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "video" },
@@ -193,10 +196,41 @@ export const templates: Template[] = [
 ];
 
 export const feedTemplates: Template[] = [
+  {
+    id: "local-feed-1",
+    title: "Pacote Maragogi (Grátis)",
+    url: "https://www.canva.com/design/DAHCpqz2lQ8/fAODQlar4Sd_e9IdHz3UdA/view?utm_content=DAHCpqz2lQ8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
+    type: "feed",
+    image_url: "/artes/arte-gratis-1.webp",
+    is_new: true
+  },
+  {
+    id: "local-feed-2",
+    title: "Rio de Janeiro (Grátis)",
+    url: "https://www.canva.com/design/DAHCpiGNm10/53d8yEuYU_wX6aoU1rYdPQ/view?utm_content=DAHCpiGNm10&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
+    type: "feed",
+    image_url: "/artes/arte-gratis-2.webp",
+    is_new: true
+  },
+  {
+    id: "local-feed-3",
+    title: "3 Desejos para o Feriado",
+    url: "https://www.canva.com/design/DAGiOUhpooE/LmnTreX2G68yNYErZ9mdHw/view?utm_content=DAGiOUhpooE&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
+    type: "feed",
+    image_url: "/artes/arte-paga-1.webp",
+    is_new: true
+  },
+  {
+    id: "local-feed-4",
+    title: "Explorar o Mundo",
+    url: "https://www.canva.com/design/DAGiOUhpooE/LmnTreX2G68yNYErZ9mdHw/view?utm_content=DAGiOUhpooE&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
+    type: "feed",
+    image_url: "/artes/arte-paga-2.webp",
+    is_new: true
+  },
   { title: "Feed Arte 1", url: "https://www.canva.com/design/DAGiNV9zcOg/jXSDpSTmksgu1fRODn9e0g/view?utm_content=DAGiNV9zcOg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "feed" },
   { title: "Feed Arte 2", url: "https://www.canva.com/design/DAGifn0vJ5I/LtyUY9gGlChc-pxvei3bsw/view?utm_content=DAGifn0vJ5I&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "feed" },
   { title: "Feed Arte 3", url: "https://www.canva.com/design/DAGiOBEVLY8/xT87ZDCn_VKeK6AXMCr0yQ/view?utm_content=DAGiOBEVLY8&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "feed" },
-  { title: "Feed Arte 4", url: "https://www.canva.com/design/DAGiOHFrGRk/2Wcct2XpSGOdeeBSXaNapQ/view?utm_content=DAGiOHFrGRk&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "feed" },
   { title: "Feed Arte 5", url: "https://www.canva.com/design/DAGiOUhpooE/LmnTreX2G68yNYErZ9mdHw/view?utm_content=DAGiOUhpooE&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "feed" },
 ];
 
@@ -209,60 +243,60 @@ export const weeklyStories: Template[] = [
   { title: "Semana 1", url: "https://www.canva.com/design/DAGie5Ni45g/Mp-nIDB59t5TX9aAUFX1mQ/view?utm_content=DAGie5Ni45g&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "story" },
   { title: "Semana 2", url: "https://www.canva.com/design/DAGifpaTJCg/TXjUXR3HBYiJVU3IpVNurA/view?utm_content=DAGifpaTJCg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "story" },
   { title: "Semana 3", url: "https://www.canva.com/design/DAGhttuR8tQ/GlvKUT5ZX5yXcpRAN6AMIw/view?utm_content=DAGhttuR8tQ&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "story" },
-  { title: "Semana 4", url: "https://www.canva.com/design/DAGi29_D8kg/JOCZKABeWOkAKZAK3WT0lQ/view?utm_content=DAGi29_D8kg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", type: "story" },
+  { title: "Semana 4", url: "https://www.canva.com/design/DAGi29_D8kg/JOCZKABeWOkAKZAK3WT0lQ/view?utm_content=DAGi29_D8kg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview", "type": "story" },
 ];
 
 export const aiTools = [
-  { 
-    title: "IA Vendedor de Viagens (novo)", 
+  {
+    title: "IA Vendedor de Viagens (novo)",
     url: "https://copy-travel-1089893400135.us-west1.run.app/",
     icon: "🤖",
     description: "Assistente IA para vender viagens"
   },
-  { 
-    title: "Criador de Headlines (Mr. Beast)", 
+  {
+    title: "Criador de Headlines (Mr. Beast)",
     url: "https://chatgpt.com/g/g-mXIK1OLtB-headlines-de-alto-impacto",
     icon: "🎯",
     description: "Crie títulos de alto impacto para seus conteúdos"
   },
-  { 
-    title: "Criador de Promessas Únicas", 
+  {
+    title: "Criador de Promessas Únicas",
     url: "https://chatgpt.com/g/g-pvCUBPOH1-gerador-de-promessas-com-mecanismo-unico",
     icon: "✨",
     description: "Gere promessas com mecanismo único"
   },
-  { 
-    title: "Criador de Quizz 2.0", 
+  {
+    title: "Criador de Quizz 2.0",
     url: "https://chatgpt.com/g/g-673e0736558881918f8e65ed8c8c5e81-funil-de-quiz-2-0",
     icon: "❓",
     description: "Crie funis de quiz interativos"
   },
-  { 
-    title: "Mapa de Dores e Desejos", 
+  {
+    title: "Mapa de Dores e Desejos",
     url: "https://chatgpt.com/g/g-673e2ac6d1f08191bac9d38be1970598-mapa-de-dores-e-desejos",
     icon: "🎯",
     description: "Mapeie dores e desejos do seu público"
   },
-  { 
-    title: "Criador de Cursos em Vídeo", 
+  {
+    title: "Criador de Cursos em Vídeo",
     url: "https://chatgpt.com/g/g-e53YJbtqR-criador-de-cursos-em-video",
     icon: "🎓",
     description: "Desenvolva cursos em vídeo profissionais"
   },
-  { 
-    title: "Criador de Bônus e Order Bumps", 
+  {
+    title: "Criador de Bônus e Order Bumps",
     url: "https://chatgpt.com/g/g-gYZKgxBX6-criador-de-bonus-e-order-bumps",
     icon: "🎁",
     description: "Crie bônus e ofertas irresistíveis"
   },
-  { 
-    title: "Corpo de Anúncios", 
+  {
+    title: "Corpo de Anúncios",
     url: "https://chatgpt.com/g/g-67e9da4bd78881919f6c27aa46c0c076-corpo-de-anuncios",
     icon: "📝",
     description: "Desenvolva textos persuasivos para anúncios"
   },
-  { 
-    title: "9 Óticas de Hooks", 
+  {
+    title: "9 Óticas de Hooks",
     url: "https://chatgpt.com/g/g-67e9d49f4dc88191b0e9e850ef4bb8ed-9-oticas-de-hooks",
     icon: "🪝",
     description: "Crie ganchos com 9 óticas diferentes"
@@ -270,8 +304,8 @@ export const aiTools = [
 ];
 
 // Narração de Ofertas separada para ficar em primeiro
-export const narracaoTool = { 
-  title: "Narração de Ofertas de Viagens", 
+export const narracaoTool = {
+  title: "Narração de Ofertas de Viagens",
   url: "https://chatgpt.com/g/g-zuVzD4urh-redador",
   icon: "🎙️",
   description: "Narrar com sua voz - Crie narrações profissionais para vídeos"
@@ -282,7 +316,7 @@ export const iaVendedorTool = {
   title: "IA Vendedor de Viagens",
   url: "https://copy-travel-1089893400135.us-west1.run.app/",
   icon: "🤖",
-  isNew: true
+  is_new: true
 };
 
 export const resources = [

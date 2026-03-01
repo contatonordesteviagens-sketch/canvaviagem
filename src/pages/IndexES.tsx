@@ -44,7 +44,7 @@ import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from "lucide-react";
 
 // Static resources (downloads and resources that don't need DB management)
-import { resources, videoDownloads } from "@/data/templates";
+import { resources, videoDownloads, feedTemplates as localFeedTemplates } from "@/data/templates";
 import { trackViewContent } from "@/lib/meta-pixel";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { contentLibraryES } from "@/data/content-library-es";
@@ -108,7 +108,7 @@ const IndexES = () => {
   const isSubscribed = user && subscription.subscribed;
 
   // Function to get the premium required callback
-  const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean, itemType?: string) => {
+  const getPremiumCallback = (category?: CategoryType, isItemPremiumOverride?: boolean, itemType?: string, itemTitle?: string, index?: number) => {
     if (isSubscribed) return undefined;
 
     // Se o item for explicitamente premium (ex: ferramenta específica ou override)
@@ -119,14 +119,26 @@ const IndexES = () => {
     if (itemType && premiumTypes.includes(itemType)) return () => setShowPremiumGate(true);
 
     // Se categoria for premium (fallback)
-    const isPremium = checkIfItemIsPremium(category || '');
+    const isPremium = checkIfItemIsPremium(itemType || category || '', itemTitle, index);
     if (isPremium) return () => setShowPremiumGate(true);
 
     return undefined;
   };
 
-  const checkIfItemIsPremium = (type: string, title?: string) => {
+  const checkIfItemIsPremium = (type: string, title?: string, index?: number) => {
     const itemTitle = title?.toLowerCase() || '';
+
+    // Captions: only first 3 are free
+    if (type === 'caption') {
+      if (typeof index === 'number') return index >= 3;
+      return false;
+    }
+
+    // Feed: first 2 are free
+    if (type === 'feed') {
+      if (typeof index === 'number') return index >= 2;
+      return true;
+    }
 
     // Explicit FREE keywords in title override everything
     if (itemTitle.includes('(grátis)') || itemTitle.includes('(gratis)') || itemTitle.includes('gratuito')) {
@@ -248,7 +260,12 @@ const IndexES = () => {
   const weeklyStories = storyTemplates?.filter(s => s.type === 'weekly-story') || [];
   const regularStories = storyTemplates?.filter(s => s.type === 'story') || [];
 
-  // Loading skeleton for content
+  const esOffers = useMemo(() => contentLibraryES.filter(item => item.category === 'offer'), []);
+  const esRankings = useMemo(() => contentLibraryES.filter(item => item.category === 'ranking'), []);
+  const esScripts = useMemo(() => contentLibraryES.filter(item => item.category === 'script'), []);
+  const esCtas = useMemo(() => contentLibraryES.filter(item => item.category === 'cta'), []);
+
+  // Loading skeletons for different types
   const ContentSkeleton = () => (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {[...Array(8)].map((_, i) => (
@@ -346,13 +363,14 @@ const IndexES = () => {
                 <div className="space-y-4">
                   <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Subtítulos</h3>
                   <div className="space-y-3">
-                    {initialCaptions.slice(0, 3).map(caption => (
+                    {initialCaptions.map((caption, index) => (
                       <div key={caption.id} onClick={() => handleCaptionClick(caption)}>
                         <CaptionCard
                           id={caption.id} destination={caption.destination} text={caption.text}
                           hashtags={caption.hashtags} isFavorite={isFavorite("caption", caption.id)}
                           onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
-                          onPremiumRequired={getPremiumCallback('all')}
+                          onPremiumRequired={getPremiumCallback('all', false, 'caption', caption.destination, index)}
+                          isPremium={checkIfItemIsPremium('caption', caption.destination, index)}
                         />
                       </div>
                     ))}
@@ -532,6 +550,7 @@ const IndexES = () => {
         );
 
       case 'feed':
+        const allFeedTemplates = [...localFeedTemplates, ...(feedTemplates || [])];
         return (
           <section className="animate-fade-in">
             <SectionHeader
@@ -543,10 +562,10 @@ const IndexES = () => {
               <ContentSkeleton />
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {videoTemplates?.map((template) => (
+                {allFeedTemplates.map((template, index) => (
                   <PremiumCard
-                    key={template.id}
-                    id={template.id}
+                    key={template.id || `local-${index}`}
+                    id={template.id || `local-${index}`}
                     title={template.title}
                     url={template.url}
                     imageUrl={template.image_url}
@@ -554,11 +573,11 @@ const IndexES = () => {
                     isNew={template.is_new}
                     icon={getIcon(template.type, template.icon)}
                     aspectRatio="4/5"
-                    onClick={() => handleCardClick(template)}
-                    isFavorite={isFavorite("content_item", template.id)}
-                    onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
-                    onPremiumRequired={getPremiumCallback(activeCategory, false, template.type)}
-                    isPremium={checkIfItemIsPremium(template.type, template.title)}
+                    onClick={() => handleCardClick(template as ContentItem)}
+                    isFavorite={template.id ? isFavorite("content_item", template.id) : false}
+                    onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
+                    onPremiumRequired={getPremiumCallback(activeCategory, false, template.type, template.title, index)}
+                    isPremium={checkIfItemIsPremium(template.type, template.title, index)}
                   />
                 ))}
               </div>
@@ -584,13 +603,13 @@ const IndexES = () => {
 
               <TabsContent value="ofertas" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {contentLibraryES.offers.map((offer) => (
+                  {esOffers.map((offer) => (
                     <OfferCard
-                      key={offer.id} id={offer.id} title={offer.title} text={offer.description}
+                      key={offer.id} id={offer.id} title={offer.title} text={offer.text}
                       isFavorite={isFavorite("content_item", offer.id)}
                       onToggleFavorite={() => handleToggleFavorite("content_item", offer.id)}
-                      onPremiumRequired={getPremiumCallback('offers', offer.premium, 'offer')}
-                      isPremium={offer.premium}
+                      onPremiumRequired={getPremiumCallback('offers', offer.isPremium, 'offer')}
+                      isPremium={offer.isPremium}
                     />
                   ))}
                 </div>
@@ -598,13 +617,13 @@ const IndexES = () => {
 
               <TabsContent value="rankings" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {contentLibraryES.rankings.map((ranking) => (
+                  {esRankings.map((ranking) => (
                     <OfferCard
-                      key={ranking.id} id={ranking.id} title={ranking.title} text={ranking.description}
+                      key={ranking.id} id={ranking.id} title={ranking.title} text={ranking.text}
                       isFavorite={isFavorite("content_item", ranking.id)}
                       onToggleFavorite={() => handleToggleFavorite("content_item", ranking.id)}
-                      onPremiumRequired={getPremiumCallback('offers', ranking.premium, 'offer')}
-                      isPremium={ranking.premium}
+                      onPremiumRequired={getPremiumCallback('offers', ranking.isPremium, 'offer')}
+                      isPremium={ranking.isPremium}
                     />
                   ))}
                 </div>
@@ -612,13 +631,13 @@ const IndexES = () => {
 
               <TabsContent value="scripts" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {contentLibraryES.scripts.map((script) => (
+                  {esScripts.map((script) => (
                     <OfferCard
-                      key={script.id} id={script.id} title={script.title} text={script.description}
+                      key={script.id} id={script.id} title={script.title} text={script.text}
                       isFavorite={isFavorite("content_item", script.id)}
                       onToggleFavorite={() => handleToggleFavorite("content_item", script.id)}
-                      onPremiumRequired={getPremiumCallback('offers', script.premium, 'offer')}
-                      isPremium={script.premium}
+                      onPremiumRequired={getPremiumCallback('offers', script.isPremium, 'offer')}
+                      isPremium={script.isPremium}
                     />
                   ))}
                 </div>
@@ -626,13 +645,13 @@ const IndexES = () => {
 
               <TabsContent value="frases" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {contentLibraryES.ctas.map((cta) => (
+                  {esCtas.map((cta) => (
                     <OfferCard
-                      key={cta.id} id={cta.id} title={cta.title} text={cta.description}
+                      key={cta.id} id={cta.id} title={cta.title} text={cta.text}
                       isFavorite={isFavorite("content_item", cta.id)}
                       onToggleFavorite={() => handleToggleFavorite("content_item", cta.id)}
-                      onPremiumRequired={getPremiumCallback('offers', cta.premium, 'offer')}
-                      isPremium={cta.premium}
+                      onPremiumRequired={getPremiumCallback('offers', cta.isPremium, 'offer')}
+                      isPremium={cta.isPremium}
                     />
                   ))}
                 </div>
@@ -722,7 +741,7 @@ const IndexES = () => {
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {displayedCaptions.map((caption) => (
+                  {displayedCaptions.map((caption, index) => (
                     <div key={caption.id} onClick={() => handleCaptionClick(caption)}>
                       <CaptionCard
                         id={caption.id}
@@ -731,7 +750,8 @@ const IndexES = () => {
                         hashtags={caption.hashtags}
                         isFavorite={isFavorite("caption", caption.id)}
                         onToggleFavorite={() => handleToggleFavorite("caption", caption.id)}
-                        onPremiumRequired={getPremiumCallback(activeCategory)}
+                        onPremiumRequired={getPremiumCallback(activeCategory, false, 'caption', caption.destination, index)}
+                        isPremium={checkIfItemIsPremium('caption', caption.destination, index)}
                       />
                     </div>
                   ))}
@@ -774,7 +794,10 @@ const IndexES = () => {
             <div className="max-w-2xl mx-auto bg-card rounded-3xl shadow-canva p-6">
               <ResourceSection
                 title="📥 Biblioteca de Videos"
-                resources={videoDownloads}
+                resources={videoDownloads.map(r => ({
+                  ...r,
+                  onPremiumRequired: getPremiumCallback('downloads', true, 'resource')
+                }))}
                 description="Videos listos organizados por categoría"
               />
             </div>
@@ -826,11 +849,10 @@ const IndexES = () => {
             <div className="bg-card rounded-3xl shadow-canva p-6">
               <ResourceSection
                 title="📚 Materiales y Recursos"
-                resources={resources.map(r =>
-                  r.name === "Calendário Editorial"
-                    ? { ...r, onPremiumRequired: getPremiumCallback('videos') }
-                    : r
-                )}
+                resources={resources.map(r => ({
+                  ...r,
+                  onPremiumRequired: getPremiumCallback('tools', true, 'resource')
+                }))}
                 description="PDFs, comunidad y calendario editorial"
               />
             </div>
