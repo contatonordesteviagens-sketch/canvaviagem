@@ -997,6 +997,8 @@ const Index = () => {
                       ...r,
                       onPremiumRequired: getPremiumCallback('all', true, 'resource', r.name)
                     }))}
+                    locked={!isSubscribed}
+                    onLockedClick={() => setShowPremiumGate(true)}
                   />
                 </Suspense>
               </>
@@ -1020,6 +1022,8 @@ const Index = () => {
                   onPremiumRequired: getPremiumCallback('downloads', true, 'resource', r.name)
                 }))}
                 description="Vídeos prontos organizados por categoria"
+                locked={!isSubscribed}
+                onLockedClick={() => setShowPremiumGate(true)}
               />
             </div>
           </section>
@@ -1299,6 +1303,40 @@ const Index = () => {
                   </div>
                 );
               })()}
+
+              {/* Favorite Offers */}
+              {(() => {
+                const favoriteOffers = offersData?.filter(o => isFavorite("content_item", o.id)) || [];
+                const favoriteLocalOffers = contentLibrary.filter(o => isFavorite("content_item", o.id));
+                const allFavOffers = [...favoriteOffers, ...favoriteLocalOffers];
+                if (allFavOffers.length === 0) return null;
+                return (
+                  <div>
+                    <h3 className="font-bold text-foreground mb-4 text-lg">📢 Ofertas</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {allFavOffers.map((offer: any) => (
+                        <OfferCard
+                          key={offer.id}
+                          id={offer.id}
+                          title={offer.title}
+                          text={offer.description || offer.text || ""}
+                          isFavorite={true}
+                          onToggleFavorite={() => handleToggleFavorite("content_item", offer.id)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Empty state */}
+              {favorites.length === 0 && (
+                <div className="bg-muted/30 rounded-3xl p-12 text-center border-2 border-dashed border-muted-foreground/20">
+                  <div className="text-5xl mb-4">❤️</div>
+                  <h3 className="text-xl font-bold mb-2">Nenhum favorito ainda</h3>
+                  <p className="text-muted-foreground">Clique no coração ❤️ em qualquer conteúdo para salvar aqui.</p>
+                </div>
+              )}
             </div>
           </section>
         );

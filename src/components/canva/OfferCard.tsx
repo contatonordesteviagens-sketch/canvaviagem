@@ -44,11 +44,10 @@ const OfferCardComponent = ({
 
     return (
         <div className="bg-card rounded-2xl shadow-canva hover:shadow-canva-hover transition-all duration-300 overflow-hidden border border-border/40 p-5 space-y-4 relative group">
-            {/* Premium Badge */}
+            {/* Premium Crown - bottom right */}
             {isPremium && (
-                <div className="absolute top-3 left-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-lg z-10 flex items-center gap-1">
-                    <Crown className="w-3 h-3 fill-white" />
-                    <span>Premium</span>
+                <div className="absolute bottom-3 right-3 p-1.5 rounded-full bg-gray-800/50 backdrop-blur-sm shadow-md z-10">
+                    <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                 </div>
             )}
 
