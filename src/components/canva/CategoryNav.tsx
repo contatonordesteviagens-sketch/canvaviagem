@@ -103,11 +103,11 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
 
   return (
     <div className="mb-8 relative">
-      {/* Left arrow - desktop only */}
+      {/* Left arrow - mobile + desktop */}
       <button
         onClick={() => scroll('left')}
         className={cn(
-          "absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 shadow-md items-center justify-center transition-opacity duration-200 hidden md:flex",
+          "absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-8 md:h-8 rounded-full bg-white/90 shadow-md flex items-center justify-center transition-all duration-200",
           canScrollLeft ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         aria-label="Scroll para esquerda"

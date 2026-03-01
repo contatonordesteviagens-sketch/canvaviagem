@@ -283,7 +283,7 @@ const IndexES = () => {
         const uncoveredVideos = sortedVideos.filter(v => !v.image_url);
         const remainingVideos = showAllVideos ? sortedVideos : uncoveredVideos.slice(0, 8);
         const initialCaptions = captionsData?.slice(0, 8) || [];
-        const initialOffers = contentLibraryES.offers.slice(0, 2);
+        const initialOffers = contentLibraryES.filter(item => item.category === 'offer').slice(0, 2);
 
         return (
           <section className="animate-fade-in space-y-8">
@@ -382,11 +382,11 @@ const IndexES = () => {
                   <div className="space-y-3">
                     {initialOffers.map(offer => (
                       <OfferCard
-                        key={offer.id} id={offer.id} title={offer.title} text={offer.description}
+                        key={offer.id} id={offer.id} title={offer.title} text={offer.text}
                         isFavorite={isFavorite("content_item", offer.id)}
                         onToggleFavorite={() => handleToggleFavorite("content_item", offer.id)}
                         onPremiumRequired={getPremiumCallback('offers', true, 'offer')}
-                        isPremium={offer.premium}
+                        isPremium={offer.isPremium}
                       />
                     ))}
                     <Button variant="ghost" className="w-full text-primary" onClick={() => setActiveCategory('offers')}>Ver todas</Button>
