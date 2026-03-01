@@ -1,16 +1,19 @@
-﻿import { useState, useEffect, useMemo } from "react";
+﻿import { useState, useEffect, useMemo, Suspense, lazy } from "react";
 // Build trigger: Freemium Transition - 2026-02-27
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import SeoMetadata from "@/components/SeoMetadata";
-import { Footer } from "@/components/Footer";
-import { PremiumGateModal } from "@/components/PremiumGateModal";
+const BottomNav = lazy(() => import("@/components/canva/BottomNav").then(module => ({ default: module.BottomNav })));
+const Footer = lazy(() => import("@/components/Footer").then(module => ({ default: module.Footer })));
 import { ResourceSection } from "@/components/ResourceSection";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+
+// Lazy load non-critical components
+const PremiumGateModal = lazy(() => import("@/components/PremiumGateModal").then(module => ({ default: module.PremiumGateModal })));
 
 // Canva-style components
 import { HeroBanner } from "@/components/canva/HeroBanner";
@@ -21,7 +24,6 @@ import { AccessFilter, AccessFilterType } from "@/components/canva/AccessFilter"
 import { SectionHeader } from "@/components/canva/SectionHeader";
 import { CaptionCard } from "@/components/canva/CaptionCard";
 import { ToolCard } from "@/components/canva/ToolCard";
-import { BottomNav } from "@/components/canva/BottomNav";
 
 // Database hooks
 import {
@@ -101,14 +103,8 @@ const Index = () => {
     }
   }, [location.state]);
 
-  // Show loading while checking auth
-  if (loading || subscription.loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  // Note: Removed blocking loader for better LCP. 
+  // We handle loading states within individual components or sections.
 
   // Check if user is subscribed for showing premium content (logged in + active subscription)
   const isSubscribed = user && subscription.subscribed;
@@ -1179,7 +1175,9 @@ const Index = () => {
         {mainContent}
       </main>
 
-      <Footer />
+      <Suspense fallback={<div className="h-20 bg-muted/20 animate-pulse" />}>
+        <Footer />
+      </Suspense>
 
       {/* Floating 'Mostrar menos' button — fixed bottom center when expanded */}
       {showAllVideos && activeCategory === 'all' && (
@@ -1196,16 +1194,20 @@ const Index = () => {
       )}
 
       {/* Bottom Navigation - Mobile only */}
-      <BottomNav
-        activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
-      />
+      <Suspense fallback={null}>
+        <BottomNav
+          activeCategory={activeCategory}
+          onCategoryChange={setActiveCategory}
+        />
+      </Suspense>
 
-      {/* Premium Gate Modal - triggered by action */}
-      <PremiumGateModal
-        isOpen={showPremiumGate}
-        onClose={() => setShowPremiumGate(false)}
-      />
+      {/* Premium Gate Modal - lazy loaded */}
+      <Suspense fallback={null}>
+        <PremiumGateModal
+          isOpen={showPremiumGate}
+          onClose={() => setShowPremiumGate(false)}
+        />
+      </Suspense>
     </div>
   );
 };
