@@ -1,21 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* Fonts moved to index.html for performance */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+
   /* Apple-style Typography */
   :root {
     --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, system-ui, sans-serif;
     --font-text: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif;
-    
+
     /* Mobile-optimized spacing scale */
     --spacing-section-mobile: 3rem;
     --spacing-section-desktop: 5rem;
     --spacing-element-mobile: 1.5rem;
     --spacing-element-desktop: 2rem;
-    
+
     /* Touch-friendly sizes */
     --min-touch-target: 44px;
   }
@@ -26,7 +27,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     font-weight: 600;
     letter-spacing: -0.02em;
@@ -54,7 +60,7 @@
     --canva-purple-light: 262 90% 65%;
     --canva-cyan: 180 100% 40%;
     --canva-cyan-light: 180 80% 65%;
-    
+
     /* Core palette */
     --background: 220 20% 97%;
     --foreground: 220 20% 15%;
@@ -85,12 +91,12 @@
     --ring: 265 78% 54%;
 
     --radius: 1rem;
-    
+
     /* Canva Gradients */
     --gradient-canva: linear-gradient(135deg, hsl(268 73% 46%) 0%, hsl(265 78% 54%) 50%, hsl(180 100% 40%) 100%);
     --gradient-canva-soft: linear-gradient(135deg, hsl(265 78% 54% / 0.1) 0%, hsl(180 100% 40% / 0.1) 100%);
     --gradient-hero: linear-gradient(135deg, hsl(268 73% 46%) 0%, hsl(262 90% 65%) 50%, hsl(180 80% 65%) 100%);
-    
+
     /* Canva Shadows - Soft and diffuse */
     --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
     --shadow-card-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
@@ -136,10 +142,10 @@
     --border: 220 20% 20%;
     --input: 220 20% 20%;
     --ring: 262 90% 65%;
-    
+
     --gradient-canva: linear-gradient(135deg, hsl(268 73% 50%) 0%, hsl(265 78% 58%) 50%, hsl(180 100% 45%) 100%);
     --gradient-hero: linear-gradient(135deg, hsl(268 73% 50%) 0%, hsl(262 90% 68%) 50%, hsl(180 80% 68%) 100%);
-    
+
     --sidebar-background: 220 20% 10%;
     --sidebar-foreground: 220 20% 96%;
     --sidebar-primary: 262 90% 65%;
@@ -161,80 +167,100 @@
     font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     overflow-x: hidden;
   }
-  
+
   html {
     overflow-x: hidden;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply tracking-tight font-bold;
   }
 }
 
 @layer utilities {
+
   /* Glassmorphism utility */
   .glass {
     @apply bg-white/80 backdrop-blur-md;
   }
-  
+
   /* Canva gradient backgrounds */
   .bg-canva-gradient {
     background: var(--gradient-canva);
   }
-  
+
   .bg-hero-gradient {
     background: var(--gradient-hero);
   }
-  
+
   /* Soft shadow utility */
   .shadow-canva {
     box-shadow: var(--shadow-card);
   }
-  
+
   .shadow-canva-hover {
     box-shadow: var(--shadow-card-hover);
   }
-  
+
   /* Hide scrollbar but keep functionality */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  
+
   /* Snap scroll for category nav */
   .snap-x-mandatory {
     scroll-snap-type: x mandatory;
   }
-  
+
   .snap-center {
     scroll-snap-align: center;
   }
-  
+
   /* Hint scroll animation for category nav */
   @keyframes hint-scroll {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(-20px); }
+
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+
+    50% {
+      transform: translateX(-20px);
+    }
   }
-  
+
   .animate-hint-scroll {
     animation: hint-scroll 0.6s ease-in-out;
   }
-  
+
   /* Safe area padding for iOS bottom bar */
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
-  
+
   /* Pulse animation for scroll hint */
   @keyframes gentle-pulse {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
+
+    0%,
+    100% {
+      opacity: 0.6;
+    }
+
+    50% {
+      opacity: 1;
+    }
   }
-  
+
   .animate-gentle-pulse {
     animation: gentle-pulse 2s ease-in-out infinite;
   }
@@ -252,12 +278,10 @@
     left: -75%;
     width: 50%;
     height: 200%;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.35) 50%,
-      transparent 100%
-    );
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.35) 50%,
+        transparent 100%);
     transform: skewX(-20deg);
     transition: none;
   }
@@ -267,7 +291,12 @@
   }
 
   @keyframes shine-sweep {
-    0%   { left: -75%; }
-    100% { left: 125%; }
+    0% {
+      left: -75%;
+    }
+
+    100% {
+      left: 125%;
+    }
   }
 }

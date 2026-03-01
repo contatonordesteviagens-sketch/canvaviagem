@@ -15,31 +15,45 @@ const AccessFilterComponent = ({
     onFiltersChange
 }: AccessFilterProps) => {
 
-    // Exclusive toggle: click activates only that filter, click again deselects
-    const toggleFilter = (filter: AccessFilterType) => {
-        if (selectedFilters.includes(filter)) {
-            // Deselect → show everything
+    const toggleFilter = (filter: AccessFilterType | null) => {
+        if (!filter) {
+            onFiltersChange([]);
+        } else if (selectedFilters.includes(filter)) {
             onFiltersChange([]);
         } else {
-            // Select only this one (exclusive)
             onFiltersChange([filter]);
         }
     };
 
+    const isAllSelected = selectedFilters.length === 0;
+
     return (
-        <div className="flex bg-secondary/50 p-1 rounded-full w-fit">
+        <div className="flex bg-secondary/80 backdrop-blur-md p-1 rounded-full w-fit border border-white/10 shadow-sm">
+            <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleFilter(null)}
+                className={cn(
+                    "rounded-full px-5 h-9 transition-all text-xs font-bold uppercase tracking-wider",
+                    isAllSelected
+                        ? "bg-white shadow-md text-primary"
+                        : "text-muted-foreground/70 hover:bg-white/50"
+                )}
+            >
+                Tudo
+            </Button>
             <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleFilter('premium')}
                 className={cn(
-                    "rounded-full gap-2 px-4 h-9 transition-all",
+                    "rounded-full gap-2 px-5 h-9 transition-all text-xs font-bold uppercase tracking-wider",
                     selectedFilters.includes('premium')
-                        ? "bg-white shadow-sm text-primary font-bold"
-                        : "text-muted-foreground hover:bg-white/50"
+                        ? "bg-white shadow-md text-primary"
+                        : "text-muted-foreground/70 hover:bg-white/50"
                 )}
             >
-                <Crown className={cn("w-4 h-4", selectedFilters.includes('premium') ? "text-primary" : "text-muted-foreground")} />
+                <Crown className={cn("w-3.5 h-3.5", selectedFilters.includes('premium') ? "text-primary fill-primary/20" : "text-muted-foreground/50")} />
                 PRO
             </Button>
             <Button
@@ -47,13 +61,13 @@ const AccessFilterComponent = ({
                 size="sm"
                 onClick={() => toggleFilter('gratis')}
                 className={cn(
-                    "rounded-full gap-2 px-4 h-9 transition-all",
+                    "rounded-full gap-2 px-5 h-9 transition-all text-xs font-bold uppercase tracking-wider",
                     selectedFilters.includes('gratis')
-                        ? "bg-white shadow-sm text-accent font-bold"
-                        : "text-muted-foreground hover:bg-white/50"
+                        ? "bg-white shadow-xl shadow-orange-500/10 text-orange-600 border border-orange-100"
+                        : "text-muted-foreground/70 hover:bg-white/50"
                 )}
             >
-                <Sparkles className={cn("w-4 h-4", selectedFilters.includes('gratis') ? "text-accent" : "text-muted-foreground")} />
+                <Sparkles className={cn("w-3.5 h-3.5", selectedFilters.includes('gratis') ? "text-orange-500" : "text-muted-foreground/50")} />
                 Grátis
             </Button>
         </div>

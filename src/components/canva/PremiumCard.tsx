@@ -18,6 +18,8 @@ interface PremiumCardProps {
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
   onPremiumRequired?: () => void;
+  loading?: "lazy" | "eager";
+  fetchPriority?: "high" | "low" | "auto";
 }
 
 // Color per content type
@@ -66,7 +68,9 @@ const PremiumCardComponent = ({
   onClick,
   isFavorite = false,
   onToggleFavorite,
-  onPremiumRequired
+  onPremiumRequired,
+  loading = "lazy",
+  fetchPriority = "auto"
 }: PremiumCardProps) => {
   const gradient = getTypeGradient(contentType, title);
 
@@ -146,7 +150,8 @@ const PremiumCardComponent = ({
             <img
               src={imageUrl}
               alt={title}
-              loading="lazy"
+              loading={loading}
+              fetchPriority={fetchPriority}
               decoding="async"
               className="w-full h-full object-cover transition-all duration-500 group-hover:brightness-110"
             />

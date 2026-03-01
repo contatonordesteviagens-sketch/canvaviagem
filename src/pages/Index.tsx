@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect, useMemo } from "react";
 // Build trigger: Freemium Transition - 2026-02-27
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import SeoMetadata from "@/components/SeoMetadata";
@@ -52,6 +52,7 @@ import { checkIfItemIsPremium } from "@/lib/premium-utils";
 
 const Index = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, loading, subscription } = useAuth();
   const { setLanguage, t } = useLanguage();
 
@@ -89,6 +90,16 @@ const Index = () => {
       trackPageView('/');
     }
   }, [user, trackPageView]);
+
+  // Handle category navigation from Header (when coming from another page)
+  useEffect(() => {
+    const state = location.state as { category?: CategoryType } | null;
+    if (state?.category) {
+      setActiveCategory(state.category);
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [location.state]);
 
   // Show loading while checking auth
   if (loading || subscription.loading) {
@@ -250,8 +261,32 @@ const Index = () => {
   const weeklyStories = storyTemplates?.filter(s => s.type === 'weekly-story') || [];
   const regularStories = storyTemplates?.filter(s => s.type === 'story') || [];
 
-  // Loading skeleton for content
-  const ContentSkeleton = () => (
+  // Loading skeletons for different types
+  const VideoSkeleton = () => (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+      {[...Array(4)].map((_, i) => (
+        <Skeleton key={i} className="aspect-[9/16] rounded-2xl shadow-canva" />
+      ))}
+    </div>
+  );
+
+  const ToolSkeleton = () => (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {[...Array(4)].map((_, i) => (
+        <Skeleton key={i} className="aspect-[16/10] rounded-2xl shadow-canva" />
+      ))}
+    </div>
+  );
+
+  const FeedSkeleton = () => (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {[...Array(8)].map((_, i) => (
+        <Skeleton key={i} className="aspect-[4/5] rounded-2xl shadow-canva" />
+      ))}
+    </div>
+  );
+
+  const StorySkeleton = () => (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {[...Array(8)].map((_, i) => (
         <Skeleton key={i} className="aspect-[9/16] rounded-2xl shadow-canva" />
@@ -270,20 +305,27 @@ const Index = () => {
 
         const firstFourVideos = coveredVideos.slice(0, 4);
         // After AI tools: remaining covered (always shown) — uncovered only when expanded
+        // Performance: Reduce initial items on mobile (8 vs 20)
+        const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+        const initialRemainingCount = isMobile ? 8 : 20;
+
         const remainingVideos = showAllVideos
           ? [...coveredVideos.slice(4), ...uncoveredVideos]
-          : coveredVideos.slice(4, 20);
+          : coveredVideos.slice(4, initialRemainingCount);
 
         const tools = toolsData || [];
-        const preferredTitles = ['corpo de anúncio', '9 óticas de hooks'];
-        const excludedTitles = ['criador de headline', 'criador de promessas única'];
-
         const preferredTools = tools.filter(t =>
-          preferredTitles.some(p => t.title.toLowerCase().includes(p))
-        );
+          ['corpo de anúncio', '9 óticas de hooks'].some(p => t.title.toLowerCase().includes(p))
+        ).sort((a, b) => {
+          // Force definitive order: Corpo de Anúncio first, then 9 óticas
+          if (a.title.toLowerCase().includes('corpo')) return -1;
+          if (b.title.toLowerCase().includes('corpo')) return 1;
+          return 0;
+        });
+
         const otherTools = tools.filter(t =>
-          !preferredTitles.some(p => t.title.toLowerCase().includes(p)) &&
-          !excludedTitles.some(e => t.title.toLowerCase().includes(e))
+          !['corpo de anúncio', '9 óticas de hooks'].some(p => t.title.toLowerCase().includes(p)) &&
+          !['criador de headline', 'criador de promessas única'].some(e => t.title.toLowerCase().includes(e))
         );
 
         const firstFourTools = [...preferredTools, ...otherTools].slice(0, 4);
@@ -325,9 +367,7 @@ const Index = () => {
                   <button onClick={() => setAccessFilters([])} className="underline font-semibold text-foreground">veja o plano Pro</button>.
                 </p>
                 {toolsLoading ? (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-32 rounded-xl" />)}
-                  </div>
+                  <ToolSkeleton />
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {allFilterTools.map(tool => {
@@ -344,7 +384,7 @@ const Index = () => {
                           onClick={() => { trackClick('tool', tool.id); trackActivity('tool'); }}
                           isFavorite={isFavorite("marketing_tool", tool.id)}
                           onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                          onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium, tool.type || 'tool', tool.title)}
+                          onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium, 'tool', tool.title)}
                           isPremium={isToolPremium}
                         />
                       );
@@ -377,17 +417,18 @@ const Index = () => {
 
                 {/* Row 1: First 4 videos — 2 cols mobile, 4 cols desktop */}
                 {videosLoading ? (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                    {[...Array(4)].map((_, i) => <Skeleton key={i} className="aspect-[9/16] rounded-2xl" />)}
-                  </div>
+                  <VideoSkeleton />
                 ) : firstFourVideos.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                    {firstFourVideos.map((template) => (
+                    {firstFourVideos.map((template, index) => (
                       <PremiumCard
                         key={template.id} id={template.id} title={template.title} url={template.url}
                         isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
                         imageUrl={template.image_url || undefined}
                         aspectRatio="9/16"
+                        // Performance: Prioritize first 2 items (especially on mobile)
+                        loading={index < 2 ? "eager" : "lazy"}
+                        fetchPriority={index < 2 ? "high" : "auto"}
                         onClick={() => handleCardClick(template)}
                         isFavorite={isFavorite("content_item", template.id)}
                         onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
@@ -411,7 +452,7 @@ const Index = () => {
                           onClick={() => { trackClick('tool', tool.id); trackActivity('tool'); }}
                           isFavorite={isFavorite("marketing_tool", tool.id)}
                           onToggleFavorite={() => handleToggleFavorite("marketing_tool", tool.id)}
-                          onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium, tool.type || 'tool', tool.title)}
+                          onPremiumRequired={getPremiumCallback(activeCategory, isToolPremium, 'tool', tool.title)}
                           isPremium={isToolPremium}
                         />
                       );
@@ -675,7 +716,7 @@ const Index = () => {
             />
 
             {feedLoading ? (
-              <ContentSkeleton />
+              <FeedSkeleton />
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {filterTemplates(feedTemplates).map((template) => (
@@ -705,7 +746,7 @@ const Index = () => {
         return (
           <section className="space-y-12 animate-fade-in">
             {storiesLoading ? (
-              <ContentSkeleton />
+              <StorySkeleton />
             ) : (
               <>
                 {weeklyStories.length > 0 && (
@@ -715,7 +756,7 @@ const Index = () => {
                       subtitle="Planejamento semanal de conteúdo"
                     />
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 lg:gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-4">
                       {weeklyStories.sort((a, b) => a.title.localeCompare(b.title)).map((story) => (
                         <PremiumCard
                           key={story.id}

@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { ExternalLink, Heart } from "lucide-react";
+import { ExternalLink, Heart, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ToolCardProps {
@@ -100,8 +100,8 @@ const ToolCardComponent = ({
             <span className="text-5xl">{icon}</span>
 
             {isPremium && (
-              <div className="absolute top-2 left-2 bg-gradient-to-r from-amber-400 to-amber-600 text-white p-1.5 rounded-full shadow-lg z-20">
-                <span className="text-xs">👑</span>
+              <div className="absolute bottom-2 right-2 z-20 p-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 shadow-lg group-hover:bg-black/60 transition-all duration-300">
+                <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
               </div>
             )}
 
