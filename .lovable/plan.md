@@ -1,30 +1,60 @@
 
 
-## Build Errors & Feature Fixes
+## Plan: Massive Content Library Expansion + Mobile-Optimized Tabs
 
-### 1. Fix Build Errors
+### Summary
+Populate the content library with all uploaded material (50 offers, 50 rankings, scripts/conditions, CTAs/frases), reorganize the tabs for mobile readability, and make all text cards editable with save-to-favorites functionality. Only 3 offers are free; everything else is premium.
 
-**Error 1: `verify-magic-link` — `filter` not in `PageParams`**
-- In `supabase/functions/verify-magic-link/index.ts` line 73, remove the invalid `filter` param from `listUsers`. Instead, call `listUsers()` and then find the user by email in the result, or use a different approach: iterate with `page`/`perPage` and filter manually.
-- Simplest fix: `listUsers({ page: 1, perPage: 1000 })` then `.find(u => u.email === email)`.
+### 1. Expand `src/data/content-library.ts` with full content
 
-**Error 2: `Index.tsx:780` — `(ContentItem | Template)[]` not assignable to `ContentItem[]`**
-- `allFeedTemplates` mixes `Template[]` (local) with `ContentItem[]` (DB). The `filterTemplates` function expects `ContentItem[]`.
-- Fix: Cast `allFeedTemplates` or adapt the `filterTemplates` call for the feed section to handle the mixed type. Best approach: map `localFeedTemplates` to a `ContentItem`-compatible shape or change `filterTemplates` to accept a broader type.
+Replace the current 7-item library with the complete dataset:
 
-**Error 3: `Index.tsx:788` — `isNew` should be `is_new`**
-- Change `template.isNew` to `template.is_new` on line 788 (or use a fallback: `(template as any).isNew || template.is_new`).
+- **Ofertas (50 items)**: 25 nacionais + 25 internacionais from the uploaded docs. Each offer has a short version (for card preview) and full version (for edit modal). Only the first 3 (Rio, Gramado, Maceio) are `isPremium: false`.
+- **Rankings (50 items)**: 25 nacionais + 25 internacionais from PARTE1. Each item shows position, destination, profile, and highlight. All premium.
+- **Scripts (15+ items)**: Payment conditions, footer templates, package descriptions (Basic, All Inclusive, Complete, Cruise, Wellness), documentation guides from PARTE4. All premium.
+- **Frases/CTAs (50+ items)**: Categorized by theme (Nordeste, Internacional, Familia, Casal, Urgencia, Ecoturismo, Corporativo, Intercambio, Legendas, Hashtags) from PARTE5. All premium.
 
-**Error 4: `IndexES.tsx:286` — `contentLibraryES.offers` doesn't exist**
-- `contentLibraryES` is an array, not an object with `.offers`. Fix: `contentLibraryES.filter(item => item.category === 'offer').slice(0, 2)`.
+Add new interface fields:
+```ts
+export interface ContentLibraryItem {
+    id: string;
+    category: 'offer' | 'ranking' | 'script' | 'cta';
+    title: string;
+    text: string;       // short version / preview
+    fullText?: string;  // full version for edit modal
+    isPremium: boolean;
+    tags: string[];
+    icon?: string;      // emoji icon per category
+}
+```
 
-### 2. Add Back Button (`<`) on Mobile CategoryNav
-- In `CategoryNav.tsx`, add a left-arrow back button visible only on mobile (`md:hidden`) that appears when the user has scrolled right in the category icons, allowing them to scroll back to the beginning.
+### 2. Update `OfferCard.tsx` to be expandable + editable
 
-### 3. Update Free Filter to Show 2 Free Arts
-- Currently when `gratis` filter is active in "Tudo", only tools and captions are shown (lines 377-428).
-- Add the first 2 feed arts (which are free per `checkIfItemIsPremium` — `feed` type with index < 2) to the free filter view, displayed as a "Arte para Agência de Viagens" section with a 2-column grid.
+- Add collapsed preview (3-line clamp by default, like CaptionCard)
+- Click to expand shows full text (blocked for premium users without subscription)
+- Add "Editar" button that opens a Dialog modal with:
+  - Full text in a Textarea (editable)
+  - Copy button
+  - Save button (saves to favorites)
+- Premium items: clicking expand triggers `onPremiumRequired` instead
 
-### 4. Planos Page Background — Keep White
-- The user mentioned the Planos page background changed color. Ensure it uses `bg-white` / `bg-background` explicitly. (Will verify the actual current state during implementation.)
+New props: `fullText?: string`, `onSaveEdit?: (newText: string) => void`
+
+### 3. Reorganize the Offers section tabs for mobile
+
+In `Index.tsx`, update the `case 'offers'` section:
+- Rename tabs: "Ofertas" | "Destinos" (rankings) | "Scripts" | "Frases"
+- Use scrollable horizontal `TabsList` on mobile instead of 4-column grid
+- Add item counts as badges on each tab
+- Add sub-filters within Ofertas: "Nacionais" / "Internacionais" chip filters
+
+### 4. Update CategoryNav label
+
+Change the offers category label from "Ofertas" to "Central de Conteúdo" or keep "Ofertas" but ensure the "Novo" badge stays.
+
+### Technical Notes
+- The content-library.ts file will be large (~2000+ lines) but it's static data, no DB migration needed
+- All content uses the existing `OfferCard` component with the new expandable/editable behavior
+- The edit/save flow reuses the existing `useFavorites` hook
+- Premium gating logic: first 3 offers free, everything else premium (consistent with user request)
 
