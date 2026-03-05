@@ -16,12 +16,16 @@ const getCorsHeaders = (origin: string | null) => {
   };
 };
 
+// Pixels using META_CONVERSIONS_API_TOKEN
 const PIXEL_IDS = [
   '1599242897762192',
   '1152272353771099',
   '4254631328136179',
   '1560736461820497'
 ];
+
+// Pixel using its own token (META_CONVERSIONS_API_TOKEN_NEW)
+const NEW_PIXEL_ID = '916689227676142';
 
 interface EventData {
   event_name: string;
@@ -90,9 +94,10 @@ serve(async (req) => {
     }
 
     const accessToken = Deno.env.get('META_CONVERSIONS_API_TOKEN');
+    const newAccessToken = Deno.env.get('META_CONVERSIONS_API_TOKEN_NEW');
     
-    if (!accessToken) {
-      console.error('META_CONVERSIONS_API_TOKEN not configured');
+    if (!accessToken && !newAccessToken) {
+      console.error('No META_CONVERSIONS_API_TOKEN configured');
       return new Response(
         JSON.stringify({ error: 'API token not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -128,19 +133,26 @@ serve(async (req) => {
       action_source: 'website',
     };
 
-    // Send to all pixel IDs
+    // Build all pixel requests: existing pixels with original token + new pixel with new token
+    const pixelRequests: Array<{ pixelId: string; token: string }> = [];
+    
+    if (accessToken) {
+      PIXEL_IDS.forEach(id => pixelRequests.push({ pixelId: id, token: accessToken }));
+    }
+    if (newAccessToken) {
+      pixelRequests.push({ pixelId: NEW_PIXEL_ID, token: newAccessToken });
+    }
+
     const results = await Promise.allSettled(
-      PIXEL_IDS.map(async (pixelId) => {
+      pixelRequests.map(async ({ pixelId, token }) => {
         const url = `https://graph.facebook.com/v18.0/${pixelId}/events`;
         
         const response = await fetch(url, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             data: [eventData],
-            access_token: accessToken,
+            access_token: token,
           }),
         });
 
