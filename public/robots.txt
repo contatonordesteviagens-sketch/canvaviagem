@@ -9,4 +9,4 @@ Disallow: /auth/verify
 Disallow: /api/
 
 # Sitemap
-Sitemap: https://canvaviagem.com.br/sitemap.xml
+Sitemap: https://canvaviagem.com/sitemap.xml
