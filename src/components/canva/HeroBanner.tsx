@@ -31,6 +31,10 @@ const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) =
           <h1 className="text-xl md:text-3xl lg:text-4xl font-bold md:font-extrabold text-white leading-tight tracking-tight">
             {t('hero.title')}
           </h1>
+          <p className="text-white/90 text-sm md:text-lg font-medium max-w-2xl mx-auto">
+            <span className="bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm border border-white/30 mr-2">🤖 IA de Marketing</span>
+            <span className="bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm border border-white/30">🎨 Templates Gratuitos</span>
+          </p>
 
           {/* Glassmorphism Search Bar */}
           <div className="max-w-lg mx-auto relative">

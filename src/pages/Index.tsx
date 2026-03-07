@@ -21,12 +21,12 @@ const BlogSection = () => {
   const posts = [
     {
       title: "Marketing Digital para Agência de Viagem 2026",
-      image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=400&auto=format&fit=crop",
+      image: "/blog/img-marketing-digital-agencia.png",
       slug: "marketing-digital-para-agencia-de-viagem"
     },
     {
       title: "Como criar conteúdo sem gravar vídeo",
-      image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=400&auto=format&fit=crop",
+      image: "/blog/img-como-criar-conteudo-sem-gravar.png",
       slug: "como-criar-conteudo-agencia-de-viagem-sem-gravar-video"
     }
   ];
