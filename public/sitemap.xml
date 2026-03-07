@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- ===== VERSÃO PORTUGUÊS BRASIL ===== -->
+  <url>
+    <loc>https://canvaviagem.com.br/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://canvaviagem.com.br/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://canvaviagem.com.br/es"/>
+    <xhtml:link rel="alternate" hreflang="es-MX" href="https://canvaviagem.com.br/es"/>
+    <xhtml:link rel="alternate" hreflang="es-AR" href="https://canvaviagem.com.br/es"/>
+    <xhtml:link rel="alternate" hreflang="es-CO" href="https://canvaviagem.com.br/es"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://canvaviagem.com.br/es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://canvaviagem.com.br/"/>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://storage.googleapis.com/gpt-engineer-file-uploads/gv52nlymyDZCKjaUbvIf7y1xoY12/social-images/social-1767713927214-canva mobile.jpg</image:loc>
+      <image:title>Canva Viagem — 150 Vídeos Prontos para Agência de Viagem</image:title>
+      <image:caption>Pack com 150 vídeos editáveis no Canva para agências de viagem — R$47</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://canvaviagem.com.br/planos</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://canvaviagem.com.br/planos"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://canvaviagem.com.br/es/planos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://canvaviagem.com.br/planos"/>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://canvaviagem.com.br/blog</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://canvaviagem.com.br/blog"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://canvaviagem.com.br/es/blog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://canvaviagem.com.br/blog"/>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Artigos de Blog PT-BR -->
+  <url>
+    <loc>https://canvaviagem.com.br/blog/o-que-postar-no-instagram-agencia-de-viagem</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://canvaviagem.com.br/blog/o-que-postar-no-instagram-agencia-de-viagem"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://canvaviagem.com.br/es/blog/que-publicar-instagram-agencia-de-viajes"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://canvaviagem.com.br/blog/o-que-postar-no-instagram-agencia-de-viagem"/>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://canvaviagem.com.br/blog/como-criar-conteudo-agencia-de-viagem-sem-gravar-video</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://canvaviagem.com.br/blog/como-criar-conteudo-agencia-de-viagem-sem-gravar-video"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://canvaviagem.com.br/es/blog/como-crear-contenido-agencia-de-viajes-sin-grabar"/>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://canvaviagem.com.br/blog/marketing-digital-para-agencia-de-viagem</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://canvaviagem.com.br/blog/marketing-digital-para-agencia-de-viagem"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://canvaviagem.com.br/es/blog/marketing-digital-para-agencia-de-viajes"/>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://canvaviagem.com.br/blog/erros-agencia-de-viagem-instagram</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://canvaviagem.com.br/blog/erros-agencia-de-viagem-instagram"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://canvaviagem.com.br/es/blog/errores-agencia-de-viajes-instagram"/>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- ===== VERSÃO ESPANHOL — LATAM + ESPANHA ===== -->
+  <url>
+    <loc>https://canvaviagem.com.br/es</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://canvaviagem.com.br/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://canvaviagem.com.br/es"/>
+    <xhtml:link rel="alternate" hreflang="es-MX" href="https://canvaviagem.com.br/es"/>
+    <xhtml:link rel="alternate" hreflang="es-AR" href="https://canvaviagem.com.br/es"/>
+    <xhtml:link rel="alternate" hreflang="es-CO" href="https://canvaviagem.com.br/es"/>
+    <xhtml:link rel="alternate" hreflang="es-CL" href="https://canvaviagem.com.br/es"/>
+    <xhtml:link rel="alternate" hreflang="es-PE" href="https://canvaviagem.com.br/es"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="https://canvaviagem.com.br/es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://canvaviagem.com.br/"/>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://canvaviagem.com.br/es/planos</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://canvaviagem.com.br/planos"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://canvaviagem.com.br/es/planos"/>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://canvaviagem.com.br/es/blog/que-publicar-instagram-agencia-de-viajes</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://canvaviagem.com.br/blog/o-que-postar-no-instagram-agencia-de-viagem"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://canvaviagem.com.br/es/blog/que-publicar-instagram-agencia-de-viajes"/>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://canvaviagem.com.br/es/blog/marketing-digital-para-agencia-de-viajes</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://canvaviagem.com.br/blog/marketing-digital-para-agencia-de-viagem"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://canvaviagem.com.br/es/blog/marketing-digital-para-agencia-de-viajes"/>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Páginas institucionais -->
+  <url>
+    <loc>https://canvaviagem.com.br/privacy</loc>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://canvaviagem.com.br/terms</loc>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+</urlset>
