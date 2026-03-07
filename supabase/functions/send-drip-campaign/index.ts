@@ -93,31 +93,31 @@ const getEmail1Content = (name: string) => {
 const getEmail2Content = (name: string) => {
   const safeName = escapeHtml(name);
   return `
-  <h2 style="color: #1a1a2e; margin: 0 0 20px 0; font-size: 24px;">${safeName}, este é seu próximo passo! ✈️</h2>
+  <h2 style="color: #1a1a2e; margin: 0 0 20px 0; font-size: 24px;">${safeName}, você já publicou seu primeiro post? 📱</h2>
   <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0;">
-    Você já está usando o CanvaTrip há alguns dias. Parabéns por dar esse passo!
+    Faz alguns dias que você tem acesso ao Canva Viagem. Já usou? Já publicou alguma coisa?
   </p>
   <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0;">
-    Mas deixa eu te perguntar: <strong>você está realmente vendendo viagens com suas redes sociais?</strong>
+    Se sim — <strong>que incrível!</strong> Você já sabe o valor de ter conteúdo pronto.
   </p>
   <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 25px 0;">
-    Criei o curso <strong>Agente Lucrativo</strong> para agentes que querem ir além dos posts bonitos e realmente <strong>faturar alto</strong> no turismo.
+    Agora imagina ter esse conteúdo chegando todo mês — sem precisar comprar de novo, sem pensar em renovação. É exatamente isso que o <strong>plano anual</strong> faz.
   </p>
-  
+
   <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 16px; padding: 25px; margin: 25px 0;">
     <p style="color: #1a1a2e; font-size: 15px; margin: 0 0 15px 0; font-weight: bold;">
-      📚 O que você vai aprender:
+      📅 Plano Anual — Por que vale a pena:
     </p>
     <p style="color: #4a4a4a; font-size: 15px; margin: 0; line-height: 1.8;">
-      🎬 <strong>Edição de Vídeo</strong> - Crie Reels e Stories que viralizam<br>
-      📢 <strong>Tráfego Pago para Viagens</strong> - Anúncios que trazem clientes<br>
-      📱 <strong>Automação de WhatsApp</strong> - Atenda mais sem perder qualidade<br>
-      💰 <strong>Vendas no X1</strong> - Feche mais pacotes pelo WhatsApp
+      ✅ <strong>12 meses garantidos</strong> — sem renovação mensal<br>
+      ✅ <strong>R$16,40/mês</strong> — economia de R$151 em relação ao mensal<br>
+      ✅ <strong>Preço travado</strong> — mesmo que os preços subam<br>
+      ✅ <strong>Acesso prioritário</strong> a novos conteúdos todo mês
     </p>
   </div>
-  
+
   <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 20px 0;">
-    Não fique só na criação de posts. <strong>Aprenda a vender de verdade!</strong>
+    Quem paga anual usa mais — e quem usa mais, vende mais. Simples assim.
   </p>
 `;
 };
@@ -125,30 +125,103 @@ const getEmail2Content = (name: string) => {
 const getEmail3Content = (name: string) => {
   const safeName = escapeHtml(name);
   return `
-  <h2 style="color: #1a1a2e; margin: 0 0 20px 0; font-size: 24px;">Última chance, ${safeName}! 🚀</h2>
+  <h2 style="color: #1a1a2e; margin: 0 0 20px 0; font-size: 24px;">Oferta especial para você, ${safeName} 🎁</h2>
   <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0;">
-    Já faz 5 dias que você está no CanvaTrip. E eu preciso ser sincero com você:
+    Você é assinante do Canva Viagem. Isso significa que já entende o valor de ter conteúdo pronto.
   </p>
   <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0;">
-    <strong>Posts bonitos não pagam suas contas.</strong> Vendas sim.
+    Por isso quero te fazer uma proposta exclusiva, válida por <strong>48 horas</strong>:
   </p>
-  <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 25px 0;">
-    O mercado de turismo está mais competitivo do que nunca. Quem não se profissionaliza, fica para trás.
-  </p>
-  
-  <div style="background: linear-gradient(135deg, #7D2AE8 0%, #8B3DFF 100%); border-radius: 16px; padding: 25px; margin: 25px 0;">
-    <p style="color: #ffffff; font-size: 16px; margin: 0; line-height: 1.7; text-align: center;">
-      ⚡ <strong>O Agente Lucrativo</strong> já transformou a vida de centenas de agentes de viagem.<br><br>
-      Edição de Vídeo + Tráfego Pago + WhatsApp + Vendas X1<br><br>
-      <strong>Tudo o que você precisa para dominar o mercado.</strong>
+
+  <div style="background: linear-gradient(135deg, #7D2AE8 0%, #8B3DFF 100%); border-radius: 16px; padding: 30px; margin: 25px 0; text-align: center;">
+    <p style="color: #ffffff; font-size: 22px; margin: 0 0 10px 0; font-weight: bold;">
+      Plano Anual por R$197
+    </p>
+    <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0 0 15px 0;">
+      = R$16,40/mês — você economiza R$151
+    </p>
+    <p style="color: rgba(255,255,255,0.8); font-size: 14px; margin: 0;">
+      12 meses garantidos · Preço travado · Sem renovação mensal
     </p>
   </div>
-  
+
   <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 20px 0;">
-    Esta é minha última mensagem sobre isso. A decisão é sua.
+    Essa oferta é exclusiva para quem já assina. Não aparece na página pública.
   </p>
   <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 20px 0;">
-    <strong>Você quer continuar no mesmo lugar ou quer ser um Agente Lucrativo?</strong>
+    Válida por 48 horas. Depois disso, o preço volta ao normal.
+  </p>
+`;
+};
+
+const getEmail4Content = (name: string) => {
+  const safeName = escapeHtml(name);
+  return `
+  <h2 style="color: #1a1a2e; margin: 0 0 20px 0; font-size: 24px;">${safeName}, você está postando — e agora? 🚀</h2>
+  <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0;">
+    Você tem o conteúdo pronto. Está publicando. Mas deixa eu te perguntar uma coisa:
+  </p>
+  <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0;">
+    <strong>Os posts estão trazendo clientes de verdade?</strong>
+  </p>
+  <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 25px 0;">
+    Criei o <strong>Agente Lucrativo</strong> para agentes que querem ir além dos posts bonitos
+    e realmente <strong>fechar pacotes pelo Instagram e WhatsApp</strong>.
+  </p>
+
+  <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 16px; padding: 25px; margin: 25px 0;">
+    <p style="color: #1a1a2e; font-size: 15px; margin: 0 0 15px 0; font-weight: bold;">
+      📚 O que você vai aprender no Agente Lucrativo:
+    </p>
+    <p style="color: #4a4a4a; font-size: 15px; margin: 0; line-height: 1.8;">
+      🎬 <strong>Edição de Vídeo</strong> — Reels e Stories que viralizam<br>
+      📢 <strong>Tráfego Pago para Viagens</strong> — Anúncios que trazem clientes com intenção de compra<br>
+      📱 <strong>Automação de WhatsApp</strong> — Atenda mais sem perder qualidade<br>
+      💰 <strong>Fechamento no X1</strong> — Scripts para fechar mais pacotes pelo WhatsApp
+    </p>
+  </div>
+
+  <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 20px 0;">
+    Por R$97 — acesso vitalício, sem mensalidade.
+  </p>
+  <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 20px 0;">
+    Lucas
+  </p>
+`;
+};
+
+const getEmail5Content = (name: string) => {
+  const safeName = escapeHtml(name);
+  return `
+  <h2 style="color: #1a1a2e; margin: 0 0 20px 0; font-size: 24px;">Última chance, ${safeName} — Agente Lucrativo ⚡</h2>
+  <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0;">
+    Faz 30 dias que você está no Canva Viagem. Espero que já tenha publicado bastante.
+  </p>
+  <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0;">
+    Vou ser direto: <strong>posts bonitos não pagam suas contas. Vendas sim.</strong>
+  </p>
+  <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 0 0 25px 0;">
+    O Agente Lucrativo transforma sua presença no Instagram em máquina de fechar pacotes.
+    Esta é a última vez que vou mencionar.
+  </p>
+
+  <div style="background: linear-gradient(135deg, #7D2AE8 0%, #8B3DFF 100%); border-radius: 16px; padding: 25px; margin: 25px 0; text-align: center;">
+    <p style="color: #ffffff; font-size: 18px; margin: 0 0 10px 0; font-weight: bold;">
+      Agente Lucrativo — R$97
+    </p>
+    <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0 0 15px 0;">
+      Acesso vitalício · Garantia de 7 dias
+    </p>
+    <p style="color: rgba(255,255,255,0.8); font-size: 14px; margin: 0;">
+      Edição de Vídeo + Tráfego Pago + WhatsApp + Fechamento X1
+    </p>
+  </div>
+
+  <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 20px 0;">
+    A decisão é sua. Mas agentes que vendem de verdade não ficam só postando — eles fecham.
+  </p>
+  <p style="color: #4a4a4a; font-size: 16px; line-height: 1.7; margin: 20px 0;">
+    Lucas
   </p>
 `;
 };
@@ -185,12 +258,12 @@ async function sendEmail1(resend: Resend, email: string, name: string, supabase:
 // deno-lint-ignore no-explicit-any
 async function sendEmail2(resend: Resend, email: string, name: string, supabase: any) {
   const content = getEmail2Content(name);
-  const html = getEmailTemplate(content, "✈️ Conhecer o Curso Agente Lucrativo", "https://rochadigitalmidia.com.br/agente-lucrativo/");
+  const html = getEmailTemplate(content, "📅 Assinar Plano Anual — R$197", "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09");
   
   const result = await resend.emails.send({
     from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
     to: [email],
-    subject: "Este é seu próximo passo para vender mais viagens ✈️",
+    subject: "Você já publicou seu primeiro post? 📱",
     html,
   });
   
@@ -211,12 +284,12 @@ async function sendEmail2(resend: Resend, email: string, name: string, supabase:
 // deno-lint-ignore no-explicit-any
 async function sendEmail3(resend: Resend, email: string, name: string, supabase: any) {
   const content = getEmail3Content(name);
-  const html = getEmailTemplate(content, "🚀 Quero Ser Um Agente Lucrativo", "https://rochadigitalmidia.com.br/agente-lucrativo/");
+  const html = getEmailTemplate(content, "🎁 Garantir Plano Anual — R$197", "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09");
   
   const result = await resend.emails.send({
     from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
     to: [email],
-    subject: "Última chance: Domine o mercado de turismo 🚀",
+    subject: "Oferta especial para assinante — 48 horas 🎁",
     html,
   });
   
@@ -231,6 +304,58 @@ async function sendEmail3(resend: Resend, email: string, name: string, supabase:
   }
   
   logStep("Email 3 sent", { email, emailId: result.data?.id });
+  return result;
+}
+
+// deno-lint-ignore no-explicit-any
+async function sendEmail4(resend: Resend, email: string, name: string, supabase: any) {
+  const content = getEmail4Content(name);
+  const html = getEmailTemplate(content, "🚀 Conhecer o Agente Lucrativo", "https://rochadigitalmidia.com.br/agente-lucrativo/");
+
+  const result = await resend.emails.send({
+    from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+    to: [email],
+    subject: "Seus posts estão trazendo clientes? 🚀",
+    html,
+  });
+
+  if (result.data?.id) {
+    const { error } = await supabase.from("email_events").insert({
+      email_id: result.data.id,
+      type: "sent",
+      recipient_email: email,
+      email_type: "email_4",
+    });
+    if (error) logStep("Email event insert error", { error: error.message });
+  }
+
+  logStep("Email 4 sent", { email, emailId: result.data?.id });
+  return result;
+}
+
+// deno-lint-ignore no-explicit-any
+async function sendEmail5(resend: Resend, email: string, name: string, supabase: any) {
+  const content = getEmail5Content(name);
+  const html = getEmailTemplate(content, "⚡ Quero Ser Um Agente Lucrativo — R$97", "https://rochadigitalmidia.com.br/agente-lucrativo/");
+
+  const result = await resend.emails.send({
+    from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+    to: [email],
+    subject: "Última chance: transforme posts em vendas ⚡",
+    html,
+  });
+
+  if (result.data?.id) {
+    const { error } = await supabase.from("email_events").insert({
+      email_id: result.data.id,
+      type: "sent",
+      recipient_email: email,
+      email_type: "email_5",
+    });
+    if (error) logStep("Email event insert error", { error: error.message });
+  }
+
+  logStep("Email 5 sent", { email, emailId: result.data?.id });
   return result;
 }
 
@@ -268,21 +393,19 @@ serve(async (req) => {
 
   try {
     const now = new Date();
-    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
-    const fiveDaysAgo = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
+    const day3  = new Date(now.getTime() -  3 * 24 * 60 * 60 * 1000);
+    const day5  = new Date(now.getTime() -  5 * 24 * 60 * 60 * 1000);
+    const day14 = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    const day30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    logStep("Starting drip campaign", { 
-      now: now.toISOString(), 
-      threeDaysAgo: threeDaysAgo.toISOString(),
-      fiveDaysAgo: fiveDaysAgo.toISOString() 
-    });
+    logStep("Starting drip campaign", { now: now.toISOString() });
 
     // Buscar usuários com emails pendentes (não unsubscribed)
     const { data: users, error } = await supabase
       .from("user_email_automations")
       .select("*")
       .eq("unsubscribed", false)
-      .or("email_1_sent_at.is.null,email_2_sent_at.is.null,email_3_sent_at.is.null");
+      .or("email_1_sent_at.is.null,email_2_sent_at.is.null,email_3_sent_at.is.null,email_4_sent_at.is.null,email_5_sent_at.is.null");
 
     if (error) {
       logStep("Database error", { error: error.message });
@@ -291,47 +414,54 @@ serve(async (req) => {
 
     logStep("Users to process", { count: users?.length ?? 0 });
 
-    const emailsSent = { email1: 0, email2: 0, email3: 0, errors: 0 };
+    const emailsSent = { email1: 0, email2: 0, email3: 0, email4: 0, email5: 0, errors: 0 };
 
     for (const user of users ?? []) {
       const userName = user.name || user.email.split("@")[0];
       const createdAt = new Date(user.created_at);
 
       try {
-        // EMAIL 1: Boas-vindas (imediato - enviado assim que cadastra)
+        // EMAIL 1: Boas-vindas (D0 — imediato)
         if (!user.email_1_sent_at) {
           await sendEmail1(resend, user.email, userName, supabase);
-          await supabase
-            .from("user_email_automations")
-            .update({ email_1_sent_at: now.toISOString() })
-            .eq("id", user.id);
+          await supabase.from("user_email_automations").update({ email_1_sent_at: now.toISOString() }).eq("id", user.id);
           emailsSent.email1++;
-          continue; // Só envia 1 email por execução por usuário
+          continue;
         }
 
-        // EMAIL 2: Curso Agente Lucrativo (3 dias depois do cadastro)
-        if (!user.email_2_sent_at && createdAt < threeDaysAgo) {
+        // EMAIL 2: Você está postando? + upsell anual (D+3)
+        if (!user.email_2_sent_at && createdAt < day3) {
           await sendEmail2(resend, user.email, userName, supabase);
-          await supabase
-            .from("user_email_automations")
-            .update({ email_2_sent_at: now.toISOString() })
-            .eq("id", user.id);
+          await supabase.from("user_email_automations").update({ email_2_sent_at: now.toISOString() }).eq("id", user.id);
           emailsSent.email2++;
           continue;
         }
 
-        // EMAIL 3: Oferta Final (5 dias depois do cadastro)
-        if (!user.email_3_sent_at && createdAt < fiveDaysAgo) {
+        // EMAIL 3: Oferta anual exclusiva 48h (D+5)
+        if (!user.email_3_sent_at && createdAt < day5) {
           await sendEmail3(resend, user.email, userName, supabase);
-          await supabase
-            .from("user_email_automations")
-            .update({ email_3_sent_at: now.toISOString() })
-            .eq("id", user.id);
+          await supabase.from("user_email_automations").update({ email_3_sent_at: now.toISOString() }).eq("id", user.id);
           emailsSent.email3++;
+          continue;
+        }
+
+        // EMAIL 4: Agente Lucrativo — introdução (D+14)
+        if (!user.email_4_sent_at && createdAt < day14) {
+          await sendEmail4(resend, user.email, userName, supabase);
+          await supabase.from("user_email_automations").update({ email_4_sent_at: now.toISOString() }).eq("id", user.id);
+          emailsSent.email4++;
+          continue;
+        }
+
+        // EMAIL 5: Agente Lucrativo — última chance (D+30)
+        if (!user.email_5_sent_at && createdAt < day30) {
+          await sendEmail5(resend, user.email, userName, supabase);
+          await supabase.from("user_email_automations").update({ email_5_sent_at: now.toISOString() }).eq("id", user.id);
+          emailsSent.email5++;
         }
       } catch (userError) {
-        logStep("Error processing user", { 
-          userId: user.id, 
+        logStep("Error processing user", {
+          userId: user.id,
           email: user.email,
           error: userError instanceof Error ? userError.message : String(userError)
         });

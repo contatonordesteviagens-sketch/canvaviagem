@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect, useMemo, Suspense, lazy } from "react";
 // Build trigger: Freemium Transition - 2026-02-27
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import SeoMetadata from "@/components/SeoMetadata";
@@ -9,7 +9,7 @@ const Footer = lazy(() => import("@/components/Footer").then(module => ({ defaul
 import { Button } from "@/components/ui/button";
 import { contentLibrary } from "@/data/content-library";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User, ArrowRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
@@ -17,6 +17,53 @@ import { Helmet } from "react-helmet-async";
 // Lazy load non-critical components
 const PremiumGateModal = lazy(() => import("@/components/PremiumGateModal").then(module => ({ default: module.PremiumGateModal })));
 const ResourceSection = lazy(() => import("@/components/ResourceSection").then(module => ({ default: module.ResourceSection })));
+const BlogSection = () => {
+  const posts = [
+    {
+      title: "Marketing Digital para Agência de Viagem 2026",
+      image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=400&auto=format&fit=crop",
+      slug: "marketing-digital-para-agencia-de-viagem"
+    },
+    {
+      title: "Como criar conteúdo sem gravar vídeo",
+      image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=400&auto=format&fit=crop",
+      slug: "como-criar-conteudo-agencia-de-viagem-sem-gravar-video"
+    }
+  ];
+
+  return (
+    <section className="py-16 bg-muted/30">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-end mb-8">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Blog Canva Viagem</h2>
+            <p className="text-muted-foreground">Dicas estratégicas para agentes</p>
+          </div>
+          <Button variant="ghost" asChild>
+            <Link to="/blog" className="flex items-center gap-1 text-primary">
+              Ver tudo <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {posts.map((post, i) => (
+            <Link key={i} to={`/blog/${post.slug}`} className="group relative overflow-hidden rounded-xl border bg-background hover:shadow-lg transition-all">
+              <div className="flex flex-col sm:flex-row h-full">
+                <div className="w-full sm:w-1/3 aspect-video sm:aspect-square overflow-hidden">
+                  <img src={post.image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                </div>
+                <div className="p-4 flex flex-col justify-center w-full sm:w-2/3">
+                  <h3 className="font-bold text-lg leading-tight mb-2 group-hover:text-primary transition-colors">{post.title}</h3>
+                  <span className="text-primary text-sm font-medium flex items-center gap-1">Ler artigo <ArrowRight className="h-4 w-4" /></span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
 
 // Canva-style components
 import { HeroBanner } from "@/components/canva/HeroBanner";
@@ -1351,7 +1398,8 @@ const Index = () => {
         {mainContent}
       </main>
 
-      <Suspense fallback={<div className="h-20 bg-muted/20 animate-pulse" />}>
+      <BlogSection />
+      <Suspense fallback={<div className="h-20" />}>
         <Footer />
       </Suspense>
 

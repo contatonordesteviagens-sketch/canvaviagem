@@ -1,4 +1,4 @@
-project_id = "zdjtcwtakgizbsbbwtgc"
+project_id = "mgdsjxasolxoclchyqdx"
 
 [functions.stripe-webhook]
 verify_jwt = false
@@ -40,4 +40,10 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.meta-conversions-api-es]
+verify_jwt = false
+
+[functions.send-winback]
+verify_jwt = false
+
+[functions.send-reengagement]
 verify_jwt = false

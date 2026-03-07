@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:zdjtcwtakgizbsbbwtgc.supabase.co)",
+      "Bash(ANON=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkanRjd3Rha2dpemJzYmJ3dGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMzIxMjMsImV4cCI6MjA4NDYwODEyM30.juuc45o-OZbLQcx2LaMLyltRABAVy70kgJ_L_JXeUEs\")",
+      "Bash(BASE=\"https://zdjtcwtakgizbsbbwtgc.supabase.co/rest/v1\")",
+      "Bash(H1=\"apikey: $ANON\")",
+      "Bash(H2=\"Authorization: Bearer $ANON\")",
+      "Bash(__NEW_LINE_d2439d59b13a7827__ echo \"=== PAGE VIEWS \\(7 dias\\) ===\")",
+      "Bash(curl -s \"$BASE/page_views?select=page_path,viewed_at&viewed_at=gte.2026-02-28T00:00:00.000Z&limit=1000\" -H \"$H1\" -H \"$H2\")",
+      "Bash(curl -s \"$BASE/subscriptions?select=status,created_at,stripe_price_id&limit=500\" -H \"$H1\" -H \"$H2\")",
+      "Bash(curl -s \"$BASE/content_clicks?select=content_type,content_id,created_at&created_at=gte.2026-02-28T00:00:00.000Z&limit=1000\" -H \"$H1\" -H \"$H2\")",
+      "Bash(curl -s \"$BASE/traffic_sources?select=utm_source,utm_medium,referrer,created_at&created_at=gte.2026-02-28T00:00:00.000Z&limit=1000\" -H \"$H1\" -H \"$H2\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"c:\\\\Users\\\\win 10\\\\Downloads\\\\canvaviagem-main \\(4\\)\\\\canvaviagem-main\\\\fetch_dados.ps1\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"c:\\\\Users\\\\win 10\\\\Downloads\\\\canvaviagem-main \\(4\\)\\\\canvaviagem-main\\\\fetch2.ps1\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"c:\\\\Users\\\\win 10\\\\Downloads\\\\canvaviagem-main \\(4\\)\\\\canvaviagem-main\\\\fetch_stripe.ps1\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"c:\\\\Users\\\\win 10\\\\Downloads\\\\canvaviagem-main \\(4\\)\\\\canvaviagem-main\\\\fetch_stripe2.ps1\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"c:\\\\Users\\\\win 10\\\\Downloads\\\\canvaviagem-main \\(4\\)\\\\canvaviagem-main\\\\fetch_stripe3.ps1\")"
+    ]
+  }
+}

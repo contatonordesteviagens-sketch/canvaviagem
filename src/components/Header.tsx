@@ -108,6 +108,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
   const mainNavItems = [
     { to: isESRoute ? "/es" : "/", label: t('header.home'), icon: Home },
     { to: isESRoute ? "/es/calendar" : "/calendar", label: t('header.calendar'), icon: Calendar },
+    { to: "/blog", label: "Blog", icon: FileText },
     { to: isESRoute ? "/es/planos" : "/planos", label: t('header.plans'), icon: CreditCard },
   ];
 
