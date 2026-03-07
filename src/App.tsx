@@ -40,6 +40,7 @@ const ProximoNivel = lazy(() => import("./pages/ProximoNivel"));
 const Progresso = lazy(() => import("./pages/Progresso"));
 const Sugestoes = lazy(() => import("./pages/Sugestoes"));
 const AuthVerify = lazy(() => import("./pages/AuthVerify"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -134,6 +135,9 @@ const App = () => (
                       <Route path="captions" element={<CaptionsManager />} />
                       <Route path="tools" element={<ToolsManager />} />
                     </Route>
+
+                    {/* ROTAS DO BLOG */}
+                    <Route path="/blog/o-que-postar-no-instagram-agencia-de-viagem" element={<BlogPost />} />
 
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
