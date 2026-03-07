@@ -47,11 +47,11 @@ const BlogPost = () => {
                 })}</script>
             </Helmet>
 
-            <div className="min-h-screen bg-[#0a0a0f] text-white">
+            <div className="min-h-screen bg-gray-50 text-gray-900">
                 {/* Header */}
-                <header className="border-b border-white/10 py-4 px-6">
+                <header className="border-b border-gray-200 bg-white py-4 px-6 shadow-sm">
                     <div className="max-w-4xl mx-auto flex items-center justify-between">
-                        <Link to="/" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors">
+                        <Link to="/" className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors">
                             <ArrowLeft size={18} />
                             <span className="text-sm">Voltar ao site</span>
                         </Link>
@@ -65,12 +65,12 @@ const BlogPost = () => {
                 <main className="max-w-4xl mx-auto px-6 py-12">
 
                     {/* Breadcrumb */}
-                    <nav className="text-sm text-white/40 mb-6">
-                        <Link to="/" className="hover:text-white/70">Início</Link>
+                    <nav className="text-sm text-gray-400 mb-6">
+                        <Link to="/" className="hover:text-gray-700">Início</Link>
                         <span className="mx-2">/</span>
-                        <span className="hover:text-white/70 cursor-pointer">Blog</span>
+                        <span className="hover:text-gray-700 cursor-pointer">Blog</span>
                         <span className="mx-2">/</span>
-                        <span className="text-white/70">O que postar no Instagram</span>
+                        <span className="text-gray-600">O que postar no Instagram</span>
                     </nav>
 
                     {/* Tag de categoria */}
@@ -79,13 +79,12 @@ const BlogPost = () => {
                     </span>
 
                     {/* Título */}
-                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6">
+                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6 text-gray-900">
                         O que Postar no Instagram da Sua Agência de Viagem
-                        <span className="text-blue-400"> (30 Ideias Prontas)</span>
+                        <span className="text-blue-600"> (30 Ideias Prontas)</span>
                     </h1>
 
-                    {/* Meta do artigo */}
-                    <div className="flex flex-wrap items-center gap-4 text-white/40 text-sm mb-8 pb-8 border-b border-white/10">
+                    <div className="flex flex-wrap items-center gap-4 text-gray-400 text-sm mb-8 pb-8 border-b border-gray-200">
                         <div className="flex items-center gap-1.5">
                             <Calendar size={14} />
                             <span>7 de março de 2026</span>
@@ -96,7 +95,7 @@ const BlogPost = () => {
                         </div>
                         <button
                             onClick={handleShare}
-                            className="flex items-center gap-1.5 ml-auto text-white/40 hover:text-white transition-colors"
+                            className="flex items-center gap-1.5 ml-auto text-gray-400 hover:text-gray-700 transition-colors"
                         >
                             <Share2 size={14} />
                             <span>Compartilhar</span>
@@ -104,7 +103,7 @@ const BlogPost = () => {
                     </div>
 
                     {/* Conteúdo */}
-                    <div className="prose prose-invert prose-lg max-w-none space-y-8">
+                    <div className="prose prose-gray prose-lg max-w-none space-y-8">
 
                         {/* Imagem Hero */}
                         <div className="mb-8 rounded-2xl overflow-hidden border border-white/10">
@@ -116,7 +115,7 @@ const BlogPost = () => {
                             />
                         </div>
 
-                        <p className="text-xl text-white/80 leading-relaxed">
+                        <p className="text-xl text-gray-700 leading-relaxed">
                             Você sabe que precisa postar no Instagram da sua agência de viagem. Mas chega a hora e bate aquela travada: <em>"O que eu posto hoje?"</em>
                         </p>
 
@@ -126,10 +125,10 @@ const BlogPost = () => {
                         </p>
 
                         {/* CTA inline */}
-                        <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 rounded-2xl p-6 my-10">
-                            <p className="font-semibold text-white mb-2">🎯 Quer pular direto para o conteúdo pronto?</p>
-                            <p className="text-white/70 text-sm mb-4">O Canva Viagem tem 150 vídeos prontos para você publicar no Instagram da sua agência. Editáveis no Canva, por R$47 uma única vez.</p>
-                            <Link to="/planos" className="inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold px-6 py-2.5 rounded-xl hover:opacity-90 transition-opacity text-sm">
+                        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 my-10">
+                            <p className="font-semibold text-gray-900 mb-2">🎯 Quer pular direto para o conteúdo pronto?</p>
+                            <p className="text-gray-600 text-sm mb-4">O Canva Viagem tem 250+ vídeos prontos para você publicar no Instagram da sua agência. Editáveis no Canva. A partir de R$29/mês ou R$197/ano.</p>
+                            <Link to="/planos" className="inline-block bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl hover:opacity-90 transition-opacity text-sm">
                                 Ver conteúdo pronto →
                             </Link>
                         </div>
