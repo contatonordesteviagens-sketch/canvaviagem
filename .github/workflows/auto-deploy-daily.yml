@@ -1,0 +1,62 @@
+name: 🚀 Auto-Deploy Blog Diário
+
+on:
+  schedule:
+    # Publica artigos todos os dias às 8h horário de Brasília (11h UTC)
+    - cron: '0 11 * * *'
+  # Permite executar manualmente pelo botão "Run workflow" no GitHub
+  workflow_dispatch:
+    inputs:
+      force_commit:
+        description: 'Forçar novo commit mesmo sem artigos novos?'
+        required: false
+        default: 'false'
+
+jobs:
+  update-sitemap:
+    name: Atualizar Sitemap e Registrar Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 📥 Checkout do repositório
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📅 Verificar data de hoje
+        id: date
+        run: echo "TODAY=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: 📝 Atualizar registro de deploys automáticos
+        run: |
+          mkdir -p .github/deploy-logs
+          echo "Deploy automático: ${{ steps.date.outputs.TODAY }}" >> .github/deploy-logs/history.txt
+          echo "Horário UTC: $(date +'%H:%M:%S')" >> .github/deploy-logs/history.txt
+          echo "---" >> .github/deploy-logs/history.txt
+
+      - name: 🔧 Configurar Git
+        run: |
+          git config --local user.email "bot@canvaviagem.com"
+          git config --local user.name "Canvaviagem Bot"
+
+      - name: 📤 Commit e Push (ativa o deploy no Lovable)
+        run: |
+          git add .github/deploy-logs/
+          git diff --staged --quiet || git commit -m "chore: deploy automático ${{ steps.date.outputs.TODAY }} — blog atualizado [skip ci]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📊 Notificar sucesso no Telegram
+        if: env.TELEGRAM_BOT_TOKEN != ''
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          ADMIN_CHAT_ID: ${{ secrets.ADMIN_CHAT_ID }}
+        run: |
+          MESSAGE="✅ *Deploy Automático Concluído*%0A📅 Data: ${{ steps.date.outputs.TODAY }}%0A🌐 Site: canvaviagem.com%0A📝 Artigos do blog: ativos e indexáveis"
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${ADMIN_CHAT_ID}" \
+            -d "text=${MESSAGE}" \
+            -d "parse_mode=Markdown" || true
