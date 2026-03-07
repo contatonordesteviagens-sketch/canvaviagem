@@ -15,7 +15,8 @@
       "Bash(powershell.exe -ExecutionPolicy Bypass -File \"c:\\\\Users\\\\win 10\\\\Downloads\\\\canvaviagem-main \\(4\\)\\\\canvaviagem-main\\\\fetch2.ps1\")",
       "Bash(powershell.exe -ExecutionPolicy Bypass -File \"c:\\\\Users\\\\win 10\\\\Downloads\\\\canvaviagem-main \\(4\\)\\\\canvaviagem-main\\\\fetch_stripe.ps1\")",
       "Bash(powershell.exe -ExecutionPolicy Bypass -File \"c:\\\\Users\\\\win 10\\\\Downloads\\\\canvaviagem-main \\(4\\)\\\\canvaviagem-main\\\\fetch_stripe2.ps1\")",
-      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"c:\\\\Users\\\\win 10\\\\Downloads\\\\canvaviagem-main \\(4\\)\\\\canvaviagem-main\\\\fetch_stripe3.ps1\")"
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"c:\\\\Users\\\\win 10\\\\Downloads\\\\canvaviagem-main \\(4\\)\\\\canvaviagem-main\\\\fetch_stripe3.ps1\")",
+      "Bash(ls \"c:\\\\Users\\\\win 10\\\\Downloads\\\\canvaviagem-main \\(4\\)\\\\canvaviagem-main\\\\.agents\\\\skills\\\\canvaviagem_email_diretor\")"
     ]
   }
 }

@@ -109,7 +109,7 @@ const BlogPost = () => {
                         {/* Imagem Hero */}
                         <div className="mb-8 rounded-2xl overflow-hidden border border-white/10 shadow-lg">
                             <img
-                                src="/blog/img-instagram-agencia-viagem.png"
+                                src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=800&auto=format&fit=crop"
                                 alt="Instagram de agência de viagem com posts profissionais de destinos — o que postar"
                                 className="w-full object-cover"
                                 loading="eager"

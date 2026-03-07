@@ -98,7 +98,7 @@ const BlogPost2 = () => {
                         {/* Imagem Hero */}
                         <div className="mb-8 rounded-2xl overflow-hidden border border-white/10 shadow-lg">
                             <img
-                                src="/blog/img-como-criar-conteudo-sem-gravar.png"
+                                src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=800&auto=format&fit=crop"
                                 alt="Método de 3 passos para criar conteúdo para agência de viagem sem gravar vídeo"
                                 className="w-full object-cover"
                                 loading="eager"

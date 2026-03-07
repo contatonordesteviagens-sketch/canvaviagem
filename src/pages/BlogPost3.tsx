@@ -95,6 +95,13 @@ const BlogPost3 = () => {
                     </div>
 
                     <div className="prose prose-lg max-w-none space-y-8">
+                        <div className="mb-10 rounded-2xl overflow-hidden shadow-xl border border-gray-200">
+                            <img
+                                src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1200&auto=format&fit=crop"
+                                alt="Marketing digital para agência de viagem"
+                                className="w-full h-auto"
+                            />
+                        </div>
 
                         {/* Intro */}
                         <p className="text-xl text-slate-700 leading-relaxed font-medium">
