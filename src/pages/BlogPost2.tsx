@@ -46,26 +46,26 @@ const BlogPost2 = () => {
                 })}</script>
             </Helmet>
 
-            <div className="min-h-screen bg-[#0a0a0f] text-white">
-                <header className="border-b border-white/10 py-4 px-6">
+            <div className="min-h-screen bg-gray-50 text-slate-900">
+                <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 py-4 px-6 shadow-sm">
                     <div className="max-w-4xl mx-auto flex items-center justify-between">
-                        <Link to="/" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors">
+                        <Link to="/" className="flex items-center gap-2 text-slate-500 hover:text-primary transition-colors">
                             <ArrowLeft size={18} />
-                            <span className="text-sm">Voltar ao site</span>
+                            <span className="text-sm font-medium">Voltar ao site</span>
                         </Link>
-                        <Link to="/" className="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                        <Link to="/" className="text-xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                             Canva Viagem
                         </Link>
                     </div>
                 </header>
 
                 <main className="max-w-4xl mx-auto px-6 py-12">
-                    <nav className="text-sm text-white/40 mb-6">
-                        <Link to="/" className="hover:text-white/70">Início</Link>
+                    <nav className="text-sm text-slate-400 mb-6 font-medium">
+                        <Link to="/" className="hover:text-primary transition-colors">Início</Link>
                         <span className="mx-2">/</span>
-                        <span className="hover:text-white/70 cursor-pointer">Blog</span>
+                        <span className="hover:text-primary cursor-pointer transition-colors">Blog</span>
                         <span className="mx-2">/</span>
-                        <span className="text-white/70">Criar conteúdo sem gravar vídeo</span>
+                        <span className="text-slate-600">Criar conteúdo sem gravar vídeo</span>
                     </nav>
 
                     <span className="inline-block text-xs font-semibold uppercase tracking-widest text-purple-400 bg-purple-400/10 px-3 py-1 rounded-full mb-6">
@@ -77,16 +77,16 @@ const BlogPost2 = () => {
                         <span className="text-purple-400"> Sem Gravar Vídeo</span>
                     </h1>
 
-                    <div className="flex flex-wrap items-center gap-4 text-white/40 text-sm mb-8 pb-8 border-b border-white/10">
-                        <div className="flex items-center gap-1.5">
-                            <Calendar size={14} />
-                            <span>7 de março de 2026</span>
+                    <div className="flex flex-wrap items-center gap-4 text-slate-400 text-sm mb-8 pb-8 border-b border-gray-200">
+                        <div className="flex items-center gap-1.5 bg-gray-100 px-3 py-1 rounded-full">
+                            <Calendar size={14} className="text-primary" />
+                            <span className="font-medium">7 de março de 2026</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                            <Clock size={14} />
-                            <span>7 minutos de leitura</span>
+                        <div className="flex items-center gap-1.5 bg-gray-100 px-3 py-1 rounded-full">
+                            <Clock size={14} className="text-primary" />
+                            <span className="font-medium">7 minutos de leitura</span>
                         </div>
-                        <button onClick={handleShare} className="flex items-center gap-1.5 ml-auto text-white/40 hover:text-white transition-colors">
+                        <button onClick={handleShare} className="flex items-center gap-1.5 ml-auto text-slate-500 hover:text-primary transition-colors font-medium">
                             <Share2 size={14} />
                             <span>Compartilhar</span>
                         </button>
@@ -104,21 +104,21 @@ const BlogPost2 = () => {
                             />
                         </div>
 
-                        <p className="text-xl text-white/80 leading-relaxed">
+                        <p className="text-xl text-slate-700 leading-relaxed font-medium">
                             "Não consigo criar conteúdo porque não sei gravar vídeo" — essa é a frase que mais trava agentes de viagem no Instagram.
                             E a boa notícia é que você não precisa gravar nada para ter um perfil profissional e ativo.
                         </p>
 
-                        <p className="text-white/70 leading-relaxed">
+                        <p className="text-slate-600 leading-relaxed">
                             Neste artigo você vai entender como funciona o método que agentes de viagem de todo o Brasil estão usando para postar todo dia — sem aparecer na câmera, sem editar no celular, sem contratar um designer.
                         </p>
 
-                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">Por que a maioria dos agentes não posta?</h2>
-                        <p className="text-white/70 leading-relaxed">
+                        <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">Por que a maioria dos agentes não posta?</h2>
+                        <p className="text-slate-600 leading-relaxed">
                             Existe uma crença de que para ter um Instagram bom, você precisa de três coisas: câmera profissional, habilidade de edição e muito tempo. Nenhuma dessas três é verdade.
                         </p>
-                        <p className="text-white/70 leading-relaxed">
-                            O que você precisa, na verdade, é de <strong className="text-white">conteúdo visual de qualidade</strong> e <strong className="text-white">consistência</strong>. E dá para ter os dois sem gravar um segundo de vídeo sequer.
+                        <p className="text-slate-600 leading-relaxed">
+                            O que você precisa, na verdade, é de <strong className="text-slate-900">conteúdo visual de qualidade</strong> e <strong className="text-slate-900">consistência</strong>. E dá para ter os dois sem gravar um segundo de vídeo sequer.
                         </p>
 
                         <h2 className="text-2xl font-bold text-white mt-12 mb-4">Os 3 tipos de conteúdo que funcionam sem câmera</h2>
@@ -142,15 +142,15 @@ const BlogPost2 = () => {
                         </p>
 
                         {/* CTA intermediário */}
-                        <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 rounded-2xl p-6 my-10">
-                            <p className="font-semibold text-white mb-2">🎯 Quer pular a etapa de montar o vídeo do zero?</p>
-                            <p className="text-white/70 text-sm mb-4">O Canva Viagem tem 150 vídeos prontos para sua agência. Com destinos nacionais e internacionais, já editados e otimizados para Reels e Stories. Por R$47.</p>
-                            <Link to="/planos" className="inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold px-6 py-2.5 rounded-xl hover:opacity-90 transition-opacity text-sm">
-                                Ver os 150 vídeos prontos →
+                        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 my-10 shadow-sm">
+                            <p className="font-bold text-slate-900 mb-2">🎯 Quer pular a etapa de montar o vídeo do zero?</p>
+                            <p className="text-slate-600 text-sm mb-4">O Canva Viagem tem centenas de vídeos e artes prontos para sua agência. Com destinos nacionais e internacionais, já editados e otimizados para Reels e Stories. Planos a partir de R$29/mês.</p>
+                            <Link to="/planos" className="inline-block bg-primary text-white font-bold px-6 py-2.5 rounded-xl hover:bg-primary/90 transition-all text-sm shadow-md hover:shadow-lg active:scale-95">
+                                Ver planos e conteúdos →
                             </Link>
                         </div>
 
-                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">O método dos 3 passos para criar conteúdo rápido</h2>
+                        <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">O método dos 3 passos para criar conteúdo rápido</h2>
 
                         <div className="space-y-6">
                             <div className="flex gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
@@ -193,24 +193,31 @@ const BlogPost2 = () => {
                         </p>
 
                         {/* CTA final */}
-                        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 my-10 text-center">
-                            <h3 className="text-2xl font-bold text-white mb-3">Comece Hoje com 150 Vídeos Prontos</h3>
-                            <p className="text-white/80 mb-6 max-w-lg mx-auto">
-                                Sem gravar. Sem editar do zero. Só personalizar com a logo da sua agência e publicar. 150 vídeos para o Instagram por R$47.
+                        <div className="bg-slate-900 rounded-3xl p-10 my-16 text-center shadow-xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                            <div className="absolute bottom-0 left-0 w-32 h-32 bg-accent/10 rounded-full -ml-16 -mb-16 blur-3xl"></div>
+
+                            <h3 className="text-2xl md:text-3xl font-black text-white mb-4 relative z-10">
+                                Tenha um Perfil Profissional Hoje
+                            </h3>
+                            <p className="text-slate-300 mb-8 max-w-lg mx-auto text-base md:text-lg relative z-10">
+                                Sem gravar. Sem aparecer. Só personalizar com a logo da sua agência e publicar. Planos a partir de R$29/mês ou R$197/ano.
                             </p>
-                            <Link to="/planos" className="inline-block bg-white text-purple-700 font-bold px-8 py-3 rounded-xl hover:bg-white/90 transition-opacity text-sm">
-                                Quero começar a postar hoje por R$47 →
+                            <Link to="/planos" className="relative z-10 inline-block bg-white text-slate-900 font-black px-10 py-4 rounded-2xl hover:bg-slate-100 transition-all text-base shadow-xl active:scale-95">
+                                QUERO COMEÇAR AGORA →
                             </Link>
                         </div>
 
                     </div>
                 </main>
 
-                <footer className="border-t border-white/10 py-8 px-6 text-center text-white/30 text-sm">
-                    <p>© 2026 Canva Viagem. Todos os direitos reservados.</p>
-                    <div className="flex justify-center gap-4 mt-2">
-                        <Link to="/termos" className="hover:text-white/60 transition-colors">Termos</Link>
-                        <Link to="/privacidade" className="hover:text-white/60 transition-colors">Privacidade</Link>
+                <footer className="bg-white border-t border-gray-200 py-12 px-6 text-center">
+                    <div className="max-w-4xl mx-auto">
+                        <p className="text-slate-400 text-sm font-medium">© 2026 Canva Viagem. Todos os direitos reservados.</p>
+                        <div className="flex justify-center gap-6 mt-4">
+                            <Link to="/termos" className="text-slate-500 hover:text-primary text-xs font-bold uppercase tracking-widest transition-colors">Termos</Link>
+                            <Link to="/privacidade" className="text-slate-500 hover:text-primary text-xs font-bold uppercase tracking-widest transition-colors">Privacidade</Link>
+                        </div>
                     </div>
                 </footer>
             </div>

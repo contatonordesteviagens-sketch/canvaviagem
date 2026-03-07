@@ -13,6 +13,20 @@ Esse departamento é motor de crescimento orgânico do Canvaviagem. Cada artigo 
 
 ## Equipe do Departamento
 
+### 🎨 Especialista em Arte e Criação Visual
+Responsável por criar as capas dos artigos, infográficos e imagens realistas que "param o scroll".
+**Responsabilidades:**
+- Criar imagens Hero estilizadas para cada artigo (estilo dark-premium ou light-clean)
+- Desenvolver infográficos que simplificam conceitos de marketing para o agente
+- Garantir que todas as imagens no blog têm atributos `alt` otimizados para SEO Imagens
+
+### 🖥️ UI/UX Designer de Conteúdo
+Foca na experiência de leitura e conversão visual do blog.
+**Responsabilidades:**
+- Otimizar o layout dos artigos para máxima legibilidade (espaçamento, fontes, contraste)
+- Criar caixas de CTA que chamam a atenção sem serem invasivas
+- Garantir que o blog é 100% responsivo e rápido no mobile
+
 ### 📝 Editor-Chefe de Blog
 Responsável por definir a pauta, revisar todos os artigos antes de publicar e garantir consistência de voz e qualidade.
 
@@ -79,13 +93,14 @@ Garante que cada artigo seja espalhado em múltiplos canais.
 ```
 1. [Estrategista SEO] Seleciona palavra-chave da lista prioritária
 2. [Editor-Chefe] Aprova pauta e define ângulo do artigo (título final)
-3. [Redator] Escreve artigo completo (+1.200 palavras) com SEO on-page
-4. [Editor-Chefe] Revisa e aprova
-5. [Dev] Cria o componente BlogPost tsx e registra a rota no App.tsx
-6. [Dev] Faz commit e push para o GitHub → Lovable faz deploy
-7. [Especialista Distribuição] Distribui nos canais
-8. [SEO Manager] Atualiza sitemap.xml com a nova URL
-9. [CEO] Monitora performance no Google Search Console após 4 semanas
+3. [Redator] Escreve o rascunho do artigo (+1.200 palavras)
+4. [Especialista em Arte] Cria a imagem Hero e infográficos baseados no texto
+5. [UI/UX Designer] Define a estrutura de blocos e CTAs para melhor conversão
+6. [Editor-Chefe] Revisa e aprova o conjunto completo (Texto + Imagens)
+7. [Dev] Cria o componente BlogPost tsx e registra a rota no App.tsx
+8. [Dev] Faz commit e push para o GitHub → Lovable faz deploy
+9. [Especialista Distribuição] Distribui nos canais
+10. [SEO Manager] Atualiza sitemap.xml com a nova URL
 ```
 
 ---
