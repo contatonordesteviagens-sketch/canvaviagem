@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Clock, Calendar, Share2, TrendingUp, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { BlogCTA } from "@/components/blog/BlogCTA";
 
 const BlogPost3 = () => {
     const handleShare = () => {
@@ -30,9 +31,9 @@ const BlogPost3 = () => {
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Marketing Digital para Agência de Viagem: Guia Completo 2026" />
                 <meta property="og:description" content="Os 7 erros que derrubam agentes no Instagram e as estratégias que estão funcionando em 2026." />
-                <meta property="og:image" content="/blog/img-marketing-digital-agencia.png" />
+                <meta property="og:image" content="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=800&auto=format&fit=crop" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/blog/img-marketing-digital-agencia.png" />
+                <meta name="twitter:image" content="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=800&auto=format&fit=crop" />
                 <script type="application/ld+json">{JSON.stringify({
                     "@context": "https://schema.org",
                     "@type": "Article",
@@ -43,7 +44,7 @@ const BlogPost3 = () => {
                     "datePublished": "2026-03-10",
                     "dateModified": "2026-03-10",
                     "url": "https://canvaviagem.com/blog/marketing-digital-para-agencia-de-viagem",
-                    "image": "https://canvaviagem.com/blog/img-marketing-digital-agencia.png"
+                    "image": "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=800&auto=format&fit=crop"
                 })}</script>
             </Helmet>
 
@@ -54,17 +55,17 @@ const BlogPost3 = () => {
                             <ArrowLeft size={18} />
                             <span className="text-sm font-medium">Voltar ao site</span>
                         </Link>
-                        <Link to="/" className="text-xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                        <Link to="/" className="text-xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                             Canva Viagem
                         </Link>
                     </div>
                 </header>
 
-                <main className="max-w-4xl mx-auto px-6 py-12">
+                <main className="max-w-4xl mx-auto px-6 py-12 pb-32">
                     <nav className="text-sm text-slate-400 mb-6 font-medium">
                         <Link to="/" className="hover:text-primary transition-colors">Início</Link>
                         <span className="mx-2">/</span>
-                        <span className="hover:text-primary cursor-pointer transition-colors">Blog</span>
+                        <Link to="/blog" className="hover:text-primary transition-colors">Blog</Link>
                         <span className="mx-2">/</span>
                         <span className="text-slate-600">Marketing Digital para Agência</span>
                     </nav>
@@ -99,6 +100,8 @@ const BlogPost3 = () => {
                         <p className="text-xl text-slate-700 leading-relaxed font-medium">
                             Em 2026, não basta ter uma agência de viagem boa. <strong className="text-slate-900">Você precisa ser encontrada.</strong> E o marketing digital deixou de ser opcional para se tornar o maior diferencial entre agentes que crescem e aqueles que ainda esperam o telefone tocar.
                         </p>
+
+                        <BlogCTA type="free" className="my-10 shadow-blue-50" />
 
                         <p className="text-slate-600 leading-relaxed">
                             A boa notícia: a maioria dos agentes ainda erra nos mesmos pontos básicos. Isso significa que quem acertar <em>agora</em> vai sair na frente dos concorrentes por meses — ou anos.
@@ -187,16 +190,7 @@ const BlogPost3 = () => {
                             </div>
                         ))}
 
-                        {/* CTA intermediário */}
-                        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 my-10 shadow-sm">
-                            <p className="font-bold text-slate-900 mb-2">💡 Cansado de criar conteúdo do zero?</p>
-                            <p className="text-slate-600 text-sm mb-4">
-                                O Canva Viagem resolve o erro #2 (consistência) automaticamente: você tem centenas de vídeos e artes prontos para postar todo dia. Só personalize com sua logo e publique.
-                            </p>
-                            <Link to="/planos" className="inline-block bg-primary text-white font-bold px-6 py-2.5 rounded-xl hover:bg-primary/90 transition-all text-sm shadow-md hover:shadow-lg active:scale-95">
-                                Ver planos — a partir de R$29/mês →
-                            </Link>
-                        </div>
+                        <BlogCTA type="main" className="my-10" />
 
                         {/* O que fazer */}
                         <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-14 mb-6">

@@ -17,7 +17,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.darkMode': 'Modo Escuro',
 
     // Hero
-    'hero.title': 'O que você vai criar hoje?',
+    'hero.title': 'Pare de improvisar e venda mais viagens',
     'hero.searchPlaceholder': 'Busque conteúdo seu ou do Canva',
 
     // Categories
@@ -97,7 +97,7 @@ export const translations: Record<Language, Record<string, string>> = {
     // Plans Page
     'plans.title': 'Escolha seu Plano',
     'plans.subtitle': 'Acesso ilimitado a todo conteúdo',
-    'plans.price': 'R$ 29,00',
+    'plans.price': 'R$ 16,41',
     'plans.period': '/mês',
     'plans.originalPrice': 'de R$ 197,00',
     'plans.cta': 'Assinar Plano Agora',
@@ -106,7 +106,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'plans.guarantee': 'Garantia de 7 dias',
     'plans.guaranteeTitle': 'Garantia Total de 7 Dias',
     'plans.guaranteeDesc': 'Em 7 dias seu perfil vai ter o dobro de engajamento ou devolvo seu dinheiro.',
-    'plans.badge': '🎁 ACESSO IMEDIATO - Apenas R$29,00/mês',
+    'plans.badge': '🎁 ACESSO IMEDIATO - A partir de R$16,41/mês',
     'plans.heroTitle': 'VENDA + VIAGENS',
     'plans.heroTitleLine2': 'O ANO INTEIRO!',
     'plans.heroSubtitle': 'Tenha acesso a 250 vídeos de viagens e poste em 2 minutos.',
@@ -160,7 +160,7 @@ export const translations: Record<Language, Record<string, string>> = {
     // Premium Gate
     'premium.title': 'Conteúdo Exclusivo 🔒',
     'premium.subtitle': 'Este conteúdo é exclusivo para assinantes Premium',
-    'premium.cta': 'Assinar Premium - R$ 29,00/mês',
+    'premium.cta': 'Assinar Premium - R$ 16,41/mês',
     'premium.close': 'Voltar',
     'premium.clickUnlock': 'Clique para desbloquear',
     'premium.unlockAccess': '🔓 DESBLOQUEAR ACESSO',
@@ -230,7 +230,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.darkMode': 'Modo Oscuro',
 
     // Hero
-    'hero.title': '¿Qué vas a crear hoy?',
+    'hero.title': 'Deja de improvisar y vende más viajes',
     'hero.searchPlaceholder': 'Busca contenido tuyo o de Canva',
 
     // Categories
@@ -319,7 +319,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'plans.guarantee': 'Garantía de 7 días',
     'plans.guaranteeTitle': 'Garantía Total de 7 Días',
     'plans.guaranteeDesc': 'En 7 días tu perfil tendrá el doble de engagement o te devuelvo tu dinero.',
-    'plans.badge': '🎁 ACCESO INMEDIATO - Solo $9,09/mes',
+    'plans.badge': '🎁 ACCESO INMEDIATO - Desde $9,09/mes',
     'plans.heroTitle': '¡VENDE MÁS VIAJES',
     'plans.heroTitleLine2': 'TODO EL AÑO!',
     'plans.heroSubtitle': 'Accede a 250 videos de viajes y publica en 2 minutos.',

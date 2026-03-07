@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Clock, Calendar, Share2 } from "lucide-react";
+import { BlogCTA } from "@/components/blog/BlogCTA";
 
 const BlogPost2 = () => {
     const handleShare = () => {
@@ -53,28 +54,28 @@ const BlogPost2 = () => {
                             <ArrowLeft size={18} />
                             <span className="text-sm font-medium">Voltar ao site</span>
                         </Link>
-                        <Link to="/" className="text-xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                        <Link to="/" className="text-xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                             Canva Viagem
                         </Link>
                     </div>
                 </header>
 
-                <main className="max-w-4xl mx-auto px-6 py-12">
+                <main className="max-w-4xl mx-auto px-6 py-12 pb-32">
                     <nav className="text-sm text-slate-400 mb-6 font-medium">
                         <Link to="/" className="hover:text-primary transition-colors">Início</Link>
                         <span className="mx-2">/</span>
-                        <span className="hover:text-primary cursor-pointer transition-colors">Blog</span>
+                        <Link to="/blog" className="hover:text-primary transition-colors">Blog</Link>
                         <span className="mx-2">/</span>
                         <span className="text-slate-600">Criar conteúdo sem gravar vídeo</span>
                     </nav>
 
-                    <span className="inline-block text-xs font-semibold uppercase tracking-widest text-purple-400 bg-purple-400/10 px-3 py-1 rounded-full mb-6">
+                    <span className="inline-block text-xs font-semibold uppercase tracking-widest text-purple-600 bg-purple-400/10 px-3 py-1 rounded-full mb-6">
                         Conteúdo & Estratégia
                     </span>
 
                     <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6">
                         Como Criar Conteúdo para Agência de Viagem
-                        <span className="text-purple-400"> Sem Gravar Vídeo</span>
+                        <span className="text-purple-600"> Sem Gravar Vídeo</span>
                     </h1>
 
                     <div className="flex flex-wrap items-center gap-4 text-slate-400 text-sm mb-8 pb-8 border-b border-gray-200">
@@ -95,7 +96,7 @@ const BlogPost2 = () => {
                     <div className="prose prose-slate prose-lg max-w-none space-y-8">
 
                         {/* Imagem Hero */}
-                        <div className="mb-8 rounded-2xl overflow-hidden border border-white/10">
+                        <div className="mb-8 rounded-2xl overflow-hidden border border-white/10 shadow-lg">
                             <img
                                 src="/blog/img-como-criar-conteudo-sem-gravar.png"
                                 alt="Método de 3 passos para criar conteúdo para agência de viagem sem gravar vídeo"
@@ -117,6 +118,9 @@ const BlogPost2 = () => {
                         <p className="text-slate-600 leading-relaxed">
                             Existe uma crença de que para ter um Instagram bom, você precisa de três coisas: câmera profissional, habilidade de edição e muito tempo. Nenhuma dessas três é verdade.
                         </p>
+
+                        <BlogCTA type="free" className="my-10" />
+
                         <p className="text-slate-600 leading-relaxed">
                             O que você precisa, na verdade, é de <strong className="text-slate-900">conteúdo visual de qualidade</strong> e <strong className="text-slate-900">consistência</strong>. E dá para ter os dois sem gravar um segundo de vídeo sequer.
                         </p>
@@ -127,28 +131,18 @@ const BlogPost2 = () => {
                         <p className="text-slate-600 leading-relaxed">
                             O formato mais eficiente atualmente no Instagram é o Reel com transições de fotos e texto em cima. Você usa fotos de banco de imagem do destino, coloca uma legenda impactante e música. Isso gera alcance altíssimo — e você não aparece em momento algum.
                         </p>
-                        <p className="text-slate-600 leading-relaxed">
-                            Plataformas como o Canva oferecem templates prontos com esse estilo. Você edita o destino, o preço do pacote e publica. Em menos de 5 minutos.
-                        </p>
 
                         <h3 className="text-xl font-semibold text-slate-800 mt-8 mb-3">2. Carrosséis educativos</h3>
                         <p className="text-slate-600 leading-relaxed">
                             Carrosséis são o tipo de post com maior taxa de salvamento no Instagram — e salvamentos são o melhor sinal de que o conteúdo tem valor. Um carrossel do tipo "7 coisas que você precisa saber antes de viajar para Maldivas" funciona muito bem e pode ser feito inteiramente com texto e imagens estáticas.
                         </p>
 
+                        <BlogCTA type="main" className="my-10" />
+
                         <h3 className="text-xl font-semibold text-slate-800 mt-8 mb-3">3. Reels com vídeos de estoque</h3>
                         <p className="text-slate-600 leading-relaxed">
                             Existem milhares de vídeos gratuitos de destinos turísticos em plataformas como Pexels e Pixabay. Você pega um vídeo de Santorini, por exemplo, adiciona texto com "Pacote Grécia saindo de R$X por pessoa, 7 noites", coloca uma música popular e publica como Reel. Simples assim.
                         </p>
-
-                        {/* CTA intermediário */}
-                        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 my-10 shadow-sm">
-                            <p className="font-bold text-slate-900 mb-2">🎯 Quer pular a etapa de montar o vídeo do zero?</p>
-                            <p className="text-slate-600 text-sm mb-4">O Canva Viagem tem centenas de vídeos e artes prontos para sua agência. Com destinos nacionais e internacionais, já editados e otimizados para Reels e Stories. Planos a partir de R$29/mês.</p>
-                            <Link to="/planos" className="inline-block bg-primary text-white font-bold px-6 py-2.5 rounded-xl hover:bg-primary/90 transition-all text-sm shadow-md hover:shadow-lg active:scale-95">
-                                Ver planos e conteúdos →
-                            </Link>
-                        </div>
 
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">O método dos 3 passos para criar conteúdo rápido</h2>
 
@@ -180,34 +174,8 @@ const BlogPost2 = () => {
                         <p className="text-slate-600 leading-relaxed">
                             Usando templates prontos, cada post demora entre 5 e 15 minutos para estar pronto. Postar 4 vezes por semana = 1 hora dedicada ao Instagram por semana.
                         </p>
-                        <p className="text-slate-600 leading-relaxed">
-                            O segredo é ter o conteúdo já pronto para usar — não começar do zero toda vez. É exatamente isso que o Canva Viagem resolve: você já tem 150 vídeos prontos, é só personalizar e publicar.
-                        </p>
 
-                        <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">E os resultados — quando aparecem?</h2>
-                        <p className="text-slate-600 leading-relaxed">
-                            Com consistência de 4+ posts por semana, os primeiros resultados aparecem em 30-60 dias: mais seguidores do nicho certo, primeiras mensagens no WhatsApp por conta do Instagram, e aumento no alcance orgânico.
-                        </p>
-                        <p className="text-slate-600 leading-relaxed">
-                            O perfil que posta toda semana têm 3-5x mais alcance do que o que posta esporadicamente. O algoritmo privilegia quem é consistente — independente de aparecer ou não nas câmeras.
-                        </p>
-
-                        {/* CTA final */}
-                        <div className="bg-slate-900 rounded-3xl p-10 my-16 text-center shadow-xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-                            <div className="absolute bottom-0 left-0 w-32 h-32 bg-accent/10 rounded-full -ml-16 -mb-16 blur-3xl"></div>
-
-                            <h3 className="text-2xl md:text-3xl font-black text-white mb-4 relative z-10">
-                                Tenha um Perfil Profissional Hoje
-                            </h3>
-                            <p className="text-slate-300 mb-8 max-w-lg mx-auto text-base md:text-lg relative z-10">
-                                Sem gravar. Sem aparecer. Só personalizar com a logo da sua agência e publicar. Planos a partir de R$29/mês ou R$197/ano.
-                            </p>
-                            <Link to="/planos" className="relative z-10 inline-block bg-white text-slate-900 font-black px-10 py-4 rounded-2xl hover:bg-slate-100 transition-all text-base shadow-xl active:scale-95">
-                                QUERO COMEÇAR AGORA →
-                            </Link>
-                        </div>
-
+                        <BlogCTA type="sale" className="my-16 shadow-purple-200" />
                     </div>
                 </main>
 

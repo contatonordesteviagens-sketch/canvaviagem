@@ -13,7 +13,7 @@ const blogPosts = [
         date: "07 Mar 2026",
         author: "Lucas Rocha",
         readTime: "8 min",
-        image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=800&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=800&auto=format&fit=crop",
         slug: "marketing-digital-para-agencia-de-viagem",
         category: "Marketing"
     },
@@ -23,7 +23,7 @@ const blogPosts = [
         date: "05 Mar 2026",
         author: "Lucas Rocha",
         readTime: "5 min",
-        image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=800&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=800&auto=format&fit=crop",
         slug: "como-criar-conteudo-agencia-de-viagem-sem-gravar-video",
         category: "Conteúdo"
     },
@@ -33,9 +33,29 @@ const blogPosts = [
         date: "01 Mar 2026",
         author: "Lucas Rocha",
         readTime: "6 min",
-        image: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?q=80&w=800&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=800&auto=format&fit=crop",
         slug: "o-que-postar-no-instagram-agencia-de-viagem",
         category: "Instagram"
+    },
+    {
+        title: "7 Destinos Nacionais para Vender Muito em 2026",
+        excerpt: "Uma análise detalhada dos destinos tendência no Brasil que sua agência precisa oferecer agora.",
+        date: "08 Mar 2026",
+        author: "Lucas Rocha",
+        readTime: "10 min",
+        image: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?q=80&w=800&auto=format&fit=crop",
+        slug: "destinos-nacionais-tendencia-2026",
+        category: "Destinos"
+    },
+    {
+        title: "Como Converter Seguidores em Clientes no WhatsApp",
+        excerpt: "O script exato que as agências de sucesso usam para fechar vendas pelo aplicativo de mensagens.",
+        date: "09 Mar 2026",
+        author: "Lucas Rocha",
+        readTime: "7 min",
+        image: "https://images.unsplash.com/photo-1611746872915-64382b5c76da?q=80&w=800&auto=format&fit=crop",
+        slug: "converter-seguidores-whatsapp",
+        category: "Vendas"
     }
 ];
 

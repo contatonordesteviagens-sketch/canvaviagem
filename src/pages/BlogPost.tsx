@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Clock, Calendar, Share2 } from "lucide-react";
+import { BlogCTA } from "@/components/blog/BlogCTA";
 
 const BlogPost = () => {
     const handleShare = () => {
@@ -55,26 +56,26 @@ const BlogPost = () => {
                             <ArrowLeft size={18} />
                             <span className="text-sm">Voltar ao site</span>
                         </Link>
-                        <Link to="/" className="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                        <Link to="/" className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                             Canva Viagem
                         </Link>
                     </div>
                 </header>
 
                 {/* Artigo */}
-                <main className="max-w-4xl mx-auto px-6 py-12">
+                <main className="max-w-4xl mx-auto px-6 py-12 pb-32">
 
                     {/* Breadcrumb */}
                     <nav className="text-sm text-gray-400 mb-6">
                         <Link to="/" className="hover:text-gray-700">Início</Link>
                         <span className="mx-2">/</span>
-                        <span className="hover:text-gray-700 cursor-pointer">Blog</span>
+                        <Link to="/blog" className="hover:text-gray-700">Blog</Link>
                         <span className="mx-2">/</span>
                         <span className="text-gray-600">O que postar no Instagram</span>
                     </nav>
 
                     {/* Tag de categoria */}
-                    <span className="inline-block text-xs font-semibold uppercase tracking-widest text-blue-400 bg-blue-400/10 px-3 py-1 rounded-full mb-6">
+                    <span className="inline-block text-xs font-semibold uppercase tracking-widest text-blue-600 bg-blue-400/10 px-3 py-1 rounded-full mb-6">
                         Instagram & Conteúdo
                     </span>
 
@@ -106,7 +107,7 @@ const BlogPost = () => {
                     <div className="prose prose-gray prose-lg max-w-none space-y-8">
 
                         {/* Imagem Hero */}
-                        <div className="mb-8 rounded-2xl overflow-hidden border border-white/10">
+                        <div className="mb-8 rounded-2xl overflow-hidden border border-white/10 shadow-lg">
                             <img
                                 src="/blog/img-instagram-agencia-viagem.png"
                                 alt="Instagram de agência de viagem com posts profissionais de destinos — o que postar"
@@ -131,6 +132,8 @@ const BlogPost = () => {
                             <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">05.</span><span><strong className="text-slate-900">Destino nacional pouco conhecido</strong>: "3 lugares incríveis no Brasil que você provavelmente ainda não foi."</span></li>
                         </ul>
 
+                        <BlogCTA type="free" className="my-12 shadow-blue-100" />
+
                         {/* Seção 2 */}
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">2. Posts de Bastidores (criam conexão)</h2>
                         <p className="text-slate-600 leading-relaxed">
@@ -143,6 +146,8 @@ const BlogPost = () => {
                             <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">09.</span><span><strong className="text-slate-900">Roteiro personalizado que você montou</strong> para um cliente (sem dados pessoais).</span></li>
                             <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">10.</span><span><strong className="text-slate-900">Missão do dia</strong>: "hoje organizei a viagem de lua de mel de um casal para Portugal."</span></li>
                         </ul>
+
+                        <BlogCTA type="main" className="my-12" />
 
                         {/* Seção 3 */}
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">3. Posts Educativos (aumentam sua autoridade)</h2>
@@ -206,29 +211,17 @@ const BlogPost = () => {
                             O problema não é o Instagram. É a falta de constância. E a falta de constância vem da falta de conteúdo pronto.
                         </p>
 
-                        {/* CTA final */}
-                        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 my-10 text-center">
-                            <h3 className="text-2xl font-bold text-white mb-3">150 Posts Prontos para Você Publicar Agora</h3>
-                            <p className="text-white/80 mb-6 max-w-lg mx-auto">
-                                O Canva Viagem tem 150 vídeos profissionais editáveis no Canva — com destinos nacionais e internacionais, hooks de alta conversão e layout premium. Por R$47 uma única vez.
-                            </p>
-                            <Link
-                                to="/planos"
-                                className="inline-block bg-white text-purple-700 font-bold px-8 py-3 rounded-xl hover:bg-white/90 transition-opacity text-sm"
-                            >
-                                Quero os 150 vídeos prontos por R$47 →
-                            </Link>
-                        </div>
+                        <BlogCTA type="sale" className="my-12 shadow-purple-200" />
 
                     </div>
                 </main>
 
                 {/* Footer simples */}
-                <footer className="border-t border-white/10 py-8 px-6 text-center text-white/30 text-sm">
+                <footer className="border-t border-gray-200 py-8 px-6 text-center text-gray-500 text-sm">
                     <p>© 2026 Canva Viagem. Todos os direitos reservados.</p>
                     <div className="flex justify-center gap-4 mt-2">
-                        <Link to="/termos" className="hover:text-white/60 transition-colors">Termos</Link>
-                        <Link to="/privacidade" className="hover:text-white/60 transition-colors">Privacidade</Link>
+                        <Link to="/termos" className="hover:text-gray-900 transition-colors">Termos</Link>
+                        <Link to="/privacidade" className="hover:text-gray-900 transition-colors">Privacidade</Link>
                     </div>
                 </footer>
             </div>

@@ -28,6 +28,16 @@ const BlogSection = () => {
       title: "Como criar conteúdo sem gravar vídeo",
       image: "/blog/img-como-criar-conteudo-sem-gravar.png",
       slug: "como-criar-conteudo-agencia-de-viagem-sem-gravar-video"
+    },
+    {
+      title: "O Que Postar no Instagram da Sua Agência",
+      image: "/blog/img-instagram-agencia-viagem.png",
+      slug: "o-que-postar-no-instagram-agencia-de-viagem"
+    },
+    {
+      title: "7 Destinos Nacionais para Vender Muito em 2026",
+      image: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?q=80&w=800&auto=format&fit=crop",
+      slug: "destinos-nacionais-tendencia-2026"
     }
   ];
 

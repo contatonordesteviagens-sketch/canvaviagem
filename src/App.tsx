@@ -43,6 +43,8 @@ const AuthVerify = lazy(() => import("./pages/AuthVerify"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const BlogPost2 = lazy(() => import("./pages/BlogPost2"));
 const BlogPost3 = lazy(() => import("./pages/BlogPost3"));
+const BlogPost4 = lazy(() => import("./pages/BlogPost4"));
+const BlogPost5 = lazy(() => import("./pages/BlogPost5"));
 const Blog = lazy(() => import("./pages/Blog"));
 
 const PageLoader = () => (
@@ -143,6 +145,8 @@ const App = () => (
                     <Route path="/blog/o-que-postar-no-instagram-agencia-de-viagem" element={<BlogPost />} />
                     <Route path="/blog/como-criar-conteudo-agencia-de-viagem-sem-gravar-video" element={<BlogPost2 />} />
                     <Route path="/blog/marketing-digital-para-agencia-de-viagem" element={<BlogPost3 />} />
+                    <Route path="/blog/destinos-nacionais-tendencia-2026" element={<BlogPost4 />} />
+                    <Route path="/blog/converter-seguidores-whatsapp" element={<BlogPost5 />} />
                     <Route path="/blog" element={<Blog />} />
 
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -106,3 +106,66 @@ Ela não tem paciência para email longo. Ela quer saber: "o que isso tem a ver 
 - **Instagram** (`canvaviagem_feed`, `canvaviagem_stories`) → temas do calendário social alinham com os emails
 - **Tráfego Pago** (`canvaviagem_trafego`) → leads captados por anúncio entram na sequência de nutrição
 - **CRM** (`canvaviagem_crm`) → segmentação e higiene alimentam todos os envios
+
+---
+
+## Sequências Automáticas Ativas (Edge Functions + pg_cron)
+
+### Drip Campaign — `send-drip-campaign` — 09h BRT diário
+Tabela: `user_email_automations` | Gatilho: novo usuário em auth.users
+
+| # | Dia | Assunto | Objetivo |
+|---|---|---|---|
+| 1 | D0 | Bem-vindo! Acesse seu Tutorial | Onboarding |
+| 2 | D+3 | Você já publicou seu primeiro post? | Ativação + upsell anual |
+| 3 | D+5 | Oferta especial — 48 horas | Converter para anual R$197 |
+| 4 | D+14 | Seus posts estão trazendo clientes? | Agente Lucrativo intro |
+| 5 | D+30 | Última chance: transforme posts em vendas | Agente Lucrativo R$97 |
+
+### Win-back — `send-winback` — 10h BRT diário
+Tabela: `winback_emails` | Gatilho: subscriptions.status = 'canceled'
+
+| # | Dia | Assunto | Objetivo |
+|---|---|---|---|
+| 1 | D+7 | Sentimos sua falta — o que aconteceu? | Entender + oferta R$19/1º mês |
+| 2 | D+21 | Veja o que chegou desde que você saiu | Prova social + volta R$29 |
+| 3 | D+45 | Última mensagem — oferta especial | Anual R$147 exclusivo |
+
+### Re-engajamento — `send-reengagement` — 11h BRT diário
+Coluna: `user_email_automations.reengagement_sent_at` | Gatilho: 14 dias sem login
+
+| Condição | Ação |
+|---|---|
+| Assinante ativo sem login 14+ dias | 1 email humanizado do Lucas |
+| Não repete antes de 30 dias | Frequência controlada |
+
+### Monitoramento — queries semanais no SQL Editor
+
+```sql
+-- Status geral dos emails automáticos
+SELECT
+  email_type,
+  COUNT(*) FILTER (WHERE type = 'sent') AS enviados,
+  COUNT(*) FILTER (WHERE type = 'opened') AS abertos,
+  COUNT(*) FILTER (WHERE type = 'clicked') AS clicados,
+  ROUND(COUNT(*) FILTER (WHERE type = 'opened')::numeric /
+    NULLIF(COUNT(*) FILTER (WHERE type = 'delivered'), 0) * 100, 1) AS taxa_abertura
+FROM email_events
+WHERE created_at > now() - interval '30 days'
+GROUP BY email_type ORDER BY email_type;
+
+-- Verificar crons rodando
+SELECT jobname, schedule, last_run_success, next_run
+FROM cron.job
+WHERE jobname IN ('run-drip-campaign', 'run-winback', 'run-reengagement');
+```
+
+### KPIs de Email — Metas
+
+| Métrica | Meta |
+|---|---|
+| Taxa de abertura | > 40% |
+| Taxa de clique | > 8% |
+| Conversão anual (email 2+3) | > 5% |
+| Taxa de reativação win-back | > 15% |
+| Taxa de bounce | < 2% |
