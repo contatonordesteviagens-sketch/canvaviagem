@@ -30,7 +30,9 @@ const BlogPost2 = () => {
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Como Criar Conteúdo para Agência de Viagem Sem Gravar Vídeo" />
                 <meta property="og:description" content="O método que agentes de viagem usam para postar todo dia no Instagram sem aparecer na câmera." />
-                <meta property="og:url" content="https://canvaviagem.com/blog/como-criar-conteudo-agencia-de-viagem-sem-gravar-video" />
+                <meta property="og:image" content="https://canvaviagem.com/blog/img-como-criar-conteudo-sem-gravar.png" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:image" content="https://canvaviagem.com/blog/img-como-criar-conteudo-sem-gravar.png" />
                 <script type="application/ld+json">{JSON.stringify({
                     "@context": "https://schema.org",
                     "@type": "Article",
@@ -91,6 +93,16 @@ const BlogPost2 = () => {
                     </div>
 
                     <div className="prose prose-invert prose-lg max-w-none space-y-8">
+
+                        {/* Imagem Hero */}
+                        <div className="mb-8 rounded-2xl overflow-hidden border border-white/10">
+                            <img
+                                src="/blog/img-como-criar-conteudo-sem-gravar.png"
+                                alt="Método de 3 passos para criar conteúdo para agência de viagem sem gravar vídeo"
+                                className="w-full object-cover"
+                                loading="eager"
+                            />
+                        </div>
 
                         <p className="text-xl text-white/80 leading-relaxed">
                             "Não consigo criar conteúdo porque não sei gravar vídeo" — essa é a frase que mais trava agentes de viagem no Instagram.

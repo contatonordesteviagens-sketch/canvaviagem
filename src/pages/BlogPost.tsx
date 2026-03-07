@@ -30,7 +30,9 @@ const BlogPost = () => {
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="O que Postar no Instagram da Sua Agência de Viagem (30 Ideias)" />
                 <meta property="og:description" content="30 ideias de conteúdo para sua agência de viagem aparecer todo dia no Instagram e atrair mais clientes." />
-                <meta property="og:url" content="https://canvaviagem.com/blog/o-que-postar-no-instagram-agencia-de-viagem" />
+                <meta property="og:image" content="https://canvaviagem.com/blog/img-instagram-agencia-viagem.png" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:image" content="https://canvaviagem.com/blog/img-instagram-agencia-viagem.png" />
                 <script type="application/ld+json">{JSON.stringify({
                     "@context": "https://schema.org",
                     "@type": "Article",
@@ -104,6 +106,16 @@ const BlogPost = () => {
                     {/* Conteúdo */}
                     <div className="prose prose-invert prose-lg max-w-none space-y-8">
 
+                        {/* Imagem Hero */}
+                        <div className="mb-8 rounded-2xl overflow-hidden border border-white/10">
+                            <img
+                                src="/blog/img-instagram-agencia-viagem.png"
+                                alt="Instagram de agência de viagem com posts profissionais de destinos — o que postar"
+                                className="w-full object-cover"
+                                loading="eager"
+                            />
+                        </div>
+
                         <p className="text-xl text-white/80 leading-relaxed">
                             Você sabe que precisa postar no Instagram da sua agência de viagem. Mas chega a hora e bate aquela travada: <em>"O que eu posto hoje?"</em>
                         </p>
@@ -121,6 +133,19 @@ const BlogPost = () => {
                                 Ver conteúdo pronto →
                             </Link>
                         </div>
+
+                        {/* Infográfico tipos de conteúdo */}
+                        <figure className="my-8 rounded-2xl overflow-hidden border border-white/10">
+                            <img
+                                src="/blog/img-tipos-conteudo-agencia-viagem.png"
+                                alt="Infográfico com 6 tipos de conteúdo para agência de viagem no Instagram: Destinos, Bastidores, Educativo, Promoções, Interativo e Humor"
+                                className="w-full object-cover"
+                                loading="lazy"
+                            />
+                            <figcaption className="text-center text-white/30 text-xs py-2 px-4">
+                                Os 6 tipos de conteúdo que toda agência de viagem deve usar no Instagram
+                            </figcaption>
+                        </figure>
 
                         {/* Seção 1 */}
                         <h2 className="text-2xl font-bold text-white mt-12 mb-4">1. Posts de Destinos (o tipo que mais atrai cliques)</h2>
