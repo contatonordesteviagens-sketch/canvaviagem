@@ -1,0 +1,209 @@
+import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
+import { ArrowLeft, Clock, Calendar, Share2 } from "lucide-react";
+
+const BlogPost2 = () => {
+    const handleShare = () => {
+        if (navigator.share) {
+            navigator.share({
+                title: "Como Criar Conteúdo para Agência de Viagem Sem Gravar Vídeo",
+                url: window.location.href,
+            });
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+        }
+    };
+
+    return (
+        <>
+            <Helmet>
+                <title>Como Criar Conteúdo para Agência de Viagem Sem Gravar Vídeo | Canva Viagem</title>
+                <meta
+                    name="description"
+                    content="Aprenda como criar conteúdo profissional para sua agência de viagem no Instagram sem precisar aparecer, gravar ou editar vídeos. Método simples e que funciona."
+                />
+                <meta
+                    name="keywords"
+                    content="como criar conteúdo agência de viagem, conteúdo pronto agência de viagem, vídeos prontos instagram agência de viagem, marketing digital agência de viagem sem gravar, canva agência de viagem"
+                />
+                <link rel="canonical" href="https://canvaviagem.com/blog/como-criar-conteudo-agencia-de-viagem-sem-gravar-video" />
+                <meta property="og:type" content="article" />
+                <meta property="og:title" content="Como Criar Conteúdo para Agência de Viagem Sem Gravar Vídeo" />
+                <meta property="og:description" content="O método que agentes de viagem usam para postar todo dia no Instagram sem aparecer na câmera." />
+                <meta property="og:url" content="https://canvaviagem.com/blog/como-criar-conteudo-agencia-de-viagem-sem-gravar-video" />
+                <script type="application/ld+json">{JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "Article",
+                    "headline": "Como Criar Conteúdo para Agência de Viagem Sem Gravar Vídeo",
+                    "description": "O método que agentes de viagem usam para postar todo dia no Instagram sem aparecer na câmera.",
+                    "author": { "@type": "Organization", "name": "Canva Viagem" },
+                    "publisher": { "@type": "Organization", "name": "Canva Viagem", "logo": { "@type": "ImageObject", "url": "https://canvaviagem.com/favicon.png" } },
+                    "datePublished": "2026-03-07",
+                    "dateModified": "2026-03-07",
+                    "url": "https://canvaviagem.com/blog/como-criar-conteudo-agencia-de-viagem-sem-gravar-video"
+                })}</script>
+            </Helmet>
+
+            <div className="min-h-screen bg-[#0a0a0f] text-white">
+                <header className="border-b border-white/10 py-4 px-6">
+                    <div className="max-w-4xl mx-auto flex items-center justify-between">
+                        <Link to="/" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors">
+                            <ArrowLeft size={18} />
+                            <span className="text-sm">Voltar ao site</span>
+                        </Link>
+                        <Link to="/" className="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                            Canva Viagem
+                        </Link>
+                    </div>
+                </header>
+
+                <main className="max-w-4xl mx-auto px-6 py-12">
+                    <nav className="text-sm text-white/40 mb-6">
+                        <Link to="/" className="hover:text-white/70">Início</Link>
+                        <span className="mx-2">/</span>
+                        <span className="hover:text-white/70 cursor-pointer">Blog</span>
+                        <span className="mx-2">/</span>
+                        <span className="text-white/70">Criar conteúdo sem gravar vídeo</span>
+                    </nav>
+
+                    <span className="inline-block text-xs font-semibold uppercase tracking-widest text-purple-400 bg-purple-400/10 px-3 py-1 rounded-full mb-6">
+                        Conteúdo & Estratégia
+                    </span>
+
+                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6">
+                        Como Criar Conteúdo para Agência de Viagem
+                        <span className="text-purple-400"> Sem Gravar Vídeo</span>
+                    </h1>
+
+                    <div className="flex flex-wrap items-center gap-4 text-white/40 text-sm mb-8 pb-8 border-b border-white/10">
+                        <div className="flex items-center gap-1.5">
+                            <Calendar size={14} />
+                            <span>7 de março de 2026</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <Clock size={14} />
+                            <span>7 minutos de leitura</span>
+                        </div>
+                        <button onClick={handleShare} className="flex items-center gap-1.5 ml-auto text-white/40 hover:text-white transition-colors">
+                            <Share2 size={14} />
+                            <span>Compartilhar</span>
+                        </button>
+                    </div>
+
+                    <div className="prose prose-invert prose-lg max-w-none space-y-8">
+
+                        <p className="text-xl text-white/80 leading-relaxed">
+                            "Não consigo criar conteúdo porque não sei gravar vídeo" — essa é a frase que mais trava agentes de viagem no Instagram.
+                            E a boa notícia é que você não precisa gravar nada para ter um perfil profissional e ativo.
+                        </p>
+
+                        <p className="text-white/70 leading-relaxed">
+                            Neste artigo você vai entender como funciona o método que agentes de viagem de todo o Brasil estão usando para postar todo dia — sem aparecer na câmera, sem editar no celular, sem contratar um designer.
+                        </p>
+
+                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">Por que a maioria dos agentes não posta?</h2>
+                        <p className="text-white/70 leading-relaxed">
+                            Existe uma crença de que para ter um Instagram bom, você precisa de três coisas: câmera profissional, habilidade de edição e muito tempo. Nenhuma dessas três é verdade.
+                        </p>
+                        <p className="text-white/70 leading-relaxed">
+                            O que você precisa, na verdade, é de <strong className="text-white">conteúdo visual de qualidade</strong> e <strong className="text-white">consistência</strong>. E dá para ter os dois sem gravar um segundo de vídeo sequer.
+                        </p>
+
+                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">Os 3 tipos de conteúdo que funcionam sem câmera</h2>
+
+                        <h3 className="text-xl font-semibold text-white mt-8 mb-3">1. Vídeos com imagens e texto (o que mais vira Reel)</h3>
+                        <p className="text-white/70 leading-relaxed">
+                            O formato mais eficiente atualmente no Instagram é o Reel com transições de fotos e texto em cima. Você usa fotos de banco de imagem do destino, coloca uma legenda impactante e música. Isso gera alcance altíssimo — e você não aparece em momento algum.
+                        </p>
+                        <p className="text-white/70 leading-relaxed">
+                            Plataformas como o Canva oferecem templates prontos com esse estilo. Você edita o destino, o preço do pacote e publica. Em menos de 5 minutos.
+                        </p>
+
+                        <h3 className="text-xl font-semibold text-white mt-8 mb-3">2. Carrosséis educativos</h3>
+                        <p className="text-white/70 leading-relaxed">
+                            Carrosséis são o tipo de post com maior taxa de salvamento no Instagram — e salvamentos são o melhor sinal de que o conteúdo tem valor. Um carrossel do tipo "7 coisas que você precisa saber antes de viajar para Maldivas" funciona muito bem e pode ser feito inteiramente com texto e imagens estáticas.
+                        </p>
+
+                        <h3 className="text-xl font-semibold text-white mt-8 mb-3">3. Reels com vídeos de estoque</h3>
+                        <p className="text-white/70 leading-relaxed">
+                            Existem milhares de vídeos gratuitos de destinos turísticos em plataformas como Pexels e Pixabay. Você pega um vídeo de Santorini, por exemplo, adiciona texto com "Pacote Grécia saindo de R$X por pessoa, 7 noites", coloca uma música popular e publica como Reel. Simples assim.
+                        </p>
+
+                        {/* CTA intermediário */}
+                        <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 rounded-2xl p-6 my-10">
+                            <p className="font-semibold text-white mb-2">🎯 Quer pular a etapa de montar o vídeo do zero?</p>
+                            <p className="text-white/70 text-sm mb-4">O Canva Viagem tem 150 vídeos prontos para sua agência. Com destinos nacionais e internacionais, já editados e otimizados para Reels e Stories. Por R$47.</p>
+                            <Link to="/planos" className="inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold px-6 py-2.5 rounded-xl hover:opacity-90 transition-opacity text-sm">
+                                Ver os 150 vídeos prontos →
+                            </Link>
+                        </div>
+
+                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">O método dos 3 passos para criar conteúdo rápido</h2>
+
+                        <div className="space-y-6">
+                            <div className="flex gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
+                                <span className="text-2xl font-black text-blue-400 flex-shrink-0">1</span>
+                                <div>
+                                    <h4 className="font-semibold text-white mb-1">Escolha o tema do post</h4>
+                                    <p className="text-white/60 text-sm">Use a lista de 30 ideias do nosso artigo anterior. Ou simplesmente pense: "o que meu cliente pergunta mais?" Isso vira post.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
+                                <span className="text-2xl font-black text-purple-400 flex-shrink-0">2</span>
+                                <div>
+                                    <h4 className="font-semibold text-white mb-1">Pegue um template pronto</h4>
+                                    <p className="text-white/60 text-sm">Use um vídeo pronto do Canva Viagem ou um template no Canva gratuito. Edite apenas: nome do destino, preço e o logo da sua agência.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
+                                <span className="text-2xl font-black text-blue-400 flex-shrink-0">3</span>
+                                <div>
+                                    <h4 className="font-semibold text-white mb-1">Escreva a legenda e publique</h4>
+                                    <p className="text-white/60 text-sm">A legenda não precisa ser longa. 3-5 linhas com a informação principal + um CTA claro: "Quer saber mais? Me chama no WhatsApp!"</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">Quanto tempo leva no dia a dia?</h2>
+                        <p className="text-white/70 leading-relaxed">
+                            Usando templates prontos, cada post demora entre 5 e 15 minutos para estar pronto. Postar 4 vezes por semana = 1 hora dedicada ao Instagram por semana.
+                        </p>
+                        <p className="text-white/70 leading-relaxed">
+                            O segredo é ter o conteúdo já pronto para usar — não começar do zero toda vez. É exatamente isso que o Canva Viagem resolve: você já tem 150 vídeos prontos, é só personalizar e publicar.
+                        </p>
+
+                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">E os resultados — quando aparecem?</h2>
+                        <p className="text-white/70 leading-relaxed">
+                            Com consistência de 4+ posts por semana, os primeiros resultados aparecem em 30-60 dias: mais seguidores do nicho certo, primeiras mensagens no WhatsApp por conta do Instagram, e aumento no alcance orgânico.
+                        </p>
+                        <p className="text-white/70 leading-relaxed">
+                            O perfil que posta toda semana têm 3-5x mais alcance do que o que posta esporadicamente. O algoritmo privilegia quem é consistente — independente de aparecer ou não nas câmeras.
+                        </p>
+
+                        {/* CTA final */}
+                        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 my-10 text-center">
+                            <h3 className="text-2xl font-bold text-white mb-3">Comece Hoje com 150 Vídeos Prontos</h3>
+                            <p className="text-white/80 mb-6 max-w-lg mx-auto">
+                                Sem gravar. Sem editar do zero. Só personalizar com a logo da sua agência e publicar. 150 vídeos para o Instagram por R$47.
+                            </p>
+                            <Link to="/planos" className="inline-block bg-white text-purple-700 font-bold px-8 py-3 rounded-xl hover:bg-white/90 transition-opacity text-sm">
+                                Quero começar a postar hoje por R$47 →
+                            </Link>
+                        </div>
+
+                    </div>
+                </main>
+
+                <footer className="border-t border-white/10 py-8 px-6 text-center text-white/30 text-sm">
+                    <p>© 2026 Canva Viagem. Todos os direitos reservados.</p>
+                    <div className="flex justify-center gap-4 mt-2">
+                        <Link to="/termos" className="hover:text-white/60 transition-colors">Termos</Link>
+                        <Link to="/privacidade" className="hover:text-white/60 transition-colors">Privacidade</Link>
+                    </div>
+                </footer>
+            </div>
+        </>
+    );
+};
+
+export default BlogPost2;

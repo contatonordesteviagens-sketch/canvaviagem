@@ -41,6 +41,7 @@ const Progresso = lazy(() => import("./pages/Progresso"));
 const Sugestoes = lazy(() => import("./pages/Sugestoes"));
 const AuthVerify = lazy(() => import("./pages/AuthVerify"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
+const BlogPost2 = lazy(() => import("./pages/BlogPost2"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -138,6 +139,7 @@ const App = () => (
 
                     {/* ROTAS DO BLOG */}
                     <Route path="/blog/o-que-postar-no-instagram-agencia-de-viagem" element={<BlogPost />} />
+                    <Route path="/blog/como-criar-conteudo-agencia-de-viagem-sem-gravar-video" element={<BlogPost2 />} />
 
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
