@@ -14,12 +14,12 @@ const SeoMetadata = ({
     description,
     keywords,
     image,
-    url = "https://canvaviagem.com.br/",
+    url = "https://canvaviagem.com/",
     type = "website",
 }: SeoMetadataProps) => {
-    const baseTitle = "Canva Viagem | Templates e IA para Agências";
+    const baseTitle = "Vídeos Prontos para Agência de Viagem — 150 por R$47 | Canva Viagem";
     const fullTitle = title ? `${title} | Canva Viagem` : baseTitle;
-    const defaultDesc = "Acelere suas vendas com templates profissionais e inteligência artificial especializada em turismo.";
+    const defaultDesc = "150 vídeos prontos para agência de viagem por R$47. Conteúdo para Instagram, Reels e Stories editáveis no Canva. Sem gravar, sem editar, só publicar.";
 
     return (
         <Helmet>
