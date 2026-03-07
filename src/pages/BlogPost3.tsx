@@ -30,9 +30,9 @@ const BlogPost3 = () => {
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Marketing Digital para Agência de Viagem: Guia Completo 2026" />
                 <meta property="og:description" content="Os 7 erros que derrubam agentes no Instagram e as estratégias que estão funcionando em 2026." />
-                <meta property="og:image" content="https://canvaviagem.com/blog/img-marketing-digital-agencia.png" />
+                <meta property="og:image" content="/blog/img-marketing-digital-agencia.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="https://canvaviagem.com/blog/img-marketing-digital-agencia.png" />
+                <meta name="twitter:image" content="/blog/img-marketing-digital-agencia.png" />
                 <script type="application/ld+json">{JSON.stringify({
                     "@context": "https://schema.org",
                     "@type": "Article",

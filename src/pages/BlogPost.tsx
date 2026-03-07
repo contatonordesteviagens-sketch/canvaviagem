@@ -30,9 +30,9 @@ const BlogPost = () => {
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="O que Postar no Instagram da Sua Agência de Viagem (30 Ideias)" />
                 <meta property="og:description" content="30 ideias de conteúdo para sua agência de viagem aparecer todo dia no Instagram e atrair mais clientes." />
-                <meta property="og:image" content="https://canvaviagem.com/blog/img-instagram-agencia-viagem.png" />
+                <meta property="og:image" content="/blog/img-instagram-agencia-viagem.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="https://canvaviagem.com/blog/img-instagram-agencia-viagem.png" />
+                <meta name="twitter:image" content="/blog/img-instagram-agencia-viagem.png" />
                 <script type="application/ld+json">{JSON.stringify({
                     "@context": "https://schema.org",
                     "@type": "Article",
@@ -119,118 +119,90 @@ const BlogPost = () => {
                             Você sabe que precisa postar no Instagram da sua agência de viagem. Mas chega a hora e bate aquela travada: <em>"O que eu posto hoje?"</em>
                         </p>
 
-                        <p className="text-white/70 leading-relaxed">
-                            Isso acontece com a maioria dos agentes de viagem. Não é falta de vontade — é falta de um plano e de conteúdo pronto para usar.
-                            Neste artigo você vai encontrar 30 ideias concretas de posts que funcionam, organizadas por tipo. Use como calendário editorial e nunca mais fique sem postar.
-                        </p>
-
-                        {/* CTA inline */}
-                        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 my-10">
-                            <p className="font-semibold text-gray-900 mb-2">🎯 Quer pular direto para o conteúdo pronto?</p>
-                            <p className="text-gray-600 text-sm mb-4">O Canva Viagem tem 250+ vídeos prontos para você publicar no Instagram da sua agência. Editáveis no Canva. A partir de R$29/mês ou R$197/ano.</p>
-                            <Link to="/planos" className="inline-block bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl hover:opacity-90 transition-opacity text-sm">
-                                Ver conteúdo pronto →
-                            </Link>
-                        </div>
-
-                        {/* Infográfico tipos de conteúdo */}
-                        <figure className="my-8 rounded-2xl overflow-hidden border border-white/10">
-                            <img
-                                src="/blog/img-tipos-conteudo-agencia-viagem.png"
-                                alt="Infográfico com 6 tipos de conteúdo para agência de viagem no Instagram: Destinos, Bastidores, Educativo, Promoções, Interativo e Humor"
-                                className="w-full object-cover"
-                                loading="lazy"
-                            />
-                            <figcaption className="text-center text-white/30 text-xs py-2 px-4">
-                                Os 6 tipos de conteúdo que toda agência de viagem deve usar no Instagram
-                            </figcaption>
-                        </figure>
-
-                        {/* Seção 1 */}
-                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">1. Posts de Destinos (o tipo que mais atrai cliques)</h2>
-                        <p className="text-white/70 leading-relaxed">
+                        <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">1. Posts de Destinos (o tipo que mais atrai cliques)</h2>
+                        <p className="text-slate-600 leading-relaxed">
                             Destinos são o conteúdo número 1 em agências de viagem. O viajante sonha, e você é quem realiza o sonho. Use esses formatos:
                         </p>
-                        <ul className="space-y-3 text-white/70">
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">01.</span><span><strong className="text-white">Foto ou Reel do destino</strong> com uma curiosidade que as pessoas não sabem. Ex: "Sabia que Maragogi tem a água mais transparente do Brasil?"</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">02.</span><span><strong className="text-white">Comparativo de destinos</strong>: "Maldivas ou Noronha? Veja qual é ideal para você."</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">03.</span><span><strong className="text-white">Destinos do mês</strong>: "5 destinos perfeitos para viajar em agosto com a família."</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">04.</span><span><strong className="text-white">Destino + preço estimado</strong>: "Quanto custa viajar para a Disney em 2026?"</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">05.</span><span><strong className="text-white">Destino nacional pouco conhecido</strong>: "3 lugares incríveis no Brasil que você provavelmente ainda não foi."</span></li>
+                        <ul className="space-y-3 text-slate-600">
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">01.</span><span><strong className="text-slate-900">Foto ou Reel do destino</strong> com uma curiosidade que as pessoas não sabem. Ex: "Sabia que Maragogi tem a água mais transparente do Brasil?"</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">02.</span><span><strong className="text-blue-600 font-bold">Comparativo de destinos</strong>: "Maldivas ou Noronha? Veja qual é ideal para você."</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">03.</span><span><strong className="text-slate-900">Destinos do mês</strong>: "5 destinos perfeitos para viajar em agosto com a família."</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">04.</span><span><strong className="text-slate-900">Destino + preço estimado</strong>: "Quanto custa viajar para a Disney em 2026?"</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">05.</span><span><strong className="text-slate-900">Destino nacional pouco conhecido</strong>: "3 lugares incríveis no Brasil que você provavelmente ainda não foi."</span></li>
                         </ul>
 
                         {/* Seção 2 */}
-                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">2. Posts de Bastidores (criam conexão)</h2>
-                        <p className="text-white/70 leading-relaxed">
+                        <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">2. Posts de Bastidores (criam conexão)</h2>
+                        <p className="text-slate-600 leading-relaxed">
                             Pessoas compram de pessoas. Mostrar o dia a dia da sua agência gera confiança — e confiança gera venda.
                         </p>
-                        <ul className="space-y-3 text-white/70">
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">06.</span><span><strong className="text-white">Depoimento de cliente viajando</strong> com foto ou vídeo enviado por ele.</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">07.</span><span><strong className="text-white">Antes e depois de uma viagem organizada por você.</strong></span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">08.</span><span><strong className="text-white">Sua história como agente</strong>: por que você escolheu trabalhar com viagens?</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">09.</span><span><strong className="text-white">Roteiro personalizado que você montou</strong> para um cliente (sem dados pessoais).</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">10.</span><span><strong className="text-white">Missão do dia</strong>: "hoje organizei a viagem de lua de mel de um casal para Portugal."</span></li>
+                        <ul className="space-y-3 text-slate-600">
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">06.</span><span><strong className="text-slate-900">Depoimento de cliente viajando</strong> com foto ou vídeo enviado por ele.</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">07.</span><span><strong className="text-slate-900">Antes e depois de uma viagem organizada por você.</strong></span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">08.</span><span><strong className="text-slate-900">Sua história como agente</strong>: por que você escolheu trabalhar com viagens?</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">09.</span><span><strong className="text-slate-900">Roteiro personalizado que você montou</strong> para um cliente (sem dados pessoais).</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">10.</span><span><strong className="text-slate-900">Missão do dia</strong>: "hoje organizei a viagem de lua de mel de um casal para Portugal."</span></li>
                         </ul>
 
                         {/* Seção 3 */}
-                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">3. Posts Educativos (aumentam sua autoridade)</h2>
-                        <p className="text-white/70 leading-relaxed">
+                        <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">3. Posts Educativos (aumentam sua autoridade)</h2>
+                        <p className="text-slate-600 leading-relaxed">
                             Ensinar é uma das formas mais poderosas de vender. Quando você educa, as pessoas te veem como especialista — e especialistas cobram mais.
                         </p>
-                        <ul className="space-y-3 text-white/70">
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">11.</span><span><strong className="text-white">Dica de passagem barata</strong>: "Como encontrar voos baratos com 3 meses de antecedência."</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">12.</span><span><strong className="text-white">O que levar na mala</strong> para um destino específico (praia, frio, Europa).</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">13.</span><span><strong className="text-white">Documentos necessários</strong>: "O que você precisa ter em dia para viajar para os EUA."</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">14.</span><span><strong className="text-white">Erros que os viajantes cometem</strong>: "5 erros que as pessoas cometem ao planejar a primeira viagem internacional."</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">15.</span><span><strong className="text-white">Seguro viagem</strong>: por que contratar e o que cobre.</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">16.</span><span><strong className="text-white">Alta vs Baixa temporada</strong>: qual é melhor para viajar para cada destino.</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">17.</span><span><strong className="text-white">Visto</strong>: quais países o brasileiro não precisa de visto.</span></li>
+                        <ul className="space-y-3 text-slate-600">
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">11.</span><span><strong className="text-slate-900">Dica de passagem barata</strong>: "Como encontrar voos baratos com 3 meses de antecedência."</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">12.</span><span><strong className="text-slate-900">O que levar na mala</strong> para um destino específico (praia, frio, Europa).</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">13.</span><span><strong className="text-slate-900">Documentos necessários</strong>: "O que você precisa ter em dia para viajar para os EUA."</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">14.</span><span><strong className="text-slate-900">Erros que os viajantes cometem</strong>: "5 erros que as pessoas cometem ao planejar a primeira viagem internacional."</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">15.</span><span><strong className="text-slate-900">Seguro viagem</strong>: por que contratar e o que cobre.</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">16.</span><span><strong className="text-slate-900">Alta vs Baixa temporada</strong>: qual é melhor para viajar para cada destino.</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">17.</span><span><strong className="text-slate-900">Visto</strong>: quais países o brasileiro não precisa de visto.</span></li>
                         </ul>
 
                         {/* Seção 4 */}
-                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">4. Posts de Oferta e Promoção</h2>
-                        <p className="text-white/70 leading-relaxed">
+                        <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">4. Posts de Oferta e Promoção</h2>
+                        <p className="text-slate-600 leading-relaxed">
                             Sim, você pode e deve postar ofertas. Mas o segredo é não só fazer isso — misture com os outros tipos.
                         </p>
-                        <ul className="space-y-3 text-white/70">
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">18.</span><span><strong className="text-white">Pacote da semana</strong> com preço e o que está incluso (passagem, hotel, transfer).</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">19.</span><span><strong className="text-white">Última hora</strong>: "Pacote saindo este fim de semana. Vagas limitadas."</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">20.</span><span><strong className="text-white">Parcelamento</strong>: mostre que é possível viajar pagando pouco por mês.</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">21.</span><span><strong className="text-white">Promoção de data comemorativa</strong>: aniversário, Dia das Mães, Natal, Reveillon.</span></li>
+                        <ul className="space-y-3 text-slate-600">
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">18.</span><span><strong className="text-slate-900">Pacote da semana</strong> com preço e o que está incluso (passagem, hotel, transfer).</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">19.</span><span><strong className="text-slate-900">Última hora</strong>: "Pacote saindo este fim de semana. Vagas limitadas."</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">20.</span><span><strong className="text-slate-900">Parcelamento</strong>: mostre que é possível viajar pagando pouco por mês.</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">21.</span><span><strong className="text-slate-900">Promoção de data comemorativa</strong>: aniversário, Dia das Mães, Natal, Reveillon.</span></li>
                         </ul>
 
                         {/* Seção 5 */}
-                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">5. Posts Interativos (aumentam o alcance)</h2>
-                        <p className="text-white/70 leading-relaxed">
+                        <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">5. Posts Interativos (aumentam o alcance)</h2>
+                        <p className="text-slate-600 leading-relaxed">
                             O algoritmo do Instagram ama comentários, salvamentos e compartilhamentos. Use formatos que geram ação.
                         </p>
-                        <ul className="space-y-3 text-white/70">
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">22.</span><span><strong className="text-white">Enquete</strong>: "Praia ou campo? Diz aqui nos comentários."</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">23.</span><span><strong className="text-white">Complete a frase</strong>: "Meu próximo destino dos sonhos é ___."</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">24.</span><span><strong className="text-white">Esse ou aquele</strong>: "Paris ou Roma? Cada um que posta qual escolheria."</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">25.</span><span><strong className="text-white">Marque alguém</strong>: "Marca aquela pessoa que está devendo uma viagem com você!"</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">26.</span><span><strong className="text-white">Pergunta direta</strong>: "Para onde você quer viajar até o final deste ano?"</span></li>
+                        <ul className="space-y-3 text-slate-600">
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">22.</span><span><strong className="text-slate-900">Enquete</strong>: "Praia ou campo? Diz aqui nos comentários."</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">23.</span><span><strong className="text-slate-900">Complete a frase</strong>: "Meu próximo destino dos sonhos é ___."</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">24.</span><span><strong className="text-slate-900">Esse ou aquele</strong>: "Paris ou Roma? Cada um que posta qual escolheria."</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">25.</span><span><strong className="text-slate-900">Marque alguém</strong>: "Marca aquela pessoa que está devendo uma viagem com você!"</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">26.</span><span><strong className="text-slate-900">Pergunta direta</strong>: "Para onde você quer viajar até o final deste ano?"</span></li>
                         </ul>
 
                         {/* Seção 6 */}
-                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">6. Posts com Humor e Cultura Pop</h2>
-                        <p className="text-white/70 leading-relaxed">
+                        <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">6. Posts com Humor e Cultura Pop</h2>
+                        <p className="text-slate-600 leading-relaxed">
                             Leveza no feed aumenta o alcance. Posts engraçados são compartilháveis.
                         </p>
-                        <ul className="space-y-3 text-white/70">
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">27.</span><span><strong className="text-white">Meme de viagem</strong>: algo que todo viajante vai se identificar.</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">28.</span><span><strong className="text-white">Reação ao orçamento vs realidade</strong>: meme mostrando o antes e depois do cliente que achou caro.</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">29.</span><span><strong className="text-white">Frases de viagem</strong>: citações motivacionais sobre viajar que fazem as pessoas salvar.</span></li>
-                            <li className="flex gap-3"><span className="text-blue-400 font-bold flex-shrink-0">30.</span><span><strong className="text-white">Meme adaptado para o nicho</strong>: use um meme popular e adapte para o cotidiano de agente de viagem.</span></li>
+                        <ul className="space-y-3 text-slate-600">
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">27.</span><span><strong className="text-slate-900">Meme de viagem</strong>: algo que todo viajante vai se identificar.</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">28.</span><span><strong className="text-slate-900">Reação ao orçamento vs realidade</strong>: meme mostrando o antes e depois do cliente que achou caro.</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">29.</span><span><strong className="text-slate-900">Frases de viagem</strong>: citações motivacionais sobre viajar que fazem as pessoas salvar.</span></li>
+                            <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">30.</span><span><strong className="text-slate-900">Meme adaptado para o nicho</strong>: use um meme popular e adapte para o cotidiano de agente de viagem.</span></li>
                         </ul>
 
                         {/* Frequência de postagem */}
-                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">Com que Frequência Postar?</h2>
-                        <p className="text-white/70 leading-relaxed">
+                        <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">Com que Frequência Postar?</h2>
+                        <p className="text-slate-700 leading-relaxed">
                             A resposta é: poste mais do que você está postando agora. O mínimo é 4 vezes por semana.
                             Mas o que a maioria das agências de viagem faz? Menos de 1 vez por semana — e aí clama que "o Instagram não funciona".
                         </p>
-                        <p className="text-white/70 leading-relaxed">
+                        <p className="text-slate-700 leading-relaxed">
                             O problema não é o Instagram. É a falta de constância. E a falta de constância vem da falta de conteúdo pronto.
                         </p>
 

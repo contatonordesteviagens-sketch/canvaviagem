@@ -1,4 +1,4 @@
-project_id = "mgdsjxasolxoclchyqdx"
+project_id = "zdjtcwtakgizbsbbwtgc"
 
 [functions.stripe-webhook]
 verify_jwt = false
@@ -46,4 +46,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-reengagement]
+verify_jwt = false
+
+[functions.telegram-bot]
 verify_jwt = false

@@ -92,7 +92,7 @@ const BlogPost2 = () => {
                         </button>
                     </div>
 
-                    <div className="prose prose-invert prose-lg max-w-none space-y-8">
+                    <div className="prose prose-slate prose-lg max-w-none space-y-8">
 
                         {/* Imagem Hero */}
                         <div className="mb-8 rounded-2xl overflow-hidden border border-white/10">
@@ -121,23 +121,23 @@ const BlogPost2 = () => {
                             O que você precisa, na verdade, é de <strong className="text-slate-900">conteúdo visual de qualidade</strong> e <strong className="text-slate-900">consistência</strong>. E dá para ter os dois sem gravar um segundo de vídeo sequer.
                         </p>
 
-                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">Os 3 tipos de conteúdo que funcionam sem câmera</h2>
+                        <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">Os 3 tipos de conteúdo que funcionam sem câmera</h2>
 
-                        <h3 className="text-xl font-semibold text-white mt-8 mb-3">1. Vídeos com imagens e texto (o que mais vira Reel)</h3>
-                        <p className="text-white/70 leading-relaxed">
+                        <h3 className="text-xl font-semibold text-slate-800 mt-8 mb-3">1. Vídeos com imagens e texto (o que mais vira Reel)</h3>
+                        <p className="text-slate-600 leading-relaxed">
                             O formato mais eficiente atualmente no Instagram é o Reel com transições de fotos e texto em cima. Você usa fotos de banco de imagem do destino, coloca uma legenda impactante e música. Isso gera alcance altíssimo — e você não aparece em momento algum.
                         </p>
-                        <p className="text-white/70 leading-relaxed">
+                        <p className="text-slate-600 leading-relaxed">
                             Plataformas como o Canva oferecem templates prontos com esse estilo. Você edita o destino, o preço do pacote e publica. Em menos de 5 minutos.
                         </p>
 
-                        <h3 className="text-xl font-semibold text-white mt-8 mb-3">2. Carrosséis educativos</h3>
-                        <p className="text-white/70 leading-relaxed">
+                        <h3 className="text-xl font-semibold text-slate-800 mt-8 mb-3">2. Carrosséis educativos</h3>
+                        <p className="text-slate-600 leading-relaxed">
                             Carrosséis são o tipo de post com maior taxa de salvamento no Instagram — e salvamentos são o melhor sinal de que o conteúdo tem valor. Um carrossel do tipo "7 coisas que você precisa saber antes de viajar para Maldivas" funciona muito bem e pode ser feito inteiramente com texto e imagens estáticas.
                         </p>
 
-                        <h3 className="text-xl font-semibold text-white mt-8 mb-3">3. Reels com vídeos de estoque</h3>
-                        <p className="text-white/70 leading-relaxed">
+                        <h3 className="text-xl font-semibold text-slate-800 mt-8 mb-3">3. Reels com vídeos de estoque</h3>
+                        <p className="text-slate-600 leading-relaxed">
                             Existem milhares de vídeos gratuitos de destinos turísticos em plataformas como Pexels e Pixabay. Você pega um vídeo de Santorini, por exemplo, adiciona texto com "Pacote Grécia saindo de R$X por pessoa, 7 noites", coloca uma música popular e publica como Reel. Simples assim.
                         </p>
 
@@ -153,42 +153,42 @@ const BlogPost2 = () => {
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">O método dos 3 passos para criar conteúdo rápido</h2>
 
                         <div className="space-y-6">
-                            <div className="flex gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
-                                <span className="text-2xl font-black text-blue-400 flex-shrink-0">1</span>
+                            <div className="flex gap-4 p-5 bg-blue-50/50 rounded-2xl border border-blue-100">
+                                <span className="text-2xl font-black text-blue-600 flex-shrink-0">1</span>
                                 <div>
-                                    <h4 className="font-semibold text-white mb-1">Escolha o tema do post</h4>
-                                    <p className="text-white/60 text-sm">Use a lista de 30 ideias do nosso artigo anterior. Ou simplesmente pense: "o que meu cliente pergunta mais?" Isso vira post.</p>
+                                    <h4 className="font-semibold text-slate-900 mb-1">Escolha o tema do post</h4>
+                                    <p className="text-slate-600 text-sm">Use a lista de 30 ideias do nosso artigo anterior. Ou simplesmente pense: "o que meu cliente pergunta mais?" Isso vira post.</p>
                                 </div>
                             </div>
-                            <div className="flex gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
-                                <span className="text-2xl font-black text-purple-400 flex-shrink-0">2</span>
+                            <div className="flex gap-4 p-5 bg-purple-50/50 rounded-2xl border border-purple-100">
+                                <span className="text-2xl font-black text-purple-600 flex-shrink-0">2</span>
                                 <div>
-                                    <h4 className="font-semibold text-white mb-1">Pegue um template pronto</h4>
-                                    <p className="text-white/60 text-sm">Use um vídeo pronto do Canva Viagem ou um template no Canva gratuito. Edite apenas: nome do destino, preço e o logo da sua agência.</p>
+                                    <h4 className="font-semibold text-slate-900 mb-1">Pegue um template pronto</h4>
+                                    <p className="text-slate-600 text-sm">Use um vídeo pronto do Canva Viagem ou um template no Canva gratuito. Edite apenas: nome do destino, preço e o logo da sua agência.</p>
                                 </div>
                             </div>
-                            <div className="flex gap-4 p-5 bg-white/5 rounded-2xl border border-white/10">
-                                <span className="text-2xl font-black text-blue-400 flex-shrink-0">3</span>
+                            <div className="flex gap-4 p-5 bg-blue-50/50 rounded-2xl border border-blue-100">
+                                <span className="text-2xl font-black text-blue-600 flex-shrink-0">3</span>
                                 <div>
-                                    <h4 className="font-semibold text-white mb-1">Escreva a legenda e publique</h4>
-                                    <p className="text-white/60 text-sm">A legenda não precisa ser longa. 3-5 linhas com a informação principal + um CTA claro: "Quer saber mais? Me chama no WhatsApp!"</p>
+                                    <h4 className="font-semibold text-slate-900 mb-1">Escreva a legenda e publique</h4>
+                                    <p className="text-slate-600 text-sm">A legenda não precisa ser longa. 3-5 linhas com a informação principal + um CTA claro: "Quer saber mais? Me chama no WhatsApp!"</p>
                                 </div>
                             </div>
                         </div>
 
-                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">Quanto tempo leva no dia a dia?</h2>
-                        <p className="text-white/70 leading-relaxed">
+                        <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">Quanto tempo leva no dia a dia?</h2>
+                        <p className="text-slate-600 leading-relaxed">
                             Usando templates prontos, cada post demora entre 5 e 15 minutos para estar pronto. Postar 4 vezes por semana = 1 hora dedicada ao Instagram por semana.
                         </p>
-                        <p className="text-white/70 leading-relaxed">
+                        <p className="text-slate-600 leading-relaxed">
                             O segredo é ter o conteúdo já pronto para usar — não começar do zero toda vez. É exatamente isso que o Canva Viagem resolve: você já tem 150 vídeos prontos, é só personalizar e publicar.
                         </p>
 
-                        <h2 className="text-2xl font-bold text-white mt-12 mb-4">E os resultados — quando aparecem?</h2>
-                        <p className="text-white/70 leading-relaxed">
+                        <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">E os resultados — quando aparecem?</h2>
+                        <p className="text-slate-600 leading-relaxed">
                             Com consistência de 4+ posts por semana, os primeiros resultados aparecem em 30-60 dias: mais seguidores do nicho certo, primeiras mensagens no WhatsApp por conta do Instagram, e aumento no alcance orgânico.
                         </p>
-                        <p className="text-white/70 leading-relaxed">
+                        <p className="text-slate-600 leading-relaxed">
                             O perfil que posta toda semana têm 3-5x mais alcance do que o que posta esporadicamente. O algoritmo privilegia quem é consistente — independente de aparecer ou não nas câmeras.
                         </p>
 
