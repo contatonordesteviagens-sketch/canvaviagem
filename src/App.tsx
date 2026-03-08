@@ -14,6 +14,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { Loader2 } from "lucide-react";
 
 // Lazy-loaded components for better performance
+const AulaSecreta = lazy(() => import("./pages/AulaSecreta"));
 const Index = lazy(() => import("./pages/Index"));
 const IndexES = lazy(() => import("./pages/IndexES"));
 const Calendar = lazy(() => import("./pages/Calendar"));
@@ -201,6 +202,9 @@ const App = () => (
                     <Route path="/blog/fidelizar-clientes-agencia-de-viagem" element={<BlogPost29 />} />
                     <Route path="/blog/primeiro-mes-agente-de-viagem" element={<BlogPost30 />} />
                     <Route path="/blog" element={<Blog />} />
+
+                    {/* Aula Secreta — Webinar 18/03/2026 */}
+                    <Route path="/aula-secreta" element={<AulaSecreta />} />
 
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
