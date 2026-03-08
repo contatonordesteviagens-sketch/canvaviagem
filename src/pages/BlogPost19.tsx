@@ -78,7 +78,7 @@ const BlogPost19 = () => {
                             Famílias com crianças são um dos segmentos mais ativos do turismo nacional. Elas viajam nas férias de julho e janeiro de forma quase obrigatória — e quando encontram um agente de confiança que <strong className="text-slate-900">entende do destino e facilita tudo</strong>, a fidelidade é altíssima.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <div className="grid grid-cols-3 gap-3 my-8">
                             {[
@@ -117,7 +117,7 @@ const BlogPost19 = () => {
                             </ul>
                         </div>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

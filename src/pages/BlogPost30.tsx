@@ -66,7 +66,7 @@ const BlogPost30 = () => {
                             Todo mundo começa do zero. E o maior perigo do primeiro mês não é a falta de clientes — é a <strong className="text-slate-900">expectativa errada</strong> que faz as pessoas desistirem antes de colher os resultados. Este guia é honesto sobre o que vai acontecer e o que fazer em cada fase.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-10 mb-6">📅 Semana a Semana: O Que Acontece de Verdade</h2>
 
@@ -108,7 +108,7 @@ const BlogPost30 = () => {
                             <p className="text-slate-500 text-xs">— Relato de agente autônomo brasileiro com 10 meses de perfil</p>
                         </div>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

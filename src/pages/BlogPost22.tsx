@@ -76,7 +76,7 @@ const BlogPost22 = () => {
                             Em 2026, agentes de viagem que não usam IA estão em desvantagem competitiva. Não é exagero: <strong className="text-slate-900">as ferramentas certas economizam de 5 a 15 horas por semana</strong> — tempo que pode ser reinvestido em atendimento, vendas e crescimento.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <p className="text-slate-600 leading-relaxed">A boa notícia: a maioria dessas ferramentas tem versão gratuita suficiente para começar. E o impacto na qualidade do conteúdo e na velocidade de produção é imediato. Aqui estão as 7 que todo agente de viagem deveria conhecer.</p>
 
@@ -103,7 +103,7 @@ const BlogPost22 = () => {
                             </div>
                         </div>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

@@ -66,7 +66,7 @@ const BlogPost29 = () => {
                             O maior custo de uma agência de viagem é conquistar um novo cliente. <strong className="text-slate-900">Reter um cliente existente custa 5x menos e gera 60% mais receita ao longo do tempo.</strong> Mas a maioria dos agentes abandona o cliente depois da viagem — perdendo a fonte mais poderosa de renda recorrente.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {[
@@ -107,7 +107,7 @@ const BlogPost29 = () => {
                         <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-10 mb-4">⭐ Programa de Indicação</h2>
                         <p className="text-slate-600 leading-relaxed">A forma mais barata de adquirir novos clientes é através de indicações de clientes satisfeitos. Crie um programa simples: "Indicate um amigo que fechar uma viagem comigo e você ganha R$100 de desconto na sua próxima viagem." Com um volume pequeno de clientes ativos, isso gera um pipeline de novos leads sem custo de marketing.</p>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

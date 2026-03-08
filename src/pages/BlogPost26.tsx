@@ -59,41 +59,40 @@ const BlogPost26 = () => {
 
                     <div className="prose prose-lg max-w-none space-y-8">
                         <div className="mb-10 rounded-2xl overflow-hidden shadow-xl border border-gray-200">
-                            <img src="https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1200&auto=format&fit=crop" alt="Roteiro Europa para Brasileiros" className="w-full h-auto" />
+                            <img src="https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1200&auto=format&fit=crop" alt="Roteiro Europa para Agências" className="w-full h-auto" />
                         </div>
 
                         <p className="text-xl text-slate-700 leading-relaxed font-medium">
-                            Europa é o destino dos sonhos de milhões de brasileiros. E em 2026 ela está mais acessível do que nos últimos 5 anos. <strong className="text-slate-900">Um roteiro bem planejado pode caber em R$12.000 a R$20.000 por pessoa — com tudo incluído.</strong> Mas requer atenção a vários detalhes. Este guia cobre tudo.
+                            A Europa é o destino que mais gera <strong className="text-slate-900">comissão e prestígio</strong> para uma agência de viagem em 2026. <strong className="text-slate-900">Vender um roteiro bem planejado pode significar uma margem de lucro de R$2.000 a R$5.000 por passageiro.</strong> Mas para fechar essas vendas premium, você — o agente — precisa dominar os detalhes técnicos que o cliente não encontra no Google.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
 
-                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-10 mb-6">🗺️ Roteiros Mais Populares para Brasileiros</h2>
+                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-10 mb-6">🗺️ Perfis de Roteiros que sua Agência DEVE Oferecer</h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {[
-                                { title: "🇵🇹🇪🇸 Clássico Ibérico (12 dias)", cities: "Lisboa → Porto → Madrid → Barcelona", profile: "Primeira viagem à Europa. Idiomas próximos. Alta identidade cultural com Brasil.", budget: "R$ 12.000 – R$ 18.000" },
-                                { title: "🇫🇷🇮🇹🇬🇷 Mediterrâneo (14 dias)", cities: "Paris → Nice → Roma → Atenas", profile: "Casais, cultura, gastronomia, fotografia. Uma das combinações mais desejadas.", budget: "R$ 16.000 – R$ 25.000" },
-                                { title: "🇩🇪🇦🇹🇨🇭 Europa Central (10 dias)", cities: "Frankfurt → Munique → Viena → Zurique", profile: "Perfil mais culto. Arquitetura, museus, castelos. Inverno com neve é espetacular.", budget: "R$ 14.000 – R$ 22.000" },
-                                { title: "🇬🇧🇮🇪🇮🇸 Europa do Norte (12 dias)", cities: "Londres → Edimburgo → Dublin → Reykjavik", profile: "Viajantes mais experientes. Aurora Boreal na Islândia é o grande atrativo.", budget: "R$ 18.000 – R$ 30.000" }
+                                { title: "🇵🇹🇪🇸 Clássico Ibérico (12 dias)", cities: "Lisboa → Porto → Madrid → Barcelona", profile: "Ideal para vender para pessoas que farão a primeira viagem à Europa. Ticket médio fácil de converter.", commission: "Alta conversão" },
+                                { title: "🇫🇷🇮🇹🇬🇷 Mediterrâneo (14 dias)", cities: "Paris → Nice → Roma → Atenas", profile: "Público de Lua de Mel e Casais. Maior ticket médio e comissões robustas em hotéis boutique.", commission: "Margem Premium" },
+                                { title: "🇩🇪🇦🇹🇨🇭 Europa Central (10 dias)", cities: "Frankfurt → Munique → Viena → Zurique", profile: "Perfil cultural e corporativo. Excelente para grupos fechados na melhor idade.", commission: "Ticket Médio Alto" },
+                                { title: "🇬🇧🇮🇪🇮🇸 Europa do Norte (12 dias)", cities: "Londres → Edimburgo → Dublin → Reykjavik", profile: "Ideal para 'Viajantes Recorrentes'. O ticket da Aurora Boreal é um dos maiores do mercado.", commission: "Lucro Exponencial" }
                             ].map((item, i) => (
                                 <div key={i} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-2">
                                     <h3 className="font-black text-slate-900 text-base">{item.title}</h3>
                                     <p className="text-slate-500 text-xs font-medium">{item.cities}</p>
                                     <p className="text-slate-600 text-xs leading-relaxed">{item.profile}</p>
-                                    <span className="inline-block bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">{item.budget}</span>
+                                    <span className="inline-block bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">Foco: {item.commission}</span>
                                 </div>
                             ))}
                         </div>
 
-                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-10 mb-4">📋 Visto Schengen: O Que Brasileiros Precisam Saber</h2>
+                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-10 mb-4">📋 Visto Schengen: O que você (Agente) deve Orientar</h2>
                         <div className="space-y-3">
                             {[
-                                { label: "Quem precisa?", info: "Todos os brasileiros que viajam para países da zona Schengen (maioria dos países europeus)." },
-                                { label: "Onde solicitar?", info: "No consulado do primeiro país de destino (o país onde você fica mais tempo)." },
-                                { label: "Documentos principais", info: "Passaporte válido, extrato bancário (3 meses), comprovante de hospedagem, passagem aérea, seguro viagem (obrigatório, cobertura mínima €30.000), comprovante de renda." },
-                                { label: "Prazo de solicitação", info: "Mínimo 4 semanas antes da viagem. Em alta temporada, solicite com 3 meses de antecedência." },
-                                { label: "Custo", info: "€80 a €85 (taxa consular). Não reembolsável em caso de recusa." }
+                                { label: "Sua responsabilidade", info: "Como profissional, seu papel é garantir que o cliente tenha toda a documentação. Erros aqui significam perda de venda e reputação." },
+                                { label: "Onde o cliente solicita?", info: "No consulado do país principal. Você deve prover o itinerário detalhado e seguro viagem para esta etapa." },
+                                { label: "Seguro Viagem: A Venda Adicional", info: "O seguro é obrigatório (mín. €30.000). Nunca venda o pacote sem o seguro. É lucro garantido e segurança para você e seu cliente." },
+                                { label: "Argumento de Venda", info: "Mostre que o visto é burocrático, mas com sua assessoria, o risco de erro é zero. Use isso para cobrar taxas de serviço se desejar." }
                             ].map((item, i) => (
                                 <div key={i} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
                                     <p className="font-black text-slate-900 text-sm">{item.label}</p>
@@ -102,22 +101,22 @@ const BlogPost26 = () => {
                             ))}
                         </div>
 
-                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-10 mb-4">🌤️ Melhor Época para Visitar a Europa</h2>
+                        <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-10 mb-4">🌤️ Sazonalidade: Quando 'Empurrar' as Vendas?</h2>
                         <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm">
                             <table className="w-full text-sm">
                                 <thead className="bg-slate-900 text-white">
                                     <tr>
                                         <th className="text-left py-3 px-4 font-bold">Período</th>
-                                        <th className="text-left py-3 px-4 font-bold">Clima</th>
-                                        <th className="text-left py-3 px-4 font-bold">Custo</th>
+                                        <th className="text-left py-3 px-4 font-bold">Perfil de Venda</th>
+                                        <th className="text-left py-3 px-4 font-bold">Dica para o Agente</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {[
-                                        { periodo: "Março – Maio", clima: "Primavera. Flores, temperatura agradável (10-20°C)", custo: "Médio (ótimo custo-benefício)" },
-                                        { periodo: "Junho – Agosto", clima: "Verão. Quente, muita gente, atrações abertas", custo: "Alto (alta temporada)" },
-                                        { periodo: "Setembro – Novembro", clima: "Outono. Colors, menos turistas, agradável", custo: "Médio-baixo (excelente época)" },
-                                        { periodo: "Dezembro – Fevereiro", clima: "Inverno. Neve, mercados de Natal, Aurora (norte)", custo: "Alto no natal, baixo em jan/fev" },
+                                        { periodo: "Março – Maio", clima: "Primavera. Ticket médio moderado.", custo: "Época de pacotes promocionais 'early bird'." },
+                                        { periodo: "Junho – Agosto", clima: "Verão. Venda garantida.", custo: "Bloqueie hotéis com antecedência. Preços disparam." },
+                                        { periodo: "Setembro – Novembro", clima: "Outono. Venda técnica.", custo: "Foque em clientes de luxo que evitam multidões." },
+                                        { periodo: "Dezembro – Fevereiro", clima: "Inverno. Nicho específico.", custo: "Foque em Mercados de Natal e Neve (Suíça)." },
                                     ].map((row, i) => (
                                         <tr key={i} className={`${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'} border-t border-gray-100`}>
                                             <td className="py-3 px-4 font-bold text-slate-900 text-xs">{row.periodo}</td>
@@ -129,7 +128,7 @@ const BlogPost26 = () => {
                             </table>
                         </div>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="decision" className="my-10" />
                     </div>
                 </main>
 

@@ -4,32 +4,32 @@ import { ArrowRight, Sparkles, Gift, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BlogCTAProps {
-    type: "main" | "free" | "sale";
+    type: "awareness" | "consideration" | "decision";
     className?: string;
 }
 
 export const BlogCTA = ({ type, className }: BlogCTAProps) => {
     const content = {
-        main: {
-            title: "🚀 Use a Ferramenta Principal",
-            description: "Acesse agora a biblioteca completa de vídeos e artes para sua agência.",
-            buttonText: "Acessar Canva Viagem",
-            link: "/",
+        awareness: {
+            title: "💰 Transforme sua paixão em lucro",
+            description: "Você sabia que pode faturar de R$ 2.000 a R$ 15.000/mês com turismo em casa? Conheça o modelo que mais cresce.",
+            buttonText: "Ver como funciona",
+            link: "/planos",
             icon: <Sparkles className="w-5 h-5" />,
+            colors: "bg-emerald-50 text-emerald-950 border-emerald-200 hover:bg-emerald-100",
+        },
+        consideration: {
+            title: "🚀 O segredo das agências que vendem todo dia",
+            description: "Não bata cabeça criando postagens. Tenha 250+ vídeos e artes prontas para postar agora no seu Instagram.",
+            buttonText: "Acessar Biblioteca Pro",
+            link: "/planos",
+            icon: <Gift className="w-5 h-5" />,
             colors: "bg-zinc-950 text-white border-zinc-800 hover:bg-zinc-900",
         },
-        free: {
-            title: "🎁 Comece de Graça",
-            description: "Teste nossas ferramentas de IA e alguns templates sem pagar nada.",
-            buttonText: "Experimentar Versão Grátis",
-            link: "/?category=free",
-            icon: <Gift className="w-5 h-5" />,
-            colors: "bg-white text-zinc-950 border-zinc-200 hover:bg-zinc-50",
-        },
-        sale: {
-            title: "💎 Oferta Especial: Plano Anual",
-            description: "Tenha acesso ilimitado por apenas R$ 16,41/mês (Total R$ 197/ano).",
-            buttonText: "Assinar Agora e Economizar",
+        decision: {
+            title: "💎 Garanta seu acesso Premium",
+            description: "Acesso completo à plataforma, 11 agentes de IA e atualizações semanais por apenas R$ 16,41/mês.",
+            buttonText: "Assinar Agora - R$ 197/ano",
             link: "/planos",
             icon: <CreditCard className="w-5 h-5" />,
             colors: "bg-gradient-to-r from-blue-600 to-purple-600 text-white border-transparent hover:opacity-90 shadow-lg",
@@ -40,7 +40,7 @@ export const BlogCTA = ({ type, className }: BlogCTAProps) => {
 
     return (
         <div className={cn(
-            "p-6 rounded-2xl border flex flex-col items-center text-center gap-4 transition-all duration-300 hover:shadow-xl",
+            "p-8 rounded-2xl border flex flex-col items-center text-center gap-4 transition-all duration-300 hover:shadow-xl",
             current.colors,
             className
         )}>
@@ -49,16 +49,19 @@ export const BlogCTA = ({ type, className }: BlogCTAProps) => {
                     {current.icon}
                     {current.title}
                 </h3>
-                <p className="text-sm opacity-80 max-w-sm mx-auto">
+                <p className="text-base opacity-90 max-w-md mx-auto leading-relaxed">
                     {current.description}
                 </p>
             </div>
-            <Button asChild className="w-full sm:w-auto h-12 px-8 rounded-xl font-bold gap-2 group">
+            <Button asChild className="w-full sm:w-auto h-12 px-10 rounded-xl font-black gap-2 group text-base">
                 <Link to={current.link}>
                     {current.buttonText}
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </Link>
             </Button>
+            <p className="text-[10px] uppercase tracking-widest font-bold opacity-60">
+                Acesso imediato • 7 dias de garantia • Pagamento Seguro
+            </p>
         </div>
     );
 };

@@ -119,7 +119,7 @@ const BlogPost2 = () => {
                             Existe uma crença de que para ter um Instagram bom, você precisa de três coisas: câmera profissional, habilidade de edição e muito tempo. Nenhuma dessas três é verdade.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <p className="text-slate-600 leading-relaxed">
                             O que você precisa, na verdade, é de <strong className="text-slate-900">conteúdo visual de qualidade</strong> e <strong className="text-slate-900">consistência</strong>. E dá para ter os dois sem gravar um segundo de vídeo sequer.
@@ -137,7 +137,7 @@ const BlogPost2 = () => {
                             Carrosséis são o tipo de post com maior taxa de salvamento no Instagram — e salvamentos são o melhor sinal de que o conteúdo tem valor. Um carrossel do tipo "7 coisas que você precisa saber antes de viajar para Maldivas" funciona muito bem e pode ser feito inteiramente com texto e imagens estáticas.
                         </p>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
 
                         <h3 className="text-xl font-semibold text-slate-800 mt-8 mb-3">3. Reels com vídeos de estoque</h3>
                         <p className="text-slate-600 leading-relaxed">
@@ -175,7 +175,7 @@ const BlogPost2 = () => {
                             Usando templates prontos, cada post demora entre 5 e 15 minutos para estar pronto. Postar 4 vezes por semana = 1 hora dedicada ao Instagram por semana.
                         </p>
 
-                        <BlogCTA type="sale" className="my-16 shadow-purple-200" />
+                        <BlogCTA type="decision" className="my-16 shadow-purple-200" />
                     </div>
                 </main>
 

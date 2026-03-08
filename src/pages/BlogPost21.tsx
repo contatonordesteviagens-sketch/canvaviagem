@@ -69,7 +69,7 @@ const BlogPost21 = () => {
                             O maior inimigo do agente de viagem no Instagram não é a concorrência — é a improvisação. Acordar todo dia sem saber o que postar é o caminho mais rápido para postar cada vez menos e perder visibilidade. <strong className="text-slate-900">Um calendário de conteúdo bem planejado resolve esse problema de uma vez por todas.</strong>
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-10 mb-6">📅 O Calendário Anual do Turismo</h2>
                         <p className="text-slate-600 leading-relaxed">O turismo tem sazonalidade previsível. Aproveitá-la é a decisão mais inteligente que um agente pode tomar no planejamento de conteúdo.</p>
@@ -138,7 +138,7 @@ const BlogPost21 = () => {
                             ))}
                         </div>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

@@ -66,7 +66,7 @@ const BlogPost23 = () => {
                             Vender para uma família ou casal é ótimo. Mas vender para um grupo de 20 pessoas ao mesmo tempo — com a mesma energia — é <strong className="text-slate-900">o divisor de águas do faturamento</strong> de muitos agentes. Um único grupo bem montado pode gerar R$5.000 a R$30.000 de comissão em uma venda.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {[
@@ -114,7 +114,7 @@ const BlogPost23 = () => {
                             ))}
                         </div>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

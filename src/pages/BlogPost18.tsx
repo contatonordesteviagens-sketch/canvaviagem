@@ -69,7 +69,7 @@ const BlogPost18 = () => {
                             Lua de mel é diferente de qualquer outra viagem. O casal não está procurando o mais barato — está procurando o <strong className="text-slate-900">mais perfeito</strong>. E isso significa tickets altos, clientes dispostos a investir e comissões que podem representar semanas de trabalho em uma única venda.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {[
@@ -109,7 +109,7 @@ const BlogPost18 = () => {
                         <p className="text-slate-600 leading-relaxed">O segredo para atrair clientes de lua de mel no Instagram é criar conteúdo que <strong>desperta o sonho</strong>. Vídeos de overwater bungalows, fotos de por do sol em Santorini, scripts inspiracionais sobre compartilhar o mundo com quem você ama. Esse tipo de conteúdo emocional é o que hace o casal mandar DM perguntando "quanto custa?"</p>
                         <p className="text-slate-600 leading-relaxed">Use hashtags específicas: #luademel, #lademelbrasileiros, #noivado, #casamento2026, #destinosromânticos. E crie uma série de highlights dedicados a cada destino romântico.</p>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

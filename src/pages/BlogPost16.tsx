@@ -69,7 +69,7 @@ const BlogPost16 = () => {
                             O WhatsApp é o principal canal de fechamento para agentes de viagem no Brasil. Mas a maioria dos agentes comete erros que afastam o cliente justo no momento decisivo. <strong className="text-slate-900">Esses scripts foram testados em dezenas de conversas reais</strong> e aumentam a taxa de fechamento em até 3x.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
                             <div className="flex gap-3 items-start">
@@ -143,7 +143,7 @@ const BlogPost16 = () => {
                             ))}
                         </div>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

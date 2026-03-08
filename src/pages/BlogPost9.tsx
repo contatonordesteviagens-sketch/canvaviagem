@@ -94,7 +94,7 @@ const BlogPost9 = () => {
                             A Inteligência Artificial chegou para ser a sua assistente de marketing e operações. Em 2026, quem domina as ferramentas de IA produz 10x mais com o mesmo esforço.
                         </p>
 
-                        <BlogCTA type="free" className="my-10 shadow-emerald-50" />
+                        <BlogCTA type="awareness" className="my-10 shadow-emerald-50" />
 
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">O Segredo do Prompt</h2>
                         <p className="text-slate-600 leading-relaxed">
@@ -121,14 +121,14 @@ const BlogPost9 = () => {
                             </li>
                         </ul>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
 
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">Muito Além dos Roteiros</h2>
                         <p className="text-slate-600 leading-relaxed">
                             Use também para criar legendas de posts, responder e-mails complexos ou até para sugerir temas de campanhas de vendas baseadas na sazonalidade do mercado.
                         </p>
 
-                        <BlogCTA type="sale" className="my-16 shadow-emerald-100" />
+                        <BlogCTA type="decision" className="my-16 shadow-emerald-100" />
                     </div>
                 </main>
 

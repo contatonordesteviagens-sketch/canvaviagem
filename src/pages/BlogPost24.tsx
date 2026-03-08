@@ -74,7 +74,7 @@ const BlogPost24 = () => {
                             Reels são o formato de maior alcance orgânico no Instagram em 2026. Um único Reel bem feito pode trazer centenas de novos seguidores — e alguns deles se tornam clientes. <strong className="text-slate-900">O segredo está nos primeiros 3 segundos: o hook.</strong>
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
                             <p className="font-black text-blue-900 mb-2">📌 A regra dos 3 segundos</p>
@@ -120,7 +120,7 @@ const BlogPost24 = () => {
                             <p className="text-amber-700 text-sm leading-relaxed">Muitos agentes de sucesso nunca aparecem nos Reels. Use imagens e vídeos de destinos com texto sobreposto e narração em voz (sua voz ao vivo ou gerada por IA). O conteúdo é o que importa, não o rosto.</p>
                         </div>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

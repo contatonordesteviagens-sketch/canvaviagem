@@ -77,7 +77,7 @@ const BlogPost15 = () => {
                             A escolha do destino certo não é só uma questão de preferência — é uma decisão de negócio. <strong className="text-slate-900">Destino errado = ticket baixo = comissão baixa = muita energia por pouco retorno.</strong> Destino certo = o oposto. Aqui estão os 5 destinos que os agentes mais rentáveis do Brasil estão priorizando.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-8">
                             {[
@@ -123,7 +123,7 @@ const BlogPost15 = () => {
                             <p className="text-slate-300 text-sm leading-relaxed">É aí que a maioria dos agentes trava: criar esse conteúdo do zero leva horas. Com vídeos e artes prontos sobre os principais destinos, você resolve esse problema de uma vez por todas.</p>
                         </div>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

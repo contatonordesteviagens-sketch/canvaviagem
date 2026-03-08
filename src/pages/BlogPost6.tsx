@@ -94,7 +94,7 @@ const BlogPost6 = () => {
                             Se você quer parar de vender apenas passagens e começar a faturar alto, a resposta está nos grupos. Vender para 20 pessoas de uma vez exige esforço, mas o lucro é exponencialmente maior.
                         </p>
 
-                        <BlogCTA type="free" className="my-10 shadow-blue-50" />
+                        <BlogCTA type="awareness" className="my-10 shadow-blue-50" />
 
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">Por que Grupos são a "Mina de Ouro"?</h2>
                         <p className="text-slate-600 leading-relaxed">
@@ -126,14 +126,14 @@ const BlogPost6 = () => {
                             </li>
                         </ul>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
 
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">Estratégia de Fechamento</h2>
                         <p className="text-slate-600 leading-relaxed">
                             Ofereça um bônus para os primeiros 5 confirmados. Isso gera imediatismo e ajuda a fechar o quorum mínimo do grupo rapidamente.
                         </p>
 
-                        <BlogCTA type="sale" className="my-16 shadow-blue-100" />
+                        <BlogCTA type="decision" className="my-16 shadow-blue-100" />
                     </div>
                 </main>
 

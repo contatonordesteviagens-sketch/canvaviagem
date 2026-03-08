@@ -69,7 +69,7 @@ const BlogPost13 = () => {
                             Essa é a primeira pergunta de quem está considerando entrar no turismo: <strong>"Vale a pena financeiramente?"</strong>. A resposta curta: <strong className="text-slate-900">depende muito de como você trabalha</strong>. A resposta longa — com os números reais — está aqui.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-10 mb-6">📊 Tabela de Ganhos por Perfil</h2>
 
@@ -132,7 +132,7 @@ const BlogPost13 = () => {
                         <p className="text-slate-600 leading-relaxed">O maior acelerador da renda no turismo é a <strong>presença constante no Instagram</strong>. Quem posta todo dia aparece para mais pessoas, gera mais consultas e fecha mais vendas. O problema: criar conteúdo profissional do zero todos os dias consome horas que poderiam ser dedicadas a atender mais clientes.</p>
                         <p className="text-slate-600 leading-relaxed">A solução que agentes de alto desempenho estão usando: <strong>conteúdo pronto e editável</strong> — vídeos de destinos, artes de Instagram e scripts de vendas — que permitem postar em minutos, não em horas.</p>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

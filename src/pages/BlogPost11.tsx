@@ -92,13 +92,13 @@ const BlogPost11 = () => {
                         </div>
 
                         <p className="text-xl text-slate-700 leading-relaxed font-medium">
-                            Você ama viagens. Já pensou que isso poderia gerar dinheiro? Em 2026, transformar essa paixão em uma fonte de <strong className="text-slate-900">renda extra real</strong> nunca foi tão acessível — e não exige que você abandone nada do que já tem.
+                            Você ama viagens e quer faturar com isso, mas se sente perdido? Em 2026, transformar essa paixão em uma fonte de <strong className="text-slate-900">renda extra real</strong> é a maior oportunidade do mercado digital — se você souber como se posicionar como um <strong className="text-slate-900">profissional</strong>, e não apenas um amador que dá dicas.
                         </p>
 
-                        <BlogCTA type="free" className="my-10 shadow-blue-50" />
+                        <BlogCTA type="awareness" className="my-10 shadow-blue-50" />
 
                         <p className="text-slate-600 leading-relaxed">
-                            O mercado de turismo no Brasil movimentou mais de <strong>R$ 200 bilhões em 2025</strong>. Uma fatia crescente disso está indo para pessoas comuns — não grandes operadoras — que encontraram formas inteligentes de participar desse mercado trabalhando de casa, no horário livre, com o celular na mão.
+                            O maior erro de quem tenta entrar no mercado de turismo é achar que basta postar fotos bonitas. O mercado movimentou mais de <strong>R$ 200 bilhões em 2025</strong>, mas esse dinheiro não vai para quem "ajuda amigos", e sim para quem constrói um <strong className="text-slate-900">negócio de agenciamento</strong> lucrativo, mesmo que comece com apenas 1 hora por dia.
                         </p>
 
                         {/* Opções de renda */}
@@ -194,7 +194,7 @@ const BlogPost11 = () => {
                             A solução que dezenas de agentes brasileiros descobriram é ter acesso a um banco de conteúdo pronto — <strong>vídeos, artes e scripts editáveis</strong> — que elimina o tempo de produção e permite postar profissionalmente desde o primeiro dia.
                         </p>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
 
                         <div className="bg-slate-50 border border-gray-200 rounded-2xl p-8">
                             <h3 className="font-black text-slate-900 mb-4 text-xl">Resumo: Sua Rota para a Renda Extra com Viagens</h3>

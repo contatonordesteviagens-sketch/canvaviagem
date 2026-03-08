@@ -105,7 +105,7 @@ const BlogPost4 = () => {
                             O turismo nacional nunca esteve tão forte. Em 2026, a busca por experiências autênticas, contato com a natureza e "slow travel" no Brasil atingiu o ápice. Para sua agência vender mais, é preciso estar onde o desejo do cliente está.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">1. Lençóis Maranhenses, MA</h2>
                         <p className="text-slate-600 leading-relaxed">
@@ -117,7 +117,7 @@ const BlogPost4 = () => {
                             O destino preferido dos amantes de aventura e isolamento. Em 2026, as agências que vendem "glamping" (acampamento de luxo) no Jalapão estão vendo as maiores margens de lucro.
                         </p>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
 
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">3. Alter do Chão, PA</h2>
                         <p className="text-slate-600 leading-relaxed">
@@ -143,7 +143,7 @@ const BlogPost4 = () => {
                             O clássico que nunca morre, mas agora com foco total em exclusividade. Em 2026, vender Noronha exige conhecimento profundo sobre as novas taxas e regras de preservação.
                         </p>
 
-                        <BlogCTA type="sale" className="my-16 shadow-green-100" />
+                        <BlogCTA type="decision" className="my-16 shadow-green-100" />
                     </div>
                 </main>
 

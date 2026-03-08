@@ -69,7 +69,7 @@ const BlogPost20 = () => {
                             A pandemia mudou a forma como o Brasil enxerga o trabalho remoto. E o turismo — ironicamente — foi um dos setores que mais se adaptou. Hoje, <strong className="text-slate-900">agentes de viagem autônomos faturam de R$2.000 a R$20.000 por mês sem sair de casa</strong>. Mas isso é realidade ou exceção?
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6">
                             <p className="font-black text-emerald-900 mb-2 text-lg">✅ A Resposta Direta: Sim, é possível — e mais fácil do que parece</p>
@@ -119,7 +119,7 @@ const BlogPost20 = () => {
                             <p className="text-amber-700 text-sm leading-relaxed">A principal barreira de quem quer trabalhar de casa com turismo é a produção de conteúdo. Criar posts profissionais de destinos do zero, todo dia, enquanto atende clientes e fecha vendas, rapidamente se torna insustentável. Agentes que resolvem esse problema — com templates prontos, vídeos editáveis e scripts — consistentemente performam melhor e com muito menos estresse.</p>
                         </div>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

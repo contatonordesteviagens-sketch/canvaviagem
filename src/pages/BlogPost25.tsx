@@ -65,7 +65,7 @@ const BlogPost25 = () => {
                             Seguro viagem é a venda adicional que mais agentes esquecem de oferecer — e por isso perdem dinheiro duas vezes: na comissão não recebida e na responsabilidade quando o cliente viaja sem proteção. <strong className="text-slate-900">Saber vender seguro é obrigação de todo agente profissional.</strong>
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-10 mb-6">🛡️ Por Que Seguro Viagem é Obrigatório (Moralmente e Legalmente)</h2>
                         <div className="space-y-3">
@@ -109,7 +109,7 @@ const BlogPost25 = () => {
                             <p className="text-slate-500 text-xs mt-3">Por quê funciona: não pergunta SE o cliente quer, apresenta como parte do processo. A maioria aceita quando vê o custo relativo ao risco.</p>
                         </div>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

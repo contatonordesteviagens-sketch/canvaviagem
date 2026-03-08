@@ -132,7 +132,7 @@ const BlogPost = () => {
                             <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">05.</span><span><strong className="text-slate-900">Destino nacional pouco conhecido</strong>: "3 lugares incríveis no Brasil que você provavelmente ainda não foi."</span></li>
                         </ul>
 
-                        <BlogCTA type="free" className="my-12 shadow-blue-100" />
+                        <BlogCTA type="awareness" className="my-12 shadow-blue-100" />
 
                         {/* Seção 2 */}
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">2. Posts de Bastidores (criam conexão)</h2>
@@ -147,7 +147,7 @@ const BlogPost = () => {
                             <li className="flex gap-3"><span className="text-blue-600 font-bold flex-shrink-0">10.</span><span><strong className="text-slate-900">Missão do dia</strong>: "hoje organizei a viagem de lua de mel de um casal para Portugal."</span></li>
                         </ul>
 
-                        <BlogCTA type="main" className="my-12" />
+                        <BlogCTA type="consideration" className="my-12" />
 
                         {/* Seção 3 */}
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">3. Posts Educativos (aumentam sua autoridade)</h2>
@@ -211,7 +211,7 @@ const BlogPost = () => {
                             O problema não é o Instagram. É a falta de constância. E a falta de constância vem da falta de conteúdo pronto.
                         </p>
 
-                        <BlogCTA type="sale" className="my-12 shadow-purple-200" />
+                        <BlogCTA type="decision" className="my-12 shadow-purple-200" />
 
                     </div>
                 </main>

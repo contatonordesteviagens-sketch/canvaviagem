@@ -69,7 +69,7 @@ const BlogPost17 = () => {
                             Você não precisa ser designer para ter um Instagram de agência de viagem bonito e profissional. O Canva transformou o design digital e colocou na mão de qualquer pessoa a capacidade de criar artes que <strong className="text-slate-900">param o scroll e geram consultas</strong>.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-10 mb-6">🎨 Por Que o Canva é Indispensável para Agentes de Viagem</h2>
 
@@ -107,7 +107,7 @@ const BlogPost17 = () => {
                         <p className="text-slate-600 leading-relaxed">Criar um carrossel de 8 slides no Canva do zero — pesquisar fotos, escrever os textos, posicionar os elementos, exportar — pode levar de 45 minutos a 2 horas. Para quem posta 5 vezes por semana, isso é 10 horas semanais só em criação de conteúdo.</p>
                         <p className="text-slate-600 leading-relaxed">A solução que agentes profissionais estão usando: começar com <strong>templates prontos e editáveis de alta qualidade</strong>, onde você só precisa trocar o destino, o preço e sua logo. O que levava 2 horas passa a levar 5 minutos.</p>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

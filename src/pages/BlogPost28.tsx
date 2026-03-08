@@ -66,7 +66,7 @@ const BlogPost28 = () => {
                             O Instagram é visual. E a primeira impressão que um potencial cliente tem da sua agência é julgada em menos de 3 segundos. <strong className="text-slate-900">Perfis com identidade visual consistente e profissional convertem até 3x mais</strong> do que perfis visualmente desorganizados — mesmo com conteúdo de qualidade similar.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-10 mb-6">🎨 Os 5 Pilares da Identidade Visual</h2>
 
@@ -113,7 +113,7 @@ const BlogPost28 = () => {
                             <p className="text-blue-700 text-sm leading-relaxed">Em vez de criar tudo do zero e gastar semanas testando combinações, use uma biblioteca de templates já padronizados para o nicho de turismo. Você adapta a paleta de cor para a sua identidade e mantém toda a estrutura profissional pronta.</p>
                         </div>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

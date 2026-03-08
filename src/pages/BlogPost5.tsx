@@ -105,7 +105,7 @@ const BlogPost5 = () => {
                             O Instagram atrai o olhar. O WhatsApp fecha a venda. Em 2026, a agência que não domina a arte da conversa no Zap está perdendo dinheiro todos os dias.
                         </p>
 
-                        <BlogCTA type="free" className="my-10 shadow-green-50" />
+                        <BlogCTA type="awareness" className="my-10 shadow-green-50" />
 
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">A Ponte: Do Direct ao WhatsApp</h2>
                         <p className="text-slate-600 leading-relaxed">
@@ -137,14 +137,14 @@ const BlogPost5 = () => {
                             </li>
                         </ul>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
 
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">Fechamento: O Script de Sucesso</h2>
                         <p className="text-slate-600 leading-relaxed">
                             Não termine a conversa com "Qualquer coisa me avisa". Termine com uma pergunta de fechamento ou opção dupla: "Prefere que eu reserve as vagas desse hotel agora ou quer incluir o seguro viagem antes?".
                         </p>
 
-                        <BlogCTA type="sale" className="my-16 shadow-green-100" />
+                        <BlogCTA type="decision" className="my-16 shadow-green-100" />
                     </div>
                 </main>
 

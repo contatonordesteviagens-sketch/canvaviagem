@@ -79,7 +79,7 @@ const BlogPost14 = () => {
                             Em 2026, o Instagram não é mais uma rede social de lazer para agentes de viagem. <strong className="text-slate-900">É o principal canal de vendas.</strong> Mais de 70% dos clientes que contratam agentes autônomos hoje os descobriram pelo Instagram. Ainda assim, 9 em cada 10 agentes estão usando a plataforma de forma errada.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <p className="text-slate-600 leading-relaxed">
                             Não se trata de ter milhões de seguidores. Trata-se de ter o <strong>tipo certo de presença</strong> — conteúdo estratégico que aparece para as pessoas certas, no momento certo, e que as converte em consultas e vendas. Aqui estão os 7 pilares de um Instagram que vende.
@@ -140,7 +140,7 @@ const BlogPost14 = () => {
                             <p className="text-rose-700 text-sm leading-relaxed">Seguir esse calendário exige produzir conteúdo de alta qualidade 7 dias por semana. Agentes que tentam criar tudo do zero desistem em menos de 30 dias. A solução está em ter uma biblioteca de conteúdo pronto — vídeos, artes e templates editáveis — que transformam o processo de horas em minutos.</p>
                         </div>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
                     </div>
                 </main>
 

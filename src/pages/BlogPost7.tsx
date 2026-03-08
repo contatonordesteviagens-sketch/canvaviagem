@@ -94,7 +94,7 @@ const BlogPost7 = () => {
                             O orgânico está cada vez mais difícil. Em 2026, agências que querem previsibilidade precisam investir em tráfego pago. Não é gasto, é investimento com retorno mensurável.
                         </p>
 
-                        <BlogCTA type="free" className="my-10 shadow-indigo-50" />
+                        <BlogCTA type="awareness" className="my-10 shadow-indigo-50" />
 
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">O "Feijão com Arroz" que funciona</h2>
                         <p className="text-slate-600 leading-relaxed">
@@ -126,14 +126,14 @@ const BlogPost7 = () => {
                             </li>
                         </ul>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
 
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">Métricas que Importam</h2>
                         <p className="text-slate-600 leading-relaxed">
                             Não olhe apenas para o CTR. O que importa no final do dia é o CPL (Custo por Lead) e o ROAS (Retorno sobre Investimento em Anúncios). Quantos contatos chegaram e quantos pacotes você fechou?
                         </p>
 
-                        <BlogCTA type="sale" className="my-16 shadow-indigo-100" />
+                        <BlogCTA type="decision" className="my-16 shadow-indigo-100" />
                     </div>
                 </main>
 

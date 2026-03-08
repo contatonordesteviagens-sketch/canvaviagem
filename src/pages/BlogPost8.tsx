@@ -94,7 +94,7 @@ const BlogPost8 = () => {
                             No mercado de turismo de 2026, a "agência que vende tudo para todos" está morrendo. O futuro pertence aos especialistas. Quem foca, fatura mais.
                         </p>
 
-                        <BlogCTA type="free" className="my-10 shadow-amber-50" />
+                        <BlogCTA type="awareness" className="my-10 shadow-amber-50" />
 
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">O Perigo do "Generalista"</h2>
                         <p className="text-slate-600 leading-relaxed">
@@ -126,14 +126,14 @@ const BlogPost8 = () => {
                             </li>
                         </ul>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
 
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">A Escada do Lucro</h2>
                         <p className="text-slate-600 leading-relaxed">
                             Ao ser especialista, você pode cobrar taxas de consultoria. O cliente paga feliz para ter a garantia de que a viagem dos sonhos será perfeita sob a supervisão de um mestre no assunto.
                         </p>
 
-                        <BlogCTA type="sale" className="my-16 shadow-amber-100" />
+                        <BlogCTA type="decision" className="my-16 shadow-amber-100" />
                     </div>
                 </main>
 

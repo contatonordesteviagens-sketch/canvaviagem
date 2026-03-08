@@ -108,7 +108,7 @@ const BlogPost3 = () => {
                             Em 2026, não basta ter uma agência de viagem boa. <strong className="text-slate-900">Você precisa ser encontrada.</strong> E o marketing digital deixou de ser opcional para se tornar o maior diferencial entre agentes que crescem e aqueles que ainda esperam o telefone tocar.
                         </p>
 
-                        <BlogCTA type="free" className="my-10 shadow-blue-50" />
+                        <BlogCTA type="awareness" className="my-10 shadow-blue-50" />
 
                         <p className="text-slate-600 leading-relaxed">
                             A boa notícia: a maioria dos agentes ainda erra nos mesmos pontos básicos. Isso significa que quem acertar <em>agora</em> vai sair na frente dos concorrentes por meses — ou anos.
@@ -197,7 +197,7 @@ const BlogPost3 = () => {
                             </div>
                         ))}
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
 
                         {/* O que fazer */}
                         <h2 className="text-2xl md:text-3xl font-black text-slate-900 mt-14 mb-6">

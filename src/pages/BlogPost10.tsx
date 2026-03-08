@@ -94,7 +94,7 @@ const BlogPost10 = () => {
                             Fidelizar um cliente é muito mais barato do que conquistar um novo. No turismo, um cliente satisfeito viaja com você a vida toda e ainda indica sua agência para amigos.
                         </p>
 
-                        <BlogCTA type="free" className="my-10 shadow-rose-50" />
+                        <BlogCTA type="awareness" className="my-10 shadow-rose-50" />
 
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">A Experiência no Retorno</h2>
                         <p className="text-slate-600 leading-relaxed">
@@ -126,14 +126,14 @@ const BlogPost10 = () => {
                             </li>
                         </ul>
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
 
                         <h2 className="text-2xl font-bold text-slate-900 mt-12 mb-4">O Ciclo da Próxima Viagem</h2>
                         <p className="text-slate-600 leading-relaxed">
                             Depois de saber o que o cliente gostou, você já pode começar a "plantar a semente" para o próximo ano. "Já que você amou esse resort em Alagoas, ano que vem você vai adorar conhecer nossa opção em Porto de Galinhas."
                         </p>
 
-                        <BlogCTA type="sale" className="my-16 shadow-rose-100" />
+                        <BlogCTA type="decision" className="my-16 shadow-rose-100" />
                     </div>
                 </main>
 

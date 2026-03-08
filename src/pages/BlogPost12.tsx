@@ -92,7 +92,7 @@ const BlogPost12 = () => {
                             Você provavelmente já pensou nisso: <strong className="text-slate-900">"E se eu pudesse trabalhar com algo que amo?"</strong> Para muitas pessoas, viagens são essa paixão. A boa notícia: existe uma profissão inteira construída em torno disso — e ela nunca foi tão acessível para quem está começando do zero.
                         </p>
 
-                        <BlogCTA type="free" className="my-10" />
+                        <BlogCTA type="awareness" className="my-10" />
 
                         <p className="text-slate-600 leading-relaxed">
                             Ser agente de viagens autônomo não exige diploma, capital inicial alto ou experiência prévia. O que exige é método, presença digital e constância. Neste guia, vou mostrar exatamente o caminho que dezenas de agentes percorreram nos últimos dois anos.
@@ -159,7 +159,7 @@ const BlogPost12 = () => {
                             </div>
                         ))}
 
-                        <BlogCTA type="main" className="my-10" />
+                        <BlogCTA type="consideration" className="my-10" />
 
                         <div className="bg-slate-50 border border-gray-200 rounded-2xl p-8">
                             <h3 className="font-black text-slate-900 mb-4">Conclusão: Começar é a Etapa Mais Difícil (e a Mais Importante)</h3>
