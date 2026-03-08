@@ -56,6 +56,56 @@ const blogPosts = [
         image: "https://images.unsplash.com/photo-1611746872915-64382b5c76da?q=80&w=800&auto=format&fit=crop",
         slug: "converter-seguidores-whatsapp",
         category: "Vendas"
+    },
+    {
+        title: "Como Fechar Vendas de Grupos e Faturar 5x Mais",
+        excerpt: "Vender para grupos é o caminho mais curto para escalar o faturamento da sua agência.",
+        date: "10 Mar 2026",
+        author: "Lucas Rocha",
+        readTime: "10 min",
+        image: "https://images.unsplash.com/photo-1539635278303-d4002c07dee3?q=80&w=800&auto=format&fit=crop",
+        slug: "fechar-vendas-grupos-viagem",
+        category: "Estratégia"
+    },
+    {
+        title: "Guia de Tráfego Pago para Agentes de Viagem (Meta Ads 2026)",
+        excerpt: "Saiba como investir em anúncios no Instagram para atrair leads qualificados gastando pouco.",
+        date: "11 Mar 2026",
+        author: "Lucas Rocha",
+        readTime: "12 min",
+        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop",
+        slug: "trafego-pago-agentes-viagem",
+        category: "Anúncios"
+    },
+    {
+        title: "O Poder do Nicho: Por que Agências Especialistas Ganham Mais",
+        excerpt: "Descubra por que focar em um nicho específico pode transformar sua agência em uma referência.",
+        date: "12 Mar 2026",
+        author: "Lucas Rocha",
+        readTime: "9 min",
+        image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=800&auto=format&fit=crop",
+        slug: "poder-nicho-turismo",
+        category: "Nicho"
+    },
+    {
+        title: "Como usar o ChatGPT para Criar Roteiros Irresistíveis em Minutos",
+        excerpt: "Aprenda prompts exatos para usar a IA na criação de roteiros que encantam seus clientes.",
+        date: "13 Mar 2026",
+        author: "Lucas Rocha",
+        readTime: "7 min",
+        image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=800&auto=format&fit=crop",
+        slug: "chatgpt-roteiros-viagem",
+        category: "IA"
+    },
+    {
+        title: "Atendimento que Fideliza: O Segredo do Pós-Venda no Turismo",
+        excerpt: "Aprenda como encantar seus clientes depois que a viagem termina e transformar viajantes em fãs.",
+        date: "14 Mar 2026",
+        author: "Lucas Rocha",
+        readTime: "8 min",
+        image: "https://images.unsplash.com/photo-1556740734-7f9a2b7a0f42?q=80&w=800&auto=format&fit=crop",
+        slug: "pos-venda-fidelizacao-turismo",
+        category: "Fidelização"
     }
 ];
 

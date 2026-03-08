@@ -24,7 +24,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 import { ProgressBar } from "@/components/ProgressBar";
-import { TextRewind } from "@/components/ui/TextRewind";
 
 type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
 
@@ -157,8 +156,10 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
               className="h-10 w-10 rounded-xl shadow-lg md:shadow-lg hover:shadow-xl transition-shadow object-cover"
             />
             <div className="hidden sm:block">
-              <TextRewind text="Canva Viagem" />
-              <p className="text-[10px] text-muted-foreground font-medium -mt-1">Estratégias para Agentes</p>
+              <span className="text-xl font-bold text-slate-800 dark:text-white tracking-tight">
+                Canva Viagem
+              </span>
+              <p className="text-[10px] text-muted-foreground font-medium -mt-1 uppercase tracking-wider">Estratégias para Agentes</p>
             </div>
           </Link>
 

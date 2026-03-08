@@ -13,8 +13,9 @@ import { UserInfoCard } from "@/components/UserInfoCard";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
 import {
   Loader2, Check, Plane, Settings, RefreshCw, Star,
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, Instagram, Facebook, Twitter, Linkedin
 } from "lucide-react";
+import { MinimalistHero } from "@/components/ui/minimalist-hero";
 import garantia7dias from "@/assets/garantia-7-dias.png";
 
 // ─── Links de pagamento ───────────────────────────────────────────────────────
@@ -176,33 +177,28 @@ const Planos = () => {
         description="Marketing pronto para agentes de viagem. 250+ vídeos, IA e templates editáveis."
         keywords="assinar canva viagem, planos marketing turístico, assinatura agência de viagens"
       />
-      <Header />
-      {user && <div className="max-w-4xl mx-auto px-4 pt-6"><UserInfoCard /></div>}
+      <MinimalistHero
+        logoText="Canva Viagem"
+        navLinks={[
+          { label: 'HOME', href: '/' },
+          { label: 'BLOG', href: '/blog' },
+          { label: 'GESTÃO', href: '/gestao' },
+        ]}
+        mainText="Quem aparece todo dia vende mais. No Instagram, aparecer todo dia significa ter conteúdo diário. Com nossos 150 vídeos prontos, você garante sua presença e suas vendas."
+        readMoreLink="#preco"
+        imageSrc="/hero-canva.png"
+        imageAlt="Plataforma Canva Viagem em ação"
+        overlayText={{
+          part1: 'venda',
+          part2: 'mais.',
+        }}
+        socialLinks={[
+          { icon: Instagram, href: 'https://instagram.com/canvaviagem' },
+        ]}
+        locationText="Estratégia para Agentes de Viagem"
+      />
 
-      {/* ─── HERO ─────────────────────────────────────────────────────────── */}
-      <section className="relative max-w-3xl mx-auto px-6 pt-16 pb-14 text-center overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_0%,rgba(250,204,21,0.08)_0%,rgba(255,255,255,0)_70%)] pointer-events-none" />
-        <p className="text-[11px] font-bold tracking-[0.3em] text-zinc-400 uppercase mb-6">
-          Para agentes de viagem que querem crescer
-        </p>
-        <h1 className="text-4xl md:text-[3.5rem] font-black leading-[1.1] mb-6 text-black tracking-tight">
-          Sabe aquela sensação de abrir o Instagram{" "}
-          <span className="italic">sem saber o que postar</span>?
-        </h1>
-        <p className="text-lg md:text-xl text-zinc-600 max-w-xl mx-auto mb-4 leading-relaxed">
-          Eu sei exatamente como é isso. Criei esta ferramenta porque vi agência após agência travando no mesmo lugar — não por falta de esforço, mas por falta do conteúdo certo.
-          Hoje você tem acesso a <strong className="text-black">250+ vídeos de destinos prontos</strong>, artes editáveis, legendas e IA de marketing.
-        </p>
-        <p className="text-base text-zinc-500 mb-10">
-          Por menos de <strong className="text-black">R$ 1 por dia</strong>, você deixa de improvisar e começa a aparecer de verdade.
-        </p>
-        <a href="#preco">
-          <button className="btn-shine bg-black text-white font-black text-base md:text-lg px-10 py-4 rounded-full hover:bg-zinc-800 transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0">
-            Quero resolver isso agora →
-          </button>
-        </a>
-        <p className="text-xs text-zinc-400 mt-3">Garantia de 7 dias · Cancele quando quiser</p>
-      </section>
+      {user && <div className="max-w-4xl mx-auto px-4 py-12"><UserInfoCard /></div>}
 
       {/* ─── DEPOIMENTOS ──────────────────────────────────────────────────── */}
       <section className="py-10 px-6 bg-white border-b border-zinc-100">
@@ -499,7 +495,6 @@ const Planos = () => {
         </div>
       </section>
 
-      <Footer />
     </div>
   );
 };
