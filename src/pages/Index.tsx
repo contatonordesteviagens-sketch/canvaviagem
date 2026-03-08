@@ -20,9 +20,9 @@ const ResourceSection = lazy(() => import("@/components/ResourceSection").then(m
 const BlogSection = () => {
   const posts = [
     {
-      title: "Marketing Digital para Agência de Viagem 2026",
-      image: "/blog/img-marketing-digital-agencia.png",
-      slug: "marketing-digital-para-agencia-de-viagem"
+      title: "Trabalhar de Casa com Turismo: Realidade ou Ilusão em 2026?",
+      image: "/artes/woman_travel_agent_laptop_cafe_realistic_1772961080945.png",
+      slug: "trabalhar-de-casa-com-turismo"
     },
     {
       title: "Como criar conteúdo sem gravar vídeo",
