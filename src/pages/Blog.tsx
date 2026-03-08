@@ -12,7 +12,7 @@ const blogPosts = [
         title: "Marketing Digital para Agência de Viagem: O Guia Completo 2026",
         excerpt: "Descubra as estratégias que realmente funcionam para vender pacotes turísticos no novo cenário digital.",
         date: "07 Mar 2026", author: "Lucas Rocha", readTime: "8 min",
-        image: "/blog/marketing-digital-2026.png",
+        image: "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?q=80&w=800&auto=format&fit=crop",
         slug: "marketing-digital-para-agencia-de-viagem", category: "Marketing"
     },
     {
