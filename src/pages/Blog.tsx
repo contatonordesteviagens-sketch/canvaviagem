@@ -12,21 +12,21 @@ const blogPosts = [
         title: "Marketing Digital para Agência de Viagem: O Guia Completo 2026",
         excerpt: "Descubra as estratégias que realmente funcionam para vender pacotes turísticos no novo cenário digital.",
         date: "07 Mar 2026", author: "Lucas Rocha", readTime: "8 min",
-        image: "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?q=80&w=800&auto=format&fit=crop",
+        image: "/artes/marketing_digital_agencia_art_premium_1772960978935.png",
         slug: "marketing-digital-para-agencia-de-viagem", category: "Marketing"
     },
     {
         title: "Como Criar Conteúdo para Agência de Viagem Sem Gravar Vídeo",
         excerpt: "Aprenda a manter um perfil profissional e atraente no Instagram sem precisar aparecer ou editar vídeos complexos.",
         date: "05 Mar 2026", author: "Lucas Rocha", readTime: "5 min",
-        image: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=800&auto=format&fit=crop",
+        image: "/artes/woman_travel_agent_laptop_cafe_realistic_1772961080945.png",
         slug: "como-criar-conteudo-agencia-de-viagem-sem-gravar-video", category: "Conteúdo"
     },
     {
         title: "O Que Postar no Instagram da Sua Agência de Viagem",
         excerpt: "Um guia prático com ideias de posts que geram desejo de viagem e convertem seguidores em clientes.",
         date: "01 Mar 2026", author: "Lucas Rocha", readTime: "6 min",
-        image: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=800&auto=format&fit=crop",
+        image: "/artes/instagram_content_strategy_turismo_premium_1772961022191.png",
         slug: "o-que-postar-no-instagram-agencia-de-viagem", category: "Instagram"
     },
     {
@@ -40,7 +40,7 @@ const blogPosts = [
         title: "Como Converter Seguidores em Clientes no WhatsApp",
         excerpt: "O script exato que as agências de sucesso usam para fechar vendas pelo aplicativo de mensagens.",
         date: "09 Mar 2026", author: "Lucas Rocha", readTime: "7 min",
-        image: "https://images.unsplash.com/photo-1611746872915-64382b5c76da?q=80&w=800&auto=format&fit=crop",
+        image: "/artes/hands_holding_phone_whatsapp_business_realistic_1772961106417.png",
         slug: "converter-seguidores-whatsapp", category: "Vendas"
     },
     {
@@ -225,8 +225,8 @@ const Blog = () => {
     return (
         <div className="min-h-screen bg-background">
             <SeoMetadata
-                title="Blog Canva Viagem | Dicas de Marketing para Agentes de Viagem"
-                description="Aprenda a escalar sua agência de viagem com as melhores dicas de marketing digital, conteúdo para Instagram e vendas."
+                title="Blog Canva Viagem | Estratégias de Marketing para Agentes de Viagem 2026"
+                description="Aprenda a escalar sua agência de viagem com as melhores dicas de marketing digital, conteúdo para Instagram, automação de WhatsApp e vendas de pacotes turísticos."
             />
             <Header />
 

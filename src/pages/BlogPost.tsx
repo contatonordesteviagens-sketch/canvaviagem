@@ -31,9 +31,9 @@ const BlogPost = () => {
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="O que Postar no Instagram da Sua Agência de Viagem (30 Ideias)" />
                 <meta property="og:description" content="30 ideias de conteúdo para sua agência de viagem aparecer todo dia no Instagram e atrair mais clientes." />
-                <meta property="og:image" content="/blog/img-instagram-agencia-viagem.png" />
+                <meta property="og:image" content="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=1200&auto=format&fit=crop" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/blog/img-instagram-agencia-viagem.png" />
+                <meta name="twitter:image" content="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=1200&auto=format&fit=crop" />
                 <script type="application/ld+json">{JSON.stringify({
                     "@context": "https://schema.org",
                     "@type": "Article",
