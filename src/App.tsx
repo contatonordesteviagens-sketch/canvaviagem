@@ -34,6 +34,7 @@ const ContentManager = lazy(() => import("./pages/admin/ContentManager"));
 const CaptionsManager = lazy(() => import("./pages/admin/CaptionsManager"));
 const ToolsManager = lazy(() => import("./pages/admin/ToolsManager"));
 const Marketing = lazy(() => import("./pages/admin/Marketing"));
+const HotmartManager = lazy(() => import("./pages/admin/HotmartManager"));
 const Termos = lazy(() => import("./pages/Termos"));
 const Privacidade = lazy(() => import("./pages/Privacidade"));
 const ProximoNivel = lazy(() => import("./pages/ProximoNivel"));
@@ -144,6 +145,7 @@ const App = () => (
                       <Route path="content" element={<ContentManager />} />
                       <Route path="captions" element={<CaptionsManager />} />
                       <Route path="tools" element={<ToolsManager />} />
+                      <Route path="hotmart" element={<HotmartManager />} />
                     </Route>
 
                     {/* ROTAS DO BLOG */}

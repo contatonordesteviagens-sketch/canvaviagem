@@ -13,7 +13,7 @@ const blogPosts = [
         date: "07 Mar 2026",
         author: "Lucas Rocha",
         readTime: "8 min",
-        image: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=800&auto=format&fit=crop",
+        image: "/blog/marketing-digital-2026.png",
         slug: "marketing-digital-para-agencia-de-viagem",
         category: "Marketing"
     },

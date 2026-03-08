@@ -97,7 +97,7 @@ const BlogPost3 = () => {
                     <div className="prose prose-lg max-w-none space-y-8">
                         <div className="mb-10 rounded-2xl overflow-hidden shadow-xl border border-gray-200">
                             <img
-                                src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1200&auto=format&fit=crop"
+                                src="/blog/marketing-digital-2026.png"
                                 alt="Marketing digital para agência de viagem"
                                 className="w-full h-auto"
                             />

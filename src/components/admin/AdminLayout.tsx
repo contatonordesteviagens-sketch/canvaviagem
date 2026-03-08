@@ -10,7 +10,8 @@ import {
   LogOut,
   Home,
   Loader2,
-  TrendingUp
+  TrendingUp,
+  ShoppingBag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ const navItems = [
   { path: "/admin/content", label: "Conteúdos", icon: FileText },
   { path: "/admin/captions", label: "Legendas", icon: MessageSquare },
   { path: "/admin/tools", label: "Ferramentas", icon: Wrench },
+  { path: "/admin/hotmart", label: "Hotmart", icon: ShoppingBag },
 ];
 
 export default function AdminLayout() {
