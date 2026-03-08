@@ -51,6 +51,26 @@ const BlogPost7 = lazy(() => import("./pages/BlogPost7"));
 const BlogPost8 = lazy(() => import("./pages/BlogPost8"));
 const BlogPost9 = lazy(() => import("./pages/BlogPost9"));
 const BlogPost10 = lazy(() => import("./pages/BlogPost10"));
+const BlogPost11 = lazy(() => import("./pages/BlogPost11"));
+const BlogPost12 = lazy(() => import("./pages/BlogPost12"));
+const BlogPost13 = lazy(() => import("./pages/BlogPost13"));
+const BlogPost14 = lazy(() => import("./pages/BlogPost14"));
+const BlogPost15 = lazy(() => import("./pages/BlogPost15"));
+const BlogPost16 = lazy(() => import("./pages/BlogPost16"));
+const BlogPost17 = lazy(() => import("./pages/BlogPost17"));
+const BlogPost18 = lazy(() => import("./pages/BlogPost18"));
+const BlogPost19 = lazy(() => import("./pages/BlogPost19"));
+const BlogPost20 = lazy(() => import("./pages/BlogPost20"));
+const BlogPost21 = lazy(() => import("./pages/BlogPost21"));
+const BlogPost22 = lazy(() => import("./pages/BlogPost22"));
+const BlogPost23 = lazy(() => import("./pages/BlogPost23"));
+const BlogPost24 = lazy(() => import("./pages/BlogPost24"));
+const BlogPost25 = lazy(() => import("./pages/BlogPost25"));
+const BlogPost26 = lazy(() => import("./pages/BlogPost26"));
+const BlogPost27 = lazy(() => import("./pages/BlogPost27"));
+const BlogPost28 = lazy(() => import("./pages/BlogPost28"));
+const BlogPost29 = lazy(() => import("./pages/BlogPost29"));
+const BlogPost30 = lazy(() => import("./pages/BlogPost30"));
 const Blog = lazy(() => import("./pages/Blog"));
 
 const PageLoader = () => (
@@ -148,7 +168,7 @@ const App = () => (
                       <Route path="hotmart" element={<HotmartManager />} />
                     </Route>
 
-                    {/* ROTAS DO BLOG */}
+                    {/* ROTAS DO BLOG - Posts originais */}
                     <Route path="/blog/o-que-postar-no-instagram-agencia-de-viagem" element={<BlogPost />} />
                     <Route path="/blog/como-criar-conteudo-agencia-de-viagem-sem-gravar-video" element={<BlogPost2 />} />
                     <Route path="/blog/marketing-digital-para-agencia-de-viagem" element={<BlogPost3 />} />
@@ -159,6 +179,27 @@ const App = () => (
                     <Route path="/blog/poder-nicho-turismo" element={<BlogPost8 />} />
                     <Route path="/blog/chatgpt-roteiros-viagem" element={<BlogPost9 />} />
                     <Route path="/blog/pos-venda-fidelizacao-turismo" element={<BlogPost10 />} />
+                    {/* ROTAS DO BLOG - 20 Novos Posts SEO (Funil Completo) */}
+                    <Route path="/blog/como-ganhar-dinheiro-extra-com-viagens" element={<BlogPost11 />} />
+                    <Route path="/blog/como-se-tornar-agente-de-viagens" element={<BlogPost12 />} />
+                    <Route path="/blog/quanto-ganha-agente-de-viagens" element={<BlogPost13 />} />
+                    <Route path="/blog/instagram-para-agente-de-viagens" element={<BlogPost14 />} />
+                    <Route path="/blog/destinos-internacionais-mais-vendem-agentes" element={<BlogPost15 />} />
+                    <Route path="/blog/script-vendas-whatsapp-agente-viagens" element={<BlogPost16 />} />
+                    <Route path="/blog/canva-para-agencia-de-viagem" element={<BlogPost17 />} />
+                    <Route path="/blog/vender-pacotes-lua-de-mel-agente-viagem" element={<BlogPost18 />} />
+                    <Route path="/blog/melhores-destinos-nacionais-familia-2026" element={<BlogPost19 />} />
+                    <Route path="/blog/trabalhar-de-casa-com-turismo" element={<BlogPost20 />} />
+                    <Route path="/blog/calendario-conteudo-agencia-de-viagem" element={<BlogPost21 />} />
+                    <Route path="/blog/ia-para-agentes-de-viagem" element={<BlogPost22 />} />
+                    <Route path="/blog/criar-grupo-viagem-lucrativo-whatsapp" element={<BlogPost23 />} />
+                    <Route path="/blog/reels-agencia-de-viagem" element={<BlogPost24 />} />
+                    <Route path="/blog/seguro-viagem-guia-agente-turismo" element={<BlogPost25 />} />
+                    <Route path="/blog/roteiro-europa-brasileiros-2026" element={<BlogPost26 />} />
+                    <Route path="/blog/cruzeiros-para-brasileiros-2026" element={<BlogPost27 />} />
+                    <Route path="/blog/identidade-visual-agencia-de-viagem" element={<BlogPost28 />} />
+                    <Route path="/blog/fidelizar-clientes-agencia-de-viagem" element={<BlogPost29 />} />
+                    <Route path="/blog/primeiro-mes-agente-de-viagem" element={<BlogPost30 />} />
                     <Route path="/blog" element={<Blog />} />
 
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
