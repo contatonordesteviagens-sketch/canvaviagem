@@ -1,5 +1,4 @@
 ﻿import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,14 +11,12 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { UserInfoCard } from "@/components/UserInfoCard";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
-import {
-  Loader2, Check, Plane, Settings, RefreshCw, Star,
-  ChevronDown, ChevronUp, Instagram, Facebook, Twitter, Linkedin
-} from "lucide-react";
+import { Loader2, Check, Plane, Settings, RefreshCw, Star, ChevronDown, ChevronUp } from "lucide-react";
 import { MinimalistHero } from "@/components/ui/minimalist-hero";
+import { Instagram } from "lucide-react";
 import garantia7dias from "@/assets/garantia-7-dias.png";
 
-// ─── Links de pagamento ───────────────────────────────────────────────────────
+// ─── Links de pagamento ────────────────────────────────────────────────────────
 const STRIPE = {
   monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
   annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
@@ -44,7 +41,7 @@ const PROOFS = [
   },
 ];
 
-// ─── FAQ ─────────────────────────────────────────────────────────────────────
+// ─── FAQ ──────────────────────────────────────────────────────────────────────
 const FAQS = [
   {
     q: "Qual a diferença entre o plano Mensal e o Anual?",
@@ -132,6 +129,7 @@ const Planos = () => {
     );
   }
 
+  // ─── Já assinante: painel simples ────────────────────────────────────────────
   if (subscription.subscribed) {
     return (
       <div className="min-h-screen bg-white">
@@ -178,6 +176,8 @@ const Planos = () => {
         description="Marketing pronto para agentes de viagem. 250+ vídeos, IA e templates editáveis."
         keywords="assinar canva viagem, planos marketing turístico, assinatura agência de viagens"
       />
+
+      {/* ─── HERO ──────────────────────────────────────────────────────────── */}
       <MinimalistHero
         logoText="Canva Viagem"
         navLinks={[
@@ -189,21 +189,14 @@ const Planos = () => {
         readMoreLink="#preco"
         imageSrc="/hero-canva.png"
         imageAlt="Plataforma Canva Viagem em ação"
-        overlayText={{
-          part1: 'venda',
-          part2: 'mais.',
-        }}
-        socialLinks={[
-          { icon: Instagram, href: 'https://instagram.com/canvaviagem' },
-        ]}
+        overlayText={{ part1: 'venda', part2: 'mais.' }}
+        socialLinks={[{ icon: Instagram, href: 'https://instagram.com/canvaviagem' }]}
         locationText="Estratégia para Agentes de Viagem"
       />
 
-      {user && <div className="max-w-4xl mx-auto px-4 py-12"><UserInfoCard /></div>}
-
-      {/* ─── DEPOIMENTOS ──────────────────────────────────────────────────── */}
-      <section className="py-10 px-6 bg-white border-b border-zinc-100">
-        <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* ─── DEPOIMENTOS ───────────────────────────────────────────────────── */}
+      <section className="py-8 px-6 bg-white border-b border-zinc-100">
+        <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-3">
           {PROOFS.map((p) => (
             <div key={p.name} className="bg-zinc-950 text-white rounded-2xl p-5 flex flex-col gap-3">
               <div className="flex gap-0.5">
@@ -216,16 +209,16 @@ const Planos = () => {
         </div>
       </section>
 
-      {/* ─── GIFs ─────────────────────────────────────────────────────────── */}
-      <section className="py-16 px-6 bg-zinc-950">
+      {/* ─── GIFs: EXEMPLOS DE CONTEÚDO ────────────────────────────────────── */}
+      <section className="py-12 px-6 bg-zinc-950">
         <div className="max-w-3xl mx-auto">
-          <p className="text-[11px] font-bold tracking-widest text-zinc-500 uppercase mb-4 text-center">
+          <p className="text-[11px] font-bold tracking-widest text-zinc-500 uppercase mb-3 text-center">
             Exemplos reais do conteúdo
           </p>
-          <h2 className="text-2xl md:text-3xl font-black text-center text-white mb-3 leading-snug">
+          <h2 className="text-2xl md:text-3xl font-black text-center text-white mb-2 leading-snug">
             É isso que você vai ter na mão hoje
           </h2>
-          <p className="text-zinc-400 text-center mb-10 text-sm max-w-lg mx-auto">
+          <p className="text-zinc-400 text-center mb-8 text-sm max-w-lg mx-auto">
             Cada um desses vídeos foi criado para agentes postarem diretamente no Instagram, TikTok ou WhatsApp — sem editar nada.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -245,33 +238,29 @@ const Planos = () => {
               </div>
             ))}
           </div>
-          <p className="text-zinc-500 text-xs text-center mt-6">
-            250+ vídeos disponíveis · Novos toda semana
-          </p>
+          <p className="text-zinc-500 text-xs text-center mt-5">250+ vídeos disponíveis · Novos toda semana</p>
         </div>
       </section>
 
       {/* ─── COMO FUNCIONA ─────────────────────────────────────────────────── */}
-      <section className="py-16 px-6 bg-white border-b border-zinc-100">
+      <section className="py-12 px-6 bg-white border-b border-zinc-100">
         <div className="max-w-2xl mx-auto">
-          <p className="text-[11px] font-bold tracking-widest text-zinc-400 uppercase mb-4 text-center">
+          <p className="text-[11px] font-bold tracking-widest text-zinc-400 uppercase mb-3 text-center">
             Como funciona?
           </p>
-          <h2 className="text-2xl md:text-3xl font-black text-center mb-12 leading-snug">
-            Simples assim.
-          </h2>
-          <div className="space-y-8">
+          <h2 className="text-2xl md:text-3xl font-black text-center mb-8 leading-snug">Simples assim.</h2>
+          <div className="space-y-6">
             {[
               { n: "1", title: "Escolha", desc: "Navegue por 250+ destinos: Disney, Maldivas, Paris, Nordeste, Europa e muito mais." },
               { n: "2", title: "Baixe (ou edite, se quiser)", desc: "Abra no Canva em 1 clique, coloque seu logo e suas cores. Ou baixe direto, já está pronto." },
               { n: "3", title: "Publique", desc: "Cole no Instagram, TikTok ou WhatsApp. Seu perfil profissional em menos de 2 minutos." },
             ].map((step) => (
-              <div key={step.n} className="flex gap-6 items-start">
-                <div className="shrink-0 w-12 h-12 bg-black text-white rounded-full flex items-center justify-center font-black text-xl">
+              <div key={step.n} className="flex gap-5 items-start">
+                <div className="shrink-0 w-11 h-11 bg-black text-white rounded-full flex items-center justify-center font-black text-xl">
                   {step.n}
                 </div>
                 <div className="pt-1">
-                  <h3 className="font-black text-lg mb-1">{step.title}</h3>
+                  <h3 className="font-black text-base mb-1">{step.title}</h3>
                   <p className="text-zinc-500 text-sm leading-relaxed">{step.desc}</p>
                 </div>
               </div>
@@ -281,23 +270,23 @@ const Planos = () => {
       </section>
 
       {/* ─── TABELA COMPARATIVA ────────────────────────────────────────────── */}
-      <section className="py-16 px-6 bg-zinc-50 border-b border-zinc-100">
+      <section className="py-12 px-6 bg-zinc-50 border-b border-zinc-100">
         <div className="max-w-2xl mx-auto">
-          <p className="text-[11px] font-bold tracking-widest text-zinc-400 uppercase mb-4 text-center">
+          <p className="text-[11px] font-bold tracking-widest text-zinc-400 uppercase mb-3 text-center">
             O que você tem acesso
           </p>
-          <h2 className="text-2xl md:text-3xl font-black text-center mb-12 leading-snug">
+          <h2 className="text-2xl md:text-3xl font-black text-center mb-8 leading-snug">
             Grátis vs Pro — sem enrolação.
           </h2>
           <div className="overflow-hidden rounded-2xl border border-zinc-200">
             <div className="grid grid-cols-3 bg-zinc-950 text-white text-center">
-              <div className="py-4 px-3 text-left pl-5">
+              <div className="py-3 px-3 text-left pl-5">
                 <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Recurso</p>
               </div>
-              <div className="py-4 px-3 border-l border-zinc-800">
+              <div className="py-3 px-3 border-l border-zinc-800">
                 <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Grátis</p>
               </div>
-              <div className="py-4 px-3 border-l border-zinc-800 bg-yellow-400">
+              <div className="py-3 px-3 border-l border-zinc-800 bg-yellow-400">
                 <p className="text-xs font-black text-black uppercase tracking-widest">Pro ⭐</p>
               </div>
             </div>
@@ -306,28 +295,27 @@ const Planos = () => {
               { label: "100+ Ofertas Validadas", free: "3 itens", pro: "Completo 💎" },
               { label: "50 Rankings de Destinos", free: "—", pro: "✓" },
               { label: "Stories e Reels prontos", free: "—", pro: "200+" },
-              { label: "Scripts de Venda & Scripts WhatsApp", free: "—", pro: "✓" },
+              { label: "Scripts de Venda & WhatsApp", free: "—", pro: "✓" },
               { label: "Legendas & CTAs de Alto Impacto", free: "✓", pro: "✓" },
               { label: "Artes e Feed editáveis", free: "—", pro: "Ilimitado" },
               { label: "Ferramentas de IA", free: "8 agentes", pro: "11 agentes" },
-              { label: "Biblioteca de vídeos", free: "—", pro: "✓" },
               { label: "Novos conteúdos", free: "—", pro: "Toda semana" },
             ].map((row, i) => (
               <div
                 key={row.label}
                 className={`grid grid-cols-3 text-sm ${i % 2 === 0 ? "bg-white" : "bg-zinc-50"} border-t border-zinc-100`}
               >
-                <div className="py-3.5 px-5 font-medium text-zinc-700">{row.label}</div>
-                <div className="py-3.5 px-3 text-center border-l border-zinc-100 text-zinc-400">{row.free}</div>
-                <div className="py-3.5 px-3 text-center border-l border-zinc-100 font-bold text-black bg-yellow-50">{row.pro}</div>
+                <div className="py-3 px-5 font-medium text-zinc-700">{row.label}</div>
+                <div className="py-3 px-3 text-center border-l border-zinc-100 text-zinc-400">{row.free}</div>
+                <div className="py-3 px-3 text-center border-l border-zinc-100 font-bold text-black bg-yellow-50">{row.pro}</div>
               </div>
             ))}
             <div className="grid grid-cols-3 bg-zinc-950 border-t border-zinc-800">
-              <div className="py-5 px-5 text-white text-xs font-bold flex items-center">Seu plano:</div>
-              <div className="py-5 px-3 text-center border-l border-zinc-800">
+              <div className="py-4 px-5 text-white text-xs font-bold flex items-center">Seu plano:</div>
+              <div className="py-4 px-3 text-center border-l border-zinc-800">
                 <span className="text-zinc-500 text-xs">Acesso limitado</span>
               </div>
-              <div className="py-5 px-3 text-center border-l border-zinc-800">
+              <div className="py-4 px-3 text-center border-l border-zinc-800">
                 <a href="#preco">
                   <button className="bg-yellow-400 text-black text-xs font-black px-4 py-2 rounded-full hover:bg-yellow-300 transition-all">
                     Assinar Pro →
@@ -339,18 +327,18 @@ const Planos = () => {
         </div>
       </section>
 
-      {/* ─── PREÇO ────────────────────────────────────────────────────────── */}
-      <section id="preco" className="bg-zinc-950 text-white py-20 px-6 scroll-mt-20">
+      {/* ─── PREÇO ─────────────────────────────────────────────────────────── */}
+      <section id="preco" className="bg-zinc-950 text-white py-14 px-6 scroll-mt-20">
         <div className="max-w-xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-black text-center mb-3 leading-tight">
+          <h2 className="text-3xl md:text-4xl font-black text-center mb-2 leading-tight">
             Quanto vale não precisar criar do zero?
           </h2>
-          <p className="text-zinc-400 text-base text-center mb-12 max-w-md mx-auto leading-relaxed">
-            Um social media freelancer cobra em média R$ 800 a R$ 2.000/mês. A plataforma inteira custa a partir de R$ 16,41/mês.
+          <p className="text-zinc-400 text-sm text-center mb-8 max-w-md mx-auto leading-relaxed">
+            Um social media freelancer cobra em média R$ 800 a R$ 2.000/mês. A plataforma inteira custa a partir de <strong className="text-white">R$ 16,41/mês</strong>.
           </p>
 
-          {/* Toggle */}
-          <div className="flex justify-center mb-8">
+          {/* Toggle Mensal / Anual */}
+          <div className="flex justify-center mb-6">
             <div className="bg-zinc-800 p-1 rounded-full flex gap-1">
               <button
                 onClick={() => setBillingCycle("monthly")}
@@ -383,7 +371,7 @@ const Planos = () => {
                 ⭐ MELHOR CUSTO-BENEFÍCIO — MAIS POPULAR
               </div>
             )}
-            <div className="p-8 md:p-10">
+            <div className="p-7 md:p-9">
               <p className="text-sm text-zinc-400 font-medium mb-1">
                 {isAnnual ? "Plano Anual" : "Plano Mensal"}
               </p>
@@ -401,13 +389,13 @@ const Planos = () => {
                   </span>
                 )}
               </div>
-              <p className="text-sm text-zinc-400 mb-8">
+              <p className="text-sm text-zinc-400 mb-6">
                 {isAnnual
                   ? "Cobrado uma vez no ano · R$ 197,00 total · Você economiza R$ 151"
                   : "Recorrência mensal · Cancele quando quiser"}
               </p>
 
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-2.5 mb-6">
                 {[
                   "Acesso a 250+ vídeos e 100+ destinos",
                   "Central de Ofertas 'Copia e Cola'",
@@ -428,19 +416,19 @@ const Planos = () => {
 
               <button
                 onClick={handleCheckout}
-                className="btn-shine w-full bg-black text-white font-black text-lg py-5 rounded-2xl hover:bg-zinc-800 transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                className="btn-shine w-full bg-black text-white font-black text-lg py-4 rounded-2xl hover:bg-zinc-800 transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0"
               >
                 {isAnnual ? "Assinar agora por R$ 197/ano →" : "Assinar agora por R$ 29/mês →"}
               </button>
-              <p className="text-center text-xs text-zinc-400 mt-4">
+              <p className="text-center text-xs text-zinc-400 mt-3">
                 Pagamento seguro via Stripe · Acesso imediato após confirmação
               </p>
             </div>
           </div>
 
           {/* Garantia */}
-          <div className="mt-6 flex items-center gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-            <img src={garantia7dias} alt="Garantia 7 dias" className="w-14 h-14 object-contain shrink-0" />
+          <div className="mt-5 flex items-center gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+            <img src={garantia7dias} alt="Garantia 7 dias" className="w-12 h-12 object-contain shrink-0" />
             <div>
               <h4 className="font-black text-sm mb-0.5 text-white">Garantia incondicional de 7 dias</h4>
               <p className="text-xs text-zinc-400 leading-relaxed">
@@ -451,17 +439,15 @@ const Planos = () => {
         </div>
       </section>
 
-      {/* ─── FAQ ─────────────────────────────────────────────────────────── */}
-      <section className="py-16 px-6 bg-white border-b border-zinc-100">
+      {/* ─── FAQ ───────────────────────────────────────────────────────────── */}
+      <section className="py-12 px-6 bg-white border-b border-zinc-100">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-black text-center mb-10">
-            Dúvidas frequentes
-          </h2>
+          <h2 className="text-2xl md:text-3xl font-black text-center mb-8">Dúvidas frequentes</h2>
           <div className="space-y-2">
             {FAQS.map((faq, i) => (
               <div key={i} className="border border-zinc-200 rounded-2xl overflow-hidden">
                 <button
-                  className="w-full flex items-center justify-between gap-4 p-5 text-left font-bold text-sm hover:bg-zinc-50 transition-colors"
+                  className="w-full flex items-center justify-between gap-4 p-4 text-left font-bold text-sm hover:bg-zinc-50 transition-colors"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                 >
                   {faq.q}
@@ -470,7 +456,7 @@ const Planos = () => {
                     : <ChevronDown className="h-4 w-4 text-zinc-400 shrink-0" />}
                 </button>
                 {openFaq === i && (
-                  <div className="px-5 pb-5 text-sm text-zinc-500 leading-relaxed border-t border-zinc-100 pt-4">
+                  <div className="px-4 pb-4 text-sm text-zinc-500 leading-relaxed border-t border-zinc-100 pt-3">
                     {faq.a}
                   </div>
                 )}
@@ -480,13 +466,13 @@ const Planos = () => {
         </div>
       </section>
 
-      {/* ─── CTA FINAL ────────────────────────────────────────────────────── */}
-      <section className="bg-black text-white py-14 px-6 text-center">
+      {/* ─── CTA FINAL ─────────────────────────────────────────────────────── */}
+      <section className="bg-black text-white py-12 px-6 text-center">
         <div className="max-w-xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-black mb-4 leading-tight">
+          <h2 className="text-2xl md:text-3xl font-black mb-3 leading-tight">
             Comece hoje. Poste amanhã.
           </h2>
-          <p className="text-zinc-400 text-sm mb-8">Garantia de 7 dias · Acesso imediato · Cancele quando quiser</p>
+          <p className="text-zinc-400 text-sm mb-6">Garantia de 7 dias · Acesso imediato · Cancele quando quiser</p>
           <button
             onClick={handleCheckout}
             className="btn-shine bg-yellow-400 text-black font-black text-lg px-10 py-4 rounded-full hover:bg-yellow-300 transition-all shadow-xl inline-block"
@@ -495,7 +481,6 @@ const Planos = () => {
           </button>
         </div>
       </section>
-
     </div>
   );
 };
