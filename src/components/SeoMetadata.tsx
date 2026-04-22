@@ -17,9 +17,9 @@ const SeoMetadata = ({
     url = "https://canvaviagem.com/",
     type = "website",
 }: SeoMetadataProps) => {
-    const baseTitle = "Vídeos Prontos para Agência de Viagem — 150 por R$47 | Canva Viagem";
+    const baseTitle = "Vídeos Prontos para Agência de Viagem — 250+ por R$16,41/mês | Canva Viagem";
     const fullTitle = title ? `${title} | Canva Viagem` : baseTitle;
-    const defaultDesc = "150 vídeos prontos para agência de viagem por R$47. Conteúdo para Instagram, Reels e Stories editáveis no Canva. Sem gravar, sem editar, só publicar.";
+    const defaultDesc = "250+ vídeos e artes prontas para agência de viagem a partir de R$16,41/mês. Conteúdo para Instagram, Reels e Stories editáveis no Canva. Calendário editorial de 365 dias e IA inclusos. Sem gravar, sem editar, só publicar.";
 
     return (
         <Helmet>
