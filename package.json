@@ -9,7 +9,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "postbuild": "react-snap"
+    "prerender": "react-snap",
+    "build:local": "vite build && react-snap"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -147,8 +148,7 @@
       "/proximo-nivel",
       "/aula-secreta"
     ],
-    "puppeteerExecutablePath": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-    "puppeteerArgs": ["--no-sandbox", "--disable-setuid-sandbox"],
+    "puppeteerArgs": ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
     "minifyHtml": { "collapseWhitespace": false },
     "removeBlobs": true,
     "skipThirdPartyRequests": false,
