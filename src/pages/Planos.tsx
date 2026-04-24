@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +17,9 @@ import {
   Globe, TrendingUp, Shield, ArrowRight, X
 } from "lucide-react";
 import garantia7dias from "@/assets/garantia-7-dias.png";
+import { motion } from "framer-motion";
+import { VerticalCutReveal } from "@/components/ui/vertical-cut-reveal";
+import { ImageTrail } from "@/components/ui/image-trail";
 
 // ─── Stripe checkout links ────────────────────────────────────────────────────
 const STRIPE = {
@@ -93,6 +96,16 @@ const FEATURES = [
   { label: "Grupo VIP com a equipe",          free: "—",       pro: "—",          elite: "✓" },
 ];
 
+// ─── Travel images for ImageTrail (Unsplash) ──────────────────────────────────
+const TRAIL_IMAGES = [
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&q=80",
+  "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=300&q=80",
+  "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=300&q=80",
+  "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=300&q=80",
+  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&q=80",
+  "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=300&q=80",
+];
+
 // ─── Component ────────────────────────────────────────────────────────────────
 const Planos = () => {
   const navigate = useNavigate();
@@ -110,6 +123,7 @@ const Planos = () => {
   const [portalLoading, setPortalLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
+  const exemplosRef = useRef<HTMLElement>(null);
 
   useEffect(() => { trackViewContent("Página de Planos"); }, []);
 
@@ -253,18 +267,60 @@ const Planos = () => {
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black leading-[1.05] tracking-tight mb-5">
-            Conteúdo pronto{" "}
-            <span className="bg-gradient-to-r from-sky-400 to-violet-400 bg-clip-text text-transparent">
-              pra vender viagens
-            </span>{" "}
-            todo dia
+            <VerticalCutReveal
+              splitBy="words"
+              staggerDuration={0.12}
+              staggerFrom="first"
+              reverse={true}
+              containerClassName="flex-wrap justify-center gap-x-3"
+              wordLevelClassName="overflow-hidden"
+              transition={{ type: "spring", stiffness: 220, damping: 38 }}
+            >
+              Conteúdo pronto
+            </VerticalCutReveal>
+            <span className="block">
+              <VerticalCutReveal
+                splitBy="words"
+                staggerDuration={0.12}
+                staggerFrom="first"
+                reverse={true}
+                containerClassName="flex-wrap justify-center gap-x-3"
+                wordLevelClassName="overflow-hidden"
+                transition={{ type: "spring", stiffness: 220, damping: 38, delay: 0.25 }}
+              >
+                <span className="bg-gradient-to-r from-sky-400 to-violet-400 bg-clip-text text-transparent inline-block">
+                  pra vender viagens
+                </span>
+              </VerticalCutReveal>
+            </span>
+            <VerticalCutReveal
+              splitBy="words"
+              staggerDuration={0.12}
+              staggerFrom="first"
+              reverse={true}
+              containerClassName="flex-wrap justify-center gap-x-3"
+              wordLevelClassName="overflow-hidden"
+              transition={{ type: "spring", stiffness: 220, damping: 38, delay: 0.5 }}
+            >
+              todo dia
+            </VerticalCutReveal>
           </h1>
 
-          <p className="text-zinc-400 text-base sm:text-lg max-w-xl mx-auto mb-8 leading-relaxed">
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.75, duration: 0.5 }}
+            className="text-zinc-400 text-base sm:text-lg max-w-xl mx-auto mb-8 leading-relaxed"
+          >
             250+ reels e artes prontos, 11 agentes de IA e scripts de venda. Seu Instagram com cara de grande agência — sem designer, sem equipe.
-          </p>
+          </motion.p>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9, duration: 0.5 }}
+            className="flex flex-col sm:flex-row gap-3 justify-center mb-12"
+          >
             <a href="#planos">
               <button className="w-full sm:w-auto bg-gradient-to-r from-sky-500 to-violet-600 text-white font-black text-base px-8 py-4 rounded-2xl hover:opacity-90 transition-all shadow-xl hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
                 Ver planos <ArrowRight className="h-4 w-4" />
@@ -275,7 +331,7 @@ const Planos = () => {
                 Ver exemplos de conteúdo
               </button>
             </a>
-          </div>
+          </motion.div>
 
           {/* Stats row */}
           <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto">
@@ -319,8 +375,19 @@ const Planos = () => {
       </section>
 
       {/* ─── EXEMPLOS DE CONTEÚDO ────────────────────────────────────────────────── */}
-      <section id="exemplos" className="py-14 px-5 bg-zinc-950">
-        <div className="max-w-3xl mx-auto">
+      <section id="exemplos" ref={exemplosRef as unknown as React.RefObject<HTMLDivElement>} className="py-14 px-5 bg-zinc-950 relative overflow-hidden">
+        {/* ImageTrail container — desktop only */}
+        <div className="hidden md:block absolute inset-0 z-0">
+          <ImageTrail containerRef={exemplosRef} rotationRange={12} interval={120}>
+            {TRAIL_IMAGES.map((url, i) => (
+              <div key={i} className="w-20 h-28 rounded-xl overflow-hidden shadow-lg border border-zinc-700">
+                <img src={url} alt="" className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </ImageTrail>
+        </div>
+
+        <div className="relative z-10 max-w-3xl mx-auto">
           <p className="text-[11px] font-bold tracking-widest text-zinc-500 uppercase mb-3 text-center">
             Exemplos reais do conteúdo
           </p>
@@ -337,14 +404,21 @@ const Planos = () => {
               "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3J2anV0aTVkYWowbDl1ZXFtNnB4ZWUwcnVnZTVzOW91ZzNncGNvNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mbylDFYWSU46XeLcsS/giphy.gif",
               "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXQ1dHAxM2JxcWM0N3VqdWhibnBtcDR5eWVmNTZwaGI1NTJjeml3diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VcFJaM72FG76eG75In/giphy.gif",
             ].map((gif, i) => (
-              <div key={i} className="rounded-2xl overflow-hidden border border-zinc-800 aspect-[9/16]">
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+                className="rounded-2xl overflow-hidden border border-zinc-800 aspect-[9/16]"
+              >
                 <img
                   src={gif}
                   loading="lazy"
                   alt={`Exemplo de vídeo de viagem ${i + 1}`}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                 />
-              </div>
+              </motion.div>
             ))}
           </div>
           <p className="text-zinc-500 text-xs text-center mt-5">250+ vídeos disponíveis · Novos toda semana</p>
@@ -382,7 +456,9 @@ const Planos = () => {
       </section>
 
       {/* ─── PLANOS ──────────────────────────────────────────────────────────────── */}
-      <section id="planos" className="bg-zinc-950 text-white py-16 px-5 scroll-mt-20">
+      <section id="planos" className="relative bg-zinc-950 text-white py-16 px-5 scroll-mt-20">
+        {/* Dot grid background from 21st.dev PricingSection3 */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0d_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0d_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_60%,transparent_100%)] pointer-events-none" />
         <div className="max-w-5xl mx-auto">
           <p className="text-[11px] font-bold tracking-widest text-zinc-500 uppercase mb-3 text-center">
             Escolha seu plano
@@ -423,10 +499,16 @@ const Planos = () => {
           </div>
 
           {/* 3 Pricing cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4">
 
             {/* ── Grátis ── */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col">
+            <motion.div
+              initial={{ opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.5, delay: 0 }}
+              className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col"
+            >
               <div className="mb-5">
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Grátis</p>
                 <div className="flex items-baseline gap-1 mb-1">
@@ -462,10 +544,16 @@ const Planos = () => {
               >
                 Criar conta grátis
               </button>
-            </div>
+            </motion.div>
 
             {/* ── Pro (destaque) ── */}
-            <div className="relative bg-white text-black rounded-3xl overflow-hidden flex flex-col shadow-2xl shadow-white/10 scale-[1.02] md:scale-105">
+            <motion.div
+              initial={{ opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+              className="relative bg-white text-black rounded-3xl overflow-hidden flex flex-col shadow-2xl shadow-white/10 scale-[1.02] md:scale-105"
+            >
               <div className="bg-yellow-400 text-black text-center py-2.5 text-xs font-black tracking-wide">
                 MAIS POPULAR — MELHOR CUSTO-BENEFÍCIO
               </div>
@@ -510,10 +598,16 @@ const Planos = () => {
                   {isAnnual ? "Assinar Pro por R$ 197/ano →" : "Assinar Pro por R$ 29/mês →"}
                 </button>
               </div>
-            </div>
+            </motion.div>
 
             {/* ── Elite (novo) ── */}
-            <div className="relative bg-zinc-900 border border-violet-500/40 rounded-3xl overflow-hidden flex flex-col">
+            <motion.div
+              initial={{ opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="relative bg-zinc-900 border border-violet-500/40 rounded-3xl overflow-hidden flex flex-col"
+            >
               {/* Gradient top line */}
               <div className="h-1 w-full bg-gradient-to-r from-sky-500 to-violet-600" />
               <div className="p-6 flex flex-col flex-1">
@@ -556,7 +650,7 @@ const Planos = () => {
                   {isAnnual ? "Assinar Elite por R$ 497/ano →" : "Assinar Elite por R$ 67/mês →"}
                 </button>
               </div>
-            </div>
+            </motion.div>
           </div>
 
           {/* Garantia */}
