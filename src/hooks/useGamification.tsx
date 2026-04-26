@@ -188,37 +188,8 @@ export function useGamification(): GamificationState & GamificationActions {
         fetchProgress();
     }, [fetchProgress]);
 
-    // Realtime subscription
-    useEffect(() => {
-        if (!user) return;
-
-        const channelName = `user_progress:${user.id}:${crypto.randomUUID()}`;
-        const channel = supabase.channel(channelName);
-
-        try {
-            channel
-                .on(
-                    'postgres_changes',
-                    {
-                        event: 'UPDATE',
-                        schema: 'public',
-                        table: 'user_progress',
-                        filter: `user_id=eq.${user.id}`,
-                    },
-                    (payload) => {
-                        console.log('[useGamification] Progress updated:', payload);
-                        setProgress(payload.new as UserProgress);
-                    }
-                )
-                .subscribe();
-        } catch (err) {
-            console.error('[useGamification] Realtime setup failed:', err);
-        }
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [user]);
+    // Realtime was intentionally removed here: multiple mounted consumers of this hook
+    // can collide during StrictMode/HMR and crash the app before the page renders.
 
     // Computed values
     const level = progress?.level || 1;
