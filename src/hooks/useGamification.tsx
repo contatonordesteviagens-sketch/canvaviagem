@@ -192,22 +192,28 @@ export function useGamification(): GamificationState & GamificationActions {
     useEffect(() => {
         if (!user) return;
 
-        const channel = supabase
-            .channel(`user_progress:${user.id}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'user_progress',
-                    filter: `user_id=eq.${user.id}`,
-                },
-                (payload) => {
-                    console.log('[useGamification] Progress updated:', payload);
-                    setProgress(payload.new as UserProgress);
-                }
-            )
-            .subscribe();
+        const channelName = `user_progress:${user.id}:${crypto.randomUUID()}`;
+        const channel = supabase.channel(channelName);
+
+        try {
+            channel
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'UPDATE',
+                        schema: 'public',
+                        table: 'user_progress',
+                        filter: `user_id=eq.${user.id}`,
+                    },
+                    (payload) => {
+                        console.log('[useGamification] Progress updated:', payload);
+                        setProgress(payload.new as UserProgress);
+                    }
+                )
+                .subscribe();
+        } catch (err) {
+            console.error('[useGamification] Realtime setup failed:', err);
+        }
 
         return () => {
             supabase.removeChannel(channel);
