@@ -86,9 +86,9 @@ export const useRollbackAction = () => {
         // Remove fields that shouldn't be updated
         const { id, created_at, ...updateData } = old_data as Record<string, unknown>;
         
-        const { error } = await supabase
+        const { error } = await (supabase
           .from(table_name as "content_items" | "captions" | "marketing_tools")
-          .update(updateData)
+          .update(updateData as any) as any)
           .eq("id", record_id);
         if (error) throw error;
       } else if (action === "DELETE") {
@@ -153,9 +153,9 @@ export const useBatchRollback = () => {
           } else if (action === "UPDATE") {
             if (!old_data) throw new Error("Dados anteriores não disponíveis");
             const { id, created_at, ...updateData } = old_data as Record<string, unknown>;
-            const { error } = await supabase
+            const { error } = await (supabase
               .from(table_name as "content_items" | "captions" | "marketing_tools")
-              .update(updateData)
+              .update(updateData as any) as any)
               .eq("id", record_id);
             if (error) throw error;
           } else if (action === "DELETE") {
