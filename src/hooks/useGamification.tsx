@@ -188,8 +188,12 @@ export function useGamification(): GamificationState & GamificationActions {
         fetchProgress();
     }, [fetchProgress]);
 
-    // Realtime was intentionally removed here: multiple mounted consumers of this hook
-    // can collide during StrictMode/HMR and crash the app before the page renders.
+    // Realtime intentionally disabled: multiple mounted consumers of this hook
+    // collided during StrictMode/HMR and crashed the app before render.
+    // We keep an empty useEffect to preserve hook order across HMR reloads.
+    useEffect(() => {
+        // no-op
+    }, [user]);
 
     // Computed values
     const level = progress?.level || 1;
