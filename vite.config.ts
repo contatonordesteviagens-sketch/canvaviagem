@@ -29,12 +29,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     rollupOptions: {
-      output: {
-        manualChunks: {
-          radix: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-toast'],
-          vendor: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js'],
-        },
-      },
+      output: {},
     },
   },
 }));
