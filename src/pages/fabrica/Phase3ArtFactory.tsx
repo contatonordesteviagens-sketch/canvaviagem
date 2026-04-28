@@ -218,51 +218,57 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         return;
       }
 
-      // ===== MODO FOTO (composição local) — gera 1 banner único =====
+      // ===== MODO FOTO (composição local) — gera 2 variações =====
       if (genMode === "photo") {
-        toast.info("Gerando 1 banner único com foto real");
+        toast.info("Gerando 2 variações com foto real");
         const localStrategies: StrategyId[] = categoria === "oferta_pacote"
           ? ["matriz", "gancho", "ancora"]
           : ["vitrine", "ancora"];
-        const localStrategy = localStrategies[variationCounter % localStrategies.length];
+        // Duas estratégias distintas para garantir variação visual
+        const stratA = localStrategies[variationCounter % localStrategies.length];
+        const stratB = localStrategies[(variationCounter + 1) % localStrategies.length];
+        const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(variationCounter + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
 
-        let img = await composeTravelAd({
-          imageUrl: refImage,
-          format,
-          destination,
-          city: state.city,
-          primaryColor,
-          secondaryColor,
-          price,
-          installments,
-          promoName,
-          highlights,
-          hasLogo: !!state.logoBase64,
-          paymentMode,
-          paymentLabel: paymentLabel || undefined,
-          paymentSuffix: paymentSuffix || undefined,
-          strategy: localStrategy,
-        });
-        if (state.logoBase64) {
-          try {
-            const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
-            img = await composeLogoOnImage(img, state.logoBase64);
-          } catch (e) {
-            console.warn("Falha ao compor logo:", e);
-          }
-        }
+        const composed = await Promise.all(
+          chosen.map(async (localStrategy) => {
+            let img = await composeTravelAd({
+              imageUrl: refImage,
+              format,
+              destination,
+              city: state.city,
+              primaryColor,
+              secondaryColor,
+              price,
+              installments,
+              promoName,
+              highlights,
+              hasLogo: !!state.logoBase64,
+              paymentMode,
+              paymentLabel: paymentLabel || undefined,
+              paymentSuffix: paymentSuffix || undefined,
+              strategy: localStrategy,
+            });
+            if (state.logoBase64) {
+              try {
+                const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
+                img = await composeLogoOnImage(img, state.logoBase64);
+              } catch (e) {
+                console.warn("Falha ao compor logo:", e);
+              }
+            }
+            return img;
+          })
+        );
 
-        const images = [img];
+        setGeneratedImage(composed[0]);
+        setGeneratedImages(composed);
+        update({ generatedAdImage: composed[0], primaryColor });
 
-        setGeneratedImage(images[0]);
-        setGeneratedImages(images);
-        update({ generatedAdImage: images[0], primaryColor });
-
-        const newCount = generationCount + images.length;
+        const newCount = generationCount + composed.length;
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
 
-        toast.success("Banner único gerado com foto real!");
+        toast.success("2 variações geradas com foto real!");
         return;
       }
 
@@ -335,7 +341,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         return;
       }
 
-      // ===== MODO CUSTOM (link/upload do usuário) — gera 1 banner único =====
+      // ===== MODO CUSTOM (link/upload do usuário) — gera 2 variações =====
       const fnName = "fabrica-edit-photo";
       const payload: any = {
         imageUrl: refImage,
@@ -358,40 +364,45 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       if (!data?.image) throw new Error("Imagem não retornada");
       const baseImg = data.image as string;
 
-      toast.info("Aplicando 1 composição limpa");
+      toast.info("Aplicando 2 composições");
       const localStrategies: StrategyId[] = categoria === "oferta_pacote"
         ? ["matriz", "gancho", "ancora"]
         : ["vitrine", "ancora"];
-      const localStrategy = localStrategies[variationCounter % localStrategies.length];
+      const stratA = localStrategies[variationCounter % localStrategies.length];
+      const stratB = localStrategies[(variationCounter + 1) % localStrategies.length];
+      const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(variationCounter + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
 
-      let img = await composeTravelAd({
-        imageUrl: refImage || baseImg,
-        format,
-        destination,
-        city: state.city,
-        primaryColor,
-        secondaryColor,
-        price,
-        installments,
-        promoName,
-        highlights,
-        hasLogo: !!state.logoBase64,
-        paymentMode,
-        paymentLabel: paymentLabel || undefined,
-        paymentSuffix: paymentSuffix || undefined,
-        strategy: localStrategy,
-      });
       const shouldStampLogo = !!state.logoBase64 && !!data?.fallback;
-      if (shouldStampLogo) {
-        try {
-          const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
-          img = await composeLogoOnImage(img, state.logoBase64);
-        } catch (e) {
-          console.warn("Falha ao compor logo:", e);
-        }
-      }
-
-      const imagesCustom = [img];
+      const imagesCustom = await Promise.all(
+        chosen.map(async (localStrategy) => {
+          let img = await composeTravelAd({
+            imageUrl: refImage || baseImg,
+            format,
+            destination,
+            city: state.city,
+            primaryColor,
+            secondaryColor,
+            price,
+            installments,
+            promoName,
+            highlights,
+            hasLogo: !!state.logoBase64,
+            paymentMode,
+            paymentLabel: paymentLabel || undefined,
+            paymentSuffix: paymentSuffix || undefined,
+            strategy: localStrategy,
+          });
+          if (shouldStampLogo) {
+            try {
+              const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
+              img = await composeLogoOnImage(img, state.logoBase64);
+            } catch (e) {
+              console.warn("Falha ao compor logo:", e);
+            }
+          }
+          return img;
+        })
+      );
 
       setGeneratedImage(imagesCustom[0]);
       setGeneratedImages(imagesCustom);
@@ -403,9 +414,9 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       localStorage.setItem("fabrica_gen_count", String(newCount));
 
       if (data?.fallback && data?.warning) {
-        toast.warning("Créditos de IA indisponíveis. Montei um banner usando sua imagem como base.", { duration: 8000 });
+        toast.warning("Créditos de IA indisponíveis. Montei banners usando sua imagem como base.", { duration: 8000 });
       } else {
-        toast.success("Banner único gerado!");
+        toast.success("2 variações geradas!");
       }
 
     } catch (err: any) {
