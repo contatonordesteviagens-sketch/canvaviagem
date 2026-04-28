@@ -457,8 +457,17 @@ export async function reframeImageToAspect(
         canvas.height = targetH;
         const ctx = canvas.getContext("2d");
         if (!ctx) return reject(new Error("Canvas 2D não suportado"));
-        // Cover crop centrado
-        const scale = Math.max(targetW / img.naturalWidth, targetH / img.naturalHeight);
+        // Fundo desfocado em cover + imagem principal em contain para NÃO cortar textos/blocos.
+        const bgScale = Math.max(targetW / img.naturalWidth, targetH / img.naturalHeight);
+        const bgW = img.naturalWidth * bgScale;
+        const bgH = img.naturalHeight * bgScale;
+        ctx.filter = "blur(24px) brightness(0.72)";
+        ctx.drawImage(img, (targetW - bgW) / 2, (targetH - bgH) / 2, bgW, bgH);
+        ctx.filter = "none";
+        ctx.fillStyle = "rgba(0,0,0,0.18)";
+        ctx.fillRect(0, 0, targetW, targetH);
+
+        const scale = Math.min(targetW / img.naturalWidth, targetH / img.naturalHeight);
         const drawW = img.naturalWidth * scale;
         const drawH = img.naturalHeight * scale;
         const dx = (targetW - drawW) / 2;
