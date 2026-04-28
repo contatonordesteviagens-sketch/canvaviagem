@@ -385,13 +385,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = overlay;
     ctx.fillRect(0, 0, width, heroH);
 
-    fillRoundRect(ctx, left, panelBottom - (format === "story" ? 610 : 430), contentWidth, format === "story" ? 470 : 330, 42, "rgba(7,10,18,0.68)");
-    drawBadge(left + 28, panelBottom - (format === "story" ? 560 : 392), 320);
+    fillRoundRect(ctx, left, panelBottom - (format === "story" ? 650 : 430), contentWidth, format === "story" ? 560 : 330, 42, "rgba(7,10,18,0.68)");
+    drawBadge(left + 28, panelBottom - (format === "story" ? 600 : 392), 320);
     ctx.fillStyle = "#ffffff";
-    drawTextBlock(ctx, titleText, left + 28, panelBottom - (format === "story" ? 400 : 268), contentWidth - 56, format === "story" ? 84 : 68, 2, { baseFontSize: format === "story" ? 84 : 64, minFontSize: 44 });
-    drawPromoKicker(left + 28, panelBottom - (format === "story" ? 232 : 160));
-    drawPriceCard(right - 320, panelBottom - (format === "story" ? 246 : 174), 292, 146, "right");
-    drawHighlightsBlock(left + 28, panelBottom - (format === "story" ? 230 : 140), contentWidth - 380, format === "story" ? 4 : 3, true);
+    drawTextBlock(ctx, titleText, left + 28, panelBottom - (format === "story" ? 448 : 268), contentWidth - 56, format === "story" ? 84 : 68, 2, { baseFontSize: format === "story" ? 84 : 64, minFontSize: 44 });
+    drawPromoKicker(left + 28, panelBottom - (format === "story" ? 268 : 160));
+    drawPriceCard(right - 320, panelBottom - (format === "story" ? 250 : 174), 292, 146, "right");
+    drawHighlightsBlock(left + 28, panelBottom - (format === "story" ? 150 : 140), contentWidth - 380, format === "story" ? 4 : 3, true);
   } else {
     const bottomHeight = format === "story" ? 770 : 560;
     const photoHeight = height - safeBottom - bottomHeight;
