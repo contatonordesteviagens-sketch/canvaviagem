@@ -27,6 +27,7 @@ export interface MasterPromptVars {
   secondaryHex: string;
   agencyName: string;
   highlights: string[];
+  creativeSeed?: string;
 }
 
 // ============================================================
@@ -101,6 +102,7 @@ Pacote: ${v.packageType} · ${v.duration}
 Preço pequeno e secundário: a partir de R$ ${v.installmentValue} em ${v.installments}, dentro da área segura central.`;
 
   const categoryRules = opts.category === "oferta" ? OFERTA_RULES : EXPERIENCIA_RULES;
+  const creativeSeed = v.creativeSeed || `${opts.category}-${opts.layout.slice(0, 24)}`;
 
   return `
 Um banner publicitário vertical de turismo (formato 9:16, resolução 8K), hiper-realista, com qualidade cinematográfica, iluminação natural ou dramática altamente refinada e composição profissional de nível publicitário.
@@ -108,6 +110,13 @@ Um banner publicitário vertical de turismo (formato 9:16, resolução 8K), hipe
 A imagem deve seguir rigorosamente um layout estruturado e organizado, com hierarquia visual clara, foco em legibilidade e alto impacto visual para conversão.
 
 A composição segue o layout: ${opts.layout}.
+
+[VARIAÇÃO CRIATIVA OBRIGATÓRIA]
+ID de variação: ${creativeSeed}.
+Mesmo que destino, preço e benefícios sejam parecidos com uma geração anterior, crie uma interpretação visual nova: novo enquadramento fotográfico, nova posição dos blocos, nova proporção de cartão/faixa, novo ritmo tipográfico e nova distribuição de respiro. Não repita a composição anterior.
+
+[REFERÊNCIAS DE ESTILO]
+Use a biblioteca de referências de anúncios enviada pelo usuário APENAS como inspiração estrutural: divisão 60/40 foto + base sólida, cartão amarelo de pacote, faixa lateral vibrante, selo tipo bilhete Pix, layout editorial topo/base e grid editorial de experiências. NÃO copie destinos, preços, datas, hotéis, textos legais ou informações fixas dessas referências. Os únicos dados permitidos são os dados preenchidos no formulário abaixo.
 
 [FOTOGRAFIA PRINCIPAL]
 Uma cena extremamente realista e detalhada de ${v.destination}, com iluminação ${opts.lighting}, mostrando ${opts.sceneDescription}.
