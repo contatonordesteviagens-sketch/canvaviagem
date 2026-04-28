@@ -27,6 +27,7 @@ export interface MasterPromptVars {
   secondaryHex: string;
   agencyName: string;
   highlights: string[];
+  creativeSeed?: string;
 }
 
 // ============================================================
@@ -101,6 +102,7 @@ Pacote: ${v.packageType} · ${v.duration}
 Preço pequeno e secundário: a partir de R$ ${v.installmentValue} em ${v.installments}, dentro da área segura central.`;
 
   const categoryRules = opts.category === "oferta" ? OFERTA_RULES : EXPERIENCIA_RULES;
+  const creativeSeed = v.creativeSeed || `${opts.category}-${opts.layout.slice(0, 24)}`;
 
   return `
 Um banner publicitário vertical de turismo (formato 9:16, resolução 8K), hiper-realista, com qualidade cinematográfica, iluminação natural ou dramática altamente refinada e composição profissional de nível publicitário.
@@ -108,6 +110,13 @@ Um banner publicitário vertical de turismo (formato 9:16, resolução 8K), hipe
 A imagem deve seguir rigorosamente um layout estruturado e organizado, com hierarquia visual clara, foco em legibilidade e alto impacto visual para conversão.
 
 A composição segue o layout: ${opts.layout}.
+
+[VARIAÇÃO CRIATIVA OBRIGATÓRIA]
+ID de variação: ${creativeSeed}.
+Mesmo que destino, preço e benefícios sejam parecidos com uma geração anterior, crie uma interpretação visual nova: novo enquadramento fotográfico, nova posição dos blocos, nova proporção de cartão/faixa, novo ritmo tipográfico e nova distribuição de respiro. Não repita a composição anterior.
+
+[REFERÊNCIAS DE ESTILO]
+Use a biblioteca de referências de anúncios enviada pelo usuário APENAS como inspiração estrutural: divisão 60/40 foto + base sólida, cartão amarelo de pacote, faixa lateral vibrante, selo tipo bilhete Pix, layout editorial topo/base e grid editorial de experiências. NÃO copie destinos, preços, datas, hotéis, textos legais ou informações fixas dessas referências. Os únicos dados permitidos são os dados preenchidos no formulário abaixo.
 
 [FOTOGRAFIA PRINCIPAL]
 Uma cena extremamente realista e detalhada de ${v.destination}, com iluminação ${opts.lighting}, mostrando ${opts.sceneDescription}.
@@ -232,6 +241,34 @@ export function promptMaceioStyle(v: MasterPromptVars): string {
   });
 }
 
+// 🔥 OP5 — BILHETE PIX / CARTÃO AMARELO
+export function promptTicketPixCard(v: MasterPromptVars): string {
+  return buildBrain(v, {
+    category: "oferta",
+    layout:
+      "FOTO AÉREA OU PANORÂMICA ocupando 100% do fundo com um CARTÃO AMARELO grande e limpo no centro seguro; dentro do cartão há cabeçalho PACOTE + DESTINO, linha de ícones dos inclusos, preço maciço e selo azul serrilhado PIX anexado abaixo com margem sem sobreposição",
+    lighting: "natural brilhante, comercial, cores turquesa/azul com contraste alto no cartão amarelo",
+    sceneDescription: `vista ampla e clara de ${v.destinationDescription}`,
+    headline: `PACOTE ${v.destination}`,
+    specialization:
+      "• Inspirado em cartões amarelos premium de pacote, mas usando APENAS os dados do formulário.\n• O cartão amarelo não pode encostar nas safe zones; deve parecer uma peça única e limpa.\n• Selo tipo bilhete PIX azul fica abaixo do preço com separação visível, nunca sobre texto.\n• A fotografia de fundo serve de contexto; preço e oferta dominam a conversão.",
+  });
+}
+
+// 🔥 OP6 — FAIXA LATERAL + HERO DE PERFORMANCE
+export function promptSideHeroPerformance(v: MasterPromptVars): string {
+  return buildBrain(v, {
+    category: "oferta",
+    layout:
+      "PAINEL LATERAL esquerdo vibrante ocupando 28-32% da largura com destino, selos e preço; lado direito com uma fotografia hero única ocupando 68-72%, com CTA em botão isolado no centro seguro",
+    lighting: "dramática de fim de tarde ou manhã, alto contraste comercial, cores saturadas",
+    sceneDescription: `${v.destinationDescription} em enquadramento hero cinematográfico, sem duplicar cenas`,
+    headline: `OFERTA ${v.destination}`,
+    specialization:
+      "• Referência estrutural: faixa lateral amarela/roxa + fotografia grande, sem copiar conteúdo fixo.\n• Leitura em 3 segundos: destino → preço → CTA.\n• Painel lateral deve ter respiro interno alto, sem texto vertical colidindo.\n• Nunca usar grid; apenas uma foto hero e um painel de conversão.",
+  });
+}
+
 // ============================================================
 // 🔵 EXPERIÊNCIA DE DESTINO — ED1..ED4
 // ============================================================
@@ -296,6 +333,36 @@ export function promptEditorialVisual(v: MasterPromptVars): string {
   });
 }
 
+// 🌍 ED5 — TOPO EDITORIAL + FOTO CINEMATOGRÁFICA
+export function promptTopEditorialPhoto(v: MasterPromptVars): string {
+  return buildBrain(v, {
+    category: "experiencia",
+    layout:
+      "SEÇÃO SUPERIOR editorial clean em fundo claro ocupando 35-40% com título emocional, cidade de saída e 3 detalhes leves; SEÇÃO INFERIOR com UMA fotografia cinematográfica dominante ocupando 60-65%, sem preço dominante",
+    lighting: "sol natural refinado, atmosfera realista e convidativa, cores limpas de revista",
+    sceneDescription: `${v.destinationDescription} com profundidade, céu natural, elementos locais autênticos e escala humana discreta`,
+    headline: `Conheça ${v.destination}`,
+    experienceDescription: `Uma experiência leve em ${v.destination}, com roteiro organizado, inclusos claros e tempo para aproveitar o destino com calma.`,
+    specialization:
+      "• Inspirado em layout topo informativo + fotografia inferior, mas com dados do formulário.\n• Título e detalhes ficam leves; imagem é protagonista.\n• Preço aparece pequeno, como informação secundária, nunca como cartaz de oferta.\n• Visual limpo, mobile-first e editorial.",
+  });
+}
+
+// 🌍 ED6 — COLUNA EDITORIAL + DUAS CENAS DISTINTAS
+export function promptTwoSceneEditorial(v: MasterPromptVars): string {
+  return buildBrain(v, {
+    category: "experiencia",
+    layout:
+      "COLUNA ESQUERDA editorial em fundo bege/off-white com título e checklist leve; COLUNA DIREITA com duas fotografias distintas do destino, uma paisagem ampla e um detalhe cultural/local, com espaçamento uniforme",
+    lighting: "editorial sofisticada, textura real, luz natural coerente entre as cenas",
+    sceneDescription: `duas perspectivas diferentes de ${v.destinationDescription}: uma paisagem ampla e um detalhe sensorial local`,
+    headline: `Viva ${v.destination}`,
+    experienceDescription: `Explore ${v.destination} por ângulos diferentes: paisagem, cultura, descanso e momentos memoráveis em ${v.duration}.`,
+    specialization:
+      "• As duas fotos devem ser DIFERENTES, nunca cópias da mesma imagem.\n• A composição deve parecer página editorial premium, não panfleto de preço.\n• Checklist curto e espaçado, sem pílulas agressivas.\n• Sem urgência, sem 'APENAS HOJE', sem preço gigante.",
+  });
+}
+
 // ============================================================
 // REGISTRO DE TEMPLATES
 // ============================================================
@@ -305,11 +372,15 @@ export const MASTER_TEMPLATES = [
   { id: "cancun_style",       name: "OP2 · Cartão Central Flutuante", builder: promptCancunStyle },
   { id: "gramado_style",      name: "OP3 · Cartão Aéreo (Top Down)",  builder: promptGramadoStyle },
   { id: "maceio_style",       name: "OP4 · Barra Lateral Performance",builder: promptMaceioStyle },
+  { id: "ticket_pix_card",    name: "OP5 · Bilhete Pix",              builder: promptTicketPixCard },
+  { id: "side_hero_performance", name: "OP6 · Faixa Lateral Hero",    builder: promptSideHeroPerformance },
   // 🔵 EXPERIÊNCIA DESTINO
   { id: "iconic_landmark",    name: "ED1 · Storytelling",             builder: promptIconicLandmark },
   { id: "split_yellow_side",  name: "ED2 · Checklist + Grid",         builder: promptSplitYellowSide },
   { id: "elegant_center",     name: "ED3 · Clean Informativo",        builder: promptElegantCenterCard },
   { id: "editorial_visual",   name: "ED4 · Editorial Visual",         builder: promptEditorialVisual },
+  { id: "top_editorial_photo", name: "ED5 · Topo Editorial",           builder: promptTopEditorialPhoto },
+  { id: "two_scene_editorial", name: "ED6 · Duas Cenas Editoriais",    builder: promptTwoSceneEditorial },
 ] as const;
 
 export type MasterTemplateId = typeof MASTER_TEMPLATES[number]["id"];

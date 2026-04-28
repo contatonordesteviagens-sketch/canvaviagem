@@ -86,6 +86,10 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
   const [categoria, setCategoria] = useState<CategoriaId>("oferta_pacote");
   const strategy: StrategyId = getCategoria(categoria).legacyStrategy;
   const [lastTemplateId, setLastTemplateId] = useState<string | null>(() => localStorage.getItem("fabrica_last_template_id"));
+  const [recentTemplateIds, setRecentTemplateIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("fabrica_recent_template_ids") || "[]"); }
+    catch { return []; }
+  });
   const [format, setFormat] = useState<"square" | "story">("story");
   const [destination, setDestination] = useState(state.destinos?.[0] || "");
   const [price, setPrice] = useState("149,90");
@@ -217,6 +221,10 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       // ===== MODO FOTO (composição local) — gera 1 banner único =====
       if (genMode === "photo") {
         toast.info("Gerando 1 banner único com foto real");
+        const localStrategies: StrategyId[] = categoria === "oferta_pacote"
+          ? ["matriz", "gancho", "ancora"]
+          : ["vitrine", "ancora"];
+        const localStrategy = localStrategies[variationCounter % localStrategies.length];
 
         let img = await composeTravelAd({
           imageUrl: refImage,
@@ -233,7 +241,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
           paymentMode,
           paymentLabel: paymentLabel || undefined,
           paymentSuffix: paymentSuffix || undefined,
-          strategy,
+          strategy: localStrategy,
         });
         if (state.logoBase64) {
           try {
@@ -260,9 +268,10 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
       // ===== MODO IA PURA: gera 1 imagem escolhendo prompt da categoria =====
       if (genMode === "ai") {
-        const picks = pickPromptsForCategoria(categoria, 1, lastTemplateId);
+        const picks = pickPromptsForCategoria(categoria, 1, lastTemplateId, recentTemplateIds);
         const cat = getCategoria(categoria);
         const pick = picks[0];
+        const nextVariation = forceVariation ?? variationCounter;
 
         toast.info(`[${cat.name}] Gerando 1 banner: ${pick.code}`);
 
@@ -284,6 +293,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             highlights,
             ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
             templateId: pick.templateId,
+            variation: nextVariation,
             packageType: "Voo + Hotel",
             duration: "5 NOITES",
           },
@@ -311,8 +321,11 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
         // Persiste o último prompt usado para a próxima rotação não repetir
         const lastUsed = pick.templateId;
+        const nextRecent = [lastUsed, ...recentTemplateIds.filter((id) => id !== lastUsed)].slice(0, Math.max(1, cat.prompts.length - 1));
         setLastTemplateId(lastUsed);
+        setRecentTemplateIds(nextRecent);
         localStorage.setItem("fabrica_last_template_id", lastUsed);
+        localStorage.setItem("fabrica_recent_template_ids", JSON.stringify(nextRecent));
 
         const newCount = generationCount + images.length;
         setGenerationCount(newCount);
@@ -346,6 +359,10 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       const baseImg = data.image as string;
 
       toast.info("Aplicando 1 composição limpa");
+      const localStrategies: StrategyId[] = categoria === "oferta_pacote"
+        ? ["matriz", "gancho", "ancora"]
+        : ["vitrine", "ancora"];
+      const localStrategy = localStrategies[variationCounter % localStrategies.length];
 
       let img = await composeTravelAd({
         imageUrl: refImage || baseImg,
@@ -362,7 +379,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         paymentMode,
         paymentLabel: paymentLabel || undefined,
         paymentSuffix: paymentSuffix || undefined,
-        strategy,
+        strategy: localStrategy,
       });
       const shouldStampLogo = !!state.logoBase64 && !!data?.fallback;
       if (shouldStampLogo) {
@@ -399,8 +416,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
     }
   };
 
-  const generateVariation = () => {
-    const next = (variationCounter + 1) % 4;
+  const generateNext = () => {
+    const next = variationCounter + 1;
     setVariationCounter(next);
     generate(next);
   };
@@ -937,7 +954,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         </div>
 
         <button
-          onClick={() => generate()}
+          onClick={() => generateNext()}
           disabled={loading || !destination}
           className="w-full py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110"
           style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 8px 24px ${primaryColor}55` }}
@@ -976,7 +993,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             ))}
           </div>
           <button
-            onClick={() => generate()}
+            onClick={() => generateNext()}
             disabled={loading}
             className="w-full py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white/80 text-sm font-semibold border border-white/10 flex items-center justify-center gap-2"
           >
