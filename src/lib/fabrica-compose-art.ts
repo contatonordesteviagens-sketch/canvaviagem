@@ -420,7 +420,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     drawTextBlock(ctx, titleText, left, cursorY + 56, contentWidth, 80, 2, { baseFontSize: 76, minFontSize: 44 });
     cursorY += 168;
 
-    const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, format === "story" ? 4 : 3, false);
+    const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, format === "story" ? 5 : 4, false);
     cursorY += pillsH + 28;
 
     drawPriceCard(left, cursorY, contentWidth, 168, "right");
