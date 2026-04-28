@@ -583,7 +583,7 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ image: imageUrl, prompt, variation, provider }), {
+    return new Response(JSON.stringify({ image: imageUrl, prompt, variation, provider, templateId: usedTemplateId }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
