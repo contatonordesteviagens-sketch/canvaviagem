@@ -86,6 +86,10 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
   const [categoria, setCategoria] = useState<CategoriaId>("oferta_pacote");
   const strategy: StrategyId = getCategoria(categoria).legacyStrategy;
   const [lastTemplateId, setLastTemplateId] = useState<string | null>(() => localStorage.getItem("fabrica_last_template_id"));
+  const [recentTemplateIds, setRecentTemplateIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("fabrica_recent_template_ids") || "[]"); }
+    catch { return []; }
+  });
   const [format, setFormat] = useState<"square" | "story">("story");
   const [destination, setDestination] = useState(state.destinos?.[0] || "");
   const [price, setPrice] = useState("149,90");
@@ -217,6 +221,10 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       // ===== MODO FOTO (composição local) — gera 1 banner único =====
       if (genMode === "photo") {
         toast.info("Gerando 1 banner único com foto real");
+        const localStrategies: StrategyId[] = categoria === "oferta_pacote"
+          ? ["matriz", "gancho", "ancora"]
+          : ["vitrine", "ancora"];
+        const localStrategy = localStrategies[variationCounter % localStrategies.length];
 
         let img = await composeTravelAd({
           imageUrl: refImage,
@@ -233,7 +241,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
           paymentMode,
           paymentLabel: paymentLabel || undefined,
           paymentSuffix: paymentSuffix || undefined,
-          strategy,
+          strategy: localStrategy,
         });
         if (state.logoBase64) {
           try {
