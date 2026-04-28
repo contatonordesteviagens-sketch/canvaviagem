@@ -288,23 +288,8 @@ export function promptSideHeroPerformance(v: MasterPromptVars): string {
 }
 
 // ============================================================
-// 🔵 EXPERIÊNCIA DE DESTINO — ED1..ED4
+// 🔵 EXPERIÊNCIA DE DESTINO — ED1..ED6 (editorial, sem cara de oferta)
 // ============================================================
-
-// 🌍 ED1 — STORYTELLING (Europa)
-export function promptIconicLandmark(v: MasterPromptVars): string {
-  return buildBrain(v, {
-    category: "experiencia",
-    layout:
-      "BARRA LATERAL FINA (20-25%) à esquerda com fundo neutro (creme, off-white ou tom terra) contendo título narrativo vertical e ícone discreto; IMAGEM PRINCIPAL ocupando 75-80% à direita, em estilo editorial",
-    lighting: "cinematográfica dramática, hora dourada ou blue hour, atmosfera aspiracional de revista",
-    sceneDescription: `o marco turístico icônico de ${v.destination}, ${v.destinationDescription}, com pessoas pequenas no quadro para dar escala`,
-    headline: `Descubra ${v.destination}`,
-    experienceDescription: `Uma jornada de ${v.duration} pelas paisagens icônicas e pelas histórias que fazem de ${v.destination} um destino inesquecível.`,
-    specialization:
-      "• NARRATIVA VISUAL: a foto conta uma história — não é apenas um registro do ponto turístico.\n• Título FORTE em fonte serifada ou sans-serif elegante, posicionado verticalmente na barra lateral.\n• Ambientação RICA: clima, hora do dia e atmosfera devem ser palpáveis.\n• Linguagem editorial estilo revista de viagem.",
-  });
-}
 
 // 🌍 ED1 — HERO CINEMATOGRÁFICO (FULL IMAGE)
 export function promptIconicLandmark(v: MasterPromptVars): string {
