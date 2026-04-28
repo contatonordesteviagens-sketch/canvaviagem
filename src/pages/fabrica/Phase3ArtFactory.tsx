@@ -416,12 +416,6 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
     }
   };
 
-  const generateVariation = () => {
-    const next = (variationCounter + 1) % 4;
-    setVariationCounter(next);
-    generate(next);
-  };
-
   const generateNext = () => {
     const next = variationCounter + 1;
     setVariationCounter(next);
