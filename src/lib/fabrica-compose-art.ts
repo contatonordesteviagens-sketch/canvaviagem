@@ -244,25 +244,28 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     return badgeW;
   };
 
-  const drawHighlightsBlock = (x: number, y: number, w: number, limit = shownHighlights.length, inverted = false) => {
+  const drawHighlightsBlock = (x: number, y: number, w: number, limit = shownHighlights.length, inverted = false, compact = false) => {
     const items = shownHighlights.slice(0, limit);
-    const pillH = 82;
-    const gap = 14;
-    const textStartX = 82;
+    const pillH = compact ? 60 : 82;
+    const gap = compact ? 10 : 14;
+    const iconFont = compact ? 26 : 34;
+    const baseTextFont = compact ? 24 : 30;
+    const textStartX = compact ? 64 : 82;
+    const iconX = compact ? 20 : 24;
     const textMaxW = w - textStartX - 24; // padding direito
     items.forEach((item, idx) => {
-      fillRoundRect(ctx, x, y + idx * (pillH + gap), w, pillH, 40, inverted ? "rgba(255,255,255,0.16)" : "#ffffff");
+      fillRoundRect(ctx, x, y + idx * (pillH + gap), w, pillH, compact ? 30 : 40, inverted ? "rgba(255,255,255,0.16)" : "#ffffff");
       ctx.fillStyle = inverted ? "#ffffff" : primaryColor;
-      ctx.font = "800 34px Inter, Arial, sans-serif";
+      ctx.font = `800 ${iconFont}px Inter, Arial, sans-serif`;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText(ICON_SYMBOL[item.icon || "check"] || "✓", x + 24, y + idx * (pillH + gap) + pillH / 2 + 1);
+      ctx.fillText(ICON_SYMBOL[item.icon || "check"] || "✓", x + iconX, y + idx * (pillH + gap) + pillH / 2 + 1);
       ctx.fillStyle = inverted ? "#ffffff" : "#111111";
 
       // Auto-shrink pill text so it never extends beyond pill width.
-      let pillFont = 30;
+      let pillFont = baseTextFont;
       ctx.font = `800 ${pillFont}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(item.text).width > textMaxW && pillFont > 18) {
+      while (ctx.measureText(item.text).width > textMaxW && pillFont > 16) {
         pillFont -= 2;
         ctx.font = `800 ${pillFont}px Inter, Arial, sans-serif`;
       }
