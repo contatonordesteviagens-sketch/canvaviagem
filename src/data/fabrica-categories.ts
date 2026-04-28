@@ -81,10 +81,13 @@ export function getCategoria(id: CategoriaId): CategoriaMeta {
 export function pickPromptsForCategoria(
   categoriaId: CategoriaId,
   count: number,
-  lastTemplateId?: string | null
+  lastTemplateId?: string | null,
+  recentTemplateIds: string[] = []
 ): { code: string; templateId: string }[] {
   const cat = getCategoria(categoriaId);
-  const pool = [...cat.prompts];
+  const recent = new Set([...(lastTemplateId ? [lastTemplateId] : []), ...recentTemplateIds].filter(Boolean));
+  const available = cat.prompts.filter((p) => !recent.has(p.templateId));
+  const pool = available.length >= Math.min(count, cat.prompts.length) ? [...available] : [...cat.prompts.filter((p) => p.templateId !== lastTemplateId)];
 
   // Embaralha
   const shuffled = pool.sort(() => Math.random() - 0.5);
