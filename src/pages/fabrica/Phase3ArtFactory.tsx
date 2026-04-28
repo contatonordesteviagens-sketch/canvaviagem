@@ -960,7 +960,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         </div>
 
         <button
-          onClick={() => generate()}
+          onClick={() => generateNext()}
           disabled={loading || !destination}
           className="w-full py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110"
           style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 8px 24px ${primaryColor}55` }}
@@ -999,7 +999,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             ))}
           </div>
           <button
-            onClick={() => generate()}
+            onClick={() => generateNext()}
             disabled={loading}
             className="w-full py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white/80 text-sm font-semibold border border-white/10 flex items-center justify-center gap-2"
           >
