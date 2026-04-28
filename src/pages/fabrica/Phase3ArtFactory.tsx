@@ -950,7 +950,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       {generatedImages.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={sectionCls}>
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
-            "Seu anúncio"
+            Seu anúncio
           </h3>
           <div className={generatedImages.length > 1 ? "grid grid-cols-2 gap-3 mb-4" : "mb-4"}>
             {generatedImages.map((img, idx) => (
@@ -980,7 +980,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             disabled={loading}
             className="w-full py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white/80 text-sm font-semibold border border-white/10 flex items-center justify-center gap-2"
           >
-            <Sparkles className="w-3.5 h-3.5" /> Gerar novos anúncios (templates aleatórios)
+            <Sparkles className="w-3.5 h-3.5" /> Gerar novo anúncio (template aleatório)
           </button>
         </motion.div>
       )}
