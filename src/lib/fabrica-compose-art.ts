@@ -193,7 +193,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const left = 80;
   const right = width - 80;
   const contentWidth = right - left;
-  const shownHighlights = highlights.slice(0, format === "story" ? 4 : 3);
+  const shownHighlights = highlights.slice(0, format === "story" ? 5 : 4);
   const badgeText = city ? `Saindo de ${city}` : "Pacote completo";
   const titleText = `Conheça ${destination}!`;
 
@@ -351,7 +351,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = "#ffffff";
     drawTextBlock(ctx, titleText, left, topY + 150, panelW - left - 36, 70, 2, { baseFontSize: 66, minFontSize: 38 });
     drawPromoKicker(left, topY + 300);
-    const pillsH = drawHighlightsBlock(left, topY + 396, panelW - left - 36, format === "story" ? 4 : 3, false);
+    const pillsH = drawHighlightsBlock(left, topY + 396, panelW - left - 36, format === "story" ? 5 : 4, false);
     drawPriceCard(left, Math.min(panelBottom - 170, topY + 420 + pillsH), panelW - left - 36, 146, "left");
   } else if (strategy === "matriz") {
     ctx.fillStyle = primaryColor;
@@ -374,7 +374,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
     const rightColX = left + leftColW + 24;
     const rightColW = contentWidth - leftColW - 24;
-    const pillsH = drawHighlightsBlock(rightColX, lowerY + 8, rightColW, format === "story" ? 4 : 3, true);
+    const pillsH = drawHighlightsBlock(rightColX, lowerY + 8, rightColW, format === "story" ? 5 : 4, true);
     drawPriceCard(rightColX, Math.min(panelBottom - 170, lowerY + pillsH + 34), rightColW, 150, "right");
   } else if (strategy === "gancho") {
     const heroH = panelBottom;
@@ -394,7 +394,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     drawTextBlock(ctx, titleText, left + 28, panelBottom - (format === "story" ? 400 : 268), contentWidth - 56, format === "story" ? 84 : 68, 2, { baseFontSize: format === "story" ? 84 : 64, minFontSize: 44 });
     drawPromoKicker(left + 28, panelBottom - (format === "story" ? 232 : 160));
     drawPriceCard(right - 320, panelBottom - (format === "story" ? 246 : 174), 292, 146, "right");
-    drawHighlightsBlock(left + 28, panelBottom - (format === "story" ? 180 : 118), contentWidth - 380, 2, true);
+    drawHighlightsBlock(left + 28, panelBottom - (format === "story" ? 230 : 140), contentWidth - 380, format === "story" ? 4 : 3, true);
   } else {
     const bottomHeight = format === "story" ? 770 : 560;
     const photoHeight = height - safeBottom - bottomHeight;
@@ -420,7 +420,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     drawTextBlock(ctx, titleText, left, cursorY + 56, contentWidth, 80, 2, { baseFontSize: 76, minFontSize: 44 });
     cursorY += 168;
 
-    const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, format === "story" ? 4 : 3, false);
+    const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, format === "story" ? 5 : 4, false);
     cursorY += pillsH + 28;
 
     drawPriceCard(left, cursorY, contentWidth, 168, "right");
