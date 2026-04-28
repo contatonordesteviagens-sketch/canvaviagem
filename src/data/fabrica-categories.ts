@@ -57,6 +57,7 @@ export const CATEGORIAS: CategoriaMeta[] = [
       { code: "ED1", templateId: "iconic_landmark" },
       { code: "ED2", templateId: "split_yellow_side" },
       { code: "ED3", templateId: "elegant_center" },
+      { code: "ED4", templateId: "editorial_visual" },
     ],
     legacyStrategy: "vitrine",
   },
