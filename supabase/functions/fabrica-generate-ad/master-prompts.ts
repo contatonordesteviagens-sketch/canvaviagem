@@ -36,8 +36,10 @@ const OFERTA_RULES = `
 ══════════════════════════════════════
 🔴 REGRAS ESPECÍFICAS DA CATEGORIA — OFERTA DE PACOTE
 - FOCO TOTAL EM CONVERSÃO DIRETA.
+- Esta categoria deve parecer um anúncio agressivo de performance, NÃO editorial.
 - O PREÇO deve ser o MAIOR elemento visual da composição,
   ocupando NO MÍNIMO 25% da área do bloco central.
+- A imagem/fotografia é apenas suporte visual; ela NÃO pode ser protagonista.
 - Use cores vibrantes e contrastantes para destacar preço e oferta:
   roxo, azul-elétrico, amarelo, dourado.
 - Elementos de URGÊNCIA SEMPRE presentes (escolha 1 ou 2):
@@ -55,8 +57,9 @@ const EXPERIENCIA_RULES = `
 ══════════════════════════════════════
 🔵 REGRAS ESPECÍFICAS DA CATEGORIA — EXPERIÊNCIA DE DESTINO
 - FOCO EM DESEJO E EXPERIÊNCIA.
-- A IMAGEM deve ocupar mais espaço visual do que o texto.
-- O PREÇO NÃO é o elemento principal — apresente-o discreto, no rodapé/canto.
+- Esta categoria deve parecer editorial/inspiracional, NÃO anúncio agressivo de preço.
+- A IMAGEM deve ser a protagonista absoluta e ocupar a maior área visual.
+- O PREÇO NÃO é o elemento principal — apresente-o pequeno, secundário e discreto dentro da área segura central, nunca no rodapé.
 - Linguagem emocional obrigatória: "Descubra", "Explore", "Viva", "Conheça".
 - Objetivo: gerar interesse e desejo, NÃO pressão de compra imediata.
 - Estética editorial, atmosférica, aspiracional.
@@ -95,7 +98,7 @@ Urgência: ${v.promoName.toUpperCase()}`
     : `[BLOCO DE EXPERIÊNCIA — DISCRETO]
 ${opts.experienceDescription || `Roteiro de ${v.duration} explorando ${v.destination} com curadoria local e conforto.`}
 Pacote: ${v.packageType} · ${v.duration}
-Preço (pequeno, no rodapé): a partir de R$ ${v.installmentValue} em ${v.installments}.`;
+Preço pequeno e secundário: a partir de R$ ${v.installmentValue} em ${v.installments}, dentro da área segura central.`;
 
   const categoryRules = opts.category === "oferta" ? OFERTA_RULES : EXPERIENCIA_RULES;
 
