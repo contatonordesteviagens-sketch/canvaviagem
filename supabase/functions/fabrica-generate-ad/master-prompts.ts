@@ -22,11 +22,38 @@ export interface MasterPromptVars {
 
 const COMMON_RULES = (v: MasterPromptVars) => `
 ══════════════════════════════════════
+DIRETRIZES ESTRITAS DE RENDERIZAÇÃO (UI/UX + TIPOGRAFIA):
+Formato Vertical 9:16, resolução 8K, qualidade fotográfica máxima.
+
+1) SAFE ZONES (Instagram Stories):
+- Top 15%: PROIBIDO colocar texto, logo ou elemento de conversão (área do perfil/usuário do Instagram).
+- Bottom 20%: PROIBIDO colocar preço, botão ou texto legal (área da caixa "Enviar mensagem" e botões do Instagram).
+- Laterais: padding mínimo de 5% — nenhum texto pode tocar as bordas.
+
+2) POSICIONAMENTO E HIERARQUIA:
+- Zero sobreposição entre blocos de texto, ícones ou linhas. Negative space matemático e claro entre todos os elementos.
+- Centro de Conversão (Middle 65%): preço gigante, destino, chamada principal e botões DEVEM estar contidos nesta área central segura.
+- Alinhamento perfeito: layouts centralizados precisam de eixo Y matematicamente simétrico; layouts em colunas com margens internas simétricas.
+
+3) TIPOGRAFIA (TEXT ENGINE):
+- Estética premium, minimalista, limpa, tipo Apple/interfaces de alta tecnologia. Sans-serif moderna.
+- Contraste absoluto: texto branco SEMPRE sobre fundos escuros/vibrantes; texto escuro SEMPRE sobre fundos claros. Texto sobre foto recebe drop shadow escuro suave para 100% de legibilidade.
+- Hierarquia de tamanhos:
+  • Preço primário: maior elemento da tela, fonte Ultra-Bold/Heavy.
+  • Destino: segundo maior, fonte Bold.
+  • Apoio (Por pessoa, Sem Juros): pequeno, peso Regular/Medium.
+  • Rodapé legal: micro, posicionado IMEDIATAMENTE acima da margem inferior proibida (20%).
+
+4) QUALIDADE DE RENDERIZAÇÃO E ANTI-DISTORÇÃO:
+- Texto perfeito em português: sem caracteres alienígenas, sem fusão de letras, sem erros de ortografia.
+- Realismo absoluto: proibido gerar distorções anatômicas (cabeças desproporcionais, membros extras), duplicação ilógica de objetos (dois relógios no mesmo pulso), proporções não naturais.
+- Profissionalismo fotográfico em qualquer elemento humano ou objeto.
+
 🚫 REGRAS ABSOLUTAS:
 - Nenhuma marca d'água, nenhum logotipo de empresa visível.
-- Os textos devem aparecer exatamente como escritos, sem traduzir, sem inventar.
-- Cores devem ser respeitadas com fidelidade.
-- Imagem deve estar pronta para postar (sem réguas, guias, anotações técnicas).
+- Textos exatamente como escritos, sem traduzir, sem inventar.
+- Cores respeitadas com fidelidade.
+- Imagem pronta para postar (sem réguas, guias, anotações técnicas, sem bordas de safe zone visíveis).
 ══════════════════════════════════════
 `;
 
