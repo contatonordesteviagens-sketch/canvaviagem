@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { STRATEGIES, type StrategyId } from "@/data/fabrica-prompts";
+import { CATEGORIAS, getCategoria, pickPromptsForCategoria, type CategoriaId } from "@/data/fabrica-categories";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { composeTravelAd, type PaymentMode } from "@/lib/fabrica-compose-art";
