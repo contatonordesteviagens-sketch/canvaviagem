@@ -129,34 +129,36 @@ ${opts.specialization ? `[ESPECIALIZAÇÃO DESTE PROMPT]\n${opts.specialization}
 ${categoryRules}
 
 ══════════════════════════════════════
-DIRETRIZES ESTRITAS DE RENDERIZAÇÃO (UI/UX + TIPOGRAFIA):
+DIRETRIZES ESTRITAS DE RENDERIZAÇÃO DE INTERFACE (UI/UX) E TIPOGRAFIA:
+A imagem deve ser gerada no formato Vertical 9:16 (resolução 8K). O motor de geração deve obedecer rigorosamente ao seguinte sistema de grid matemático, 'Safe Zones' do Instagram Stories e prevenção de artefatos:
 
-1) SAFE ZONES (Instagram Stories):
-- Top 15%: PROIBIDO colocar texto, logo ou elemento de conversão.
-- Bottom 20%: PROIBIDO colocar preço, botão ou texto legal.
-- Laterais: padding mínimo de 5%.
+1. SAFE ZONES (ZONAS DE SEGURANÇA DO INSTAGRAM):
+- Margem Superior (Top 15%): É TERMINANTEMENTE PROIBIDO colocar qualquer texto, logotipo ou elemento crucial de conversão nos 15% superiores da imagem.
+- Margem Inferior (Bottom 20%): É TERMINANTEMENTE PROIBIDO colocar qualquer texto legal, preço ou botão nos 20% inferiores da imagem.
+- Margens Laterais (Padding de 5%): Nenhum texto pode tocar a borda.
 
-2) HIERARQUIA E POSICIONAMENTO:
-- Centro de Conversão (Middle 65%): preço/headline/destino e botões DEVEM ficar contidos aqui.
-- Zero sobreposição entre blocos. Negative space matemático e claro.
-- Alinhamento perfeito.
+2. POSICIONAMENTO:
+- Zero sobreposição entre elementos.
+- Espaçamento matemático e simétrico entre todos os blocos.
+- Centro de conversão obrigatório nos 65% centrais da imagem (preço, headline, destino e CTA).
 
-3) TIPOGRAFIA:
-- Sans-serif moderna premium estilo Apple.
-- Contraste absoluto (branco em fundo escuro/vibrante, escuro em fundo claro). Drop-shadow suave em texto sobre foto.
-- Hierarquia: preço primário = MAIOR (Ultra-Bold). Destino = segundo maior (Bold). Apoio = pequeno. Rodapé legal = micro.
+3. TIPOGRAFIA:
+- PREÇO = maior elemento da composição (Ultra-Bold / Heavy).
+- DESTINO = segundo maior elemento (Bold).
+- Texto com CONTRASTE ABSOLUTO: branco sobre fundos escuros/vibrantes; escuro sobre fundos claros. Drop-shadow suave quando o texto estiver sobre foto.
+- Sans-serif moderna premium estilo Apple/alta tecnologia.
 
-4) QUALIDADE E ANTI-DISTORÇÃO:
-- Texto perfeito em português, sem caracteres alienígenas, sem fusão, sem erros.
-- Realismo absoluto: proibido distorção anatômica, membros extras, duplicação ilógica de objetos.
-- Renderização profissional.
+4. QUALIDADE:
+- SEM distorções anatômicas (cabeças desproporcionais, membros extras, duplicação ilógica de objetos como dois relógios no mesmo pulso).
+- SEM erros de texto: ortografia perfeita em português, sem caracteres alienígenas, sem fusão de letras.
+- REALISMO ABSOLUTO em qualquer elemento humano, objeto ou cenário.
 
-🚫 REGRAS ABSOLUTAS:
+🚫 REGRAS ABSOLUTAS ADICIONAIS:
 - Estilo geral minimalista, alto contraste, sem poluição visual, estética premium.
 - Nenhum logotipo de empresa externa, nenhuma marca d'água visível.
-- Textos exatamente como escritos acima, sem traduzir, sem inventar.
-- Cores respeitadas com fidelidade.
-- Imagem pronta para postar (sem réguas, guias, anotações).
+- Textos renderizados EXATAMENTE como escritos acima, sem traduzir, sem inventar palavras.
+- Cores respeitadas com fidelidade total aos hex informados.
+- Imagem pronta para postar — sem réguas, guias, marcações de safe-zone ou anotações técnicas visíveis.
 ══════════════════════════════════════
 `;
 }
