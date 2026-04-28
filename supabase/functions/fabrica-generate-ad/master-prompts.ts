@@ -393,12 +393,12 @@ export const MASTER_TEMPLATES = [
   { id: "ticket_pix_card",    name: "OP5 · Bilhete Pix",              builder: promptTicketPixCard },
   { id: "side_hero_performance", name: "OP6 · Faixa Lateral Hero",    builder: promptSideHeroPerformance },
   // 🔵 EXPERIÊNCIA DESTINO
-  { id: "iconic_landmark",    name: "ED1 · Storytelling",             builder: promptIconicLandmark },
-  { id: "split_yellow_side",  name: "ED2 · Checklist + Grid",         builder: promptSplitYellowSide },
-  { id: "elegant_center",     name: "ED3 · Clean Informativo",        builder: promptElegantCenterCard },
-  { id: "editorial_visual",   name: "ED4 · Editorial Visual",         builder: promptEditorialVisual },
-  { id: "top_editorial_photo", name: "ED5 · Topo Editorial",           builder: promptTopEditorialPhoto },
-  { id: "two_scene_editorial", name: "ED6 · Duas Cenas Editoriais",    builder: promptTwoSceneEditorial },
+  { id: "iconic_landmark",    name: "ED1 · Hero Cinematográfico",     builder: promptIconicLandmark },
+  { id: "split_yellow_side",  name: "ED2 · Split Suave",              builder: promptSplitYellowSide },
+  { id: "elegant_center",     name: "ED3 · Story Lifestyle",          builder: promptElegantCenterCard },
+  { id: "editorial_visual",   name: "ED4 · Multi Experiência (Grid)", builder: promptEditorialVisual },
+  { id: "top_editorial_photo", name: "ED5 · Minimalista Premium",     builder: promptTopEditorialPhoto },
+  { id: "two_scene_editorial", name: "ED6 · Duas Cenas Editoriais",   builder: promptTwoSceneEditorial },
 ] as const;
 
 export type MasterTemplateId = typeof MASTER_TEMPLATES[number]["id"];
