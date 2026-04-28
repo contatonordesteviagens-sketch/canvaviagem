@@ -244,25 +244,28 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     return badgeW;
   };
 
-  const drawHighlightsBlock = (x: number, y: number, w: number, limit = shownHighlights.length, inverted = false) => {
+  const drawHighlightsBlock = (x: number, y: number, w: number, limit = shownHighlights.length, inverted = false, compact = false) => {
     const items = shownHighlights.slice(0, limit);
-    const pillH = 82;
-    const gap = 14;
-    const textStartX = 82;
+    const pillH = compact ? 60 : 82;
+    const gap = compact ? 10 : 14;
+    const iconFont = compact ? 26 : 34;
+    const baseTextFont = compact ? 24 : 30;
+    const textStartX = compact ? 64 : 82;
+    const iconX = compact ? 20 : 24;
     const textMaxW = w - textStartX - 24; // padding direito
     items.forEach((item, idx) => {
-      fillRoundRect(ctx, x, y + idx * (pillH + gap), w, pillH, 40, inverted ? "rgba(255,255,255,0.16)" : "#ffffff");
+      fillRoundRect(ctx, x, y + idx * (pillH + gap), w, pillH, compact ? 30 : 40, inverted ? "rgba(255,255,255,0.16)" : "#ffffff");
       ctx.fillStyle = inverted ? "#ffffff" : primaryColor;
-      ctx.font = "800 34px Inter, Arial, sans-serif";
+      ctx.font = `800 ${iconFont}px Inter, Arial, sans-serif`;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText(ICON_SYMBOL[item.icon || "check"] || "✓", x + 24, y + idx * (pillH + gap) + pillH / 2 + 1);
+      ctx.fillText(ICON_SYMBOL[item.icon || "check"] || "✓", x + iconX, y + idx * (pillH + gap) + pillH / 2 + 1);
       ctx.fillStyle = inverted ? "#ffffff" : "#111111";
 
       // Auto-shrink pill text so it never extends beyond pill width.
-      let pillFont = 30;
+      let pillFont = baseTextFont;
       ctx.font = `800 ${pillFont}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(item.text).width > textMaxW && pillFont > 18) {
+      while (ctx.measureText(item.text).width > textMaxW && pillFont > 16) {
         pillFont -= 2;
         ctx.font = `800 ${pillFont}px Inter, Arial, sans-serif`;
       }
@@ -385,13 +388,16 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = overlay;
     ctx.fillRect(0, 0, width, heroH);
 
-    fillRoundRect(ctx, left, panelBottom - (format === "story" ? 650 : 430), contentWidth, format === "story" ? 560 : 330, 42, "rgba(7,10,18,0.68)");
-    drawBadge(left + 28, panelBottom - (format === "story" ? 600 : 392), 320);
+    fillRoundRect(ctx, left, panelBottom - (format === "story" ? 720 : 470), contentWidth, format === "story" ? 630 : 370, 42, "rgba(7,10,18,0.68)");
+    drawBadge(left + 28, panelBottom - (format === "story" ? 670 : 432), 320);
     ctx.fillStyle = "#ffffff";
-    drawTextBlock(ctx, titleText, left + 28, panelBottom - (format === "story" ? 448 : 268), contentWidth - 56, format === "story" ? 84 : 68, 2, { baseFontSize: format === "story" ? 84 : 64, minFontSize: 44 });
-    drawPromoKicker(left + 28, panelBottom - (format === "story" ? 268 : 160));
+    drawTextBlock(ctx, titleText, left + 28, panelBottom - (format === "story" ? 510 : 300), contentWidth - 56, format === "story" ? 78 : 64, 2, { baseFontSize: format === "story" ? 78 : 60, minFontSize: 42 });
+    drawPromoKicker(left + 28, panelBottom - (format === "story" ? 348 : 200));
+    // 5 pills compactos à esquerda; card de preço à direita não sobrepõe
+    const pillsLimit = format === "story" ? 5 : 4;
+    const pillsW = contentWidth - 360;
+    drawHighlightsBlock(left + 28, panelBottom - (format === "story" ? 320 : 180), pillsW, pillsLimit, true, true);
     drawPriceCard(right - 320, panelBottom - (format === "story" ? 250 : 174), 292, 146, "right");
-    drawHighlightsBlock(left + 28, panelBottom - (format === "story" ? 250 : 140), contentWidth - 380, format === "story" ? 2 : 3, true);
   } else {
     const bottomHeight = format === "story" ? 770 : 560;
     const photoHeight = height - safeBottom - bottomHeight;
