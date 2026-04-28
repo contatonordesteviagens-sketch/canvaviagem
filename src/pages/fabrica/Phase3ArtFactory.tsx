@@ -359,6 +359,10 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       const baseImg = data.image as string;
 
       toast.info("Aplicando 1 composição limpa");
+      const localStrategies: StrategyId[] = categoria === "oferta_pacote"
+        ? ["matriz", "gancho", "ancora"]
+        : ["vitrine", "ancora"];
+      const localStrategy = localStrategies[variationCounter % localStrategies.length];
 
       let img = await composeTravelAd({
         imageUrl: refImage || baseImg,
@@ -375,7 +379,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         paymentMode,
         paymentLabel: paymentLabel || undefined,
         paymentSuffix: paymentSuffix || undefined,
-        strategy,
+        strategy: localStrategy,
       });
       const shouldStampLogo = !!state.logoBase64 && !!data?.fallback;
       if (shouldStampLogo) {
