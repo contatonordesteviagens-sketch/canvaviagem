@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
-import { STRATEGIES, type StrategyId } from "@/data/fabrica-prompts";
+import { type StrategyId } from "@/data/fabrica-prompts";
+import { CATEGORIAS, getCategoria, pickPromptsForCategoria, type CategoriaId } from "@/data/fabrica-categories";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { composeTravelAd, type PaymentMode } from "@/lib/fabrica-compose-art";
@@ -82,7 +83,9 @@ const PAYMENT_PRESETS: PaymentPreset[] = [
 
 export const Phase3ArtFactory = ({ onNext }: Props) => {
   const { state, update } = useFabricaContext();
-  const [strategy, setStrategy] = useState<StrategyId>("vitrine");
+  const [categoria, setCategoria] = useState<CategoriaId>("oferta_pacote");
+  const strategy: StrategyId = getCategoria(categoria).legacyStrategy;
+  const [lastTemplateId, setLastTemplateId] = useState<string | null>(() => localStorage.getItem("fabrica_last_template_id"));
   const [format, setFormat] = useState<"square" | "story">("story");
   const [destination, setDestination] = useState(state.destinos?.[0] || "");
   const [price, setPrice] = useState("149,90");
@@ -268,16 +271,14 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         return;
       }
 
-      // ===== MODO IA PURA: gera 2 imagens em paralelo com 2 templates mestres diferentes =====
+      // ===== MODO IA PURA: gera 2 imagens em paralelo escolhendo prompts da categoria =====
       if (genMode === "ai") {
-        // Importa o registro de templates dinamicamente
-        const { MASTER_TEMPLATES } = await import("@/data/fabrica-master-templates");
-        const shuffled = [...MASTER_TEMPLATES].sort(() => Math.random() - 0.5);
-        const picks = shuffled.slice(0, 2);
+        const picks = pickPromptsForCategoria(categoria, 2, lastTemplateId);
+        const cat = getCategoria(categoria);
 
-        toast.info(`Gerando 2 anúncios com templates: ${picks.map((p) => p.name).join(" + ")}`);
+        toast.info(`[${cat.name}] Gerando 2 anúncios: ${picks.map((p) => p.code).join(" + ")}`);
 
-        const calls = picks.map((tpl) =>
+        const calls = picks.map((pick) =>
           supabase.functions.invoke("fabrica-generate-ad", {
             body: {
               strategy,
@@ -295,7 +296,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               promoName,
               highlights,
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
-              templateId: tpl.id,
+              templateId: pick.templateId,
               packageType: "Voo + Hotel",
               duration: "5 NOITES",
             },
@@ -336,11 +337,16 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         update({ generatedAdImage: images[0], primaryColor });
         if (providerSeen) setLastProvider(providerSeen);
 
+        // Persiste o último prompt usado para a próxima rotação não repetir
+        const lastUsed = picks[picks.length - 1].templateId;
+        setLastTemplateId(lastUsed);
+        localStorage.setItem("fabrica_last_template_id", lastUsed);
+
         const newCount = generationCount + images.length;
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
 
-        toast.success(`${images.length} anúncio(s) gerado(s)!`);
+        toast.success(`${images.length} anúncio(s) gerado(s) — categoria: ${cat.name}`);
         return;
       }
 
@@ -535,31 +541,52 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         )}
       </div>
 
-      {/* 1 · Estratégia visual (todos os modos) */}
+      {/* 1 · Categoria do anúncio (todos os modos) */}
       <div className={sectionCls}>
-        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">1 · Estratégia visual</h3>
-        <div className="grid grid-cols-2 gap-3">
-          {STRATEGIES.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => setStrategy(s.id)}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
-                strategy === s.id ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
-              }`}
-              style={strategy === s.id ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
-            >
-              <div className="text-2xl mb-2">{s.emoji}</div>
-              <div className={`inline-block text-[9px] font-extrabold px-2 py-0.5 rounded border mb-2 ${BADGE_BG[s.badgeColor]}`}>{s.badge}</div>
-              <div className="text-sm font-bold text-white mb-1">{s.name}</div>
-              <p className="text-[11px] text-white/55 leading-snug">{s.description}</p>
-            </button>
-          ))}
+        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-1">1 · Categoria do anúncio</h3>
+        <p className="text-[11px] text-white/45 mb-4">A IA escolhe automaticamente um prompt da categoria e nunca repete o último usado.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {CATEGORIAS.map((c) => {
+            const selected = categoria === c.id;
+            return (
+              <button
+                key={c.id}
+                onClick={() => setCategoria(c.id)}
+                className={`p-5 rounded-2xl border-2 text-left transition-all ${
+                  selected ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
+                }`}
+                style={selected ? { borderColor: c.accent, background: `${c.accent}1a` } : undefined}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-2xl">{c.emoji}</span>
+                  <span
+                    className="text-[10px] font-extrabold px-2 py-0.5 rounded border"
+                    style={{ background: `${c.accent}26`, borderColor: `${c.accent}66`, color: c.accent }}
+                  >
+                    {c.badge}
+                  </span>
+                  <span className="ml-auto text-[10px] text-white/45">{c.prompts.length} prompts</span>
+                </div>
+                <div className="text-base font-bold text-white mb-1.5">{c.name}</div>
+                <p className="text-[12px] text-white/60 leading-snug mb-3">{c.description}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {c.focus.map((f) => (
+                    <span key={f} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.06] text-white/70 border border-white/10">
+                      {f}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-1">
+                  {c.prompts.map((p) => (
+                    <span key={p.code} className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-black/30 text-white/50 border border-white/10">
+                      {p.code}
+                    </span>
+                  ))}
+                </div>
+              </button>
+            );
+          })}
         </div>
-        {genMode !== "ai" && (
-          <p className="text-[10px] text-white/40 mt-3 leading-snug">
-            A estratégia influencia o tom do título e da copy aplicados sobre a foto escolhida.
-          </p>
-        )}
       </div>
 
       {/* 1b · Galeria Pexels (modo foto) */}
