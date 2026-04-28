@@ -391,7 +391,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     drawTextBlock(ctx, titleText, left + 28, panelBottom - (format === "story" ? 448 : 268), contentWidth - 56, format === "story" ? 84 : 68, 2, { baseFontSize: format === "story" ? 84 : 64, minFontSize: 44 });
     drawPromoKicker(left + 28, panelBottom - (format === "story" ? 268 : 160));
     drawPriceCard(right - 320, panelBottom - (format === "story" ? 250 : 174), 292, 146, "right");
-    drawHighlightsBlock(left + 28, panelBottom - (format === "story" ? 150 : 140), contentWidth - 380, format === "story" ? 4 : 3, true);
+    drawHighlightsBlock(left + 28, panelBottom - (format === "story" ? 250 : 140), contentWidth - 380, format === "story" ? 2 : 3, true);
   } else {
     const bottomHeight = format === "story" ? 770 : 560;
     const photoHeight = height - safeBottom - bottomHeight;
