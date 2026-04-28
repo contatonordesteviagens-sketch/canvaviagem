@@ -306,63 +306,78 @@ export function promptIconicLandmark(v: MasterPromptVars): string {
   });
 }
 
-// 🌍 ED2 — CHECKLIST + GRID (combo de destinos)
+// 🌍 ED1 — HERO CINEMATOGRÁFICO (FULL IMAGE)
+export function promptIconicLandmark(v: MasterPromptVars): string {
+  return buildBrain(v, {
+    category: "experiencia",
+    layout:
+      "FULL-BLEED CINEMATOGRÁFICO — a fotografia ocupa cerca de 90% da composição, sem divisões duras nem blocos sólidos. Texto leve sobreposto no centro vertical, com gradiente sutil para legibilidade. Sem cartões, sem caixas, sem rodapé colorido.",
+    lighting: "natural perfeita, hora dourada cinematográfica, profundidade de campo realista, cores vibrantes e atmosféricas",
+    sceneDescription: `${v.destination} com riqueza de detalhes — céu dramático, luz dourada, pessoas naturais em momentos espontâneos (caminhando, sorrindo, contemplando), água cristalina ou paisagem icônica. ${v.destinationDescription}`,
+    headline: `Descubra ${v.destination}`,
+    experienceDescription: `Uma experiência inesquecível espera por você em ${v.destination}.`,
+    specialization:
+      "• Título elegante e LEVE no centro: 'Descubra " + v.destination + "'.\n• Subtítulo sutil abaixo: 'Uma experiência inesquecível espera por você'.\n• Pequenos ícones discretos na base do centro (SEM caixa, SEM pílula): • Hospedagem  • Passeios  • Guia local.\n• PROIBIDO caixa de preço, cartão promocional, cores agressivas.\n• Estilo: editorial, aspiracional, limpo, capa de revista de viagem.",
+  });
+}
+
+// 🌍 ED2 — SPLIT SUAVE (IMAGEM + TEXTO LEVE)
 export function promptSplitYellowSide(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "SPLIT VERTICAL — 45% à esquerda com fundo claro/neutro contendo título emocional + checklist de experiências/roteiro; 55% à direita com GRID editorial de 3-4 fotografias DIFERENTES do destino empilhadas (paisagem, gastronomia, cultura, atividade)",
-    lighting: "cada foto do grid com sua própria atmosfera — natural variada, autêntica",
-    sceneDescription: `múltiplos cenários de ${v.destinationDescription} formando um mosaico de experiências (paisagem icônica, gastronomia local, cultura, atividade típica)`,
+      "DIVISÃO SUAVE — 70% SUPERIOR com fotografia hiper-realista do destino; 30% INFERIOR com área clean usando leve gradiente translúcido (NUNCA bloco sólido pesado, NUNCA cor saturada). Transição suave entre as duas áreas.",
+    lighting: "natural suave, luz realista, atmosfera convidativa",
+    sceneDescription: `${v.destination} com foco em experiência — mar, arquitetura ou natureza com luz natural suave, pessoas interagindo com o ambiente de forma natural. ${v.destinationDescription}`,
     headline: `Explore ${v.destination}`,
-    experienceDescription: `Conheça as múltiplas faces de ${v.destination}: paisagens, sabores, cultura e momentos únicos em ${v.duration}.`,
+    experienceDescription: `Viva dias únicos com paisagens incríveis e momentos inesquecíveis em ${v.destination}.`,
     specialization:
-      "• Lado direito = GRID de 3 ou 4 fotos pequenas mostrando experiências DIFERENTES (é proibido repetir a mesma foto/cena).\n• Lado esquerdo = CHECKLIST visual com respiro generoso entre linhas.\n• Sensação de VARIEDADE e roteiro completo.\n• Comunica 'tudo o que está incluso' sem soar comercial.\n• Grid permitido APENAS nesta categoria de experiência; ainda assim é um único banner, não múltiplos anúncios.",
+      "• Texto na área inferior:\n   Título: 'Explore " + v.destination + "'.\n   Descrição: 'Viva dias únicos com paisagens incríveis e momentos inesquecíveis'.\n• Lista LEVE (sem caixas, sem pílulas): • Cultura local  • Gastronomia  • Passeios exclusivos.\n• Preço pequeno OPCIONAL e discreto, em texto fino: 'A partir de R$ " + v.installmentValue + "'. NUNCA em caixa colorida.\n• Estilo: minimalista, leve, sem aparência de anúncio agressivo.",
   });
 }
 
-// 🌍 ED3 — CLEAN INFORMATIVO
+// 🌍 ED3 — STORY LIFESTYLE (PESSOAS + EXPERIÊNCIA)
 export function promptElegantCenterCard(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "DIVISÃO HORIZONTAL — TOPO 40% com fundo neutro (off-white, creme ou tom pastel) contendo título grande + dados informativos limpos; BASE 60% com fotografia única e impactante do destino",
-    lighting: "natural suave, paleta clean, atmosfera convidativa sem dramaticidade",
-    sceneDescription: v.destinationDescription,
-    headline: `Conheça ${v.destination}`,
-    experienceDescription: `${v.duration} para se reconectar com ${v.destination}. Hospedagem selecionada, gastronomia local e tempo para o que importa.`,
+      "STORY LIFESTYLE — fotografia full-bleed dominante mostrando pessoas reais aproveitando o destino. Texto sobreposto leve, sem caixas pesadas, com gradiente sutil apenas para legibilidade.",
+    lighting: "luz natural, clima feliz, sensação de liberdade, atmosfera real e espontânea",
+    sceneDescription: `grupo de pessoas reais aproveitando ${v.destination} — rindo, tirando fotos, vivendo o momento. Ambiente vivo, autêntico, sem pose comercial. ${v.destinationDescription}`,
+    headline: `Viva o melhor de ${v.destination}`,
+    experienceDescription: `Momentos que ficam para sempre em ${v.destination}.`,
     specialization:
-      "• LEITURA SIMPLES: máxima clareza, mínimo de elementos, muito espaço em branco.\n• INFORMATIVO: data, duração, tipo de pacote em linha discreta no topo.\n• Estética ELEGANTE de site de hotelaria boutique.\n• Sem urgência, sem selos, sem ornamentos.",
+      "• Topo do centro: 'Viva o melhor de " + v.destination + "'.\n• Meio: 'Momentos que ficam para sempre'.\n• Base (pequeno e discreto, SEM caixas): • Passeios inclusos  • Experiência completa  • Roteiro planejado.\n• PROIBIDO preço gigante, cartões, elementos de oferta.\n• Estilo: Instagram orgânico premium, sensação real de viagem.",
   });
 }
 
-// 🌍 ED4 — EDITORIAL VISUAL
+// 🌍 ED4 — MULTI EXPERIÊNCIA (GRID VISUAL)
 export function promptEditorialVisual(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "DUAS COLUNAS verticais — coluna ESQUERDA (40%) com bloco editorial (título grande, parágrafo curto narrativo, número de página estilo revista); coluna DIREITA (60%) com UMA fotografia vertical principal e um pequeno recorte de detalhe complementar, sem repetir a mesma imagem",
-    lighting: "editorial sofisticada, paleta filmica, tons quentes ou frios coerentes entre as duas fotos",
-    sceneDescription: `duas cenas complementares de ${v.destinationDescription} (uma ampla, uma detalhe íntimo)`,
-    headline: `Viva ${v.destination}`,
-    experienceDescription: `Um capítulo de ${v.duration} em ${v.destination} — escrito por você, curado por nós.`,
+      "GRID EDITORIAL — lado DIREITO com 3 ou 4 imagens empilhadas mostrando experiências DIFERENTES (praia, passeio, gastronomia, ponto turístico); lado ESQUERDO com área limpa contendo texto leve. Espaçamento uniforme estilo revista.",
+    lighting: "cada foto com sua própria atmosfera natural — variada e autêntica",
+    sceneDescription: `múltiplas experiências distintas em ${v.destination}: praia, passeio cultural, gastronomia local, ponto turístico icônico. Cada imagem deve ser ÚNICA — proibido repetir cenas. ${v.destinationDescription}`,
+    headline: `Um destino, várias experiências`,
+    experienceDescription: `${v.destination} além do óbvio.`,
     specialization:
-      "• Layout ESTILO REVISTA editorial (Cereal, Kinfolk, Condé Nast Traveller).\n• STORYTELLING LEVE: parágrafo curto evocativo, não vendedor.\n• Fonte de título preferencialmente SERIFADA elegante (estilo editorial).\n• Detalhes editoriais sutis: número de página, linha fina divisória, kerning amplo.\n• Sofisticação MÁXIMA, comercialidade ZERO.",
+      "• Lado esquerdo:\n   Título: 'Um destino, várias experiências'.\n   Subtítulo: '" + v.destination + " além do óbvio'.\n   Lista LEVE: • Praias incríveis  • Cultura local  • Aventuras únicas.\n• SEM destaque de preço.\n• Estilo: revista de viagem, sofisticado, visual rico.\n• Cada imagem do grid precisa ser visualmente DIFERENTE — proibido cópia ou repetição.",
   });
 }
 
-// 🌍 ED5 — TOPO EDITORIAL + FOTO CINEMATOGRÁFICA
+// 🌍 ED5 — MINIMALISTA PREMIUM (LUXO)
 export function promptTopEditorialPhoto(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "SEÇÃO SUPERIOR editorial clean em fundo claro ocupando 35-40% com título emocional, cidade de saída e 3 detalhes leves; SEÇÃO INFERIOR com UMA fotografia cinematográfica dominante ocupando 60-65%, sem preço dominante",
-    lighting: "sol natural refinado, atmosfera realista e convidativa, cores limpas de revista",
-    sceneDescription: `${v.destinationDescription} com profundidade, céu natural, elementos locais autênticos e escala humana discreta`,
-    headline: `Conheça ${v.destination}`,
-    experienceDescription: `Uma experiência leve em ${v.destination}, com roteiro organizado, inclusos claros e tempo para aproveitar o destino com calma.`,
+      "MINIMALISTA PREMIUM — fotografia única, limpa, com composição artística. Pouquíssimo texto, muito espaço negativo, atmosfera de alto luxo. Sem caixas, sem blocos, sem listas pesadas.",
+    lighting: "suave, estética premium, paleta refinada, ângulo único e artístico",
+    sceneDescription: `${v.destination} em ângulo único e artístico, com luz suave e estética premium. Composição contemplativa. ${v.destinationDescription}`,
+    headline: `${v.destination}`,
+    experienceDescription: `Uma experiência para poucos.`,
     specialization:
-      "• Inspirado em layout topo informativo + fotografia inferior, mas com dados do formulário.\n• Título e detalhes ficam leves; imagem é protagonista.\n• Preço aparece pequeno, como informação secundária, nunca como cartaz de oferta.\n• Visual limpo, mobile-first e editorial.",
+      "• Centro: '" + v.destination + "'.\n• Abaixo: 'Uma experiência para poucos'.\n• NENHUM preço em destaque.\n• Pequeno detalhe na base: 'Consulte disponibilidade'.\n• MUITO espaço negativo (respiro visual).\n• Estilo: luxo, exclusivo, silencioso, alto padrão.",
   });
 }
 
@@ -377,7 +392,7 @@ export function promptTwoSceneEditorial(v: MasterPromptVars): string {
     headline: `Viva ${v.destination}`,
     experienceDescription: `Explore ${v.destination} por ângulos diferentes: paisagem, cultura, descanso e momentos memoráveis em ${v.duration}.`,
     specialization:
-      "• As duas fotos devem ser DIFERENTES, nunca cópias da mesma imagem.\n• A composição deve parecer página editorial premium, não panfleto de preço.\n• Checklist curto e espaçado, sem pílulas agressivas.\n• Sem urgência, sem 'APENAS HOJE', sem preço gigante.",
+      "• As duas fotos devem ser DIFERENTES, nunca cópias da mesma imagem.\n• Composição estilo página editorial premium, NÃO panfleto de preço.\n• Checklist curto e espaçado, sem pílulas agressivas.\n• Sem urgência, sem 'APENAS HOJE', sem preço gigante. Preço opcional como nota fina.",
   });
 }
 
