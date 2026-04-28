@@ -193,7 +193,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const left = 80;
   const right = width - 80;
   const contentWidth = right - left;
-  const shownHighlights = highlights.slice(0, format === "story" ? 4 : 3);
+  const shownHighlights = highlights.slice(0, format === "story" ? 5 : 4);
   const badgeText = city ? `Saindo de ${city}` : "Pacote completo";
   const titleText = `Conheça ${destination}!`;
 
