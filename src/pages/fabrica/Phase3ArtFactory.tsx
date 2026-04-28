@@ -83,7 +83,9 @@ const PAYMENT_PRESETS: PaymentPreset[] = [
 
 export const Phase3ArtFactory = ({ onNext }: Props) => {
   const { state, update } = useFabricaContext();
-  const [strategy, setStrategy] = useState<StrategyId>("vitrine");
+  const [categoria, setCategoria] = useState<CategoriaId>("oferta_pacote");
+  const strategy: StrategyId = getCategoria(categoria).legacyStrategy;
+  const [lastTemplateId, setLastTemplateId] = useState<string | null>(() => localStorage.getItem("fabrica_last_template_id"));
   const [format, setFormat] = useState<"square" | "story">("story");
   const [destination, setDestination] = useState(state.destinos?.[0] || "");
   const [price, setPrice] = useState("149,90");
