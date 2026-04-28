@@ -357,25 +357,22 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = primaryColor;
     ctx.fillRect(0, 0, width, height);
 
-    const gutter = 22;
-    const tileY = safeTop + 20;
-    const tileH = format === "story" ? 430 : 280;
-    const leftTileW = Math.round((contentWidth - gutter) * 0.58);
-    const rightTileW = contentWidth - gutter - leftTileW;
-    drawRoundedPhoto(left, tileY, leftTileW, tileH, 36, 0.34);
-    drawRoundedPhoto(left + leftTileW + gutter, tileY, rightTileW, tileH, 36, 0.52);
+    const photoY = safeTop + 12;
+    const photoH = format === "story" ? 500 : 360;
+    drawRoundedPhoto(left, photoY, contentWidth, photoH, 44, 0.36);
 
-    const lowerY = tileY + tileH + 28;
-    const leftColW = Math.round(contentWidth * 0.48);
+    const lowerY = photoY + photoH + 34;
+    const leftColW = Math.round(contentWidth * 0.5);
     drawBadge(left, lowerY, leftColW);
     ctx.fillStyle = "#ffffff";
     drawTextBlock(ctx, titleText, left, lowerY + 136, leftColW, 72, 2, { baseFontSize: 68, minFontSize: 40 });
-    drawPromoKicker(left, lowerY + 288);
+    drawPromoKicker(left, lowerY + 294);
 
     const rightColX = left + leftColW + 24;
     const rightColW = contentWidth - leftColW - 24;
     const pillsH = drawHighlightsBlock(rightColX, lowerY + 8, rightColW, format === "story" ? 5 : 4, true);
-    drawPriceCard(rightColX, Math.min(panelBottom - 170, lowerY + pillsH + 34), rightColW, 150, "right");
+    const priceY = Math.min(panelBottom - 180, lowerY + pillsH + 40);
+    drawPriceCard(rightColX, priceY, rightColW, 154, "right");
   } else if (strategy === "gancho") {
     const heroH = panelBottom;
     const crop = fitCover(image.naturalWidth, image.naturalHeight, width, heroH, format === "story" ? 0.38 : 0.42);
