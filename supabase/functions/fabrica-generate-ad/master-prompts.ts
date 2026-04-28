@@ -256,13 +256,13 @@ export function promptSplitYellowSide(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "SPLIT VERTICAL — 50% à esquerda com fundo claro/neutro contendo título emocional + checklist de experiências/roteiro; 50% à direita com GRID de 3-4 fotografias diferentes do destino empilhadas (paisagem, gastronomia, cultura, atividade)",
+      "SPLIT VERTICAL — 45% à esquerda com fundo claro/neutro contendo título emocional + checklist de experiências/roteiro; 55% à direita com GRID editorial de 3-4 fotografias DIFERENTES do destino empilhadas (paisagem, gastronomia, cultura, atividade)",
     lighting: "cada foto do grid com sua própria atmosfera — natural variada, autêntica",
     sceneDescription: `múltiplos cenários de ${v.destinationDescription} formando um mosaico de experiências (paisagem icônica, gastronomia local, cultura, atividade típica)`,
     headline: `Explore ${v.destination}`,
     experienceDescription: `Conheça as múltiplas faces de ${v.destination}: paisagens, sabores, cultura e momentos únicos em ${v.duration}.`,
     specialization:
-      "• Lado direito = GRID de 3 ou 4 fotos pequenas mostrando experiências DIFERENTES (não a mesma cena).\n• Lado esquerdo = CHECKLIST visual ('✓ City tour', '✓ Gastronomia local', '✓ Pôr do sol icônico'...).\n• Sensação de VARIEDADE e roteiro completo.\n• Comunica 'tudo o que está incluso' sem soar comercial.",
+      "• Lado direito = GRID de 3 ou 4 fotos pequenas mostrando experiências DIFERENTES (é proibido repetir a mesma foto/cena).\n• Lado esquerdo = CHECKLIST visual com respiro generoso entre linhas.\n• Sensação de VARIEDADE e roteiro completo.\n• Comunica 'tudo o que está incluso' sem soar comercial.\n• Grid permitido APENAS nesta categoria de experiência; ainda assim é um único banner, não múltiplos anúncios.",
   });
 }
 
@@ -286,7 +286,7 @@ export function promptEditorialVisual(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "DUAS COLUNAS verticais — coluna ESQUERDA (40%) com bloco editorial (título grande, parágrafo curto narrativo, número de página estilo revista); coluna DIREITA (60%) com 2 fotografias verticais empilhadas com fino espaço entre elas",
+      "DUAS COLUNAS verticais — coluna ESQUERDA (40%) com bloco editorial (título grande, parágrafo curto narrativo, número de página estilo revista); coluna DIREITA (60%) com UMA fotografia vertical principal e um pequeno recorte de detalhe complementar, sem repetir a mesma imagem",
     lighting: "editorial sofisticada, paleta filmica, tons quentes ou frios coerentes entre as duas fotos",
     sceneDescription: `duas cenas complementares de ${v.destinationDescription} (uma ampla, uma detalhe íntimo)`,
     headline: `Viva ${v.destination}`,
