@@ -192,6 +192,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
     }
     setLoading(true);
     setGeneratedImage("");
+    setGeneratedImages([]);
     try {
       // Resolve imagem de referência conforme modo
       const refImage =
@@ -210,10 +211,9 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         return;
       }
 
-      let finalImg = "";
-
+      // ===== MODO FOTO (composição local) =====
       if (genMode === "photo") {
-        finalImg = await composeTravelAd({
+        let finalImg = await composeTravelAd({
           imageUrl: refImage,
           format,
           destination,
@@ -241,94 +241,131 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         }
 
         setGeneratedImage(finalImg);
+        setGeneratedImages([finalImg]);
         update({ generatedAdImage: finalImg, primaryColor });
         toast.success("Arte gerada com foto real!");
         return;
       }
 
-      let payload: any;
-      let fnName: string;
+      // ===== MODO IA PURA: gera 2 imagens em paralelo com 2 templates mestres diferentes =====
+      if (genMode === "ai") {
+        // Importa o registro de templates dinamicamente
+        const { MASTER_TEMPLATES } = await import("@/data/fabrica-master-templates");
+        const shuffled = [...MASTER_TEMPLATES].sort(() => Math.random() - 0.5);
+        const picks = shuffled.slice(0, 2);
 
-      if (refImage) {
-        fnName = "fabrica-edit-photo";
-        payload = {
-          imageUrl: refImage,
-          format,
-          destination,
-          agencyName: state.agencyName,
-          city: state.city,
-          primaryColor,
-          secondaryColor,
-          hasLogo: !!state.logoBase64,
-          price,
-          installments,
-          promoName,
-          highlights,
-        };
-      } else {
-        const variation = forceVariation ?? variationCounter;
-        fnName = "fabrica-generate-ad";
-        payload = {
-          strategy,
-          format,
-          destination,
-          niche: state.niche,
-          agencyName: state.agencyName,
-          agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
-          city: state.city,
-          primaryColor,
-          secondaryColor,
-          hasLogo: !!state.logoBase64,
-          price,
-          installments,
-          promoName,
-          highlights,
-          variation,
-          ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
-        };
+        toast.info(`Gerando 2 anúncios com templates: ${picks.map((p) => p.name).join(" + ")}`);
+
+        const calls = picks.map((tpl) =>
+          supabase.functions.invoke("fabrica-generate-ad", {
+            body: {
+              strategy,
+              format,
+              destination,
+              niche: state.niche,
+              agencyName: state.agencyName,
+              agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
+              city: state.city,
+              primaryColor,
+              secondaryColor,
+              hasLogo: !!state.logoBase64,
+              price,
+              installments,
+              promoName,
+              highlights,
+              ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
+              templateId: tpl.id,
+              packageType: "Voo + Hotel",
+              duration: "5 NOITES",
+            },
+          })
+        );
+
+        const results = await Promise.allSettled(calls);
+        const images: string[] = [];
+        let providerSeen: "user_gemini" | "lovable_ai" | null = null;
+
+        for (const r of results) {
+          if (r.status === "fulfilled") {
+            const { data, error } = r.value as any;
+            if (error) { console.warn("call error", error); continue; }
+            if (data?.error) { console.warn("data error", data.error); continue; }
+            if (data?.image) {
+              let img = data.image as string;
+              try {
+                const { reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
+                img = await reframeImageToAspect(img, format);
+              } catch (e) {
+                console.warn("reframe failed", e);
+              }
+              images.push(img);
+              if (data.provider) providerSeen = data.provider;
+            }
+          } else {
+            console.warn("rejected", r.reason);
+          }
+        }
+
+        if (images.length === 0) {
+          throw new Error("Nenhuma das 2 imagens foi gerada. Cheque os créditos de IA.");
+        }
+
+        setGeneratedImages(images);
+        setGeneratedImage(images[0]);
+        update({ generatedAdImage: images[0], primaryColor });
+        if (providerSeen) setLastProvider(providerSeen);
+
+        const newCount = generationCount + images.length;
+        setGenerationCount(newCount);
+        localStorage.setItem("fabrica_gen_count", String(newCount));
+
+        toast.success(`${images.length} anúncio(s) gerado(s)!`);
+        return;
       }
+
+      // ===== MODO CUSTOM (link/upload do usuário) — fluxo antigo =====
+      const fnName = "fabrica-edit-photo";
+      const payload: any = {
+        imageUrl: refImage,
+        format,
+        destination,
+        agencyName: state.agencyName,
+        city: state.city,
+        primaryColor,
+        secondaryColor,
+        hasLogo: !!state.logoBase64,
+        price,
+        installments,
+        promoName,
+        highlights,
+      };
 
       const { data, error } = await supabase.functions.invoke(fnName, { body: payload });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       if (!data?.image) throw new Error("Imagem não retornada");
-      finalImg = data.image;
+      let finalImg = data.image as string;
 
-      // Modo "custom" (link de imagem do usuário): SEMPRE aplicar o template completo via composeTravelAd
-      // para garantir aspecto correto (story 9:16 / square 1:1) e layout consistente, mesmo se a edge
-      // function processou a imagem. A foto do link cru raramente já vem no formato certo.
-      if (genMode === "custom") {
-        finalImg = await composeTravelAd({
-          imageUrl: refImage || finalImg,
-          format,
-          destination,
-          city: state.city,
-          primaryColor,
-          secondaryColor,
-          price,
-          installments,
-          promoName,
-          highlights,
-          hasLogo: !!state.logoBase64,
-          paymentMode,
-          paymentLabel: paymentLabel || undefined,
-          paymentSuffix: paymentSuffix || undefined,
-          strategy,
-        });
-      } else {
-        // AI gera tipicamente em ~quadrado. Reenquadra (cover crop) para o aspecto pedido.
-        try {
-          const { reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
-          finalImg = await reframeImageToAspect(finalImg, format);
-        } catch (e) {
-          console.warn("Falha ao reenquadrar imagem AI:", e);
-        }
-      }
+      // Custom: aplica template completo via composeTravelAd para garantir aspecto correto
+      finalImg = await composeTravelAd({
+        imageUrl: refImage || finalImg,
+        format,
+        destination,
+        city: state.city,
+        primaryColor,
+        secondaryColor,
+        price,
+        installments,
+        promoName,
+        highlights,
+        hasLogo: !!state.logoBase64,
+        paymentMode,
+        paymentLabel: paymentLabel || undefined,
+        paymentSuffix: paymentSuffix || undefined,
+        strategy,
+      });
 
-      // Logo overlay: só aplicamos quando NÃO veio direto da IA (a IA já renderiza a logo no prompt).
-      // Para fluxos "custom" com fallback (que usam composeTravelAd), o overlay com fundo branco
-      // é necessário pra garantir contraste. No modo AI puro, evitamos a "borda branca duplicada".
-      const shouldStampLogo = !!state.logoBase64 && genMode === "custom" && !!data?.fallback;
+      const shouldStampLogo = !!state.logoBase64 && !!data?.fallback;
       if (shouldStampLogo) {
         try {
           const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
@@ -339,30 +376,18 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       }
 
       setGeneratedImage(finalImg);
+      setGeneratedImages([finalImg]);
       update({ generatedAdImage: finalImg, primaryColor });
 
-      // rastrear provider usado e contagem
-      if (data?.provider) {
-        setLastProvider(data.provider);
-      }
+      if (data?.provider) setLastProvider(data.provider);
       const newCount = generationCount + 1;
       setGenerationCount(newCount);
       localStorage.setItem("fabrica_gen_count", String(newCount));
 
       if (data?.fallback && data?.warning) {
-        toast.warning(
-          genMode === "custom"
-            ? "Créditos de IA indisponíveis. Montei a arte completa usando sua imagem como base."
-            : data.warning,
-          { duration: 8000 }
-        );
+        toast.warning("Créditos de IA indisponíveis. Montei a arte completa usando sua imagem como base.", { duration: 8000 });
       } else {
-        const providerLabel = data?.provider === "user_gemini"
-          ? "✨ Anúncio gerado com sua chave Gemini (grátis)"
-          : data?.provider === "lovable_ai"
-            ? "✨ Anúncio gerado com créditos da plataforma"
-            : "Anúncio gerado!";
-        toast.success(providerLabel);
+        toast.success("Anúncio gerado!");
       }
     } catch (err: any) {
       console.error("generate error", err);
