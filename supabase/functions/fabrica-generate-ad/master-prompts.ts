@@ -157,6 +157,12 @@ A imagem deve ser gerada no formato Vertical 9:16 (resolução 8K). O motor de g
 - REALISMO ABSOLUTO em qualquer elemento humano, objeto ou cenário.
 
 🚫 REGRAS ABSOLUTAS ADICIONAIS:
+- GERAR UM ÚNICO BANNER PUBLICITÁRIO DE TURISMO. A saída deve conter APENAS 1 imagem única.
+- É PROIBIDO gerar imagens duplicadas, repetidas, variações lado a lado, mockups em tela dupla ou duas peças dentro do mesmo arquivo.
+- Escolha UM layout por geração e NÃO misture cartão central, divisão topo/base, barra lateral e grid no mesmo banner.
+- É PROIBIDO duplicar fotografia, cartões, blocos de preço, botões, selos ou listas dentro da mesma imagem.
+- É PROIBIDO sobrepor textos, preços, ícones ou blocos. Cada elemento deve ter respiro claro; nenhum texto pode encostar em outro bloco.
+- Se a categoria for OFERTA PACOTE, use visual de venda direta com preço protagonista; se for EXPERIÊNCIA DE DESTINO, use visual editorial com fotografia protagonista. As duas categorias NÃO podem parecer o mesmo estilo visual.
 - Estilo geral minimalista, alto contraste, sem poluição visual, estética premium.
 - Nenhum logotipo de empresa externa, nenhuma marca d'água visível.
 - Textos renderizados EXATAMENTE como escritos acima, sem traduzir, sem inventar palavras.
