@@ -545,20 +545,20 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
                 style={selected ? { borderColor: c.accent, background: `${c.accent}1a` } : undefined}
               >
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-2xl">{c.emoji}</span>
+                  <span className="text-2xl leading-none">{c.emoji}</span>
                   <span
-                    className="text-[10px] font-extrabold px-2 py-0.5 rounded border"
+                    className="text-[10px] font-extrabold px-2 py-0.5 rounded border tracking-wider"
                     style={{ background: `${c.accent}26`, borderColor: `${c.accent}66`, color: c.accent }}
                   >
                     {c.badge}
                   </span>
                   <span className="ml-auto text-[10px] text-white/45">{c.prompts.length} prompts</span>
                 </div>
-                <div className="text-base font-bold text-white mb-1.5">{c.name}</div>
+                <div className="text-base font-bold text-white mb-1.5 leading-tight">{c.name}</div>
                 <p className="text-[12px] text-white/60 leading-snug mb-3">{c.description}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {c.focus.map((f) => (
-                    <span key={f} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.06] text-white/70 border border-white/10">
+                    <span key={f} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.06] text-white/70 border border-white/10 whitespace-nowrap">
                       {f}
                     </span>
                   ))}
