@@ -98,6 +98,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
   const [newHl, setNewHl] = useState("");
   const [loading, setLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string>("");
+  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [variationCounter, setVariationCounter] = useState(0);
   const [lastProvider, setLastProvider] = useState<"user_gemini" | "lovable_ai" | null>(null);
   const [generationCount, setGenerationCount] = useState<number>(() => {
