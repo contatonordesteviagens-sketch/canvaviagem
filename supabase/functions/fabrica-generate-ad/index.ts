@@ -36,6 +36,9 @@ interface AdParams {
   highlights?: (string | Highlight)[];
   ctaText?: string;
   variation?: number; // 0..3 — varia composição mesmo com mesmos parâmetros
+  templateId?: string; // se definido, usa um template mestre em vez do builder de estratégia
+  packageType?: string; // ex: "Voo + Hotel"
+  duration?: string;    // ex: "5 NOITES"
 }
 
 // ===== Tom visual por tipo de agência =====
