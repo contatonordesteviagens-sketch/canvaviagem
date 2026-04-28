@@ -374,7 +374,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
     const rightColX = left + leftColW + 24;
     const rightColW = contentWidth - leftColW - 24;
-    const pillsH = drawHighlightsBlock(rightColX, lowerY + 8, rightColW, format === "story" ? 4 : 3, true);
+    const pillsH = drawHighlightsBlock(rightColX, lowerY + 8, rightColW, format === "story" ? 5 : 4, true);
     drawPriceCard(rightColX, Math.min(panelBottom - 170, lowerY + pillsH + 34), rightColW, 150, "right");
   } else if (strategy === "gancho") {
     const heroH = panelBottom;
