@@ -258,66 +258,51 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         return;
       }
 
-      // ===== MODO IA PURA: gera 2 imagens em paralelo escolhendo prompts da categoria =====
+      // ===== MODO IA PURA: gera 1 imagem escolhendo prompt da categoria =====
       if (genMode === "ai") {
-        const picks = pickPromptsForCategoria(categoria, 2, lastTemplateId);
+        const picks = pickPromptsForCategoria(categoria, 1, lastTemplateId);
         const cat = getCategoria(categoria);
+        const pick = picks[0];
 
-        toast.info(`[${cat.name}] Gerando 2 anúncios: ${picks.map((p) => p.code).join(" + ")}`);
+        toast.info(`[${cat.name}] Gerando 1 banner: ${pick.code}`);
 
-        const calls = picks.map((pick) =>
-          supabase.functions.invoke("fabrica-generate-ad", {
-            body: {
-              strategy,
-              format,
-              destination,
-              niche: state.niche,
-              agencyName: state.agencyName,
-              agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
-              city: state.city,
-              primaryColor,
-              secondaryColor,
-              hasLogo: !!state.logoBase64,
-              price,
-              installments,
-              promoName,
-              highlights,
-              ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
-              templateId: pick.templateId,
-              packageType: "Voo + Hotel",
-              duration: "5 NOITES",
-            },
-          })
-        );
+        const { data, error } = await supabase.functions.invoke("fabrica-generate-ad", {
+          body: {
+            strategy,
+            format,
+            destination,
+            niche: state.niche,
+            agencyName: state.agencyName,
+            agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
+            city: state.city,
+            primaryColor,
+            secondaryColor,
+            hasLogo: !!state.logoBase64,
+            price,
+            installments,
+            promoName,
+            highlights,
+            ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
+            templateId: pick.templateId,
+            packageType: "Voo + Hotel",
+            duration: "5 NOITES",
+          },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        if (!data?.image) throw new Error("Nenhuma imagem foi gerada. Cheque os créditos de IA.");
 
-        const results = await Promise.allSettled(calls);
-        const images: string[] = [];
+        let img = data.image as string;
         let providerSeen: "user_gemini" | "lovable_ai" | null = null;
-
-        for (const r of results) {
-          if (r.status === "fulfilled") {
-            const { data, error } = r.value as any;
-            if (error) { console.warn("call error", error); continue; }
-            if (data?.error) { console.warn("data error", data.error); continue; }
-            if (data?.image) {
-              let img = data.image as string;
-              try {
-                const { reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
-                img = await reframeImageToAspect(img, format);
-              } catch (e) {
-                console.warn("reframe failed", e);
-              }
-              images.push(img);
-              if (data.provider) providerSeen = data.provider;
-            }
-          } else {
-            console.warn("rejected", r.reason);
-          }
+        try {
+          const { reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
+          img = await reframeImageToAspect(img, format);
+        } catch (e) {
+          console.warn("reframe failed", e);
         }
+        if (data.provider) providerSeen = data.provider;
 
-        if (images.length === 0) {
-          throw new Error("Nenhuma das 2 imagens foi gerada. Cheque os créditos de IA.");
-        }
+        const images = [img];
 
         setGeneratedImages(images);
         setGeneratedImage(images[0]);
@@ -325,7 +310,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         if (providerSeen) setLastProvider(providerSeen);
 
         // Persiste o último prompt usado para a próxima rotação não repetir
-        const lastUsed = picks[picks.length - 1].templateId;
+        const lastUsed = pick.templateId;
         setLastTemplateId(lastUsed);
         localStorage.setItem("fabrica_last_template_id", lastUsed);
 
@@ -333,7 +318,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
 
-        toast.success(`${images.length} anúncio(s) gerado(s) — categoria: ${cat.name}`);
+        toast.success(`1 banner gerado — categoria: ${cat.name}`);
         return;
       }
 
