@@ -114,10 +114,10 @@ ${v.installments} de R$ ${v.installmentValue}     ← FONTE GIGANTE, ULTRA-BOLD
 Preço total: R$ ${v.totalValue}
 Selos obrigatórios: SEM JUROS · PIX · ${v.packageType.toUpperCase()}
 Urgência: ${v.promoName.toUpperCase()}`
-    : `[BLOCO DE EXPERIÊNCIA — DISCRETO]
+    : `[BLOCO DE EXPERIÊNCIA — EDITORIAL, SEM CARA DE OFERTA]
 ${opts.experienceDescription || `Roteiro de ${v.duration} explorando ${v.destination} com curadoria local e conforto.`}
-Pacote: ${v.packageType} · ${v.duration}
-Preço pequeno e secundário: a partir de R$ ${v.installmentValue} em ${v.installments}, dentro da área segura central.`;
+Tipo de viagem: ${v.packageType} · ${v.duration}
+PREÇO É OPCIONAL E DISCRETO: se inserir, use APENAS um pequeno texto fino "A partir de R$ ${v.installmentValue}" em tipografia leve, posicionado como nota lateral dentro da área segura central. NÃO usar caixa colorida, NÃO usar parcelamento em destaque, NÃO usar selos. Em layouts mais minimalistas (ED1, ED3, ED5) o preço pode ser totalmente OMITIDO em favor de "Consulte disponibilidade".`;
 
   const categoryRules = opts.category === "oferta" ? OFERTA_RULES : EXPERIENCIA_RULES;
   const creativeSeed = v.creativeSeed || `${opts.category}-${opts.layout.slice(0, 24)}`;
