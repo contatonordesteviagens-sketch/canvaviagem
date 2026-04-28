@@ -921,21 +921,40 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         {loading && <p className="text-xs text-white/50 text-center mt-1">A IA leva 8 a 25 segundos.</p>}
       </div>
 
-      {generatedImage && (
+      {generatedImages.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={sectionCls}>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">Seu anúncio</h3>
-          <div className={`rounded-xl overflow-hidden bg-black/40 mb-4 mx-auto ${format === "square" ? "max-w-md" : "max-w-xs"}`}>
-            <img src={generatedImage} alt="Anúncio gerado" className="w-full h-auto block" />
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
+            {generatedImages.length > 1 ? `Seus ${generatedImages.length} anúncios` : "Seu anúncio"}
+          </h3>
+          <div className={generatedImages.length > 1 ? "grid grid-cols-2 gap-3 mb-4" : "mb-4"}>
+            {generatedImages.map((img, idx) => (
+              <div
+                key={idx}
+                className={`rounded-xl overflow-hidden bg-black/40 mx-auto ${
+                  generatedImages.length > 1 ? "w-full" : (format === "square" ? "max-w-md" : "max-w-xs")
+                }`}
+              >
+                <img src={img} alt={`Anúncio ${idx + 1}`} className="w-full h-auto block" />
+                <button
+                  onClick={() => {
+                    const a = document.createElement("a");
+                    a.href = img;
+                    a.download = `anuncio-${(destination || "destino").toLowerCase().replace(/\s+/g, "-")}-${idx + 1}.png`;
+                    document.body.appendChild(a); a.click(); a.remove();
+                  }}
+                  className="w-full py-2 bg-white text-black text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-white/90"
+                >
+                  <Download className="w-3 h-3" /> Baixar #{idx + 1}
+                </button>
+              </div>
+            ))}
           </div>
-          <button onClick={downloadPNG} className="w-full py-3 rounded-xl bg-white text-black font-bold flex items-center justify-center gap-2 hover:bg-white/90 transition-colors mb-3">
-            <Download className="w-4 h-4" /> Baixar PNG
-          </button>
           <button
-            onClick={generateVariation}
+            onClick={() => generate()}
             disabled={loading}
             className="w-full py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white/80 text-sm font-semibold border border-white/10 flex items-center justify-center gap-2"
           >
-            <Sparkles className="w-3.5 h-3.5" /> Gerar variação diferente (composição #{((variationCounter + 1) % 4) + 1}/4)
+            <Sparkles className="w-3.5 h-3.5" /> Gerar novos anúncios (templates aleatórios)
           </button>
         </motion.div>
       )}
