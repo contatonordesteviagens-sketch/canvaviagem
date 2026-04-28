@@ -333,6 +333,36 @@ export function promptEditorialVisual(v: MasterPromptVars): string {
   });
 }
 
+// 🌍 ED5 — TOPO EDITORIAL + FOTO CINEMATOGRÁFICA
+export function promptTopEditorialPhoto(v: MasterPromptVars): string {
+  return buildBrain(v, {
+    category: "experiencia",
+    layout:
+      "SEÇÃO SUPERIOR editorial clean em fundo claro ocupando 35-40% com título emocional, cidade de saída e 3 detalhes leves; SEÇÃO INFERIOR com UMA fotografia cinematográfica dominante ocupando 60-65%, sem preço dominante",
+    lighting: "sol natural refinado, atmosfera realista e convidativa, cores limpas de revista",
+    sceneDescription: `${v.destinationDescription} com profundidade, céu natural, elementos locais autênticos e escala humana discreta`,
+    headline: `Conheça ${v.destination}`,
+    experienceDescription: `Uma experiência leve em ${v.destination}, com roteiro organizado, inclusos claros e tempo para aproveitar o destino com calma.`,
+    specialization:
+      "• Inspirado em layout topo informativo + fotografia inferior, mas com dados do formulário.\n• Título e detalhes ficam leves; imagem é protagonista.\n• Preço aparece pequeno, como informação secundária, nunca como cartaz de oferta.\n• Visual limpo, mobile-first e editorial.",
+  });
+}
+
+// 🌍 ED6 — COLUNA EDITORIAL + DUAS CENAS DISTINTAS
+export function promptTwoSceneEditorial(v: MasterPromptVars): string {
+  return buildBrain(v, {
+    category: "experiencia",
+    layout:
+      "COLUNA ESQUERDA editorial em fundo bege/off-white com título e checklist leve; COLUNA DIREITA com duas fotografias distintas do destino, uma paisagem ampla e um detalhe cultural/local, com espaçamento uniforme",
+    lighting: "editorial sofisticada, textura real, luz natural coerente entre as cenas",
+    sceneDescription: `duas perspectivas diferentes de ${v.destinationDescription}: uma paisagem ampla e um detalhe sensorial local`,
+    headline: `Viva ${v.destination}`,
+    experienceDescription: `Explore ${v.destination} por ângulos diferentes: paisagem, cultura, descanso e momentos memoráveis em ${v.duration}.`,
+    specialization:
+      "• As duas fotos devem ser DIFERENTES, nunca cópias da mesma imagem.\n• A composição deve parecer página editorial premium, não panfleto de preço.\n• Checklist curto e espaçado, sem pílulas agressivas.\n• Sem urgência, sem 'APENAS HOJE', sem preço gigante.",
+  });
+}
+
 // ============================================================
 // REGISTRO DE TEMPLATES
 // ============================================================
@@ -342,11 +372,15 @@ export const MASTER_TEMPLATES = [
   { id: "cancun_style",       name: "OP2 · Cartão Central Flutuante", builder: promptCancunStyle },
   { id: "gramado_style",      name: "OP3 · Cartão Aéreo (Top Down)",  builder: promptGramadoStyle },
   { id: "maceio_style",       name: "OP4 · Barra Lateral Performance",builder: promptMaceioStyle },
+  { id: "ticket_pix_card",    name: "OP5 · Bilhete Pix",              builder: promptTicketPixCard },
+  { id: "side_hero_performance", name: "OP6 · Faixa Lateral Hero",    builder: promptSideHeroPerformance },
   // 🔵 EXPERIÊNCIA DESTINO
   { id: "iconic_landmark",    name: "ED1 · Storytelling",             builder: promptIconicLandmark },
   { id: "split_yellow_side",  name: "ED2 · Checklist + Grid",         builder: promptSplitYellowSide },
   { id: "elegant_center",     name: "ED3 · Clean Informativo",        builder: promptElegantCenterCard },
   { id: "editorial_visual",   name: "ED4 · Editorial Visual",         builder: promptEditorialVisual },
+  { id: "top_editorial_photo", name: "ED5 · Topo Editorial",           builder: promptTopEditorialPhoto },
+  { id: "two_scene_editorial", name: "ED6 · Duas Cenas Editoriais",    builder: promptTwoSceneEditorial },
 ] as const;
 
 export type MasterTemplateId = typeof MASTER_TEMPLATES[number]["id"];
