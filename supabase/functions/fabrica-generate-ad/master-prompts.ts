@@ -241,6 +241,34 @@ export function promptMaceioStyle(v: MasterPromptVars): string {
   });
 }
 
+// 🔥 OP5 — BILHETE PIX / CARTÃO AMARELO
+export function promptTicketPixCard(v: MasterPromptVars): string {
+  return buildBrain(v, {
+    category: "oferta",
+    layout:
+      "FOTO AÉREA OU PANORÂMICA ocupando 100% do fundo com um CARTÃO AMARELO grande e limpo no centro seguro; dentro do cartão há cabeçalho PACOTE + DESTINO, linha de ícones dos inclusos, preço maciço e selo azul serrilhado PIX anexado abaixo com margem sem sobreposição",
+    lighting: "natural brilhante, comercial, cores turquesa/azul com contraste alto no cartão amarelo",
+    sceneDescription: `vista ampla e clara de ${v.destinationDescription}`,
+    headline: `PACOTE ${v.destination}`,
+    specialization:
+      "• Inspirado em cartões amarelos premium de pacote, mas usando APENAS os dados do formulário.\n• O cartão amarelo não pode encostar nas safe zones; deve parecer uma peça única e limpa.\n• Selo tipo bilhete PIX azul fica abaixo do preço com separação visível, nunca sobre texto.\n• A fotografia de fundo serve de contexto; preço e oferta dominam a conversão.",
+  });
+}
+
+// 🔥 OP6 — FAIXA LATERAL + HERO DE PERFORMANCE
+export function promptSideHeroPerformance(v: MasterPromptVars): string {
+  return buildBrain(v, {
+    category: "oferta",
+    layout:
+      "PAINEL LATERAL esquerdo vibrante ocupando 28-32% da largura com destino, selos e preço; lado direito com uma fotografia hero única ocupando 68-72%, com CTA em botão isolado no centro seguro",
+    lighting: "dramática de fim de tarde ou manhã, alto contraste comercial, cores saturadas",
+    sceneDescription: `${v.destinationDescription} em enquadramento hero cinematográfico, sem duplicar cenas`,
+    headline: `OFERTA ${v.destination}`,
+    specialization:
+      "• Referência estrutural: faixa lateral amarela/roxa + fotografia grande, sem copiar conteúdo fixo.\n• Leitura em 3 segundos: destino → preço → CTA.\n• Painel lateral deve ter respiro interno alto, sem texto vertical colidindo.\n• Nunca usar grid; apenas uma foto hero e um painel de conversão.",
+  });
+}
+
 // ============================================================
 // 🔵 EXPERIÊNCIA DE DESTINO — ED1..ED4
 // ============================================================
