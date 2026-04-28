@@ -271,16 +271,14 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         return;
       }
 
-      // ===== MODO IA PURA: gera 2 imagens em paralelo com 2 templates mestres diferentes =====
+      // ===== MODO IA PURA: gera 2 imagens em paralelo escolhendo prompts da categoria =====
       if (genMode === "ai") {
-        // Importa o registro de templates dinamicamente
-        const { MASTER_TEMPLATES } = await import("@/data/fabrica-master-templates");
-        const shuffled = [...MASTER_TEMPLATES].sort(() => Math.random() - 0.5);
-        const picks = shuffled.slice(0, 2);
+        const picks = pickPromptsForCategoria(categoria, 2, lastTemplateId);
+        const cat = getCategoria(categoria);
 
-        toast.info(`Gerando 2 anúncios com templates: ${picks.map((p) => p.name).join(" + ")}`);
+        toast.info(`[${cat.name}] Gerando 2 anúncios: ${picks.map((p) => p.code).join(" + ")}`);
 
-        const calls = picks.map((tpl) =>
+        const calls = picks.map((pick) =>
           supabase.functions.invoke("fabrica-generate-ad", {
             body: {
               strategy,
@@ -298,7 +296,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               promoName,
               highlights,
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
-              templateId: tpl.id,
+              templateId: pick.templateId,
               packageType: "Voo + Hotel",
               duration: "5 NOITES",
             },
@@ -339,11 +337,16 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         update({ generatedAdImage: images[0], primaryColor });
         if (providerSeen) setLastProvider(providerSeen);
 
+        // Persiste o último prompt usado para a próxima rotação não repetir
+        const lastUsed = picks[picks.length - 1].templateId;
+        setLastTemplateId(lastUsed);
+        localStorage.setItem("fabrica_last_template_id", lastUsed);
+
         const newCount = generationCount + images.length;
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
 
-        toast.success(`${images.length} anúncio(s) gerado(s)!`);
+        toast.success(`${images.length} anúncio(s) gerado(s) — categoria: ${cat.name}`);
         return;
       }
 
