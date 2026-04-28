@@ -351,7 +351,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = "#ffffff";
     drawTextBlock(ctx, titleText, left, topY + 150, panelW - left - 36, 70, 2, { baseFontSize: 66, minFontSize: 38 });
     drawPromoKicker(left, topY + 300);
-    const pillsH = drawHighlightsBlock(left, topY + 396, panelW - left - 36, format === "story" ? 4 : 3, false);
+    const pillsH = drawHighlightsBlock(left, topY + 396, panelW - left - 36, format === "story" ? 5 : 4, false);
     drawPriceCard(left, Math.min(panelBottom - 170, topY + 420 + pillsH), panelW - left - 36, 146, "left");
   } else if (strategy === "matriz") {
     ctx.fillStyle = primaryColor;
