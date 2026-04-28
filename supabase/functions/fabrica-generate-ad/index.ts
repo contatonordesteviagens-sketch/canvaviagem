@@ -438,6 +438,7 @@ serve(async (req) => {
         secondaryHex: (finalBody.secondaryColor || "#FCD34D").toUpperCase(),
         agencyName: finalBody.agencyName || "",
         highlights: (finalBody.highlights || []).map((h) => typeof h === "string" ? h : h.text),
+        creativeSeed: `${tpl.id}-v${variation}-${Date.now()}`,
       };
       prompt = tpl.builder(vars);
       usedTemplateId = tpl.id;
