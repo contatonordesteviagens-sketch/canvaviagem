@@ -422,6 +422,12 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
     generate(next);
   };
 
+  const generateNext = () => {
+    const next = variationCounter + 1;
+    setVariationCounter(next);
+    generate(next);
+  };
+
   const downloadPNG = () => {
     if (!generatedImage) return;
     try {
