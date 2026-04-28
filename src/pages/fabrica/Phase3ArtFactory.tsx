@@ -268,9 +268,10 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
       // ===== MODO IA PURA: gera 1 imagem escolhendo prompt da categoria =====
       if (genMode === "ai") {
-        const picks = pickPromptsForCategoria(categoria, 1, lastTemplateId);
+        const picks = pickPromptsForCategoria(categoria, 1, lastTemplateId, recentTemplateIds);
         const cat = getCategoria(categoria);
         const pick = picks[0];
+        const nextVariation = forceVariation ?? variationCounter;
 
         toast.info(`[${cat.name}] Gerando 1 banner: ${pick.code}`);
 
@@ -292,6 +293,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             highlights,
             ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
             templateId: pick.templateId,
+            variation: nextVariation,
             packageType: "Voo + Hotel",
             duration: "5 NOITES",
           },
@@ -319,8 +321,11 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
         // Persiste o último prompt usado para a próxima rotação não repetir
         const lastUsed = pick.templateId;
+        const nextRecent = [lastUsed, ...recentTemplateIds.filter((id) => id !== lastUsed)].slice(0, Math.max(1, cat.prompts.length - 1));
         setLastTemplateId(lastUsed);
+        setRecentTemplateIds(nextRecent);
         localStorage.setItem("fabrica_last_template_id", lastUsed);
+        localStorage.setItem("fabrica_recent_template_ids", JSON.stringify(nextRecent));
 
         const newCount = generationCount + images.length;
         setGenerationCount(newCount);
