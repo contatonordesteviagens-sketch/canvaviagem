@@ -181,12 +181,12 @@ export function promptClassicVertical(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "DIVISÃO HORIZONTAL EXATA — 60% superiores com fotografia full-bleed do destino; 40% inferiores como bloco sólido vibrante (azul-marinho ou roxo profundo). Cartão central FLUTUANTE de oferta cruzando a divisória, com sombra projetada",
+      "DIVISÃO HORIZONTAL EXATA — topo com fotografia full-bleed do destino e base com bloco sólido vibrante. O cartão de oferta fica INTEIRO dentro do bloco sólido inferior, sem cruzar divisórias e sem encostar em outros elementos",
     lighting: "natural diurna brilhante, hora dourada, cores vivas, sombras nítidas",
     sceneDescription: v.destinationDescription,
     headline: v.promoName,
     specialization:
-      "• Cartão central FLUTUANDO sobre a linha divisória, com sombra projetada para profundidade.\n• DIVISÃO VISUAL clara entre foto e bloco sólido — zero transição gradual.\n• PREÇO extremamente dominante dentro do cartão (mínimo 30% do cartão).\n• Cores vibrantes obrigatórias: roxo + amarelo OU azul-elétrico + dourado.",
+      "• Cartão central íntegro e separado, com sombra projetada para profundidade, SEM sobrepor foto, badge ou lista.\n• DIVISÃO VISUAL clara entre foto e bloco sólido — zero transição gradual.\n• PREÇO extremamente dominante dentro do cartão (mínimo 30% do cartão).\n• Cores vibrantes obrigatórias: roxo + amarelo OU azul-elétrico + dourado.",
   });
 }
 
@@ -195,12 +195,12 @@ export function promptCancunStyle(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "Fundo 100% FOTOGRÁFICO ocupando toda a tela (sem bloco sólido), com CARTÃO CENTRAL amarelo vibrante sobreposto, levemente inclinado ou centralizado, com selo de desconto circular sobreposto na borda",
+      "Fundo 100% FOTOGRÁFICO ocupando toda a tela (sem bloco sólido), com CARTÃO CENTRAL amarelo vibrante sobreposto e centralizado; selo de desconto separado acima do cartão, nunca sobre a borda do cartão",
     lighting: "tropical brilhante, céu turquesa, água cristalina, alta saturação cinematográfica",
     sceneDescription: v.destinationDescription,
     headline: v.promoName,
     specialization:
-      "• Cartão AMARELO vibrante OU dourado, cantos arredondados, sombra suave para flutuar sobre a foto.\n• PREÇO no centro absoluto do cartão, fonte Ultra-Bold, ocupando 30%+ do cartão.\n• Selo CIRCULAR de desconto (% OFF, OFERTA EXCLUSIVA) SOBREPOSTO na quina superior do cartão, rotacionado ~15°.\n• Foto NUNCA é cortada — flui por trás do cartão como background editorial.",
+      "• Cartão AMARELO vibrante OU dourado, cantos arredondados, sombra suave para flutuar sobre a foto.\n• PREÇO no centro absoluto do cartão, fonte Ultra-Bold, ocupando 30%+ do cartão.\n• Selo CIRCULAR de desconto (% OFF, OFERTA EXCLUSIVA) deve ficar separado do cartão com margem visível; NÃO sobrepor texto nem bordas.\n• Foto NUNCA é cortada de forma agressiva — enquadramento limpo por trás do cartão como background de suporte.",
   });
 }
 
