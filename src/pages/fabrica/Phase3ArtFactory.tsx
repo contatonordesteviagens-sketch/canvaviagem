@@ -546,6 +546,9 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             );
           })}
         </div>
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-[11px] text-white/55 leading-snug">
+          <strong className="text-white/80">Regra fixa:</strong> sempre será gerado apenas 1 banner por vez. Oferta destaca preço e conversão; Experiência destaca foto, emoção e estilo editorial.
+        </div>
       </div>
 
       {/* 1b · Galeria Pexels (modo foto) */}
@@ -947,7 +950,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       {generatedImages.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={sectionCls}>
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
-            {generatedImages.length > 1 ? `Seus ${generatedImages.length} anúncios` : "Seu anúncio"}
+            "Seu anúncio"
           </h3>
           <div className={generatedImages.length > 1 ? "grid grid-cols-2 gap-3 mb-4" : "mb-4"}>
             {generatedImages.map((img, idx) => (
