@@ -1,42 +1,81 @@
 // ============================================================
 // PROMPTS MESTRES — Fábrica de Anúncios
 // ------------------------------------------------------------
-// Todos os prompts seguem o "CÉREBRO COMUM" abaixo:
-// banner vertical 9:16, 8K, hiper-realista, cinematográfico,
-// com layout estruturado, hierarquia clara e UI minimalista.
+// Estrutura em 3 camadas:
+//   1) CÉREBRO COMUM   (buildBrain)   — esqueleto fixo de TODOS os anúncios
+//   2) REGRAS DA CATEGORIA            — sobrepostas ao cérebro
+//        🔴 OFERTA PACOTE  → conversão direta, preço dominante
+//        🔵 EXPERIÊNCIA    → desejo, emoção, imagem dominante
+//   3) ESPECIALIZAÇÃO DO PROMPT       — layout único de cada OP/ED
 //
-// Categorias:
-//   🔴 OFERTA PACOTE  → OP1..OP4 (foco: preço dominante)
-//   🔵 EXPERIÊNCIA    → ED1..ED3 (foco: emoção / desejo)
+// Categorias finais:
+//   🔴 OP1..OP4
+//   🔵 ED1..ED4
 // ============================================================
 
 export interface MasterPromptVars {
-  destination: string;            // Ex: "RIO DE JANEIRO"
-  destinationDescription: string; // Cena detalhada do destino
-  installments: string;           // Ex: "10x"
-  installmentValue: string;       // Ex: "149"
-  totalValue: string;             // Ex: "1490"
-  packageType: string;            // Ex: "Voo + Hotel"
-  duration: string;               // Ex: "5 NOITES"
-  promoName: string;              // Ex: "OFERTA IMPERDÍVEL"
-  city: string;                   // Cidade de origem
-  primaryHex: string;             // Cor primária (hex)
-  secondaryHex: string;           // Cor secundária (hex)
+  destination: string;
+  destinationDescription: string;
+  installments: string;
+  installmentValue: string;
+  totalValue: string;
+  packageType: string;
+  duration: string;
+  promoName: string;
+  city: string;
+  primaryHex: string;
+  secondaryHex: string;
   agencyName: string;
-  highlights: string[];           // Benefícios curtos
+  highlights: string[];
 }
 
 // ============================================================
-// 🧠 CÉREBRO COMUM — esqueleto que TODOS os prompts usam
+// 🔴 REGRAS ESPECÍFICAS — OFERTA DE PACOTE
+// ============================================================
+const OFERTA_RULES = `
+══════════════════════════════════════
+🔴 REGRAS ESPECÍFICAS DA CATEGORIA — OFERTA DE PACOTE
+- FOCO TOTAL EM CONVERSÃO DIRETA.
+- O PREÇO deve ser o MAIOR elemento visual da composição,
+  ocupando NO MÍNIMO 25% da área do bloco central.
+- Use cores vibrantes e contrastantes para destacar preço e oferta:
+  roxo, azul-elétrico, amarelo, dourado.
+- Elementos de URGÊNCIA SEMPRE presentes (escolha 1 ou 2):
+  "OFERTA EXCLUSIVA" · "APENAS HOJE" · "ÚLTIMAS VAGAS".
+- Selos / botões devem reforçar pelo menos 2 destes:
+  "SEM JUROS" · "PIX" · "VOO + HOTEL".
+- Tom de copy: direto, comercial, cria gatilho de decisão imediata.
+══════════════════════════════════════
+`;
+
+// ============================================================
+// 🔵 REGRAS ESPECÍFICAS — EXPERIÊNCIA DE DESTINO
+// ============================================================
+const EXPERIENCIA_RULES = `
+══════════════════════════════════════
+🔵 REGRAS ESPECÍFICAS DA CATEGORIA — EXPERIÊNCIA DE DESTINO
+- FOCO EM DESEJO E EXPERIÊNCIA.
+- A IMAGEM deve ocupar mais espaço visual do que o texto.
+- O PREÇO NÃO é o elemento principal — apresente-o discreto, no rodapé/canto.
+- Linguagem emocional obrigatória: "Descubra", "Explore", "Viva", "Conheça".
+- Objetivo: gerar interesse e desejo, NÃO pressão de compra imediata.
+- Estética editorial, atmosférica, aspiracional.
+══════════════════════════════════════
+`;
+
+// ============================================================
+// 🧠 CÉREBRO COMUM
 // ============================================================
 function buildBrain(v: MasterPromptVars, opts: {
+  category: "oferta" | "experiencia";
   layout: string;
   lighting: string;
   sceneDescription: string;
   headline: string;
-  block: "oferta" | "experiencia";
-  experienceDescription?: string; // só p/ ED
+  experienceDescription?: string;
   legalFooter?: string;
+  /** Texto livre extra com a "especialização" daquele OP/ED. */
+  specialization?: string;
 }): string {
   const benefits = (v.highlights?.length ? v.highlights : ["Hospedagem", "Aéreo", "Café da manhã", "Transfer"])
     .slice(0, 5)
@@ -46,15 +85,19 @@ function buildBrain(v: MasterPromptVars, opts: {
   const legal = opts.legalFooter
     ?? `Saindo de ${v.city}. Taxas e impostos não inclusos. Consulte disponibilidade.`;
 
-  const valueBlock = opts.block === "oferta"
-    ? `[BLOCO DE PREÇO — DESTAQUE EXTREMO]
+  const valueBlock = opts.category === "oferta"
+    ? `[BLOCO DE PREÇO — DESTAQUE EXTREMO · MÍNIMO 25% DA ÁREA CENTRAL]
 A partir de
-${v.installments} de R$ ${v.installmentValue}
+${v.installments} de R$ ${v.installmentValue}     ← FONTE GIGANTE, ULTRA-BOLD
 Preço total: R$ ${v.totalValue}
-Pacote: ${v.packageType} · ${v.duration}`
-    : `[BLOCO DE VALOR — EXPERIÊNCIA]
-${opts.experienceDescription || `Roteiro completo de ${v.duration} explorando ${v.destination} com curadoria local e conforto premium.`}
-Pacote: ${v.packageType} · ${v.duration}`;
+Selos obrigatórios: SEM JUROS · PIX · ${v.packageType.toUpperCase()}
+Urgência: ${v.promoName.toUpperCase()}`
+    : `[BLOCO DE EXPERIÊNCIA — DISCRETO]
+${opts.experienceDescription || `Roteiro de ${v.duration} explorando ${v.destination} com curadoria local e conforto.`}
+Pacote: ${v.packageType} · ${v.duration}
+Preço (pequeno, no rodapé): a partir de R$ ${v.installmentValue} em ${v.installments}.`;
+
+  const categoryRules = opts.category === "oferta" ? OFERTA_RULES : EXPERIENCIA_RULES;
 
   return `
 Um banner publicitário vertical de turismo (formato 9:16, resolução 8K), hiper-realista, com qualidade cinematográfica, iluminação natural ou dramática altamente refinada e composição profissional de nível publicitário.
@@ -82,35 +125,38 @@ ${benefits}
 Rodapé legal:
 ${legal}
 
+${opts.specialization ? `[ESPECIALIZAÇÃO DESTE PROMPT]\n${opts.specialization}\n` : ""}
+${categoryRules}
+
 ══════════════════════════════════════
 DIRETRIZES ESTRITAS DE RENDERIZAÇÃO (UI/UX + TIPOGRAFIA):
 
 1) SAFE ZONES (Instagram Stories):
-- Top 15%: PROIBIDO colocar texto, logo ou elemento de conversão (área do perfil do Instagram).
-- Bottom 20%: PROIBIDO colocar preço, botão ou texto legal (área da caixa "Enviar mensagem").
-- Laterais: padding mínimo de 5%; nenhum texto encosta nas bordas.
+- Top 15%: PROIBIDO colocar texto, logo ou elemento de conversão.
+- Bottom 20%: PROIBIDO colocar preço, botão ou texto legal.
+- Laterais: padding mínimo de 5%.
 
 2) HIERARQUIA E POSICIONAMENTO:
 - Centro de Conversão (Middle 65%): preço/headline/destino e botões DEVEM ficar contidos aqui.
-- Zero sobreposição entre blocos. Negative space matemático e claro entre todos os elementos.
-- Alinhamento perfeito: layouts centralizados com eixo Y simétrico; colunas com margens internas iguais.
+- Zero sobreposição entre blocos. Negative space matemático e claro.
+- Alinhamento perfeito.
 
-3) TIPOGRAFIA (TEXT ENGINE):
-- Estética premium minimalista, sans-serif moderna estilo Apple/alta tecnologia.
-- Contraste absoluto: branco sobre fundos escuros/vibrantes, escuro sobre claros. Texto sobre foto recebe drop-shadow suave.
-- Hierarquia: preço primário = maior elemento (Ultra-Bold). Destino = segundo maior (Bold). Apoio (Por pessoa, Sem Juros) = pequeno (Regular/Medium). Rodapé legal = micro, logo acima da safe-zone inferior.
+3) TIPOGRAFIA:
+- Sans-serif moderna premium estilo Apple.
+- Contraste absoluto (branco em fundo escuro/vibrante, escuro em fundo claro). Drop-shadow suave em texto sobre foto.
+- Hierarquia: preço primário = MAIOR (Ultra-Bold). Destino = segundo maior (Bold). Apoio = pequeno. Rodapé legal = micro.
 
 4) QUALIDADE E ANTI-DISTORÇÃO:
-- Texto perfeito em português: sem caracteres alienígenas, sem fusão de letras, sem erros de ortografia.
-- Realismo absoluto: proibido distorção anatômica (cabeça desproporcional, membros extras), duplicação ilógica de objetos (dois relógios no mesmo pulso), proporções não naturais.
-- Renderização profissional em qualquer elemento humano ou objeto.
+- Texto perfeito em português, sem caracteres alienígenas, sem fusão, sem erros.
+- Realismo absoluto: proibido distorção anatômica, membros extras, duplicação ilógica de objetos.
+- Renderização profissional.
 
 🚫 REGRAS ABSOLUTAS:
 - Estilo geral minimalista, alto contraste, sem poluição visual, estética premium.
 - Nenhum logotipo de empresa externa, nenhuma marca d'água visível.
 - Textos exatamente como escritos acima, sem traduzir, sem inventar.
 - Cores respeitadas com fidelidade.
-- Imagem pronta para postar (sem réguas, guias, anotações ou bordas de safe-zone visíveis).
+- Imagem pronta para postar (sem réguas, guias, anotações).
 ══════════════════════════════════════
 `;
 }
@@ -119,94 +165,123 @@ DIRETRIZES ESTRITAS DE RENDERIZAÇÃO (UI/UX + TIPOGRAFIA):
 // 🔴 OFERTA PACOTE — OP1..OP4
 // ============================================================
 
-// OP1 — Clássico vertical (foto top + caixa de oferta dominante)
+// 🔥 OP1 — CARTÃO DIVIDIDO (base Cancún)
 export function promptClassicVertical(v: MasterPromptVars): string {
   return buildBrain(v, {
+    category: "oferta",
     layout:
-      "60% superiores com fotografia fotorealista do destino; 40% inferiores com painel sólido azul-marinho escuro; caixa de oferta arredondada centralizada cruzando a divisória",
-    lighting: "natural diurna brilhante, hora dourada com cores vivas e sombras nítidas",
+      "DIVISÃO HORIZONTAL EXATA — 60% superiores com fotografia full-bleed do destino; 40% inferiores como bloco sólido vibrante (azul-marinho ou roxo profundo). Cartão central FLUTUANTE de oferta cruzando a divisória, com sombra projetada",
+    lighting: "natural diurna brilhante, hora dourada, cores vivas, sombras nítidas",
     sceneDescription: v.destinationDescription,
     headline: v.promoName,
-    block: "oferta",
+    specialization:
+      "• Cartão central FLUTUANDO sobre a linha divisória, com sombra projetada para profundidade.\n• DIVISÃO VISUAL clara entre foto e bloco sólido — zero transição gradual.\n• PREÇO extremamente dominante dentro do cartão (mínimo 30% do cartão).\n• Cores vibrantes obrigatórias: roxo + amarelo OU azul-elétrico + dourado.",
   });
 }
 
-// OP2 — Cancún style (azuis e roxos vibrantes)
+// 🔥 OP2 — CARTÃO CENTRAL FLUTUANTE
 export function promptCancunStyle(v: MasterPromptVars): string {
   return buildBrain(v, {
+    category: "oferta",
     layout:
-      "60% superiores com foto vibrante de praia/cidade; 40% inferiores azul-marinho; painel interno roxo vibrante dividido em 2 colunas (preço à esquerda, pílulas de pacote à direita)",
-    lighting: "tropical brilhante, céu azul-turquesa, água cristalina, alto saturação cinematográfica",
+      "Fundo 100% FOTOGRÁFICO ocupando toda a tela (sem bloco sólido), com CARTÃO CENTRAL amarelo vibrante sobreposto, levemente inclinado ou centralizado, com selo de desconto circular sobreposto na borda",
+    lighting: "tropical brilhante, céu turquesa, água cristalina, alta saturação cinematográfica",
     sceneDescription: v.destinationDescription,
     headline: v.promoName,
-    block: "oferta",
+    specialization:
+      "• Cartão AMARELO vibrante OU dourado, cantos arredondados, sombra suave para flutuar sobre a foto.\n• PREÇO no centro absoluto do cartão, fonte Ultra-Bold, ocupando 30%+ do cartão.\n• Selo CIRCULAR de desconto (% OFF, OFERTA EXCLUSIVA) SOBREPOSTO na quina superior do cartão, rotacionado ~15°.\n• Foto NUNCA é cortada — flui por trás do cartão como background editorial.",
   });
 }
 
-// OP3 — Gramado style (cartão amarelo + selo PIX serrilhado)
+// 🔥 OP3 — CARTÃO AÉREO (TOP DOWN)
 export function promptGramadoStyle(v: MasterPromptVars): string {
   return buildBrain(v, {
+    category: "oferta",
     layout:
-      "foto full-bleed do destino com cartão promocional amarelo brilhante centralizado no topo, selo azul serrilhado tipo bilhete na borda inferior do cartão com '5% OFF NO PIX'",
-    lighting: "diurna ensolarada, céu azul claro com nuvens fofas, cores vivas e sombras suaves",
-    sceneDescription: v.destinationDescription,
+      "FOTO AÉREA top-down ou drone-shot do destino ocupando toda a tela, com CARTÃO arredondado sobreposto na parte SUPERIOR (não centralizado), permitindo respiro inferior para a vista panorâmica respirar",
+    lighting: "aérea diurna, sol alto, água translúcida com gradientes turquesa, sombras nítidas",
+    sceneDescription: `vista aérea (drone) de ${v.destinationDescription}`,
     headline: `PACOTE ${v.destination}`,
-    block: "oferta",
+    specialization:
+      "• Câmera obrigatoriamente em ângulo TOP-DOWN ou drone alto, mostrando ESCALA e amplitude.\n• Cartão posicionado no TERÇO SUPERIOR — não no centro — para deixar a paisagem respirar.\n• Preço FORTE mas INTEGRADO ao cartão, com selo serrilhado tipo bilhete azul anexado na borda inferior do cartão (PIX 5% OFF).\n• Sensação de descoberta + escala da viagem.",
   });
 }
 
-// OP4 — Maceió style (vista aérea + cartão amarelo)
+// 🔥 OP4 — BARRA LATERAL (PERFORMANCE)
 export function promptMaceioStyle(v: MasterPromptVars): string {
   return buildBrain(v, {
+    category: "oferta",
     layout:
-      "metade superior com vista aérea cinematográfica do destino, grande cartão promocional amarelo arredondado sobreposto e centralizado, selo azul serrilhado com PIX na base do cartão",
-    lighting: "aérea diurna, sol alto, água translúcida com gradientes turquesa, sombras nítidas",
-    sceneDescription: `vista aérea de ${v.destinationDescription}`,
-    headline: `PACOTE ${v.destination}`,
-    block: "oferta",
+      "SPLIT VERTICAL — 30% à ESQUERDA com barra sólida vibrante (roxo, azul-elétrico ou amarelo) contendo TODO o texto e CTA; 70% à DIREITA com fotografia limpa do destino",
+    lighting: "comercial brilhante, alto contraste, cores saturadas",
+    sceneDescription: v.destinationDescription,
+    headline: v.promoName,
+    specialization:
+      "• Barra lateral 30% com COR SÓLIDA vibrante — contém destino, preço gigante e CTA.\n• Hierarquia de leitura ULTRA-RÁPIDA (3 segundos): destino → preço → CTA.\n• CTA FORTE em botão retangular contrastante: 'RESERVAR AGORA' ou 'GARANTIR VAGA'.\n• Estilo de anúncio direto de performance (Google Ads / Meta Ads), sem ornamentos.",
   });
 }
 
 // ============================================================
-// 🔵 EXPERIÊNCIA DE DESTINO — ED1..ED3
+// 🔵 EXPERIÊNCIA DE DESTINO — ED1..ED4
 // ============================================================
 
-// ED1 — Ponto turístico icônico (split amarelo + foto do landmark)
+// 🌍 ED1 — STORYTELLING (Europa)
 export function promptIconicLandmark(v: MasterPromptVars): string {
   return buildBrain(v, {
+    category: "experiencia",
     layout:
-      "split vertical: 30% à esquerda com painel amarelo sólido contendo nome do destino na vertical e ícone de localização; 70% à direita com foto cinematográfica do marco turístico icônico",
-    lighting: "cinematográfica dramática, hora dourada, contraste alto, atmosfera aspiracional",
-    sceneDescription: `o marco turístico icônico de ${v.destination}, ${v.destinationDescription}`,
-    headline: "Sua próxima viagem começa aqui",
-    block: "experiencia",
-    experienceDescription: `Viva o icônico ${v.destination} em ${v.duration} de imersão cultural, com pontos turísticos imperdíveis e momentos que ficam para a vida.`,
+      "BARRA LATERAL FINA (20-25%) à esquerda com fundo neutro (creme, off-white ou tom terra) contendo título narrativo vertical e ícone discreto; IMAGEM PRINCIPAL ocupando 75-80% à direita, em estilo editorial",
+    lighting: "cinematográfica dramática, hora dourada ou blue hour, atmosfera aspiracional de revista",
+    sceneDescription: `o marco turístico icônico de ${v.destination}, ${v.destinationDescription}, com pessoas pequenas no quadro para dar escala`,
+    headline: `Descubra ${v.destination}`,
+    experienceDescription: `Uma jornada de ${v.duration} pelas paisagens icônicas e pelas histórias que fazem de ${v.destination} um destino inesquecível.`,
+    specialization:
+      "• NARRATIVA VISUAL: a foto conta uma história — não é apenas um registro do ponto turístico.\n• Título FORTE em fonte serifada ou sans-serif elegante, posicionado verticalmente na barra lateral.\n• Ambientação RICA: clima, hora do dia e atmosfera devem ser palpáveis.\n• Linguagem editorial estilo revista de viagem.",
   });
 }
 
-// ED2 — Split lateral amarelo (faixa amarela + foto cinematográfica)
+// 🌍 ED2 — CHECKLIST + GRID (combo de destinos)
 export function promptSplitYellowSide(v: MasterPromptVars): string {
   return buildBrain(v, {
+    category: "experiencia",
     layout:
-      "asimétrico: faixa vertical amarela ocupando 30% à esquerda com nome do destino em caixa alta vertical; 70% à direita com fotografia cinematográfica do destino e badge de oferta sobreposta",
-    lighting: "cinematográfica suave, golden hour ou blue hour, profundidade de campo, atmosfera de cinema",
-    sceneDescription: v.destinationDescription,
-    headline: "Sua próxima viagem começa aqui",
-    block: "experiencia",
-    experienceDescription: `Roteiro de ${v.duration} em ${v.destination} com curadoria local, conforto premium e momentos inesquecíveis.`,
+      "SPLIT VERTICAL — 50% à esquerda com fundo claro/neutro contendo título emocional + checklist de experiências/roteiro; 50% à direita com GRID de 3-4 fotografias diferentes do destino empilhadas (paisagem, gastronomia, cultura, atividade)",
+    lighting: "cada foto do grid com sua própria atmosfera — natural variada, autêntica",
+    sceneDescription: `múltiplos cenários de ${v.destinationDescription} formando um mosaico de experiências (paisagem icônica, gastronomia local, cultura, atividade típica)`,
+    headline: `Explore ${v.destination}`,
+    experienceDescription: `Conheça as múltiplas faces de ${v.destination}: paisagens, sabores, cultura e momentos únicos em ${v.duration}.`,
+    specialization:
+      "• Lado direito = GRID de 3 ou 4 fotos pequenas mostrando experiências DIFERENTES (não a mesma cena).\n• Lado esquerdo = CHECKLIST visual ('✓ City tour', '✓ Gastronomia local', '✓ Pôr do sol icônico'...).\n• Sensação de VARIEDADE e roteiro completo.\n• Comunica 'tudo o que está incluso' sem soar comercial.",
   });
 }
 
-// ED3 — Card central elegante (foto full-bleed + card central)
+// 🌍 ED3 — CLEAN INFORMATIVO
 export function promptElegantCenterCard(v: MasterPromptVars): string {
   return buildBrain(v, {
+    category: "experiencia",
     layout:
-      "fotografia full-bleed do destino ocupando todo o fundo, leve gradiente escuro nas bordas; card retangular central na cor primária ocupando 70% da largura, contendo título, linha separadora e botão CTA",
-    lighting: "premium aspiracional, luz natural rica, paleta saturada, profundidade cinematográfica",
+      "DIVISÃO HORIZONTAL — TOPO 40% com fundo neutro (off-white, creme ou tom pastel) contendo título grande + dados informativos limpos; BASE 60% com fotografia única e impactante do destino",
+    lighting: "natural suave, paleta clean, atmosfera convidativa sem dramaticidade",
     sceneDescription: v.destinationDescription,
     headline: `Conheça ${v.destination}`,
-    block: "experiencia",
-    experienceDescription: `Uma experiência premium em ${v.destination}: ${v.duration} curados com hospedagem selecionada, gastronomia local e atrações exclusivas.`,
+    experienceDescription: `${v.duration} para se reconectar com ${v.destination}. Hospedagem selecionada, gastronomia local e tempo para o que importa.`,
+    specialization:
+      "• LEITURA SIMPLES: máxima clareza, mínimo de elementos, muito espaço em branco.\n• INFORMATIVO: data, duração, tipo de pacote em linha discreta no topo.\n• Estética ELEGANTE de site de hotelaria boutique.\n• Sem urgência, sem selos, sem ornamentos.",
+  });
+}
+
+// 🌍 ED4 — EDITORIAL VISUAL
+export function promptEditorialVisual(v: MasterPromptVars): string {
+  return buildBrain(v, {
+    category: "experiencia",
+    layout:
+      "DUAS COLUNAS verticais — coluna ESQUERDA (40%) com bloco editorial (título grande, parágrafo curto narrativo, número de página estilo revista); coluna DIREITA (60%) com 2 fotografias verticais empilhadas com fino espaço entre elas",
+    lighting: "editorial sofisticada, paleta filmica, tons quentes ou frios coerentes entre as duas fotos",
+    sceneDescription: `duas cenas complementares de ${v.destinationDescription} (uma ampla, uma detalhe íntimo)`,
+    headline: `Viva ${v.destination}`,
+    experienceDescription: `Um capítulo de ${v.duration} em ${v.destination} — escrito por você, curado por nós.`,
+    specialization:
+      "• Layout ESTILO REVISTA editorial (Cereal, Kinfolk, Condé Nast Traveller).\n• STORYTELLING LEVE: parágrafo curto evocativo, não vendedor.\n• Fonte de título preferencialmente SERIFADA elegante (estilo editorial).\n• Detalhes editoriais sutis: número de página, linha fina divisória, kerning amplo.\n• Sofisticação MÁXIMA, comercialidade ZERO.",
   });
 }
 
@@ -215,14 +290,15 @@ export function promptElegantCenterCard(v: MasterPromptVars): string {
 // ============================================================
 export const MASTER_TEMPLATES = [
   // 🔴 OFERTA PACOTE
-  { id: "classic_vertical",   name: "OP1 · Clássico Vertical",        builder: promptClassicVertical },
-  { id: "cancun_style",       name: "OP2 · Cancún (azul/roxo)",       builder: promptCancunStyle },
-  { id: "gramado_style",      name: "OP3 · Gramado (cartão amarelo)", builder: promptGramadoStyle },
-  { id: "maceio_style",       name: "OP4 · Maceió (vista aérea)",     builder: promptMaceioStyle },
+  { id: "classic_vertical",   name: "OP1 · Cartão Dividido",          builder: promptClassicVertical },
+  { id: "cancun_style",       name: "OP2 · Cartão Central Flutuante", builder: promptCancunStyle },
+  { id: "gramado_style",      name: "OP3 · Cartão Aéreo (Top Down)",  builder: promptGramadoStyle },
+  { id: "maceio_style",       name: "OP4 · Barra Lateral Performance",builder: promptMaceioStyle },
   // 🔵 EXPERIÊNCIA DESTINO
-  { id: "iconic_landmark",    name: "ED1 · Ponto turístico icônico",  builder: promptIconicLandmark },
-  { id: "split_yellow_side",  name: "ED2 · Split lateral amarelo",    builder: promptSplitYellowSide },
-  { id: "elegant_center",     name: "ED3 · Card central elegante",    builder: promptElegantCenterCard },
+  { id: "iconic_landmark",    name: "ED1 · Storytelling",             builder: promptIconicLandmark },
+  { id: "split_yellow_side",  name: "ED2 · Checklist + Grid",         builder: promptSplitYellowSide },
+  { id: "elegant_center",     name: "ED3 · Clean Informativo",        builder: promptElegantCenterCard },
+  { id: "editorial_visual",   name: "ED4 · Editorial Visual",         builder: promptEditorialVisual },
 ] as const;
 
 export type MasterTemplateId = typeof MASTER_TEMPLATES[number]["id"];
