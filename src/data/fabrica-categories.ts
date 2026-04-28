@@ -6,7 +6,6 @@
 // que são rotacionados aleatoriamente, sem repetir o último.
 // ============================================================
 
-import type { MasterTemplateId } from "@/data/fabrica-master-templates";
 import type { StrategyId } from "@/data/fabrica-prompts";
 
 export type CategoriaId = "oferta_pacote" | "experiencia_destino";
