@@ -4,6 +4,7 @@
 // safe zones para Reels/Stories/Feed, cores e ícones respeitados.
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { getTemplateById, MASTER_TEMPLATES, type MasterPromptVars } from "./master-prompts.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,6 +36,9 @@ interface AdParams {
   highlights?: (string | Highlight)[];
   ctaText?: string;
   variation?: number; // 0..3 — varia composição mesmo com mesmos parâmetros
+  templateId?: string; // se definido, usa um template mestre em vez do builder de estratégia
+  packageType?: string; // ex: "Voo + Hotel"
+  duration?: string;    // ex: "5 NOITES"
 }
 
 // ===== Tom visual por tipo de agência =====
@@ -386,17 +390,53 @@ serve(async (req) => {
 
     const body = (await req.json()) as AdParams;
 
-    if (!body.strategy || !["ancora", "vitrine", "matriz", "gancho"].includes(body.strategy)) {
-      return new Response(JSON.stringify({ error: "Invalid strategy" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // templateId tem prioridade sobre strategy. Sem templateId, exige strategy válida.
+    if (!body.templateId) {
+      if (!body.strategy || !["ancora", "vitrine", "matriz", "gancho"].includes(body.strategy)) {
+        return new Response(JSON.stringify({ error: "Invalid strategy" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Se variation não vier, gera aleatório para garantir variedade entre cliques
     const variation = typeof body.variation === "number" ? body.variation : Math.floor(Math.random() * 4);
     const finalBody = { ...body, variation };
-    const prompt = buildPrompt(finalBody);
+
+    // === Decide qual prompt usar ===
+    let prompt: string;
+    let usedTemplateId: string | null = null;
+
+    if (body.templateId) {
+      const tpl = getTemplateById(body.templateId);
+      if (!tpl) {
+        return new Response(JSON.stringify({ error: `Template ${body.templateId} not found` }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const totalNum = Math.round(parseFloat((finalBody.price || "149,90").replace(/\./g, "").replace(",", ".")) * parseInt((finalBody.installments || "10x").replace(/\D/g, "") || "10"));
+      const vars: MasterPromptVars = {
+        destination: (finalBody.destination || "DESTINO").toUpperCase(),
+        destinationDescription: nicheToScene(finalBody.niche, finalBody.destination),
+        installments: (finalBody.installments || "10").replace(/\D/g, "") || "10",
+        installmentValue: (finalBody.price || "149").replace(/[^\d]/g, "").slice(0, 4) || "149",
+        totalValue: String(totalNum || 1490),
+        packageType: finalBody.packageType || "Voo + Hotel",
+        duration: finalBody.duration || "5 NOITES",
+        promoName: (finalBody.promoName || "OFERTA EXCLUSIVA").toUpperCase(),
+        city: finalBody.city || "sua cidade",
+        primaryHex: (finalBody.primaryColor || "#0c2340").toUpperCase(),
+        secondaryHex: (finalBody.secondaryColor || "#FCD34D").toUpperCase(),
+        agencyName: finalBody.agencyName || "",
+        highlights: (finalBody.highlights || []).map((h) => typeof h === "string" ? h : h.text),
+      };
+      prompt = tpl.builder(vars);
+      usedTemplateId = tpl.id;
+    } else {
+      prompt = buildPrompt(finalBody);
+    }
 
     // Estratégia de provider: tenta USER_GEMINI primeiro, faz fallback para Lovable AI
     const useUserKey = !!USER_GEMINI_API_KEY;
@@ -543,7 +583,7 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ image: imageUrl, prompt, variation, provider }), {
+    return new Response(JSON.stringify({ image: imageUrl, prompt, variation, provider, templateId: usedTemplateId }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
