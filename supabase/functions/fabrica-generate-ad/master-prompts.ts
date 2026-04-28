@@ -36,8 +36,10 @@ const OFERTA_RULES = `
 ══════════════════════════════════════
 🔴 REGRAS ESPECÍFICAS DA CATEGORIA — OFERTA DE PACOTE
 - FOCO TOTAL EM CONVERSÃO DIRETA.
+- Esta categoria deve parecer um anúncio agressivo de performance, NÃO editorial.
 - O PREÇO deve ser o MAIOR elemento visual da composição,
   ocupando NO MÍNIMO 25% da área do bloco central.
+- A imagem/fotografia é apenas suporte visual; ela NÃO pode ser protagonista.
 - Use cores vibrantes e contrastantes para destacar preço e oferta:
   roxo, azul-elétrico, amarelo, dourado.
 - Elementos de URGÊNCIA SEMPRE presentes (escolha 1 ou 2):
@@ -55,8 +57,9 @@ const EXPERIENCIA_RULES = `
 ══════════════════════════════════════
 🔵 REGRAS ESPECÍFICAS DA CATEGORIA — EXPERIÊNCIA DE DESTINO
 - FOCO EM DESEJO E EXPERIÊNCIA.
-- A IMAGEM deve ocupar mais espaço visual do que o texto.
-- O PREÇO NÃO é o elemento principal — apresente-o discreto, no rodapé/canto.
+- Esta categoria deve parecer editorial/inspiracional, NÃO anúncio agressivo de preço.
+- A IMAGEM deve ser a protagonista absoluta e ocupar a maior área visual.
+- O PREÇO NÃO é o elemento principal — apresente-o pequeno, secundário e discreto dentro da área segura central, nunca no rodapé.
 - Linguagem emocional obrigatória: "Descubra", "Explore", "Viva", "Conheça".
 - Objetivo: gerar interesse e desejo, NÃO pressão de compra imediata.
 - Estética editorial, atmosférica, aspiracional.
@@ -95,7 +98,7 @@ Urgência: ${v.promoName.toUpperCase()}`
     : `[BLOCO DE EXPERIÊNCIA — DISCRETO]
 ${opts.experienceDescription || `Roteiro de ${v.duration} explorando ${v.destination} com curadoria local e conforto.`}
 Pacote: ${v.packageType} · ${v.duration}
-Preço (pequeno, no rodapé): a partir de R$ ${v.installmentValue} em ${v.installments}.`;
+Preço pequeno e secundário: a partir de R$ ${v.installmentValue} em ${v.installments}, dentro da área segura central.`;
 
   const categoryRules = opts.category === "oferta" ? OFERTA_RULES : EXPERIENCIA_RULES;
 
@@ -154,6 +157,12 @@ A imagem deve ser gerada no formato Vertical 9:16 (resolução 8K). O motor de g
 - REALISMO ABSOLUTO em qualquer elemento humano, objeto ou cenário.
 
 🚫 REGRAS ABSOLUTAS ADICIONAIS:
+- GERAR UM ÚNICO BANNER PUBLICITÁRIO DE TURISMO. A saída deve conter APENAS 1 imagem única.
+- É PROIBIDO gerar imagens duplicadas, repetidas, variações lado a lado, mockups em tela dupla ou duas peças dentro do mesmo arquivo.
+- Escolha UM layout por geração e NÃO misture cartão central, divisão topo/base, barra lateral e grid no mesmo banner.
+- É PROIBIDO duplicar fotografia, cartões, blocos de preço, botões, selos ou listas dentro da mesma imagem.
+- É PROIBIDO sobrepor textos, preços, ícones ou blocos. Cada elemento deve ter respiro claro; nenhum texto pode encostar em outro bloco.
+- Se a categoria for OFERTA PACOTE, use visual de venda direta com preço protagonista; se for EXPERIÊNCIA DE DESTINO, use visual editorial com fotografia protagonista. As duas categorias NÃO podem parecer o mesmo estilo visual.
 - Estilo geral minimalista, alto contraste, sem poluição visual, estética premium.
 - Nenhum logotipo de empresa externa, nenhuma marca d'água visível.
 - Textos renderizados EXATAMENTE como escritos acima, sem traduzir, sem inventar palavras.
@@ -172,12 +181,12 @@ export function promptClassicVertical(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "DIVISÃO HORIZONTAL EXATA — 60% superiores com fotografia full-bleed do destino; 40% inferiores como bloco sólido vibrante (azul-marinho ou roxo profundo). Cartão central FLUTUANTE de oferta cruzando a divisória, com sombra projetada",
+      "DIVISÃO HORIZONTAL EXATA — topo com fotografia full-bleed do destino e base com bloco sólido vibrante. O cartão de oferta fica INTEIRO dentro do bloco sólido inferior, sem cruzar divisórias e sem encostar em outros elementos",
     lighting: "natural diurna brilhante, hora dourada, cores vivas, sombras nítidas",
     sceneDescription: v.destinationDescription,
     headline: v.promoName,
     specialization:
-      "• Cartão central FLUTUANDO sobre a linha divisória, com sombra projetada para profundidade.\n• DIVISÃO VISUAL clara entre foto e bloco sólido — zero transição gradual.\n• PREÇO extremamente dominante dentro do cartão (mínimo 30% do cartão).\n• Cores vibrantes obrigatórias: roxo + amarelo OU azul-elétrico + dourado.",
+      "• Cartão central íntegro e separado, com sombra projetada para profundidade, SEM sobrepor foto, badge ou lista.\n• DIVISÃO VISUAL clara entre foto e bloco sólido — zero transição gradual.\n• PREÇO extremamente dominante dentro do cartão (mínimo 30% do cartão).\n• Cores vibrantes obrigatórias: roxo + amarelo OU azul-elétrico + dourado.",
   });
 }
 
@@ -186,12 +195,12 @@ export function promptCancunStyle(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "Fundo 100% FOTOGRÁFICO ocupando toda a tela (sem bloco sólido), com CARTÃO CENTRAL amarelo vibrante sobreposto, levemente inclinado ou centralizado, com selo de desconto circular sobreposto na borda",
+      "Fundo 100% FOTOGRÁFICO ocupando toda a tela (sem bloco sólido), com CARTÃO CENTRAL amarelo vibrante sobreposto e centralizado; selo de desconto separado acima do cartão, nunca sobre a borda do cartão",
     lighting: "tropical brilhante, céu turquesa, água cristalina, alta saturação cinematográfica",
     sceneDescription: v.destinationDescription,
     headline: v.promoName,
     specialization:
-      "• Cartão AMARELO vibrante OU dourado, cantos arredondados, sombra suave para flutuar sobre a foto.\n• PREÇO no centro absoluto do cartão, fonte Ultra-Bold, ocupando 30%+ do cartão.\n• Selo CIRCULAR de desconto (% OFF, OFERTA EXCLUSIVA) SOBREPOSTO na quina superior do cartão, rotacionado ~15°.\n• Foto NUNCA é cortada — flui por trás do cartão como background editorial.",
+      "• Cartão AMARELO vibrante OU dourado, cantos arredondados, sombra suave para flutuar sobre a foto.\n• PREÇO no centro absoluto do cartão, fonte Ultra-Bold, ocupando 30%+ do cartão.\n• Selo CIRCULAR de desconto (% OFF, OFERTA EXCLUSIVA) deve ficar separado do cartão com margem visível; NÃO sobrepor texto nem bordas.\n• Foto NUNCA é cortada de forma agressiva — enquadramento limpo por trás do cartão como background de suporte.",
   });
 }
 
@@ -247,13 +256,13 @@ export function promptSplitYellowSide(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "SPLIT VERTICAL — 50% à esquerda com fundo claro/neutro contendo título emocional + checklist de experiências/roteiro; 50% à direita com GRID de 3-4 fotografias diferentes do destino empilhadas (paisagem, gastronomia, cultura, atividade)",
+      "SPLIT VERTICAL — 45% à esquerda com fundo claro/neutro contendo título emocional + checklist de experiências/roteiro; 55% à direita com GRID editorial de 3-4 fotografias DIFERENTES do destino empilhadas (paisagem, gastronomia, cultura, atividade)",
     lighting: "cada foto do grid com sua própria atmosfera — natural variada, autêntica",
     sceneDescription: `múltiplos cenários de ${v.destinationDescription} formando um mosaico de experiências (paisagem icônica, gastronomia local, cultura, atividade típica)`,
     headline: `Explore ${v.destination}`,
     experienceDescription: `Conheça as múltiplas faces de ${v.destination}: paisagens, sabores, cultura e momentos únicos em ${v.duration}.`,
     specialization:
-      "• Lado direito = GRID de 3 ou 4 fotos pequenas mostrando experiências DIFERENTES (não a mesma cena).\n• Lado esquerdo = CHECKLIST visual ('✓ City tour', '✓ Gastronomia local', '✓ Pôr do sol icônico'...).\n• Sensação de VARIEDADE e roteiro completo.\n• Comunica 'tudo o que está incluso' sem soar comercial.",
+      "• Lado direito = GRID de 3 ou 4 fotos pequenas mostrando experiências DIFERENTES (é proibido repetir a mesma foto/cena).\n• Lado esquerdo = CHECKLIST visual com respiro generoso entre linhas.\n• Sensação de VARIEDADE e roteiro completo.\n• Comunica 'tudo o que está incluso' sem soar comercial.\n• Grid permitido APENAS nesta categoria de experiência; ainda assim é um único banner, não múltiplos anúncios.",
   });
 }
 
@@ -277,7 +286,7 @@ export function promptEditorialVisual(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "DUAS COLUNAS verticais — coluna ESQUERDA (40%) com bloco editorial (título grande, parágrafo curto narrativo, número de página estilo revista); coluna DIREITA (60%) com 2 fotografias verticais empilhadas com fino espaço entre elas",
+      "DUAS COLUNAS verticais — coluna ESQUERDA (40%) com bloco editorial (título grande, parágrafo curto narrativo, número de página estilo revista); coluna DIREITA (60%) com UMA fotografia vertical principal e um pequeno recorte de detalhe complementar, sem repetir a mesma imagem",
     lighting: "editorial sofisticada, paleta filmica, tons quentes ou frios coerentes entre as duas fotos",
     sceneDescription: `duas cenas complementares de ${v.destinationDescription} (uma ampla, uma detalhe íntimo)`,
     headline: `Viva ${v.destination}`,

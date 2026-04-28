@@ -357,25 +357,22 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = primaryColor;
     ctx.fillRect(0, 0, width, height);
 
-    const gutter = 22;
-    const tileY = safeTop + 20;
-    const tileH = format === "story" ? 430 : 280;
-    const leftTileW = Math.round((contentWidth - gutter) * 0.58);
-    const rightTileW = contentWidth - gutter - leftTileW;
-    drawRoundedPhoto(left, tileY, leftTileW, tileH, 36, 0.34);
-    drawRoundedPhoto(left + leftTileW + gutter, tileY, rightTileW, tileH, 36, 0.52);
+    const photoY = safeTop + 12;
+    const photoH = format === "story" ? 500 : 360;
+    drawRoundedPhoto(left, photoY, contentWidth, photoH, 44, 0.36);
 
-    const lowerY = tileY + tileH + 28;
-    const leftColW = Math.round(contentWidth * 0.48);
+    const lowerY = photoY + photoH + 34;
+    const leftColW = Math.round(contentWidth * 0.5);
     drawBadge(left, lowerY, leftColW);
     ctx.fillStyle = "#ffffff";
     drawTextBlock(ctx, titleText, left, lowerY + 136, leftColW, 72, 2, { baseFontSize: 68, minFontSize: 40 });
-    drawPromoKicker(left, lowerY + 288);
+    drawPromoKicker(left, lowerY + 294);
 
     const rightColX = left + leftColW + 24;
     const rightColW = contentWidth - leftColW - 24;
     const pillsH = drawHighlightsBlock(rightColX, lowerY + 8, rightColW, format === "story" ? 5 : 4, true);
-    drawPriceCard(rightColX, Math.min(panelBottom - 170, lowerY + pillsH + 34), rightColW, 150, "right");
+    const priceY = Math.min(panelBottom - 180, lowerY + pillsH + 40);
+    drawPriceCard(rightColX, priceY, rightColW, 154, "right");
   } else if (strategy === "gancho") {
     const heroH = panelBottom;
     const crop = fitCover(image.naturalWidth, image.naturalHeight, width, heroH, format === "story" ? 0.38 : 0.42);
@@ -388,13 +385,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = overlay;
     ctx.fillRect(0, 0, width, heroH);
 
-    fillRoundRect(ctx, left, panelBottom - (format === "story" ? 610 : 430), contentWidth, format === "story" ? 470 : 330, 42, "rgba(7,10,18,0.68)");
-    drawBadge(left + 28, panelBottom - (format === "story" ? 560 : 392), 320);
+    fillRoundRect(ctx, left, panelBottom - (format === "story" ? 650 : 430), contentWidth, format === "story" ? 560 : 330, 42, "rgba(7,10,18,0.68)");
+    drawBadge(left + 28, panelBottom - (format === "story" ? 600 : 392), 320);
     ctx.fillStyle = "#ffffff";
-    drawTextBlock(ctx, titleText, left + 28, panelBottom - (format === "story" ? 400 : 268), contentWidth - 56, format === "story" ? 84 : 68, 2, { baseFontSize: format === "story" ? 84 : 64, minFontSize: 44 });
-    drawPromoKicker(left + 28, panelBottom - (format === "story" ? 232 : 160));
-    drawPriceCard(right - 320, panelBottom - (format === "story" ? 246 : 174), 292, 146, "right");
-    drawHighlightsBlock(left + 28, panelBottom - (format === "story" ? 230 : 140), contentWidth - 380, format === "story" ? 4 : 3, true);
+    drawTextBlock(ctx, titleText, left + 28, panelBottom - (format === "story" ? 448 : 268), contentWidth - 56, format === "story" ? 84 : 68, 2, { baseFontSize: format === "story" ? 84 : 64, minFontSize: 44 });
+    drawPromoKicker(left + 28, panelBottom - (format === "story" ? 268 : 160));
+    drawPriceCard(right - 320, panelBottom - (format === "story" ? 250 : 174), 292, 146, "right");
+    drawHighlightsBlock(left + 28, panelBottom - (format === "story" ? 250 : 140), contentWidth - 380, format === "story" ? 2 : 3, true);
   } else {
     const bottomHeight = format === "story" ? 770 : 560;
     const photoHeight = height - safeBottom - bottomHeight;
@@ -460,8 +457,17 @@ export async function reframeImageToAspect(
         canvas.height = targetH;
         const ctx = canvas.getContext("2d");
         if (!ctx) return reject(new Error("Canvas 2D não suportado"));
-        // Cover crop centrado
-        const scale = Math.max(targetW / img.naturalWidth, targetH / img.naturalHeight);
+        // Fundo desfocado em cover + imagem principal em contain para NÃO cortar textos/blocos.
+        const bgScale = Math.max(targetW / img.naturalWidth, targetH / img.naturalHeight);
+        const bgW = img.naturalWidth * bgScale;
+        const bgH = img.naturalHeight * bgScale;
+        ctx.filter = "blur(24px) brightness(0.72)";
+        ctx.drawImage(img, (targetW - bgW) / 2, (targetH - bgH) / 2, bgW, bgH);
+        ctx.filter = "none";
+        ctx.fillStyle = "rgba(0,0,0,0.18)";
+        ctx.fillRect(0, 0, targetW, targetH);
+
+        const scale = Math.min(targetW / img.naturalWidth, targetH / img.naturalHeight);
         const drawW = img.naturalWidth * scale;
         const drawH = img.naturalHeight * scale;
         const dx = (targetW - drawW) / 2;

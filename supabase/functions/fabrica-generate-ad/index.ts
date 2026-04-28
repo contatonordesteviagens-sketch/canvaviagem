@@ -210,6 +210,13 @@ function buildPrompt(p: AdParams): string {
 ══════════════════════════════════════
 🚫 REGRAS ABSOLUTAS (violar = imagem inutilizável)
 
+0) SAÍDA ÚNICA E LAYOUT ÚNICO:
+   • GERAR APENAS 1 banner publicitário final, em uma única composição centralizada.
+   • É PROIBIDO criar duas imagens lado a lado, variações, mockups, previews, cards duplicados ou collage de anúncios.
+   • Escolha UM layout e siga esse layout até o fim; nunca misture dois layouts no mesmo banner.
+   • É PROIBIDO duplicar foto, bloco de preço, cartão, botão, selo ou lista.
+   • Zero sobreposição: texto, preço, ícones e blocos precisam ter respiro claro e não podem tocar/encobrir outro elemento.
+
 1) NADA DE GUIAS / ANOTAÇÕES TÉCNICAS:
    NUNCA renderize números de pixel ("1080px", "40px"), réguas, linhas-guia, setas de medida,
    marcações de safe zone, retângulos pontilhados, anotações ou qualquer texto de instrução.

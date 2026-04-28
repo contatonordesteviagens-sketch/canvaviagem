@@ -214,50 +214,37 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         return;
       }
 
-      // ===== MODO FOTO (composição local) — gera 2 variações em paralelo =====
+      // ===== MODO FOTO (composição local) — gera 1 banner único =====
       if (genMode === "photo") {
-        const allStrategies: Array<"ancora" | "vitrine" | "matriz" | "gancho"> = ["ancora", "vitrine", "matriz", "gancho"];
-        const others = allStrategies.filter((s) => s !== strategy);
-        const secondStrategy = others[Math.floor(Math.random() * others.length)];
-        const variants = [strategy, secondStrategy];
+        toast.info("Gerando 1 banner único com foto real");
 
-        toast.info(`Gerando 2 variações: ${variants.join(" + ")}`);
-
-        const composeOne = async (strat: typeof strategy) => {
-          let img = await composeTravelAd({
-            imageUrl: refImage,
-            format,
-            destination,
-            city: state.city,
-            primaryColor,
-            secondaryColor,
-            price,
-            installments,
-            promoName,
-            highlights,
-            hasLogo: !!state.logoBase64,
-            paymentMode,
-            paymentLabel: paymentLabel || undefined,
-            paymentSuffix: paymentSuffix || undefined,
-            strategy: strat,
-          });
-          if (state.logoBase64) {
-            try {
-              const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
-              img = await composeLogoOnImage(img, state.logoBase64);
-            } catch (e) {
-              console.warn("Falha ao compor logo:", e);
-            }
+        let img = await composeTravelAd({
+          imageUrl: refImage,
+          format,
+          destination,
+          city: state.city,
+          primaryColor,
+          secondaryColor,
+          price,
+          installments,
+          promoName,
+          highlights,
+          hasLogo: !!state.logoBase64,
+          paymentMode,
+          paymentLabel: paymentLabel || undefined,
+          paymentSuffix: paymentSuffix || undefined,
+          strategy,
+        });
+        if (state.logoBase64) {
+          try {
+            const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
+            img = await composeLogoOnImage(img, state.logoBase64);
+          } catch (e) {
+            console.warn("Falha ao compor logo:", e);
           }
-          return img;
-        };
+        }
 
-        const settled = await Promise.allSettled(variants.map(composeOne));
-        const images = settled
-          .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
-          .map((r) => r.value);
-
-        if (images.length === 0) throw new Error("Falha ao gerar variações");
+        const images = [img];
 
         setGeneratedImage(images[0]);
         setGeneratedImages(images);
@@ -267,70 +254,55 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
 
-        toast.success(`${images.length} variações geradas com foto real!`);
+        toast.success("Banner único gerado com foto real!");
         return;
       }
 
-      // ===== MODO IA PURA: gera 2 imagens em paralelo escolhendo prompts da categoria =====
+      // ===== MODO IA PURA: gera 1 imagem escolhendo prompt da categoria =====
       if (genMode === "ai") {
-        const picks = pickPromptsForCategoria(categoria, 2, lastTemplateId);
+        const picks = pickPromptsForCategoria(categoria, 1, lastTemplateId);
         const cat = getCategoria(categoria);
+        const pick = picks[0];
 
-        toast.info(`[${cat.name}] Gerando 2 anúncios: ${picks.map((p) => p.code).join(" + ")}`);
+        toast.info(`[${cat.name}] Gerando 1 banner: ${pick.code}`);
 
-        const calls = picks.map((pick) =>
-          supabase.functions.invoke("fabrica-generate-ad", {
-            body: {
-              strategy,
-              format,
-              destination,
-              niche: state.niche,
-              agencyName: state.agencyName,
-              agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
-              city: state.city,
-              primaryColor,
-              secondaryColor,
-              hasLogo: !!state.logoBase64,
-              price,
-              installments,
-              promoName,
-              highlights,
-              ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
-              templateId: pick.templateId,
-              packageType: "Voo + Hotel",
-              duration: "5 NOITES",
-            },
-          })
-        );
+        const { data, error } = await supabase.functions.invoke("fabrica-generate-ad", {
+          body: {
+            strategy,
+            format,
+            destination,
+            niche: state.niche,
+            agencyName: state.agencyName,
+            agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
+            city: state.city,
+            primaryColor,
+            secondaryColor,
+            hasLogo: !!state.logoBase64,
+            price,
+            installments,
+            promoName,
+            highlights,
+            ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
+            templateId: pick.templateId,
+            packageType: "Voo + Hotel",
+            duration: "5 NOITES",
+          },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        if (!data?.image) throw new Error("Nenhuma imagem foi gerada. Cheque os créditos de IA.");
 
-        const results = await Promise.allSettled(calls);
-        const images: string[] = [];
+        let img = data.image as string;
         let providerSeen: "user_gemini" | "lovable_ai" | null = null;
-
-        for (const r of results) {
-          if (r.status === "fulfilled") {
-            const { data, error } = r.value as any;
-            if (error) { console.warn("call error", error); continue; }
-            if (data?.error) { console.warn("data error", data.error); continue; }
-            if (data?.image) {
-              let img = data.image as string;
-              try {
-                const { reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
-                img = await reframeImageToAspect(img, format);
-              } catch (e) {
-                console.warn("reframe failed", e);
-              }
-              images.push(img);
-              if (data.provider) providerSeen = data.provider;
-            }
-          } else {
-            console.warn("rejected", r.reason);
-          }
+        try {
+          const { reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
+          img = await reframeImageToAspect(img, format);
+        } catch (e) {
+          console.warn("reframe failed", e);
         }
+        if (data.provider) providerSeen = data.provider;
 
-        if (images.length === 0) {
-          throw new Error("Nenhuma das 2 imagens foi gerada. Cheque os créditos de IA.");
-        }
+        const images = [img];
 
         setGeneratedImages(images);
         setGeneratedImage(images[0]);
@@ -338,7 +310,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         if (providerSeen) setLastProvider(providerSeen);
 
         // Persiste o último prompt usado para a próxima rotação não repetir
-        const lastUsed = picks[picks.length - 1].templateId;
+        const lastUsed = pick.templateId;
         setLastTemplateId(lastUsed);
         localStorage.setItem("fabrica_last_template_id", lastUsed);
 
@@ -346,11 +318,11 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
 
-        toast.success(`${images.length} anúncio(s) gerado(s) — categoria: ${cat.name}`);
+        toast.success(`1 banner gerado — categoria: ${cat.name}`);
         return;
       }
 
-      // ===== MODO CUSTOM (link/upload do usuário) — gera 2 variações em paralelo =====
+      // ===== MODO CUSTOM (link/upload do usuário) — gera 1 banner único =====
       const fnName = "fabrica-edit-photo";
       const payload: any = {
         imageUrl: refImage,
@@ -373,49 +345,36 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       if (!data?.image) throw new Error("Imagem não retornada");
       const baseImg = data.image as string;
 
-      const allStrategies: Array<"ancora" | "vitrine" | "matriz" | "gancho"> = ["ancora", "vitrine", "matriz", "gancho"];
-      const others = allStrategies.filter((s) => s !== strategy);
-      const secondStrategy = others[Math.floor(Math.random() * others.length)];
-      const variants = [strategy, secondStrategy];
+      toast.info("Aplicando 1 composição limpa");
 
-      toast.info(`Aplicando 2 variações: ${variants.join(" + ")}`);
-
-      const composeOneCustom = async (strat: typeof strategy) => {
-        let img = await composeTravelAd({
-          imageUrl: refImage || baseImg,
-          format,
-          destination,
-          city: state.city,
-          primaryColor,
-          secondaryColor,
-          price,
-          installments,
-          promoName,
-          highlights,
-          hasLogo: !!state.logoBase64,
-          paymentMode,
-          paymentLabel: paymentLabel || undefined,
-          paymentSuffix: paymentSuffix || undefined,
-          strategy: strat,
-        });
-        const shouldStampLogo = !!state.logoBase64 && !!data?.fallback;
-        if (shouldStampLogo) {
-          try {
-            const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
-            img = await composeLogoOnImage(img, state.logoBase64);
-          } catch (e) {
-            console.warn("Falha ao compor logo:", e);
-          }
+      let img = await composeTravelAd({
+        imageUrl: refImage || baseImg,
+        format,
+        destination,
+        city: state.city,
+        primaryColor,
+        secondaryColor,
+        price,
+        installments,
+        promoName,
+        highlights,
+        hasLogo: !!state.logoBase64,
+        paymentMode,
+        paymentLabel: paymentLabel || undefined,
+        paymentSuffix: paymentSuffix || undefined,
+        strategy,
+      });
+      const shouldStampLogo = !!state.logoBase64 && !!data?.fallback;
+      if (shouldStampLogo) {
+        try {
+          const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
+          img = await composeLogoOnImage(img, state.logoBase64);
+        } catch (e) {
+          console.warn("Falha ao compor logo:", e);
         }
-        return img;
-      };
+      }
 
-      const settledCustom = await Promise.allSettled(variants.map(composeOneCustom));
-      const imagesCustom = settledCustom
-        .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
-        .map((r) => r.value);
-
-      if (imagesCustom.length === 0) throw new Error("Falha ao gerar variações");
+      const imagesCustom = [img];
 
       setGeneratedImage(imagesCustom[0]);
       setGeneratedImages(imagesCustom);
@@ -427,9 +386,9 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       localStorage.setItem("fabrica_gen_count", String(newCount));
 
       if (data?.fallback && data?.warning) {
-        toast.warning("Créditos de IA indisponíveis. Montei as variações usando sua imagem como base.", { duration: 8000 });
+        toast.warning("Créditos de IA indisponíveis. Montei um banner usando sua imagem como base.", { duration: 8000 });
       } else {
-        toast.success(`${imagesCustom.length} variações geradas!`);
+        toast.success("Banner único gerado!");
       }
 
     } catch (err: any) {
@@ -586,6 +545,9 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               </button>
             );
           })}
+        </div>
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-[11px] text-white/55 leading-snug">
+          <strong className="text-white/80">Regra fixa:</strong> sempre será gerado apenas 1 banner por vez. Oferta destaca preço e conversão; Experiência destaca foto, emoção e estilo editorial.
         </div>
       </div>
 
@@ -988,7 +950,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       {generatedImages.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={sectionCls}>
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
-            {generatedImages.length > 1 ? `Seus ${generatedImages.length} anúncios` : "Seu anúncio"}
+            Seu anúncio
           </h3>
           <div className={generatedImages.length > 1 ? "grid grid-cols-2 gap-3 mb-4" : "mb-4"}>
             {generatedImages.map((img, idx) => (
@@ -1018,7 +980,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             disabled={loading}
             className="w-full py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white/80 text-sm font-semibold border border-white/10 flex items-center justify-center gap-2"
           >
-            <Sparkles className="w-3.5 h-3.5" /> Gerar novos anúncios (templates aleatórios)
+            <Sparkles className="w-3.5 h-3.5" /> Gerar novo anúncio (template aleatório)
           </button>
         </motion.div>
       )}
