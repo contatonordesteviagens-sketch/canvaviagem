@@ -57,13 +57,31 @@ const OFERTA_RULES = `
 const EXPERIENCIA_RULES = `
 ══════════════════════════════════════
 🔵 REGRAS ESPECÍFICAS DA CATEGORIA — EXPERIÊNCIA DE DESTINO
-- FOCO EM DESEJO E EXPERIÊNCIA.
-- Esta categoria deve parecer editorial/inspiracional, NÃO anúncio agressivo de preço.
-- A IMAGEM deve ser a protagonista absoluta e ocupar a maior área visual.
-- O PREÇO NÃO é o elemento principal — apresente-o pequeno, secundário e discreto dentro da área segura central, nunca no rodapé.
-- Linguagem emocional obrigatória: "Descubra", "Explore", "Viva", "Conheça".
-- Objetivo: gerar interesse e desejo, NÃO pressão de compra imediata.
-- Estética editorial, atmosférica, aspiracional.
+- FOCO TOTAL EM DESEJO, EMOÇÃO E EXPERIÊNCIA. NÃO é um anúncio de venda.
+- A FOTOGRAFIA é a protagonista absoluta e deve ocupar no MÍNIMO 70% da composição (em alguns layouts até 90%).
+- Estética editorial premium, aspiracional, estilo capa de revista de viagem (Condé Nast Traveller, Kinfolk, Cereal).
+- Linguagem emocional obrigatória: "Descubra", "Explore", "Viva", "Conheça". JAMAIS usar copy de venda agressiva.
+
+🚫 PROIBIÇÕES ABSOLUTAS NESTA CATEGORIA:
+- PROIBIDO caixa grande de oferta, cartão promocional, bloco pesado de preço.
+- PROIBIDO preço gigante, parcelamento em destaque, selos "% OFF", "SEM JUROS", "PIX".
+- PROIBIDO palavras de urgência: "OFERTA EXCLUSIVA", "APENAS HOJE", "ÚLTIMAS VAGAS", "COMPRE AGORA", "GARANTIR VAGA".
+- PROIBIDO cores agressivas saturadas tipo amarelo neon + roxo elétrico em blocos sólidos grandes.
+- PROIBIDO layout de venda direta / performance / Meta Ads.
+- O PREÇO é OPCIONAL: se aparecer, deve ser MINÚSCULO, em texto fino, como informação discreta tipo "A partir de R$ X" — NUNCA em caixa colorida e NUNCA dominante.
+
+✅ HIERARQUIA OBRIGATÓRIA:
+1. Imagem (protagonista absoluta)
+2. Título emocional curto
+3. Subtítulo/detalhes leves
+4. Lista de experiências (sem caixas, sem pílulas pesadas — texto leve com ícones discretos)
+5. Preço (opcional, discreto, minúsculo)
+
+✅ ESTILO VISUAL:
+- Muito espaço negativo / respiro visual.
+- Tipografia leve e elegante (serifada ou sans-serif refinada).
+- Sem ornamentos comerciais, sem selos, sem botões CTA agressivos.
+- Resultado deve parecer página de revista, não panfleto.
 ══════════════════════════════════════
 `;
 
