@@ -384,37 +384,14 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         return;
       }
 
-      // ===== MODO CUSTOM (link/upload do usuário) — gera 2 variações =====
-      const fnName = "fabrica-edit-photo";
-      const payload: any = {
-        imageUrl: refImage,
-        format,
-        destination,
-        agencyName: state.agencyName,
-        city: state.city,
-        primaryColor,
-        secondaryColor,
-        hasLogo: !!state.logoBase64,
-        price,
-        installments,
-        promoName,
-        highlights,
-      };
-
-      const { data, error } = await supabase.functions.invoke(fnName, { body: payload });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      if (!data?.image) throw new Error("Imagem não retornada");
-      const baseImg = data.image as string;
-
-      toast.info("Aplicando 2 composições");
+      // ===== MODO CUSTOM (link/upload do usuário) — gera 2 variações locais, sem gastar créditos de IA =====
+      toast.info("Gerando 2 variações com sua imagem");
       const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 2);
 
-      const shouldStampLogo = !!state.logoBase64 && !!data?.fallback;
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy) => {
           let img = await composeTravelAd({
-            imageUrl: refImage || baseImg,
+            imageUrl: refImage,
             format,
             destination,
             city: state.city,
@@ -430,7 +407,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             paymentSuffix: paymentSuffix || undefined,
             strategy: localStrategy,
           });
-          if (shouldStampLogo) {
+          if (state.logoBase64) {
             try {
               const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
               img = await composeLogoOnImage(img, state.logoBase64);
@@ -446,17 +423,12 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       setGeneratedImages(imagesCustom);
       update({ generatedAdImage: imagesCustom[0], primaryColor });
 
-      if (data?.provider) setLastProvider(data.provider);
       const newCount = generationCount + imagesCustom.length;
       setGenerationCount(newCount);
       localStorage.setItem("fabrica_gen_count", String(newCount));
       finishCycle(imagesCustom.length);
 
-      if (data?.fallback && data?.warning) {
-        toast.warning("Créditos de IA indisponíveis. Montei banners usando sua imagem como base.", { duration: 8000 });
-      } else {
-        toast.success("2 variações geradas!");
-      }
+      toast.success("2 variações geradas com sua imagem!");
 
     } catch (err: any) {
       console.error("generate error", err);
