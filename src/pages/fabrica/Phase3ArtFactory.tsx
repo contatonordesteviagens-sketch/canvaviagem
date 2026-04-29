@@ -82,11 +82,30 @@ const PAYMENT_PRESETS: PaymentPreset[] = [
 ];
 
 const CATEGORY_LOCAL_STRATEGIES: Record<CategoriaId, StrategyId[]> = {
-  // Pool ampliado de layouts para Oferta — garante variação real entre gerações.
   oferta_pacote: ["matriz", "gancho", "ancora", "vitrine"],
-  // Experiência usa SOMENTE experiencia_hero (full-bleed sem card branco/laranja embaixo)
-  // para evitar layouts divididos e erros ortográficos em textos auxiliares.
-  experiencia_destino: ["experiencia_hero"],
+  experiencia_destino: ["experiencia_hero", "experiencia_postcard", "experiencia_editorial", "experiencia_lifestyle"],
+};
+
+const CATEGORY_COLOR_ROTATIONS: Record<CategoriaId, Array<{ primary: string; secondary: string }>> = {
+  oferta_pacote: [
+    { primary: "#7c2d12", secondary: "#FCD34D" },
+    { primary: "#1d4ed8", secondary: "#F59E0B" },
+    { primary: "#0a0a0a", secondary: "#22c55e" },
+    { primary: "#dc2626", secondary: "#fef08a" },
+    { primary: "#581c87", secondary: "#fb923c" },
+  ],
+  experiencia_destino: [
+    { primary: "#0c2340", secondary: "#f8fafc" },
+    { primary: "#064e3b", secondary: "#d9f99d" },
+    { primary: "#1f2937", secondary: "#fde68a" },
+    { primary: "#164e63", secondary: "#bae6fd" },
+    { primary: "#2d1b69", secondary: "#f5d0fe" },
+  ],
+};
+
+const pickGenerationPalette = (categoria: CategoriaId, seed: number, fallbackPrimary: string, fallbackSecondary: string) => {
+  const pool = CATEGORY_COLOR_ROTATIONS[categoria];
+  return pool.length ? pool[Math.abs(seed) % pool.length] : { primary: fallbackPrimary, secondary: fallbackSecondary };
 };
 
 const scopedGenerationKey = (categoria: CategoriaId, genMode: GenMode, format: "square" | "story") =>
@@ -115,11 +134,10 @@ const shuffleArray = <T,>(arr: T[]): T[] => {
 const pickDistinctLocalStrategies = (
   categoria: CategoriaId,
   _seed: number,
-  count = 2,
+  count = 1,
   history: StrategyId[] = [],
 ): StrategyId[] => {
   const pool = CATEGORY_LOCAL_STRATEGIES[categoria];
-  if (categoria === "experiencia_destino") return [pool[0]];
   const desired = Math.min(count, pool.length);
   // Prefere estratégias FORA do histórico recente; se faltar, completa com as do histórico
   // (mas embaralhadas para nunca repetir exatamente a mesma sequência).
