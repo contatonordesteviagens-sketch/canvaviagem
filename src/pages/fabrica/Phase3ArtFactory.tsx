@@ -229,10 +229,16 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         const stratB = localStrategies[(variationCounter + 1) % localStrategies.length];
         const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(variationCounter + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
 
+        const selectedIdx = photos.findIndex((p) => p.url === refImage);
+        const photoRefs = chosen.map((_, idx) => {
+          if (idx === 0 || selectedIdx < 0 || photos.length < 2) return refImage;
+          return photos[(selectedIdx + idx) % photos.length]?.url || refImage;
+        });
+
         const composed = await Promise.all(
-          chosen.map(async (localStrategy) => {
+          chosen.map(async (localStrategy, idx) => {
             let img = await composeTravelAd({
-              imageUrl: refImage,
+              imageUrl: photoRefs[idx],
               format,
               destination,
               city: state.city,
