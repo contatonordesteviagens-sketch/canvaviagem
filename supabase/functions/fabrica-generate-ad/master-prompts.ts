@@ -713,7 +713,7 @@ export function promptElegantCenterCard(v: MasterPromptVars): string {
       "STORY LIFESTYLE — fotografia full-bleed dominante mostrando pessoas reais aproveitando o destino. Texto sobreposto leve, sem caixas pesadas, com gradiente sutil apenas para legibilidade.",
     lighting: "luz natural, clima feliz, sensação de liberdade, atmosfera real e espontânea",
     sceneDescription: `grupo de pessoas reais aproveitando ${v.destination} — rindo, tirando fotos, vivendo o momento. Ambiente vivo, autêntico, sem pose comercial. ${v.destinationDescription}`,
-    headline: `Viva o melhor de ${v.destination}`,
+    headline: pickExperienciaHeadline(v.destination, v.creativeSeed || "ed3"),
     experienceDescription: `Momentos que ficam para sempre em ${v.destination}.`,
     specialization:
       "• Topo do centro: 'Viva o melhor de " + v.destination + "'.\n• Meio: 'Momentos que ficam para sempre'.\n• Base (pequeno e discreto, SEM caixas): • Passeios inclusos  • Experiência completa  • Roteiro planejado.\n• PROIBIDO preço gigante, cartões, elementos de oferta.\n• Estilo: Instagram orgânico premium, sensação real de viagem.",
