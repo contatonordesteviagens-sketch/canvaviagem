@@ -194,27 +194,70 @@ function buildPrompt(p: AdParams): string {
   const safeZone = safeZoneRules(format);
   const variation = p.variation ?? 0;
 
-  // ===== HEADLINE DINÂMICO (Regra 5 — proibido "Conheça/Viva/Explore/Descubra X") =====
+  // ===== HEADLINE DINÂMICO — banco editorial expandido (anti-repetição) =====
+  // 🚫 BANIDOS PARA SEMPRE (substring): "o melhor de", "seu próximo destino",
+  // "algo te espera", "o destino te espera", "Conheça/Explore/Descubra X".
   const HEADLINE_POOL: string[] = [
+    // Emocional / Aspiracional
     `Momentos que ficam para sempre`,
-    `O melhor de ${dest}`,
-    `Seu próximo destino é esse`,
-    `Dias inesquecíveis começam aqui`,
-    `Uma experiência única`,
-    `Partiu viajar?`,
-    `Dias que você não esquece`,
-    `${dest} te espera`,
-    `Hora de arrumar as malas`,
-    `Bora viajar?`,
-    `Você merece esse destino`,
+    `Um lugar para se desconectar`,
+    `Onde tudo faz sentido`,
+    `Viva algo diferente de tudo`,
+    `Histórias começam aqui`,
+    `Memórias que você leva pra vida`,
+    // Experiência
     `Mais que uma viagem, uma experiência`,
+    `Dias inesquecíveis começam aqui`,
+    `Seu próximo capítulo começa aqui`,
+    `Uma experiência que vale cada segundo`,
+    `Prepare-se para viver isso`,
+    `Isso não é só uma viagem`,
+    // Impacto curto
+    `Simplesmente incrível`,
+    `Imperdível`,
+    `Surpreendente do começo ao fim`,
+    `Difícil explicar, fácil amar`,
+    // Conversacional / Pergunta
+    `Partiu viajar?`,
+    `Bora viver isso?`,
+    `Já imaginou estar aqui?`,
+    `Tá esperando o quê?`,
+    `Seu descanso começa agora`,
+    // Narrativo
+    `O destino certo na hora certa`,
+    `O lugar que você estava procurando`,
+    `Um cenário que parece filme`,
+    `Tudo que você precisa em um só lugar`,
+    // Premium
+    `Experiências que elevam sua viagem`,
+    `Um novo padrão de viajar`,
+    `Sofisticação e natureza no mesmo lugar`,
+    `Viagens pensadas nos mínimos detalhes`,
+    // Com destino (uso moderado)
+    `${dest} do jeito que você merece`,
+    `${dest} além do óbvio`,
+    `Sua próxima história começa em ${dest}`,
+  ];
+  const BANNED_PATTERNS = [
+    "o melhor de",
+    "seu próximo destino",
+    "algo te espera",
+    "o destino te espera",
+    "conheça",
+    "explore",
+    "descubra",
   ];
   const forbidden = new Set((p.forbiddenHeadlines || []).map((s) => s.toLowerCase().trim()));
-  const seedBase = Math.abs((variation * 31 + Date.now()) | 0) % HEADLINE_POOL.length;
+  const isBanned = (s: string) => {
+    const k = s.toLowerCase().trim();
+    if (forbidden.has(k)) return true;
+    return BANNED_PATTERNS.some((b) => k.includes(b));
+  };
+  const seedBase = Math.abs((variation * 31 + Date.now() + Math.floor(Math.random() * 1e6)) | 0) % HEADLINE_POOL.length;
   let dynamicHeadline = HEADLINE_POOL[seedBase];
   for (let i = 0; i < HEADLINE_POOL.length; i++) {
     const cand = HEADLINE_POOL[(seedBase + i) % HEADLINE_POOL.length];
-    if (!forbidden.has(cand.toLowerCase().trim())) { dynamicHeadline = cand; break; }
+    if (!isBanned(cand)) { dynamicHeadline = cand; break; }
   }
 
   // Logo: SEMPRE deixar área limpa no topo esquerdo (a logo será composta no cliente depois).

@@ -218,43 +218,93 @@ uma abordagem criativa única. NUNCA uma repetição.
 // PROÍBE qualquer escolha que tenha aparecido nas últimas N gerações.
 // ============================================================
 
+// 🚫 Banidos para sempre (padrões repetitivos detectados pelo usuário):
+// "o melhor de", "seu próximo destino", "algo te espera", "o destino te espera",
+// "conheça/viva/explore/descubra X".
 const HEADLINE_POOL_EXPERIENCIA: ((d: string) => string)[] = [
+  // 🔹 Emocional / Aspiracional
   () => `Momentos que ficam para sempre`,
-  (d) => `O melhor de ${d}`,
-  () => `Seu próximo destino é esse`,
-  () => `Dias inesquecíveis começam aqui`,
-  () => `Uma experiência única`,
-  () => `Partiu viajar?`,
-  () => `Dias que você não esquece`,
   () => `Um lugar para se desconectar`,
   () => `Onde tudo faz sentido`,
+  () => `Viva algo diferente de tudo`,
+  () => `Histórias começam aqui`,
+  () => `Memórias que você leva pra vida`,
+  // 🔹 Experiência
   () => `Mais que uma viagem, uma experiência`,
-  () => `Permita-se viver isso`,
-  () => `Você merece esse destino`,
-  () => `O mundo te espera`,
-  () => `Hora de arrumar as malas`,
-  () => `Bora viajar?`,
-  (d) => `${d} te espera`,
+  () => `Dias inesquecíveis começam aqui`,
+  () => `Seu próximo capítulo começa aqui`,
+  () => `Uma experiência que vale cada segundo`,
+  () => `Prepare-se para viver isso`,
+  () => `Isso não é só uma viagem`,
+  // 🔹 Impacto curto
+  () => `Simplesmente incrível`,
+  () => `Imperdível`,
+  () => `Surpreendente do começo ao fim`,
+  () => `Difícil explicar, fácil amar`,
+  // 🔹 Conversacional / Pergunta
+  () => `Partiu viajar?`,
+  () => `Bora viver isso?`,
+  () => `Já imaginou estar aqui?`,
+  () => `Tá esperando o quê?`,
+  () => `Seu descanso começa agora`,
+  // 🔹 Narrativo
+  () => `O destino certo na hora certa`,
+  () => `O lugar que você estava procurando`,
+  () => `Um cenário que parece filme`,
+  () => `Tudo que você precisa em um só lugar`,
+  // 🔹 Premium
+  () => `Experiências que elevam sua viagem`,
+  () => `Um novo padrão de viajar`,
+  () => `Sofisticação e natureza no mesmo lugar`,
+  () => `Viagens pensadas nos mínimos detalhes`,
+  // 🔹 Com destino (uso moderado — só algumas)
+  (d) => `${d} do jeito que você merece`,
+  (d) => `${d} além do óbvio`,
   (d) => `Sua próxima história começa em ${d}`,
-  () => `A viagem que muda o ritmo`,
 ];
 
 const HEADLINE_POOL_OFERTA: ((d: string) => string)[] = [
-  (d) => `Pacote especial para ${d}`,
+  // 🔹 Conversão direta
   () => `Férias com tudo resolvido`,
-  () => `Preço especial para viajar`,
-  () => `Seu próximo destino é esse`,
-  (d) => `O melhor de ${d}`,
-  () => `Partiu viajar?`,
-  () => `Hora de arrumar as malas`,
-  (d) => `Sua viagem para ${d}`,
   () => `Tudo incluso, sem complicação`,
   () => `Reserva já garantida`,
+  () => `Preço que cabe no bolso`,
+  () => `Sua viagem começa agora`,
+  () => `Pacote completo, preço fechado`,
+  // 🔹 Urgência leve
+  () => `Hora de arrumar as malas`,
+  () => `Não dá pra deixar passar`,
+  () => `Última chance dessa semana`,
+  () => `Aproveite enquanto tem`,
+  // 🔹 Pergunta / Conversacional
+  () => `Bora marcar essa?`,
+  () => `Quando foi sua última viagem?`,
+  () => `Que tal essa data?`,
+  // 🔹 Promessa
+  () => `Viaje sem dor de cabeça`,
+  () => `Pague em parcelas, viaje agora`,
+  () => `Do voo ao hotel, tudo resolvido`,
+  () => `O pacote certo para o seu plano`,
+  // 🔹 Com destino (variações leves)
+  (d) => `Pacote especial para ${d}`,
+  (d) => `Sua viagem para ${d} está pronta`,
+  (d) => `${d} com tudo incluso`,
 ];
 
 function normalize(s: string): string {
   return s.toLowerCase().trim();
 }
+
+// Padrões PROIBIDOS por substring (Regra do usuário — anti-colapso)
+const BANNED_PATTERNS = [
+  "o melhor de",
+  "seu próximo destino",
+  "algo te espera",
+  "o destino te espera",
+  "conheça",
+  "explore",
+  "descubra",
+];
 
 function pickFromPool(
   pool: ((d: string) => string)[],
@@ -263,14 +313,20 @@ function pickFromPool(
   forbidden: string[] = [],
 ): string {
   const banned = new Set(forbidden.map(normalize));
-  const seedSum = [...creativeSeed].reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  // Tenta até encontrar uma frase fora do bloqueio
+  const isBanned = (s: string) => {
+    const k = normalize(s);
+    if (banned.has(k)) return true;
+    return BANNED_PATTERNS.some((b) => k.includes(b));
+  };
+  // Embaralha com seed + ruído real para evitar colisões em cliques rápidos
+  const noise = Math.floor(Math.random() * 1e6);
+  const seedSum = [...creativeSeed].reduce((acc, c) => acc + c.charCodeAt(0), 0) + noise;
   for (let i = 0; i < pool.length; i++) {
     const idx = (seedSum + i) % pool.length;
     const candidate = pool[idx](destination);
-    if (!banned.has(normalize(candidate))) return candidate;
+    if (!isBanned(candidate)) return candidate;
   }
-  // Todas bloqueadas → libera a mais "antiga" (primeira fora do mais recente)
+  // Tudo bloqueado → libera por seed (último recurso)
   return pool[seedSum % pool.length](destination);
 }
 
@@ -621,7 +677,7 @@ Para CADA palavra renderizada na imagem, validar mentalmente:
 
 // 🔥 OP1 — CARTÃO DIVIDIDO (base Cancún)
 export function promptClassicVertical(v: MasterPromptVars): string {
-  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op1");
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op1", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "oferta",
     layout:
@@ -636,7 +692,7 @@ export function promptClassicVertical(v: MasterPromptVars): string {
 
 // 🔥 OP2 — CARTÃO CENTRAL FLUTUANTE
 export function promptCancunStyle(v: MasterPromptVars): string {
-  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op2");
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op2", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "oferta",
     layout:
@@ -651,7 +707,7 @@ export function promptCancunStyle(v: MasterPromptVars): string {
 
 // 🔥 OP3 — CARTÃO AÉREO (TOP DOWN)
 export function promptGramadoStyle(v: MasterPromptVars): string {
-  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op3");
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op3", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "oferta",
     layout:
@@ -666,7 +722,7 @@ export function promptGramadoStyle(v: MasterPromptVars): string {
 
 // 🔥 OP4 — BARRA LATERAL (PERFORMANCE)
 export function promptMaceioStyle(v: MasterPromptVars): string {
-  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op4");
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op4", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "oferta",
     layout:
@@ -681,7 +737,7 @@ export function promptMaceioStyle(v: MasterPromptVars): string {
 
 // 🔥 OP5 — BILHETE PIX / CARTÃO AMARELO
 export function promptTicketPixCard(v: MasterPromptVars): string {
-  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op5");
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op5", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "oferta",
     layout:
@@ -696,7 +752,7 @@ export function promptTicketPixCard(v: MasterPromptVars): string {
 
 // 🔥 OP6 — FAIXA LATERAL + HERO DE PERFORMANCE
 export function promptSideHeroPerformance(v: MasterPromptVars): string {
-  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op6");
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op6", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "oferta",
     layout:
