@@ -249,6 +249,15 @@ const HEADLINE_STYLE_ORDER = [
   "acao_leve",
 ];
 
+const HEADLINE_POOL_OFERTA: ((d: string) => string)[] = [
+  (d) => `Pacote especial para ${d}`,
+  () => `Partiu viajar?`,
+  (d) => `O melhor de ${d}`,
+  () => `Seu próximo destino é esse`,
+  () => `Preço especial para viajar`,
+  () => `Férias com tudo resolvido`,
+];
+
 /**
  * Escolhe um headline rotativo da categoria Experiência.
  * Usa o creativeSeed (que muda a cada geração) para forçar variação real.
@@ -259,6 +268,11 @@ function pickExperienciaHeadline(destination: string, creativeSeed: string): str
   const pool = HEADLINE_POOLS_EXPERIENCIA[styleKey];
   const builder = pool[Math.floor(seedSum / HEADLINE_STYLE_ORDER.length) % pool.length];
   return builder(destination);
+}
+
+function pickOfertaHeadline(destination: string, creativeSeed: string): string {
+  const seedSum = [...creativeSeed].reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return HEADLINE_POOL_OFERTA[seedSum % HEADLINE_POOL_OFERTA.length](destination);
 }
 
 
