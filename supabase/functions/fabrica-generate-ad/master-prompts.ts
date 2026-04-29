@@ -45,8 +45,8 @@ const OFERTA_RULES = `
 - O PREÇO deve ser o MAIOR elemento visual da composição,
   ocupando NO MÍNIMO 25% da área do bloco central.
 - A imagem/fotografia é apenas suporte visual; ela NÃO pode ser protagonista.
-- Use cores vibrantes e contrastantes para destacar preço e oferta:
-  roxo, azul-elétrico, amarelo, dourado.
+- Use EXCLUSIVAMENTE a paleta enviada pelo formulário: a cor primária deve dominar fundos/blocos e a cor secundária deve aparecer em preço, badges e detalhes.
+- É PROIBIDO inventar verde, preto, azul, laranja, dourado ou qualquer outra cor dominante se ela não for uma das cores selecionadas pelo usuário.
 - Elementos de URGÊNCIA SEMPRE presentes (escolha 1 ou 2):
   "OFERTA EXCLUSIVA" · "APENAS HOJE" · "ÚLTIMAS VAGAS".
 - Selos / botões devem reforçar pelo menos 2 destes:
@@ -91,9 +91,8 @@ centro · canto inferior (dentro da safe zone) · lado direito ·
 lado esquerdo · dentro de selo · sobreposto livre na imagem.
 
 [VARIAÇÃO DE ESTILO VISUAL]
-Alternar entre estilos:
-vibrante (amarelo/roxo) · elegante (azul escuro/dourado) ·
-tropical (verde/azul claro) · moderno (gradientes) · clean (fundo claro).
+Alternar estrutura, iluminação e composição, MAS SEM trocar a paleta:
+usar sempre a cor primária e a cor secundária selecionadas no formulário.
 
 [ANTI-REPETIÇÃO DE ESTRUTURA — PROIBIDO]
 🚫 Usar sempre o mesmo "cartão com preço".
@@ -106,7 +105,7 @@ Se parecer semelhante à anterior → ERRADO, refazer.
 ✔ Essa imagem é diferente da anterior?
 ✔ O layout mudou?
 ✔ O preço mudou de posição?
-✔ As cores mudaram?
+✔ As cores respeitam exatamente a primária e secundária selecionadas?
 ✔ A estrutura é nova?
 Se alguma resposta for "não", REFAZER a imagem.
 
@@ -330,12 +329,12 @@ PREÇO É OPCIONAL E DISCRETO: se inserir, use APENAS um pequeno texto fino "A p
   const creativeSeed = v.creativeSeed || `${opts.category}-${opts.layout.slice(0, 24)}`;
   const variationDirectives = opts.category === "oferta"
     ? [
-        "LAYOUT ÚNICO DESTA GERAÇÃO: imagem full com preço direto sobre a foto, SEM cartão central · POSIÇÃO PREÇO: lado esquerdo livre · CORES: tropical verde + azul claro · IMAGEM: panorâmica praia · ILUMINAÇÃO: natural cristalina",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: divisão topo imagem 60% + base sólida 40% com oferta · POSIÇÃO PREÇO: base inferior dentro da safe zone · CORES: azul-elétrico + dourado · IMAGEM: aérea/drone · ILUMINAÇÃO: luz dramática de meio-dia",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: barra lateral vertical + imagem dominante · POSIÇÃO PREÇO: lado direito dentro da barra · CORES: amarelo neon + preto · IMAGEM: close lifestyle · ILUMINAÇÃO: backlight quente",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: grid de fotos com preço em selo isolado · POSIÇÃO PREÇO: selo no canto oposto à imagem principal · CORES: vermelho carmim + creme · IMAGEM: múltiplos recortes turísticos · ILUMINAÇÃO: comercial brilhante",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: cartão inclinado/assimétrico tipo ticket · POSIÇÃO PREÇO: dentro de selo circular · CORES: gradiente moderno (rosa/laranja/roxo) · IMAGEM: lifestyle pessoas viajando · ILUMINAÇÃO: sunset cinematográfico",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: texto central leve com preço isolado, sem bloco pesado · POSIÇÃO PREÇO: centro inferior · CORES: off-white + azul escuro/dourado · IMAGEM: detalhe arquitetônico ou close · ILUMINAÇÃO: luz suave difusa",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: imagem full com preço direto sobre a foto, SEM cartão central · POSIÇÃO PREÇO: lado esquerdo livre · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: panorâmica praia · ILUMINAÇÃO: natural cristalina",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: divisão topo imagem 60% + base sólida 40% com oferta · POSIÇÃO PREÇO: base inferior dentro da safe zone · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: aérea/drone · ILUMINAÇÃO: luz dramática de meio-dia",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: barra lateral vertical + imagem dominante · POSIÇÃO PREÇO: lado direito dentro da barra · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: close lifestyle · ILUMINAÇÃO: backlight quente",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: grid de fotos com preço em selo isolado · POSIÇÃO PREÇO: selo no canto oposto à imagem principal · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: múltiplos recortes turísticos · ILUMINAÇÃO: comercial brilhante",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: cartão inclinado/assimétrico tipo ticket · POSIÇÃO PREÇO: dentro de selo circular · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: lifestyle pessoas viajando · ILUMINAÇÃO: sunset cinematográfico",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: texto central leve com preço isolado, sem bloco pesado · POSIÇÃO PREÇO: centro inferior · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: detalhe arquitetônico ou close · ILUMINAÇÃO: luz suave difusa",
       ]
     : [
         "LAYOUT ÚNICO DESTA GERAÇÃO: imagem full sem caixas; texto leve no centro seguro; fotografia contemplativa domina tudo",
@@ -378,7 +377,7 @@ Uma cena extremamente realista e detalhada de ${v.destination}, com iluminação
 
 [ELEMENTOS DE INTERFACE]
 Interface moderna, limpa e minimalista, com tipografia perfeita e alinhamento matemático.
-Paleta principal: cor primária ${v.primaryHex}, cor secundária ${v.secondaryHex}.
+Paleta obrigatória e bloqueada: cor primária ${v.primaryHex}, cor secundária ${v.secondaryHex}. Use SOMENTE essas duas cores nos blocos, preço, badges, barras, cartões e detalhes. É proibido substituir por verde/preto/azul/amarelo genérico ou qualquer paleta sugerida pelo estilo.
 
 Título/Chamada: "${opts.headline}"
 Destino destacado: "${v.destination}"
@@ -407,6 +406,7 @@ A imagem deve ser gerada no formato Vertical 9:16 (resolução 8K). O motor de g
 2. POSICIONAMENTO:
 - Zero sobreposição entre elementos.
 - Espaçamento matemático e simétrico entre todos os blocos.
+- Se houver logo ou nome da agência no topo esquerdo, reservar uma área limpa exclusiva; cidade, badge, título, preço e qualquer texto devem começar abaixo ou ao lado, nunca por cima dessa área.
 ${centerRule}
 
 3. TIPOGRAFIA:
@@ -602,7 +602,7 @@ Para CADA palavra renderizada na imagem, validar mentalmente:
 - Escolha UM layout por geração e NÃO misture cartão central, divisão topo/base, barra lateral e grid no mesmo banner.
 - É PROIBIDO duplicar fotografia, cartões, blocos de preço, botões, selos ou listas dentro da mesma imagem.
 - É PROIBIDO sobrepor textos, preços, ícones ou blocos. Cada elemento deve ter respiro claro; nenhum texto pode encostar em outro bloco.
-- 🚫 PROIBIDO ESPAÇOS VAZIOS GRANDES DENTRO DO CARTÃO/BLOCO DE OFERTA: o cartão amarelo/colorido deve ser PREENCHIDO de forma equilibrada, com altura ajustada ao conteúdo. NÃO deixe áreas grandes em branco entre o título, o preço, a lista e o rodapé. Distribua os elementos com espaçamento RÍTMICO e CONSISTENTE; o cartão deve "respirar", não "ecoar vazio".
+- 🚫 PROIBIDO ESPAÇOS VAZIOS GRANDES DENTRO DO CARTÃO/BLOCO DE OFERTA: o cartão na cor selecionada deve ser PREENCHIDO de forma equilibrada, com altura ajustada ao conteúdo. NÃO deixe áreas grandes em branco entre o título, o preço, a lista e o rodapé. Distribua os elementos com espaçamento RÍTMICO e CONSISTENTE; o cartão deve "respirar", não "ecoar vazio".
 - O cartão de oferta deve ter altura PROPORCIONAL ao conteúdo (compacto e cheio), nunca alongado artificialmente com gaps de 30%+ entre blocos. Se sobrar muito espaço interno, ENCOLHA o cartão — não infle o vazio.
 - Espaçamento entre blocos internos do cartão: máximo equivalente a 1 linha de texto. Mais que isso é ERRO de composição.
 - Se a categoria for OFERTA PACOTE, use visual de venda direta com preço protagonista; se for EXPERIÊNCIA DE DESTINO, use visual editorial com fotografia protagonista. As duas categorias NÃO podem parecer o mesmo estilo visual.
@@ -630,7 +630,7 @@ export function promptClassicVertical(v: MasterPromptVars): string {
     sceneDescription: v.destinationDescription,
     headline,
     specialization:
-      "• Cartão central íntegro e separado, com sombra projetada para profundidade, SEM sobrepor foto, badge ou lista.\n• DIVISÃO VISUAL clara entre foto e bloco sólido — zero transição gradual.\n• PREÇO extremamente dominante dentro do cartão (mínimo 30% do cartão).\n• Cores vibrantes obrigatórias: roxo + amarelo OU azul-elétrico + dourado.",
+      "• Cartão central íntegro e separado, com sombra projetada para profundidade, SEM sobrepor foto, badge ou lista.\n• DIVISÃO VISUAL clara entre foto e bloco sólido — zero transição gradual.\n• PREÇO extremamente dominante dentro do cartão (mínimo 30% do cartão).\n• Cores obrigatórias: fundo/bloco na cor primária enviada e preço/badges na cor secundária enviada — sem trocar por paleta pronta.",
   });
 }
 
@@ -640,12 +640,12 @@ export function promptCancunStyle(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "Fundo 100% FOTOGRÁFICO ocupando toda a tela (sem bloco sólido), com CARTÃO CENTRAL amarelo vibrante sobreposto e centralizado; selo de desconto separado acima do cartão, nunca sobre a borda do cartão",
+      "Fundo 100% FOTOGRÁFICO ocupando toda a tela (sem bloco sólido), com CARTÃO CENTRAL na cor secundária enviada sobreposto e centralizado; selo de desconto separado acima do cartão, nunca sobre a borda do cartão",
     lighting: "tropical brilhante, céu turquesa, água cristalina, alta saturação cinematográfica",
     sceneDescription: v.destinationDescription,
     headline,
     specialization:
-      "• Cartão AMARELO vibrante OU dourado, cantos arredondados, sombra suave para flutuar sobre a foto.\n• PREÇO no centro absoluto do cartão, fonte Ultra-Bold, ocupando 30%+ do cartão.\n• Selo CIRCULAR de desconto (% OFF, OFERTA EXCLUSIVA) deve ficar separado do cartão com margem visível; NÃO sobrepor texto nem bordas.\n• Foto NUNCA é cortada de forma agressiva — enquadramento limpo por trás do cartão como background de suporte.",
+      "• Cartão na cor secundária enviada, cantos arredondados, sombra suave para flutuar sobre a foto.\n• PREÇO no centro absoluto do cartão, fonte Ultra-Bold, ocupando 30%+ do cartão.\n• Selo CIRCULAR de desconto deve usar a cor primária enviada e ficar separado do cartão com margem visível; NÃO sobrepor texto nem bordas.\n• Foto NUNCA é cortada de forma agressiva — enquadramento limpo por trás do cartão como background de suporte.",
   });
 }
 
@@ -670,7 +670,7 @@ export function promptMaceioStyle(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "SPLIT VERTICAL — 30% à ESQUERDA com barra sólida vibrante (roxo, azul-elétrico ou amarelo) contendo TODO o texto e CTA; 70% à DIREITA com fotografia limpa do destino",
+      "SPLIT VERTICAL — 30% à ESQUERDA com barra sólida na cor primária enviada contendo TODO o texto e CTA; 70% à DIREITA com fotografia limpa do destino",
     lighting: "comercial brilhante, alto contraste, cores saturadas",
     sceneDescription: v.destinationDescription,
     headline,
@@ -685,12 +685,12 @@ export function promptTicketPixCard(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "FOTO AÉREA OU PANORÂMICA ocupando 100% do fundo com um CARTÃO AMARELO grande e limpo no centro seguro; dentro do cartão há cabeçalho PACOTE + DESTINO, linha de ícones dos inclusos, preço maciço e selo azul serrilhado PIX anexado abaixo com margem sem sobreposição",
+      "FOTO AÉREA OU PANORÂMICA ocupando 100% do fundo com um CARTÃO grande e limpo na cor secundária enviada no centro seguro; dentro do cartão há cabeçalho PACOTE + DESTINO, linha de ícones dos inclusos, preço maciço e selo serrilhado PIX na cor primária enviada anexado abaixo com margem sem sobreposição",
     lighting: "natural brilhante, comercial, cores turquesa/azul com contraste alto no cartão amarelo",
     sceneDescription: `vista ampla e clara de ${v.destinationDescription}`,
     headline,
     specialization:
-      "• Inspirado em cartões amarelos premium de pacote, mas usando APENAS os dados do formulário.\n• O cartão amarelo não pode encostar nas safe zones; deve parecer uma peça única e limpa.\n• Selo tipo bilhete PIX azul fica abaixo do preço com separação visível, nunca sobre texto.\n• A fotografia de fundo serve de contexto; preço e oferta dominam a conversão.",
+      "• Inspirado em cartões premium de pacote, mas usando APENAS os dados e cores do formulário.\n• O cartão na cor secundária enviada não pode encostar nas safe zones; deve parecer uma peça única e limpa.\n• Selo tipo bilhete PIX na cor primária enviada fica abaixo do preço com separação visível, nunca sobre texto.\n• A fotografia de fundo serve de contexto; preço e oferta dominam a conversão.",
   });
 }
 
@@ -705,7 +705,7 @@ export function promptSideHeroPerformance(v: MasterPromptVars): string {
     sceneDescription: `${v.destinationDescription} em enquadramento hero cinematográfico, sem duplicar cenas`,
     headline,
     specialization:
-      "• Referência estrutural: faixa lateral amarela/roxa + fotografia grande, sem copiar conteúdo fixo.\n• Leitura em 3 segundos: destino → preço → CTA.\n• Painel lateral deve ter respiro interno alto, sem texto vertical colidindo.\n• Nunca usar grid; apenas uma foto hero e um painel de conversão.",
+      "• Referência estrutural: faixa lateral + fotografia grande, usando a cor primária enviada no painel e a secundária nos destaques, sem copiar conteúdo fixo.\n• Leitura em 3 segundos: destino → preço → CTA.\n• Painel lateral deve ter respiro interno alto, sem texto vertical colidindo.\n• Nunca usar grid; apenas uma foto hero e um painel de conversão.",
   });
 }
 

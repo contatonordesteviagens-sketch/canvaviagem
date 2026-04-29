@@ -87,27 +87,17 @@ const CATEGORY_LOCAL_STRATEGIES: Record<CategoriaId, StrategyId[]> = {
   experiencia_destino: ["experiencia_hero", "experiencia_postcard", "experiencia_editorial", "experiencia_lifestyle"],
 };
 
-const CATEGORY_COLOR_ROTATIONS: Record<CategoriaId, Array<{ primary: string; secondary: string }>> = {
-  oferta_pacote: [
-    { primary: "#7c2d12", secondary: "#FCD34D" },
-    { primary: "#1d4ed8", secondary: "#F59E0B" },
-    { primary: "#0a0a0a", secondary: "#22c55e" },
-    { primary: "#dc2626", secondary: "#fef08a" },
-    { primary: "#581c87", secondary: "#fb923c" },
-  ],
-  experiencia_destino: [
-    { primary: "#0c2340", secondary: "#f8fafc" },
-    { primary: "#064e3b", secondary: "#d9f99d" },
-    { primary: "#1f2937", secondary: "#fde68a" },
-    { primary: "#164e63", secondary: "#bae6fd" },
-    { primary: "#2d1b69", secondary: "#f5d0fe" },
-  ],
+const normalizeHexColor = (value: string, fallback: string) => {
+  const raw = value.trim();
+  if (/^#[0-9a-f]{6}$/i.test(raw)) return raw;
+  if (/^[0-9a-f]{6}$/i.test(raw)) return `#${raw}`;
+  return fallback;
 };
 
-const pickGenerationPalette = (categoria: CategoriaId, seed: number, fallbackPrimary: string, fallbackSecondary: string) => {
-  const pool = CATEGORY_COLOR_ROTATIONS[categoria];
-  return pool.length ? pool[Math.abs(seed) % pool.length] : { primary: fallbackPrimary, secondary: fallbackSecondary };
-};
+const selectedPalette = (primary: string, secondary: string) => ({
+  primary: normalizeHexColor(primary, "#0c2340"),
+  secondary: normalizeHexColor(secondary, "#FCD34D"),
+});
 
 const scopedGenerationKey = (categoria: CategoriaId, genMode: GenMode, format: "square" | "story") =>
   `fabrica_generation_cycle_${categoria}_${genMode}_${format}`;
@@ -326,13 +316,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         localStorage.setItem(stratHistKey, JSON.stringify(chosen));
         const photoRefs = pickPhotoRefs(photos, refImage, freshSeedPhoto, chosen.length);
 
-        // Paleta — evita a paleta usada na última geração
-        let palette = pickGenerationPalette(categoria, freshSeedPhoto, primaryColor, secondaryColor);
-        const palKey = (p: typeof palette) => `${p.primary.toLowerCase()}|${p.secondary.toLowerCase()}`;
-        if (guard.palettes.includes(palKey(palette))) {
-          // tenta próxima
-          palette = pickGenerationPalette(categoria, freshSeedPhoto + 7, primaryColor, secondaryColor);
-        }
+        // Paleta — sempre usa exatamente as cores selecionadas pelo usuário.
+        const palette = selectedPalette(primaryColor, secondaryColor);
 
         const composed = await Promise.all(
           chosen.map(async (localStrategy, idx) => {
@@ -405,12 +390,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
           : pickPromptsForCategoria(categoria, 1, storedLast, mergedRecent);
         const freshSeedAi = freshSeed(generationSeed);
 
-        // Paleta — evita repetir a última usada
-        let palette = pickGenerationPalette(categoria, freshSeedAi, primaryColor, secondaryColor);
-        const palKey = (p: typeof palette) => `${p.primary.toLowerCase()}|${p.secondary.toLowerCase()}`;
-        if (guard.palettes.includes(palKey(palette))) {
-          palette = pickGenerationPalette(categoria, freshSeedAi + 7, primaryColor, secondaryColor);
-        }
+        // Paleta — sempre usa exatamente as cores selecionadas pelo usuário.
+        const palette = selectedPalette(primaryColor, secondaryColor);
         const aiExperienceStrategy = (() => {
           if (!isAiExperienceStory) return "experiencia_hero" as StrategyId;
           const key = scopedStrategyHistoryKey(categoria, "ai", format);
@@ -544,11 +525,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       const freshSeedCustom = freshSeed(generationSeed);
       const chosen = pickDistinctLocalStrategies(categoria, freshSeedCustom, 1, mergedHistCustom);
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
-      let palette = pickGenerationPalette(categoria, freshSeedCustom, primaryColor, secondaryColor);
-      const palKeyC = (p: typeof palette) => `${p.primary.toLowerCase()}|${p.secondary.toLowerCase()}`;
-      if (guardCustom.palettes.includes(palKeyC(palette))) {
-        palette = pickGenerationPalette(categoria, freshSeedCustom + 7, primaryColor, secondaryColor);
-      }
+      const palette = selectedPalette(primaryColor, secondaryColor);
 
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy) => {
