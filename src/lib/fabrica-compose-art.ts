@@ -447,8 +447,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = primaryColor;
     ctx.textAlign = "left";
     ctx.font = "700 28px Inter, Arial, sans-serif";
-    ctx.fillText(city ? `Saindo de ${city}` : "Roteiro especial", left, safeTop + 54);
-    drawTextBlock(ctx, `Descubra ${destination}`, left, safeTop + 170, columnW, 78, 3, { fontWeight: "800", baseFontSize: 74, minFontSize: 42 });
+    ctx.fillText(cityFmt ? `Saindo de ${cityFmt}` : "Roteiro especial", left, safeTop + 54);
+    drawTextBlock(ctx, `Descubra ${destFmt}`, left, safeTop + 170, columnW, 78, 3, { fontWeight: "800", baseFontSize: 74, minFontSize: 42 });
     ctx.fillStyle = "#2b2118";
     ctx.font = "500 29px Inter, Arial, sans-serif";
     drawTextBlock(ctx, "Uma experiência pensada para viver o destino com calma, beleza e curadoria.", left, safeTop + 420, columnW, 42, 4, { fontWeight: "500", baseFontSize: 29, minFontSize: 22 });
