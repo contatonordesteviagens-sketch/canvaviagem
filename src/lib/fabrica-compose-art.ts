@@ -230,6 +230,14 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const shownHighlights = highlights.slice(0, 5);
   const badgeText = cityFmt ? `Saindo de ${cityFmt}` : "Pacote completo";
   const titleText = headlinePool[Math.abs(variation) % headlinePool.length];
+  const subtitlePool = [
+    "Roteiro pensado para viver melhor",
+    "Beleza, conforto e boas memórias",
+    "Uma viagem com outro ritmo",
+    "Paisagens, sabores e histórias",
+    "Seu descanso começa aqui",
+  ];
+  const subtitleText = subtitlePool[(Math.abs(variation) + 2) % subtitlePool.length];
 
   const resolvePaymentCopy = () => {
     switch (paymentMode) {
@@ -452,14 +460,14 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.textAlign = "left";
     ctx.font = "700 30px Inter, Arial, sans-serif";
     ctx.fillText(cityFmt ? `Saindo de ${cityFmt}` : "Experiência completa", left, textY);
-    drawTextBlock(ctx, `Viva ${destFmt}`, left, titleY, contentWidth, format === "story" ? 92 : 72, 2, { fontWeight: "800", baseFontSize: format === "story" ? 88 : 66, minFontSize: 42 });
+    drawTextBlock(ctx, titleText, left, titleY, contentWidth, format === "story" ? 92 : 72, 2, { fontWeight: "800", baseFontSize: format === "story" ? 88 : 66, minFontSize: 42 });
 
     const smallItems = shownHighlights.slice(0, 3).map((h) => h.text).join("   •   ");
     ctx.font = `700 ${format === "story" ? 25 : 24}px Inter, Arial, sans-serif`;
     drawTextBlock(ctx, `•   ${smallItems}`, left, benefitsY, contentWidth, format === "story" ? 34 : 32, 2, { fontWeight: "700", baseFontSize: format === "story" ? 25 : 24, minFontSize: 18 });
 
     ctx.font = "500 30px Inter, Arial, sans-serif";
-    ctx.fillText("Momentos que ficam para sempre", left, footerY);
+    ctx.fillText(subtitleText, left, footerY);
   } else if (strategy === "experiencia_editorial") {
     ctx.fillStyle = "#f7f2ea";
     ctx.fillRect(0, 0, width, height);
@@ -474,7 +482,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.textAlign = "left";
     ctx.font = "700 28px Inter, Arial, sans-serif";
     ctx.fillText(cityFmt ? `Saindo de ${cityFmt}` : "Roteiro especial", left, safeTop + 54);
-    drawTextBlock(ctx, `Descubra ${destFmt}`, left, safeTop + 170, columnW, 78, 3, { fontWeight: "800", baseFontSize: 74, minFontSize: 42 });
+    drawTextBlock(ctx, titleText, left, safeTop + 170, columnW, 78, 3, { fontWeight: "800", baseFontSize: 74, minFontSize: 42 });
     ctx.fillStyle = "#2b2118";
     ctx.font = "500 29px Inter, Arial, sans-serif";
     drawTextBlock(ctx, "Uma experiência pensada para viver o destino com calma, beleza e curadoria.", left, safeTop + 420, columnW, 42, 4, { fontWeight: "500", baseFontSize: 29, minFontSize: 22 });
