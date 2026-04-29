@@ -192,10 +192,12 @@ PREÇO É OPCIONAL E DISCRETO: se inserir, use APENAS um pequeno texto fino "A p
   const creativeSeed = v.creativeSeed || `${opts.category}-${opts.layout.slice(0, 24)}`;
   const variationDirectives = opts.category === "oferta"
     ? [
-        "ângulo fotográfico comercial amplo + bloco de preço em posição dominante diferente da geração anterior",
-        "foto com profundidade lateral + cartão de oferta deslocado, nunca central igual ao anterior",
-        "enquadramento aéreo/drone + estrutura de venda direta com ritmo tipográfico novo",
-        "hero de destino com painel de conversão separado e composição assimétrica inédita",
+        "LAYOUT: cartão central flutuante · POSIÇÃO PREÇO: centro · CONTAINER: cartão arredondado com sombra · CORES: roxo + amarelo vibrante · IMAGEM: panorâmica do destino atrás · ILUMINAÇÃO: golden hour saturada",
+        "LAYOUT: divisão topo imagem 60% + base sólida 40% com oferta · POSIÇÃO PREÇO: base inferior dentro da safe zone · CONTAINER: faixa horizontal sólida · CORES: azul-elétrico + dourado · IMAGEM: aérea/drone · ILUMINAÇÃO: luz dramática de meio-dia",
+        "LAYOUT: barra lateral vertical + imagem dominante · POSIÇÃO PREÇO: lado direito dentro da barra · CONTAINER: faixa lateral sólida · CORES: amarelo neon + preto · IMAGEM: close lifestyle · ILUMINAÇÃO: backlight quente",
+        "LAYOUT: preço sobreposto direto na imagem (SEM cartão) · POSIÇÃO PREÇO: lado esquerdo livre · CONTAINER: nenhum, apenas tipografia gigante com sombra · CORES: tropical verde + azul claro · IMAGEM: panorâmica praia · ILUMINAÇÃO: natural cristalina",
+        "LAYOUT: cartão inclinado/assimétrico · POSIÇÃO PREÇO: dentro de selo circular ou bilhete · CONTAINER: selo serrilhado tipo ticket · CORES: gradiente moderno (rosa/laranja/roxo) · IMAGEM: lifestyle pessoas viajando · ILUMINAÇÃO: sunset cinematográfico",
+        "LAYOUT: minimalista com preço isolado · POSIÇÃO PREÇO: canto inferior dentro da safe zone · CONTAINER: nenhum, fundo claro elegante · CORES: clean (off-white + um único acento azul escuro/dourado) · IMAGEM: detalhe arquitetônico ou close · ILUMINAÇÃO: luz suave difusa",
       ]
     : [
         "fotografia full-bleed contemplativa, sem cartão; texto leve no centro seguro",
