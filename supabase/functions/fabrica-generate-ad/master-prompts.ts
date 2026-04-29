@@ -48,6 +48,74 @@ const OFERTA_RULES = `
 - Selos / botões devem reforçar pelo menos 2 destes:
   "SEM JUROS" · "PIX" · "VOO + HOTEL".
 - Tom de copy: direto, comercial, cria gatilho de decisão imediata.
+
+══════════════════════════════════════
+🚨 REGRA MAIS IMPORTANTE DO SISTEMA — NÃO REPETIÇÃO (CRÍTICA ABSOLUTA)
+══════════════════════════════════════
+É TERMINANTEMENTE PROIBIDO gerar imagens iguais, similares ou com a mesma
+estrutura visual da geração anterior. Cada nova imagem DEVE ser
+VISUALMENTE DIFERENTE da anterior. Se a anterior teve cartão central →
+agora NÃO usar cartão central. Se teve fundo azul → usar outra cor
+dominante. Se teve layout dividido → usar outro tipo de layout. Se o
+preço estava na posição X → mudar completamente de posição.
+
+A IA deve FORÇAR variação estrutural — não apenas trocar texto.
+
+[OBRIGAÇÃO DE VARIAÇÃO REAL]
+A cada nova geração, ALTERAR pelo menos 4 destes elementos:
+  1. Tipo de layout (estrutura visual)
+  2. Posição do preço
+  3. Estilo do container (cartão, faixa, selo, lateral, etc)
+  4. Cores principais
+  5. Hierarquia dos elementos
+  6. Tipo de imagem (aérea, close, lifestyle, panorâmica)
+  7. Estilo de iluminação
+Se esses elementos não mudarem, a geração está ERRADA.
+
+[CONTROLE DE LAYOUT — ESCOLHER 1 POR VEZ]
+Escolher APENAS UM layout por geração (proibido repetir o anterior):
+  1. Cartão central flutuante
+  2. Divisão topo imagem + base oferta
+  3. Barra lateral + imagem
+  4. Preço sobreposto direto na imagem (sem cartão)
+  5. Cartão inclinado/assimétrico
+  6. Layout minimalista com preço isolado
+
+[VARIAÇÃO DE POSIÇÃO DO PREÇO]
+O preço NUNCA pode ficar sempre no mesmo lugar. Alternar entre:
+centro · canto inferior (dentro da safe zone) · lado direito ·
+lado esquerdo · dentro de selo · sobreposto livre na imagem.
+
+[VARIAÇÃO DE ESTILO VISUAL]
+Alternar entre estilos:
+vibrante (amarelo/roxo) · elegante (azul escuro/dourado) ·
+tropical (verde/azul claro) · moderno (gradientes) · clean (fundo claro).
+
+[ANTI-REPETIÇÃO DE ESTRUTURA — PROIBIDO]
+🚫 Usar sempre o mesmo "cartão com preço".
+🚫 Repetir mesma composição da geração anterior.
+🚫 Repetir posição dos elementos.
+🚫 Gerar layouts clonados.
+Se parecer semelhante à anterior → ERRADO, refazer.
+
+[CONTROLE FINAL DE QUALIDADE — VALIDAR ANTES DE FINALIZAR]
+✔ Essa imagem é diferente da anterior?
+✔ O layout mudou?
+✔ O preço mudou de posição?
+✔ As cores mudaram?
+✔ A estrutura é nova?
+Se alguma resposta for "não", REFAZER a imagem.
+
+[REGRAS FIXAS]
+- Gerar APENAS UMA imagem.
+- Não duplicar elementos.
+- Não sobrepor textos.
+- Não repetir layout anterior.
+- Não gerar arte semelhante.
+
+[RESULTADO ESPERADO]
+Cada geração deve parecer um anúncio completamente novo, uma nova
+campanha, uma nova abordagem visual. NUNCA uma repetição.
 ══════════════════════════════════════
 `;
 
@@ -124,10 +192,12 @@ PREÇO É OPCIONAL E DISCRETO: se inserir, use APENAS um pequeno texto fino "A p
   const creativeSeed = v.creativeSeed || `${opts.category}-${opts.layout.slice(0, 24)}`;
   const variationDirectives = opts.category === "oferta"
     ? [
-        "ângulo fotográfico comercial amplo + bloco de preço em posição dominante diferente da geração anterior",
-        "foto com profundidade lateral + cartão de oferta deslocado, nunca central igual ao anterior",
-        "enquadramento aéreo/drone + estrutura de venda direta com ritmo tipográfico novo",
-        "hero de destino com painel de conversão separado e composição assimétrica inédita",
+        "LAYOUT: cartão central flutuante · POSIÇÃO PREÇO: centro · CONTAINER: cartão arredondado com sombra · CORES: roxo + amarelo vibrante · IMAGEM: panorâmica do destino atrás · ILUMINAÇÃO: golden hour saturada",
+        "LAYOUT: divisão topo imagem 60% + base sólida 40% com oferta · POSIÇÃO PREÇO: base inferior dentro da safe zone · CONTAINER: faixa horizontal sólida · CORES: azul-elétrico + dourado · IMAGEM: aérea/drone · ILUMINAÇÃO: luz dramática de meio-dia",
+        "LAYOUT: barra lateral vertical + imagem dominante · POSIÇÃO PREÇO: lado direito dentro da barra · CONTAINER: faixa lateral sólida · CORES: amarelo neon + preto · IMAGEM: close lifestyle · ILUMINAÇÃO: backlight quente",
+        "LAYOUT: preço sobreposto direto na imagem (SEM cartão) · POSIÇÃO PREÇO: lado esquerdo livre · CONTAINER: nenhum, apenas tipografia gigante com sombra · CORES: tropical verde + azul claro · IMAGEM: panorâmica praia · ILUMINAÇÃO: natural cristalina",
+        "LAYOUT: cartão inclinado/assimétrico · POSIÇÃO PREÇO: dentro de selo circular ou bilhete · CONTAINER: selo serrilhado tipo ticket · CORES: gradiente moderno (rosa/laranja/roxo) · IMAGEM: lifestyle pessoas viajando · ILUMINAÇÃO: sunset cinematográfico",
+        "LAYOUT: minimalista com preço isolado · POSIÇÃO PREÇO: canto inferior dentro da safe zone · CONTAINER: nenhum, fundo claro elegante · CORES: clean (off-white + um único acento azul escuro/dourado) · IMAGEM: detalhe arquitetônico ou close · ILUMINAÇÃO: luz suave difusa",
       ]
     : [
         "fotografia full-bleed contemplativa, sem cartão; texto leve no centro seguro",
