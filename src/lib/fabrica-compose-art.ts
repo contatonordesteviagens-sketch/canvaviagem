@@ -569,15 +569,26 @@ export async function reframeImageToAspect(
         const ctx = canvas.getContext("2d");
         if (!ctx) return reject(new Error("Canvas 2D não suportado"));
 
-        // COVER CROP: preenche todo o frame no aspecto pedido (9:16 ou 1:1),
-        // sem barras desfocadas. A IA é instruída a deixar respiro nas bordas
-        // (safe zones) para que nada importante seja cortado no recorte.
-        const scale = Math.max(targetW / img.naturalWidth, targetH / img.naturalHeight);
-        const drawW = img.naturalWidth * scale;
-        const drawH = img.naturalHeight * scale;
-        const dx = (targetW - drawW) / 2;
-        const dy = (targetH - drawH) / 2;
+        // CONTAIN + EDGE STRETCH — preserva todo o conteúdo do anúncio (texto, cards, preço)
+        // sem cortar nada. As faixas vazias são preenchidas esticando a primeira/última
+        // linha de pixels da imagem, evitando barras pretas ou blur feio.
+        const scale = Math.min(targetW / img.naturalWidth, targetH / img.naturalHeight);
+        const drawW = Math.round(img.naturalWidth * scale);
+        const drawH = Math.round(img.naturalHeight * scale);
+        const dx = Math.round((targetW - drawW) / 2);
+        const dy = Math.round((targetH - drawH) / 2);
+
         ctx.drawImage(img, dx, dy, drawW, drawH);
+
+        if (dy > 0) {
+          ctx.drawImage(canvas, dx, dy, drawW, 1, dx, 0, drawW, dy);
+          ctx.drawImage(canvas, dx, dy + drawH - 1, drawW, 1, dx, dy + drawH, drawW, targetH - (dy + drawH));
+        }
+        if (dx > 0) {
+          ctx.drawImage(canvas, dx, 0, 1, targetH, 0, 0, dx, targetH);
+          ctx.drawImage(canvas, dx + drawW - 1, 0, 1, targetH, dx + drawW, 0, targetW - (dx + drawW), targetH);
+        }
+
         resolve(canvas.toDataURL("image/png"));
       } catch (e) {
         reject(e);
