@@ -5,6 +5,7 @@ import { CATEGORIAS, getCategoria, pickPromptsForCategoria, type CategoriaId } f
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { composeTravelAd, type PaymentMode } from "@/lib/fabrica-compose-art";
+import { getForbiddenSets, registerGeneration, freshSeed } from "@/lib/fabrica-generation-guard";
 import {
   Loader2, Download, Sparkles, ArrowRight, Plus, X,
   Bus, Hotel, Plane, Check, Star, Heart, Sun, Camera, MapPin, Utensils, Ship, Palmtree, Coffee, Wifi, User,
@@ -314,13 +315,24 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       // ===== MODO FOTO (composição local) — gera 1 imagem única =====
       if (genMode === "photo") {
         toast.info("Gerando 1 imagem única com foto real");
-        const stratHistKey = scopedStrategyHistoryKey(categoria, genMode, format);
+        const guard = getForbiddenSets(categoria, "photo", format);
+        const stratHistKey = scopedStrategyHistoryKey(categoria, "photo", format);
         let stratHistory: StrategyId[] = [];
         try { stratHistory = JSON.parse(localStorage.getItem(stratHistKey) || "[]"); } catch { stratHistory = []; }
-        const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 1, stratHistory);
+        // Combina histórico local + histórico do guard (proíbe layouts recentes)
+        const mergedHist = Array.from(new Set([...stratHistory, ...(guard.layouts as StrategyId[])]));
+        const freshSeedPhoto = freshSeed(generationSeed);
+        const chosen = pickDistinctLocalStrategies(categoria, freshSeedPhoto, 1, mergedHist);
         localStorage.setItem(stratHistKey, JSON.stringify(chosen));
-        const photoRefs = pickPhotoRefs(photos, refImage, generationSeed, chosen.length);
-        const palette = pickGenerationPalette(categoria, generationSeed, primaryColor, secondaryColor);
+        const photoRefs = pickPhotoRefs(photos, refImage, freshSeedPhoto, chosen.length);
+
+        // Paleta — evita a paleta usada na última geração
+        let palette = pickGenerationPalette(categoria, freshSeedPhoto, primaryColor, secondaryColor);
+        const palKey = (p: typeof palette) => `${p.primary.toLowerCase()}|${p.secondary.toLowerCase()}`;
+        if (guard.palettes.includes(palKey(palette))) {
+          // tenta próxima
+          palette = pickGenerationPalette(categoria, freshSeedPhoto + 7, primaryColor, secondaryColor);
+        }
 
         const composed = await Promise.all(
           chosen.map(async (localStrategy, idx) => {
@@ -340,7 +352,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               paymentLabel: paymentLabel || undefined,
               paymentSuffix: paymentSuffix || undefined,
               strategy: localStrategy,
-              variation: generationSeed + idx,
+              variation: freshSeedPhoto + idx,
             });
             if (state.logoBase64) {
               try {
@@ -353,6 +365,14 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             return img;
           })
         );
+
+        // Registra no GenerationGuard (a "headline" no modo foto = promoName, pois é o que aparece)
+        registerGeneration(categoria, "photo", format, {
+          layoutId: chosen[0],
+          headline: promoName || "OFERTA ESPECIAL",
+          primary: palette.primary,
+          secondary: palette.secondary,
+        });
 
         setGeneratedImage(composed[0]);
         setGeneratedImages(composed);
@@ -371,22 +391,33 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       if (genMode === "ai") {
         const cat = getCategoria(categoria);
         const isAiExperienceStory = categoria === "experiencia_destino";
-        const categoryLastKey = scopedTemplateKey("last", categoria, genMode);
-        const categoryRecentKey = scopedTemplateKey("recent", categoria, genMode);
+        const guard = getForbiddenSets(categoria, "ai", format);
+        const categoryLastKey = scopedTemplateKey("last", categoria, "ai");
+        const categoryRecentKey = scopedTemplateKey("recent", categoria, "ai");
         const storedLast = localStorage.getItem(categoryLastKey) || (cat.prompts.some((p) => p.templateId === lastTemplateId) ? lastTemplateId : null);
         let storedRecent: string[] = [];
         try { storedRecent = JSON.parse(localStorage.getItem(categoryRecentKey) || "[]"); }
         catch { storedRecent = []; }
+        // Junta histórico local com o GenerationGuard para evitar repetir templates
+        const mergedRecent = Array.from(new Set([...storedRecent, ...guard.layouts]));
         const picks = isAiExperienceStory
           ? [{ code: "ED_SAFE_STORY", templateId: "photo_only_experience_story" }]
-          : pickPromptsForCategoria(categoria, 1, storedLast, storedRecent);
-        const palette = pickGenerationPalette(categoria, generationSeed, primaryColor, secondaryColor);
+          : pickPromptsForCategoria(categoria, 1, storedLast, mergedRecent);
+        const freshSeedAi = freshSeed(generationSeed);
+
+        // Paleta — evita repetir a última usada
+        let palette = pickGenerationPalette(categoria, freshSeedAi, primaryColor, secondaryColor);
+        const palKey = (p: typeof palette) => `${p.primary.toLowerCase()}|${p.secondary.toLowerCase()}`;
+        if (guard.palettes.includes(palKey(palette))) {
+          palette = pickGenerationPalette(categoria, freshSeedAi + 7, primaryColor, secondaryColor);
+        }
         const aiExperienceStrategy = (() => {
           if (!isAiExperienceStory) return "experiencia_hero" as StrategyId;
-          const key = scopedStrategyHistoryKey(categoria, genMode, format);
+          const key = scopedStrategyHistoryKey(categoria, "ai", format);
           let history: StrategyId[] = [];
           try { history = JSON.parse(localStorage.getItem(key) || "[]"); } catch { history = []; }
-          const [picked] = pickDistinctLocalStrategies(categoria, generationSeed, 1, history);
+          const mergedH = Array.from(new Set([...history, ...(guard.layouts as StrategyId[])]));
+          const [picked] = pickDistinctLocalStrategies(categoria, freshSeedAi, 1, mergedH);
           localStorage.setItem(key, JSON.stringify([picked]));
           return picked;
         })();
@@ -413,9 +444,12 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
               templateId: isAiExperienceStory ? undefined : pick.templateId,
               photoOnly: isAiExperienceStory,
-              variation: generationSeed + idx,
+              variation: freshSeedAi + idx,
               packageType: "Voo + Hotel",
               duration: "5 NOITES",
+              // 🚨 Anti-repetição global (Regra 5)
+              forbiddenHeadlines: guard.headlines,
+              forbiddenLayouts: guard.layouts,
             },
           }))
         );
@@ -447,7 +481,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               paymentLabel: paymentLabel || undefined,
               paymentSuffix: paymentSuffix || undefined,
               strategy: aiExperienceStrategy,
-              variation: generationSeed,
+              variation: freshSeedAi,
             });
             if (state.logoBase64) {
               try {
@@ -466,6 +500,17 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         setGeneratedImage(images[0]);
         update({ generatedAdImage: images[0], primaryColor: palette.primary });
         if (providerSeen) setLastProvider(providerSeen);
+
+        // Registra no GenerationGuard
+        const layoutId = isAiExperienceStory ? aiExperienceStrategy : (picks[0]?.templateId || "ai_unknown");
+        // Headline real é decidida no backend, mas registramos a "categoria visual" como hash:
+        // o que importa é layout+paleta para impedir mesmo arranjo no próximo clique.
+        registerGeneration(categoria, "ai", format, {
+          layoutId,
+          headline: `${categoria}-${freshSeedAi}`, // o real fica no backend; isso impede colisão
+          primary: palette.primary,
+          secondary: palette.secondary,
+        });
 
         // Persiste o último prompt usado para a próxima rotação não repetir
         const usedTemplateIds = isAiExperienceStory ? [] : picks.map((p) => p.templateId);
@@ -491,12 +536,19 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
       // ===== MODO CUSTOM (link/upload do usuário) — gera 1 imagem local, sem gastar créditos de IA =====
       toast.info("Gerando 1 imagem única com sua imagem");
-      const stratHistKeyCustom = scopedStrategyHistoryKey(categoria, genMode, format);
+      const guardCustom = getForbiddenSets(categoria, "custom", format);
+      const stratHistKeyCustom = scopedStrategyHistoryKey(categoria, "custom", format);
       let stratHistoryCustom: StrategyId[] = [];
       try { stratHistoryCustom = JSON.parse(localStorage.getItem(stratHistKeyCustom) || "[]"); } catch { stratHistoryCustom = []; }
-      const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 1, stratHistoryCustom);
+      const mergedHistCustom = Array.from(new Set([...stratHistoryCustom, ...(guardCustom.layouts as StrategyId[])]));
+      const freshSeedCustom = freshSeed(generationSeed);
+      const chosen = pickDistinctLocalStrategies(categoria, freshSeedCustom, 1, mergedHistCustom);
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
-      const palette = pickGenerationPalette(categoria, generationSeed, primaryColor, secondaryColor);
+      let palette = pickGenerationPalette(categoria, freshSeedCustom, primaryColor, secondaryColor);
+      const palKeyC = (p: typeof palette) => `${p.primary.toLowerCase()}|${p.secondary.toLowerCase()}`;
+      if (guardCustom.palettes.includes(palKeyC(palette))) {
+        palette = pickGenerationPalette(categoria, freshSeedCustom + 7, primaryColor, secondaryColor);
+      }
 
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy) => {
@@ -516,7 +568,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             paymentLabel: paymentLabel || undefined,
             paymentSuffix: paymentSuffix || undefined,
             strategy: localStrategy,
-            variation: generationSeed,
+            variation: freshSeedCustom,
           });
           if (state.logoBase64) {
             try {
@@ -529,6 +581,13 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
           return img;
         })
       );
+
+      registerGeneration(categoria, "custom", format, {
+        layoutId: chosen[0],
+        headline: promoName || "OFERTA ESPECIAL",
+        primary: palette.primary,
+        secondary: palette.secondary,
+      });
 
       setGeneratedImage(imagesCustom[0]);
       setGeneratedImages(imagesCustom);
