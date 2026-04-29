@@ -106,7 +106,7 @@ Se parecer semelhante à anterior → ERRADO, refazer.
 ✔ Essa imagem é diferente da anterior?
 ✔ O layout mudou?
 ✔ O preço mudou de posição?
-✔ As cores mudaram?
+✔ As cores respeitam exatamente a primária e secundária selecionadas?
 ✔ A estrutura é nova?
 Se alguma resposta for "não", REFAZER a imagem.
 
@@ -631,7 +631,7 @@ export function promptClassicVertical(v: MasterPromptVars): string {
     sceneDescription: v.destinationDescription,
     headline,
     specialization:
-      "• Cartão central íntegro e separado, com sombra projetada para profundidade, SEM sobrepor foto, badge ou lista.\n• DIVISÃO VISUAL clara entre foto e bloco sólido — zero transição gradual.\n• PREÇO extremamente dominante dentro do cartão (mínimo 30% do cartão).\n• Cores vibrantes obrigatórias: roxo + amarelo OU azul-elétrico + dourado.",
+      "• Cartão central íntegro e separado, com sombra projetada para profundidade, SEM sobrepor foto, badge ou lista.\n• DIVISÃO VISUAL clara entre foto e bloco sólido — zero transição gradual.\n• PREÇO extremamente dominante dentro do cartão (mínimo 30% do cartão).\n• Cores obrigatórias: fundo/bloco na cor primária enviada e preço/badges na cor secundária enviada — sem trocar por paleta pronta.",
   });
 }
 
@@ -671,7 +671,7 @@ export function promptMaceioStyle(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "SPLIT VERTICAL — 30% à ESQUERDA com barra sólida vibrante (roxo, azul-elétrico ou amarelo) contendo TODO o texto e CTA; 70% à DIREITA com fotografia limpa do destino",
+      "SPLIT VERTICAL — 30% à ESQUERDA com barra sólida na cor primária enviada contendo TODO o texto e CTA; 70% à DIREITA com fotografia limpa do destino",
     lighting: "comercial brilhante, alto contraste, cores saturadas",
     sceneDescription: v.destinationDescription,
     headline,
