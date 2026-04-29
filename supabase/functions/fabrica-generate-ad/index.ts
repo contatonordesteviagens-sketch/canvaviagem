@@ -22,6 +22,7 @@ interface Highlight {
 interface AdParams {
   strategy: Strategy;
   format?: Format; // "square" 1:1 ou "story" 9:16
+  photoOnly?: boolean; // gera apenas fotografia limpa; textos serão compostos no canvas do app
   destination: string;
   niche?: string;
   agencyName?: string;
@@ -385,6 +386,29 @@ ${RULES}`;
   }
 
   return `Imagem promocional de turismo de "${agency}" para ${dest}. ${RULES}`;
+}
+
+function buildTextFreeDestinationPrompt(p: AdParams): string {
+  const dest = p.destination || "destino paradisíaco";
+  const scene = nicheToScene(p.niche, dest);
+  const formatLine = (p.format || "story") === "story"
+    ? "formato vertical 9:16, enquadramento de celular em pé, 1080x1920"
+    : "formato quadrado 1:1, 1080x1080";
+
+  return `
+Fotografia turística hiper-realista de ${dest}, ${formatLine}, qualidade editorial premium, iluminação natural cinematográfica.
+
+CENA: ${scene}.
+
+REGRAS ABSOLUTAS:
+- GERAR APENAS UMA ÚNICA FOTO FINAL, full-bleed, preenchendo 100% da tela.
+- PROIBIDO qualquer divisão de tela, colagem, grid, duas fotos, três fotos, moldura, cartão, pôster, mockup ou variações lado a lado.
+- PROIBIDO qualquer texto, letra, palavra, número, preço, legenda, placa legível, logo, marca d'água, botão, selo ou tipografia.
+- Deixar área visual limpa no centro inferior para o app aplicar textos depois, mas sem renderizar nenhum texto agora.
+- Pessoas e cenário naturais, sem deformações anatômicas, sem objetos duplicados, sem aparência artificial.
+
+Resultado: uma foto única, limpa e realista do destino, pronta para receber layout e textos pelo sistema.
+`;
 }
 
 serve(async (req) => {
