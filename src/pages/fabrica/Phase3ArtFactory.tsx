@@ -281,8 +281,14 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
       // ===== MODO IA PURA: gera 1 imagem escolhendo prompt da categoria =====
       if (genMode === "ai") {
-        const picks = pickPromptsForCategoria(categoria, 1, lastTemplateId, recentTemplateIds);
         const cat = getCategoria(categoria);
+        const categoryLastKey = `fabrica_last_template_id_${categoria}`;
+        const categoryRecentKey = `fabrica_recent_template_ids_${categoria}`;
+        const storedLast = localStorage.getItem(categoryLastKey) || (cat.prompts.some((p) => p.templateId === lastTemplateId) ? lastTemplateId : null);
+        let storedRecent: string[] = [];
+        try { storedRecent = JSON.parse(localStorage.getItem(categoryRecentKey) || "[]"); }
+        catch { storedRecent = []; }
+        const picks = pickPromptsForCategoria(categoria, 1, storedLast, storedRecent);
         const pick = picks[0];
         const nextVariation = activeVariation;
 
@@ -334,9 +340,11 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
         // Persiste o último prompt usado para a próxima rotação não repetir
         const lastUsed = pick.templateId;
-        const nextRecent = [lastUsed, ...recentTemplateIds.filter((id) => id !== lastUsed)].slice(0, Math.max(1, cat.prompts.length - 1));
+        const nextRecent = [lastUsed, ...storedRecent.filter((id) => id !== lastUsed)].slice(0, Math.max(1, cat.prompts.length - 1));
         setLastTemplateId(lastUsed);
         setRecentTemplateIds(nextRecent);
+        localStorage.setItem(categoryLastKey, lastUsed);
+        localStorage.setItem(categoryRecentKey, JSON.stringify(nextRecent));
         localStorage.setItem("fabrica_last_template_id", lastUsed);
         localStorage.setItem("fabrica_recent_template_ids", JSON.stringify(nextRecent));
 
