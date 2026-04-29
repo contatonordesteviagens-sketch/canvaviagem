@@ -168,12 +168,11 @@ A cada nova geração, MUDAR:
   4. Tamanho do texto
 
 [ESTILOS DE TÍTULO — ALTERNAR ENTRE ELES]
-🎯 Direto: "Conheça [DESTINO]" · "Descubra [DESTINO]" · "Explore [DESTINO]"
 🎯 Emocional: "Momentos que ficam para sempre" · "Um lugar para se desconectar" · "Onde tudo faz sentido"
-🎯 Experiência: "Dias inesquecíveis começam aqui" · "Sua próxima história começa em [DESTINO]" · "Mais que uma viagem, uma experiência"
-🎯 Curto e impactante: "[DESTINO] como você nunca viu" · "Simplesmente [DESTINO]" · "O melhor de [DESTINO]"
+🎯 Experiência: "Dias inesquecíveis começam aqui" · "Sua próxima história começa no destino" · "Mais que uma viagem, uma experiência"
+🎯 Curto e impactante: "O melhor de [DESTINO]" · "Seu próximo destino é esse" · "Uma experiência diferente de tudo"
 🎯 Inspiracional: "Permita-se viver isso" · "Você merece esse destino" · "O mundo te espera"
-🎯 Ação leve: "Partiu [DESTINO]?" · "Hora de arrumar as malas" · "Bora viajar?"
+🎯 Ação leve: "Partiu viajar?" · "Hora de arrumar as malas" · "Bora viajar?"
 
 [REGRA DE NÃO REPETIÇÃO]
 🚫 PROIBIDO usar o mesmo verbo em sequência.
@@ -208,10 +207,10 @@ uma abordagem criativa única. NUNCA uma repetição.
 // garantindo variação real de copy entre gerações consecutivas.
 // ============================================================
 const HEADLINE_POOLS_EXPERIENCIA: Record<string, ((d: string) => string)[]> = {
-  direto: [
-    (d) => `Conheça ${d}`,
-    (d) => `Descubra ${d}`,
-    (d) => `Explore ${d}`,
+  convite: [
+    () => `Momentos que ficam para sempre`,
+    (d) => `O melhor de ${d}`,
+    () => `Seu próximo destino é esse`,
   ],
   emocional: [
     () => `Momentos que ficam para sempre`,
@@ -241,7 +240,7 @@ const HEADLINE_POOLS_EXPERIENCIA: Record<string, ((d: string) => string)[]> = {
 };
 
 const HEADLINE_STYLE_ORDER = [
-  "direto",
+  "convite",
   "emocional",
   "experiencia",
   "impactante",
@@ -331,7 +330,7 @@ PREÇO É OPCIONAL E DISCRETO: se inserir, use APENAS um pequeno texto fino "A p
   const variationIndex = Math.abs([...creativeSeed].reduce((acc, char) => acc + char.charCodeAt(0), 0)) % variationDirectives.length;
   const promoLine = opts.category === "oferta"
     ? `Selo promocional: "${v.promoName}"`
-    : `Chamada editorial secundária: "${opts.experienceDescription || `Viva ${v.destination} com calma, beleza e curadoria.`}" — sem selo promocional, sem urgência e sem linguagem de oferta.`;
+    : `Chamada editorial secundária: "${opts.experienceDescription || `Dias leves em ${v.destination}, com calma, beleza e curadoria.`}" — sem selo promocional, sem urgência e sem linguagem de oferta.`;
   const typographyHierarchy = opts.category === "oferta"
     ? "- PREÇO = maior elemento da composição (Ultra-Bold / Heavy).\n- DESTINO = segundo maior elemento (Bold)."
     : "- IMAGEM = protagonista absoluta; texto deve ser leve e elegante.\n- DESTINO = maior texto, mas sem competir com a fotografia.\n- PREÇO, se existir, deve ser o menor elemento informativo e nunca usar Ultra-Bold.";
