@@ -604,13 +604,14 @@ Para CADA palavra renderizada na imagem, validar mentalmente:
 
 // 🔥 OP1 — CARTÃO DIVIDIDO (base Cancún)
 export function promptClassicVertical(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op1");
   return buildBrain(v, {
     category: "oferta",
     layout:
       "DIVISÃO HORIZONTAL EXATA — topo com fotografia full-bleed do destino e base com bloco sólido vibrante. O cartão de oferta fica INTEIRO dentro do bloco sólido inferior, sem cruzar divisórias e sem encostar em outros elementos",
     lighting: "natural diurna brilhante, hora dourada, cores vivas, sombras nítidas",
     sceneDescription: v.destinationDescription,
-    headline: v.promoName,
+    headline,
     specialization:
       "• Cartão central íntegro e separado, com sombra projetada para profundidade, SEM sobrepor foto, badge ou lista.\n• DIVISÃO VISUAL clara entre foto e bloco sólido — zero transição gradual.\n• PREÇO extremamente dominante dentro do cartão (mínimo 30% do cartão).\n• Cores vibrantes obrigatórias: roxo + amarelo OU azul-elétrico + dourado.",
   });
@@ -618,13 +619,14 @@ export function promptClassicVertical(v: MasterPromptVars): string {
 
 // 🔥 OP2 — CARTÃO CENTRAL FLUTUANTE
 export function promptCancunStyle(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op2");
   return buildBrain(v, {
     category: "oferta",
     layout:
       "Fundo 100% FOTOGRÁFICO ocupando toda a tela (sem bloco sólido), com CARTÃO CENTRAL amarelo vibrante sobreposto e centralizado; selo de desconto separado acima do cartão, nunca sobre a borda do cartão",
     lighting: "tropical brilhante, céu turquesa, água cristalina, alta saturação cinematográfica",
     sceneDescription: v.destinationDescription,
-    headline: v.promoName,
+    headline,
     specialization:
       "• Cartão AMARELO vibrante OU dourado, cantos arredondados, sombra suave para flutuar sobre a foto.\n• PREÇO no centro absoluto do cartão, fonte Ultra-Bold, ocupando 30%+ do cartão.\n• Selo CIRCULAR de desconto (% OFF, OFERTA EXCLUSIVA) deve ficar separado do cartão com margem visível; NÃO sobrepor texto nem bordas.\n• Foto NUNCA é cortada de forma agressiva — enquadramento limpo por trás do cartão como background de suporte.",
   });
@@ -632,13 +634,14 @@ export function promptCancunStyle(v: MasterPromptVars): string {
 
 // 🔥 OP3 — CARTÃO AÉREO (TOP DOWN)
 export function promptGramadoStyle(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op3");
   return buildBrain(v, {
     category: "oferta",
     layout:
       "FOTO AÉREA top-down ou drone-shot do destino ocupando toda a tela, com CARTÃO arredondado sobreposto na parte SUPERIOR (não centralizado), permitindo respiro inferior para a vista panorâmica respirar",
     lighting: "aérea diurna, sol alto, água translúcida com gradientes turquesa, sombras nítidas",
     sceneDescription: `vista aérea (drone) de ${v.destinationDescription}`,
-    headline: `PACOTE ${v.destination}`,
+    headline,
     specialization:
       "• Câmera obrigatoriamente em ângulo TOP-DOWN ou drone alto, mostrando ESCALA e amplitude.\n• Cartão posicionado no TERÇO SUPERIOR — não no centro — para deixar a paisagem respirar.\n• Preço FORTE mas INTEGRADO ao cartão, com selo serrilhado tipo bilhete azul anexado na borda inferior do cartão (PIX 5% OFF).\n• Sensação de descoberta + escala da viagem.",
   });
