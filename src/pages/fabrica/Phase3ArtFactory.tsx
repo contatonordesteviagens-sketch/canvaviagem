@@ -311,7 +311,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         return;
       }
 
-      // ===== MODO IA PURA: gera 2 imagens escolhendo prompts distintos da categoria =====
+      // ===== MODO IA PURA: gera prompts da categoria; Experiência/Stories usa fluxo seguro sem texto da IA =====
       if (genMode === "ai") {
         const cat = getCategoria(categoria);
         const isAiExperienceStory = categoria === "experiencia_destino" && format === "story";
