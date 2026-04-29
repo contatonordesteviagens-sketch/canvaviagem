@@ -484,6 +484,9 @@ serve(async (req) => {
       prompt = buildPrompt(finalBody);
     }
 
+    const imageTemperature = body.photoOnly ? 0.72 : 1.18;
+    const imageTopP = body.photoOnly ? 0.88 : 0.96;
+
     // Estratégia de provider: tenta USER_GEMINI primeiro, faz fallback para Lovable AI
     const useUserKey = !!USER_GEMINI_API_KEY;
     let provider: "user_gemini" | "lovable_ai" = useUserKey ? "user_gemini" : "lovable_ai";
@@ -524,8 +527,8 @@ serve(async (req) => {
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
                   responseModalities: ["IMAGE", "TEXT"],
-                  temperature: 1.18,
-                  topP: 0.96,
+                  temperature: imageTemperature,
+                  topP: imageTopP,
                   maxOutputTokens: 8192,
                 },
               }),
@@ -594,8 +597,8 @@ serve(async (req) => {
           model: "google/gemini-3.1-flash-image-preview",
           messages: [{ role: "user", content: prompt }],
           modalities: ["image", "text"],
-          temperature: 1.18,
-          top_p: 0.96,
+          temperature: imageTemperature,
+          top_p: imageTopP,
           max_tokens: 8192,
         }),
       });
