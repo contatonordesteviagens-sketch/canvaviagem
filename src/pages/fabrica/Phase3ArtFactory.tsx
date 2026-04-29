@@ -470,7 +470,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       localStorage.setItem("fabrica_gen_count", String(newCount));
       finishCycle(imagesCustom.length);
 
-      toast.success("2 variações geradas com sua imagem!");
+      toast.success(`${imagesCustom.length} ${imagesCustom.length === 1 ? "variação gerada" : "variações geradas"} com sua imagem!`);
 
     } catch (err: any) {
       console.error("generate error", err);
