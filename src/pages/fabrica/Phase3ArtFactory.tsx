@@ -296,7 +296,11 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       // ===== MODO FOTO (composição local) — gera 2 variações =====
       if (genMode === "photo") {
         toast.info(categoria === "experiencia_destino" ? "Gerando 1 variação cinematográfica" : "Gerando 2 variações com foto real");
-        const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 2);
+        const stratHistKey = scopedStrategyHistoryKey(categoria, genMode, format);
+        let stratHistory: StrategyId[] = [];
+        try { stratHistory = JSON.parse(localStorage.getItem(stratHistKey) || "[]"); } catch { stratHistory = []; }
+        const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 2, stratHistory);
+        localStorage.setItem(stratHistKey, JSON.stringify(chosen));
         const photoRefs = pickPhotoRefs(photos, refImage, generationSeed, chosen.length);
 
         const composed = await Promise.all(
