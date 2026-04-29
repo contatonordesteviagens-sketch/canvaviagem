@@ -33,6 +33,7 @@ interface ComposeTravelAdOptions {
   paymentLabel?: string;
   paymentSuffix?: string;
   strategy?: "ancora" | "vitrine" | "matriz" | "gancho" | "experiencia_hero" | "experiencia_editorial" | "experiencia_postcard" | "experiencia_lifestyle";
+  variation?: number;
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
@@ -175,6 +176,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     paymentLabel,
     paymentSuffix,
     strategy = "vitrine",
+    variation = 0,
   } = options;
 
   const width = 1080;
@@ -198,6 +200,25 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
   const cityFmt = toTitle(city);
   const destFmt = toTitle(destination);
+  const isExperience = strategy.startsWith("experiencia_");
+  const headlinePool = isExperience
+    ? [
+        "Momentos que ficam para sempre",
+        `O melhor de ${destFmt}`,
+        "Partiu viajar?",
+        "Seu próximo destino é esse",
+        "Uma experiência diferente de tudo",
+        "Dias que você não esquece",
+        `${destFmt} como você nunca viu`,
+      ]
+    : [
+        `Pacote para ${destFmt}`,
+        `${destFmt} te espera`,
+        "Partiu viajar?",
+        "Preço especial para viajar",
+        `O melhor de ${destFmt}`,
+        "Seu próximo destino é esse",
+      ];
 
   const safeTop = format === "story" ? 270 : 120;
   const safeBottom = format === "story" ? 345 : 120;
@@ -208,7 +229,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   // Sempre mostra até 5 benefícios (story OU quadrado) — o usuário escolheu 5/5 e os 5 devem aparecer.
   const shownHighlights = highlights.slice(0, 5);
   const badgeText = cityFmt ? `Saindo de ${cityFmt}` : "Pacote completo";
-  const titleText = `Conheça ${destFmt}!`;
+  const titleText = headlinePool[Math.abs(variation) % headlinePool.length];
 
   const resolvePaymentCopy = () => {
     switch (paymentMode) {
