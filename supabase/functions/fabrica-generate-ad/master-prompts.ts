@@ -91,9 +91,8 @@ centro · canto inferior (dentro da safe zone) · lado direito ·
 lado esquerdo · dentro de selo · sobreposto livre na imagem.
 
 [VARIAÇÃO DE ESTILO VISUAL]
-Alternar entre estilos:
-vibrante (amarelo/roxo) · elegante (azul escuro/dourado) ·
-tropical (verde/azul claro) · moderno (gradientes) · clean (fundo claro).
+Alternar estrutura, iluminação e composição, MAS SEM trocar a paleta:
+usar sempre a cor primária e a cor secundária selecionadas no formulário.
 
 [ANTI-REPETIÇÃO DE ESTRUTURA — PROIBIDO]
 🚫 Usar sempre o mesmo "cartão com preço".
@@ -706,7 +705,7 @@ export function promptSideHeroPerformance(v: MasterPromptVars): string {
     sceneDescription: `${v.destinationDescription} em enquadramento hero cinematográfico, sem duplicar cenas`,
     headline,
     specialization:
-      "• Referência estrutural: faixa lateral amarela/roxa + fotografia grande, sem copiar conteúdo fixo.\n• Leitura em 3 segundos: destino → preço → CTA.\n• Painel lateral deve ter respiro interno alto, sem texto vertical colidindo.\n• Nunca usar grid; apenas uma foto hero e um painel de conversão.",
+      "• Referência estrutural: faixa lateral + fotografia grande, usando a cor primária enviada no painel e a secundária nos destaques, sem copiar conteúdo fixo.\n• Leitura em 3 segundos: destino → preço → CTA.\n• Painel lateral deve ter respiro interno alto, sem texto vertical colidindo.\n• Nunca usar grid; apenas uma foto hero e um painel de conversão.",
   });
 }
 
