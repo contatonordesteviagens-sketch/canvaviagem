@@ -5,6 +5,7 @@ import { CATEGORIAS, getCategoria, pickPromptsForCategoria, type CategoriaId } f
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { composeTravelAd, type PaymentMode } from "@/lib/fabrica-compose-art";
+import { getForbiddenSets, registerGeneration, freshSeed } from "@/lib/fabrica-generation-guard";
 import {
   Loader2, Download, Sparkles, ArrowRight, Plus, X,
   Bus, Hotel, Plane, Check, Star, Heart, Sun, Camera, MapPin, Utensils, Ship, Palmtree, Coffee, Wifi, User,
