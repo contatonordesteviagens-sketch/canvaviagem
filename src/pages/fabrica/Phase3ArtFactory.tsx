@@ -311,7 +311,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         localStorage.setItem("fabrica_gen_count", String(newCount));
         finishCycle(composed.length);
 
-        toast.success("2 variações geradas com foto real!");
+        toast.success(`${composed.length} ${composed.length === 1 ? "variação gerada" : "variações geradas"} com foto real!`);
         return;
       }
 
