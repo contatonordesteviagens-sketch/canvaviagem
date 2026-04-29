@@ -660,7 +660,7 @@ Para CADA palavra renderizada na imagem, validar mentalmente:
 
 // 🔥 OP1 — CARTÃO DIVIDIDO (base Cancún)
 export function promptClassicVertical(v: MasterPromptVars): string {
-  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op1");
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op1", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "oferta",
     layout:
@@ -675,7 +675,7 @@ export function promptClassicVertical(v: MasterPromptVars): string {
 
 // 🔥 OP2 — CARTÃO CENTRAL FLUTUANTE
 export function promptCancunStyle(v: MasterPromptVars): string {
-  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op2");
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op2", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "oferta",
     layout:
@@ -690,7 +690,7 @@ export function promptCancunStyle(v: MasterPromptVars): string {
 
 // 🔥 OP3 — CARTÃO AÉREO (TOP DOWN)
 export function promptGramadoStyle(v: MasterPromptVars): string {
-  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op3");
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op3", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "oferta",
     layout:
@@ -705,7 +705,7 @@ export function promptGramadoStyle(v: MasterPromptVars): string {
 
 // 🔥 OP4 — BARRA LATERAL (PERFORMANCE)
 export function promptMaceioStyle(v: MasterPromptVars): string {
-  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op4");
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op4", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "oferta",
     layout:
@@ -720,7 +720,7 @@ export function promptMaceioStyle(v: MasterPromptVars): string {
 
 // 🔥 OP5 — BILHETE PIX / CARTÃO AMARELO
 export function promptTicketPixCard(v: MasterPromptVars): string {
-  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op5");
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op5", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "oferta",
     layout:
@@ -735,7 +735,7 @@ export function promptTicketPixCard(v: MasterPromptVars): string {
 
 // 🔥 OP6 — FAIXA LATERAL + HERO DE PERFORMANCE
 export function promptSideHeroPerformance(v: MasterPromptVars): string {
-  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op6");
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op6", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "oferta",
     layout:
