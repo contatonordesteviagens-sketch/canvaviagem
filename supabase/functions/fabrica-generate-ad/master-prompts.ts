@@ -602,7 +602,7 @@ Para CADA palavra renderizada na imagem, validar mentalmente:
 - Escolha UM layout por geração e NÃO misture cartão central, divisão topo/base, barra lateral e grid no mesmo banner.
 - É PROIBIDO duplicar fotografia, cartões, blocos de preço, botões, selos ou listas dentro da mesma imagem.
 - É PROIBIDO sobrepor textos, preços, ícones ou blocos. Cada elemento deve ter respiro claro; nenhum texto pode encostar em outro bloco.
-- 🚫 PROIBIDO ESPAÇOS VAZIOS GRANDES DENTRO DO CARTÃO/BLOCO DE OFERTA: o cartão amarelo/colorido deve ser PREENCHIDO de forma equilibrada, com altura ajustada ao conteúdo. NÃO deixe áreas grandes em branco entre o título, o preço, a lista e o rodapé. Distribua os elementos com espaçamento RÍTMICO e CONSISTENTE; o cartão deve "respirar", não "ecoar vazio".
+- 🚫 PROIBIDO ESPAÇOS VAZIOS GRANDES DENTRO DO CARTÃO/BLOCO DE OFERTA: o cartão na cor selecionada deve ser PREENCHIDO de forma equilibrada, com altura ajustada ao conteúdo. NÃO deixe áreas grandes em branco entre o título, o preço, a lista e o rodapé. Distribua os elementos com espaçamento RÍTMICO e CONSISTENTE; o cartão deve "respirar", não "ecoar vazio".
 - O cartão de oferta deve ter altura PROPORCIONAL ao conteúdo (compacto e cheio), nunca alongado artificialmente com gaps de 30%+ entre blocos. Se sobrar muito espaço interno, ENCOLHA o cartão — não infle o vazio.
 - Espaçamento entre blocos internos do cartão: máximo equivalente a 1 linha de texto. Mais que isso é ERRO de composição.
 - Se a categoria for OFERTA PACOTE, use visual de venda direta com preço protagonista; se for EXPERIÊNCIA DE DESTINO, use visual editorial com fotografia protagonista. As duas categorias NÃO podem parecer o mesmo estilo visual.
