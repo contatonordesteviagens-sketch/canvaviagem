@@ -316,13 +316,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         localStorage.setItem(stratHistKey, JSON.stringify(chosen));
         const photoRefs = pickPhotoRefs(photos, refImage, freshSeedPhoto, chosen.length);
 
-        // Paleta — evita a paleta usada na última geração
-        let palette = pickGenerationPalette(categoria, freshSeedPhoto, primaryColor, secondaryColor);
-        const palKey = (p: typeof palette) => `${p.primary.toLowerCase()}|${p.secondary.toLowerCase()}`;
-        if (guard.palettes.includes(palKey(palette))) {
-          // tenta próxima
-          palette = pickGenerationPalette(categoria, freshSeedPhoto + 7, primaryColor, secondaryColor);
-        }
+        // Paleta — sempre usa exatamente as cores selecionadas pelo usuário.
+        const palette = selectedPalette(primaryColor, secondaryColor);
 
         const composed = await Promise.all(
           chosen.map(async (localStrategy, idx) => {
@@ -395,12 +390,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
           : pickPromptsForCategoria(categoria, 1, storedLast, mergedRecent);
         const freshSeedAi = freshSeed(generationSeed);
 
-        // Paleta — evita repetir a última usada
-        let palette = pickGenerationPalette(categoria, freshSeedAi, primaryColor, secondaryColor);
-        const palKey = (p: typeof palette) => `${p.primary.toLowerCase()}|${p.secondary.toLowerCase()}`;
-        if (guard.palettes.includes(palKey(palette))) {
-          palette = pickGenerationPalette(categoria, freshSeedAi + 7, primaryColor, secondaryColor);
-        }
+        // Paleta — sempre usa exatamente as cores selecionadas pelo usuário.
+        const palette = selectedPalette(primaryColor, secondaryColor);
         const aiExperienceStrategy = (() => {
           if (!isAiExperienceStory) return "experiencia_hero" as StrategyId;
           const key = scopedStrategyHistoryKey(categoria, "ai", format);
@@ -534,11 +525,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       const freshSeedCustom = freshSeed(generationSeed);
       const chosen = pickDistinctLocalStrategies(categoria, freshSeedCustom, 1, mergedHistCustom);
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
-      let palette = pickGenerationPalette(categoria, freshSeedCustom, primaryColor, secondaryColor);
-      const palKeyC = (p: typeof palette) => `${p.primary.toLowerCase()}|${p.secondary.toLowerCase()}`;
-      if (guardCustom.palettes.includes(palKeyC(palette))) {
-        palette = pickGenerationPalette(categoria, freshSeedCustom + 7, primaryColor, secondaryColor);
-      }
+      const palette = selectedPalette(primaryColor, secondaryColor);
 
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy) => {
