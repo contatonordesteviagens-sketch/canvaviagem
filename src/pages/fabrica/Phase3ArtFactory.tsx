@@ -546,7 +546,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       {/* 1 · Categoria do anúncio (todos os modos) */}
       <div className={sectionCls}>
         <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-1">1 · Categoria do anúncio</h3>
-        <p className="text-[11px] text-white/45 mb-4">A IA escolhe automaticamente um prompt da categoria e nunca repete o último usado.</p>
+        <p className="text-[11px] text-white/45 mb-4">Escolha o tipo de anúncio que deseja gerar.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {CATEGORIAS.map((c) => {
             const selected = categoria === c.id;
@@ -567,7 +567,6 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
                   >
                     {c.badge}
                   </span>
-                  <span className="ml-auto text-[10px] text-white/45">{c.prompts.length} prompts</span>
                 </div>
                 <div className="text-base font-bold text-white mb-1.5 leading-tight">{c.name}</div>
                 <p className="text-[12px] text-white/60 leading-snug mb-3">{c.description}</p>
@@ -575,13 +574,6 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
                   {c.focus.map((f) => (
                     <span key={f} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.06] text-white/70 border border-white/10 whitespace-nowrap">
                       {f}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-3 flex flex-wrap gap-1">
-                  {c.prompts.map((p) => (
-                    <span key={p.code} className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-black/30 text-white/50 border border-white/10">
-                      {p.code}
                     </span>
                   ))}
                 </div>
