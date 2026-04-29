@@ -201,24 +201,34 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const cityFmt = toTitle(city);
   const destFmt = toTitle(destination);
   const isExperience = strategy.startsWith("experiencia_");
+  const hasDest = destFmt.length > 0;
+
+  // Pools de headlines — variantes que dependem do destino só entram se houver destino preenchido.
+  // Frases banidas globalmente (alinhado com edge function): "O melhor de", "Seu próximo destino é esse".
+  const experienceBase = [
+    "Momentos que ficam para sempre",
+    "Partiu viajar?",
+    "Uma experiência diferente de tudo",
+    "Dias que você não esquece",
+    "Histórias começam aqui",
+    "Memórias que você leva pra vida",
+  ];
+  const experienceWithDest = hasDest
+    ? [`${destFmt} como você nunca viu`, `Viva ${destFmt} de verdade`]
+    : [];
+  const ofertaBase = [
+    "Partiu viajar?",
+    "Preço especial para viajar",
+    "Sua próxima viagem começa agora",
+    "Vagas limitadas, garanta a sua",
+  ];
+  const ofertaWithDest = hasDest
+    ? [`Pacote para ${destFmt}`, `${destFmt} te espera`, `Vamos para ${destFmt}?`]
+    : [];
+
   const headlinePool = isExperience
-    ? [
-        "Momentos que ficam para sempre",
-        `O melhor de ${destFmt}`,
-        "Partiu viajar?",
-        "Seu próximo destino é esse",
-        "Uma experiência diferente de tudo",
-        "Dias que você não esquece",
-        `${destFmt} como você nunca viu`,
-      ]
-    : [
-        `Pacote para ${destFmt}`,
-        `${destFmt} te espera`,
-        "Partiu viajar?",
-        "Preço especial para viajar",
-        `O melhor de ${destFmt}`,
-        "Seu próximo destino é esse",
-      ];
+    ? [...experienceBase, ...experienceWithDest]
+    : [...ofertaBase, ...ofertaWithDest];
 
   const safeTop = format === "story" ? 270 : 120;
   const safeBottom = format === "story" ? 345 : 120;
