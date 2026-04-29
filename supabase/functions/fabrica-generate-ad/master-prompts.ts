@@ -39,6 +39,28 @@ export interface MasterPromptVars {
 // ============================================================
 const OFERTA_RULES = `
 ══════════════════════════════════════
+🎯 REFERÊNCIA VISUAL OBRIGATÓRIA — ESTILO "CVC / AGÊNCIA BRASILEIRA"
+══════════════════════════════════════
+A composição deve seguir o padrão visual de anúncios de agências de viagem brasileiras (CVC, Decolar, Hurb), com esta anatomia:
+
+1. FOTO REAL DO DESTINO ocupando o fundo inteiro do banner (igreja, praia, monumento, paisagem icônica reconhecível) — sem efeitos artísticos, sem ilustração, sem render 3D. Foto de catálogo turístico, nítida, cores vibrantes e luz natural cristalina.
+
+2. CAIXA DE PREÇO RETANGULAR no terço superior, com cantos levemente arredondados, em cor SECUNDÁRIA forte (amarelo, dourado ou cor de destaque da paleta), contendo nesta ordem vertical:
+   • Etiqueta pequena no topo: "PACOTE" + NOME DO DESTINO em maiúsculas e negrito (tipografia bold sans-serif).
+   • Linha de informações com ícones pequenos: "X dias ✈ 🚌 🏨 ☕" (duração + transporte + hospedagem + alimentação).
+   • Bloco "a partir de" pequeno + selo redondo "12X sem juros" colado ao valor R$ XXX em tipografia GIGANTE bold (o preço é o maior elemento da caixa).
+   • Linha fina embaixo: "Total por pessoa: R$ X.XXX".
+   • Faixa inferior contrastante (azul escuro ou cor primária) com "5% OFF À VISTA NO PIX" + ícone PIX.
+
+3. SELO/LOGO DA AGÊNCIA pequeno e discreto no canto inferior direito (círculo colorido).
+
+4. TEXTO LATERAL VERTICAL fino na lateral esquerda em fonte miúda branca: condições legais ("Saída de [cidade] em DD/MM/AAAA. Hospedagem [hotel]. Oferta sujeita à disponibilidade. Consulte condições.").
+
+5. PROPORÇÃO 9:16 (story) — composição vertical com foto cobrindo 100% do fundo e a caixa amarela posicionada no terço superior central, deixando a paisagem respirar abaixo.
+
+REGRA DE OURO: o resultado deve PARECER um story real de agência de viagem brasileira pronto para WhatsApp/Instagram — não um pôster de design moderno, não editorial, não minimalista. É anúncio comercial direto e reconhecível.
+
+══════════════════════════════════════
 🔴 REGRAS ESPECÍFICAS DA CATEGORIA — OFERTA DE PACOTE
 - FOCO TOTAL EM CONVERSÃO DIRETA.
 - Esta categoria deve parecer um anúncio agressivo de performance, NÃO editorial.
