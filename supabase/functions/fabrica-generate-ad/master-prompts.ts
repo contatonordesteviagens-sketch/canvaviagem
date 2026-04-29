@@ -128,7 +128,7 @@ const EXPERIENCIA_RULES = `
 - FOCO TOTAL EM DESEJO, EMOÇÃO E EXPERIÊNCIA. NÃO é um anúncio de venda.
 - A FOTOGRAFIA é a protagonista absoluta e deve ocupar no MÍNIMO 70% da composição (em alguns layouts até 90%).
 - Estética editorial premium, aspiracional, estilo capa de revista de viagem (Condé Nast Traveller, Kinfolk, Cereal).
-- Linguagem emocional obrigatória: "Descubra", "Explore", "Viva", "Conheça". JAMAIS usar copy de venda agressiva.
+- Linguagem emocional. Tom aspiracional, contemplativo, NUNCA agressivo.
 
 🚫 PROIBIÇÕES ABSOLUTAS NESTA CATEGORIA:
 - PROIBIDO caixa grande de oferta, cartão promocional, bloco pesado de preço.
@@ -151,8 +151,116 @@ const EXPERIENCIA_RULES = `
 - Tipografia leve e elegante (serifada ou sans-serif refinada).
 - Sem ornamentos comerciais, sem selos, sem botões CTA agressivos.
 - Resultado deve parecer página de revista (foto de capa cobrindo a página inteira), não cartão postal pequeno em cima de fundo branco.
+
+══════════════════════════════════════
+🚨 REGRA MAIS IMPORTANTE — VARIAÇÃO DE COPY (CRÍTICA ABSOLUTA)
+══════════════════════════════════════
+É TERMINANTEMENTE PROIBIDO repetir o mesmo estilo de título em gerações
+consecutivas. Isso inclui "Viva [DESTINO]", "Descubra [DESTINO]",
+"Explore [DESTINO]". NÃO pode repetir a mesma estrutura de frase.
+Cada nova imagem deve usar uma abordagem COMPLETAMENTE DIFERENTE de copy.
+
+[OBRIGAÇÃO DE VARIAÇÃO DE TÍTULOS]
+A cada nova geração, MUDAR:
+  1. Verbo principal
+  2. Estrutura da frase
+  3. Estilo de comunicação
+  4. Tamanho do texto
+
+[ESTILOS DE TÍTULO — ALTERNAR ENTRE ELES]
+🎯 Direto: "Conheça [DESTINO]" · "Descubra [DESTINO]" · "Explore [DESTINO]"
+🎯 Emocional: "Momentos que ficam para sempre" · "Um lugar para se desconectar" · "Onde tudo faz sentido"
+🎯 Experiência: "Dias inesquecíveis começam aqui" · "Sua próxima história começa em [DESTINO]" · "Mais que uma viagem, uma experiência"
+🎯 Curto e impactante: "[DESTINO] como você nunca viu" · "Simplesmente [DESTINO]" · "O melhor de [DESTINO]"
+🎯 Inspiracional: "Permita-se viver isso" · "Você merece esse destino" · "O mundo te espera"
+🎯 Ação leve: "Partiu [DESTINO]?" · "Hora de arrumar as malas" · "Bora viajar?"
+
+[REGRA DE NÃO REPETIÇÃO]
+🚫 PROIBIDO usar o mesmo verbo em sequência.
+🚫 PROIBIDO repetir padrão "verbo + destino".
+🚫 PROIBIDO usar sempre frases curtas iguais.
+🚫 PROIBIDO repetir estrutura de copy.
+Se a anterior usou "Viva Cancún", a próxima NÃO pode ser "Explore Cancún".
+Tem que mudar COMPLETAMENTE o estilo.
+
+[VARIAÇÃO DE ESTRUTURA — ALTERNAR]
+frase com destino · frase sem destino · frase emocional ·
+frase narrativa · frase curta · frase longa.
+
+[CONTROLE FINAL]
+✔ O título é diferente do anterior?
+✔ A estrutura mudou?
+✔ O estilo de linguagem mudou?
+✔ Não parece repetido?
+Se parecer repetido → REFAZER.
+
+[RESULTADO ESPERADO]
+Cada imagem deve parecer uma campanha diferente, uma ideia nova,
+uma abordagem criativa única. NUNCA uma repetição.
 ══════════════════════════════════════
 `;
+
+// ============================================================
+// 🎨 POOL DE HEADLINES ROTATIVOS — EXPERIÊNCIA
+// ------------------------------------------------------------
+// Cada chamada de template ED escolhe um headline diferente,
+// indexado pelo creativeSeed (timestamp+template+variação),
+// garantindo variação real de copy entre gerações consecutivas.
+// ============================================================
+const HEADLINE_POOLS_EXPERIENCIA: Record<string, ((d: string) => string)[]> = {
+  direto: [
+    (d) => `Conheça ${d}`,
+    (d) => `Descubra ${d}`,
+    (d) => `Explore ${d}`,
+  ],
+  emocional: [
+    () => `Momentos que ficam para sempre`,
+    () => `Um lugar para se desconectar`,
+    () => `Onde tudo faz sentido`,
+  ],
+  experiencia: [
+    () => `Dias inesquecíveis começam aqui`,
+    (d) => `Sua próxima história começa em ${d}`,
+    () => `Mais que uma viagem, uma experiência`,
+  ],
+  impactante: [
+    (d) => `${d} como você nunca viu`,
+    (d) => `Simplesmente ${d}`,
+    (d) => `O melhor de ${d}`,
+  ],
+  inspiracional: [
+    () => `Permita-se viver isso`,
+    () => `Você merece esse destino`,
+    () => `O mundo te espera`,
+  ],
+  acao_leve: [
+    (d) => `Partiu ${d}?`,
+    () => `Hora de arrumar as malas`,
+    () => `Bora viajar?`,
+  ],
+};
+
+const HEADLINE_STYLE_ORDER = [
+  "direto",
+  "emocional",
+  "experiencia",
+  "impactante",
+  "inspiracional",
+  "acao_leve",
+];
+
+/**
+ * Escolhe um headline rotativo da categoria Experiência.
+ * Usa o creativeSeed (que muda a cada geração) para forçar variação real.
+ */
+function pickExperienciaHeadline(destination: string, creativeSeed: string): string {
+  const seedSum = [...creativeSeed].reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const styleKey = HEADLINE_STYLE_ORDER[seedSum % HEADLINE_STYLE_ORDER.length];
+  const pool = HEADLINE_POOLS_EXPERIENCIA[styleKey];
+  const builder = pool[Math.floor(seedSum / HEADLINE_STYLE_ORDER.length) % pool.length];
+  return builder(destination);
+}
+
 
 // ============================================================
 // 🧠 CÉREBRO COMUM
