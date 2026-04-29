@@ -641,12 +641,12 @@ export function promptCancunStyle(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "Fundo 100% FOTOGRÁFICO ocupando toda a tela (sem bloco sólido), com CARTÃO CENTRAL amarelo vibrante sobreposto e centralizado; selo de desconto separado acima do cartão, nunca sobre a borda do cartão",
+      "Fundo 100% FOTOGRÁFICO ocupando toda a tela (sem bloco sólido), com CARTÃO CENTRAL na cor secundária enviada sobreposto e centralizado; selo de desconto separado acima do cartão, nunca sobre a borda do cartão",
     lighting: "tropical brilhante, céu turquesa, água cristalina, alta saturação cinematográfica",
     sceneDescription: v.destinationDescription,
     headline,
     specialization:
-      "• Cartão AMARELO vibrante OU dourado, cantos arredondados, sombra suave para flutuar sobre a foto.\n• PREÇO no centro absoluto do cartão, fonte Ultra-Bold, ocupando 30%+ do cartão.\n• Selo CIRCULAR de desconto (% OFF, OFERTA EXCLUSIVA) deve ficar separado do cartão com margem visível; NÃO sobrepor texto nem bordas.\n• Foto NUNCA é cortada de forma agressiva — enquadramento limpo por trás do cartão como background de suporte.",
+      "• Cartão na cor secundária enviada, cantos arredondados, sombra suave para flutuar sobre a foto.\n• PREÇO no centro absoluto do cartão, fonte Ultra-Bold, ocupando 30%+ do cartão.\n• Selo CIRCULAR de desconto deve usar a cor primária enviada e ficar separado do cartão com margem visível; NÃO sobrepor texto nem bordas.\n• Foto NUNCA é cortada de forma agressiva — enquadramento limpo por trás do cartão como background de suporte.",
   });
 }
 
@@ -686,12 +686,12 @@ export function promptTicketPixCard(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "FOTO AÉREA OU PANORÂMICA ocupando 100% do fundo com um CARTÃO AMARELO grande e limpo no centro seguro; dentro do cartão há cabeçalho PACOTE + DESTINO, linha de ícones dos inclusos, preço maciço e selo azul serrilhado PIX anexado abaixo com margem sem sobreposição",
+      "FOTO AÉREA OU PANORÂMICA ocupando 100% do fundo com um CARTÃO grande e limpo na cor secundária enviada no centro seguro; dentro do cartão há cabeçalho PACOTE + DESTINO, linha de ícones dos inclusos, preço maciço e selo serrilhado PIX na cor primária enviada anexado abaixo com margem sem sobreposição",
     lighting: "natural brilhante, comercial, cores turquesa/azul com contraste alto no cartão amarelo",
     sceneDescription: `vista ampla e clara de ${v.destinationDescription}`,
     headline,
     specialization:
-      "• Inspirado em cartões amarelos premium de pacote, mas usando APENAS os dados do formulário.\n• O cartão amarelo não pode encostar nas safe zones; deve parecer uma peça única e limpa.\n• Selo tipo bilhete PIX azul fica abaixo do preço com separação visível, nunca sobre texto.\n• A fotografia de fundo serve de contexto; preço e oferta dominam a conversão.",
+      "• Inspirado em cartões premium de pacote, mas usando APENAS os dados e cores do formulário.\n• O cartão na cor secundária enviada não pode encostar nas safe zones; deve parecer uma peça única e limpa.\n• Selo tipo bilhete PIX na cor primária enviada fica abaixo do preço com separação visível, nunca sobre texto.\n• A fotografia de fundo serve de contexto; preço e oferta dominam a conversão.",
   });
 }
 
