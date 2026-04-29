@@ -78,10 +78,11 @@ const EXPERIENCIA_RULES = `
 5. Preço (opcional, discreto, minúsculo)
 
 ✅ ESTILO VISUAL:
-- Muito espaço negativo / respiro visual.
+- Muito espaço negativo DENTRO da imagem (céu, mar, areia, paisagem) — NÃO criar bordas brancas, molduras ou margens externas vazias.
+- A FOTOGRAFIA DEVE PREENCHER 100% DA TELA, full-bleed, edge-to-edge. PROIBIDO moldura branca, polaroid, fundo branco visível em volta da foto, layout "imagem flutuando dentro de papel".
 - Tipografia leve e elegante (serifada ou sans-serif refinada).
 - Sem ornamentos comerciais, sem selos, sem botões CTA agressivos.
-- Resultado deve parecer página de revista, não panfleto.
+- Resultado deve parecer página de revista (foto de capa cobrindo a página inteira), não cartão postal pequeno em cima de fundo branco.
 ══════════════════════════════════════
 `;
 
