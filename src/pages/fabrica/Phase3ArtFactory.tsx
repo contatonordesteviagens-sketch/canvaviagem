@@ -391,22 +391,33 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       if (genMode === "ai") {
         const cat = getCategoria(categoria);
         const isAiExperienceStory = categoria === "experiencia_destino";
-        const categoryLastKey = scopedTemplateKey("last", categoria, genMode);
-        const categoryRecentKey = scopedTemplateKey("recent", categoria, genMode);
+        const guard = getForbiddenSets(categoria, "ai", format);
+        const categoryLastKey = scopedTemplateKey("last", categoria, "ai");
+        const categoryRecentKey = scopedTemplateKey("recent", categoria, "ai");
         const storedLast = localStorage.getItem(categoryLastKey) || (cat.prompts.some((p) => p.templateId === lastTemplateId) ? lastTemplateId : null);
         let storedRecent: string[] = [];
         try { storedRecent = JSON.parse(localStorage.getItem(categoryRecentKey) || "[]"); }
         catch { storedRecent = []; }
+        // Junta histórico local com o GenerationGuard para evitar repetir templates
+        const mergedRecent = Array.from(new Set([...storedRecent, ...guard.layouts]));
         const picks = isAiExperienceStory
           ? [{ code: "ED_SAFE_STORY", templateId: "photo_only_experience_story" }]
-          : pickPromptsForCategoria(categoria, 1, storedLast, storedRecent);
-        const palette = pickGenerationPalette(categoria, generationSeed, primaryColor, secondaryColor);
+          : pickPromptsForCategoria(categoria, 1, storedLast, mergedRecent);
+        const freshSeedAi = freshSeed(generationSeed);
+
+        // Paleta — evita repetir a última usada
+        let palette = pickGenerationPalette(categoria, freshSeedAi, primaryColor, secondaryColor);
+        const palKey = (p: typeof palette) => `${p.primary.toLowerCase()}|${p.secondary.toLowerCase()}`;
+        if (guard.palettes.includes(palKey(palette))) {
+          palette = pickGenerationPalette(categoria, freshSeedAi + 7, primaryColor, secondaryColor);
+        }
         const aiExperienceStrategy = (() => {
           if (!isAiExperienceStory) return "experiencia_hero" as StrategyId;
-          const key = scopedStrategyHistoryKey(categoria, genMode, format);
+          const key = scopedStrategyHistoryKey(categoria, "ai", format);
           let history: StrategyId[] = [];
           try { history = JSON.parse(localStorage.getItem(key) || "[]"); } catch { history = []; }
-          const [picked] = pickDistinctLocalStrategies(categoria, generationSeed, 1, history);
+          const mergedH = Array.from(new Set([...history, ...(guard.layouts as StrategyId[])]));
+          const [picked] = pickDistinctLocalStrategies(categoria, freshSeedAi, 1, mergedH);
           localStorage.setItem(key, JSON.stringify([picked]));
           return picked;
         })();
@@ -433,9 +444,12 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
               templateId: isAiExperienceStory ? undefined : pick.templateId,
               photoOnly: isAiExperienceStory,
-              variation: generationSeed + idx,
+              variation: freshSeedAi + idx,
               packageType: "Voo + Hotel",
               duration: "5 NOITES",
+              // 🚨 Anti-repetição global (Regra 5)
+              forbiddenHeadlines: guard.headlines,
+              forbiddenLayouts: guard.layouts,
             },
           }))
         );
@@ -467,7 +481,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               paymentLabel: paymentLabel || undefined,
               paymentSuffix: paymentSuffix || undefined,
               strategy: aiExperienceStrategy,
-              variation: generationSeed,
+              variation: freshSeedAi,
             });
             if (state.logoBase64) {
               try {
@@ -486,6 +500,17 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         setGeneratedImage(images[0]);
         update({ generatedAdImage: images[0], primaryColor: palette.primary });
         if (providerSeen) setLastProvider(providerSeen);
+
+        // Registra no GenerationGuard
+        const layoutId = isAiExperienceStory ? aiExperienceStrategy : (picks[0]?.templateId || "ai_unknown");
+        // Headline real é decidida no backend, mas registramos a "categoria visual" como hash:
+        // o que importa é layout+paleta para impedir mesmo arranjo no próximo clique.
+        registerGeneration(categoria, "ai", format, {
+          layoutId,
+          headline: `${categoria}-${freshSeedAi}`, // o real fica no backend; isso impede colisão
+          primary: palette.primary,
+          secondary: palette.secondary,
+        });
 
         // Persiste o último prompt usado para a próxima rotação não repetir
         const usedTemplateIds = isAiExperienceStory ? [] : picks.map((p) => p.templateId);
