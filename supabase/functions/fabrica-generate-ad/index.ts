@@ -603,6 +603,23 @@ serve(async (req) => {
         "gemini-2.0-flash-preview-image-generation",
         "gemini-2.5-flash-image-preview",
       ];
+      // Carrega referência CVC como inlineData se for oferta
+      let refParts: Array<Record<string, unknown>> = [];
+      if (isOferta) {
+        try {
+          const refResp = await fetch(CVC_REF_URL);
+          if (refResp.ok) {
+            const buf = new Uint8Array(await refResp.arrayBuffer());
+            let bin = "";
+            for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
+            const b64 = btoa(bin);
+            refParts = [{ inlineData: { mimeType: "image/jpeg", data: b64 } }];
+          }
+        } catch (e) {
+          console.warn("Falha ao carregar ref CVC:", e);
+        }
+      }
+      const promptText = isOferta ? refInstruction + prompt : prompt;
       let geminiResp: Response | null = null;
       let lastErrText = "";
       try {
@@ -613,7 +630,7 @@ serve(async (req) => {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
+                contents: [{ parts: [{ text: promptText }, ...refParts] }],
                 generationConfig: {
                   responseModalities: ["IMAGE", "TEXT"],
                   temperature: imageTemperature,
