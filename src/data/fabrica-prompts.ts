@@ -1,4 +1,4 @@
-export type StrategyId = "ancora" | "vitrine" | "matriz" | "gancho" | "experiencia_hero" | "experiencia_editorial";
+export type StrategyId = "ancora" | "vitrine" | "matriz" | "gancho" | "experiencia_hero" | "experiencia_editorial" | "experiencia_postcard" | "experiencia_lifestyle";
 
 export interface StrategyMeta {
   id: StrategyId;
@@ -57,5 +57,21 @@ export const STRATEGIES: StrategyMeta[] = [
     badgeColor: "purple",
     description: "Layout de revista com narrativa visual e oferta discreta.",
     emoji: "🌍",
+  },
+  {
+    id: "experiencia_postcard",
+    name: "Postal Premium",
+    badge: "EMOÇÃO",
+    badgeColor: "blue",
+    description: "Foto dominante com assinatura visual discreta e respiro de capa editorial.",
+    emoji: "🖼️",
+  },
+  {
+    id: "experiencia_lifestyle",
+    name: "Lifestyle de Viagem",
+    badge: "NARRATIVA",
+    badgeColor: "purple",
+    description: "Visual aspiracional com narrativa leve e sensação de viagem real.",
+    emoji: "✨",
   },
 ];
