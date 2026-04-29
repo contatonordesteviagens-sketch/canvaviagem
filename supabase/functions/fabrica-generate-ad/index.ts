@@ -143,14 +143,17 @@ function iconLine(h: Highlight): string {
 function safeZoneRules(format: Format): string {
   if (format === "story") {
     return `FORMATO VERTICAL 9:16 — para Stories e Reels.
+GERE A IMAGEM DIRETAMENTE EM PROPORÇÃO VERTICAL 9:16 (mais alta do que larga, formato de celular em pé).
+NÃO entregue uma composição quadrada — a tela é 1080x1920, vertical.
 SAFE ZONES (deixe respiro generoso, NÃO posicione textos críticos nestas áreas):
 - Topo: faixa superior livre para o nome de usuário do app.
 - Base: faixa inferior larga livre para legenda, música e botões do app.
 - Lateral direita: coluna estreita livre para botões de interação.
 - Lateral esquerda: pequena margem de respiro.
-Mantenha todo o texto importante centralizado verticalmente, dentro do miolo seguro da imagem.`;
+Concentre TODO o conteúdo importante (preço, headline, CTA, logo) no MIOLO CENTRAL VERTICAL — entre 18% e 82% da altura — e centralize horizontalmente, deixando ~10% de margem em cada lateral, pois as bordas podem ser recortadas em telas diferentes.`;
   }
-  return `FORMATO QUADRADO 1:1 — para o feed do Instagram.
+  return `FORMATO QUADRADO 1:1 — para o feed do Instagram (1080x1080).
+GERE A IMAGEM DIRETAMENTE EM PROPORÇÃO QUADRADA, nunca vertical nem horizontal.
 SAFE ZONES: respiro generoso em todas as bordas. Composição equilibrada, perfeita para o grid.`;
 }
 
