@@ -205,7 +205,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const left = 80;
   const right = width - 80;
   const contentWidth = right - left;
-  const shownHighlights = highlights.slice(0, format === "story" ? 5 : 4);
+  // Sempre mostra até 5 benefícios (story OU quadrado) — o usuário escolheu 5/5 e os 5 devem aparecer.
+  const shownHighlights = highlights.slice(0, 5);
   const badgeText = cityFmt ? `Saindo de ${cityFmt}` : "Pacote completo";
   const titleText = `Conheça ${destFmt}!`;
 
@@ -366,7 +367,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = "#ffffff";
     drawTextBlock(ctx, titleText, left, topY + 150, panelW - left - 36, 70, 2, { baseFontSize: 66, minFontSize: 38 });
     drawPromoKicker(left, topY + 300);
-    const pillsH = drawHighlightsBlock(left, topY + 396, panelW - left - 36, format === "story" ? 5 : 4, false);
+    const pillsH = drawHighlightsBlock(left, topY + 396, panelW - left - 36, 5, false, format !== "story");
     drawPriceCard(left, Math.min(panelBottom - 170, topY + 420 + pillsH), panelW - left - 36, 146, "left");
   } else if (strategy === "matriz") {
     ctx.fillStyle = primaryColor;
@@ -385,7 +386,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
     const rightColX = left + leftColW + 24;
     const rightColW = contentWidth - leftColW - 24;
-    const pillsH = drawHighlightsBlock(rightColX, lowerY + 8, rightColW, format === "story" ? 5 : 4, true);
+    const pillsH = drawHighlightsBlock(rightColX, lowerY + 8, rightColW, 5, true, format !== "story");
     const priceY = Math.min(panelBottom - 180, lowerY + pillsH + 40);
     drawPriceCard(rightColX, priceY, rightColW, 154, "right");
   } else if (strategy === "gancho") {
@@ -406,7 +407,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     drawTextBlock(ctx, titleText, left + 28, panelBottom - (format === "story" ? 510 : 300), contentWidth - 56, format === "story" ? 78 : 64, 2, { baseFontSize: format === "story" ? 78 : 60, minFontSize: 42 });
     drawPromoKicker(left + 28, panelBottom - (format === "story" ? 348 : 200));
     // 5 pills compactos à esquerda; card de preço à direita não sobrepõe
-    const pillsLimit = format === "story" ? 5 : 4;
+    const pillsLimit = 5;
     const pillsW = contentWidth - 360;
     drawHighlightsBlock(left + 28, panelBottom - (format === "story" ? 320 : 180), pillsW, pillsLimit, true, true);
     drawPriceCard(right - 320, panelBottom - (format === "story" ? 250 : 174), 292, 146, "right");
@@ -544,7 +545,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     drawTextBlock(ctx, titleText, left, cursorY + 56, contentWidth, 80, 2, { baseFontSize: 76, minFontSize: 44 });
     cursorY += 168;
 
-    const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, format === "story" ? 5 : 4, false);
+    const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, 5, false);
     cursorY += pillsH + 28;
 
     drawPriceCard(left, cursorY, contentWidth, 168, "right");
