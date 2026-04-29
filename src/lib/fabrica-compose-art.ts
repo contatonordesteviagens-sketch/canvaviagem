@@ -422,18 +422,22 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = veil;
     ctx.fillRect(0, 0, width, heroH);
 
-    const textY = format === "story" ? panelBottom - 520 : height - 330;
+    const textY = format === "story" ? panelBottom - 520 : height - 380;
+    const titleY = format === "story" ? textY + 96 : textY + 92;
+    const benefitsY = format === "story" ? textY + 332 : textY + 248;
+    const footerY = format === "story" ? textY + 245 : textY + 318;
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "left";
     ctx.font = "700 30px Inter, Arial, sans-serif";
     ctx.fillText(cityFmt ? `Saindo de ${cityFmt}` : "Experiência completa", left, textY);
-    drawTextBlock(ctx, `Viva ${destFmt}`, left, textY + 96, contentWidth, 92, 2, { fontWeight: "800", baseFontSize: format === "story" ? 88 : 70, minFontSize: 44 });
-    ctx.font = "500 30px Inter, Arial, sans-serif";
-    ctx.fillText("Momentos que ficam para sempre", left, textY + (format === "story" ? 245 : 205));
+    drawTextBlock(ctx, `Viva ${destFmt}`, left, titleY, contentWidth, format === "story" ? 92 : 72, 2, { fontWeight: "800", baseFontSize: format === "story" ? 88 : 66, minFontSize: 42 });
 
     const smallItems = shownHighlights.slice(0, 3).map((h) => h.text).join("   •   ");
-    ctx.font = "700 25px Inter, Arial, sans-serif";
-    ctx.fillText(`•   ${smallItems}`, left, Math.min(panelBottom - 96, textY + (format === "story" ? 332 : 270)));
+    ctx.font = `700 ${format === "story" ? 25 : 24}px Inter, Arial, sans-serif`;
+    drawTextBlock(ctx, `•   ${smallItems}`, left, benefitsY, contentWidth, format === "story" ? 34 : 32, 2, { fontWeight: "700", baseFontSize: format === "story" ? 25 : 24, minFontSize: 18 });
+
+    ctx.font = "500 30px Inter, Arial, sans-serif";
+    ctx.fillText("Momentos que ficam para sempre", left, footerY);
   } else if (strategy === "experiencia_editorial") {
     ctx.fillStyle = "#f7f2ea";
     ctx.fillRect(0, 0, width, height);
