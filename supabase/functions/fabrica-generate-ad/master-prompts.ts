@@ -227,6 +227,28 @@ Os textos abaixo DEVEM aparecer no banner EXATAMENTE como escritos, sem alterar 
 • Lista de benefícios: copiar PALAVRA POR PALAVRA cada item enviado. Se não souber soletrar com 100% de certeza, OMITIR o item — NUNCA inventar caracteres, NUNCA repetir letras aleatórias.
 
 ══════════════════════════════════════
+🚨 REGRA ANTI-CORTE (CRÍTICA — JÁ CAUSOU PALAVRAS OBSCENAS)
+══════════════════════════════════════
+TODA palavra renderizada DEVE caber 100% dentro da área visível do banner, com no mínimo 5% de margem interna em CADA lado (esquerda, direita, topo, base).
+
+⛔ É TERMINANTEMENTE PROIBIDO que qualquer letra fique cortada pela borda da imagem, pelo "bleed" do canvas, ou por qualquer elemento sobreposto. Cortar letras NUNCA é aceitável — nem 1 pixel.
+
+⛔ EXEMPLO REAL DE FALHA CATASTRÓFICA (NÃO REPETIR):
+   "OFERTA ESPECIAL" foi renderizado tão largo que o "O" inicial e o "L" final foram cortados pela borda, transformando-se em «SURUBA ESPECIA» — palavra OBSCENA em português brasileiro. ISSO É INACEITÁVEL.
+
+⛔ Palavras que JAMAIS podem aparecer no banner por acidente de corte (são todas obscenas/ofensivas em português brasileiro):
+   "SURUBA", "PORRA", "MERDA", "BOSTA", "PUTA", "CARALHO", "BUCETA", "CU", "PINTO", "PIROCA", "CACETE", "FODA", "FODE", "FUDEU", "VIADO", "BICHA", "PUTO", "PUTAS", "VAGABA", "VADIA", "PIRANHA".
+   Se a palavra renderizada SOAR ou PARECER qualquer uma dessas, REGENERAR a imagem do zero, reduzindo o tamanho da fonte do título até caber inteira com folga.
+
+✅ COMO EVITAR:
+1. ANTES de escolher o tamanho da fonte, contar as letras de CADA palavra do título.
+2. Calcular a largura disponível (largura da imagem - 10% de padding lateral total).
+3. Se a palavra não couber, REDUZIR o tamanho até caber INTEIRA com 5% de margem em cada lado.
+4. Quebrar em DUAS LINHAS é preferível a cortar uma letra. Ex: «OFERTA / ESPECIAL» em duas linhas é OK; «SURUBA ESPECIA» em uma linha cortada é PROIBIDO.
+5. Após renderizar, verificar visualmente se a primeira letra (A, B, C...) e a última letra estão COMPLETAS e VISÍVEIS. Se não estiverem, REGENERAR.
+══════════════════════════════════════
+
+══════════════════════════════════════
 🔤 DICIONÁRIO ANTI-ERRO — PALAVRAS QUE O MODELO COSTUMA ERRAR
 ══════════════════════════════════════
 Estas são as palavras em português que modelos de geração de imagem mais erram. Use SEMPRE a grafia da coluna CERTO. NUNCA a coluna ERRADO.
@@ -236,6 +258,7 @@ MOEDA E NÚMEROS:
   ❌ "R5 149,90"     ✅ "R$ 149,90"        (cifrão "$", não o número "5")
   ❌ "B$ 149,90"     ✅ "R$ 149,90"        (letra "R", não "B")
   ❌ "RS\$ 149,90"   ✅ "R$ 149,90"
+  ❌ "R$ 1500"       ✅ "R$ 1.500,00"      (sempre incluir centavos quando exibir total)
   ❌ "1499,00"       ✅ "1.499,00"         (ponto de milhar obrigatório a partir de 1.000)
   ❌ "1.499.00"      ✅ "1.499,00"         (centavos com VÍRGULA, nunca ponto)
   ❌ "1,499,00"      ✅ "1.499,00"         (milhar com PONTO, nunca vírgula)
@@ -245,16 +268,28 @@ ALIMENTAÇÃO E HOSPEDAGEM:
   ❌ "Café da mênha"      ✅ "Café da manhã"
   ❌ "Café da mânha"      ✅ "Café da manhã"
   ❌ "Café da manha"      ✅ "Café da manhã"  (til no "a" final é obrigatório)
+  ❌ "Café da mâhna"      ✅ "Café da manhã"
+  ❌ "Café da mãnha"      ✅ "Café da manhã"
   ❌ "Cafe da manhã"      ✅ "Café da manhã"  (acento agudo no "e")
   ❌ "Almolço"            ✅ "Almoço"
   ❌ "Hospedajem"         ✅ "Hospedagem"
+  ❌ "Hospadagem"         ✅ "Hospedagem"
+  ❌ "Hospadaem"          ✅ "Hospedagem"     (já apareceu — proibido)
+  ❌ "Hospedaem"          ✅ "Hospedagem"
+  ❌ "Hospedagen"         ✅ "Hospedagem"
   ❌ "Hotell"             ✅ "Hotel"
   ❌ "Pousadda"           ✅ "Pousada"
   ❌ "Reffeições"         ✅ "Refeições"
   ❌ "Transffer"          ✅ "Transfer"
+  ❌ "Passeos"            ✅ "Passeios"
+  ❌ "Pacceios"           ✅ "Passeios"
+  ❌ "Guia locall"        ✅ "Guia local"
 
 CIDADES E DESTINOS BRASILEIROS:
   ❌ "Fortalesa"          ✅ "Fortaleza"
+  ❌ "Fartalesa"          ✅ "Fortaleza"      (já apareceu — proibido)
+  ❌ "Fartaleza"          ✅ "Fortaleza"
+  ❌ "Fortaleza"          ✅ "Fortaleza"
   ❌ "Maseió"             ✅ "Maceió"
   ❌ "Jericoacora"        ✅ "Jericoacoara"
   ❌ "Jiricoacoara"       ✅ "Jericoacoara"
@@ -267,11 +302,12 @@ CIDADES E DESTINOS BRASILEIROS:
   ❌ "Salvadorr"          ✅ "Salvador"
   ❌ "Recifie"            ✅ "Recife"
   ❌ "Natall"             ✅ "Natal"
-  ❌ "Pipa"               ✅ "Pipa"
   ❌ "Gramaddo"           ✅ "Gramado"
   ❌ "Bonitto"            ✅ "Bonito"
+  ❌ "Rio de Janero"      ✅ "Rio de Janeiro"
+  ❌ "Rio de Janneiro"    ✅ "Rio de Janeiro"
 
-PALAVRAS COMERCIAIS E LEGAIS:
+PALAVRAS COMERCIAIS, EMOCIONAIS E LEGAIS:
   ❌ "dispatbibiiibade"   ✅ "disponibilidade"
   ❌ "dispobibibidade"    ✅ "disponibilidade"
   ❌ "disponiblidade"     ✅ "disponibilidade"
@@ -280,7 +316,6 @@ PALAVRAS COMERCIAIS E LEGAIS:
   ❌ "Reservar agorra"    ✅ "Reservar agora"
   ❌ "Garantta"           ✅ "Garanta"
   ❌ "Compree"            ✅ "Compre"
-  ❌ "Aproveite"          ✅ "Aproveite"
   ❌ "Imperdivel"         ✅ "Imperdível"
   ❌ "Promosão"           ✅ "Promoção"
   ❌ "Ofertta"            ✅ "Oferta"
@@ -296,10 +331,33 @@ PALAVRAS COMERCIAIS E LEGAIS:
   ❌ "Taxass"             ✅ "Taxas"
   ❌ "impostoss"          ✅ "impostos"
   ❌ "incluzos"           ✅ "inclusos"
+  ❌ "incluidos"          ✅ "inclusos"
   ❌ "Preçço"             ✅ "Preço"
   ❌ "Preco"              ✅ "Preço"  (cedilha obrigatória)
   ❌ "naum"               ✅ "não"
   ❌ "nao"                ✅ "não"
+  ❌ "Descrubra"          ✅ "Descubra"
+  ❌ "Descobra"           ✅ "Descubra"
+  ❌ "experiência"        ✅ "experiência"   (acento agudo no "e", circunflexo no segundo "e")
+  ❌ "expériência"        ✅ "experiência"   (NÃO usa acento agudo no primeiro "e")
+  ❌ "expériêncio"        ✅ "experiência"   (a palavra termina em "a", é FEMININA — "uma experiência", nunca "um experiência" nem "expériêncio")
+  ❌ "expêriencia"        ✅ "experiência"
+  ❌ "experienca"         ✅ "experiência"
+  ❌ "ineséquevel"        ✅ "inesquecível"  (já apareceu — proibido)
+  ❌ "inesquesivel"       ✅ "inesquecível"
+  ❌ "inesquecivel"       ✅ "inesquecível"  (acento agudo no "i")
+  ❌ "inesqueçivel"       ✅ "inesquecível"  (sem cedilha, é "c" simples)
+  ❌ "pocuos"             ✅ "poucos"        (já apareceu — proibido)
+  ❌ "pucos"              ✅ "poucos"
+  ❌ "Para pocuos"        ✅ "Para poucos"
+  ❌ "espera por voce"    ✅ "espera por você"  (acento circunflexo obrigatório)
+  ❌ "voce"               ✅ "você"
+  ❌ "viajem"             ✅ "viagem"        (com G, não com J)
+  ❌ "Tipo de viajem"     ✅ "Tipo de viagem"
+  ❌ "Conheca"            ✅ "Conheça"       (cedilha obrigatória)
+  ❌ "Explore"            ✅ "Explore"
+  ❌ "Vivencie"           ✅ "Vivencie"
+  ❌ "Roteiro"            ✅ "Roteiro"
 
 ══════════════════════════════════════
 🔍 CHECKLIST DE PURGA ORTOGRÁFICA (REVISAR ANTES DE FINALIZAR)
@@ -310,18 +368,21 @@ Para CADA palavra renderizada na imagem, validar mentalmente:
 2. ✓ Tem o NÚMERO EXATO de letras da palavra original (sem letras a mais ou a menos)?
 3. ✓ Não tem "letras fantasmas" — repetições aleatórias de "i", "b", "p", "l", "s", "t" no meio?
 4. ✓ Não tem letras coladas/fundidas que parecem outra letra?
-5. ✓ A PRIMEIRA letra de cada palavra está visível e do MESMO tamanho que as demais? (jamais cortar inicial — "ERICOACOARA" é ERRO)
+5. ✓ A PRIMEIRA letra de cada palavra está visível e do MESMO tamanho que as demais? (jamais cortar inicial — "ERICOACOARA" é ERRO; "SURUBA ESPECIA" é ERRO GRAVE)
 6. ✓ A ÚLTIMA letra de cada palavra está completa, sem cortes?
 7. ✓ Símbolo de moeda é "R$" (R maiúsculo + cifrão "$")? Nunca "RS", "R5", "B$", "BS".
 8. ✓ Números acima de 999 têm PONTO de milhar e VÍRGULA nos centavos? ("1.499,00")
-9. ✓ Acentos obrigatórios presentes: "Café", "manhã", "Preço", "disponibilidade", "não", "inclusos", "Aéreo", "Últimas", "Búzios", "Maceió", "Cancún", "Florianópolis"?
-10. ✓ Cedilha "ç" presente onde necessário: "Preço", "Promoção", "Almoço", "Refeições"?
+9. ✓ Acentos obrigatórios presentes: "Café", "manhã", "Preço", "disponibilidade", "não", "inclusos", "Aéreo", "Últimas", "Búzios", "Maceió", "Cancún", "Florianópolis", "experiência", "inesquecível", "você"?
+10. ✓ Cedilha "ç" presente onde necessário: "Preço", "Promoção", "Almoço", "Refeições", "Conheça"?
 11. ✓ Til "~" presente em: "manhã", "não", "São", "Promoção"?
 12. ✓ Nenhuma palavra em inglês inventada substituindo palavra portuguesa?
+13. ✓ Nenhuma palavra cortada acidentalmente formou palavrão ou termo obsceno?
+14. ✓ Concordância de gênero/número correta? ("uma experiência", não "um experiência"; "para poucos", não "para pocuos")
+15. ✓ Categoria EXPERIÊNCIA: NÃO renderizou cartão amarelo de oferta, NÃO listou "Tipo de viagem: Voo + Hotel", NÃO mostrou parcelamento? (esses elementos são EXCLUSIVOS de OFERTA)
 
-⚠️ Se QUALQUER palavra falhar em QUALQUER um dos 12 itens acima, REGENERAR aquela palavra do zero antes de finalizar a imagem. É preferível OMITIR um texto a renderizá-lo com erro ortográfico.
+⚠️ Se QUALQUER palavra falhar em QUALQUER um dos 15 itens acima, REGENERAR aquela palavra do zero antes de finalizar a imagem. É preferível OMITIR um texto a renderizá-lo com erro ortográfico.
 
-⚠️ REGRA DE OURO: na dúvida sobre como soletrar, OMITIR a palavra. Texto faltando é menos grave que texto errado.
+⚠️ REGRA DE OURO: na dúvida sobre como soletrar, OMITIR a palavra. Texto faltando é menos grave que texto errado, e MUITO menos grave que texto cortado virando obscenidade.
 ══════════════════════════════════════
 
 
