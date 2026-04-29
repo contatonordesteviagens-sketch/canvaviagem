@@ -137,6 +137,7 @@ const defaultState: FabricaState = {
   selectedPackages: [],
   depoimentos: [],
   primaryColor: "#F59E0B",
+  secondaryColor: "#FCD34D",
   currentPhase: 1,
   checklist30days: {},
   diagnosticoCompleto: false,
