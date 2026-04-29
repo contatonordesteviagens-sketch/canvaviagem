@@ -117,9 +117,9 @@ const FabricaInner = () => {
               key={p.num}
               onClick={() => setPhase(p.num)}
               className={`flex-1 py-2 px-2 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-colors ${
-                state.currentPhase === p.num ? "text-black" : state.currentPhase > p.num ? "text-white/80" : "text-white/40"
+                state.currentPhase === p.num ? "" : state.currentPhase > p.num ? "text-white/80" : "text-white/40"
               }`}
-              style={state.currentPhase === p.num ? { background: state.primaryColor } : undefined}
+              style={state.currentPhase === p.num ? { background: state.primaryColor, color: onPrimaryText } : undefined}
             >
               <span className="hidden sm:inline">F{p.num} · </span>{p.label}
             </button>
