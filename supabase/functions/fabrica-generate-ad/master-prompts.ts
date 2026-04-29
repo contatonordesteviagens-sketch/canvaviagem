@@ -758,7 +758,7 @@ export function promptTwoSceneEditorial(v: MasterPromptVars): string {
       "COLUNA ESQUERDA editorial em fundo bege/off-white com título e checklist leve; COLUNA DIREITA com duas fotografias distintas do destino, uma paisagem ampla e um detalhe cultural/local, com espaçamento uniforme",
     lighting: "editorial sofisticada, textura real, luz natural coerente entre as cenas",
     sceneDescription: `duas perspectivas diferentes de ${v.destinationDescription}: uma paisagem ampla e um detalhe sensorial local`,
-    headline: `Viva ${v.destination}`,
+    headline: pickExperienciaHeadline(v.destination, v.creativeSeed || "ed6"),
     experienceDescription: `Explore ${v.destination} por ângulos diferentes: paisagem, cultura, descanso e momentos memoráveis em ${v.duration}.`,
     specialization:
       "• As duas fotos devem ser DIFERENTES, nunca cópias da mesma imagem.\n• Composição estilo página editorial premium, NÃO panfleto de preço.\n• Checklist curto e espaçado, sem pílulas agressivas.\n• Sem urgência, sem 'APENAS HOJE', sem preço gigante. Preço opcional como nota fina.",
