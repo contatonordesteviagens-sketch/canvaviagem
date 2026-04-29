@@ -210,6 +210,31 @@ ${typographyHierarchy}
 - SEM erros de texto: ortografia perfeita em português, sem caracteres alienígenas, sem fusão de letras.
 - REALISMO ABSOLUTO em qualquer elemento humano, objeto ou cenário.
 
+══════════════════════════════════════
+🛑 LISTA ZERO-TIPO — TEXTOS LITERAIS OBRIGATÓRIOS (COPIAR CARACTERE A CARACTERE)
+══════════════════════════════════════
+Os textos abaixo DEVEM aparecer no banner EXATAMENTE como escritos, sem alterar UMA ÚNICA letra, acento, espaço ou pontuação. NÃO traduzir, NÃO abreviar, NÃO inventar palavras, NÃO improvisar caracteres parecidos. Se o modelo não souber renderizar uma letra com fidelidade, REFAZER até ficar 100% correto.
+
+• Destino: «${v.destination}»  (renderizar a palavra COMPLETA, com a primeira letra visível — NÃO cortar a inicial)
+• Promo/Headline: «${v.promoName}»
+• Cidade de origem: «${v.city}»
+• Parcela: «${v.installments}x R$ ${v.installmentValue}»  (símbolo "R$" com cifrão correto, NUNCA "RS" ou "R5")
+• Preço total: «Preço total: R$ ${v.totalValue}»  (cifrão "R$" obrigatório; ponto como separador de milhar; vírgula nos centavos)
+• Rodapé: «Saindo de ${v.city}. Taxas e impostos não inclusos. Consulte disponibilidade.»  (a palavra é "disponibilidade" — NÃO inventar "dispatbibiiibade", "dispobibibidade" etc.)
+• Café da manhã (se listado): grafia exata «Café da manhã» — NUNCA "mênha", "mânha", "manha".
+• Cidade Fortaleza (se citada): grafia exata «Fortaleza» — NUNCA "Fortalesa".
+• Lista de benefícios: copiar palavra por palavra cada item; se não souber soletrar, OMITIR o item, JAMAIS inventar caracteres.
+
+REGRAS DE PURGA ORTOGRÁFICA (revisar antes de finalizar a imagem):
+1. Toda palavra deve ser uma palavra real do português brasileiro, escrita com ortografia oficial.
+2. Proibido qualquer "letra fantasma" — repetições aleatórias de "i", "b", "p" no meio de palavras.
+3. Proibido cortar a primeira letra do destino (ex.: "ERICOACOARA" em vez de "JERICOACOARA"). A inicial deve ter a MESMA altura e visibilidade que as demais letras.
+4. Símbolo de moeda SEMPRE "R$" (R maiúsculo + cifrão). Nunca "RS", "R5", "R\$", "BS", "B$".
+5. Números com 4+ dígitos SEMPRE com ponto de milhar: "1.499,00" — nunca "1499,00" ou "1.499.00".
+6. Acentos obrigatórios: "Café", "manhã", "Preço", "disponibilidade", "não", "inclusos".
+7. Antes de entregar, reler MENTALMENTE cada palavra do banner e corrigir QUALQUER caractere suspeito.
+══════════════════════════════════════
+
 🚫 REGRAS ABSOLUTAS ADICIONAIS:
 - GERAR UM ÚNICO BANNER PUBLICITÁRIO DE TURISMO. A saída deve conter APENAS 1 imagem única.
 - É PROIBIDO gerar imagens duplicadas, repetidas, variações lado a lado, mockups em tela dupla ou duas peças dentro do mesmo arquivo.

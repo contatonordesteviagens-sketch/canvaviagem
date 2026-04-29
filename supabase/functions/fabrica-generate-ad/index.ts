@@ -433,13 +433,15 @@ serve(async (req) => {
         .replace(/\.(?=\d{3}(\D|$))/g, ""); // remove pontos de milhar (1.499,90 → 1499,90)
       const priceNumeric = parseFloat(priceFormatted.replace(/\./g, "").replace(",", ".")) || 149.9;
       const installmentsCount = parseInt((finalBody.installments || "10x").replace(/\D/g, "") || "10");
-      const totalNum = Math.round(priceNumeric * installmentsCount);
+      const totalNum = priceNumeric * installmentsCount;
+      // Formata total no padrão BR: "1.499,00" (com ponto de milhar e vírgula decimal)
+      const formatBR = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       const vars: MasterPromptVars = {
         destination: (finalBody.destination || "DESTINO").toUpperCase(),
         destinationDescription: nicheToScene(finalBody.niche, finalBody.destination),
         installments: String(installmentsCount),
         installmentValue: priceFormatted || "149,90",
-        totalValue: priceNumeric % 1 === 0 ? String(totalNum) : totalNum.toFixed(2).replace(".", ","),
+        totalValue: formatBR(totalNum),
         packageType: finalBody.packageType || "Voo + Hotel",
         duration: finalBody.duration || "5 NOITES",
         promoName: (finalBody.promoName || "OFERTA EXCLUSIVA").toUpperCase(),
