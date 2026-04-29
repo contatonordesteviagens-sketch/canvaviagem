@@ -295,6 +295,17 @@ function normalize(s: string): string {
   return s.toLowerCase().trim();
 }
 
+// Padrões PROIBIDOS por substring (Regra do usuário — anti-colapso)
+const BANNED_PATTERNS = [
+  "o melhor de",
+  "seu próximo destino",
+  "algo te espera",
+  "o destino te espera",
+  "conheça",
+  "explore",
+  "descubra",
+];
+
 function pickFromPool(
   pool: ((d: string) => string)[],
   destination: string,
@@ -302,14 +313,20 @@ function pickFromPool(
   forbidden: string[] = [],
 ): string {
   const banned = new Set(forbidden.map(normalize));
-  const seedSum = [...creativeSeed].reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  // Tenta até encontrar uma frase fora do bloqueio
+  const isBanned = (s: string) => {
+    const k = normalize(s);
+    if (banned.has(k)) return true;
+    return BANNED_PATTERNS.some((b) => k.includes(b));
+  };
+  // Embaralha com seed + ruído real para evitar colisões em cliques rápidos
+  const noise = Math.floor(Math.random() * 1e6);
+  const seedSum = [...creativeSeed].reduce((acc, c) => acc + c.charCodeAt(0), 0) + noise;
   for (let i = 0; i < pool.length; i++) {
     const idx = (seedSum + i) % pool.length;
     const candidate = pool[idx](destination);
-    if (!banned.has(normalize(candidate))) return candidate;
+    if (!isBanned(candidate)) return candidate;
   }
-  // Todas bloqueadas → libera a mais "antiga" (primeira fora do mais recente)
+  // Tudo bloqueado → libera por seed (último recurso)
   return pool[seedSum % pool.length](destination);
 }
 
