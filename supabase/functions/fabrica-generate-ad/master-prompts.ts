@@ -698,7 +698,7 @@ export function promptSplitYellowSide(v: MasterPromptVars): string {
       "DIVISÃO SUAVE — 70% SUPERIOR com fotografia hiper-realista do destino; 30% INFERIOR com área clean usando leve gradiente translúcido (NUNCA bloco sólido pesado, NUNCA cor saturada). Transição suave entre as duas áreas.",
     lighting: "natural suave, luz realista, atmosfera convidativa",
     sceneDescription: `${v.destination} com foco em experiência — mar, arquitetura ou natureza com luz natural suave, pessoas interagindo com o ambiente de forma natural. ${v.destinationDescription}`,
-    headline: `Explore ${v.destination}`,
+    headline: pickExperienciaHeadline(v.destination, v.creativeSeed || "ed2"),
     experienceDescription: `Viva dias únicos com paisagens incríveis e momentos inesquecíveis em ${v.destination}.`,
     specialization:
       "• Texto na área inferior:\n   Título: 'Explore " + v.destination + "'.\n   Descrição: 'Viva dias únicos com paisagens incríveis e momentos inesquecíveis'.\n• Lista LEVE (sem caixas, sem pílulas): • Cultura local  • Gastronomia  • Passeios exclusivos.\n• Preço pequeno OPCIONAL e discreto, em texto fino: 'A partir de R$ " + v.installmentValue + "'. NUNCA em caixa colorida.\n• Estilo: minimalista, leve, sem aparência de anúncio agressivo.",
