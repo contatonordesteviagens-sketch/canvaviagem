@@ -48,6 +48,74 @@ const OFERTA_RULES = `
 - Selos / botões devem reforçar pelo menos 2 destes:
   "SEM JUROS" · "PIX" · "VOO + HOTEL".
 - Tom de copy: direto, comercial, cria gatilho de decisão imediata.
+
+══════════════════════════════════════
+🚨 REGRA MAIS IMPORTANTE DO SISTEMA — NÃO REPETIÇÃO (CRÍTICA ABSOLUTA)
+══════════════════════════════════════
+É TERMINANTEMENTE PROIBIDO gerar imagens iguais, similares ou com a mesma
+estrutura visual da geração anterior. Cada nova imagem DEVE ser
+VISUALMENTE DIFERENTE da anterior. Se a anterior teve cartão central →
+agora NÃO usar cartão central. Se teve fundo azul → usar outra cor
+dominante. Se teve layout dividido → usar outro tipo de layout. Se o
+preço estava na posição X → mudar completamente de posição.
+
+A IA deve FORÇAR variação estrutural — não apenas trocar texto.
+
+[OBRIGAÇÃO DE VARIAÇÃO REAL]
+A cada nova geração, ALTERAR pelo menos 4 destes elementos:
+  1. Tipo de layout (estrutura visual)
+  2. Posição do preço
+  3. Estilo do container (cartão, faixa, selo, lateral, etc)
+  4. Cores principais
+  5. Hierarquia dos elementos
+  6. Tipo de imagem (aérea, close, lifestyle, panorâmica)
+  7. Estilo de iluminação
+Se esses elementos não mudarem, a geração está ERRADA.
+
+[CONTROLE DE LAYOUT — ESCOLHER 1 POR VEZ]
+Escolher APENAS UM layout por geração (proibido repetir o anterior):
+  1. Cartão central flutuante
+  2. Divisão topo imagem + base oferta
+  3. Barra lateral + imagem
+  4. Preço sobreposto direto na imagem (sem cartão)
+  5. Cartão inclinado/assimétrico
+  6. Layout minimalista com preço isolado
+
+[VARIAÇÃO DE POSIÇÃO DO PREÇO]
+O preço NUNCA pode ficar sempre no mesmo lugar. Alternar entre:
+centro · canto inferior (dentro da safe zone) · lado direito ·
+lado esquerdo · dentro de selo · sobreposto livre na imagem.
+
+[VARIAÇÃO DE ESTILO VISUAL]
+Alternar entre estilos:
+vibrante (amarelo/roxo) · elegante (azul escuro/dourado) ·
+tropical (verde/azul claro) · moderno (gradientes) · clean (fundo claro).
+
+[ANTI-REPETIÇÃO DE ESTRUTURA — PROIBIDO]
+🚫 Usar sempre o mesmo "cartão com preço".
+🚫 Repetir mesma composição da geração anterior.
+🚫 Repetir posição dos elementos.
+🚫 Gerar layouts clonados.
+Se parecer semelhante à anterior → ERRADO, refazer.
+
+[CONTROLE FINAL DE QUALIDADE — VALIDAR ANTES DE FINALIZAR]
+✔ Essa imagem é diferente da anterior?
+✔ O layout mudou?
+✔ O preço mudou de posição?
+✔ As cores mudaram?
+✔ A estrutura é nova?
+Se alguma resposta for "não", REFAZER a imagem.
+
+[REGRAS FIXAS]
+- Gerar APENAS UMA imagem.
+- Não duplicar elementos.
+- Não sobrepor textos.
+- Não repetir layout anterior.
+- Não gerar arte semelhante.
+
+[RESULTADO ESPERADO]
+Cada geração deve parecer um anúncio completamente novo, uma nova
+campanha, uma nova abordagem visual. NUNCA uma repetição.
 ══════════════════════════════════════
 `;
 
