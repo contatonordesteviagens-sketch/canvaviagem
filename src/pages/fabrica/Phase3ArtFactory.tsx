@@ -460,7 +460,11 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
       // ===== MODO CUSTOM (link/upload do usuário) — gera 2 variações locais, sem gastar créditos de IA =====
       toast.info(categoria === "experiencia_destino" ? "Gerando 1 variação com sua imagem" : "Gerando 2 variações com sua imagem");
-      const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 2);
+      const stratHistKeyCustom = scopedStrategyHistoryKey(categoria, genMode, format);
+      let stratHistoryCustom: StrategyId[] = [];
+      try { stratHistoryCustom = JSON.parse(localStorage.getItem(stratHistKeyCustom) || "[]"); } catch { stratHistoryCustom = []; }
+      const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 2, stratHistoryCustom);
+      localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
 
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy) => {
