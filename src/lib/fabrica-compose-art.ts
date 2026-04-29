@@ -32,7 +32,7 @@ interface ComposeTravelAdOptions {
   paymentMode?: PaymentMode;
   paymentLabel?: string;
   paymentSuffix?: string;
-  strategy?: "ancora" | "vitrine" | "matriz" | "gancho";
+  strategy?: "ancora" | "vitrine" | "matriz" | "gancho" | "experiencia_hero" | "experiencia_editorial";
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
