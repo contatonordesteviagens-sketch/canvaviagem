@@ -217,6 +217,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         setLoading(false);
         return;
       }
+      const activeVariation = forceVariation ?? variationCounter;
 
       // ===== MODO FOTO (composição local) — gera 2 variações =====
       if (genMode === "photo") {
@@ -225,8 +226,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
           ? ["matriz", "gancho", "ancora"]
           : ["experiencia_hero", "experiencia_editorial"];
         // Duas estratégias distintas para garantir variação visual
-        const stratA = localStrategies[variationCounter % localStrategies.length];
-        const stratB = localStrategies[(variationCounter + 1) % localStrategies.length];
+        const stratA = localStrategies[activeVariation % localStrategies.length];
+        const stratB = localStrategies[(activeVariation + 1) % localStrategies.length];
         const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(variationCounter + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
 
         const selectedIdx = photos.findIndex((p) => p.url === refImage);
@@ -283,7 +284,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         const picks = pickPromptsForCategoria(categoria, 1, lastTemplateId, recentTemplateIds);
         const cat = getCategoria(categoria);
         const pick = picks[0];
-        const nextVariation = forceVariation ?? variationCounter;
+        const nextVariation = activeVariation;
 
         toast.info(`[${cat.name}] Gerando 1 banner: ${pick.code}`);
 
@@ -374,8 +375,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       const localStrategies: StrategyId[] = categoria === "oferta_pacote"
         ? ["matriz", "gancho", "ancora"]
         : ["experiencia_hero", "experiencia_editorial"];
-      const stratA = localStrategies[variationCounter % localStrategies.length];
-      const stratB = localStrategies[(variationCounter + 1) % localStrategies.length];
+      const stratA = localStrategies[activeVariation % localStrategies.length];
+      const stratB = localStrategies[(activeVariation + 1) % localStrategies.length];
       const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(variationCounter + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
 
       const shouldStampLogo = !!state.logoBase64 && !!data?.fallback;
