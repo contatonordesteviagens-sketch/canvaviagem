@@ -594,25 +594,33 @@ serve(async (req) => {
     const CVC_REF_URL = "https://zdjtcwtakgizbsbbwtgc.supabase.co/storage/v1/object/public/thumbnails/fabrica-ref-cvc-style.jpg";
     const refInstruction = `🚨 INSTRUÇÃO DE MAIOR PRIORIDADE — IGNORE QUALQUER OUTRA REGRA QUE CONFLITE 🚨
 
-Você está recebendo UMA IMAGEM DE REFERÊNCIA em anexo. Sua tarefa é gerar uma NOVA imagem que seja uma RÉPLICA ESTRUTURAL DIRETA dessa referência, com a MESMA ANATOMIA visual:
+Você está recebendo UMA IMAGEM DE REFERÊNCIA em anexo. Gere UMA ÚNICA imagem INTEGRADA (não é colagem, não é split-screen, não é duas metades lado a lado) seguindo a anatomia da referência:
 
-✓ Foto real fotográfica de catálogo turístico cobrindo 100% do fundo (paisagem/monumento icônico do destino solicitado).
-✓ CAIXA RETANGULAR AMARELA SÓLIDA flutuando no TERÇO SUPERIOR CENTRAL, com cantos levemente arredondados, contendo (de cima para baixo):
-   • Etiqueta "PACOTE" pequena + NOME DO DESTINO em maiúsculas bold logo abaixo
-   • Linha com "X dias" + ícones pequenos: avião ✈, ônibus 🚌, hotel 🏨, café ☕
-   • Texto pequeno "a partir de" + selo redondo "12X sem juros" colado ao lado de "R$ XXX" em tipografia GIGANTE bold
+🛑 PROIBIDO ABSOLUTAMENTE:
+- Dividir a imagem ao meio (esquerda/direita ou cima/baixo)
+- Colocar foto de um lado e card/cor sólida do outro lado
+- Criar duas cenas separadas
+- Cortar a foto do destino
+- Cortar o card de preço
+A imagem é UMA composição contínua: foto do destino ocupa 100% do fundo, e o card de preço fica SOBREPOSTO (overlay) sobre a foto.
+
+✓ FUNDO: foto real fotográfica de catálogo turístico cobrindo 100% do enquadramento (full-bleed) — paisagem/monumento icônico do destino. A foto NÃO é cortada nem espremida em uma metade — ela é o fundo INTEIRO da imagem.
+✓ CARD DE PREÇO SOBREPOSTO: caixa retangular AMARELA SÓLIDA com cantos arredondados, FLUTUANDO sobre a foto no TERÇO SUPERIOR CENTRAL (largura ~75% da imagem, altura ~30%). O card cobre PARTE da foto mas NÃO substitui a foto — a foto continua visível ao redor (acima, abaixo, dos lados). Conteúdo do card (de cima para baixo):
+   • Etiqueta pequena "PACOTE" + NOME DO DESTINO em maiúsculas bold
+   • Linha "X dias" + ícones: avião ✈ ônibus 🚌 hotel 🏨 café ☕
+   • "a partir de" + selo redondo "12X sem juros" + "R$ XXX" gigante bold
    • Linha fina "Total por pessoa: R$ X.XXX"
-   • Faixa horizontal AZUL ESCURA na base da caixa com texto branco "5% OFF À VISTA NO PIX" + ícone PIX
-✓ Selo redondo da agência pequeno no canto INFERIOR DIREITO.
-✓ Texto LEGAL VERTICAL fino branco na lateral ESQUERDA (rotacionado 90°).
-✓ Proporção 9:16 vertical (story).
+   • Faixa AZUL ESCURA na base do card: "5% OFF À VISTA NO PIX" branco
+✓ Selo redondo da agência pequeno no canto INFERIOR DIREITO da imagem (sobre a foto).
+✓ Texto LEGAL VERTICAL fino branco na lateral ESQUERDA da imagem (rotacionado 90°, sobre a foto).
+✓ Proporção 9:16 vertical.
 
-NÃO crie design moderno editorial. NÃO crie pôster minimalista. NÃO crie composição artística. É um anúncio comercial direto de agência de viagem brasileira (estilo CVC/Decolar). A referência anexa é a verdade absoluta de estilo.
+NÃO crie design editorial moderno. NÃO crie pôster minimalista. É anúncio comercial direto de agência (estilo CVC/Decolar): foto inteira de fundo + card de preço flutuando por cima.
 
 Trocas permitidas (e SOMENTE essas):
-- A foto de fundo → trocar pelo destino do briefing abaixo
-- As cores → adaptar à paleta primária/secundária informada (mas mantendo o contraste forte foto + caixa de preço)
-- Os textos/valores → usar os dados do briefing abaixo
+- Foto de fundo → destino do briefing
+- Cores do card → paleta do briefing (mantendo card claro/saturado contrastando com foto)
+- Textos/valores → dados do briefing
 
 ═══════════════════════════════════════
 BRIEFING DO ANÚNCIO:
