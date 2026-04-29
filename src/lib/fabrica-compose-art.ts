@@ -428,10 +428,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const photoX = Math.round(width * 0.42);
     const photoY = safeTop - 40;
     const photoW = width - photoX - 48;
-    const largeH = format === "story" ? 780 : 500;
-    const smallH = format === "story" ? 470 : 300;
-    drawRoundedPhoto(photoX, photoY, photoW, largeH, 34, 0.28);
-    drawRoundedPhoto(photoX, photoY + largeH + 26, photoW, smallH, 34, 0.62);
+    const photoH = panelBottom - photoY - 44;
+    drawRoundedPhoto(photoX, photoY, photoW, photoH, 34, 0.36);
 
     const columnW = photoX - left - 42;
     ctx.fillStyle = primaryColor;
