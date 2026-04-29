@@ -380,6 +380,15 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
           ? [{ code: "ED_SAFE_STORY", templateId: "photo_only_experience_story" }]
           : pickPromptsForCategoria(categoria, 1, storedLast, storedRecent);
         const palette = pickGenerationPalette(categoria, generationSeed, primaryColor, secondaryColor);
+        const aiExperienceStrategy = (() => {
+          if (!isAiExperienceStory) return "experiencia_hero" as StrategyId;
+          const key = scopedStrategyHistoryKey(categoria, genMode, format);
+          let history: StrategyId[] = [];
+          try { history = JSON.parse(localStorage.getItem(key) || "[]"); } catch { history = []; }
+          const [picked] = pickDistinctLocalStrategies(categoria, generationSeed, 1, history);
+          localStorage.setItem(key, JSON.stringify([picked]));
+          return picked;
+        })();
 
         toast.info(`Gerando ${picks.length} ${picks.length === 1 ? "variação" : "variações"} em IA Pura — ${cat.name}`);
 
@@ -436,7 +445,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               paymentMode,
               paymentLabel: paymentLabel || undefined,
               paymentSuffix: paymentSuffix || undefined,
-              strategy: "experiencia_hero",
+              strategy: aiExperienceStrategy,
+              variation: generationSeed,
             });
             if (state.logoBase64) {
               try {
@@ -478,13 +488,14 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         return;
       }
 
-      // ===== MODO CUSTOM (link/upload do usuário) — gera 2 variações locais, sem gastar créditos de IA =====
-      toast.info(categoria === "experiencia_destino" ? "Gerando 1 variação com sua imagem" : "Gerando 2 variações com sua imagem");
+      // ===== MODO CUSTOM (link/upload do usuário) — gera 1 imagem local, sem gastar créditos de IA =====
+      toast.info("Gerando 1 imagem única com sua imagem");
       const stratHistKeyCustom = scopedStrategyHistoryKey(categoria, genMode, format);
       let stratHistoryCustom: StrategyId[] = [];
       try { stratHistoryCustom = JSON.parse(localStorage.getItem(stratHistKeyCustom) || "[]"); } catch { stratHistoryCustom = []; }
-      const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 2, stratHistoryCustom);
+      const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 1, stratHistoryCustom);
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
+      const palette = pickGenerationPalette(categoria, generationSeed, primaryColor, secondaryColor);
 
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy) => {
@@ -493,8 +504,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             format,
             destination,
             city: state.city,
-            primaryColor,
-            secondaryColor,
+            primaryColor: palette.primary,
+            secondaryColor: palette.secondary,
             price,
             installments,
             promoName,
@@ -504,6 +515,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             paymentLabel: paymentLabel || undefined,
             paymentSuffix: paymentSuffix || undefined,
             strategy: localStrategy,
+            variation: generationSeed,
           });
           if (state.logoBase64) {
             try {
@@ -519,7 +531,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
       setGeneratedImage(imagesCustom[0]);
       setGeneratedImages(imagesCustom);
-      update({ generatedAdImage: imagesCustom[0], primaryColor });
+      update({ generatedAdImage: imagesCustom[0], primaryColor: palette.primary });
 
       const newCount = generationCount + imagesCustom.length;
       setGenerationCount(newCount);
