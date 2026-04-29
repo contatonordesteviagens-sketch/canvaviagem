@@ -45,20 +45,16 @@ serve(async (req) => {
       });
     }
 
-    // Estratégia de busca em camadas para máxima precisão do destino:
-    // 1) Tenta exatamente o nome do destino (ex: "Maragogi") — Pexels indexa por localização real
-    // 2) Se vier pouco resultado, tenta com sufixo geográfico ("Brasil"/"Brazil")
-    // 3) Último fallback: nome + "praia/cidade" (NUNCA termos genéricos em inglês)
     const rawQuery = body.query.trim();
     const perPage = Math.min(body.perPage || 12, 30);
     const orientation = body.orientation || "portrait";
 
-    const tryFetch = async (query: string) => {
+    const tryFetch = async (query: string, locale = "pt-BR") => {
       const params = new URLSearchParams({
         query,
         per_page: String(perPage),
         orientation,
-        locale: "pt-BR",
+        locale,
       });
       const r = await fetch(`https://api.pexels.com/v1/search?${params}`, {
         headers: { Authorization: PEXELS_API_KEY },
@@ -67,27 +63,74 @@ serve(async (req) => {
       return (await r.json()) as { photos: PexelsPhoto[]; total_results: number };
     };
 
-    // Heurística: detecta destinos brasileiros conhecidos para reforçar contexto geográfico
+    // Mapeamento explícito para destinos AMBÍGUOS (palavras que também são substantivos comuns)
+    // ou que precisam de termo turístico em inglês para a Pexels achar fotos certas.
+    const lower = rawQuery.toLowerCase().trim();
+    const DESTINATION_MAP: Record<string, { queries: string[]; locale?: string }> = {
+      // BR ambíguos (gramado=grass, bonito=pretty, natal=christmas, etc.)
+      "gramado":           { queries: ["Gramado Rio Grande do Sul", "Gramado Serra Gaúcha", "Gramado RS Brasil"] },
+      "bonito":            { queries: ["Bonito Mato Grosso do Sul", "Bonito MS Brasil", "Gruta Bonito Brasil"] },
+      "natal":             { queries: ["Natal Rio Grande do Norte", "Natal RN Brasil", "Praia Natal Brasil"] },
+      "salvador":          { queries: ["Salvador Bahia Pelourinho", "Salvador BA Brasil"] },
+      "recife":            { queries: ["Recife Pernambuco", "Recife Antigo Brasil"] },
+      "olinda":            { queries: ["Olinda Pernambuco", "Olinda Brasil histórica"] },
+      "pipa":              { queries: ["Praia da Pipa Rio Grande do Norte", "Pipa Brasil praia"] },
+      // Internacionais comuns — em inglês para resultados melhores
+      "paris":             { queries: ["Paris Eiffel Tower", "Paris France skyline"], locale: "en-US" },
+      "orlando":           { queries: ["Orlando Florida", "Orlando theme park"], locale: "en-US" },
+      "lisboa":            { queries: ["Lisboa Portugal", "Lisbon tram"], locale: "pt-PT" },
+      "lisbon":            { queries: ["Lisbon Portugal", "Lisbon tram"], locale: "pt-PT" },
+      "santiago":          { queries: ["Santiago Chile", "Santiago Andes"], locale: "es" },
+      "cancún":            { queries: ["Cancun Mexico beach", "Cancun resort"], locale: "en-US" },
+      "cancun":            { queries: ["Cancun Mexico beach", "Cancun resort"], locale: "en-US" },
+      "punta cana":        { queries: ["Punta Cana Dominican Republic", "Punta Cana resort beach"], locale: "en-US" },
+      "buenos aires":      { queries: ["Buenos Aires Argentina", "Buenos Aires city"], locale: "es" },
+      "miami":             { queries: ["Miami Beach Florida", "Miami skyline"], locale: "en-US" },
+      "nova york":         { queries: ["New York City skyline", "Manhattan NYC"], locale: "en-US" },
+      "new york":          { queries: ["New York City skyline", "Manhattan NYC"], locale: "en-US" },
+      "dubai":             { queries: ["Dubai skyline", "Dubai Burj Khalifa"], locale: "en-US" },
+      "roma":              { queries: ["Rome Italy Colosseum", "Rome cityscape"], locale: "en-US" },
+      "rome":              { queries: ["Rome Italy Colosseum", "Rome cityscape"], locale: "en-US" },
+      "londres":           { queries: ["London UK Big Ben", "London skyline"], locale: "en-US" },
+      "london":            { queries: ["London UK Big Ben", "London skyline"], locale: "en-US" },
+      "madri":             { queries: ["Madrid Spain", "Madrid Plaza Mayor"], locale: "es" },
+      "madrid":            { queries: ["Madrid Spain", "Madrid Plaza Mayor"], locale: "es" },
+      "barcelona":         { queries: ["Barcelona Spain Sagrada Familia", "Barcelona beach"], locale: "es" },
+      "tóquio":            { queries: ["Tokyo Japan skyline", "Tokyo Shibuya"], locale: "en-US" },
+      "tokyo":             { queries: ["Tokyo Japan skyline", "Tokyo Shibuya"], locale: "en-US" },
+    };
+
+    // Lista de destinos brasileiros conhecidos para reforçar geografia automaticamente
     const BR_HINTS = [
       "maragogi", "jericoacoara", "fernando de noronha", "porto de galinhas",
-      "gramado", "bonito", "búzios", "buzios", "florianópolis", "florianopolis",
-      "salvador", "natal", "fortaleza", "recife", "rio de janeiro", "são paulo",
-      "sao paulo", "ilhabela", "paraty", "ouro preto", "pipa", "morro de são paulo",
-      "chapada", "lençóis", "lencois", "alter do chão", "alter do chao", "ubatuba",
-      "trancoso", "arraial d'ajuda", "arraial dajuda", "caldas novas", "olinda",
+      "búzios", "buzios", "florianópolis", "florianopolis", "fortaleza",
+      "rio de janeiro", "são paulo", "sao paulo", "ilhabela", "paraty",
+      "ouro preto", "morro de são paulo", "chapada", "lençóis", "lencois",
+      "alter do chão", "alter do chao", "ubatuba", "trancoso",
+      "arraial d'ajuda", "arraial dajuda", "caldas novas",
     ];
-    const isBR = BR_HINTS.some((h) => rawQuery.toLowerCase().includes(h));
 
-    // Camada 1: query pura (mais preciso para destinos específicos)
-    let data = await tryFetch(rawQuery);
+    // Decide a lista de queries a tentar, em ordem de prioridade
+    const mapped = DESTINATION_MAP[lower];
+    const queriesToTry: { q: string; locale: string }[] = [];
 
-    // Camada 2: se vier menos de 6 resultados, tenta reforçar geografia
-    if (!data || data.photos.length < 6) {
-      const enriched = isBR ? `${rawQuery} Brasil` : `${rawQuery} city`;
-      const data2 = await tryFetch(enriched);
-      if (data2 && data2.photos.length > (data?.photos.length ?? 0)) {
-        data = data2;
+    if (mapped) {
+      // Destino mapeado: usa SOMENTE as queries específicas (evita "gramado" puro virar grama)
+      mapped.queries.forEach((q) => queriesToTry.push({ q, locale: mapped.locale || "pt-BR" }));
+    } else {
+      const isBR = BR_HINTS.some((h) => lower.includes(h));
+      queriesToTry.push({ q: rawQuery, locale: "pt-BR" });
+      queriesToTry.push({ q: isBR ? `${rawQuery} Brasil` : `${rawQuery} travel`, locale: isBR ? "pt-BR" : "en-US" });
+    }
+
+    // Executa as tentativas e fica com a que trouxe mais fotos
+    let data: { photos: PexelsPhoto[]; total_results: number } | null = null;
+    for (const attempt of queriesToTry) {
+      const res = await tryFetch(attempt.q, attempt.locale);
+      if (res && res.photos.length > (data?.photos.length ?? 0)) {
+        data = res;
       }
+      if (data && data.photos.length >= 8) break;
     }
 
     if (!data) {
@@ -97,16 +140,24 @@ serve(async (req) => {
       });
     }
 
-    // Filtra fora resultados claramente irrelevantes (selfies, retratos com pessoas como tema central)
-    // baseado no alt-text fornecido pela Pexels.
+    // Filtra resultados irrelevantes: selfies/retratos e TEXTURAS (grama, areia, parede)
     const BAD_TERMS = [
       "selfie", "portrait of woman", "portrait of man", "portrait of a woman",
       "portrait of a man", "model posing", "indoor portrait", "studio shot",
       "close-up of person", "person looking at camera",
     ];
+    const TEXTURE_TERMS = [
+      "grass texture", "green grass", "lawn", "close-up of grass",
+      "blades of grass", "sand texture", "wall texture", "grass background",
+      "field of grass", "grassy field close",
+    ];
+    const isCityQuery = !!mapped || BR_HINTS.some((h) => lower.includes(h));
+
     const filtered = data.photos.filter((p) => {
       const alt = (p.alt || "").toLowerCase();
-      return !BAD_TERMS.some((t) => alt.includes(t));
+      if (BAD_TERMS.some((t) => alt.includes(t))) return false;
+      if (isCityQuery && TEXTURE_TERMS.some((t) => alt.includes(t))) return false;
+      return true;
     });
 
     const photos = (filtered.length >= 4 ? filtered : data.photos).map((p) => ({
