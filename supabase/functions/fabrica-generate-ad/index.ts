@@ -194,6 +194,29 @@ function buildPrompt(p: AdParams): string {
   const safeZone = safeZoneRules(format);
   const variation = p.variation ?? 0;
 
+  // ===== HEADLINE DINÂMICO (Regra 5 — proibido "Conheça/Viva/Explore/Descubra X") =====
+  const HEADLINE_POOL: string[] = [
+    `Momentos que ficam para sempre`,
+    `O melhor de ${dest}`,
+    `Seu próximo destino é esse`,
+    `Dias inesquecíveis começam aqui`,
+    `Uma experiência única`,
+    `Partiu viajar?`,
+    `Dias que você não esquece`,
+    `${dest} te espera`,
+    `Hora de arrumar as malas`,
+    `Bora viajar?`,
+    `Você merece esse destino`,
+    `Mais que uma viagem, uma experiência`,
+  ];
+  const forbidden = new Set((p.forbiddenHeadlines || []).map((s) => s.toLowerCase().trim()));
+  const seedBase = Math.abs((variation * 31 + Date.now()) | 0) % HEADLINE_POOL.length;
+  let dynamicHeadline = HEADLINE_POOL[seedBase];
+  for (let i = 0; i < HEADLINE_POOL.length; i++) {
+    const cand = HEADLINE_POOL[(seedBase + i) % HEADLINE_POOL.length];
+    if (!forbidden.has(cand.toLowerCase().trim())) { dynamicHeadline = cand; break; }
+  }
+
   // Logo: SEMPRE deixar área limpa no topo esquerdo (a logo será composta no cliente depois).
   // Se a agência NÃO tem logo, escrever o nome como wordmark.
   const logoArea = p.hasLogo
