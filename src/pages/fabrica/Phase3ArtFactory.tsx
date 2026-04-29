@@ -393,22 +393,24 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         if (providerSeen) setLastProvider(providerSeen);
 
         // Persiste o último prompt usado para a próxima rotação não repetir
-        const usedTemplateIds = picks.map((p) => p.templateId);
+        const usedTemplateIds = isAiExperienceStory ? [] : picks.map((p) => p.templateId);
         const lastUsed = usedTemplateIds[usedTemplateIds.length - 1];
-        const nextRecent = [...usedTemplateIds, ...storedRecent.filter((id) => !usedTemplateIds.includes(id))].slice(0, Math.max(1, cat.prompts.length - usedTemplateIds.length));
-        setLastTemplateId(lastUsed);
-        setRecentTemplateIds(nextRecent);
-        localStorage.setItem(categoryLastKey, lastUsed);
-        localStorage.setItem(categoryRecentKey, JSON.stringify(nextRecent));
-        localStorage.setItem("fabrica_last_template_id", lastUsed);
-        localStorage.setItem("fabrica_recent_template_ids", JSON.stringify(nextRecent));
+        const nextRecent = isAiExperienceStory ? storedRecent : [...usedTemplateIds, ...storedRecent.filter((id) => !usedTemplateIds.includes(id))].slice(0, Math.max(1, cat.prompts.length - usedTemplateIds.length));
+        if (!isAiExperienceStory && lastUsed) {
+          setLastTemplateId(lastUsed);
+          setRecentTemplateIds(nextRecent);
+          localStorage.setItem(categoryLastKey, lastUsed);
+          localStorage.setItem(categoryRecentKey, JSON.stringify(nextRecent));
+          localStorage.setItem("fabrica_last_template_id", lastUsed);
+          localStorage.setItem("fabrica_recent_template_ids", JSON.stringify(nextRecent));
+        }
 
         const newCount = generationCount + images.length;
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
         finishCycle(images.length);
 
-        toast.success(`2 variações geradas — ${cat.name}`);
+        toast.success(`${images.length} ${images.length === 1 ? "variação gerada" : "variações geradas"} — ${cat.name}`);
         return;
       }
 
