@@ -684,7 +684,15 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           model: "google/gemini-3.1-flash-image-preview",
-          messages: [{ role: "user", content: prompt }],
+          messages: [{
+            role: "user",
+            content: isOferta
+              ? [
+                  { type: "text", text: refInstruction + prompt },
+                  { type: "image_url", image_url: { url: CVC_REF_URL } },
+                ]
+              : prompt,
+          }],
           modalities: ["image", "text"],
           temperature: imageTemperature,
           top_p: imageTopP,
