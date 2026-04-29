@@ -408,12 +408,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       const baseImg = data.image as string;
 
       toast.info("Aplicando 2 composições");
-      const localStrategies: StrategyId[] = categoria === "oferta_pacote"
-        ? ["matriz", "gancho", "ancora"]
-        : ["experiencia_hero", "experiencia_editorial"];
-      const stratA = localStrategies[activeVariation % localStrategies.length];
-      const stratB = localStrategies[(activeVariation + 1) % localStrategies.length];
-      const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(activeVariation + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
+      const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 2);
 
       const shouldStampLogo = !!state.logoBase64 && !!data?.fallback;
       const imagesCustom = await Promise.all(
@@ -455,6 +450,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       const newCount = generationCount + imagesCustom.length;
       setGenerationCount(newCount);
       localStorage.setItem("fabrica_gen_count", String(newCount));
+      finishCycle(imagesCustom.length);
 
       if (data?.fallback && data?.warning) {
         toast.warning("Créditos de IA indisponíveis. Montei banners usando sua imagem como base.", { duration: 8000 });
