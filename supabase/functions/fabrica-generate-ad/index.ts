@@ -490,7 +490,9 @@ serve(async (req) => {
         secondaryHex: (finalBody.secondaryColor || "#FCD34D").toUpperCase(),
         agencyName: finalBody.agencyName || "",
         highlights: (finalBody.highlights || []).map((h) => typeof h === "string" ? h : h.text),
-        creativeSeed: `${tpl.id}-v${variation}-${Date.now()}`,
+        creativeSeed: `${tpl.id}-v${variation}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        forbiddenHeadlines: finalBody.forbiddenHeadlines || [],
+        forbiddenLayouts: finalBody.forbiddenLayouts || [],
       };
       prompt = tpl.builder(vars);
       usedTemplateId = tpl.id;
