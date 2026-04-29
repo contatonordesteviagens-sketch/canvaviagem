@@ -217,22 +217,29 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         setLoading(false);
         return;
       }
+      const activeVariation = forceVariation ?? variationCounter;
 
       // ===== MODO FOTO (composição local) — gera 2 variações =====
       if (genMode === "photo") {
         toast.info("Gerando 2 variações com foto real");
         const localStrategies: StrategyId[] = categoria === "oferta_pacote"
           ? ["matriz", "gancho", "ancora"]
-          : ["vitrine", "ancora"];
+          : ["experiencia_hero", "experiencia_editorial"];
         // Duas estratégias distintas para garantir variação visual
-        const stratA = localStrategies[variationCounter % localStrategies.length];
-        const stratB = localStrategies[(variationCounter + 1) % localStrategies.length];
-        const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(variationCounter + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
+        const stratA = localStrategies[activeVariation % localStrategies.length];
+        const stratB = localStrategies[(activeVariation + 1) % localStrategies.length];
+        const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(activeVariation + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
+
+        const selectedIdx = photos.findIndex((p) => p.url === refImage);
+        const photoRefs = chosen.map((_, idx) => {
+          if (idx === 0 || selectedIdx < 0 || photos.length < 2) return refImage;
+          return photos[(selectedIdx + idx) % photos.length]?.url || refImage;
+        });
 
         const composed = await Promise.all(
-          chosen.map(async (localStrategy) => {
+          chosen.map(async (localStrategy, idx) => {
             let img = await composeTravelAd({
-              imageUrl: refImage,
+              imageUrl: photoRefs[idx],
               format,
               destination,
               city: state.city,
@@ -274,10 +281,16 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
       // ===== MODO IA PURA: gera 1 imagem escolhendo prompt da categoria =====
       if (genMode === "ai") {
-        const picks = pickPromptsForCategoria(categoria, 1, lastTemplateId, recentTemplateIds);
         const cat = getCategoria(categoria);
+        const categoryLastKey = `fabrica_last_template_id_${categoria}`;
+        const categoryRecentKey = `fabrica_recent_template_ids_${categoria}`;
+        const storedLast = localStorage.getItem(categoryLastKey) || (cat.prompts.some((p) => p.templateId === lastTemplateId) ? lastTemplateId : null);
+        let storedRecent: string[] = [];
+        try { storedRecent = JSON.parse(localStorage.getItem(categoryRecentKey) || "[]"); }
+        catch { storedRecent = []; }
+        const picks = pickPromptsForCategoria(categoria, 1, storedLast, storedRecent);
         const pick = picks[0];
-        const nextVariation = forceVariation ?? variationCounter;
+        const nextVariation = activeVariation;
 
         toast.info(`[${cat.name}] Gerando 1 banner: ${pick.code}`);
 
@@ -327,9 +340,11 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
         // Persiste o último prompt usado para a próxima rotação não repetir
         const lastUsed = pick.templateId;
-        const nextRecent = [lastUsed, ...recentTemplateIds.filter((id) => id !== lastUsed)].slice(0, Math.max(1, cat.prompts.length - 1));
+        const nextRecent = [lastUsed, ...storedRecent.filter((id) => id !== lastUsed)].slice(0, Math.max(1, cat.prompts.length - 1));
         setLastTemplateId(lastUsed);
         setRecentTemplateIds(nextRecent);
+        localStorage.setItem(categoryLastKey, lastUsed);
+        localStorage.setItem(categoryRecentKey, JSON.stringify(nextRecent));
         localStorage.setItem("fabrica_last_template_id", lastUsed);
         localStorage.setItem("fabrica_recent_template_ids", JSON.stringify(nextRecent));
 
@@ -367,10 +382,10 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       toast.info("Aplicando 2 composições");
       const localStrategies: StrategyId[] = categoria === "oferta_pacote"
         ? ["matriz", "gancho", "ancora"]
-        : ["vitrine", "ancora"];
-      const stratA = localStrategies[variationCounter % localStrategies.length];
-      const stratB = localStrategies[(variationCounter + 1) % localStrategies.length];
-      const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(variationCounter + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
+        : ["experiencia_hero", "experiencia_editorial"];
+      const stratA = localStrategies[activeVariation % localStrategies.length];
+      const stratB = localStrategies[(activeVariation + 1) % localStrategies.length];
+      const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(activeVariation + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
 
       const shouldStampLogo = !!state.logoBase64 && !!data?.fallback;
       const imagesCustom = await Promise.all(
@@ -575,7 +590,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
           })}
         </div>
         <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-[11px] text-white/55 leading-snug">
-          <strong className="text-white/80">Regra fixa:</strong> sempre será gerado apenas 1 banner por vez. Oferta destaca preço e conversão; Experiência destaca foto, emoção e estilo editorial.
+          <strong className="text-white/80">Regra fixa:</strong> Foto Real e Sua imagem geram 2 variações; IA Pura gera 1 para economizar créditos. Oferta destaca preço e conversão; Experiência destaca foto, emoção e estilo editorial.
         </div>
       </div>
 

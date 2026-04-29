@@ -72,11 +72,10 @@ export function getCategoria(id: CategoriaId): CategoriaMeta {
 }
 
 /**
- * Sorteia N prompts da categoria, garantindo:
+ * Sorteia N prompts da categoria, garantindo variação real:
  *  - nenhum repetido entre si
- *  - o primeiro nunca é igual ao `lastTemplateId` (último usado na sessão anterior)
- *
- * Quando N > pool disponível, completa permitindo repetição (mas avisa via console).
+ *  - nunca mistura prompts da outra categoria
+ *  - evita o histórico recente; só reinicia o ciclo quando todos já foram usados
  */
 export function pickPromptsForCategoria(
   categoriaId: CategoriaId,
@@ -87,7 +86,7 @@ export function pickPromptsForCategoria(
   const cat = getCategoria(categoriaId);
   const recent = new Set([...(lastTemplateId ? [lastTemplateId] : []), ...recentTemplateIds].filter(Boolean));
   const available = cat.prompts.filter((p) => !recent.has(p.templateId));
-  const pool = available.length >= Math.min(count, cat.prompts.length) ? [...available] : [...cat.prompts.filter((p) => p.templateId !== lastTemplateId)];
+  const pool = available.length >= count ? [...available] : [...cat.prompts.filter((p) => p.templateId !== lastTemplateId)];
 
   // Embaralha
   const shuffled = pool.sort(() => Math.random() - 0.5);

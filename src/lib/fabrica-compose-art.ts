@@ -32,7 +32,7 @@ interface ComposeTravelAdOptions {
   paymentMode?: PaymentMode;
   paymentLabel?: string;
   paymentSuffix?: string;
-  strategy?: "ancora" | "vitrine" | "matriz" | "gancho";
+  strategy?: "ancora" | "vitrine" | "matriz" | "gancho" | "experiencia_hero" | "experiencia_editorial";
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
@@ -398,6 +398,58 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const pillsW = contentWidth - 360;
     drawHighlightsBlock(left + 28, panelBottom - (format === "story" ? 320 : 180), pillsW, pillsLimit, true, true);
     drawPriceCard(right - 320, panelBottom - (format === "story" ? 250 : 174), 292, 146, "right");
+  } else if (strategy === "experiencia_hero") {
+    const heroH = format === "story" ? panelBottom : height;
+    const crop = fitCover(image.naturalWidth, image.naturalHeight, width, heroH, format === "story" ? 0.34 : 0.38);
+    ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, heroH);
+
+    const veil = ctx.createLinearGradient(0, 0, 0, heroH);
+    veil.addColorStop(0, "rgba(0,0,0,0.08)");
+    veil.addColorStop(0.52, "rgba(0,0,0,0.10)");
+    veil.addColorStop(1, "rgba(0,0,0,0.62)");
+    ctx.fillStyle = veil;
+    ctx.fillRect(0, 0, width, heroH);
+
+    const textY = format === "story" ? panelBottom - 520 : height - 330;
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "left";
+    ctx.font = "700 30px Inter, Arial, sans-serif";
+    ctx.fillText(city ? `Saindo de ${city}` : "Experiência completa", left, textY);
+    drawTextBlock(ctx, `Viva ${destination}`, left, textY + 96, contentWidth, 92, 2, { fontWeight: "800", baseFontSize: format === "story" ? 88 : 70, minFontSize: 44 });
+    ctx.font = "500 30px Inter, Arial, sans-serif";
+    ctx.fillText("Momentos que ficam para sempre", left, textY + (format === "story" ? 245 : 205));
+
+    const smallItems = shownHighlights.slice(0, 3).map((h) => h.text).join("   •   ");
+    ctx.font = "700 25px Inter, Arial, sans-serif";
+    ctx.fillText(`•   ${smallItems}`, left, Math.min(panelBottom - 96, textY + (format === "story" ? 332 : 270)));
+  } else if (strategy === "experiencia_editorial") {
+    ctx.fillStyle = "#f7f2ea";
+    ctx.fillRect(0, 0, width, height);
+    const photoX = Math.round(width * 0.42);
+    const photoY = safeTop - 40;
+    const photoW = width - photoX - 48;
+    const photoH = panelBottom - photoY - 44;
+    drawRoundedPhoto(photoX, photoY, photoW, photoH, 34, 0.36);
+
+    const columnW = photoX - left - 42;
+    ctx.fillStyle = primaryColor;
+    ctx.textAlign = "left";
+    ctx.font = "700 28px Inter, Arial, sans-serif";
+    ctx.fillText(city ? `Saindo de ${city}` : "Roteiro especial", left, safeTop + 54);
+    drawTextBlock(ctx, `Descubra ${destination}`, left, safeTop + 170, columnW, 78, 3, { fontWeight: "800", baseFontSize: 74, minFontSize: 42 });
+    ctx.fillStyle = "#2b2118";
+    ctx.font = "500 29px Inter, Arial, sans-serif";
+    drawTextBlock(ctx, "Uma experiência pensada para viver o destino com calma, beleza e curadoria.", left, safeTop + 420, columnW, 42, 4, { fontWeight: "500", baseFontSize: 29, minFontSize: 22 });
+    ctx.font = "700 26px Inter, Arial, sans-serif";
+    shownHighlights.slice(0, 4).forEach((item, idx) => {
+      ctx.fillStyle = primaryColor;
+      ctx.fillText("•", left, safeTop + 620 + idx * 62);
+      ctx.fillStyle = "#2b2118";
+      ctx.fillText(item.text, left + 34, safeTop + 620 + idx * 62);
+    });
+    ctx.font = "700 24px Inter, Arial, sans-serif";
+    ctx.fillStyle = primaryColor;
+    ctx.fillText("Consulte disponibilidade", left, Math.min(panelBottom - 90, safeTop + 930));
   } else {
     const bottomHeight = format === "story" ? 770 : 560;
     const photoHeight = height - safeBottom - bottomHeight;
