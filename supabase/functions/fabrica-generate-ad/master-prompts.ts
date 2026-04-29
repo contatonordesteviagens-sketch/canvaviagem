@@ -677,91 +677,97 @@ export function promptSideHeroPerformance(v: MasterPromptVars): string {
 
 // 🌍 ED1 — HERO CINEMATOGRÁFICO (FULL IMAGE)
 export function promptIconicLandmark(v: MasterPromptVars): string {
+  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed1");
   return buildBrain(v, {
     category: "experiencia",
     layout:
       "FULL-BLEED CINEMATOGRÁFICO — a fotografia ocupa cerca de 90% da composição, sem divisões duras nem blocos sólidos. Texto leve sobreposto no centro vertical, com gradiente sutil para legibilidade. Sem cartões, sem caixas, sem rodapé colorido.",
     lighting: "natural perfeita, hora dourada cinematográfica, profundidade de campo realista, cores vibrantes e atmosféricas",
     sceneDescription: `${v.destination} com riqueza de detalhes — céu dramático, luz dourada, pessoas naturais em momentos espontâneos (caminhando, sorrindo, contemplando), água cristalina ou paisagem icônica. ${v.destinationDescription}`,
-    headline: pickExperienciaHeadline(v.destination, v.creativeSeed || "ed1"),
+    headline,
     experienceDescription: `Uma experiência inesquecível espera por você em ${v.destination}.`,
     specialization:
-      "• Título elegante e LEVE no centro: 'Descubra " + v.destination + "'.\n• Subtítulo sutil abaixo: 'Uma experiência inesquecível espera por você'.\n• Pequenos ícones discretos na base do centro (SEM caixa, SEM pílula): • Hospedagem  • Passeios  • Guia local.\n• PROIBIDO caixa de preço, cartão promocional, cores agressivas.\n• Estilo: editorial, aspiracional, limpo, capa de revista de viagem.",
+      "• Título elegante e LEVE no centro: '" + headline + "' — use EXATAMENTE essa frase, NÃO substitua por 'Descubra/Explore/Viva' fixos.\n• Subtítulo sutil abaixo: 'Uma experiência inesquecível espera por você'.\n• Pequenos ícones discretos na base do centro (SEM caixa, SEM pílula): • Hospedagem  • Passeios  • Guia local.\n• PROIBIDO caixa de preço, cartão promocional, cores agressivas.\n• Estilo: editorial, aspiracional, limpo, capa de revista de viagem.",
   });
 }
 
 // 🌍 ED2 — SPLIT SUAVE (IMAGEM + TEXTO LEVE)
 export function promptSplitYellowSide(v: MasterPromptVars): string {
+  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed2");
   return buildBrain(v, {
     category: "experiencia",
     layout:
       "DIVISÃO SUAVE — 70% SUPERIOR com fotografia hiper-realista do destino; 30% INFERIOR com área clean usando leve gradiente translúcido (NUNCA bloco sólido pesado, NUNCA cor saturada). Transição suave entre as duas áreas.",
     lighting: "natural suave, luz realista, atmosfera convidativa",
     sceneDescription: `${v.destination} com foco em experiência — mar, arquitetura ou natureza com luz natural suave, pessoas interagindo com o ambiente de forma natural. ${v.destinationDescription}`,
-    headline: pickExperienciaHeadline(v.destination, v.creativeSeed || "ed2"),
-    experienceDescription: `Viva dias únicos com paisagens incríveis e momentos inesquecíveis em ${v.destination}.`,
+    headline,
+    experienceDescription: `Dias únicos com paisagens incríveis e momentos inesquecíveis em ${v.destination}.`,
     specialization:
-      "• Texto na área inferior:\n   Título: 'Explore " + v.destination + "'.\n   Descrição: 'Viva dias únicos com paisagens incríveis e momentos inesquecíveis'.\n• Lista LEVE (sem caixas, sem pílulas): • Cultura local  • Gastronomia  • Passeios exclusivos.\n• Preço pequeno OPCIONAL e discreto, em texto fino: 'A partir de R$ " + v.installmentValue + "'. NUNCA em caixa colorida.\n• Estilo: minimalista, leve, sem aparência de anúncio agressivo.",
+      "• Texto na área inferior:\n   Título: '" + headline + "' — use EXATAMENTE essa frase, NÃO substitua por verbos fixos.\n   Descrição: 'Paisagens incríveis e momentos inesquecíveis'.\n• Lista LEVE (sem caixas, sem pílulas): • Cultura local  • Gastronomia  • Passeios exclusivos.\n• Preço pequeno OPCIONAL e discreto, em texto fino: 'A partir de R$ " + v.installmentValue + "'. NUNCA em caixa colorida.\n• Estilo: minimalista, leve, sem aparência de anúncio agressivo.",
   });
 }
 
 // 🌍 ED3 — STORY LIFESTYLE (PESSOAS + EXPERIÊNCIA)
 export function promptElegantCenterCard(v: MasterPromptVars): string {
+  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed3");
   return buildBrain(v, {
     category: "experiencia",
     layout:
       "STORY LIFESTYLE — fotografia full-bleed dominante mostrando pessoas reais aproveitando o destino. Texto sobreposto leve, sem caixas pesadas, com gradiente sutil apenas para legibilidade.",
     lighting: "luz natural, clima feliz, sensação de liberdade, atmosfera real e espontânea",
     sceneDescription: `grupo de pessoas reais aproveitando ${v.destination} — rindo, tirando fotos, vivendo o momento. Ambiente vivo, autêntico, sem pose comercial. ${v.destinationDescription}`,
-    headline: pickExperienciaHeadline(v.destination, v.creativeSeed || "ed3"),
+    headline,
     experienceDescription: `Momentos que ficam para sempre em ${v.destination}.`,
     specialization:
-      "• Topo do centro: 'Viva o melhor de " + v.destination + "'.\n• Meio: 'Momentos que ficam para sempre'.\n• Base (pequeno e discreto, SEM caixas): • Passeios inclusos  • Experiência completa  • Roteiro planejado.\n• PROIBIDO preço gigante, cartões, elementos de oferta.\n• Estilo: Instagram orgânico premium, sensação real de viagem.",
+      "• Topo do centro: '" + headline + "' — use EXATAMENTE essa frase como título principal.\n• Meio: 'Momentos que ficam para sempre'.\n• Base (pequeno e discreto, SEM caixas): • Passeios inclusos  • Experiência completa  • Roteiro planejado.\n• PROIBIDO preço gigante, cartões, elementos de oferta.\n• Estilo: Instagram orgânico premium, sensação real de viagem.",
   });
 }
 
 // 🌍 ED4 — MULTI EXPERIÊNCIA (GRID VISUAL)
 export function promptEditorialVisual(v: MasterPromptVars): string {
+  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed4");
   return buildBrain(v, {
     category: "experiencia",
     layout:
       "GRID EDITORIAL — lado DIREITO com 3 ou 4 imagens empilhadas mostrando experiências DIFERENTES (praia, passeio, gastronomia, ponto turístico); lado ESQUERDO com área limpa contendo texto leve. Espaçamento uniforme estilo revista.",
     lighting: "cada foto com sua própria atmosfera natural — variada e autêntica",
     sceneDescription: `múltiplas experiências distintas em ${v.destination}: praia, passeio cultural, gastronomia local, ponto turístico icônico. Cada imagem deve ser ÚNICA — proibido repetir cenas. ${v.destinationDescription}`,
-    headline: pickExperienciaHeadline(v.destination, v.creativeSeed || "ed4"),
+    headline,
     experienceDescription: `${v.destination} além do óbvio.`,
     specialization:
-      "• Lado esquerdo:\n   Título: 'Um destino, várias experiências'.\n   Subtítulo: '" + v.destination + " além do óbvio'.\n   Lista LEVE: • Praias incríveis  • Cultura local  • Aventuras únicas.\n• SEM destaque de preço.\n• Estilo: revista de viagem, sofisticado, visual rico.\n• Cada imagem do grid precisa ser visualmente DIFERENTE — proibido cópia ou repetição.",
+      "• Lado esquerdo:\n   Título: '" + headline + "' — use EXATAMENTE essa frase.\n   Subtítulo: '" + v.destination + " além do óbvio'.\n   Lista LEVE: • Praias incríveis  • Cultura local  • Aventuras únicas.\n• SEM destaque de preço.\n• Estilo: revista de viagem, sofisticado, visual rico.\n• Cada imagem do grid precisa ser visualmente DIFERENTE — proibido cópia ou repetição.",
   });
 }
 
 // 🌍 ED5 — MINIMALISTA PREMIUM (LUXO)
 export function promptTopEditorialPhoto(v: MasterPromptVars): string {
+  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed5");
   return buildBrain(v, {
     category: "experiencia",
     layout:
       "MINIMALISTA PREMIUM — fotografia única, limpa, com composição artística. Pouquíssimo texto, muito espaço negativo, atmosfera de alto luxo. Sem caixas, sem blocos, sem listas pesadas.",
     lighting: "suave, estética premium, paleta refinada, ângulo único e artístico",
     sceneDescription: `${v.destination} em ângulo único e artístico, com luz suave e estética premium. Composição contemplativa. ${v.destinationDescription}`,
-    headline: `${v.destination}`,
+    headline,
     experienceDescription: `Uma experiência para poucos.`,
     specialization:
-      "• Centro: '" + v.destination + "'.\n• Abaixo: 'Uma experiência para poucos'.\n• NENHUM preço em destaque.\n• Pequeno detalhe na base: 'Consulte disponibilidade'.\n• MUITO espaço negativo (respiro visual).\n• Estilo: luxo, exclusivo, silencioso, alto padrão.",
+      "• Centro: '" + headline + "' — use EXATAMENTE essa frase como título principal.\n• Abaixo: 'Uma experiência para poucos'.\n• NENHUM preço em destaque.\n• Pequeno detalhe na base: 'Consulte disponibilidade'.\n• MUITO espaço negativo (respiro visual).\n• Estilo: luxo, exclusivo, silencioso, alto padrão.",
   });
 }
 
 // 🌍 ED6 — COLUNA EDITORIAL + DUAS CENAS DISTINTAS
 export function promptTwoSceneEditorial(v: MasterPromptVars): string {
+  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed6");
   return buildBrain(v, {
     category: "experiencia",
     layout:
       "COLUNA ESQUERDA editorial em fundo bege/off-white com título e checklist leve; COLUNA DIREITA com duas fotografias distintas do destino, uma paisagem ampla e um detalhe cultural/local, com espaçamento uniforme",
     lighting: "editorial sofisticada, textura real, luz natural coerente entre as cenas",
     sceneDescription: `duas perspectivas diferentes de ${v.destinationDescription}: uma paisagem ampla e um detalhe sensorial local`,
-    headline: pickExperienciaHeadline(v.destination, v.creativeSeed || "ed6"),
-    experienceDescription: `Explore ${v.destination} por ângulos diferentes: paisagem, cultura, descanso e momentos memoráveis em ${v.duration}.`,
+    headline,
+    experienceDescription: `${v.destination} por ângulos diferentes: paisagem, cultura, descanso e momentos memoráveis em ${v.duration}.`,
     specialization:
-      "• As duas fotos devem ser DIFERENTES, nunca cópias da mesma imagem.\n• Composição estilo página editorial premium, NÃO panfleto de preço.\n• Checklist curto e espaçado, sem pílulas agressivas.\n• Sem urgência, sem 'APENAS HOJE', sem preço gigante. Preço opcional como nota fina.",
+      "• Coluna esquerda: '" + headline + "' como título principal — use EXATAMENTE essa frase, NÃO substitua por 'Viva/Explore/Descubra' fixos.\n• As duas fotos devem ser DIFERENTES, nunca cópias da mesma imagem.\n• Composição estilo página editorial premium, NÃO panfleto de preço.\n• Checklist curto e espaçado, sem pílulas agressivas.\n• Sem urgência, sem 'APENAS HOJE', sem preço gigante. Preço opcional como nota fina.",
   });
 }
 
