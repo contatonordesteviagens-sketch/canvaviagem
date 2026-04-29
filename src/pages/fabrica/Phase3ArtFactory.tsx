@@ -315,13 +315,24 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       // ===== MODO FOTO (composição local) — gera 1 imagem única =====
       if (genMode === "photo") {
         toast.info("Gerando 1 imagem única com foto real");
-        const stratHistKey = scopedStrategyHistoryKey(categoria, genMode, format);
+        const guard = getForbiddenSets(categoria, "photo", format);
+        const stratHistKey = scopedStrategyHistoryKey(categoria, "photo", format);
         let stratHistory: StrategyId[] = [];
         try { stratHistory = JSON.parse(localStorage.getItem(stratHistKey) || "[]"); } catch { stratHistory = []; }
-        const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 1, stratHistory);
+        // Combina histórico local + histórico do guard (proíbe layouts recentes)
+        const mergedHist = Array.from(new Set([...stratHistory, ...(guard.layouts as StrategyId[])]));
+        const freshSeedPhoto = freshSeed(generationSeed);
+        const chosen = pickDistinctLocalStrategies(categoria, freshSeedPhoto, 1, mergedHist);
         localStorage.setItem(stratHistKey, JSON.stringify(chosen));
-        const photoRefs = pickPhotoRefs(photos, refImage, generationSeed, chosen.length);
-        const palette = pickGenerationPalette(categoria, generationSeed, primaryColor, secondaryColor);
+        const photoRefs = pickPhotoRefs(photos, refImage, freshSeedPhoto, chosen.length);
+
+        // Paleta — evita a paleta usada na última geração
+        let palette = pickGenerationPalette(categoria, freshSeedPhoto, primaryColor, secondaryColor);
+        const palKey = (p: typeof palette) => `${p.primary.toLowerCase()}|${p.secondary.toLowerCase()}`;
+        if (guard.palettes.includes(palKey(palette))) {
+          // tenta próxima
+          palette = pickGenerationPalette(categoria, freshSeedPhoto + 7, primaryColor, secondaryColor);
+        }
 
         const composed = await Promise.all(
           chosen.map(async (localStrategy, idx) => {
@@ -341,7 +352,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               paymentLabel: paymentLabel || undefined,
               paymentSuffix: paymentSuffix || undefined,
               strategy: localStrategy,
-              variation: generationSeed + idx,
+              variation: freshSeedPhoto + idx,
             });
             if (state.logoBase64) {
               try {
@@ -354,6 +365,14 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             return img;
           })
         );
+
+        // Registra no GenerationGuard (a "headline" no modo foto = promoName, pois é o que aparece)
+        registerGeneration(categoria, "photo", format, {
+          layoutId: chosen[0],
+          headline: promoName || "OFERTA ESPECIAL",
+          primary: palette.primary,
+          secondary: palette.secondary,
+        });
 
         setGeneratedImage(composed[0]);
         setGeneratedImages(composed);
