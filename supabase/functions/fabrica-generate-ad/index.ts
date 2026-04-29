@@ -586,6 +586,13 @@ serve(async (req) => {
 
     let imageUrl: string | undefined;
 
+    // ===== Referência visual CVC para OFERTAS =====
+    // Passa a imagem de referência (estilo CVC) como segundo item de content
+    // para que o modelo replique a anatomia: foto real + caixa amarela com preço + selos PIX.
+    const isOferta = (usedTemplateId?.startsWith("OP") ?? false) || finalBody.strategy === "ancora" || finalBody.strategy === "matriz";
+    const CVC_REF_URL = "https://zdjtcwtakgizbsbbwtgc.supabase.co/storage/v1/object/public/thumbnails/fabrica-ref-cvc-style.jpg";
+    const refInstruction = "REFERÊNCIA VISUAL OBRIGATÓRIA: a imagem em anexo é o ESTILO EXATO que você deve replicar — foto real do destino cobrindo o fundo, caixa amarela retangular no terço superior contendo PACOTE + DESTINO + ícones de duração/voo/hotel + 12X sem juros colado ao R$ gigante + total por pessoa + faixa azul escura com '5% OFF À VISTA NO PIX' + selo da agência no canto inferior direito + texto legal vertical fino na lateral esquerda. Mantenha esta MESMA ANATOMIA, trocando apenas: a foto pelo destino solicitado, as cores pela paleta informada e os textos/preço pelos dados do briefing abaixo.\n\n";
+
     // ===== Tentativa 1: chave Gemini do usuário (Google AI Studio) =====
     if (provider === "user_gemini") {
       // Os nomes de modelo válidos no endpoint público v1beta variam.
@@ -596,6 +603,23 @@ serve(async (req) => {
         "gemini-2.0-flash-preview-image-generation",
         "gemini-2.5-flash-image-preview",
       ];
+      // Carrega referência CVC como inlineData se for oferta
+      let refParts: Array<Record<string, unknown>> = [];
+      if (isOferta) {
+        try {
+          const refResp = await fetch(CVC_REF_URL);
+          if (refResp.ok) {
+            const buf = new Uint8Array(await refResp.arrayBuffer());
+            let bin = "";
+            for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
+            const b64 = btoa(bin);
+            refParts = [{ inlineData: { mimeType: "image/jpeg", data: b64 } }];
+          }
+        } catch (e) {
+          console.warn("Falha ao carregar ref CVC:", e);
+        }
+      }
+      const promptText = isOferta ? refInstruction + prompt : prompt;
       let geminiResp: Response | null = null;
       let lastErrText = "";
       try {
@@ -606,7 +630,7 @@ serve(async (req) => {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
+                contents: [{ parts: [{ text: promptText }, ...refParts] }],
                 generationConfig: {
                   responseModalities: ["IMAGE", "TEXT"],
                   temperature: imageTemperature,
@@ -677,7 +701,15 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           model: "google/gemini-3.1-flash-image-preview",
-          messages: [{ role: "user", content: prompt }],
+          messages: [{
+            role: "user",
+            content: isOferta
+              ? [
+                  { type: "text", text: refInstruction + prompt },
+                  { type: "image_url", image_url: { url: CVC_REF_URL } },
+                ]
+              : prompt,
+          }],
           modalities: ["image", "text"],
           temperature: imageTemperature,
           top_p: imageTopP,
