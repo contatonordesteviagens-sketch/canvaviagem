@@ -83,13 +83,9 @@ const FabricaInner = () => {
           <h1 className="text-3xl sm:text-4xl font-black mb-3 tracking-tight leading-[1.1]">
             Sua agência{" "}
             <span
+              className="bg-clip-text text-transparent"
               style={{
                 backgroundImage: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)`,
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                color: "transparent",
-                display: "inline-block",
               }}
             >
               profissional
