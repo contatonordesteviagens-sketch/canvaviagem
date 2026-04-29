@@ -318,7 +318,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       // ===== MODO IA PURA: gera prompts da categoria; Experiência/Stories usa fluxo seguro sem texto da IA =====
       if (genMode === "ai") {
         const cat = getCategoria(categoria);
-        const isAiExperienceStory = categoria === "experiencia_destino" && format === "story";
+        const isAiExperienceStory = categoria === "experiencia_destino";
         const categoryLastKey = scopedTemplateKey("last", categoria, genMode);
         const categoryRecentKey = scopedTemplateKey("recent", categoria, genMode);
         const storedLast = localStorage.getItem(categoryLastKey) || (cat.prompts.some((p) => p.templateId === lastTemplateId) ? lastTemplateId : null);
