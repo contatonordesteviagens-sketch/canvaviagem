@@ -426,13 +426,20 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const totalNum = Math.round(parseFloat((finalBody.price || "149,90").replace(/\./g, "").replace(",", ".")) * parseInt((finalBody.installments || "10x").replace(/\D/g, "") || "10"));
+      // Preserva vírgula/centavos do preço (ex.: "149,90" — NÃO virar "1499").
+      const rawPrice = (finalBody.price || "149,90").trim();
+      const priceFormatted = rawPrice
+        .replace(/[^\d.,]/g, "")        // mantém apenas dígitos, ponto e vírgula
+        .replace(/\.(?=\d{3}(\D|$))/g, ""); // remove pontos de milhar (1.499,90 → 1499,90)
+      const priceNumeric = parseFloat(priceFormatted.replace(/\./g, "").replace(",", ".")) || 149.9;
+      const installmentsCount = parseInt((finalBody.installments || "10x").replace(/\D/g, "") || "10");
+      const totalNum = Math.round(priceNumeric * installmentsCount);
       const vars: MasterPromptVars = {
         destination: (finalBody.destination || "DESTINO").toUpperCase(),
         destinationDescription: nicheToScene(finalBody.niche, finalBody.destination),
-        installments: (finalBody.installments || "10").replace(/\D/g, "") || "10",
-        installmentValue: (finalBody.price || "149").replace(/[^\d]/g, "").slice(0, 4) || "149",
-        totalValue: String(totalNum || 1490),
+        installments: String(installmentsCount),
+        installmentValue: priceFormatted || "149,90",
+        totalValue: priceNumeric % 1 === 0 ? String(totalNum) : totalNum.toFixed(2).replace(".", ","),
         packageType: finalBody.packageType || "Voo + Hotel",
         duration: finalBody.duration || "5 NOITES",
         promoName: (finalBody.promoName || "OFERTA EXCLUSIVA").toUpperCase(),
