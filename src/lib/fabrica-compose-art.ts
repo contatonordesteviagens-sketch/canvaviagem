@@ -497,7 +497,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = grad;
     ctx.fillRect(0, photoH - 240, width, 240);
     ctx.fillStyle = "#ffffff";
-    drawTextBlock(ctx, `Viva ${destination}`, left, photoH - 210, contentWidth, 78, 2, { fontWeight: "800", baseFontSize: format === "story" ? 78 : 62, minFontSize: 40 });
+    drawTextBlock(ctx, `Viva ${destFmt}`, left, photoH - 210, contentWidth, 78, 2, { fontWeight: "800", baseFontSize: format === "story" ? 78 : 62, minFontSize: 40 });
 
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, photoH, width, height - photoH);
