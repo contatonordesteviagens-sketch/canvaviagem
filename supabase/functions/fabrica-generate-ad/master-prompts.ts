@@ -728,7 +728,7 @@ export function promptEditorialVisual(v: MasterPromptVars): string {
       "GRID EDITORIAL — lado DIREITO com 3 ou 4 imagens empilhadas mostrando experiências DIFERENTES (praia, passeio, gastronomia, ponto turístico); lado ESQUERDO com área limpa contendo texto leve. Espaçamento uniforme estilo revista.",
     lighting: "cada foto com sua própria atmosfera natural — variada e autêntica",
     sceneDescription: `múltiplas experiências distintas em ${v.destination}: praia, passeio cultural, gastronomia local, ponto turístico icônico. Cada imagem deve ser ÚNICA — proibido repetir cenas. ${v.destinationDescription}`,
-    headline: `Um destino, várias experiências`,
+    headline: pickExperienciaHeadline(v.destination, v.creativeSeed || "ed4"),
     experienceDescription: `${v.destination} além do óbvio.`,
     specialization:
       "• Lado esquerdo:\n   Título: 'Um destino, várias experiências'.\n   Subtítulo: '" + v.destination + " além do óbvio'.\n   Lista LEVE: • Praias incríveis  • Cultura local  • Aventuras únicas.\n• SEM destaque de preço.\n• Estilo: revista de viagem, sofisticado, visual rico.\n• Cada imagem do grid precisa ser visualmente DIFERENTE — proibido cópia ou repetição.",
