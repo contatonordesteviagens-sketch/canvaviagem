@@ -375,10 +375,79 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillText(promoTrunc, x, y + (hasOfferKeyword ? 0 : 48));
   };
 
+  const renderSafeSquareOffer = () => {
+    const variant = Math.abs(variation) % 3;
+    ctx.fillStyle = primaryColor;
+    ctx.fillRect(0, 0, width, height);
+
+    if (variant === 1) {
+      const photoW = 500;
+      const crop = fitCover(image.naturalWidth, image.naturalHeight, photoW, height, 0.38);
+      ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, photoW, height);
+      const shade = ctx.createLinearGradient(0, 0, photoW, 0);
+      shade.addColorStop(0, "rgba(0,0,0,0.05)");
+      shade.addColorStop(1, "rgba(0,0,0,0.34)");
+      ctx.fillStyle = shade;
+      ctx.fillRect(0, 0, photoW, height);
+
+      const panelX = 500;
+      ctx.fillStyle = primaryColor;
+      ctx.fillRect(panelX, 0, width - panelX, height);
+      drawBadge(panelX + 54, 70, 430);
+      ctx.fillStyle = "#ffffff";
+      drawTextBlock(ctx, titleText, panelX + 54, 190, 450, 58, 3, { baseFontSize: 56, minFontSize: 34 });
+      drawPriceCard(panelX + 54, 390, 450, 150, "right");
+      drawHighlightsBlock(panelX + 54, 590, 450, 5, true, true);
+      return canvas.toDataURL("image/png");
+    }
+
+    if (variant === 2) {
+      const photoH = 610;
+      const crop = fitCover(image.naturalWidth, image.naturalHeight, width, photoH, 0.36);
+      ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, photoH);
+      const grad = ctx.createLinearGradient(0, 0, 0, photoH);
+      grad.addColorStop(0, "rgba(0,0,0,0.08)");
+      grad.addColorStop(1, "rgba(0,0,0,0.42)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, photoH);
+      drawBadge(left, 70, 420);
+      ctx.fillStyle = "#ffffff";
+      drawTextBlock(ctx, titleText, left, 178, contentWidth - 80, 66, 2, { baseFontSize: 64, minFontSize: 38 });
+
+      const cardY = 640;
+      fillRoundRect(ctx, left, cardY, contentWidth, 360, 38, primaryColor);
+      drawPriceCard(left + 36, cardY + 36, 360, 140, "left");
+      drawHighlightsBlock(left + 430, cardY + 36, contentWidth - 466, 5, true, true);
+      return canvas.toDataURL("image/png");
+    }
+
+    const photoH = 480;
+    const crop = fitCover(image.naturalWidth, image.naturalHeight, width, photoH, 0.36);
+    ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, photoH);
+    const photoGrad = ctx.createLinearGradient(0, photoH - 150, 0, photoH);
+    photoGrad.addColorStop(0, "rgba(0,0,0,0)");
+    photoGrad.addColorStop(1, "rgba(0,0,0,0.32)");
+    ctx.fillStyle = photoGrad;
+    ctx.fillRect(0, photoH - 150, width, 150);
+
+    ctx.fillStyle = primaryColor;
+    ctx.fillRect(0, photoH, width, height - photoH);
+    drawBadge(left, 528, 500);
+    ctx.fillStyle = "#ffffff";
+    drawTextBlock(ctx, titleText, left, 628, 520, 58, 2, { baseFontSize: 56, minFontSize: 34 });
+    drawPriceCard(620, 535, 396, 165, "right");
+    drawHighlightsBlock(left, 735, contentWidth, 5, true, true);
+    return canvas.toDataURL("image/png");
+  };
+
   // Fundo opaco com a cor primária — evita qualquer "borda branca" caso a foto
   // não cubra todo o canvas por algum motivo (ex.: imagem com transparência ou aspecto inesperado).
   ctx.fillStyle = primaryColor || "#0a0a0a";
   ctx.fillRect(0, 0, width, height);
+
+  if (format === "square" && !isExperience) {
+    return renderSafeSquareOffer();
+  }
 
   if (strategy === "ancora") {
     ctx.fillStyle = primaryColor;
