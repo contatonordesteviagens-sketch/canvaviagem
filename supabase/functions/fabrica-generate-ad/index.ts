@@ -587,11 +587,40 @@ serve(async (req) => {
     let imageUrl: string | undefined;
 
     // ===== Referência visual CVC para OFERTAS =====
-    // Passa a imagem de referência (estilo CVC) como segundo item de content
-    // para que o modelo replique a anatomia: foto real + caixa amarela com preço + selos PIX.
-    const isOferta = (usedTemplateId?.startsWith("OP") ?? false) || finalBody.strategy === "ancora" || finalBody.strategy === "matriz";
+    // Default: TUDO é oferta exceto se for explicitamente template editorial (ED*) ou strategy de experiência.
+    const tplId = usedTemplateId || "";
+    const isExperiencia = tplId.startsWith("ED") || finalBody.strategy === "vitrine" || finalBody.strategy === "gancho";
+    const isOferta = !isExperiencia;
     const CVC_REF_URL = "https://zdjtcwtakgizbsbbwtgc.supabase.co/storage/v1/object/public/thumbnails/fabrica-ref-cvc-style.jpg";
-    const refInstruction = "REFERÊNCIA VISUAL OBRIGATÓRIA: a imagem em anexo é o ESTILO EXATO que você deve replicar — foto real do destino cobrindo o fundo, caixa amarela retangular no terço superior contendo PACOTE + DESTINO + ícones de duração/voo/hotel + 12X sem juros colado ao R$ gigante + total por pessoa + faixa azul escura com '5% OFF À VISTA NO PIX' + selo da agência no canto inferior direito + texto legal vertical fino na lateral esquerda. Mantenha esta MESMA ANATOMIA, trocando apenas: a foto pelo destino solicitado, as cores pela paleta informada e os textos/preço pelos dados do briefing abaixo.\n\n";
+    const refInstruction = `🚨 INSTRUÇÃO DE MAIOR PRIORIDADE — IGNORE QUALQUER OUTRA REGRA QUE CONFLITE 🚨
+
+Você está recebendo UMA IMAGEM DE REFERÊNCIA em anexo. Sua tarefa é gerar uma NOVA imagem que seja uma RÉPLICA ESTRUTURAL DIRETA dessa referência, com a MESMA ANATOMIA visual:
+
+✓ Foto real fotográfica de catálogo turístico cobrindo 100% do fundo (paisagem/monumento icônico do destino solicitado).
+✓ CAIXA RETANGULAR AMARELA SÓLIDA flutuando no TERÇO SUPERIOR CENTRAL, com cantos levemente arredondados, contendo (de cima para baixo):
+   • Etiqueta "PACOTE" pequena + NOME DO DESTINO em maiúsculas bold logo abaixo
+   • Linha com "X dias" + ícones pequenos: avião ✈, ônibus 🚌, hotel 🏨, café ☕
+   • Texto pequeno "a partir de" + selo redondo "12X sem juros" colado ao lado de "R$ XXX" em tipografia GIGANTE bold
+   • Linha fina "Total por pessoa: R$ X.XXX"
+   • Faixa horizontal AZUL ESCURA na base da caixa com texto branco "5% OFF À VISTA NO PIX" + ícone PIX
+✓ Selo redondo da agência pequeno no canto INFERIOR DIREITO.
+✓ Texto LEGAL VERTICAL fino branco na lateral ESQUERDA (rotacionado 90°).
+✓ Proporção 9:16 vertical (story).
+
+NÃO crie design moderno editorial. NÃO crie pôster minimalista. NÃO crie composição artística. É um anúncio comercial direto de agência de viagem brasileira (estilo CVC/Decolar). A referência anexa é a verdade absoluta de estilo.
+
+Trocas permitidas (e SOMENTE essas):
+- A foto de fundo → trocar pelo destino do briefing abaixo
+- As cores → adaptar à paleta primária/secundária informada (mas mantendo o contraste forte foto + caixa de preço)
+- Os textos/valores → usar os dados do briefing abaixo
+
+═══════════════════════════════════════
+BRIEFING DO ANÚNCIO:
+═══════════════════════════════════════
+
+`;
+
+    console.log("Ref CVC decision", { tplId, strategy: finalBody.strategy, isOferta, willAttachRef: isOferta });
 
     // ===== Tentativa 1: chave Gemini do usuário (Google AI Studio) =====
     if (provider === "user_gemini") {
