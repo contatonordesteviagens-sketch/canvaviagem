@@ -213,7 +213,7 @@ const HEADLINE_POOLS_EXPERIENCIA: Record<string, ((d: string) => string)[]> = {
     () => `Seu próximo destino é esse`,
   ],
   emocional: [
-    () => `Momentos que ficam para sempre`,
+    () => `Dias que você não esquece`,
     () => `Um lugar para se desconectar`,
     () => `Onde tudo faz sentido`,
   ],
@@ -224,8 +224,8 @@ const HEADLINE_POOLS_EXPERIENCIA: Record<string, ((d: string) => string)[]> = {
   ],
   impactante: [
     (d) => `${d} como você nunca viu`,
-    (d) => `Simplesmente ${d}`,
-    (d) => `O melhor de ${d}`,
+    () => `Uma experiência diferente de tudo`,
+    () => `A viagem que muda o ritmo`,
   ],
   inspiracional: [
     () => `Permita-se viver isso`,
@@ -233,7 +233,7 @@ const HEADLINE_POOLS_EXPERIENCIA: Record<string, ((d: string) => string)[]> = {
     () => `O mundo te espera`,
   ],
   acao_leve: [
-    (d) => `Partiu ${d}?`,
+    () => `Partiu viajar?`,
     () => `Hora de arrumar as malas`,
     () => `Bora viajar?`,
   ],
