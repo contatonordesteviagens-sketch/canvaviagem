@@ -27,6 +27,19 @@ const FabricaInner = () => {
     document.documentElement.style.setProperty("--fabrica-primary", state.primaryColor);
   }, [state.primaryColor]);
 
+  // Decide texto preto/branco com base na luminância da primaryColor
+  // Evita "texto preto sobre fundo escuro" quando alguém escolhe uma cor escura.
+  const getContrastText = (hex: string): string => {
+    const c = hex.replace("#", "");
+    if (c.length !== 6) return "#000";
+    const r = parseInt(c.slice(0, 2), 16);
+    const g = parseInt(c.slice(2, 4), 16);
+    const b = parseInt(c.slice(4, 6), 16);
+    const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return lum > 0.6 ? "#000" : "#fff";
+  };
+  const onPrimaryText = getContrastText(state.primaryColor);
+
   return (
     <div
       className="min-h-screen"
