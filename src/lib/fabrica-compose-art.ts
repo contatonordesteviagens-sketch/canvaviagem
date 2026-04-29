@@ -519,7 +519,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     drawTextBlock(ctx, destFmt, left + 42, panelBottom - 360, contentWidth - 84, 86, 2, { fontWeight: "800", baseFontSize: format === "story" ? 92 : 70, minFontSize: 44 });
     ctx.font = "500 30px Inter, Arial, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("Uma viagem para sentir, viver e lembrar", width / 2, panelBottom - 165);
+    ctx.fillText(subtitleText, width / 2, panelBottom - 165);
     ctx.textAlign = "left";
   } else if (strategy === "experiencia_lifestyle") {
     const photoH = Math.round(panelBottom * 0.76);
@@ -531,13 +531,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = grad;
     ctx.fillRect(0, photoH - 240, width, 240);
     ctx.fillStyle = "#ffffff";
-    drawTextBlock(ctx, `Viva ${destFmt}`, left, photoH - 210, contentWidth, 78, 2, { fontWeight: "800", baseFontSize: format === "story" ? 78 : 62, minFontSize: 40 });
+    drawTextBlock(ctx, titleText, left, photoH - 210, contentWidth, 78, 2, { fontWeight: "800", baseFontSize: format === "story" ? 78 : 62, minFontSize: 40 });
 
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, photoH, width, height - photoH);
     ctx.fillStyle = primaryColor;
     ctx.font = "700 30px Inter, Arial, sans-serif";
-    ctx.fillText("Experiências selecionadas", left, photoH + 92);
+    ctx.fillText(subtitleText, left, photoH + 92);
     ctx.fillStyle = "#1f2937";
     ctx.font = "500 30px Inter, Arial, sans-serif";
     drawTextBlock(ctx, "Um roteiro com beleza, conforto e momentos autênticos no destino.", left, photoH + 160, contentWidth, 42, 3, { fontWeight: "500", baseFontSize: 30, minFontSize: 22 });
