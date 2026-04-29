@@ -32,7 +32,7 @@ interface ComposeTravelAdOptions {
   paymentMode?: PaymentMode;
   paymentLabel?: string;
   paymentSuffix?: string;
-  strategy?: "ancora" | "vitrine" | "matriz" | "gancho" | "experiencia_hero" | "experiencia_editorial";
+  strategy?: "ancora" | "vitrine" | "matriz" | "gancho" | "experiencia_hero" | "experiencia_editorial" | "experiencia_postcard" | "experiencia_lifestyle";
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
@@ -450,6 +450,57 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.font = "700 24px Inter, Arial, sans-serif";
     ctx.fillStyle = primaryColor;
     ctx.fillText("Consulte disponibilidade", left, Math.min(panelBottom - 90, safeTop + 930));
+  } else if (strategy === "experiencia_postcard") {
+    const heroH = panelBottom;
+    const crop = fitCover(image.naturalWidth, image.naturalHeight, width, heroH, format === "story" ? 0.28 : 0.34);
+    ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, heroH);
+
+    const shade = ctx.createLinearGradient(0, 0, 0, heroH);
+    shade.addColorStop(0, "rgba(0,0,0,0.18)");
+    shade.addColorStop(0.48, "rgba(0,0,0,0.02)");
+    shade.addColorStop(1, "rgba(0,0,0,0.55)");
+    ctx.fillStyle = shade;
+    ctx.fillRect(0, 0, width, heroH);
+
+    ctx.strokeStyle = "rgba(255,255,255,0.82)";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(left, safeTop + 20, contentWidth, panelBottom - safeTop - 80);
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "center";
+    ctx.font = "700 28px Inter, Arial, sans-serif";
+    ctx.fillText(city ? `Saindo de ${city}` : "Roteiro especial", width / 2, safeTop + 96);
+    drawTextBlock(ctx, destination, left + 42, panelBottom - 360, contentWidth - 84, 86, 2, { fontWeight: "800", baseFontSize: format === "story" ? 92 : 70, minFontSize: 44 });
+    ctx.font = "500 30px Inter, Arial, sans-serif";
+    ctx.fillText("Uma viagem para sentir, viver e lembrar", width / 2, panelBottom - 165);
+    ctx.textAlign = "left";
+  } else if (strategy === "experiencia_lifestyle") {
+    const photoH = Math.round(panelBottom * 0.76);
+    const crop = fitCover(image.naturalWidth, image.naturalHeight, width, photoH, format === "story" ? 0.42 : 0.46);
+    ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, photoH);
+    const grad = ctx.createLinearGradient(0, photoH - 240, 0, photoH);
+    grad.addColorStop(0, "rgba(0,0,0,0)");
+    grad.addColorStop(1, "rgba(0,0,0,0.42)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, photoH - 240, width, 240);
+    ctx.fillStyle = "#ffffff";
+    drawTextBlock(ctx, `Viva ${destination}`, left, photoH - 210, contentWidth, 78, 2, { fontWeight: "800", baseFontSize: format === "story" ? 78 : 62, minFontSize: 40 });
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, photoH, width, height - photoH);
+    ctx.fillStyle = primaryColor;
+    ctx.font = "700 30px Inter, Arial, sans-serif";
+    ctx.fillText("Experiências selecionadas", left, photoH + 92);
+    ctx.fillStyle = "#1f2937";
+    ctx.font = "500 30px Inter, Arial, sans-serif";
+    drawTextBlock(ctx, "Um roteiro com beleza, conforto e momentos autênticos no destino.", left, photoH + 160, contentWidth, 42, 3, { fontWeight: "500", baseFontSize: 30, minFontSize: 22 });
+    shownHighlights.slice(0, 3).forEach((item, idx) => {
+      ctx.fillStyle = primaryColor;
+      ctx.font = "800 28px Inter, Arial, sans-serif";
+      ctx.fillText("—", left, photoH + 340 + idx * 58);
+      ctx.fillStyle = "#1f2937";
+      ctx.font = "700 27px Inter, Arial, sans-serif";
+      ctx.fillText(item.text, left + 46, photoH + 340 + idx * 58);
+    });
   } else {
     const bottomHeight = format === "story" ? 770 : 560;
     const photoHeight = height - safeBottom - bottomHeight;
