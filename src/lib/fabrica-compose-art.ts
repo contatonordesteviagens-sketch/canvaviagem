@@ -187,6 +187,18 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
   const image = await loadImage(imageUrl);
 
+  // Title-case helper to evitar "saindo de fortaleza" minusculo
+  const toTitle = (s?: string) =>
+    (s || "")
+      .trim()
+      .toLocaleLowerCase("pt-BR")
+      .split(/\s+/)
+      .map((w) => (w.length <= 2 && /^(de|da|do|e)$/i.test(w) ? w : w.charAt(0).toLocaleUpperCase("pt-BR") + w.slice(1)))
+      .join(" ");
+
+  const cityFmt = toTitle(city);
+  const destFmt = toTitle(destination);
+
   const safeTop = format === "story" ? 270 : 120;
   const safeBottom = format === "story" ? 345 : 120;
   const panelBottom = height - safeBottom;
@@ -194,8 +206,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const right = width - 80;
   const contentWidth = right - left;
   const shownHighlights = highlights.slice(0, format === "story" ? 5 : 4);
-  const badgeText = city ? `Saindo de ${city}` : "Pacote completo";
-  const titleText = `Conheça ${destination}!`;
+  const badgeText = cityFmt ? `Saindo de ${cityFmt}` : "Pacote completo";
+  const titleText = `Conheça ${destFmt}!`;
 
   const resolvePaymentCopy = () => {
     switch (paymentMode) {
