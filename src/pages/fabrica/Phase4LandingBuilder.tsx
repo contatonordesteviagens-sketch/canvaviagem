@@ -760,6 +760,19 @@ const PublishOnLovableCard = ({ primaryColor, html }: { primaryColor: string; ht
         <p className="text-[11px] text-white/50 text-center">
           ✓ Sem cartão de crédito · ✓ Domínio grátis incluído · ✓ Suporte a domínio próprio
         </p>
+
+        <div className="mt-6 pt-5 border-t border-white/10 flex justify-center">
+          <button
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.06] border border-white/15 text-white/80 hover:text-white hover:bg-white/[0.10] transition-all text-sm font-semibold"
+          >
+            <ArrowLeft className="w-4 h-4" /> Voltar ao topo
+          </button>
+        </div>
       </div>
     </div>
   );
