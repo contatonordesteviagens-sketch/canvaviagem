@@ -469,8 +469,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.textAlign = "center";
     ctx.font = "700 28px Inter, Arial, sans-serif";
     ctx.fillText(city ? `Saindo de ${city}` : "Roteiro especial", width / 2, safeTop + 96);
+    ctx.textAlign = "left";
     drawTextBlock(ctx, destination, left + 42, panelBottom - 360, contentWidth - 84, 86, 2, { fontWeight: "800", baseFontSize: format === "story" ? 92 : 70, minFontSize: 44 });
     ctx.font = "500 30px Inter, Arial, sans-serif";
+    ctx.textAlign = "center";
     ctx.fillText("Uma viagem para sentir, viver e lembrar", width / 2, panelBottom - 165);
     ctx.textAlign = "left";
   } else if (strategy === "experiencia_lifestyle") {
