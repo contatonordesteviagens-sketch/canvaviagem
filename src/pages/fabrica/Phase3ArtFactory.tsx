@@ -247,23 +247,20 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         return;
       }
       const activeVariation = forceVariation ?? variationCounter;
+      const cycleKey = scopedGenerationKey(categoria, genMode, format);
+      const storedCycle = Number.parseInt(localStorage.getItem(cycleKey) || "0", 10);
+      const generationSeed = Math.max(activeVariation, Number.isFinite(storedCycle) ? storedCycle : 0);
+      const finishCycle = (amount: number) => {
+        const nextSeed = generationSeed + amount;
+        setVariationCounter(nextSeed);
+        localStorage.setItem(cycleKey, String(nextSeed));
+      };
 
       // ===== MODO FOTO (composição local) — gera 2 variações =====
       if (genMode === "photo") {
         toast.info("Gerando 2 variações com foto real");
-        const localStrategies: StrategyId[] = categoria === "oferta_pacote"
-          ? ["matriz", "gancho", "ancora"]
-          : ["experiencia_hero", "experiencia_editorial"];
-        // Duas estratégias distintas para garantir variação visual
-        const stratA = localStrategies[activeVariation % localStrategies.length];
-        const stratB = localStrategies[(activeVariation + 1) % localStrategies.length];
-        const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(activeVariation + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
-
-        const selectedIdx = photos.findIndex((p) => p.url === refImage);
-        const photoRefs = chosen.map((_, idx) => {
-          if (idx === 0 || selectedIdx < 0 || photos.length < 2) return refImage;
-          return photos[(selectedIdx + idx) % photos.length]?.url || refImage;
-        });
+        const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 2);
+        const photoRefs = pickPhotoRefs(photos, refImage, generationSeed, chosen.length);
 
         const composed = await Promise.all(
           chosen.map(async (localStrategy, idx) => {
@@ -303,64 +300,64 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         const newCount = generationCount + composed.length;
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
+        finishCycle(composed.length);
 
         toast.success("2 variações geradas com foto real!");
         return;
       }
 
-      // ===== MODO IA PURA: gera 1 imagem escolhendo prompt da categoria =====
+      // ===== MODO IA PURA: gera 2 imagens escolhendo prompts distintos da categoria =====
       if (genMode === "ai") {
         const cat = getCategoria(categoria);
-        const categoryLastKey = `fabrica_last_template_id_${categoria}`;
-        const categoryRecentKey = `fabrica_recent_template_ids_${categoria}`;
+        const categoryLastKey = scopedTemplateKey("last", categoria, genMode);
+        const categoryRecentKey = scopedTemplateKey("recent", categoria, genMode);
         const storedLast = localStorage.getItem(categoryLastKey) || (cat.prompts.some((p) => p.templateId === lastTemplateId) ? lastTemplateId : null);
         let storedRecent: string[] = [];
         try { storedRecent = JSON.parse(localStorage.getItem(categoryRecentKey) || "[]"); }
         catch { storedRecent = []; }
-        const picks = pickPromptsForCategoria(categoria, 1, storedLast, storedRecent);
-        const pick = picks[0];
-        const nextVariation = activeVariation;
+        const picks = pickPromptsForCategoria(categoria, 2, storedLast, storedRecent);
 
-        toast.info(`[${cat.name}] Gerando 1 banner: ${pick.code}`);
+        toast.info(`Gerando 2 variações em IA Pura — ${cat.name}`);
 
-        const { data, error } = await supabase.functions.invoke("fabrica-generate-ad", {
-          body: {
-            strategy,
-            format,
-            destination,
-            niche: state.niche,
-            agencyName: state.agencyName,
-            agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
-            city: state.city,
-            primaryColor,
-            secondaryColor,
-            hasLogo: !!state.logoBase64,
-            price,
-            installments,
-            promoName,
-            highlights,
-            ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
-            templateId: pick.templateId,
-            variation: nextVariation,
-            packageType: "Voo + Hotel",
-            duration: "5 NOITES",
-          },
-        });
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
-        if (!data?.image) throw new Error("Nenhuma imagem foi gerada. Cheque os créditos de IA.");
+        const results = await Promise.all(
+          picks.map((pick, idx) => supabase.functions.invoke("fabrica-generate-ad", {
+            body: {
+              strategy,
+              format,
+              destination,
+              niche: state.niche,
+              agencyName: state.agencyName,
+              agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
+              city: state.city,
+              primaryColor,
+              secondaryColor,
+              hasLogo: !!state.logoBase64,
+              price,
+              installments,
+              promoName,
+              highlights,
+              ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
+              templateId: pick.templateId,
+              variation: generationSeed + idx,
+              packageType: "Voo + Hotel",
+              duration: "5 NOITES",
+            },
+          }))
+        );
 
-        let img = data.image as string;
+        const images: string[] = [];
         let providerSeen: "user_gemini" | "lovable_ai" | null = null;
-        try {
-          const { reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
-          img = await reframeImageToAspect(img, format);
-        } catch (e) {
-          console.warn("reframe failed", e);
+        const { reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
+        for (const result of results) {
+          if (result.error) throw result.error;
+          if (result.data?.error) throw new Error(result.data.error);
+          if (!result.data?.image) throw new Error("Nenhuma imagem foi gerada. Cheque os créditos de IA.");
+          let img = result.data.image as string;
+          try { img = await reframeImageToAspect(img, format); }
+          catch (e) { console.warn("reframe failed", e); }
+          images.push(img);
+          if (result.data.provider) providerSeen = result.data.provider;
         }
-        if (data.provider) providerSeen = data.provider;
-
-        const images = [img];
 
         setGeneratedImages(images);
         setGeneratedImage(images[0]);
@@ -368,8 +365,9 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         if (providerSeen) setLastProvider(providerSeen);
 
         // Persiste o último prompt usado para a próxima rotação não repetir
-        const lastUsed = pick.templateId;
-        const nextRecent = [lastUsed, ...storedRecent.filter((id) => id !== lastUsed)].slice(0, Math.max(1, cat.prompts.length - 1));
+        const usedTemplateIds = picks.map((p) => p.templateId);
+        const lastUsed = usedTemplateIds[usedTemplateIds.length - 1];
+        const nextRecent = [...usedTemplateIds, ...storedRecent.filter((id) => !usedTemplateIds.includes(id))].slice(0, Math.max(1, cat.prompts.length - usedTemplateIds.length));
         setLastTemplateId(lastUsed);
         setRecentTemplateIds(nextRecent);
         localStorage.setItem(categoryLastKey, lastUsed);
@@ -380,8 +378,9 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         const newCount = generationCount + images.length;
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
+        finishCycle(images.length);
 
-        toast.success(`1 banner gerado — categoria: ${cat.name}`);
+        toast.success(`2 variações geradas — ${cat.name}`);
         return;
       }
 
