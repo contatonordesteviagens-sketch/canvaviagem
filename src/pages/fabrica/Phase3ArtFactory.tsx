@@ -267,7 +267,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
       // ===== MODO FOTO (composição local) — gera 2 variações =====
       if (genMode === "photo") {
-        toast.info("Gerando 2 variações com foto real");
+        toast.info(categoria === "experiencia_destino" ? "Gerando 1 variação cinematográfica" : "Gerando 2 variações com foto real");
         const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 2);
         const photoRefs = pickPhotoRefs(photos, refImage, generationSeed, chosen.length);
 
