@@ -45,8 +45,8 @@ const OFERTA_RULES = `
 - O PREÇO deve ser o MAIOR elemento visual da composição,
   ocupando NO MÍNIMO 25% da área do bloco central.
 - A imagem/fotografia é apenas suporte visual; ela NÃO pode ser protagonista.
-- Use cores vibrantes e contrastantes para destacar preço e oferta:
-  roxo, azul-elétrico, amarelo, dourado.
+- Use EXCLUSIVAMENTE a paleta enviada pelo formulário: a cor primária deve dominar fundos/blocos e a cor secundária deve aparecer em preço, badges e detalhes.
+- É PROIBIDO inventar verde, preto, azul, laranja, dourado ou qualquer outra cor dominante se ela não for uma das cores selecionadas pelo usuário.
 - Elementos de URGÊNCIA SEMPRE presentes (escolha 1 ou 2):
   "OFERTA EXCLUSIVA" · "APENAS HOJE" · "ÚLTIMAS VAGAS".
 - Selos / botões devem reforçar pelo menos 2 destes:
@@ -330,12 +330,12 @@ PREÇO É OPCIONAL E DISCRETO: se inserir, use APENAS um pequeno texto fino "A p
   const creativeSeed = v.creativeSeed || `${opts.category}-${opts.layout.slice(0, 24)}`;
   const variationDirectives = opts.category === "oferta"
     ? [
-        "LAYOUT ÚNICO DESTA GERAÇÃO: imagem full com preço direto sobre a foto, SEM cartão central · POSIÇÃO PREÇO: lado esquerdo livre · CORES: tropical verde + azul claro · IMAGEM: panorâmica praia · ILUMINAÇÃO: natural cristalina",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: divisão topo imagem 60% + base sólida 40% com oferta · POSIÇÃO PREÇO: base inferior dentro da safe zone · CORES: azul-elétrico + dourado · IMAGEM: aérea/drone · ILUMINAÇÃO: luz dramática de meio-dia",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: barra lateral vertical + imagem dominante · POSIÇÃO PREÇO: lado direito dentro da barra · CORES: amarelo neon + preto · IMAGEM: close lifestyle · ILUMINAÇÃO: backlight quente",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: grid de fotos com preço em selo isolado · POSIÇÃO PREÇO: selo no canto oposto à imagem principal · CORES: vermelho carmim + creme · IMAGEM: múltiplos recortes turísticos · ILUMINAÇÃO: comercial brilhante",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: cartão inclinado/assimétrico tipo ticket · POSIÇÃO PREÇO: dentro de selo circular · CORES: gradiente moderno (rosa/laranja/roxo) · IMAGEM: lifestyle pessoas viajando · ILUMINAÇÃO: sunset cinematográfico",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: texto central leve com preço isolado, sem bloco pesado · POSIÇÃO PREÇO: centro inferior · CORES: off-white + azul escuro/dourado · IMAGEM: detalhe arquitetônico ou close · ILUMINAÇÃO: luz suave difusa",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: imagem full com preço direto sobre a foto, SEM cartão central · POSIÇÃO PREÇO: lado esquerdo livre · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: panorâmica praia · ILUMINAÇÃO: natural cristalina",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: divisão topo imagem 60% + base sólida 40% com oferta · POSIÇÃO PREÇO: base inferior dentro da safe zone · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: aérea/drone · ILUMINAÇÃO: luz dramática de meio-dia",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: barra lateral vertical + imagem dominante · POSIÇÃO PREÇO: lado direito dentro da barra · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: close lifestyle · ILUMINAÇÃO: backlight quente",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: grid de fotos com preço em selo isolado · POSIÇÃO PREÇO: selo no canto oposto à imagem principal · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: múltiplos recortes turísticos · ILUMINAÇÃO: comercial brilhante",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: cartão inclinado/assimétrico tipo ticket · POSIÇÃO PREÇO: dentro de selo circular · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: lifestyle pessoas viajando · ILUMINAÇÃO: sunset cinematográfico",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: texto central leve com preço isolado, sem bloco pesado · POSIÇÃO PREÇO: centro inferior · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: detalhe arquitetônico ou close · ILUMINAÇÃO: luz suave difusa",
       ]
     : [
         "LAYOUT ÚNICO DESTA GERAÇÃO: imagem full sem caixas; texto leve no centro seguro; fotografia contemplativa domina tudo",
