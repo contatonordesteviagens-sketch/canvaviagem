@@ -81,7 +81,7 @@ const FabricaInner = () => {
               <Factory className="w-5 h-5 text-black" />
             </div>
             <div>
-              <div className="text-sm font-extrabold leading-tight">Fábrica de Anúncios</div>
+              <div className="text-sm font-extrabold leading-tight">Fábrica de Destinos</div>
               <div className="text-[10px] text-white/50 uppercase tracking-widest">TravelBoost · Canva Viagem</div>
             </div>
           </div>
@@ -91,7 +91,7 @@ const FabricaInner = () => {
         <div className="text-center py-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/10 bg-white/[0.04] mb-4">
             <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: state.primaryColor }} />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">Fábrica de Anúncios · IA</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">Fábrica de Destinos · IA</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-black mb-3 tracking-tight leading-[1.1]">
             Sua agência{" "}
@@ -164,7 +164,7 @@ const Fabrica = () => {
 
   return (
     <>
-      <SeoMetadata title="Fábrica de Anúncios | Canva Viagem" description="Sistema completo de marketing e geração de anúncios com IA para agências de viagens." />
+      <SeoMetadata title="Fábrica de Destinos | Canva Viagem" description="Sistema completo de marketing e geração de anúncios com IA para agências de viagens." />
       <FabricaProvider>
         <FabricaInner />
       </FabricaProvider>
