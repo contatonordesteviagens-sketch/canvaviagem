@@ -168,8 +168,12 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
   const [paymentMode, setPaymentMode] = useState<PaymentMode>("installments");
   const [paymentLabel, setPaymentLabel] = useState("");
   const [paymentSuffix, setPaymentSuffix] = useState("");
-  const [primaryColor, setPrimaryColor] = useState(state.primaryColor || "#0c2340");
-  const [secondaryColor, setSecondaryColor] = useState("#FCD34D");
+  const [primaryColor, setPrimaryColorState] = useState(state.primaryColor || "#0c2340");
+  const [secondaryColor, setSecondaryColorState] = useState(state.secondaryColor || "#FCD34D");
+  // Persiste a cor IMEDIATAMENTE ao alterar — assim a marca da agência fica fixa
+  // e nunca é "resetada" quando o usuário troca de fase, recarrega ou gera nova imagem.
+  const setPrimaryColor = (c: string) => { setPrimaryColorState(c); update({ primaryColor: c }); };
+  const setSecondaryColor = (c: string) => { setSecondaryColorState(c); update({ secondaryColor: c }); };
   const [highlights, setHighlights] = useState<Highlight[]>(DEFAULT_HIGHLIGHTS);
   const [editingIconIdx, setEditingIconIdx] = useState<number | null>(null);
   const [newHl, setNewHl] = useState("");

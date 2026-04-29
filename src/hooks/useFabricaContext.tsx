@@ -104,6 +104,7 @@ export interface FabricaState {
   selectedPackages: Pacote[];
   depoimentos: Depoimento[];
   primaryColor: string;
+  secondaryColor: string;
   currentPhase: number;
   checklist30days: Record<string, boolean>;
   diagnosticoCompleto: boolean;
@@ -136,6 +137,7 @@ const defaultState: FabricaState = {
   selectedPackages: [],
   depoimentos: [],
   primaryColor: "#F59E0B",
+  secondaryColor: "#FCD34D",
   currentPhase: 1,
   checklist30days: {},
   diagnosticoCompleto: false,
