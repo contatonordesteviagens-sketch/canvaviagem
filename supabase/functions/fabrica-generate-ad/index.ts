@@ -203,7 +203,7 @@ function buildPrompt(p: AdParams): string {
   // ===== STRINGS EXATAS — lista única, congelada =====
   // Mostramos UMA ÚNICA vez no topo do prompt. Nada mais pode ser inventado.
   const exactStrings: string[] = [
-    `"Conheça ${dest}!"`,
+    `"${dynamicHeadline}"`,
     `"${cityTxt}"`,
     `"${promo}"`,
     ...highlights.map((h) => `"${h.text}"`),
@@ -297,22 +297,22 @@ ${RULES}`;
       const layouts = [
         // var 0: foto inferior 55% + bloco superior cor primária
         `LAYOUT: empilhado verticalmente em 2 seções.
-SUPERIOR (45% altura): fundo SÓLIDO em ${primaryHex}. ${logoArea} Centralizado, título BRANCO sans-serif bold tamanho XGG: "Conheça ${dest}!". Abaixo, badge arredondada em ${secondaryHex} com texto preto bold: "${cityTxt}" + ícone de pin pequeno. À esquerda da seção, lista de 3 itens com ${highlights.slice(0, 3).map(iconLine).join(" / ")}. À direita, bloco de preço em texto BRANCO: "${installments} R$" pequeno acima e "${price}" gigante bold + "/pessoa" pequeno abaixo. Linha vertical fina branca como divisor.
+SUPERIOR (45% altura): fundo SÓLIDO em ${primaryHex}. ${logoArea} Centralizado, título BRANCO sans-serif bold tamanho XGG: "${dynamicHeadline}". Abaixo, badge arredondada em ${secondaryHex} com texto preto bold: "${cityTxt}" + ícone de pin pequeno. À esquerda da seção, lista de 3 itens com ${highlights.slice(0, 3).map(iconLine).join(" / ")}. À direita, bloco de preço em texto BRANCO: "${installments} R$" pequeno acima e "${price}" gigante bold + "/pessoa" pequeno abaixo. Linha vertical fina branca como divisor.
 INFERIOR (55% altura): fotografia ÚNICA full-bleed ultra-realista de ${scene}, ocupando toda a largura, iluminação solar nítida, qualidade National Geographic.`,
 
         // var 1: foto MASSIVA superior (70%) + faixa inferior promocional
         `LAYOUT: empilhado.
-SUPERIOR (70% altura): fotografia full-bleed de ${scene}, com gradiente sutil escuro embaixo. Sobre a foto, no terço inferior, título BRANCO bold com sombra projetada XGG: "Conheça ${dest}!". ${logoArea}
+SUPERIOR (70% altura): fotografia full-bleed de ${scene}, com gradiente sutil escuro embaixo. Sobre a foto, no terço inferior, título BRANCO bold com sombra projetada XGG: "${dynamicHeadline}". ${logoArea}
 INFERIOR (30% altura): fundo SÓLIDO em ${primaryHex}. À esquerda, badge ${secondaryHex} "${cityTxt}" + lista horizontal de chips brancos com ${highlights.slice(0, 3).map((h) => `"✓ ${h.text}"`).join(", ")}. À direita, caixa ${secondaryHex} arredondada com preço preto bold "${installments} R$ ${price}".`,
 
         // var 2: split diagonal artístico
         `LAYOUT: dividida por DIAGONAL.
-METADE SUPERIOR-DIREITA (separada por diagonal de canto inferior-esquerdo a canto superior-direito): fundo SÓLIDO em ${primaryHex}. ${logoArea} Título branco bold XGG inclinado levemente: "Conheça ${dest}!". Lista de ${highlights.length} ícones brancos finos com ${highlights.map(iconLine).join(" / ")}. Badge ${secondaryHex} "${cityTxt}".
+METADE SUPERIOR-DIREITA (separada por diagonal de canto inferior-esquerdo a canto superior-direito): fundo SÓLIDO em ${primaryHex}. ${logoArea} Título branco bold XGG inclinado levemente: "${dynamicHeadline}". Lista de ${highlights.length} ícones brancos finos com ${highlights.map(iconLine).join(" / ")}. Badge ${secondaryHex} "${cityTxt}".
 METADE INFERIOR-ESQUERDA: fotografia full-bleed de ${scene}. Na esquina inferior esquerda, caixa ${secondaryHex} arredondada com "${installments} R$ ${price}" preto bold.`,
 
         // var 3: moldura + foto central + texto laterais
         `LAYOUT: foto central com moldura grossa em ${primaryHex}.
-A imagem inteira tem fundo SÓLIDO ${primaryHex}. ${logoArea} no topo. Centralizado, retângulo de fotografia ultra-realista de ${scene} ocupando ~60% da altura, com cantos arredondados. Acima da foto, título branco bold XG "Conheça ${dest}!". Abaixo da foto, lista horizontal de chips brancos arredondados com ${highlights.slice(0, 3).map((h) => `"✓ ${h.text}"`).join(", ")}. Na base, caixa ${secondaryHex} com preço preto bold "${installments} R$ ${price}" + sufixo "/pessoa".`,
+A imagem inteira tem fundo SÓLIDO ${primaryHex}. ${logoArea} no topo. Centralizado, retângulo de fotografia ultra-realista de ${scene} ocupando ~60% da altura, com cantos arredondados. Acima da foto, título branco bold XG "${dynamicHeadline}". Abaixo da foto, lista horizontal de chips brancos arredondados com ${highlights.slice(0, 3).map((h) => `"✓ ${h.text}"`).join(", ")}. Na base, caixa ${secondaryHex} com preço preto bold "${installments} R$ ${price}" + sufixo "/pessoa".`,
       ];
       return `Anúncio editorial de turismo de alta conversão para "${agency}". ${layouts[variation % 4]}
 Tipografia Inter/Outfit bold sans-serif. Composição limpa, mobile-first.
@@ -326,17 +326,17 @@ ${RULES}`;
       const layouts = [
         // var 0: foto direita + texto esquerda
         `LAYOUT: dividida em DUAS COLUNAS iguais (50/50).
-ESQUERDA (50%): fundo SÓLIDO em ${primaryHex}. ${logoArea} Centralizado verticalmente, título grande BRANCO bold "Conheça ${dest}!". Badge ${secondaryHex} "${cityTxt}". Lista de ${highlights.length} itens com ${highlights.map(iconLine).join(" / ")}. Na base, caixa ${secondaryHex} arredondada com texto preto bold: "${installments} R$ ${price}" tamanho XG.
+ESQUERDA (50%): fundo SÓLIDO em ${primaryHex}. ${logoArea} Centralizado verticalmente, título grande BRANCO bold "${dynamicHeadline}". Badge ${secondaryHex} "${cityTxt}". Lista de ${highlights.length} itens com ${highlights.map(iconLine).join(" / ")}. Na base, caixa ${secondaryHex} arredondada com texto preto bold: "${installments} R$ ${price}" tamanho XG.
 DIREITA (50%): fotografia ÚNICA full-bleed ultra-realista de ${scene}, ocupando toda a altura, sem bordas brancas.`,
 
         // var 1: foto topo + checklist embaixo
         `LAYOUT: empilhado.
 TOPO (50% altura): fotografia full-bleed de ${scene}. ${logoArea} sobre a foto no canto superior esquerdo. No canto superior direito, badge ${secondaryHex} "${cityTxt}".
-INFERIOR (50% altura): fundo SÓLIDO em ${primaryHex}. À esquerda, título branco bold "Conheça ${dest}!". À direita, lista vertical de ${highlights.length} pílulas brancas com ${highlights.map(iconLine).join(" / ")}. Na base inferior, caixa ${secondaryHex} arredondada de largura total com preço preto bold "${installments} R$ ${price}" centralizado.`,
+INFERIOR (50% altura): fundo SÓLIDO em ${primaryHex}. À esquerda, título branco bold "${dynamicHeadline}". À direita, lista vertical de ${highlights.length} pílulas brancas com ${highlights.map(iconLine).join(" / ")}. Na base inferior, caixa ${secondaryHex} arredondada de largura total com preço preto bold "${installments} R$ ${price}" centralizado.`,
 
         // var 2: 4 quadrantes
         `LAYOUT: dividida em 4 QUADRANTES iguais.
-QUADRANTE SUPERIOR-ESQUERDO: fundo SÓLIDO ${primaryHex}, ${logoArea} + título branco bold "Conheça ${dest}!".
+QUADRANTE SUPERIOR-ESQUERDO: fundo SÓLIDO ${primaryHex}, ${logoArea} + título branco bold "${dynamicHeadline}".
 QUADRANTE SUPERIOR-DIREITO: fotografia de ${scene} em close.
 QUADRANTE INFERIOR-ESQUERDO: fotografia de ${scene} em ângulo diferente.
 QUADRANTE INFERIOR-DIREITO: fundo SÓLIDO ${primaryHex}, lista de ${highlights.length} itens brancos ${highlights.map(iconLine).join(" / ")} + caixa de preço ${secondaryHex} preto bold "${installments} R$ ${price}".`,
@@ -344,7 +344,7 @@ QUADRANTE INFERIOR-DIREITO: fundo SÓLIDO ${primaryHex}, lista de ${highlights.l
         // var 3: foto centralizada com info abaixo
         `LAYOUT: 3 faixas horizontais.
 FAIXA SUPERIOR (15%): fundo ${primaryHex}, ${logoArea} à esquerda + badge ${secondaryHex} "${cityTxt}" à direita.
-FAIXA CENTRAL (60%): fotografia full-bleed de ${scene} com título branco bold "Conheça ${dest}!" sobreposto na parte inferior com sombra.
+FAIXA CENTRAL (60%): fotografia full-bleed de ${scene} com título branco bold "${dynamicHeadline}" sobreposto na parte inferior com sombra.
 FAIXA INFERIOR (25%): fundo ${primaryHex}, à esquerda lista horizontal de chips brancos com ${highlights.slice(0, 3).map((h) => `"✓ ${h.text}"`).join(", ")}, à direita caixa ${secondaryHex} arredondada preço preto bold "${installments} R$ ${price}".`,
       ];
       return `Anúncio quadrado 1:1 (1080x1080) profissional para "${agency}". ${layouts[variation % 4]}
@@ -358,7 +358,7 @@ ${RULES}`;
     case "gancho": {
       // Hook = alto contraste emocional, MAS sempre vendendo o pacote real.
       // Usamos APENAS as strings exatas declaradas em RULES. Nada de inventar dores.
-      const hookHeadline = `Conheça ${dest}!`;
+      const hookHeadline = `${dynamicHeadline}`;
       const hookSubtitle = cityTxt;
 
       const layouts = [
