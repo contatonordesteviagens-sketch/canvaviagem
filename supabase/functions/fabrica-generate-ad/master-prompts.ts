@@ -218,38 +218,77 @@ uma abordagem criativa única. NUNCA uma repetição.
 // PROÍBE qualquer escolha que tenha aparecido nas últimas N gerações.
 // ============================================================
 
+// 🚫 Banidos para sempre (padrões repetitivos detectados pelo usuário):
+// "o melhor de", "seu próximo destino", "algo te espera", "o destino te espera",
+// "conheça/viva/explore/descubra X".
 const HEADLINE_POOL_EXPERIENCIA: ((d: string) => string)[] = [
+  // 🔹 Emocional / Aspiracional
   () => `Momentos que ficam para sempre`,
-  (d) => `O melhor de ${d}`,
-  () => `Seu próximo destino é esse`,
-  () => `Dias inesquecíveis começam aqui`,
-  () => `Uma experiência única`,
-  () => `Partiu viajar?`,
-  () => `Dias que você não esquece`,
   () => `Um lugar para se desconectar`,
   () => `Onde tudo faz sentido`,
+  () => `Viva algo diferente de tudo`,
+  () => `Histórias começam aqui`,
+  () => `Memórias que você leva pra vida`,
+  // 🔹 Experiência
   () => `Mais que uma viagem, uma experiência`,
-  () => `Permita-se viver isso`,
-  () => `Você merece esse destino`,
-  () => `O mundo te espera`,
-  () => `Hora de arrumar as malas`,
-  () => `Bora viajar?`,
-  (d) => `${d} te espera`,
+  () => `Dias inesquecíveis começam aqui`,
+  () => `Seu próximo capítulo começa aqui`,
+  () => `Uma experiência que vale cada segundo`,
+  () => `Prepare-se para viver isso`,
+  () => `Isso não é só uma viagem`,
+  // 🔹 Impacto curto
+  () => `Simplesmente incrível`,
+  () => `Imperdível`,
+  () => `Surpreendente do começo ao fim`,
+  () => `Difícil explicar, fácil amar`,
+  // 🔹 Conversacional / Pergunta
+  () => `Partiu viajar?`,
+  () => `Bora viver isso?`,
+  () => `Já imaginou estar aqui?`,
+  () => `Tá esperando o quê?`,
+  () => `Seu descanso começa agora`,
+  // 🔹 Narrativo
+  () => `O destino certo na hora certa`,
+  () => `O lugar que você estava procurando`,
+  () => `Um cenário que parece filme`,
+  () => `Tudo que você precisa em um só lugar`,
+  // 🔹 Premium
+  () => `Experiências que elevam sua viagem`,
+  () => `Um novo padrão de viajar`,
+  () => `Sofisticação e natureza no mesmo lugar`,
+  () => `Viagens pensadas nos mínimos detalhes`,
+  // 🔹 Com destino (uso moderado — só algumas)
+  (d) => `${d} do jeito que você merece`,
+  (d) => `${d} além do óbvio`,
   (d) => `Sua próxima história começa em ${d}`,
-  () => `A viagem que muda o ritmo`,
 ];
 
 const HEADLINE_POOL_OFERTA: ((d: string) => string)[] = [
-  (d) => `Pacote especial para ${d}`,
+  // 🔹 Conversão direta
   () => `Férias com tudo resolvido`,
-  () => `Preço especial para viajar`,
-  () => `Seu próximo destino é esse`,
-  (d) => `O melhor de ${d}`,
-  () => `Partiu viajar?`,
-  () => `Hora de arrumar as malas`,
-  (d) => `Sua viagem para ${d}`,
   () => `Tudo incluso, sem complicação`,
   () => `Reserva já garantida`,
+  () => `Preço que cabe no bolso`,
+  () => `Sua viagem começa agora`,
+  () => `Pacote completo, preço fechado`,
+  // 🔹 Urgência leve
+  () => `Hora de arrumar as malas`,
+  () => `Não dá pra deixar passar`,
+  () => `Última chance dessa semana`,
+  () => `Aproveite enquanto tem`,
+  // 🔹 Pergunta / Conversacional
+  () => `Bora marcar essa?`,
+  () => `Quando foi sua última viagem?`,
+  () => `Que tal essa data?`,
+  // 🔹 Promessa
+  () => `Viaje sem dor de cabeça`,
+  () => `Pague em parcelas, viaje agora`,
+  () => `Do voo ao hotel, tudo resolvido`,
+  () => `O pacote certo para o seu plano`,
+  // 🔹 Com destino (variações leves)
+  (d) => `Pacote especial para ${d}`,
+  (d) => `Sua viagem para ${d} está pronta`,
+  (d) => `${d} com tudo incluso`,
 ];
 
 function normalize(s: string): string {
