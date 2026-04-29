@@ -18,6 +18,7 @@ import {
   X,
   Link as LinkIcon,
   Upload,
+  ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { SectionVisibility } from "@/hooks/useFabricaContext";
