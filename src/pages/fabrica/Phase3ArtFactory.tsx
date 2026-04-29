@@ -82,6 +82,7 @@ const PAYMENT_PRESETS: PaymentPreset[] = [
 ];
 
 const CATEGORY_LOCAL_STRATEGIES: Record<CategoriaId, StrategyId[]> = {
+  // Pool ampliado de layouts para Oferta — garante variação real entre gerações.
   oferta_pacote: ["matriz", "gancho", "ancora", "vitrine"],
   // Experiência usa SOMENTE experiencia_hero (full-bleed sem card branco/laranja embaixo)
   // para evitar layouts divididos e erros ortográficos em textos auxiliares.
@@ -94,11 +95,38 @@ const scopedGenerationKey = (categoria: CategoriaId, genMode: GenMode, format: "
 const scopedTemplateKey = (type: "last" | "recent", categoria: CategoriaId, genMode: GenMode) =>
   `fabrica_${type}_template_ids_${categoria}_${genMode}`;
 
-const pickDistinctLocalStrategies = (categoria: CategoriaId, seed: number, count = 2): StrategyId[] => {
+const scopedStrategyHistoryKey = (categoria: CategoriaId, genMode: GenMode, format: "square" | "story") =>
+  `fabrica_strategy_history_${categoria}_${genMode}_${format}`;
+
+const shuffleArray = <T,>(arr: T[]): T[] => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
+/**
+ * Escolhe `count` estratégias DISTINTAS para a categoria, evitando ao máximo
+ * repetir as estratégias usadas na geração anterior. Se o pool for muito pequeno
+ * para evitar todas, prioriza as que estão fora do histórico mais recente.
+ */
+const pickDistinctLocalStrategies = (
+  categoria: CategoriaId,
+  _seed: number,
+  count = 2,
+  history: StrategyId[] = [],
+): StrategyId[] => {
   const pool = CATEGORY_LOCAL_STRATEGIES[categoria];
-  // Para Experiência, sempre 1 variação única no estilo hero (sem split layouts)
   if (categoria === "experiencia_destino") return [pool[0]];
-  return Array.from({ length: Math.min(count, pool.length) }, (_, idx) => pool[(seed + idx) % pool.length]);
+  const desired = Math.min(count, pool.length);
+  // Prefere estratégias FORA do histórico recente; se faltar, completa com as do histórico
+  // (mas embaralhadas para nunca repetir exatamente a mesma sequência).
+  const fresh = shuffleArray(pool.filter((s) => !history.includes(s)));
+  const stale = shuffleArray(pool.filter((s) => history.includes(s)));
+  const ordered = [...fresh, ...stale];
+  return ordered.slice(0, desired);
 };
 
 const pickPhotoRefs = (
