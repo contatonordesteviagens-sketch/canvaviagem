@@ -314,15 +314,18 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       // ===== MODO IA PURA: gera 2 imagens escolhendo prompts distintos da categoria =====
       if (genMode === "ai") {
         const cat = getCategoria(categoria);
+        const isAiExperienceStory = categoria === "experiencia_destino" && format === "story";
         const categoryLastKey = scopedTemplateKey("last", categoria, genMode);
         const categoryRecentKey = scopedTemplateKey("recent", categoria, genMode);
         const storedLast = localStorage.getItem(categoryLastKey) || (cat.prompts.some((p) => p.templateId === lastTemplateId) ? lastTemplateId : null);
         let storedRecent: string[] = [];
         try { storedRecent = JSON.parse(localStorage.getItem(categoryRecentKey) || "[]"); }
         catch { storedRecent = []; }
-        const picks = pickPromptsForCategoria(categoria, 2, storedLast, storedRecent);
+        const picks = isAiExperienceStory
+          ? [{ code: "ED_SAFE_STORY", templateId: "photo_only_experience_story" }]
+          : pickPromptsForCategoria(categoria, 2, storedLast, storedRecent);
 
-        toast.info(`Gerando 2 variações em IA Pura — ${cat.name}`);
+        toast.info(`Gerando ${picks.length} ${picks.length === 1 ? "variação" : "variações"} em IA Pura — ${cat.name}`);
 
         const results = await Promise.all(
           picks.map((pick, idx) => supabase.functions.invoke("fabrica-generate-ad", {
@@ -342,7 +345,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               promoName,
               highlights,
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
-              templateId: pick.templateId,
+              templateId: isAiExperienceStory ? undefined : pick.templateId,
+              photoOnly: isAiExperienceStory,
               variation: generationSeed + idx,
               packageType: "Voo + Hotel",
               duration: "5 NOITES",
@@ -360,6 +364,25 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
           let img = result.data.image as string;
           try { img = await reframeImageToAspect(img, format); }
           catch (e) { console.warn("reframe failed", e); }
+          if (isAiExperienceStory) {
+            img = await composeTravelAd({
+              imageUrl: img,
+              format,
+              destination,
+              city: state.city,
+              primaryColor,
+              secondaryColor,
+              price,
+              installments,
+              promoName,
+              highlights,
+              hasLogo: !!state.logoBase64,
+              paymentMode,
+              paymentLabel: paymentLabel || undefined,
+              paymentSuffix: paymentSuffix || undefined,
+              strategy: "experiencia_hero",
+            });
+          }
           images.push(img);
           if (result.data.provider) providerSeen = result.data.provider;
         }
