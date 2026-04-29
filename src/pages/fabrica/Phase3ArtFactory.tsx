@@ -223,7 +223,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         toast.info("Gerando 2 variações com foto real");
         const localStrategies: StrategyId[] = categoria === "oferta_pacote"
           ? ["matriz", "gancho", "ancora"]
-          : ["vitrine", "ancora"];
+          : ["experiencia_hero", "experiencia_editorial"];
         // Duas estratégias distintas para garantir variação visual
         const stratA = localStrategies[variationCounter % localStrategies.length];
         const stratB = localStrategies[(variationCounter + 1) % localStrategies.length];
@@ -367,7 +367,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       toast.info("Aplicando 2 composições");
       const localStrategies: StrategyId[] = categoria === "oferta_pacote"
         ? ["matriz", "gancho", "ancora"]
-        : ["vitrine", "ancora"];
+        : ["experiencia_hero", "experiencia_editorial"];
       const stratA = localStrategies[variationCounter % localStrategies.length];
       const stratB = localStrategies[(variationCounter + 1) % localStrategies.length];
       const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(variationCounter + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
@@ -575,7 +575,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
           })}
         </div>
         <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-[11px] text-white/55 leading-snug">
-          <strong className="text-white/80">Regra fixa:</strong> sempre será gerado apenas 1 banner por vez. Oferta destaca preço e conversão; Experiência destaca foto, emoção e estilo editorial.
+          <strong className="text-white/80">Regra fixa:</strong> Foto Real e Sua imagem geram 2 variações; IA Pura gera 1 para economizar créditos. Oferta destaca preço e conversão; Experiência destaca foto, emoção e estilo editorial.
         </div>
       </div>
 
