@@ -311,15 +311,16 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         localStorage.setItem(cycleKey, String(nextSeed));
       };
 
-      // ===== MODO FOTO (composição local) — gera 2 variações =====
+      // ===== MODO FOTO (composição local) — gera 1 imagem única =====
       if (genMode === "photo") {
-        toast.info(categoria === "experiencia_destino" ? "Gerando 1 variação cinematográfica" : "Gerando 2 variações com foto real");
+        toast.info("Gerando 1 imagem única com foto real");
         const stratHistKey = scopedStrategyHistoryKey(categoria, genMode, format);
         let stratHistory: StrategyId[] = [];
         try { stratHistory = JSON.parse(localStorage.getItem(stratHistKey) || "[]"); } catch { stratHistory = []; }
-        const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 2, stratHistory);
+        const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 1, stratHistory);
         localStorage.setItem(stratHistKey, JSON.stringify(chosen));
         const photoRefs = pickPhotoRefs(photos, refImage, generationSeed, chosen.length);
+        const palette = pickGenerationPalette(categoria, generationSeed, primaryColor, secondaryColor);
 
         const composed = await Promise.all(
           chosen.map(async (localStrategy, idx) => {
@@ -328,8 +329,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               format,
               destination,
               city: state.city,
-              primaryColor,
-              secondaryColor,
+              primaryColor: palette.primary,
+              secondaryColor: palette.secondary,
               price,
               installments,
               promoName,
@@ -354,7 +355,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
         setGeneratedImage(composed[0]);
         setGeneratedImages(composed);
-        update({ generatedAdImage: composed[0], primaryColor });
+        update({ generatedAdImage: composed[0], primaryColor: palette.primary });
 
         const newCount = generationCount + composed.length;
         setGenerationCount(newCount);
@@ -365,7 +366,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         return;
       }
 
-      // ===== MODO IA PURA: gera prompts da categoria; Experiência/Stories usa fluxo seguro sem texto da IA =====
+        // ===== MODO IA PURA: gera 1 prompt da categoria; Experiência usa fluxo seguro sem texto da IA =====
       if (genMode === "ai") {
         const cat = getCategoria(categoria);
         const isAiExperienceStory = categoria === "experiencia_destino";
@@ -377,7 +378,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         catch { storedRecent = []; }
         const picks = isAiExperienceStory
           ? [{ code: "ED_SAFE_STORY", templateId: "photo_only_experience_story" }]
-          : pickPromptsForCategoria(categoria, 2, storedLast, storedRecent);
+          : pickPromptsForCategoria(categoria, 1, storedLast, storedRecent);
+        const palette = pickGenerationPalette(categoria, generationSeed, primaryColor, secondaryColor);
 
         toast.info(`Gerando ${picks.length} ${picks.length === 1 ? "variação" : "variações"} em IA Pura — ${cat.name}`);
 
@@ -391,8 +393,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               agencyName: state.agencyName,
               agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
               city: state.city,
-              primaryColor,
-              secondaryColor,
+              primaryColor: palette.primary,
+              secondaryColor: palette.secondary,
               hasLogo: !!state.logoBase64,
               price,
               installments,
@@ -424,8 +426,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               format,
               destination,
               city: state.city,
-              primaryColor,
-              secondaryColor,
+              primaryColor: palette.primary,
+              secondaryColor: palette.secondary,
               price,
               installments,
               promoName,
@@ -451,7 +453,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
         setGeneratedImages(images);
         setGeneratedImage(images[0]);
-        update({ generatedAdImage: images[0], primaryColor });
+        update({ generatedAdImage: images[0], primaryColor: palette.primary });
         if (providerSeen) setLastProvider(providerSeen);
 
         // Persiste o último prompt usado para a próxima rotação não repetir
