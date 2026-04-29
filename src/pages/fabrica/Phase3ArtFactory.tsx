@@ -340,6 +340,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               paymentLabel: paymentLabel || undefined,
               paymentSuffix: paymentSuffix || undefined,
               strategy: localStrategy,
+              variation: generationSeed + idx,
             });
             if (state.logoBase64) {
               try {
@@ -688,7 +689,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
           })}
         </div>
         <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-[11px] text-white/55 leading-snug">
-          <strong className="text-white/80">Regra fixa:</strong> Foto Real e Sua imagem geram 2 variações; IA Pura gera 1 para economizar créditos. Oferta destaca preço e conversão; Experiência destaca foto, emoção e estilo editorial.
+          <strong className="text-white/80">Regra fixa:</strong> cada clique gera apenas 1 imagem única. A próxima geração troca layout, frase, cores e estilo. Oferta destaca preço e conversão; Experiência destaca foto, emoção e estilo editorial.
         </div>
       </div>
 
@@ -1121,7 +1122,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             disabled={loading}
             className="w-full py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white/80 text-sm font-semibold border border-white/10 flex items-center justify-center gap-2"
           >
-            <Sparkles className="w-3.5 h-3.5" /> Gerar novo anúncio (template aleatório)
+            <Sparkles className="w-3.5 h-3.5" /> Gerar novo anúncio único
           </button>
         </motion.div>
       )}
