@@ -586,6 +586,13 @@ serve(async (req) => {
 
     let imageUrl: string | undefined;
 
+    // ===== Referência visual CVC para OFERTAS =====
+    // Passa a imagem de referência (estilo CVC) como segundo item de content
+    // para que o modelo replique a anatomia: foto real + caixa amarela com preço + selos PIX.
+    const isOferta = (usedTemplateId?.startsWith("OP") ?? false) || finalBody.strategy === "ancora" || finalBody.strategy === "matriz";
+    const CVC_REF_URL = "https://zdjtcwtakgizbsbbwtgc.supabase.co/storage/v1/object/public/thumbnails/fabrica-ref-cvc-style.jpg";
+    const refInstruction = "REFERÊNCIA VISUAL OBRIGATÓRIA: a imagem em anexo é o ESTILO EXATO que você deve replicar — foto real do destino cobrindo o fundo, caixa amarela retangular no terço superior contendo PACOTE + DESTINO + ícones de duração/voo/hotel + 12X sem juros colado ao R$ gigante + total por pessoa + faixa azul escura com '5% OFF À VISTA NO PIX' + selo da agência no canto inferior direito + texto legal vertical fino na lateral esquerda. Mantenha esta MESMA ANATOMIA, trocando apenas: a foto pelo destino solicitado, as cores pela paleta informada e os textos/preço pelos dados do briefing abaixo.\n\n";
+
     // ===== Tentativa 1: chave Gemini do usuário (Google AI Studio) =====
     if (provider === "user_gemini") {
       // Os nomes de modelo válidos no endpoint público v1beta variam.
