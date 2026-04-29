@@ -715,7 +715,7 @@ export function promptSideHeroPerformance(v: MasterPromptVars): string {
 
 // 🌍 ED1 — HERO CINEMATOGRÁFICO (FULL IMAGE)
 export function promptIconicLandmark(v: MasterPromptVars): string {
-  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed1");
+  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed1", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "experiencia",
     layout:
@@ -731,7 +731,7 @@ export function promptIconicLandmark(v: MasterPromptVars): string {
 
 // 🌍 ED2 — SPLIT SUAVE (IMAGEM + TEXTO LEVE)
 export function promptSplitYellowSide(v: MasterPromptVars): string {
-  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed2");
+  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed2", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "experiencia",
     layout:
@@ -747,7 +747,7 @@ export function promptSplitYellowSide(v: MasterPromptVars): string {
 
 // 🌍 ED3 — STORY LIFESTYLE (PESSOAS + EXPERIÊNCIA)
 export function promptElegantCenterCard(v: MasterPromptVars): string {
-  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed3");
+  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed3", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "experiencia",
     layout:
@@ -763,7 +763,7 @@ export function promptElegantCenterCard(v: MasterPromptVars): string {
 
 // 🌍 ED4 — MULTI EXPERIÊNCIA (GRID VISUAL)
 export function promptEditorialVisual(v: MasterPromptVars): string {
-  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed4");
+  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed4", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "experiencia",
     layout:
@@ -779,7 +779,7 @@ export function promptEditorialVisual(v: MasterPromptVars): string {
 
 // 🌍 ED5 — MINIMALISTA PREMIUM (LUXO)
 export function promptTopEditorialPhoto(v: MasterPromptVars): string {
-  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed5");
+  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed5", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "experiencia",
     layout:
@@ -795,7 +795,7 @@ export function promptTopEditorialPhoto(v: MasterPromptVars): string {
 
 // 🌍 ED6 — COLUNA EDITORIAL + DUAS CENAS DISTINTAS
 export function promptTwoSceneEditorial(v: MasterPromptVars): string {
-  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed6");
+  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed6", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "experiencia",
     layout:
