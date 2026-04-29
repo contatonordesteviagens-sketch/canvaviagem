@@ -33,6 +33,7 @@ interface ComposeTravelAdOptions {
   paymentLabel?: string;
   paymentSuffix?: string;
   strategy?: "ancora" | "vitrine" | "matriz" | "gancho" | "experiencia_hero" | "experiencia_editorial" | "experiencia_postcard" | "experiencia_lifestyle";
+  variation?: number;
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
@@ -175,6 +176,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     paymentLabel,
     paymentSuffix,
     strategy = "vitrine",
+    variation = 0,
   } = options;
 
   const width = 1080;
@@ -198,6 +200,25 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
   const cityFmt = toTitle(city);
   const destFmt = toTitle(destination);
+  const isExperience = strategy.startsWith("experiencia_");
+  const headlinePool = isExperience
+    ? [
+        "Momentos que ficam para sempre",
+        `O melhor de ${destFmt}`,
+        "Partiu viajar?",
+        "Seu próximo destino é esse",
+        "Uma experiência diferente de tudo",
+        "Dias que você não esquece",
+        `${destFmt} como você nunca viu`,
+      ]
+    : [
+        `Pacote para ${destFmt}`,
+        `${destFmt} te espera`,
+        "Partiu viajar?",
+        "Preço especial para viajar",
+        `O melhor de ${destFmt}`,
+        "Seu próximo destino é esse",
+      ];
 
   const safeTop = format === "story" ? 270 : 120;
   const safeBottom = format === "story" ? 345 : 120;
@@ -208,7 +229,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   // Sempre mostra até 5 benefícios (story OU quadrado) — o usuário escolheu 5/5 e os 5 devem aparecer.
   const shownHighlights = highlights.slice(0, 5);
   const badgeText = cityFmt ? `Saindo de ${cityFmt}` : "Pacote completo";
-  const titleText = `Conheça ${destFmt}!`;
+  const titleText = headlinePool[Math.abs(variation) % headlinePool.length];
+  const subtitlePool = [
+    "Roteiro pensado para viver melhor",
+    "Beleza, conforto e boas memórias",
+    "Uma viagem com outro ritmo",
+    "Paisagens, sabores e histórias",
+    "Seu descanso começa aqui",
+  ];
+  const subtitleText = subtitlePool[(Math.abs(variation) + 2) % subtitlePool.length];
 
   const resolvePaymentCopy = () => {
     switch (paymentMode) {
@@ -431,14 +460,14 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.textAlign = "left";
     ctx.font = "700 30px Inter, Arial, sans-serif";
     ctx.fillText(cityFmt ? `Saindo de ${cityFmt}` : "Experiência completa", left, textY);
-    drawTextBlock(ctx, `Viva ${destFmt}`, left, titleY, contentWidth, format === "story" ? 92 : 72, 2, { fontWeight: "800", baseFontSize: format === "story" ? 88 : 66, minFontSize: 42 });
+    drawTextBlock(ctx, titleText, left, titleY, contentWidth, format === "story" ? 92 : 72, 2, { fontWeight: "800", baseFontSize: format === "story" ? 88 : 66, minFontSize: 42 });
 
     const smallItems = shownHighlights.slice(0, 3).map((h) => h.text).join("   •   ");
     ctx.font = `700 ${format === "story" ? 25 : 24}px Inter, Arial, sans-serif`;
     drawTextBlock(ctx, `•   ${smallItems}`, left, benefitsY, contentWidth, format === "story" ? 34 : 32, 2, { fontWeight: "700", baseFontSize: format === "story" ? 25 : 24, minFontSize: 18 });
 
     ctx.font = "500 30px Inter, Arial, sans-serif";
-    ctx.fillText("Momentos que ficam para sempre", left, footerY);
+    ctx.fillText(subtitleText, left, footerY);
   } else if (strategy === "experiencia_editorial") {
     ctx.fillStyle = "#f7f2ea";
     ctx.fillRect(0, 0, width, height);
@@ -453,7 +482,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.textAlign = "left";
     ctx.font = "700 28px Inter, Arial, sans-serif";
     ctx.fillText(cityFmt ? `Saindo de ${cityFmt}` : "Roteiro especial", left, safeTop + 54);
-    drawTextBlock(ctx, `Descubra ${destFmt}`, left, safeTop + 170, columnW, 78, 3, { fontWeight: "800", baseFontSize: 74, minFontSize: 42 });
+    drawTextBlock(ctx, titleText, left, safeTop + 170, columnW, 78, 3, { fontWeight: "800", baseFontSize: 74, minFontSize: 42 });
     ctx.fillStyle = "#2b2118";
     ctx.font = "500 29px Inter, Arial, sans-serif";
     drawTextBlock(ctx, "Uma experiência pensada para viver o destino com calma, beleza e curadoria.", left, safeTop + 420, columnW, 42, 4, { fontWeight: "500", baseFontSize: 29, minFontSize: 22 });
@@ -490,7 +519,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     drawTextBlock(ctx, destFmt, left + 42, panelBottom - 360, contentWidth - 84, 86, 2, { fontWeight: "800", baseFontSize: format === "story" ? 92 : 70, minFontSize: 44 });
     ctx.font = "500 30px Inter, Arial, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("Uma viagem para sentir, viver e lembrar", width / 2, panelBottom - 165);
+    ctx.fillText(subtitleText, width / 2, panelBottom - 165);
     ctx.textAlign = "left";
   } else if (strategy === "experiencia_lifestyle") {
     const photoH = Math.round(panelBottom * 0.76);
@@ -502,13 +531,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = grad;
     ctx.fillRect(0, photoH - 240, width, 240);
     ctx.fillStyle = "#ffffff";
-    drawTextBlock(ctx, `Viva ${destFmt}`, left, photoH - 210, contentWidth, 78, 2, { fontWeight: "800", baseFontSize: format === "story" ? 78 : 62, minFontSize: 40 });
+    drawTextBlock(ctx, titleText, left, photoH - 210, contentWidth, 78, 2, { fontWeight: "800", baseFontSize: format === "story" ? 78 : 62, minFontSize: 40 });
 
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, photoH, width, height - photoH);
     ctx.fillStyle = primaryColor;
     ctx.font = "700 30px Inter, Arial, sans-serif";
-    ctx.fillText("Experiências selecionadas", left, photoH + 92);
+    ctx.fillText(subtitleText, left, photoH + 92);
     ctx.fillStyle = "#1f2937";
     ctx.font = "500 30px Inter, Arial, sans-serif";
     drawTextBlock(ctx, "Um roteiro com beleza, conforto e momentos autênticos no destino.", left, photoH + 160, contentWidth, 42, 3, { fontWeight: "500", baseFontSize: 30, minFontSize: 22 });

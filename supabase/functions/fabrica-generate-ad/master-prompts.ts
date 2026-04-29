@@ -168,12 +168,11 @@ A cada nova geração, MUDAR:
   4. Tamanho do texto
 
 [ESTILOS DE TÍTULO — ALTERNAR ENTRE ELES]
-🎯 Direto: "Conheça [DESTINO]" · "Descubra [DESTINO]" · "Explore [DESTINO]"
 🎯 Emocional: "Momentos que ficam para sempre" · "Um lugar para se desconectar" · "Onde tudo faz sentido"
-🎯 Experiência: "Dias inesquecíveis começam aqui" · "Sua próxima história começa em [DESTINO]" · "Mais que uma viagem, uma experiência"
-🎯 Curto e impactante: "[DESTINO] como você nunca viu" · "Simplesmente [DESTINO]" · "O melhor de [DESTINO]"
+🎯 Experiência: "Dias inesquecíveis começam aqui" · "Sua próxima história começa no destino" · "Mais que uma viagem, uma experiência"
+🎯 Curto e impactante: "O melhor de [DESTINO]" · "Seu próximo destino é esse" · "Uma experiência diferente de tudo"
 🎯 Inspiracional: "Permita-se viver isso" · "Você merece esse destino" · "O mundo te espera"
-🎯 Ação leve: "Partiu [DESTINO]?" · "Hora de arrumar as malas" · "Bora viajar?"
+🎯 Ação leve: "Partiu viajar?" · "Hora de arrumar as malas" · "Bora viajar?"
 
 [REGRA DE NÃO REPETIÇÃO]
 🚫 PROIBIDO usar o mesmo verbo em sequência.
@@ -208,13 +207,13 @@ uma abordagem criativa única. NUNCA uma repetição.
 // garantindo variação real de copy entre gerações consecutivas.
 // ============================================================
 const HEADLINE_POOLS_EXPERIENCIA: Record<string, ((d: string) => string)[]> = {
-  direto: [
-    (d) => `Conheça ${d}`,
-    (d) => `Descubra ${d}`,
-    (d) => `Explore ${d}`,
+  convite: [
+    () => `Momentos que ficam para sempre`,
+    (d) => `O melhor de ${d}`,
+    () => `Seu próximo destino é esse`,
   ],
   emocional: [
-    () => `Momentos que ficam para sempre`,
+    () => `Dias que você não esquece`,
     () => `Um lugar para se desconectar`,
     () => `Onde tudo faz sentido`,
   ],
@@ -225,8 +224,8 @@ const HEADLINE_POOLS_EXPERIENCIA: Record<string, ((d: string) => string)[]> = {
   ],
   impactante: [
     (d) => `${d} como você nunca viu`,
-    (d) => `Simplesmente ${d}`,
-    (d) => `O melhor de ${d}`,
+    () => `Uma experiência diferente de tudo`,
+    () => `A viagem que muda o ritmo`,
   ],
   inspiracional: [
     () => `Permita-se viver isso`,
@@ -234,19 +233,28 @@ const HEADLINE_POOLS_EXPERIENCIA: Record<string, ((d: string) => string)[]> = {
     () => `O mundo te espera`,
   ],
   acao_leve: [
-    (d) => `Partiu ${d}?`,
+    () => `Partiu viajar?`,
     () => `Hora de arrumar as malas`,
     () => `Bora viajar?`,
   ],
 };
 
 const HEADLINE_STYLE_ORDER = [
-  "direto",
+  "convite",
   "emocional",
   "experiencia",
   "impactante",
   "inspiracional",
   "acao_leve",
+];
+
+const HEADLINE_POOL_OFERTA: ((d: string) => string)[] = [
+  (d) => `Pacote especial para ${d}`,
+  () => `Partiu viajar?`,
+  (d) => `O melhor de ${d}`,
+  () => `Seu próximo destino é esse`,
+  () => `Preço especial para viajar`,
+  () => `Férias com tudo resolvido`,
 ];
 
 /**
@@ -259,6 +267,11 @@ function pickExperienciaHeadline(destination: string, creativeSeed: string): str
   const pool = HEADLINE_POOLS_EXPERIENCIA[styleKey];
   const builder = pool[Math.floor(seedSum / HEADLINE_STYLE_ORDER.length) % pool.length];
   return builder(destination);
+}
+
+function pickOfertaHeadline(destination: string, creativeSeed: string): string {
+  const seedSum = [...creativeSeed].reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return HEADLINE_POOL_OFERTA[seedSum % HEADLINE_POOL_OFERTA.length](destination);
 }
 
 
@@ -300,23 +313,24 @@ PREÇO É OPCIONAL E DISCRETO: se inserir, use APENAS um pequeno texto fino "A p
   const creativeSeed = v.creativeSeed || `${opts.category}-${opts.layout.slice(0, 24)}`;
   const variationDirectives = opts.category === "oferta"
     ? [
-        "LAYOUT: cartão central flutuante · POSIÇÃO PREÇO: centro · CONTAINER: cartão arredondado com sombra · CORES: roxo + amarelo vibrante · IMAGEM: panorâmica do destino atrás · ILUMINAÇÃO: golden hour saturada",
-        "LAYOUT: divisão topo imagem 60% + base sólida 40% com oferta · POSIÇÃO PREÇO: base inferior dentro da safe zone · CONTAINER: faixa horizontal sólida · CORES: azul-elétrico + dourado · IMAGEM: aérea/drone · ILUMINAÇÃO: luz dramática de meio-dia",
-        "LAYOUT: barra lateral vertical + imagem dominante · POSIÇÃO PREÇO: lado direito dentro da barra · CONTAINER: faixa lateral sólida · CORES: amarelo neon + preto · IMAGEM: close lifestyle · ILUMINAÇÃO: backlight quente",
-        "LAYOUT: preço sobreposto direto na imagem (SEM cartão) · POSIÇÃO PREÇO: lado esquerdo livre · CONTAINER: nenhum, apenas tipografia gigante com sombra · CORES: tropical verde + azul claro · IMAGEM: panorâmica praia · ILUMINAÇÃO: natural cristalina",
-        "LAYOUT: cartão inclinado/assimétrico · POSIÇÃO PREÇO: dentro de selo circular ou bilhete · CONTAINER: selo serrilhado tipo ticket · CORES: gradiente moderno (rosa/laranja/roxo) · IMAGEM: lifestyle pessoas viajando · ILUMINAÇÃO: sunset cinematográfico",
-        "LAYOUT: minimalista com preço isolado · POSIÇÃO PREÇO: canto inferior dentro da safe zone · CONTAINER: nenhum, fundo claro elegante · CORES: clean (off-white + um único acento azul escuro/dourado) · IMAGEM: detalhe arquitetônico ou close · ILUMINAÇÃO: luz suave difusa",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: imagem full com preço direto sobre a foto, SEM cartão central · POSIÇÃO PREÇO: lado esquerdo livre · CORES: tropical verde + azul claro · IMAGEM: panorâmica praia · ILUMINAÇÃO: natural cristalina",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: divisão topo imagem 60% + base sólida 40% com oferta · POSIÇÃO PREÇO: base inferior dentro da safe zone · CORES: azul-elétrico + dourado · IMAGEM: aérea/drone · ILUMINAÇÃO: luz dramática de meio-dia",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: barra lateral vertical + imagem dominante · POSIÇÃO PREÇO: lado direito dentro da barra · CORES: amarelo neon + preto · IMAGEM: close lifestyle · ILUMINAÇÃO: backlight quente",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: grid de fotos com preço em selo isolado · POSIÇÃO PREÇO: selo no canto oposto à imagem principal · CORES: vermelho carmim + creme · IMAGEM: múltiplos recortes turísticos · ILUMINAÇÃO: comercial brilhante",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: cartão inclinado/assimétrico tipo ticket · POSIÇÃO PREÇO: dentro de selo circular · CORES: gradiente moderno (rosa/laranja/roxo) · IMAGEM: lifestyle pessoas viajando · ILUMINAÇÃO: sunset cinematográfico",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: texto central leve com preço isolado, sem bloco pesado · POSIÇÃO PREÇO: centro inferior · CORES: off-white + azul escuro/dourado · IMAGEM: detalhe arquitetônico ou close · ILUMINAÇÃO: luz suave difusa",
       ]
     : [
-        "fotografia full-bleed contemplativa, sem cartão; texto leve no centro seguro",
-        "momento lifestyle com pessoas naturais e narrativa emocional; sem preço protagonista",
-        "composição editorial minimalista com muito respiro e oferta omitida ou minúscula",
-        "página de revista de viagem com fotografia protagonista e detalhes discretos",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: imagem full sem caixas; texto leve no centro seguro; fotografia contemplativa domina tudo",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: divisão topo + base suave sem cara de promoção; imagem ocupa a maior parte; texto editorial discreto",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: barra lateral editorial fina com foto dominante; sem preço protagonista; linguagem emocional",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: grid editorial de fotos diferentes; título curto e leve; nenhum bloco de venda",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: texto central leve sobre foto limpa; muito respiro; sem cartão e sem selo",
       ];
   const variationIndex = Math.abs([...creativeSeed].reduce((acc, char) => acc + char.charCodeAt(0), 0)) % variationDirectives.length;
   const promoLine = opts.category === "oferta"
     ? `Selo promocional: "${v.promoName}"`
-    : `Chamada editorial secundária: "${opts.experienceDescription || `Viva ${v.destination} com calma, beleza e curadoria.`}" — sem selo promocional, sem urgência e sem linguagem de oferta.`;
+    : `Chamada editorial secundária: "${opts.experienceDescription || `Dias leves em ${v.destination}, com calma, beleza e curadoria.`}" — sem selo promocional, sem urgência e sem linguagem de oferta.`;
   const typographyHierarchy = opts.category === "oferta"
     ? "- PREÇO = maior elemento da composição (Ultra-Bold / Heavy).\n- DESTINO = segundo maior elemento (Bold)."
     : "- IMAGEM = protagonista absoluta; texto deve ser leve e elegante.\n- DESTINO = maior texto, mas sem competir com a fotografia.\n- PREÇO, se existir, deve ser o menor elemento informativo e nunca usar Ultra-Bold.";
@@ -396,7 +410,8 @@ Os textos abaixo DEVEM aparecer no banner EXATAMENTE como escritos, sem alterar 
 
 📋 TEXTOS EXATOS PERMITIDOS NESTE BANNER:
 • Destino: «${v.destination}»  (renderizar a palavra COMPLETA — contar as letras antes de desenhar; a primeira e a última letra DEVEM aparecer inteiras com a MESMA altura das demais)
-• Promo/Headline: «${v.promoName}»
+• Título principal: «${opts.headline}»
+• Promoção/selo, se usar: «${v.promoName}»
 • Cidade de origem: «${v.city}»
 • Parcela: «${v.installments}x R$ ${v.installmentValue}»
 • Preço total: «Preço total: R$ ${v.totalValue}»
@@ -589,13 +604,14 @@ Para CADA palavra renderizada na imagem, validar mentalmente:
 
 // 🔥 OP1 — CARTÃO DIVIDIDO (base Cancún)
 export function promptClassicVertical(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op1");
   return buildBrain(v, {
     category: "oferta",
     layout:
       "DIVISÃO HORIZONTAL EXATA — topo com fotografia full-bleed do destino e base com bloco sólido vibrante. O cartão de oferta fica INTEIRO dentro do bloco sólido inferior, sem cruzar divisórias e sem encostar em outros elementos",
     lighting: "natural diurna brilhante, hora dourada, cores vivas, sombras nítidas",
     sceneDescription: v.destinationDescription,
-    headline: v.promoName,
+    headline,
     specialization:
       "• Cartão central íntegro e separado, com sombra projetada para profundidade, SEM sobrepor foto, badge ou lista.\n• DIVISÃO VISUAL clara entre foto e bloco sólido — zero transição gradual.\n• PREÇO extremamente dominante dentro do cartão (mínimo 30% do cartão).\n• Cores vibrantes obrigatórias: roxo + amarelo OU azul-elétrico + dourado.",
   });
@@ -603,13 +619,14 @@ export function promptClassicVertical(v: MasterPromptVars): string {
 
 // 🔥 OP2 — CARTÃO CENTRAL FLUTUANTE
 export function promptCancunStyle(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op2");
   return buildBrain(v, {
     category: "oferta",
     layout:
       "Fundo 100% FOTOGRÁFICO ocupando toda a tela (sem bloco sólido), com CARTÃO CENTRAL amarelo vibrante sobreposto e centralizado; selo de desconto separado acima do cartão, nunca sobre a borda do cartão",
     lighting: "tropical brilhante, céu turquesa, água cristalina, alta saturação cinematográfica",
     sceneDescription: v.destinationDescription,
-    headline: v.promoName,
+    headline,
     specialization:
       "• Cartão AMARELO vibrante OU dourado, cantos arredondados, sombra suave para flutuar sobre a foto.\n• PREÇO no centro absoluto do cartão, fonte Ultra-Bold, ocupando 30%+ do cartão.\n• Selo CIRCULAR de desconto (% OFF, OFERTA EXCLUSIVA) deve ficar separado do cartão com margem visível; NÃO sobrepor texto nem bordas.\n• Foto NUNCA é cortada de forma agressiva — enquadramento limpo por trás do cartão como background de suporte.",
   });
@@ -617,13 +634,14 @@ export function promptCancunStyle(v: MasterPromptVars): string {
 
 // 🔥 OP3 — CARTÃO AÉREO (TOP DOWN)
 export function promptGramadoStyle(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op3");
   return buildBrain(v, {
     category: "oferta",
     layout:
       "FOTO AÉREA top-down ou drone-shot do destino ocupando toda a tela, com CARTÃO arredondado sobreposto na parte SUPERIOR (não centralizado), permitindo respiro inferior para a vista panorâmica respirar",
     lighting: "aérea diurna, sol alto, água translúcida com gradientes turquesa, sombras nítidas",
     sceneDescription: `vista aérea (drone) de ${v.destinationDescription}`,
-    headline: `PACOTE ${v.destination}`,
+    headline,
     specialization:
       "• Câmera obrigatoriamente em ângulo TOP-DOWN ou drone alto, mostrando ESCALA e amplitude.\n• Cartão posicionado no TERÇO SUPERIOR — não no centro — para deixar a paisagem respirar.\n• Preço FORTE mas INTEGRADO ao cartão, com selo serrilhado tipo bilhete azul anexado na borda inferior do cartão (PIX 5% OFF).\n• Sensação de descoberta + escala da viagem.",
   });
@@ -631,13 +649,14 @@ export function promptGramadoStyle(v: MasterPromptVars): string {
 
 // 🔥 OP4 — BARRA LATERAL (PERFORMANCE)
 export function promptMaceioStyle(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op4");
   return buildBrain(v, {
     category: "oferta",
     layout:
       "SPLIT VERTICAL — 30% à ESQUERDA com barra sólida vibrante (roxo, azul-elétrico ou amarelo) contendo TODO o texto e CTA; 70% à DIREITA com fotografia limpa do destino",
     lighting: "comercial brilhante, alto contraste, cores saturadas",
     sceneDescription: v.destinationDescription,
-    headline: v.promoName,
+    headline,
     specialization:
       "• Barra lateral 30% com COR SÓLIDA vibrante — contém destino, preço gigante e CTA.\n• Hierarquia de leitura ULTRA-RÁPIDA (3 segundos): destino → preço → CTA.\n• CTA FORTE em botão retangular contrastante: 'RESERVAR AGORA' ou 'GARANTIR VAGA'.\n• Estilo de anúncio direto de performance (Google Ads / Meta Ads), sem ornamentos.",
   });
@@ -645,13 +664,14 @@ export function promptMaceioStyle(v: MasterPromptVars): string {
 
 // 🔥 OP5 — BILHETE PIX / CARTÃO AMARELO
 export function promptTicketPixCard(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op5");
   return buildBrain(v, {
     category: "oferta",
     layout:
       "FOTO AÉREA OU PANORÂMICA ocupando 100% do fundo com um CARTÃO AMARELO grande e limpo no centro seguro; dentro do cartão há cabeçalho PACOTE + DESTINO, linha de ícones dos inclusos, preço maciço e selo azul serrilhado PIX anexado abaixo com margem sem sobreposição",
     lighting: "natural brilhante, comercial, cores turquesa/azul com contraste alto no cartão amarelo",
     sceneDescription: `vista ampla e clara de ${v.destinationDescription}`,
-    headline: `PACOTE ${v.destination}`,
+    headline,
     specialization:
       "• Inspirado em cartões amarelos premium de pacote, mas usando APENAS os dados do formulário.\n• O cartão amarelo não pode encostar nas safe zones; deve parecer uma peça única e limpa.\n• Selo tipo bilhete PIX azul fica abaixo do preço com separação visível, nunca sobre texto.\n• A fotografia de fundo serve de contexto; preço e oferta dominam a conversão.",
   });
@@ -659,13 +679,14 @@ export function promptTicketPixCard(v: MasterPromptVars): string {
 
 // 🔥 OP6 — FAIXA LATERAL + HERO DE PERFORMANCE
 export function promptSideHeroPerformance(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op6");
   return buildBrain(v, {
     category: "oferta",
     layout:
       "PAINEL LATERAL esquerdo vibrante ocupando 28-32% da largura com destino, selos e preço; lado direito com uma fotografia hero única ocupando 68-72%, com CTA em botão isolado no centro seguro",
     lighting: "dramática de fim de tarde ou manhã, alto contraste comercial, cores saturadas",
     sceneDescription: `${v.destinationDescription} em enquadramento hero cinematográfico, sem duplicar cenas`,
-    headline: `OFERTA ${v.destination}`,
+    headline,
     specialization:
       "• Referência estrutural: faixa lateral amarela/roxa + fotografia grande, sem copiar conteúdo fixo.\n• Leitura em 3 segundos: destino → preço → CTA.\n• Painel lateral deve ter respiro interno alto, sem texto vertical colidindo.\n• Nunca usar grid; apenas uma foto hero e um painel de conversão.",
   });

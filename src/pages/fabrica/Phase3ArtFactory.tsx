@@ -82,11 +82,30 @@ const PAYMENT_PRESETS: PaymentPreset[] = [
 ];
 
 const CATEGORY_LOCAL_STRATEGIES: Record<CategoriaId, StrategyId[]> = {
-  // Pool ampliado de layouts para Oferta — garante variação real entre gerações.
   oferta_pacote: ["matriz", "gancho", "ancora", "vitrine"],
-  // Experiência usa SOMENTE experiencia_hero (full-bleed sem card branco/laranja embaixo)
-  // para evitar layouts divididos e erros ortográficos em textos auxiliares.
-  experiencia_destino: ["experiencia_hero"],
+  experiencia_destino: ["experiencia_hero", "experiencia_postcard", "experiencia_editorial", "experiencia_lifestyle"],
+};
+
+const CATEGORY_COLOR_ROTATIONS: Record<CategoriaId, Array<{ primary: string; secondary: string }>> = {
+  oferta_pacote: [
+    { primary: "#7c2d12", secondary: "#FCD34D" },
+    { primary: "#1d4ed8", secondary: "#F59E0B" },
+    { primary: "#0a0a0a", secondary: "#22c55e" },
+    { primary: "#dc2626", secondary: "#fef08a" },
+    { primary: "#581c87", secondary: "#fb923c" },
+  ],
+  experiencia_destino: [
+    { primary: "#0c2340", secondary: "#f8fafc" },
+    { primary: "#064e3b", secondary: "#d9f99d" },
+    { primary: "#1f2937", secondary: "#fde68a" },
+    { primary: "#164e63", secondary: "#bae6fd" },
+    { primary: "#2d1b69", secondary: "#f5d0fe" },
+  ],
+};
+
+const pickGenerationPalette = (categoria: CategoriaId, seed: number, fallbackPrimary: string, fallbackSecondary: string) => {
+  const pool = CATEGORY_COLOR_ROTATIONS[categoria];
+  return pool.length ? pool[Math.abs(seed) % pool.length] : { primary: fallbackPrimary, secondary: fallbackSecondary };
 };
 
 const scopedGenerationKey = (categoria: CategoriaId, genMode: GenMode, format: "square" | "story") =>
@@ -115,11 +134,10 @@ const shuffleArray = <T,>(arr: T[]): T[] => {
 const pickDistinctLocalStrategies = (
   categoria: CategoriaId,
   _seed: number,
-  count = 2,
+  count = 1,
   history: StrategyId[] = [],
 ): StrategyId[] => {
   const pool = CATEGORY_LOCAL_STRATEGIES[categoria];
-  if (categoria === "experiencia_destino") return [pool[0]];
   const desired = Math.min(count, pool.length);
   // Prefere estratégias FORA do histórico recente; se faltar, completa com as do histórico
   // (mas embaralhadas para nunca repetir exatamente a mesma sequência).
@@ -293,15 +311,16 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         localStorage.setItem(cycleKey, String(nextSeed));
       };
 
-      // ===== MODO FOTO (composição local) — gera 2 variações =====
+      // ===== MODO FOTO (composição local) — gera 1 imagem única =====
       if (genMode === "photo") {
-        toast.info(categoria === "experiencia_destino" ? "Gerando 1 variação cinematográfica" : "Gerando 2 variações com foto real");
+        toast.info("Gerando 1 imagem única com foto real");
         const stratHistKey = scopedStrategyHistoryKey(categoria, genMode, format);
         let stratHistory: StrategyId[] = [];
         try { stratHistory = JSON.parse(localStorage.getItem(stratHistKey) || "[]"); } catch { stratHistory = []; }
-        const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 2, stratHistory);
+        const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 1, stratHistory);
         localStorage.setItem(stratHistKey, JSON.stringify(chosen));
         const photoRefs = pickPhotoRefs(photos, refImage, generationSeed, chosen.length);
+        const palette = pickGenerationPalette(categoria, generationSeed, primaryColor, secondaryColor);
 
         const composed = await Promise.all(
           chosen.map(async (localStrategy, idx) => {
@@ -310,8 +329,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               format,
               destination,
               city: state.city,
-              primaryColor,
-              secondaryColor,
+              primaryColor: palette.primary,
+              secondaryColor: palette.secondary,
               price,
               installments,
               promoName,
@@ -321,6 +340,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               paymentLabel: paymentLabel || undefined,
               paymentSuffix: paymentSuffix || undefined,
               strategy: localStrategy,
+              variation: generationSeed + idx,
             });
             if (state.logoBase64) {
               try {
@@ -336,7 +356,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
         setGeneratedImage(composed[0]);
         setGeneratedImages(composed);
-        update({ generatedAdImage: composed[0], primaryColor });
+        update({ generatedAdImage: composed[0], primaryColor: palette.primary });
 
         const newCount = generationCount + composed.length;
         setGenerationCount(newCount);
@@ -347,7 +367,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         return;
       }
 
-      // ===== MODO IA PURA: gera prompts da categoria; Experiência/Stories usa fluxo seguro sem texto da IA =====
+        // ===== MODO IA PURA: gera 1 prompt da categoria; Experiência usa fluxo seguro sem texto da IA =====
       if (genMode === "ai") {
         const cat = getCategoria(categoria);
         const isAiExperienceStory = categoria === "experiencia_destino";
@@ -359,7 +379,17 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         catch { storedRecent = []; }
         const picks = isAiExperienceStory
           ? [{ code: "ED_SAFE_STORY", templateId: "photo_only_experience_story" }]
-          : pickPromptsForCategoria(categoria, 2, storedLast, storedRecent);
+          : pickPromptsForCategoria(categoria, 1, storedLast, storedRecent);
+        const palette = pickGenerationPalette(categoria, generationSeed, primaryColor, secondaryColor);
+        const aiExperienceStrategy = (() => {
+          if (!isAiExperienceStory) return "experiencia_hero" as StrategyId;
+          const key = scopedStrategyHistoryKey(categoria, genMode, format);
+          let history: StrategyId[] = [];
+          try { history = JSON.parse(localStorage.getItem(key) || "[]"); } catch { history = []; }
+          const [picked] = pickDistinctLocalStrategies(categoria, generationSeed, 1, history);
+          localStorage.setItem(key, JSON.stringify([picked]));
+          return picked;
+        })();
 
         toast.info(`Gerando ${picks.length} ${picks.length === 1 ? "variação" : "variações"} em IA Pura — ${cat.name}`);
 
@@ -373,8 +403,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               agencyName: state.agencyName,
               agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
               city: state.city,
-              primaryColor,
-              secondaryColor,
+              primaryColor: palette.primary,
+              secondaryColor: palette.secondary,
               hasLogo: !!state.logoBase64,
               price,
               installments,
@@ -406,8 +436,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               format,
               destination,
               city: state.city,
-              primaryColor,
-              secondaryColor,
+              primaryColor: palette.primary,
+              secondaryColor: palette.secondary,
               price,
               installments,
               promoName,
@@ -416,7 +446,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               paymentMode,
               paymentLabel: paymentLabel || undefined,
               paymentSuffix: paymentSuffix || undefined,
-              strategy: "experiencia_hero",
+              strategy: aiExperienceStrategy,
+              variation: generationSeed,
             });
             if (state.logoBase64) {
               try {
@@ -433,7 +464,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
         setGeneratedImages(images);
         setGeneratedImage(images[0]);
-        update({ generatedAdImage: images[0], primaryColor });
+        update({ generatedAdImage: images[0], primaryColor: palette.primary });
         if (providerSeen) setLastProvider(providerSeen);
 
         // Persiste o último prompt usado para a próxima rotação não repetir
@@ -458,13 +489,14 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         return;
       }
 
-      // ===== MODO CUSTOM (link/upload do usuário) — gera 2 variações locais, sem gastar créditos de IA =====
-      toast.info(categoria === "experiencia_destino" ? "Gerando 1 variação com sua imagem" : "Gerando 2 variações com sua imagem");
+      // ===== MODO CUSTOM (link/upload do usuário) — gera 1 imagem local, sem gastar créditos de IA =====
+      toast.info("Gerando 1 imagem única com sua imagem");
       const stratHistKeyCustom = scopedStrategyHistoryKey(categoria, genMode, format);
       let stratHistoryCustom: StrategyId[] = [];
       try { stratHistoryCustom = JSON.parse(localStorage.getItem(stratHistKeyCustom) || "[]"); } catch { stratHistoryCustom = []; }
-      const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 2, stratHistoryCustom);
+      const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 1, stratHistoryCustom);
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
+      const palette = pickGenerationPalette(categoria, generationSeed, primaryColor, secondaryColor);
 
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy) => {
@@ -473,8 +505,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             format,
             destination,
             city: state.city,
-            primaryColor,
-            secondaryColor,
+            primaryColor: palette.primary,
+            secondaryColor: palette.secondary,
             price,
             installments,
             promoName,
@@ -484,6 +516,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             paymentLabel: paymentLabel || undefined,
             paymentSuffix: paymentSuffix || undefined,
             strategy: localStrategy,
+            variation: generationSeed,
           });
           if (state.logoBase64) {
             try {
@@ -499,7 +532,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
       setGeneratedImage(imagesCustom[0]);
       setGeneratedImages(imagesCustom);
-      update({ generatedAdImage: imagesCustom[0], primaryColor });
+      update({ generatedAdImage: imagesCustom[0], primaryColor: palette.primary });
 
       const newCount = generationCount + imagesCustom.length;
       setGenerationCount(newCount);
@@ -656,7 +689,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
           })}
         </div>
         <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-[11px] text-white/55 leading-snug">
-          <strong className="text-white/80">Regra fixa:</strong> Foto Real e Sua imagem geram 2 variações; IA Pura gera 1 para economizar créditos. Oferta destaca preço e conversão; Experiência destaca foto, emoção e estilo editorial.
+          <strong className="text-white/80">Regra fixa:</strong> cada clique gera apenas 1 imagem única. A próxima geração troca layout, frase, cores e estilo. Oferta destaca preço e conversão; Experiência destaca foto, emoção e estilo editorial.
         </div>
       </div>
 
@@ -1089,7 +1122,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             disabled={loading}
             className="w-full py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white/80 text-sm font-semibold border border-white/10 flex items-center justify-center gap-2"
           >
-            <Sparkles className="w-3.5 h-3.5" /> Gerar novo anúncio (template aleatório)
+            <Sparkles className="w-3.5 h-3.5" /> Gerar novo anúncio único
           </button>
         </motion.div>
       )}
