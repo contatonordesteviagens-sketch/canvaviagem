@@ -378,7 +378,7 @@ Uma cena extremamente realista e detalhada de ${v.destination}, com iluminação
 
 [ELEMENTOS DE INTERFACE]
 Interface moderna, limpa e minimalista, com tipografia perfeita e alinhamento matemático.
-Paleta principal: cor primária ${v.primaryHex}, cor secundária ${v.secondaryHex}.
+Paleta obrigatória e bloqueada: cor primária ${v.primaryHex}, cor secundária ${v.secondaryHex}. Use SOMENTE essas duas cores nos blocos, preço, badges, barras, cartões e detalhes. É proibido substituir por verde/preto/azul/amarelo genérico ou qualquer paleta sugerida pelo estilo.
 
 Título/Chamada: "${opts.headline}"
 Destino destacado: "${v.destination}"
@@ -407,6 +407,7 @@ A imagem deve ser gerada no formato Vertical 9:16 (resolução 8K). O motor de g
 2. POSICIONAMENTO:
 - Zero sobreposição entre elementos.
 - Espaçamento matemático e simétrico entre todos os blocos.
+- Se houver logo ou nome da agência no topo esquerdo, reservar uma área limpa exclusiva; cidade, badge, título, preço e qualquer texto devem começar abaixo ou ao lado, nunca por cima dessa área.
 ${centerRule}
 
 3. TIPOGRAFIA:
