@@ -187,6 +187,18 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
   const image = await loadImage(imageUrl);
 
+  // Title-case helper to evitar "saindo de fortaleza" minusculo
+  const toTitle = (s?: string) =>
+    (s || "")
+      .trim()
+      .toLocaleLowerCase("pt-BR")
+      .split(/\s+/)
+      .map((w) => (w.length <= 2 && /^(de|da|do|e)$/i.test(w) ? w : w.charAt(0).toLocaleUpperCase("pt-BR") + w.slice(1)))
+      .join(" ");
+
+  const cityFmt = toTitle(city);
+  const destFmt = toTitle(destination);
+
   const safeTop = format === "story" ? 270 : 120;
   const safeBottom = format === "story" ? 345 : 120;
   const panelBottom = height - safeBottom;
@@ -194,8 +206,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const right = width - 80;
   const contentWidth = right - left;
   const shownHighlights = highlights.slice(0, format === "story" ? 5 : 4);
-  const badgeText = city ? `Saindo de ${city}` : "Pacote completo";
-  const titleText = `Conheça ${destination}!`;
+  const badgeText = cityFmt ? `Saindo de ${cityFmt}` : "Pacote completo";
+  const titleText = `Conheça ${destFmt}!`;
 
   const resolvePaymentCopy = () => {
     switch (paymentMode) {
@@ -414,8 +426,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "left";
     ctx.font = "700 30px Inter, Arial, sans-serif";
-    ctx.fillText(city ? `Saindo de ${city}` : "Experiência completa", left, textY);
-    drawTextBlock(ctx, `Viva ${destination}`, left, textY + 96, contentWidth, 92, 2, { fontWeight: "800", baseFontSize: format === "story" ? 88 : 70, minFontSize: 44 });
+    ctx.fillText(cityFmt ? `Saindo de ${cityFmt}` : "Experiência completa", left, textY);
+    drawTextBlock(ctx, `Viva ${destFmt}`, left, textY + 96, contentWidth, 92, 2, { fontWeight: "800", baseFontSize: format === "story" ? 88 : 70, minFontSize: 44 });
     ctx.font = "500 30px Inter, Arial, sans-serif";
     ctx.fillText("Momentos que ficam para sempre", left, textY + (format === "story" ? 245 : 205));
 
@@ -435,8 +447,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = primaryColor;
     ctx.textAlign = "left";
     ctx.font = "700 28px Inter, Arial, sans-serif";
-    ctx.fillText(city ? `Saindo de ${city}` : "Roteiro especial", left, safeTop + 54);
-    drawTextBlock(ctx, `Descubra ${destination}`, left, safeTop + 170, columnW, 78, 3, { fontWeight: "800", baseFontSize: 74, minFontSize: 42 });
+    ctx.fillText(cityFmt ? `Saindo de ${cityFmt}` : "Roteiro especial", left, safeTop + 54);
+    drawTextBlock(ctx, `Descubra ${destFmt}`, left, safeTop + 170, columnW, 78, 3, { fontWeight: "800", baseFontSize: 74, minFontSize: 42 });
     ctx.fillStyle = "#2b2118";
     ctx.font = "500 29px Inter, Arial, sans-serif";
     drawTextBlock(ctx, "Uma experiência pensada para viver o destino com calma, beleza e curadoria.", left, safeTop + 420, columnW, 42, 4, { fontWeight: "500", baseFontSize: 29, minFontSize: 22 });
@@ -468,9 +480,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = "#ffffff";
     ctx.textAlign = "center";
     ctx.font = "700 28px Inter, Arial, sans-serif";
-    ctx.fillText(city ? `Saindo de ${city}` : "Roteiro especial", width / 2, safeTop + 96);
+    ctx.fillText(cityFmt ? `Saindo de ${cityFmt}` : "Roteiro especial", width / 2, safeTop + 96);
     ctx.textAlign = "left";
-    drawTextBlock(ctx, destination, left + 42, panelBottom - 360, contentWidth - 84, 86, 2, { fontWeight: "800", baseFontSize: format === "story" ? 92 : 70, minFontSize: 44 });
+    drawTextBlock(ctx, destFmt, left + 42, panelBottom - 360, contentWidth - 84, 86, 2, { fontWeight: "800", baseFontSize: format === "story" ? 92 : 70, minFontSize: 44 });
     ctx.font = "500 30px Inter, Arial, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText("Uma viagem para sentir, viver e lembrar", width / 2, panelBottom - 165);
@@ -485,7 +497,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = grad;
     ctx.fillRect(0, photoH - 240, width, 240);
     ctx.fillStyle = "#ffffff";
-    drawTextBlock(ctx, `Viva ${destination}`, left, photoH - 210, contentWidth, 78, 2, { fontWeight: "800", baseFontSize: format === "story" ? 78 : 62, minFontSize: 40 });
+    drawTextBlock(ctx, `Viva ${destFmt}`, left, photoH - 210, contentWidth, 78, 2, { fontWeight: "800", baseFontSize: format === "story" ? 78 : 62, minFontSize: 40 });
 
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, photoH, width, height - photoH);

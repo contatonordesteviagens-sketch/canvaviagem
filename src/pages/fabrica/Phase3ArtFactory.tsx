@@ -83,7 +83,9 @@ const PAYMENT_PRESETS: PaymentPreset[] = [
 
 const CATEGORY_LOCAL_STRATEGIES: Record<CategoriaId, StrategyId[]> = {
   oferta_pacote: ["matriz", "gancho", "ancora", "vitrine"],
-  experiencia_destino: ["experiencia_hero", "experiencia_editorial", "experiencia_postcard", "experiencia_lifestyle"],
+  // Experiência usa SOMENTE experiencia_hero (full-bleed sem card branco/laranja embaixo)
+  // para evitar layouts divididos e erros ortográficos em textos auxiliares.
+  experiencia_destino: ["experiencia_hero"],
 };
 
 const scopedGenerationKey = (categoria: CategoriaId, genMode: GenMode, format: "square" | "story") =>
@@ -94,6 +96,8 @@ const scopedTemplateKey = (type: "last" | "recent", categoria: CategoriaId, genM
 
 const pickDistinctLocalStrategies = (categoria: CategoriaId, seed: number, count = 2): StrategyId[] => {
   const pool = CATEGORY_LOCAL_STRATEGIES[categoria];
+  // Para Experiência, sempre 1 variação única no estilo hero (sem split layouts)
+  if (categoria === "experiencia_destino") return [pool[0]];
   return Array.from({ length: Math.min(count, pool.length) }, (_, idx) => pool[(seed + idx) % pool.length]);
 };
 
@@ -263,7 +267,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
       // ===== MODO FOTO (composição local) — gera 2 variações =====
       if (genMode === "photo") {
-        toast.info("Gerando 2 variações com foto real");
+        toast.info(categoria === "experiencia_destino" ? "Gerando 1 variação cinematográfica" : "Gerando 2 variações com foto real");
         const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 2);
         const photoRefs = pickPhotoRefs(photos, refImage, generationSeed, chosen.length);
 
@@ -307,14 +311,14 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         localStorage.setItem("fabrica_gen_count", String(newCount));
         finishCycle(composed.length);
 
-        toast.success("2 variações geradas com foto real!");
+        toast.success(`${composed.length} ${composed.length === 1 ? "variação gerada" : "variações geradas"} com foto real!`);
         return;
       }
 
       // ===== MODO IA PURA: gera prompts da categoria; Experiência/Stories usa fluxo seguro sem texto da IA =====
       if (genMode === "ai") {
         const cat = getCategoria(categoria);
-        const isAiExperienceStory = categoria === "experiencia_destino" && format === "story";
+        const isAiExperienceStory = categoria === "experiencia_destino";
         const categoryLastKey = scopedTemplateKey("last", categoria, genMode);
         const categoryRecentKey = scopedTemplateKey("recent", categoria, genMode);
         const storedLast = localStorage.getItem(categoryLastKey) || (cat.prompts.some((p) => p.templateId === lastTemplateId) ? lastTemplateId : null);
@@ -423,7 +427,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       }
 
       // ===== MODO CUSTOM (link/upload do usuário) — gera 2 variações locais, sem gastar créditos de IA =====
-      toast.info("Gerando 2 variações com sua imagem");
+      toast.info(categoria === "experiencia_destino" ? "Gerando 1 variação com sua imagem" : "Gerando 2 variações com sua imagem");
       const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 2);
 
       const imagesCustom = await Promise.all(
@@ -466,7 +470,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
       localStorage.setItem("fabrica_gen_count", String(newCount));
       finishCycle(imagesCustom.length);
 
-      toast.success("2 variações geradas com sua imagem!");
+      toast.success(`${imagesCustom.length} ${imagesCustom.length === 1 ? "variação gerada" : "variações geradas"} com sua imagem!`);
 
     } catch (err: any) {
       console.error("generate error", err);
