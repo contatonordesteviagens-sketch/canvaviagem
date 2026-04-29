@@ -138,11 +138,17 @@ PREÇO É OPCIONAL E DISCRETO: se inserir, use APENAS um pequeno texto fino "A p
   const promoLine = opts.category === "oferta"
     ? `Selo promocional: "${v.promoName}"`
     : `Chamada editorial secundária: "${opts.experienceDescription || `Viva ${v.destination} com calma, beleza e curadoria.`}" — sem selo promocional, sem urgência e sem linguagem de oferta.`;
+  const typographyHierarchy = opts.category === "oferta"
+    ? "- PREÇO = maior elemento da composição (Ultra-Bold / Heavy).\n- DESTINO = segundo maior elemento (Bold)."
+    : "- IMAGEM = protagonista absoluta; texto deve ser leve e elegante.\n- DESTINO = maior texto, mas sem competir com a fotografia.\n- PREÇO, se existir, deve ser o menor elemento informativo e nunca usar Ultra-Bold.";
+  const objectiveLine = opts.category === "oferta"
+    ? "foco em legibilidade e alto impacto visual para conversão imediata."
+    : "foco em emoção, desejo, fotografia premium e leitura elegante, sem aparência de oferta.";
 
   return `
 Um banner publicitário vertical de turismo (formato 9:16, resolução 8K), hiper-realista, com qualidade cinematográfica, iluminação natural ou dramática altamente refinada e composição profissional de nível publicitário.
 
-A imagem deve seguir rigorosamente um layout estruturado e organizado, com hierarquia visual clara, foco em legibilidade e alto impacto visual para conversão.
+A imagem deve seguir rigorosamente um layout estruturado e organizado, com hierarquia visual clara, ${objectiveLine}
 
 A composição segue o layout: ${opts.layout}.
 
@@ -191,8 +197,7 @@ A imagem deve ser gerada no formato Vertical 9:16 (resolução 8K). O motor de g
 - Centro de conversão obrigatório nos 65% centrais da imagem (preço, headline, destino e CTA).
 
 3. TIPOGRAFIA:
-- PREÇO = maior elemento da composição (Ultra-Bold / Heavy).
-- DESTINO = segundo maior elemento (Bold).
+${typographyHierarchy}
 - Texto com CONTRASTE ABSOLUTO: branco sobre fundos escuros/vibrantes; escuro sobre fundos claros. Drop-shadow suave quando o texto estiver sobre foto.
 - Sans-serif moderna premium estilo Apple/alta tecnologia.
 
