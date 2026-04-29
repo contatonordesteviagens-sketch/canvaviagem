@@ -484,7 +484,12 @@ serve(async (req) => {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { responseModalities: ["IMAGE", "TEXT"] },
+                generationConfig: {
+                  responseModalities: ["IMAGE", "TEXT"],
+                  temperature: 1.18,
+                  topP: 0.96,
+                  maxOutputTokens: 8192,
+                },
               }),
             }
           );
@@ -551,6 +556,9 @@ serve(async (req) => {
           model: "google/gemini-3.1-flash-image-preview",
           messages: [{ role: "user", content: prompt }],
           modalities: ["image", "text"],
+          temperature: 1.18,
+          top_p: 0.96,
+          max_tokens: 8192,
         }),
       });
 
