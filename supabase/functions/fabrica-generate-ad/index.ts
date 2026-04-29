@@ -40,6 +40,8 @@ interface AdParams {
   templateId?: string; // se definido, usa um template mestre em vez do builder de estratégia
   packageType?: string; // ex: "Voo + Hotel"
   duration?: string;    // ex: "5 NOITES"
+  forbiddenHeadlines?: string[]; // headlines a EVITAR (vindas do GenerationGuard do cliente)
+  forbiddenLayouts?: string[];   // layouts/templateIds a EVITAR
 }
 
 // ===== Tom visual por tipo de agência =====
