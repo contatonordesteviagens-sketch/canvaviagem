@@ -424,8 +424,8 @@ serve(async (req) => {
 
     const body = (await req.json()) as AdParams;
 
-    // templateId tem prioridade sobre strategy. Sem templateId, exige strategy válida.
-    if (!body.templateId) {
+    // templateId tem prioridade sobre strategy. Photo-only dispensa strategy legada.
+    if (!body.templateId && !body.photoOnly) {
       if (!body.strategy || !["ancora", "vitrine", "matriz", "gancho"].includes(body.strategy)) {
         return new Response(JSON.stringify({ error: "Invalid strategy" }), {
           status: 400,
