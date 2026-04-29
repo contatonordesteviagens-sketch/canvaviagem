@@ -314,18 +314,19 @@ PREÇO É OPCIONAL E DISCRETO: se inserir, use APENAS um pequeno texto fino "A p
   const creativeSeed = v.creativeSeed || `${opts.category}-${opts.layout.slice(0, 24)}`;
   const variationDirectives = opts.category === "oferta"
     ? [
-        "LAYOUT: cartão central flutuante · POSIÇÃO PREÇO: centro · CONTAINER: cartão arredondado com sombra · CORES: roxo + amarelo vibrante · IMAGEM: panorâmica do destino atrás · ILUMINAÇÃO: golden hour saturada",
-        "LAYOUT: divisão topo imagem 60% + base sólida 40% com oferta · POSIÇÃO PREÇO: base inferior dentro da safe zone · CONTAINER: faixa horizontal sólida · CORES: azul-elétrico + dourado · IMAGEM: aérea/drone · ILUMINAÇÃO: luz dramática de meio-dia",
-        "LAYOUT: barra lateral vertical + imagem dominante · POSIÇÃO PREÇO: lado direito dentro da barra · CONTAINER: faixa lateral sólida · CORES: amarelo neon + preto · IMAGEM: close lifestyle · ILUMINAÇÃO: backlight quente",
-        "LAYOUT: preço sobreposto direto na imagem (SEM cartão) · POSIÇÃO PREÇO: lado esquerdo livre · CONTAINER: nenhum, apenas tipografia gigante com sombra · CORES: tropical verde + azul claro · IMAGEM: panorâmica praia · ILUMINAÇÃO: natural cristalina",
-        "LAYOUT: cartão inclinado/assimétrico · POSIÇÃO PREÇO: dentro de selo circular ou bilhete · CONTAINER: selo serrilhado tipo ticket · CORES: gradiente moderno (rosa/laranja/roxo) · IMAGEM: lifestyle pessoas viajando · ILUMINAÇÃO: sunset cinematográfico",
-        "LAYOUT: minimalista com preço isolado · POSIÇÃO PREÇO: canto inferior dentro da safe zone · CONTAINER: nenhum, fundo claro elegante · CORES: clean (off-white + um único acento azul escuro/dourado) · IMAGEM: detalhe arquitetônico ou close · ILUMINAÇÃO: luz suave difusa",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: imagem full com preço direto sobre a foto, SEM cartão central · POSIÇÃO PREÇO: lado esquerdo livre · CORES: tropical verde + azul claro · IMAGEM: panorâmica praia · ILUMINAÇÃO: natural cristalina",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: divisão topo imagem 60% + base sólida 40% com oferta · POSIÇÃO PREÇO: base inferior dentro da safe zone · CORES: azul-elétrico + dourado · IMAGEM: aérea/drone · ILUMINAÇÃO: luz dramática de meio-dia",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: barra lateral vertical + imagem dominante · POSIÇÃO PREÇO: lado direito dentro da barra · CORES: amarelo neon + preto · IMAGEM: close lifestyle · ILUMINAÇÃO: backlight quente",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: grid de fotos com preço em selo isolado · POSIÇÃO PREÇO: selo no canto oposto à imagem principal · CORES: vermelho carmim + creme · IMAGEM: múltiplos recortes turísticos · ILUMINAÇÃO: comercial brilhante",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: cartão inclinado/assimétrico tipo ticket · POSIÇÃO PREÇO: dentro de selo circular · CORES: gradiente moderno (rosa/laranja/roxo) · IMAGEM: lifestyle pessoas viajando · ILUMINAÇÃO: sunset cinematográfico",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: texto central leve com preço isolado, sem bloco pesado · POSIÇÃO PREÇO: centro inferior · CORES: off-white + azul escuro/dourado · IMAGEM: detalhe arquitetônico ou close · ILUMINAÇÃO: luz suave difusa",
       ]
     : [
-        "fotografia full-bleed contemplativa, sem cartão; texto leve no centro seguro",
-        "momento lifestyle com pessoas naturais e narrativa emocional; sem preço protagonista",
-        "composição editorial minimalista com muito respiro e oferta omitida ou minúscula",
-        "página de revista de viagem com fotografia protagonista e detalhes discretos",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: imagem full sem caixas; texto leve no centro seguro; fotografia contemplativa domina tudo",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: divisão topo + base suave sem cara de promoção; imagem ocupa a maior parte; texto editorial discreto",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: barra lateral editorial fina com foto dominante; sem preço protagonista; linguagem emocional",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: grid editorial de fotos diferentes; título curto e leve; nenhum bloco de venda",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: texto central leve sobre foto limpa; muito respiro; sem cartão e sem selo",
       ];
   const variationIndex = Math.abs([...creativeSeed].reduce((acc, char) => acc + char.charCodeAt(0), 0)) % variationDirectives.length;
   const promoLine = opts.category === "oferta"
