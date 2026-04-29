@@ -104,6 +104,7 @@ export interface FabricaState {
   selectedPackages: Pacote[];
   depoimentos: Depoimento[];
   primaryColor: string;
+  secondaryColor: string;
   currentPhase: number;
   checklist30days: Record<string, boolean>;
   diagnosticoCompleto: boolean;
