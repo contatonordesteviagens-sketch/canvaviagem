@@ -71,15 +71,9 @@ interface PaymentPreset {
 }
 
 const PAYMENT_PRESETS: PaymentPreset[] = [
-  { id: "installments",  name: "Parcelado",          emoji: "💳", description: "Ex: 10x R$ 149,90",            hint: "Parcelas: 10x · Valor: 149,90" },
-  { id: "cash",          name: "À vista",            emoji: "💰", description: "Ex: À VISTA R$ 1.499",         hint: "Valor: 1.499" },
-  { id: "cash_discount", name: "À vista c/ desconto",emoji: "🏷️", description: "Ex: À VISTA · 5% OFF",          hint: "Valor já com desconto" },
-  { id: "from",          name: "A partir de",        emoji: "🚀", description: "Ex: A PARTIR DE R$ 1.499",     hint: "Valor mínimo do pacote" },
-  { id: "daily",         name: "Diária",             emoji: "🛏️", description: "Ex: R$ 149/diária",             hint: "Valor por diária" },
-  { id: "monthly",       name: "Mensal",             emoji: "📅", description: "Ex: R$ 149/mês",                hint: "Valor por mês" },
-  { id: "down_plus",     name: "Entrada + parcelas", emoji: "💵", description: "Ex: ENTRADA + 10x R$ 149",      hint: "Parcelas (rótulo): ENTRADA R$ 200 + 10x · Valor: 149" },
-  { id: "free_quote",    name: "Sob consulta",       emoji: "💬", description: "Ex: CONSULTE no WhatsApp",      hint: "Sem valor — direciona pra conversa" },
-  { id: "custom_label",  name: "Personalizado",      emoji: "✏️", description: "Você escreve o rótulo livre",   hint: "Label livre + Valor" },
+  { id: "installments", name: "Parcelado",          emoji: "💳", description: "Ex: 10x R$ 149,90",       hint: "Parcelas: 10x · Valor: 149,90" },
+  { id: "cash",         name: "À vista",            emoji: "💰", description: "Ex: À VISTA R$ 1.499",    hint: "Valor: 1.499" },
+  { id: "down_plus",    name: "Entrada + parcelas", emoji: "💵", description: "Ex: ENTRADA + 10x R$ 149", hint: "Parcelas: ENTRADA R$ 200 + 10x · Valor: 149" },
 ];
 
 const CATEGORY_LOCAL_STRATEGIES: Record<CategoriaId, StrategyId[]> = {
