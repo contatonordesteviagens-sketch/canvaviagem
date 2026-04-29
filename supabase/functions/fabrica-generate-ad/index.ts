@@ -442,7 +442,9 @@ serve(async (req) => {
     let prompt: string;
     let usedTemplateId: string | null = null;
 
-    if (body.templateId) {
+    if (body.photoOnly) {
+      prompt = buildTextFreeDestinationPrompt(finalBody);
+    } else if (body.templateId) {
       const tpl = getTemplateById(body.templateId);
       if (!tpl) {
         return new Response(JSON.stringify({ error: `Template ${body.templateId} not found` }), {
