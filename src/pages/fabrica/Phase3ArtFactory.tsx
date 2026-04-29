@@ -83,7 +83,9 @@ const PAYMENT_PRESETS: PaymentPreset[] = [
 
 const CATEGORY_LOCAL_STRATEGIES: Record<CategoriaId, StrategyId[]> = {
   oferta_pacote: ["matriz", "gancho", "ancora", "vitrine"],
-  experiencia_destino: ["experiencia_hero", "experiencia_editorial", "experiencia_postcard", "experiencia_lifestyle"],
+  // Experiência usa SOMENTE experiencia_hero (full-bleed sem card branco/laranja embaixo)
+  // para evitar layouts divididos e erros ortográficos em textos auxiliares.
+  experiencia_destino: ["experiencia_hero"],
 };
 
 const scopedGenerationKey = (categoria: CategoriaId, genMode: GenMode, format: "square" | "story") =>
@@ -94,6 +96,8 @@ const scopedTemplateKey = (type: "last" | "recent", categoria: CategoriaId, genM
 
 const pickDistinctLocalStrategies = (categoria: CategoriaId, seed: number, count = 2): StrategyId[] => {
   const pool = CATEGORY_LOCAL_STRATEGIES[categoria];
+  // Para Experiência, sempre 1 variação única no estilo hero (sem split layouts)
+  if (categoria === "experiencia_destino") return [pool[0]];
   return Array.from({ length: Math.min(count, pool.length) }, (_, idx) => pool[(seed + idx) % pool.length]);
 };
 
