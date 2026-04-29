@@ -228,7 +228,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         // Duas estratégias distintas para garantir variação visual
         const stratA = localStrategies[activeVariation % localStrategies.length];
         const stratB = localStrategies[(activeVariation + 1) % localStrategies.length];
-        const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(variationCounter + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
+        const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(activeVariation + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
 
         const selectedIdx = photos.findIndex((p) => p.url === refImage);
         const photoRefs = chosen.map((_, idx) => {
@@ -377,7 +377,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         : ["experiencia_hero", "experiencia_editorial"];
       const stratA = localStrategies[activeVariation % localStrategies.length];
       const stratB = localStrategies[(activeVariation + 1) % localStrategies.length];
-      const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(variationCounter + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
+      const chosen: StrategyId[] = stratA === stratB ? [stratA, localStrategies[(activeVariation + 2) % localStrategies.length] ?? stratA] : [stratA, stratB];
 
       const shouldStampLogo = !!state.logoBase64 && !!data?.fallback;
       const imagesCustom = await Promise.all(
