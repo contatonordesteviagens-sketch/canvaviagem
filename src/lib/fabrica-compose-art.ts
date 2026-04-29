@@ -357,7 +357,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillText(destUpper, cx, y + 60);
 
     // 3. Linha de info: "X dias ✈ 🚌 🏨 ☕"
-    const days = (highlights[0] || "").match(/(\d+)\s*dias?/i)?.[0] || "5 dias";
+    const firstHL = highlights[0];
+    const firstHLText = typeof firstHL === "string" ? firstHL : (firstHL?.text || "");
+    const days = firstHLText.match(/(\d+)\s*dias?/i)?.[0] || "5 dias";
     ctx.font = `700 17px Inter, Arial, sans-serif`;
     ctx.fillText(`${days}   ✈   🚌   🏨   ☕`, cx, y + 92);
 
