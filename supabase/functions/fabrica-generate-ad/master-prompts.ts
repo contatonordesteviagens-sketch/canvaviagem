@@ -411,7 +411,8 @@ Os textos abaixo DEVEM aparecer no banner EXATAMENTE como escritos, sem alterar 
 
 📋 TEXTOS EXATOS PERMITIDOS NESTE BANNER:
 • Destino: «${v.destination}»  (renderizar a palavra COMPLETA — contar as letras antes de desenhar; a primeira e a última letra DEVEM aparecer inteiras com a MESMA altura das demais)
-• Promo/Headline: «${v.promoName}»
+• Título principal: «${opts.headline}»
+• Promoção/selo, se usar: «${v.promoName}»
 • Cidade de origem: «${v.city}»
 • Parcela: «${v.installments}x R$ ${v.installmentValue}»
 • Preço total: «Preço total: R$ ${v.totalValue}»
