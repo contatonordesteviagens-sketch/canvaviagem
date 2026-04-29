@@ -213,27 +213,117 @@ ${typographyHierarchy}
 ══════════════════════════════════════
 🛑 LISTA ZERO-TIPO — TEXTOS LITERAIS OBRIGATÓRIOS (COPIAR CARACTERE A CARACTERE)
 ══════════════════════════════════════
+Este é o requisito MAIS CRÍTICO de toda a geração. Erros ortográficos invalidam a imagem e exigem refazer.
 Os textos abaixo DEVEM aparecer no banner EXATAMENTE como escritos, sem alterar UMA ÚNICA letra, acento, espaço ou pontuação. NÃO traduzir, NÃO abreviar, NÃO inventar palavras, NÃO improvisar caracteres parecidos. Se o modelo não souber renderizar uma letra com fidelidade, REFAZER até ficar 100% correto.
 
-• Destino: «${v.destination}»  (renderizar a palavra COMPLETA, com a primeira letra visível — NÃO cortar a inicial)
+📋 TEXTOS EXATOS PERMITIDOS NESTE BANNER:
+• Destino: «${v.destination}»  (renderizar a palavra COMPLETA — contar as letras antes de desenhar; a primeira e a última letra DEVEM aparecer inteiras com a MESMA altura das demais)
 • Promo/Headline: «${v.promoName}»
 • Cidade de origem: «${v.city}»
-• Parcela: «${v.installments}x R$ ${v.installmentValue}»  (símbolo "R$" com cifrão correto, NUNCA "RS" ou "R5")
-• Preço total: «Preço total: R$ ${v.totalValue}»  (cifrão "R$" obrigatório; ponto como separador de milhar; vírgula nos centavos)
-• Rodapé: «Saindo de ${v.city}. Taxas e impostos não inclusos. Consulte disponibilidade.»  (a palavra é "disponibilidade" — NÃO inventar "dispatbibiiibade", "dispobibibidade" etc.)
-• Café da manhã (se listado): grafia exata «Café da manhã» — NUNCA "mênha", "mânha", "manha".
-• Cidade Fortaleza (se citada): grafia exata «Fortaleza» — NUNCA "Fortalesa".
-• Lista de benefícios: copiar palavra por palavra cada item; se não souber soletrar, OMITIR o item, JAMAIS inventar caracteres.
+• Parcela: «${v.installments}x R$ ${v.installmentValue}»
+• Preço total: «Preço total: R$ ${v.totalValue}»
+• CTA (se houver): «RESERVAR AGORA»  (NUNCA "RESERVAR AGOR", "RESEVAR", "RESEVAR AGORA")
+• Rodapé: «Saindo de ${v.city}. Taxas e impostos não inclusos. Consulte disponibilidade.»
+• Lista de benefícios: copiar PALAVRA POR PALAVRA cada item enviado. Se não souber soletrar com 100% de certeza, OMITIR o item — NUNCA inventar caracteres, NUNCA repetir letras aleatórias.
 
-REGRAS DE PURGA ORTOGRÁFICA (revisar antes de finalizar a imagem):
-1. Toda palavra deve ser uma palavra real do português brasileiro, escrita com ortografia oficial.
-2. Proibido qualquer "letra fantasma" — repetições aleatórias de "i", "b", "p" no meio de palavras.
-3. Proibido cortar a primeira letra do destino (ex.: "ERICOACOARA" em vez de "JERICOACOARA"). A inicial deve ter a MESMA altura e visibilidade que as demais letras.
-4. Símbolo de moeda SEMPRE "R$" (R maiúsculo + cifrão). Nunca "RS", "R5", "R\$", "BS", "B$".
-5. Números com 4+ dígitos SEMPRE com ponto de milhar: "1.499,00" — nunca "1499,00" ou "1.499.00".
-6. Acentos obrigatórios: "Café", "manhã", "Preço", "disponibilidade", "não", "inclusos".
-7. Antes de entregar, reler MENTALMENTE cada palavra do banner e corrigir QUALQUER caractere suspeito.
 ══════════════════════════════════════
+🔤 DICIONÁRIO ANTI-ERRO — PALAVRAS QUE O MODELO COSTUMA ERRAR
+══════════════════════════════════════
+Estas são as palavras em português que modelos de geração de imagem mais erram. Use SEMPRE a grafia da coluna CERTO. NUNCA a coluna ERRADO.
+
+MOEDA E NÚMEROS:
+  ❌ "RS 149,90"     ✅ "R$ 149,90"        (símbolo é R + cifrão, sem espaço entre R e $)
+  ❌ "R5 149,90"     ✅ "R$ 149,90"        (cifrão "$", não o número "5")
+  ❌ "B$ 149,90"     ✅ "R$ 149,90"        (letra "R", não "B")
+  ❌ "RS\$ 149,90"   ✅ "R$ 149,90"
+  ❌ "1499,00"       ✅ "1.499,00"         (ponto de milhar obrigatório a partir de 1.000)
+  ❌ "1.499.00"      ✅ "1.499,00"         (centavos com VÍRGULA, nunca ponto)
+  ❌ "1,499,00"      ✅ "1.499,00"         (milhar com PONTO, nunca vírgula)
+  ❌ "10X"           ✅ "10x"              (x minúsculo nas parcelas)
+
+ALIMENTAÇÃO E HOSPEDAGEM:
+  ❌ "Café da mênha"      ✅ "Café da manhã"
+  ❌ "Café da mânha"      ✅ "Café da manhã"
+  ❌ "Café da manha"      ✅ "Café da manhã"  (til no "a" final é obrigatório)
+  ❌ "Cafe da manhã"      ✅ "Café da manhã"  (acento agudo no "e")
+  ❌ "Almolço"            ✅ "Almoço"
+  ❌ "Hospedajem"         ✅ "Hospedagem"
+  ❌ "Hotell"             ✅ "Hotel"
+  ❌ "Pousadda"           ✅ "Pousada"
+  ❌ "Reffeições"         ✅ "Refeições"
+  ❌ "Transffer"          ✅ "Transfer"
+
+CIDADES E DESTINOS BRASILEIROS:
+  ❌ "Fortalesa"          ✅ "Fortaleza"
+  ❌ "Maseió"             ✅ "Maceió"
+  ❌ "Jericoacora"        ✅ "Jericoacoara"
+  ❌ "Jiricoacoara"       ✅ "Jericoacoara"
+  ❌ "ERICOACOARA"        ✅ "JERICOACOARA"  (NUNCA cortar o "J" inicial)
+  ❌ "Cancum"             ✅ "Cancún"
+  ❌ "Buzzios"            ✅ "Búzios"
+  ❌ "Florianopolis"      ✅ "Florianópolis"
+  ❌ "Fernando de Noronia" ✅ "Fernando de Noronha"
+  ❌ "Porto Segurro"      ✅ "Porto Seguro"
+  ❌ "Salvadorr"          ✅ "Salvador"
+  ❌ "Recifie"            ✅ "Recife"
+  ❌ "Natall"             ✅ "Natal"
+  ❌ "Pipa"               ✅ "Pipa"
+  ❌ "Gramaddo"           ✅ "Gramado"
+  ❌ "Bonitto"            ✅ "Bonito"
+
+PALAVRAS COMERCIAIS E LEGAIS:
+  ❌ "dispatbibiiibade"   ✅ "disponibilidade"
+  ❌ "dispobibibidade"    ✅ "disponibilidade"
+  ❌ "disponiblidade"     ✅ "disponibilidade"
+  ❌ "Consultte"          ✅ "Consulte"
+  ❌ "Reservaa"           ✅ "Reserva"
+  ❌ "Reservar agorra"    ✅ "Reservar agora"
+  ❌ "Garantta"           ✅ "Garanta"
+  ❌ "Compree"            ✅ "Compre"
+  ❌ "Aproveite"          ✅ "Aproveite"
+  ❌ "Imperdivel"         ✅ "Imperdível"
+  ❌ "Promosão"           ✅ "Promoção"
+  ❌ "Ofertta"            ✅ "Oferta"
+  ❌ "Excluziva"          ✅ "Exclusiva"
+  ❌ "Ultimas"            ✅ "Últimas"
+  ❌ "Vagass"             ✅ "Vagas"
+  ❌ "Pacotte"            ✅ "Pacote"
+  ❌ "Voo + Hotell"       ✅ "Voo + Hotel"
+  ❌ "Aereo"              ✅ "Aéreo"
+  ❌ "PIIX"               ✅ "PIX"
+  ❌ "Sem juross"         ✅ "Sem juros"
+  ❌ "Saindoo"            ✅ "Saindo"
+  ❌ "Taxass"             ✅ "Taxas"
+  ❌ "impostoss"          ✅ "impostos"
+  ❌ "incluzos"           ✅ "inclusos"
+  ❌ "Preçço"             ✅ "Preço"
+  ❌ "Preco"              ✅ "Preço"  (cedilha obrigatória)
+  ❌ "naum"               ✅ "não"
+  ❌ "nao"                ✅ "não"
+
+══════════════════════════════════════
+🔍 CHECKLIST DE PURGA ORTOGRÁFICA (REVISAR ANTES DE FINALIZAR)
+══════════════════════════════════════
+Para CADA palavra renderizada na imagem, validar mentalmente:
+
+1. ✓ É uma palavra REAL do português brasileiro (existe no dicionário)?
+2. ✓ Tem o NÚMERO EXATO de letras da palavra original (sem letras a mais ou a menos)?
+3. ✓ Não tem "letras fantasmas" — repetições aleatórias de "i", "b", "p", "l", "s", "t" no meio?
+4. ✓ Não tem letras coladas/fundidas que parecem outra letra?
+5. ✓ A PRIMEIRA letra de cada palavra está visível e do MESMO tamanho que as demais? (jamais cortar inicial — "ERICOACOARA" é ERRO)
+6. ✓ A ÚLTIMA letra de cada palavra está completa, sem cortes?
+7. ✓ Símbolo de moeda é "R$" (R maiúsculo + cifrão "$")? Nunca "RS", "R5", "B$", "BS".
+8. ✓ Números acima de 999 têm PONTO de milhar e VÍRGULA nos centavos? ("1.499,00")
+9. ✓ Acentos obrigatórios presentes: "Café", "manhã", "Preço", "disponibilidade", "não", "inclusos", "Aéreo", "Últimas", "Búzios", "Maceió", "Cancún", "Florianópolis"?
+10. ✓ Cedilha "ç" presente onde necessário: "Preço", "Promoção", "Almoço", "Refeições"?
+11. ✓ Til "~" presente em: "manhã", "não", "São", "Promoção"?
+12. ✓ Nenhuma palavra em inglês inventada substituindo palavra portuguesa?
+
+⚠️ Se QUALQUER palavra falhar em QUALQUER um dos 12 itens acima, REGENERAR aquela palavra do zero antes de finalizar a imagem. É preferível OMITIR um texto a renderizá-lo com erro ortográfico.
+
+⚠️ REGRA DE OURO: na dúvida sobre como soletrar, OMITIR a palavra. Texto faltando é menos grave que texto errado.
+══════════════════════════════════════
+
 
 🚫 REGRAS ABSOLUTAS ADICIONAIS:
 - GERAR UM ÚNICO BANNER PUBLICITÁRIO DE TURISMO. A saída deve conter APENAS 1 imagem única.
