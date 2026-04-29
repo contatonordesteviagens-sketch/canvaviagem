@@ -188,11 +188,16 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
     setSelectedPhotoUrl("");
     try {
       const { data, error } = await supabase.functions.invoke("fabrica-search-photos", {
-        body: { query: q, orientation: format === "story" ? "portrait" : "square", perPage: 12 },
+        body: { query: q, orientation: format === "story" ? "portrait" : "square", perPage: 24 },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      setPhotos(data?.photos || []);
+      const results = data?.photos || [];
+      const rotationKey = `fabrica_photo_search_rotation_${q.toLowerCase()}_${format}`;
+      const rotation = Number.parseInt(localStorage.getItem(rotationKey) || "0", 10) || 0;
+      localStorage.setItem(rotationKey, String(rotation + 5));
+      const rotated = results.length ? [...results.slice(rotation % results.length), ...results.slice(0, rotation % results.length)] : [];
+      setPhotos(rotated);
       if (!data?.photos?.length) toast.warning("Nenhuma foto encontrada — tente outro termo");
     } catch (err: any) {
       toast.error(err?.message || "Erro ao buscar fotos");
