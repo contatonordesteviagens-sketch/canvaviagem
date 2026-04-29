@@ -81,6 +81,35 @@ const PAYMENT_PRESETS: PaymentPreset[] = [
   { id: "custom_label",  name: "Personalizado",      emoji: "✏️", description: "Você escreve o rótulo livre",   hint: "Label livre + Valor" },
 ];
 
+const CATEGORY_LOCAL_STRATEGIES: Record<CategoriaId, StrategyId[]> = {
+  oferta_pacote: ["matriz", "gancho", "ancora", "vitrine"],
+  experiencia_destino: ["experiencia_hero", "experiencia_editorial", "experiencia_postcard", "experiencia_lifestyle"],
+};
+
+const scopedGenerationKey = (categoria: CategoriaId, genMode: GenMode, format: "square" | "story") =>
+  `fabrica_generation_cycle_${categoria}_${genMode}_${format}`;
+
+const scopedTemplateKey = (type: "last" | "recent", categoria: CategoriaId, genMode: GenMode) =>
+  `fabrica_${type}_template_ids_${categoria}_${genMode}`;
+
+const pickDistinctLocalStrategies = (categoria: CategoriaId, seed: number, count = 2): StrategyId[] => {
+  const pool = CATEGORY_LOCAL_STRATEGIES[categoria];
+  return Array.from({ length: Math.min(count, pool.length) }, (_, idx) => pool[(seed + idx) % pool.length]);
+};
+
+const pickPhotoRefs = (
+  photos: Array<{ id: number; url: string; thumb: string; alt: string }>,
+  selectedPhotoUrl: string,
+  seed: number,
+  count: number,
+) => {
+  const unique = Array.from(new Set(photos.map((p) => p.url).filter(Boolean)));
+  if (unique.length === 0) return Array.from({ length: count }, () => selectedPhotoUrl);
+  const selectedIdx = Math.max(0, unique.findIndex((url) => url === selectedPhotoUrl));
+  const start = unique.length > 1 ? (selectedIdx + seed) % unique.length : selectedIdx;
+  return Array.from({ length: count }, (_, idx) => unique[(start + idx) % unique.length] || selectedPhotoUrl);
+};
+
 export const Phase3ArtFactory = ({ onNext }: Props) => {
   const { state, update } = useFabricaContext();
   const [categoria, setCategoria] = useState<CategoriaId>("oferta_pacote");
