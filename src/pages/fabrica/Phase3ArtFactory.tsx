@@ -382,6 +382,14 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               paymentSuffix: paymentSuffix || undefined,
               strategy: "experiencia_hero",
             });
+            if (state.logoBase64) {
+              try {
+                const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
+                img = await composeLogoOnImage(img, state.logoBase64);
+              } catch (e) {
+                console.warn("Falha ao compor logo:", e);
+              }
+            }
           }
           images.push(img);
           if (result.data.provider) providerSeen = result.data.provider;
