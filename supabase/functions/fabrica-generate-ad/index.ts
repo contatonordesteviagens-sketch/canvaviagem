@@ -391,6 +391,14 @@ ${RULES}`;
 function buildTextFreeDestinationPrompt(p: AdParams): string {
   const dest = p.destination || "destino paradisíaco";
   const scene = nicheToScene(p.niche, dest);
+  const variation = Math.abs(p.variation ?? 0);
+  const visualDirectives = [
+    "ENQUADRAMENTO: foto full-bleed panorâmica com horizonte amplo e muito céu/mar; sensação contemplativa e premium.",
+    "ENQUADRAMENTO: close lifestyle natural, pessoas pequenas no cenário, luz quente e sensação de momento real.",
+    "ENQUADRAMENTO: vista aérea/drone com linhas gráficas da paisagem, textura de praia/cidade/natureza bem diferente da anterior.",
+    "ENQUADRAMENTO: detalhe sensorial do destino (arquitetura, barco, areia, gastronomia local sem texto), fundo desfocado e atmosfera editorial.",
+    "ENQUADRAMENTO: perspectiva baixa cinematográfica, profundidade forte, luz de fim de tarde e composição dramática.",
+  ];
   const formatLine = (p.format || "story") === "story"
     ? "formato vertical 9:16, enquadramento de celular em pé, 1080x1920"
     : "formato quadrado 1:1, 1080x1080";
@@ -399,6 +407,10 @@ function buildTextFreeDestinationPrompt(p: AdParams): string {
 Fotografia turística hiper-realista de ${dest}, ${formatLine}, qualidade editorial premium, iluminação natural cinematográfica.
 
 CENA: ${scene}.
+
+VARIAÇÃO OBRIGATÓRIA DESTA GERAÇÃO:
+ID ${variation}. ${visualDirectives[variation % visualDirectives.length]}
+Nunca repetir o enquadramento, iluminação, composição ou clima visual da geração anterior. Se parecer a mesma foto com outro destino, está errado.
 
 REGRAS ABSOLUTAS:
 - GERAR APENAS UMA ÚNICA FOTO FINAL, full-bleed, preenchendo 100% da tela.
