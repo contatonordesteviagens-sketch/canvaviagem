@@ -379,6 +379,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const variant = Math.abs(variation) % 3;
     ctx.fillStyle = primaryColor;
     ctx.fillRect(0, 0, width, height);
+    const logoReservedY = hasLogo ? 170 : 70;
 
     if (variant === 1) {
       const photoW = 500;
@@ -410,9 +411,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       grad.addColorStop(1, "rgba(0,0,0,0.42)");
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, width, photoH);
-      drawBadge(left, 70, 420);
+      drawBadge(left, logoReservedY, 420);
       ctx.fillStyle = "#ffffff";
-      drawTextBlock(ctx, titleText, left, 178, contentWidth - 80, 66, 2, { baseFontSize: 64, minFontSize: 38 });
+      drawTextBlock(ctx, titleText, left, logoReservedY + 108, contentWidth - 80, 66, 2, { baseFontSize: 64, minFontSize: 38 });
 
       const cardY = 640;
       fillRoundRect(ctx, left, cardY, contentWidth, 360, 38, primaryColor);
