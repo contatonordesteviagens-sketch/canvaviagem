@@ -734,8 +734,8 @@ BRIEFING DO ANÚNCIO:
             role: "user",
             content: isOferta
               ? [
-                  { type: "text", text: refInstruction + prompt },
                   { type: "image_url", image_url: { url: CVC_REF_URL } },
+                  { type: "text", text: refInstruction + prompt },
                 ]
               : prompt,
           }],
