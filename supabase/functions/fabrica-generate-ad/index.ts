@@ -403,7 +403,7 @@ CENA: ${scene}.
 REGRAS ABSOLUTAS:
 - GERAR APENAS UMA ÚNICA FOTO FINAL, full-bleed, preenchendo 100% da tela.
 - PROIBIDO qualquer divisão de tela, colagem, grid, duas fotos, três fotos, moldura, cartão, pôster, mockup ou variações lado a lado.
-- PROIBIDO qualquer texto, letra, palavra, número, preço, legenda, placa legível, logo, marca d'água, botão, selo ou tipografia.
+- PROIBIDO qualquer texto, letra, palavra, número, preço, legenda, letreiro, placa legível, outdoor, cardápio, fachada com escrita, logo, marca d'água, botão, selo ou tipografia.
 - Deixar área visual limpa no centro inferior para o app aplicar textos depois, mas sem renderizar nenhum texto agora.
 - Pessoas e cenário naturais, sem deformações anatômicas, sem objetos duplicados, sem aparência artificial.
 
