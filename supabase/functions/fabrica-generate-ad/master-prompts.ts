@@ -206,72 +206,85 @@ uma abordagem criativa única. NUNCA uma repetição.
 // indexado pelo creativeSeed (timestamp+template+variação),
 // garantindo variação real de copy entre gerações consecutivas.
 // ============================================================
-const HEADLINE_POOLS_EXPERIENCIA: Record<string, ((d: string) => string)[]> = {
-  convite: [
-    () => `Momentos que ficam para sempre`,
-    (d) => `O melhor de ${d}`,
-    () => `Seu próximo destino é esse`,
-  ],
-  emocional: [
-    () => `Dias que você não esquece`,
-    () => `Um lugar para se desconectar`,
-    () => `Onde tudo faz sentido`,
-  ],
-  experiencia: [
-    () => `Dias inesquecíveis começam aqui`,
-    (d) => `Sua próxima história começa em ${d}`,
-    () => `Mais que uma viagem, uma experiência`,
-  ],
-  impactante: [
-    (d) => `${d} como você nunca viu`,
-    () => `Uma experiência diferente de tudo`,
-    () => `A viagem que muda o ritmo`,
-  ],
-  inspiracional: [
-    () => `Permita-se viver isso`,
-    () => `Você merece esse destino`,
-    () => `O mundo te espera`,
-  ],
-  acao_leve: [
-    () => `Partiu viajar?`,
-    () => `Hora de arrumar as malas`,
-    () => `Bora viajar?`,
-  ],
-};
+// ============================================================
+// 🎨 POOLS DE HEADLINES — SET NOVO (Regra 5 do usuário)
+// ------------------------------------------------------------
+// 🚫 BANIDOS PARA SEMPRE: "Conheça X", "Viva X", "Explore X", "Descubra X".
+// Apenas frases editoriais sem padrão "verbo + destino".
+// O backend recebe `forbiddenHeadlines[]` do cliente (GenerationGuard) e
+// PROÍBE qualquer escolha que tenha aparecido nas últimas N gerações.
+// ============================================================
 
-const HEADLINE_STYLE_ORDER = [
-  "convite",
-  "emocional",
-  "experiencia",
-  "impactante",
-  "inspiracional",
-  "acao_leve",
+const HEADLINE_POOL_EXPERIENCIA: ((d: string) => string)[] = [
+  () => `Momentos que ficam para sempre`,
+  (d) => `O melhor de ${d}`,
+  () => `Seu próximo destino é esse`,
+  () => `Dias inesquecíveis começam aqui`,
+  () => `Uma experiência única`,
+  () => `Partiu viajar?`,
+  () => `Dias que você não esquece`,
+  () => `Um lugar para se desconectar`,
+  () => `Onde tudo faz sentido`,
+  () => `Mais que uma viagem, uma experiência`,
+  () => `Permita-se viver isso`,
+  () => `Você merece esse destino`,
+  () => `O mundo te espera`,
+  () => `Hora de arrumar as malas`,
+  () => `Bora viajar?`,
+  (d) => `${d} te espera`,
+  (d) => `Sua próxima história começa em ${d}`,
+  () => `A viagem que muda o ritmo`,
 ];
 
 const HEADLINE_POOL_OFERTA: ((d: string) => string)[] = [
   (d) => `Pacote especial para ${d}`,
-  () => `Partiu viajar?`,
-  (d) => `O melhor de ${d}`,
-  () => `Seu próximo destino é esse`,
-  () => `Preço especial para viajar`,
   () => `Férias com tudo resolvido`,
+  () => `Preço especial para viajar`,
+  () => `Seu próximo destino é esse`,
+  (d) => `O melhor de ${d}`,
+  () => `Partiu viajar?`,
+  () => `Hora de arrumar as malas`,
+  (d) => `Sua viagem para ${d}`,
+  () => `Tudo incluso, sem complicação`,
+  () => `Reserva já garantida`,
 ];
 
-/**
- * Escolhe um headline rotativo da categoria Experiência.
- * Usa o creativeSeed (que muda a cada geração) para forçar variação real.
- */
-function pickExperienciaHeadline(destination: string, creativeSeed: string): string {
-  const seedSum = [...creativeSeed].reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  const styleKey = HEADLINE_STYLE_ORDER[seedSum % HEADLINE_STYLE_ORDER.length];
-  const pool = HEADLINE_POOLS_EXPERIENCIA[styleKey];
-  const builder = pool[Math.floor(seedSum / HEADLINE_STYLE_ORDER.length) % pool.length];
-  return builder(destination);
+function normalize(s: string): string {
+  return s.toLowerCase().trim();
 }
 
-function pickOfertaHeadline(destination: string, creativeSeed: string): string {
+function pickFromPool(
+  pool: ((d: string) => string)[],
+  destination: string,
+  creativeSeed: string,
+  forbidden: string[] = [],
+): string {
+  const banned = new Set(forbidden.map(normalize));
   const seedSum = [...creativeSeed].reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return HEADLINE_POOL_OFERTA[seedSum % HEADLINE_POOL_OFERTA.length](destination);
+  // Tenta até encontrar uma frase fora do bloqueio
+  for (let i = 0; i < pool.length; i++) {
+    const idx = (seedSum + i) % pool.length;
+    const candidate = pool[idx](destination);
+    if (!banned.has(normalize(candidate))) return candidate;
+  }
+  // Todas bloqueadas → libera a mais "antiga" (primeira fora do mais recente)
+  return pool[seedSum % pool.length](destination);
+}
+
+function pickExperienciaHeadline(
+  destination: string,
+  creativeSeed: string,
+  forbidden: string[] = [],
+): string {
+  return pickFromPool(HEADLINE_POOL_EXPERIENCIA, destination, creativeSeed, forbidden);
+}
+
+function pickOfertaHeadline(
+  destination: string,
+  creativeSeed: string,
+  forbidden: string[] = [],
+): string {
+  return pickFromPool(HEADLINE_POOL_OFERTA, destination, creativeSeed, forbidden);
 }
 
 
