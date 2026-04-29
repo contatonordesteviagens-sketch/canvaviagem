@@ -60,9 +60,9 @@ const FabricaInner = () => {
               key={p.num}
               onClick={() => setPhase(p.num)}
               className={`px-2.5 py-1 rounded text-[11px] font-semibold whitespace-nowrap border transition-colors ${
-                state.currentPhase === p.num ? "text-black" : "text-white/60 border-white/10 bg-white/[0.04] hover:border-white/30"
+                state.currentPhase === p.num ? "" : "text-white/60 border-white/10 bg-white/[0.04] hover:border-white/30"
               }`}
-              style={state.currentPhase === p.num ? { background: state.primaryColor, borderColor: state.primaryColor } : undefined}
+              style={state.currentPhase === p.num ? { background: state.primaryColor, borderColor: state.primaryColor, color: onPrimaryText } : undefined}
             >
               F{p.num}
             </button>
