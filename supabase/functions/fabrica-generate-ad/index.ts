@@ -659,7 +659,7 @@ BRIEFING DO ANÚNCIO:
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                contents: [{ parts: [{ text: promptText }, ...refParts] }],
+                contents: [{ parts: [...refParts, { text: promptText }] }],
                 generationConfig: {
                   responseModalities: ["IMAGE", "TEXT"],
                   temperature: imageTemperature,
