@@ -121,6 +121,23 @@ PREÇO É OPCIONAL E DISCRETO: se inserir, use APENAS um pequeno texto fino "A p
 
   const categoryRules = opts.category === "oferta" ? OFERTA_RULES : EXPERIENCIA_RULES;
   const creativeSeed = v.creativeSeed || `${opts.category}-${opts.layout.slice(0, 24)}`;
+  const variationDirectives = opts.category === "oferta"
+    ? [
+        "ângulo fotográfico comercial amplo + bloco de preço em posição dominante diferente da geração anterior",
+        "foto com profundidade lateral + cartão de oferta deslocado, nunca central igual ao anterior",
+        "enquadramento aéreo/drone + estrutura de venda direta com ritmo tipográfico novo",
+        "hero de destino com painel de conversão separado e composição assimétrica inédita",
+      ]
+    : [
+        "fotografia full-bleed contemplativa, sem cartão; texto leve no centro seguro",
+        "momento lifestyle com pessoas naturais e narrativa emocional; sem preço protagonista",
+        "composição editorial minimalista com muito respiro e oferta omitida ou minúscula",
+        "página de revista de viagem com fotografia protagonista e detalhes discretos",
+      ];
+  const variationIndex = Math.abs([...creativeSeed].reduce((acc, char) => acc + char.charCodeAt(0), 0)) % variationDirectives.length;
+  const promoLine = opts.category === "oferta"
+    ? `Selo promocional: "${v.promoName}"`
+    : `Chamada editorial secundária: "${opts.experienceDescription || `Viva ${v.destination} com calma, beleza e curadoria.`}" — sem selo promocional, sem urgência e sem linguagem de oferta.`;
 
   return `
 Um banner publicitário vertical de turismo (formato 9:16, resolução 8K), hiper-realista, com qualidade cinematográfica, iluminação natural ou dramática altamente refinada e composição profissional de nível publicitário.
@@ -131,7 +148,8 @@ A composição segue o layout: ${opts.layout}.
 
 [VARIAÇÃO CRIATIVA OBRIGATÓRIA]
 ID de variação: ${creativeSeed}.
-Mesmo que destino, preço e benefícios sejam parecidos com uma geração anterior, crie uma interpretação visual nova: novo enquadramento fotográfico, nova posição dos blocos, nova proporção de cartão/faixa, novo ritmo tipográfico e nova distribuição de respiro. Não repita a composição anterior.
+Direção única desta geração: ${variationDirectives[variationIndex]}.
+Mesmo que destino, preço e benefícios sejam parecidos com uma geração anterior, crie uma interpretação visual nova: novo enquadramento fotográfico, nova posição dos blocos, nova proporção visual, novo ritmo tipográfico e nova distribuição de respiro. Não repita a composição anterior e não reaproveite o mesmo prompt visual da outra categoria.
 
 [REFERÊNCIAS DE ESTILO]
 Use a biblioteca de referências de anúncios enviada pelo usuário APENAS como inspiração estrutural: divisão 60/40 foto + base sólida, cartão amarelo de pacote, faixa lateral vibrante, selo tipo bilhete Pix, layout editorial topo/base e grid editorial de experiências. NÃO copie destinos, preços, datas, hotéis, textos legais ou informações fixas dessas referências. Os únicos dados permitidos são os dados preenchidos no formulário abaixo.
@@ -145,7 +163,7 @@ Paleta principal: cor primária ${v.primaryHex}, cor secundária ${v.secondaryHe
 
 Título/Chamada: "${opts.headline}"
 Destino destacado: "${v.destination}"
-Selo promocional: "${v.promoName}"
+${promoLine}
 
 ${valueBlock}
 
