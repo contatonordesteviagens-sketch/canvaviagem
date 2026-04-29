@@ -22,6 +22,7 @@ interface Highlight {
 interface AdParams {
   strategy: Strategy;
   format?: Format; // "square" 1:1 ou "story" 9:16
+  photoOnly?: boolean; // gera apenas fotografia limpa; textos serão compostos no canvas do app
   destination: string;
   niche?: string;
   agencyName?: string;
@@ -387,6 +388,29 @@ ${RULES}`;
   return `Imagem promocional de turismo de "${agency}" para ${dest}. ${RULES}`;
 }
 
+function buildTextFreeDestinationPrompt(p: AdParams): string {
+  const dest = p.destination || "destino paradisíaco";
+  const scene = nicheToScene(p.niche, dest);
+  const formatLine = (p.format || "story") === "story"
+    ? "formato vertical 9:16, enquadramento de celular em pé, 1080x1920"
+    : "formato quadrado 1:1, 1080x1080";
+
+  return `
+Fotografia turística hiper-realista de ${dest}, ${formatLine}, qualidade editorial premium, iluminação natural cinematográfica.
+
+CENA: ${scene}.
+
+REGRAS ABSOLUTAS:
+- GERAR APENAS UMA ÚNICA FOTO FINAL, full-bleed, preenchendo 100% da tela.
+- PROIBIDO qualquer divisão de tela, colagem, grid, duas fotos, três fotos, moldura, cartão, pôster, mockup ou variações lado a lado.
+- PROIBIDO qualquer texto, letra, palavra, número, preço, legenda, letreiro, placa legível, outdoor, cardápio, fachada com escrita, logo, marca d'água, botão, selo ou tipografia.
+- Deixar área visual limpa no centro inferior para o app aplicar textos depois, mas sem renderizar nenhum texto agora.
+- Pessoas e cenário naturais, sem deformações anatômicas, sem objetos duplicados, sem aparência artificial.
+
+Resultado: uma foto única, limpa e realista do destino, pronta para receber layout e textos pelo sistema.
+`;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -400,8 +424,8 @@ serve(async (req) => {
 
     const body = (await req.json()) as AdParams;
 
-    // templateId tem prioridade sobre strategy. Sem templateId, exige strategy válida.
-    if (!body.templateId) {
+    // templateId tem prioridade sobre strategy. Photo-only dispensa strategy legada.
+    if (!body.templateId && !body.photoOnly) {
       if (!body.strategy || !["ancora", "vitrine", "matriz", "gancho"].includes(body.strategy)) {
         return new Response(JSON.stringify({ error: "Invalid strategy" }), {
           status: 400,
@@ -418,7 +442,9 @@ serve(async (req) => {
     let prompt: string;
     let usedTemplateId: string | null = null;
 
-    if (body.templateId) {
+    if (body.photoOnly) {
+      prompt = buildTextFreeDestinationPrompt(finalBody);
+    } else if (body.templateId) {
       const tpl = getTemplateById(body.templateId);
       if (!tpl) {
         return new Response(JSON.stringify({ error: `Template ${body.templateId} not found` }), {
@@ -457,6 +483,9 @@ serve(async (req) => {
     } else {
       prompt = buildPrompt(finalBody);
     }
+
+    const imageTemperature = body.photoOnly ? 0.72 : 1.18;
+    const imageTopP = body.photoOnly ? 0.88 : 0.96;
 
     // Estratégia de provider: tenta USER_GEMINI primeiro, faz fallback para Lovable AI
     const useUserKey = !!USER_GEMINI_API_KEY;
@@ -498,8 +527,8 @@ serve(async (req) => {
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
                   responseModalities: ["IMAGE", "TEXT"],
-                  temperature: 1.18,
-                  topP: 0.96,
+                  temperature: imageTemperature,
+                  topP: imageTopP,
                   maxOutputTokens: 8192,
                 },
               }),
@@ -568,8 +597,8 @@ serve(async (req) => {
           model: "google/gemini-3.1-flash-image-preview",
           messages: [{ role: "user", content: prompt }],
           modalities: ["image", "text"],
-          temperature: 1.18,
-          top_p: 0.96,
+          temperature: imageTemperature,
+          top_p: imageTopP,
           max_tokens: 8192,
         }),
       });

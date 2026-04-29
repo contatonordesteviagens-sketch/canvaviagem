@@ -311,18 +311,21 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         return;
       }
 
-      // ===== MODO IA PURA: gera 2 imagens escolhendo prompts distintos da categoria =====
+      // ===== MODO IA PURA: gera prompts da categoria; Experiência/Stories usa fluxo seguro sem texto da IA =====
       if (genMode === "ai") {
         const cat = getCategoria(categoria);
+        const isAiExperienceStory = categoria === "experiencia_destino" && format === "story";
         const categoryLastKey = scopedTemplateKey("last", categoria, genMode);
         const categoryRecentKey = scopedTemplateKey("recent", categoria, genMode);
         const storedLast = localStorage.getItem(categoryLastKey) || (cat.prompts.some((p) => p.templateId === lastTemplateId) ? lastTemplateId : null);
         let storedRecent: string[] = [];
         try { storedRecent = JSON.parse(localStorage.getItem(categoryRecentKey) || "[]"); }
         catch { storedRecent = []; }
-        const picks = pickPromptsForCategoria(categoria, 2, storedLast, storedRecent);
+        const picks = isAiExperienceStory
+          ? [{ code: "ED_SAFE_STORY", templateId: "photo_only_experience_story" }]
+          : pickPromptsForCategoria(categoria, 2, storedLast, storedRecent);
 
-        toast.info(`Gerando 2 variações em IA Pura — ${cat.name}`);
+        toast.info(`Gerando ${picks.length} ${picks.length === 1 ? "variação" : "variações"} em IA Pura — ${cat.name}`);
 
         const results = await Promise.all(
           picks.map((pick, idx) => supabase.functions.invoke("fabrica-generate-ad", {
@@ -342,7 +345,8 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
               promoName,
               highlights,
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
-              templateId: pick.templateId,
+              templateId: isAiExperienceStory ? undefined : pick.templateId,
+              photoOnly: isAiExperienceStory,
               variation: generationSeed + idx,
               packageType: "Voo + Hotel",
               duration: "5 NOITES",
@@ -360,6 +364,33 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
           let img = result.data.image as string;
           try { img = await reframeImageToAspect(img, format); }
           catch (e) { console.warn("reframe failed", e); }
+          if (isAiExperienceStory) {
+            img = await composeTravelAd({
+              imageUrl: img,
+              format,
+              destination,
+              city: state.city,
+              primaryColor,
+              secondaryColor,
+              price,
+              installments,
+              promoName,
+              highlights,
+              hasLogo: !!state.logoBase64,
+              paymentMode,
+              paymentLabel: paymentLabel || undefined,
+              paymentSuffix: paymentSuffix || undefined,
+              strategy: "experiencia_hero",
+            });
+            if (state.logoBase64) {
+              try {
+                const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
+                img = await composeLogoOnImage(img, state.logoBase64);
+              } catch (e) {
+                console.warn("Falha ao compor logo:", e);
+              }
+            }
+          }
           images.push(img);
           if (result.data.provider) providerSeen = result.data.provider;
         }
@@ -370,22 +401,24 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         if (providerSeen) setLastProvider(providerSeen);
 
         // Persiste o último prompt usado para a próxima rotação não repetir
-        const usedTemplateIds = picks.map((p) => p.templateId);
+        const usedTemplateIds = isAiExperienceStory ? [] : picks.map((p) => p.templateId);
         const lastUsed = usedTemplateIds[usedTemplateIds.length - 1];
-        const nextRecent = [...usedTemplateIds, ...storedRecent.filter((id) => !usedTemplateIds.includes(id))].slice(0, Math.max(1, cat.prompts.length - usedTemplateIds.length));
-        setLastTemplateId(lastUsed);
-        setRecentTemplateIds(nextRecent);
-        localStorage.setItem(categoryLastKey, lastUsed);
-        localStorage.setItem(categoryRecentKey, JSON.stringify(nextRecent));
-        localStorage.setItem("fabrica_last_template_id", lastUsed);
-        localStorage.setItem("fabrica_recent_template_ids", JSON.stringify(nextRecent));
+        const nextRecent = isAiExperienceStory ? storedRecent : [...usedTemplateIds, ...storedRecent.filter((id) => !usedTemplateIds.includes(id))].slice(0, Math.max(1, cat.prompts.length - usedTemplateIds.length));
+        if (!isAiExperienceStory && lastUsed) {
+          setLastTemplateId(lastUsed);
+          setRecentTemplateIds(nextRecent);
+          localStorage.setItem(categoryLastKey, lastUsed);
+          localStorage.setItem(categoryRecentKey, JSON.stringify(nextRecent));
+          localStorage.setItem("fabrica_last_template_id", lastUsed);
+          localStorage.setItem("fabrica_recent_template_ids", JSON.stringify(nextRecent));
+        }
 
         const newCount = generationCount + images.length;
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
         finishCycle(images.length);
 
-        toast.success(`2 variações geradas — ${cat.name}`);
+        toast.success(`${images.length} ${images.length === 1 ? "variação gerada" : "variações geradas"} — ${cat.name}`);
         return;
       }
 
