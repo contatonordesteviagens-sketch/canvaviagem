@@ -71,15 +71,9 @@ interface PaymentPreset {
 }
 
 const PAYMENT_PRESETS: PaymentPreset[] = [
-  { id: "installments",  name: "Parcelado",          emoji: "💳", description: "Ex: 10x R$ 149,90",            hint: "Parcelas: 10x · Valor: 149,90" },
-  { id: "cash",          name: "À vista",            emoji: "💰", description: "Ex: À VISTA R$ 1.499",         hint: "Valor: 1.499" },
-  { id: "cash_discount", name: "À vista c/ desconto",emoji: "🏷️", description: "Ex: À VISTA · 5% OFF",          hint: "Valor já com desconto" },
-  { id: "from",          name: "A partir de",        emoji: "🚀", description: "Ex: A PARTIR DE R$ 1.499",     hint: "Valor mínimo do pacote" },
-  { id: "daily",         name: "Diária",             emoji: "🛏️", description: "Ex: R$ 149/diária",             hint: "Valor por diária" },
-  { id: "monthly",       name: "Mensal",             emoji: "📅", description: "Ex: R$ 149/mês",                hint: "Valor por mês" },
-  { id: "down_plus",     name: "Entrada + parcelas", emoji: "💵", description: "Ex: ENTRADA + 10x R$ 149",      hint: "Parcelas (rótulo): ENTRADA R$ 200 + 10x · Valor: 149" },
-  { id: "free_quote",    name: "Sob consulta",       emoji: "💬", description: "Ex: CONSULTE no WhatsApp",      hint: "Sem valor — direciona pra conversa" },
-  { id: "custom_label",  name: "Personalizado",      emoji: "✏️", description: "Você escreve o rótulo livre",   hint: "Label livre + Valor" },
+  { id: "installments", name: "Parcelado",          emoji: "💳", description: "Ex: 10x R$ 149,90",       hint: "Parcelas: 10x · Valor: 149,90" },
+  { id: "cash",         name: "À vista",            emoji: "💰", description: "Ex: À VISTA R$ 1.499",    hint: "Valor: 1.499" },
+  { id: "down_plus",    name: "Entrada + parcelas", emoji: "💵", description: "Ex: ENTRADA + 10x R$ 149", hint: "Parcelas: ENTRADA R$ 200 + 10x · Valor: 149" },
 ];
 
 const CATEGORY_LOCAL_STRATEGIES: Record<CategoriaId, StrategyId[]> = {
@@ -925,7 +919,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
           <input value={promoName} onChange={(e) => setPromoName(e.target.value)} placeholder="Ex: BLACK FRIDAY" className={inputCls} />
         </div>
 
-        {/* Modo de pagamento */}
+        {/* Modo de pagamento — compacto */}
         <div>
           <label className={labelCls}>Modo de exibição do preço</label>
           <div className="grid grid-cols-3 gap-1.5 mb-3">
@@ -937,81 +931,48 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
                   setPaymentLabel("");
                   setPaymentSuffix("");
                 }}
-                className={`p-2 rounded-lg border-2 text-left transition-all ${
+                className={`px-2 py-1.5 rounded-lg border-2 text-center transition-all ${
                   paymentMode === p.id ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
                 }`}
                 style={paymentMode === p.id ? { borderColor: secondaryColor, background: `${secondaryColor}1a` } : undefined}
                 title={p.description}
               >
-                <div className="text-base leading-none mb-1">{p.emoji}</div>
-                <div className="text-[11px] font-bold text-white leading-tight">{p.name}</div>
-                <div className="text-[9px] text-white/45 leading-tight mt-0.5">{p.description}</div>
+                <span className="text-sm mr-1">{p.emoji}</span>
+                <span className="text-[11px] font-bold text-white">{p.name}</span>
               </button>
             ))}
           </div>
-          <p className="text-[10px] text-white/40 mb-2">{PAYMENT_PRESETS.find((p) => p.id === paymentMode)?.hint}</p>
 
-          {/* Campos dinâmicos */}
-          {paymentMode === "free_quote" ? (
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Texto de chamada (sufixo)</label>
+              <label className={labelCls}>
+                {paymentMode === "installments" || paymentMode === "down_plus" ? "Parcelas / Rótulo" : "Rótulo (opcional)"}
+              </label>
               <input
-                value={paymentSuffix}
-                onChange={(e) => setPaymentSuffix(e.target.value)}
-                placeholder="no WhatsApp"
+                value={paymentMode === "installments" || paymentMode === "down_plus" ? installments : paymentLabel}
+                onChange={(e) =>
+                  paymentMode === "installments" || paymentMode === "down_plus"
+                    ? setInstallments(e.target.value)
+                    : setPaymentLabel(e.target.value)
+                }
+                placeholder={
+                  paymentMode === "installments" ? "10x" :
+                  paymentMode === "down_plus" ? "ENTRADA R$ 200 + 10x" :
+                  "À VISTA"
+                }
                 className={inputCls}
               />
             </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={labelCls}>
-                  {paymentMode === "installments" || paymentMode === "down_plus" ? "Parcelas / Rótulo" :
-                   paymentMode === "custom_label" ? "Rótulo livre" : "Rótulo (opcional)"}
-                </label>
-                <input
-                  value={paymentMode === "installments" || paymentMode === "down_plus" ? installments : paymentLabel}
-                  onChange={(e) =>
-                    paymentMode === "installments" || paymentMode === "down_plus"
-                      ? setInstallments(e.target.value)
-                      : setPaymentLabel(e.target.value)
-                  }
-                  placeholder={
-                    paymentMode === "installments" ? "10x" :
-                    paymentMode === "down_plus" ? "ENTRADA R$ 200 + 10x" :
-                    paymentMode === "cash" ? "À VISTA" :
-                    paymentMode === "cash_discount" ? "À VISTA · 5% OFF" :
-                    paymentMode === "from" ? "A PARTIR DE" :
-                    paymentMode === "daily" ? "DIÁRIA POR" :
-                    paymentMode === "monthly" ? "MENSAL POR" :
-                    "Rótulo"
-                  }
-                  className={inputCls}
-                />
-              </div>
-              <div>
-                <label className={labelCls}>Valor (R$)</label>
-                <input
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  placeholder="149,90"
-                  className={inputCls}
-                />
-              </div>
-            </div>
-          )}
-
-          {(paymentMode === "daily" || paymentMode === "monthly" || paymentMode === "custom_label") && (
-            <div className="mt-3">
-              <label className={labelCls}>Sufixo (opcional, ex: /pessoa, /diária, /mês)</label>
+            <div>
+              <label className={labelCls}>Valor (R$)</label>
               <input
-                value={paymentSuffix}
-                onChange={(e) => setPaymentSuffix(e.target.value)}
-                placeholder={paymentMode === "daily" ? "/diária" : paymentMode === "monthly" ? "/mês" : "/pessoa"}
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder="149,90"
                 className={inputCls}
               />
             </div>
-          )}
+          </div>
         </div>
 
         {/* Cor primária — agora editável */}
