@@ -28,6 +28,10 @@ export interface MasterPromptVars {
   agencyName: string;
   highlights: string[];
   creativeSeed?: string;
+  /** Headlines a EVITAR nesta geração (vindas do GenerationGuard do cliente). */
+  forbiddenHeadlines?: string[];
+  /** Layout/templateIds a EVITAR (apenas log/uso futuro). */
+  forbiddenLayouts?: string[];
 }
 
 // ============================================================
