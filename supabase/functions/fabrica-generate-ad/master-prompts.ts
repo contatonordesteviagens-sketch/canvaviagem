@@ -141,6 +141,9 @@ PREÇO É OPCIONAL E DISCRETO: se inserir, use APENAS um pequeno texto fino "A p
   const typographyHierarchy = opts.category === "oferta"
     ? "- PREÇO = maior elemento da composição (Ultra-Bold / Heavy).\n- DESTINO = segundo maior elemento (Bold)."
     : "- IMAGEM = protagonista absoluta; texto deve ser leve e elegante.\n- DESTINO = maior texto, mas sem competir com a fotografia.\n- PREÇO, se existir, deve ser o menor elemento informativo e nunca usar Ultra-Bold.";
+  const centerRule = opts.category === "oferta"
+    ? "- Centro de conversão obrigatório nos 65% centrais da imagem (preço, headline, destino e CTA)."
+    : "- Centro seguro obrigatório nos 65% centrais para título e narrativa; NÃO criar centro de conversão com preço/CTA grande.";
   const objectiveLine = opts.category === "oferta"
     ? "foco em legibilidade e alto impacto visual para conversão imediata."
     : "foco em emoção, desejo, fotografia premium e leitura elegante, sem aparência de oferta.";
@@ -194,7 +197,7 @@ A imagem deve ser gerada no formato Vertical 9:16 (resolução 8K). O motor de g
 2. POSICIONAMENTO:
 - Zero sobreposição entre elementos.
 - Espaçamento matemático e simétrico entre todos os blocos.
-- Centro de conversão obrigatório nos 65% centrais da imagem (preço, headline, destino e CTA).
+${centerRule}
 
 3. TIPOGRAFIA:
 ${typographyHierarchy}
