@@ -536,12 +536,19 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
 
       // ===== MODO CUSTOM (link/upload do usuário) — gera 1 imagem local, sem gastar créditos de IA =====
       toast.info("Gerando 1 imagem única com sua imagem");
-      const stratHistKeyCustom = scopedStrategyHistoryKey(categoria, genMode, format);
+      const guardCustom = getForbiddenSets(categoria, "custom", format);
+      const stratHistKeyCustom = scopedStrategyHistoryKey(categoria, "custom", format);
       let stratHistoryCustom: StrategyId[] = [];
       try { stratHistoryCustom = JSON.parse(localStorage.getItem(stratHistKeyCustom) || "[]"); } catch { stratHistoryCustom = []; }
-      const chosen = pickDistinctLocalStrategies(categoria, generationSeed, 1, stratHistoryCustom);
+      const mergedHistCustom = Array.from(new Set([...stratHistoryCustom, ...(guardCustom.layouts as StrategyId[])]));
+      const freshSeedCustom = freshSeed(generationSeed);
+      const chosen = pickDistinctLocalStrategies(categoria, freshSeedCustom, 1, mergedHistCustom);
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
-      const palette = pickGenerationPalette(categoria, generationSeed, primaryColor, secondaryColor);
+      let palette = pickGenerationPalette(categoria, freshSeedCustom, primaryColor, secondaryColor);
+      const palKeyC = (p: typeof palette) => `${p.primary.toLowerCase()}|${p.secondary.toLowerCase()}`;
+      if (guardCustom.palettes.includes(palKeyC(palette))) {
+        palette = pickGenerationPalette(categoria, freshSeedCustom + 7, primaryColor, secondaryColor);
+      }
 
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy) => {
@@ -561,7 +568,7 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
             paymentLabel: paymentLabel || undefined,
             paymentSuffix: paymentSuffix || undefined,
             strategy: localStrategy,
-            variation: generationSeed,
+            variation: freshSeedCustom,
           });
           if (state.logoBase64) {
             try {
@@ -574,6 +581,13 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
           return img;
         })
       );
+
+      registerGeneration(categoria, "custom", format, {
+        layoutId: chosen[0],
+        headline: promoName || "OFERTA ESPECIAL",
+        primary: palette.primary,
+        secondary: palette.secondary,
+      });
 
       setGeneratedImage(imagesCustom[0]);
       setGeneratedImages(imagesCustom);
