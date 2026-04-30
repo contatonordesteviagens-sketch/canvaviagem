@@ -139,14 +139,13 @@ const pickDistinctLocalStrategies = (
 const pickPhotoRefs = (
   photos: Array<{ id: number; url: string; thumb: string; alt: string }>,
   selectedPhotoUrl: string,
-  seed: number,
+  _seed: number,
   count: number,
 ) => {
-  const unique = Array.from(new Set(photos.map((p) => p.url).filter(Boolean)));
-  if (unique.length === 0) return Array.from({ length: count }, () => selectedPhotoUrl);
-  const selectedIdx = Math.max(0, unique.findIndex((url) => url === selectedPhotoUrl));
-  const start = unique.length > 1 ? (selectedIdx + seed) % unique.length : selectedIdx;
-  return Array.from({ length: count }, (_, idx) => unique[(start + idx) % unique.length] || selectedPhotoUrl);
+  // SEMPRE usa a foto que o usuário selecionou como primeira.
+  // Se não houver seleção, cai para a primeira da lista.
+  const primary = selectedPhotoUrl || photos[0]?.url || "";
+  return Array.from({ length: count }, () => primary);
 };
 
 export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
