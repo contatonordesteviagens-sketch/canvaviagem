@@ -594,10 +594,212 @@ export function promptTwoSceneEditorial(v: MasterPromptVars): string {
     specialization:
       "• Na área de cor sólida: APENAS '" + headline + "' como título. Fonte grande, espaçada, elegante.\n• NENHUM checklist, NENHUM preço, NENHUM selo.\n• A metade com foto deve ser UMA ÚNICA cena clara do destino, sem divisões ou colagens.\n• Estilo: página de revista de luxo.",
   });
-}
 
 // ============================================================
-// ⬛ AUTORIDADE PREMIUM (ESTILO KRIPTOPIX) — DK1..DK3
+// ⬛ AUTORIDADE PREMIUM (ESTILO KRIPTOPIX) — DK1..DK6
+// Referência visual: Kriptopix fintech — preto sólido + acento dourado/cor
+// TIPOGRAFIA OBRIGATÓRIA: fontes 100% preenchidas, sólidas, SEM borda, SEM outline
+// ============================================================
+
+// Helper para o aviso anti-neon que repete em todos os DK
+const DK_TYPOGRAPHY_RULE = `
+⚠️ TIPOGRAFIA — REGRA CRÍTICA (MAIS IMPORTANTE DE TODAS):
+As letras e números DEVEM ser SÓLIDOS e completamente PREENCHIDOS.
+PENSE ASSIM: o texto deve parecer impresso em papel ou numa tela LED — opaco, plano, sem efeito.
+PROIBIDO ABSOLUTAMENTE:
+- Letras com borda/contorno (outline font / stroke) — as que aparecem "vazadas" como néon de discoteca
+- Efeito neon, glow, halo, luminescência ou brilho colorido em qualquer texto
+- Fonte serifada ou manuscrita — use apenas sans-serif grotesca (tipo Inter Black, Helvetica Bold)
+CORRETO: texto branco sólido como numa tela de aplicativo financeiro (Nubank, Stripe, Itaú app)
+`;
+
+// DK1 — PESSOA EXECUTIVA + ÍCONES 3D VIAGEM FLUTUANDO
+export function promptDarkNeonGlassmorphism(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "dk1", v.forbiddenHeadlines);
+  return `
+Crie um banner publicitário de agência de viagens no estilo visual da marca Kriptopix (fintech brasileira premium).
+
+FUNDO: Preto absoluto (#0A0A0A). Sem gradientes, sem texturas, sem ruído.
+
+COMPOSIÇÃO PRINCIPAL:
+- Lado esquerdo: bloco de texto com tipografia Ultra-Bold branca ocupando 50% da largura.
+- Lado direito: uma pessoa jovem (20-35 anos, roupa social escura ou na cor ${v.primaryHex}), expressão determinada, segurando um celular ou olhando para a câmera. Ao redor da pessoa, 3 a 4 objetos 3D de viagem flutuando: mala de viagem dourada-metálica, passaporte 3D, avião de papel dourado, globo terrestre metálico. Objetos com acabamento FOSCO-METÁLICO iluminados por luz de estúdio suave.
+
+TEXTOS — escreva EXATAMENTE e SOMENTE estes textos:
+Linha 1 (grande, branca): «${headline}»
+Linha 2 (cor ${v.secondaryHex}, Bold): «${v.destination}»
+Linha 3 (branca, Ultra-Bold, tamanho gigante): «${v.installments}x R$ ${v.installmentValue}»
+Botão pequeno (pílula sólida na cor ${v.secondaryHex}): «Reserve Agora →»
+
+${DK_TYPOGRAPHY_RULE}
+
+PALETA: Fundo preto + objetos dourado-metálico + texto branco puro + acento ${v.secondaryHex}.
+NÃO inclua fotografias de praia, hotel, piscina, natureza ou céu.
+Resolução editorial 8K, qualidade premium de aplicativo financeiro.
+`;
+}
+
+// DK2 — OBJETOS 3D VIAGEM GIGANTES FLUTUANDO (sem pessoa)
+export function promptDark3DIconsFloating(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "dk2", v.forbiddenHeadlines);
+  return `
+Crie um banner publicitário de agência de viagens no estilo visual da marca Kriptopix (fintech, preto + dourado).
+
+COMPOSIÇÃO:
+- Metade superior (60%): Fundo preto absoluto. 3 objetos 3D de viagem em tamanho GRANDE e dominante, levitando no centro superior: mala de viagem metálica dourada, passaporte 3D dourado-escuro, ônibus de turismo 3D compacto em plástico fosco. Os objetos têm acabamento FOSCO com luz de estúdio suave — SEM brilho neon, SEM translucidez.
+- Metade inferior (40%): Texto e preço em fundo preto, bem espaçados com muito espaço vazio.
+
+TEXTOS — escreva EXATAMENTE e SOMENTE estes textos:
+Linha 1 (grande, branca): «${headline}»
+Linha 2 (cor ${v.secondaryHex}): «${v.destination}»
+Linha 3 (branca, Ultra-Bold, gigante): «${v.installments}x R$ ${v.installmentValue}»
+Botão CTA (pílula ${v.secondaryHex}): «Saiba mais →»
+
+${DK_TYPOGRAPHY_RULE}
+
+Fundo preto + objetos em dourado/bronze metálico + texto branco sólido + acento ${v.secondaryHex}.
+NÃO inclua céu, praia, hotel, natureza.
+Qualidade editorial 8K.
+`;
+}
+
+// DK3 — SPLIT PRETO + COR COM MAPA DE ROTAS
+export function promptDarkMinimalGeometric(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "dk3", v.forbiddenHeadlines);
+  return `
+Crie um banner publicitário de agência de viagens no estilo visual Kriptopix — split preto + cor com mapa de rotas.
+
+COMPOSIÇÃO SPLIT VERTICAL:
+PARTE SUPERIOR (65%): Fundo preto absoluto.
+- À esquerda: texto Bold branco grande empilhado.
+- À direita: globo terrestre 3D em dourado metálico fosco, com linhas de rota tracejadas em ${v.secondaryHex} conectando cidades ao destino ${v.destination}. Ao lado do globo, pequenos pins de localização 3D e ícone de avião em miniatura.
+
+PARTE INFERIOR (35%): Fundo sólido na cor ${v.secondaryHex}.
+- Texto escuro (preto ou ${v.primaryHex}) sobre fundo claro.
+- Botão escuro com seta.
+
+TEXTOS — escreva EXATAMENTE e SOMENTE estes textos:
+No topo (branca): «${headline}»
+Destino (${v.secondaryHex} no topo / preto na base): «${v.destination}»
+Preço (Ultra-Bold): «${v.installments}x R$ ${v.installmentValue}»
+Ícones de rota: pontinhos com 2 ou 3 nomes de cidades brasileiras conectando ao destino.
+
+${DK_TYPOGRAPHY_RULE}
+
+NÃO inclua praia, hotel, natureza.
+Qualidade editorial 8K.
+`;
+}
+
+// DK4 — PESSOA + TIPOGRAFIA BRUTALISTA (estilo editorial fintech)
+export function promptDarkPersonBrutal(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "dk4", v.forbiddenHeadlines);
+  return `
+Crie um banner publicitário premium de agência de viagens com estética editorial fintech.
+
+COMPOSIÇÃO:
+- Fundo: metade esquerda preto, metade direita na cor ${v.secondaryHex} sólido.
+- Pessoa: mulher ou homem jovem executivo, segurando passaporte ou mochila, sorrindo com confiança. Posicionado centralmente cruzando as duas metades.
+- Ao redor da pessoa: 2 a 3 ícones 3D de viagem flutuando — avião de papel dourado 3D, mala 3D, planeta/globo em miniatura.
+
+TEXTOS — escreva EXATAMENTE e SOMENTE estes textos:
+Topo esquerdo (branca, Bold): «${headline}»
+Centro (branco, Ultra-Bold, grande): «${v.destination}»
+Preço (${v.primaryHex === "#ffffff" ? "#111111" : "branco"}, Ultra-Bold, gigante): «${v.installments}x R$ ${v.installmentValue}»
+Base (botão pílula escuro com seta): «Reservar agora →»
+
+${DK_TYPOGRAPHY_RULE}
+
+Resolução 8K, sem praia, sem hotel, sem natureza.
+`;
+}
+
+// DK5 — AVIÃO 3D + TIPOGRAFIA MINIMALISTA
+export function promptDarkAirplanePremium(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "dk5", v.forbiddenHeadlines);
+  return `
+Crie um banner publicitário de agência de viagens — estilo fintech premium minimalista com avião 3D.
+
+COMPOSIÇÃO:
+- Fundo preto absoluto (#0A0A0A). Muito espaço vazio.
+- No centro-superior: um avião comercial 3D realista com acabamento FOSCO METÁLICO ESCURO, em perspectiva diagonal elegante, com sombra suave projetada abaixo. O avião é o elemento visual principal e ocupa 40% da tela.
+- Ao redor do avião: pequenos planetas 3D (esferas metálicas) e pins de localização minúsculos flutuando, conectados por linhas tracejadas finas na cor ${v.secondaryHex}.
+
+TEXTOS — escreva EXATAMENTE e SOMENTE estes textos:
+Topo (${v.secondaryHex}, caps, pequeno): «PACOTE DE VIAGEM»
+Centro (branca, Ultra-Bold, fonte gigante): «${v.destination}»
+Abaixo (branca): «${v.installments}x R$ ${v.installmentValue}»
+Botão CTA (pílula ${v.secondaryHex}): «${headline} →»
+
+${DK_TYPOGRAPHY_RULE}
+
+Sem praia, sem hotel, sem paisagem natural. Qualidade editorial 8K.
+`;
+}
+
+// DK6 — GRUPO DE PESSOAS + ÔNIBUS 3D (viagem em grupo)
+export function promptDarkGroupTravel(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "dk6", v.forbiddenHeadlines);
+  return `
+Crie um banner publicitário de agência de viagens — estilo fintech com foco em viagem em grupo.
+
+COMPOSIÇÃO:
+- Fundo: preto sólido + faixa horizontal na cor ${v.secondaryHex} cortando o terço inferior.
+- Centro superior: um ônibus de turismo 3D moderno em perspectiva 3/4, acabamento FOSCO na cor ${v.primaryHex}, com detalhes dourados/cromados. Ao lado do ônibus, 2 a 3 pessoas em miniatura 3D de estilo cartoon-realista com malas.
+- Ao redor: planetas miniatura 3D, setas de rota, mapa simplificado.
+
+TEXTOS — escreva EXATAMENTE e SOMENTE estes textos:
+Topo esquerdo (branca, Ultra-Bold): «${headline}»
+Centro (branca, fonte gigante): «${v.destination}»
+Na faixa colorida (cor ${v.primaryHex === "#ffffff" ? "#111" : "branca"}, Ultra-Bold): «${v.installments}x R$ ${v.installmentValue}»
+Botão (pílula escura): «Ver pacote →»
+
+${DK_TYPOGRAPHY_RULE}
+
+Sem foto de praia, hotel ou paisagem. Qualidade editorial 8K.
+`;
+}
+
+
+// ============================================================
+// REGISTRO DE TEMPLATES
+// ============================================================
+export const MASTER_TEMPLATES = [
+  // 🔴 OFERTA PACOTE
+  { id: "classic_vertical",   name: "OP1 · Cartão Dividido",          builder: promptClassicVertical },
+  { id: "cancun_style",       name: "OP2 · Cartão Central Flutuante", builder: promptCancunStyle },
+  { id: "gramado_style",      name: "OP3 · Cartão Aéreo (Top Down)",  builder: promptGramadoStyle },
+  { id: "maceio_style",       name: "OP4 · Barra Lateral Performance",builder: promptMaceioStyle },
+  { id: "ticket_pix_card",    name: "OP5 · Bilhete Pix",              builder: promptTicketPixCard },
+  { id: "side_hero_performance", name: "OP6 · Faixa Lateral Hero",    builder: promptSideHeroPerformance },
+  // 🔵 EXPERIÊNCIA DESTINO
+  { id: "iconic_landmark",    name: "ED1 · Hero Cinematográfico",     builder: promptIconicLandmark },
+  { id: "split_yellow_side",  name: "ED2 · Split Suave",              builder: promptSplitYellowSide },
+  { id: "elegant_center",     name: "ED3 · Story Lifestyle",          builder: promptElegantCenterCard },
+  { id: "editorial_visual",   name: "ED4 · Multi Experiência (Grid)", builder: promptEditorialVisual },
+  { id: "top_editorial_photo", name: "ED5 · Minimalista Premium",     builder: promptTopEditorialPhoto },
+  { id: "two_scene_editorial", name: "ED6 · Duas Cenas Editoriais",   builder: promptTwoSceneEditorial },
+  // ⬛ AUTORIDADE PREMIUM (DARK — ESTILO KRIPTOPIX)
+  { id: "dark_neon_glassmorphism", name: "DK1 · Pessoa + Ícones 3D",   builder: promptDarkNeonGlassmorphism },
+  { id: "dark_3d_icons_floating",  name: "DK2 · Objetos 3D Gigantes",  builder: promptDark3DIconsFloating },
+  { id: "dark_minimal_geometric",  name: "DK3 · Mapa de Rotas",        builder: promptDarkMinimalGeometric },
+  { id: "dark_person_brutal",      name: "DK4 · Split Pessoa Editorial",builder: promptDarkPersonBrutal },
+  { id: "dark_airplane_premium",   name: "DK5 · Avião 3D Premium",     builder: promptDarkAirplanePremium },
+  { id: "dark_group_travel",       name: "DK6 · Ônibus + Grupo",       builder: promptDarkGroupTravel },
+] as const;
+
+export type MasterTemplateId = typeof MASTER_TEMPLATES[number]["id"];
+
+export function getTemplateById(id: string) {
+  return MASTER_TEMPLATES.find((t) => t.id === id);
+}
+
+export function pickRandomTemplates(n: number, exclude: string[] = []): typeof MASTER_TEMPLATES[number][] {
+  const pool = MASTER_TEMPLATES.filter((t) => !exclude.includes(t.id));
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, n);
+}
+
 // ============================================================
 
 // DK1 — PESSOA CORPORATIVA + ÍCONES 3D FLUTUANDO

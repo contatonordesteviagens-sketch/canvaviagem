@@ -55,10 +55,14 @@ const DEFAULT_HIGHLIGHTS: Highlight[] = [
 ];
 
 const PRESET_COLORS = [
-  "#0c2340", "#1d4ed8", "#2563eb", "#3b82f6",
-  "#dc2626", "#991b1b", "#e85d3a", "#ff6b35",
-  "#064e3b", "#0d7a5f", "#16a34a", "#22c55e",
-  "#0a0a0a", "#1e293b", "#7c3aed", "#a855f7",
+  // Escuros
+  "#0a0a0a", "#0c2340", "#1e293b", "#1d4ed8",
+  // Médios
+  "#2563eb", "#3b82f6", "#7c3aed", "#a855f7",
+  // Quentes
+  "#dc2626", "#991b1b", "#e85d3a", "#064e3b",
+  // Claros / Especiais
+  "#ffffff", "#f8fafc", "#0d7a5f", "#16a34a",
 ];
 
 interface PaymentPreset {
@@ -974,14 +978,15 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-12 h-10 rounded-lg border border-white/10 bg-transparent cursor-pointer" />
             <input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="flex-1 bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-white/40 font-mono" />
           </div>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex gap-1.5 flex-wrap">
             {PRESET_COLORS.map((c) => (
               <button
                 key={c}
                 onClick={() => setPrimaryColor(c)}
-                className={`w-7 h-7 rounded-md border-2 transition-all ${primaryColor.toLowerCase() === c.toLowerCase() ? "border-white scale-110" : "border-white/20 hover:border-white/40"}`}
-                style={{ background: c }}
+                className={`w-6 h-6 rounded-full border-2 transition-all ${primaryColor.toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-lg" : "border-white/20 hover:border-white/60"}`}
+                style={{ background: c, boxShadow: c === "#ffffff" || c === "#f8fafc" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
                 aria-label={c}
+                title={c}
               />
             ))}
           </div>
@@ -996,8 +1001,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
         </div>
 
-        {/* Benefícios totalmente editáveis (texto + ícone) */}
-        <div>
+        {/* Benefícios totalmente editáveis (texto + ícone) — oculto para Autoridade Premium */}
+        {categoria !== "autoridade_dark" && (
           <label className={labelCls}>Benefícios / Inclusos ({highlights.length}/5) — clique no ícone para trocar</label>
           <div className="space-y-2 mb-2">
             {highlights.map((h, i) => {
@@ -1063,6 +1068,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             Pressione Enter ou clique em Adicionar. O novo benefício entrará na próxima geração da arte.
           </p>
         </div>
+        )}
 
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-[11px] text-amber-200/90">
           💡 Dados da Fase 1: <strong>{state.agencyName || "agência"}</strong>
