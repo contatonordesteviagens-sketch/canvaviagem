@@ -1,8 +1,8 @@
 // Edge function: fabrica-search-photos
-// Busca fotos reais de destinos. Estratégia em cascata:
-// 1) Wikimedia Commons (fotos geo-tagueadas reais, sem API key) — melhor para destinos BR
-// 2) Unsplash Source (alta qualidade, sem API key) — fallback paisagens
-// 3) Pexels (último fallback, requer PEXELS_API_KEY)
+// Busca fotos reais de destinos de viagem. Estratégia em cascata:
+// 1) Pexels (melhor qualidade para viagem, requer PEXELS_API_KEY) — PREFERIDO
+// 2) Unsplash Source (alta qualidade, sem API key) — fallback rápido
+// 3) Wikimedia Commons (último recurso — noisy para nomes de municípios BR)
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const corsHeaders = {
@@ -25,17 +25,71 @@ interface PhotoOut {
   alt: string;
 }
 
-// ---------- Wikimedia Commons ----------
-// Usa a API generator=search com prop=imageinfo p/ trazer URL direto + dimensões.
-// Filtra por mime image/jpeg|png e tamanho mínimo p/ evitar miniaturas/ícones.
+// ---------- Pexels (FONTE PRINCIPAL) ----------
+async function searchPexels(query: string, perPage: number, orientation: string): Promise<PhotoOut[]> {
+  const PEXELS_API_KEY = Deno.env.get("PEXELS_API_KEY");
+  if (!PEXELS_API_KEY) return [];
+  const params = new URLSearchParams({
+    query: `${query} travel destination tourism landscape beach`,
+    per_page: String(Math.min(perPage, 30)),
+    orientation,
+  });
+  const res = await fetch(`https://api.pexels.com/v1/search?${params}`, {
+    headers: { Authorization: PEXELS_API_KEY },
+  });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.photos || []).map((p: any) => ({
+    id: p.id,
+    url: p.src.large2x,
+    thumb: p.src.medium,
+    width: p.width,
+    height: p.height,
+    alt: p.alt || query,
+  }));
+}
+
+// ---------- Unsplash Source (sem API key, fallback) ----------
+function buildUnsplashFallback(query: string, perPage: number, orientation: string): PhotoOut[] {
+  const isPortrait = orientation === "portrait";
+  const w = isPortrait ? 1080 : 1600;
+  const h = isPortrait ? 1920 : 1200;
+  const out: PhotoOut[] = [];
+  // Rotaciona termos de viagem para garantir fotos turísticas diferentes
+  const travelTerms = ["beach", "tourism", "travel", "landscape", "paradise", "destination"];
+  for (let i = 0; i < perPage; i++) {
+    const sig = `${Date.now()}-${i}`;
+    const extra = travelTerms[i % travelTerms.length];
+    const url = `https://source.unsplash.com/${w}x${h}/?${encodeURIComponent(query + " " + extra)}&sig=${sig}`;
+    out.push({
+      id: `unsplash-${sig}`,
+      url,
+      thumb: url,
+      width: w,
+      height: h,
+      alt: query,
+    });
+  }
+  return out;
+}
+
+// Palavras-chave que indicam que a imagem é um brasão, bandeira ou logo institucional
+const JUNK_KEYWORDS = [
+  "brasão", "bandeira", "braso", "flag", "coat_of_arms", "coat of arms",
+  "brasão_de", "escudo", "logo", "logotipo", "logomarca", "emblema",
+  "municipio", "município", "prefeitura", "câmara", "camara", "vereador",
+  "crest", "heraldic", "heraldry", "seal", "insignia", "frecheirinha",
+];
+
+// ---------- Wikimedia Commons (ÚLTIMO RECURSO) ----------
 async function searchWikimedia(query: string, perPage: number): Promise<PhotoOut[]> {
   const params = new URLSearchParams({
     action: "query",
     format: "json",
     generator: "search",
-    gsrsearch: `${query} (beach OR tourism OR landscape OR travel) -map -flag -logo -football -soccer -stadium -politician filetype:bitmap`,
-    gsrnamespace: "6", // File namespace
-    gsrlimit: String(Math.min(perPage * 2, 40)), // pega mais p/ filtrar depois
+    gsrsearch: `${query} (beach OR tourism OR landscape OR travel OR praia OR litoral) -brasão -bandeira -flag -logo -coat_of_arms filetype:bitmap`,
+    gsrnamespace: "6",
+    gsrlimit: String(Math.min(perPage * 3, 50)),
     prop: "imageinfo",
     iiprop: "url|size|mime|extmetadata",
     iiurlwidth: "1600",
@@ -60,7 +114,13 @@ async function searchWikimedia(query: string, perPage: number): Promise<PhotoOut
     if (!mime.startsWith("image/jpeg") && !mime.startsWith("image/png")) continue;
     const w = info.thumbwidth || info.width || 0;
     const h = info.thumbheight || info.height || 0;
-    if (w < 800 || h < 600) continue; // descarta miniaturas
+    if (w < 800 || h < 600) continue;
+
+    // Filtra pelo nome do arquivo — bloqueia brasões, bandeiras e logos municipais
+    const title = (p.title || "").toLowerCase();
+    const isJunk = JUNK_KEYWORDS.some((kw) => title.includes(kw));
+    if (isJunk) continue;
+
     photos.push({
       id: p.pageid,
       url: info.thumburl || info.url,
@@ -72,52 +132,6 @@ async function searchWikimedia(query: string, perPage: number): Promise<PhotoOut
     if (photos.length >= perPage) break;
   }
   return photos;
-}
-
-// ---------- Unsplash Source (sem API key, retorna URL direta) ----------
-// Não tem busca paginada oficial sem API key, então geramos N variações com seed diferente.
-function buildUnsplashFallback(query: string, perPage: number, orientation: string): PhotoOut[] {
-  const isPortrait = orientation === "portrait";
-  const w = isPortrait ? 1080 : 1600;
-  const h = isPortrait ? 1920 : 1200;
-  const out: PhotoOut[] = [];
-  for (let i = 0; i < perPage; i++) {
-    const sig = `${Date.now()}-${i}`;
-    const url = `https://source.unsplash.com/${w}x${h}/?${encodeURIComponent(query + " travel")}&sig=${sig}`;
-    out.push({
-      id: `unsplash-${sig}`,
-      url,
-      thumb: url,
-      width: w,
-      height: h,
-      alt: query,
-    });
-  }
-  return out;
-}
-
-// ---------- Pexels (último fallback) ----------
-async function searchPexels(query: string, perPage: number, orientation: string): Promise<PhotoOut[]> {
-  const PEXELS_API_KEY = Deno.env.get("PEXELS_API_KEY");
-  if (!PEXELS_API_KEY) return [];
-  const params = new URLSearchParams({
-    query: `${query} travel destination tourism landscape beach`,
-    per_page: String(Math.min(perPage, 30)),
-    orientation,
-  });
-  const res = await fetch(`https://api.pexels.com/v1/search?${params}`, {
-    headers: { Authorization: PEXELS_API_KEY },
-  });
-  if (!res.ok) return [];
-  const data = await res.json();
-  return (data.photos || []).map((p: any) => ({
-    id: p.id,
-    url: p.src.large2x,
-    thumb: p.src.medium,
-    width: p.width,
-    height: p.height,
-    alt: p.alt || query,
-  }));
 }
 
 serve(async (req) => {
@@ -137,27 +151,27 @@ serve(async (req) => {
     const orientation = body.orientation || "portrait";
 
     let photos: PhotoOut[] = [];
-    let source = "wikimedia";
+    let source = "pexels";
 
-    // 1) Wikimedia Commons — melhor para destinos brasileiros específicos
+    // 1) Pexels — melhor para fotos de viagem profissionais (FONTE PRIMÁRIA)
     try {
-      photos = await searchWikimedia(query, perPage);
+      photos = await searchPexels(query, perPage, orientation);
     } catch (e) {
-      console.warn("Wikimedia falhou:", e);
+      console.warn("Pexels falhou:", e);
     }
 
-    // 2) Se Wikimedia não trouxe o suficiente, completa com Unsplash
+    // 2) Se Pexels não trouxe o suficiente, complementa com Unsplash
     if (photos.length < Math.min(6, perPage)) {
       const need = perPage - photos.length;
       const unsplash = buildUnsplashFallback(query, need, orientation);
       photos = [...photos, ...unsplash];
-      source = photos.length > unsplash.length ? "wikimedia+unsplash" : "unsplash";
+      source = photos.length > unsplash.length ? "pexels+unsplash" : "unsplash";
     }
 
-    // 3) Se ainda assim falhou (improvável), tenta Pexels como último recurso
+    // 3) Último recurso: Wikimedia com filtros agressivos
     if (photos.length === 0) {
-      photos = await searchPexels(query, perPage, orientation);
-      source = "pexels";
+      photos = await searchWikimedia(query, perPage);
+      source = "wikimedia";
     }
 
     return new Response(JSON.stringify({ photos, source }), {
