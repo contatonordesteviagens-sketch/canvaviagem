@@ -253,40 +253,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     setPhotos([]);
     setSelectedPhotoUrl("");
 
-    // Lista de motores para tentar em sequência
-    const engines = searchEngine === "pexels" ? ["unsplash", "pixabay"] : ["pixabay", "wikimedia"];
-    
-    for (const engine of engines) {
-      try {
-        let results: any[] = [];
+    setPhotoQuery(q);
 
-        if (engine === "unsplash") {
-          // Unsplash (Fotos Artísticas) - Usando chave pública de demo
-          const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(q + " travel destination")}&per_page=15&client_id=v97YvA6PqT4M5yL0N4m3q5-X5N-7q6o4-O_n3p8q6_Y`;
-          const resp = await fetch(url);
-          const data = await resp.json();
-          if (data.results?.length > 0) {
-            results = data.results.map((r: any) => ({
-              id: r.id,
-              url: r.urls.regular,
-              thumb: r.urls.small,
-              width: r.width,
-              height: r.height,
-              alt: r.alt_description || q
-            }));
-          }
-        } else if (engine === "pixabay") {
-          // Pixabay (Fotos Variadas)
-          const API_KEY = "43516035-779836371752b0476495df7b6";
-          const url = `https://pixabay.com/api/?key=${API_KEY}&q=${encodeURIComponent(q)}&image_type=photo&orientation=${format === "story" ? "vertical" : "horizontal"}&per_page=15&safesearch=true`;
-          const resp = await fetch(url);
-          const data = await resp.json();
-    setPhotoQuery(query);
-    
+
     try {
       const { data, error } = await supabase.functions.invoke("fabrica-search-photos", {
         body: { 
-          query, 
+          query: q, 
           perPage: 12, 
           engine: searchEngine 
         }
@@ -297,7 +270,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         setPhotos(data.photos);
         setVisiblePhotoCount(3);
         setSelectedPhotoUrl("");
-        toast.success(`Fotos de ${query} carregadas com sucesso!`);
+        toast.success(`Fotos de ${q} carregadas com sucesso!`);
       }
     } catch (err) {
       console.error("Erro ao buscar fotos:", err);
