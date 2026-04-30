@@ -345,15 +345,20 @@ export const Phase1Diagnostico = ({ onComplete }: Props) => {
                     <button
                       key={n.id + n.label}
                       onClick={() => update({ niche: n.id })}
-                      className={`p-4 rounded-xl border text-left transition-all ${
+                      className={`relative p-4 rounded-xl border text-left transition-all overflow-hidden group ${
                         state.niche === n.id
-                          ? "border-2"
-                          : "border-white/[0.08] hover:border-white/20 bg-white/[0.02]"
+                          ? "border-2 shadow-lg"
+                          : "border-white/[0.08] hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.04]"
                       }`}
                       style={state.niche === n.id ? { borderColor: state.primaryColor, background: `${state.primaryColor}1a` } : undefined}
                     >
-                      <div className="text-2xl mb-1">{n.emoji}</div>
-                      <div className="text-sm font-semibold text-white">{n.label}</div>
+                      {state.niche === n.id && (
+                        <div className="absolute top-3 right-3 text-white">
+                          <Check className="w-4 h-4" />
+                        </div>
+                      )}
+                      <div className="text-2xl mb-1.5 transform group-hover:scale-110 transition-transform origin-left">{n.emoji}</div>
+                      <div className="text-sm font-semibold text-white leading-tight">{n.label}</div>
                     </button>
                   ))}
                 </div>
@@ -690,52 +695,55 @@ const DestinosInput = ({ destinos, onChange, primaryColor }: { destinos: string[
   const remove = (d: string) => onChange(destinos.filter((x) => x !== d));
 
   return (
-    <div>
-      <div className="flex gap-2 mb-3">
+    <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4">
+      <div className="relative mb-4">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), add(input))}
-          placeholder="Ex: Jericoacoara, Cancún..."
-          className="flex-1 bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
+          placeholder="Digite e aperte Enter (ex: Paris, Gramado)..."
+          className="w-full bg-white/[0.04] border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 transition-colors"
         />
         <button
           onClick={() => add(input)}
           disabled={!input.trim()}
-          className="px-4 py-2.5 rounded-xl text-sm font-bold text-black disabled:opacity-40 flex items-center gap-1"
+          className="absolute right-1.5 top-1.5 bottom-1.5 aspect-square rounded-lg flex items-center justify-center text-black disabled:opacity-40 transition-all hover:scale-105 active:scale-95"
           style={{ background: primaryColor }}
         >
-          <Plus className="w-4 h-4" /> Add
+          <Plus className="w-4 h-4" />
         </button>
       </div>
 
-      {destinos.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-3">
+      <div className="space-y-3">
+        <div className="flex flex-wrap gap-2 min-h-[32px]">
+          {destinos.length === 0 && <span className="text-xs text-white/30 italic flex items-center">Nenhum adicionado ainda.</span>}
           {destinos.map((d) => (
-            <span key={d} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-black" style={{ background: primaryColor }}>
+            <span key={d} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-black animate-in zoom-in duration-200" style={{ background: primaryColor }}>
               {d}
-              <button onClick={() => remove(d)} className="hover:opacity-70"><X className="w-3 h-3" /></button>
+              <button onClick={() => remove(d)} className="hover:bg-black/20 p-0.5 rounded-full transition-colors"><X className="w-3 h-3" /></button>
             </span>
           ))}
         </div>
-      )}
 
-      {sugestoes.length > 0 && (
-        <div>
-          <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">Sugestões para seu nicho</div>
-          <div className="flex flex-wrap gap-1.5">
-            {sugestoes.slice(0, 8).map((s) => (
-              <button
-                key={s}
-                onClick={() => add(s)}
-                className="px-2.5 py-1 rounded-full text-[11px] bg-white/[0.05] border border-white/10 text-white/70 hover:border-white/30 hover:text-white transition-colors"
-              >
-                + {s}
-              </button>
-            ))}
+        {sugestoes.length > 0 && (
+          <div className="pt-3 border-t border-white/10">
+            <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 flex items-center gap-2">
+              Sugestões Rápidas
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {sugestoes.slice(0, 8).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => add(s)}
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-white/[0.04] border border-white/10 text-white/60 hover:border-white/30 hover:text-white hover:bg-white/[0.08] transition-all active:scale-95"
+                >
+                  + {s}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
