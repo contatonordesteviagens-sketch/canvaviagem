@@ -253,40 +253,60 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     setSelectedPhotoUrl("");
 
     try {
-      const isPortrait = format === "story";
-      const w = isPortrait ? 1080 : 1200;
-      const h = isPortrait ? 1920 : 1200;
+      // Busca no Wikimedia Commons (estável, sem API key, permite CORS)
+      // Forçamos termos de turismo na busca
+      const searchTerm = encodeURIComponent(`${q} beach landscape -flag -map -logo -coat`);
+      const url = `https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&generator=search&gsrsearch=File:${searchTerm}&gsrlimit=24&gsrnamespace=6&iiprop=url|size|extlinks&iilimit=1&origin=*`;
 
-      // Termos de turismo para forçar fotos de alta qualidade
-      const travelTerms = [
-        "beach", "resort", "paradise", "travel", "landscape", 
-        "ocean", "tourism", "vacation", "scenic", "tropical"
-      ];
+      const resp = await fetch(url);
+      const data = await resp.json();
 
-      // Usando o formato de URL mais estável do Unsplash que não bloqueia o redirecionamento
-      const generated = Array.from({ length: 12 }).map((_, i) => {
-        const term = travelTerms[i % travelTerms.length];
-        const sig = Math.floor(Math.random() * 1000000);
-        // O formato /1080x1920/?query é o mais estável para evitar 404
-        const queryParams = encodeURIComponent(`${q},${term},tourism`);
-        const url = `https://source.unsplash.com/${w}x${h}/?${queryParams}&sig=${sig}`;
-        
-        return {
-          id: `photo-${i}-${sig}`,
-          url,
-          thumb: `https://source.unsplash.com/400x400/?${queryParams}&sig=${sig}`,
-          width: w,
-          height: h,
-          alt: `${q} ${term}`,
-        };
-      });
+      if (!data.query || !data.query.pages) {
+        // Fallback: tenta busca mais simples se a específica falhar
+        const simpleUrl = `https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=15&gsrnamespace=6&iiprop=url|size&origin=*`;
+        const resp2 = await fetch(simpleUrl);
+        const data2 = await resp2.json();
+        if (!data2.query) throw new Error("Nenhuma foto encontrada");
+        data.query = data2.query;
+      }
 
-      setPhotos(generated);
+      const pages = Object.values(data.query.pages) as any[];
+      const filtered = pages
+        .filter(p => {
+          const title = (p.title || "").toLowerCase();
+          // Filtro rigoroso anti-brasão/bandeira/mapa
+          return !title.includes("flag_of") && 
+                 !title.includes("coat_of_arms") && 
+                 !title.includes("brasão") && 
+                 !title.includes("bandeira") && 
+                 !title.includes("mapa") && 
+                 !title.includes("map_of") && 
+                 !title.includes("logo") && 
+                 !title.includes("escudo");
+        })
+        .map((p, i) => {
+          const info = p.imageinfo?.[0];
+          return {
+            id: p.pageid || i,
+            url: info?.url || "",
+            thumb: info?.url || "", // Wikimedia entrega a URL direta, o browser redimensiona
+            width: info?.width || 1200,
+            height: info?.height || 800,
+            alt: p.title.replace("File:", ""),
+          };
+        })
+        .filter(p => p.url.match(/\.(jpg|jpeg|png|webp)$/i));
+
+      if (filtered.length === 0) {
+        toast.warning("Tente um termo mais genérico (ex: apenas o nome da cidade)");
+      }
+
+      setPhotos(filtered);
       setVisiblePhotoCount(3);
       setSelectedPhotoUrl("");
-      toast.success(`Fotos de ${q} prontas!`);
+      toast.success(`${filtered.length} fotos encontradas`);
     } catch (err: any) {
-      toast.error("Erro ao carregar fotos. Tente outro termo.");
+      toast.error("Erro na busca. Tente digitar apenas o nome do lugar.");
     } finally {
       setSearchingPhotos(false);
     }
