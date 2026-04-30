@@ -95,9 +95,9 @@ serve(async (req) => {
       });
     }
 
-    const body = (await req.json()) as AdParams;
+    const body = (await req.json()) as AdParams & { customPrompt?: string };
 
-    if (!body.templateId && !body.photoOnly) {
+    if (!body.templateId && !body.photoOnly && !body.customPrompt) {
       if (!body.strategy || !["ancora", "vitrine", "matriz", "gancho"].includes(body.strategy)) {
         return new Response(JSON.stringify({ error: "Strategy ou templateId inválido" }), {
           status: 400,
@@ -120,7 +120,10 @@ serve(async (req) => {
     let usedTemplateId: string | null = null;
     let provider: "user_gemini" | "lovable_ai" = USER_GEMINI_API_KEY ? "user_gemini" : "lovable_ai";
 
-    if (body.photoOnly) {
+    if (body.customPrompt) {
+      prompt = body.customPrompt;
+      usedTemplateId = body.templateId || "custom";
+    } else if (body.photoOnly) {
       const dest = body.destination || "destino paradisíaco";
       const scene = nicheToScene(body.niche, dest);
       prompt = `Fotografia de viagem ultra-realista e hiper-detalhada de ${dest}.
