@@ -1024,73 +1024,73 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         {/* Benefícios totalmente editáveis (texto + ícone) — oculto para Autoridade Premium */}
         {categoria !== "autoridade_dark" && (
           <>
-          <label className={labelCls}>Benefícios / Inclusos ({highlights.length}/5) — clique no ícone para trocar</label>
-          <div className="space-y-2 mb-2">
-            {highlights.map((h, i) => {
-              const IconComp = ICON_OPTIONS.find((o) => o.key === h.icon)?.Icon || Check;
-              return (
-                <div key={i} className="bg-white/[0.04] border border-white/10 rounded-lg">
-                  <div className="flex gap-2 items-center px-3 py-2">
-                    <button
-                      onClick={() => setEditingIconIdx(editingIconIdx === i ? null : i)}
-                      className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
-                      style={{ color: secondaryColor }}
-                      title="Trocar ícone"
-                    >
-                      <IconComp className="w-4 h-4" />
-                    </button>
-                    <input
-                      value={h.text}
-                      onChange={(e) => updateHighlightText(i, e.target.value)}
-                      className="flex-1 bg-transparent text-sm text-white outline-none"
-                    />
-                    <button onClick={() => removeHighlight(i)} className="text-white/40 hover:text-red-400">
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  {editingIconIdx === i && (
-                    <div className="border-t border-white/10 p-2 grid grid-cols-8 gap-1">
-                      {ICON_OPTIONS.map(({ key, Icon, label }) => (
-                        <button
-                          key={key}
-                          onClick={() => updateHighlightIcon(i, key)}
-                          className={`p-2 rounded hover:bg-white/10 flex items-center justify-center transition-colors ${h.icon === key ? "bg-white/20" : ""}`}
-                          title={label}
-                        >
-                          <Icon className="w-4 h-4" style={{ color: h.icon === key ? secondaryColor : "rgba(255,255,255,0.7)" }} />
-                        </button>
-                      ))}
+            <label className={labelCls}>Benefícios / Inclusos ({highlights.length}/5) — clique no ícone para trocar</label>
+            <div className="space-y-2 mb-2">
+              {highlights.map((h, i) => {
+                const IconComp = ICON_OPTIONS.find((o) => o.key === h.icon)?.Icon || Check;
+                return (
+                  <div key={i} className="bg-white/[0.04] border border-white/10 rounded-lg">
+                    <div className="flex gap-2 items-center px-3 py-2">
+                      <button
+                        onClick={() => setEditingIconIdx(editingIconIdx === i ? null : i)}
+                        className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
+                        style={{ color: secondaryColor }}
+                        title="Trocar ícone"
+                      >
+                        <IconComp className="w-4 h-4" />
+                      </button>
+                      <input
+                        value={h.text}
+                        onChange={(e) => updateHighlightText(i, e.target.value)}
+                        className="flex-1 bg-transparent text-sm text-white outline-none"
+                      />
+                      <button onClick={() => removeHighlight(i)} className="text-white/40 hover:text-red-400">
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          {highlights.length < 5 && (
-            <div className="flex gap-2">
-              <input
-                value={newHl}
-                onChange={(e) => setNewHl(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addHighlight()}
-                placeholder="Ex: Bebidas inclusas"
-                className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder:text-white/30 outline-none focus:border-white/40"
-              />
-              <button
-                onClick={addHighlight}
-                disabled={!newHl.trim()}
-                className="px-4 py-2 rounded-lg font-bold text-black flex items-center gap-1.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110"
-                style={{ background: secondaryColor }}
-              >
-                <Plus className="w-4 h-4" /> Adicionar
-              </button>
+                    {editingIconIdx === i && (
+                      <div className="border-t border-white/10 p-2 grid grid-cols-8 gap-1">
+                        {ICON_OPTIONS.map(({ key, Icon, label }) => (
+                          <button
+                            key={key}
+                            onClick={() => updateHighlightIcon(i, key)}
+                            className={`p-2 rounded hover:bg-white/10 flex items-center justify-center transition-colors ${h.icon === key ? "bg-white/20" : ""}`}
+                            title={label}
+                          >
+                            <Icon className="w-4 h-4" style={{ color: h.icon === key ? secondaryColor : "rgba(255,255,255,0.7)" }} />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          )}
-          <p className="text-[10px] text-white/40 mt-1.5">
-            Pressione Enter ou clique em Adicionar. O novo benefício entrará na próxima geração da arte.
-          </p>
-        </div>
+            {highlights.length < 5 && (
+              <div className="flex gap-2">
+                <input
+                  value={newHl}
+                  onChange={(e) => setNewHl(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addHighlight()}
+                  placeholder="Ex: Bebidas inclusas"
+                  className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder:text-white/30 outline-none focus:border-white/40"
+                />
+                <button
+                  onClick={addHighlight}
+                  disabled={!newHl.trim()}
+                  className="px-4 py-2 rounded-lg font-bold text-black flex items-center gap-1.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110"
+                  style={{ background: secondaryColor }}
+                >
+                  <Plus className="w-4 h-4" /> Adicionar
+                </button>
+              </div>
+            )}
+            <p className="text-[10px] text-white/40 mt-1.5">
+              Pressione Enter ou clique em Adicionar. O novo benefício entrará na próxima geração da arte.
+            </p>
           </>
         )}
+
 
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-[11px] text-amber-200/90">
           💡 Dados da Fase 1: <strong>{state.agencyName || "agência"}</strong>
