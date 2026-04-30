@@ -540,7 +540,7 @@ const DiagnosticoResult = ({ onNext, onEdit }: { onNext: () => void; onEdit: () 
           className="px-6 py-3 rounded-xl font-bold text-black flex items-center gap-2 transition-all hover:brightness-110"
           style={{ background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)` }}
         >
-          Ir para Fase 2 <ArrowRight className="w-4 h-4" />
+          Avançar para Plano <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>

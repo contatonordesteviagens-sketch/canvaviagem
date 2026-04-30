@@ -169,7 +169,7 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
           Voltar
         </button>
         <button onClick={onNext} className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all hover:brightness-110" style={{ background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)`, boxShadow: `0 8px 24px ${state.primaryColor}55` }}>
-          Avançar para Gerador de Anúncios <ArrowRight className="w-4 h-4" />
+          Avançar para Destinos Ads <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>

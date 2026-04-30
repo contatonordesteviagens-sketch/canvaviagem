@@ -12,8 +12,8 @@ import { ComingSoonGate, isFabricaUnlocked } from "@/components/fabrica/ComingSo
 
 const PHASES = [
   { num: 1, label: "Diagnóstico" },
-  { num: 2, label: "Ativos" },
-  { num: 3, label: "Gerador de Anúncios" },
+  { num: 2, label: "Plano" },
+  { num: 3, label: "Destinos Ads" },
   { num: 4, label: "Seu Site" },
 ];
 
