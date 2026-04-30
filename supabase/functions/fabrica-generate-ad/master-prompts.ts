@@ -103,15 +103,16 @@ const EXPERIENCIA_RULES = `
     // ============================================================
     const AUTORIDADE_DARK_RULES = `
     ══════════════════════════════════════
-    ⬛ REGRAS ESPECÍFICAS DA CATEGORIA — AUTORIDADE PREMIUM (DARK 3D)
+    ⬛ REGRAS ESPECÍFICAS DA CATEGORIA — AUTORIDADE PREMIUM
     - FOCO TOTAL NA AGÊNCIA E NO PACOTE, NÃO NO DESTINO.
-    - É PROIBIDO GERAR FOTOGRAFIAS REAIS DE TURISMO (sem praias, sem hotéis, sem céu azul).
-    - O fundo deve ser um Dark Mode absoluto (preto, chumbo escuro, ou gradiente radial muito escuro).
-    - ESTÉTICA FINTECH / KRIPTOPIX: Use cartões de UI translúcidos (glassmorphism negro), bordas luminosas (neon suave), e profundidade espacial 3D.
-    - ELEMENTOS 3D FLUTUANTES: Sempre inclua ícones premium em 3D levitando no ar (ex: moedas douradas, passaportes blindados, globos terrestres translúcidos, ou pequenos aviões dourados de papel/metal).
-    - As cores primária e secundária DEVEM dominar as fontes e a iluminação. O Contraste extremo é o segredo desta categoria.
-    - ADAPTAÇÃO AO FORMATO: Esta imagem será gerada para Feed (Quadrado) ou Stories (Vertical). Adapte a distribuição do design para o formato fornecido. Nunca deixe os textos baterem ou vazarem pelas bordas.
-    - VENDA PURA E DIRETA: O foco do anúncio é a venda. Preço grande, destino chamativo, pacotes e formato de conversão.
+    - PROIBIDO: Fotografias reais de turismo (sem praias, sem hotéis, sem céu azul).
+    - PROIBIDO ABSOLUTAMENTE: qualquer luz neon, laser, glow colorido ou efeito luminoso brilhante.
+    - FUNDO obrigatório: Dark Mode fosco e sóbrio (preto, chumbo escuro ou cinza grafite muito escuro). Sem gradientes luminosos.
+    - ESTÉTICA OBRIGATÓRIA: Fintech corporativo premium (estilo Nubank, Stripe, Itaú). Interface limpa, tipografia grossa, paleta sóbria.
+    - ELEMENTOS 3D PERMITIDOS: objetos físicos opacos com luz de estúdio direcional suave (globos metálicos foscos, moedas opacas, malas, passaportes). Nunca translúcidos com brilho neon.
+    - As cores primária e secundária DEVEM dominar as fontes e elementos. Alto contraste sem brilho artificial.
+    - ADAPTAÇÃO AO FORMATO: Jamais deixe textos cortados nas bordas. Respeite as safe zones.
+    - VENDA DIRETA: Preço grande, destino chamativo, layout de aplicativo financeiro.
     ══════════════════════════════════════
     `;
     
@@ -279,9 +280,9 @@ function buildBrain(v: MasterPromptVars, opts: {
 ${v.installments} de R$ ${v.installmentValue}     ← FONTE GIGANTE, ULTRA-BOLD
 Selo principal: ${v.promoName.toUpperCase()}`
     : opts.category === "autoridade_dark"
-    ? `[BLOCO DE INFORMAÇÕES — 3D PREMIUM]
-${v.installments} de R$ ${v.installmentValue}     ← PREÇO LUMINOSO EM NEON/BRILHO
-Selo corporativo: ${v.promoName.toUpperCase()}`
+    ? `[BLOCO DE INFORMAÇÕES — DARK PREMIUM]
+${v.installments}x R$ ${v.installmentValue}     ← FONTE GIGANTE, ULTRA-BOLD, COR SÓLIDA SEM BRILHO
+Selo: ${v.promoName.toUpperCase()}`
     : `[BLOCO DE EXPERIÊNCIA — EDITORIAL, SEM CARA DE OFERTA]
 ${opts.experienceDescription || `Roteiro inesquecível em ${v.destination}.`}
 SEM NENHUM PREÇO, SEM PARCELAS, SEM SELOS.`;
@@ -318,7 +319,7 @@ SEM NENHUM PREÇO, SEM PARCELAS, SEM SELOS.`;
   const typographyHierarchy = opts.category === "oferta"
     ? "- PREÇO = maior elemento da composição (Ultra-Bold / Heavy).\n- DESTINO = segundo maior elemento (Bold)."
     : opts.category === "autoridade_dark"
-    ? "- PREÇO e DESTINO = competem em impacto. Foco na precisão e tecnologia.\n- TEXTO COM GLOW/NEON."
+    ? "- PREÇO e DESTINO = competem em impacto. Foco em precisão e sobriedade corporativa.\n- TEXTO SÓLIDO E OPACO. Sem glow, sem neon, sem brilho."
     : "- IMAGEM = protagonista absoluta; texto deve ser leve e elegante.\n- DESTINO = maior texto, mas sem competir com a fotografia.";
   const centerRule = opts.category === "oferta"
     ? "- Centro de conversão obrigatório nos 65% centrais da imagem."
@@ -376,6 +377,8 @@ ${typographyHierarchy}
 4. QUALIDADE:
 - SEM erros de texto: ortografia perfeita em português.
 - NUNCA crie listas de tópicos com marcadores (bullet points ou ícones pequenos).
+- NÃO tente renderizar mais de 2 blocos de texto distintos na mesma imagem — escolha apenas TÍTULO + PREÇO (oferta) ou apenas TÍTULO (experiência).
+- Se o texto for longo demais para caber com segurança, use uma versão mais curta e clara.
 
 ══════════════════════════════════════
 🛑 OBRIGATÓRIO: RENDERIZAÇÃO DE TEXTO EXATO E LIMPO
@@ -507,9 +510,9 @@ export function promptIconicLandmark(v: MasterPromptVars): string {
     lighting: "natural perfeita, hora dourada cinematográfica, profundidade de campo realista, cores vibrantes e atmosféricas",
     sceneDescription: `${v.destination} com riqueza de detalhes — céu dramático, luz dourada, pessoas naturais em momentos espontâneos, água cristalina ou paisagem icônica. ${v.destinationDescription}`,
     headline,
-    experienceDescription: `Uma experiência inesquecível espera por você em ${v.destination}.`,
+    experienceDescription: `Uma experiência inesquecível em ${v.destination}.`,
     specialization:
-      "• Título elegante e LEVE no centro: '" + headline + "' — use EXATAMENTE essa frase.\n• Subtítulo sutil abaixo.\n• NENHUMA lista de ícones ou passeios.\n• PROIBIDO caixa de preço, cartão promocional, cores agressivas.\n• Estilo: editorial, aspiracional, limpo, capa de revista de viagem com MUITO espaço em branco.",
+      "• ÚNICO bloco de texto: '" + headline + "' — centralizado, fonte elegante, muito respiro ao redor.\n• NENHUM subtítulo adicional, NENHUMA lista, NENHUM ícone.\n• PROIBIDO caixa de preço ou cartão promocional.\n• Estilo: capa de revista de viagem. 90% foto, 10% texto.",
   });
 }
 
@@ -523,9 +526,9 @@ export function promptSplitYellowSide(v: MasterPromptVars): string {
     lighting: "natural suave, luz realista, atmosfera convidativa",
     sceneDescription: `${v.destination} com foco em experiência — mar, arquitetura ou natureza com luz natural suave, pessoas interagindo com o ambiente de forma natural. ${v.destinationDescription}`,
     headline,
-    experienceDescription: `Dias únicos com paisagens incríveis e momentos inesquecíveis em ${v.destination}.`,
+    experienceDescription: `Momentos únicos em ${v.destination}.`,
     specialization:
-      "• Texto na área inferior com amplo respiro:\n   Título: '" + headline + "'\n   Descrição: 'Paisagens incríveis e momentos inesquecíveis'.\n• NENHUMA lista.\n• NENHUM preço.\n• Estilo: minimalista, leve, silencioso, sem aparência de anúncio.",
+      "• Na área inferior: APENAS o título '" + headline + "' em fonte elegante e leve. Nenhum texto adicional.\n• NENHUMA lista, NENHUM preço.\n• Estilo: minimalista, editorial, silencioso.",
   });
 }
 
@@ -539,9 +542,9 @@ export function promptElegantCenterCard(v: MasterPromptVars): string {
     lighting: "luz natural, clima feliz, sensação de liberdade, atmosfera real e espontânea",
     sceneDescription: `grupo de pessoas reais aproveitando ${v.destination} — rindo, tirando fotos, vivendo o momento. Ambiente vivo, autêntico, sem pose comercial. ${v.destinationDescription}`,
     headline,
-    experienceDescription: `Momentos que ficam para sempre em ${v.destination}.`,
+    experienceDescription: `Momentos únicos em ${v.destination}.`,
     specialization:
-      "• Apenas UM bloco de texto centralizado: '" + headline + "'.\n• NENHUM texto na base, nenhum ícone.\n• PROIBIDO cartões, caixas pesadas e elementos de oferta.\n• Estilo: Instagram orgânico premium, espaço livre gigante.",
+      "• Apenas UM texto centralizado e curto: '" + headline + "'. Nada mais.\n• PROIBIDO qualquer outro texto, ícone ou elemento de oferta.\n• Estilo: Instagram orgânico premium, foto domina 90% da tela.",
   });
 }
 
@@ -555,9 +558,9 @@ export function promptEditorialVisual(v: MasterPromptVars): string {
     lighting: "atmosfera natural premium, estética de arte fina",
     sceneDescription: `Uma única cena deslumbrante de ${v.destination}, enquadrada de forma assimétrica para deixar muito céu ou espaço negativo vazio. ${v.destinationDescription}`,
     headline,
-    experienceDescription: `${v.destination} além do óbvio.`,
+    experienceDescription: `${v.destination} em outro nível.`,
     specialization:
-      "• Área limpa:\n   Título: '" + headline + "'\n   Subtítulo: '" + v.destination + " além do óbvio'.\n• SEM listas.\n• SEM destaque de preço.\n• Estilo: revista de viagem minimalista, onde o silêncio e o vazio são tão importantes quanto a foto.",
+      "• Único texto: '" + headline + "' — flutuando sobre o espaço vazio, fonte leve e refinada.\n• SEM subtítulo, SEM lista, SEM preço.\n• Estilo: galeria de arte moderna. Silêncio visual é o objetivo.",
   });
 }
 
@@ -571,9 +574,9 @@ export function promptTopEditorialPhoto(v: MasterPromptVars): string {
     lighting: "suave, estética premium, paleta refinada, ângulo único e artístico",
     sceneDescription: `${v.destination} em ângulo único e artístico, com luz suave e estética premium. Composição contemplativa. ${v.destinationDescription}`,
     headline,
-    experienceDescription: `Uma experiência para poucos.`,
+    experienceDescription: `Premium e exclusivo.`,
     specialization:
-      "• Centro: '" + headline + "' — use EXATAMENTE essa frase.\n• Abaixo: 'Uma experiência para poucos'.\n• NENHUM preço.\n• MUITO espaço negativo (respiro visual) — o texto deve ocupar apenas 10% da tela.\n• Estilo: luxo absoluto, exclusivo, silencioso.",
+      "• ÚNICO texto: '" + headline + "' — centralizado, fonte ultra-leve e refinada, cor branca.\n• NENHUM outro texto, NENHUM preço.\n• O texto deve ocupar apenas 10% da tela. 90% é foto e espaço vazio.\n• Estilo: luxo silencioso, exclusividade total.",
   });
 }
 
@@ -589,7 +592,7 @@ export function promptTwoSceneEditorial(v: MasterPromptVars): string {
     headline,
     experienceDescription: `${v.destination} em sua melhor forma.`,
     specialization:
-      "• Na cor sólida: '" + headline + "' como título principal.\n• NENHUM checklist, nenhum preço, nenhum selo.\n• Composição limpa estilo página de revista.\n• Extremamente focado em tipografia espaçada e margens generosas.",
+      "• Na área de cor sólida: APENAS '" + headline + "' como título. Fonte grande, espaçada, elegante.\n• NENHUM checklist, NENHUM preço, NENHUM selo.\n• A metade com foto deve ser UMA ÚNICA cena clara do destino, sem divisões ou colagens.\n• Estilo: página de revista de luxo.",
   });
 }
 
@@ -602,12 +605,12 @@ export function promptDarkNeonGlassmorphism(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "autoridade_dark",
     layout:
-      "FUNDO ESCURO PROFUNDO (Dark Mode). No centro, um cartão de vidro fumê translúcido (Glassmorphism) com bordas luminosas suaves. Texto super brilhante dentro do vidro.",
-    lighting: "estúdio profissional, luz neon suave recortando o vidro, altíssimo contraste",
-    sceneDescription: `um ambiente tecnológico e financeiro abstrato em fundo preto; nenhum céu e nenhuma paisagem. Foco absoluto no painel UI de ${v.destination} em glassmorphism negro`,
+      "FUNDO PRETO ABSOLUTAMENTE FOSCO (Dark Mode Matte). No centro, um cartão de interface UI em cinza muito escuro (#1a1a1a) com cantos arredondados. Estilo aplicativo financeiro premium. SEM transparência, SEM vidro, SEM brilho.",
+    lighting: "luz de estúdio direcional suave vinda de cima, highlights brancos frios nos objetos 3D, SEM neon, SEM laser, SEM glow",
+    sceneDescription: `um layout corporativo e tecnológico em fundo preto fosco representando o pacote para ${v.destination}. Sem paisagem, sem céu`,
     headline,
     specialization:
-      "• O destino não é mostrado via fotos; é exibido através da TIPOGRAFIA de alto padrão no centro.\n• Cartão translúcido (Glassmorphism Escuro) com margens enormes flutuando sobre a escuridão.\n• PROIBIDO gerar listinhas de benefícios.",
+      "• Destino em tipografia GIGANTE e grossa, cor sólida (sem brilho).\n• Preço em fonte Ultra-Bold logo abaixo, bem espaçado.\n• PROIBIDO: neon, glow, brilho, translucidez, gradientes coloridos.\n• Estilo idêntico ao aplicativo Nubank ou Stripe: sóbrio, limpo, fosco.",
   });
 }
 
@@ -616,12 +619,12 @@ export function promptDark3DIconsFloating(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "autoridade_dark",
     layout:
-      "FUNDO DARK COM ÍCONES 3D FLUTUANDO. Ícones premium de viagem (globos 3D, pins de localização, moedas) levitam em diferentes níveis de foco ao redor de um painel de conversão central de alta tecnologia.",
-    lighting: "backlight cinematográfico (rim lighting) focando apenas nas bordas dos objetos 3D, isolando-os da escuridão do fundo",
-    sceneDescription: `elementos abstratos 3D de turismo premium flutuando no vazio preto (sem céus nem água). Foco de luz dramática nos elementos. Oferta de ${v.destination} no meio`,
+      "FUNDO ESCURO FOSCO. Ícones 3D físicos opacos de viagem (globo metálico, mala de viagem, passaporte) flutuam com luz de estúdio suave. Cartão de oferta centralizado em dark, sólido e limpo.",
+    lighting: "luz de estúdio soft-box lateral, sem brilho excessivo. Luz natural de estúdio profissional fotográfico",
+    sceneDescription: `objetos físicos 3D de viagem em ambiente dark fosco, representando um pacote premium para ${v.destination}`,
     headline,
     specialization:
-      "• Sensação forte de autoridade, similar a um aplicativo financeiro (Fintech) ou corretora.\n• Cores de destaque restritas para dar choque e elegância no fundo negro.\n• Preço gigante iluminado como neon no centro da composição.",
+      "• Autoridade corporativa: similar a um aplicativo financeiro premium.\n• Preço GIGANTE E OPACO no centro, cor da paleta enviada.\n• PROIBIDO: qualquer efeito neon, glow ou brilho colorido. Tudo deve ser fosco e sólido.",
   });
 }
 
@@ -630,12 +633,12 @@ export function promptDarkMinimalGeometric(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "autoridade_dark",
     layout:
-      "COMPOSIÇÃO GEOMÉTRICA FLAT/3D EXTREMAMENTE MINIMALISTA. Apenas o preto absoluto e faixas de cor na paleta definida. Muito espaço vazio, layout assimétrico focado no poder das palavras.",
-    lighting: "iluminação direcional forte sobre um único objeto ou letra principal",
-    sceneDescription: `um layout puramente corporativo e geométrico focado na venda do pacote para ${v.destination}, abstrato, corporativo`,
+      "BRUTALISMO TIPOGRÁFICO DARK. Fundo preto puro. Apenas tipografia GIGANTE grossa e uma única faixa horizontal ou diagonal na cor primária enviada. Zero foto de paisagem. Zero ornamento.",
+    lighting: "iluminação de estúdio spot, sem brilho colorido, sem neon",
+    sceneDescription: `layout geométrico e tipográfico minimalista para o pacote de ${v.destination}`,
     headline,
     specialization:
-      "• MÁXIMO de espaço vazio e escuro. Foco no preço e destino em fonte GIGANTESCA.\n• Pode ter a silhueta de uma pessoa com 'rim lighting' dourado usando um celular de lado (simbolizando o cliente comprando).",
+      "• MÁXIMO de espaço escuro e vazio. Destino e preço em fonte Ultra-Bold gigantesca, cor sólida da paleta.\n• Um único elemento geométrico (linha ou faixa) na cor secundária.\n• NADA de neon. NADA de glow. Precisão suíça de design.",
   });
 }
 

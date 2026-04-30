@@ -40,16 +40,14 @@ export async function composeLogoOnImage(
 
           // Reserva uma área opaca maior que a logo para cobrir qualquer badge/texto que a IA/canvas
           // tenha tentado colocar no canto superior esquerdo. Isso evita "logo em cima do local".
-          const bgPad = lw * 0.12;
-          const reservedW = lw + bgPad * 2;
-          const reservedH = lh + bgPad * 2;
+          const bgPad = lw * 0.05;
           ctx.save();
           ctx.fillStyle = "rgba(255,255,255,0.96)";
           const r = bgPad;
           const bx = padX - bgPad;
           const by = padY - bgPad;
-          const bw = reservedW;
-          const bh = reservedH;
+          const bw = lw + bgPad * 2;
+          const bh = lh + bgPad * 2;
           ctx.beginPath();
           ctx.moveTo(bx + r, by);
           ctx.lineTo(bx + bw - r, by);
