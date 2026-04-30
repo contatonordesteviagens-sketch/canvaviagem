@@ -225,7 +225,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       toast.error("Digite o destino para buscar fotos");
       return;
     }
-    setPhotoQuery(q);
+    // Reforça a busca com termos de turismo se for apenas uma palavra (ex: "Ceará" -> "Ceará turismo")
+    const enhancedQuery = q.split(/\s+/).length === 1 ? `${q} turismo` : q;
+    setPhotoQuery(enhancedQuery);
     setSearchingPhotos(true);
     setPhotos([]);
     setSelectedPhotoUrl("");

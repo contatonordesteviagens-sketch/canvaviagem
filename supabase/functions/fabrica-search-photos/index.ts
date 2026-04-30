@@ -33,7 +33,7 @@ async function searchWikimedia(query: string, perPage: number): Promise<PhotoOut
     action: "query",
     format: "json",
     generator: "search",
-    gsrsearch: `${query} filetype:bitmap`,
+    gsrsearch: `${query} (beach OR tourism OR landscape OR travel) -map -flag -logo -football -soccer -stadium -politician filetype:bitmap`,
     gsrnamespace: "6", // File namespace
     gsrlimit: String(Math.min(perPage * 2, 40)), // pega mais p/ filtrar depois
     prop: "imageinfo",
@@ -101,7 +101,7 @@ async function searchPexels(query: string, perPage: number, orientation: string)
   const PEXELS_API_KEY = Deno.env.get("PEXELS_API_KEY");
   if (!PEXELS_API_KEY) return [];
   const params = new URLSearchParams({
-    query: `${query} travel destination`,
+    query: `${query} travel destination tourism landscape beach`,
     per_page: String(Math.min(perPage, 30)),
     orientation,
   });

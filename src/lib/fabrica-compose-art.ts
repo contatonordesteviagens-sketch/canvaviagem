@@ -624,9 +624,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
 
 
-  // Fundo opaco com a cor primária — evita qualquer "borda branca" caso a foto
-  // não cubra todo o canvas por algum motivo (ex.: imagem com transparência ou aspecto inesperado).
-  ctx.fillStyle = primaryColor || "#0a0a0a";
+  // Fundo inteligente: usa a cor primária como base, mas garante que a foto 
+  // ocupe o máximo de espaço sem deixar "blocos" vazios nas margens de segurança.
+  ctx.fillStyle = "#0a0a0a"; // Fundo neutro escuro sempre
   ctx.fillRect(0, 0, width, height);
 
   if (format === "square" && !isExperience) {
@@ -708,11 +708,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
     // 3 Pills compactos — abaixo do destino
     const pillsY = destY + (format === "story" ? 40 : 34);
-    drawHighlightsBlock(left + 28, pillsY, contentWidth - 56, 3, true, true);
+    // Exibe os 5 destaques no formato compacto para caber tudo
+    drawHighlightsBlock(left + 28, pillsY, contentWidth - 56, 5, true, true);
 
     // Price card — SEMPRE abaixo dos pills, sem Math.min que causava sobreposição
-    // 3 pills compact: 3 × (60+10) = 210px
-    const priceCardY = pillsY + 3 * 70 + 16;
+    // Se tivermos 5 pills, a altura aumenta. Cada pill compact = 70px.
+    const pillsCount = highlights.slice(0, 5).length;
+    const priceCardY = pillsY + pillsCount * 70 + 20;
     drawPriceCard(left + 28, priceCardY, contentWidth - 56, 290, "right");
 
 
