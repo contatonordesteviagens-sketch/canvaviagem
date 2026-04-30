@@ -494,9 +494,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         const results = await Promise.all(
           picks.map((pick, idx) => supabase.functions.invoke("fabrica-generate-ad", {
             body: {
-              strategy,
+              strategy: categoria === "oferta_pacote" ? "ancora" : categoria === "experiencia_destino" ? "vitrine" : "matriz",
               format,
-              destination,
+              destination: destination.toUpperCase() + " (NÃO USE ICONES NO CARD)",
               niche: state.niche,
               agencyName: state.agencyName,
               agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
@@ -506,7 +506,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               hasLogo: !!state.logoBase64,
               price,
               installments,
-              promoName,
+              promoName: (promoName || "Oferta Especial").toUpperCase(),
               highlights,
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
               templateId: isAiExperienceStory ? undefined : pick.templateId,
@@ -514,6 +514,25 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               variation: freshSeedAi + idx,
               packageType: "Voo + Hotel",
               duration: "5 NOITES",
+              // 🚨 SOLUÇÃO DEFINITIVA: Envia o prompt pronto para o servidor não estragar
+              customPrompt: categoria === "oferta_pacote" ? `
+Um banner vertical de turismo (9:16) para ${destination.toUpperCase()}.
+ESTILO VISUAL: Agência CVC, limpo, cores vibrantes.
+FUNDO: Foto real e nítida de ${destination.toUpperCase()}.
+
+LAYOUT OBRIGATÓRIO:
+1. TÍTULO GRANDE E COMPLETO: "Pacote para ${destination}" (NUNCA deixe o texto incompleto).
+2. CAIXA DE PREÇO (Cor: ${palette.secondary.toUpperCase()}): 
+   - Texto "PACOTE ${destination.toUpperCase()}" no topo.
+   - Preço GIGANTE: "${installments} de R$ ${price}".
+   - "5% OFF À VISTA NO PIX".
+   - ⚠️ REGRA CRÍTICA: PROIBIDO colocar ícones de avião, ônibus ou hotel dentro desta caixa amarela. Mantenha a caixa limpa, apenas com o texto da duração (5 DIAS) e o preço.
+
+3. BENEFÍCIOS: Coloque ${highlights.join(", ")} em pílulas brancas separadas ao lado da foto.
+
+CORES: Use apenas ${palette.primary.toUpperCase()} e ${palette.secondary.toUpperCase()}.
+Sem erros de português. Texto nítido e legível.
+              ` : undefined,
               // 🚨 Anti-repetição global (Regra 5)
               forbiddenHeadlines: guard.headlines,
               forbiddenLayouts: guard.layouts,
