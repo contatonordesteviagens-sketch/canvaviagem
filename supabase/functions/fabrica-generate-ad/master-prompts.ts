@@ -597,49 +597,89 @@ export function promptTwoSceneEditorial(v: MasterPromptVars): string {
 }
 
 // ============================================================
-// ⬛ AUTORIDADE PREMIUM (DARK 3D) — DK1..DK3
+// ⬛ AUTORIDADE PREMIUM (ESTILO KRIPTOPIX) — DK1..DK3
 // ============================================================
 
+// DK1 — PESSOA CORPORATIVA + ÍCONES 3D FLUTUANDO
 export function promptDarkNeonGlassmorphism(v: MasterPromptVars): string {
   const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "dk1", v.forbiddenHeadlines);
-  return buildBrain(v, {
-    category: "autoridade_dark",
-    layout:
-      "FUNDO PRETO ABSOLUTAMENTE FOSCO (Dark Mode Matte). No centro, um cartão de interface UI em cinza muito escuro (#1a1a1a) com cantos arredondados. Estilo aplicativo financeiro premium. SEM transparência, SEM vidro, SEM brilho.",
-    lighting: "luz de estúdio direcional suave vinda de cima, highlights brancos frios nos objetos 3D, SEM neon, SEM laser, SEM glow",
-    sceneDescription: `um layout corporativo e tecnológico em fundo preto fosco representando o pacote para ${v.destination}. Sem paisagem, sem céu`,
-    headline,
-    specialization:
-      "• Destino em tipografia GIGANTE e grossa, cor sólida (sem brilho).\n• Preço em fonte Ultra-Bold logo abaixo, bem espaçado.\n• PROIBIDO: neon, glow, brilho, translucidez, gradientes coloridos.\n• Estilo idêntico ao aplicativo Nubank ou Stripe: sóbrio, limpo, fosco.",
-  });
+  return `
+Banner publicitário vertical 9:16 no estilo de uma fintech premium brasileira (referência: Kriptopix).
+
+FUNDO: Preto absoluto (#0A0A0A), sem gradientes, sem texturas.
+
+COMPOSIÇÃO: No lado esquerdo, texto em bloco com tipografia Ultra-Bold. No lado direito, objetos 3D de viagem flutuando (avião dourado, passaporte metálico, mala 3D) com luz de estúdio lateral suave.
+
+PESSOA: Opcional. Se incluída, deve ser uma pessoa com aparência executiva/profissional, roupa escura ou na cor ${v.primaryHex}, olhando para o lado ou para a câmera com expressão determinada.
+
+TEXTOS EXATOS — escreva SOMENTE esses textos, SEM inventar palavras:
+- Headline (fonte Ultra-Bold branca, grande): «${headline}»
+- Destino (fonte Bold, cor ${v.secondaryHex}): «${v.destination}»
+- Preço (fonte Ultra-Bold branca, tamanho gigante): «${v.installments}x R$ ${v.installmentValue}»
+- Botão CTA pequeno (pílula na cor ${v.secondaryHex} com seta): «Reserve Agora →»
+
+TIPOGRAFIA: APENAS fontes sólidas, cor sólida. PROIBIDO: outline, vazado, neon, glow.
+PALETA: Fundo preto + destaque obrigatório na cor ${v.secondaryHex} apenas em botão e acento.
+
+🛑 REGRAS ABSOLUTAS:
+- Texto perfeitamente escrito, sem erros ortográficos, sem letras cortadas na borda.
+- NÃO gere fotografias de praia, hotel, natureza ou turismo no fundo.
+- Máximo de 4 blocos de texto distintos na imagem inteira.
+- Qualidade editorial profissional, resolução 8K.
+`;
 }
 
+// DK2 — OBJETOS 3D DOURADOS GIGANTES + HEADLINE IMPACTANTE
 export function promptDark3DIconsFloating(v: MasterPromptVars): string {
   const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "dk2", v.forbiddenHeadlines);
-  return buildBrain(v, {
-    category: "autoridade_dark",
-    layout:
-      "FUNDO ESCURO FOSCO. Ícones 3D físicos opacos de viagem (globo metálico, mala de viagem, passaporte) flutuam com luz de estúdio suave. Cartão de oferta centralizado em dark, sólido e limpo.",
-    lighting: "luz de estúdio soft-box lateral, sem brilho excessivo. Luz natural de estúdio profissional fotográfico",
-    sceneDescription: `objetos físicos 3D de viagem em ambiente dark fosco, representando um pacote premium para ${v.destination}`,
-    headline,
-    specialization:
-      "• Autoridade corporativa: similar a um aplicativo financeiro premium.\n• Preço GIGANTE E OPACO no centro, cor da paleta enviada.\n• PROIBIDO: qualquer efeito neon, glow ou brilho colorido. Tudo deve ser fosco e sólido.",
-  });
+  return `
+Banner publicitário vertical 9:16 no estilo fintech premium (referência: Kriptopix - layout com moedas 3D gigantes acima de texto).
+
+FUNDO: Preto absoluto na metade superior. Na metade inferior, fundo levemente mais escuro ou igual.
+
+COMPOSIÇÃO: Na metade superior da tela, 2 a 3 objetos 3D de viagem em tamanho GIGANTE e proporção dominante (passaportes metálicos dourados, mala de viagem 3D, globo terrestre metálico, bilhete de avião 3D dourado). Os objetos têm acabamento FOSCO-METÁLICO com reflexos de luz de estúdio suave. Na metade inferior: texto e preço bem espaçados.
+
+LOGO DA MARCA no topo, discreta (apenas um ícone K ou similar).
+
+TEXTOS EXATOS — escreva SOMENTE esses textos, SEM inventar palavras:
+- Headline (fonte Ultra-Bold branca ou ${v.secondaryHex}, grande): «${headline}»
+- Destino (fonte Bold, branco): «${v.destination}»
+- Preço (fonte Ultra-Bold branca, tamanho gigante): «${v.installments}x R$ ${v.installmentValue}»
+- Botão CTA (pílula com seta na cor ${v.secondaryHex}): «Saiba mais →»
+
+TIPOGRAFIA: Apenas sólida. PROIBIDO outline, vazado, neon, glow.
+PALETA: Fundo preto + objetos em dourado-metálico + texto branco + acento ${v.secondaryHex}.
+
+🛑 REGRAS ABSOLUTAS:
+- Texto perfeitamente escrito, sem erros ortográficos, sem letras cortadas.
+- NÃO gere praia, hotel, natureza, céu.
+- Qualidade editorial profissional, resolução 8K.
+`;
 }
 
+// DK3 — SPLIT FUNDO PRETO + COR COM MOCKUP / MAPA DE ROTAS
 export function promptDarkMinimalGeometric(v: MasterPromptVars): string {
   const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "dk3", v.forbiddenHeadlines);
-  return buildBrain(v, {
-    category: "autoridade_dark",
-    layout:
-      "BRUTALISMO TIPOGRÁFICO DARK. Fundo preto puro. Apenas tipografia GIGANTE grossa e uma única faixa horizontal ou diagonal na cor primária enviada. Zero foto de paisagem. Zero ornamento.",
-    lighting: "iluminação de estúdio spot, sem brilho colorido, sem neon",
-    sceneDescription: `layout geométrico e tipográfico minimalista para o pacote de ${v.destination}`,
-    headline,
-    specialization:
-      "• MÁXIMO de espaço escuro e vazio. Destino e preço em fonte Ultra-Bold gigantesca, cor sólida da paleta.\n• Um único elemento geométrico (linha ou faixa) na cor secundária.\n• NADA de neon. NADA de glow. Precisão suíça de design.",
-  });
+  return `
+Banner publicitário vertical 9:16 no estilo fintech premium (referência: Kriptopix - layout split preto + amarelo com mockup de app e rotas globais).
+
+COMPOSIÇÃO SPLIT VERTICAL:
+- TOPO (60% da tela): Fundo PRETO ABSOLUTO. Texto Bold branco grande à esquerda. À direita, um mockup 3D de celular mostrando um "app de pacotes de viagem" na tela, OU um globo terrestre abstrato em dourado-metálico com linhas de rotas tracejadas conectando cidades (estilo mapa de voos).
+- BASE (40% da tela): Fundo na cor ${v.secondaryHex} (amarelo ouro). Texto escuro sobre ele. Botão escuro com seta.
+
+TEXTOS EXATOS — escreva SOMENTE esses textos, SEM inventar palavras:
+- Headline (fonte Ultra-Bold branca no topo): «${headline}»
+- Destino (fonte Bold na cor ${v.secondaryHex} ou preto, dependendo da área): «${v.destination}»
+- Preço (fonte Ultra-Bold, cor contrastante): «${v.installments}x R$ ${v.installmentValue}»
+- Linha ícones de rotas: pontinhos com nomes de 2 ou 3 cidades conectando ao destino.
+
+TIPOGRAFIA: Apenas sólida, Ultra-Bold. PROIBIDO outline, vazado, neon, glow.
+
+🛑 REGRAS ABSOLUTAS:
+- Texto perfeitamente escrito, sem erros ortográficos, sem letras cortadas.
+- NÃO gere praia, hotel, natureza.
+- Qualidade editorial profissional, resolução 8K.
+`;
 }
 
 
