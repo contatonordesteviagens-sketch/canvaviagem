@@ -447,91 +447,180 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   const renderSafeSquareOffer = () => {
-    const variant = Math.abs(variation) % 3;
-    ctx.fillStyle = primaryColor;
-    ctx.fillRect(0, 0, width, height);
-    const logoH = hasLogo ? 140 : 0;
+    const variant = Math.abs(variation) % 4;
+    const logoH = hasLogo ? 130 : 0;
+    const destUp = (destination || "DESTINO").toUpperCase();
 
-    // V0 — Foto topo | Price card direita | Benefits abaixo
+    // ── V0 · REF "Enseada" — painel claro/cor TOPO + foto EMBAIXO ──────────
+    // Exatamente como nas refs 1 e 2: fundo sólido com texto em cima, foto na base
     if (variant === 0) {
-      const pH0 = 490;
-      const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, pH0, 0.38);
-      ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, 0, width, pH0);
-      const g0 = ctx.createLinearGradient(0, pH0 - 120, 0, pH0);
-      g0.addColorStop(0, "rgba(0,0,0,0)"); g0.addColorStop(1, "rgba(0,0,0,0.30)");
-      ctx.fillStyle = g0; ctx.fillRect(0, pH0 - 120, width, 120);
-      ctx.fillStyle = primaryColor; ctx.fillRect(0, pH0, width, height - pH0);
-      // Badge
-      drawBadge(left, pH0 + 30, 480);
-      // Destino (cor acento)
+      // Topo: fundo na cor secundária (amarelo/cor de acento)
+      const topH = 520;
       ctx.fillStyle = secondaryColor;
-      let df0 = 52; ctx.font = `900 ${df0}px Inter, Arial, sans-serif`;
-      const du0 = (destination || "").toUpperCase();
-      while (ctx.measureText(du0).width > 490 && df0 > 26) { df0 -= 3; ctx.font = `900 ${df0}px Inter, Arial, sans-serif`; }
-      ctx.fillText(du0, left, pH0 + 124);
-      // Headline esquerda
-      ctx.fillStyle = "#ffffff";
-      drawTextBlock(ctx, titleText, left, pH0 + 186, 490, 60, 2, { baseFontSize: 56, minFontSize: 30 });
-      // Price card direita (mesmo top do badge, nao sobrepoe)
-      drawPriceCard(left + 510, pH0 + 30, 390, 290, "right");
-      // Benefits abaixo de tudo (pH0 + 30 + 290 = pH0 + 320 = 810)
-      drawHighlightsBlock(left, pH0 + 330, contentWidth, 4, true, true);
+      ctx.fillRect(0, 0, width, topH);
+      // Logo zone
+      // Badge "Saindo de" no topo
+      ctx.fillStyle = primaryColor;
+      fillRoundRect(ctx, left, logoH + 36, 500, 66, 8, primaryColor);
+      ctx.fillStyle = secondaryColor;
+      ctx.font = "800 28px Inter, Arial, sans-serif";
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.fillText(badgeText, left + 20, logoH + 36 + 33);
+      ctx.textBaseline = "alphabetic";
+      // Headline enorme
+      ctx.fillStyle = primaryColor;
+      drawTextBlock(ctx, titleText, left, logoH + 148, contentWidth, 80, 2, { fontWeight: "900", baseFontSize: 88, minFontSize: 48 });
+      // Separador + Benefits + Preço lado a lado
+      const benefitsX = left; const priceX = left + 380;
+      ctx.fillStyle = primaryColor;
+      ctx.font = "700 32px Inter, Arial, sans-serif";
+      ctx.fillText(ICON_SYMBOL["bus"] + " " + (highlights[0]?.text || "Transporte"), benefitsX, logoH + 310);
+      ctx.fillText(ICON_SYMBOL["map"] + " " + (highlights[1]?.text || highlights[0]?.text || ""), benefitsX, logoH + 358);
+      ctx.fillText(ICON_SYMBOL["guide"] + " " + (highlights[2]?.text || highlights[0]?.text || ""), benefitsX, logoH + 406);
+      // Divisor vertical
+      ctx.fillStyle = primaryColor; ctx.globalAlpha = 0.2;
+      ctx.fillRect(priceX - 20, logoH + 280, 2, 140);
+      ctx.globalAlpha = 1;
+      // Preço lado direito
+      ctx.fillStyle = "#555"; ctx.font = "600 22px Inter, Arial, sans-serif";
+      ctx.fillText("por apenas", priceX, logoH + 310);
+      ctx.fillStyle = primaryColor; ctx.font = "900 64px Inter, Arial, sans-serif";
+      const priceStr = mainPrice || `R$ ${price}`;
+      ctx.fillText(priceStr, priceX, logoH + 388);
+      ctx.font = "600 22px Inter, Arial, sans-serif"; ctx.fillStyle = "#555";
+      ctx.fillText("/pessoa", priceX, logoH + 422);
+      // Foto na base
+      const photoH0 = height - topH;
+      const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
+      ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
       return canvas.toDataURL("image/png");
     }
 
-    // V1 — Foto esquerda | Painel direito sequencial (destino→badge→headline→pills→price)
+    // ── V1 · REF "Black Friday" — painel escuro ESQUERDA + coluna fotos DIREITA ──
+    // Painel primário na esquerda com texto/preço; coluna direita com foto empilhada
     if (variant === 1) {
-      const pW1 = 420;
-      const c1 = fitCover(image.naturalWidth, image.naturalHeight, pW1, height, 0.42);
-      ctx.drawImage(image, c1.sx, c1.sy, c1.sw, c1.sh, 0, 0, pW1, height);
-      ctx.fillStyle = primaryColor; ctx.fillRect(pW1, 0, width - pW1, height);
-      const px1 = pW1 + 44; const pw1 = width - pW1 - 68;
-      const top1 = logoH + 28;
-      // Destino gigante
+      const panelW = 460;
+      const colX = panelW + 24; const colW = width - colX - 24;
+      // Fundo esquerdo (cor primária)
+      ctx.fillStyle = primaryColor; ctx.fillRect(0, 0, panelW, height);
+      // Fundo direito (cor secundária)
+      ctx.fillStyle = secondaryColor; ctx.fillRect(panelW, 0, width - panelW, height);
+      // Texto no painel esquerdo
+      const px = left; const pw = panelW - left - 24;
       ctx.fillStyle = secondaryColor;
-      let df1 = 70; ctx.font = `900 ${df1}px Inter, Arial, sans-serif`;
-      const du1 = (destination || "").toUpperCase();
-      while (ctx.measureText(du1).width > pw1 && df1 > 30) { df1 -= 4; ctx.font = `900 ${df1}px Inter, Arial, sans-serif`; }
-      ctx.fillText(du1, px1, top1 + 66);
-      // Badge
-      drawBadge(px1, top1 + 90, pw1);
-      // Headline
+      ctx.font = "900 22px Inter, Arial, sans-serif";
+      ctx.fillText((promoName || "OFERTA ESPECIAL").toUpperCase(), px, logoH + 54);
       ctx.fillStyle = "#ffffff";
-      drawTextBlock(ctx, titleText, px1, top1 + 198, pw1, 62, 2, { baseFontSize: 58, minFontSize: 28 });
-      // 4 pills (top1+198+124+20 = top1+342)
-      const hlY1 = top1 + 342;
-      drawHighlightsBlock(px1, hlY1, pw1, 4, true, true);
-      // Price card abaixo dos pills (4x70=280 -> hlY1+280+14)
-      const pcY1 = hlY1 + 4 * 70 + 14;
-      drawPriceCard(px1, Math.min(pcY1, height - 295), pw1, 290, "right");
+      drawTextBlock(ctx, destUp, px, logoH + 100, pw, 88, 2, { fontWeight: "900", baseFontSize: 84, minFontSize: 40 });
+      // Benefits como lista com check
+      const hlStart = logoH + 290;
+      highlights.slice(0, 4).forEach((h, i) => {
+        fillRoundRect(ctx, px, hlStart + i * 82, pw, 68, 34, "rgba(255,255,255,0.14)");
+        ctx.fillStyle = secondaryColor; ctx.font = "700 28px Inter, Arial, sans-serif";
+        ctx.textBaseline = "middle";
+        ctx.fillText("✓", px + 18, hlStart + i * 82 + 34);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(h.text, px + 52, hlStart + i * 82 + 34);
+        ctx.textBaseline = "alphabetic";
+      });
+      // Price card no painel esquerdo, base
+      fillRoundRect(ctx, px, height - 200, pw, 172, 16, "rgba(0,0,0,0.3)");
+      ctx.fillStyle = secondaryColor; ctx.font = "700 22px Inter, Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("APENAS HOJE:", px + pw / 2, height - 168);
+      ctx.fillStyle = "#ffffff"; ctx.font = "900 62px Inter, Arial, sans-serif";
+      ctx.fillText(mainPrice || `R$ ${price}`, px + pw / 2, height - 100);
+      ctx.font = "600 20px Inter, Arial, sans-serif";
+      ctx.fillText("/pessoa", px + pw / 2, height - 68);
+      ctx.textAlign = "left";
+      // Fotos no lado direito: 2 empilhadas
+      const gap1 = 16; const photoH1 = (height - gap1 * 3) / 2;
+      [0, 1].forEach(i => {
+        const pY = gap1 + i * (photoH1 + gap1);
+        const c1 = fitCover(image.naturalWidth, image.naturalHeight, colW, photoH1, 0.38);
+        ctx.save();
+        fillRoundRect(ctx, colX, pY, colW, photoH1, 20, "#000");
+        ctx.clip();
+        ctx.drawImage(image, c1.sx, c1.sy, c1.sw, c1.sh, colX, pY, colW, photoH1);
+        ctx.restore();
+      });
       return canvas.toDataURL("image/png");
     }
 
-    // V2 — Foto full-bleed | Benefits esquerda + Price direita na base
-    const c2 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.38);
-    ctx.drawImage(image, c2.sx, c2.sy, c2.sw, c2.sh, 0, 0, width, height);
-    const g2 = ctx.createLinearGradient(0, height * 0.3, 0, height);
-    g2.addColorStop(0, "rgba(0,0,0,0)"); g2.addColorStop(1, "rgba(0,0,0,0.84)");
-    ctx.fillStyle = g2; ctx.fillRect(0, height * 0.3, width, height * 0.7);
-    // Badge + headline no topo da foto
-    drawBadge(left, logoH + 60, 500);
+    // ── V2 · REF "Santa Teresa" — 2 fotos canto superior + faixa + benefits ──
+    // Topo: fundo branco/claro com logo. Foto canto superior direito.
+    // Faixa de cor com headline. Metade inferior: benefits + preço.
+    if (variant === 2) {
+      ctx.fillStyle = "#f7f4ef"; ctx.fillRect(0, 0, width, height);
+      // Foto superior DIREITA (60% largura, 44% altura)
+      const fW2 = Math.round(width * 0.58); const fH2 = Math.round(height * 0.44);
+      const c2 = fitCover(image.naturalWidth, image.naturalHeight, fW2, fH2, 0.36);
+      ctx.save();
+      fillRoundRect(ctx, width - fW2 - 16, 16, fW2, fH2, 22, "#ccc");
+      ctx.clip();
+      ctx.drawImage(image, c2.sx, c2.sy, c2.sw, c2.sh, width - fW2 - 16, 16, fW2, fH2);
+      ctx.restore();
+      // Faixa horizontal colorida (cor primária)
+      const faixaY = fH2 + 28; const faixaH = 140;
+      fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, primaryColor);
+      ctx.fillStyle = "#ffffff"; ctx.font = "900 56px Inter, Arial, sans-serif";
+      drawTextBlock(ctx, titleText + " " + destUp + "!", left, faixaY + 94, contentWidth, 64, 1, { fontWeight: "900", baseFontSize: 56, minFontSize: 32 });
+      // Benefits abaixo da faixa
+      const belowY = faixaY + faixaH + 28;
+      highlights.slice(0, 3).forEach((h, i) => {
+        ctx.fillStyle = primaryColor; ctx.font = "700 32px Inter, Arial, sans-serif";
+        ctx.fillText(ICON_SYMBOL[h.icon || "check"] + "  " + h.text, left, belowY + i * 68);
+      });
+      // Preço
+      fillRoundRect(ctx, left, belowY + 228, 420, 86, 12, primaryColor);
+      ctx.fillStyle = secondaryColor; ctx.font = "700 22px Inter, Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("por apenas", left + 210, belowY + 264);
+      ctx.fillStyle = "#ffffff"; ctx.font = "900 50px Inter, Arial, sans-serif";
+      ctx.fillText(mainPrice || `R$ ${price}` + " /p.", left + 210, belowY + 318);
+      ctx.textAlign = "left";
+      return canvas.toDataURL("image/png");
+    }
+
+    // ── V3 · FULLBLEED com card centralizado flutuante ─────────────────────
+    // Foto ocupa 100% da tela. Card semi-transparente centralizado na base.
+    const c3 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.38);
+    ctx.drawImage(image, c3.sx, c3.sy, c3.sw, c3.sh, 0, 0, width, height);
+    const g3 = ctx.createLinearGradient(0, height * 0.25, 0, height);
+    g3.addColorStop(0, "rgba(0,0,0,0)"); g3.addColorStop(1, "rgba(0,0,0,0.86)");
+    ctx.fillStyle = g3; ctx.fillRect(0, height * 0.25, width, height * 0.75);
+    // Badge "Saindo de" sobre a foto
+    drawBadge(left, logoH + 60, 480);
+    // Destino gigante
     ctx.fillStyle = "#ffffff";
-    drawTextBlock(ctx, titleText, left, logoH + 160, contentWidth * 0.65, 70, 2, { baseFontSize: 66, minFontSize: 34 });
-    // Destino em destaque (meio)
-    ctx.fillStyle = secondaryColor;
-    let df2 = 66; ctx.font = `900 ${df2}px Inter, Arial, sans-serif`;
-    const du2 = (destination || "").toUpperCase();
-    while (ctx.measureText(du2).width > contentWidth && df2 > 30) { df2 -= 4; ctx.font = `900 ${df2}px Inter, Arial, sans-serif`; }
-    ctx.fillText(du2, left, 616);
-    // Benefits esquerda + Price card direita (base)
-    const bot2 = 644; const lW2 = 470; const rX2 = left + lW2 + 16;
-    drawHighlightsBlock(left, bot2, lW2, 4, true, true);
-    drawPriceCard(rX2, bot2 - 14, contentWidth - lW2 - 16, 290, "right");
+    let df3 = 92; ctx.font = `900 ${df3}px Inter, Arial, sans-serif`;
+    while (ctx.measureText(destUp).width > contentWidth && df3 > 40) { df3 -= 5; ctx.font = `900 ${df3}px Inter, Arial, sans-serif`; }
+    ctx.fillText(destUp, left, logoH + 176);
+    // Card base transparente
+    const cardY3 = 660;
+    fillRoundRect(ctx, left - 20, cardY3, contentWidth + 40, 380, 28, "rgba(0,0,0,0.55)");
+    // Headline
+    ctx.fillStyle = secondaryColor; ctx.font = "700 30px Inter, Arial, sans-serif";
+    ctx.fillText(titleText, left, cardY3 + 50);
+    // Benefits 2 colunas
+    const col3W = Math.floor(contentWidth / 2);
+    highlights.slice(0, 4).forEach((h, i) => {
+      const cx3 = left + (i % 2) * col3W;
+      const cy3 = cardY3 + 90 + Math.floor(i / 2) * 72;
+      ctx.fillStyle = "#ffffff"; ctx.font = "700 28px Inter, Arial, sans-serif";
+      ctx.fillText(ICON_SYMBOL[h.icon || "check"] + " " + h.text, cx3, cy3);
+    });
+    // Preço
+    ctx.fillStyle = secondaryColor; ctx.font = "900 72px Inter, Arial, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(mainPrice || `R$ ${price}`, width / 2, cardY3 + 312);
+    ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = "600 24px Inter, Arial, sans-serif";
+    ctx.fillText("/pessoa · " + (installments || "10x") + " sem juros", width / 2, cardY3 + 356);
+    ctx.textAlign = "left";
     return canvas.toDataURL("image/png");
   };
 
-    const variant = Math.abs(variation) % 3;
-    ctx.fillStyle = primaryColor;
+
 
 
 
