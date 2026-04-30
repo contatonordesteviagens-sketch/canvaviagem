@@ -683,7 +683,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = overlay;
     ctx.fillRect(0, 0, width, heroH);
 
-    const panelH = format === "story" ? 830 : 470;
+    const panelH = format === "story" ? 920 : 500;
     const panelY = panelBottom - panelH;
     fillRoundRect(ctx, left, panelY, contentWidth, panelH, 42, "rgba(7,10,18,0.78)");
 
@@ -695,8 +695,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     drawTextBlock(ctx, titleText, left + 28, titleY, contentWidth - 56, format === "story" ? 72 : 60, 2, { baseFontSize: format === "story" ? 68 : 58, minFontSize: 32 });
 
     // Destino em destaque (grande, abaixo do título)
-    const destY = titleY + (format === "story" ? 172 : 140);
-    let destFontSize = format === "story" ? 72 : 56;
+    const destY = titleY + (format === "story" ? 164 : 136);
+    let destFontSize = format === "story" ? 68 : 54;
     ctx.font = `900 ${destFontSize}px Inter, Arial, sans-serif`;
     const destStr = (destination || "").toUpperCase();
     while (ctx.measureText(destStr).width > contentWidth - 80 && destFontSize > 32) {
@@ -706,13 +706,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = secondaryColor;
     ctx.fillText(destStr, left + 28, destY);
 
-    // Pills (3 compactos, abaixo do destino)
-    const pillsY = destY + (format === "story" ? 44 : 36);
+    // 3 Pills compactos — abaixo do destino
+    const pillsY = destY + (format === "story" ? 40 : 34);
     drawHighlightsBlock(left + 28, pillsY, contentWidth - 56, 3, true, true);
 
-    // Price card: abaixo dos 3 pills (3 pills × (60+10) = 210px)
-    const priceCardY = pillsY + 3 * 70 + (format === "story" ? 12 : 8);
-    drawPriceCard(left + 28, Math.min(priceCardY, panelBottom - 310), contentWidth - 56, 290, "right");
+    // Price card — SEMPRE abaixo dos pills, sem Math.min que causava sobreposição
+    // 3 pills compact: 3 × (60+10) = 210px
+    const priceCardY = pillsY + 3 * 70 + 16;
+    drawPriceCard(left + 28, priceCardY, contentWidth - 56, 290, "right");
+
 
   } else if (strategy === "experiencia_hero") {
     const heroH = format === "story" ? panelBottom : height;
