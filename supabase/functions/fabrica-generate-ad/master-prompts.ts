@@ -618,6 +618,7 @@ export function promptTwoSceneEditorial(v: MasterPromptVars): string {
     specialization:
       "• Na área de cor sólida: APENAS '" + headline + "' como título. Fonte grande, espaçada, elegante.\n• NENHUM checklist, NENHUM preço, NENHUM selo.\n• A metade com foto deve ser UMA ÚNICA cena clara do destino, sem divisões ou colagens.\n• Estilo: página de revista de luxo.",
   });
+}
 
 // ============================================================
 // ⬛ AUTORIDADE PREMIUM (ESTILO KRIPTOPIX) — DK1..DK6
