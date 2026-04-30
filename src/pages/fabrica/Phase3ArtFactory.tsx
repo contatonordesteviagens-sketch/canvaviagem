@@ -257,22 +257,24 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       const w = isPortrait ? 1080 : 1200;
       const h = isPortrait ? 1920 : 1200;
 
-      // Lista de termos para forçar fotos de alta qualidade e turísticas
+      // Termos de turismo para forçar fotos de alta qualidade
       const travelTerms = [
-        "beach", "tourism", "resort", "paradise", "travel", "landscape", 
-        "coast", "ocean", "hotel", "summer", "vacation", "scenic"
+        "beach", "resort", "paradise", "travel", "landscape", 
+        "ocean", "tourism", "vacation", "scenic", "tropical"
       ];
 
+      // Usando o formato de URL mais estável do Unsplash que não bloqueia o redirecionamento
       const generated = Array.from({ length: 12 }).map((_, i) => {
         const term = travelTerms[i % travelTerms.length];
         const sig = Math.floor(Math.random() * 1000000);
-        // Usando a API de source do Unsplash de forma mais direta e robusta
-        const url = `https://source.unsplash.com/featured/${w}x${h}/?${encodeURIComponent(q + " " + term)}&sig=${sig}`;
+        // O formato /1080x1920/?query é o mais estável para evitar 404
+        const queryParams = encodeURIComponent(`${q},${term},tourism`);
+        const url = `https://source.unsplash.com/${w}x${h}/?${queryParams}&sig=${sig}`;
         
         return {
           id: `photo-${i}-${sig}`,
           url,
-          thumb: `https://source.unsplash.com/featured/400x400/?${encodeURIComponent(q + " " + term)}&sig=${sig}`,
+          thumb: `https://source.unsplash.com/400x400/?${queryParams}&sig=${sig}`,
           width: w,
           height: h,
           alt: `${q} ${term}`,
@@ -282,7 +284,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       setPhotos(generated);
       setVisiblePhotoCount(3);
       setSelectedPhotoUrl("");
-      toast.success(`Fotos de ${q} carregadas!`);
+      toast.success(`Fotos de ${q} prontas!`);
     } catch (err: any) {
       toast.error("Erro ao carregar fotos. Tente outro termo.");
     } finally {
