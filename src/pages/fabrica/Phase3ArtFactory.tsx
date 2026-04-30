@@ -177,7 +177,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
   const [paymentLabel, setPaymentLabel] = useState("");
   const [paymentSuffix, setPaymentSuffix] = useState("");
-  const [primaryColor, setPrimaryColorState] = useState(state.primaryColor || "#0c2340");
+  const [primaryColor, setPrimaryColorState] = useState(state.primaryColor || "#F59E0B");
   const [secondaryColor, setSecondaryColorState] = useState(state.secondaryColor || "#FCD34D");
   
   const setPrimaryColor = (c: string) => { setPrimaryColorState(c); update({ primaryColor: c }); };
@@ -254,31 +254,37 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
     try {
       const isPortrait = format === "story";
-      const w = isPortrait ? 1080 : 1600;
+      const w = isPortrait ? 1080 : 1200;
       const h = isPortrait ? 1920 : 1200;
 
-      // Gera 24 URLs do Unsplash com termos de turismo diferentes
-      // Cada URL aponta para uma foto real de viagem/destino
-      const seed = Date.now();
-      const generated = TRAVEL_TERMS_CYCLE.slice(0, 24).map((term, i) => {
-        const searchTerm = encodeURIComponent(`${q} ${term}`);
-        const url = `https://source.unsplash.com/${w}x${h}/?${searchTerm}&sig=${seed}-${i}`;
+      // Lista de termos para forçar fotos de alta qualidade e turísticas
+      const travelTerms = [
+        "beach", "tourism", "resort", "paradise", "travel", "landscape", 
+        "coast", "ocean", "hotel", "summer", "vacation", "scenic"
+      ];
+
+      const generated = Array.from({ length: 12 }).map((_, i) => {
+        const term = travelTerms[i % travelTerms.length];
+        const sig = Math.floor(Math.random() * 1000000);
+        // Usando a API de source do Unsplash de forma mais direta e robusta
+        const url = `https://source.unsplash.com/featured/${w}x${h}/?${encodeURIComponent(q + " " + term)}&sig=${sig}`;
+        
         return {
-          id: i,
+          id: `photo-${i}-${sig}`,
           url,
-          thumb: `https://source.unsplash.com/400x600/?${searchTerm}&sig=${seed}-${i}`,
+          thumb: `https://source.unsplash.com/featured/400x400/?${encodeURIComponent(q + " " + term)}&sig=${sig}`,
           width: w,
           height: h,
-          alt: `${q} — ${term}`,
+          alt: `${q} ${term}`,
         };
       });
 
       setPhotos(generated);
       setVisiblePhotoCount(3);
       setSelectedPhotoUrl("");
-      toast.success(`${generated.length} fotos de ${q} carregadas`);
+      toast.success(`Fotos de ${q} carregadas!`);
     } catch (err: any) {
-      toast.error(err?.message || "Erro ao buscar fotos");
+      toast.error("Erro ao carregar fotos. Tente outro termo.");
     } finally {
       setSearchingPhotos(false);
     }
@@ -642,19 +648,19 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     } catch { toast.error("Erro ao baixar imagem"); }
   };
 
-  const sectionCls = "bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 backdrop-blur-xl";
+  const sectionCls = "bg-white/[0.05] border border-white/[0.08] rounded-2xl p-6";
   const labelCls = "text-[11px] text-white/60 uppercase tracking-wider font-semibold block mb-1.5";
-  const inputCls = "w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-white/40";
+  const inputCls = "w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-white/40";
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Banner de provedor de IA */}
-      <div className={`rounded-2xl p-4 border backdrop-blur-xl ${
+      <div className={`rounded-2xl p-4 border ${
         lastProvider === "user_gemini"
-          ? "bg-emerald-500/10 border-emerald-500/30"
+          ? "bg-emerald-500/15 border-emerald-500/30"
           : lastProvider === "lovable_ai"
-            ? "bg-blue-500/10 border-blue-500/30"
-            : "bg-white/[0.03] border-white/10"
+            ? "bg-blue-500/15 border-blue-500/30"
+            : "bg-white/[0.05] border-white/10"
       }`}>
         <div className="flex items-start gap-3">
           <div className="text-2xl">

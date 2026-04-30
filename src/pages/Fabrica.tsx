@@ -24,7 +24,8 @@ const FabricaInner = () => {
   const [primary] = useState(state.primaryColor);
 
   useEffect(() => {
-    document.documentElement.style.setProperty("--fabrica-primary", state.primaryColor);
+    const color = state.primaryColor || "#F59E0B";
+    document.documentElement.style.setProperty("--fabrica-primary", color);
   }, [state.primaryColor]);
 
   // Decide texto preto/branco com base na luminância da primaryColor
