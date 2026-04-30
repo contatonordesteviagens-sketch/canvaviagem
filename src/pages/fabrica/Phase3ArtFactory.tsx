@@ -496,7 +496,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             body: {
               strategy: categoria === "oferta_pacote" ? "ancora" : categoria === "experiencia_destino" ? "vitrine" : "matriz",
               format,
-              destination: destination.toUpperCase() + " (NÃO USE ICONES NO CARD)",
+              destination: destination.toUpperCase(),
               niche: state.niche,
               agencyName: state.agencyName,
               agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
@@ -509,31 +509,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               promoName: (promoName || "Oferta Especial").toUpperCase(),
               highlights,
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
-              templateId: isAiExperienceStory ? undefined : pick.templateId,
-              photoOnly: isAiExperienceStory,
+              templateId: pick.templateId,
+              // 🚨 SOLUÇÃO RADICAL: IA gera apenas a foto de fundo (sem erros de texto)
+              // O código desenha o resto por cima com 100% de precisão.
+              photoOnly: true, 
               variation: freshSeedAi + idx,
               packageType: "Voo + Hotel",
               duration: "5 NOITES",
-              // 🚨 SOLUÇÃO DEFINITIVA: Envia o prompt pronto para o servidor não estragar
-              customPrompt: categoria === "oferta_pacote" ? `
-Um banner vertical de turismo (9:16) para ${destination.toUpperCase()}.
-ESTILO VISUAL: Agência CVC, limpo, cores vibrantes.
-FUNDO: Foto real e nítida de ${destination.toUpperCase()}.
-
-LAYOUT OBRIGATÓRIO:
-1. TÍTULO GRANDE E COMPLETO: "Pacote para ${destination}" (NUNCA deixe o texto incompleto).
-2. CAIXA DE PREÇO (Cor: ${palette.secondary.toUpperCase()}): 
-   - Texto "PACOTE ${destination.toUpperCase()}" no topo.
-   - Preço GIGANTE: "${installments} de R$ ${price}".
-   - "5% OFF À VISTA NO PIX".
-   - ⚠️ REGRA CRÍTICA: PROIBIDO colocar ícones de avião, ônibus ou hotel dentro desta caixa amarela. Mantenha a caixa limpa, apenas com o texto da duração (5 DIAS) e o preço.
-
-3. BENEFÍCIOS: Coloque ${highlights.join(", ")} em pílulas brancas separadas ao lado da foto.
-
-CORES: Use apenas ${palette.primary.toUpperCase()} e ${palette.secondary.toUpperCase()}.
-Sem erros de português. Texto nítido e legível.
-              ` : undefined,
-              // 🚨 Anti-repetição global (Regra 5)
               forbiddenHeadlines: guard.headlines,
               forbiddenLayouts: guard.layouts,
             },
@@ -543,14 +525,19 @@ Sem erros de português. Texto nítido e legível.
         const images: string[] = [];
         let providerSeen: "user_gemini" | "lovable_ai" | null = null;
         const { reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
+        const { composeTravelAd } = await import("@/lib/fabrica-compose-art");
+
         for (const result of results) {
           if (result.error) throw result.error;
           if (result.data?.error) throw new Error(result.data.error);
-          if (!result.data?.image) throw new Error("Nenhuma imagem foi gerada. Cheque os créditos de IA.");
+          if (!result.data?.image) throw new Error("Nenhuma imagem foi gerada.");
+          
           let img = result.data.image as string;
           try { img = await reframeImageToAspect(img, format); }
           catch (e) { console.warn("reframe failed", e); }
-          if (isAiExperienceStory) {
+          
+          // Sempre usamos a composição local para Ofertas para garantir perfeição
+          if (categoria === "oferta_pacote" || isAiExperienceStory) {
             img = await composeTravelAd({
               imageUrl: img,
               format,
@@ -566,18 +553,18 @@ Sem erros de português. Texto nítido e legível.
               paymentMode,
               paymentLabel: paymentLabel || undefined,
               paymentSuffix: paymentSuffix || undefined,
-              strategy: aiExperienceStrategy,
+              strategy: categoria === "oferta_pacote" ? "ancora" : aiExperienceStrategy,
               variation: freshSeedAi,
             });
+            
             if (state.logoBase64) {
               try {
                 const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
                 img = await composeLogoOnImage(img, state.logoBase64);
-              } catch (e) {
-                console.warn("Falha ao compor logo:", e);
-              }
+              } catch (e) { console.warn("Falha ao compor logo:", e); }
             }
           }
+          
           images.push(img);
           if (result.data.provider) providerSeen = result.data.provider;
         }
