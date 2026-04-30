@@ -496,7 +496,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             body: {
               strategy: categoria === "oferta_pacote" ? "ancora" : categoria === "experiencia_destino" ? "vitrine" : "matriz",
               format,
-              destination: destination.toUpperCase(),
+              // 🚨 HACK DE EMERGÊNCIA: Injeta ordens no único campo que o servidor antigo lê
+              destination: `${destination.toUpperCase()} (STRICT RULE: NO PEOPLE, ONLY LANDSCAPE. WRITE FULL TITLE: "Pacote para ${destination}". NO ICONS IN PRICE TAG)`,
               niche: state.niche,
               agencyName: state.agencyName,
               agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
@@ -510,10 +511,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               highlights,
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
               templateId: pick.templateId,
-              // 🚨 SOLUÇÃO RADICAL: IA gera apenas a foto de fundo (sem erros de texto)
-              // O código desenha o resto por cima com 100% de precisão.
-              photoOnly: true, 
-              variation: freshSeedAi + idx,
+              photoOnly: false, // Voltamos para a IA profissional
+              variation: freshSeedAi + idx + Math.random(), // Garante que NUNCA repita a imagem
               packageType: "Voo + Hotel",
               duration: "5 NOITES",
               forbiddenHeadlines: guard.headlines,
@@ -525,7 +524,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         const images: string[] = [];
         let providerSeen: "user_gemini" | "lovable_ai" | null = null;
         const { reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
-        const { composeTravelAd } = await import("@/lib/fabrica-compose-art");
 
         for (const result of results) {
           if (result.error) throw result.error;
@@ -533,37 +531,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           if (!result.data?.image) throw new Error("Nenhuma imagem foi gerada.");
           
           let img = result.data.image as string;
+          // Ajusta o enquadramento se a IA entregar algo fora do aspecto (especialmente em Square)
           try { img = await reframeImageToAspect(img, format); }
           catch (e) { console.warn("reframe failed", e); }
-          
-          // Sempre usamos a composição local para Ofertas para garantir perfeição
-          if (categoria === "oferta_pacote" || isAiExperienceStory) {
-            img = await composeTravelAd({
-              imageUrl: img,
-              format,
-              destination,
-              city: state.city,
-              primaryColor: palette.primary,
-              secondaryColor: palette.secondary,
-              price,
-              installments,
-              promoName,
-              highlights,
-              hasLogo: !!state.logoBase64,
-              paymentMode,
-              paymentLabel: paymentLabel || undefined,
-              paymentSuffix: paymentSuffix || undefined,
-              strategy: categoria === "oferta_pacote" ? "ancora" : aiExperienceStrategy,
-              variation: freshSeedAi,
-            });
-            
-            if (state.logoBase64) {
-              try {
-                const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
-                img = await composeLogoOnImage(img, state.logoBase64);
-              } catch (e) { console.warn("Falha ao compor logo:", e); }
-            }
-          }
           
           images.push(img);
           if (result.data.provider) providerSeen = result.data.provider;
