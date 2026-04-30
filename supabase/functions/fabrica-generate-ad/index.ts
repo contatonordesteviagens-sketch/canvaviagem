@@ -166,6 +166,7 @@ Qualidade cinematográfica, iluminação natural perfeita, cores vivas e saturad
         creativeSeed: `${tpl.id}-v${variation}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         forbiddenHeadlines: body.forbiddenHeadlines || [],
         forbiddenLayouts: body.forbiddenLayouts || [],
+        format,
       };
 
       prompt = tpl.builder(vars);
