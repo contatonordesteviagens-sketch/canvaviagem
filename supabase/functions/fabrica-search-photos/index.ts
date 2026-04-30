@@ -25,6 +25,43 @@ interface PhotoOut {
   alt: string;
 }
 
+// ---------- Google Custom Search (GOOGLE REAL) ----------
+async function searchGoogle(query: string, perPage: number): Promise<PhotoOut[]> {
+  const GOOGLE_API_KEY = Deno.env.get("GOOGLE_API_KEY");
+  const GOOGLE_CX_ID = Deno.env.get("GOOGLE_CX_ID");
+  
+  if (!GOOGLE_API_KEY || !GOOGLE_CX_ID) {
+    console.log("Google Search: Chaves não configuradas.");
+    return [];
+  }
+
+  try {
+    const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX_ID}&q=${encodeURIComponent(query + " tourism destination landscape")}&searchType=image&num=${Math.min(perPage, 10)}&imgSize=large`;
+    
+    const resp = await fetch(url);
+    if (!resp.ok) {
+      const err = await resp.text();
+      console.error("Google Search API Error:", err);
+      return [];
+    }
+    
+    const data = await resp.json();
+    if (!data.items) return [];
+
+    return data.items.map((item: any) => ({
+      id: item.link,
+      url: item.link,
+      thumb: item.image.thumbnailLink,
+      alt: item.title,
+      width: item.image.width,
+      height: item.image.height
+    }));
+  } catch (e) {
+    console.error("Google Search Exception:", e);
+    return [];
+  }
+}
+
 // ---------- Pexels (FONTE PRINCIPAL se tiver API key) ----------
 async function searchPexels(query: string, perPage: number, orientation: string): Promise<PhotoOut[]> {
   const PEXELS_API_KEY = Deno.env.get("PEXELS_API_KEY");
@@ -55,48 +92,26 @@ async function searchPexels(query: string, perPage: number, orientation: string)
   }
 }
 
-// ---------- Unsplash Source (sem API key — FALLBACK PRINCIPAL) ----------
-// Usa termos de turismo variados para garantir fotos de praias/destinos
-const TRAVEL_TERMS = [
-  "beach paradise",
-  "tourism landscape",
-  "travel destination",
-  "tropical beach",
-  "ocean sunset",
-  "nature travel",
-  "holiday resort",
-  "aerial beach",
-  "sea coast",
-  "scenic view",
-  "tourism attraction",
-  "vacation spot",
-];
-
-function buildUnsplashPhotos(query: string, perPage: number, orientation: string): PhotoOut[] {
-  const isPortrait = orientation === "portrait";
-  const w = isPortrait ? 1080 : 1600;
-  const h = isPortrait ? 1920 : 1200;
-  const out: PhotoOut[] = [];
-
+// ---------- Unsplash (FREE FALLBACK) ----------
+async function searchUnsplash(query: string, perPage: number): Promise<PhotoOut[]> {
+  const terms = ["tourism", "travel", "landscape", "beach"];
+  const randomTerm = terms[Math.floor(Math.random() * terms.length)];
+  const fullQuery = `${query} ${randomTerm}`;
+  
+  const photos: PhotoOut[] = [];
   for (let i = 0; i < perPage; i++) {
-    // Rotaciona entre termos de turismo para variar os resultados
-    const travelTerm = TRAVEL_TERMS[i % TRAVEL_TERMS.length];
-    const searchTerm = encodeURIComponent(`${query} ${travelTerm}`);
-    // Adiciona timestamp + índice como seed para forçar imagens diferentes
-    const sig = `${Math.floor(Date.now() / 10000)}-${i}`;
-    const url = `https://source.unsplash.com/${w}x${h}/?${searchTerm}&sig=${sig}`;
-
-    out.push({
-      id: `unsplash-${i}-${sig}`,
-      url,
-      thumb: url,
-      width: w,
-      height: h,
-      alt: `${query} - foto ${i + 1}`,
+    const seed = Math.floor(Math.random() * 1000000);
+    const url = `https://images.unsplash.com/photo-${seed}?auto=format&fit=crop&q=80&w=1080&q=${encodeURIComponent(fullQuery)}`;
+    photos.push({
+      id: `unsplash-${seed}`,
+      url: url,
+      thumb: url + "&w=400",
+      alt: `${query} photo`,
+      width: 1080,
+      height: 1350
     });
   }
-
-  return out;
+  return photos;
 }
 
 serve(async (req) => {
@@ -114,9 +129,9 @@ serve(async (req) => {
     const query = body.query.trim();
     const perPage = Math.min(body.perPage || 12, 24);
     const orientation = body.orientation || "portrait";
+    const engine = body.engine || "google";
 
     let photos: PhotoOut[] = [];
-    let source = "unsplash";
 
     // 1) Tenta Pexels primeiro (melhor qualidade)
     try {
