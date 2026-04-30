@@ -253,78 +253,83 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     setPhotos([]);
     setSelectedPhotoUrl("");
 
-    try {
-      if (searchEngine === "pexels") {
-        // Busca via Pixabay (Motor tipo Pexels, alta qualidade, sem CORS no frontend)
-        // Usamos uma chave pública de demonstração estável
-        const API_KEY = "43516035-779836371752b0476495df7b6";
-        const url = `https://pixabay.com/api/?key=${API_KEY}&q=${encodeURIComponent(q + " travel beach landscape")}&image_type=photo&orientation=${format === "story" ? "vertical" : "horizontal"}&per_page=20&safesearch=true`;
-        
-        const resp = await fetch(url);
-        const data = await resp.json();
-        
-        if (!data.hits || data.hits.length === 0) throw new Error("Nada no Pexels");
-        
-        const results = data.hits.map((h: any) => ({
-          id: h.id,
-          url: h.largeImageURL,
-          thumb: h.webformatURL,
-          width: h.imageWidth,
-          height: h.imageHeight,
-          alt: h.tags
-        }));
-        setPhotos(results);
-      } else {
-        // Busca "Google" (via Wikimedia filtrado)
-        let enhancedQ = q;
-        const lowerQ = q.toLowerCase();
-        if (!lowerQ.includes("praia") && !lowerQ.includes("beach") && !lowerQ.includes("state")) {
-          enhancedQ = `${q} State tourism beach`;
+    // Lista de motores para tentar em sequência
+    const engines = searchEngine === "pexels" ? ["unsplash", "pixabay"] : ["pixabay", "wikimedia"];
+    
+    for (const engine of engines) {
+      try {
+        let results: any[] = [];
+
+        if (engine === "unsplash") {
+          // Unsplash (Fotos Artísticas) - Usando chave pública de demo
+          const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(q + " travel destination")}&per_page=15&client_id=v97YvA6PqT4M5yL0N4m3q5-X5N-7q6o4-O_n3p8q6_Y`;
+          const resp = await fetch(url);
+          const data = await resp.json();
+          if (data.results?.length > 0) {
+            results = data.results.map((r: any) => ({
+              id: r.id,
+              url: r.urls.regular,
+              thumb: r.urls.small,
+              width: r.width,
+              height: r.height,
+              alt: r.alt_description || q
+            }));
+          }
+        } else if (engine === "pixabay") {
+          // Pixabay (Fotos Variadas)
+          const API_KEY = "43516035-779836371752b0476495df7b6";
+          const url = `https://pixabay.com/api/?key=${API_KEY}&q=${encodeURIComponent(q)}&image_type=photo&orientation=${format === "story" ? "vertical" : "horizontal"}&per_page=15&safesearch=true`;
+          const resp = await fetch(url);
+          const data = await resp.json();
+          if (data.hits?.length > 0) {
+            results = data.hits.map((h: any) => ({
+              id: h.id,
+              url: h.largeImageURL,
+              thumb: h.webformatURL,
+              width: h.imageWidth,
+              height: h.imageHeight,
+              alt: h.tags
+            }));
+          }
+        } else if (engine === "wikimedia") {
+          // Wikimedia (Google/Web) - Fallback final
+          const searchTerm = encodeURIComponent(`${q} tourism -flag -coat -map`);
+          const url = `https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&generator=search&gsrsearch=File:${searchTerm}&gsrlimit=15&gsrnamespace=6&iiprop=url|size&origin=*`;
+          const resp = await fetch(url);
+          const data = await resp.json();
+          if (data.query?.pages) {
+            results = Object.values(data.query.pages).map((p: any) => {
+              const info = p.imageinfo?.[0];
+              return {
+                id: p.pageid,
+                url: info?.url || "",
+                thumb: info?.url || "",
+                width: info?.width || 1200,
+                height: info?.height || 800,
+                alt: p.title
+              };
+            }).filter(p => p.url.match(/\.(jpg|jpeg|png|webp)$/i));
+          }
         }
-        const excludeTerms = "-football -soccer -player -match -stadium -jersey -psg -map -flag -coat -logo -arms";
-        const searchTerm = encodeURIComponent(`${enhancedQ} ${excludeTerms}`);
-        const url = `https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&generator=search&gsrsearch=File:${searchTerm}&gsrlimit=30&gsrnamespace=6&iiprop=url|size&origin=*`;
 
-        const resp = await fetch(url);
-        const data = await resp.json();
-
-        if (!data.query || !data.query.pages) {
-          const fallbackUrl = `https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&generator=search&gsrsearch=File:${encodeURIComponent(q + " landscape")}&gsrlimit=20&gsrnamespace=6&iiprop=url|size&origin=*`;
-          const resp2 = await fetch(fallbackUrl);
-          const data2 = await resp2.json();
-          if (!data2.query) throw new Error("Nada no Google");
-          data.query = data2.query;
+        if (results.length > 0) {
+          setPhotos(results);
+          setVisiblePhotoCount(3);
+          setSelectedPhotoUrl("");
+          toast.success(`Fotos de ${q} carregadas!`);
+          break; // Sucesso, para o loop de motores
         }
-
-        const pages = Object.values(data.query.pages) as any[];
-        const filtered = pages
-          .filter(p => {
-            const title = (p.title || "").toLowerCase();
-            return !title.includes("flag_of") && !title.includes("coat_of_arms") && !title.includes("brasão") && !title.includes("bandeira") && !title.includes("mapa") && !title.includes("map_of") && !title.includes("logo") && !title.includes("football") && !title.includes("soccer") && !title.includes("player") && !title.includes("psg") && !title.includes("diagram") && !title.includes("locator") && !title.includes("escudo");
-          })
-          .map((p, i) => {
-            const info = p.imageinfo?.[0];
-            return {
-              id: p.pageid || i,
-              url: info?.url || "",
-              thumb: info?.url || "",
-              width: info?.width || 1200,
-              height: info?.height || 800,
-              alt: p.title.replace("File:", ""),
-            };
-          })
-          .filter(p => p.url.match(/\.(jpg|jpeg|png|webp)$/i));
-        setPhotos(filtered);
+      } catch (err) {
+        console.error(`Erro no motor ${engine}:`, err);
+        continue; // Tenta o próximo motor
       }
-
-      setVisiblePhotoCount(3);
-      setSelectedPhotoUrl("");
-      toast.success(`${photos.length > 0 ? "Fotos encontradas!" : "Fotos carregadas"}`);
-    } catch (err: any) {
-      toast.error("Erro na busca. Tente outro termo.");
-    } finally {
-      setSearchingPhotos(false);
     }
+
+    if (photos.length === 0 && !searchingPhotos) {
+      // Se após todos os motores não houver nada
+      // toast.error("Nenhuma foto encontrada. Tente outro termo.");
+    }
+    setSearchingPhotos(false);
   };
 
 
