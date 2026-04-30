@@ -150,28 +150,47 @@ const pickPhotoRefs = (
 
 export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const { state, update } = useFabricaContext();
-  const [categoria, setCategoria] = useState<CategoriaId>("oferta_pacote");
+  const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
+  const setCategoria = (c: CategoriaId) => { setCategoriaState(c); update({ lastCategoria: c }); };
+
   const strategy: StrategyId = getCategoria(categoria).legacyStrategy;
   const [lastTemplateId, setLastTemplateId] = useState<string | null>(() => localStorage.getItem("fabrica_last_template_id"));
   const [recentTemplateIds, setRecentTemplateIds] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("fabrica_recent_template_ids") || "[]"); }
     catch { return []; }
   });
-  const [format, setFormat] = useState<"square" | "story">("story");
+  const [format, setFormatState] = useState<"square" | "story">(state.lastFormat || "story");
+  const setFormat = (f: "square" | "story") => { setFormatState(f); update({ lastFormat: f }); };
+
   const [destination, setDestination] = useState(state.destinos?.[0] || "");
-  const [price, setPrice] = useState("149,90");
-  const [installments, setInstallments] = useState("10x");
-  const [promoName, setPromoName] = useState("OFERTA ESPECIAL");
-  const [paymentMode, setPaymentMode] = useState<PaymentMode>("installments");
+  const [price, setPriceState] = useState(state.lastPrice || "149,90");
+  const setPrice = (p: string) => { setPriceState(p); update({ lastPrice: p }); };
+
+  const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
+  const setInstallments = (i: string) => { setInstallmentsState(i); update({ lastInstallments: i }); };
+
+  const [promoName, setPromoNameState] = useState(state.lastPromoName || "OFERTA ESPECIAL");
+  const setPromoName = (n: string) => { setPromoNameState(n); update({ lastPromoName: n }); };
+
+  const [paymentMode, setPaymentModeState] = useState<PaymentMode>(state.lastPaymentMode || "installments");
+  const setPaymentMode = (m: PaymentMode) => { setPaymentModeState(m); update({ lastPaymentMode: m }); };
+
   const [paymentLabel, setPaymentLabel] = useState("");
   const [paymentSuffix, setPaymentSuffix] = useState("");
   const [primaryColor, setPrimaryColorState] = useState(state.primaryColor || "#0c2340");
   const [secondaryColor, setSecondaryColorState] = useState(state.secondaryColor || "#FCD34D");
-  // Persiste a cor IMEDIATAMENTE ao alterar — assim a marca da agência fica fixa
-  // e nunca é "resetada" quando o usuário troca de fase, recarrega ou gera nova imagem.
+  
+  // Sincroniza cores locais se o estado global mudar (ex: carregamento inicial do localStorage)
+  useEffect(() => {
+    if (state.primaryColor) setPrimaryColorState(state.primaryColor);
+    if (state.secondaryColor) setSecondaryColorState(state.secondaryColor);
+  }, [state.primaryColor, state.secondaryColor]);
+
   const setPrimaryColor = (c: string) => { setPrimaryColorState(c); update({ primaryColor: c }); };
   const setSecondaryColor = (c: string) => { setSecondaryColorState(c); update({ secondaryColor: c }); };
-  const [highlights, setHighlights] = useState<Highlight[]>(DEFAULT_HIGHLIGHTS);
+
+  const [highlights, setHighlightsState] = useState<Highlight[]>(state.lastHighlights || DEFAULT_HIGHLIGHTS);
+  const setHighlights = (h: Highlight[]) => { setHighlightsState(h); update({ lastHighlights: h }); };
   const [editingIconIdx, setEditingIconIdx] = useState<number | null>(null);
   const [newHl, setNewHl] = useState("");
   const [loading, setLoading] = useState(false);

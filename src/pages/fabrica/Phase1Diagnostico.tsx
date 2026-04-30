@@ -151,8 +151,27 @@ export const Phase1Diagnostico = ({ onComplete }: Props) => {
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const reader = new FileReader();
-    reader.onload = () => update({ logoBase64: reader.result as string });
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 800;
+        const scale = Math.min(1, MAX_WIDTH / img.width);
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // Exporta como webp/jpeg comprimido para economizar muito espaço
+        const base64 = canvas.toDataURL("image/webp", 0.8);
+        update({ logoBase64: base64 });
+        toast.success("Logo carregada e otimizada!");
+      };
+      img.src = event.target?.result as string;
+    };
     reader.readAsDataURL(file);
   };
 

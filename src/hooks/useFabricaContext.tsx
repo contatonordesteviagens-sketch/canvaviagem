@@ -110,6 +110,15 @@ export interface FabricaState {
   diagnosticoCompleto: boolean;
   generatedAdImage: string; // base64 da imagem gerada na Fase 3
   siteContent: SiteContent;
+
+  // Persistência da Fase 3 (para não resetar ao voltar)
+  lastCategoria?: string;
+  lastFormat?: "square" | "story";
+  lastPrice?: string;
+  lastInstallments?: string;
+  lastPromoName?: string;
+  lastHighlights?: any[];
+  lastPaymentMode?: any;
 }
 
 const defaultState: FabricaState = {
@@ -169,6 +178,13 @@ const defaultState: FabricaState = {
       finalCta: true,
     },
   },
+  lastCategoria: "oferta_pacote",
+  lastFormat: "story",
+  lastPrice: "149,90",
+  lastInstallments: "10x",
+  lastPromoName: "OFERTA ESPECIAL",
+  lastHighlights: undefined,
+  lastPaymentMode: "installments",
 };
 
 const STORAGE_KEY = "fabrica-context-v1";
