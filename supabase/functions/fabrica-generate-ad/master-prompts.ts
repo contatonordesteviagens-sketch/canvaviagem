@@ -32,6 +32,8 @@ export interface MasterPromptVars {
   forbiddenHeadlines?: string[];
   /** Layout/templateIds a EVITAR (apenas log/uso futuro). */
   forbiddenLayouts?: string[];
+  /** Formato de saída: "square" (1:1 feed) ou "story" (9:16). Default: story. */
+  format?: "square" | "story";
 }
 
 // ============================================================
