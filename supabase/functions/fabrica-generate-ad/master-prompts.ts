@@ -254,60 +254,47 @@ function buildBrain(v: MasterPromptVars, opts: {
   headline: string;
   experienceDescription?: string;
   legalFooter?: string;
-  /** Texto livre extra com a "especialização" daquele OP/ED. */
   specialization?: string;
 }): string {
-  const benefits = (v.highlights?.length ? v.highlights : ["Hospedagem", "Aéreo", "Café da manhã", "Transfer"])
-    .slice(0, 5)
-    .map((b) => `• ${b}`)
-    .join("\n");
-
-  const legal = opts.legalFooter
-    ?? `Saindo de ${v.city}. Taxas e impostos não inclusos. Consulte disponibilidade.`;
-
   const valueBlock = opts.category === "oferta"
-    ? `[BLOCO DE PREÇO — DESTAQUE EXTREMO · MÍNIMO 25% DA ÁREA CENTRAL]
-A partir de
+    ? `[BLOCO DE PREÇO — DESTAQUE EXTREMO]
 ${v.installments} de R$ ${v.installmentValue}     ← FONTE GIGANTE, ULTRA-BOLD
-Preço total: R$ ${v.totalValue}
-Selos obrigatórios: SEM JUROS · PIX · ${v.packageType.toUpperCase()}
-Urgência: ${v.promoName.toUpperCase()}`
+Selo principal: ${v.promoName.toUpperCase()}`
     : `[BLOCO DE EXPERIÊNCIA — EDITORIAL, SEM CARA DE OFERTA]
-${opts.experienceDescription || `Roteiro de ${v.duration} explorando ${v.destination} com curadoria local e conforto.`}
-Tipo de viagem: ${v.packageType} · ${v.duration}
-PREÇO É OPCIONAL E DISCRETO: se inserir, use APENAS um pequeno texto fino "A partir de R$ ${v.installmentValue}" em tipografia leve, posicionado como nota lateral dentro da área segura central. NÃO usar caixa colorida, NÃO usar parcelamento em destaque, NÃO usar selos. Em layouts mais minimalistas (ED1, ED3, ED5) o preço pode ser totalmente OMITIDO em favor de "Consulte disponibilidade".`;
+${opts.experienceDescription || `Roteiro inesquecível em ${v.destination}.`}
+SEM NENHUM PREÇO, SEM PARCELAS, SEM SELOS.`;
 
   const categoryRules = opts.category === "oferta" ? OFERTA_RULES : EXPERIENCIA_RULES;
   const creativeSeed = v.creativeSeed || `${opts.category}-${opts.layout.slice(0, 24)}`;
   const variationDirectives = opts.category === "oferta"
     ? [
-        "LAYOUT ÚNICO DESTA GERAÇÃO: imagem full com preço direto sobre a foto, SEM cartão central · POSIÇÃO PREÇO: lado esquerdo livre · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: panorâmica praia · ILUMINAÇÃO: natural cristalina",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: divisão topo imagem 60% + base sólida 40% com oferta · POSIÇÃO PREÇO: base inferior dentro da safe zone · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: aérea/drone · ILUMINAÇÃO: luz dramática de meio-dia",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: barra lateral vertical + imagem dominante · POSIÇÃO PREÇO: lado direito dentro da barra · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: close lifestyle · ILUMINAÇÃO: backlight quente",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: grid de fotos com preço em selo isolado · POSIÇÃO PREÇO: selo no canto oposto à imagem principal · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: múltiplos recortes turísticos · ILUMINAÇÃO: comercial brilhante",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: cartão inclinado/assimétrico tipo ticket · POSIÇÃO PREÇO: dentro de selo circular · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: lifestyle pessoas viajando · ILUMINAÇÃO: sunset cinematográfico",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: texto central leve com preço isolado, sem bloco pesado · POSIÇÃO PREÇO: centro inferior · CORES: usar SOMENTE a primária e secundária informadas · IMAGEM: detalhe arquitetônico ou close · ILUMINAÇÃO: luz suave difusa",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: imagem full com preço direto sobre a foto em um único bloco sólido bem espaçado",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: divisão topo imagem + base sólida com oferta",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: barra lateral vertical + imagem dominante ao lado",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: cartão arredondado flutuando no terço inferior, com muita margem ao redor",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: bloco retangular simples no canto, deixando 70% da foto livre",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: texto centralizado com preço isolado em fonte imensa, sem bordas pesadas",
       ]
     : [
-        "LAYOUT ÚNICO DESTA GERAÇÃO: imagem full sem caixas; texto leve no centro seguro; fotografia contemplativa domina tudo",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: divisão topo + base suave sem cara de promoção; imagem ocupa a maior parte; texto editorial discreto",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: barra lateral editorial fina com foto dominante; sem preço protagonista; linguagem emocional",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: grid editorial de fotos diferentes; título curto e leve; nenhum bloco de venda",
-        "LAYOUT ÚNICO DESTA GERAÇÃO: texto central leve sobre foto limpa; muito respiro; sem cartão e sem selo",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: imagem full sem caixas; apenas título leve no centro seguro; fotografia domina tudo",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: divisão suave topo + base sem cara de promoção; texto editorial discreto",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: barra lateral editorial fina com foto dominante; sem preço",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: imagem limpa; título curto no terço superior; nenhum bloco de venda",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: texto central leve sobre foto com muito respiro e espaço negativo ao redor",
       ];
   const variationIndex = Math.abs([...creativeSeed].reduce((acc, char) => acc + char.charCodeAt(0), 0)) % variationDirectives.length;
   const promoLine = opts.category === "oferta"
     ? `Selo promocional: "${v.promoName}"`
-    : `Chamada editorial secundária: "${opts.experienceDescription || `Dias leves em ${v.destination}, com calma, beleza e curadoria.`}" — sem selo promocional, sem urgência e sem linguagem de oferta.`;
+    : `Chamada editorial secundária: "${opts.experienceDescription || `Dias leves em ${v.destination}, com calma, beleza e curadoria.`}" — sem selo promocional.`;
   const typographyHierarchy = opts.category === "oferta"
     ? "- PREÇO = maior elemento da composição (Ultra-Bold / Heavy).\n- DESTINO = segundo maior elemento (Bold)."
-    : "- IMAGEM = protagonista absoluta; texto deve ser leve e elegante.\n- DESTINO = maior texto, mas sem competir com a fotografia.\n- PREÇO, se existir, deve ser o menor elemento informativo e nunca usar Ultra-Bold.";
+    : "- IMAGEM = protagonista absoluta; texto deve ser leve e elegante.\n- DESTINO = maior texto, mas sem competir com a fotografia.";
   const centerRule = opts.category === "oferta"
-    ? "- Centro de conversão obrigatório nos 65% centrais da imagem (preço, headline, destino e CTA)."
-    : "- Centro seguro obrigatório nos 65% centrais para título e narrativa; NÃO criar centro de conversão com preço/CTA grande.";
+    ? "- Centro de conversão obrigatório nos 65% centrais da imagem."
+    : "- Centro seguro obrigatório nos 65% centrais para título e narrativa; NÃO criar centro de conversão.";
   const objectiveLine = opts.category === "oferta"
-    ? "foco em legibilidade e alto impacto visual para conversão imediata."
-    : "foco em emoção, desejo, fotografia premium e leitura elegante, sem aparência de oferta.";
+    ? "foco em legibilidade, espaço vazio abundante e alto impacto visual para conversão imediata."
+    : "foco em emoção, desejo, espaço negativo amplo, fotografia premium e leitura elegante, sem aparência de oferta.";
 
   return `
 Um banner publicitário vertical de turismo (formato 9:16, resolução 8K), hiper-realista, com qualidade cinematográfica, iluminação natural ou dramática altamente refinada e composição profissional de nível publicitário.
@@ -321,27 +308,18 @@ ID de variação: ${creativeSeed}.
 Direção única desta geração: ${variationDirectives[variationIndex]}.
 Este anúncio DEVE seguir a câmera, iluminação e estruturação exatas informadas na "Direção única", garantindo variação visual extrema. Mude os elementos de lugar e inove na composição espacial de acordo com a diretriz acima.
 
-[REFERÊNCIAS DE ESTILO]
-Use a biblioteca de referências de anúncios enviada pelo usuário APENAS como inspiração estrutural: divisão 60/40 foto + base sólida, cartão amarelo de pacote, faixa lateral vibrante, selo tipo bilhete Pix, layout editorial topo/base e grid editorial de experiências. NÃO copie destinos, preços, datas, hotéis, textos legais ou informações fixas dessas referências. Os únicos dados permitidos são os dados preenchidos no formulário abaixo.
-
 [FOTOGRAFIA PRINCIPAL]
 Uma cena extremamente realista e detalhada de ${v.destination}, com iluminação ${opts.lighting}, mostrando ${opts.sceneDescription}.
 
 [ELEMENTOS DE INTERFACE]
-Interface moderna, limpa e minimalista, com tipografia perfeita e alinhamento matemático.
-Paleta obrigatória e bloqueada: cor primária ${v.primaryHex}, cor secundária ${v.secondaryHex}. Use SOMENTE essas duas cores nos blocos, preço, badges, barras, cartões e detalhes. É proibido substituir por verde/preto/azul/amarelo genérico ou qualquer paleta sugerida pelo estilo.
+Interface moderna, limpa e minimalista, com tipografia perfeita e MUITO ESPAÇO VAZIO (Negative Space) para evitar sobreposição de textos.
+Paleta obrigatória e bloqueada: cor primária ${v.primaryHex}, cor secundária ${v.secondaryHex}. Use SOMENTE essas duas cores nos blocos, preço, badges e detalhes.
 
 Título/Chamada: "${opts.headline}"
 Destino destacado: "${v.destination}"
 ${promoLine}
 
 ${valueBlock}
-
-Benefícios:
-${benefits}
-
-Rodapé legal:
-${legal}
 
 ${opts.specialization ? `[ESPECIALIZAÇÃO DESTE PROMPT]\n${opts.specialization}\n` : ""}
 ${categoryRules}
@@ -350,49 +328,41 @@ ${categoryRules}
 DIRETRIZES ESTRITAS DE RENDERIZAÇÃO DE INTERFACE (UI/UX) E TIPOGRAFIA:
 A imagem deve ser gerada no formato Vertical 9:16 (resolução 8K). O motor de geração deve obedecer rigorosamente ao seguinte sistema de grid matemático, 'Safe Zones' do Instagram Stories e prevenção de artefatos:
 
-1. SAFE ZONES (ZONAS DE SEGURANÇA DO INSTAGRAM):
-- Margem Superior (Top 15%): É TERMINANTEMENTE PROIBIDO colocar qualquer texto, logotipo ou elemento crucial de conversão nos 15% superiores da imagem.
-- Margem Inferior (Bottom 20%): É TERMINANTEMENTE PROIBIDO colocar qualquer texto legal, preço ou botão nos 20% inferiores da imagem.
-- Margens Laterais (Padding de 5%): Nenhum texto pode tocar a borda.
+1. SAFE ZONES E ESPAÇAMENTO (CRÍTICO):
+- É OBRIGATÓRIO deixar margens amplas ao redor de cada bloco de texto.
+- PROIBIDO sobrepor textos em cima uns dos outros ou sobre bordas de cartões.
+- Margem Superior (Top 15%) e Margem Inferior (Bottom 20%): Livres de texto.
 
 2. POSICIONAMENTO:
-- Zero sobreposição entre elementos.
+- Zero sobreposição entre elementos. Espaçamento visível entre título e preço.
 - Espaçamento matemático e simétrico entre todos os blocos.
-- Se houver logo ou nome da agência no topo esquerdo, reservar uma área limpa exclusiva; cidade, badge, título, preço e qualquer texto devem começar abaixo ou ao lado, nunca por cima dessa área.
 ${centerRule}
 
 3. TIPOGRAFIA:
 ${typographyHierarchy}
-- Texto com CONTRASTE ABSOLUTO: branco sobre fundos escuros/vibrantes; escuro sobre fundos claros. Drop-shadow suave quando o texto estiver sobre foto.
-- Sans-serif moderna premium estilo Apple/alta tecnologia.
+- Texto com CONTRASTE ABSOLUTO.
 
 4. QUALIDADE:
-- SEM distorções anatômicas (cabeças desproporcionais, membros extras, duplicação ilógica de objetos como dois relógios no mesmo pulso).
-- SEM erros de texto: ortografia perfeita em português, sem caracteres alienígenas, sem fusão de letras.
-- REALISMO ABSOLUTO em qualquer elemento humano, objeto ou cenário.
+- SEM erros de texto: ortografia perfeita em português.
+- NUNCA crie listas de tópicos com marcadores (bullet points ou ícones pequenos).
 
 ══════════════════════════════════════
-🛑 OBRIGATÓRIO: RENDERIZAÇÃO DE TEXTO EXATO
+🛑 OBRIGATÓRIO: RENDERIZAÇÃO DE TEXTO EXATO E LIMPO
 ══════════════════════════════════════
 Você DEVE escrever os textos EXATAMENTE como passados no prompt.
-É proibido inventar palavras de viagem, adicionar adjetivos ou criar seus próprios títulos. 
-O texto precisa ser uma cópia EXATA.
+É proibido inventar palavras de viagem, adicionar ícones desenhados, ou criar descrições longas. O texto precisa ser uma cópia EXATA e o mais curto possível.
 
 📋 TEXTOS EXATOS DESTE BANNER:
 • Destino: «${v.destination}»
 • Título principal: «${opts.headline}»
-• Parcela: «${v.installments}x R$ ${v.installmentValue}»
-• Preço total: «Preço total: R$ ${v.totalValue}»
-• Rodapé: «Saindo de ${v.city}. Consulte disponibilidade.»
+${opts.category === "oferta" ? `• Parcela: «${v.installments}x R$ ${v.installmentValue}»\n• Selo: «${v.promoName}»` : ""}
 
 ⚠️ NUNCA deixe letras cortadas na borda da imagem. Toda palavra deve caber inteira na imagem.
 ══════════════════════════════════════
 
 🛑 REGRAS ABSOLUTAS ADICIONAIS:
-- GERAR APENAS 1 IMAGEM.
-- É PROIBIDO gerar mockups duplos, duas peças ou colagens.
-- O cartão da oferta deve estar bem preenchido e organizado.
-- Textos renderizados EXATAMENTE como listados, sem "adivinhar" palavras.
+- GERAR APENAS 1 IMAGEM ÚNICA (PROIBIDO fazer grids empilhados, colagens ou mockups duplos).
+- O cartão da oferta (se houver) deve estar limpo e MUITO bem espaçado, sem textos amontoados.
 - As cores primária e secundária informadas DEVEM ser as únicas cores dominantes.
 ══════════════════════════════════════
 `;
@@ -402,18 +372,18 @@ O texto precisa ser uma cópia EXATA.
 // 🔴 OFERTA PACOTE — OP1..OP4
 // ============================================================
 
-// 🔥 OP1 — CARTÃO DIVIDIDO (base Cancún)
+// 🔥 OP1 — CARTÃO DIVIDIDO
 export function promptClassicVertical(v: MasterPromptVars): string {
   const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op1", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "DIVISÃO HORIZONTAL EXATA — topo com fotografia full-bleed do destino e base com bloco sólido vibrante. O cartão de oferta fica INTEIRO dentro do bloco sólido inferior, sem cruzar divisórias e sem encostar em outros elementos",
+      "DIVISÃO HORIZONTAL — topo com fotografia full-bleed do destino e base com bloco sólido vibrante. O bloco sólido possui muito espaço livre interno.",
     lighting: "natural diurna brilhante, hora dourada, cores vivas, sombras nítidas",
     sceneDescription: v.destinationDescription,
     headline,
     specialization:
-      "• Cartão central íntegro e separado, com sombra projetada para profundidade, SEM sobrepor foto, badge ou lista.\n• DIVISÃO VISUAL clara entre foto e bloco sólido — zero transição gradual.\n• PREÇO extremamente dominante dentro do cartão (mínimo 30% do cartão).\n• Cores obrigatórias: fundo/bloco na cor primária enviada e preço/badges na cor secundária enviada — sem trocar por paleta pronta.",
+      "• Bloco de conversão íntegro e separado. O cartão de oferta DEVE ficar com folga, SEM encostar nas bordas ou na foto principal.\n• DIVISÃO VISUAL clara entre foto e bloco.\n• PREÇO espaçado e legível, com margem vazia ao seu redor.\n• Cores obrigatórias: bloco na cor primária e destaques na cor secundária.",
   });
 }
 
@@ -423,12 +393,12 @@ export function promptCancunStyle(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "Fundo 100% FOTOGRÁFICO ocupando toda a tela (sem bloco sólido), com CARTÃO CENTRAL na cor secundária enviada sobreposto e centralizado; selo de desconto separado acima do cartão, nunca sobre a borda do cartão",
+      "Fundo 100% FOTOGRÁFICO ocupando toda a tela, com CARTÃO CENTRAL na cor secundária enviado sobreposto e centralizado.",
     lighting: "tropical brilhante, céu turquesa, água cristalina, alta saturação cinematográfica",
     sceneDescription: v.destinationDescription,
     headline,
     specialization:
-      "• Cartão na cor secundária enviada, cantos arredondados, sombra suave para flutuar sobre a foto.\n• PREÇO no centro absoluto do cartão, fonte Ultra-Bold, ocupando 30%+ do cartão.\n• Selo CIRCULAR de desconto deve usar a cor primária enviada e ficar separado do cartão com margem visível; NÃO sobrepor texto nem bordas.\n• Foto NUNCA é cortada de forma agressiva — enquadramento limpo por trás do cartão como background de suporte.",
+      "• Cartão na cor secundária, cantos arredondados, sombra suave para flutuar sobre a foto.\n• PREÇO absoluto e limpo dentro do cartão, fonte Ultra-Bold.\n• O cartão deve ter pouquíssimo texto e muito espaço vazio internamente para não poluir.\n• Foto NUNCA é cortada de forma agressiva — enquadramento limpo por trás do cartão.",
   });
 }
 
@@ -438,12 +408,12 @@ export function promptGramadoStyle(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "FOTO AÉREA top-down ou drone-shot do destino ocupando toda a tela, com CARTÃO arredondado sobreposto na parte SUPERIOR (não centralizado), permitindo respiro inferior para a vista panorâmica respirar",
+      "FOTO AÉREA top-down ou drone-shot do destino ocupando toda a tela, com CARTÃO MINIMALISTA sobreposto em um dos cantos, permitindo muito respiro inferior.",
     lighting: "aérea diurna, sol alto, água translúcida com gradientes turquesa, sombras nítidas",
     sceneDescription: `vista aérea (drone) de ${v.destinationDescription}`,
     headline,
     specialization:
-      "• Câmera obrigatoriamente em ângulo TOP-DOWN ou drone alto, mostrando ESCALA e amplitude.\n• Cartão posicionado no TERÇO SUPERIOR — não no centro — para deixar a paisagem respirar.\n• Preço FORTE mas INTEGRADO ao cartão, com selo serrilhado tipo bilhete azul anexado na borda inferior do cartão (PIX 5% OFF).\n• Sensação de descoberta + escala da viagem.",
+      "• Câmera obrigatoriamente em ângulo TOP-DOWN ou drone alto, mostrando ESCALA e amplitude.\n• Cartão posicionado com folga — não no centro — para deixar a paisagem respirar.\n• Preço FORTE e limpo, sem esmagar o título.",
   });
 }
 
@@ -453,27 +423,27 @@ export function promptMaceioStyle(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "SPLIT VERTICAL — 30% à ESQUERDA com barra sólida na cor primária enviada contendo TODO o texto e CTA; 70% à DIREITA com fotografia limpa do destino",
+      "SPLIT VERTICAL — 30% à ESQUERDA com barra sólida na cor primária; 70% à DIREITA com fotografia limpa do destino.",
     lighting: "comercial brilhante, alto contraste, cores saturadas",
     sceneDescription: v.destinationDescription,
     headline,
     specialization:
-      "• Barra lateral 30% com COR SÓLIDA vibrante — contém destino, preço gigante e CTA.\n• Hierarquia de leitura ULTRA-RÁPIDA (3 segundos): destino → preço → CTA.\n• CTA FORTE em botão retangular contrastante: 'RESERVAR AGORA' ou 'GARANTIR VAGA'.\n• Estilo de anúncio direto de performance (Google Ads / Meta Ads), sem ornamentos.",
+      "• Barra lateral com COR SÓLIDA vibrante, COM MUITO ESPAÇAMENTO INTERNO.\n• Hierarquia de leitura ULTRA-RÁPIDA e limpa: destino → enorme respiro visual vazio → preço gigante na base.\n• ZERO listas de texto na barra lateral, mantenha-a limpa e direta.",
   });
 }
 
-// 🔥 OP5 — BILHETE PIX / CARTÃO AMARELO
+// 🔥 OP5 — CARTÃO SIMPLES
 export function promptTicketPixCard(v: MasterPromptVars): string {
   const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op5", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "FOTO AÉREA OU PANORÂMICA ocupando 100% do fundo com um CARTÃO grande e limpo na cor secundária enviada no centro seguro; dentro do cartão há cabeçalho PACOTE + DESTINO, linha de ícones dos inclusos, preço maciço e selo serrilhado PIX na cor primária enviada anexado abaixo com margem sem sobreposição",
-    lighting: "natural brilhante, comercial, cores turquesa/azul com contraste alto no cartão amarelo",
+      "FOTO AÉREA OU PANORÂMICA ocupando 100% do fundo com um CARTÃO MINIMALISTA na cor secundária no centro seguro. Dentro do cartão há apenas o Destino e o Preço com enorme espaço vazio ao redor.",
+    lighting: "natural brilhante, comercial, cores turquesa/azul com contraste alto no cartão",
     sceneDescription: `vista ampla e clara de ${v.destinationDescription}`,
     headline,
     specialization:
-      "• Inspirado em cartões premium de pacote, mas usando APENAS os dados e cores do formulário.\n• O cartão na cor secundária enviada não pode encostar nas safe zones; deve parecer uma peça única e limpa.\n• Selo tipo bilhete PIX na cor primária enviada fica abaixo do preço com separação visível, nunca sobre texto.\n• A fotografia de fundo serve de contexto; preço e oferta dominam a conversão.",
+      "• O cartão não pode encostar nas safe zones; deve parecer uma peça única e extremamente limpa.\n• PROIBIDO gerar linhas de ícones ou múltiplos selos que gerem confusão.\n• A fotografia de fundo serve de contexto; o preço domina a conversão sem competir com outros textos.",
   });
 }
 
@@ -483,12 +453,12 @@ export function promptSideHeroPerformance(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "oferta",
     layout:
-      "PAINEL LATERAL esquerdo vibrante ocupando 28-32% da largura com destino, selos e preço; lado direito com uma fotografia hero única ocupando 68-72%, com CTA em botão isolado no centro seguro",
+      "PAINEL LATERAL esquerdo vibrante contendo título e preço; lado direito com uma fotografia hero limpa.",
     lighting: "dramática de fim de tarde ou manhã, alto contraste comercial, cores saturadas",
     sceneDescription: `${v.destinationDescription} em enquadramento hero cinematográfico, sem duplicar cenas`,
     headline,
     specialization:
-      "• Referência estrutural: faixa lateral + fotografia grande, usando a cor primária enviada no painel e a secundária nos destaques, sem copiar conteúdo fixo.\n• Leitura em 3 segundos: destino → preço → CTA.\n• Painel lateral deve ter respiro interno alto, sem texto vertical colidindo.\n• Nunca usar grid; apenas uma foto hero e um painel de conversão.",
+      "• Faixa lateral + fotografia grande, garantindo que o painel lateral tenha MUITO VAZIO (negative space) separando título e preço.\n• Leitura limpa: destino → (espaço vazio enorme) → preço.\n• NENHUMA lista longa ou texto vertical colidindo.",
   });
 }
 
@@ -502,13 +472,13 @@ export function promptIconicLandmark(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "FULL-BLEED CINEMATOGRÁFICO — a fotografia ocupa cerca de 90% da composição, sem divisões duras nem blocos sólidos. Texto leve sobreposto no centro vertical, com gradiente sutil para legibilidade. Sem cartões, sem caixas, sem rodapé colorido.",
+      "FULL-BLEED CINEMATOGRÁFICO — a fotografia ocupa 100% da composição, sem divisões duras. Texto leve sobreposto, com gradiente sutil apenas para legibilidade. Sem cartões, sem caixas.",
     lighting: "natural perfeita, hora dourada cinematográfica, profundidade de campo realista, cores vibrantes e atmosféricas",
-    sceneDescription: `${v.destination} com riqueza de detalhes — céu dramático, luz dourada, pessoas naturais em momentos espontâneos (caminhando, sorrindo, contemplando), água cristalina ou paisagem icônica. ${v.destinationDescription}`,
+    sceneDescription: `${v.destination} com riqueza de detalhes — céu dramático, luz dourada, pessoas naturais em momentos espontâneos, água cristalina ou paisagem icônica. ${v.destinationDescription}`,
     headline,
     experienceDescription: `Uma experiência inesquecível espera por você em ${v.destination}.`,
     specialization:
-      "• Título elegante e LEVE no centro: '" + headline + "' — use EXATAMENTE essa frase, NÃO substitua por 'Descubra/Explore/Viva' fixos.\n• Subtítulo sutil abaixo: 'Uma experiência inesquecível espera por você'.\n• Pequenos ícones discretos na base do centro (SEM caixa, SEM pílula): • Hospedagem  • Passeios  • Guia local.\n• PROIBIDO caixa de preço, cartão promocional, cores agressivas.\n• Estilo: editorial, aspiracional, limpo, capa de revista de viagem.",
+      "• Título elegante e LEVE no centro: '" + headline + "' — use EXATAMENTE essa frase.\n• Subtítulo sutil abaixo.\n• NENHUMA lista de ícones ou passeios.\n• PROIBIDO caixa de preço, cartão promocional, cores agressivas.\n• Estilo: editorial, aspiracional, limpo, capa de revista de viagem com MUITO espaço em branco.",
   });
 }
 
@@ -518,13 +488,13 @@ export function promptSplitYellowSide(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "DIVISÃO SUAVE — 70% SUPERIOR com fotografia hiper-realista do destino; 30% INFERIOR com área clean usando leve gradiente translúcido (NUNCA bloco sólido pesado, NUNCA cor saturada). Transição suave entre as duas áreas.",
+      "DIVISÃO SUAVE — 70% SUPERIOR com fotografia hiper-realista do destino; 30% INFERIOR com área clean usando leve gradiente translúcido. Transição suave entre as duas áreas.",
     lighting: "natural suave, luz realista, atmosfera convidativa",
     sceneDescription: `${v.destination} com foco em experiência — mar, arquitetura ou natureza com luz natural suave, pessoas interagindo com o ambiente de forma natural. ${v.destinationDescription}`,
     headline,
     experienceDescription: `Dias únicos com paisagens incríveis e momentos inesquecíveis em ${v.destination}.`,
     specialization:
-      "• Texto na área inferior:\n   Título: '" + headline + "' — use EXATAMENTE essa frase, NÃO substitua por verbos fixos.\n   Descrição: 'Paisagens incríveis e momentos inesquecíveis'.\n• Lista LEVE (sem caixas, sem pílulas): • Cultura local  • Gastronomia  • Passeios exclusivos.\n• Preço pequeno OPCIONAL e discreto, em texto fino: 'A partir de R$ " + v.installmentValue + "'. NUNCA em caixa colorida.\n• Estilo: minimalista, leve, sem aparência de anúncio agressivo.",
+      "• Texto na área inferior com amplo respiro:\n   Título: '" + headline + "'\n   Descrição: 'Paisagens incríveis e momentos inesquecíveis'.\n• NENHUMA lista.\n• NENHUM preço.\n• Estilo: minimalista, leve, silencioso, sem aparência de anúncio.",
   });
 }
 
@@ -534,29 +504,29 @@ export function promptElegantCenterCard(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "STORY LIFESTYLE — fotografia full-bleed dominante mostrando pessoas reais aproveitando o destino. Texto sobreposto leve, sem caixas pesadas, com gradiente sutil apenas para legibilidade.",
+      "STORY LIFESTYLE — fotografia full-bleed dominante mostrando pessoas reais aproveitando o destino. Texto sobreposto leve, sem caixas pesadas.",
     lighting: "luz natural, clima feliz, sensação de liberdade, atmosfera real e espontânea",
     sceneDescription: `grupo de pessoas reais aproveitando ${v.destination} — rindo, tirando fotos, vivendo o momento. Ambiente vivo, autêntico, sem pose comercial. ${v.destinationDescription}`,
     headline,
     experienceDescription: `Momentos que ficam para sempre em ${v.destination}.`,
     specialization:
-      "• Topo do centro: '" + headline + "' — use EXATAMENTE essa frase como título principal.\n• Meio: 'Momentos que ficam para sempre'.\n• Base (pequeno e discreto, SEM caixas): • Passeios inclusos  • Experiência completa  • Roteiro planejado.\n• PROIBIDO preço gigante, cartões, elementos de oferta.\n• Estilo: Instagram orgânico premium, sensação real de viagem.",
+      "• Apenas UM bloco de texto centralizado: '" + headline + "'.\n• NENHUM texto na base, nenhum ícone.\n• PROIBIDO cartões, caixas pesadas e elementos de oferta.\n• Estilo: Instagram orgânico premium, espaço livre gigante.",
   });
 }
 
-// 🌍 ED4 — MULTI EXPERIÊNCIA (GRID VISUAL)
+// 🌍 ED4 — MINIMALISMO ASIMÉTRICO
 export function promptEditorialVisual(v: MasterPromptVars): string {
   const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed4", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "GRID EDITORIAL — lado DIREITO com 3 ou 4 imagens empilhadas mostrando experiências DIFERENTES (praia, passeio, gastronomia, ponto turístico); lado ESQUERDO com área limpa contendo texto leve. Espaçamento uniforme estilo revista.",
-    lighting: "cada foto com sua própria atmosfera natural — variada e autêntica",
-    sceneDescription: `múltiplas experiências distintas em ${v.destination}: praia, passeio cultural, gastronomia local, ponto turístico icônico. Cada imagem deve ser ÚNICA — proibido repetir cenas. ${v.destinationDescription}`,
+      "MINIMALISMO ASSIMÉTRICO — Foco em uma única foto espetacular, descentralizada, deixando uma grande área da tela completamente livre para um título flutuante.",
+    lighting: "atmosfera natural premium, estética de arte fina",
+    sceneDescription: `Uma única cena deslumbrante de ${v.destination}, enquadrada de forma assimétrica para deixar muito céu ou espaço negativo vazio. ${v.destinationDescription}`,
     headline,
     experienceDescription: `${v.destination} além do óbvio.`,
     specialization:
-      "• Lado esquerdo:\n   Título: '" + headline + "' — use EXATAMENTE essa frase.\n   Subtítulo: '" + v.destination + " além do óbvio'.\n   Lista LEVE: • Praias incríveis  • Cultura local  • Aventuras únicas.\n• SEM destaque de preço.\n• Estilo: revista de viagem, sofisticado, visual rico.\n• Cada imagem do grid precisa ser visualmente DIFERENTE — proibido cópia ou repetição.",
+      "• Área limpa:\n   Título: '" + headline + "'\n   Subtítulo: '" + v.destination + " além do óbvio'.\n• SEM listas.\n• SEM destaque de preço.\n• Estilo: revista de viagem minimalista, onde o silêncio e o vazio são tão importantes quanto a foto.",
   });
 }
 
@@ -566,29 +536,29 @@ export function promptTopEditorialPhoto(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "MINIMALISTA PREMIUM — fotografia única, limpa, com composição artística. Pouquíssimo texto, muito espaço negativo, atmosfera de alto luxo. Sem caixas, sem blocos, sem listas pesadas.",
+      "MINIMALISTA PREMIUM — fotografia única, limpa, com composição artística. Pouquíssimo texto, muito espaço negativo, atmosfera de alto luxo.",
     lighting: "suave, estética premium, paleta refinada, ângulo único e artístico",
     sceneDescription: `${v.destination} em ângulo único e artístico, com luz suave e estética premium. Composição contemplativa. ${v.destinationDescription}`,
     headline,
     experienceDescription: `Uma experiência para poucos.`,
     specialization:
-      "• Centro: '" + headline + "' — use EXATAMENTE essa frase como título principal.\n• Abaixo: 'Uma experiência para poucos'.\n• NENHUM preço em destaque.\n• Pequeno detalhe na base: 'Consulte disponibilidade'.\n• MUITO espaço negativo (respiro visual).\n• Estilo: luxo, exclusivo, silencioso, alto padrão.",
+      "• Centro: '" + headline + "' — use EXATAMENTE essa frase.\n• Abaixo: 'Uma experiência para poucos'.\n• NENHUM preço.\n• MUITO espaço negativo (respiro visual) — o texto deve ocupar apenas 10% da tela.\n• Estilo: luxo absoluto, exclusivo, silencioso.",
   });
 }
 
-// 🌍 ED6 — COLUNA EDITORIAL + DUAS CENAS DISTINTAS
+// 🌍 ED6 — SPLIT EDITORIAL SIMPLES
 export function promptTwoSceneEditorial(v: MasterPromptVars): string {
   const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed6", v.forbiddenHeadlines);
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "COLUNA ESQUERDA editorial em fundo bege/off-white com título e checklist leve; COLUNA DIREITA com duas fotografias distintas do destino, uma paisagem ampla e um detalhe cultural/local, com espaçamento uniforme",
-    lighting: "editorial sofisticada, textura real, luz natural coerente entre as cenas",
-    sceneDescription: `duas perspectivas diferentes de ${v.destinationDescription}: uma paisagem ampla e um detalhe sensorial local`,
+      "SPLIT EDITORIAL SIMPLES — DIVISÃO 50/50. Uma metade cor sólida suave com título curto; a outra metade com UMA única fotografia premium do destino.",
+    lighting: "editorial sofisticada, textura real, luz natural",
+    sceneDescription: `uma visão sofisticada e imersiva de ${v.destinationDescription}`,
     headline,
-    experienceDescription: `${v.destination} por ângulos diferentes: paisagem, cultura, descanso e momentos memoráveis em ${v.duration}.`,
+    experienceDescription: `${v.destination} em sua melhor forma.`,
     specialization:
-      "• Coluna esquerda: '" + headline + "' como título principal — use EXATAMENTE essa frase, NÃO substitua por 'Viva/Explore/Descubra' fixos.\n• As duas fotos devem ser DIFERENTES, nunca cópias da mesma imagem.\n• Composição estilo página editorial premium, NÃO panfleto de preço.\n• Checklist curto e espaçado, sem pílulas agressivas.\n• Sem urgência, sem 'APENAS HOJE', sem preço gigante. Preço opcional como nota fina.",
+      "• Na cor sólida: '" + headline + "' como título principal.\n• NENHUM checklist, nenhum preço, nenhum selo.\n• Composição limpa estilo página de revista.\n• Extremamente focado em tipografia espaçada e margens generosas.",
   });
 }
 
