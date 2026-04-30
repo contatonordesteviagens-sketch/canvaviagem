@@ -92,11 +92,29 @@ const EXPERIENCIA_RULES = `
 4. Lista de experiências (apenas texto leve, sem caixas/cartões)
 
 ✅ ESTILO VISUAL:
-- A FOTOGRAFIA DEVE PREENCHER 100% DA TELA, edge-to-edge. 
-- Muito espaço negativo DENTRO da foto para receber texto.
-- Tipografia leve e elegante (serifada ou sans-serif refinada).
-══════════════════════════════════════
-`;
+    - A FOTOGRAFIA DEVE PREENCHER 100% DA TELA, edge-to-edge. 
+    - Muito espaço negativo DENTRO da foto para receber texto.
+    - Tipografia leve e elegante (serifada ou sans-serif refinada).
+    ══════════════════════════════════════
+    `;
+    
+    // ============================================================
+    // ⬛ REGRAS ESPECÍFICAS — AUTORIDADE PREMIUM (DARK 3D)
+    // ============================================================
+    const AUTORIDADE_DARK_RULES = `
+    ══════════════════════════════════════
+    ⬛ REGRAS ESPECÍFICAS DA CATEGORIA — AUTORIDADE PREMIUM (DARK 3D)
+    - FOCO TOTAL NA AGÊNCIA E NO PACOTE, NÃO NO DESTINO.
+    - É PROIBIDO GERAR FOTOGRAFIAS REAIS DE TURISMO (sem praias, sem hotéis, sem céu azul).
+    - O fundo deve ser um Dark Mode absoluto (preto, chumbo escuro, ou gradiente radial muito escuro).
+    - ESTÉTICA FINTECH / KRIPTOPIX: Use cartões de UI translúcidos (glassmorphism negro), bordas luminosas (neon suave), e profundidade espacial 3D.
+    - ELEMENTOS 3D FLUTUANTES: Sempre inclua ícones premium em 3D levitando no ar (ex: moedas douradas, passaportes blindados, globos terrestres translúcidos, ou pequenos aviões dourados de papel/metal).
+    - As cores primária e secundária DEVEM dominar as fontes e a iluminação. O Contraste extremo é o segredo desta categoria.
+    - ADAPTAÇÃO AO FORMATO: Esta imagem será gerada para Feed (Quadrado) ou Stories (Vertical). Adapte a distribuição do design para o formato fornecido. Nunca deixe os textos baterem ou vazarem pelas bordas.
+    - VENDA PURA E DIRETA: O foco do anúncio é a venda. Preço grande, destino chamativo, pacotes e formato de conversão.
+    ══════════════════════════════════════
+    `;
+    
 
 // ============================================================
 // 🎨 POOL DE HEADLINES ROTATIVOS — EXPERIÊNCIA
@@ -247,7 +265,7 @@ function pickOfertaHeadline(
 // 🧠 CÉREBRO COMUM
 // ============================================================
 function buildBrain(v: MasterPromptVars, opts: {
-  category: "oferta" | "experiencia";
+  category: "oferta" | "experiencia" | "autoridade_dark";
   layout: string;
   lighting: string;
   sceneDescription: string;
@@ -260,11 +278,15 @@ function buildBrain(v: MasterPromptVars, opts: {
     ? `[BLOCO DE PREÇO — DESTAQUE EXTREMO]
 ${v.installments} de R$ ${v.installmentValue}     ← FONTE GIGANTE, ULTRA-BOLD
 Selo principal: ${v.promoName.toUpperCase()}`
+    : opts.category === "autoridade_dark"
+    ? `[BLOCO DE INFORMAÇÕES — 3D PREMIUM]
+${v.installments} de R$ ${v.installmentValue}     ← PREÇO LUMINOSO EM NEON/BRILHO
+Selo corporativo: ${v.promoName.toUpperCase()}`
     : `[BLOCO DE EXPERIÊNCIA — EDITORIAL, SEM CARA DE OFERTA]
 ${opts.experienceDescription || `Roteiro inesquecível em ${v.destination}.`}
 SEM NENHUM PREÇO, SEM PARCELAS, SEM SELOS.`;
 
-  const categoryRules = opts.category === "oferta" ? OFERTA_RULES : EXPERIENCIA_RULES;
+  const categoryRules = opts.category === "oferta" ? OFERTA_RULES : opts.category === "autoridade_dark" ? AUTORIDADE_DARK_RULES : EXPERIENCIA_RULES;
   const creativeSeed = v.creativeSeed || `${opts.category}-${opts.layout.slice(0, 24)}`;
   const variationDirectives = opts.category === "oferta"
     ? [
@@ -275,6 +297,13 @@ SEM NENHUM PREÇO, SEM PARCELAS, SEM SELOS.`;
         "LAYOUT ÚNICO DESTA GERAÇÃO: bloco retangular simples no canto, deixando 70% da foto livre",
         "LAYOUT ÚNICO DESTA GERAÇÃO: texto centralizado com preço isolado em fonte imensa, sem bordas pesadas",
       ]
+    : opts.category === "autoridade_dark"
+    ? [
+        "LAYOUT ÚNICO DESTA GERAÇÃO: grande globo terrestre abstrato em wireframe/3D no fundo preto, com um cartão de vidro translúcido frontal focado no preço.",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: moedas em 3D douradas flutuando na tela; UI centralizada com bordas arredondadas e efeito neon suave.",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: composição isométrica com um celular flutuando ou ícones turísticos geométricos espalhados pelo fundo dark.",
+        "LAYOUT ÚNICO DESTA GERAÇÃO: estética hiper minimalista, tela preta absoluta, preço gigante no centro e um único ícone 3D super realista iluminado pela lateral.",
+      ]
     : [
         "LAYOUT ÚNICO DESTA GERAÇÃO: imagem full sem caixas; apenas título leve no centro seguro; fotografia domina tudo",
         "LAYOUT ÚNICO DESTA GERAÇÃO: divisão suave topo + base sem cara de promoção; texto editorial discreto",
@@ -283,11 +312,13 @@ SEM NENHUM PREÇO, SEM PARCELAS, SEM SELOS.`;
         "LAYOUT ÚNICO DESTA GERAÇÃO: texto central leve sobre foto com muito respiro e espaço negativo ao redor",
       ];
   const variationIndex = Math.abs([...creativeSeed].reduce((acc, char) => acc + char.charCodeAt(0), 0)) % variationDirectives.length;
-  const promoLine = opts.category === "oferta"
-    ? `Selo promocional: "${v.promoName}"`
+  const promoLine = opts.category === "oferta" || opts.category === "autoridade_dark"
+    ? `Selo: "${v.promoName}"`
     : `Chamada editorial secundária: "${opts.experienceDescription || `Dias leves em ${v.destination}, com calma, beleza e curadoria.`}" — sem selo promocional.`;
   const typographyHierarchy = opts.category === "oferta"
     ? "- PREÇO = maior elemento da composição (Ultra-Bold / Heavy).\n- DESTINO = segundo maior elemento (Bold)."
+    : opts.category === "autoridade_dark"
+    ? "- PREÇO e DESTINO = competem em impacto. Foco na precisão e tecnologia.\n- TEXTO COM GLOW/NEON."
     : "- IMAGEM = protagonista absoluta; texto deve ser leve e elegante.\n- DESTINO = maior texto, mas sem competir com a fotografia.";
   const centerRule = opts.category === "oferta"
     ? "- Centro de conversão obrigatório nos 65% centrais da imagem."
@@ -355,7 +386,7 @@ Você DEVE escrever os textos EXATAMENTE como passados no prompt.
 📋 TEXTOS EXATOS DESTE BANNER:
 • Destino: «${v.destination}»
 • Título principal: «${opts.headline}»
-${opts.category === "oferta" ? `• Parcela: «${v.installments}x R$ ${v.installmentValue}»\n• Selo: «${v.promoName}»` : ""}
+${opts.category !== "experiencia" ? `• Parcela: «${v.installments}x R$ ${v.installmentValue}»\n• Selo: «${v.promoName}»` : ""}
 
 ⚠️ NUNCA deixe letras cortadas na borda da imagem. Toda palavra deve caber inteira na imagem.
 ══════════════════════════════════════
@@ -563,6 +594,53 @@ export function promptTwoSceneEditorial(v: MasterPromptVars): string {
 }
 
 // ============================================================
+// ⬛ AUTORIDADE PREMIUM (DARK 3D) — DK1..DK3
+// ============================================================
+
+export function promptDarkNeonGlassmorphism(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "dk1", v.forbiddenHeadlines);
+  return buildBrain(v, {
+    category: "autoridade_dark",
+    layout:
+      "FUNDO ESCURO PROFUNDO (Dark Mode). No centro, um cartão de vidro fumê translúcido (Glassmorphism) com bordas luminosas suaves. Texto super brilhante dentro do vidro.",
+    lighting: "estúdio profissional, luz neon suave recortando o vidro, altíssimo contraste",
+    sceneDescription: `um ambiente tecnológico e financeiro abstrato em fundo preto; nenhum céu e nenhuma paisagem. Foco absoluto no painel UI de ${v.destination} em glassmorphism negro`,
+    headline,
+    specialization:
+      "• O destino não é mostrado via fotos; é exibido através da TIPOGRAFIA de alto padrão no centro.\n• Cartão translúcido (Glassmorphism Escuro) com margens enormes flutuando sobre a escuridão.\n• PROIBIDO gerar listinhas de benefícios.",
+  });
+}
+
+export function promptDark3DIconsFloating(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "dk2", v.forbiddenHeadlines);
+  return buildBrain(v, {
+    category: "autoridade_dark",
+    layout:
+      "FUNDO DARK COM ÍCONES 3D FLUTUANDO. Ícones premium de viagem (globos 3D, pins de localização, moedas) levitam em diferentes níveis de foco ao redor de um painel de conversão central de alta tecnologia.",
+    lighting: "backlight cinematográfico (rim lighting) focando apenas nas bordas dos objetos 3D, isolando-os da escuridão do fundo",
+    sceneDescription: `elementos abstratos 3D de turismo premium flutuando no vazio preto (sem céus nem água). Foco de luz dramática nos elementos. Oferta de ${v.destination} no meio`,
+    headline,
+    specialization:
+      "• Sensação forte de autoridade, similar a um aplicativo financeiro (Fintech) ou corretora.\n• Cores de destaque restritas para dar choque e elegância no fundo negro.\n• Preço gigante iluminado como neon no centro da composição.",
+  });
+}
+
+export function promptDarkMinimalGeometric(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "dk3", v.forbiddenHeadlines);
+  return buildBrain(v, {
+    category: "autoridade_dark",
+    layout:
+      "COMPOSIÇÃO GEOMÉTRICA FLAT/3D EXTREMAMENTE MINIMALISTA. Apenas o preto absoluto e faixas de cor na paleta definida. Muito espaço vazio, layout assimétrico focado no poder das palavras.",
+    lighting: "iluminação direcional forte sobre um único objeto ou letra principal",
+    sceneDescription: `um layout puramente corporativo e geométrico focado na venda do pacote para ${v.destination}, abstrato, corporativo`,
+    headline,
+    specialization:
+      "• MÁXIMO de espaço vazio e escuro. Foco no preço e destino em fonte GIGANTESCA.\n• Pode ter a silhueta de uma pessoa com 'rim lighting' dourado usando um celular de lado (simbolizando o cliente comprando).",
+  });
+}
+
+
+// ============================================================
 // REGISTRO DE TEMPLATES
 // ============================================================
 export const MASTER_TEMPLATES = [
@@ -580,6 +658,10 @@ export const MASTER_TEMPLATES = [
   { id: "editorial_visual",   name: "ED4 · Multi Experiência (Grid)", builder: promptEditorialVisual },
   { id: "top_editorial_photo", name: "ED5 · Minimalista Premium",     builder: promptTopEditorialPhoto },
   { id: "two_scene_editorial", name: "ED6 · Duas Cenas Editoriais",   builder: promptTwoSceneEditorial },
+  // ⬛ AUTORIDADE PREMIUM (DARK 3D)
+  { id: "dark_neon_glassmorphism", name: "DK1 · Vidro e Neon",        builder: promptDarkNeonGlassmorphism },
+  { id: "dark_3d_icons_floating",  name: "DK2 · Ícones 3D Flutuando", builder: promptDark3DIconsFloating },
+  { id: "dark_minimal_geometric",  name: "DK3 · Geométrico Minimal",  builder: promptDarkMinimalGeometric },
 ] as const;
 
 export type MasterTemplateId = typeof MASTER_TEMPLATES[number]["id"];

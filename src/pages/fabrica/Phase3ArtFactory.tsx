@@ -645,90 +645,80 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         </div>
       </div>
 
-      {/* 0 · Modo de geração */}
-      <div className={sectionCls}>
-        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">0 · Como criar a imagem</h3>
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            onClick={() => setGenMode("photo")}
-            className={`p-3 rounded-xl border-2 text-left transition-all ${genMode === "photo" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"}`}
-            style={genMode === "photo" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
-          >
-            <ImageIcon className="w-5 h-5 mb-1.5 text-white/80" />
-            <div className="text-[12px] font-bold text-white">Foto Real <span className="text-emerald-400">(grátis)</span></div>
-            <div className="text-[10px] text-white/50 leading-tight">Banco Pexels — lugares reais</div>
-          </button>
-          <button
-            onClick={() => setGenMode("custom")}
-            className={`p-3 rounded-xl border-2 text-left transition-all ${genMode === "custom" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"}`}
-            style={genMode === "custom" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
-          >
-            <Upload className="w-5 h-5 mb-1.5 text-white/80" />
-            <div className="text-[12px] font-bold text-white">Sua imagem</div>
-            <div className="text-[10px] text-white/50 leading-tight">Upload ou link</div>
-          </button>
-          <button
-            onClick={() => setGenMode("ai")}
-            className={`p-3 rounded-xl border-2 text-left transition-all ${genMode === "ai" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"}`}
-            style={genMode === "ai" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
-          >
-            <Wand2 className="w-5 h-5 mb-1.5 text-white/80" />
-            <div className="text-[12px] font-bold text-white">IA Pura</div>
-            <div className="text-[10px] text-white/50 leading-tight">Cria do zero (usa créditos)</div>
-          </button>
+      {/* 0 e 1 · Modo e Categoria */}
+      <div className={`${sectionCls} space-y-5`}>
+        {/* Modo de Geração - Segmented Control */}
+        <div>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">0 · Modo de Criação</h3>
+          <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full">
+            <button
+              onClick={() => setGenMode("photo")}
+              disabled={categoria === "autoridade_dark"}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "photo" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+            >
+              <ImageIcon className="w-3.5 h-3.5" /> Foto Real <span className="hidden sm:inline font-normal opacity-50">(grátis)</span>
+            </button>
+            <button
+              onClick={() => setGenMode("custom")}
+              disabled={categoria === "autoridade_dark"}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "custom" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+            >
+              <Upload className="w-3.5 h-3.5" /> Sua Imagem
+            </button>
+            <button
+              onClick={() => setGenMode("ai")}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all ${genMode === "ai" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+            >
+              <Wand2 className="w-3.5 h-3.5" /> IA Pura
+            </button>
+          </div>
+          {genMode !== "ai" && (
+            <p className="text-[10px] text-white/40 mt-1.5 leading-snug">
+              🔒 A imagem é processada <strong>apenas em memória</strong> para gerar o anúncio.
+            </p>
+          )}
         </div>
-        {genMode !== "ai" && (
-          <p className="text-[10px] text-white/40 mt-2 leading-snug">
-            🔒 Sua imagem é usada <strong>apenas em memória</strong> para gerar o anúncio — nada é armazenado no banco de dados.
-          </p>
-        )}
-      </div>
 
-      {/* 1 · Categoria do anúncio (todos os modos) */}
-      <div className={sectionCls}>
-        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-1">1 · Categoria do anúncio</h3>
-        <p className="text-[11px] text-white/45 mb-4">Escolha o tipo de anúncio que deseja gerar.</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {CATEGORIAS.map((c) => {
-            const selected = categoria === c.id;
-            return (
-              <button
-                key={c.id}
-                onClick={() => setCategoria(c.id)}
-                className={`p-5 rounded-2xl border-2 text-left transition-all ${
-                  selected ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
-                }`}
-                style={selected ? { borderColor: c.accent, background: `${c.accent}1a` } : undefined}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-2xl leading-none">{c.emoji}</span>
-                  <span
-                    className="text-[10px] font-extrabold px-2 py-0.5 rounded border tracking-wider"
-                    style={{ background: `${c.accent}26`, borderColor: `${c.accent}66`, color: c.accent }}
-                  >
-                    {c.badge}
-                  </span>
-                </div>
-                <div className="text-base font-bold text-white mb-1.5 leading-tight">{c.name}</div>
-                <p className="text-[12px] text-white/60 leading-snug mb-3">{c.description}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {c.focus.map((f) => (
-                    <span key={f} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.06] text-white/70 border border-white/10 whitespace-nowrap">
-                      {f}
+        {/* Categoria - Compacta */}
+        <div>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">1 · Estilo do Anúncio</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {CATEGORIAS.map((c) => {
+              const selected = categoria === c.id;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => {
+                    setCategoria(c.id);
+                    if (c.id === "autoridade_dark") setGenMode("ai");
+                  }}
+                  className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between min-h-[85px] ${
+                    selected ? "" : "border-white/5 bg-black/20 hover:bg-white/[0.04]"
+                  }`}
+                  style={selected ? { borderColor: c.accent, background: `${c.accent}1a` } : undefined}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl leading-none">{c.emoji}</span>
+                    <span
+                      className="text-[9px] font-extrabold px-1.5 py-0.5 rounded border tracking-wider"
+                      style={{ background: `${c.accent}26`, borderColor: `${c.accent}66`, color: c.accent }}
+                    >
+                      {c.badge}
                     </span>
-                  ))}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-[11px] text-white/55 leading-snug">
-          <strong className="text-white/80">Regra fixa:</strong> cada clique gera apenas 1 imagem única. A próxima geração troca layout, frase, cores e estilo. Oferta destaca preço e conversão; Experiência destaca foto, emoção e estilo editorial.
+                  </div>
+                  <div className="text-sm font-bold text-white leading-tight">{c.name}</div>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[10px] text-white/40 mt-2">
+            Cada clique gera 1 imagem única. A próxima geração troca layout, texto e formatação automaticamente.
+          </p>
         </div>
       </div>
 
       {/* 1b · Galeria Pexels (modo foto) */}
-      {genMode === "photo" && (
+      {genMode === "photo" && categoria !== "autoridade_dark" && (
         <div className={sectionCls}>
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">1 · Escolha uma foto real</h3>
 
@@ -862,7 +852,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
       {/* 2 · Formato */}
       <div className={sectionCls}>
-        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">2 · Formato</h3>
+        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-3">2 · Formato</h3>
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => setFormat("square")}
@@ -893,30 +883,32 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       <div className={`${sectionCls} space-y-4`}>
         <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">3 · Dados do anúncio</h3>
 
-        <div>
-          <label className={labelCls}>Destino *</label>
-          {state.destinos && state.destinos.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {state.destinos.map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setDestination(d)}
-                  className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
-                    destination === d ? "text-black" : "bg-white/[0.05] border-white/10 text-white/70 hover:border-white/30"
-                  }`}
-                  style={destination === d ? { background: primaryColor, borderColor: primaryColor } : undefined}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
-          )}
-          <input value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Ex: Maragogi, Cancún..." className={inputCls} />
-        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Destino *</label>
+            {state.destinos && state.destinos.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {state.destinos.map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setDestination(d)}
+                    className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
+                      destination === d ? "text-black" : "bg-white/[0.05] border-white/10 text-white/70 hover:border-white/30"
+                    }`}
+                    style={destination === d ? { background: primaryColor, borderColor: primaryColor } : undefined}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            )}
+            <input value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Ex: Maragogi, Cancún..." className={inputCls} />
+          </div>
 
-        <div>
-          <label className={labelCls}>Nome da promoção</label>
-          <input value={promoName} onChange={(e) => setPromoName(e.target.value)} placeholder="Ex: BLACK FRIDAY" className={inputCls} />
+          <div>
+            <label className={labelCls}>Nome da promoção</label>
+            <input value={promoName} onChange={(e) => setPromoName(e.target.value)} placeholder="Ex: BLACK FRIDAY" className={inputCls} />
+          </div>
         </div>
 
         {/* Modo de pagamento — compacto */}

@@ -8,7 +8,7 @@
 
 import type { StrategyId } from "@/data/fabrica-prompts";
 
-export type CategoriaId = "oferta_pacote" | "experiencia_destino";
+export type CategoriaId = "oferta_pacote" | "experiencia_destino" | "autoridade_dark";
 
 export interface CategoriaMeta {
   id: CategoriaId;
@@ -64,6 +64,22 @@ export const CATEGORIAS: CategoriaMeta[] = [
       { code: "ED6", templateId: "two_scene_editorial" },
     ],
     legacyStrategy: "vitrine",
+  },
+  {
+    id: "autoridade_dark",
+    name: "Autoridade Premium",
+    badge: "AGÊNCIA 3D",
+    emoji: "⬛",
+    description:
+      "Design esmerado em Dark Mode com UI Glassmorphism. Focado 100% nas informações do pacote, sem foto de viagem ao fundo.",
+    focus: ["Dark Mode", "Vidro translúcido", "Ícones 3D flutuantes", "Zero fotos de paisagem"],
+    accent: "#000000",
+    prompts: [
+      { code: "DK1", templateId: "dark_neon_glassmorphism" },
+      { code: "DK2", templateId: "dark_3d_icons_floating" },
+      { code: "DK3", templateId: "dark_minimal_geometric" },
+    ],
+    legacyStrategy: "matriz",
   },
 ];
 
