@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { type StrategyId } from "@/data/fabrica-prompts";
 import { CATEGORIAS, getCategoria, pickPromptsForCategoria, type CategoriaId } from "@/data/fabrica-categories";
@@ -180,12 +180,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [primaryColor, setPrimaryColorState] = useState(state.primaryColor || "#0c2340");
   const [secondaryColor, setSecondaryColorState] = useState(state.secondaryColor || "#FCD34D");
   
-  // Sincroniza cores locais se o estado global mudar (ex: carregamento inicial do localStorage)
-  useEffect(() => {
-    if (state.primaryColor) setPrimaryColorState(state.primaryColor);
-    if (state.secondaryColor) setSecondaryColorState(state.secondaryColor);
-  }, [state.primaryColor, state.secondaryColor]);
-
   const setPrimaryColor = (c: string) => { setPrimaryColorState(c); update({ primaryColor: c }); };
   const setSecondaryColor = (c: string) => { setSecondaryColorState(c); update({ secondaryColor: c }); };
 
