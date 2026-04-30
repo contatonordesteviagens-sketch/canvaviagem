@@ -13,7 +13,7 @@ import { ComingSoonGate, isFabricaUnlocked } from "@/components/fabrica/ComingSo
 const PHASES = [
   { num: 1, label: "Diagnóstico" },
   { num: 2, label: "Ativos" },
-  { num: 3, label: "IA Art Factory" },
+  { num: 3, label: "Gerador de Anúncios" },
   { num: 4, label: "Seu Site" },
 ];
 
@@ -122,9 +122,9 @@ const FabricaInner = () => {
 
         {/* Phase content */}
         {state.currentPhase === 1 && <Phase1Diagnostico onComplete={() => setPhase(2)} />}
-        {state.currentPhase === 2 && <Phase2Ativos onNext={() => setPhase(3)} />}
-        {state.currentPhase === 3 && <Phase3ArtFactory onNext={() => setPhase(4)} />}
-        {state.currentPhase === 4 && <Phase4LandingBuilder />}
+        {state.currentPhase === 2 && <Phase2Ativos onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
+        {state.currentPhase === 3 && <Phase3ArtFactory onNext={() => setPhase(4)} onBack={() => setPhase(2)} />}
+        {state.currentPhase === 4 && <Phase4LandingBuilder onBack={() => setPhase(3)} />}
       </div>
     </div>
   );

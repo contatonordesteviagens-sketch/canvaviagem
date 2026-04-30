@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 interface Props {
   onNext: () => void;
+  onBack: () => void;
 }
 
 const CHECKLIST_30: { week: string; tasks: { key: string; text: string }[] }[] = [
@@ -43,7 +44,7 @@ const CHECKLIST_30: { week: string; tasks: { key: string; text: string }[] }[] =
   },
 ];
 
-export const Phase2Ativos = ({ onNext }: Props) => {
+export const Phase2Ativos = ({ onNext, onBack }: Props) => {
   const { state, toggleChecklist } = useFabricaContext();
   const { data: videos = [] } = useContentItems(["video", "feed"]);
   const { data: captions = [] } = useCaptions();
@@ -163,9 +164,14 @@ export const Phase2Ativos = ({ onNext }: Props) => {
         ))}
       </FabricaCard>
 
-      <button onClick={onNext} className="w-full py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all hover:brightness-110" style={{ background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)`, boxShadow: `0 8px 24px ${state.primaryColor}55` }}>
-        Avançar para Fase 3 — IA Art Factory <ArrowRight className="w-4 h-4" />
-      </button>
+      <div className="flex gap-3">
+        <button onClick={onBack} className="flex-1 py-4 rounded-xl bg-white/[0.04] border border-white/10 text-white/70 font-semibold hover:bg-white/[0.08] transition-colors">
+          Voltar
+        </button>
+        <button onClick={onNext} className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all hover:brightness-110" style={{ background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)`, boxShadow: `0 8px 24px ${state.primaryColor}55` }}>
+          Avançar para Gerador de Anúncios <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 };

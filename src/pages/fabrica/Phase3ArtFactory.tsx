@@ -16,7 +16,7 @@ import { toast } from "sonner";
 type GenMode = "ai" | "photo" | "custom";
 type CustomSource = "upload" | "link";
 
-interface Props { onNext: () => void; }
+interface Props { onNext: () => void; onBack: () => void; }
 
 const BADGE_BG: Record<string, string> = {
   blue: "bg-blue-500/15 text-blue-400 border-blue-500/30",
@@ -145,7 +145,7 @@ const pickPhotoRefs = (
   return Array.from({ length: count }, (_, idx) => unique[(start + idx) % unique.length] || selectedPhotoUrl);
 };
 
-export const Phase3ArtFactory = ({ onNext }: Props) => {
+export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const { state, update } = useFabricaContext();
   const [categoria, setCategoria] = useState<CategoriaId>("oferta_pacote");
   const strategy: StrategyId = getCategoria(categoria).legacyStrategy;
@@ -1128,9 +1128,14 @@ export const Phase3ArtFactory = ({ onNext }: Props) => {
         </motion.div>
       )}
 
-      <button onClick={onNext} className="w-full py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white/80 font-semibold hover:bg-white/[0.08] flex items-center justify-center gap-2">
-        Avançar para Fase 4 — Seu Site <ArrowRight className="w-4 h-4" />
-      </button>
+      <div className="flex gap-3">
+        <button onClick={onBack} className="flex-1 py-4 rounded-xl bg-white/[0.04] border border-white/10 text-white/70 font-semibold hover:bg-white/[0.08] transition-colors">
+          Voltar
+        </button>
+        <button onClick={onNext} className="flex-[2] py-4 rounded-xl bg-white/[0.04] border border-white/10 text-white/80 font-semibold hover:bg-white/[0.08] flex items-center justify-center gap-2">
+          Avançar para Fase 4 — Seu Site <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 };

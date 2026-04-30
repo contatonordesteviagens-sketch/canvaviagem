@@ -26,7 +26,7 @@ import type { SectionVisibility } from "@/hooks/useFabricaContext";
 const LOVABLE_INVITE_URL = "https://lovable.dev/invite/2ZD6VL6";
 const PRESET_COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#000000"];
 
-export const Phase4LandingBuilder = () => {
+export const Phase4LandingBuilder = ({ onBack }: { onBack: () => void }) => {
   const { state, update } = useFabricaContext();
   const [previewing, setPreviewing] = useState(true);
   const [downloadCount, setDownloadCount] = useState(0);
@@ -340,10 +340,16 @@ export const Phase4LandingBuilder = () => {
       {/* AÇÕES */}
       <div className="flex gap-3 sticky bottom-4 z-10 bg-black/40 backdrop-blur-md p-2 rounded-2xl border border-white/10">
         <button
+          onClick={onBack}
+          className="flex-1 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white/80 font-semibold hover:bg-white/[0.08] flex items-center justify-center gap-2"
+        >
+          Voltar
+        </button>
+        <button
           onClick={() => setPreviewing((p) => !p)}
           className="flex-1 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white/80 font-semibold hover:bg-white/[0.08] flex items-center justify-center gap-2"
         >
-          <Eye className="w-4 h-4" /> {previewing ? "Esconder preview" : "Ver preview"}
+          <Eye className="w-4 h-4" /> {previewing ? "Esconder" : "Preview"}
         </button>
         <button
           onClick={handleDownload}
