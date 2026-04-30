@@ -288,48 +288,30 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               thumb: h.webformatURL,
               width: h.imageWidth,
               height: h.imageHeight,
-              alt: h.tags
-            }));
-          }
-        } else if (engine === "wikimedia") {
-          // Wikimedia (Google/Web) - Fallback final
-          const searchTerm = encodeURIComponent(`${q} tourism -flag -coat -map`);
-          const url = `https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&generator=search&gsrsearch=File:${searchTerm}&gsrlimit=15&gsrnamespace=6&iiprop=url|size&origin=*`;
-          const resp = await fetch(url);
-          const data = await resp.json();
-          if (data.query?.pages) {
-            results = Object.values(data.query.pages).map((p: any) => {
-              const info = p.imageinfo?.[0];
-              return {
-                id: p.pageid,
-                url: info?.url || "",
-                thumb: info?.url || "",
-                width: info?.width || 1200,
-                height: info?.height || 800,
-                alt: p.title
-              };
-            }).filter(p => p.url.match(/\.(jpg|jpeg|png|webp)$/i));
-          }
+    setPhotoQuery(query);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("fabrica-search-photos", {
+        body: { 
+          query, 
+          perPage: 12, 
+          engine: searchEngine 
         }
+      });
 
-        if (results.length > 0) {
-          setPhotos(results);
-          setVisiblePhotoCount(3);
-          setSelectedPhotoUrl("");
-          toast.success(`Fotos de ${q} carregadas!`);
-          break; // Sucesso, para o loop de motores
-        }
-      } catch (err) {
-        console.error(`Erro no motor ${engine}:`, err);
-        continue; // Tenta o próximo motor
+      if (error) throw error;
+      if (data?.photos) {
+        setPhotos(data.photos);
+        setVisiblePhotoCount(3);
+        setSelectedPhotoUrl("");
+        toast.success(`Fotos de ${query} carregadas via ${searchEngine === 'google' ? 'Google' : 'Pexels'}!`);
       }
+    } catch (err) {
+      console.error("Erro ao buscar fotos:", err);
+      toast.error("Erro na busca. Verifique as chaves de API.");
+    } finally {
+      setSearchingPhotos(false);
     }
-
-    if (photos.length === 0 && !searchingPhotos) {
-      // Se após todos os motores não houver nada
-      // toast.error("Nenhuma foto encontrada. Tente outro termo.");
-    }
-    setSearchingPhotos(false);
   };
 
 
