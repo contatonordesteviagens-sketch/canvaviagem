@@ -47,7 +47,7 @@ A composição deve seguir o padrão visual de anúncios de agências de viagem 
 
 2. CAIXA DE PREÇO RETANGULAR no terço superior, com cantos levemente arredondados, em cor SECUNDÁRIA forte (amarelo, dourado ou cor de destaque da paleta), contendo nesta ordem vertical:
    • Etiqueta pequena no topo: "PACOTE" + NOME DO DESTINO em maiúsculas e negrito (tipografia bold sans-serif).
-   • Linha de informações com ícones pequenos: "X dias ✈ 🚌 🏨 ☕" (duração + transporte + hospedagem + alimentação).
+   • Linha de informações limpa: APENAS o texto da duração (ex: "5 DIAS"). Remova ícones redundantes de transporte/alimentação desta linha.
    • Bloco "a partir de" pequeno + selo redondo "12X sem juros" colado ao valor R$ XXX em tipografia GIGANTE bold (o preço é o maior elemento da caixa).
    • Linha fina embaixo: "Total por pessoa: R$ X.XXX".
    • Faixa inferior contrastante (azul escuro ou cor primária) com "5% OFF À VISTA NO PIX" + ícone PIX.
@@ -201,9 +201,10 @@ const HEADLINE_POOL_OFERTA: ((d: string) => string)[] = [
   () => `Do voo ao hotel, tudo resolvido`,
   () => `O pacote certo para o seu plano`,
   // 🔹 Com destino (variações leves)
-  (d) => `Pacote especial para ${d}`,
-  (d) => `Sua viagem para ${d} está pronta`,
+  (d) => `Pacote para ${d}`,
+  (d) => `Promoção ${d}`,
   (d) => `${d} com tudo incluso`,
+  (d) => `Sua viagem para ${d}`,
 ];
 
 function normalize(s: string): string {
