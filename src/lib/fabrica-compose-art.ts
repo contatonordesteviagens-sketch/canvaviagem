@@ -551,7 +551,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const leftColW = Math.round(contentWidth * 0.5);
     drawBadge(left, lowerY, leftColW);
     ctx.fillStyle = "#ffffff";
-    drawTextBlock(ctx, titleText, left, lowerY + 136, leftColW, 72, 2, { baseFontSize: 68, minFontSize: 40 });
+    drawTextBlock(ctx, titleText, left, lowerY + 136, leftColW, 72, 4, { baseFontSize: 68, minFontSize: 34 });
     drawPromoKicker(left, lowerY + 294);
 
     const rightColX = left + leftColW + 24;
@@ -574,7 +574,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     fillRoundRect(ctx, left, panelBottom - (format === "story" ? 720 : 470), contentWidth, format === "story" ? 630 : 370, 42, "rgba(7,10,18,0.68)");
     drawBadge(left + 28, panelBottom - (format === "story" ? 670 : 432), 320);
     ctx.fillStyle = "#ffffff";
-    drawTextBlock(ctx, titleText, left + 28, panelBottom - (format === "story" ? 510 : 300), contentWidth - 56, format === "story" ? 78 : 64, 2, { baseFontSize: format === "story" ? 78 : 60, minFontSize: 42 });
+    drawTextBlock(ctx, titleText, left + 28, panelBottom - (format === "story" ? 510 : 300), contentWidth - 56, format === "story" ? 78 : 64, 3, { baseFontSize: format === "story" ? 78 : 60, minFontSize: 34 });
     drawPromoKicker(left + 28, panelBottom - (format === "story" ? 348 : 200));
     // 5 pills compactos à esquerda; card de preço à direita não sobrepõe
     const pillsLimit = 5;

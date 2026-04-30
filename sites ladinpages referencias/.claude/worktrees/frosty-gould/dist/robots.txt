@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Allow: /pt
+Allow: /es
+Allow: /blog
+Disallow: /admin
+Disallow: /auth
+Disallow: /auth/verify
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://canvaviagem.com/sitemap.xml

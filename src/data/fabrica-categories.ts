@@ -73,7 +73,7 @@ export const CATEGORIAS: CategoriaMeta[] = [
     description:
       "Design esmerado em Dark Mode com UI Glassmorphism. Focado 100% nas informações do pacote, sem foto de viagem ao fundo.",
     focus: ["Dark Mode", "Vidro translúcido", "Ícones 3D flutuantes", "Zero fotos de paisagem"],
-    accent: "#000000",
+    accent: "#ffffff",
     prompts: [
       { code: "DK1", templateId: "dark_neon_glassmorphism" },
       { code: "DK2", templateId: "dark_3d_icons_floating" },

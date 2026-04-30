@@ -692,10 +692,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                     setCategoria(c.id);
                     if (c.id === "autoridade_dark") setGenMode("ai");
                   }}
-                  className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between min-h-[85px] ${
-                    selected ? "" : "border-white/5 bg-black/20 hover:bg-white/[0.04]"
+                  className={`p-3 rounded-xl border-2 text-left transition-all flex flex-col justify-between min-h-[85px] ${
+                    selected ? "shadow-lg scale-[1.02]" : "border-white/5 bg-black/20 hover:bg-white/[0.04]"
                   }`}
-                  style={selected ? { borderColor: c.accent, background: `${c.accent}1a` } : undefined}
+                  style={selected ? { borderColor: c.accent, background: `${c.accent}33` } : undefined}
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xl leading-none">{c.emoji}</span>

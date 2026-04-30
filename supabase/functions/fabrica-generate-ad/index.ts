@@ -587,7 +587,8 @@ serve(async (req) => {
     // Default: TUDO é oferta exceto se for explicitamente template editorial (ED*) ou strategy de experiência.
     const tplId = usedTemplateId || "";
     const isExperiencia = tplId.startsWith("ED") || finalBody.strategy === "vitrine" || finalBody.strategy === "gancho";
-    const isOferta = !isExperiencia;
+    const isAutoridade = tplId.startsWith("dark_");
+    const isOferta = !isExperiencia && !isAutoridade;
     const CVC_REF_URL = "https://zdjtcwtakgizbsbbwtgc.supabase.co/storage/v1/object/public/thumbnails/fabrica-ref-cvc-style.jpg";
     const refInstruction = `🚨 INSTRUÇÃO DE MAIOR PRIORIDADE — IGNORE QUALQUER OUTRA REGRA QUE CONFLITE 🚨
 
