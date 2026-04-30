@@ -769,7 +769,7 @@ Crie um banner publicitário de agência de viagens — estilo fintech com foco 
 
 COMPOSIÇÃO:
 - Fundo: preto sólido + faixa horizontal na cor ${v.secondaryHex} cortando o terço inferior.
-- Centro superior: um ônibus de turismo 3D moderno em perspectiva 3/4, acabamento FOSCO na cor ${v.primaryHex}, com detalhes dourados/cromados. Ao lado do ônibus, 2 a 3 pessoas em miniatura 3D de estilo cartoon-realista com malas.
+- Centro superior: um ônibus de turismo 3D moderno em perspectiva 3/4, acabamento FOSCO na cor ${v.primaryHex}, com detalhes dourados/cromados. Ao lado do ônibus, malas e passaportes 3D estilizados (SEM pessoas, SEM figuras humanas).
 - Ao redor: planetas miniatura 3D, setas de rota, mapa simplificado.
 
 TEXTOS — escreva EXATAMENTE e SOMENTE estes textos:
