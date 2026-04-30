@@ -32,6 +32,8 @@ export interface MasterPromptVars {
   forbiddenHeadlines?: string[];
   /** Layout/templateIds a EVITAR (apenas log/uso futuro). */
   forbiddenLayouts?: string[];
+  /** Formato de saída: "square" (1:1 feed) ou "story" (9:16). Default: story. */
+  format?: "square" | "story";
 }
 
 // ============================================================
@@ -277,9 +279,13 @@ function buildBrain(v: MasterPromptVars, opts: {
   specialization?: string;
 }): string {
   const valueBlock = opts.category === "oferta"
-    ? `[BLOCO DE PREÇO — DESTAQUE EXTREMO]
-${v.installments} de R$ ${v.installmentValue}     ← FONTE GIGANTE, ULTRA-BOLD
-Selo principal: ${v.promoName.toUpperCase()}`
+    ? `[BLOCO DE PREÇO — CARD LIMPO E PROFISSIONAL]
+APENAS três informações dentro do card, nesta ordem vertical e bem espaçadas:
+  1) Valor da parcela: ${v.installments}x R$ ${v.installmentValue}  ← MAIOR ELEMENTO, ULTRA-BOLD
+  2) Texto pequeno: "Total por pessoa: R$ ${v.totalValue}"
+  3) Duração: ${v.duration}
+🚫 PROIBIDO dentro do card: ícones de avião, ônibus, hotel, mala, câmera, xícara, estrelas ou QUALQUER pictograma. Sem listas com bullets. Sem fileiras de ícones. Card 100% tipográfico.
+Selo único permitido (fora do card, opcional): "${v.promoName.toUpperCase()}"`
     : opts.category === "autoridade_dark"
     ? `[BLOCO DE INFORMAÇÕES — DARK PREMIUM]
 ${v.installments}x R$ ${v.installmentValue}     ← FONTE GIGANTE, ULTRA-BOLD, COR SÓLIDA SEM BRILHO
@@ -329,8 +335,24 @@ SEM NENHUM PREÇO, SEM PARCELAS, SEM SELOS.`;
     ? "foco em legibilidade, espaço vazio abundante e alto impacto visual para conversão imediata."
     : "foco em emoção, desejo, espaço negativo amplo, fotografia premium e leitura elegante, sem aparência de oferta.";
 
+  const fmt = v.format || "story";
+  const formatHeader = fmt === "square"
+    ? `Um banner publicitário QUADRADO de turismo (formato 1:1, 1080x1080, resolução 8K), para feed do Instagram.`
+    : `Um banner publicitário VERTICAL de turismo (formato 9:16, 1080x1920, resolução 8K), para Stories e Reels.`;
+  const formatSafeZones = fmt === "square"
+    ? `SAFE ZONES (FEED 1:1):
+- Margem mínima de 8% (≈86px) em TODAS as bordas. Nenhum texto, ícone ou borda de cartão pode encostar nas bordas.
+- Composição equilibrada centralmente; o card de preço ocupa NO MÁXIMO 25% da área (superior OU inferior).
+- O título principal fica em uma área limpa da fotografia (céu, água, areia, parede neutra).`
+    : `SAFE ZONES (STORY 9:16):
+- Margem Superior PROIBIDA: nenhum texto/elemento crucial nos primeiros 15% (≈288px do topo) — área do header do Instagram.
+- Margem Inferior PROIBIDA: nenhum texto/preço/legal nos últimos 20% (≈384px da base) — área da caixa de mensagem.
+- Margens laterais: padding mínimo de 8% (≈86px) em cada lado.
+- Todo o conteúdo crítico (Título, Card de Preço, Selo) DEVE estar entre 200px do topo e 400px da base.`;
+
   return `
-Um banner publicitário vertical de turismo (formato 9:16, resolução 8K), hiper-realista, com qualidade cinematográfica, iluminação natural ou dramática altamente refinada e composição profissional de nível publicitário.
+${formatHeader}
+Hiper-realista, qualidade cinematográfica, iluminação natural ou dramática refinada e composição profissional.
 
 A imagem deve seguir rigorosamente um layout estruturado e organizado, com hierarquia visual clara, ${objectiveLine}
 
@@ -341,14 +363,19 @@ ID de variação: ${creativeSeed}.
 Direção única desta geração: ${variationDirectives[variationIndex]}.
 Este anúncio DEVE seguir a câmera, iluminação e estruturação exatas informadas na "Direção única", garantindo variação visual extrema. Mude os elementos de lugar e inove na composição espacial de acordo com a diretriz acima.
 
-[FOTOGRAFIA PRINCIPAL]
-Uma cena extremamente realista e detalhada de ${v.destination}, com iluminação ${opts.lighting}, mostrando ${opts.sceneDescription}.
+[FOTOGRAFIA PRINCIPAL — REGRAS DE CENA]
+Cena extremamente realista e detalhada de ${v.destination}, com iluminação ${opts.lighting}, mostrando ${opts.sceneDescription}.
+
+🚫 STRICTLY NO PEOPLE — REGRA NEGATIVA ABSOLUTA:
+- PROIBIDO qualquer figura humana, modelo, casal, família, criança, silhueta, mão, pé, rosto ou parte de corpo na fotografia.
+- A fotografia deve focar 100% na PAISAGEM, ARQUITETURA ou NATUREZA do destino.
+- NO PEOPLE, NO MODELS, NO HUMANS, NO SILHOUETTES, NO HANDS, NO FACES.
 
 [ELEMENTOS DE INTERFACE]
 Interface moderna, limpa e minimalista, com tipografia perfeita e MUITO ESPAÇO VAZIO (Negative Space) para evitar sobreposição de textos.
 Paleta obrigatória e bloqueada: cor primária ${v.primaryHex}, cor secundária ${v.secondaryHex}. Use SOMENTE essas duas cores nos blocos, preço, badges e detalhes.
 
-Título/Chamada: "${opts.headline}"
+Título/Chamada (RENDERIZAR INTEGRALMENTE, SEM TRUNCAR): "${opts.headline}"
 Destino destacado: "${v.destination}"
 ${promoLine}
 
@@ -358,47 +385,43 @@ ${opts.specialization ? `[ESPECIALIZAÇÃO DESTE PROMPT]\n${opts.specialization}
 ${categoryRules}
 
 ══════════════════════════════════════
-DIRETRIZES ESTRITAS DE RENDERIZAÇÃO DE INTERFACE (UI/UX) E TIPOGRAFIA:
-A imagem deve ser gerada no formato Vertical 9:16 (resolução 8K). O motor de geração deve obedecer rigorosamente ao seguinte sistema de grid matemático, 'Safe Zones' do Instagram Stories e prevenção de artefatos:
+DIRETRIZES ESTRITAS DE RENDERIZAÇÃO (UI/UX, TIPOGRAFIA E SAFE ZONES):
 
-1. SAFE ZONES E ESPAÇAMENTO (CRÍTICO):
-- É OBRIGATÓRIO deixar margens amplas ao redor de cada bloco de texto.
-- PROIBIDO sobrepor textos em cima uns dos outros ou sobre bordas de cartões.
-- Margem Superior (Top 15%) e Margem Inferior (Bottom 20%): Livres de texto.
+1. ${formatSafeZones}
 
-2. POSICIONAMENTO:
-- Zero sobreposição entre elementos. Espaçamento visível entre título e preço.
+2. POSICIONAMENTO E ANTI-SOBREPOSIÇÃO:
+- ZERO sobreposição entre blocos de texto, ícones ou cartões.
 - Espaçamento matemático e simétrico entre todos os blocos.
+- Nenhuma letra encostada na borda da imagem. Toda palavra deve caber INTEIRA.
 ${centerRule}
 
-3. TIPOGRAFIA:
+3. TIPOGRAFIA — FONTE OBRIGATÓRIA: sans-serif grotesca tipo "Montserrat ExtraBold" ou "Oswald Bold".
 ${typographyHierarchy}
-- Texto com CONTRASTE ABSOLUTO.
+- Texto com CONTRASTE ABSOLUTO: branco em fundo escuro/vibrante; escuro em fundo claro.
+- Sobre fotografia: aplicar leve drop-shadow escuro para garantir 100% de legibilidade.
 
-4. QUALIDADE:
-- SEM erros de texto: ortografia perfeita em português.
-- NUNCA crie listas de tópicos com marcadores (bullet points ou ícones pequenos).
-- NÃO tente renderizar mais de 2 blocos de texto distintos na mesma imagem — escolha apenas TÍTULO + PREÇO (oferta) ou apenas TÍTULO (experiência).
-- Se o texto for longo demais para caber com segurança, use uma versão mais curta e clara.
+4. RENDERIZAÇÃO DE TEXTO — REGRA CRÍTICA:
+- TÍTULO INTEGRAL: a frase "${opts.headline}" deve aparecer COMPLETA, sem cortes, sem reticências, sem truncamento. Se não couber em uma linha, quebre em duas — NUNCA corte palavras.
+- Ortografia perfeita em português. Sem caracteres alienígenas, sem fusão de letras.
+- NUNCA crie listas com bullets ou ícones pequenos repetidos.
+- NÃO renderize mais de 2 blocos de texto distintos: TÍTULO + PREÇO (oferta) ou apenas TÍTULO (experiência).
 
 ══════════════════════════════════════
-🛑 OBRIGATÓRIO: RENDERIZAÇÃO DE TEXTO EXATO E LIMPO
-══════════════════════════════════════
-Você DEVE escrever os textos EXATAMENTE como passados no prompt.
-É proibido inventar palavras de viagem, adicionar ícones desenhados, ou criar descrições longas. O texto precisa ser uma cópia EXATA e o mais curto possível.
+🛑 PROIBIÇÕES ABSOLUTAS (NEGATIVE PROMPT):
+NO PEOPLE, NO MODELS, NO HUMANS, NO HANDS, NO FACES, NO SILHOUETTES,
+NO REPETITIVE ICONS (sem fileiras de avião/ônibus/hotel/mala/câmera/xícara/estrelas dentro do card),
+NO TRUNCATED TEXT, NO CUT WORDS, NO ELLIPSIS,
+NO TEXT TOUCHING BORDERS, NO TEXT OVERLAP,
+NO LOW CONTRAST (texto da mesma cor do fundo),
+NO BLURRY TEXT, NO TEXT ARTIFACTS, NO DISTORTED LETTERS,
+NO WATERMARK, NO LOGO DE TERCEIROS, NO MOCKUP DUPLO, NO COLLAGE.
 
 📋 TEXTOS EXATOS DESTE BANNER:
 • Destino: «${v.destination}»
-• Título principal: «${opts.headline}»
+• Título principal (INTEGRAL): «${opts.headline}»
 ${opts.category !== "experiencia" ? `• Parcela: «${v.installments}x R$ ${v.installmentValue}»\n• Selo: «${v.promoName}»` : ""}
 
-⚠️ NUNCA deixe letras cortadas na borda da imagem. Toda palavra deve caber inteira na imagem.
-══════════════════════════════════════
-
-🛑 REGRAS ABSOLUTAS ADICIONAIS:
-- GERAR APENAS 1 IMAGEM ÚNICA (PROIBIDO fazer grids empilhados, colagens ou mockups duplos).
-- O cartão da oferta (se houver) deve estar limpo e MUITO bem espaçado, sem textos amontoados.
-- As cores primária e secundária informadas DEVEM ser as únicas cores dominantes.
+🛑 GERAR APENAS 1 IMAGEM ÚNICA. As cores ${v.primaryHex} e ${v.secondaryHex} são as únicas dominantes.
 ══════════════════════════════════════
 `;
 }
@@ -509,7 +532,7 @@ export function promptIconicLandmark(v: MasterPromptVars): string {
     layout:
       "FULL-BLEED CINEMATOGRÁFICO — a fotografia ocupa 100% da composição, sem divisões duras. Texto leve sobreposto, com gradiente sutil apenas para legibilidade. Sem cartões, sem caixas.",
     lighting: "natural perfeita, hora dourada cinematográfica, profundidade de campo realista, cores vibrantes e atmosféricas",
-    sceneDescription: `${v.destination} com riqueza de detalhes — céu dramático, luz dourada, pessoas naturais em momentos espontâneos, água cristalina ou paisagem icônica. ${v.destinationDescription}`,
+    sceneDescription: `${v.destination} com riqueza de detalhes — céu dramático, luz dourada, paisagem natural intocada e arquitetura icônica, água cristalina ou paisagem icônica. ${v.destinationDescription}`,
     headline,
     experienceDescription: `Uma experiência inesquecível em ${v.destination}.`,
     specialization:
@@ -525,7 +548,7 @@ export function promptSplitYellowSide(v: MasterPromptVars): string {
     layout:
       "DIVISÃO SUAVE — 70% SUPERIOR com fotografia hiper-realista do destino; 30% INFERIOR com área clean usando leve gradiente translúcido. Transição suave entre as duas áreas.",
     lighting: "natural suave, luz realista, atmosfera convidativa",
-    sceneDescription: `${v.destination} com foco em experiência — mar, arquitetura ou natureza com luz natural suave, pessoas interagindo com o ambiente de forma natural. ${v.destinationDescription}`,
+    sceneDescription: `${v.destination} com foco em experiência — mar, arquitetura ou natureza com luz natural suave, elementos da paisagem em primeiro plano. ${v.destinationDescription}`,
     headline,
     experienceDescription: `Momentos únicos em ${v.destination}.`,
     specialization:
@@ -539,9 +562,9 @@ export function promptElegantCenterCard(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "STORY LIFESTYLE — fotografia full-bleed dominante mostrando pessoas reais aproveitando o destino. Texto sobreposto leve, sem caixas pesadas.",
+      "STORY LIFESTYLE — fotografia full-bleed dominante mostrando o destino em ângulo aspiracional, sem pessoas. Texto sobreposto leve, sem caixas pesadas.",
     lighting: "luz natural, clima feliz, sensação de liberdade, atmosfera real e espontânea",
-    sceneDescription: `grupo de pessoas reais aproveitando ${v.destination} — rindo, tirando fotos, vivendo o momento. Ambiente vivo, autêntico, sem pose comercial. ${v.destinationDescription}`,
+    sceneDescription: `paisagem icônica e atmosfera viva de ${v.destination} — luz natural, cores autênticas, sem pessoas, sem silhuetas. ${v.destinationDescription}`,
     headline,
     experienceDescription: `Momentos únicos em ${v.destination}.`,
     specialization:
@@ -595,6 +618,7 @@ export function promptTwoSceneEditorial(v: MasterPromptVars): string {
     specialization:
       "• Na área de cor sólida: APENAS '" + headline + "' como título. Fonte grande, espaçada, elegante.\n• NENHUM checklist, NENHUM preço, NENHUM selo.\n• A metade com foto deve ser UMA ÚNICA cena clara do destino, sem divisões ou colagens.\n• Estilo: página de revista de luxo.",
   });
+}
 
 // ============================================================
 // ⬛ AUTORIDADE PREMIUM (ESTILO KRIPTOPIX) — DK1..DK6
@@ -746,7 +770,7 @@ Crie um banner publicitário de agência de viagens — estilo fintech com foco 
 
 COMPOSIÇÃO:
 - Fundo: preto sólido + faixa horizontal na cor ${v.secondaryHex} cortando o terço inferior.
-- Centro superior: um ônibus de turismo 3D moderno em perspectiva 3/4, acabamento FOSCO na cor ${v.primaryHex}, com detalhes dourados/cromados. Ao lado do ônibus, 2 a 3 pessoas em miniatura 3D de estilo cartoon-realista com malas.
+- Centro superior: um ônibus de turismo 3D moderno em perspectiva 3/4, acabamento FOSCO na cor ${v.primaryHex}, com detalhes dourados/cromados. Ao lado do ônibus, malas e passaportes 3D estilizados (SEM pessoas, SEM figuras humanas).
 - Ao redor: planetas miniatura 3D, setas de rota, mapa simplificado.
 
 TEXTOS — escreva EXATAMENTE e SOMENTE estes textos:
