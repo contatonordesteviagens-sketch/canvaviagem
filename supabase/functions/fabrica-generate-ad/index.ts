@@ -106,7 +106,10 @@ serve(async (req) => {
       }
     }
 
-    const variation = typeof body.variation === "number" ? body.variation : Math.floor(Math.random() * 4);
+    // VARIAÇÃO REAL: seed único 0–999999 a cada chamada, garantindo arte diferente a cada clique
+    const variation = typeof body.variation === "number"
+      ? body.variation
+      : Math.floor(Math.random() * 999999);
     const format: Format = (body.format as Format) || "story";
 
     // === Identifica categoria do template ===
