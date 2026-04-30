@@ -138,8 +138,8 @@ interface Props {
 
 export const Phase1Diagnostico = ({ onComplete }: Props) => {
   const { state, update } = useFabricaContext();
-  const [step, setStep] = useState(state.diagnosticoCompleto ? 5 : 1);
-  const totalSteps = 4;
+  const [step, setStep] = useState(state.diagnosticoCompleto ? 4 : 1);
+  const totalSteps = 3;
 
   const editForm = () => {
     // mantém TODOS os dados, apenas reabre o formulário a partir do step 1
@@ -165,10 +165,10 @@ export const Phase1Diagnostico = ({ onComplete }: Props) => {
       gargalos: result.gargalos,
       diagnosticoCompleto: true,
     });
-    setStep(5);
+    setStep(4);
   };
 
-  if (step === 5) {
+  if (step === 4) {
     return <DiagnosticoResult onNext={onComplete} onEdit={editForm} />;
   }
 
@@ -246,43 +246,37 @@ export const Phase1Diagnostico = ({ onComplete }: Props) => {
             <>
               <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-5">
                 <span className="inline-block px-2 py-1 rounded mr-2" style={{ background: `${state.primaryColor}33`, color: state.primaryColor }}>2</span>
-                Presença Digital
+                Marketing & Vendas
               </h3>
-              <div className="space-y-4">
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <FabSelect label="Frequência de posts" value={state.postFrequency} onChange={(v) => update({ postFrequency: v })} options={[
                   { v: "diario", l: "Todo dia" },
                   { v: "semanal", l: "Algumas vezes por semana" },
                   { v: "mensal", l: "Algumas vezes no mês" },
                   { v: "raro", l: "Quase nunca" },
                 ]} />
-                <FabSelect label="Quantos seguidores no Instagram?" value={state.followers} onChange={(v) => update({ followers: v })} options={[
+                <FabSelect label="Seguidores no Insta" value={state.followers} onChange={(v) => update({ followers: v })} options={[
                   { v: "0-500", l: "Até 500" },
                   { v: "500-2k", l: "500 a 2 mil" },
                   { v: "2k-10k", l: "2 mil a 10 mil" },
                   { v: "10k+", l: "Mais de 10 mil" },
                 ]} />
-                <FabToggle label="Posto Reels com frequência?" value={state.usesReels} onChange={(v) => update({ usesReels: v })} />
-                <FabToggle label="Tenho destaques organizados (Pacotes, Sobre, Depoimentos)?" value={state.hasHighlights} onChange={(v) => update({ hasHighlights: v })} />
+                <FabField label="Ticket médio (R$)" value={state.ticketMedio} onChange={(v) => update({ ticketMedio: v.replace(/\D/g, "") })} placeholder="Ex: 2500" />
+                <FabField label="Vendas por mês" value={state.fechamentosMes} onChange={(v) => update({ fechamentosMes: v.replace(/\D/g, "") })} placeholder="Ex: 5" />
+              </div>
+
+              <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Presença & Autoridade</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <FabToggle label="Posta Reels sempre?" value={state.usesReels} onChange={(v) => update({ usesReels: v })} />
+                <FabToggle label="Destaques arrumados?" value={state.hasHighlights} onChange={(v) => update({ hasHighlights: v })} />
+                <FabToggle label="Tem depoimentos?" value={state.hasDepoimentos} onChange={(v) => update({ hasDepoimentos: v })} />
+                <FabToggle label="Roda Meta Ads?" value={state.investeAds} onChange={(v) => update({ investeAds: v })} />
               </div>
             </>
           )}
 
-          {step === 3 && (
-            <>
-              <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-5">
-                <span className="inline-block px-2 py-1 rounded mr-2" style={{ background: `${state.primaryColor}33`, color: state.primaryColor }}>3</span>
-                Vendas
-              </h3>
-              <div className="space-y-4">
-                <FabField label="Ticket médio por venda (R$)" value={state.ticketMedio} onChange={(v) => update({ ticketMedio: v.replace(/\D/g, "") })} placeholder="Ex: 2500" />
-                <FabField label="Quantos pacotes você fecha por mês?" value={state.fechamentosMes} onChange={(v) => update({ fechamentosMes: v.replace(/\D/g, "") })} placeholder="Ex: 5" />
-                <FabToggle label="Tenho depoimentos de clientes anteriores?" value={state.hasDepoimentos} onChange={(v) => update({ hasDepoimentos: v })} />
-                <FabToggle label="Investo em anúncios pagos (Meta Ads)?" value={state.investeAds} onChange={(v) => update({ investeAds: v })} />
-              </div>
-            </>
-          )}
-
-          {step === 4 && (() => {
+          {step === 3 && (() => {
             const nicheOptions =
               (state.agencyType && NICHES_BY_AGENCY[state.agencyType as AgencyType]) || NICHES_DEFAULT;
             const isReceptiva = state.agencyType === "receptiva";
@@ -336,7 +330,7 @@ export const Phase1Diagnostico = ({ onComplete }: Props) => {
             return (
               <>
                 <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-5">
-                  <span className="inline-block px-2 py-1 rounded mr-2" style={{ background: `${state.primaryColor}33`, color: state.primaryColor }}>4</span>
+                  <span className="inline-block px-2 py-1 rounded mr-2" style={{ background: `${state.primaryColor}33`, color: state.primaryColor }}>3</span>
                   {headerLabel}
                 </h3>
                 <p className="text-sm text-white/60 mb-3">{questionLabel}</p>
@@ -395,7 +389,7 @@ export const Phase1Diagnostico = ({ onComplete }: Props) => {
           onClick={() => (step < totalSteps ? setStep(step + 1) : finalize())}
           disabled={
             (step === 1 && (!state.agencyName || !state.whatsapp || !state.agencyType || (state.agencyType === "outro" && !state.agencyTypeOther))) ||
-            (step === 4 && (!state.niche || state.destinos.length === 0))
+            (step === 3 && (!state.niche || state.destinos.length === 0))
           }
           className="flex-[2] py-3 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110"
           style={{ background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)`, boxShadow: `0 8px 24px ${state.primaryColor}55` }}
