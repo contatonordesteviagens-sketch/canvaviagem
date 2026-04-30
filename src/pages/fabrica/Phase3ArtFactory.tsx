@@ -253,18 +253,27 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     setSelectedPhotoUrl("");
 
     try {
-      // Busca no Wikimedia Commons (estável, sem API key, permite CORS)
-      // Forçamos termos de turismo na busca
-      const searchTerm = encodeURIComponent(`${q} beach landscape -flag -map -logo -coat`);
-      const url = `https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&generator=search&gsrsearch=File:${searchTerm}&gsrlimit=24&gsrnamespace=6&iiprop=url|size|extlinks&iilimit=1&origin=*`;
+      // Refinamento do termo para evitar jogadores de futebol (ex: jogador Ceará)
+      // Se for uma palavra só, tentamos tornar mais específico
+      let enhancedQ = q;
+      const lowerQ = q.toLowerCase();
+      if (!lowerQ.includes("praia") && !lowerQ.includes("beach") && !lowerQ.includes("state")) {
+        enhancedQ = `${q} State tourism beach`;
+      }
+
+      // Busca no Wikimedia Commons com exclusões pesadas de futebol e mapas
+      const excludeTerms = "-football -soccer -player -match -stadium -jersey -psg -map -flag -coat -logo -arms";
+      const searchTerm = encodeURIComponent(`${enhancedQ} ${excludeTerms}`);
+      
+      const url = `https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&generator=search&gsrsearch=File:${searchTerm}&gsrlimit=30&gsrnamespace=6&iiprop=url|size&origin=*`;
 
       const resp = await fetch(url);
       const data = await resp.json();
 
       if (!data.query || !data.query.pages) {
-        // Fallback: tenta busca mais simples se a específica falhar
-        const simpleUrl = `https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=15&gsrnamespace=6&iiprop=url|size&origin=*`;
-        const resp2 = await fetch(simpleUrl);
+        // Fallback: se a busca ultra-específica falhar, tenta algo intermediário
+        const fallbackUrl = `https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&generator=search&gsrsearch=File:${encodeURIComponent(q + " landscape")}&gsrlimit=20&gsrnamespace=6&iiprop=url|size&origin=*`;
+        const resp2 = await fetch(fallbackUrl);
         const data2 = await resp2.json();
         if (!data2.query) throw new Error("Nenhuma foto encontrada");
         data.query = data2.query;
@@ -274,22 +283,29 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       const filtered = pages
         .filter(p => {
           const title = (p.title || "").toLowerCase();
-          // Filtro rigoroso anti-brasão/bandeira/mapa
-          return !title.includes("flag_of") && 
-                 !title.includes("coat_of_arms") && 
-                 !title.includes("brasão") && 
-                 !title.includes("bandeira") && 
-                 !title.includes("mapa") && 
-                 !title.includes("map_of") && 
-                 !title.includes("logo") && 
-                 !title.includes("escudo");
+          // Filtro rigoroso para limpar lixo (futebol, mapas, diagramas)
+          const isBad = title.includes("flag_of") || 
+                        title.includes("coat_of_arms") || 
+                        title.includes("brasão") || 
+                        title.includes("bandeira") || 
+                        title.includes("mapa") || 
+                        title.includes("map_of") || 
+                        title.includes("logo") || 
+                        title.includes("football") || 
+                        title.includes("soccer") || 
+                        title.includes("player") || 
+                        title.includes("psg") || 
+                        title.includes("diagram") || 
+                        title.includes("locator") || 
+                        title.includes("escudo");
+          return !isBad;
         })
         .map((p, i) => {
           const info = p.imageinfo?.[0];
           return {
             id: p.pageid || i,
             url: info?.url || "",
-            thumb: info?.url || "", // Wikimedia entrega a URL direta, o browser redimensiona
+            thumb: info?.url || "",
             width: info?.width || 1200,
             height: info?.height || 800,
             alt: p.title.replace("File:", ""),
@@ -297,16 +313,16 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         })
         .filter(p => p.url.match(/\.(jpg|jpeg|png|webp)$/i));
 
-      if (filtered.length === 0) {
-        toast.warning("Tente um termo mais genérico (ex: apenas o nome da cidade)");
-      }
-
       setPhotos(filtered);
       setVisiblePhotoCount(3);
       setSelectedPhotoUrl("");
-      toast.success(`${filtered.length} fotos encontradas`);
+      if (filtered.length > 0) {
+        toast.success(`${filtered.length} fotos de ${q} prontas`);
+      } else {
+        toast.warning("Tente buscar por um destino específico (ex: Jericoacoara)");
+      }
     } catch (err: any) {
-      toast.error("Erro na busca. Tente digitar apenas o nome do lugar.");
+      toast.error("Erro na busca. Tente outro termo.");
     } finally {
       setSearchingPhotos(false);
     }
