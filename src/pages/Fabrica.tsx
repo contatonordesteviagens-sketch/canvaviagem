@@ -77,13 +77,7 @@ const FabricaInner = () => {
             <ArrowLeft className="w-4 h-4" /> Voltar
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${state.primaryColor}, #D97706)`, boxShadow: `0 0 20px ${state.primaryColor}33` }}>
-              <Factory className="w-5 h-5 text-black" />
-            </div>
-            <div>
-              <div className="text-sm font-extrabold leading-tight">Fábrica de Destinos</div>
-              <div className="text-[10px] text-white/50 uppercase tracking-widest">TravelBoost · Canva Viagem</div>
-            </div>
+            <div className="text-sm font-extrabold leading-tight">Fábrica de Destinos</div>
           </div>
         </div>
 
@@ -91,7 +85,7 @@ const FabricaInner = () => {
         <div className="text-center py-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/10 bg-white/[0.04] mb-4">
             <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: state.primaryColor }} />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">Fábrica de Destinos · IA</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">Fábrica de Destinos</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-black mb-3 tracking-tight leading-[1.1]">
             Sua agência{" "}
