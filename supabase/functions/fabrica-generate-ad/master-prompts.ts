@@ -532,7 +532,7 @@ export function promptIconicLandmark(v: MasterPromptVars): string {
     layout:
       "FULL-BLEED CINEMATOGRÁFICO — a fotografia ocupa 100% da composição, sem divisões duras. Texto leve sobreposto, com gradiente sutil apenas para legibilidade. Sem cartões, sem caixas.",
     lighting: "natural perfeita, hora dourada cinematográfica, profundidade de campo realista, cores vibrantes e atmosféricas",
-    sceneDescription: `${v.destination} com riqueza de detalhes — céu dramático, luz dourada, pessoas naturais em momentos espontâneos, água cristalina ou paisagem icônica. ${v.destinationDescription}`,
+    sceneDescription: `${v.destination} com riqueza de detalhes — céu dramático, luz dourada, paisagem natural intocada e arquitetura icônica, água cristalina ou paisagem icônica. ${v.destinationDescription}`,
     headline,
     experienceDescription: `Uma experiência inesquecível em ${v.destination}.`,
     specialization:
@@ -548,7 +548,7 @@ export function promptSplitYellowSide(v: MasterPromptVars): string {
     layout:
       "DIVISÃO SUAVE — 70% SUPERIOR com fotografia hiper-realista do destino; 30% INFERIOR com área clean usando leve gradiente translúcido. Transição suave entre as duas áreas.",
     lighting: "natural suave, luz realista, atmosfera convidativa",
-    sceneDescription: `${v.destination} com foco em experiência — mar, arquitetura ou natureza com luz natural suave, pessoas interagindo com o ambiente de forma natural. ${v.destinationDescription}`,
+    sceneDescription: `${v.destination} com foco em experiência — mar, arquitetura ou natureza com luz natural suave, elementos da paisagem em primeiro plano. ${v.destinationDescription}`,
     headline,
     experienceDescription: `Momentos únicos em ${v.destination}.`,
     specialization:
@@ -562,9 +562,9 @@ export function promptElegantCenterCard(v: MasterPromptVars): string {
   return buildBrain(v, {
     category: "experiencia",
     layout:
-      "STORY LIFESTYLE — fotografia full-bleed dominante mostrando pessoas reais aproveitando o destino. Texto sobreposto leve, sem caixas pesadas.",
+      "STORY LIFESTYLE — fotografia full-bleed dominante mostrando o destino em ângulo aspiracional, sem pessoas. Texto sobreposto leve, sem caixas pesadas.",
     lighting: "luz natural, clima feliz, sensação de liberdade, atmosfera real e espontânea",
-    sceneDescription: `grupo de pessoas reais aproveitando ${v.destination} — rindo, tirando fotos, vivendo o momento. Ambiente vivo, autêntico, sem pose comercial. ${v.destinationDescription}`,
+    sceneDescription: `paisagem icônica e atmosfera viva de ${v.destination} — luz natural, cores autênticas, sem pessoas, sem silhuetas. ${v.destinationDescription}`,
     headline,
     experienceDescription: `Momentos únicos em ${v.destination}.`,
     specialization:
