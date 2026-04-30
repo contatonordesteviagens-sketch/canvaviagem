@@ -277,9 +277,13 @@ function buildBrain(v: MasterPromptVars, opts: {
   specialization?: string;
 }): string {
   const valueBlock = opts.category === "oferta"
-    ? `[BLOCO DE PREÇO — DESTAQUE EXTREMO]
-${v.installments} de R$ ${v.installmentValue}     ← FONTE GIGANTE, ULTRA-BOLD
-Selo principal: ${v.promoName.toUpperCase()}`
+    ? `[BLOCO DE PREÇO — CARD LIMPO E PROFISSIONAL]
+APENAS três informações dentro do card, nesta ordem vertical e bem espaçadas:
+  1) Valor da parcela: ${v.installments}x R$ ${v.installmentValue}  ← MAIOR ELEMENTO, ULTRA-BOLD
+  2) Texto pequeno: "Total por pessoa: R$ ${v.totalValue}"
+  3) Duração: ${v.duration}
+🚫 PROIBIDO dentro do card: ícones de avião, ônibus, hotel, mala, câmera, xícara, estrelas ou QUALQUER pictograma. Sem listas com bullets. Sem fileiras de ícones. Card 100% tipográfico.
+Selo único permitido (fora do card, opcional): "${v.promoName.toUpperCase()}"`
     : opts.category === "autoridade_dark"
     ? `[BLOCO DE INFORMAÇÕES — DARK PREMIUM]
 ${v.installments}x R$ ${v.installmentValue}     ← FONTE GIGANTE, ULTRA-BOLD, COR SÓLIDA SEM BRILHO
