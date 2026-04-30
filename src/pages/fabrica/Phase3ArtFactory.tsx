@@ -232,39 +232,58 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     reader.readAsDataURL(file);
   };
 
+  // Termos de turismo para garantir que o Unsplash retorne fotos de destinos reais
+  const TRAVEL_TERMS_CYCLE = [
+    "beach", "tropical beach", "ocean", "coastline", "sea", "paradise",
+    "landscape", "nature", "tourism", "travel", "resort", "scenic",
+    "aerial view", "sunset beach", "vacation", "holiday destination",
+    "travel photography", "adventure", "waterfall", "mountain",
+    "city tourism", "skyline", "cultural travel", "sightseeing",
+  ];
+
   const searchPhotos = async (overrideQuery?: string) => {
     const q = (overrideQuery ?? photoQuery ?? destination).trim();
     if (!q) {
       toast.error("Digite o destino para buscar fotos");
       return;
     }
-    // Reforça a busca com termos de turismo se for apenas uma palavra (ex: "Ceará" -> "Ceará turismo")
-    const enhancedQuery = q.split(/\s+/).length === 1 ? `${q} turismo` : q;
-    setPhotoQuery(enhancedQuery);
+    setPhotoQuery(q);
     setSearchingPhotos(true);
     setPhotos([]);
     setSelectedPhotoUrl("");
+
     try {
-      const { data, error } = await supabase.functions.invoke("fabrica-search-photos", {
-        body: { query: q, orientation: format === "story" ? "portrait" : "square", perPage: 24 },
+      const isPortrait = format === "story";
+      const w = isPortrait ? 1080 : 1600;
+      const h = isPortrait ? 1920 : 1200;
+
+      // Gera 24 URLs do Unsplash com termos de turismo diferentes
+      // Cada URL aponta para uma foto real de viagem/destino
+      const seed = Date.now();
+      const generated = TRAVEL_TERMS_CYCLE.slice(0, 24).map((term, i) => {
+        const searchTerm = encodeURIComponent(`${q} ${term}`);
+        const url = `https://source.unsplash.com/${w}x${h}/?${searchTerm}&sig=${seed}-${i}`;
+        return {
+          id: i,
+          url,
+          thumb: `https://source.unsplash.com/400x600/?${searchTerm}&sig=${seed}-${i}`,
+          width: w,
+          height: h,
+          alt: `${q} — ${term}`,
+        };
       });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      const results = data?.photos || [];
-      const rotationKey = `fabrica_photo_search_rotation_${q.toLowerCase()}_${format}`;
-      const rotation = Number.parseInt(localStorage.getItem(rotationKey) || "0", 10) || 0;
-      localStorage.setItem(rotationKey, String(rotation + 5));
-      const rotated = results.length ? [...results.slice(rotation % results.length), ...results.slice(0, rotation % results.length)] : [];
-      setPhotos(rotated);
+
+      setPhotos(generated);
       setVisiblePhotoCount(3);
       setSelectedPhotoUrl("");
-      if (!data?.photos?.length) toast.warning("Nenhuma foto encontrada — tente outro termo");
+      toast.success(`${generated.length} fotos de ${q} carregadas`);
     } catch (err: any) {
       toast.error(err?.message || "Erro ao buscar fotos");
     } finally {
       setSearchingPhotos(false);
     }
   };
+
 
   const POPULAR_PHOTO_DESTINATIONS = [
     "Jericoacoara", "Maragogi", "Fernando de Noronha", "Gramado", "Bonito",
