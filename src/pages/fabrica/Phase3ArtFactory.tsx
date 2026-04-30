@@ -191,6 +191,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [photos, setPhotos] = useState<Array<{ id: number; url: string; thumb: string; alt: string }>>([]);
   const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string>("");
   const [searchingPhotos, setSearchingPhotos] = useState(false);
+  const [visiblePhotoCount, setVisiblePhotoCount] = useState(3);
   // Sua imagem
   const [customSource, setCustomSource] = useState<CustomSource>("upload");
   const [customImageData, setCustomImageData] = useState<string>(""); // base64 (upload) ou URL (link) — só em memória
@@ -240,6 +241,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       localStorage.setItem(rotationKey, String(rotation + 5));
       const rotated = results.length ? [...results.slice(rotation % results.length), ...results.slice(0, rotation % results.length)] : [];
       setPhotos(rotated);
+      setVisiblePhotoCount(3);
+      setSelectedPhotoUrl("");
       if (!data?.photos?.length) toast.warning("Nenhuma foto encontrada — tente outro termo");
     } catch (err: any) {
       toast.error(err?.message || "Erro ao buscar fotos");
@@ -759,27 +762,45 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               Buscar
             </button>
           </div>
-          {photos.length > 0 && (
-            <div className="grid grid-cols-3 gap-2">
-              {photos.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => setSelectedPhotoUrl(p.url)}
-                  className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                    selectedPhotoUrl === p.url ? "scale-95" : "border-white/10 hover:border-white/30"
-                  }`}
-                  style={selectedPhotoUrl === p.url ? { borderColor: primaryColor } : undefined}
-                >
-                  <img src={p.thumb} alt={p.alt} className="w-full h-full object-cover" />
-                  {selectedPhotoUrl === p.url && (
-                    <div className="absolute inset-0 flex items-center justify-center" style={{ background: `${primaryColor}aa` }}>
-                      <Check className="w-8 h-8 text-white" />
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
+          {photos.length > 0 && (() => {
+            const visible = photos.slice(0, visiblePhotoCount);
+            const hasMore = visiblePhotoCount < photos.length;
+            return (
+              <>
+                <div className="grid grid-cols-3 gap-2">
+                  {visible.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => setSelectedPhotoUrl(p.url)}
+                      className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                        selectedPhotoUrl === p.url ? "scale-95" : "border-white/10 hover:border-white/30"
+                      }`}
+                      style={selectedPhotoUrl === p.url ? { borderColor: secondaryColor, borderWidth: 3 } : undefined}
+                    >
+                      <img src={p.thumb} alt={p.alt} className="w-full h-full object-cover" />
+                      {selectedPhotoUrl === p.url && (
+                        <div className="absolute inset-0 flex items-center justify-center" style={{ background: `${primaryColor}cc` }}>
+                          <Check className="w-8 h-8 text-white" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                {hasMore && (
+                  <button
+                    onClick={() => setVisiblePhotoCount((n) => n + 3)}
+                    className="w-full mt-3 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm font-semibold hover:bg-white/[0.06] transition-all flex items-center justify-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Ver mais fotos ({photos.length - visiblePhotoCount} restantes)
+                  </button>
+                )}
+                {!hasMore && photos.length > 3 && (
+                  <p className="text-[10px] text-white/30 text-center mt-2">Todas as {photos.length} fotos exibidas.</p>
+                )}
+              </>
+            );
+          })()}
           {photos.length === 0 && !searchingPhotos && (
             <p className="text-xs text-white/40 text-center py-6">Digite o destino e clique em buscar.</p>
           )}
