@@ -259,7 +259,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     try {
       const { data, error } = await supabase.functions.invoke("fabrica-search-photos", {
         body: { 
-          query, 
+          query: q, 
           perPage: 12, 
           engine: searchEngine 
         }
@@ -270,7 +270,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         setPhotos(data.photos);
         setVisiblePhotoCount(3);
         setSelectedPhotoUrl("");
-        toast.success(`Fotos de ${query} carregadas com sucesso!`);
+        toast.success(`Fotos de ${q} carregadas com sucesso!`);
       }
     } catch (err) {
       console.error("Erro ao buscar fotos:", err);
