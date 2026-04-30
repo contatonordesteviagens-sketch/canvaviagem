@@ -281,13 +281,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           const url = `https://pixabay.com/api/?key=${API_KEY}&q=${encodeURIComponent(q)}&image_type=photo&orientation=${format === "story" ? "vertical" : "horizontal"}&per_page=15&safesearch=true`;
           const resp = await fetch(url);
           const data = await resp.json();
-          if (data.hits?.length > 0) {
-            results = data.hits.map((h: any) => ({
-              id: h.id,
-              url: h.largeImageURL,
-              thumb: h.webformatURL,
-              width: h.imageWidth,
-              height: h.imageHeight,
     setPhotoQuery(query);
     
     try {
@@ -304,16 +297,15 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         setPhotos(data.photos);
         setVisiblePhotoCount(3);
         setSelectedPhotoUrl("");
-        toast.success(`Fotos de ${query} carregadas via ${searchEngine === 'google' ? 'Google' : 'Pexels'}!`);
+        toast.success(`Fotos de ${query} carregadas com sucesso!`);
       }
     } catch (err) {
       console.error("Erro ao buscar fotos:", err);
-      toast.error("Erro na busca. Verifique as chaves de API.");
+      toast.error("Erro na busca de fotos.");
     } finally {
       setSearchingPhotos(false);
     }
   };
-
 
   const POPULAR_PHOTO_DESTINATIONS = [
     "Jericoacoara", "Maragogi", "Fernando de Noronha", "Gramado", "Bonito",
