@@ -301,9 +301,6 @@ function buildPrompt(p: AdParams): string {
    • É PROIBIDO traduzir, abreviar, encurtar ou substituir por sinônimos.
    • É PROIBIDO misturar inglês ou espanhol.
    • Se você não consegue desenhar uma palavra com legibilidade perfeita, deixe o ESPAÇO VAZIO.
-   • Exemplos do que NUNCA fazer (alucinações já vistas a evitar):
-     ✗ "tempna detro pezetas" / "Perobleniza um contaita" / "xa de pica" / "Motel" (a menos que esteja na lista)
-     ✗ Qualquer texto fora da lista acima.
 
 3) COR — OBRIGATÓRIA, SEM SUBSTITUIÇÃO:
    • PRIMÁRIA = ${primaryHex} (${primaryName}). Use EXATAMENTE essa cor nos blocos sólidos principais, fundos de seções e títulos.

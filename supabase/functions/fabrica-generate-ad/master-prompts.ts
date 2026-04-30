@@ -62,85 +62,15 @@ REGRA DE OURO: o resultado deve PARECER um story real de agência de viagem bras
 
 ══════════════════════════════════════
 🔴 REGRAS ESPECÍFICAS DA CATEGORIA — OFERTA DE PACOTE
-- FOCO TOTAL EM CONVERSÃO DIRETA.
-- Esta categoria deve parecer um anúncio agressivo de performance, NÃO editorial.
-- O PREÇO deve ser o MAIOR elemento visual da composição,
-  ocupando NO MÍNIMO 25% da área do bloco central.
-- A imagem/fotografia é apenas suporte visual; ela NÃO pode ser protagonista.
-- Use EXCLUSIVAMENTE a paleta enviada pelo formulário: a cor primária deve dominar fundos/blocos e a cor secundária deve aparecer em preço, badges e detalhes.
-- É PROIBIDO inventar verde, preto, azul, laranja, dourado ou qualquer outra cor dominante se ela não for uma das cores selecionadas pelo usuário.
-- Elementos de URGÊNCIA SEMPRE presentes (escolha 1 ou 2):
-  "OFERTA EXCLUSIVA" · "APENAS HOJE" · "ÚLTIMAS VAGAS".
-- Selos / botões devem reforçar pelo menos 2 destes:
-  "SEM JUROS" · "PIX" · "VOO + HOTEL".
-- Tom de copy: direto, comercial, cria gatilho de decisão imediata.
-
-══════════════════════════════════════
-🚨 REGRA MAIS IMPORTANTE DO SISTEMA — NÃO REPETIÇÃO (CRÍTICA ABSOLUTA)
-══════════════════════════════════════
-É TERMINANTEMENTE PROIBIDO gerar imagens iguais, similares ou com a mesma
-estrutura visual da geração anterior. Cada nova imagem DEVE ser
-VISUALMENTE DIFERENTE da anterior. Se a anterior teve cartão central →
-agora NÃO usar cartão central. Se teve fundo azul → usar outra cor
-dominante. Se teve layout dividido → usar outro tipo de layout. Se o
-preço estava na posição X → mudar completamente de posição.
-
-A IA deve FORÇAR variação estrutural — não apenas trocar texto.
+- FOCO TOTAL EM CONVERSÃO DIRETA. Anúncio de performance comercial.
+- O PREÇO deve ser o MAIOR elemento visual da composição (no mínimo 25% da área do bloco central).
+- A imagem/fotografia é apenas suporte visual de fundo.
+- Use EXCLUSIVAMENTE a paleta enviada. A cor primária domina os blocos e a secundária domina o preço/selos.
+- Elementos de URGÊNCIA obrigatórios: "OFERTA EXCLUSIVA", "PIX", "SEM JUROS".
+- Tom de copy: direto, agressivo, gatilho de decisão imediata.
 
 [OBRIGAÇÃO DE VARIAÇÃO REAL]
-A cada nova geração, ALTERAR pelo menos 4 destes elementos:
-  1. Tipo de layout (estrutura visual)
-  2. Posição do preço
-  3. Estilo do container (cartão, faixa, selo, lateral, etc)
-  4. Cores principais
-  5. Hierarquia dos elementos
-  6. Tipo de imagem (aérea, close, lifestyle, panorâmica)
-  7. Estilo de iluminação
-Se esses elementos não mudarem, a geração está ERRADA.
-
-[CONTROLE DE LAYOUT — ESCOLHER 1 POR VEZ]
-Escolher APENAS UM layout por geração (proibido repetir o anterior):
-  1. Cartão central flutuante
-  2. Divisão topo imagem + base oferta
-  3. Barra lateral + imagem
-  4. Preço sobreposto direto na imagem (sem cartão)
-  5. Cartão inclinado/assimétrico
-  6. Layout minimalista com preço isolado
-
-[VARIAÇÃO DE POSIÇÃO DO PREÇO]
-O preço NUNCA pode ficar sempre no mesmo lugar. Alternar entre:
-centro · canto inferior (dentro da safe zone) · lado direito ·
-lado esquerdo · dentro de selo · sobreposto livre na imagem.
-
-[VARIAÇÃO DE ESTILO VISUAL]
-Alternar estrutura, iluminação e composição, MAS SEM trocar a paleta:
-usar sempre a cor primária e a cor secundária selecionadas no formulário.
-
-[ANTI-REPETIÇÃO DE ESTRUTURA — PROIBIDO]
-🚫 Usar sempre o mesmo "cartão com preço".
-🚫 Repetir mesma composição da geração anterior.
-🚫 Repetir posição dos elementos.
-🚫 Gerar layouts clonados.
-Se parecer semelhante à anterior → ERRADO, refazer.
-
-[CONTROLE FINAL DE QUALIDADE — VALIDAR ANTES DE FINALIZAR]
-✔ Essa imagem é diferente da anterior?
-✔ O layout mudou?
-✔ O preço mudou de posição?
-✔ As cores respeitam exatamente a primária e secundária selecionadas?
-✔ A estrutura é nova?
-Se alguma resposta for "não", REFAZER a imagem.
-
-[REGRAS FIXAS]
-- Gerar APENAS UMA imagem.
-- Não duplicar elementos.
-- Não sobrepor textos.
-- Não repetir layout anterior.
-- Não gerar arte semelhante.
-
-[RESULTADO ESPERADO]
-Cada geração deve parecer um anúncio completamente novo, uma nova
-campanha, uma nova abordagem visual. NUNCA uma repetição.
+Para garantir variação visual entre gerações, a IA receberá no prompt uma instrução de CÂMERA e LAYOUT. Você DEVE seguir a câmera exata especificada nesta rodada para que o anúncio fique estruturalmente único.
 ══════════════════════════════════════
 `;
 
@@ -150,77 +80,21 @@ campanha, uma nova abordagem visual. NUNCA uma repetição.
 const EXPERIENCIA_RULES = `
 ══════════════════════════════════════
 🔵 REGRAS ESPECÍFICAS DA CATEGORIA — EXPERIÊNCIA DE DESTINO
-- FOCO TOTAL EM DESEJO, EMOÇÃO E EXPERIÊNCIA. NÃO é um anúncio de venda.
+- FOCO TOTAL EM DESEJO, EMOÇÃO E EXPERIÊNCIA. Não é um anúncio de venda.
 - A FOTOGRAFIA é a protagonista absoluta e deve ocupar no MÍNIMO 70% da composição (em alguns layouts até 90%).
-- Estética editorial premium, aspiracional, estilo capa de revista de viagem (Condé Nast Traveller, Kinfolk, Cereal).
-- Linguagem emocional. Tom aspiracional, contemplativo, NUNCA agressivo.
-
-🚫 PROIBIÇÕES ABSOLUTAS NESTA CATEGORIA:
-- PROIBIDO caixa grande de oferta, cartão promocional, bloco pesado de preço.
-- PROIBIDO preço gigante, parcelamento em destaque, selos "% OFF", "SEM JUROS", "PIX".
-- PROIBIDO palavras de urgência: "OFERTA EXCLUSIVA", "APENAS HOJE", "ÚLTIMAS VAGAS", "COMPRE AGORA", "GARANTIR VAGA".
-- PROIBIDO cores agressivas saturadas tipo amarelo neon + roxo elétrico em blocos sólidos grandes.
-- PROIBIDO layout de venda direta / performance / Meta Ads.
-- O PREÇO é OPCIONAL: se aparecer, deve ser MINÚSCULO, em texto fino, como informação discreta tipo "A partir de R$ X" — NUNCA em caixa colorida e NUNCA dominante.
+- Estética editorial premium, aspiracional, estilo capa de revista de viagem.
+- O PREÇO é OPCIONAL. Se usar, deve ser MINÚSCULO e discreto: "A partir de R$ X".
 
 ✅ HIERARQUIA OBRIGATÓRIA:
-1. Imagem (protagonista absoluta)
-2. Título emocional curto
-3. Subtítulo/detalhes leves
-4. Lista de experiências (sem caixas, sem pílulas pesadas — texto leve com ícones discretos)
-5. Preço (opcional, discreto, minúsculo)
+1. Imagem (protagonista absoluta full-bleed, 100% da tela)
+2. Título emocional
+3. Subtítulo leve
+4. Lista de experiências (apenas texto leve, sem caixas/cartões)
 
 ✅ ESTILO VISUAL:
-- Muito espaço negativo DENTRO da imagem (céu, mar, areia, paisagem) — NÃO criar bordas brancas, molduras ou margens externas vazias.
-- A FOTOGRAFIA DEVE PREENCHER 100% DA TELA, full-bleed, edge-to-edge. PROIBIDO moldura branca, polaroid, fundo branco visível em volta da foto, layout "imagem flutuando dentro de papel".
+- A FOTOGRAFIA DEVE PREENCHER 100% DA TELA, edge-to-edge. 
+- Muito espaço negativo DENTRO da foto para receber texto.
 - Tipografia leve e elegante (serifada ou sans-serif refinada).
-- Sem ornamentos comerciais, sem selos, sem botões CTA agressivos.
-- Resultado deve parecer página de revista (foto de capa cobrindo a página inteira), não cartão postal pequeno em cima de fundo branco.
-
-══════════════════════════════════════
-🚨 REGRA MAIS IMPORTANTE — VARIAÇÃO DE COPY (CRÍTICA ABSOLUTA)
-══════════════════════════════════════
-É TERMINANTEMENTE PROIBIDO repetir o mesmo estilo de título em gerações
-consecutivas. Isso inclui "Viva [DESTINO]", "Descubra [DESTINO]",
-"Explore [DESTINO]". NÃO pode repetir a mesma estrutura de frase.
-Cada nova imagem deve usar uma abordagem COMPLETAMENTE DIFERENTE de copy.
-
-[OBRIGAÇÃO DE VARIAÇÃO DE TÍTULOS]
-A cada nova geração, MUDAR:
-  1. Verbo principal
-  2. Estrutura da frase
-  3. Estilo de comunicação
-  4. Tamanho do texto
-
-[ESTILOS DE TÍTULO — ALTERNAR ENTRE ELES]
-🎯 Emocional: "Momentos que ficam para sempre" · "Um lugar para se desconectar" · "Onde tudo faz sentido"
-🎯 Experiência: "Dias inesquecíveis começam aqui" · "Sua próxima história começa no destino" · "Mais que uma viagem, uma experiência"
-🎯 Curto e impactante: "O melhor de [DESTINO]" · "Seu próximo destino é esse" · "Uma experiência diferente de tudo"
-🎯 Inspiracional: "Permita-se viver isso" · "Você merece esse destino" · "O mundo te espera"
-🎯 Ação leve: "Partiu viajar?" · "Hora de arrumar as malas" · "Bora viajar?"
-
-[REGRA DE NÃO REPETIÇÃO]
-🚫 PROIBIDO usar o mesmo verbo em sequência.
-🚫 PROIBIDO repetir padrão "verbo + destino".
-🚫 PROIBIDO usar sempre frases curtas iguais.
-🚫 PROIBIDO repetir estrutura de copy.
-Se a anterior usou "Viva Cancún", a próxima NÃO pode ser "Explore Cancún".
-Tem que mudar COMPLETAMENTE o estilo.
-
-[VARIAÇÃO DE ESTRUTURA — ALTERNAR]
-frase com destino · frase sem destino · frase emocional ·
-frase narrativa · frase curta · frase longa.
-
-[CONTROLE FINAL]
-✔ O título é diferente do anterior?
-✔ A estrutura mudou?
-✔ O estilo de linguagem mudou?
-✔ Não parece repetido?
-Se parecer repetido → REFAZER.
-
-[RESULTADO ESPERADO]
-Cada imagem deve parecer uma campanha diferente, uma ideia nova,
-uma abordagem criativa única. NUNCA uma repetição.
 ══════════════════════════════════════
 `;
 
@@ -445,7 +319,7 @@ A composição segue o layout: ${opts.layout}.
 [VARIAÇÃO CRIATIVA OBRIGATÓRIA]
 ID de variação: ${creativeSeed}.
 Direção única desta geração: ${variationDirectives[variationIndex]}.
-Mesmo que destino, preço e benefícios sejam parecidos com uma geração anterior, crie uma interpretação visual nova: novo enquadramento fotográfico, nova posição dos blocos, nova proporção visual, novo ritmo tipográfico e nova distribuição de respiro. Não repita a composição anterior e não reaproveite o mesmo prompt visual da outra categoria.
+Este anúncio DEVE seguir a câmera, iluminação e estruturação exatas informadas na "Direção única", garantindo variação visual extrema. Mude os elementos de lugar e inove na composição espacial de acordo com a diretriz acima.
 
 [REFERÊNCIAS DE ESTILO]
 Use a biblioteca de referências de anúncios enviada pelo usuário APENAS como inspiração estrutural: divisão 60/40 foto + base sólida, cartão amarelo de pacote, faixa lateral vibrante, selo tipo bilhete Pix, layout editorial topo/base e grid editorial de experiências. NÃO copie destinos, preços, datas, hotéis, textos legais ou informações fixas dessas referências. Os únicos dados permitidos são os dados preenchidos no formulário abaixo.
@@ -498,197 +372,28 @@ ${typographyHierarchy}
 - REALISMO ABSOLUTO em qualquer elemento humano, objeto ou cenário.
 
 ══════════════════════════════════════
-🛑 LISTA ZERO-TIPO — TEXTOS LITERAIS OBRIGATÓRIOS (COPIAR CARACTERE A CARACTERE)
+🛑 OBRIGATÓRIO: RENDERIZAÇÃO DE TEXTO EXATO
 ══════════════════════════════════════
-Este é o requisito MAIS CRÍTICO de toda a geração. Erros ortográficos invalidam a imagem e exigem refazer.
-Os textos abaixo DEVEM aparecer no banner EXATAMENTE como escritos, sem alterar UMA ÚNICA letra, acento, espaço ou pontuação. NÃO traduzir, NÃO abreviar, NÃO inventar palavras, NÃO improvisar caracteres parecidos. Se o modelo não souber renderizar uma letra com fidelidade, REFAZER até ficar 100% correto.
+Você DEVE escrever os textos EXATAMENTE como passados no prompt.
+É proibido inventar palavras de viagem, adicionar adjetivos ou criar seus próprios títulos. 
+O texto precisa ser uma cópia EXATA.
 
-📋 TEXTOS EXATOS PERMITIDOS NESTE BANNER:
-• Destino: «${v.destination}»  (renderizar a palavra COMPLETA — contar as letras antes de desenhar; a primeira e a última letra DEVEM aparecer inteiras com a MESMA altura das demais)
+📋 TEXTOS EXATOS DESTE BANNER:
+• Destino: «${v.destination}»
 • Título principal: «${opts.headline}»
-• Promoção/selo, se usar: «${v.promoName}»
-• Cidade de origem: «${v.city}»
 • Parcela: «${v.installments}x R$ ${v.installmentValue}»
 • Preço total: «Preço total: R$ ${v.totalValue}»
-• CTA (se houver): «RESERVAR AGORA»  (NUNCA "RESERVAR AGOR", "RESEVAR", "RESEVAR AGORA")
-• Rodapé: «Saindo de ${v.city}. Taxas e impostos não inclusos. Consulte disponibilidade.»
-• Lista de benefícios: copiar PALAVRA POR PALAVRA cada item enviado. Se não souber soletrar com 100% de certeza, OMITIR o item — NUNCA inventar caracteres, NUNCA repetir letras aleatórias.
+• Rodapé: «Saindo de ${v.city}. Consulte disponibilidade.»
 
-══════════════════════════════════════
-🚨 REGRA ANTI-CORTE (CRÍTICA — JÁ CAUSOU PALAVRAS OBSCENAS)
-══════════════════════════════════════
-TODA palavra renderizada DEVE caber 100% dentro da área visível do banner, com no mínimo 5% de margem interna em CADA lado (esquerda, direita, topo, base).
-
-⛔ É TERMINANTEMENTE PROIBIDO que qualquer letra fique cortada pela borda da imagem, pelo "bleed" do canvas, ou por qualquer elemento sobreposto. Cortar letras NUNCA é aceitável — nem 1 pixel.
-
-⛔ EXEMPLO REAL DE FALHA CATASTRÓFICA (NÃO REPETIR):
-   "OFERTA ESPECIAL" foi renderizado tão largo que o "O" inicial e o "L" final foram cortados pela borda, transformando-se em «SURUBA ESPECIA» — palavra OBSCENA em português brasileiro. ISSO É INACEITÁVEL.
-
-⛔ Palavras que JAMAIS podem aparecer no banner por acidente de corte (são todas obscenas/ofensivas em português brasileiro):
-   "SURUBA", "PORRA", "MERDA", "BOSTA", "PUTA", "CARALHO", "BUCETA", "CU", "PINTO", "PIROCA", "CACETE", "FODA", "FODE", "FUDEU", "VIADO", "BICHA", "PUTO", "PUTAS", "VAGABA", "VADIA", "PIRANHA".
-   Se a palavra renderizada SOAR ou PARECER qualquer uma dessas, REGENERAR a imagem do zero, reduzindo o tamanho da fonte do título até caber inteira com folga.
-
-✅ COMO EVITAR:
-1. ANTES de escolher o tamanho da fonte, contar as letras de CADA palavra do título.
-2. Calcular a largura disponível (largura da imagem - 10% de padding lateral total).
-3. Se a palavra não couber, REDUZIR o tamanho até caber INTEIRA com 5% de margem em cada lado.
-4. Quebrar em DUAS LINHAS é preferível a cortar uma letra. Ex: «OFERTA / ESPECIAL» em duas linhas é OK; «SURUBA ESPECIA» em uma linha cortada é PROIBIDO.
-5. Após renderizar, verificar visualmente se a primeira letra (A, B, C...) e a última letra estão COMPLETAS e VISÍVEIS. Se não estiverem, REGENERAR.
+⚠️ NUNCA deixe letras cortadas na borda da imagem. Toda palavra deve caber inteira na imagem.
 ══════════════════════════════════════
 
-══════════════════════════════════════
-🔤 DICIONÁRIO ANTI-ERRO — PALAVRAS QUE O MODELO COSTUMA ERRAR
-══════════════════════════════════════
-Estas são as palavras em português que modelos de geração de imagem mais erram. Use SEMPRE a grafia da coluna CERTO. NUNCA a coluna ERRADO.
-
-MOEDA E NÚMEROS:
-  ❌ "RS 149,90"     ✅ "R$ 149,90"        (símbolo é R + cifrão, sem espaço entre R e $)
-  ❌ "R5 149,90"     ✅ "R$ 149,90"        (cifrão "$", não o número "5")
-  ❌ "B$ 149,90"     ✅ "R$ 149,90"        (letra "R", não "B")
-  ❌ "RS\$ 149,90"   ✅ "R$ 149,90"
-  ❌ "R$ 1500"       ✅ "R$ 1.500,00"      (sempre incluir centavos quando exibir total)
-  ❌ "1499,00"       ✅ "1.499,00"         (ponto de milhar obrigatório a partir de 1.000)
-  ❌ "1.499.00"      ✅ "1.499,00"         (centavos com VÍRGULA, nunca ponto)
-  ❌ "1,499,00"      ✅ "1.499,00"         (milhar com PONTO, nunca vírgula)
-  ❌ "10X"           ✅ "10x"              (x minúsculo nas parcelas)
-
-ALIMENTAÇÃO E HOSPEDAGEM:
-  ❌ "Café da mênha"      ✅ "Café da manhã"
-  ❌ "Café da mânha"      ✅ "Café da manhã"
-  ❌ "Café da manha"      ✅ "Café da manhã"  (til no "a" final é obrigatório)
-  ❌ "Café da mâhna"      ✅ "Café da manhã"
-  ❌ "Café da mãnha"      ✅ "Café da manhã"
-  ❌ "Cafe da manhã"      ✅ "Café da manhã"  (acento agudo no "e")
-  ❌ "Almolço"            ✅ "Almoço"
-  ❌ "Hospedajem"         ✅ "Hospedagem"
-  ❌ "Hospadagem"         ✅ "Hospedagem"
-  ❌ "Hospadaem"          ✅ "Hospedagem"     (já apareceu — proibido)
-  ❌ "Hospedaem"          ✅ "Hospedagem"
-  ❌ "Hospedagen"         ✅ "Hospedagem"
-  ❌ "Hotell"             ✅ "Hotel"
-  ❌ "Pousadda"           ✅ "Pousada"
-  ❌ "Reffeições"         ✅ "Refeições"
-  ❌ "Transffer"          ✅ "Transfer"
-  ❌ "Passeos"            ✅ "Passeios"
-  ❌ "Pacceios"           ✅ "Passeios"
-  ❌ "Guia locall"        ✅ "Guia local"
-
-CIDADES E DESTINOS BRASILEIROS:
-  ❌ "Fortalesa"          ✅ "Fortaleza"
-  ❌ "Fartalesa"          ✅ "Fortaleza"      (já apareceu — proibido)
-  ❌ "Fartaleza"          ✅ "Fortaleza"
-  ❌ "Fortaleza"          ✅ "Fortaleza"
-  ❌ "Maseió"             ✅ "Maceió"
-  ❌ "Jericoacora"        ✅ "Jericoacoara"
-  ❌ "Jiricoacoara"       ✅ "Jericoacoara"
-  ❌ "ERICOACOARA"        ✅ "JERICOACOARA"  (NUNCA cortar o "J" inicial)
-  ❌ "Cancum"             ✅ "Cancún"
-  ❌ "Buzzios"            ✅ "Búzios"
-  ❌ "Florianopolis"      ✅ "Florianópolis"
-  ❌ "Fernando de Noronia" ✅ "Fernando de Noronha"
-  ❌ "Porto Segurro"      ✅ "Porto Seguro"
-  ❌ "Salvadorr"          ✅ "Salvador"
-  ❌ "Recifie"            ✅ "Recife"
-  ❌ "Natall"             ✅ "Natal"
-  ❌ "Gramaddo"           ✅ "Gramado"
-  ❌ "Bonitto"            ✅ "Bonito"
-  ❌ "Rio de Janero"      ✅ "Rio de Janeiro"
-  ❌ "Rio de Janneiro"    ✅ "Rio de Janeiro"
-
-PALAVRAS COMERCIAIS, EMOCIONAIS E LEGAIS:
-  ❌ "dispatbibiiibade"   ✅ "disponibilidade"
-  ❌ "dispobibibidade"    ✅ "disponibilidade"
-  ❌ "disponiblidade"     ✅ "disponibilidade"
-  ❌ "Consultte"          ✅ "Consulte"
-  ❌ "Reservaa"           ✅ "Reserva"
-  ❌ "Reservar agorra"    ✅ "Reservar agora"
-  ❌ "Garantta"           ✅ "Garanta"
-  ❌ "Compree"            ✅ "Compre"
-  ❌ "Imperdivel"         ✅ "Imperdível"
-  ❌ "Promosão"           ✅ "Promoção"
-  ❌ "Ofertta"            ✅ "Oferta"
-  ❌ "Excluziva"          ✅ "Exclusiva"
-  ❌ "Ultimas"            ✅ "Últimas"
-  ❌ "Vagass"             ✅ "Vagas"
-  ❌ "Pacotte"            ✅ "Pacote"
-  ❌ "Voo + Hotell"       ✅ "Voo + Hotel"
-  ❌ "Aereo"              ✅ "Aéreo"
-  ❌ "PIIX"               ✅ "PIX"
-  ❌ "Sem juross"         ✅ "Sem juros"
-  ❌ "Saindoo"            ✅ "Saindo"
-  ❌ "Taxass"             ✅ "Taxas"
-  ❌ "impostoss"          ✅ "impostos"
-  ❌ "incluzos"           ✅ "inclusos"
-  ❌ "incluidos"          ✅ "inclusos"
-  ❌ "Preçço"             ✅ "Preço"
-  ❌ "Preco"              ✅ "Preço"  (cedilha obrigatória)
-  ❌ "naum"               ✅ "não"
-  ❌ "nao"                ✅ "não"
-  ❌ "Descrubra"          ✅ "Descubra"
-  ❌ "Descobra"           ✅ "Descubra"
-  ❌ "experiência"        ✅ "experiência"   (acento agudo no "e", circunflexo no segundo "e")
-  ❌ "expériência"        ✅ "experiência"   (NÃO usa acento agudo no primeiro "e")
-  ❌ "expériêncio"        ✅ "experiência"   (a palavra termina em "a", é FEMININA — "uma experiência", nunca "um experiência" nem "expériêncio")
-  ❌ "expêriencia"        ✅ "experiência"
-  ❌ "experienca"         ✅ "experiência"
-  ❌ "ineséquevel"        ✅ "inesquecível"  (já apareceu — proibido)
-  ❌ "inesquesivel"       ✅ "inesquecível"
-  ❌ "inesquecivel"       ✅ "inesquecível"  (acento agudo no "i")
-  ❌ "inesqueçivel"       ✅ "inesquecível"  (sem cedilha, é "c" simples)
-  ❌ "pocuos"             ✅ "poucos"        (já apareceu — proibido)
-  ❌ "pucos"              ✅ "poucos"
-  ❌ "Para pocuos"        ✅ "Para poucos"
-  ❌ "espera por voce"    ✅ "espera por você"  (acento circunflexo obrigatório)
-  ❌ "voce"               ✅ "você"
-  ❌ "viajem"             ✅ "viagem"        (com G, não com J)
-  ❌ "Tipo de viajem"     ✅ "Tipo de viagem"
-  ❌ "Conheca"            ✅ "Conheça"       (cedilha obrigatória)
-  ❌ "Explore"            ✅ "Explore"
-  ❌ "Vivencie"           ✅ "Vivencie"
-  ❌ "Roteiro"            ✅ "Roteiro"
-
-══════════════════════════════════════
-🔍 CHECKLIST DE PURGA ORTOGRÁFICA (REVISAR ANTES DE FINALIZAR)
-══════════════════════════════════════
-Para CADA palavra renderizada na imagem, validar mentalmente:
-
-1. ✓ É uma palavra REAL do português brasileiro (existe no dicionário)?
-2. ✓ Tem o NÚMERO EXATO de letras da palavra original (sem letras a mais ou a menos)?
-3. ✓ Não tem "letras fantasmas" — repetições aleatórias de "i", "b", "p", "l", "s", "t" no meio?
-4. ✓ Não tem letras coladas/fundidas que parecem outra letra?
-5. ✓ A PRIMEIRA letra de cada palavra está visível e do MESMO tamanho que as demais? (jamais cortar inicial — "ERICOACOARA" é ERRO; "SURUBA ESPECIA" é ERRO GRAVE)
-6. ✓ A ÚLTIMA letra de cada palavra está completa, sem cortes?
-7. ✓ Símbolo de moeda é "R$" (R maiúsculo + cifrão "$")? Nunca "RS", "R5", "B$", "BS".
-8. ✓ Números acima de 999 têm PONTO de milhar e VÍRGULA nos centavos? ("1.499,00")
-9. ✓ Acentos obrigatórios presentes: "Café", "manhã", "Preço", "disponibilidade", "não", "inclusos", "Aéreo", "Últimas", "Búzios", "Maceió", "Cancún", "Florianópolis", "experiência", "inesquecível", "você"?
-10. ✓ Cedilha "ç" presente onde necessário: "Preço", "Promoção", "Almoço", "Refeições", "Conheça"?
-11. ✓ Til "~" presente em: "manhã", "não", "São", "Promoção"?
-12. ✓ Nenhuma palavra em inglês inventada substituindo palavra portuguesa?
-13. ✓ Nenhuma palavra cortada acidentalmente formou palavrão ou termo obsceno?
-14. ✓ Concordância de gênero/número correta? ("uma experiência", não "um experiência"; "para poucos", não "para pocuos")
-15. ✓ Categoria EXPERIÊNCIA: NÃO renderizou cartão amarelo de oferta, NÃO listou "Tipo de viagem: Voo + Hotel", NÃO mostrou parcelamento? (esses elementos são EXCLUSIVOS de OFERTA)
-
-⚠️ Se QUALQUER palavra falhar em QUALQUER um dos 15 itens acima, REGENERAR aquela palavra do zero antes de finalizar a imagem. É preferível OMITIR um texto a renderizá-lo com erro ortográfico.
-
-⚠️ REGRA DE OURO: na dúvida sobre como soletrar, OMITIR a palavra. Texto faltando é menos grave que texto errado, e MUITO menos grave que texto cortado virando obscenidade.
-══════════════════════════════════════
-
-
-🚫 REGRAS ABSOLUTAS ADICIONAIS:
-- GERAR UM ÚNICO BANNER PUBLICITÁRIO DE TURISMO. A saída deve conter APENAS 1 imagem única.
-- É PROIBIDO gerar imagens duplicadas, repetidas, variações lado a lado, mockups em tela dupla ou duas peças dentro do mesmo arquivo.
-- Escolha UM layout por geração e NÃO misture cartão central, divisão topo/base, barra lateral e grid no mesmo banner.
-- É PROIBIDO duplicar fotografia, cartões, blocos de preço, botões, selos ou listas dentro da mesma imagem.
-- É PROIBIDO sobrepor textos, preços, ícones ou blocos. Cada elemento deve ter respiro claro; nenhum texto pode encostar em outro bloco.
-- 🚫 PROIBIDO ESPAÇOS VAZIOS GRANDES DENTRO DO CARTÃO/BLOCO DE OFERTA: o cartão na cor selecionada deve ser PREENCHIDO de forma equilibrada, com altura ajustada ao conteúdo. NÃO deixe áreas grandes em branco entre o título, o preço, a lista e o rodapé. Distribua os elementos com espaçamento RÍTMICO e CONSISTENTE; o cartão deve "respirar", não "ecoar vazio".
-- O cartão de oferta deve ter altura PROPORCIONAL ao conteúdo (compacto e cheio), nunca alongado artificialmente com gaps de 30%+ entre blocos. Se sobrar muito espaço interno, ENCOLHA o cartão — não infle o vazio.
-- Espaçamento entre blocos internos do cartão: máximo equivalente a 1 linha de texto. Mais que isso é ERRO de composição.
-- Se a categoria for OFERTA PACOTE, use visual de venda direta com preço protagonista; se for EXPERIÊNCIA DE DESTINO, use visual editorial com fotografia protagonista. As duas categorias NÃO podem parecer o mesmo estilo visual.
-- Estilo geral minimalista, alto contraste, sem poluição visual, estética premium.
-- Nenhum logotipo de empresa externa, nenhuma marca d'água visível.
-- Textos renderizados EXATAMENTE como escritos acima, sem traduzir, sem inventar palavras.
-- Cores respeitadas com fidelidade total aos hex informados.
-- Imagem pronta para postar — sem réguas, guias, marcações de safe-zone ou anotações técnicas visíveis.
+🛑 REGRAS ABSOLUTAS ADICIONAIS:
+- GERAR APENAS 1 IMAGEM.
+- É PROIBIDO gerar mockups duplos, duas peças ou colagens.
+- O cartão da oferta deve estar bem preenchido e organizado.
+- Textos renderizados EXATAMENTE como listados, sem "adivinhar" palavras.
+- As cores primária e secundária informadas DEVEM ser as únicas cores dominantes.
 ══════════════════════════════════════
 `;
 }
