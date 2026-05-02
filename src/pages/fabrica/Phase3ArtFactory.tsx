@@ -83,6 +83,7 @@ const PAYMENT_PRESETS: PaymentPreset[] = [
 const CATEGORY_LOCAL_STRATEGIES: Record<CategoriaId, StrategyId[]> = {
   oferta_pacote: ["matriz", "gancho", "ancora", "vitrine"],
   experiencia_destino: ["experiencia_hero", "experiencia_postcard", "experiencia_editorial", "experiencia_lifestyle"],
+  autoridade_dark: [],
 };
 
 const normalizeHexColor = (value: string, fallback: string) => {
