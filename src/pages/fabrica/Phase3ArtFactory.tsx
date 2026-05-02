@@ -773,6 +773,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             forceVariant: nextVariant,
             titleOverride: resolvedAdTitle,
             titleVariations: adTitleVariations,
+            totalOverride: totalOverride || undefined,
+            showTotal,
           });
           if (state.logoBase64) {
             try {
