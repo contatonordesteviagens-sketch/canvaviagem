@@ -306,25 +306,8 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Fallback seguro para quando o hook é chamado fora do Provider (ex.: HMR transitório,
-// componente renderizado em route guard antes do Provider montar). Em vez de lançar e
-// quebrar a tela inteira, retornamos um contexto noop com o defaultState — qualquer
-// "update" simplesmente não persiste, mas a UI continua renderizando.
-const noopCtx: FabricaContextType = {
-  state: defaultState,
-  update: () => {},
-  reset: () => {},
-  setPhase: () => {},
-  toggleChecklist: () => {},
-};
-
 export const useFabricaContext = () => {
   const ctx = useContext(FabricaContext);
-  if (!ctx) {
-    if (typeof window !== "undefined" && (import.meta as any).env?.DEV) {
-      console.warn("[useFabricaContext] chamado fora do FabricaProvider — usando fallback noop.");
-    }
-    return noopCtx;
-  }
+  if (!ctx) throw new Error("useFabricaContext must be used inside FabricaProvider");
   return ctx;
 };

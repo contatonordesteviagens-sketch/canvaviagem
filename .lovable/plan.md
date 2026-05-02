@@ -1,86 +1,107 @@
-# O que eu entendi dos seus 3 prompts + áudio
+## Objetivo
 
-Você quer **3 coisas**, nessa ordem, sem quebrar nada do que já está bom:
+Melhorar os anúncios da Fábrica adicionando 3 novos comportamentos no Phase 3:
 
-### 1. CONGELAR o que já funciona
-
-- **V0, V1 e V2** das categorias **1/1/1** (Foto Real → Oferta → 1:1) e **2/1/1** (Sua Imagem → Oferta → 1:1) ficam **intocáveis**: layout, cores, tipografia, ícones, lógica.
-- Eu só vou **adicionar** novas variantes, nunca reescrever as existentes.
-- Hoje no código a função `composeTravelAd` recebe `forceVariant` e cicla `variation % N`. Vou tratar V0/V1/V2 como o bloco imutável e fazer V3/V4/V5 entrarem como **novos `case**` no seletor de variante — sem tocar nos antigos.
-
-### 2. CRIAR V3, V4 e V5 baseadas nas 3 imagens de referência
-
-- **V3 — "Oferta Box Forte" (Maceió/CVC)**: balão amarelo central grande, "PACOTE / DESTINO" no topo (1ª palavra mais grossa, 2ª mais fina e maior), linha de ícones monocromáticos, "a partir de" + selo "12X" + "sem juros" colado no preço gigante, "Total por pessoa: R$ X" e faixa azul-escura inferior "5% OFF À VISTA NO PIX" com ícone do Pix.
-- **V4 — "Box Premium Central" (Portugal)**: fundo turístico, box central sólido (cor primária escura), tipografia grande e elegante alinhada à esquerda dentro do box, ícones monocromáticos pequenos, sensação internacional, muito espaçamento.
-- **V5 — "Split Clean" (Maragogi)**: layout dividido — esquerda (35%) bege/neutro com headline "Conheça {DESTINO}!", lista vertical de info com ícones mono ("2 adultos / 5 noites / Passagens") e box pequeno de preço; direita (65%) foto do destino. Visual editorial, muito espaço em branco.
-- Todas seguem **a mesma identidade** (cores primária/secundária do usuário, fontes Inter, mesmo sistema de inputs).
-
-### 3. INTEGRAR V3/V4/V5 nas categorias existentes
-
-- Adicionar nas categorias **1/1/1**, **2/1/1** e **3/1/1** (IA Pura → Oferta → 1:1).
-- Apenas **adicionadas ao final** do ciclo de variação. Ordem atual preservada.
-- O sistema continua gerando **1 banner por clique** (regra atual) e ciclando V0→V1→V2→V3→V4→V5 sem repetir as últimas, usando a guarda já existente.
-- Padrão "escalável": quando você mandar novas imagens de referência no futuro, eu repito esse processo (analisar imagem → virar variante VN → plugar no seletor sem mexer nas anteriores).
+1. Novo campo **"Título do anúncio"** com presets editáveis (substitui o headline aleatório atual).
+2. **Lixeira** acima de cada variação gerada para excluir individualmente.
+3. **Baixar todas as variações visíveis** em um único clique (1,2 ou 3 png, baixar separadamente). 
 
 ---
 
-# O que eu também entendi do **áudio** (importante)
+## 1. Novo seletor de Título (4º campo da grade)
 
-Você listou ajustes que **NÃO estão nos 3 prompts escritos**, e quer aplicar junto:
+### Layout do bloco "3 · Dados do anúncio"
 
-### A. Painel de **Modo de exibição de preço** — adicionar mais opções
-
-Hoje só tem `Parcelado / À vista / Entrada+parcelas`. Adicionar:
-
-- **"Parcelado SEM JUROS"** (separa de "Parcelado" comum, com selo "sem juros" embutido — igual à referência CVC).
-- **"A partir de"** (já existe `from` no compose, mas não está exposto no painel — vou expor).
-- **"Total com desconto à vista"** (mostra "% OFF À VISTA NO PIX" — opção que liga/desliga a faixa azul do V3).
-- **"Por casal" / "Por grupo" / "Total do pacote"** como opções de **complemento** que aparecem **mesmo sem apagar** o campo (hoje só aparecem quando o usuário limpa — bug). Vou colocar como `datalist` sempre visível + chips clicáveis.
-
-### B. Campo **Valor** — opção "sem vírgula / sem centavos"
-
-- Adicionar um toggle `[ ] Mostrar centavos` (ligado por padrão).
-- Quando desligado, formata `1.499,90` → `1.499` em todas as variantes. (o balão se adapta na criação da imagem, se tem os centavos ele fica maior , se não tem os centavos fica menor na geração de imagem, se adapta , igual já tem e existe nos icones. 
-
-### C. **Dados do anúncio** (passo 3) — adicionar nova categoria editável
-
-Hoje tem só Título. Adicionar **2 colunas × 2 fileiras**:
-
-- Coluna 1: **Destino** | **Nome da promoção**
-- Coluna 2: **Título** | **Quantidade de dias** (com lista clicável:  7, 15 dias , janeiro, dezembro, data 12/8— editável)
-- Cada campo segue o padrão do Título: clica → abre lista de presets → escolhe ou edita livremente.
-- O campo "Quantidade de dias, mês, data" alimenta a linha "X dias ✈ 🚌 🏨 ☕ (icones deve seguir a mesma cor primária ou secundária selecionada" da V3 (hoje é extraída do primeiro highlight via regex — vai virar campo dedicado).
-
-### D. Correção do **balão V3** (referência Maceió que você anexou)
-
-- Primeira palavra do topo (`PACOTE`) **bold pesado**, segunda (`MACEIÓ`) **maior e mais fina**.
-- Ícones **monocromáticos** (uma cor só, derivada da primária) — remover emojis coloridos atuais manter todos da mesma cor.
-- "a partir de" pequeno acima, **selo `12X / sem juros**` colado à esquerda do `R$ 229` gigante.
-- "Total por pessoa: R$ 2.739" abaixo (calculado automaticamente: `parcelas × valor` com pequeno desconto opcional).
-- Faixa inferior `5% OFF À VISTA NO PIX 💠` com cor contrastante.
-
----
-
-# Arquivos que vão ser tocados
+Hoje a grade tem 2 colunas × 1 linha (Destino + Promoção). Vai virar **2 colunas × 2 linhas**:
 
 ```text
-src/lib/fabrica-compose-art.ts        → adicionar drawV3 / drawV4 / drawV5 (sem tocar drawV0/V1/V2)
-src/pages/fabrica/Phase3ArtFactory.tsx → expandir PAYMENT_PRESETS, toggle "sem centavos",
-                                         novo bloco "Dados do anúncio" 2x2 com Dias/Promo,
-                                         expor V3/V4/V5 no ciclo de variantes
-src/hooks/useFabricaContext.tsx       → novos campos: lastDays, lastShowCents, lastPixDiscount
+┌─────────────────┬─────────────────┐
+│ Destino *       │ Nome da promoção│
+├─────────────────┼─────────────────┤
+│ Modo do preço   │ Título do anúncio (NOVO)
+└─────────────────┴─────────────────┘
 ```
 
-Sem mexer em: prompts da edge function, V0/V1/V2, lógica de PremiumGate, autenticação, qualquer outra área do app.
+(O bloco "Modo de exibição do preço" hoje fica abaixo solto — vamos encaixá-lo na grade junto com o novo campo Título, como você pediu: "essas quatro opções em uma grade, duas fileiras para cada".)
+
+### Campo "Título do anúncio"
+
+- Dropdown/Select com 16 presets, cada um usando o placeholder `{destino}` substituído dinamicamente pelo valor do campo Destino.
+- Abaixo do select, um **input editável** mostrando o título resolvido (ex.: "Pacote Jericoacoara"), que o usuário pode customizar livremente.
+- Opção extra "✏️ Personalizado" no topo do dropdown que apenas habilita edição livre.
+
+### Lista de presets (com `{destino}` como variável) Essa parte não deve ocupar muitos espaços e nem mostrar todas as opções, ao clicar essa parte aparece uma lista para escolher uma das opções de titulos
+
+```
+1.  Conheça o melhor de {destino}
+2.  Descubra {destino}
+3.  Pacote {destino}
+4.  Explore {destino}
+5.  {destino} vai te surpreender
+6.  Você precisa conhecer {destino}!
+7.  O que fazer em {destino}
+8.  O melhor de {destino}
+9.  Meu sonho se chama {destino}
+10. Partiu {destino}
+11. Sua próxima viagem é {destino}
+12. Pacote Promocional {destino}
+13. Viagem Completa {destino}
+14. {destino} te espera
+15. Vamos para {destino}?
+16. ✏️ Personalizado (texto livre)
+```
+
+Padrão inicial: preset 3 ("Pacote {destino}"). Persistido em `state.lastAdTitle` no FabricaContext.
+
+### O frase "Sua próxima viagem começa agora"
+
+Conforme você pediu, será **removida** dos pools automáticos do composer.
 
 ---
 
-# Pergunta antes de eu codar
+## 2. Pipeline do título até a arte
 
-Confirma 3 pontos rápidos:
+- Adicionar 2 campos opcionais na interface `ComposeTravelAdOptions` em `src/lib/fabrica-compose-art.ts`:
+  - `titleOverride?: string` — quando preenchido, ignora o pool aleatório e usa esse texto como `titleText` em **todas as variantes** (V0/V1/V2 + experiência).
+  - Auto-shrink já existente cobre títulos longos.
+- Em `Phase3ArtFactory.tsx`, passar `titleOverride: resolvedTitle` em todas as 3 chamadas a `composeTravelAd` (modo Foto, modo Sua Imagem, modo IA Pura).
+- Remover "Sua próxima viagem começa agora" de `ofertaBase` no composer.
 
-1. **V3/V4/V5 também na categoria 3/1/1 (IA Pura)?** Você falou "1/1/1, 2/1/1 e 3/1/1" no áudio — confirma que entra nas 3, mesmo na IA Pura (que gera a imagem inteira via Gemini, sem overlay canvas)? Se sim, na IA Pura as variantes V3/V4/V5 viram **prompts de imagem** (não overlay). Sim em todas as 3 categorias desde que seja formato oferta e feed. 
-2. **"Total por pessoa" calculado** = `parcelas × valor` automático, ou campo editável manual também? Sim. 
-3. O **toggle "sem centavos"** vale para todas as variantes (V0–V5) ou só nas novas? Todas as variaveis. 
+---
 
-Respondendo essas 3, eu já saio implementando exatamente como descrito acima.
+## 3. Lixeira para excluir variação individual
+
+Em `src/pages/fabrica/Phase3ArtFactory.tsx`, no bloco que renderiza `generatedImages.map(...)`:
+
+- Adicionar wrapper `relative` no card da imagem.
+- Botão flutuante no canto superior direito de cada imagem:
+  - Ícone `Trash2` (lucide), fundo preto translúcido (`bg-black/60`), borda branca sutil, hover vermelho.
+  - `onClick` chama `setGeneratedImages(prev => prev.filter((_, i) => i !== idx))`.
+  - Sempre visível (não só no hover) para clareza em mobile.
+
+Nada de tooltip extra; o ícone é autoexplicativo.
+
+---
+
+## 4. Botão "Baixar todas" (substitui "Baixar imagem")
+
+Hoje o botão "Baixar imagem" baixa apenas a última. Vai virar **"Baixar todas"** com este comportamento:
+
+- Se `generatedImages.length === 1` → baixa diretamente o PNG (igual hoje).
+- Se `generatedImages.length > 1` → baixa em sequência cada PNG visível, usando o truque de `<a download>` em loop com pequeno `setTimeout` entre cada (≈300 ms) para evitar bloqueio de pop-up. Nomes: `anuncio-{destino}-{format}-1.png`, `-2.png`, `-3.png`.
+- Texto auxiliar abaixo do par de botões: *"Ao clicar, todas as variações visíveis acima serão baixadas. Imagens excluídas não entram no download."*
+- Se `generatedImages.length === 0` → botão desabilitado.
+
+(Optei por baixar PNGs em sequência em vez de empacotar em ZIP para evitar adicionar a dependência `jszip` — mais simples e sem bibliotecas novas. Se você preferir ZIP único depois, é uma troca pequena.)
+
+---
+
+## Arquivos a alterar
+
+- `src/lib/fabrica-compose-art.ts` — novo campo `titleOverride`; remover frase do pool.
+- `src/pages/fabrica/Phase3ArtFactory.tsx` — novo state `adTitlePreset` + `adTitleCustom`; reorganizar grade do bloco "Dados"; passar `titleOverride` nas 3 chamadas; lixeira por imagem; botão "Baixar todas" + aviso.
+- `src/hooks/useFabricaContext.tsx` — persistir `lastAdTitle` (1 campo opcional, opcional mas recomendado).
+
+## Memória a atualizar
+
+- Atualizar `mem://features/fabrica-ad-generation-rules` registrando: título passou a ser escolhível por preset com variável `{destino}` e o composer respeita `titleOverride` quando presente.
