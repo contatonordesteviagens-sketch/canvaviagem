@@ -34,6 +34,8 @@ interface ComposeTravelAdOptions {
   paymentSuffix?: string;
   strategy?: "ancora" | "vitrine" | "matriz" | "gancho" | "experiencia_hero" | "experiencia_editorial" | "experiencia_postcard" | "experiencia_lifestyle";
   variation?: number;
+  /** Força uma variante específica (0..2 para Sua Imagem + Oferta + 1:1). Quando definido, ignora variation%N. */
+  forceVariant?: number;
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
@@ -177,6 +179,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     paymentSuffix,
     strategy = "vitrine",
     variation = 0,
+    forceVariant,
   } = options;
 
   const width = 1080;
@@ -447,32 +450,18 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   const renderSafeSquareOffer = () => {
-    const variant = Math.abs(variation) % 4;
+    // Apenas 3 variantes válidas (V0, V1, V2). V3 fullbleed foi descontinuada para Sua Imagem.
+    const variant = typeof forceVariant === "number"
+      ? ((forceVariant % 3) + 3) % 3
+      : Math.abs(variation) % 3;
     const logoH = hasLogo ? 130 : 0;
     const destUp = (destination || "DESTINO").toUpperCase();
 
     // ── V0 · REF "Enseada" — painel cor TOPO + foto EMBAIXO ─────────────────
-    // Painel superior (cor secundária) contém TUDO: badge, headline, benefits, preço.
-    // Foto fica APENAS na metade inferior, sem invadir a área de texto.
+    // Painel superior (cor secundária) com altura ADAPTATIVA: encolhe quando há
+    // pouco texto, expande quando o usuário adiciona mais benefits.
     if (variant === 0) {
-      // Garantia: o painel precisa ser alto o suficiente para conter logo + badge + headline + benefits + preço sem corte.
-      const topH = Math.max(620, logoH + 580);
-      ctx.fillStyle = secondaryColor;
-      ctx.fillRect(0, 0, width, topH);
-
-      // Badge "Saindo de" no topo
-      const badgeY = logoH + 28;
-      const badgeH = 60;
-      fillRoundRect(ctx, left, badgeY, 500, badgeH, 8, primaryColor);
-      ctx.fillStyle = secondaryColor;
-      ctx.font = "800 26px Inter, Arial, sans-serif";
-      ctx.textAlign = "left"; ctx.textBaseline = "middle";
-      ctx.fillText(badgeText, left + 20, badgeY + badgeH / 2);
-      ctx.textBaseline = "alphabetic";
-
-      // Headline — uma única linha, fonte que encolhe para caber. Sem wrap múltiplo
-      // (era a origem do "texto duplicado" sobreposto).
-      ctx.fillStyle = primaryColor;
+      // 1) Calcula tamanho do título para saber a altura real
       ctx.textAlign = "left";
       let titleSize = 78;
       ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
@@ -480,40 +469,81 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         titleSize -= 4;
         ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
       }
-      const titleY = badgeY + badgeH + 40 + titleSize;
+
+      // 2) Quantidade de benefits que serão exibidos (1 a 4)
+      const benefitsList = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 4);
+      const benefitsCount = Math.max(1, benefitsList.length);
+      const benefitLineH = 44;
+      const benefitsBlockH = benefitsCount * benefitLineH;
+
+      // 3) Altura do bloco preço (fixa, ~120px)
+      const priceBlockH = 120;
+      const contentRowH = Math.max(benefitsBlockH, priceBlockH);
+
+      // 4) Altura ADAPTATIVA do painel:
+      //    logo + badge(60) + gap(40) + título + gap(50) + content + padding(50)
+      const badgeH = 60;
+      const topPaddingBeforeTitle = 40;
+      const titleToContent = 50;
+      const bottomPadding = 50;
+      const topH = Math.min(
+        Math.round(height * 0.62),
+        Math.max(
+          Math.round(height * 0.46),
+          logoH + 28 + badgeH + topPaddingBeforeTitle + titleSize + titleToContent + contentRowH + bottomPadding
+        )
+      );
+
+      // 5) Pinta painel
+      ctx.fillStyle = secondaryColor;
+      ctx.fillRect(0, 0, width, topH);
+
+      // 6) Badge "Saindo de"
+      const badgeY = logoH + 28;
+      fillRoundRect(ctx, left, badgeY, 500, badgeH, 8, primaryColor);
+      ctx.fillStyle = secondaryColor;
+      ctx.font = "800 26px Inter, Arial, sans-serif";
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.fillText(badgeText, left + 20, badgeY + badgeH / 2);
+      ctx.textBaseline = "alphabetic";
+
+      // 7) Headline (1 linha, fonte adaptativa)
+      ctx.fillStyle = primaryColor;
+      ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
+      const titleY = badgeY + badgeH + topPaddingBeforeTitle + titleSize;
       ctx.fillText(titleText, left, titleY);
 
-      // Benefits + Preço lado a lado, ABAIXO do título e ACIMA da foto
-      const rowY = titleY + 60;
+      // 8) Benefits + Preço lado a lado (alinhados ao topo do bloco de conteúdo)
+      const rowTopY = titleY + titleToContent;
       const benefitsX = left;
       const priceX = left + 420;
 
       ctx.fillStyle = primaryColor;
-      ctx.font = "700 28px Inter, Arial, sans-serif";
-      const b0 = highlights[0]?.text || "Transporte";
-      const b1 = highlights[1]?.text || "Hospedagem";
-      const b2 = highlights[2]?.text || "Café da manhã";
-      ctx.fillText(ICON_SYMBOL["bus"] + " " + b0, benefitsX, rowY);
-      ctx.fillText(ICON_SYMBOL["map"] + " " + b1, benefitsX, rowY + 44);
-      ctx.fillText(ICON_SYMBOL["guide"] + " " + b2, benefitsX, rowY + 88);
+      ctx.font = "700 26px Inter, Arial, sans-serif";
+      const iconForIndex = (i: number, fallback: string) =>
+        ICON_SYMBOL[(benefitsList[i]?.icon as IconKey) || (fallback as IconKey)] || ICON_SYMBOL.check;
+      benefitsList.forEach((b, i) => {
+        const icon = iconForIndex(i, ["bus", "map", "guide", "star"][i] || "check");
+        ctx.fillText(`${icon} ${b.text}`, benefitsX, rowTopY + 28 + i * benefitLineH);
+      });
 
       // Divisor vertical
       ctx.fillStyle = primaryColor; ctx.globalAlpha = 0.2;
-      ctx.fillRect(priceX - 24, rowY - 28, 2, 130);
+      ctx.fillRect(priceX - 24, rowTopY, 2, contentRowH);
       ctx.globalAlpha = 1;
 
-      // Preço lado direito
+      // Preço (alinhado ao topo do bloco)
       ctx.fillStyle = primaryColor; ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText("por apenas", priceX, rowY);
+      ctx.fillText("por apenas", priceX, rowTopY + 28);
       ctx.fillStyle = primaryColor; ctx.font = "900 60px Inter, Arial, sans-serif";
       const priceStr = mainPrice || `R$ ${price}`;
-      ctx.fillText(priceStr, priceX, rowY + 64);
+      ctx.fillText(priceStr, priceX, rowTopY + 92);
       ctx.font = "600 20px Inter, Arial, sans-serif"; ctx.fillStyle = primaryColor;
       ctx.globalAlpha = 0.7;
-      ctx.fillText(bottomSuffix || "/pessoa", priceX, rowY + 92);
+      ctx.fillText(bottomSuffix || "/pessoa", priceX, rowTopY + 120);
       ctx.globalAlpha = 1;
 
-      // Foto na base — começa SÓ depois do painel, sem cobrir nada
+      // 9) Foto MAIOR na base (porque o painel encolheu)
       const photoH0 = height - topH;
       const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
       ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
