@@ -1040,7 +1040,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         </div>
 
         {/* Benefícios totalmente editáveis (texto + ícone) — oculto para Autoridade Premium */}
-        {categoria !== "autoridade_dark" && (
+        {true && (
           <>
             <label className={labelCls}>Benefícios / Inclusos ({highlights.length}/5) — clique no ícone para trocar</label>
             <div className="space-y-2 mb-2">
