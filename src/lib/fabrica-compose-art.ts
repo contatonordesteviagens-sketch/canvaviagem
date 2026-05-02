@@ -193,6 +193,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     paymentMode = "installments",
     paymentLabel,
     paymentSuffix,
+    pacoteDays,
+    pacoteIcons,
+    hideCents = false,
+    showPixStripe,
     strategy = "vitrine",
     variation = 0,
     forceVariant,
@@ -201,7 +205,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     currencySymbol,
   } = options;
   const curSym = (currencySymbol || "R$").trim();
-  const priceValueText = (price || "").trim();
+  const rawPriceText = (price || "").trim();
+  // Aplica "sem centavos" no texto cru (sem mexer no símbolo de moeda).
+  const stripCentsFromText = (s: string) => s.replace(/([,.])\d{1,2}\s*$/u, "");
+  const priceValueText = hideCents ? stripCentsFromText(rawPriceText) : rawPriceText;
   const priceWithSymbol = /^(R\$|US\$|AR\$|€|£|[A-Z]{1,3}\$)/i.test(priceValueText)
     ? priceValueText
     : `${curSym} ${priceValueText}`.trim();
