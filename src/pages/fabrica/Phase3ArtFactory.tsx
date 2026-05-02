@@ -1108,49 +1108,62 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
           <div className="sm:col-span-2">
             <label className={labelCls}>Título do anúncio</label>
-            <div className="flex gap-2">
-              <input
-                value={adTitleTemplate}
-                onChange={(e) => setAdTitleTemplate(e.target.value)}
-                placeholder="Ex: Pacote {destino}"
-                className={`${inputCls} flex-1`}
-              />
-              <div className="relative">
+            <div className="relative">
+              <div className="flex gap-2">
+                <input
+                  value={adTitleTemplate}
+                  onChange={(e) => setAdTitleTemplate(e.target.value)}
+                  onFocus={() => setAdTitleMenuOpen(true)}
+                  placeholder="Ex: Pacote {destino}"
+                  className={`${inputCls} flex-1 pr-10`}
+                />
                 <button
                   type="button"
                   onClick={() => setAdTitleMenuOpen((v) => !v)}
-                  className="h-full px-3 rounded-xl bg-white/[0.06] border border-white/10 text-white/80 hover:border-white/40 flex items-center gap-1.5 text-xs font-semibold whitespace-nowrap"
-                  title="Escolher um modelo de título"
+                  className="px-3 rounded-xl border-2 font-bold text-xs flex items-center gap-1.5 whitespace-nowrap transition-all"
+                  style={{
+                    borderColor: secondaryColor,
+                    background: `${secondaryColor}1a`,
+                    color: secondaryColor,
+                  }}
+                  title="Ver modelos de título"
                 >
-                  Modelos <ChevronDown className="w-3.5 h-3.5" />
+                  ✨ Modelos <ChevronDown className={`w-3.5 h-3.5 transition-transform ${adTitleMenuOpen ? "rotate-180" : ""}`} />
                 </button>
-                {adTitleMenuOpen && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setAdTitleMenuOpen(false)} />
-                    <div className="absolute right-0 mt-2 w-72 max-h-80 overflow-y-auto bg-neutral-900 border border-white/15 rounded-xl shadow-2xl z-50 py-1">
-                      {AD_TITLE_PRESETS.map((tpl) => {
-                        const preview = tpl.replace(/\{destino\}/gi, destination?.trim() || "Destino");
-                        const active = tpl === adTitleTemplate;
-                        return (
-                          <button
-                            key={tpl}
-                            type="button"
-                            onClick={() => { setAdTitleTemplate(tpl); setAdTitleMenuOpen(false); }}
-                            className={`w-full text-left px-3 py-2 text-xs hover:bg-white/[0.08] ${active ? "bg-white/[0.06] text-white" : "text-white/80"}`}
-                          >
-                            {preview}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
               </div>
+              {adTitleMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setAdTitleMenuOpen(false)} />
+                  <div
+                    className="absolute left-0 right-0 mt-2 max-h-80 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1"
+                    style={{ borderColor: `${secondaryColor}66` }}
+                  >
+                    <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
+                      Escolha um modelo · {AD_TITLE_PRESETS.length} opções
+                    </div>
+                    {AD_TITLE_PRESETS.map((tpl) => {
+                      const preview = tpl.replace(/\{destino\}/gi, destination?.trim() || "Destino");
+                      const active = tpl === adTitleTemplate;
+                      return (
+                        <button
+                          key={tpl}
+                          type="button"
+                          onClick={() => { setAdTitleTemplate(tpl); setAdTitleMenuOpen(false); }}
+                          className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
+                        >
+                          {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                          <span className={active ? "" : "ml-5"}>{preview}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
             <p className="text-[10px] text-white/40 mt-1.5">
               Use <code className="text-white/60">{"{destino}"}</code> e ele será trocado pelo destino atual.
               {destination && (
-                <> Pré-visualização: <span className="text-white/70 font-semibold">"{resolvedAdTitle}"</span></>
+                <> Pré-visualização: <span className="font-semibold" style={{ color: secondaryColor }}>"{resolvedAdTitle}"</span></>
               )}
             </p>
           </div>
