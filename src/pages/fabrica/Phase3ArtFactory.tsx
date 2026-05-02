@@ -315,7 +315,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [currency, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
   const setCurrency = (c: Currency) => { setCurrencyState(c); update({ lastCurrency: c }); };
   // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
-  const formattedPriceForAd = formatPriceValue(price, currency);
+  const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency);
   const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
 
   const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
@@ -1262,7 +1262,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 </select>
                 <input
                   value={price}
-                  onChange={(e) => setPrice(e.target.value)}
+                  onChange={(e) => setPrice(formatPriceWhileTyping(e.target.value, currency))}
                   onBlur={() => {
                     const f = formatPriceValue(stripCurrencyFromPrice(price, currency), currency);
                     if (f) setPrice(f);
