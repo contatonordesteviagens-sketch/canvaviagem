@@ -394,9 +394,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           secondary: palette.secondary,
         });
 
-        setGeneratedImage(composed[0]);
-        setGeneratedImages(composed);
-        update({ generatedAdImage: composed[0], primaryColor: palette.primary });
+        const MAX_VARIATIONS_PHOTO = 3;
+        setGeneratedImages((prev) => [...prev, ...composed].slice(-MAX_VARIATIONS_PHOTO));
+        setGeneratedImage(composed[composed.length - 1]);
+        update({ generatedAdImage: composed[composed.length - 1], primaryColor: palette.primary });
 
         const newCount = generationCount + composed.length;
         setGenerationCount(newCount);
@@ -488,9 +489,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           if (result.data.provider) providerSeen = result.data.provider;
         }
 
-        setGeneratedImages(images);
-        setGeneratedImage(images[0]);
-        update({ generatedAdImage: images[0], primaryColor: palette.primary });
+        const MAX_VARIATIONS_AI = 3;
+        setGeneratedImages((prev) => [...prev, ...images].slice(-MAX_VARIATIONS_AI));
+        setGeneratedImage(images[images.length - 1]);
+        update({ generatedAdImage: images[images.length - 1], primaryColor: palette.primary });
         if (providerSeen) setLastProvider(providerSeen);
 
         // Registra no GenerationGuard
@@ -586,9 +588,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         secondary: palette.secondary,
       });
 
-      setGeneratedImage(imagesCustom[0]);
-      setGeneratedImages(imagesCustom);
-      update({ generatedAdImage: imagesCustom[0], primaryColor: palette.primary });
+      // Acumula até 3 variações lado a lado (não substitui as anteriores)
+      const MAX_VARIATIONS = 3;
+      setGeneratedImages((prev) => {
+        const merged = [...prev, ...imagesCustom].slice(-MAX_VARIATIONS);
+        return merged;
+      });
+      setGeneratedImage(imagesCustom[imagesCustom.length - 1]);
+      update({ generatedAdImage: imagesCustom[imagesCustom.length - 1], primaryColor: palette.primary });
 
       const newCount = generationCount + imagesCustom.length;
       setGenerationCount(newCount);
@@ -1144,7 +1151,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
             Seu anúncio
           </h3>
-          <div className={generatedImages.length > 1 ? "grid grid-cols-2 gap-3 mb-4" : "mb-4"}>
+          <div className={
+            generatedImages.length === 1 ? "mb-4" :
+            generatedImages.length === 2 ? "grid grid-cols-2 gap-3 mb-4" :
+            "grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4"
+          }>
             {generatedImages.map((img, idx) => (
               <div
                 key={idx}
@@ -1167,13 +1178,35 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               </div>
             ))}
           </div>
-          <button
-            onClick={() => generateNext()}
-            disabled={loading}
-            className="w-full py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white/80 text-sm font-semibold border border-white/10 flex items-center justify-center gap-2"
-          >
-            <Sparkles className="w-3.5 h-3.5" /> Gerar novo anúncio único
-          </button>
+          {generatedImages.length >= 3 && (
+            <p className="text-[11px] text-amber-300/80 text-center mb-2">
+              Limite de 3 variações atingido. Ao gerar uma nova, a mais antiga será substituída.
+            </p>
+          )}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => {
+                const target = generatedImages[generatedImages.length - 1];
+                if (!target) return;
+                const a = document.createElement("a");
+                a.href = target;
+                a.download = `anuncio-${(destination || "destino").toLowerCase().replace(/\s+/g, "-")}-${format}-${generatedImages.length}.png`;
+                document.body.appendChild(a); a.click(); a.remove();
+              }}
+              className="flex-1 py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all hover:brightness-110"
+              style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 8px 24px ${primaryColor}55` }}
+            >
+              <Download className="w-4 h-4" /> Baixar imagem
+            </button>
+            <button
+              onClick={() => generateNext()}
+              disabled={loading}
+              className="flex-1 py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110"
+              style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 8px 24px ${primaryColor}55` }}
+            >
+              {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando...</> : <><Sparkles className="w-4 h-4" /> Gerar nova variação</>}
+            </button>
+          </div>
         </motion.div>
       )}
 

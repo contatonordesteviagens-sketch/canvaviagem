@@ -601,38 +601,55 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     }
 
     // ── V2 · REF "Santa Teresa" — foto topo + faixa headline + benefits + preço ──
-    // Tudo posicionado de baixo para cima: o card de preço fica ANCORADO à base
-    // (safe zone garantida) e o restante se acomoda acima.
+    // Layout ADAPTATIVO: a foto cresce/encolhe conforme a quantidade de benefícios,
+    // garantindo que TODOS os benefícios apareçam (até 5) e que não sobre espaço branco.
     if (variant === 2) {
       ctx.fillStyle = "#f7f4ef"; ctx.fillRect(0, 0, width, height);
 
-      // 1) Card de preço — ancorado à base
-      const priceCardW = 460;
-      const priceCardH = 150;
-      const priceCardY = height - 80 - priceCardH;
-      fillRoundRect(ctx, left, priceCardY, priceCardW, priceCardH, 14, primaryColor);
-      ctx.fillStyle = secondaryColor; ctx.font = "700 22px Inter, Arial, sans-serif";
+      // Lista completa de benefits (até 5) — TODOS devem aparecer
+      const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 5);
+      const benefitsCountV2 = Math.max(1, benefitsListV2.length);
+
+      // 1) Card de preço — ancorado à base, MAIOR e mais largo p/ ocupar a direita
+      const priceCardW = Math.round(width * 0.62);   // antes: 460 (~43%) → agora ~62%
+      const priceCardH = 168;
+      const priceCardY = height - 56 - priceCardH;   // sobe um pouco (era 80)
+      fillRoundRect(ctx, left, priceCardY, priceCardW, priceCardH, 16, primaryColor);
+      ctx.fillStyle = secondaryColor; ctx.font = "700 24px Inter, Arial, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("por apenas", left + priceCardW / 2, priceCardY + 36);
-      ctx.fillStyle = "#ffffff"; ctx.font = "900 56px Inter, Arial, sans-serif";
-      ctx.fillText(mainPrice || `R$ ${price}`, left + priceCardW / 2, priceCardY + 96);
-      ctx.font = "600 20px Inter, Arial, sans-serif";
-      ctx.fillText(bottomSuffix || "/pessoa", left + priceCardW / 2, priceCardY + 128);
+      ctx.fillText("por apenas", left + priceCardW / 2, priceCardY + 40);
+      ctx.fillStyle = "#ffffff"; ctx.font = "900 64px Inter, Arial, sans-serif";
+      ctx.fillText(mainPrice || `R$ ${price}`, left + priceCardW / 2, priceCardY + 108);
+      ctx.font = "600 22px Inter, Arial, sans-serif";
+      ctx.fillText(bottomSuffix || "/pessoa", left + priceCardW / 2, priceCardY + 144);
       ctx.textAlign = "left";
 
-      // 2) Foto superior (mais compacta que antes — libera espaço para tudo abaixo)
+      // 2) Faixa headline (altura adaptativa)
+      const faixaH = 110;
+
+      // 3) Cálculo de altura dos benefits — TODOS devem caber.
+      // Fonte e gap se ajustam à quantidade.
+      const benefitFontSize = benefitsCountV2 <= 3 ? 32 : benefitsCountV2 === 4 ? 28 : 24;
+      const benefitGap = benefitsCountV2 <= 3 ? 60 : benefitsCountV2 === 4 ? 52 : 44;
+      const benefitsBlockH = benefitsCountV2 * benefitGap;
+      const benefitsTopPad = 32;
+      const benefitsBottomPad = 28;
+      const benefitsAreaH = benefitsTopPad + benefitsBlockH + benefitsBottomPad;
+
+      // 4) Foto superior — calcula altura dinâmica para preencher tudo que sobra acima
+      const photoTop = 16;
+      const photoBottom = priceCardY - benefitsAreaH - faixaH - 16;
       const fW2 = width - 32;
-      const fH2 = Math.round(height * 0.36);
+      const fH2 = Math.max(Math.round(height * 0.34), photoBottom - photoTop);
       const c2 = fitCover(image.naturalWidth, image.naturalHeight, fW2, fH2, 0.36);
       ctx.save();
-      fillRoundRect(ctx, 16, 16, fW2, fH2, 22, "#ccc");
+      fillRoundRect(ctx, 16, photoTop, fW2, fH2, 22, "#ccc");
       ctx.clip();
-      ctx.drawImage(image, c2.sx, c2.sy, c2.sw, c2.sh, 16, 16, fW2, fH2);
+      ctx.drawImage(image, c2.sx, c2.sy, c2.sw, c2.sh, 16, photoTop, fW2, fH2);
       ctx.restore();
 
-      // 3) Faixa horizontal com headline (sem concatenar o destino — evita duplicação)
-      const faixaY = fH2 + 32;
-      const faixaH = 110;
+      // 5) Faixa horizontal com headline
+      const faixaY = photoTop + fH2 + 16;
       fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, primaryColor);
       ctx.fillStyle = "#ffffff";
       ctx.textAlign = "left";
@@ -646,12 +663,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(titleText, left, faixaY + faixaH / 2);
       ctx.textBaseline = "alphabetic";
 
-      // 4) Benefits no espaço entre faixa e card de preço
-      const benefitsTop = faixaY + faixaH + 40;
-      const benefitsBottom = priceCardY - 24;
-      const benefitGap = Math.min(56, Math.floor((benefitsBottom - benefitsTop) / 3));
-      highlights.slice(0, 3).forEach((h, i) => {
-        ctx.fillStyle = primaryColor; ctx.font = "700 28px Inter, Arial, sans-serif";
+      // 6) Benefits — TODOS aparecem com fonte adaptada
+      const benefitsTop = faixaY + faixaH + benefitsTopPad;
+      benefitsListV2.forEach((h, i) => {
+        ctx.fillStyle = primaryColor;
+        ctx.font = `700 ${benefitFontSize}px Inter, Arial, sans-serif`;
         ctx.fillText(ICON_SYMBOL[h.icon || "check"] + "  " + h.text, left, benefitsTop + i * benefitGap);
       });
 
