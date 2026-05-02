@@ -40,6 +40,8 @@ interface ComposeTravelAdOptions {
   titleOverride?: string;
   /** Pool de variações de título (uma por variante). Se fornecido, tem prioridade sobre titleOverride: usa-se titleVariations[variantIndex % len]. */
   titleVariations?: string[];
+  /** Símbolo de moeda exibido antes do preço (R$, US$, €, £, AR$). Default "R$". */
+  currencySymbol?: string;
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
@@ -186,7 +188,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     forceVariant,
     titleOverride,
     titleVariations,
+    currencySymbol,
   } = options;
+  const curSym = (currencySymbol || "R$").trim();
 
   const width = 1080;
   const height = format === "story" ? 1920 : 1080;
@@ -268,24 +272,24 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const resolvePaymentCopy = () => {
     switch (paymentMode) {
       case "cash":
-        return { topLabel: paymentLabel || "À VISTA", mainPrice: `R$ ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || "À VISTA", mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
       case "cash_discount":
-        return { topLabel: paymentLabel || "À VISTA · 5% OFF", mainPrice: `R$ ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || "À VISTA · 5% OFF", mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
       case "from":
-        return { topLabel: paymentLabel || "A PARTIR DE", mainPrice: `R$ ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || "A PARTIR DE", mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
       case "daily":
-        return { topLabel: paymentLabel || "DIÁRIA POR", mainPrice: `R$ ${price}`, bottomSuffix: paymentSuffix || "/diária" };
+        return { topLabel: paymentLabel || "DIÁRIA POR", mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/diária" };
       case "monthly":
-        return { topLabel: paymentLabel || "MENSAL POR", mainPrice: `R$ ${price}`, bottomSuffix: paymentSuffix || "/mês" };
+        return { topLabel: paymentLabel || "MENSAL POR", mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/mês" };
       case "down_plus":
-        return { topLabel: paymentLabel || `ENTRADA + ${installments}`, mainPrice: `R$ ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || `ENTRADA + ${installments}`, mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
       case "free_quote":
         return { topLabel: paymentLabel || "CONSULTE", mainPrice: paymentSuffix ? "" : "VALORES", bottomSuffix: paymentSuffix || "no WhatsApp" };
       case "custom_label":
-        return { topLabel: paymentLabel || installments, mainPrice: `R$ ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || installments, mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
       case "installments":
       default:
-        return { topLabel: paymentLabel || installments, mainPrice: `R$ ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || installments, mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
     }
   };
 
@@ -385,7 +389,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
     // Calcula tamanhos do selo de parcelas e do preço lado a lado
     const installmentsText = (installments || "12X").toUpperCase().replace(/\s+/g, "");
-    const priceText = mainPrice || `R$ ${price}`;
+    const priceText = mainPrice || `${curSym} ${price}`;
     let priceFontSize = 56;
     ctx.font = `900 ${priceFontSize}px Inter, Arial, sans-serif`;
     while (ctx.measureText(priceText).width > innerW * 0.65 && priceFontSize > 32) {
@@ -483,10 +487,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
       }
 
-      // 2) Quantidade de benefits que serão exibidos (1 a 4)
-      const benefitsList = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 4);
+      // 2) Quantidade de benefits que serão exibidos (até 6) — TODOS aparecem
+      const benefitsList = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
       const benefitsCount = Math.max(1, benefitsList.length);
-      const benefitLineH = 44;
+      const benefitLineH = benefitsCount <= 4 ? 44 : benefitsCount === 5 ? 38 : 34;
       const benefitsBlockH = benefitsCount * benefitLineH;
 
       // 3) Altura do bloco preço (fixa, ~120px)
@@ -545,11 +549,18 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillRect(priceX - 24, rowTopY, 2, contentRowH);
       ctx.globalAlpha = 1;
 
-      // Preço (alinhado ao topo do bloco)
+      // Preço (alinhado ao topo do bloco) — respeita rótulo personalizado (topLabel)
       ctx.fillStyle = primaryColor; ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText("por apenas", priceX, rowTopY + 28);
+      ctx.fillText((topLabel || "por apenas").toString(), priceX, rowTopY + 28);
       ctx.fillStyle = primaryColor; ctx.font = "900 60px Inter, Arial, sans-serif";
-      const priceStr = mainPrice || `R$ ${price}`;
+      const priceStr = mainPrice || `${curSym} ${price}`;
+      // Auto-shrink do preço pra não vazar
+      let priceFs = 60;
+      ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(priceStr).width > (width - priceX - 80) && priceFs > 30) {
+        priceFs -= 4;
+        ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+      }
       ctx.fillText(priceStr, priceX, rowTopY + 92);
       ctx.font = "600 20px Inter, Arial, sans-serif"; ctx.fillStyle = primaryColor;
       ctx.globalAlpha = 0.7;
@@ -577,28 +588,56 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillStyle = secondaryColor;
       ctx.font = "900 22px Inter, Arial, sans-serif";
       ctx.fillText((promoName || "OFERTA ESPECIAL").toUpperCase(), px, logoH + 54);
+      // Destino grande
       ctx.fillStyle = "#ffffff";
-      drawTextBlock(ctx, destUp, px, logoH + 100, pw, 88, 2, { fontWeight: "900", baseFontSize: 84, minFontSize: 40 });
-      // Benefits como lista com check
-      const hlStart = logoH + 290;
-      highlights.slice(0, 4).forEach((h, i) => {
-        fillRoundRect(ctx, px, hlStart + i * 82, pw, 68, 34, "rgba(255,255,255,0.14)");
-        ctx.fillStyle = secondaryColor; ctx.font = "700 28px Inter, Arial, sans-serif";
+      drawTextBlock(ctx, destUp, px, logoH + 100, pw, 78, 2, { fontWeight: "900", baseFontSize: 72, minFontSize: 36 });
+
+      // Headline (titleText escolhido pelo usuário) — abaixo do destino
+      ctx.fillStyle = secondaryColor;
+      ctx.font = "800 24px Inter, Arial, sans-serif";
+      drawTextBlock(ctx, titleText, px, logoH + 240, pw, 30, 2, { fontWeight: "800", baseFontSize: 24, minFontSize: 16 });
+
+      // Benefits — até 6 itens em pílulas, altura adaptativa
+      const benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
+      const hlStart = logoH + 320;
+      const pillH = benefitsListV1.length <= 4 ? 68 : benefitsListV1.length === 5 ? 56 : 50;
+      const pillGap = benefitsListV1.length <= 4 ? 14 : 10;
+      const pillFont = benefitsListV1.length <= 4 ? 28 : benefitsListV1.length === 5 ? 24 : 22;
+      benefitsListV1.forEach((h, i) => {
+        const py = hlStart + i * (pillH + pillGap);
+        fillRoundRect(ctx, px, py, pw, pillH, pillH / 2, "rgba(255,255,255,0.14)");
+        ctx.fillStyle = secondaryColor; ctx.font = `700 ${pillFont}px Inter, Arial, sans-serif`;
         ctx.textBaseline = "middle";
-        ctx.fillText("✓", px + 18, hlStart + i * 82 + 34);
+        ctx.fillText(ICON_SYMBOL[h.icon || "check"] || "✓", px + 18, py + pillH / 2);
         ctx.fillStyle = "#ffffff";
-        ctx.fillText(h.text, px + 52, hlStart + i * 82 + 34);
+        // Auto-shrink texto da pill
+        let pf = pillFont;
+        ctx.font = `700 ${pf}px Inter, Arial, sans-serif`;
+        const maxTw = pw - 64;
+        while (ctx.measureText(h.text).width > maxTw && pf > 14) {
+          pf -= 2;
+          ctx.font = `700 ${pf}px Inter, Arial, sans-serif`;
+        }
+        ctx.fillText(h.text, px + 52, py + pillH / 2);
         ctx.textBaseline = "alphabetic";
       });
-      // Price card no painel esquerdo, base
+      // Price card no painel esquerdo, base — usa topLabel custom se houver
       fillRoundRect(ctx, px, height - 200, pw, 172, 16, "rgba(0,0,0,0.3)");
       ctx.fillStyle = secondaryColor; ctx.font = "700 22px Inter, Arial, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("APENAS HOJE:", px + pw / 2, height - 168);
-      ctx.fillStyle = "#ffffff"; ctx.font = "900 62px Inter, Arial, sans-serif";
-      ctx.fillText(mainPrice || `R$ ${price}`, px + pw / 2, height - 100);
+      ctx.fillText((topLabel || "APENAS HOJE:").toString().toUpperCase(), px + pw / 2, height - 168);
+      ctx.fillStyle = "#ffffff";
+      // Auto-shrink preço
+      const priceStrV1 = mainPrice || `${curSym} ${price}`;
+      let pfsV1 = 62;
+      ctx.font = `900 ${pfsV1}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(priceStrV1).width > pw - 24 && pfsV1 > 28) {
+        pfsV1 -= 4;
+        ctx.font = `900 ${pfsV1}px Inter, Arial, sans-serif`;
+      }
+      ctx.fillText(priceStrV1, px + pw / 2, height - 100);
       ctx.font = "600 20px Inter, Arial, sans-serif";
-      ctx.fillText("/pessoa", px + pw / 2, height - 68);
+      ctx.fillText(bottomSuffix || "/pessoa", px + pw / 2, height - 68);
       ctx.textAlign = "left";
       // Foto ÚNICA no lado direito (sem duplicação) — ocupa toda a altura
       const gap1 = 16;
@@ -619,20 +658,28 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     if (variant === 2) {
       ctx.fillStyle = "#f7f4ef"; ctx.fillRect(0, 0, width, height);
 
-      // Lista completa de benefits (até 5) — TODOS devem aparecer
-      const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 5);
+      // Lista completa de benefits (até 6) — TODOS devem aparecer
+      const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
       const benefitsCountV2 = Math.max(1, benefitsListV2.length);
 
       // 1) Card de preço — ancorado à base, MAIOR e mais largo p/ ocupar a direita
-      const priceCardW = Math.round(width * 0.62);   // antes: 460 (~43%) → agora ~62%
+      const priceCardW = Math.round(width * 0.62);
       const priceCardH = 168;
-      const priceCardY = height - 56 - priceCardH;   // sobe um pouco (era 80)
+      const priceCardY = height - 56 - priceCardH;
       fillRoundRect(ctx, left, priceCardY, priceCardW, priceCardH, 16, primaryColor);
       ctx.fillStyle = secondaryColor; ctx.font = "700 24px Inter, Arial, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("por apenas", left + priceCardW / 2, priceCardY + 40);
-      ctx.fillStyle = "#ffffff"; ctx.font = "900 64px Inter, Arial, sans-serif";
-      ctx.fillText(mainPrice || `R$ ${price}`, left + priceCardW / 2, priceCardY + 108);
+      ctx.fillText((topLabel || "por apenas").toString(), left + priceCardW / 2, priceCardY + 40);
+      ctx.fillStyle = "#ffffff";
+      // Auto-shrink preço V2
+      const priceStrV2 = mainPrice || `${curSym} ${price}`;
+      let pfsV2 = 64;
+      ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(priceStrV2).width > priceCardW - 40 && pfsV2 > 28) {
+        pfsV2 -= 4;
+        ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
+      }
+      ctx.fillText(priceStrV2, left + priceCardW / 2, priceCardY + 108);
       ctx.font = "600 22px Inter, Arial, sans-serif";
       ctx.fillText(bottomSuffix || "/pessoa", left + priceCardW / 2, priceCardY + 144);
       ctx.textAlign = "left";
@@ -641,9 +688,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const faixaH = 110;
 
       // 3) Cálculo de altura dos benefits — TODOS devem caber.
-      // Fonte e gap se ajustam à quantidade.
-      const benefitFontSize = benefitsCountV2 <= 3 ? 32 : benefitsCountV2 === 4 ? 28 : 24;
-      const benefitGap = benefitsCountV2 <= 3 ? 60 : benefitsCountV2 === 4 ? 52 : 44;
+      const benefitFontSize = benefitsCountV2 <= 3 ? 32 : benefitsCountV2 === 4 ? 28 : benefitsCountV2 === 5 ? 24 : 22;
+      const benefitGap = benefitsCountV2 <= 3 ? 60 : benefitsCountV2 === 4 ? 52 : benefitsCountV2 === 5 ? 44 : 40;
       const benefitsBlockH = benefitsCountV2 * benefitGap;
       const benefitsTopPad = 32;
       const benefitsBottomPad = 28;
@@ -718,7 +764,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     // Preço
     ctx.fillStyle = secondaryColor; ctx.font = "900 72px Inter, Arial, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(mainPrice || `R$ ${price}`, width / 2, cardY3 + 312);
+    ctx.fillText(mainPrice || `${curSym} ${price}`, width / 2, cardY3 + 312);
     ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = "600 24px Inter, Arial, sans-serif";
     ctx.fillText("/pessoa · " + (installments || "10x") + " sem juros", width / 2, cardY3 + 356);
     ctx.textAlign = "left";

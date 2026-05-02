@@ -55,15 +55,70 @@ const DEFAULT_HIGHLIGHTS: Highlight[] = [
 ];
 
 const PRESET_COLORS = [
-  // Escuros
-  "#0a0a0a", "#0c2340", "#1e293b", "#1d4ed8",
-  // Médios
-  "#2563eb", "#3b82f6", "#7c3aed", "#a855f7",
-  // Quentes
-  "#dc2626", "#991b1b", "#e85d3a", "#064e3b",
-  // Claros / Especiais
-  "#ffffff", "#f8fafc", "#0d7a5f", "#16a34a",
+  // Linha 1 — Escuros / Neutros
+  "#000000", "#0a0a0a", "#1e293b", "#374151", "#6b7280", "#9ca3af", "#d1d5db", "#ffffff",
+  // Linha 2 — Azuis / Roxos
+  "#0c2340", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#7c3aed", "#a855f7", "#c084fc",
+  // Linha 3 — Quentes (vermelho/laranja/rosa)
+  "#dc2626", "#ef4444", "#f97316", "#fb923c", "#e85d3a", "#ec4899", "#f472b6", "#fda4af",
+  // Linha 4 — Amarelos / Verdes / Ciano
+  "#facc15", "#fde047", "#fbbf24", "#16a34a", "#22c55e", "#4ade80", "#0d7a5f", "#06b6d4",
 ];
+
+type Currency = "BRL" | "USD" | "EUR" | "ARS" | "GBP";
+const CURRENCY_PRESETS: { id: Currency; symbol: string; label: string; locale: string }[] = [
+  { id: "BRL", symbol: "R$", label: "Real (R$)", locale: "pt-BR" },
+  { id: "USD", symbol: "US$", label: "Dólar (US$)", locale: "en-US" },
+  { id: "EUR", symbol: "€", label: "Euro (€)", locale: "de-DE" },
+  { id: "GBP", symbol: "£", label: "Libra (£)", locale: "en-GB" },
+  { id: "ARS", symbol: "AR$", label: "Peso AR (AR$)", locale: "es-AR" },
+];
+
+/**
+ * Formata um valor de preço aplicando separador de milhar e casa decimal
+ * conforme a moeda selecionada. Aceita strings com vírgula ou ponto como decimal.
+ * Ex: "4124312"  → BRL: "4.124.312,00"  USD: "4,124,312.00"
+ *     "1499,90"  → BRL: "1.499,90"
+ *     "1499.9"   → BRL: "1.499,90"
+ */
+const formatPriceValue = (raw: string, currency: Currency): string => {
+  const value = (raw || "").trim();
+  if (!value) return "";
+  // Mantém só dígitos + separador decimal (último , ou .)
+  const cleaned = value.replace(/[^\d.,]/g, "");
+  if (!cleaned) return "";
+  // Detecta o ÚLTIMO separador como decimal
+  const lastComma = cleaned.lastIndexOf(",");
+  const lastDot = cleaned.lastIndexOf(".");
+  let intPart = cleaned;
+  let decPart = "";
+  if (lastComma > lastDot && lastComma !== -1) {
+    intPart = cleaned.slice(0, lastComma).replace(/[.,]/g, "");
+    decPart = cleaned.slice(lastComma + 1).replace(/\D/g, "").slice(0, 2);
+  } else if (lastDot > lastComma && lastDot !== -1) {
+    intPart = cleaned.slice(0, lastDot).replace(/[.,]/g, "");
+    decPart = cleaned.slice(lastDot + 1).replace(/\D/g, "").slice(0, 2);
+  } else {
+    intPart = cleaned.replace(/\D/g, "");
+  }
+  const num = Number(intPart || "0") + (decPart ? Number(`0.${decPart}`) : 0);
+  const preset = CURRENCY_PRESETS.find((c) => c.id === currency)!;
+  try {
+    return new Intl.NumberFormat(preset.locale, {
+      minimumFractionDigits: decPart ? Math.min(decPart.length, 2) : 0,
+      maximumFractionDigits: 2,
+    }).format(num);
+  } catch {
+    return value;
+  }
+};
+
+const buildPriceWithCurrency = (raw: string, currency: Currency): string => {
+  const formatted = formatPriceValue(raw, currency);
+  if (!formatted) return "";
+  const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
+  return `${sym} ${formatted}`;
+};
 
 interface PaymentPreset {
   id: PaymentMode;
@@ -227,6 +282,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [destination, setDestination] = useState(state.destinos?.[0] || "");
   const [price, setPriceState] = useState(state.lastPrice || "149,90");
   const setPrice = (p: string) => { setPriceState(p); update({ lastPrice: p }); };
+  const [currency, setCurrency] = useState<Currency>("BRL");
+  // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
+  const formattedPriceForAd = formatPriceValue(price, currency);
+  const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
 
   const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
   const setInstallments = (i: string) => { setInstallmentsState(i); update({ lastInstallments: i }); };
@@ -433,7 +492,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               city: state.city,
               primaryColor: palette.primary,
               secondaryColor: palette.secondary,
-              price,
+              price: formattedPriceForAd || price,
+              currencySymbol,
               installments,
               promoName,
               highlights,
@@ -527,7 +587,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               primaryColor: palette.primary,
               secondaryColor: palette.secondary,
               hasLogo: !!state.logoBase64,
-              price,
+              price: formattedPriceForAd || price,
+              currencySymbol,
               installments,
               promoName: (promoName || "Oferta Especial").toUpperCase(),
               highlights,
@@ -629,7 +690,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             city: state.city,
             primaryColor: palette.primary,
             secondaryColor: palette.secondary,
-            price,
+            price: formattedPriceForAd || price,
+            currencySymbol,
             installments,
             promoName,
             highlights,
@@ -1046,49 +1108,62 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
           <div className="sm:col-span-2">
             <label className={labelCls}>Título do anúncio</label>
-            <div className="flex gap-2">
-              <input
-                value={adTitleTemplate}
-                onChange={(e) => setAdTitleTemplate(e.target.value)}
-                placeholder="Ex: Pacote {destino}"
-                className={`${inputCls} flex-1`}
-              />
-              <div className="relative">
+            <div className="relative">
+              <div className="flex gap-2">
+                <input
+                  value={adTitleTemplate}
+                  onChange={(e) => setAdTitleTemplate(e.target.value)}
+                  onFocus={() => setAdTitleMenuOpen(true)}
+                  placeholder="Ex: Pacote {destino}"
+                  className={`${inputCls} flex-1 pr-10`}
+                />
                 <button
                   type="button"
                   onClick={() => setAdTitleMenuOpen((v) => !v)}
-                  className="h-full px-3 rounded-xl bg-white/[0.06] border border-white/10 text-white/80 hover:border-white/40 flex items-center gap-1.5 text-xs font-semibold whitespace-nowrap"
-                  title="Escolher um modelo de título"
+                  className="px-3 rounded-xl border-2 font-bold text-xs flex items-center gap-1.5 whitespace-nowrap transition-all"
+                  style={{
+                    borderColor: secondaryColor,
+                    background: `${secondaryColor}1a`,
+                    color: secondaryColor,
+                  }}
+                  title="Ver modelos de título"
                 >
-                  Modelos <ChevronDown className="w-3.5 h-3.5" />
+                  ✨ Modelos <ChevronDown className={`w-3.5 h-3.5 transition-transform ${adTitleMenuOpen ? "rotate-180" : ""}`} />
                 </button>
-                {adTitleMenuOpen && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setAdTitleMenuOpen(false)} />
-                    <div className="absolute right-0 mt-2 w-72 max-h-80 overflow-y-auto bg-neutral-900 border border-white/15 rounded-xl shadow-2xl z-50 py-1">
-                      {AD_TITLE_PRESETS.map((tpl) => {
-                        const preview = tpl.replace(/\{destino\}/gi, destination?.trim() || "Destino");
-                        const active = tpl === adTitleTemplate;
-                        return (
-                          <button
-                            key={tpl}
-                            type="button"
-                            onClick={() => { setAdTitleTemplate(tpl); setAdTitleMenuOpen(false); }}
-                            className={`w-full text-left px-3 py-2 text-xs hover:bg-white/[0.08] ${active ? "bg-white/[0.06] text-white" : "text-white/80"}`}
-                          >
-                            {preview}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
               </div>
+              {adTitleMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setAdTitleMenuOpen(false)} />
+                  <div
+                    className="absolute left-0 right-0 mt-2 max-h-80 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1"
+                    style={{ borderColor: `${secondaryColor}66` }}
+                  >
+                    <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
+                      Escolha um modelo · {AD_TITLE_PRESETS.length} opções
+                    </div>
+                    {AD_TITLE_PRESETS.map((tpl) => {
+                      const preview = tpl.replace(/\{destino\}/gi, destination?.trim() || "Destino");
+                      const active = tpl === adTitleTemplate;
+                      return (
+                        <button
+                          key={tpl}
+                          type="button"
+                          onClick={() => { setAdTitleTemplate(tpl); setAdTitleMenuOpen(false); }}
+                          className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
+                        >
+                          {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                          <span className={active ? "" : "ml-5"}>{preview}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
             <p className="text-[10px] text-white/40 mt-1.5">
               Use <code className="text-white/60">{"{destino}"}</code> e ele será trocado pelo destino atual.
               {destination && (
-                <> Pré-visualização: <span className="text-white/70 font-semibold">"{resolvedAdTitle}"</span></>
+                <> Pré-visualização: <span className="font-semibold" style={{ color: secondaryColor }}>"{resolvedAdTitle}"</span></>
               )}
             </p>
           </div>
@@ -1139,13 +1214,38 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               />
             </div>
             <div>
-              <label className={labelCls}>Valor (R$)</label>
-              <input
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="149,90"
-                className={inputCls}
-              />
+              <div className="flex items-baseline justify-between mb-1.5">
+                <label className={`${labelCls} mb-0`}>Valor ({currencySymbol})</label>
+                {formattedPriceForAd && (
+                  <span className="text-[10px] text-emerald-300/80 font-mono">
+                    → {currencySymbol} {formattedPriceForAd}
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-1.5">
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value as Currency)}
+                  className="bg-white/[0.06] border border-white/10 rounded-xl px-2 py-3 text-white text-xs outline-none focus:border-white/40 cursor-pointer"
+                  title="Moeda"
+                >
+                  {CURRENCY_PRESETS.map((c) => (
+                    <option key={c.id} value={c.id} className="bg-neutral-900">
+                      {c.symbol}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder={currency === "BRL" ? "1499,90" : "1499.90"}
+                  inputMode="decimal"
+                  className={`${inputCls} flex-1`}
+                />
+              </div>
+              <p className="text-[10px] text-white/40 mt-1">
+                Padrão {currency}. Milhares e decimais são formatados automaticamente.
+              </p>
             </div>
           </div>
         </div>
@@ -1161,14 +1261,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 <label className={labelCls}>{label}</label>
                 <span className="text-[10px] text-white/40">{hint}</span>
               </div>
-              {/* Bolinhas da paleta */}
-              <div className="flex gap-1.5 flex-wrap mb-3">
+              {/* Bolinhas da paleta — grid 8 col, 4 linhas */}
+              <div className="grid grid-cols-8 gap-1.5 mb-3">
                 {PRESET_COLORS.map((c) => (
                   <button
                     key={c}
                     onClick={() => setter(c)}
                     className={`w-6 h-6 rounded-full border-2 transition-all ${value.toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-lg" : "border-white/20 hover:border-white/60"}`}
-                    style={{ background: c, boxShadow: c === "#ffffff" || c === "#f8fafc" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
+                    style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
                     aria-label={c}
                     title={c}
                   />
