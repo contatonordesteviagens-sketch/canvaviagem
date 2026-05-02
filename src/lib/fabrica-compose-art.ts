@@ -1244,6 +1244,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const photoH0 = height - topH;
       const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
       ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
+      drawGlobalExtras();
       return canvas.toDataURL("image/png");
     }
 
