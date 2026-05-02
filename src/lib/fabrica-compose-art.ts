@@ -225,7 +225,6 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const ofertaBase = [
     "Partiu viajar?",
     "Preço especial para viajar",
-    "Sua próxima viagem começa agora",
     "Vagas limitadas, garanta a sua",
   ];
   const ofertaWithDest = hasDest
