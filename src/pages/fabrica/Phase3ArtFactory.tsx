@@ -1339,11 +1339,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5 w-fit">
               <input
                 type="checkbox"
-                checked={hideCents}
-                onChange={(e) => setHideCents(e.target.checked)}
+                checked={!hideCents}
+                onChange={(e) => setHideCents(!e.target.checked)}
                 className="accent-yellow-400 w-4 h-4"
               />
-              Sem centavos (ex.: 423 em vez de 423,43)
+              Mostrar centavos (ex.: 423,43 em vez de 423)
             </label>
           </div>
 

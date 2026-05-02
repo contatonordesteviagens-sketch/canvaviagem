@@ -19,6 +19,33 @@ function shadeColor(hex: string, percent: number): string {
   return "#" + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
 }
 
+// Luminância relativa (0..1) de uma cor hex.
+function luminance(hex: string): number {
+  let h = (hex || "").trim().replace("#", "");
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  if (h.length !== 6) return 0.5;
+  const num = parseInt(h, 16);
+  const r = ((num >> 16) & 0xff) / 255;
+  const g = ((num >> 8) & 0xff) / 255;
+  const b = (num & 0xff) / 255;
+  return 0.299 * r + 0.587 * g + 0.114 * b;
+}
+
+// Retorna preto ou branco com melhor contraste sobre `bg`.
+function contrastOn(bg: string): string {
+  return luminance(bg) > 0.6 ? "#0d0d0d" : "#ffffff";
+}
+
+/**
+ * Garante contraste mínimo entre `fg` (cor preferida do usuário) e `bg`.
+ * Se a diferença de luminância for baixa, devolve preto/branco em vez de `fg`.
+ */
+function ensureContrast(fg: string, bg: string, minDelta = 0.35): string {
+  const dl = Math.abs(luminance(fg) - luminance(bg));
+  if (dl >= minDelta) return fg;
+  return contrastOn(bg);
+}
+
 export type PaymentMode =
   | "installments"
   | "cash"
@@ -933,8 +960,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // - "yellow" = secondaryColor (fundo do box)
       // - "navy"   = primaryColor   (textos, ícones e faixa Pix)
       const yellow = secondaryColor || "#FFD400";
-      const navy = primaryColor || "#0B2B7A";
-      const yellowDark = shadeColor(yellow, -12); // anel ao redor do preço (variação mais escura do secundário)
+      const navyRaw = primaryColor || "#0B2B7A";
+      // Garante contraste mínimo dos textos/ícones contra o fundo do box.
+      // Se o usuário escolher duas cores claras (ou duas escuras), o navy vira
+      // preto/branco automaticamente para manter legibilidade.
+      const navy = ensureContrast(navyRaw, yellow, 0.35);
+      const yellowDark = shadeColor(yellow, luminance(yellow) > 0.5 ? -12 : 18); // anel: escurece se claro, clareia se escuro
 
       // Pré-cálculos de altura por seção
       const padTop = 36;
@@ -1070,23 +1101,25 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         cursorY += totalH;
       }
 
-      // [PROMO] faixa horizontal azul com texto Pix (opcional)
+      // [PROMO] faixa horizontal com texto Pix (opcional)
+      // Fundo da faixa = primaryColor (navy padrão). Texto sempre com contraste.
       if (showPixBanner) {
         const stripeY = boxY + boxH - stripeH - 24;
         const stripeX = boxX + 40;
         const stripeW = boxW - 80;
-        fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 16, navy);
-        ctx.fillStyle = "#ffffff";
+        const stripeBg = navyRaw; // mantém a cor escolhida pelo usuário p/ a faixa
+        const stripeFg = contrastOn(stripeBg); // texto preto/branco automático
+        fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 16, stripeBg);
+        ctx.fillStyle = stripeFg;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.font = "900 26px Inter, Arial, sans-serif";
 
         const customBanner = (pixBannerText || "").trim();
         if (customBanner) {
-          // Modo texto livre: usuário definiu uma frase customizada
           ctx.fillText(customBanner, stripeX + stripeW / 2, stripeY + stripeH / 2 + 1);
         } else {
-          // Modo padrão: "{N}% OFF À VISTA NO  ◇ pix"
+          // "{N}% OFF À VISTA NO  [●pix]"
           const pixText = `${descN}% OFF À VISTA NO`;
           const pixTextW = ctx.measureText(pixText).width;
           const pixIconSize = 36;
@@ -1094,16 +1127,24 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
           ctx.font = "800 28px Inter, Arial, sans-serif";
           const pixLabelW = ctx.measureText("pix").width;
           ctx.font = "900 26px Inter, Arial, sans-serif";
-          const totalPixW = pixTextW + pixGap + pixIconSize + pixGap + pixLabelW;
+          // pílula branca atrás do logo+pix p/ garantir visibilidade da marca Pix
+          const pillPad = 10;
+          const pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
+          const pillH = stripeH - 16;
+          const totalPixW = pixTextW + pixGap + pillW;
           const pixStartX = stripeX + (stripeW - totalPixW) / 2;
           ctx.textAlign = "left";
+          ctx.fillStyle = stripeFg;
           ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2 + 1);
-          const pxCx = pixStartX + pixTextW + pixGap + pixIconSize / 2;
+          const pillX = pixStartX + pixTextW + pixGap;
+          const pillY = stripeY + (stripeH - pillH) / 2;
+          fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, "#ffffff");
+          const pxCx = pillX + pillPad + pixIconSize / 2;
           const pxCy = stripeY + stripeH / 2;
           drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
-          ctx.fillStyle = "#ffffff";
-          ctx.font = "800 28px Inter, Arial, sans-serif";
-          ctx.fillText("pix", pxCx + pixIconSize / 2 + pixGap, stripeY + stripeH / 2 + 1);
+          ctx.fillStyle = "#32BCAD";
+          ctx.font = "900 28px Inter, Arial, sans-serif";
+          ctx.fillText("pix", pillX + pillPad + pixIconSize + pixGap, stripeY + stripeH / 2 + 1);
         }
         ctx.textBaseline = "alphabetic";
       }
