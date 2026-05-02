@@ -1323,6 +1323,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.clip();
       ctx.drawImage(image, c1.sx, c1.sy, c1.sw, c1.sh, colX, pY, colW, photoH1);
       ctx.restore();
+      drawGlobalExtras();
       return canvas.toDataURL("image/png");
     }
 
