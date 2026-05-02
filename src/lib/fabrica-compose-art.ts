@@ -1391,7 +1391,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillStyle = v2CardLabel; ctx.font = "700 24px Inter, Arial, sans-serif";
       ctx.textAlign = "center";
       ctx.fillText((topLabel || "por apenas").toString(), priceCardX + priceCardW / 2, priceCardY + 40);
-      ctx.fillStyle = v2OnCard;
+      // Valor do preço usa a cor SECUNDÁRIA (ex.: amarelo) para destacar contra o card primário.
+      // Se a secundária não tiver contraste suficiente, ensureContrast troca para branco/preto.
+      ctx.fillStyle = v2CardLabel;
       // Auto-shrink preço V2
       const priceStrV2 = mainPrice || `${curSym} ${price}`;
       let pfsV2 = 64;
@@ -1401,6 +1403,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
       }
       ctx.fillText(priceStrV2, priceCardX + priceCardW / 2, priceCardY + 108);
+      ctx.fillStyle = v2OnCard;
       ctx.font = "600 22px Inter, Arial, sans-serif";
       ctx.fillText(bottomSuffix, priceCardX + priceCardW / 2, priceCardY + 144);
       ctx.textAlign = "left";
