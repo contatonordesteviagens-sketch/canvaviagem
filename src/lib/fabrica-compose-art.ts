@@ -1282,21 +1282,26 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     if (variant === 1) {
       const panelW = 460;
       const colX = panelW + 24; const colW = width - colX - 24;
+      // REGRA DE LEGIBILIDADE: painel esquerdo = primaryColor → texto deve contrastar.
+      // Accent = secondaryColor mas só se contrastar; caso contrário, fallback p/ branco/preto.
+      const v1PanelBg = primaryColor;
+      const v1OnPanel = contrastOn(v1PanelBg); // texto principal sempre legível
+      const v1Accent = ensureContrast(secondaryColor, v1PanelBg, 0.35);
       // Fundo esquerdo (cor primária)
-      ctx.fillStyle = primaryColor; ctx.fillRect(0, 0, panelW, height);
+      ctx.fillStyle = v1PanelBg; ctx.fillRect(0, 0, panelW, height);
       // Fundo direito (cor secundária)
       ctx.fillStyle = secondaryColor; ctx.fillRect(panelW, 0, width - panelW, height);
       // Texto no painel esquerdo
       const px = left; const pw = panelW - left - 24;
-      ctx.fillStyle = secondaryColor;
+      ctx.fillStyle = v1Accent;
       ctx.font = "900 22px Inter, Arial, sans-serif";
       ctx.fillText((promoName || "OFERTA ESPECIAL").toUpperCase(), px, logoH + 54);
       // Destino grande
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = v1OnPanel;
       drawTextBlock(ctx, destUp, px, logoH + 100, pw, 78, 2, { fontWeight: "900", baseFontSize: 72, minFontSize: 36 });
 
       // Headline (titleText escolhido pelo usuário) — abaixo do destino
-      ctx.fillStyle = secondaryColor;
+      ctx.fillStyle = v1Accent;
       ctx.font = "800 24px Inter, Arial, sans-serif";
       drawTextBlock(ctx, titleText, px, logoH + 240, pw, 30, 2, { fontWeight: "800", baseFontSize: 24, minFontSize: 16 });
 
@@ -1306,13 +1311,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const pillH = benefitsListV1.length <= 4 ? 68 : benefitsListV1.length === 5 ? 56 : 50;
       const pillGap = benefitsListV1.length <= 4 ? 14 : 10;
       const pillFont = benefitsListV1.length <= 4 ? 28 : benefitsListV1.length === 5 ? 24 : 22;
+      // Pílula com tinta no mesmo tom do painel mas mais clara/escura, p/ contraste consistente
+      const pillBgV1 = v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.12)";
       benefitsListV1.forEach((h, i) => {
         const py = hlStart + i * (pillH + pillGap);
-        fillRoundRect(ctx, px, py, pw, pillH, pillH / 2, "rgba(255,255,255,0.14)");
-        ctx.fillStyle = secondaryColor; ctx.font = `700 ${pillFont}px Inter, Arial, sans-serif`;
+        fillRoundRect(ctx, px, py, pw, pillH, pillH / 2, pillBgV1);
+        ctx.fillStyle = v1Accent; ctx.font = `700 ${pillFont}px Inter, Arial, sans-serif`;
         ctx.textBaseline = "middle";
         ctx.fillText(ICON_SYMBOL[h.icon || "check"] || "✓", px + 18, py + pillH / 2);
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = v1OnPanel;
         // Auto-shrink texto da pill
         let pf = pillFont;
         ctx.font = `700 ${pf}px Inter, Arial, sans-serif`;
@@ -1324,12 +1331,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.fillText(h.text, px + 52, py + pillH / 2);
         ctx.textBaseline = "alphabetic";
       });
-      // Price card no painel esquerdo, base — usa topLabel custom se houver
-      fillRoundRect(ctx, px, height - 200, pw, 172, 16, "rgba(0,0,0,0.3)");
-      ctx.fillStyle = secondaryColor; ctx.font = "700 22px Inter, Arial, sans-serif";
+      // Price card no painel esquerdo, base — overlay escuro/claro de acordo com o painel
+      const priceCardOverlay = v1OnPanel === "#ffffff" ? "rgba(0,0,0,0.3)" : "rgba(255,255,255,0.25)";
+      fillRoundRect(ctx, px, height - 200, pw, 172, 16, priceCardOverlay);
+      ctx.fillStyle = v1Accent; ctx.font = "700 22px Inter, Arial, sans-serif";
       ctx.textAlign = "center";
       ctx.fillText((topLabel || "APENAS HOJE:").toString().toUpperCase(), px + pw / 2, height - 168);
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = v1OnPanel;
       // Auto-shrink preço
       const priceStrV1 = mainPrice || `${curSym} ${price}`;
       let pfsV1 = 62;
