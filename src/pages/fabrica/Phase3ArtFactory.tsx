@@ -575,6 +575,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               titleOverride: resolvedAdTitle,
               titleVariations: adTitleVariations,
               totalOverride: totalOverride || undefined,
+              showPixBanner,
+              pixBannerText: pixBannerText || undefined,
               showTotal,
             });
             if (state.logoBase64) {
@@ -779,6 +781,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             titleOverride: resolvedAdTitle,
             titleVariations: adTitleVariations,
             totalOverride: totalOverride || undefined,
+              showPixBanner,
+              pixBannerText: pixBannerText || undefined,
             showTotal,
           });
           if (state.logoBase64) {
