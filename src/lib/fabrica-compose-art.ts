@@ -960,8 +960,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // - "yellow" = secondaryColor (fundo do box)
       // - "navy"   = primaryColor   (textos, ícones e faixa Pix)
       const yellow = secondaryColor || "#FFD400";
-      const navy = primaryColor || "#0B2B7A";
-      const yellowDark = shadeColor(yellow, -12); // anel ao redor do preço (variação mais escura do secundário)
+      const navyRaw = primaryColor || "#0B2B7A";
+      // Garante contraste mínimo dos textos/ícones contra o fundo do box.
+      // Se o usuário escolher duas cores claras (ou duas escuras), o navy vira
+      // preto/branco automaticamente para manter legibilidade.
+      const navy = ensureContrast(navyRaw, yellow, 0.35);
+      const yellowDark = shadeColor(yellow, luminance(yellow) > 0.5 ? -12 : 18); // anel: escurece se claro, clareia se escuro
 
       // Pré-cálculos de altura por seção
       const padTop = 36;
