@@ -42,6 +42,10 @@ interface ComposeTravelAdOptions {
   titleVariations?: string[];
   /** Símbolo de moeda exibido antes do preço (R$, US$, €, £, AR$). Default "R$". */
   currencySymbol?: string;
+  /** V3: texto livre do "Total" (ex.: "R$ 1.999 por casal"). Se vazio, calcula automático. */
+  totalOverride?: string;
+  /** V3: controla se a linha de total aparece no box. Default true. */
+  showTotal?: boolean;
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
