@@ -123,6 +123,10 @@ export interface FabricaState {
   lastPaymentSuffix?: string;
   lastCurrency?: string;
   lastAdTitle?: string;
+  // V3: opções extras de preço/total
+  hideCents?: boolean;
+  showTotal?: boolean;
+  totalOverride?: string;
 }
 
 const defaultState: FabricaState = {
