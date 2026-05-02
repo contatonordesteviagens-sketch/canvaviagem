@@ -583,7 +583,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(priceStr, priceCenterX, rowTopY + 92);
       ctx.font = "600 20px Inter, Arial, sans-serif"; ctx.fillStyle = primaryColor;
       ctx.globalAlpha = 0.7;
-      ctx.fillText(bottomSuffix || "/pessoa", priceCenterX, rowTopY + 120);
+      ctx.fillText(bottomSuffix, priceCenterX, rowTopY + 120);
       ctx.globalAlpha = 1;
       ctx.textAlign = "left";
 
@@ -657,7 +657,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       }
       ctx.fillText(priceStrV1, px + pw / 2, height - 100);
       ctx.font = "600 20px Inter, Arial, sans-serif";
-      ctx.fillText(bottomSuffix || "/pessoa", px + pw / 2, height - 68);
+      ctx.fillText(bottomSuffix, px + pw / 2, height - 68);
       ctx.textAlign = "left";
       // Foto ÚNICA no lado direito (sem duplicação) — ocupa toda a altura
       const gap1 = 16;
@@ -701,7 +701,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       }
       ctx.fillText(priceStrV2, left + priceCardW / 2, priceCardY + 108);
       ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText(bottomSuffix || "/pessoa", left + priceCardW / 2, priceCardY + 144);
+      ctx.fillText(bottomSuffix, left + priceCardW / 2, priceCardY + 144);
       ctx.textAlign = "left";
 
       // 2) Faixa headline (altura adaptativa)
@@ -786,7 +786,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.textAlign = "center";
     ctx.fillText(mainPrice || `${curSym} ${price}`, width / 2, cardY3 + 312);
     ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = "600 24px Inter, Arial, sans-serif";
-    ctx.fillText("/pessoa · " + (installments || "10x") + " sem juros", width / 2, cardY3 + 356);
+    ctx.fillText([bottomSuffix, installments ? `${installments} sem juros` : ""].filter(Boolean).join(" · "), width / 2, cardY3 + 356);
     ctx.textAlign = "left";
     return canvas.toDataURL("image/png");
   };
