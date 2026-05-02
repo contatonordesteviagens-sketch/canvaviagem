@@ -80,6 +80,24 @@ const PAYMENT_PRESETS: PaymentPreset[] = [
   { id: "down_plus",    name: "Entrada + parcelas", emoji: "💵", description: "Ex: ENTRADA + 10x R$ 149", hint: "Parcelas: ENTRADA R$ 200 + 10x · Valor: 149" },
 ];
 
+const AD_TITLE_PRESETS: string[] = [
+  "Conheça o melhor de {destino}",
+  "Descubra {destino}",
+  "Pacote {destino}",
+  "Explore {destino}",
+  "{destino} vai te surpreender",
+  "Você precisa conhecer {destino}!",
+  "O que fazer em {destino}",
+  "O melhor de {destino}",
+  "Meu sonho se chama {destino}",
+  "Partiu {destino}",
+  "Sua próxima viagem é {destino}",
+  "Pacote Promocional {destino}",
+  "Viagem Completa {destino}",
+  "{destino} te espera",
+  "Vamos para {destino}?",
+];
+
 const CATEGORY_LOCAL_STRATEGIES: Record<CategoriaId, StrategyId[]> = {
   oferta_pacote: ["matriz", "gancho", "ancora", "vitrine"],
   experiencia_destino: ["experiencia_hero", "experiencia_postcard", "experiencia_editorial", "experiencia_lifestyle"],
