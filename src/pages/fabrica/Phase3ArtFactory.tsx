@@ -359,8 +359,21 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setPaymentLabel = (label: string) => { setPaymentLabelState(label); update({ lastPaymentLabel: label }); };
   const [paymentSuffixState, setPaymentSuffixState] = useState(state.lastPaymentSuffix || "por pessoa");
   const setPaymentSuffix = (suffix: string) => { setPaymentSuffixState(suffix); update({ lastPaymentSuffix: suffix }); };
-  const paymentLabel = paymentMode === "installments" || paymentMode === "down_plus" ? installments : paymentLabelState;
+  const paymentLabel = paymentMode === "installments" || paymentMode === "down_plus" || paymentMode === "installments_no_interest" ? installments : paymentLabelState;
   const paymentSuffix = paymentSuffixState;
+
+  // Detalhes do pacote (dias + ícones) — usados pelo card "CVC" (V3/V4)
+  const [pacoteDays, setPacoteDaysState] = useState<string>(state.lastPacoteDays || "7 dias");
+  const setPacoteDays = (d: string) => { setPacoteDaysState(d); update({ lastPacoteDays: d }); };
+  const [pacoteIcons, setPacoteIconsState] = useState<IconKey[]>((state.lastPacoteIcons as IconKey[]) || ["plane","bus","hotel","coffee","camera"]);
+  const setPacoteIcons = (icons: IconKey[]) => { setPacoteIconsState(icons); update({ lastPacoteIcons: icons }); };
+  const togglePacoteIcon = (k: IconKey) => {
+    const has = pacoteIcons.includes(k);
+    if (has) setPacoteIcons(pacoteIcons.filter((x) => x !== k));
+    else if (pacoteIcons.length < 6) setPacoteIcons([...pacoteIcons, k]);
+  };
+  const [hideCents, setHideCentsState] = useState<boolean>(!!state.lastHideCents);
+  const setHideCents = (v: boolean) => { setHideCentsState(v); update({ lastHideCents: v }); };
   const [primaryColor, setPrimaryColorState] = useState(state.primaryColor || "#F59E0B");
   const [secondaryColor, setSecondaryColorState] = useState(state.secondaryColor || "#FCD34D");
   
