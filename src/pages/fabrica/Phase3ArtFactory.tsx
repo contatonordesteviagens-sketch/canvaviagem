@@ -325,9 +325,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setCurrency = (c: Currency) => { setCurrencyState(c); update({ lastCurrency: c }); };
   // Opções extras de preço (aplicam a TODAS as variações V0/V1/V2/V3)
   const [hideCents, setHideCentsState] = useState<boolean>(!!state.hideCents);
-  // Guarda o último valor com centavos pra restaurar quando desmarcar "Sem centavos"
-  const priceWithCentsRef = useRef<string>(state.lastPrice || "149,90");
   const setHideCents = (v: boolean) => {
+    setHideCentsState(v);
+    hideCentsRef.current = v;
+    update({ hideCents: v });
     setHideCentsState(v);
     update({ hideCents: v });
     if (v) {
