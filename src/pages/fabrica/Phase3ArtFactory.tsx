@@ -302,14 +302,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     setEditingIconIdx(null);
   };
 
-  const generate = async (forceVariation?: number) => {
+  const generate = async (forceVariation?: number, accumulate: boolean = false) => {
     if (!destination.trim()) {
       toast.error("Digite o destino do anúncio");
       return;
     }
     setLoading(true);
     setGeneratedImage("");
-    setGeneratedImages([]);
+    if (!accumulate) setGeneratedImages([]);
     try {
       // Resolve imagem de referência conforme modo
       const refImage =
