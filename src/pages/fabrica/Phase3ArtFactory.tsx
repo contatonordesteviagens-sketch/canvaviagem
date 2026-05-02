@@ -538,6 +538,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
       const palette = selectedPalette(primaryColor, secondaryColor);
 
+      // Rotação determinística entre as 3 variantes do compositor (V0/V1/V2)
+      // evitando a última usada — garante imagem nova a cada clique.
+      const TOTAL_VARIANTS = 3;
+      const lastUsed = variantHistoryRef.current[variantHistoryRef.current.length - 1];
+      const candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => v !== lastUsed);
+      const nextVariant = candidates[Math.floor(Math.random() * candidates.length)];
+      variantHistoryRef.current = [...variantHistoryRef.current.slice(-2), nextVariant];
+
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy) => {
           let img = await composeTravelAd({
@@ -557,6 +565,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             paymentSuffix: paymentSuffix || undefined,
             strategy: localStrategy,
             variation: freshSeedCustom,
+            forceVariant: nextVariant,
           });
           if (state.logoBase64) {
             try {
