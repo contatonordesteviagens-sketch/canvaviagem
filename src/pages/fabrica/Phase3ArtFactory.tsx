@@ -1189,9 +1189,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <button
                 key={p.id}
                 onClick={() => {
+                  const isChangingMode = paymentMode !== p.id;
                   setPaymentMode(p.id);
-                  if (p.id === "cash" && !paymentLabelState) setPaymentLabel("À VISTA");
-                  if (p.id === "down_plus" && !installments.trim()) setInstallments("Entrada + 10x");
+                  if (p.id === "installments" && (isChangingMode || !installments.trim())) setInstallments("10x");
+                  if (p.id === "cash" && (isChangingMode || !paymentLabelState.trim())) setPaymentLabel("À VISTA");
+                  if (p.id === "down_plus" && (isChangingMode || !installments.trim())) setInstallments("Entrada + 10x");
                   if (!paymentSuffix.trim()) setPaymentSuffix("por pessoa");
                 }}
                 className={`px-2 py-1.5 rounded-lg border-2 text-center transition-all ${
