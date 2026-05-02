@@ -1112,28 +1112,17 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           <div className="sm:col-span-2">
             <label className={labelCls}>Título do anúncio</label>
             <div className="relative">
-              <div className="flex gap-2">
-                <input
-                  value={adTitleTemplate}
-                  onChange={(e) => setAdTitleTemplate(e.target.value)}
-                  onFocus={() => setAdTitleMenuOpen(true)}
-                  placeholder="Ex: Pacote {destino}"
-                  className={`${inputCls} flex-1 pr-10`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setAdTitleMenuOpen((v) => !v)}
-                  className="px-3 rounded-xl border-2 font-bold text-xs flex items-center gap-1.5 whitespace-nowrap transition-all"
-                  style={{
-                    borderColor: secondaryColor,
-                    background: `${secondaryColor}1a`,
-                    color: secondaryColor,
-                  }}
-                  title="Ver modelos de título"
-                >
-                  ✨ Modelos <ChevronDown className={`w-3.5 h-3.5 transition-transform ${adTitleMenuOpen ? "rotate-180" : ""}`} />
-                </button>
-              </div>
+              <input
+                value={adTitleTemplate}
+                onChange={(e) => setAdTitleTemplate(e.target.value)}
+                onFocus={() => setAdTitleMenuOpen(true)}
+                onClick={() => setAdTitleMenuOpen(true)}
+                placeholder="Ex: Pacote {destino}"
+                className={`${inputCls} pr-10 cursor-pointer`}
+              />
+              <ChevronDown
+                className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${adTitleMenuOpen ? "rotate-180" : ""}`}
+              />
               {adTitleMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setAdTitleMenuOpen(false)} />
