@@ -501,21 +501,170 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     //   promoName               → destaque/desconto
     //   primaryColor / secondaryColor → cores do box
     //   hasLogo, logoH          → reserva de topo p/ logo
+    // ── V3 · REF "CVC" — foto cheia + BOX AMARELO destacado ─────────────────
+    // Estrutura: BG (foto destino) → BOX amarelo arredondado no topo-esquerda
+    // contendo: PACOTE / destino / dias+ícones / "a partir de" + 12x sem juros
+    // + R$ preço gigante / total por pessoa / faixa Pix com desconto.
     if (variant === 3) {
-      // Áreas reservadas (sem render ainda — layout na próxima etapa):
-      const _v3 = {
-        bg:       { src: image },
-        box:      { /* posição/tamanho a definir */ },
-        title:    { text: titleText },
-        info:     { items: highlights },           // dias + ícones
-        install:  { value: installments, label: paymentLabel, suffix: paymentSuffix },
-        total:    { value: mainPrice || `${curSym} ${price}` },
-        promo:    { text: promoName },             // desconto / badge
-      };
-      void _v3;
-      // TODO(V3 — próxima etapa): renderizar BG → BOX → TITLE → INFO → INSTALL → TOTAL → PROMO.
-      // Fallback temporário em V0 para não quebrar a geração.
-      variant = 0;
+      // [BG] Foto do destino cobrindo todo o canvas
+      const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.45);
+      ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+
+      // ── Dados dinâmicos ────────────────────────────────────────────────────
+      const destinoUp = destUp;
+      const daysItem = highlights.find((h) => /\d+\s*dia/i.test(h?.text || ""));
+      const daysText = (daysItem?.text || "7 dias").trim();
+      // Ícones: prioriza highlights com ícone; senão usa default avião/transporte/hotel/café/câmera
+      const iconList: IconKey[] = (() => {
+        const fromHl = highlights
+          .map((h) => h?.icon as IconKey | undefined)
+          .filter((k): k is IconKey => !!k && k !== "check");
+        const defaults: IconKey[] = ["plane", "bus", "hotel", "coffee", "camera"];
+        const merged = [...new Set([...fromHl, ...defaults])];
+        return merged.slice(0, 5);
+      })();
+
+      // Parcelas: extrai número de "12x", "12 x", "12X sem juros" etc.
+      const instMatch = (installments || "12x").match(/(\d{1,2})\s*x/i);
+      const parcN = instMatch ? instMatch[1] : "12";
+      const priceStr = mainPrice || `${curSym} ${price}`;
+      const totalStr = paymentSuffix && /total/i.test(paymentSuffix)
+        ? paymentSuffix
+        : `Total por pessoa: ${curSym} ${(price || "").trim() ? formatTotalFromInstallment(price, parseInt(parcN, 10)) : "—"}`;
+      // Desconto: extrai número do promoName (ex.: "5% OFF") ou usa 5 como default
+      const descMatch = (promoName || "").match(/(\d{1,2})\s*%/);
+      const descN = descMatch ? descMatch[1] : "5";
+
+      // ── [BOX] amarelo arredondado ──────────────────────────────────────────
+      const boxX = 60;
+      const boxY = 70;
+      const boxW = 720;
+      const boxH = 600;
+      const boxR = 36;
+      const yellow = "#FFD400";
+      const navy = "#0B2B7A";
+
+      // sombra suave
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.25)";
+      ctx.shadowBlur = 28;
+      ctx.shadowOffsetY = 8;
+      fillRoundRect(ctx, boxX, boxY, boxW, boxH, boxR, yellow);
+      ctx.restore();
+
+      const cx = boxX + boxW / 2;
+      let cursorY = boxY + 70;
+
+      // [TITLE] PACOTE
+      ctx.fillStyle = navy;
+      ctx.textAlign = "center";
+      ctx.font = "900 44px Inter, Arial, sans-serif";
+      ctx.fillText("PACOTE", cx, cursorY);
+      cursorY += 56;
+
+      // destino (maior, peso médio)
+      ctx.font = "500 56px Inter, Arial, sans-serif";
+      let destSize = 56;
+      while (ctx.measureText(destinoUp).width > boxW - 80 && destSize > 32) {
+        destSize -= 2;
+        ctx.font = `500 ${destSize}px Inter, Arial, sans-serif`;
+      }
+      ctx.fillText(destinoUp, cx, cursorY);
+      cursorY += 64;
+
+      // [INFO] dias | ícones
+      ctx.font = "700 32px Inter, Arial, sans-serif";
+      const daysW = ctx.measureText(daysText).width;
+      const sepGap = 18;
+      const iconSize = 38;
+      const iconGap = 22;
+      const iconsTotal = iconList.length * iconSize + (iconList.length - 1) * iconGap;
+      const sepW = 4;
+      const infoTotalW = daysW + sepGap + sepW + sepGap + iconsTotal;
+      let infoX = cx - infoTotalW / 2;
+      const infoY = cursorY;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(daysText, infoX, infoY);
+      infoX += daysW + sepGap;
+      ctx.fillRect(infoX, infoY - 18, sepW, 36);
+      infoX += sepW + sepGap;
+      ctx.font = `${iconSize}px Inter, Arial, sans-serif`;
+      iconList.forEach((k, i) => {
+        const sym = ICON_SYMBOL[k] || ICON_SYMBOL.check;
+        ctx.fillText(sym, infoX + i * (iconSize + iconGap), infoY);
+      });
+      ctx.textBaseline = "alphabetic";
+      cursorY += 70;
+
+      // [INSTALL + PRICE] bloco lado a lado
+      // Lado esquerdo: "a partir de" / "12X" / "sem juros"
+      const priceBlockY = cursorY + 20;
+      const leftColX = boxX + 70;
+      ctx.textAlign = "left";
+      ctx.fillStyle = navy;
+      ctx.font = "600 22px Inter, Arial, sans-serif";
+      ctx.fillText("a partir de", leftColX, priceBlockY);
+      ctx.font = "900 64px Inter, Arial, sans-serif";
+      ctx.fillText(`${parcN}X`, leftColX, priceBlockY + 70);
+      ctx.font = "600 22px Inter, Arial, sans-serif";
+      ctx.fillText("sem juros", leftColX, priceBlockY + 100);
+
+      // Lado direito: "R$ XXX" gigante
+      // Quebra "R$ 229" em símbolo pequeno + valor gigante
+      const priceParts = priceStr.match(/^(\D+)\s*([\d.,]+)$/);
+      const sym = priceParts ? priceParts[1].trim() : curSym;
+      const valNum = priceParts ? priceParts[2].trim() : priceStr;
+      const priceRightX = boxX + boxW - 60;
+      ctx.textAlign = "right";
+      ctx.font = "900 130px Inter, Arial, sans-serif";
+      const valW = ctx.measureText(valNum).width;
+      ctx.fillText(valNum, priceRightX, priceBlockY + 90);
+      ctx.font = "900 46px Inter, Arial, sans-serif";
+      ctx.fillText(sym, priceRightX - valW - 8, priceBlockY + 50);
+
+      cursorY = priceBlockY + 130;
+
+      // [TOTAL] rodapé do box
+      ctx.textAlign = "center";
+      ctx.font = "600 24px Inter, Arial, sans-serif";
+      ctx.fillStyle = navy;
+      ctx.fillText(totalStr, cx, cursorY);
+      cursorY += 40;
+
+      // [PROMO] faixa horizontal azul com texto Pix
+      const stripeH = 70;
+      const stripeY = boxY + boxH - stripeH - 28;
+      const stripeX = boxX + 40;
+      const stripeW = boxW - 80;
+      fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 18, navy);
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = "900 28px Inter, Arial, sans-serif";
+      const pixText = `${descN}% OFF À VISTA NO`;
+      const pixTextW = ctx.measureText(pixText).width;
+      const pixIconSize = 36;
+      const pixGap = 14;
+      const totalPixW = pixTextW + pixGap + pixIconSize + pixGap + ctx.measureText("PIX").width;
+      const pixStartX = stripeX + (stripeW - totalPixW) / 2;
+      ctx.textAlign = "left";
+      ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2 + 1);
+      // Ícone Pix simplificado: losango com 4 pontas
+      const pxCx = pixStartX + pixTextW + pixGap + pixIconSize / 2;
+      const pxCy = stripeY + stripeH / 2;
+      ctx.save();
+      ctx.translate(pxCx, pxCy);
+      ctx.rotate(Math.PI / 4);
+      ctx.fillStyle = "#32BCAD";
+      ctx.fillRect(-pixIconSize / 2, -pixIconSize / 2, pixIconSize, pixIconSize);
+      ctx.restore();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 28px Inter, Arial, sans-serif";
+      ctx.fillText("PIX", pxCx + pixIconSize / 2 + pixGap, stripeY + stripeH / 2 + 1);
+      ctx.textBaseline = "alphabetic";
+
+      return canvas.toDataURL("image/png");
     }
 
     const logoH = hasLogo ? 130 : 0;
