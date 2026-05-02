@@ -1234,11 +1234,20 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             {generatedImages.map((img, idx) => (
               <div
                 key={idx}
-                className={`rounded-xl overflow-hidden bg-black/40 mx-auto ${
+                className={`relative rounded-xl overflow-hidden bg-black/40 mx-auto group ${
                   generatedImages.length > 1 ? "w-full" : (format === "square" ? "max-w-md" : "max-w-xs")
                 }`}
               >
                 <img src={img} alt={`Anúncio ${idx + 1}`} className="w-full h-auto block" />
+                <button
+                  type="button"
+                  onClick={() => setGeneratedImages((prev) => prev.filter((_, i) => i !== idx))}
+                  className="absolute top-2 right-2 w-9 h-9 rounded-full bg-black/70 hover:bg-red-600 border border-white/20 text-white flex items-center justify-center transition-colors shadow-lg"
+                  title="Excluir esta variação"
+                  aria-label="Excluir esta variação"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             ))}
           </div>
@@ -1249,18 +1258,31 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           )}
           <div className="flex flex-col sm:flex-row gap-3">
             <button
-              onClick={() => {
-                const target = generatedImages[generatedImages.length - 1];
-                if (!target) return;
-                const a = document.createElement("a");
-                a.href = target;
-                a.download = `anuncio-${(destination || "destino").toLowerCase().replace(/\s+/g, "-")}-${format}-${generatedImages.length}.png`;
-                document.body.appendChild(a); a.click(); a.remove();
+              onClick={async () => {
+                if (generatedImages.length === 0) return;
+                const slug = (destination || "destino").toLowerCase().replace(/\s+/g, "-");
+                for (let i = 0; i < generatedImages.length; i++) {
+                  const a = document.createElement("a");
+                  a.href = generatedImages[i];
+                  a.download = `anuncio-${slug}-${format}-${i + 1}.png`;
+                  document.body.appendChild(a); a.click(); a.remove();
+                  // Pequeno delay entre downloads para não bloquear o navegador
+                  if (i < generatedImages.length - 1) {
+                    await new Promise((res) => setTimeout(res, 350));
+                  }
+                }
+                toast.success(
+                  generatedImages.length === 1
+                    ? "Imagem baixada!"
+                    : `${generatedImages.length} imagens baixadas!`
+                );
               }}
-              className="flex-1 py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all hover:brightness-110"
+              disabled={generatedImages.length === 0}
+              className="flex-1 py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110"
               style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 8px 24px ${primaryColor}55` }}
             >
-              <Download className="w-4 h-4" /> Baixar imagem
+              <Download className="w-4 h-4" />
+              {generatedImages.length > 1 ? `Baixar todas (${generatedImages.length})` : "Baixar imagem"}
             </button>
             <button
               onClick={() => generateNext()}
@@ -1271,6 +1293,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando...</> : <><Sparkles className="w-4 h-4" /> Gerar nova variação</>}
             </button>
           </div>
+          {generatedImages.length > 1 && (
+            <p className="text-[10px] text-white/50 text-center mt-2">
+              Ao clicar em "Baixar todas", apenas as variações visíveis acima serão baixadas. Imagens excluídas não entram no download.
+            </p>
+          )}
         </motion.div>
       )}
 
