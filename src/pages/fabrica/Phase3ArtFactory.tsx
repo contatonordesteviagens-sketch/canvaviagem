@@ -98,6 +98,50 @@ const AD_TITLE_PRESETS: string[] = [
   "Vamos para {destino}?",
 ];
 
+/**
+ * Gera um pool de 3 variações de título a partir do template escolhido pelo usuário.
+ * A primeira posição é SEMPRE o título exato escolhido (respeitando a edição do usuário).
+ * As próximas duas posições vêm de presets "vizinhos" do mesmo grupo semântico, evitando
+ * que as 3 imagens geradas mostrem exatamente o mesmo headline.
+ */
+const TITLE_NEIGHBORS: Record<string, string[]> = {
+  "Conheça o melhor de {destino}": ["O melhor de {destino}", "Descubra {destino}"],
+  "Descubra {destino}": ["Conheça o melhor de {destino}", "Explore {destino}"],
+  "Pacote {destino}": ["Pacote Promocional {destino}", "Viagem Completa {destino}"],
+  "Explore {destino}": ["Descubra {destino}", "Vamos para {destino}?"],
+  "{destino} vai te surpreender": ["Você precisa conhecer {destino}!", "{destino} te espera"],
+  "Você precisa conhecer {destino}!": ["{destino} vai te surpreender", "Vamos para {destino}?"],
+  "O que fazer em {destino}": ["Conheça o melhor de {destino}", "Explore {destino}"],
+  "O melhor de {destino}": ["Conheça o melhor de {destino}", "Descubra {destino}"],
+  "Meu sonho se chama {destino}": ["Sua próxima viagem é {destino}", "Partiu {destino}"],
+  "Partiu {destino}": ["Vamos para {destino}?", "Sua próxima viagem é {destino}"],
+  "Sua próxima viagem é {destino}": ["Partiu {destino}", "Meu sonho se chama {destino}"],
+  "Pacote Promocional {destino}": ["Pacote {destino}", "Viagem Completa {destino}"],
+  "Viagem Completa {destino}": ["Pacote {destino}", "Pacote Promocional {destino}"],
+  "{destino} te espera": ["Vamos para {destino}?", "{destino} vai te surpreender"],
+  "Vamos para {destino}?": ["Partiu {destino}", "{destino} te espera"],
+};
+
+const buildTitleVariations = (template: string, destination: string): string[] => {
+  const dest = (destination || "").trim() || "Destino";
+  const fill = (t: string) => t.replace(/\{destino\}/gi, dest);
+  const main = fill(template);
+  // Se o template foi editado (não bate com nenhum preset), reaproveita vizinhos do preset mais próximo.
+  const neighbors = TITLE_NEIGHBORS[template] || [];
+  const fallback = AD_TITLE_PRESETS.filter((p) => p !== template).slice(0, 2);
+  const pool = [main, ...neighbors.map(fill), ...fallback.map(fill)];
+  // dedup mantendo ordem
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const t of pool) {
+    const key = t.toLowerCase();
+    if (!seen.has(key)) { seen.add(key); out.push(t); }
+    if (out.length >= 3) break;
+  }
+  while (out.length < 3) out.push(main);
+  return out;
+};
+
 const CATEGORY_LOCAL_STRATEGIES: Record<CategoriaId, StrategyId[]> = {
   oferta_pacote: ["matriz", "gancho", "ancora", "vitrine"],
   experiencia_destino: ["experiencia_hero", "experiencia_postcard", "experiencia_editorial", "experiencia_lifestyle"],
@@ -195,6 +239,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setAdTitleTemplate = (t: string) => { setAdTitleTemplateState(t); update({ lastAdTitle: t }); };
   const [adTitleMenuOpen, setAdTitleMenuOpen] = useState(false);
   const resolvedAdTitle = (adTitleTemplate || "").replace(/\{destino\}/gi, destination?.trim() || "Destino");
+  const adTitleVariations = buildTitleVariations(adTitleTemplate || "Pacote {destino}", destination);
 
   const [paymentMode, setPaymentModeState] = useState<PaymentMode>(state.lastPaymentMode || "installments");
   const setPaymentMode = (m: PaymentMode) => { setPaymentModeState(m); update({ lastPaymentMode: m }); };
@@ -398,6 +443,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               strategy: localStrategy,
               variation: freshSeedPhoto + idx,
               titleOverride: resolvedAdTitle,
+              titleVariations: adTitleVariations,
             });
             if (state.logoBase64) {
               try {
@@ -594,6 +640,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             variation: freshSeedCustom,
             forceVariant: nextVariant,
             titleOverride: resolvedAdTitle,
+            titleVariations: adTitleVariations,
           });
           if (state.logoBase64) {
             try {

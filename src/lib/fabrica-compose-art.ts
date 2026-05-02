@@ -38,6 +38,8 @@ interface ComposeTravelAdOptions {
   forceVariant?: number;
   /** Quando definido, sobrescreve o pool aleatório de headlines e usa este texto como título principal em todas as variantes. */
   titleOverride?: string;
+  /** Pool de variações de título (uma por variante). Se fornecido, tem prioridade sobre titleOverride: usa-se titleVariations[variantIndex % len]. */
+  titleVariations?: string[];
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
@@ -183,6 +185,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     variation = 0,
     forceVariant,
     titleOverride,
+    titleVariations,
   } = options;
 
   const width = 1080;
@@ -244,9 +247,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   // Sempre mostra até 5 benefícios (story OU quadrado) — o usuário escolheu 5/5 e os 5 devem aparecer.
   const shownHighlights = highlights.slice(0, 5);
   const badgeText = cityFmt ? `Saindo de ${cityFmt}` : "Pacote completo";
-  const titleText = (titleOverride && titleOverride.trim())
-    ? titleOverride.trim()
-    : headlinePool[Math.abs(variation) % headlinePool.length];
+  const variantIdx = typeof forceVariant === "number" ? Math.abs(forceVariant) : Math.abs(variation);
+  const pickedFromVariations = (titleVariations && titleVariations.length > 0)
+    ? (titleVariations[variantIdx % titleVariations.length] || "").trim()
+    : "";
+  const titleText = pickedFromVariations
+    ? pickedFromVariations
+    : (titleOverride && titleOverride.trim())
+      ? titleOverride.trim()
+      : headlinePool[Math.abs(variation) % headlinePool.length];
   const subtitlePool = [
     "Roteiro pensado para viver melhor",
     "Beleza, conforto e boas memórias",
