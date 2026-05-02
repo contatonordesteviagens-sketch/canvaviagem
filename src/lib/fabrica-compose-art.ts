@@ -1514,8 +1514,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         fontWeight: "700",
         baseFontSize: 24,
         minFontSize: 16,
-        fontFamily: SANS as any,
-      } as any);
+        fontFamily: SANS,
+      });
 
       // [INFO_LINE] — ícones minimal monochromatic small + dias · parcelas
       if (infoBits4.length) {
