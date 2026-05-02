@@ -321,6 +321,8 @@ function drawPixLogo(
   drawDiamond(-off, 0); // esquerda
   ctx.restore();
 }
+
+function fitCover(
   sourceW: number,
   sourceH: number,
   targetW: number,
