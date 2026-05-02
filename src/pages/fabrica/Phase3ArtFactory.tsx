@@ -1325,6 +1325,34 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               </datalist>
             </div>
           </div>
+          {/* Opções V3: sem centavos / total customizável */}
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
+            <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
+              <input
+                type="checkbox"
+                checked={hideCents}
+                onChange={(e) => setHideCents(e.target.checked)}
+                className="accent-yellow-400 w-4 h-4"
+              />
+              Sem centavos
+            </label>
+            <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
+              <input
+                type="checkbox"
+                checked={showTotal}
+                onChange={(e) => setShowTotal(e.target.checked)}
+                className="accent-yellow-400 w-4 h-4"
+              />
+              Mostrar total no anúncio
+            </label>
+            <input
+              value={totalOverride}
+              onChange={(e) => setTotalOverride(e.target.value)}
+              placeholder='Total (auto). Ex.: "Total por casal: R$ 3.998"'
+              disabled={!showTotal}
+              className={`${inputCls} ${!showTotal ? "opacity-50" : ""}`}
+            />
+          </div>
           {formattedPriceForAd && (
             <p className="text-[11px] text-emerald-300/90 font-mono mt-2">
               Prévia: {paymentLabel ? `${paymentLabel} · ` : ""}{currencySymbol} {formattedPriceForAd}{paymentSuffix ? ` · ${paymentSuffix}` : ""}
