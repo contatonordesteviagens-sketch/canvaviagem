@@ -1478,6 +1478,20 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       return canvas.toDataURL("image/png");
     }
 
+    // ── V4 · RESERVADA ──────────────────────────────────────────────────────
+    // Estrutura inicializada para futura variação de criativo de viagem.
+    // Herda os MESMOS dados dinâmicos do formulário lateral já disponíveis
+    // no escopo de composeTravelAd (destination, highlights, mainPrice, price,
+    // curSym, installments, promoName, primaryColor, secondaryColor, hasLogo,
+    // titleText, paymentMode, etc.).
+    //
+    // Layout/CSS NÃO implementado ainda — quando forceVariant === 4, faz
+    // fallback temporário para V0 para não quebrar a renderização. Substituir
+    // este bloco pelo layout definitivo quando aprovado.
+    if (variant === 4) {
+      variant = 0; // fallback temporário até o layout V4 ser definido
+    }
+
     // ── V3 · FULLBLEED com card centralizado flutuante ─────────────────────
     // Foto ocupa 100% da tela. Card semi-transparente centralizado na base.
     const c3 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.38);
