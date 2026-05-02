@@ -1389,18 +1389,39 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             </div>
             <div>
               <label className={labelCls}>Complemento</label>
-              <input
-                value={paymentSuffix}
-                onChange={(e) => setPaymentSuffix(e.target.value)}
-                placeholder="por pessoa, casal, pacote..."
-                className={inputCls}
-                list="fabrica-price-suffixes"
-              />
-              <datalist id="fabrica-price-suffixes">
-                {['por pessoa', 'por casal', 'por pacote', 'por grupo', 'total do pacote'].map((option) => (
-                  <option key={option} value={option} />
-                ))}
-              </datalist>
+              <div className="relative">
+                <input
+                  value={paymentSuffix}
+                  onChange={(e) => setPaymentSuffix(e.target.value)}
+                  onFocus={() => setSuffixMenuOpen(true)}
+                  onClick={() => setSuffixMenuOpen(true)}
+                  placeholder="por pessoa, casal, pacote..."
+                  className={`${inputCls} pr-10 cursor-pointer`}
+                />
+                <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${suffixMenuOpen ? "rotate-180" : ""}`} />
+                {suffixMenuOpen && (() => {
+                  const SUFFIX_PRESETS = ['por pessoa','por casal','por pacote','por grupo','por adulto','por criança','total do pacote','taxas inclusas','+ taxas'];
+                  return (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setSuffixMenuOpen(false)} />
+                      <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
+                        <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
+                          Sugestões · {SUFFIX_PRESETS.length} opções
+                        </div>
+                        {SUFFIX_PRESETS.map((s) => {
+                          const active = s === paymentSuffix;
+                          return (
+                            <button key={s} type="button" onClick={() => { setPaymentSuffix(s); setSuffixMenuOpen(false); }} className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}>
+                              {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                              <span className={active ? "" : "ml-5"}>{s}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
             </div>
           </div>
           {/* Opções de variações de preço — colapsado por padrão, aplica a TODAS as variações */}
