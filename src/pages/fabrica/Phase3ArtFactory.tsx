@@ -1164,17 +1164,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 }`}
               >
                 <img src={img} alt={`Anúncio ${idx + 1}`} className="w-full h-auto block" />
-                <button
-                  onClick={() => {
-                    const a = document.createElement("a");
-                    a.href = img;
-                    a.download = `anuncio-${(destination || "destino").toLowerCase().replace(/\s+/g, "-")}-${idx + 1}.png`;
-                    document.body.appendChild(a); a.click(); a.remove();
-                  }}
-                  className="w-full py-2 bg-white text-black text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-white/90"
-                >
-                  <Download className="w-3 h-3" /> Baixar #{idx + 1}
-                </button>
               </div>
             ))}
           </div>
