@@ -553,9 +553,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // Paleta — sempre usa exatamente as cores selecionadas pelo usuário.
         const palette = selectedPalette(primaryColor, secondaryColor);
 
-        // Rotação determinística entre as 4 variantes do compositor (V0/V1/V2/V3)
-        // evitando as 2 últimas usadas — garante imagem nova a cada clique e cobre V3.
-        const TOTAL_VARIANTS_PHOTO = 4;
+        // Rotação determinística entre as 5 variantes do compositor (V0/V1/V2/V3/V4)
+        // evitando as 2 últimas usadas — garante imagem nova a cada clique e cobre V4.
+        const TOTAL_VARIANTS_PHOTO = 5;
         const recentPhoto = variantHistoryRef.current.slice(-2);
         let candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i).filter((v) => !recentPhoto.includes(v));
         if (candidatesPhoto.length === 0) {
