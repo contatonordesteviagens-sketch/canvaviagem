@@ -1408,7 +1408,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
       }
       ctx.fillText(priceStrV2, priceCardX + priceCardW / 2, priceCardY + 108);
-      ctx.fillStyle = v2OnCard;
+      ctx.fillStyle = v2CardLabel;
       ctx.font = "600 22px Inter, Arial, sans-serif";
       ctx.fillText(bottomSuffix, priceCardX + priceCardW / 2, priceCardY + 144);
       ctx.textAlign = "left";
