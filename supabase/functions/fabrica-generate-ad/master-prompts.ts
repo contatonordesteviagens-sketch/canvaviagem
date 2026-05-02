@@ -279,13 +279,12 @@ function buildBrain(v: MasterPromptVars, opts: {
   specialization?: string;
 }): string {
   const valueBlock = opts.category === "oferta"
-    ? `[BLOCO DE PREÇO — CARD LIMPO E PROFISSIONAL]
-APENAS três informações dentro do card, nesta ordem vertical e bem espaçadas:
-  1) Valor da parcela: ${v.installments}x R$ ${v.installmentValue}  ← MAIOR ELEMENTO, ULTRA-BOLD
-  2) Texto pequeno: "Total por pessoa: R$ ${v.totalValue}"
-  3) Duração: ${v.duration}
-🚫 PROIBIDO dentro do card: ícones de avião, ônibus, hotel, mala, câmera, xícara, estrelas ou QUALQUER pictograma. Sem listas com bullets. Sem fileiras de ícones. Card 100% tipográfico.
-Selo único permitido (fora do card, opcional): "${v.promoName.toUpperCase()}"`
+    ? `[BLOCO DE PREÇO — CARD ÚNICO E LIMPO]
+APENAS DOIS textos dentro do card, nesta ordem:
+  1) "${v.installments}x R$ ${v.installmentValue}"  ← MAIOR ELEMENTO, ULTRA-BOLD, fonte gigante
+  2) "Total R$ ${v.totalValue}"  ← linha pequena, fina, abaixo do preço
+🚫 PROIBIDO dentro do card: ícones (avião/ônibus/hotel/mala/câmera/xícara/estrelas), bullets, listas, duração, selos extras, múltiplas linhas de copy. Card 100% tipográfico, mínimo absoluto.
+Selo único permitido FORA do card (canto, opcional, pequeno): "${v.promoName.toUpperCase()}"`
     : opts.category === "autoridade_dark"
     ? `[BLOCO DE INFORMAÇÕES — DARK PREMIUM]
 ${v.installments}x R$ ${v.installmentValue}     ← FONTE GIGANTE, ULTRA-BOLD, COR SÓLIDA SEM BRILHO
