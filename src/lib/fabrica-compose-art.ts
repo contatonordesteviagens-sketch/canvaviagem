@@ -179,6 +179,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     paymentSuffix,
     strategy = "vitrine",
     variation = 0,
+    forceVariant,
   } = options;
 
   const width = 1080;
