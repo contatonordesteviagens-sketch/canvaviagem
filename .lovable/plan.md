@@ -1,71 +1,78 @@
-## O que entendi do seu pedido
+## Correções na V3 e melhorias no input de preço
 
-Você quer que a seção "3 · Dados do anúncio" fique **mais limpa, mais leiga-friendly** e que as opções extras (que hoje só valem para a variação V3 — Total, Faixa Pix) passem a valer para **todas as variações (V0, V1, V2, V3)** e todos os **modos** (Foto Real, Sua Imagem, IA Pura). Além disso, ajustes de UX em destino, complemento, promoção e correção de bugs no campo "Sem centavos". Mantendo o que já está, sem modificar o que já fizemos e que está bem estruturado. 
-
----
-
-## Mudanças propostas
-
-### 1. Painel "Opções de variações de preço" (colapsado, unificado)
-
-- Renomear o bloco "Opções da variação V3" → **"Opções de variações de preço"**.
-- Tirar o visual amarelo / o aviso "(box amarelo · só afeta a V3)".
-- Transformar em um **accordion fechado por padrão** (texto: "+ Mais opções de preço"). O agente clica para abrir.
-- Todas as opções **desativadas por padrão**.
-- Renomear:
-  - "Mostrar linha 'Total'" → **"Mostrar mais uma linha com o valor total"** + exemplo abaixo: *"Ex.: Total por casal: R$ 3.998"*.
-  - "Mostrar faixa azul do Pix" → **"Mostrar faixa de destaque (ex.: 5% OFF no Pix)"**.
-- Os campos de texto (total custom, texto da faixa) ficam ao lado do toggle correspondente.
-
-### 2. Aplicar essas opções a TODAS as variações (V0, V1, V2, V3)
-
-- Hoje só V3 (yellow_box_cvc) renderiza linha "Total" e faixa Pix. Vou adicionar a renderização condicional dessas duas peças nos demais layouts compostos localmente (`classic_vertical`, `cancun_style`, `gramado_style`, `maceio_style`, `ticket_pix_card`, `side_hero_performance`, `iconic_landmark`, `split_yellow_side`, `elegant_center`, `editorial_visual`, `top_editorial_photo`, `two_scene_editorial`) em `src/lib/fabrica-compose-art.ts`.
-- Posicionamento: linha "Total" logo abaixo do bloco de preço; faixa de destaque como rodapé fino. Estilo respeita as cores primária/secundária da arte.
-- Vale para os 3 modos (Foto Real, Sua Imagem, IA Pura) — basta passar os mesmos parâmetros que já são enviados ao compositor.
-
-### 3. Formatação numérica do campo "Total"
-
-- O campo `totalOverride` hoje é texto livre. Vou aplicar a mesma máscara dos outros valores: separador de milhar e casas decimais por moeda.
-- O toggle **"Sem centavos"** passa a afetar também o campo Total (remove os centavos automaticamente).
-
-### 4. Bug do "Sem centavos" — restaurar decimais ao desmarcar
-
-**Causa:** hoje guardamos só a string formatada de `price`. Quando "Sem centavos" é marcado, os `,00` somem do texto e a informação se perde — desmarcar não tem como restaurar.
-**Correção:** guardar separadamente o **valor numérico cru** (`priceRaw` em centavos) no estado/contexto. O campo visível é sempre derivado de `priceRaw + hideCents + currency`. Marcar/desmarcar "Sem centavos" passa a ser puramente uma reformatação — totalmente reversível. Mesmo padrão para o campo Total.
-
-### 5. Dropdown de "Complemento" igual ao de "Título do anúncio"
-
-- Hoje usa `<datalist>` nativo (por isso só aparece quando o texto é apagado).
-- Trocar por um **dropdown customizado idêntico ao de "Título do anúncio"** com seta `ChevronDown`, abre ao clicar mesmo com texto preenchido.
-- Presets: `por pessoa`, `por casal`, `por pacote`, `por grupo`, `por adulto`, `por criança`, `total do pacote`, `taxas inclusas`, `+ taxas`.
-
-### 6. Destino — remover chips de cima, usar dropdown
-
-- Remover a linha de chips (Buenos Aires / Paris / Ceará).
-- Manter só o input com **dropdown** (ChevronDown) que lista:
-  - Destinos cadastrados pela agência (`state.destinos`)
-  - - presets populares (Maragogi, Cancún, Gramado, Buenos Aires, Paris, Lisboa, Orlando, Bariloche, Fernando de Noronha, Punta Cana, Santiago, Madrid…)
-
-### 7. Nome da promoção — também com dropdown de sugestões
-
-- Mesmo padrão visual. Presets: `BLACK FRIDAY`, `LIQUIDA VERÃO`, `OFERTA RELÂMPAGO`, `MEGA PROMO`, `SEMANA DO CONSUMIDOR`, `FÉRIAS IMPERDÍVEIS`, `LANÇAMENTO`, `ÚLTIMAS VAGAS`, `OFERTA EXCLUSIVA`.
-- Continua editável (o usuário pode digitar livre).
-
-### 8. Padronização visual
-
-- Todos os dropdowns (Título, Destino, Promoção, Complemento) seguem o **mesmo componente** (mesmo estilo, mesma cor de borda/destaque, mesma altura).
-- Vou extrair em um pequeno componente interno `<PresetSelect>` para evitar duplicação.
+Cinco ajustes coordenados — todos preservam V0/V1/V2 intactos.
 
 ---
 
-## Arquivos que serão alterados
+### 1. Ícones todos da mesma cor (V3)
 
-- `src/pages/fabrica/Phase3ArtFactory.tsx` — UI dos campos, accordion, dropdowns, lógica do `priceRaw`.
-- `src/hooks/useFabricaContext.tsx` — adicionar `priceRaw`, `totalRaw`; manter compatibilidade com `lastPrice` antigo.
-- `src/lib/fabrica-compose-art.ts` — propagar `showTotal`/`totalOverride`/`showPixBanner`/`pixBannerText` para todas as variações compostas localmente; aplicar `hideCents` no `totalOverride`.
+Hoje a linha "7 dias | ✈ 🚌 🏨 ☕ 📷" usa **emojis** via `ICON_SYMBOL`, que o navegador renderiza coloridos automaticamente (café marrom, xícara colorida, etc.).
 
-V0, V1, V2 e V3 continuam funcionando — só ganham as opções extras quando o agente decidir ativar.
+**Solução**: na V3 substituir os emojis por **ícones vetoriais monocromáticos** sem espaçamentos vazios todos preenchidos, desenhados via `Path2D` na cor navy (#0B2B7A) — avião, ônibus, hotel, café e câmera, todos na mesma cor. Não afeta V0/V1/V2 que continuam usando os emojis. Adicionar apenas icones que foram selecionados pelo usuário, na imagem tem 1 icone à mais do avião que não foi selecionado, selecionei quatro opções de ícone e apareceu um ícone a mais de um avião. 
 
 ---
 
-**Confirma que é isso?** Se sim, eu aplico tudo de uma vez.
+### 2. Sobreposição "10x R$200,00" (V3)
+
+O lado esquerdo (`12X / sem juros`) e o preço gigante da direita estão colidindo quando o valor é grande (R$ 200,00 → 7 caracteres). 
+
+**Solução**:
+
+- Calcular largura real do preço gigante e **reduzir o font-size** automaticamente (130 → mín 80px) até caber em ~62% do box.
+- Empurrar a coluna esquerda mais para a borda e a direita mais para fora, com **gap mínimo garantido de 30px** entre os dois blocos.
+- Alinhar verticalmente o "12X" com o centro óptico do preço.
+
+---
+
+### 3. "Total por pessoa" editável
+
+Hoje a V3 calcula `preço × parcelas` automaticamente e exibe `Total por pessoa: R$ X.XXX` — fixo.
+
+**Solução**: adicionar dois novos campos opcionais no painel **VALOR (R$)**:
+
+- Checkbox **"Mostrar total"** (on/off) — controla se a linha aparece.
+- Campo de texto **"Total"** — livre. Se vazio, calcula automaticamente. Se preenchido, usa o que o usuário digitou (ex.: "R$ 1.999 por casal").
+- Dropdown rápido com sugestões: "por pessoa", "por casal", "por pacote", "valor total".
+
+Os valores ficam persistidos no `useFabricaContext` (`totalOverride`, `showTotal`) e são passados para o compositor.
+
+---
+
+### 4. Logo do Pix correta
+
+Hoje desenho um losango ciano genérico. O símbolo oficial do Pix é composto por **4 losangos pequenos** formando um padrão de "X" (dois claros + dois escuros).
+
+**Solução**: substituir o desenho atual por uma renderização vetorial mais fiel ao logotipo oficial do Pix — quatro losangos arredondados em branco/turquesa formando o glifo característico, mantido nas mesmas dimensões dentro da faixa azul.
+
+---
+
+### 5. Opção "Remover centavos" no campo VALOR (R$)
+
+Pedido: ao marcar a checkbox, "423,43" vira "423"; "4234,XX" vira "4.234".
+
+**Solução**:
+
+- Adicionar checkbox **"Sem centavos"** ao lado do campo VALOR.
+- Quando ativa: a função `formatPriceValue` é chamada com flag `noCents=true`, que zera a parte decimal e formata só o inteiro com separador de milhar (`Intl.NumberFormat` com `maximumFractionDigits: 0`).
+- A flag fica persistida em `state.hideCents` no contexto e se aplica em todas as variantes (V0/V1/V2/V3) e no IA Pura (passada como parte do `installmentValue`/`totalValue` já formatados).
+- Toggle 100% reversível: desmarcar restaura "423,43" automaticamente a partir do valor digitado.
+
+---
+
+## Detalhes técnicos
+
+**Arquivos a editar:**
+
+- `src/lib/fabrica-compose-art.ts` — bloco `if (variant === 3)`: novos ícones vetoriais (função `drawMonoIcon(ctx, kind, x, y, size, color)`), ajuste de layout do preço com auto-shrink, novo glifo Pix com 4 losangos, leitura de `totalOverride` / `showTotal`.
+- `src/hooks/useFabricaContext.tsx` — adicionar `hideCents: boolean`, `totalOverride: string`, `showTotal: boolean` ao state e setters.
+- `src/pages/fabrica/Phase3ArtFactory.tsx` — checkbox "Sem centavos" no campo VALOR, checkbox "Mostrar total" + input "Total" no bloco de pagamento, propagar via `composeTravelAd({ totalOverride, showTotal })`.
+- `src/lib/fabrica-compose-art.ts` (interface) — aceitar `totalOverride?: string` e `showTotal?: boolean`.
+- `formatPriceValue` — aceitar `{ noCents?: boolean }` e respeitar a flag.
+
+**Não vou tocar:**
+
+- V0, V1, V2 (layout, cores, tipografia).
+- Lógica de rotação de variantes (V3 continua sorteada normalmente).
+- Edge function de IA Pura (o prompt OP7 já está correto e os valores já chegam pré-formatados).
+
+Após as mudanças, testarei mentalmente os 4 cenários: preço pequeno (R$ 99), médio (R$ 1.499,90), grande (R$ 12.999,00) e com centavos removidos (R$ 4.234) — todos devem caber sem sobreposição.

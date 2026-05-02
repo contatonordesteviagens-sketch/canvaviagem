@@ -201,9 +201,9 @@ const defaultState: FabricaState = {
   lastCurrency: "BRL",
   lastAdTitle: "Pacote {destino}",
   hideCents: false,
-  showTotal: false,
+  showTotal: true,
   totalOverride: "",
-  showPixBanner: false,
+  showPixBanner: true,
   pixBannerText: "",
 };
 

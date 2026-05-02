@@ -313,49 +313,28 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setFormat = (f: "square" | "story") => { setFormatState(f); update({ lastFormat: f }); };
 
   const [destination, setDestination] = useState(state.destinos?.[0] || "");
-  const hideCentsRef = useRef<boolean>(!!state.hideCents);
-  const priceWithCentsRef = useRef<string>(state.lastPrice || "149,90");
   const [price, setPriceState] = useState(state.lastPrice || "149,90");
-  const setPrice = (p: string) => {
-    setPriceState(p);
-    update({ lastPrice: p });
-    if (!hideCentsRef.current) priceWithCentsRef.current = p;
-  };
+  const setPrice = (p: string) => { setPriceState(p); update({ lastPrice: p }); };
   const [currency, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
   const setCurrency = (c: Currency) => { setCurrencyState(c); update({ lastCurrency: c }); };
-  // Opções extras de preço (aplicam a TODAS as variações V0/V1/V2/V3)
+  // V3: opções extras
   const [hideCents, setHideCentsState] = useState<boolean>(!!state.hideCents);
   const setHideCents = (v: boolean) => {
     setHideCentsState(v);
-    hideCentsRef.current = v;
     update({ hideCents: v });
-    setHideCentsState(v);
-    update({ hideCents: v });
-    if (v) {
-      // Marcando: salva valor atual (com centavos) e reformata sem
-      priceWithCentsRef.current = price;
-      const reformatted = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, true);
-      if (reformatted) setPriceState(reformatted);
-    } else {
-      // Desmarcando: restaura valor original com centavos
-      const restored = priceWithCentsRef.current
-        ? formatPriceValue(stripCurrencyFromPrice(priceWithCentsRef.current, currency), currency, false, false)
-        : formatPriceValue(stripCurrencyFromPrice(price, currency), currency, true, false);
-      if (restored) setPriceState(restored);
-    }
+    // Reformata o preço atual respeitando a nova flag
+    const reformatted = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, v);
+    if (reformatted) setPriceState(reformatted);
   };
-  const [showTotal, setShowTotalState] = useState<boolean>(!!state.showTotal);
+  const [showTotal, setShowTotalState] = useState<boolean>(state.showTotal !== false);
   const setShowTotal = (v: boolean) => { setShowTotalState(v); update({ showTotal: v }); };
   const [totalOverride, setTotalOverrideState] = useState<string>(state.totalOverride || "");
   const setTotalOverride = (v: string) => { setTotalOverrideState(v); update({ totalOverride: v }); };
-  const [showPixBanner, setShowPixBannerState] = useState<boolean>(!!(state as any).showPixBanner);
+  // V3: faixa azul do Pix (editável e ocultável)
+  const [showPixBanner, setShowPixBannerState] = useState<boolean>((state as any).showPixBanner !== false);
   const setShowPixBanner = (v: boolean) => { setShowPixBannerState(v); update({ showPixBanner: v } as any); };
   const [pixBannerText, setPixBannerTextState] = useState<string>((state as any).pixBannerText || "");
   const setPixBannerText = (v: string) => { setPixBannerTextState(v); update({ pixBannerText: v } as any); };
-  const [priceExtrasOpen, setPriceExtrasOpen] = useState(false);
-  const [suffixMenuOpen, setSuffixMenuOpen] = useState(false);
-  const [destMenuOpen, setDestMenuOpen] = useState(false);
-  const [promoMenuOpen, setPromoMenuOpen] = useState(false);
 
   // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
   const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
@@ -1183,76 +1162,28 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={labelCls}>Destino *</label>
-            <div className="relative">
-              <input
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                onFocus={() => setDestMenuOpen(true)}
-                onClick={() => setDestMenuOpen(true)}
-                placeholder="Ex: Maragogi, Cancún..."
-                className={`${inputCls} pr-10 cursor-pointer`}
-              />
-              <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${destMenuOpen ? "rotate-180" : ""}`} />
-              {destMenuOpen && (() => {
-                const opts = Array.from(new Set([...(state.destinos || []), ...POPULAR_PHOTO_DESTINATIONS]));
-                return (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setDestMenuOpen(false)} />
-                    <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
-                      <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
-                        Escolha um destino · {opts.length} opções
-                      </div>
-                      {opts.map((d) => {
-                        const active = d === destination;
-                        return (
-                          <button key={d} type="button" onClick={() => { setDestination(d); setDestMenuOpen(false); }} className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}>
-                            {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
-                            <span className={active ? "" : "ml-5"}>{d}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
+            {state.destinos && state.destinos.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {state.destinos.map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setDestination(d)}
+                    className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
+                      destination === d ? "text-black" : "bg-white/[0.05] border-white/10 text-white/70 hover:border-white/30"
+                    }`}
+                    style={destination === d ? { background: primaryColor, borderColor: primaryColor } : undefined}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            )}
+            <input value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Ex: Maragogi, Cancún..." className={inputCls} />
           </div>
 
           <div>
             <label className={labelCls}>Nome da promoção</label>
-            <div className="relative">
-              <input
-                value={promoName}
-                onChange={(e) => setPromoName(e.target.value)}
-                onFocus={() => setPromoMenuOpen(true)}
-                onClick={() => setPromoMenuOpen(true)}
-                placeholder="Ex: BLACK FRIDAY"
-                className={`${inputCls} pr-10 cursor-pointer`}
-              />
-              <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${promoMenuOpen ? "rotate-180" : ""}`} />
-              {promoMenuOpen && (() => {
-                const PROMO_PRESETS = ["BLACK FRIDAY","LIQUIDA VERÃO","OFERTA RELÂMPAGO","MEGA PROMO","SEMANA DO CONSUMIDOR","FÉRIAS IMPERDÍVEIS","LANÇAMENTO","ÚLTIMAS VAGAS","OFERTA EXCLUSIVA","OFERTA ESPECIAL"];
-                return (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setPromoMenuOpen(false)} />
-                    <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
-                      <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
-                        Sugestões · {PROMO_PRESETS.length} opções
-                      </div>
-                      {PROMO_PRESETS.map((p) => {
-                        const active = p === promoName;
-                        return (
-                          <button key={p} type="button" onClick={() => { setPromoName(p); setPromoMenuOpen(false); }} className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}>
-                            {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
-                            <span className={active ? "" : "ml-5"}>{p}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
+            <input value={promoName} onChange={(e) => setPromoName(e.target.value)} placeholder="Ex: BLACK FRIDAY" className={inputCls} />
           </div>
 
           <div className="sm:col-span-2">
@@ -1389,90 +1320,75 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             </div>
             <div>
               <label className={labelCls}>Complemento</label>
-              <div className="relative">
-                <input
-                  value={paymentSuffix}
-                  onChange={(e) => setPaymentSuffix(e.target.value)}
-                  onFocus={() => setSuffixMenuOpen(true)}
-                  onClick={() => setSuffixMenuOpen(true)}
-                  placeholder="por pessoa, casal, pacote..."
-                  className={`${inputCls} pr-10 cursor-pointer`}
-                />
-                <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${suffixMenuOpen ? "rotate-180" : ""}`} />
-                {suffixMenuOpen && (() => {
-                  const SUFFIX_PRESETS = ['por pessoa','por casal','por pacote','por grupo','por adulto','por criança','total do pacote','taxas inclusas','+ taxas'];
-                  return (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setSuffixMenuOpen(false)} />
-                      <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
-                        <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
-                          Sugestões · {SUFFIX_PRESETS.length} opções
-                        </div>
-                        {SUFFIX_PRESETS.map((s) => {
-                          const active = s === paymentSuffix;
-                          return (
-                            <button key={s} type="button" onClick={() => { setPaymentSuffix(s); setSuffixMenuOpen(false); }} className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}>
-                              {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
-                              <span className={active ? "" : "ml-5"}>{s}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
+              <input
+                value={paymentSuffix}
+                onChange={(e) => setPaymentSuffix(e.target.value)}
+                placeholder="por pessoa, casal, pacote..."
+                className={inputCls}
+                list="fabrica-price-suffixes"
+              />
+              <datalist id="fabrica-price-suffixes">
+                {['por pessoa', 'por casal', 'por pacote', 'por grupo', 'total do pacote'].map((option) => (
+                  <option key={option} value={option} />
+                ))}
+              </datalist>
             </div>
           </div>
-          {/* Opções de variações de preço — colapsado por padrão, aplica a TODAS as variações */}
+          {/* Opções de preço (aplicam a todas variantes) */}
           <div className="mt-3">
-            <button
-              type="button"
-              onClick={() => setPriceExtrasOpen((o) => !o)}
-              className="w-full flex items-center justify-between gap-2 text-[12px] font-bold text-white/80 bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5 hover:bg-white/[0.07] transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <Plus className={`w-3.5 h-3.5 transition-transform ${priceExtrasOpen ? "rotate-45" : ""}`} />
-                Opções de variações de preço
-              </span>
-              <span className="text-[10px] text-white/40 font-normal">vale para todas as variações</span>
-            </button>
-            {priceExtrasOpen && (
-              <div className="mt-2 space-y-2 bg-white/[0.02] border border-white/10 rounded-xl p-3">
-                <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer">
-                  <input type="checkbox" checked={hideCents} onChange={(e) => setHideCents(e.target.checked)} className="accent-yellow-400 w-4 h-4" />
-                  <span>Sem centavos <span className="text-white/40">(ex.: 423 em vez de 423,43)</span></span>
-                </label>
+            <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5 w-fit">
+              <input
+                type="checkbox"
+                checked={hideCents}
+                onChange={(e) => setHideCents(e.target.checked)}
+                className="accent-yellow-400 w-4 h-4"
+              />
+              Sem centavos (ex.: 423 em vez de 423,43)
+            </label>
+          </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-[auto,1fr] gap-2 items-center">
-                  <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer">
-                    <input type="checkbox" checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} className="accent-yellow-400 w-4 h-4" />
-                    Mostrar mais uma linha com o valor total
-                  </label>
-                  <input
-                    value={totalOverride}
-                    onChange={(e) => setTotalOverride(e.target.value)}
-                    placeholder='Ex.: "Total por casal: R$ 3.998"'
-                    disabled={!showTotal}
-                    className={`${inputCls} ${!showTotal ? "opacity-40" : ""}`}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-[auto,1fr] gap-2 items-center">
-                  <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer">
-                    <input type="checkbox" checked={showPixBanner} onChange={(e) => setShowPixBanner(e.target.checked)} className="accent-yellow-400 w-4 h-4" />
-                    Mostrar faixa de destaque (ex.: 5% OFF no Pix)
-                  </label>
-                  <input
-                    value={pixBannerText}
-                    onChange={(e) => setPixBannerText(e.target.value)}
-                    placeholder='Ex.: "5% OFF À VISTA NO PIX"'
-                    disabled={!showPixBanner}
-                    className={`${inputCls} ${!showPixBanner ? "opacity-40" : ""}`}
-                  />
-                </div>
-              </div>
-            )}
+          {/* Opções exclusivas da V3 (variação CVC) */}
+          <div className="mt-3 bg-amber-400/[0.06] border border-amber-300/20 rounded-xl p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-300/90">Opções da variação V3</span>
+              <span className="text-[10px] text-white/40">(box amarelo · só afeta a V3)</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+              <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
+                <input
+                  type="checkbox"
+                  checked={showTotal}
+                  onChange={(e) => setShowTotal(e.target.checked)}
+                  className="accent-yellow-400 w-4 h-4"
+                />
+                Mostrar linha "Total"
+              </label>
+              <input
+                value={totalOverride}
+                onChange={(e) => setTotalOverride(e.target.value)}
+                placeholder='Total (auto). Ex.: "Total por casal: R$ 3.998"'
+                disabled={!showTotal}
+                className={`${inputCls} ${!showTotal ? "opacity-50" : ""}`}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
+                <input
+                  type="checkbox"
+                  checked={showPixBanner}
+                  onChange={(e) => setShowPixBanner(e.target.checked)}
+                  className="accent-yellow-400 w-4 h-4"
+                />
+                Mostrar faixa azul do Pix
+              </label>
+              <input
+                value={pixBannerText}
+                onChange={(e) => setPixBannerText(e.target.value)}
+                placeholder='Texto da faixa (auto: "5% OFF À VISTA NO pix")'
+                disabled={!showPixBanner}
+                className={`${inputCls} ${!showPixBanner ? "opacity-50" : ""}`}
+              />
+            </div>
           </div>
           {formattedPriceForAd && (
             <p className="text-[11px] text-emerald-300/90 font-mono mt-2">
