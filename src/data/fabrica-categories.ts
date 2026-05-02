@@ -43,6 +43,7 @@ export const CATEGORIAS: CategoriaMeta[] = [
       { code: "OP4", templateId: "maceio_style" },
       { code: "OP5", templateId: "ticket_pix_card" },
       { code: "OP6", templateId: "side_hero_performance" },
+      { code: "OP7", templateId: "yellow_box_cvc" },
     ],
     legacyStrategy: "matriz",
   },
