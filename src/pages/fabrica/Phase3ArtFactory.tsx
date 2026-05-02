@@ -352,8 +352,19 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [adTitleTemplate, setAdTitleTemplateState] = useState(state.lastAdTitle || "Pacote {destino}");
   const setAdTitleTemplate = (t: string) => { setAdTitleTemplateState(t); update({ lastAdTitle: t }); };
   const [adTitleMenuOpen, setAdTitleMenuOpen] = useState(false);
+  const [destMenuOpen, setDestMenuOpen] = useState(false);
+  const [suffixMenuOpen, setSuffixMenuOpen] = useState(false);
+  const [priceOptionsOpen, setPriceOptionsOpen] = useState(false);
+  const [priceOptionsEnabled, setPriceOptionsEnabled] = useState(false);
   const resolvedAdTitle = (adTitleTemplate || "").replace(/\{destino\}/gi, destination?.trim() || "Destino");
   const adTitleVariations = buildTitleVariations(adTitleTemplate || "Pacote {destino}", destination);
+  const SUFFIX_PRESETS = ["por pessoa", "por casal", "por pacote", "por grupo", "total do pacote"];
+  const DESTINATION_SUGGESTIONS = Array.from(new Set([
+    ...(state.destinos || []),
+    "Maragogi", "Jericoacoara", "Fernando de Noronha", "Gramado", "Bonito",
+    "Porto de Galinhas", "Búzios", "Cancún", "Punta Cana", "Paris",
+    "Orlando", "Lisboa", "Santiago", "Bariloche", "Maldivas",
+  ]));
 
   const [paymentMode, setPaymentModeState] = useState<PaymentMode>(state.lastPaymentMode || "installments");
   const setPaymentMode = (m: PaymentMode) => { setPaymentModeState(m); update({ lastPaymentMode: m }); };
