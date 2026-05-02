@@ -245,7 +245,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const right = width - 80;
   const contentWidth = right - left;
   // Sempre mostra até 5 benefícios (story OU quadrado) — o usuário escolheu 5/5 e os 5 devem aparecer.
-  const shownHighlights = highlights.slice(0, 5);
+  const shownHighlights = highlights.slice(0, 6);
   const badgeText = cityFmt ? `Saindo de ${cityFmt}` : "Pacote completo";
   const variantIdx = typeof forceVariant === "number" ? Math.abs(forceVariant) : Math.abs(variation);
   const pickedFromVariations = (titleVariations && titleVariations.length > 0)
