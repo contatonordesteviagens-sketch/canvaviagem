@@ -99,7 +99,228 @@ function fillRoundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: n
   ctx.restore();
 }
 
-function fitCover(
+/**
+ * Desenha um ícone vetorial monocromático sólido para a V3 (sem emojis coloridos).
+ * Tudo é desenhado como silhueta preenchida na cor `color` (geralmente navy).
+ * Caixa de tamanho `size` × `size` centralizada em (cx, cy).
+ */
+function drawMonoIcon(
+  ctx: CanvasRenderingContext2D,
+  kind: IconKey,
+  cx: number,
+  cy: number,
+  size: number,
+  color: string,
+) {
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+  const s = size;
+  const x = cx - s / 2;
+  const y = cy - s / 2;
+
+  switch (kind) {
+    case "plane": {
+      // avião estilizado (silhueta horizontal)
+      ctx.translate(cx, cy);
+      ctx.rotate(-Math.PI / 8);
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.45, 0);
+      ctx.lineTo(-s * 0.05, -s * 0.08);
+      ctx.lineTo(-s * 0.1, -s * 0.32);
+      ctx.lineTo(s * 0.0, -s * 0.32);
+      ctx.lineTo(s * 0.18, -s * 0.08);
+      ctx.lineTo(s * 0.45, -s * 0.04);
+      ctx.lineTo(s * 0.45, s * 0.04);
+      ctx.lineTo(s * 0.18, s * 0.08);
+      ctx.lineTo(s * 0.0, s * 0.32);
+      ctx.lineTo(-s * 0.1, s * 0.32);
+      ctx.lineTo(-s * 0.05, s * 0.08);
+      ctx.lineTo(-s * 0.45, 0);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case "bus": {
+      // ônibus/van: corpo arredondado + 2 rodas
+      const bx = x + s * 0.08, by = y + s * 0.18, bw = s * 0.84, bh = s * 0.5;
+      roundRect(ctx, bx, by, bw, bh, s * 0.1);
+      ctx.fill();
+      // janelas (recortes brancos): desenhamos como retângulos da cor de fundo seria errado;
+      // em vez disso, deixamos silhueta sólida — fica mais limpo monocromático.
+      // rodas
+      ctx.beginPath();
+      ctx.arc(bx + bw * 0.22, by + bh + s * 0.04, s * 0.1, 0, Math.PI * 2);
+      ctx.arc(bx + bw * 0.78, by + bh + s * 0.04, s * 0.1, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case "hotel": {
+      // prédio com telhado plano + janelas indicadas como entalhes
+      const hx = x + s * 0.12, hy = y + s * 0.15, hw = s * 0.76, hh = s * 0.7;
+      roundRect(ctx, hx, hy, hw, hh, s * 0.06);
+      ctx.fill();
+      // porta (entalhe central) — desenhamos com destination-out para criar o "vazio"
+      ctx.save();
+      ctx.globalCompositeOperation = "destination-out";
+      const dw = s * 0.16, dh = s * 0.22;
+      ctx.fillRect(hx + (hw - dw) / 2, hy + hh - dh, dw, dh);
+      ctx.restore();
+      break;
+    }
+    case "coffee": {
+      // xícara com alça
+      const cx2 = x + s * 0.1, cy2 = y + s * 0.32, cw = s * 0.6, ch = s * 0.42;
+      roundRect(ctx, cx2, cy2, cw, ch, s * 0.08);
+      ctx.fill();
+      // alça
+      ctx.lineWidth = s * 0.08;
+      ctx.beginPath();
+      ctx.arc(cx2 + cw + s * 0.04, cy2 + ch / 2, s * 0.14, -Math.PI / 2, Math.PI / 2);
+      ctx.stroke();
+      // pires
+      ctx.fillRect(x + s * 0.06, cy2 + ch + s * 0.04, s * 0.7, s * 0.06);
+      // vapor
+      ctx.lineWidth = s * 0.06;
+      ctx.beginPath();
+      ctx.moveTo(x + s * 0.22, cy2 - s * 0.04);
+      ctx.quadraticCurveTo(x + s * 0.3, cy2 - s * 0.18, x + s * 0.22, cy2 - s * 0.32);
+      ctx.moveTo(x + s * 0.42, cy2 - s * 0.04);
+      ctx.quadraticCurveTo(x + s * 0.5, cy2 - s * 0.18, x + s * 0.42, cy2 - s * 0.32);
+      ctx.stroke();
+      break;
+    }
+    case "camera": {
+      // câmera: corpo + lente
+      const bx = x + s * 0.08, by = y + s * 0.28, bw = s * 0.84, bh = s * 0.52;
+      roundRect(ctx, bx, by, bw, bh, s * 0.08);
+      ctx.fill();
+      // saliência do visor
+      ctx.fillRect(x + s * 0.34, y + s * 0.18, s * 0.32, s * 0.14);
+      // lente (círculo recortado para destacar)
+      ctx.beginPath();
+      ctx.arc(cx, by + bh / 2, s * 0.18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.save();
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.beginPath();
+      ctx.arc(cx, by + bh / 2, s * 0.09, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      break;
+    }
+    case "ship": {
+      // navio: casco trapezoidal + cabine
+      ctx.beginPath();
+      ctx.moveTo(x + s * 0.05, y + s * 0.62);
+      ctx.lineTo(x + s * 0.95, y + s * 0.62);
+      ctx.lineTo(x + s * 0.82, y + s * 0.86);
+      ctx.lineTo(x + s * 0.18, y + s * 0.86);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillRect(x + s * 0.28, y + s * 0.4, s * 0.44, s * 0.22);
+      ctx.fillRect(x + s * 0.4, y + s * 0.22, s * 0.2, s * 0.18);
+      break;
+    }
+    case "palm": {
+      // palmeira simples
+      ctx.fillRect(cx - s * 0.04, y + s * 0.4, s * 0.08, s * 0.5);
+      ctx.beginPath();
+      ctx.arc(cx, y + s * 0.38, s * 0.32, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case "sun": {
+      ctx.beginPath();
+      ctx.arc(cx, cy, s * 0.22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineWidth = s * 0.07;
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI * 2 * i) / 8;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(a) * s * 0.3, cy + Math.sin(a) * s * 0.3);
+        ctx.lineTo(cx + Math.cos(a) * s * 0.42, cy + Math.sin(a) * s * 0.42);
+        ctx.stroke();
+      }
+      break;
+    }
+    case "map": {
+      // pin de mapa
+      ctx.beginPath();
+      ctx.arc(cx, cy - s * 0.05, s * 0.28, Math.PI, 0);
+      ctx.lineTo(cx, cy + s * 0.42);
+      ctx.closePath();
+      ctx.fill();
+      ctx.save();
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.beginPath();
+      ctx.arc(cx, cy - s * 0.06, s * 0.1, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      break;
+    }
+    case "food": {
+      // garfo + faca estilizados
+      ctx.lineWidth = s * 0.08;
+      ctx.beginPath();
+      ctx.moveTo(cx - s * 0.18, y + s * 0.1);
+      ctx.lineTo(cx - s * 0.18, y + s * 0.9);
+      ctx.moveTo(cx + s * 0.16, y + s * 0.1);
+      ctx.lineTo(cx + s * 0.16, y + s * 0.9);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx + s * 0.16, y + s * 0.28, s * 0.12, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case "guide":
+    case "wifi":
+    case "check":
+    case "star":
+    case "heart":
+    default: {
+      // fallback: círculo cheio (mantém monocromia)
+      ctx.beginPath();
+      ctx.arc(cx, cy, s * 0.32, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+  }
+  ctx.restore();
+}
+
+/**
+ * Desenha o glifo do Pix (4 losangos formando um padrão de "X"/diamante).
+ * Centralizado em (cx, cy), tamanho total `size`.
+ */
+function drawPixLogo(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number,
+  color: string,
+) {
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.translate(cx, cy);
+  // 4 losangos pequenos posicionados em N/S/L/O formando o glifo do Pix
+  const r = size * 0.18; // metade do lado do losango
+  const off = size * 0.28; // distância do centro
+  const drawDiamond = (px: number, py: number) => {
+    ctx.beginPath();
+    ctx.moveTo(px, py - r);
+    ctx.lineTo(px + r, py);
+    ctx.lineTo(px, py + r);
+    ctx.lineTo(px - r, py);
+    ctx.closePath();
+    ctx.fill();
+  };
+  drawDiamond(0, -off); // topo
+  drawDiamond(off, 0);  // direita
+  drawDiamond(0, off);  // base
+  drawDiamond(-off, 0); // esquerda
+  ctx.restore();
+}
   sourceW: number,
   sourceH: number,
   targetW: number,
