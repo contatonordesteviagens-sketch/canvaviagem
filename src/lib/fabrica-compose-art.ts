@@ -906,14 +906,35 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const descMatch = (promoName || "").match(/(\d{1,2})\s*%/);
       const descN = descMatch ? descMatch[1] : "5";
 
-      // ── [BOX] amarelo arredondado ──────────────────────────────────────────
+      // ── [BOX] amarelo arredondado — altura DINÂMICA conforme conteúdo ─────
       const boxX = 60;
       const boxY = 70;
       const boxW = 720;
-      const boxH = 600;
       const boxR = 36;
       const yellow = "#FFD400";
+      const yellowDark = "#E6B800"; // tom mais escuro para anel ao redor do preço
       const navy = "#0B2B7A";
+
+      // Pré-cálculos de altura por seção
+      const padTop = 36;
+      const titleH = 50; // "PACOTE"
+      const titleGap = 12;
+      const destH = 60;  // destino
+      const destGap = 18;
+      const infoH = 42;  // dias | ícones
+      const infoGap = 22;
+      const priceBlockH = 150; // bloco grande do preço com ring
+      const totalH = (showTotal && (totalOverride || !isNaN(totalNum))) ? 36 : 0;
+      const totalGap = totalH ? 14 : 0;
+      const stripeH = 64;
+      const stripeGap = showPixBanner ? 22 : 0;
+      const padBottom = 36;
+
+      const boxH =
+        padTop + titleH + titleGap + destH + destGap + infoH + infoGap +
+        priceBlockH + totalGap + totalH +
+        (showPixBanner ? stripeGap + stripeH : 0) +
+        padBottom;
 
       // sombra suave
       ctx.save();
@@ -924,14 +945,14 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.restore();
 
       const cx = boxX + boxW / 2;
-      let cursorY = boxY + 70;
+      let cursorY = boxY + padTop + 32; // baseline aproximada do título
 
       // [TITLE] PACOTE
       ctx.fillStyle = navy;
       ctx.textAlign = "center";
       ctx.font = "900 44px Inter, Arial, sans-serif";
       ctx.fillText("PACOTE", cx, cursorY);
-      cursorY += 56;
+      cursorY += titleGap + 40;
 
       // destino (maior, peso médio)
       ctx.font = "500 56px Inter, Arial, sans-serif";
@@ -941,14 +962,14 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.font = `500 ${destSize}px Inter, Arial, sans-serif`;
       }
       ctx.fillText(destinoUp, cx, cursorY);
-      cursorY += 64;
+      cursorY += destGap + 36;
 
       // [INFO] dias | ícones (TODOS monocromáticos, mesma cor navy)
-      ctx.font = "700 32px Inter, Arial, sans-serif";
+      ctx.font = "700 30px Inter, Arial, sans-serif";
       const daysW = ctx.measureText(daysText).width;
       const sepGap = 18;
-      const iconSize = 38;
-      const iconGap = 22;
+      const iconSize = 40;
+      const iconGap = 18;
       const iconsTotal = iconList.length * iconSize + Math.max(0, iconList.length - 1) * iconGap;
       const sepW = 4;
       const infoTotalW = daysW + sepGap + sepW + sepGap + iconsTotal;
@@ -966,12 +987,22 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         drawMonoIcon(ctx, k, ix, infoY, iconSize, navy);
       });
       ctx.textBaseline = "alphabetic";
-      cursorY += 70;
+      cursorY += infoGap + 28;
 
-      // [INSTALL + PRICE] bloco lado a lado — com auto-shrink e gap mínimo
-      const priceBlockY = cursorY + 20;
-      const leftColX = boxX + 50;
-      const rightEdgeX = boxX + boxW - 50;
+      // [PRICE BLOCK] anel amarelo escuro ao redor do preço
+      const ringX = boxX + 30;
+      const ringY = cursorY - 8;
+      const ringW = boxW - 60;
+      const ringH = priceBlockH - 8;
+      ctx.save();
+      ctx.fillStyle = yellowDark;
+      roundRect(ctx, ringX, ringY, ringW, ringH, 24);
+      ctx.fill();
+      ctx.restore();
+
+      const priceBlockY = ringY + 30;
+      const leftColX = ringX + 28;
+      const rightEdgeX = ringX + ringW - 28;
       const minGap = 30;
 
       // Quebra "R$ 229" em símbolo pequeno + valor gigante
@@ -979,13 +1010,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const sym = priceParts ? priceParts[1].trim() : curSym;
       const valNum = priceParts ? priceParts[2].trim() : priceStr;
 
-      // Largura disponível à direita: do fim da coluna esquerda até a borda direita.
-      // Coluna esquerda ocupa "12X" em 64px (~ até 90px). Reservamos 130px à esquerda.
       const leftReservedW = 130;
-      const maxPriceW = boxW - 100 - leftReservedW - minGap; // 100 = 50 padding cada lado
-      let priceSize = 130;
+      const maxPriceW = ringW - 56 - leftReservedW - minGap;
+      let priceSize = 120;
       ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(valNum).width > maxPriceW && priceSize > 70) {
+      while (ctx.measureText(valNum).width > maxPriceW && priceSize > 64) {
         priceSize -= 4;
         ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
       }
@@ -995,59 +1024,68 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // Lado esquerdo
       ctx.textAlign = "left";
       ctx.fillStyle = navy;
-      ctx.font = "600 22px Inter, Arial, sans-serif";
+      ctx.font = "600 20px Inter, Arial, sans-serif";
       ctx.fillText("a partir de", leftColX, priceBlockY);
-      ctx.font = "900 64px Inter, Arial, sans-serif";
-      ctx.fillText(`${parcN}X`, leftColX, priceBlockY + 70);
-      ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText("sem juros", leftColX, priceBlockY + 100);
+      ctx.font = "900 56px Inter, Arial, sans-serif";
+      ctx.fillText(`${parcN}X`, leftColX, priceBlockY + 60);
+      ctx.font = "600 20px Inter, Arial, sans-serif";
+      ctx.fillText("sem juros", leftColX, priceBlockY + 88);
 
-      // Lado direito (preço gigante alinhado à direita, símbolo à esquerda do número)
-      const priceRightX = rightEdgeX;
+      // Lado direito (preço gigante)
       ctx.textAlign = "right";
       ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
-      ctx.fillText(valNum, priceRightX, priceBlockY + 90);
+      ctx.fillText(valNum, rightEdgeX, priceBlockY + 84);
       ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
-      ctx.fillText(sym, priceRightX - valW - 8, priceBlockY + 90 - priceSize * 0.5);
+      ctx.fillText(sym, rightEdgeX - valW - 8, priceBlockY + 84 - priceSize * 0.5);
 
-      cursorY = priceBlockY + 130;
+      cursorY = ringY + ringH + totalGap;
 
       // [TOTAL] rodapé do box (apenas se showTotal)
-      if (showTotal && totalStr) {
+      if (totalH > 0) {
         ctx.textAlign = "center";
-        ctx.font = "600 24px Inter, Arial, sans-serif";
+        ctx.font = "600 22px Inter, Arial, sans-serif";
         ctx.fillStyle = navy;
-        ctx.fillText(totalStr, cx, cursorY);
+        ctx.fillText(totalStr, cx, cursorY + 22);
+        cursorY += totalH;
       }
-      cursorY += 40;
 
-      // [PROMO] faixa horizontal azul com texto Pix
-      const stripeH = 70;
-      const stripeY = boxY + boxH - stripeH - 28;
-      const stripeX = boxX + 40;
-      const stripeW = boxW - 80;
-      fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 18, navy);
-      ctx.fillStyle = "#ffffff";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.font = "900 28px Inter, Arial, sans-serif";
-      const pixText = `${descN}% OFF À VISTA NO`;
-      const pixTextW = ctx.measureText(pixText).width;
-      const pixLabelW = ctx.measureText("pix").width;
-      const pixIconSize = 40;
-      const pixGap = 12;
-      const totalPixW = pixTextW + pixGap + pixIconSize + pixGap + pixLabelW;
-      const pixStartX = stripeX + (stripeW - totalPixW) / 2;
-      ctx.textAlign = "left";
-      ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2 + 1);
-      // Logo Pix oficial-like (4 losangos)
-      const pxCx = pixStartX + pixTextW + pixGap + pixIconSize / 2;
-      const pxCy = stripeY + stripeH / 2;
-      drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "800 30px Inter, Arial, sans-serif";
-      ctx.fillText("pix", pxCx + pixIconSize / 2 + pixGap, stripeY + stripeH / 2 + 1);
-      ctx.textBaseline = "alphabetic";
+      // [PROMO] faixa horizontal azul com texto Pix (opcional)
+      if (showPixBanner) {
+        const stripeY = boxY + boxH - stripeH - 24;
+        const stripeX = boxX + 40;
+        const stripeW = boxW - 80;
+        fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 16, navy);
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "900 26px Inter, Arial, sans-serif";
+
+        const customBanner = (pixBannerText || "").trim();
+        if (customBanner) {
+          // Modo texto livre: usuário definiu uma frase customizada
+          ctx.fillText(customBanner, stripeX + stripeW / 2, stripeY + stripeH / 2 + 1);
+        } else {
+          // Modo padrão: "{N}% OFF À VISTA NO  ◇ pix"
+          const pixText = `${descN}% OFF À VISTA NO`;
+          const pixTextW = ctx.measureText(pixText).width;
+          const pixIconSize = 36;
+          const pixGap = 12;
+          ctx.font = "800 28px Inter, Arial, sans-serif";
+          const pixLabelW = ctx.measureText("pix").width;
+          ctx.font = "900 26px Inter, Arial, sans-serif";
+          const totalPixW = pixTextW + pixGap + pixIconSize + pixGap + pixLabelW;
+          const pixStartX = stripeX + (stripeW - totalPixW) / 2;
+          ctx.textAlign = "left";
+          ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2 + 1);
+          const pxCx = pixStartX + pixTextW + pixGap + pixIconSize / 2;
+          const pxCy = stripeY + stripeH / 2;
+          drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "800 28px Inter, Arial, sans-serif";
+          ctx.fillText("pix", pxCx + pixIconSize / 2 + pixGap, stripeY + stripeH / 2 + 1);
+        }
+        ctx.textBaseline = "alphabetic";
+      }
 
       return canvas.toDataURL("image/png");
     }
