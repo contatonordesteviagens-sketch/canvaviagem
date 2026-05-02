@@ -87,28 +87,38 @@ const CURRENCY_PRESETS: { id: Currency; symbol: string; label: string; locale: s
 const formatPriceValue = (raw: string, currency: Currency): string => {
   const value = (raw || "").trim();
   if (!value) return "";
-  // Mantém só dígitos + separador decimal (último , ou .)
   const cleaned = value.replace(/[^\d.,]/g, "");
-  if (!cleaned) return "";
-  // Detecta o ÚLTIMO separador como decimal
+  const digits = cleaned.replace(/\D/g, "");
+  if (!digits) return "";
+
   const lastComma = cleaned.lastIndexOf(",");
   const lastDot = cleaned.lastIndexOf(".");
-  let intPart = cleaned;
+  const lastSep = Math.max(lastComma, lastDot);
+  let centsMode = false;
+  let intPart = digits;
   let decPart = "";
-  if (lastComma > lastDot && lastComma !== -1) {
-    intPart = cleaned.slice(0, lastComma).replace(/[.,]/g, "");
-    decPart = cleaned.slice(lastComma + 1).replace(/\D/g, "").slice(0, 2);
-  } else if (lastDot > lastComma && lastDot !== -1) {
-    intPart = cleaned.slice(0, lastDot).replace(/[.,]/g, "");
-    decPart = cleaned.slice(lastDot + 1).replace(/\D/g, "").slice(0, 2);
-  } else {
-    intPart = cleaned.replace(/\D/g, "");
+
+  if (lastSep !== -1) {
+    const afterSep = cleaned.slice(lastSep + 1).replace(/\D/g, "");
+    const beforeSep = cleaned.slice(0, lastSep).replace(/\D/g, "");
+    const sepCount = (cleaned.match(/[.,]/g) || []).length;
+    centsMode = afterSep.length > 0 && afterSep.length <= 2 && (sepCount === 1 || afterSep.length !== 3);
+    if (centsMode) {
+      intPart = beforeSep || "0";
+      decPart = afterSep.padEnd(2, "0").slice(0, 2);
+    }
   }
-  const num = Number(intPart || "0") + (decPart ? Number(`0.${decPart}`) : 0);
+
+  if (!centsMode && digits.length > 2) {
+    intPart = digits.slice(0, -2);
+    decPart = digits.slice(-2);
+  }
+
+  const num = Number(intPart || "0") + (decPart ? Number(decPart) / 100 : 0);
   const preset = CURRENCY_PRESETS.find((c) => c.id === currency)!;
   try {
     return new Intl.NumberFormat(preset.locale, {
-      minimumFractionDigits: decPart ? Math.min(decPart.length, 2) : 0,
+      minimumFractionDigits: decPart ? 2 : 0,
       maximumFractionDigits: 2,
     }).format(num);
   } catch {
@@ -121,6 +131,11 @@ const buildPriceWithCurrency = (raw: string, currency: Currency): string => {
   if (!formatted) return "";
   const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
   return `${sym} ${formatted}`;
+};
+
+const stripCurrencyFromPrice = (raw: string, currency: Currency): string => {
+  const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
+  return (raw || "").replace(sym, "").replace(/R\$|US\$|AR\$|€|£/g, "").trim();
 };
 
 interface PaymentPreset {
