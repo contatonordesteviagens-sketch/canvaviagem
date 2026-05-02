@@ -1548,7 +1548,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         });
       }
 
-      // [PRICE_BLOCK] — alinhado à esquerda, com filete superior accent
+      // [PRICE_BLOCK] — spec dedicada V4
+      //   prefix · "Nx sem juros" · PREÇO grande (highlight) · "Total por pessoa: X" · faixa "N% OFF à vista no Pix"
       const priceY = boxY + boxH - boxPadY - priceBlockH;
       ctx.strokeStyle = "rgba(255,255,255,0.12)";
       ctx.lineWidth = 1;
@@ -1557,54 +1558,71 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.lineTo(contentX + contentW, priceY);
       ctx.stroke();
 
+      // (a) PREFIX
+      ctx.textAlign = "left";
       ctx.fillStyle = TEXT_MUTED;
       ctx.font = `400 18px ${SANS}`;
-      ctx.fillText((topLabel || "a partir de").toString(), contentX, priceY + 32);
+      ctx.fillText("a partir de", contentX, priceY + 30);
 
+      // (b) INSTALLMENTS LINE — "{parcelas}x sem juros"
+      let cursorY = priceY + 30;
+      if (parcelasText4) {
+        ctx.fillStyle = ACCENT;
+        ctx.font = `700 18px ${SANS}`;
+        const installFmt = `${installments} sem juros`;
+        ctx.fillText(installFmt, contentX, priceY + 56);
+        cursorY = priceY + 56;
+      }
+
+      // (c) PRICE — gigante, highlight high
       const priceStr4 = mainPrice || `${curSym} ${price}`;
-      let pfs4 = 88;
+      let pfs4 = 96;
       ctx.font = `700 ${pfs4}px ${SERIF}`;
-      while (ctx.measureText(priceStr4).width > contentW - 20 && pfs4 > 44) {
+      while (ctx.measureText(priceStr4).width > contentW - 20 && pfs4 > 48) {
         pfs4 -= 4;
         ctx.font = `700 ${pfs4}px ${SERIF}`;
       }
       ctx.fillStyle = TEXT_PRIMARY;
-      ctx.fillText(priceStr4, contentX, priceY + 32 + pfs4 * 0.85);
+      const priceBaselineY = cursorY + 24 + pfs4 * 0.78;
+      ctx.fillText(priceStr4, contentX, priceBaselineY);
 
-      // sufixo (por pessoa, etc.)
-      ctx.fillStyle = TEXT_MUTED;
-      ctx.font = `500 18px ${SANS}`;
-      ctx.fillText(bottomSuffix || "", contentX, priceY + 40 + pfs4 * 0.85 + 26);
+      // sufixo (ex: "por pessoa") logo após o preço, na mesma linha visual
+      if (bottomSuffix) {
+        ctx.fillStyle = TEXT_MUTED;
+        ctx.font = `500 18px ${SANS}`;
+        const pw = ctx.measureText(priceStr4).width;
+        ctx.fillText(bottomSuffix, contentX + pw + 14, priceBaselineY - 4);
+      }
 
-      // [TOTAL]
+      // (d) TOTAL — "Total por pessoa: {total}"
+      let afterPriceY = priceBaselineY + 18;
       if (showTotal4) {
         ctx.fillStyle = TEXT_SOFT;
         ctx.font = `500 16px ${SANS}`;
-        ctx.fillText(totalStr4, contentX, priceY + priceBlockH - 14);
+        // se totalOverride foi customizado pelo usuário, respeita; senão usa label da spec
+        const totalLine = (totalOverride && totalOverride.trim())
+          ? totalOverride
+          : (computedTotal4 ? `Total por pessoa: ${computedTotal4}` : "");
+        if (totalLine) ctx.fillText(totalLine, contentX, afterPriceY + 16);
+        afterPriceY += 24;
       }
 
-      // [DISCOUNT_BADGE] — selo minimal (pílula sólida accent) no topo direito do box
-      if (showBadge4) {
-        const badgeText = `${descNum4}% OFF`;
-        ctx.font = `800 16px ${SANS}`;
-        const padH = 18;
-        const padV = 10;
-        const tw = ctx.measureText(badgeText).width;
-        const bw = tw + padH * 2;
-        const bh = 36;
-        const bx = boxX + boxW - bw - 18;
-        const by = boxY - bh / 2;
-        ctx.save();
-        ctx.shadowColor = "rgba(0,0,0,0.25)";
-        ctx.shadowBlur = 16;
-        ctx.shadowOffsetY = 3;
-        fillRoundRect(ctx, bx, by, bw, bh, bh / 2, ACCENT);
-        ctx.restore();
-        ctx.fillStyle = "#0b0f1a";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(badgeText, bx + bw / 2, by + bh / 2);
-        ctx.textBaseline = "alphabetic";
+      // (e) DISCOUNT — faixa inferior "{desconto}% OFF à vista no Pix"
+      if (pixStripH && (showBadge4 || (pixBannerText && pixBannerText.trim()))) {
+        const stripY = boxY + boxH - boxPadY - pixStripH + 4;
+        const stripH = 40;
+        fillRoundRect(ctx, contentX, stripY, contentW, stripH, 10, ACCENT);
+        const discountText = (pixBannerText && pixBannerText.trim())
+          || (showBadge4 ? `${descNum4}% OFF à vista no Pix` : "");
+        if (discountText) {
+          ctx.fillStyle = "#0b0f1a";
+          ctx.font = `800 18px ${SANS}`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(discountText, contentX + contentW / 2, stripY + stripH / 2);
+          ctx.textBaseline = "alphabetic";
+          ctx.textAlign = "left";
+        }
       }
 
       ctx.textAlign = "left";
