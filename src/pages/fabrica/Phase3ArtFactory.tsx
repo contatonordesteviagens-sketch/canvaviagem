@@ -518,6 +518,17 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // Paleta — sempre usa exatamente as cores selecionadas pelo usuário.
         const palette = selectedPalette(primaryColor, secondaryColor);
 
+        // Rotação determinística entre as 4 variantes do compositor (V0/V1/V2/V3)
+        // evitando as 2 últimas usadas — garante imagem nova a cada clique e cobre V3.
+        const TOTAL_VARIANTS_PHOTO = 4;
+        const recentPhoto = variantHistoryRef.current.slice(-2);
+        let candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i).filter((v) => !recentPhoto.includes(v));
+        if (candidatesPhoto.length === 0) {
+          candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i);
+        }
+        const nextVariantPhoto = candidatesPhoto[Math.floor(Math.random() * candidatesPhoto.length)];
+        variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantPhoto];
+
         const composed = await Promise.all(
           chosen.map(async (localStrategy, idx) => {
             let img = await composeTravelAd({
@@ -538,6 +549,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               paymentSuffix,
               strategy: localStrategy,
               variation: freshSeedPhoto + idx,
+              forceVariant: nextVariantPhoto,
               titleOverride: resolvedAdTitle,
               titleVariations: adTitleVariations,
             });
@@ -708,13 +720,16 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
       const palette = selectedPalette(primaryColor, secondaryColor);
 
-      // Rotação determinística entre as 3 variantes do compositor (V0/V1/V2)
-      // evitando a última usada — garante imagem nova a cada clique.
-      const TOTAL_VARIANTS = 3;
-      const lastUsed = variantHistoryRef.current[variantHistoryRef.current.length - 1];
-      const candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => v !== lastUsed);
+      // Rotação determinística entre as 4 variantes do compositor (V0/V1/V2/V3)
+      // evitando as 2 últimas usadas — garante imagem nova a cada clique e cobre V3.
+      const TOTAL_VARIANTS = 4;
+      const recent = variantHistoryRef.current.slice(-2);
+      let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => !recent.includes(v));
+      if (candidates.length === 0) {
+        candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i);
+      }
       const nextVariant = candidates[Math.floor(Math.random() * candidates.length)];
-      variantHistoryRef.current = [...variantHistoryRef.current.slice(-2), nextVariant];
+      variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariant];
 
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy) => {
