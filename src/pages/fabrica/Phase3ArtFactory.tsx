@@ -191,6 +191,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [generatedImage, setGeneratedImage] = useState<string>("");
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [variationCounter, setVariationCounter] = useState(0);
+  // Histórico das últimas variantes do compositor canvas (modo Sua Imagem) para forçar rotação
+  const variantHistoryRef = useRef<number[]>([]);
   const [lastProvider, setLastProvider] = useState<"user_gemini" | "lovable_ai" | null>(null);
   const [generationCount, setGenerationCount] = useState<number>(() => {
     const saved = localStorage.getItem("fabrica_gen_count");
