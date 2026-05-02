@@ -388,6 +388,7 @@ Este anúncio DEVE seguir a câmera, iluminação e estruturação exatas inform
 
 [FOTOGRAFIA PRINCIPAL — REGRAS DE CENA]
 Cena extremamente realista e detalhada de ${v.destination}, com iluminação ${opts.lighting}, mostrando ${opts.sceneDescription}.
+${ofertaPhotoAnchor}${variationLock}
 
 🚫 STRICTLY NO PEOPLE — REGRA NEGATIVA ABSOLUTA:
 - PROIBIDO qualquer figura humana, modelo, casal, família, criança, silhueta, mão, pé, rosto ou parte de corpo na fotografia.
