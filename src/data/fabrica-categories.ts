@@ -8,7 +8,7 @@
 
 import type { StrategyId } from "@/data/fabrica-prompts";
 
-export type CategoriaId = "oferta_pacote" | "experiencia_destino" | "autoridade_dark";
+export type CategoriaId = "oferta_pacote" | "experiencia_destino";
 
 export interface CategoriaMeta {
   id: CategoriaId;
