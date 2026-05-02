@@ -1150,105 +1150,137 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
         </div>
 
-        {/* Cor primária — agora editável */}
-        <div>
-          <label className={labelCls}>Cor primária (fundo principal)</label>
-          <div className="flex gap-2 items-center mb-2">
-            <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-12 h-10 rounded-lg border border-white/10 bg-transparent cursor-pointer" />
-            <input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="flex-1 bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-white/40 font-mono" />
-          </div>
-          <div className="flex gap-1.5 flex-wrap">
-            {PRESET_COLORS.map((c) => (
-              <button
-                key={c}
-                onClick={() => setPrimaryColor(c)}
-                className={`w-6 h-6 rounded-full border-2 transition-all ${primaryColor.toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-lg" : "border-white/20 hover:border-white/60"}`}
-                style={{ background: c, boxShadow: c === "#ffffff" || c === "#f8fafc" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
-                aria-label={c}
-                title={c}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Cor secundária */}
-        <div>
-          <label className={labelCls}>Cor secundária (acento)</label>
-          <div className="flex gap-2 items-center">
-            <input type="color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="w-12 h-10 rounded-lg border border-white/10 bg-transparent cursor-pointer" />
-            <input value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="flex-1 bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2 text-white text-sm outline-none focus:border-white/40 font-mono" />
-          </div>
-        </div>
-
-        {/* Benefícios totalmente editáveis (texto + ícone) — oculto para Autoridade Premium */}
-        {true && (
-          <>
-            <label className={labelCls}>Benefícios / Inclusos ({highlights.length}/5) — clique no ícone para trocar</label>
-            <div className="space-y-2 mb-2">
-              {highlights.map((h, i) => {
-                const IconComp = ICON_OPTIONS.find((o) => o.key === h.icon)?.Icon || Check;
-                return (
-                  <div key={i} className="bg-white/[0.04] border border-white/10 rounded-lg">
-                    <div className="flex gap-2 items-center px-3 py-2">
-                      <button
-                        onClick={() => setEditingIconIdx(editingIconIdx === i ? null : i)}
-                        className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
-                        style={{ color: secondaryColor }}
-                        title="Trocar ícone"
-                      >
-                        <IconComp className="w-4 h-4" />
-                      </button>
-                      <input
-                        value={h.text}
-                        onChange={(e) => updateHighlightText(i, e.target.value)}
-                        className="flex-1 bg-transparent text-sm text-white outline-none"
-                      />
-                      <button onClick={() => removeHighlight(i)} className="text-white/40 hover:text-red-400">
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                    {editingIconIdx === i && (
-                      <div className="border-t border-white/10 p-2 grid grid-cols-8 gap-1">
-                        {ICON_OPTIONS.map(({ key, Icon, label }) => (
-                          <button
-                            key={key}
-                            onClick={() => updateHighlightIcon(i, key)}
-                            className={`p-2 rounded hover:bg-white/10 flex items-center justify-center transition-colors ${h.icon === key ? "bg-white/20" : ""}`}
-                            title={label}
-                          >
-                            <Icon className="w-4 h-4" style={{ color: h.icon === key ? secondaryColor : "rgba(255,255,255,0.7)" }} />
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+        {/* Cores — Primária | Secundária em 2 colunas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            { label: "Cor primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo principal" },
+            { label: "Cor secundária", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
+          ].map(({ label, value, setter, hint }) => (
+            <div key={label} className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
+              <div className="flex items-baseline justify-between mb-2">
+                <label className={labelCls}>{label}</label>
+                <span className="text-[10px] text-white/40">{hint}</span>
+              </div>
+              {/* Bolinhas da paleta */}
+              <div className="flex gap-1.5 flex-wrap mb-3">
+                {PRESET_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setter(c)}
+                    className={`w-6 h-6 rounded-full border-2 transition-all ${value.toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-lg" : "border-white/20 hover:border-white/60"}`}
+                    style={{ background: c, boxShadow: c === "#ffffff" || c === "#f8fafc" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
+                    aria-label={c}
+                    title={c}
+                  />
+                ))}
+              </div>
+              {/* Color picker redondo (gradiente arco-íris) + HEX */}
+              <div className="flex gap-2 items-center">
+                <label
+                  className="relative w-10 h-10 rounded-full cursor-pointer flex-shrink-0 overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
+                  style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}
+                  title="Escolher cor personalizada"
+                >
+                  <input
+                    type="color"
+                    value={value}
+                    onChange={(e) => setter(e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                  <span
+                    className="absolute inset-1.5 rounded-full border border-white/40"
+                    style={{ background: value }}
+                  />
+                </label>
+                <input
+                  value={value}
+                  onChange={(e) => setter(e.target.value)}
+                  placeholder="#000000"
+                  className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase"
+                />
+              </div>
             </div>
-            {highlights.length < 5 && (
-              <div className="flex gap-2">
+          ))}
+        </div>
+
+        {/* Benefícios — grade 2 colunas com botão adicionar (até 6) */}
+        <div>
+          <div className="flex items-baseline justify-between mb-2">
+            <label className={labelCls}>Benefícios / Inclusos</label>
+            <span className="text-[10px] text-white/40">{highlights.length}/{MAX_HIGHLIGHTS} · clique no ícone para trocar</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {highlights.map((h, i) => {
+              const IconComp = ICON_OPTIONS.find((o) => o.key === h.icon)?.Icon || Check;
+              return (
+                <div key={i} className="bg-white/[0.04] border border-white/10 rounded-lg">
+                  <div className="flex gap-1.5 items-center px-2.5 py-2">
+                    <button
+                      onClick={() => setEditingIconIdx(editingIconIdx === i ? null : i)}
+                      className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
+                      style={{ color: secondaryColor }}
+                      title="Trocar ícone"
+                    >
+                      <IconComp className="w-4 h-4" />
+                    </button>
+                    <input
+                      value={h.text}
+                      onChange={(e) => updateHighlightText(i, e.target.value)}
+                      className="flex-1 min-w-0 bg-transparent text-sm text-white outline-none"
+                    />
+                    <button
+                      onClick={() => removeHighlight(i)}
+                      className="text-white/40 hover:text-red-400 flex-shrink-0"
+                      title="Remover"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  {editingIconIdx === i && (
+                    <div className="border-t border-white/10 p-2 grid grid-cols-8 gap-1">
+                      {ICON_OPTIONS.map(({ key, Icon, label }) => (
+                        <button
+                          key={key}
+                          onClick={() => updateHighlightIcon(i, key)}
+                          className={`p-1.5 rounded hover:bg-white/10 flex items-center justify-center transition-colors ${h.icon === key ? "bg-white/20" : ""}`}
+                          title={label}
+                        >
+                          <Icon className="w-3.5 h-3.5" style={{ color: h.icon === key ? secondaryColor : "rgba(255,255,255,0.7)" }} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Slot "adicionar" — só aparece se ainda dá pra adicionar */}
+            {highlights.length < MAX_HIGHLIGHTS && (
+              <div className="bg-white/[0.02] border border-dashed border-white/15 rounded-lg flex gap-1.5 items-center px-2.5 py-2 hover:border-white/30 transition-colors">
+                <Plus className="w-4 h-4 flex-shrink-0" style={{ color: secondaryColor }} />
                 <input
                   value={newHl}
                   onChange={(e) => setNewHl(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && addHighlight()}
                   placeholder="Ex: Bebidas inclusas"
-                  className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder:text-white/30 outline-none focus:border-white/40"
+                  className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder:text-white/30 outline-none"
                 />
                 <button
                   onClick={addHighlight}
                   disabled={!newHl.trim()}
-                  className="px-4 py-2 rounded-lg font-bold text-black flex items-center gap-1.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110"
+                  className="text-xs font-bold px-2 py-1 rounded text-black disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:brightness-110 flex-shrink-0"
                   style={{ background: secondaryColor }}
+                  title="Adicionar"
                 >
-                  <Plus className="w-4 h-4" /> Adicionar
+                  +
                 </button>
               </div>
             )}
-            <p className="text-[10px] text-white/40 mt-1.5">
-              Pressione Enter ou clique em Adicionar. O novo benefício entrará na próxima geração da arte.
-            </p>
-          </>
-        )}
+          </div>
+          <p className="text-[10px] text-white/40 mt-1.5">
+            Pressione Enter ou clique em <kbd className="text-white/60">+</kbd> para adicionar. Até {MAX_HIGHLIGHTS} benefícios.
+          </p>
+        </div>
 
 
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-[11px] text-amber-200/90">
