@@ -532,6 +532,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     currencySymbol,
     totalOverride,
     showTotal = true,
+    pixBannerText,
+    showPixBanner = true,
   } = options;
   const curSym = (currencySymbol || "R$").trim();
   const priceValueText = (price || "").trim();
