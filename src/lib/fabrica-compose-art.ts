@@ -794,8 +794,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     // gigante + Total + faixa PIX). Usado por V3 e V4.
     // ─────────────────────────────────────────────────────────────────────────
     const drawCvcStyleCard = (cardX: number, cardY: number, cardW: number, opts?: { tagText?: string }) => {
-      const cardH = 380;
+      // Faixa PIX só aparece quando explicitamente solicitado ou quando o modo de
+      // pagamento é "cash_pix_off". Card encolhe quando não há faixa.
+      const wantPixStripe = showPixStripe ?? (paymentMode === "cash_pix_off");
+      const stripeH = wantPixStripe ? 56 : 0;
+      const cardH = (wantPixStripe ? 420 : 380);
       const radius = 28;
+
       // Sombra suave
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.25)";
@@ -811,87 +816,155 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const innerPad = 28;
       const innerW = cardW - innerPad * 2;
 
-      // Etiqueta superior
-      ctx.font = `900 28px Inter, Arial, sans-serif`;
-      ctx.fillText((opts?.tagText || "PACOTE").toUpperCase(), cx, cardY + 50);
+      // ── 1) Etiqueta superior ("PACOTE") — peso bold (não black), tracking aberto.
+      ctx.font = `700 30px Inter, Arial, sans-serif`;
+      const tagText = (opts?.tagText || "PACOTE").toUpperCase();
+      // Letter-spacing manual (canvas não suporta nativamente)
+      const drawSpaced = (text: string, x: number, y: number, spacing: number) => {
+        const total = [...text].reduce((acc, ch) => acc + ctx.measureText(ch).width, 0) + spacing * (text.length - 1);
+        let cur = x - total / 2;
+        for (const ch of text) {
+          const w = ctx.measureText(ch).width;
+          ctx.textAlign = "left";
+          ctx.fillText(ch, cur, y);
+          cur += w + spacing;
+        }
+        ctx.textAlign = "center";
+      };
+      drawSpaced(tagText, cx, cardY + 56, 4);
 
-      // Destino grande (até 2 linhas se couber)
+      // ── 2) Destino grande — peso BLACK (mais grosso que o "PACOTE")
       const destUpper = (destination || "DESTINO").toUpperCase();
-      let destSize = 64;
-      ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
+      let destSize = 60;
+      ctx.font = `400 ${destSize}px Inter, Arial, sans-serif`; // peso fino como na referência
       while (ctx.measureText(destUpper).width > innerW && destSize > 28) {
         destSize -= 4;
-        ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
+        ctx.font = `400 ${destSize}px Inter, Arial, sans-serif`;
       }
-      ctx.fillText(destUpper, cx, cardY + 50 + destSize + 10);
+      ctx.fillText(destUpper, cx, cardY + 56 + destSize + 8);
 
-      // Linha "X dias" + ícones
+      // ── 3) Linha "X dias  |  ✈ 🚌 🏨 ☕ 📷" — ícones MONOCROMÁTICOS
+      // Usa U+FE0E (variation selector text) para evitar emoji colorido em fontes
+      // que respeitam o seletor. Em fontes que ignoram, ainda assim mantém o
+      // glifo próximo da cor desejada via fillStyle.
+      const iconKeyToGlyph: Record<IconKey, string> = {
+        plane: "✈", bus: "🚌", hotel: "🏨", coffee: "☕", camera: "📷",
+        ship: "⛴", palm: "🌴", food: "🍽", map: "📍", guide: "👤",
+        wifi: "📶", check: "✓", star: "★", heart: "♥", sun: "☀",
+      };
+      const defaultIcons: IconKey[] = ["plane", "bus", "hotel", "coffee", "camera"];
+      const iconList = (pacoteIcons && pacoteIcons.length > 0 ? pacoteIcons : defaultIcons).slice(0, 6);
+      const iconGlyphs = iconList.map((k) => (iconKeyToGlyph[k] || "✓") + "\uFE0E");
+
       const firstHL = highlights[0];
       const firstHLText = typeof firstHL === "string" ? firstHL : (firstHL?.text || "");
-      const days = firstHLText.match(/(\d+)\s*dias?/i)?.[0] || "5 dias";
-      ctx.font = `700 26px Inter, Arial, sans-serif`;
-      ctx.fillText(`${days}   ✈   🚌   🏨   ☕   📷`, cx, cardY + 50 + destSize + 60);
+      const daysText = (pacoteDays && pacoteDays.trim())
+        || firstHLText.match(/(\d+)\s*dias?/i)?.[0]
+        || "5 dias";
 
-      // "a partir de" + 12X selo + preço
-      const baseLineY = cardY + 220;
+      // Linha: [X dias]  |  [icon]  [icon]  [icon] ...
+      ctx.fillStyle = primaryColor;
+      ctx.textAlign = "left";
+      const daysFont = `700 26px Inter, Arial, sans-serif`;
+      const iconFont = `400 30px "Segoe UI Symbol", "Apple Symbols", Arial, sans-serif`;
+      ctx.font = daysFont;
+      const daysW = ctx.measureText(daysText).width;
+      const sepW = 18;
+      const iconGap = 18;
+      ctx.font = iconFont;
+      const iconsW = iconGlyphs.reduce((acc, g) => acc + ctx.measureText(g).width, 0) + iconGap * (iconGlyphs.length - 1);
+      const lineW = daysW + sepW + 12 + sepW + iconsW;
+      const lineY = cardY + 56 + destSize + 8 + 56;
+      let curX = cx - lineW / 2;
+      ctx.font = daysFont;
+      ctx.fillText(daysText, curX, lineY);
+      curX += daysW + sepW;
+      // separador "|"
+      ctx.fillText("|", curX, lineY);
+      curX += 12 + sepW;
+      ctx.font = iconFont;
+      iconGlyphs.forEach((g, i) => {
+        ctx.fillText(g, curX, lineY);
+        curX += ctx.measureText(g).width + (i < iconGlyphs.length - 1 ? iconGap : 0);
+      });
+      ctx.textAlign = "center";
+
+      // ── 4) Bloco de preço: "a partir de" + selo (parcelas / sem juros) + R$ gigante
+      const blockTopY = cardY + (wantPixStripe ? 240 : 230);
+
+      // texto "a partir de" pequeno, do lado esquerdo do selo
+      ctx.fillStyle = primaryColor;
       ctx.font = `600 18px Inter, Arial, sans-serif`;
-      ctx.fillText("a partir de", cx, baseLineY);
 
-      const installmentsText = (installments || "12X").toUpperCase().replace(/\s+/g, "");
       const priceText = mainPrice || `${curSym} ${price}`;
-      let priceFs = 78;
+      let priceFs = 92;
       ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(priceText).width > innerW * 0.62 && priceFs > 36) {
+      while (ctx.measureText(priceText).width > innerW * 0.58 && priceFs > 36) {
         priceFs -= 4;
         ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
       }
       const priceW = ctx.measureText(priceText).width;
-      const badgeW = 96;
-      const badgeH = 70;
-      const gap = 16;
+
+      const installmentsText = (installments || "12X").toUpperCase().replace(/\s+/g, "");
+      const showNoInterestInBadge = paymentMode === "installments_no_interest" || /sem\s*juros/i.test(paymentLabel || "");
+      const badgeW = 116;
+      const badgeH = 92;
+      const gap = 22;
       const groupW = badgeW + gap + priceW;
       const groupX = cx - groupW / 2;
-      const priceY = baseLineY + 70;
+      const priceCenterY = blockTopY + 40;
 
-      // Selo 12X
-      fillRoundRect(ctx, groupX, priceY - badgeH / 2 - 6, badgeW, badgeH, 14, primaryColor);
+      // "a partir de" centralizado acima do selo
+      ctx.font = `600 18px Inter, Arial, sans-serif`;
+      ctx.fillStyle = primaryColor;
+      ctx.fillText("a partir de", groupX + badgeW / 2, blockTopY - 10);
+
+      // Selo de parcelas
+      fillRoundRect(ctx, groupX, priceCenterY - badgeH / 2, badgeW, badgeH, 14, primaryColor);
       ctx.fillStyle = secondaryColor;
-      ctx.font = `900 28px Inter, Arial, sans-serif`;
+      ctx.font = `900 36px Inter, Arial, sans-serif`;
       ctx.textAlign = "center";
-      ctx.fillText(installmentsText, groupX + badgeW / 2, priceY - 6);
-      ctx.font = `700 11px Inter, Arial, sans-serif`;
-      ctx.fillText("sem juros", groupX + badgeW / 2, priceY + 16);
+      ctx.fillText(installmentsText, groupX + badgeW / 2, priceCenterY + (showNoInterestInBadge ? 4 : 12));
+      if (showNoInterestInBadge) {
+        ctx.font = `700 13px Inter, Arial, sans-serif`;
+        ctx.fillText("sem juros", groupX + badgeW / 2, priceCenterY + 26);
+      }
 
       // Preço gigante
       ctx.fillStyle = primaryColor;
       ctx.textAlign = "left";
       ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
-      ctx.fillText(priceText, groupX + badgeW + gap, priceY + priceFs / 3);
-
-      // Total por pessoa
-      ctx.fillStyle = primaryColor;
-      ctx.font = `600 18px Inter, Arial, sans-serif`;
+      ctx.fillText(priceText, groupX + badgeW + gap, priceCenterY + priceFs / 3 - 4);
       ctx.textAlign = "center";
+
+      // ── 5) "Total por pessoa: R$ 2.739" (sufixo) abaixo do preço
+      ctx.fillStyle = primaryColor;
+      ctx.font = `600 20px Inter, Arial, sans-serif`;
       if (bottomSuffix) {
-        ctx.fillText(bottomSuffix, cx, cardY + 308);
+        ctx.fillText(bottomSuffix, cx, blockTopY + 130);
       }
 
-      // Faixa PIX inferior (cor primária)
-      const stripeH = 48;
-      const stripeY = cardY + cardH - stripeH;
-      ctx.save();
-      roundRect(ctx, cardX, cardY, cardW, cardH, radius);
-      ctx.clip();
-      ctx.fillStyle = primaryColor;
-      ctx.fillRect(cardX, stripeY, cardW, stripeH);
-      ctx.restore();
-      ctx.fillStyle = "#ffffff";
-      ctx.font = `900 20px Inter, Arial, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.fillText("5% OFF À VISTA NO PIX  💠", cx, stripeY + 30);
+      // ── 6) Faixa PIX inferior (azul/cor primária) — opcional
+      if (wantPixStripe) {
+        const stripeY = cardY + cardH - stripeH;
+        ctx.save();
+        roundRect(ctx, cardX, cardY, cardW, cardH, radius);
+        ctx.clip();
+        ctx.fillStyle = primaryColor;
+        ctx.fillRect(cardX, stripeY, cardW, stripeH);
+        ctx.restore();
+        ctx.fillStyle = secondaryColor;
+        ctx.font = `900 22px Inter, Arial, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.fillText("5% OFF À VISTA NO PIX", cx - 18, stripeY + 36);
+        // Pequeno emblema "pix" arredondado à direita
+        ctx.font = `900 16px Inter, Arial, sans-serif`;
+        ctx.fillText("✦ pix", cx + 130, stripeY + 36);
+      }
 
       ctx.textAlign = "left";
       ctx.textBaseline = "alphabetic";
+      return cardH;
     };
 
     // ── V3 · CVC FULLBLEED — foto cobre, card amarelo no canto SUPERIOR ESQUERDO ──
