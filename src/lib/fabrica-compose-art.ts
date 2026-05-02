@@ -185,6 +185,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     variation = 0,
     forceVariant,
     titleOverride,
+    titleVariations,
   } = options;
 
   const width = 1080;
