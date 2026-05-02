@@ -654,20 +654,28 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     if (variant === 2) {
       ctx.fillStyle = "#f7f4ef"; ctx.fillRect(0, 0, width, height);
 
-      // Lista completa de benefits (até 5) — TODOS devem aparecer
-      const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 5);
+      // Lista completa de benefits (até 6) — TODOS devem aparecer
+      const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
       const benefitsCountV2 = Math.max(1, benefitsListV2.length);
 
       // 1) Card de preço — ancorado à base, MAIOR e mais largo p/ ocupar a direita
-      const priceCardW = Math.round(width * 0.62);   // antes: 460 (~43%) → agora ~62%
+      const priceCardW = Math.round(width * 0.62);
       const priceCardH = 168;
-      const priceCardY = height - 56 - priceCardH;   // sobe um pouco (era 80)
+      const priceCardY = height - 56 - priceCardH;
       fillRoundRect(ctx, left, priceCardY, priceCardW, priceCardH, 16, primaryColor);
       ctx.fillStyle = secondaryColor; ctx.font = "700 24px Inter, Arial, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("por apenas", left + priceCardW / 2, priceCardY + 40);
-      ctx.fillStyle = "#ffffff"; ctx.font = "900 64px Inter, Arial, sans-serif";
-      ctx.fillText(mainPrice || `R$ ${price}`, left + priceCardW / 2, priceCardY + 108);
+      ctx.fillText((topLabel || "por apenas").toString(), left + priceCardW / 2, priceCardY + 40);
+      ctx.fillStyle = "#ffffff";
+      // Auto-shrink preço V2
+      const priceStrV2 = mainPrice || `R$ ${price}`;
+      let pfsV2 = 64;
+      ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(priceStrV2).width > priceCardW - 40 && pfsV2 > 28) {
+        pfsV2 -= 4;
+        ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
+      }
+      ctx.fillText(priceStrV2, left + priceCardW / 2, priceCardY + 108);
       ctx.font = "600 22px Inter, Arial, sans-serif";
       ctx.fillText(bottomSuffix || "/pessoa", left + priceCardW / 2, priceCardY + 144);
       ctx.textAlign = "left";
@@ -676,9 +684,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const faixaH = 110;
 
       // 3) Cálculo de altura dos benefits — TODOS devem caber.
-      // Fonte e gap se ajustam à quantidade.
-      const benefitFontSize = benefitsCountV2 <= 3 ? 32 : benefitsCountV2 === 4 ? 28 : 24;
-      const benefitGap = benefitsCountV2 <= 3 ? 60 : benefitsCountV2 === 4 ? 52 : 44;
+      const benefitFontSize = benefitsCountV2 <= 3 ? 32 : benefitsCountV2 === 4 ? 28 : benefitsCountV2 === 5 ? 24 : 22;
+      const benefitGap = benefitsCountV2 <= 3 ? 60 : benefitsCountV2 === 4 ? 52 : benefitsCountV2 === 5 ? 44 : 40;
       const benefitsBlockH = benefitsCountV2 * benefitGap;
       const benefitsTopPad = 32;
       const benefitsBottomPad = 28;
