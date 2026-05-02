@@ -1459,14 +1459,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             )}
           </div>
 
-                value={pixBannerText}
-                onChange={(e) => setPixBannerText(e.target.value)}
-                placeholder='Texto da faixa (auto: "5% OFF À VISTA NO pix")'
-                disabled={!showPixBanner}
-                className={`${inputCls} ${!showPixBanner ? "opacity-50" : ""}`}
-              />
-            </div>
-          </div>
+
           {formattedPriceForAd && (
             <p className="text-[11px] text-emerald-300/90 font-mono mt-2">
               Prévia: {paymentLabel ? `${paymentLabel} · ` : ""}{currencySymbol} {formattedPriceForAd}{paymentSuffix ? ` · ${paymentSuffix}` : ""}
