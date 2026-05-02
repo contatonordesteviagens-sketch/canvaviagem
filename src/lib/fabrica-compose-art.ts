@@ -1382,8 +1382,16 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     }
 
     // ── V4 · PREMIUM com BOX CENTRAL flutuante ──────────────────────────────
-    // Foto cobrindo todo o canvas + box central translúcido com borda sutil.
+    // Estrutura definida (data binding):
+    //   [BG]            tourism_destination → image
+    //   [TITLE]         titleText (headline da campanha)
+    //   [DESTINATION]   destination (gigante, centralizado)
+    //   [INFO_LINE]     dias · parcelas (linha única, separadores)
+    //   [PRICE_BLOCK]   mainPrice (preço destacado)
+    //   [TOTAL]         total por pessoa / totalOverride
+    //   [DISCOUNT_BADGE]% extraído de promoName (selo flutuante no topo do box)
     if (variant === 4) {
+      // [BG] tourism_destination
       const cBg4 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
       ctx.drawImage(image, cBg4.sx, cBg4.sy, cBg4.sw, cBg4.sh, 0, 0, width, height);
       const vg = ctx.createRadialGradient(width / 2, height / 2, Math.min(width, height) * 0.25, width / 2, height / 2, Math.max(width, height) * 0.75);
@@ -1391,25 +1399,50 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       vg.addColorStop(1, "rgba(0,0,0,0.55)");
       ctx.fillStyle = vg; ctx.fillRect(0, 0, width, height);
 
+      // ── Data binding ─────────────────────────────────────────────────────
       const destUp4 = (destination || "DESTINO").toUpperCase();
-      const benefits4 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 4);
+      // dias → primeiro highlight com padrão "N dia(s)"
+      const daysItem4 = highlights.find((h) => /\d+\s*dia/i.test(h?.text || ""));
+      const daysText4 = daysItem4?.text?.trim() || "";
+      // parcelas
+      const parcelasText4 = installments ? `${installments} sem juros` : "";
+      // info_line: dias · parcelas
+      const infoBits4 = [daysText4, parcelasText4].filter(Boolean);
+      const infoLine4 = infoBits4.join("   ·   ");
+      // total / totalOverride
+      const priceNum4 = parseFloat(String(price || "0").replace(/\./g, "").replace(",", "."));
+      const parcelasNum4 = parseInt((installments || "").replace(/\D/g, ""), 10);
+      const computedTotal4 = !isNaN(priceNum4) && !isNaN(parcelasNum4) && parcelasNum4 > 0
+        ? `${curSym} ${(priceNum4 * parcelasNum4).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : "";
+      const totalStr4 = (totalOverride && totalOverride.trim()) || (computedTotal4 ? `Total: ${computedTotal4} por pessoa` : "");
+      const showTotal4 = showTotal !== false && !!totalStr4;
+      // discount_badge: extrai "N%" do promoName
+      const descMatch4 = (promoName || "").match(/(\d{1,2})\s*%/);
+      const descNum4 = descMatch4 ? parseInt(descMatch4[1], 10) : 0;
+      const showBadge4 = descNum4 > 0;
 
+      // ── Layout dinâmico do box ───────────────────────────────────────────
       const boxW = Math.round(width * 0.78);
       const boxPadX = 56;
       const boxPadY = 48;
       const titleLines = Math.min(2, Math.max(1, Math.ceil(titleText.length / 22)));
-      const benefitsRows = Math.ceil(benefits4.length / 2);
-      const benefitsBlockH = benefitsRows * 56;
-      const priceBlockH = 180;
-      const destBlockH = 110;
       const titleBlockH = titleLines * 36;
-      const sep = 28;
+      const destBlockH = 110;
+      const infoBlockH = infoLine4 ? 44 : 0;
+      const priceBlockH = showTotal4 ? 200 : 170;
+      const sep = 24;
       const boxH =
-        boxPadY + destBlockH + sep + titleBlockH + sep +
-        (benefits4.length ? benefitsBlockH + sep : 0) + priceBlockH + boxPadY;
+        boxPadY +
+        destBlockH + sep +
+        titleBlockH + sep +
+        (infoBlockH ? infoBlockH + sep : 0) +
+        priceBlockH +
+        boxPadY;
       const boxX = Math.round((width - boxW) / 2);
       const boxY = Math.round((height - boxH) / 2);
 
+      // Sombra + base do box
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.45)";
       ctx.shadowBlur = 60;
@@ -1417,6 +1450,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       fillRoundRect(ctx, boxX, boxY, boxW, boxH, 32, "rgba(15,18,28,0.78)");
       ctx.restore();
 
+      // Borda secundária
       ctx.strokeStyle = secondaryColor;
       ctx.lineWidth = 2;
       const rr = 32;
@@ -1429,11 +1463,20 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.closePath();
       ctx.stroke();
 
+      // [TITLE] — headline (kicker no topo)
       ctx.textAlign = "center";
       ctx.fillStyle = secondaryColor;
-      ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText(cityFmt ? `SAINDO DE ${cityFmt.toUpperCase()}` : "PACOTE EXCLUSIVO", width / 2, boxY + boxPadY + 24);
+      ctx.font = "700 22px Inter, Arial, sans-serif";
+      const kicker4 = (titleText || (cityFmt ? `Saindo de ${cityFmt}` : "PACOTE EXCLUSIVO")).toUpperCase();
+      let kickerSize = 22;
+      ctx.font = `700 ${kickerSize}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(kicker4).width > boxW - boxPadX * 2 && kickerSize > 14) {
+        kickerSize -= 1;
+        ctx.font = `700 ${kickerSize}px Inter, Arial, sans-serif`;
+      }
+      ctx.fillText(kicker4, width / 2, boxY + boxPadY + 24);
 
+      // [DESTINATION] — destino gigante
       let destSize4 = 76;
       ctx.font = `900 ${destSize4}px Inter, Arial, sans-serif`;
       while (ctx.measureText(destUp4).width > boxW - boxPadX * 2 && destSize4 > 38) {
@@ -1441,30 +1484,40 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.font = `900 ${destSize4}px Inter, Arial, sans-serif`;
       }
       ctx.fillStyle = "#ffffff";
-      ctx.fillText(destUp4, width / 2, boxY + boxPadY + 88);
+      ctx.fillText(destUp4, width / 2, boxY + boxPadY + 92);
 
-      const titleY4 = boxY + boxPadY + destBlockH + sep;
-      ctx.fillStyle = "rgba(255,255,255,0.85)";
-      drawTextBlock(ctx, titleText, boxX + boxPadX, titleY4, boxW - boxPadX * 2, 32, 2, { fontWeight: "600", baseFontSize: 26, minFontSize: 18 });
-
-      if (benefits4.length) {
-        const benTop = titleY4 + titleBlockH + sep;
-        const colW4 = (boxW - boxPadX * 2 - 24) / 2;
-        ctx.textAlign = "left";
-        benefits4.forEach((h, i) => {
-          const col = i % 2;
-          const row = Math.floor(i / 2);
-          const bx = boxX + boxPadX + col * (colW4 + 24);
-          const by = benTop + row * 56 + 28;
-          ctx.fillStyle = secondaryColor;
-          ctx.font = "800 22px Inter, Arial, sans-serif";
-          ctx.fillText(ICON_SYMBOL[h.icon || "check"], bx, by);
-          ctx.fillStyle = "#ffffff";
-          ctx.font = "600 22px Inter, Arial, sans-serif";
-          ctx.fillText(h.text, bx + 36, by);
-        });
+      // (slot mantido p/ subtítulo — usa cityFmt se houver, senão omite)
+      const subY4 = boxY + boxPadY + destBlockH + sep;
+      if (cityFmt) {
+        ctx.fillStyle = "rgba(255,255,255,0.75)";
+        ctx.font = "500 22px Inter, Arial, sans-serif";
+        ctx.fillText(`Saindo de ${cityFmt}`, width / 2, subY4 + 22);
       }
 
+      // [INFO_LINE] — dias · parcelas
+      if (infoLine4) {
+        const infoY4 = subY4 + titleBlockH + sep;
+        // pílula de fundo sutil
+        ctx.font = "700 22px Inter, Arial, sans-serif";
+        const infoW = ctx.measureText(infoLine4).width + 56;
+        const pillX = (width - infoW) / 2;
+        const pillY = infoY4 - 4;
+        fillRoundRect(ctx, pillX, pillY, infoW, 36, 18, "rgba(255,255,255,0.10)");
+        ctx.strokeStyle = "rgba(255,255,255,0.18)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(pillX + 18, pillY);
+        ctx.arcTo(pillX + infoW, pillY, pillX + infoW, pillY + 36, 18);
+        ctx.arcTo(pillX + infoW, pillY + 36, pillX, pillY + 36, 18);
+        ctx.arcTo(pillX, pillY + 36, pillX, pillY, 18);
+        ctx.arcTo(pillX, pillY, pillX + infoW, pillY, 18);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(infoLine4, width / 2, infoY4 + 21);
+      }
+
+      // [PRICE_BLOCK]
       const priceY4 = boxY + boxH - boxPadY - priceBlockH;
       ctx.strokeStyle = "rgba(255,255,255,0.18)";
       ctx.lineWidth = 1;
@@ -1488,10 +1541,48 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillStyle = secondaryColor;
       ctx.fillText(priceStr4, width / 2, priceY4 + 122);
 
+      // sufixo (por pessoa, etc.)
       ctx.fillStyle = "rgba(255,255,255,0.85)";
       ctx.font = "600 22px Inter, Arial, sans-serif";
-      const footerBits = [installments ? `${installments} sem juros` : "", bottomSuffix].filter(Boolean);
-      ctx.fillText(footerBits.join("  ·  "), width / 2, priceY4 + 158);
+      ctx.fillText(bottomSuffix || "", width / 2, priceY4 + 154);
+
+      // [TOTAL]
+      if (showTotal4) {
+        ctx.fillStyle = "rgba(255,255,255,0.65)";
+        ctx.font = "600 20px Inter, Arial, sans-serif";
+        ctx.fillText(totalStr4, width / 2, priceY4 + 186);
+      }
+
+      // [DISCOUNT_BADGE] — selo flutuante no canto superior direito do box
+      if (showBadge4) {
+        const badgeR = 64;
+        const badgeCx = boxX + boxW - 28;
+        const badgeCy = boxY + 4;
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.45)";
+        ctx.shadowBlur = 18;
+        ctx.shadowOffsetY = 4;
+        ctx.fillStyle = secondaryColor;
+        ctx.beginPath();
+        ctx.arc(badgeCx, badgeCy, badgeR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        // anel interno
+        ctx.strokeStyle = "rgba(0,0,0,0.25)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(badgeCx, badgeCy, badgeR - 8, 0, Math.PI * 2);
+        ctx.stroke();
+        // texto do badge
+        ctx.fillStyle = "#0b0f1a";
+        ctx.textAlign = "center";
+        ctx.font = "900 36px Inter, Arial, sans-serif";
+        ctx.textBaseline = "middle";
+        ctx.fillText(`${descNum4}%`, badgeCx, badgeCy - 6);
+        ctx.font = "800 14px Inter, Arial, sans-serif";
+        ctx.fillText("OFF", badgeCx, badgeCy + 22);
+        ctx.textBaseline = "alphabetic";
+      }
 
       ctx.textAlign = "left";
       return canvas.toDataURL("image/png");
