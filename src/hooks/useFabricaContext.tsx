@@ -197,6 +197,9 @@ const defaultState: FabricaState = {
   lastPaymentSuffix: "por pessoa",
   lastCurrency: "BRL",
   lastAdTitle: "Pacote {destino}",
+  hideCents: false,
+  showTotal: true,
+  totalOverride: "",
 };
 
 const STORAGE_KEY = "fabrica-context-v1";
