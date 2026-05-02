@@ -177,8 +177,9 @@ Qualidade cinematográfica, iluminação natural perfeita, cores vivas e saturad
       prompt = `Anúncio de viagem profissional para ${dest}. ${safeZoneRules(format)}`;
     }
 
-    const imageTemperature = body.photoOnly ? 0.72 : 1.1;
-    const imageTopP = body.photoOnly ? 0.88 : 0.96;
+    // Oferta exige texto legível → temperature mais baixa. Experiência aceita criatividade alta.
+    const imageTemperature = body.photoOnly ? 0.72 : (isOferta ? 0.85 : 1.1);
+    const imageTopP = body.photoOnly ? 0.88 : (isOferta ? 0.92 : 0.96);
 
     console.log("fabrica-generate-ad", { templateId: usedTemplateId, format, provider, isOferta, isAutoridade, isExperiencia });
 
