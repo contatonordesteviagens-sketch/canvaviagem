@@ -84,7 +84,7 @@ const CURRENCY_PRESETS: { id: Currency; symbol: string; label: string; locale: s
  *     "1499,90"  → BRL: "1.499,90"
  *     "1499.9"   → BRL: "1.499,90"
  */
-const formatPriceValue = (raw: string, currency: Currency): string => {
+const formatPriceValue = (raw: string, currency: Currency, assumeCents = false): string => {
   const value = (raw || "").trim();
   if (!value) return "";
   const cleaned = value.replace(/[^\d.,]/g, "");
@@ -109,9 +109,12 @@ const formatPriceValue = (raw: string, currency: Currency): string => {
     }
   }
 
-  if (!centsMode && digits.length > 2) {
+  if (!centsMode && assumeCents && digits.length > 2) {
     intPart = digits.slice(0, -2);
     decPart = digits.slice(-2);
+  } else if (!centsMode) {
+    intPart = digits;
+    decPart = "";
   }
 
   const num = Number(intPart || "0") + (decPart ? Number(decPart) / 100 : 0);
@@ -136,6 +139,15 @@ const buildPriceWithCurrency = (raw: string, currency: Currency): string => {
 const stripCurrencyFromPrice = (raw: string, currency: Currency): string => {
   const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
   return (raw || "").replace(sym, "").replace(/R\$|US\$|AR\$|€|£/g, "").trim();
+};
+
+const formatPriceWhileTyping = (raw: string, currency: Currency): string => {
+  const value = stripCurrencyFromPrice(raw, currency);
+  if (!value.trim()) return "";
+  if (/[A-Za-zÀ-ÿ]/.test(value)) return value;
+  const digits = value.replace(/\D/g, "");
+  if (digits.length >= 3 || /[.,]/.test(value)) return formatPriceValue(value, currency, digits.length >= 3);
+  return value;
 };
 
 interface PaymentPreset {
