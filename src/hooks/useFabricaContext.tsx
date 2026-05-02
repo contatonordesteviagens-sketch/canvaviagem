@@ -186,6 +186,7 @@ const defaultState: FabricaState = {
   lastPromoName: "OFERTA ESPECIAL",
   lastHighlights: undefined,
   lastPaymentMode: "installments",
+  lastAdTitle: "Pacote {destino}",
 };
 
 const STORAGE_KEY = "fabrica-context-v1";
