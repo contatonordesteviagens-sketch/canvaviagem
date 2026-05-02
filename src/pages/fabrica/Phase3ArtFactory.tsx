@@ -54,15 +54,18 @@ const DEFAULT_HIGHLIGHTS: Highlight[] = [
   { text: "Guia local", icon: "guide" },
 ];
 
+// Paleta enxuta: 10 cores distintas (sem repetir tons próximos)
 const PRESET_COLORS = [
-  // Linha 1 — Escuros / Neutros
-  "#000000", "#0a0a0a", "#1e293b", "#374151", "#6b7280", "#9ca3af", "#d1d5db", "#ffffff",
-  // Linha 2 — Azuis / Roxos
-  "#0c2340", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#7c3aed", "#a855f7", "#c084fc",
-  // Linha 3 — Quentes (vermelho/laranja/rosa)
-  "#dc2626", "#ef4444", "#f97316", "#fb923c", "#e85d3a", "#ec4899", "#f472b6", "#fda4af",
-  // Linha 4 — Amarelos / Verdes / Ciano
-  "#facc15", "#fde047", "#fbbf24", "#16a34a", "#22c55e", "#4ade80", "#0d7a5f", "#06b6d4",
+  "#000000", // preto
+  "#ffffff", // branco
+  "#6b7280", // cinza
+  "#0c2340", // azul marinho
+  "#2563eb", // azul
+  "#7c3aed", // roxo
+  "#dc2626", // vermelho
+  "#f97316", // laranja
+  "#facc15", // amarelo
+  "#16a34a", // verde
 ];
 
 type Currency = "BRL" | "USD" | "EUR" | "ARS" | "GBP";
@@ -1109,28 +1112,17 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           <div className="sm:col-span-2">
             <label className={labelCls}>Título do anúncio</label>
             <div className="relative">
-              <div className="flex gap-2">
-                <input
-                  value={adTitleTemplate}
-                  onChange={(e) => setAdTitleTemplate(e.target.value)}
-                  onFocus={() => setAdTitleMenuOpen(true)}
-                  placeholder="Ex: Pacote {destino}"
-                  className={`${inputCls} flex-1 pr-10`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setAdTitleMenuOpen((v) => !v)}
-                  className="px-3 rounded-xl border-2 font-bold text-xs flex items-center gap-1.5 whitespace-nowrap transition-all"
-                  style={{
-                    borderColor: secondaryColor,
-                    background: `${secondaryColor}1a`,
-                    color: secondaryColor,
-                  }}
-                  title="Ver modelos de título"
-                >
-                  ✨ Modelos <ChevronDown className={`w-3.5 h-3.5 transition-transform ${adTitleMenuOpen ? "rotate-180" : ""}`} />
-                </button>
-              </div>
+              <input
+                value={adTitleTemplate}
+                onChange={(e) => setAdTitleTemplate(e.target.value)}
+                onFocus={() => setAdTitleMenuOpen(true)}
+                onClick={() => setAdTitleMenuOpen(true)}
+                placeholder="Ex: Pacote {destino}"
+                className={`${inputCls} pr-10 cursor-pointer`}
+              />
+              <ChevronDown
+                className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${adTitleMenuOpen ? "rotate-180" : ""}`}
+              />
               {adTitleMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setAdTitleMenuOpen(false)} />
@@ -1214,14 +1206,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               />
             </div>
             <div>
-              <div className="flex items-baseline justify-between mb-1.5">
-                <label className={`${labelCls} mb-0`}>Valor ({currencySymbol})</label>
-                {formattedPriceForAd && (
-                  <span className="text-[10px] text-emerald-300/80 font-mono">
-                    → {currencySymbol} {formattedPriceForAd}
-                  </span>
-                )}
-              </div>
+              <label className={labelCls}>Valor ({currencySymbol})</label>
               <div className="flex gap-1.5">
                 <select
                   value={currency}
@@ -1238,14 +1223,24 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 <input
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
-                  placeholder={currency === "BRL" ? "1499,90" : "1499.90"}
+                  onBlur={() => {
+                    const f = formatPriceValue(price, currency);
+                    if (f) setPrice(f);
+                  }}
+                  placeholder={currency === "BRL" ? "1.499,90" : "1,499.90"}
                   inputMode="decimal"
                   className={`${inputCls} flex-1`}
                 />
               </div>
-              <p className="text-[10px] text-white/40 mt-1">
-                Padrão {currency}. Milhares e decimais são formatados automaticamente.
-              </p>
+              {formattedPriceForAd ? (
+                <p className="text-[11px] text-emerald-300/90 font-mono mt-1.5">
+                  {currencySymbol} {formattedPriceForAd}
+                </p>
+              ) : (
+                <p className="text-[10px] text-white/40 mt-1.5">
+                  Milhares e decimais formatados automaticamente.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -1262,12 +1257,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 <span className="text-[10px] text-white/40">{hint}</span>
               </div>
               {/* Bolinhas da paleta — grid 8 col, 4 linhas */}
-              <div className="grid grid-cols-8 gap-1.5 mb-3">
+              <div className="grid grid-cols-10 gap-1 mb-3">
                 {PRESET_COLORS.map((c) => (
                   <button
                     key={c}
                     onClick={() => setter(c)}
-                    className={`w-6 h-6 rounded-full border-2 transition-all ${value.toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-lg" : "border-white/20 hover:border-white/60"}`}
+                    className={`w-5 h-5 rounded-full border transition-all ${value.toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-md" : "border-white/20 hover:border-white/60"}`}
                     style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
                     aria-label={c}
                     title={c}

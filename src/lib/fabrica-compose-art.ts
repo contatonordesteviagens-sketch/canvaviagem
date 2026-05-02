@@ -530,10 +530,14 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const titleY = badgeY + badgeH + topPaddingBeforeTitle + titleSize;
       ctx.fillText(titleText, left, titleY);
 
-      // 8) Benefits + Preço lado a lado (alinhados ao topo do bloco de conteúdo)
+      // 8) Benefits + Preço lado a lado — preço ALINHADO À DIREITA pra eliminar
+      //    o espaço em branco que sobrava no canto direito.
       const rowTopY = titleY + titleToContent;
       const benefitsX = left;
-      const priceX = left + 420;
+      // Largura do bloco de preço: ~46% da contentWidth, mínimo 380px
+      const priceBlockW = Math.max(380, Math.round(contentWidth * 0.46));
+      const priceX = width - 60 - priceBlockW; // encosta no padding direito
+      const benefitsMaxW = priceX - 24 - benefitsX;
 
       ctx.fillStyle = primaryColor;
       ctx.font = "700 26px Inter, Arial, sans-serif";
@@ -541,7 +545,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ICON_SYMBOL[(benefitsList[i]?.icon as IconKey) || (fallback as IconKey)] || ICON_SYMBOL.check;
       benefitsList.forEach((b, i) => {
         const icon = iconForIndex(i, ["bus", "map", "guide", "star"][i] || "check");
-        ctx.fillText(`${icon} ${b.text}`, benefitsX, rowTopY + 28 + i * benefitLineH);
+        const line = `${icon} ${b.text}`;
+        // auto-shrink por linha pra caber na coluna esquerda
+        let bfs = 26;
+        ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(line).width > benefitsMaxW && bfs > 16) {
+          bfs -= 2;
+          ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
+        }
+        ctx.fillText(line, benefitsX, rowTopY + 28 + i * benefitLineH);
       });
 
       // Divisor vertical
@@ -549,23 +561,26 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillRect(priceX - 24, rowTopY, 2, contentRowH);
       ctx.globalAlpha = 1;
 
-      // Preço (alinhado ao topo do bloco) — respeita rótulo personalizado (topLabel)
+      // Preço — agora CENTRALIZADO dentro do bloco direito
+      const priceCenterX = priceX + priceBlockW / 2;
+      ctx.textAlign = "center";
       ctx.fillStyle = primaryColor; ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText((topLabel || "por apenas").toString(), priceX, rowTopY + 28);
-      ctx.fillStyle = primaryColor; ctx.font = "900 60px Inter, Arial, sans-serif";
+      ctx.fillText((topLabel || "por apenas").toString(), priceCenterX, rowTopY + 28);
       const priceStr = mainPrice || `${curSym} ${price}`;
-      // Auto-shrink do preço pra não vazar
-      let priceFs = 60;
+      // Auto-shrink do preço pra não vazar do bloco direito
+      let priceFs = 64;
       ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(priceStr).width > (width - priceX - 80) && priceFs > 30) {
+      while (ctx.measureText(priceStr).width > priceBlockW - 20 && priceFs > 30) {
         priceFs -= 4;
         ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
       }
-      ctx.fillText(priceStr, priceX, rowTopY + 92);
+      ctx.fillStyle = primaryColor;
+      ctx.fillText(priceStr, priceCenterX, rowTopY + 92);
       ctx.font = "600 20px Inter, Arial, sans-serif"; ctx.fillStyle = primaryColor;
       ctx.globalAlpha = 0.7;
-      ctx.fillText(bottomSuffix || "/pessoa", priceX, rowTopY + 120);
+      ctx.fillText(bottomSuffix || "/pessoa", priceCenterX, rowTopY + 120);
       ctx.globalAlpha = 1;
+      ctx.textAlign = "left";
 
       // 9) Foto MAIOR na base (porque o painel encolheu)
       const photoH0 = height - topH;
