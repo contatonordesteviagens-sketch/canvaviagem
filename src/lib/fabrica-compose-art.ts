@@ -191,6 +191,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     currencySymbol,
   } = options;
   const curSym = (currencySymbol || "R$").trim();
+  const priceValueText = (price || "").trim();
+  const priceWithSymbol = /^(R\$|US\$|AR\$|€|£|[A-Z]{1,3}\$)/i.test(priceValueText)
+    ? priceValueText
+    : `${curSym} ${priceValueText}`.trim();
 
   const width = 1080;
   const height = format === "story" ? 1920 : 1080;
@@ -270,26 +274,27 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const subtitleText = subtitlePool[(Math.abs(variation) + 2) % subtitlePool.length];
 
   const resolvePaymentCopy = () => {
+    const suffix = (fallback: string) => (typeof paymentSuffix === "string" ? paymentSuffix : fallback);
     switch (paymentMode) {
       case "cash":
-        return { topLabel: paymentLabel || "À VISTA", mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || "À VISTA", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "cash_discount":
-        return { topLabel: paymentLabel || "À VISTA · 5% OFF", mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || "À VISTA · 5% OFF", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "from":
-        return { topLabel: paymentLabel || "A PARTIR DE", mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || "A PARTIR DE", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "daily":
-        return { topLabel: paymentLabel || "DIÁRIA POR", mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/diária" };
+        return { topLabel: paymentLabel || "DIÁRIA POR", mainPrice: priceWithSymbol, bottomSuffix: suffix("por diária") };
       case "monthly":
-        return { topLabel: paymentLabel || "MENSAL POR", mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/mês" };
+        return { topLabel: paymentLabel || "MENSAL POR", mainPrice: priceWithSymbol, bottomSuffix: suffix("por mês") };
       case "down_plus":
-        return { topLabel: paymentLabel || `ENTRADA + ${installments}`, mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || `ENTRADA + ${installments}`, mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "free_quote":
         return { topLabel: paymentLabel || "CONSULTE", mainPrice: paymentSuffix ? "" : "VALORES", bottomSuffix: paymentSuffix || "no WhatsApp" };
       case "custom_label":
-        return { topLabel: paymentLabel || installments, mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || installments, mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "installments":
       default:
-        return { topLabel: paymentLabel || installments, mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || installments, mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
     }
   };
 
