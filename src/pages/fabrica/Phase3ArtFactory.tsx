@@ -300,7 +300,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [destination, setDestination] = useState(state.destinos?.[0] || "");
   const [price, setPriceState] = useState(state.lastPrice || "149,90");
   const setPrice = (p: string) => { setPriceState(p); update({ lastPrice: p }); };
-  const [currency, setCurrency] = useState<Currency>("BRL");
+  const [currency, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
+  const setCurrency = (c: Currency) => { setCurrencyState(c); update({ lastCurrency: c }); };
   // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
   const formattedPriceForAd = formatPriceValue(price, currency);
   const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
@@ -321,8 +322,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [paymentMode, setPaymentModeState] = useState<PaymentMode>(state.lastPaymentMode || "installments");
   const setPaymentMode = (m: PaymentMode) => { setPaymentModeState(m); update({ lastPaymentMode: m }); };
 
-  const [paymentLabel, setPaymentLabel] = useState("");
-  const [paymentSuffix, setPaymentSuffix] = useState("");
+  const [paymentLabelState, setPaymentLabelState] = useState(state.lastPaymentLabel || "");
+  const setPaymentLabel = (label: string) => { setPaymentLabelState(label); update({ lastPaymentLabel: label }); };
+  const [paymentSuffixState, setPaymentSuffixState] = useState(state.lastPaymentSuffix || "por pessoa");
+  const setPaymentSuffix = (suffix: string) => { setPaymentSuffixState(suffix); update({ lastPaymentSuffix: suffix }); };
+  const paymentLabel = paymentMode === "installments" || paymentMode === "down_plus" ? installments : paymentLabelState;
+  const paymentSuffix = paymentSuffixState;
   const [primaryColor, setPrimaryColorState] = useState(state.primaryColor || "#F59E0B");
   const [secondaryColor, setSecondaryColorState] = useState(state.secondaryColor || "#FCD34D");
   
