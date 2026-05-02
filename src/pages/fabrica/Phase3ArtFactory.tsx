@@ -1351,68 +1351,114 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             </div>
             <div>
               <label className={labelCls}>Complemento</label>
-              <input
-                value={paymentSuffix}
-                onChange={(e) => setPaymentSuffix(e.target.value)}
-                placeholder="por pessoa, casal, pacote..."
-                className={inputCls}
-                list="fabrica-price-suffixes"
-              />
-              <datalist id="fabrica-price-suffixes">
-                {['por pessoa', 'por casal', 'por pacote', 'por grupo', 'total do pacote'].map((option) => (
-                  <option key={option} value={option} />
-                ))}
-              </datalist>
+              <div className="relative">
+                <input
+                  value={paymentSuffix}
+                  onChange={(e) => setPaymentSuffix(e.target.value)}
+                  onFocus={() => setSuffixMenuOpen(true)}
+                  onClick={() => setSuffixMenuOpen(true)}
+                  placeholder="por pessoa, casal..."
+                  className={`${inputCls} pr-9 cursor-pointer`}
+                />
+                <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${suffixMenuOpen ? "rotate-180" : ""}`} />
+                {suffixMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setSuffixMenuOpen(false)} />
+                    <div className="absolute left-0 right-0 mt-2 bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
+                      {SUFFIX_PRESETS.map((opt) => {
+                        const active = paymentSuffix === opt;
+                        return (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => { setPaymentSuffix(opt); setSuffixMenuOpen(false); }}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
+                          >
+                            {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                            <span className={active ? "" : "ml-5"}>{opt}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-          {/* Opções de preço (aplicam a todas variantes) */}
-          <div className="mt-3">
-            <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5 w-fit">
-              <input
-                type="checkbox"
-                checked={!hideCents}
-                onChange={(e) => setHideCents(!e.target.checked)}
-                className="accent-yellow-400 w-4 h-4"
-              />
-              Mostrar centavos (ex.: 423,43 em vez de 423)
-            </label>
           </div>
 
-          {/* Opções exclusivas da V3 (variação CVC) */}
-          <div className="mt-3 bg-amber-400/[0.06] border border-amber-300/20 rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-300/90">Opções da variação V3</span>
-              <span className="text-[10px] text-white/40">(box amarelo · só afeta a V3)</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
-              <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
-                <input
-                  type="checkbox"
-                  checked={showTotal}
-                  onChange={(e) => setShowTotal(e.target.checked)}
-                  className="accent-yellow-400 w-4 h-4"
-                />
-                Mostrar linha "Total"
-              </label>
-              <input
-                value={totalOverride}
-                onChange={(e) => setTotalOverride(e.target.value)}
-                placeholder='Total (auto). Ex.: "Total por casal: R$ 3.998"'
-                disabled={!showTotal}
-                className={`${inputCls} ${!showTotal ? "opacity-50" : ""}`}
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
-                <input
-                  type="checkbox"
-                  checked={showPixBanner}
-                  onChange={(e) => setShowPixBanner(e.target.checked)}
-                  className="accent-yellow-400 w-4 h-4"
-                />
-                Mostrar faixa azul do Pix
-              </label>
-              <input
+          {/* Opções de preço — colapsável, desativada por padrão, aplica a TODAS variações */}
+          <div className="mt-4 bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
+            <button
+              type="button"
+              onClick={() => {
+                if (!priceOptionsEnabled) {
+                  setPriceOptionsEnabled(true);
+                  setPriceOptionsOpen(true);
+                } else {
+                  setPriceOptionsOpen((v) => !v);
+                }
+              }}
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-white">Opções de preço</span>
+                <span className="text-[10px] text-white/40">{priceOptionsEnabled ? "(ativado)" : "(opcional)"}</span>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${priceOptionsOpen ? "rotate-180" : ""}`} />
+            </button>
+            {priceOptionsOpen && (
+              <div className="px-4 pb-4 pt-1 space-y-3 border-t border-white/10">
+                <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
+                  <input
+                    type="checkbox"
+                    checked={!hideCents}
+                    onChange={(e) => setHideCents(!e.target.checked)}
+                    className="accent-yellow-400 w-4 h-4"
+                  />
+                  Mostrar centavos <span className="text-white/40 ml-1">(ex.: R$ 423,43)</span>
+                </label>
+
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
+                    <input
+                      type="checkbox"
+                      checked={showTotal}
+                      onChange={(e) => setShowTotal(e.target.checked)}
+                      className="accent-yellow-400 w-4 h-4"
+                    />
+                    Mostrar valor total <span className="text-white/40 ml-1">(ex.: Total por casal: R$ 3.998)</span>
+                  </label>
+                  <input
+                    value={totalOverride}
+                    onChange={(e) => setTotalOverride(e.target.value)}
+                    placeholder='Texto personalizado (auto se vazio)'
+                    disabled={!showTotal}
+                    className={`${inputCls} ${!showTotal ? "opacity-50" : ""}`}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
+                    <input
+                      type="checkbox"
+                      checked={showPixBanner}
+                      onChange={(e) => setShowPixBanner(e.target.checked)}
+                      className="accent-yellow-400 w-4 h-4"
+                    />
+                    Mostrar faixa de desconto
+                  </label>
+                  <input
+                    value={pixBannerText}
+                    onChange={(e) => setPixBannerText(e.target.value)}
+                    placeholder='Ex.: "5% OFF À VISTA NO PIX"'
+                    disabled={!showPixBanner}
+                    className={`${inputCls} ${!showPixBanner ? "opacity-50" : ""}`}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
                 value={pixBannerText}
                 onChange={(e) => setPixBannerText(e.target.value)}
                 placeholder='Texto da faixa (auto: "5% OFF À VISTA NO pix")'
