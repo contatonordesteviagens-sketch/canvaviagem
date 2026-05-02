@@ -119,6 +119,7 @@ export interface FabricaState {
   lastPromoName?: string;
   lastHighlights?: any[];
   lastPaymentMode?: any;
+  lastAdTitle?: string;
 }
 
 const defaultState: FabricaState = {
