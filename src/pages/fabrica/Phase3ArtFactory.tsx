@@ -593,6 +593,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             strategy: localStrategy,
             variation: freshSeedCustom,
             forceVariant: nextVariant,
+            titleOverride: resolvedAdTitle,
           });
           if (state.logoBase64) {
             try {
