@@ -1151,7 +1151,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">
             Seu anúncio
           </h3>
-          <div className={generatedImages.length > 1 ? "grid grid-cols-2 gap-3 mb-4" : "mb-4"}>
+          <div className={
+            generatedImages.length === 1 ? "mb-4" :
+            generatedImages.length === 2 ? "grid grid-cols-2 gap-3 mb-4" :
+            "grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4"
+          }>
             {generatedImages.map((img, idx) => (
               <div
                 key={idx}
