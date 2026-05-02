@@ -394,9 +394,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           secondary: palette.secondary,
         });
 
-        setGeneratedImage(composed[0]);
-        setGeneratedImages(composed);
-        update({ generatedAdImage: composed[0], primaryColor: palette.primary });
+        const MAX_VARIATIONS_PHOTO = 3;
+        setGeneratedImages((prev) => [...prev, ...composed].slice(-MAX_VARIATIONS_PHOTO));
+        setGeneratedImage(composed[composed.length - 1]);
+        update({ generatedAdImage: composed[composed.length - 1], primaryColor: palette.primary });
 
         const newCount = generationCount + composed.length;
         setGenerationCount(newCount);
