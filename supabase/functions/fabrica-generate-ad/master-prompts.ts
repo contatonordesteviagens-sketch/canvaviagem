@@ -955,6 +955,64 @@ REGRAS ABSOLUTAS:
 }
 
 // ============================================================
+// V4 (PREMIUM BLUE BOX) — Equivalente IA do template canvas V4
+// Estilo "premium_international": destino europeu/histórico, luz quente,
+// box azul-marinho central #1C2D5A, tipografia elegante, ícones minimal mono.
+// ============================================================
+export function promptPremiumBlueBoxV4(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "v4-premium", v.forbiddenHeadlines);
+  const isSquare = v.format === "square";
+  const discountMatch = (v.promoName || "").match(/(\d{1,2})\s*%/);
+  const discountNum = discountMatch ? parseInt(discountMatch[1], 10) : 5;
+  return `
+Banner publicitário de viagem ${isSquare ? "QUADRADO 1:1" : "VERTICAL 9:16"} no estilo PREMIUM INTERNACIONAL — agência de viagem boutique, foco em conversão com sofisticação.
+
+FUNDO (highly realistic): Foto fotográfica REAL de altíssima qualidade do destino "${v.destination}" — preferencialmente cidade histórica europeia, marco arquitetônico ou paisagem icônica reconhecível. Iluminação natural QUENTE (golden hour), look CINEMATOGRÁFICO, profundidade de campo suave, alto realismo, 8K. Sem ilustração, sem 3D, sem efeitos artísticos.
+
+ELEMENTO PRINCIPAL — BOX AZUL-MARINHO PREMIUM CENTRAL:
+Um retângulo SÓLIDO na cor AZUL-MARINHO PROFUNDO #1C2D5A com cantos arredondados (raio ~24px / medium), posicionado no CENTRO do banner ocupando ~78% da largura, com sombra SOFT (suave, difusa) que destaca o box do fundo fotográfico sem pesar. Filete interno fino branco a 10% de opacidade para acabamento elegante.
+
+DENTRO DO BOX — alinhamento à ESQUERDA, hierarquia vertical (do topo para a base):
+1. KICKER: pequena barra accent + texto curto em CAPS tracking ("${headline.toUpperCase()}") — Bold pequeno, cor accent ${v.secondaryHex}.
+2. NOME DO DESTINO: "${v.destination}" em fonte SERIF ELEGANTE (Playfair Display / Cormorant) peso medium, branco, tamanho GRANDE (dominante na área superior do box).
+3. SUBLINHA DISCRETA: "Saindo de ${v.city || "—"}" em sans regular, branco 70%.
+4. TÍTULO/SUBHEADLINE: "${v.titleOverride || headline}" em sans Bold, branco 92%, máx 2 linhas.
+5. INFO_LINE: linha única "${v.duration || "5 dias"} · ${v.installments}x sem juros" precedida de ÍCONES MINIMAL MONOCROMÁTICOS PEQUENOS em outline fino accent (calendário, cartão). Sem ícones coloridos.
+6. FILETE divisor branco 12% de opacidade.
+7. BLOCO DE PREÇO (alinhado à esquerda):
+   - "a partir de" (sans regular, branco 72%)
+   - "${v.installments}x sem juros" (sans Bold accent ${v.secondaryHex})
+   - "R$ ${v.installmentValue}" em fonte SERIF Bold GIGANTE (a maior tipografia do banner inteiro), branco. Formato BRL (ponto milhar, vírgula centavos).
+   - sufixo "por pessoa" lateral pequeno em branco 72%.
+   - "Total por pessoa: R$ ${v.totalValue}" em sans medium pequeno, branco 55%.
+8. FAIXA INFERIOR (dentro do box, no rodapé): pílula sólida na cor accent ${v.secondaryHex} ocupando toda a largura interna, com texto preto Bold "${discountNum}% OFF À VISTA NO PIX" centralizado.
+
+TEXTOS EXATOS — escreva SOMENTE esses, sem inventar palavras adicionais:
+- «${headline.toUpperCase()}»
+- «${v.destination}»
+${v.city ? `- «Saindo de ${v.city}»` : ""}
+- «${v.titleOverride || headline}»
+- «${v.duration || "5 dias"} · ${v.installments}x sem juros»
+- «a partir de»
+- «${v.installments}x sem juros»
+- «R$ ${v.installmentValue}»
+- «por pessoa»
+- «Total por pessoa: R$ ${v.totalValue}»
+- «${discountNum}% OFF À VISTA NO PIX»
+
+REGRAS ABSOLUTAS:
+- Hierarquia clara: o R$ do preço é SEMPRE o maior elemento do banner.
+- Visual CLEAN, PREMIUM, NO_CLUTTER — muita respiração entre os blocos.
+- ÍCONES apenas monocromáticos minimal (outline fino accent), nunca coloridos.
+- Tipografia: serif elegante para destino + preço, sans Bold para títulos.
+- Box sólido #1C2D5A (não translúcido, não gradiente).
+- Texto perfeitamente escrito, sem erros, sem letras cortadas, sem repetições.
+- Sem badges circulares grandes, sem stickers, sem emojis.
+- Qualidade editorial profissional, resolução 8K.
+`;
+}
+
+// ============================================================
 // REGISTRO DE TEMPLATES
 // ============================================================
 export const MASTER_TEMPLATES = [
