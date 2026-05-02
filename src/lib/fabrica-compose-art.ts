@@ -1440,7 +1440,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // 5) Faixa horizontal com headline
       const faixaY = photoTop + fH2 + 16;
       fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, v2CardBg);
-      ctx.fillStyle = v2OnCard;
+      ctx.fillStyle = v2HeadlineColor;
       ctx.textAlign = "left";
       let v2Size = 52;
       ctx.font = `900 ${v2Size}px Inter, Arial, sans-serif`;
