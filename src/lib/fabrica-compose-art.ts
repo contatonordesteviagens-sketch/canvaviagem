@@ -645,6 +645,45 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
   const { topLabel, mainPrice, bottomSuffix } = resolvePaymentCopy();
 
+  /**
+   * Desenha extras globais (linha "Total" + faixa Pix) no rodapé da arte.
+   * Vale para TODAS as variações (V0/V1/V2 e demais strategies).
+   * V3 já tem implementação própria — ele NÃO chama esta função.
+   */
+  const drawGlobalExtras = () => {
+    if (!showTotal && !showPixBanner) return;
+    const bottomMargin = 30;
+    const stripeH = showPixBanner ? 64 : 0;
+    const stripeY = height - bottomMargin - stripeH;
+    if (showPixBanner) {
+      ctx.save();
+      ctx.fillStyle = "#0B2B7A";
+      ctx.fillRect(0, stripeY, width, stripeH);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 26px Inter, Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const txt = (pixBannerText || "").trim() || "5% OFF À VISTA NO PIX";
+      ctx.fillText(txt, width / 2, stripeY + stripeH / 2 + 1);
+      ctx.restore();
+      ctx.textBaseline = "alphabetic";
+    }
+    if (showTotal) {
+      const totalText = (totalOverride || "").trim() || `Total: ${priceWithSymbol}`;
+      const totalY = (showPixBanner ? stripeY : height - bottomMargin) - 14;
+      ctx.save();
+      ctx.font = "800 24px Inter, Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = "rgba(0,0,0,0.65)";
+      ctx.strokeText(totalText, width / 2, totalY);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(totalText, width / 2, totalY);
+      ctx.restore();
+      ctx.textAlign = "left";
+    }
+  };
+
   const drawRoundedPhoto = (x: number, y: number, w: number, h: number, radius: number, focusY = 0.4) => {
     const crop = fitCover(image.naturalWidth, image.naturalHeight, w, h, focusY);
     ctx.save();
