@@ -670,7 +670,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             </button>
             <button
               onClick={() => setGenMode("custom")}
-              disabled={categoria === "autoridade_dark"}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "custom" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
             >
               <Upload className="w-3.5 h-3.5" /> Sua Imagem
