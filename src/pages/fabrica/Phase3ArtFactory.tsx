@@ -708,13 +708,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
       const palette = selectedPalette(primaryColor, secondaryColor);
 
-      // Rotação determinística entre as 3 variantes do compositor (V0/V1/V2)
-      // evitando a última usada — garante imagem nova a cada clique.
-      const TOTAL_VARIANTS = 3;
-      const lastUsed = variantHistoryRef.current[variantHistoryRef.current.length - 1];
-      const candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => v !== lastUsed);
+      // Rotação determinística entre as 6 variantes do compositor
+      // (V0/V1/V2 originais + V3/V4/V5 estilo CVC e split editorial),
+      // evitando as 2 últimas usadas — garante imagem nova a cada clique.
+      const TOTAL_VARIANTS = 6;
+      const lastUsed = variantHistoryRef.current.slice(-2);
+      const candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => !lastUsed.includes(v));
       const nextVariant = candidates[Math.floor(Math.random() * candidates.length)];
-      variantHistoryRef.current = [...variantHistoryRef.current.slice(-2), nextVariant];
+      variantHistoryRef.current = [...variantHistoryRef.current.slice(-4), nextVariant];
 
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy) => {
