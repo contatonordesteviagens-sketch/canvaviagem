@@ -245,7 +245,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const right = width - 80;
   const contentWidth = right - left;
   // Sempre mostra até 5 benefícios (story OU quadrado) — o usuário escolheu 5/5 e os 5 devem aparecer.
-  const shownHighlights = highlights.slice(0, 5);
+  const shownHighlights = highlights.slice(0, 6);
   const badgeText = cityFmt ? `Saindo de ${cityFmt}` : "Pacote completo";
   const variantIdx = typeof forceVariant === "number" ? Math.abs(forceVariant) : Math.abs(variation);
   const pickedFromVariations = (titleVariations && titleVariations.length > 0)
@@ -813,12 +813,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
     // 3 Pills compactos — abaixo do destino
     const pillsY = destY + (format === "story" ? 40 : 34);
-    // Exibe os 5 destaques no formato compacto para caber tudo
-    drawHighlightsBlock(left + 28, pillsY, contentWidth - 56, 5, true, true);
+    // Exibe até 6 destaques no formato compacto
+    drawHighlightsBlock(left + 28, pillsY, contentWidth - 56, 6, true, true);
 
     // Price card — SEMPRE abaixo dos pills, sem Math.min que causava sobreposição
-    // Se tivermos 5 pills, a altura aumenta. Cada pill compact = 70px.
-    const pillsCount = highlights.slice(0, 5).length;
+    // Cada pill compact = 70px.
+    const pillsCount = highlights.slice(0, 6).length;
     const priceCardY = pillsY + pillsCount * 70 + 20;
     drawPriceCard(left + 28, priceCardY, contentWidth - 56, 290, "right");
 
