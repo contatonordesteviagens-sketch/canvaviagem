@@ -1355,61 +1355,55 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               </datalist>
             </div>
           </div>
-          {/* Opções de preço (aplicam a todas variantes) */}
+          {/* Opções de variações de preço — colapsado por padrão, aplica a TODAS as variações */}
           <div className="mt-3">
-            <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5 w-fit">
-              <input
-                type="checkbox"
-                checked={hideCents}
-                onChange={(e) => setHideCents(e.target.checked)}
-                className="accent-yellow-400 w-4 h-4"
-              />
-              Sem centavos (ex.: 423 em vez de 423,43)
-            </label>
-          </div>
+            <button
+              type="button"
+              onClick={() => setPriceExtrasOpen((o) => !o)}
+              className="w-full flex items-center justify-between gap-2 text-[12px] font-bold text-white/80 bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5 hover:bg-white/[0.07] transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Plus className={`w-3.5 h-3.5 transition-transform ${priceExtrasOpen ? "rotate-45" : ""}`} />
+                Opções de variações de preço
+              </span>
+              <span className="text-[10px] text-white/40 font-normal">vale para todas as variações</span>
+            </button>
+            {priceExtrasOpen && (
+              <div className="mt-2 space-y-2 bg-white/[0.02] border border-white/10 rounded-xl p-3">
+                <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer">
+                  <input type="checkbox" checked={hideCents} onChange={(e) => setHideCents(e.target.checked)} className="accent-yellow-400 w-4 h-4" />
+                  <span>Sem centavos <span className="text-white/40">(ex.: 423 em vez de 423,43)</span></span>
+                </label>
 
-          {/* Opções exclusivas da V3 (variação CVC) */}
-          <div className="mt-3 bg-amber-400/[0.06] border border-amber-300/20 rounded-xl p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-300/90">Opções da variação V3</span>
-              <span className="text-[10px] text-white/40">(box amarelo · só afeta a V3)</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
-              <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
-                <input
-                  type="checkbox"
-                  checked={showTotal}
-                  onChange={(e) => setShowTotal(e.target.checked)}
-                  className="accent-yellow-400 w-4 h-4"
-                />
-                Mostrar linha "Total"
-              </label>
-              <input
-                value={totalOverride}
-                onChange={(e) => setTotalOverride(e.target.value)}
-                placeholder='Total (auto). Ex.: "Total por casal: R$ 3.998"'
-                disabled={!showTotal}
-                className={`${inputCls} ${!showTotal ? "opacity-50" : ""}`}
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
-                <input
-                  type="checkbox"
-                  checked={showPixBanner}
-                  onChange={(e) => setShowPixBanner(e.target.checked)}
-                  className="accent-yellow-400 w-4 h-4"
-                />
-                Mostrar faixa azul do Pix
-              </label>
-              <input
-                value={pixBannerText}
-                onChange={(e) => setPixBannerText(e.target.value)}
-                placeholder='Texto da faixa (auto: "5% OFF À VISTA NO pix")'
-                disabled={!showPixBanner}
-                className={`${inputCls} ${!showPixBanner ? "opacity-50" : ""}`}
-              />
-            </div>
+                <div className="grid grid-cols-1 sm:grid-cols-[auto,1fr] gap-2 items-center">
+                  <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer">
+                    <input type="checkbox" checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} className="accent-yellow-400 w-4 h-4" />
+                    Mostrar mais uma linha com o valor total
+                  </label>
+                  <input
+                    value={totalOverride}
+                    onChange={(e) => setTotalOverride(e.target.value)}
+                    placeholder='Ex.: "Total por casal: R$ 3.998"'
+                    disabled={!showTotal}
+                    className={`${inputCls} ${!showTotal ? "opacity-40" : ""}`}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-[auto,1fr] gap-2 items-center">
+                  <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer">
+                    <input type="checkbox" checked={showPixBanner} onChange={(e) => setShowPixBanner(e.target.checked)} className="accent-yellow-400 w-4 h-4" />
+                    Mostrar faixa de destaque (ex.: 5% OFF no Pix)
+                  </label>
+                  <input
+                    value={pixBannerText}
+                    onChange={(e) => setPixBannerText(e.target.value)}
+                    placeholder='Ex.: "5% OFF À VISTA NO PIX"'
+                    disabled={!showPixBanner}
+                    className={`${inputCls} ${!showPixBanner ? "opacity-40" : ""}`}
+                  />
+                </div>
+              </div>
+            )}
           </div>
           {formattedPriceForAd && (
             <p className="text-[11px] text-emerald-300/90 font-mono mt-2">
