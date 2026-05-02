@@ -760,8 +760,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         secondary: palette.secondary,
       });
 
-      // Acumula até 3 variações lado a lado (não substitui as anteriores)
-      const MAX_VARIATIONS = 3;
+      // Acumula até 6 variações lado a lado (não substitui as anteriores)
+      const MAX_VARIATIONS = 6;
       setGeneratedImages((prev) => {
         const merged = [...prev, ...imagesCustom].slice(-MAX_VARIATIONS);
         return merged;
