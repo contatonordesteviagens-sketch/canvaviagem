@@ -36,6 +36,8 @@ interface ComposeTravelAdOptions {
   variation?: number;
   /** Força uma variante específica (0..2 para Sua Imagem + Oferta + 1:1). Quando definido, ignora variation%N. */
   forceVariant?: number;
+  /** Quando definido, sobrescreve o pool aleatório de headlines e usa este texto como título principal em todas as variantes. */
+  titleOverride?: string;
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
@@ -180,6 +182,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     strategy = "vitrine",
     variation = 0,
     forceVariant,
+    titleOverride,
   } = options;
 
   const width = 1080;
@@ -222,7 +225,6 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const ofertaBase = [
     "Partiu viajar?",
     "Preço especial para viajar",
-    "Sua próxima viagem começa agora",
     "Vagas limitadas, garanta a sua",
   ];
   const ofertaWithDest = hasDest
@@ -242,7 +244,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   // Sempre mostra até 5 benefícios (story OU quadrado) — o usuário escolheu 5/5 e os 5 devem aparecer.
   const shownHighlights = highlights.slice(0, 5);
   const badgeText = cityFmt ? `Saindo de ${cityFmt}` : "Pacote completo";
-  const titleText = headlinePool[Math.abs(variation) % headlinePool.length];
+  const titleText = (titleOverride && titleOverride.trim())
+    ? titleOverride.trim()
+    : headlinePool[Math.abs(variation) % headlinePool.length];
   const subtitlePool = [
     "Roteiro pensado para viver melhor",
     "Beleza, conforto e boas memórias",

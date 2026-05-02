@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { composeTravelAd, type PaymentMode } from "@/lib/fabrica-compose-art";
 import { getForbiddenSets, registerGeneration, freshSeed } from "@/lib/fabrica-generation-guard";
 import {
-  Loader2, Download, Sparkles, ArrowRight, Plus, X,
+  Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown,
   Bus, Hotel, Plane, Check, Star, Heart, Sun, Camera, MapPin, Utensils, Ship, Palmtree, Coffee, Wifi, User,
   Square, Smartphone, Image as ImageIcon, Upload, Link2, Search, Wand2,
 } from "lucide-react";
@@ -78,6 +78,24 @@ const PAYMENT_PRESETS: PaymentPreset[] = [
   { id: "installments", name: "Parcelado",          emoji: "💳", description: "Ex: 10x R$ 149,90",       hint: "Parcelas: 10x · Valor: 149,90" },
   { id: "cash",         name: "À vista",            emoji: "💰", description: "Ex: À VISTA R$ 1.499",    hint: "Valor: 1.499" },
   { id: "down_plus",    name: "Entrada + parcelas", emoji: "💵", description: "Ex: ENTRADA + 10x R$ 149", hint: "Parcelas: ENTRADA R$ 200 + 10x · Valor: 149" },
+];
+
+const AD_TITLE_PRESETS: string[] = [
+  "Conheça o melhor de {destino}",
+  "Descubra {destino}",
+  "Pacote {destino}",
+  "Explore {destino}",
+  "{destino} vai te surpreender",
+  "Você precisa conhecer {destino}!",
+  "O que fazer em {destino}",
+  "O melhor de {destino}",
+  "Meu sonho se chama {destino}",
+  "Partiu {destino}",
+  "Sua próxima viagem é {destino}",
+  "Pacote Promocional {destino}",
+  "Viagem Completa {destino}",
+  "{destino} te espera",
+  "Vamos para {destino}?",
 ];
 
 const CATEGORY_LOCAL_STRATEGIES: Record<CategoriaId, StrategyId[]> = {
@@ -171,6 +189,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
   const [promoName, setPromoNameState] = useState(state.lastPromoName || "OFERTA ESPECIAL");
   const setPromoName = (n: string) => { setPromoNameState(n); update({ lastPromoName: n }); };
+
+  // Título do anúncio (com presets editáveis usando {destino})
+  const [adTitleTemplate, setAdTitleTemplateState] = useState(state.lastAdTitle || "Pacote {destino}");
+  const setAdTitleTemplate = (t: string) => { setAdTitleTemplateState(t); update({ lastAdTitle: t }); };
+  const [adTitleMenuOpen, setAdTitleMenuOpen] = useState(false);
+  const resolvedAdTitle = (adTitleTemplate || "").replace(/\{destino\}/gi, destination?.trim() || "Destino");
 
   const [paymentMode, setPaymentModeState] = useState<PaymentMode>(state.lastPaymentMode || "installments");
   const setPaymentMode = (m: PaymentMode) => { setPaymentModeState(m); update({ lastPaymentMode: m }); };
@@ -373,6 +397,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               paymentSuffix: paymentSuffix || undefined,
               strategy: localStrategy,
               variation: freshSeedPhoto + idx,
+              titleOverride: resolvedAdTitle,
             });
             if (state.logoBase64) {
               try {
@@ -568,6 +593,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             strategy: localStrategy,
             variation: freshSeedCustom,
             forceVariant: nextVariant,
+            titleOverride: resolvedAdTitle,
           });
           if (state.logoBase64) {
             try {
@@ -969,6 +995,55 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             <label className={labelCls}>Nome da promoção</label>
             <input value={promoName} onChange={(e) => setPromoName(e.target.value)} placeholder="Ex: BLACK FRIDAY" className={inputCls} />
           </div>
+
+          <div className="sm:col-span-2">
+            <label className={labelCls}>Título do anúncio</label>
+            <div className="flex gap-2">
+              <input
+                value={adTitleTemplate}
+                onChange={(e) => setAdTitleTemplate(e.target.value)}
+                placeholder="Ex: Pacote {destino}"
+                className={`${inputCls} flex-1`}
+              />
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setAdTitleMenuOpen((v) => !v)}
+                  className="h-full px-3 rounded-xl bg-white/[0.06] border border-white/10 text-white/80 hover:border-white/40 flex items-center gap-1.5 text-xs font-semibold whitespace-nowrap"
+                  title="Escolher um modelo de título"
+                >
+                  Modelos <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+                {adTitleMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setAdTitleMenuOpen(false)} />
+                    <div className="absolute right-0 mt-2 w-72 max-h-80 overflow-y-auto bg-neutral-900 border border-white/15 rounded-xl shadow-2xl z-50 py-1">
+                      {AD_TITLE_PRESETS.map((tpl) => {
+                        const preview = tpl.replace(/\{destino\}/gi, destination?.trim() || "Destino");
+                        const active = tpl === adTitleTemplate;
+                        return (
+                          <button
+                            key={tpl}
+                            type="button"
+                            onClick={() => { setAdTitleTemplate(tpl); setAdTitleMenuOpen(false); }}
+                            className={`w-full text-left px-3 py-2 text-xs hover:bg-white/[0.08] ${active ? "bg-white/[0.06] text-white" : "text-white/80"}`}
+                          >
+                            {preview}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+            <p className="text-[10px] text-white/40 mt-1.5">
+              Use <code className="text-white/60">{"{destino}"}</code> e ele será trocado pelo destino atual.
+              {destination && (
+                <> Pré-visualização: <span className="text-white/70 font-semibold">"{resolvedAdTitle}"</span></>
+              )}
+            </p>
+          </div>
         </div>
 
         {/* Modo de pagamento — compacto */}
@@ -1159,11 +1234,20 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             {generatedImages.map((img, idx) => (
               <div
                 key={idx}
-                className={`rounded-xl overflow-hidden bg-black/40 mx-auto ${
+                className={`relative rounded-xl overflow-hidden bg-black/40 mx-auto group ${
                   generatedImages.length > 1 ? "w-full" : (format === "square" ? "max-w-md" : "max-w-xs")
                 }`}
               >
                 <img src={img} alt={`Anúncio ${idx + 1}`} className="w-full h-auto block" />
+                <button
+                  type="button"
+                  onClick={() => setGeneratedImages((prev) => prev.filter((_, i) => i !== idx))}
+                  className="absolute top-2 right-2 w-9 h-9 rounded-full bg-black/70 hover:bg-red-600 border border-white/20 text-white flex items-center justify-center transition-colors shadow-lg"
+                  title="Excluir esta variação"
+                  aria-label="Excluir esta variação"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             ))}
           </div>
@@ -1174,18 +1258,31 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           )}
           <div className="flex flex-col sm:flex-row gap-3">
             <button
-              onClick={() => {
-                const target = generatedImages[generatedImages.length - 1];
-                if (!target) return;
-                const a = document.createElement("a");
-                a.href = target;
-                a.download = `anuncio-${(destination || "destino").toLowerCase().replace(/\s+/g, "-")}-${format}-${generatedImages.length}.png`;
-                document.body.appendChild(a); a.click(); a.remove();
+              onClick={async () => {
+                if (generatedImages.length === 0) return;
+                const slug = (destination || "destino").toLowerCase().replace(/\s+/g, "-");
+                for (let i = 0; i < generatedImages.length; i++) {
+                  const a = document.createElement("a");
+                  a.href = generatedImages[i];
+                  a.download = `anuncio-${slug}-${format}-${i + 1}.png`;
+                  document.body.appendChild(a); a.click(); a.remove();
+                  // Pequeno delay entre downloads para não bloquear o navegador
+                  if (i < generatedImages.length - 1) {
+                    await new Promise((res) => setTimeout(res, 350));
+                  }
+                }
+                toast.success(
+                  generatedImages.length === 1
+                    ? "Imagem baixada!"
+                    : `${generatedImages.length} imagens baixadas!`
+                );
               }}
-              className="flex-1 py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all hover:brightness-110"
+              disabled={generatedImages.length === 0}
+              className="flex-1 py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110"
               style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 8px 24px ${primaryColor}55` }}
             >
-              <Download className="w-4 h-4" /> Baixar imagem
+              <Download className="w-4 h-4" />
+              {generatedImages.length > 1 ? `Baixar todas (${generatedImages.length})` : "Baixar imagem"}
             </button>
             <button
               onClick={() => generateNext()}
@@ -1196,6 +1293,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando...</> : <><Sparkles className="w-4 h-4" /> Gerar nova variação</>}
             </button>
           </div>
+          {generatedImages.length > 1 && (
+            <p className="text-[10px] text-white/50 text-center mt-2">
+              Ao clicar em "Baixar todas", apenas as variações visíveis acima serão baixadas. Imagens excluídas não entram no download.
+            </p>
+          )}
         </motion.div>
       )}
 
