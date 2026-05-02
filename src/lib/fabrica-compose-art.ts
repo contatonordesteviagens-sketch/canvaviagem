@@ -297,6 +297,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         return { topLabel: paymentLabel || "À VISTA", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "cash_discount":
         return { topLabel: paymentLabel || "À VISTA · 5% OFF", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
+      case "cash_pix_off":
+        return { topLabel: paymentLabel || "À VISTA NO PIX · 5% OFF", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
+      case "installments_no_interest":
+        return { topLabel: paymentLabel || `${installments || "12x"} SEM JUROS`, mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "from":
         return { topLabel: paymentLabel || "A PARTIR DE", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "daily":
