@@ -557,17 +557,16 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.font = "600 20px Inter, Arial, sans-serif";
       ctx.fillText("/pessoa", px + pw / 2, height - 68);
       ctx.textAlign = "left";
-      // Fotos no lado direito: 2 empilhadas
-      const gap1 = 16; const photoH1 = (height - gap1 * 3) / 2;
-      [0, 1].forEach(i => {
-        const pY = gap1 + i * (photoH1 + gap1);
-        const c1 = fitCover(image.naturalWidth, image.naturalHeight, colW, photoH1, 0.38);
-        ctx.save();
-        fillRoundRect(ctx, colX, pY, colW, photoH1, 20, "#000");
-        ctx.clip();
-        ctx.drawImage(image, c1.sx, c1.sy, c1.sw, c1.sh, colX, pY, colW, photoH1);
-        ctx.restore();
-      });
+      // Foto ÚNICA no lado direito (sem duplicação) — ocupa toda a altura
+      const gap1 = 16;
+      const pY = gap1;
+      const photoH1 = height - gap1 * 2;
+      const c1 = fitCover(image.naturalWidth, image.naturalHeight, colW, photoH1, 0.40);
+      ctx.save();
+      fillRoundRect(ctx, colX, pY, colW, photoH1, 20, "#000");
+      ctx.clip();
+      ctx.drawImage(image, c1.sx, c1.sy, c1.sw, c1.sh, colX, pY, colW, photoH1);
+      ctx.restore();
       return canvas.toDataURL("image/png");
     }
 
