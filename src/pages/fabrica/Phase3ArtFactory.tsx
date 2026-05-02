@@ -54,15 +54,18 @@ const DEFAULT_HIGHLIGHTS: Highlight[] = [
   { text: "Guia local", icon: "guide" },
 ];
 
+// Paleta enxuta: 10 cores distintas (sem repetir tons próximos)
 const PRESET_COLORS = [
-  // Linha 1 — Escuros / Neutros
-  "#000000", "#0a0a0a", "#1e293b", "#374151", "#6b7280", "#9ca3af", "#d1d5db", "#ffffff",
-  // Linha 2 — Azuis / Roxos
-  "#0c2340", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#7c3aed", "#a855f7", "#c084fc",
-  // Linha 3 — Quentes (vermelho/laranja/rosa)
-  "#dc2626", "#ef4444", "#f97316", "#fb923c", "#e85d3a", "#ec4899", "#f472b6", "#fda4af",
-  // Linha 4 — Amarelos / Verdes / Ciano
-  "#facc15", "#fde047", "#fbbf24", "#16a34a", "#22c55e", "#4ade80", "#0d7a5f", "#06b6d4",
+  "#000000", // preto
+  "#ffffff", // branco
+  "#6b7280", // cinza
+  "#0c2340", // azul marinho
+  "#2563eb", // azul
+  "#7c3aed", // roxo
+  "#dc2626", // vermelho
+  "#f97316", // laranja
+  "#facc15", // amarelo
+  "#16a34a", // verde
 ];
 
 type Currency = "BRL" | "USD" | "EUR" | "ARS" | "GBP";
