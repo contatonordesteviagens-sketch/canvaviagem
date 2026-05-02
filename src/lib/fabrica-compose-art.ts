@@ -1704,6 +1704,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
 
+  drawGlobalExtras();
   return canvas.toDataURL("image/png");
 }
 
