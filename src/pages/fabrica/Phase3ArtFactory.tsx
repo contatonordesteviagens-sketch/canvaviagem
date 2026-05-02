@@ -330,6 +330,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setShowTotal = (v: boolean) => { setShowTotalState(v); update({ showTotal: v }); };
   const [totalOverride, setTotalOverrideState] = useState<string>(state.totalOverride || "");
   const setTotalOverride = (v: string) => { setTotalOverrideState(v); update({ totalOverride: v }); };
+  // V3: faixa azul do Pix (editável e ocultável)
+  const [showPixBanner, setShowPixBannerState] = useState<boolean>((state as any).showPixBanner !== false);
+  const setShowPixBanner = (v: boolean) => { setShowPixBannerState(v); update({ showPixBanner: v } as any); };
+  const [pixBannerText, setPixBannerTextState] = useState<string>((state as any).pixBannerText || "");
+  const setPixBannerText = (v: string) => { setPixBannerTextState(v); update({ pixBannerText: v } as any); };
 
   // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
   const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
