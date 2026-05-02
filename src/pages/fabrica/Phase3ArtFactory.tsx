@@ -55,15 +55,70 @@ const DEFAULT_HIGHLIGHTS: Highlight[] = [
 ];
 
 const PRESET_COLORS = [
-  // Escuros
-  "#0a0a0a", "#0c2340", "#1e293b", "#1d4ed8",
-  // Médios
-  "#2563eb", "#3b82f6", "#7c3aed", "#a855f7",
-  // Quentes
-  "#dc2626", "#991b1b", "#e85d3a", "#064e3b",
-  // Claros / Especiais
-  "#ffffff", "#f8fafc", "#0d7a5f", "#16a34a",
+  // Linha 1 — Escuros / Neutros
+  "#000000", "#0a0a0a", "#1e293b", "#374151", "#6b7280", "#9ca3af", "#d1d5db", "#ffffff",
+  // Linha 2 — Azuis / Roxos
+  "#0c2340", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#7c3aed", "#a855f7", "#c084fc",
+  // Linha 3 — Quentes (vermelho/laranja/rosa)
+  "#dc2626", "#ef4444", "#f97316", "#fb923c", "#e85d3a", "#ec4899", "#f472b6", "#fda4af",
+  // Linha 4 — Amarelos / Verdes / Ciano
+  "#facc15", "#fde047", "#fbbf24", "#16a34a", "#22c55e", "#4ade80", "#0d7a5f", "#06b6d4",
 ];
+
+type Currency = "BRL" | "USD" | "EUR" | "ARS" | "GBP";
+const CURRENCY_PRESETS: { id: Currency; symbol: string; label: string; locale: string }[] = [
+  { id: "BRL", symbol: "R$", label: "Real (R$)", locale: "pt-BR" },
+  { id: "USD", symbol: "US$", label: "Dólar (US$)", locale: "en-US" },
+  { id: "EUR", symbol: "€", label: "Euro (€)", locale: "de-DE" },
+  { id: "GBP", symbol: "£", label: "Libra (£)", locale: "en-GB" },
+  { id: "ARS", symbol: "AR$", label: "Peso AR (AR$)", locale: "es-AR" },
+];
+
+/**
+ * Formata um valor de preço aplicando separador de milhar e casa decimal
+ * conforme a moeda selecionada. Aceita strings com vírgula ou ponto como decimal.
+ * Ex: "4124312"  → BRL: "4.124.312,00"  USD: "4,124,312.00"
+ *     "1499,90"  → BRL: "1.499,90"
+ *     "1499.9"   → BRL: "1.499,90"
+ */
+const formatPriceValue = (raw: string, currency: Currency): string => {
+  const value = (raw || "").trim();
+  if (!value) return "";
+  // Mantém só dígitos + separador decimal (último , ou .)
+  const cleaned = value.replace(/[^\d.,]/g, "");
+  if (!cleaned) return "";
+  // Detecta o ÚLTIMO separador como decimal
+  const lastComma = cleaned.lastIndexOf(",");
+  const lastDot = cleaned.lastIndexOf(".");
+  let intPart = cleaned;
+  let decPart = "";
+  if (lastComma > lastDot && lastComma !== -1) {
+    intPart = cleaned.slice(0, lastComma).replace(/[.,]/g, "");
+    decPart = cleaned.slice(lastComma + 1).replace(/\D/g, "").slice(0, 2);
+  } else if (lastDot > lastComma && lastDot !== -1) {
+    intPart = cleaned.slice(0, lastDot).replace(/[.,]/g, "");
+    decPart = cleaned.slice(lastDot + 1).replace(/\D/g, "").slice(0, 2);
+  } else {
+    intPart = cleaned.replace(/\D/g, "");
+  }
+  const num = Number(intPart || "0") + (decPart ? Number(`0.${decPart}`) : 0);
+  const preset = CURRENCY_PRESETS.find((c) => c.id === currency)!;
+  try {
+    return new Intl.NumberFormat(preset.locale, {
+      minimumFractionDigits: decPart ? Math.min(decPart.length, 2) : 0,
+      maximumFractionDigits: 2,
+    }).format(num);
+  } catch {
+    return value;
+  }
+};
+
+const buildPriceWithCurrency = (raw: string, currency: Currency): string => {
+  const formatted = formatPriceValue(raw, currency);
+  if (!formatted) return "";
+  const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
+  return `${sym} ${formatted}`;
+};
 
 interface PaymentPreset {
   id: PaymentMode;
