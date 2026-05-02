@@ -319,6 +319,30 @@ SEM NENHUM PREÇO, SEM PARCELAS, SEM SELOS.`;
         "LAYOUT ÚNICO DESTA GERAÇÃO: texto central leve sobre foto com muito respiro e espaço negativo ao redor",
       ];
   const variationIndex = Math.abs([...creativeSeed].reduce((acc, char) => acc + char.charCodeAt(0), 0)) % variationDirectives.length;
+
+  // 📸 ÂNCORAS FOTOGRÁFICAS REAIS — só Oferta (3 ângulos rotativos por seed)
+  const ofertaCameraAngles = [
+    "aerial drone shot from 80m altitude, top-down 30° tilt, shot on DJI Mavic 3 Pro, golden hour, ultra-sharp",
+    "ground-level wide angle 24mm, eye-level perspective, shot on Sony A7R IV f/8, midday natural light, crystal clear",
+    "cinematic side perspective 50mm, slight low-angle hero shot, shot on Hasselblad H6D medium format, blue hour, editorial",
+  ];
+  const seedSum = Math.abs([...creativeSeed].reduce((acc, char) => acc + char.charCodeAt(0), 0));
+  const ofertaCameraAngle = ofertaCameraAngles[seedSum % 3];
+  const ofertaPhotoAnchor = opts.category === "oferta"
+    ? `\n[FOTOGRAFIA REAL — ÂNCORA OBRIGATÓRIA]\nReal travel photography, ${ofertaCameraAngle}, Condé Nast Traveler editorial aesthetic, vibrant saturated colors, professional travel catalog quality. NO 3D render, NO illustration, NO AI artifacts.\n`
+    : "";
+
+  // 🔒 VARIATION LOCK — bloqueia repetições recentes
+  const forbiddenLayoutsTxt = (v.forbiddenLayouts && v.forbiddenLayouts.length > 0)
+    ? v.forbiddenLayouts.slice(0, 4).join(", ")
+    : "";
+  const forbiddenHeadlinesTxt = (v.forbiddenHeadlines && v.forbiddenHeadlines.length > 0)
+    ? v.forbiddenHeadlines.slice(0, 4).map((h) => `"${h}"`).join(", ")
+    : "";
+  const variationLock = opts.category === "oferta"
+    ? `\n[🔒 VARIATION LOCK — seed=${creativeSeed}]\nThis generation MUST be visually distinct from the previous ones.${forbiddenLayoutsTxt ? `\nAvoid these prior compositions: ${forbiddenLayoutsTxt}.` : ""}${forbiddenHeadlinesTxt ? `\nAvoid these prior headlines: ${forbiddenHeadlinesTxt}.` : ""}\nUse a DIFFERENT camera angle, time of day and color temperature than the previous generation.\n`
+    : "";
+
   const promoLine = opts.category === "oferta" || opts.category === "autoridade_dark"
     ? `Selo: "${v.promoName}"`
     : `Chamada editorial secundária: "${opts.experienceDescription || `Dias leves em ${v.destination}, com calma, beleza e curadoria.`}" — sem selo promocional.`;
