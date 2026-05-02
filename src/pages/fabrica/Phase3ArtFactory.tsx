@@ -357,9 +357,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     "Orlando", "Lisboa", "Santiago", "Bariloche", "Maldivas",
   ];
 
+  const MAX_HIGHLIGHTS = 6;
   const addHighlight = () => {
     const v = newHl.trim();
-    if (!v || highlights.length >= 5) return;
+    if (!v || highlights.length >= MAX_HIGHLIGHTS) return;
     setHighlights([...highlights, { text: v, icon: "check" }]);
     setNewHl("");
   };
