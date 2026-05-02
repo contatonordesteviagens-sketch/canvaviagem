@@ -659,6 +659,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
         toast.info(`Gerando ${picks.length} ${picks.length === 1 ? "variação" : "variações"} em IA Pura — ${cat.name}`);
 
+        // Prompt cinematográfico estruturado para o BG da V4 (Gemini Nano Banana 2)
+        // Consome o campo "Destino" preenchido no formulário lateral.
+        const v4BackgroundPrompt = `Fotografia ultra-realista 4k, estilo cinematográfico e editorial de agência de turismo premium focada em conversão. Vista panorâmica, ampla e imersiva de ${destination || "destino paradisíaco"}. Iluminação natural de golden hour ou dia ensolarado com céu azul vibrante e nuvens suaves. Composição com grande profundidade de campo: destacar a arquitetura histórica local, castelos ou belezas naturais em segundo e terceiro plano. DEIXAR OBRIGATORIAMENTE o centro e a base da imagem como 'negative space' (espaço mais limpo e levemente desfocado) para perfeita leitura de textos e sobreposição de elementos gráficos. Renderização fotorrealista em altíssima definição. NO TEXT, NO LOGOS, NO PEOPLE in foreground.`;
+
         const results = await Promise.all(
           picks.map((pick, idx) => supabase.functions.invoke("fabrica-generate-ad", {
             body: {
@@ -686,6 +690,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               duration: "5 NOITES",
               forbiddenHeadlines: guard.headlines,
               forbiddenLayouts: guard.layouts,
+              // V4: prompt cinematográfico injetado para o BG (negative space p/ overlay)
+              customPrompt: v4BackgroundPrompt,
             },
           }))
         );
