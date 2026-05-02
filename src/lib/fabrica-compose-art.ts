@@ -511,7 +511,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
       // ── Dados dinâmicos ────────────────────────────────────────────────────
-      const destinoUp = destUp;
+      const destinoUp = (destination || "DESTINO").toUpperCase();
       const daysItem = highlights.find((h) => /\d+\s*dia/i.test(h?.text || ""));
       const daysText = (daysItem?.text || "7 dias").trim();
       // Ícones: prioriza highlights com ícone; senão usa default avião/transporte/hotel/café/câmera
