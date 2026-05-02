@@ -1190,8 +1190,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 key={p.id}
                 onClick={() => {
                   setPaymentMode(p.id);
-                  setPaymentLabel("");
-                  setPaymentSuffix("");
+                  if (p.id === "cash" && !paymentLabelState) setPaymentLabel("À VISTA");
+                  if (p.id === "down_plus" && !installments.trim()) setInstallments("Entrada + 10x");
+                  if (!paymentSuffix.trim()) setPaymentSuffix("por pessoa");
                 }}
                 className={`px-2 py-1.5 rounded-lg border-2 text-center transition-all ${
                   paymentMode === p.id ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
@@ -1205,13 +1206,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             ))}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className={labelCls}>
-                {paymentMode === "installments" || paymentMode === "down_plus" ? "Parcelas / Rótulo" : "Rótulo (opcional)"}
+                {paymentMode === "installments" ? "Parcela" : paymentMode === "down_plus" ? "Entrada + parcela" : "Rótulo"}
               </label>
               <input
-                value={paymentMode === "installments" || paymentMode === "down_plus" ? installments : paymentLabel}
+                value={paymentLabel}
                 onChange={(e) =>
                   paymentMode === "installments" || paymentMode === "down_plus"
                     ? setInstallments(e.target.value)
@@ -1230,7 +1231,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <div className="flex gap-1.5">
                 <select
                   value={currency}
-                  onChange={(e) => setCurrency(e.target.value as Currency)}
+                  onChange={(e) => {
+                    const nextCurrency = e.target.value as Currency;
+                    const normalized = formatPriceValue(stripCurrencyFromPrice(price, currency), nextCurrency);
+                    setCurrency(nextCurrency);
+                    if (normalized) setPrice(normalized);
+                  }}
                   className="bg-white/[0.06] border border-white/10 rounded-xl px-2 py-3 text-white text-xs outline-none focus:border-white/40 cursor-pointer"
                   title="Moeda"
                 >
@@ -1244,7 +1250,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   onBlur={() => {
-                    const f = formatPriceValue(price, currency);
+                    const f = formatPriceValue(stripCurrencyFromPrice(price, currency), currency);
                     if (f) setPrice(f);
                   }}
                   placeholder={currency === "BRL" ? "1.499,90" : "1,499.90"}
@@ -1252,17 +1258,28 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   className={`${inputCls} flex-1`}
                 />
               </div>
-              {formattedPriceForAd ? (
-                <p className="text-[11px] text-emerald-300/90 font-mono mt-1.5">
-                  {currencySymbol} {formattedPriceForAd}
-                </p>
-              ) : (
-                <p className="text-[10px] text-white/40 mt-1.5">
-                  Milhares e decimais formatados automaticamente.
-                </p>
-              )}
+            </div>
+            <div>
+              <label className={labelCls}>Complemento</label>
+              <input
+                value={paymentSuffix}
+                onChange={(e) => setPaymentSuffix(e.target.value)}
+                placeholder="por pessoa, casal, pacote..."
+                className={inputCls}
+                list="fabrica-price-suffixes"
+              />
+              <datalist id="fabrica-price-suffixes">
+                {['por pessoa', 'por casal', 'por pacote', 'por grupo', 'total do pacote'].map((option) => (
+                  <option key={option} value={option} />
+                ))}
+              </datalist>
             </div>
           </div>
+          {formattedPriceForAd && (
+            <p className="text-[11px] text-emerald-300/90 font-mono mt-2">
+              Prévia: {paymentLabel ? `${paymentLabel} · ` : ""}{currencySymbol} {formattedPriceForAd}{paymentSuffix ? ` · ${paymentSuffix}` : ""}
+            </p>
+          )}
         </div>
 
         {/* Cores — Primária | Secundária em 2 colunas */}
