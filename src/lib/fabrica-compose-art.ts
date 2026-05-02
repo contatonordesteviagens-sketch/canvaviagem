@@ -188,7 +188,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     forceVariant,
     titleOverride,
     titleVariations,
+    currencySymbol,
   } = options;
+  const curSym = (currencySymbol || "R$").trim();
 
   const width = 1080;
   const height = format === "story" ? 1920 : 1080;
