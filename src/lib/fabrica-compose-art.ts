@@ -1369,6 +1369,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     if (variant === 2) {
       ctx.fillStyle = "#f7f4ef"; ctx.fillRect(0, 0, width, height);
 
+      // REGRA DE LEGIBILIDADE V2:
+      // - Card de preço e faixa headline = primaryColor → texto principal contrasta automaticamente.
+      // - Label de topo do preço = secondaryColor mas só se contrastar; senão usa contraste forte.
+      // - Benefits sobre fundo bege #f7f4ef → primaryColor garantido contra creme; se for muito claro, vira preto.
+      const v2CardBg = primaryColor;
+      const v2OnCard = contrastOn(v2CardBg);
+      const v2CardLabel = ensureContrast(secondaryColor, v2CardBg, 0.35);
+      const v2BenefitColor = ensureContrast(primaryColor, "#f7f4ef", 0.35);
+
       // Lista completa de benefits (até 6) — TODOS devem aparecer
       const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
       const benefitsCountV2 = Math.max(1, benefitsListV2.length);
@@ -1378,11 +1387,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const priceCardH = 168;
       const priceCardX = Math.round((width - priceCardW) / 2);
       const priceCardY = height - 56 - priceCardH;
-      fillRoundRect(ctx, priceCardX, priceCardY, priceCardW, priceCardH, 16, primaryColor);
-      ctx.fillStyle = secondaryColor; ctx.font = "700 24px Inter, Arial, sans-serif";
+      fillRoundRect(ctx, priceCardX, priceCardY, priceCardW, priceCardH, 16, v2CardBg);
+      ctx.fillStyle = v2CardLabel; ctx.font = "700 24px Inter, Arial, sans-serif";
       ctx.textAlign = "center";
       ctx.fillText((topLabel || "por apenas").toString(), priceCardX + priceCardW / 2, priceCardY + 40);
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = v2OnCard;
       // Auto-shrink preço V2
       const priceStrV2 = mainPrice || `${curSym} ${price}`;
       let pfsV2 = 64;
@@ -1422,8 +1431,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
       // 5) Faixa horizontal com headline
       const faixaY = photoTop + fH2 + 16;
-      fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, primaryColor);
-      ctx.fillStyle = "#ffffff";
+      fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, v2CardBg);
+      ctx.fillStyle = v2OnCard;
       ctx.textAlign = "left";
       let v2Size = 52;
       ctx.font = `900 ${v2Size}px Inter, Arial, sans-serif`;
@@ -1444,7 +1453,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         const row = Math.floor(i / 2);
         const tx = left + col * (colWV2 + colGapV2);
         const ty = benefitsTop + row * benefitGap;
-        ctx.fillStyle = primaryColor;
+        ctx.fillStyle = v2BenefitColor;
         let fs = benefitFontSize;
         const label = `${ICON_SYMBOL[h.icon || "check"]}  ${h.text}`;
         ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
