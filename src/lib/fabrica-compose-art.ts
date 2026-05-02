@@ -528,9 +528,14 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const instMatch = (installments || "12x").match(/(\d{1,2})\s*x/i);
       const parcN = instMatch ? instMatch[1] : "12";
       const priceStr = mainPrice || `${curSym} ${price}`;
+      // Calcula total = preço × parcelas, formatando milhares com "." e centavos com ","
+      const priceNumeric = parseFloat(((price || "").trim()).replace(/\./g, "").replace(",", "."));
+      const totalNum = !isNaN(priceNumeric) ? priceNumeric * parseInt(parcN, 10) : NaN;
+      const fmtBR = (n: number) =>
+        n.toLocaleString("pt-BR", { minimumFractionDigits: n % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 });
       const totalStr = paymentSuffix && /total/i.test(paymentSuffix)
         ? paymentSuffix
-        : `Total por pessoa: ${curSym} ${(price || "").trim() ? formatTotalFromInstallment(price, parseInt(parcN, 10)) : "—"}`;
+        : `Total por pessoa: ${curSym} ${!isNaN(totalNum) ? fmtBR(totalNum) : "—"}`;
       // Desconto: extrai número do promoName (ex.: "5% OFF") ou usa 5 como default
       const descMatch = (promoName || "").match(/(\d{1,2})\s*%/);
       const descN = descMatch ? descMatch[1] : "5";
