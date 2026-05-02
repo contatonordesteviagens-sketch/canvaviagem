@@ -584,28 +584,56 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillStyle = secondaryColor;
       ctx.font = "900 22px Inter, Arial, sans-serif";
       ctx.fillText((promoName || "OFERTA ESPECIAL").toUpperCase(), px, logoH + 54);
+      // Destino grande
       ctx.fillStyle = "#ffffff";
-      drawTextBlock(ctx, destUp, px, logoH + 100, pw, 88, 2, { fontWeight: "900", baseFontSize: 84, minFontSize: 40 });
-      // Benefits como lista com check
-      const hlStart = logoH + 290;
-      highlights.slice(0, 4).forEach((h, i) => {
-        fillRoundRect(ctx, px, hlStart + i * 82, pw, 68, 34, "rgba(255,255,255,0.14)");
-        ctx.fillStyle = secondaryColor; ctx.font = "700 28px Inter, Arial, sans-serif";
+      drawTextBlock(ctx, destUp, px, logoH + 100, pw, 78, 2, { fontWeight: "900", baseFontSize: 72, minFontSize: 36 });
+
+      // Headline (titleText escolhido pelo usuário) — abaixo do destino
+      ctx.fillStyle = secondaryColor;
+      ctx.font = "800 24px Inter, Arial, sans-serif";
+      drawTextBlock(ctx, titleText, px, logoH + 240, pw, 30, 2, { fontWeight: "800", baseFontSize: 24, minFontSize: 16 });
+
+      // Benefits — até 6 itens em pílulas, altura adaptativa
+      const benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
+      const hlStart = logoH + 320;
+      const pillH = benefitsListV1.length <= 4 ? 68 : benefitsListV1.length === 5 ? 56 : 50;
+      const pillGap = benefitsListV1.length <= 4 ? 14 : 10;
+      const pillFont = benefitsListV1.length <= 4 ? 28 : benefitsListV1.length === 5 ? 24 : 22;
+      benefitsListV1.forEach((h, i) => {
+        const py = hlStart + i * (pillH + pillGap);
+        fillRoundRect(ctx, px, py, pw, pillH, pillH / 2, "rgba(255,255,255,0.14)");
+        ctx.fillStyle = secondaryColor; ctx.font = `700 ${pillFont}px Inter, Arial, sans-serif`;
         ctx.textBaseline = "middle";
-        ctx.fillText("✓", px + 18, hlStart + i * 82 + 34);
+        ctx.fillText(ICON_SYMBOL[h.icon || "check"] || "✓", px + 18, py + pillH / 2);
         ctx.fillStyle = "#ffffff";
-        ctx.fillText(h.text, px + 52, hlStart + i * 82 + 34);
+        // Auto-shrink texto da pill
+        let pf = pillFont;
+        ctx.font = `700 ${pf}px Inter, Arial, sans-serif`;
+        const maxTw = pw - 64;
+        while (ctx.measureText(h.text).width > maxTw && pf > 14) {
+          pf -= 2;
+          ctx.font = `700 ${pf}px Inter, Arial, sans-serif`;
+        }
+        ctx.fillText(h.text, px + 52, py + pillH / 2);
         ctx.textBaseline = "alphabetic";
       });
-      // Price card no painel esquerdo, base
+      // Price card no painel esquerdo, base — usa topLabel custom se houver
       fillRoundRect(ctx, px, height - 200, pw, 172, 16, "rgba(0,0,0,0.3)");
       ctx.fillStyle = secondaryColor; ctx.font = "700 22px Inter, Arial, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("APENAS HOJE:", px + pw / 2, height - 168);
-      ctx.fillStyle = "#ffffff"; ctx.font = "900 62px Inter, Arial, sans-serif";
-      ctx.fillText(mainPrice || `R$ ${price}`, px + pw / 2, height - 100);
+      ctx.fillText((topLabel || "APENAS HOJE:").toString().toUpperCase(), px + pw / 2, height - 168);
+      ctx.fillStyle = "#ffffff";
+      // Auto-shrink preço
+      const priceStrV1 = mainPrice || `R$ ${price}`;
+      let pfsV1 = 62;
+      ctx.font = `900 ${pfsV1}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(priceStrV1).width > pw - 24 && pfsV1 > 28) {
+        pfsV1 -= 4;
+        ctx.font = `900 ${pfsV1}px Inter, Arial, sans-serif`;
+      }
+      ctx.fillText(priceStrV1, px + pw / 2, height - 100);
       ctx.font = "600 20px Inter, Arial, sans-serif";
-      ctx.fillText("/pessoa", px + pw / 2, height - 68);
+      ctx.fillText(bottomSuffix || "/pessoa", px + pw / 2, height - 68);
       ctx.textAlign = "left";
       // Foto ÚNICA no lado direito (sem duplicação) — ocupa toda a altura
       const gap1 = 16;
