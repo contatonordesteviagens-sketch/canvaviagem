@@ -586,9 +586,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         secondary: palette.secondary,
       });
 
-      setGeneratedImage(imagesCustom[0]);
-      setGeneratedImages(imagesCustom);
-      update({ generatedAdImage: imagesCustom[0], primaryColor: palette.primary });
+      // Acumula até 3 variações lado a lado (não substitui as anteriores)
+      const MAX_VARIATIONS = 3;
+      setGeneratedImages((prev) => {
+        const merged = [...prev, ...imagesCustom].slice(-MAX_VARIATIONS);
+        return merged;
+      });
+      setGeneratedImage(imagesCustom[imagesCustom.length - 1]);
+      update({ generatedAdImage: imagesCustom[imagesCustom.length - 1], primaryColor: palette.primary });
 
       const newCount = generationCount + imagesCustom.length;
       setGenerationCount(newCount);
