@@ -244,7 +244,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   // Sempre mostra até 5 benefícios (story OU quadrado) — o usuário escolheu 5/5 e os 5 devem aparecer.
   const shownHighlights = highlights.slice(0, 5);
   const badgeText = cityFmt ? `Saindo de ${cityFmt}` : "Pacote completo";
-  const titleText = headlinePool[Math.abs(variation) % headlinePool.length];
+  const titleText = (titleOverride && titleOverride.trim())
+    ? titleOverride.trim()
+    : headlinePool[Math.abs(variation) % headlinePool.length];
   const subtitlePool = [
     "Roteiro pensado para viver melhor",
     "Beleza, conforto e boas memórias",
