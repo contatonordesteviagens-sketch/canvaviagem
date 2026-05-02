@@ -1400,7 +1400,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
       // ── Tokens de estilo ─────────────────────────────────────────────────
       const BOX_COLOR = "#1C2D5A";          // azul premium definido no spec
-      const BOX_RADIUS = 24;                 // medium
+      const BOX_RADIUS = 28;
       const ACCENT = secondaryColor;         // accent vindo da paleta da agência
       const SERIF = '"Playfair Display", "Cormorant Garamond", Georgia, serif';
       const SANS = "Inter, Arial, sans-serif";
@@ -1409,220 +1409,253 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const TEXT_SOFT = "rgba(255,255,255,0.55)";
 
       // ── Data binding ─────────────────────────────────────────────────────
-      const destUp4 = (destination || "DESTINO").toUpperCase();
       const destDisplay4 = destination || "Destino";
+      // Kicker: usa o promoName como tag (ex.: "OFERTA ESPECIAL"). Se não houver, fallback genérico.
+      // NUNCA repete o destino aqui (era a causa do "PARTIU JERICOACOARA" duplicado).
+      let kickerLabel = (promoName || "").trim().toUpperCase();
+      if (!kickerLabel || kickerLabel.length > 32) kickerLabel = "PACOTE EXCLUSIVO";
+      // Subheadline (titleText) — só mostra se for diferente do destino e do kicker.
+      const _norm = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "").trim();
+      const subheadRaw = (titleText || "").trim();
+      const showSubhead = !!subheadRaw
+        && _norm(subheadRaw) !== _norm(destDisplay4)
+        && _norm(subheadRaw) !== _norm(kickerLabel);
+
       const daysItem4 = highlights.find((h) => /\d+\s*dia/i.test(h?.text || ""));
       const daysText4 = daysItem4?.text?.trim() || "";
-      const parcelasText4 = installments ? `${installments} sem juros` : "";
-      const infoBits4 = [daysText4, parcelasText4].filter(Boolean);
+      // Highlights extras (sem o "dias" pra não repetir, sem "parcelas/juros" pra não duplicar com bloco de preço)
+      const extraHighlights = highlights.filter((h) => {
+        const t = (h?.text || "").trim();
+        if (!t) return false;
+        if (/\d+\s*dia/i.test(t)) return false;
+        if (/sem\s*juros|parcel/i.test(t)) return false;
+        return true;
+      }).slice(0, 4);
+
       const priceNum4 = parseFloat(String(price || "0").replace(/\./g, "").replace(",", "."));
       const parcelasNum4 = parseInt((installments || "").replace(/\D/g, ""), 10);
       const computedTotal4 = !isNaN(priceNum4) && !isNaN(parcelasNum4) && parcelasNum4 > 0
         ? `${curSym} ${(priceNum4 * parcelasNum4).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
         : "";
-      const totalStr4 = (totalOverride && totalOverride.trim()) || (computedTotal4 ? `Total: ${computedTotal4} por pessoa` : "");
+      const totalStr4 = (totalOverride && totalOverride.trim()) || computedTotal4;
       const showTotal4 = showTotal !== false && !!totalStr4;
+
       const descMatch4 = (promoName || "").match(/(\d{1,2})\s*%/);
       const descNum4 = descMatch4 ? parseInt(descMatch4[1], 10) : 0;
-      const showBadge4 = descNum4 > 0;
+      const showPix4 = showPixBanner !== false && (descNum4 > 0 || !!(pixBannerText && pixBannerText.trim()));
 
       // ── Layout dinâmico do box (alinhamento à ESQUERDA) ─────────────────
-      const boxW = Math.round(width * 0.80);
-      const boxPadX = 56;
-      const boxPadY = 52;
-      const titleLines = Math.min(2, Math.max(1, Math.ceil(titleText.length / 28)));
-      const kickerH = 28;
-      const titleBlockH = titleLines * 38;
-      const destBlockH = 96;
-      const infoBlockH = infoBits4.length ? 36 : 0;
-      // price_block: prefix + installments line + price gigante + total + faixa pix
-      const installLineH = parcelasText4 ? 26 : 0;
-      const totalLineH = showTotal4 ? 24 : 0;
-      const pixStripH = (showBadge4 || showPixBanner !== false) ? 44 : 0;
-      const priceBlockH = 64 + installLineH + 110 + 14 + totalLineH + (pixStripH ? pixStripH + 14 : 0);
-      const sep = 22;
+      const boxW = Math.round(width * 0.84);
+      const boxPadX = 48;
+      const boxPadY = 44;
+
+      // Pré-mede destino pra dimensionar o box
+      let dSize = format === "story" ? 96 : 84;
+      ctx.font = `600 ${dSize}px ${SERIF}`;
+      while (ctx.measureText(destDisplay4).width > boxW - boxPadX * 2 && dSize > 44) {
+        dSize -= 4;
+        ctx.font = `600 ${dSize}px ${SERIF}`;
+      }
+
+      const kickerH = 22;
+      const gapAfterKicker = 18;
+      const destH = Math.round(dSize * 0.95);
+      const cityH = cityFmt ? 26 : 0;
+      const gapAfterDest = 24;
+      const subheadH = showSubhead ? 64 : 0;
+      const gapAfterSubhead = showSubhead ? 18 : 0;
+      const infoH = (daysText4 || extraHighlights.length) ? 36 : 0;
+      const gapAfterInfo = infoH ? 24 : 0;
+      const dividerGap = 18;
+
+      // Bloco de preço
+      const installLineH = parcelasNum4 > 0 ? 28 : 0;
+      const priceFs = format === "story" ? 108 : 96;
+      const totalLineH = showTotal4 ? 28 : 0;
+      const pixStripH = showPix4 ? 52 : 0;
+      const priceBlockH =
+        24 /* "a partir de" */ +
+        (installLineH ? installLineH + 6 : 0) +
+        Math.round(priceFs * 0.92) +
+        (totalLineH ? totalLineH + 8 : 0) +
+        (pixStripH ? pixStripH + 18 : 0);
+
       const boxH =
         boxPadY +
-        kickerH + sep +
-        destBlockH + sep +
-        titleBlockH + sep +
-        (infoBlockH ? infoBlockH + sep : 0) +
+        kickerH + gapAfterKicker +
+        destH + cityH + gapAfterDest +
+        subheadH + gapAfterSubhead +
+        infoH + gapAfterInfo +
+        dividerGap +
         priceBlockH +
         boxPadY;
+
       const boxX = Math.round((width - boxW) / 2);
       const boxY = Math.round((height - boxH) / 2);
 
       // [BOX] sombra SOFT + base sólida #1C2D5A + raio medium
       ctx.save();
-      ctx.shadowColor = "rgba(0,0,0,0.25)";
-      ctx.shadowBlur = 32;
-      ctx.shadowOffsetY = 6;
+      ctx.shadowColor = "rgba(0,0,0,0.35)";
+      ctx.shadowBlur = 36;
+      ctx.shadowOffsetY = 8;
       fillRoundRect(ctx, boxX, boxY, boxW, boxH, BOX_RADIUS, BOX_COLOR);
       ctx.restore();
-
-      // Filete elegante interno (linha fina accent)
-      ctx.strokeStyle = "rgba(255,255,255,0.10)";
-      ctx.lineWidth = 1;
-      const inset = 12;
-      const irr = BOX_RADIUS - 6;
-      ctx.beginPath();
-      ctx.moveTo(boxX + inset + irr, boxY + inset);
-      ctx.arcTo(boxX + boxW - inset, boxY + inset, boxX + boxW - inset, boxY + boxH - inset, irr);
-      ctx.arcTo(boxX + boxW - inset, boxY + boxH - inset, boxX + inset, boxY + boxH - inset, irr);
-      ctx.arcTo(boxX + inset, boxY + boxH - inset, boxX + inset, boxY + inset, irr);
-      ctx.arcTo(boxX + inset, boxY + inset, boxX + boxW - inset, boxY + inset, irr);
-      ctx.closePath();
-      ctx.stroke();
 
       // Conteúdo alinhado à ESQUERDA
       const contentX = boxX + boxPadX;
       const contentW = boxW - boxPadX * 2;
       ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
 
-      // [KICKER] — barra accent + texto do título em caps tracking
-      const kickerY = boxY + boxPadY;
-      fillRoundRect(ctx, contentX, kickerY + 10, 36, 3, 1.5, ACCENT);
+      // [KICKER] — barra accent + texto curto em caps
+      let cy = boxY + boxPadY;
+      fillRoundRect(ctx, contentX, cy + 9, 32, 3, 1.5, ACCENT);
       ctx.fillStyle = ACCENT;
-      ctx.font = `700 14px ${SANS}`;
-      const kickerLabel = (titleText || "PACOTE EXCLUSIVO").toUpperCase();
-      let kSize = 14;
-      ctx.font = `700 ${kSize}px ${SANS}`;
-      while (ctx.measureText(kickerLabel).width > contentW - 56 && kSize > 10) {
+      let kSize = 13;
+      ctx.font = `800 ${kSize}px ${SANS}`;
+      while (ctx.measureText(kickerLabel).width > contentW - 48 && kSize > 10) {
         kSize -= 1;
-        ctx.font = `700 ${kSize}px ${SANS}`;
+        ctx.font = `800 ${kSize}px ${SANS}`;
       }
-      ctx.fillText(kickerLabel, contentX + 50, kickerY + 16);
+      ctx.fillText(kickerLabel, contentX + 44, cy + 14);
+      cy += kickerH + gapAfterKicker;
 
-      // [DESTINATION] — serif elegante, peso medium
-      const destY = kickerY + kickerH + sep;
-      let dSize = 84;
-      ctx.font = `500 ${dSize}px ${SERIF}`;
-      while (ctx.measureText(destDisplay4).width > contentW && dSize > 40) {
-        dSize -= 4;
-        ctx.font = `500 ${dSize}px ${SERIF}`;
-      }
+      // [DESTINATION] — serif elegante grande
       ctx.fillStyle = TEXT_PRIMARY;
-      ctx.fillText(destDisplay4, contentX, destY + dSize * 0.78);
+      ctx.font = `600 ${dSize}px ${SERIF}`;
+      ctx.fillText(destDisplay4, contentX, cy + Math.round(dSize * 0.78));
+      cy += destH;
 
-      // Cidade de origem (sutil, abaixo)
+      // Cidade de origem
       if (cityFmt) {
         ctx.fillStyle = TEXT_MUTED;
-        ctx.font = `400 18px ${SANS}`;
-        ctx.fillText(`Saindo de ${cityFmt}`, contentX, destY + destBlockH - 6);
+        ctx.font = `400 17px ${SANS}`;
+        ctx.fillText(`Saindo de ${cityFmt}`, contentX, cy + 18);
+        cy += cityH;
+      }
+      cy += gapAfterDest;
+
+      // [SUBHEAD] (só se diferente do destino/kicker)
+      if (showSubhead) {
+        ctx.fillStyle = "rgba(255,255,255,0.92)";
+        drawTextBlock(ctx, subheadRaw, contentX, cy + 4, contentW, 30, 2, {
+          fontWeight: "600",
+          baseFontSize: 22,
+          minFontSize: 16,
+          fontFamily: SANS,
+        });
+        cy += subheadH + gapAfterSubhead;
       }
 
-      // [TITLE] — subheadline em sans (bold)
-      const titleY = destY + destBlockH + sep;
-      ctx.fillStyle = "rgba(255,255,255,0.92)";
-      drawTextBlock(ctx, titleText, contentX, titleY + 4, contentW, 34, 2, {
-        fontWeight: "700",
-        baseFontSize: 24,
-        minFontSize: 16,
-        fontFamily: SANS,
-      });
-
-      // [INFO_LINE] — ícones minimal monochromatic small + dias · parcelas
-      if (infoBits4.length) {
-        const infoY = titleY + titleBlockH + sep;
-        ctx.font = `600 16px ${SANS}`;
-        ctx.fillStyle = TEXT_MUTED;
+      // [INFO_LINE] — ícones REAIS dos highlights selecionados
+      if (daysText4 || extraHighlights.length) {
+        const infoY = cy;
         let cursorX = contentX;
-        infoBits4.forEach((bit, i) => {
+        const items: Array<{ icon: string; text: string }> = [];
+        if (daysText4) items.push({ icon: ICON_SYMBOL["map"], text: daysText4 });
+        extraHighlights.forEach((h) => {
+          items.push({ icon: ICON_SYMBOL[h.icon || "check"], text: h.text });
+        });
+
+        ctx.font = `600 16px ${SANS}`;
+        items.forEach((item, i) => {
           if (i > 0) {
-            // separador minimal (ponto)
             ctx.fillStyle = TEXT_SOFT;
-            ctx.fillText("·", cursorX + 6, infoY + 22);
-            cursorX += 22;
+            ctx.font = `600 16px ${SANS}`;
+            ctx.fillText("·", cursorX + 4, infoY + 22);
+            cursorX += 18;
           }
-          // ícone monocromático pequeno (círculo outline 6px)
-          ctx.strokeStyle = ACCENT;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.arc(cursorX + 6, infoY + 17, 5, 0, Math.PI * 2);
-          ctx.stroke();
+          // Ícone real do highlight (emoji/símbolo selecionado)
+          ctx.fillStyle = ACCENT;
+          ctx.font = `400 18px ${SANS}`;
+          ctx.fillText(item.icon, cursorX, infoY + 22);
+          const iw = ctx.measureText(item.icon).width;
           ctx.fillStyle = TEXT_PRIMARY;
           ctx.font = `600 16px ${SANS}`;
-          const tw = ctx.measureText(bit).width;
-          ctx.fillText(bit, cursorX + 20, infoY + 22);
-          cursorX += 20 + tw + 4;
+          ctx.fillText(item.text, cursorX + iw + 8, infoY + 22);
+          cursorX += iw + 8 + ctx.measureText(item.text).width + 4;
+
+          // Quebra simples se passar do contentW (drop next items)
+          if (cursorX > contentX + contentW - 60) {
+            // simples truncamento: para de adicionar
+          }
         });
+        cy += infoH + gapAfterInfo;
       }
 
-      // [PRICE_BLOCK] — spec dedicada V4
-      //   prefix · "Nx sem juros" · PREÇO grande (highlight) · "Total por pessoa: X" · faixa "N% OFF à vista no Pix"
-      const priceY = boxY + boxH - boxPadY - priceBlockH;
-      ctx.strokeStyle = "rgba(255,255,255,0.12)";
+      // Divisor sutil
+      ctx.strokeStyle = "rgba(255,255,255,0.14)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(contentX, priceY);
-      ctx.lineTo(contentX + contentW, priceY);
+      ctx.moveTo(contentX, cy);
+      ctx.lineTo(contentX + contentW, cy);
       ctx.stroke();
+      cy += dividerGap;
 
-      // (a) PREFIX
-      ctx.textAlign = "left";
+      // ── PRICE BLOCK ──────────────────────────────────────────────────────
+      // (a) "a partir de"
       ctx.fillStyle = TEXT_MUTED;
-      ctx.font = `400 18px ${SANS}`;
-      ctx.fillText("a partir de", contentX, priceY + 30);
+      ctx.font = `400 17px ${SANS}`;
+      ctx.fillText("a partir de", contentX, cy + 16);
+      cy += 24;
 
-      // (b) INSTALLMENTS LINE — "{parcelas}x sem juros"
-      let cursorY = priceY + 30;
-      if (parcelasText4) {
+      // (b) Parcelamento
+      if (installLineH) {
         ctx.fillStyle = ACCENT;
-        ctx.font = `700 18px ${SANS}`;
-        const installFmt = `${installments} sem juros`;
-        ctx.fillText(installFmt, contentX, priceY + 56);
-        cursorY = priceY + 56;
+        ctx.font = `800 20px ${SANS}`;
+        ctx.fillText(`${installments} sem juros`, contentX, cy + 22);
+        cy += installLineH + 6;
       }
 
-      // (c) PRICE — gigante, highlight high
+      // (c) Preço gigante
       const priceStr4 = mainPrice || `${curSym} ${price}`;
-      let pfs4 = 96;
+      let pfs4 = priceFs;
       ctx.font = `700 ${pfs4}px ${SERIF}`;
-      while (ctx.measureText(priceStr4).width > contentW - 20 && pfs4 > 48) {
+      // Reserva espaço para o sufixo (ex: "por pessoa")
+      const suffixText = bottomSuffix || "";
+      const reserveSuffix = suffixText ? 160 : 0;
+      while (ctx.measureText(priceStr4).width > contentW - reserveSuffix - 8 && pfs4 > 56) {
         pfs4 -= 4;
         ctx.font = `700 ${pfs4}px ${SERIF}`;
       }
+      const priceBaselineY = cy + Math.round(pfs4 * 0.86);
       ctx.fillStyle = TEXT_PRIMARY;
-      const priceBaselineY = cursorY + 24 + pfs4 * 0.78;
       ctx.fillText(priceStr4, contentX, priceBaselineY);
+      const priceWidth = ctx.measureText(priceStr4).width;
 
-      // sufixo (ex: "por pessoa") logo após o preço, na mesma linha visual
-      if (bottomSuffix) {
+      // Sufixo (ex: "por pessoa") na lateral direita do preço, baseline alinhada
+      if (suffixText) {
         ctx.fillStyle = TEXT_MUTED;
-        ctx.font = `500 18px ${SANS}`;
-        const pw = ctx.measureText(priceStr4).width;
-        ctx.fillText(bottomSuffix, contentX + pw + 14, priceBaselineY - 4);
+        ctx.font = `500 17px ${SANS}`;
+        ctx.fillText(suffixText, contentX + priceWidth + 14, priceBaselineY - 6);
       }
+      cy = priceBaselineY + 8;
 
-      // (d) TOTAL — "Total por pessoa: {total}"
-      let afterPriceY = priceBaselineY + 18;
+      // (d) Total — em linha separada, com respiro
       if (showTotal4) {
         ctx.fillStyle = TEXT_SOFT;
         ctx.font = `500 16px ${SANS}`;
-        // se totalOverride foi customizado pelo usuário, respeita; senão usa label da spec
         const totalLine = (totalOverride && totalOverride.trim())
           ? totalOverride
-          : (computedTotal4 ? `Total por pessoa: ${computedTotal4}` : "");
-        if (totalLine) ctx.fillText(totalLine, contentX, afterPriceY + 16);
-        afterPriceY += 24;
+          : `Total por pessoa: ${totalStr4}`;
+        ctx.fillText(totalLine, contentX, cy + 18);
+        cy += totalLineH + 8;
       }
 
-      // (e) DISCOUNT — faixa inferior "{desconto}% OFF à vista no Pix"
-      if (pixStripH && (showBadge4 || (pixBannerText && pixBannerText.trim()))) {
-        const stripY = boxY + boxH - boxPadY - pixStripH + 4;
-        const stripH = 40;
-        fillRoundRect(ctx, contentX, stripY, contentW, stripH, 10, ACCENT);
+      // (e) Faixa de desconto (rodapé do box)
+      if (pixStripH) {
+        const stripY = boxY + boxH - boxPadY - pixStripH + 6;
+        const stripH = pixStripH - 8;
+        fillRoundRect(ctx, contentX, stripY, contentW, stripH, 12, ACCENT);
         const discountText = (pixBannerText && pixBannerText.trim())
-          || (showBadge4 ? `${descNum4}% OFF à vista no Pix` : "");
-        if (discountText) {
-          ctx.fillStyle = "#0b0f1a";
-          ctx.font = `800 18px ${SANS}`;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(discountText, contentX + contentW / 2, stripY + stripH / 2);
-          ctx.textBaseline = "alphabetic";
-          ctx.textAlign = "left";
-        }
+          || `${descNum4}% OFF À VISTA NO PIX`;
+        ctx.fillStyle = "#0b0f1a";
+        ctx.font = `800 18px ${SANS}`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(discountText, contentX + contentW / 2, stripY + stripH / 2);
+        ctx.textBaseline = "alphabetic";
+        ctx.textAlign = "left";
       }
 
       ctx.textAlign = "left";
