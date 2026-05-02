@@ -1183,28 +1183,76 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={labelCls}>Destino *</label>
-            {state.destinos && state.destinos.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {state.destinos.map((d) => (
-                  <button
-                    key={d}
-                    onClick={() => setDestination(d)}
-                    className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
-                      destination === d ? "text-black" : "bg-white/[0.05] border-white/10 text-white/70 hover:border-white/30"
-                    }`}
-                    style={destination === d ? { background: primaryColor, borderColor: primaryColor } : undefined}
-                  >
-                    {d}
-                  </button>
-                ))}
-              </div>
-            )}
-            <input value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Ex: Maragogi, Cancún..." className={inputCls} />
+            <div className="relative">
+              <input
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                onFocus={() => setDestMenuOpen(true)}
+                onClick={() => setDestMenuOpen(true)}
+                placeholder="Ex: Maragogi, Cancún..."
+                className={`${inputCls} pr-10 cursor-pointer`}
+              />
+              <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${destMenuOpen ? "rotate-180" : ""}`} />
+              {destMenuOpen && (() => {
+                const opts = Array.from(new Set([...(state.destinos || []), ...POPULAR_PHOTO_DESTINATIONS]));
+                return (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setDestMenuOpen(false)} />
+                    <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
+                      <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
+                        Escolha um destino · {opts.length} opções
+                      </div>
+                      {opts.map((d) => {
+                        const active = d === destination;
+                        return (
+                          <button key={d} type="button" onClick={() => { setDestination(d); setDestMenuOpen(false); }} className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}>
+                            {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                            <span className={active ? "" : "ml-5"}>{d}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
           </div>
 
           <div>
             <label className={labelCls}>Nome da promoção</label>
-            <input value={promoName} onChange={(e) => setPromoName(e.target.value)} placeholder="Ex: BLACK FRIDAY" className={inputCls} />
+            <div className="relative">
+              <input
+                value={promoName}
+                onChange={(e) => setPromoName(e.target.value)}
+                onFocus={() => setPromoMenuOpen(true)}
+                onClick={() => setPromoMenuOpen(true)}
+                placeholder="Ex: BLACK FRIDAY"
+                className={`${inputCls} pr-10 cursor-pointer`}
+              />
+              <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${promoMenuOpen ? "rotate-180" : ""}`} />
+              {promoMenuOpen && (() => {
+                const PROMO_PRESETS = ["BLACK FRIDAY","LIQUIDA VERÃO","OFERTA RELÂMPAGO","MEGA PROMO","SEMANA DO CONSUMIDOR","FÉRIAS IMPERDÍVEIS","LANÇAMENTO","ÚLTIMAS VAGAS","OFERTA EXCLUSIVA","OFERTA ESPECIAL"];
+                return (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setPromoMenuOpen(false)} />
+                    <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
+                      <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
+                        Sugestões · {PROMO_PRESETS.length} opções
+                      </div>
+                      {PROMO_PRESETS.map((p) => {
+                        const active = p === promoName;
+                        return (
+                          <button key={p} type="button" onClick={() => { setPromoName(p); setPromoMenuOpen(false); }} className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}>
+                            {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                            <span className={active ? "" : "ml-5"}>{p}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
           </div>
 
           <div className="sm:col-span-2">
