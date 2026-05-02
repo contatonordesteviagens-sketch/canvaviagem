@@ -127,6 +127,9 @@ export interface FabricaState {
   hideCents?: boolean;
   showTotal?: boolean;
   totalOverride?: string;
+  // V3: faixa do Pix (editável)
+  showPixBanner?: boolean;
+  pixBannerText?: string;
 }
 
 const defaultState: FabricaState = {
