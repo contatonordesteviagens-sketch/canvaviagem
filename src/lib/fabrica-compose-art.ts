@@ -36,6 +36,8 @@ interface ComposeTravelAdOptions {
   variation?: number;
   /** Força uma variante específica (0..2 para Sua Imagem + Oferta + 1:1). Quando definido, ignora variation%N. */
   forceVariant?: number;
+  /** Quando definido, sobrescreve o pool aleatório de headlines e usa este texto como título principal em todas as variantes. */
+  titleOverride?: string;
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
