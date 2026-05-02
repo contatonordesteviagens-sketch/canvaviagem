@@ -1381,6 +1381,122 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       return canvas.toDataURL("image/png");
     }
 
+    // ── V4 · PREMIUM com BOX CENTRAL flutuante ──────────────────────────────
+    // Foto cobrindo todo o canvas + box central translúcido com borda sutil.
+    if (variant === 4) {
+      const cBg4 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
+      ctx.drawImage(image, cBg4.sx, cBg4.sy, cBg4.sw, cBg4.sh, 0, 0, width, height);
+      const vg = ctx.createRadialGradient(width / 2, height / 2, Math.min(width, height) * 0.25, width / 2, height / 2, Math.max(width, height) * 0.75);
+      vg.addColorStop(0, "rgba(0,0,0,0)");
+      vg.addColorStop(1, "rgba(0,0,0,0.55)");
+      ctx.fillStyle = vg; ctx.fillRect(0, 0, width, height);
+
+      const destUp4 = (destination || "DESTINO").toUpperCase();
+      const benefits4 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 4);
+
+      const boxW = Math.round(width * 0.78);
+      const boxPadX = 56;
+      const boxPadY = 48;
+      const titleLines = Math.min(2, Math.max(1, Math.ceil(titleText.length / 22)));
+      const benefitsRows = Math.ceil(benefits4.length / 2);
+      const benefitsBlockH = benefitsRows * 56;
+      const priceBlockH = 180;
+      const destBlockH = 110;
+      const titleBlockH = titleLines * 36;
+      const sep = 28;
+      const boxH =
+        boxPadY + destBlockH + sep + titleBlockH + sep +
+        (benefits4.length ? benefitsBlockH + sep : 0) + priceBlockH + boxPadY;
+      const boxX = Math.round((width - boxW) / 2);
+      const boxY = Math.round((height - boxH) / 2);
+
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.45)";
+      ctx.shadowBlur = 60;
+      ctx.shadowOffsetY = 10;
+      fillRoundRect(ctx, boxX, boxY, boxW, boxH, 32, "rgba(15,18,28,0.78)");
+      ctx.restore();
+
+      ctx.strokeStyle = secondaryColor;
+      ctx.lineWidth = 2;
+      const rr = 32;
+      ctx.beginPath();
+      ctx.moveTo(boxX + rr, boxY);
+      ctx.arcTo(boxX + boxW, boxY, boxX + boxW, boxY + boxH, rr);
+      ctx.arcTo(boxX + boxW, boxY + boxH, boxX, boxY + boxH, rr);
+      ctx.arcTo(boxX, boxY + boxH, boxX, boxY, rr);
+      ctx.arcTo(boxX, boxY, boxX + boxW, boxY, rr);
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = secondaryColor;
+      ctx.font = "600 22px Inter, Arial, sans-serif";
+      ctx.fillText(cityFmt ? `SAINDO DE ${cityFmt.toUpperCase()}` : "PACOTE EXCLUSIVO", width / 2, boxY + boxPadY + 24);
+
+      let destSize4 = 76;
+      ctx.font = `900 ${destSize4}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(destUp4).width > boxW - boxPadX * 2 && destSize4 > 38) {
+        destSize4 -= 4;
+        ctx.font = `900 ${destSize4}px Inter, Arial, sans-serif`;
+      }
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(destUp4, width / 2, boxY + boxPadY + 88);
+
+      const titleY4 = boxY + boxPadY + destBlockH + sep;
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      drawTextBlock(ctx, titleText, boxX + boxPadX, titleY4, boxW - boxPadX * 2, 32, 2, { fontWeight: "600", baseFontSize: 26, minFontSize: 18 });
+
+      if (benefits4.length) {
+        const benTop = titleY4 + titleBlockH + sep;
+        const colW4 = (boxW - boxPadX * 2 - 24) / 2;
+        ctx.textAlign = "left";
+        benefits4.forEach((h, i) => {
+          const col = i % 2;
+          const row = Math.floor(i / 2);
+          const bx = boxX + boxPadX + col * (colW4 + 24);
+          const by = benTop + row * 56 + 28;
+          ctx.fillStyle = secondaryColor;
+          ctx.font = "800 22px Inter, Arial, sans-serif";
+          ctx.fillText(ICON_SYMBOL[h.icon || "check"], bx, by);
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "600 22px Inter, Arial, sans-serif";
+          ctx.fillText(h.text, bx + 36, by);
+        });
+      }
+
+      const priceY4 = boxY + boxH - boxPadY - priceBlockH;
+      ctx.strokeStyle = "rgba(255,255,255,0.18)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(boxX + boxPadX, priceY4);
+      ctx.lineTo(boxX + boxW - boxPadX, priceY4);
+      ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      ctx.font = "600 22px Inter, Arial, sans-serif";
+      ctx.fillText((topLabel || "a partir de").toString(), width / 2, priceY4 + 38);
+
+      const priceStr4 = mainPrice || `${curSym} ${price}`;
+      let pfs4 = 96;
+      ctx.font = `900 ${pfs4}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(priceStr4).width > boxW - boxPadX * 2 - 40 && pfs4 > 48) {
+        pfs4 -= 4;
+        ctx.font = `900 ${pfs4}px Inter, Arial, sans-serif`;
+      }
+      ctx.fillStyle = secondaryColor;
+      ctx.fillText(priceStr4, width / 2, priceY4 + 122);
+
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.font = "600 22px Inter, Arial, sans-serif";
+      const footerBits = [installments ? `${installments} sem juros` : "", bottomSuffix].filter(Boolean);
+      ctx.fillText(footerBits.join("  ·  "), width / 2, priceY4 + 158);
+
+      ctx.textAlign = "left";
+      return canvas.toDataURL("image/png");
+    }
+
     // ── V3 · FULLBLEED com card centralizado flutuante ─────────────────────
     // Foto ocupa 100% da tela. Card semi-transparente centralizado na base.
     const c3 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.38);
