@@ -193,6 +193,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     titleOverride,
     titleVariations,
     currencySymbol,
+    totalOverride,
+    showTotal = true,
   } = options;
   const curSym = (currencySymbol || "R$").trim();
   const priceValueText = (price || "").trim();
