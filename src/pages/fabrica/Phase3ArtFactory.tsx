@@ -699,7 +699,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   key={c.id}
                   onClick={() => {
                     setCategoria(c.id);
-                    if (c.id === "autoridade_dark") setGenMode("ai");
                   }}
                   className={`p-3 rounded-xl border-2 text-left transition-all flex flex-col justify-between min-h-[85px] ${
                     selected ? "shadow-lg scale-[1.02]" : "border-white/5 bg-black/20 hover:bg-white/[0.04]"
