@@ -472,10 +472,21 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   const renderSafeSquareOffer = () => {
-    // Apenas 3 variantes válidas (V0, V1, V2). V3 fullbleed foi descontinuada para Sua Imagem.
-    const variant = typeof forceVariant === "number"
-      ? ((forceVariant % 3) + 3) % 3
-      : Math.abs(variation) % 3;
+    // Variantes válidas: V0, V1, V2 (ativas) + V3 (estrutura reservada — layout ainda não definido).
+    const TOTAL_VARIANTS = 4;
+    let variant = typeof forceVariant === "number"
+      ? ((forceVariant % TOTAL_VARIANTS) + TOTAL_VARIANTS) % TOTAL_VARIANTS
+      : Math.abs(variation) % TOTAL_VARIANTS;
+
+    // ── V3 · ESTRUTURA RESERVADA ────────────────────────────────────────────
+    // Placeholder: segue o mesmo padrão estrutural de V0/V1/V2 (early return
+    // por variante). Layout ainda não implementado — fallback temporário em V0
+    // para não quebrar a geração caso seja sorteada antes do layout final.
+    if (variant === 3) {
+      // TODO(V3): definir layout próprio. Por ora, delega para V0.
+      // (não modifica V0 — apenas reaproveita o branch existente abaixo)
+      variant = 0;
+    }
     const logoH = hasLogo ? 130 : 0;
     const destUp = (destination || "DESTINO").toUpperCase();
 
