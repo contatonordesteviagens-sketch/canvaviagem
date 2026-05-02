@@ -182,6 +182,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     strategy = "vitrine",
     variation = 0,
     forceVariant,
+    titleOverride,
   } = options;
 
   const width = 1080;
