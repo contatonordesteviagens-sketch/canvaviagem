@@ -862,10 +862,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   const renderSafeSquareOffer = () => {
-    // Variantes válidas: V0, V1, V2 (ativas) + V3 (estrutura reservada — layout ainda não definido).
-    const TOTAL_VARIANTS = 4;
+    // Variantes ATIVAS no rotacionador: V0, V1, V2, V3.
+    // V4 = RESERVADA (estrutura inicializada, layout/CSS ainda não implementado).
+    //      Não entra na rotação automática; só será renderizada se forceVariant === 4.
+    const TOTAL_VARIANTS = 4; // pool de rotação (V0–V3). V4 fica fora até ser ativada.
+    const TOTAL_VARIANTS_INCLUDING_RESERVED = 5; // V0–V4 (referência futura)
     let variant = typeof forceVariant === "number"
-      ? ((forceVariant % TOTAL_VARIANTS) + TOTAL_VARIANTS) % TOTAL_VARIANTS
+      ? ((forceVariant % TOTAL_VARIANTS_INCLUDING_RESERVED) + TOTAL_VARIANTS_INCLUDING_RESERVED) % TOTAL_VARIANTS_INCLUDING_RESERVED
       : Math.abs(variation) % TOTAL_VARIANTS;
 
     // ── V3 · ESTRUTURA (oferta com box destacado) ───────────────────────────
