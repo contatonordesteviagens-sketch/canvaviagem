@@ -817,8 +817,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   const renderSafeSquareOffer = () => {
-    // Variantes válidas: V0, V1, V2 (ativas) + V3 (estrutura reservada — layout ainda não definido).
-    const TOTAL_VARIANTS = 4;
+    // Variantes válidas: V0, V1, V2, V3 (CVC) + V4 (premium box central).
+    const TOTAL_VARIANTS = 5;
     let variant = typeof forceVariant === "number"
       ? ((forceVariant % TOTAL_VARIANTS) + TOTAL_VARIANTS) % TOTAL_VARIANTS
       : Math.abs(variation) % TOTAL_VARIANTS;
