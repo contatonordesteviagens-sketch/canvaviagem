@@ -172,6 +172,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [promoName, setPromoNameState] = useState(state.lastPromoName || "OFERTA ESPECIAL");
   const setPromoName = (n: string) => { setPromoNameState(n); update({ lastPromoName: n }); };
 
+  // Título do anúncio (com presets editáveis usando {destino})
+  const [adTitleTemplate, setAdTitleTemplateState] = useState(state.lastAdTitle || "Pacote {destino}");
+  const setAdTitleTemplate = (t: string) => { setAdTitleTemplateState(t); update({ lastAdTitle: t }); };
+  const [adTitleMenuOpen, setAdTitleMenuOpen] = useState(false);
+  const resolvedAdTitle = (adTitleTemplate || "").replace(/\{destino\}/gi, destination?.trim() || "Destino");
+
   const [paymentMode, setPaymentModeState] = useState<PaymentMode>(state.lastPaymentMode || "installments");
   const setPaymentMode = (m: PaymentMode) => { setPaymentModeState(m); update({ lastPaymentMode: m }); };
 
