@@ -759,9 +759,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
       const palette = selectedPalette(primaryColor, secondaryColor);
 
-      // Rotação determinística entre as 4 variantes do compositor (V0/V1/V2/V3)
-      // evitando as 2 últimas usadas — garante imagem nova a cada clique e cobre V3.
-      const TOTAL_VARIANTS = 4;
+      // Rotação determinística entre as 5 variantes do compositor (V0/V1/V2/V3/V4)
+      // evitando as 2 últimas usadas — garante imagem nova a cada clique e cobre V4.
+      const TOTAL_VARIANTS = 5;
       const recent = variantHistoryRef.current.slice(-2);
       let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => !recent.includes(v));
       if (candidates.length === 0) {
