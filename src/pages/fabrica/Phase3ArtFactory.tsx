@@ -615,7 +615,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const generateNext = () => {
     const next = variationCounter + 1;
     setVariationCounter(next);
-    generate(next);
+    generate(next, true);
   };
 
   const downloadPNG = () => {
