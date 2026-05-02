@@ -664,14 +664,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full">
             <button
               onClick={() => setGenMode("photo")}
-              disabled={categoria === "autoridade_dark"}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "photo" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
             >
               <ImageIcon className="w-3.5 h-3.5" /> Foto Real <span className="hidden sm:inline font-normal opacity-50">(grátis)</span>
             </button>
             <button
               onClick={() => setGenMode("custom")}
-              disabled={categoria === "autoridade_dark"}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "custom" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
             >
               <Upload className="w-3.5 h-3.5" /> Sua Imagem
@@ -701,7 +699,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   key={c.id}
                   onClick={() => {
                     setCategoria(c.id);
-                    if (c.id === "autoridade_dark") setGenMode("ai");
                   }}
                   className={`p-3 rounded-xl border-2 text-left transition-all flex flex-col justify-between min-h-[85px] ${
                     selected ? "shadow-lg scale-[1.02]" : "border-white/5 bg-black/20 hover:bg-white/[0.04]"
@@ -729,7 +726,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       </div>
 
       {/* 1b · Galeria Pexels/Google (modo foto) */}
-      {genMode === "photo" && categoria !== "autoridade_dark" && (
+      {genMode === "photo" && (
         <div className={sectionCls}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">1 · Escolha uma foto real</h3>
@@ -1043,7 +1040,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         </div>
 
         {/* Benefícios totalmente editáveis (texto + ícone) — oculto para Autoridade Premium */}
-        {categoria !== "autoridade_dark" && (
+        {true && (
           <>
             <label className={labelCls}>Benefícios / Inclusos ({highlights.length}/5) — clique no ícone para trocar</label>
             <div className="space-y-2 mb-2">
