@@ -569,6 +569,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               forceVariant: nextVariantPhoto,
               titleOverride: resolvedAdTitle,
               titleVariations: adTitleVariations,
+              totalOverride: totalOverride || undefined,
+              showTotal,
             });
             if (state.logoBase64) {
               try {
