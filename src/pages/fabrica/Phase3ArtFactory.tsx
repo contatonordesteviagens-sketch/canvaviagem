@@ -317,24 +317,38 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setPrice = (p: string) => { setPriceState(p); update({ lastPrice: p }); };
   const [currency, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
   const setCurrency = (c: Currency) => { setCurrencyState(c); update({ lastCurrency: c }); };
-  // V3: opções extras
+  // Opções extras de preço (aplicam a TODAS as variações V0/V1/V2/V3)
   const [hideCents, setHideCentsState] = useState<boolean>(!!state.hideCents);
+  // Guarda o último valor com centavos pra restaurar quando desmarcar "Sem centavos"
+  const priceWithCentsRef = useRef<string>(state.lastPrice || "149,90");
   const setHideCents = (v: boolean) => {
     setHideCentsState(v);
     update({ hideCents: v });
-    // Reformata o preço atual respeitando a nova flag
-    const reformatted = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, v);
-    if (reformatted) setPriceState(reformatted);
+    if (v) {
+      // Marcando: salva valor atual (com centavos) e reformata sem
+      priceWithCentsRef.current = price;
+      const reformatted = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, true);
+      if (reformatted) setPriceState(reformatted);
+    } else {
+      // Desmarcando: restaura valor original com centavos
+      const restored = priceWithCentsRef.current
+        ? formatPriceValue(stripCurrencyFromPrice(priceWithCentsRef.current, currency), currency, false, false)
+        : formatPriceValue(stripCurrencyFromPrice(price, currency), currency, true, false);
+      if (restored) setPriceState(restored);
+    }
   };
-  const [showTotal, setShowTotalState] = useState<boolean>(state.showTotal !== false);
+  const [showTotal, setShowTotalState] = useState<boolean>(!!state.showTotal);
   const setShowTotal = (v: boolean) => { setShowTotalState(v); update({ showTotal: v }); };
   const [totalOverride, setTotalOverrideState] = useState<string>(state.totalOverride || "");
   const setTotalOverride = (v: string) => { setTotalOverrideState(v); update({ totalOverride: v }); };
-  // V3: faixa azul do Pix (editável e ocultável)
-  const [showPixBanner, setShowPixBannerState] = useState<boolean>((state as any).showPixBanner !== false);
+  const [showPixBanner, setShowPixBannerState] = useState<boolean>(!!(state as any).showPixBanner);
   const setShowPixBanner = (v: boolean) => { setShowPixBannerState(v); update({ showPixBanner: v } as any); };
   const [pixBannerText, setPixBannerTextState] = useState<string>((state as any).pixBannerText || "");
   const setPixBannerText = (v: string) => { setPixBannerTextState(v); update({ pixBannerText: v } as any); };
+  const [priceExtrasOpen, setPriceExtrasOpen] = useState(false);
+  const [suffixMenuOpen, setSuffixMenuOpen] = useState(false);
+  const [destMenuOpen, setDestMenuOpen] = useState(false);
+  const [promoMenuOpen, setPromoMenuOpen] = useState(false);
 
   // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
   const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
