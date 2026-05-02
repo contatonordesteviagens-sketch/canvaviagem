@@ -317,8 +317,22 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setPrice = (p: string) => { setPriceState(p); update({ lastPrice: p }); };
   const [currency, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
   const setCurrency = (c: Currency) => { setCurrencyState(c); update({ lastCurrency: c }); };
+  // V3: opções extras
+  const [hideCents, setHideCentsState] = useState<boolean>(!!state.hideCents);
+  const setHideCents = (v: boolean) => {
+    setHideCentsState(v);
+    update({ hideCents: v });
+    // Reformata o preço atual respeitando a nova flag
+    const reformatted = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, v);
+    if (reformatted) setPriceState(reformatted);
+  };
+  const [showTotal, setShowTotalState] = useState<boolean>(state.showTotal !== false);
+  const setShowTotal = (v: boolean) => { setShowTotalState(v); update({ showTotal: v }); };
+  const [totalOverride, setTotalOverrideState] = useState<string>(state.totalOverride || "");
+  const setTotalOverride = (v: string) => { setTotalOverrideState(v); update({ totalOverride: v }); };
+
   // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
-  const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency);
+  const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
   const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
 
   const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
