@@ -1101,23 +1101,25 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         cursorY += totalH;
       }
 
-      // [PROMO] faixa horizontal azul com texto Pix (opcional)
+      // [PROMO] faixa horizontal com texto Pix (opcional)
+      // Fundo da faixa = primaryColor (navy padrão). Texto sempre com contraste.
       if (showPixBanner) {
         const stripeY = boxY + boxH - stripeH - 24;
         const stripeX = boxX + 40;
         const stripeW = boxW - 80;
-        fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 16, navy);
-        ctx.fillStyle = "#ffffff";
+        const stripeBg = navyRaw; // mantém a cor escolhida pelo usuário p/ a faixa
+        const stripeFg = contrastOn(stripeBg); // texto preto/branco automático
+        fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 16, stripeBg);
+        ctx.fillStyle = stripeFg;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.font = "900 26px Inter, Arial, sans-serif";
 
         const customBanner = (pixBannerText || "").trim();
         if (customBanner) {
-          // Modo texto livre: usuário definiu uma frase customizada
           ctx.fillText(customBanner, stripeX + stripeW / 2, stripeY + stripeH / 2 + 1);
         } else {
-          // Modo padrão: "{N}% OFF À VISTA NO  ◇ pix"
+          // "{N}% OFF À VISTA NO  [●pix]"
           const pixText = `${descN}% OFF À VISTA NO`;
           const pixTextW = ctx.measureText(pixText).width;
           const pixIconSize = 36;
@@ -1125,16 +1127,24 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
           ctx.font = "800 28px Inter, Arial, sans-serif";
           const pixLabelW = ctx.measureText("pix").width;
           ctx.font = "900 26px Inter, Arial, sans-serif";
-          const totalPixW = pixTextW + pixGap + pixIconSize + pixGap + pixLabelW;
+          // pílula branca atrás do logo+pix p/ garantir visibilidade da marca Pix
+          const pillPad = 10;
+          const pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
+          const pillH = stripeH - 16;
+          const totalPixW = pixTextW + pixGap + pillW;
           const pixStartX = stripeX + (stripeW - totalPixW) / 2;
           ctx.textAlign = "left";
+          ctx.fillStyle = stripeFg;
           ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2 + 1);
-          const pxCx = pixStartX + pixTextW + pixGap + pixIconSize / 2;
+          const pillX = pixStartX + pixTextW + pixGap;
+          const pillY = stripeY + (stripeH - pillH) / 2;
+          fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, "#ffffff");
+          const pxCx = pillX + pillPad + pixIconSize / 2;
           const pxCy = stripeY + stripeH / 2;
           drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
-          ctx.fillStyle = "#ffffff";
-          ctx.font = "800 28px Inter, Arial, sans-serif";
-          ctx.fillText("pix", pxCx + pixIconSize / 2 + pixGap, stripeY + stripeH / 2 + 1);
+          ctx.fillStyle = "#32BCAD";
+          ctx.font = "900 28px Inter, Arial, sans-serif";
+          ctx.fillText("pix", pillX + pillPad + pixIconSize + pixGap, stripeY + stripeH / 2 + 1);
         }
         ctx.textBaseline = "alphabetic";
       }
