@@ -142,6 +142,7 @@ const buildTitleVariations = (template: string, destination: string): string[] =
   return out;
 };
 
+const CATEGORY_LOCAL_STRATEGIES: Record<CategoriaId, StrategyId[]> = {
   oferta_pacote: ["matriz", "gancho", "ancora", "vitrine"],
   experiencia_destino: ["experiencia_hero", "experiencia_postcard", "experiencia_editorial", "experiencia_lifestyle"],
 };
