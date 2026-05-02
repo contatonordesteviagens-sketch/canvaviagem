@@ -203,6 +203,8 @@ const defaultState: FabricaState = {
   hideCents: false,
   showTotal: true,
   totalOverride: "",
+  showPixBanner: true,
+  pixBannerText: "",
 };
 
 const STORAGE_KEY = "fabrica-context-v1";
