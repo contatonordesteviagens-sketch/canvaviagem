@@ -489,9 +489,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           if (result.data.provider) providerSeen = result.data.provider;
         }
 
-        setGeneratedImages(images);
-        setGeneratedImage(images[0]);
-        update({ generatedAdImage: images[0], primaryColor: palette.primary });
+        const MAX_VARIATIONS_AI = 3;
+        setGeneratedImages((prev) => [...prev, ...images].slice(-MAX_VARIATIONS_AI));
+        setGeneratedImage(images[images.length - 1]);
+        update({ generatedAdImage: images[images.length - 1], primaryColor: palette.primary });
         if (providerSeen) setLastProvider(providerSeen);
 
         // Registra no GenerationGuard
