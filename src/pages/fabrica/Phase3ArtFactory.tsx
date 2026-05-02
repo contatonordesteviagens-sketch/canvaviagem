@@ -397,6 +397,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               paymentSuffix: paymentSuffix || undefined,
               strategy: localStrategy,
               variation: freshSeedPhoto + idx,
+              titleOverride: resolvedAdTitle,
             });
             if (state.logoBase64) {
               try {
