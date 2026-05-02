@@ -191,6 +191,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     currencySymbol,
   } = options;
   const curSym = (currencySymbol || "R$").trim();
+  const priceValueText = (price || "").trim();
+  const priceWithSymbol = /^(R\$|US\$|AR\$|€|£|[A-Z]{1,3}\$)/i.test(priceValueText)
+    ? priceValueText
+    : `${curSym} ${priceValueText}`.trim();
 
   const width = 1080;
   const height = format === "story" ? 1920 : 1080;
@@ -270,26 +274,27 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const subtitleText = subtitlePool[(Math.abs(variation) + 2) % subtitlePool.length];
 
   const resolvePaymentCopy = () => {
+    const suffix = (fallback: string) => (typeof paymentSuffix === "string" ? paymentSuffix : fallback);
     switch (paymentMode) {
       case "cash":
-        return { topLabel: paymentLabel || "À VISTA", mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || "À VISTA", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "cash_discount":
-        return { topLabel: paymentLabel || "À VISTA · 5% OFF", mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || "À VISTA · 5% OFF", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "from":
-        return { topLabel: paymentLabel || "A PARTIR DE", mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || "A PARTIR DE", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "daily":
-        return { topLabel: paymentLabel || "DIÁRIA POR", mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/diária" };
+        return { topLabel: paymentLabel || "DIÁRIA POR", mainPrice: priceWithSymbol, bottomSuffix: suffix("por diária") };
       case "monthly":
-        return { topLabel: paymentLabel || "MENSAL POR", mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/mês" };
+        return { topLabel: paymentLabel || "MENSAL POR", mainPrice: priceWithSymbol, bottomSuffix: suffix("por mês") };
       case "down_plus":
-        return { topLabel: paymentLabel || `ENTRADA + ${installments}`, mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || `ENTRADA + ${installments}`, mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "free_quote":
         return { topLabel: paymentLabel || "CONSULTE", mainPrice: paymentSuffix ? "" : "VALORES", bottomSuffix: paymentSuffix || "no WhatsApp" };
       case "custom_label":
-        return { topLabel: paymentLabel || installments, mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || installments, mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "installments":
       default:
-        return { topLabel: paymentLabel || installments, mainPrice: `${curSym} ${price}`, bottomSuffix: paymentSuffix || "/pessoa" };
+        return { topLabel: paymentLabel || installments, mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
     }
   };
 
@@ -578,7 +583,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(priceStr, priceCenterX, rowTopY + 92);
       ctx.font = "600 20px Inter, Arial, sans-serif"; ctx.fillStyle = primaryColor;
       ctx.globalAlpha = 0.7;
-      ctx.fillText(bottomSuffix || "/pessoa", priceCenterX, rowTopY + 120);
+      ctx.fillText(bottomSuffix, priceCenterX, rowTopY + 120);
       ctx.globalAlpha = 1;
       ctx.textAlign = "left";
 
@@ -652,7 +657,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       }
       ctx.fillText(priceStrV1, px + pw / 2, height - 100);
       ctx.font = "600 20px Inter, Arial, sans-serif";
-      ctx.fillText(bottomSuffix || "/pessoa", px + pw / 2, height - 68);
+      ctx.fillText(bottomSuffix, px + pw / 2, height - 68);
       ctx.textAlign = "left";
       // Foto ÚNICA no lado direito (sem duplicação) — ocupa toda a altura
       const gap1 = 16;
@@ -677,14 +682,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
       const benefitsCountV2 = Math.max(1, benefitsListV2.length);
 
-      // 1) Card de preço — ancorado à base, MAIOR e mais largo p/ ocupar a direita
-      const priceCardW = Math.round(width * 0.62);
+      // 1) Card de preço — ancorado à base e centralizado para não pesar só à esquerda
+      const priceCardW = Math.round(width * 0.66);
       const priceCardH = 168;
+      const priceCardX = Math.round((width - priceCardW) / 2);
       const priceCardY = height - 56 - priceCardH;
-      fillRoundRect(ctx, left, priceCardY, priceCardW, priceCardH, 16, primaryColor);
+      fillRoundRect(ctx, priceCardX, priceCardY, priceCardW, priceCardH, 16, primaryColor);
       ctx.fillStyle = secondaryColor; ctx.font = "700 24px Inter, Arial, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText((topLabel || "por apenas").toString(), left + priceCardW / 2, priceCardY + 40);
+      ctx.fillText((topLabel || "por apenas").toString(), priceCardX + priceCardW / 2, priceCardY + 40);
       ctx.fillStyle = "#ffffff";
       // Auto-shrink preço V2
       const priceStrV2 = mainPrice || `${curSym} ${price}`;
@@ -694,18 +700,19 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         pfsV2 -= 4;
         ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
       }
-      ctx.fillText(priceStrV2, left + priceCardW / 2, priceCardY + 108);
+      ctx.fillText(priceStrV2, priceCardX + priceCardW / 2, priceCardY + 108);
       ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText(bottomSuffix || "/pessoa", left + priceCardW / 2, priceCardY + 144);
+      ctx.fillText(bottomSuffix, priceCardX + priceCardW / 2, priceCardY + 144);
       ctx.textAlign = "left";
 
       // 2) Faixa headline (altura adaptativa)
       const faixaH = 110;
 
       // 3) Cálculo de altura dos benefits — TODOS devem caber.
-      const benefitFontSize = benefitsCountV2 <= 3 ? 32 : benefitsCountV2 === 4 ? 28 : benefitsCountV2 === 5 ? 24 : 22;
-      const benefitGap = benefitsCountV2 <= 3 ? 60 : benefitsCountV2 === 4 ? 52 : benefitsCountV2 === 5 ? 44 : 40;
-      const benefitsBlockH = benefitsCountV2 * benefitGap;
+      const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
+      const benefitFontSize = benefitRowsV2 <= 2 ? 30 : 25;
+      const benefitGap = benefitRowsV2 <= 2 ? 58 : 46;
+      const benefitsBlockH = benefitRowsV2 * benefitGap;
       const benefitsTopPad = 32;
       const benefitsBottomPad = 28;
       const benefitsAreaH = benefitsTopPad + benefitsBlockH + benefitsBottomPad;
@@ -737,12 +744,24 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(titleText, left, faixaY + faixaH / 2);
       ctx.textBaseline = "alphabetic";
 
-      // 6) Benefits — TODOS aparecem com fonte adaptada
+      // 6) Benefits — duas colunas para ocupar o espaço inferior sem deixar vazio à direita
       const benefitsTop = faixaY + faixaH + benefitsTopPad;
+      const colGapV2 = 28;
+      const colWV2 = (contentWidth - colGapV2) / 2;
       benefitsListV2.forEach((h, i) => {
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const tx = left + col * (colWV2 + colGapV2);
+        const ty = benefitsTop + row * benefitGap;
         ctx.fillStyle = primaryColor;
-        ctx.font = `700 ${benefitFontSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(ICON_SYMBOL[h.icon || "check"] + "  " + h.text, left, benefitsTop + i * benefitGap);
+        let fs = benefitFontSize;
+        const label = `${ICON_SYMBOL[h.icon || "check"]}  ${h.text}`;
+        ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(label).width > colWV2 && fs > 15) {
+          fs -= 2;
+          ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
+        }
+        ctx.fillText(label, tx, ty);
       });
 
       return canvas.toDataURL("image/png");
@@ -781,7 +800,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.textAlign = "center";
     ctx.fillText(mainPrice || `${curSym} ${price}`, width / 2, cardY3 + 312);
     ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = "600 24px Inter, Arial, sans-serif";
-    ctx.fillText("/pessoa · " + (installments || "10x") + " sem juros", width / 2, cardY3 + 356);
+    ctx.fillText([bottomSuffix, installments ? `${installments} sem juros` : ""].filter(Boolean).join(" · "), width / 2, cardY3 + 356);
     ctx.textAlign = "left";
     return canvas.toDataURL("image/png");
   };

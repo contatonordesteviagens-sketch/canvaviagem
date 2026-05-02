@@ -119,6 +119,9 @@ export interface FabricaState {
   lastPromoName?: string;
   lastHighlights?: any[];
   lastPaymentMode?: any;
+  lastPaymentLabel?: string;
+  lastPaymentSuffix?: string;
+  lastCurrency?: string;
   lastAdTitle?: string;
 }
 
@@ -186,6 +189,9 @@ const defaultState: FabricaState = {
   lastPromoName: "OFERTA ESPECIAL",
   lastHighlights: undefined,
   lastPaymentMode: "installments",
+  lastPaymentLabel: "",
+  lastPaymentSuffix: "por pessoa",
+  lastCurrency: "BRL",
   lastAdTitle: "Pacote {destino}",
 };
 

@@ -84,31 +84,44 @@ const CURRENCY_PRESETS: { id: Currency; symbol: string; label: string; locale: s
  *     "1499,90"  → BRL: "1.499,90"
  *     "1499.9"   → BRL: "1.499,90"
  */
-const formatPriceValue = (raw: string, currency: Currency): string => {
+const formatPriceValue = (raw: string, currency: Currency, assumeCents = false): string => {
   const value = (raw || "").trim();
   if (!value) return "";
-  // Mantém só dígitos + separador decimal (último , ou .)
   const cleaned = value.replace(/[^\d.,]/g, "");
-  if (!cleaned) return "";
-  // Detecta o ÚLTIMO separador como decimal
+  const digits = cleaned.replace(/\D/g, "");
+  if (!digits) return "";
+
   const lastComma = cleaned.lastIndexOf(",");
   const lastDot = cleaned.lastIndexOf(".");
-  let intPart = cleaned;
+  const lastSep = Math.max(lastComma, lastDot);
+  let centsMode = false;
+  let intPart = digits;
   let decPart = "";
-  if (lastComma > lastDot && lastComma !== -1) {
-    intPart = cleaned.slice(0, lastComma).replace(/[.,]/g, "");
-    decPart = cleaned.slice(lastComma + 1).replace(/\D/g, "").slice(0, 2);
-  } else if (lastDot > lastComma && lastDot !== -1) {
-    intPart = cleaned.slice(0, lastDot).replace(/[.,]/g, "");
-    decPart = cleaned.slice(lastDot + 1).replace(/\D/g, "").slice(0, 2);
-  } else {
-    intPart = cleaned.replace(/\D/g, "");
+
+  if (lastSep !== -1) {
+    const afterSep = cleaned.slice(lastSep + 1).replace(/\D/g, "");
+    const beforeSep = cleaned.slice(0, lastSep).replace(/\D/g, "");
+    const sepCount = (cleaned.match(/[.,]/g) || []).length;
+    centsMode = afterSep.length > 0 && afterSep.length <= 2 && (sepCount === 1 || afterSep.length !== 3);
+    if (centsMode) {
+      intPart = beforeSep || "0";
+      decPart = afterSep.padEnd(2, "0").slice(0, 2);
+    }
   }
-  const num = Number(intPart || "0") + (decPart ? Number(`0.${decPart}`) : 0);
+
+  if (!centsMode && assumeCents && digits.length > 2) {
+    intPart = digits.slice(0, -2);
+    decPart = digits.slice(-2);
+  } else if (!centsMode) {
+    intPart = digits;
+    decPart = "";
+  }
+
+  const num = Number(intPart || "0") + (decPart ? Number(decPart) / 100 : 0);
   const preset = CURRENCY_PRESETS.find((c) => c.id === currency)!;
   try {
     return new Intl.NumberFormat(preset.locale, {
-      minimumFractionDigits: decPart ? Math.min(decPart.length, 2) : 0,
+      minimumFractionDigits: decPart ? 2 : 0,
       maximumFractionDigits: 2,
     }).format(num);
   } catch {
@@ -121,6 +134,20 @@ const buildPriceWithCurrency = (raw: string, currency: Currency): string => {
   if (!formatted) return "";
   const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
   return `${sym} ${formatted}`;
+};
+
+const stripCurrencyFromPrice = (raw: string, currency: Currency): string => {
+  const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
+  return (raw || "").replace(sym, "").replace(/R\$|US\$|AR\$|€|£/g, "").trim();
+};
+
+const formatPriceWhileTyping = (raw: string, currency: Currency): string => {
+  const value = stripCurrencyFromPrice(raw, currency);
+  if (!value.trim()) return "";
+  if (/[A-Za-zÀ-ÿ]/.test(value)) return value;
+  const digits = value.replace(/\D/g, "");
+  if (digits.length >= 3 || /[.,]/.test(value)) return formatPriceValue(value, currency, digits.length >= 3);
+  return value;
 };
 
 interface PaymentPreset {
@@ -285,9 +312,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [destination, setDestination] = useState(state.destinos?.[0] || "");
   const [price, setPriceState] = useState(state.lastPrice || "149,90");
   const setPrice = (p: string) => { setPriceState(p); update({ lastPrice: p }); };
-  const [currency, setCurrency] = useState<Currency>("BRL");
+  const [currency, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
+  const setCurrency = (c: Currency) => { setCurrencyState(c); update({ lastCurrency: c }); };
   // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
-  const formattedPriceForAd = formatPriceValue(price, currency);
+  const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency);
   const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
 
   const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
@@ -306,8 +334,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [paymentMode, setPaymentModeState] = useState<PaymentMode>(state.lastPaymentMode || "installments");
   const setPaymentMode = (m: PaymentMode) => { setPaymentModeState(m); update({ lastPaymentMode: m }); };
 
-  const [paymentLabel, setPaymentLabel] = useState("");
-  const [paymentSuffix, setPaymentSuffix] = useState("");
+  const [paymentLabelState, setPaymentLabelState] = useState(state.lastPaymentLabel || "");
+  const setPaymentLabel = (label: string) => { setPaymentLabelState(label); update({ lastPaymentLabel: label }); };
+  const [paymentSuffixState, setPaymentSuffixState] = useState(state.lastPaymentSuffix || "por pessoa");
+  const setPaymentSuffix = (suffix: string) => { setPaymentSuffixState(suffix); update({ lastPaymentSuffix: suffix }); };
+  const paymentLabel = paymentMode === "installments" || paymentMode === "down_plus" ? installments : paymentLabelState;
+  const paymentSuffix = paymentSuffixState;
   const [primaryColor, setPrimaryColorState] = useState(state.primaryColor || "#F59E0B");
   const [secondaryColor, setSecondaryColorState] = useState(state.secondaryColor || "#FCD34D");
   
@@ -503,7 +535,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               hasLogo: !!state.logoBase64,
               paymentMode,
               paymentLabel: paymentLabel || undefined,
-              paymentSuffix: paymentSuffix || undefined,
+              paymentSuffix,
               strategy: localStrategy,
               variation: freshSeedPhoto + idx,
               titleOverride: resolvedAdTitle,
@@ -701,7 +733,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             hasLogo: !!state.logoBase64,
             paymentMode,
             paymentLabel: paymentLabel || undefined,
-            paymentSuffix: paymentSuffix || undefined,
+            paymentSuffix,
             strategy: localStrategy,
             variation: freshSeedCustom,
             forceVariant: nextVariant,
@@ -1169,9 +1201,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <button
                 key={p.id}
                 onClick={() => {
+                  const isChangingMode = paymentMode !== p.id;
                   setPaymentMode(p.id);
-                  setPaymentLabel("");
-                  setPaymentSuffix("");
+                  if (p.id === "installments" && (isChangingMode || !installments.trim())) setInstallments("10x");
+                  if (p.id === "cash" && (isChangingMode || !paymentLabelState.trim())) setPaymentLabel("À VISTA");
+                  if (p.id === "down_plus" && (isChangingMode || !installments.trim())) setInstallments("Entrada + 10x");
+                  if (!paymentSuffix.trim()) setPaymentSuffix("por pessoa");
                 }}
                 className={`px-2 py-1.5 rounded-lg border-2 text-center transition-all ${
                   paymentMode === p.id ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
@@ -1185,13 +1220,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             ))}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className={labelCls}>
-                {paymentMode === "installments" || paymentMode === "down_plus" ? "Parcelas / Rótulo" : "Rótulo (opcional)"}
+                {paymentMode === "installments" ? "Parcela" : paymentMode === "down_plus" ? "Entrada + parcela" : "Rótulo"}
               </label>
               <input
-                value={paymentMode === "installments" || paymentMode === "down_plus" ? installments : paymentLabel}
+                value={paymentLabel}
                 onChange={(e) =>
                   paymentMode === "installments" || paymentMode === "down_plus"
                     ? setInstallments(e.target.value)
@@ -1210,7 +1245,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <div className="flex gap-1.5">
                 <select
                   value={currency}
-                  onChange={(e) => setCurrency(e.target.value as Currency)}
+                  onChange={(e) => {
+                    const nextCurrency = e.target.value as Currency;
+                    const normalized = formatPriceValue(stripCurrencyFromPrice(price, currency), nextCurrency);
+                    setCurrency(nextCurrency);
+                    if (normalized) setPrice(normalized);
+                  }}
                   className="bg-white/[0.06] border border-white/10 rounded-xl px-2 py-3 text-white text-xs outline-none focus:border-white/40 cursor-pointer"
                   title="Moeda"
                 >
@@ -1222,9 +1262,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 </select>
                 <input
                   value={price}
-                  onChange={(e) => setPrice(e.target.value)}
+                  onChange={(e) => setPrice(formatPriceWhileTyping(e.target.value, currency))}
                   onBlur={() => {
-                    const f = formatPriceValue(price, currency);
+                    const f = formatPriceValue(stripCurrencyFromPrice(price, currency), currency);
                     if (f) setPrice(f);
                   }}
                   placeholder={currency === "BRL" ? "1.499,90" : "1,499.90"}
@@ -1232,17 +1272,28 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   className={`${inputCls} flex-1`}
                 />
               </div>
-              {formattedPriceForAd ? (
-                <p className="text-[11px] text-emerald-300/90 font-mono mt-1.5">
-                  {currencySymbol} {formattedPriceForAd}
-                </p>
-              ) : (
-                <p className="text-[10px] text-white/40 mt-1.5">
-                  Milhares e decimais formatados automaticamente.
-                </p>
-              )}
+            </div>
+            <div>
+              <label className={labelCls}>Complemento</label>
+              <input
+                value={paymentSuffix}
+                onChange={(e) => setPaymentSuffix(e.target.value)}
+                placeholder="por pessoa, casal, pacote..."
+                className={inputCls}
+                list="fabrica-price-suffixes"
+              />
+              <datalist id="fabrica-price-suffixes">
+                {['por pessoa', 'por casal', 'por pacote', 'por grupo', 'total do pacote'].map((option) => (
+                  <option key={option} value={option} />
+                ))}
+              </datalist>
             </div>
           </div>
+          {formattedPriceForAd && (
+            <p className="text-[11px] text-emerald-300/90 font-mono mt-2">
+              Prévia: {paymentLabel ? `${paymentLabel} · ` : ""}{currencySymbol} {formattedPriceForAd}{paymentSuffix ? ` · ${paymentSuffix}` : ""}
+            </p>
+          )}
         </div>
 
         {/* Cores — Primária | Secundária em 2 colunas */}
