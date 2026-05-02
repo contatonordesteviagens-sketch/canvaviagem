@@ -451,45 +451,69 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const logoH = hasLogo ? 130 : 0;
     const destUp = (destination || "DESTINO").toUpperCase();
 
-    // ── V0 · REF "Enseada" — painel claro/cor TOPO + foto EMBAIXO ──────────
-    // Exatamente como nas refs 1 e 2: fundo sólido com texto em cima, foto na base
+    // ── V0 · REF "Enseada" — painel cor TOPO + foto EMBAIXO ─────────────────
+    // Painel superior (cor secundária) contém TUDO: badge, headline, benefits, preço.
+    // Foto fica APENAS na metade inferior, sem invadir a área de texto.
     if (variant === 0) {
-      // Topo: fundo na cor secundária (amarelo/cor de acento)
-      const topH = 520;
+      // Garantia: o painel precisa ser alto o suficiente para conter logo + badge + headline + benefits + preço sem corte.
+      const topH = Math.max(620, logoH + 580);
       ctx.fillStyle = secondaryColor;
       ctx.fillRect(0, 0, width, topH);
-      // Logo zone
+
       // Badge "Saindo de" no topo
-      ctx.fillStyle = primaryColor;
-      fillRoundRect(ctx, left, logoH + 36, 500, 66, 8, primaryColor);
+      const badgeY = logoH + 28;
+      const badgeH = 60;
+      fillRoundRect(ctx, left, badgeY, 500, badgeH, 8, primaryColor);
       ctx.fillStyle = secondaryColor;
-      ctx.font = "800 28px Inter, Arial, sans-serif";
+      ctx.font = "800 26px Inter, Arial, sans-serif";
       ctx.textAlign = "left"; ctx.textBaseline = "middle";
-      ctx.fillText(badgeText, left + 20, logoH + 36 + 33);
+      ctx.fillText(badgeText, left + 20, badgeY + badgeH / 2);
       ctx.textBaseline = "alphabetic";
-      // Headline enorme
+
+      // Headline — uma única linha, fonte que encolhe para caber. Sem wrap múltiplo
+      // (era a origem do "texto duplicado" sobreposto).
       ctx.fillStyle = primaryColor;
-      drawTextBlock(ctx, titleText, left, logoH + 148, contentWidth, 80, 2, { fontWeight: "900", baseFontSize: 88, minFontSize: 48 });
-      // Separador + Benefits + Preço lado a lado
-      const benefitsX = left; const priceX = left + 380;
+      ctx.textAlign = "left";
+      let titleSize = 78;
+      ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(titleText).width > contentWidth && titleSize > 38) {
+        titleSize -= 4;
+        ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
+      }
+      const titleY = badgeY + badgeH + 40 + titleSize;
+      ctx.fillText(titleText, left, titleY);
+
+      // Benefits + Preço lado a lado, ABAIXO do título e ACIMA da foto
+      const rowY = titleY + 60;
+      const benefitsX = left;
+      const priceX = left + 420;
+
       ctx.fillStyle = primaryColor;
-      ctx.font = "700 32px Inter, Arial, sans-serif";
-      ctx.fillText(ICON_SYMBOL["bus"] + " " + (highlights[0]?.text || "Transporte"), benefitsX, logoH + 310);
-      ctx.fillText(ICON_SYMBOL["map"] + " " + (highlights[1]?.text || highlights[0]?.text || ""), benefitsX, logoH + 358);
-      ctx.fillText(ICON_SYMBOL["guide"] + " " + (highlights[2]?.text || highlights[0]?.text || ""), benefitsX, logoH + 406);
+      ctx.font = "700 28px Inter, Arial, sans-serif";
+      const b0 = highlights[0]?.text || "Transporte";
+      const b1 = highlights[1]?.text || "Hospedagem";
+      const b2 = highlights[2]?.text || "Café da manhã";
+      ctx.fillText(ICON_SYMBOL["bus"] + " " + b0, benefitsX, rowY);
+      ctx.fillText(ICON_SYMBOL["map"] + " " + b1, benefitsX, rowY + 44);
+      ctx.fillText(ICON_SYMBOL["guide"] + " " + b2, benefitsX, rowY + 88);
+
       // Divisor vertical
       ctx.fillStyle = primaryColor; ctx.globalAlpha = 0.2;
-      ctx.fillRect(priceX - 20, logoH + 280, 2, 140);
+      ctx.fillRect(priceX - 24, rowY - 28, 2, 130);
       ctx.globalAlpha = 1;
+
       // Preço lado direito
-      ctx.fillStyle = "#555"; ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText("por apenas", priceX, logoH + 310);
-      ctx.fillStyle = primaryColor; ctx.font = "900 64px Inter, Arial, sans-serif";
+      ctx.fillStyle = primaryColor; ctx.font = "600 22px Inter, Arial, sans-serif";
+      ctx.fillText("por apenas", priceX, rowY);
+      ctx.fillStyle = primaryColor; ctx.font = "900 60px Inter, Arial, sans-serif";
       const priceStr = mainPrice || `R$ ${price}`;
-      ctx.fillText(priceStr, priceX, logoH + 388);
-      ctx.font = "600 22px Inter, Arial, sans-serif"; ctx.fillStyle = "#555";
-      ctx.fillText("/pessoa", priceX, logoH + 422);
-      // Foto na base
+      ctx.fillText(priceStr, priceX, rowY + 64);
+      ctx.font = "600 20px Inter, Arial, sans-serif"; ctx.fillStyle = primaryColor;
+      ctx.globalAlpha = 0.7;
+      ctx.fillText(bottomSuffix || "/pessoa", priceX, rowY + 92);
+      ctx.globalAlpha = 1;
+
+      // Foto na base — começa SÓ depois do painel, sem cobrir nada
       const photoH0 = height - topH;
       const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
       ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
