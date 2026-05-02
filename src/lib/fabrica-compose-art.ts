@@ -478,15 +478,46 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ? ((forceVariant % TOTAL_VARIANTS) + TOTAL_VARIANTS) % TOTAL_VARIANTS
       : Math.abs(variation) % TOTAL_VARIANTS;
 
-    // ── V3 · ESTRUTURA RESERVADA ────────────────────────────────────────────
-    // Placeholder: segue o mesmo padrão estrutural de V0/V1/V2 (early return
-    // por variante). Layout ainda não implementado — fallback temporário em V0
-    // para não quebrar a geração caso seja sorteada antes do layout final.
+    // ── V3 · ESTRUTURA (oferta com box destacado) ───────────────────────────
+    // Spec estrutural — layout/visual ainda NÃO implementado.
+    // Padrão idêntico a V0/V1/V2: early-branch por variante, lendo dos mesmos
+    // dados dinâmicos já existentes no escopo de composeTravelAd().
+    //
+    // ÁREAS (de fundo → frente):
+    //   [BG]      Fundo com imagem turística do destino  → image (drawImage cover)
+    //   [BOX]     Bloco principal central (card destacado sobre o BG)
+    //     ├─ [TITLE]      Área de título            → titleText
+    //     ├─ [INFO]       Dias + ícones (highlights)→ highlights[] (ICON_SYMBOL)
+    //     ├─ [INSTALL]    Preço parcelado           → installments / paymentLabel
+    //     ├─ [TOTAL]      Valor total               → mainPrice / price / curSym
+    //     └─ [PROMO]      Destaque promocional      → promoName (desconto/badge)
+    //
+    // DADOS DINÂMICOS REUTILIZADOS (já disponíveis no escopo):
+    //   destination, destUp     → nome do destino
+    //   highlights[]            → dias + ícones (text + icon)
+    //   installments            → parcelas
+    //   mainPrice / price       → total
+    //   curSym                  → moeda
+    //   promoName               → destaque/desconto
+    //   primaryColor / secondaryColor → cores do box
+    //   hasLogo, logoH          → reserva de topo p/ logo
     if (variant === 3) {
-      // TODO(V3): definir layout próprio. Por ora, delega para V0.
-      // (não modifica V0 — apenas reaproveita o branch existente abaixo)
+      // Áreas reservadas (sem render ainda — layout na próxima etapa):
+      const _v3 = {
+        bg:       { src: image },
+        box:      { /* posição/tamanho a definir */ },
+        title:    { text: titleText },
+        info:     { items: highlights },           // dias + ícones
+        install:  { value: installments, label: paymentLabel, suffix: paymentSuffix },
+        total:    { value: mainPrice || `${curSym} ${price}` },
+        promo:    { text: promoName },             // desconto / badge
+      };
+      void _v3;
+      // TODO(V3 — próxima etapa): renderizar BG → BOX → TITLE → INFO → INSTALL → TOTAL → PROMO.
+      // Fallback temporário em V0 para não quebrar a geração.
       variant = 0;
     }
+
     const logoH = hasLogo ? 130 : 0;
     const destUp = (destination || "DESTINO").toUpperCase();
 
