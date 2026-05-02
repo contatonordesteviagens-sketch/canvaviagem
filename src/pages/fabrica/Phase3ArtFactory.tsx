@@ -1300,7 +1300,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   value={price}
                   onChange={(e) => setPrice(formatPriceWhileTyping(e.target.value, currency))}
                   onBlur={() => {
-                    const f = formatPriceValue(stripCurrencyFromPrice(price, currency), currency);
+                    const f = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
                     if (f) setPrice(f);
                   }}
                   placeholder={currency === "BRL" ? "1.499,90" : "1,499.90"}
