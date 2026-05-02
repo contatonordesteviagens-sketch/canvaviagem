@@ -123,8 +123,10 @@ const formatPriceValue = (raw: string, currency: Currency, assumeCents = false, 
   const num = Number(intPart || "0") + (decPart ? Number(decPart) / 100 : 0);
   const preset = CURRENCY_PRESETS.find((c) => c.id === currency)!;
   try {
+    // Quando "Mostrar centavos" está ligado (noCents=false), SEMPRE força 2 casas decimais
+    // para que ao re-ativar o toggle os centavos sejam restaurados (ex: "423" → "423,00").
     return new Intl.NumberFormat(preset.locale, {
-      minimumFractionDigits: decPart ? 2 : 0,
+      minimumFractionDigits: noCents ? 0 : 2,
       maximumFractionDigits: noCents ? 0 : 2,
     }).format(num);
   } catch {
