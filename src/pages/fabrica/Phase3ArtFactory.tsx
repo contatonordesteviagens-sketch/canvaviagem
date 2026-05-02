@@ -443,6 +443,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               strategy: localStrategy,
               variation: freshSeedPhoto + idx,
               titleOverride: resolvedAdTitle,
+              titleVariations: adTitleVariations,
             });
             if (state.logoBase64) {
               try {
