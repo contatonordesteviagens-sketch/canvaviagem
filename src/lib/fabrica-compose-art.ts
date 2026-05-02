@@ -743,14 +743,26 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const destinoUp = (destination || "DESTINO").toUpperCase();
       const daysItem = highlights.find((h) => /\d+\s*dia/i.test(h?.text || ""));
       const daysText = (daysItem?.text || "7 dias").trim();
-      // Ícones: prioriza highlights com ícone; senão usa default avião/transporte/hotel/café/câmera
+      // Ícones: usa APENAS os selecionados pelo usuário (sem merge com defaults).
+      // Se nenhum highlight tiver ícone, usa um conjunto padrão mínimo.
       const iconList: IconKey[] = (() => {
         const fromHl = highlights
           .map((h) => h?.icon as IconKey | undefined)
           .filter((k): k is IconKey => !!k && k !== "check");
-        const defaults: IconKey[] = ["plane", "bus", "hotel", "coffee", "camera"];
-        const merged = [...new Set([...fromHl, ...defaults])];
-        return merged.slice(0, 5);
+        if (fromHl.length === 0) {
+          return ["plane", "hotel", "coffee", "camera"] as IconKey[];
+        }
+        // dedup preservando ordem do usuário, máximo 5
+        const seen = new Set<IconKey>();
+        const out: IconKey[] = [];
+        for (const k of fromHl) {
+          if (!seen.has(k)) {
+            seen.add(k);
+            out.push(k);
+            if (out.length >= 5) break;
+          }
+        }
+        return out;
       })();
 
       // Parcelas: extrai número de "12x", "12 x", "12X sem juros" etc.
@@ -760,11 +772,20 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // Calcula total = preço × parcelas, formatando milhares com "." e centavos com ","
       const priceNumeric = parseFloat(((price || "").trim()).replace(/\./g, "").replace(",", "."));
       const totalNum = !isNaN(priceNumeric) ? priceNumeric * parseInt(parcN, 10) : NaN;
-      const fmtBR = (n: number) =>
-        n.toLocaleString("pt-BR", { minimumFractionDigits: n % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 });
-      const totalStr = paymentSuffix && /total/i.test(paymentSuffix)
-        ? paymentSuffix
-        : `Total por pessoa: ${curSym} ${!isNaN(totalNum) ? fmtBR(totalNum) : "—"}`;
+      // Se preço não tem centavos (inteiro), o total também não terá.
+      const priceHasDecimals = /[.,]\d{1,2}\s*$/.test((price || "").trim());
+      const fmtBR = (n: number) => {
+        const showDec = priceHasDecimals && n % 1 !== 0;
+        return n.toLocaleString("pt-BR", {
+          minimumFractionDigits: showDec ? 2 : 0,
+          maximumFractionDigits: showDec ? 2 : 0,
+        });
+      };
+      // Total: prioriza override do usuário; senão calcula automático com sufixo
+      const computedTotal = !isNaN(totalNum)
+        ? `Total ${(paymentSuffix || "por pessoa").trim()}: ${curSym} ${fmtBR(totalNum)}`
+        : "";
+      const totalStr = (totalOverride && totalOverride.trim()) || computedTotal;
       // Desconto: extrai número do promoName (ex.: "5% OFF") ou usa 5 como default
       const descMatch = (promoName || "").match(/(\d{1,2})\s*%/);
       const descN = descMatch ? descMatch[1] : "5";
@@ -806,35 +827,56 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(destinoUp, cx, cursorY);
       cursorY += 64;
 
-      // [INFO] dias | ícones
+      // [INFO] dias | ícones (TODOS monocromáticos, mesma cor navy)
       ctx.font = "700 32px Inter, Arial, sans-serif";
       const daysW = ctx.measureText(daysText).width;
       const sepGap = 18;
       const iconSize = 38;
       const iconGap = 22;
-      const iconsTotal = iconList.length * iconSize + (iconList.length - 1) * iconGap;
+      const iconsTotal = iconList.length * iconSize + Math.max(0, iconList.length - 1) * iconGap;
       const sepW = 4;
       const infoTotalW = daysW + sepGap + sepW + sepGap + iconsTotal;
       let infoX = cx - infoTotalW / 2;
       const infoY = cursorY;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
+      ctx.fillStyle = navy;
       ctx.fillText(daysText, infoX, infoY);
       infoX += daysW + sepGap;
       ctx.fillRect(infoX, infoY - 18, sepW, 36);
       infoX += sepW + sepGap;
-      ctx.font = `${iconSize}px Inter, Arial, sans-serif`;
       iconList.forEach((k, i) => {
-        const sym = ICON_SYMBOL[k] || ICON_SYMBOL.check;
-        ctx.fillText(sym, infoX + i * (iconSize + iconGap), infoY);
+        const ix = infoX + i * (iconSize + iconGap) + iconSize / 2;
+        drawMonoIcon(ctx, k, ix, infoY, iconSize, navy);
       });
       ctx.textBaseline = "alphabetic";
       cursorY += 70;
 
-      // [INSTALL + PRICE] bloco lado a lado
-      // Lado esquerdo: "a partir de" / "12X" / "sem juros"
+      // [INSTALL + PRICE] bloco lado a lado — com auto-shrink e gap mínimo
       const priceBlockY = cursorY + 20;
-      const leftColX = boxX + 70;
+      const leftColX = boxX + 50;
+      const rightEdgeX = boxX + boxW - 50;
+      const minGap = 30;
+
+      // Quebra "R$ 229" em símbolo pequeno + valor gigante
+      const priceParts = priceStr.match(/^(\D+)\s*([\d.,]+)$/);
+      const sym = priceParts ? priceParts[1].trim() : curSym;
+      const valNum = priceParts ? priceParts[2].trim() : priceStr;
+
+      // Largura disponível à direita: do fim da coluna esquerda até a borda direita.
+      // Coluna esquerda ocupa "12X" em 64px (~ até 90px). Reservamos 130px à esquerda.
+      const leftReservedW = 130;
+      const maxPriceW = boxW - 100 - leftReservedW - minGap; // 100 = 50 padding cada lado
+      let priceSize = 130;
+      ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(valNum).width > maxPriceW && priceSize > 70) {
+        priceSize -= 4;
+        ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+      }
+      const valW = ctx.measureText(valNum).width;
+      const symSize = Math.round(priceSize * 0.36);
+
+      // Lado esquerdo
       ctx.textAlign = "left";
       ctx.fillStyle = navy;
       ctx.font = "600 22px Inter, Arial, sans-serif";
@@ -844,26 +886,23 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.font = "600 22px Inter, Arial, sans-serif";
       ctx.fillText("sem juros", leftColX, priceBlockY + 100);
 
-      // Lado direito: "R$ XXX" gigante
-      // Quebra "R$ 229" em símbolo pequeno + valor gigante
-      const priceParts = priceStr.match(/^(\D+)\s*([\d.,]+)$/);
-      const sym = priceParts ? priceParts[1].trim() : curSym;
-      const valNum = priceParts ? priceParts[2].trim() : priceStr;
-      const priceRightX = boxX + boxW - 60;
+      // Lado direito (preço gigante alinhado à direita, símbolo à esquerda do número)
+      const priceRightX = rightEdgeX;
       ctx.textAlign = "right";
-      ctx.font = "900 130px Inter, Arial, sans-serif";
-      const valW = ctx.measureText(valNum).width;
+      ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
       ctx.fillText(valNum, priceRightX, priceBlockY + 90);
-      ctx.font = "900 46px Inter, Arial, sans-serif";
-      ctx.fillText(sym, priceRightX - valW - 8, priceBlockY + 50);
+      ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
+      ctx.fillText(sym, priceRightX - valW - 8, priceBlockY + 90 - priceSize * 0.5);
 
       cursorY = priceBlockY + 130;
 
-      // [TOTAL] rodapé do box
-      ctx.textAlign = "center";
-      ctx.font = "600 24px Inter, Arial, sans-serif";
-      ctx.fillStyle = navy;
-      ctx.fillText(totalStr, cx, cursorY);
+      // [TOTAL] rodapé do box (apenas se showTotal)
+      if (showTotal && totalStr) {
+        ctx.textAlign = "center";
+        ctx.font = "600 24px Inter, Arial, sans-serif";
+        ctx.fillStyle = navy;
+        ctx.fillText(totalStr, cx, cursorY);
+      }
       cursorY += 40;
 
       // [PROMO] faixa horizontal azul com texto Pix
@@ -878,24 +917,20 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.font = "900 28px Inter, Arial, sans-serif";
       const pixText = `${descN}% OFF À VISTA NO`;
       const pixTextW = ctx.measureText(pixText).width;
-      const pixIconSize = 36;
-      const pixGap = 14;
-      const totalPixW = pixTextW + pixGap + pixIconSize + pixGap + ctx.measureText("PIX").width;
+      const pixLabelW = ctx.measureText("pix").width;
+      const pixIconSize = 40;
+      const pixGap = 12;
+      const totalPixW = pixTextW + pixGap + pixIconSize + pixGap + pixLabelW;
       const pixStartX = stripeX + (stripeW - totalPixW) / 2;
       ctx.textAlign = "left";
       ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2 + 1);
-      // Ícone Pix simplificado: losango com 4 pontas
+      // Logo Pix oficial-like (4 losangos)
       const pxCx = pixStartX + pixTextW + pixGap + pixIconSize / 2;
       const pxCy = stripeY + stripeH / 2;
-      ctx.save();
-      ctx.translate(pxCx, pxCy);
-      ctx.rotate(Math.PI / 4);
-      ctx.fillStyle = "#32BCAD";
-      ctx.fillRect(-pixIconSize / 2, -pixIconSize / 2, pixIconSize, pixIconSize);
-      ctx.restore();
+      drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
       ctx.fillStyle = "#ffffff";
-      ctx.font = "900 28px Inter, Arial, sans-serif";
-      ctx.fillText("PIX", pxCx + pixIconSize / 2 + pixGap, stripeY + stripeH / 2 + 1);
+      ctx.font = "800 30px Inter, Arial, sans-serif";
+      ctx.fillText("pix", pxCx + pixIconSize / 2 + pixGap, stripeY + stripeH / 2 + 1);
       ctx.textBaseline = "alphabetic";
 
       return canvas.toDataURL("image/png");
