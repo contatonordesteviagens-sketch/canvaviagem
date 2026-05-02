@@ -472,10 +472,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   const renderSafeSquareOffer = () => {
-    // Apenas 3 variantes válidas (V0, V1, V2). V3 fullbleed foi descontinuada para Sua Imagem.
+    // 6 variantes válidas: V0/V1/V2 (originais aprovados) + V3/V4/V5 (CVC fullbleed-topo-esquerdo,
+    // CVC card centralizado topo, Split editorial 50/50 estilo Maragogi).
     const variant = typeof forceVariant === "number"
-      ? ((forceVariant % 3) + 3) % 3
-      : Math.abs(variation) % 3;
+      ? ((forceVariant % 6) + 6) % 6
+      : Math.abs(variation) % 6;
     const logoH = hasLogo ? 130 : 0;
     const destUp = (destination || "DESTINO").toUpperCase();
 
@@ -767,41 +768,305 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       return canvas.toDataURL("image/png");
     }
 
-    // ── V3 · FULLBLEED com card centralizado flutuante ─────────────────────
-    // Foto ocupa 100% da tela. Card semi-transparente centralizado na base.
-    const c3 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.38);
-    ctx.drawImage(image, c3.sx, c3.sy, c3.sw, c3.sh, 0, 0, width, height);
-    const g3 = ctx.createLinearGradient(0, height * 0.25, 0, height);
-    g3.addColorStop(0, "rgba(0,0,0,0)"); g3.addColorStop(1, "rgba(0,0,0,0.86)");
-    ctx.fillStyle = g3; ctx.fillRect(0, height * 0.25, width, height * 0.75);
-    // Badge "Saindo de" sobre a foto
-    drawBadge(left, logoH + 60, 480);
-    // Destino gigante
-    ctx.fillStyle = "#ffffff";
-    let df3 = 92; ctx.font = `900 ${df3}px Inter, Arial, sans-serif`;
-    while (ctx.measureText(destUp).width > contentWidth && df3 > 40) { df3 -= 5; ctx.font = `900 ${df3}px Inter, Arial, sans-serif`; }
-    ctx.fillText(destUp, left, logoH + 176);
-    // Card base transparente
-    const cardY3 = 660;
-    fillRoundRect(ctx, left - 20, cardY3, contentWidth + 40, 380, 28, "rgba(0,0,0,0.55)");
-    // Headline
-    ctx.fillStyle = secondaryColor; ctx.font = "700 30px Inter, Arial, sans-serif";
-    ctx.fillText(titleText, left, cardY3 + 50);
-    // Benefits 2 colunas
-    const col3W = Math.floor(contentWidth / 2);
-    highlights.slice(0, 4).forEach((h, i) => {
-      const cx3 = left + (i % 2) * col3W;
-      const cy3 = cardY3 + 90 + Math.floor(i / 2) * 72;
-      ctx.fillStyle = "#ffffff"; ctx.font = "700 28px Inter, Arial, sans-serif";
-      ctx.fillText(ICON_SYMBOL[h.icon || "check"] + " " + h.text, cx3, cy3);
-    });
-    // Preço
-    ctx.fillStyle = secondaryColor; ctx.font = "900 72px Inter, Arial, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(mainPrice || `${curSym} ${price}`, width / 2, cardY3 + 312);
-    ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = "600 24px Inter, Arial, sans-serif";
-    ctx.fillText([bottomSuffix, installments ? `${installments} sem juros` : ""].filter(Boolean).join(" · "), width / 2, cardY3 + 356);
-    ctx.textAlign = "left";
+    // ─────────────────────────────────────────────────────────────────────────
+    // Helper: card "CVC" amarelo arredondado (PACOTE/DESTINO + ícones + 12X+R$
+    // gigante + Total + faixa PIX). Usado por V3 e V4.
+    // ─────────────────────────────────────────────────────────────────────────
+    const drawCvcStyleCard = (cardX: number, cardY: number, cardW: number, opts?: { tagText?: string }) => {
+      const cardH = 380;
+      const radius = 28;
+      // Sombra suave
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.25)";
+      ctx.shadowBlur = 30;
+      ctx.shadowOffsetY = 8;
+      fillRoundRect(ctx, cardX, cardY, cardW, cardH, radius, secondaryColor);
+      ctx.restore();
+
+      ctx.fillStyle = primaryColor;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
+      const cx = cardX + cardW / 2;
+      const innerPad = 28;
+      const innerW = cardW - innerPad * 2;
+
+      // Etiqueta superior
+      ctx.font = `900 28px Inter, Arial, sans-serif`;
+      ctx.fillText((opts?.tagText || "PACOTE").toUpperCase(), cx, cardY + 50);
+
+      // Destino grande (até 2 linhas se couber)
+      const destUpper = (destination || "DESTINO").toUpperCase();
+      let destSize = 64;
+      ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(destUpper).width > innerW && destSize > 28) {
+        destSize -= 4;
+        ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
+      }
+      ctx.fillText(destUpper, cx, cardY + 50 + destSize + 10);
+
+      // Linha "X dias" + ícones
+      const firstHL = highlights[0];
+      const firstHLText = typeof firstHL === "string" ? firstHL : (firstHL?.text || "");
+      const days = firstHLText.match(/(\d+)\s*dias?/i)?.[0] || "5 dias";
+      ctx.font = `700 26px Inter, Arial, sans-serif`;
+      ctx.fillText(`${days}   ✈   🚌   🏨   ☕   📷`, cx, cardY + 50 + destSize + 60);
+
+      // "a partir de" + 12X selo + preço
+      const baseLineY = cardY + 220;
+      ctx.font = `600 18px Inter, Arial, sans-serif`;
+      ctx.fillText("a partir de", cx, baseLineY);
+
+      const installmentsText = (installments || "12X").toUpperCase().replace(/\s+/g, "");
+      const priceText = mainPrice || `${curSym} ${price}`;
+      let priceFs = 78;
+      ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(priceText).width > innerW * 0.62 && priceFs > 36) {
+        priceFs -= 4;
+        ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+      }
+      const priceW = ctx.measureText(priceText).width;
+      const badgeW = 96;
+      const badgeH = 70;
+      const gap = 16;
+      const groupW = badgeW + gap + priceW;
+      const groupX = cx - groupW / 2;
+      const priceY = baseLineY + 70;
+
+      // Selo 12X
+      fillRoundRect(ctx, groupX, priceY - badgeH / 2 - 6, badgeW, badgeH, 14, primaryColor);
+      ctx.fillStyle = secondaryColor;
+      ctx.font = `900 28px Inter, Arial, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(installmentsText, groupX + badgeW / 2, priceY - 6);
+      ctx.font = `700 11px Inter, Arial, sans-serif`;
+      ctx.fillText("sem juros", groupX + badgeW / 2, priceY + 16);
+
+      // Preço gigante
+      ctx.fillStyle = primaryColor;
+      ctx.textAlign = "left";
+      ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+      ctx.fillText(priceText, groupX + badgeW + gap, priceY + priceFs / 3);
+
+      // Total por pessoa
+      ctx.fillStyle = primaryColor;
+      ctx.font = `600 18px Inter, Arial, sans-serif`;
+      ctx.textAlign = "center";
+      if (bottomSuffix) {
+        ctx.fillText(bottomSuffix, cx, cardY + 308);
+      }
+
+      // Faixa PIX inferior (cor primária)
+      const stripeH = 48;
+      const stripeY = cardY + cardH - stripeH;
+      ctx.save();
+      roundRect(ctx, cardX, cardY, cardW, cardH, radius);
+      ctx.clip();
+      ctx.fillStyle = primaryColor;
+      ctx.fillRect(cardX, stripeY, cardW, stripeH);
+      ctx.restore();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `900 20px Inter, Arial, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText("5% OFF À VISTA NO PIX  💠", cx, stripeY + 30);
+
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+    };
+
+    // ── V3 · CVC FULLBLEED — foto cobre, card amarelo no canto SUPERIOR ESQUERDO ──
+    if (variant === 3) {
+      const c3 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.55);
+      ctx.drawImage(image, c3.sx, c3.sy, c3.sw, c3.sh, 0, 0, width, height);
+      // Vinheta inferior pra texto/marca caso queira
+      const g3 = ctx.createLinearGradient(0, height * 0.65, 0, height);
+      g3.addColorStop(0, "rgba(0,0,0,0)");
+      g3.addColorStop(1, "rgba(0,0,0,0.55)");
+      ctx.fillStyle = g3;
+      ctx.fillRect(0, height * 0.65, width, height * 0.35);
+
+      // Card no canto superior esquerdo
+      const cardW = Math.round(width * 0.50);
+      const cardX = 60;
+      const cardY = 60 + (hasLogo ? 100 : 0);
+      drawCvcStyleCard(cardX, cardY, cardW, { tagText: "PACOTE" });
+
+      // Caption inferior (1 linha discreta) — usa titleText ou subtítulo
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "700 24px Inter, Arial, sans-serif";
+      ctx.textAlign = "left";
+      const cap = (titleText || subtitleText || "").trim();
+      if (cap) {
+        let cs = 24;
+        ctx.font = `700 ${cs}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(cap).width > contentWidth && cs > 14) {
+          cs -= 2;
+          ctx.font = `700 ${cs}px Inter, Arial, sans-serif`;
+        }
+        ctx.fillText(cap, left, height - 60);
+      }
+      return canvas.toDataURL("image/png");
+    }
+
+    // ── V4 · CVC FULLBLEED — foto cobre, card amarelo CENTRALIZADO no TOPO ──
+    if (variant === 4) {
+      const c4 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.62);
+      ctx.drawImage(image, c4.sx, c4.sy, c4.sw, c4.sh, 0, 0, width, height);
+      const g4 = ctx.createLinearGradient(0, 0, 0, height * 0.55);
+      g4.addColorStop(0, "rgba(0,0,0,0.25)");
+      g4.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g4;
+      ctx.fillRect(0, 0, width, height * 0.55);
+
+      const cardW = Math.round(width * 0.62);
+      const cardX = Math.round((width - cardW) / 2);
+      const cardY = 80 + (hasLogo ? 110 : 0);
+      drawCvcStyleCard(cardX, cardY, cardW, { tagText: "CIRCUITO" });
+
+      // Headline inferior (caption)
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      const cap2 = (titleText || "").trim();
+      if (cap2) {
+        let cs2 = 30;
+        ctx.font = `800 ${cs2}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(cap2).width > contentWidth && cs2 > 16) {
+          cs2 -= 2;
+          ctx.font = `800 ${cs2}px Inter, Arial, sans-serif`;
+        }
+        ctx.fillText(cap2, width / 2, height - 70);
+      }
+      ctx.textAlign = "left";
+      return canvas.toDataURL("image/png");
+    }
+
+    // ── V5 · SPLIT EDITORIAL 50/50 — esquerda creme + foto direita ──
+    // Estilo "Conheça Maragogi": coluna creme à esquerda com badge título flutuante
+    // (cor primária, arredondado), benefits com ícones, card de preço; foto na direita.
+    if (variant === 5) {
+      const splitX = Math.round(width * 0.48);
+      // Esquerda: creme suave
+      ctx.fillStyle = "#fbf6ec";
+      ctx.fillRect(0, 0, splitX, height);
+      // Direita: foto preenchendo
+      const c5 = fitCover(image.naturalWidth, image.naturalHeight, width - splitX, height, 0.40);
+      ctx.drawImage(image, c5.sx, c5.sy, c5.sw, c5.sh, splitX, 0, width - splitX, height);
+
+      // Badge "@instagram" topo-esquerdo (mantém vibe da ref, mas discreto)
+      const tagY = 80 + (hasLogo ? 120 : 0);
+      ctx.fillStyle = primaryColor;
+      ctx.font = "800 22px Inter, Arial, sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(`✈  ${cityFmt ? `Saindo de ${cityFmt}` : "Pacote completo"}`, 60, tagY);
+
+      // Badge título flutuante — atravessa o split (sai um pouco para a foto)
+      const titleBoxY = tagY + 50;
+      const titleBoxX = 40;
+      const titleBoxW = splitX - titleBoxX + 80; // estende sobre a foto
+      // Calcula altura proporcional ao título
+      ctx.textAlign = "left";
+      let v5Size = 80;
+      ctx.font = `900 ${v5Size}px Inter, Arial, sans-serif`;
+      const t5 = (titleText || "Conheça o destino").trim();
+      while (ctx.measureText(t5).width > titleBoxW - 80 && v5Size > 36) {
+        v5Size -= 4;
+        ctx.font = `900 ${v5Size}px Inter, Arial, sans-serif`;
+      }
+      // Word-wrap até 2 linhas
+      const wordsT = t5.split(/\s+/);
+      const linesT: string[] = [];
+      let curT = "";
+      for (const w of wordsT) {
+        const tst = curT ? `${curT} ${w}` : w;
+        if (ctx.measureText(tst).width <= titleBoxW - 80) curT = tst;
+        else { if (curT) linesT.push(curT); curT = w; if (linesT.length === 1) break; }
+      }
+      if (curT && linesT.length < 2) linesT.push(curT);
+      const titleBoxH = linesT.length * (v5Size * 1.05) + 50;
+
+      // Sombra suave do badge
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.25)";
+      ctx.shadowBlur = 22;
+      ctx.shadowOffsetY = 6;
+      fillRoundRect(ctx, titleBoxX, titleBoxY, titleBoxW, titleBoxH, 18, primaryColor);
+      ctx.restore();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `900 ${v5Size}px Inter, Arial, sans-serif`;
+      linesT.forEach((ln, i) => {
+        ctx.fillText(ln, titleBoxX + 36, titleBoxY + 50 + i * v5Size * 1.05);
+      });
+
+      // Benefits (até 4) com ícone grande e label
+      const benY = titleBoxY + titleBoxH + 60;
+      const benList = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 4);
+      benList.forEach((h, i) => {
+        const by = benY + i * 80;
+        ctx.fillStyle = primaryColor;
+        ctx.font = "700 50px Inter, Arial, sans-serif";
+        ctx.fillText(ICON_SYMBOL[h.icon || "check"] || "✓", 70, by + 50);
+        ctx.fillStyle = "#1a1a1a";
+        let bfs = 42;
+        ctx.font = `800 ${bfs}px Inter, Arial, sans-serif`;
+        const benMaxW = splitX - 160;
+        while (ctx.measureText(h.text).width > benMaxW && bfs > 22) {
+          bfs -= 2;
+          ctx.font = `800 ${bfs}px Inter, Arial, sans-serif`;
+        }
+        ctx.fillText(h.text, 150, by + 48);
+      });
+
+      // Card de preço (cor primária, arredondado) — na base esquerda
+      const cardW5 = Math.round(splitX * 0.78);
+      const cardH5 = 110;
+      const cardX5 = 50;
+      const cardY5 = height - cardH5 - 80;
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.20)";
+      ctx.shadowBlur = 18;
+      ctx.shadowOffsetY = 6;
+      fillRoundRect(ctx, cardX5, cardY5, cardW5, cardH5, cardH5 / 2, primaryColor);
+      ctx.restore();
+
+      // Etiqueta "A partir de"  +  parcelas/preço
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "left";
+      ctx.font = "700 16px Inter, Arial, sans-serif";
+      const labelTop = (topLabel || "A partir de").toString();
+      ctx.fillText(labelTop, cardX5 + 30, cardY5 + 38);
+      ctx.font = "700 18px Inter, Arial, sans-serif";
+      ctx.fillText(`${(installments || "10x").toLowerCase()} ${curSym}`, cardX5 + 30, cardY5 + 70);
+
+      // Preço gigante centralizado-direita
+      const priceStr5 = (priceValueText || "0,00");
+      let pfs5 = 56;
+      ctx.font = `900 ${pfs5}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(priceStr5).width > cardW5 * 0.55 && pfs5 > 28) {
+        pfs5 -= 4;
+        ctx.font = `900 ${pfs5}px Inter, Arial, sans-serif`;
+      }
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "right";
+      ctx.fillText(priceStr5, cardX5 + cardW5 - 28, cardY5 + cardH5 / 2 + pfs5 / 3);
+
+      ctx.textAlign = "left";
+
+      // Linha sutil sob o card (vibe Maragogi)
+      ctx.strokeStyle = primaryColor;
+      ctx.globalAlpha = 0.45;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(50, cardY5 + cardH5 + 30);
+      ctx.lineTo(splitX - 60, cardY5 + cardH5 + 30);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      return canvas.toDataURL("image/png");
+    }
+
+    // Fallback (não deve cair aqui — todas as 6 variantes têm return acima)
+    const cF = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.4);
+    ctx.drawImage(image, cF.sx, cF.sy, cF.sw, cF.sh, 0, 0, width, height);
     return canvas.toDataURL("image/png");
   };
 

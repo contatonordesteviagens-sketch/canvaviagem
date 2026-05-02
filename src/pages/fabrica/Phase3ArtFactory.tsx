@@ -561,7 +561,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           secondary: palette.secondary,
         });
 
-        const MAX_VARIATIONS_PHOTO = 3;
+        const MAX_VARIATIONS_PHOTO = 6;
         setGeneratedImages((prev) => [...prev, ...composed].slice(-MAX_VARIATIONS_PHOTO));
         setGeneratedImage(composed[composed.length - 1]);
         update({ generatedAdImage: composed[composed.length - 1], primaryColor: palette.primary });
@@ -657,7 +657,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           if (result.data.provider) providerSeen = result.data.provider;
         }
 
-        const MAX_VARIATIONS_AI = 3;
+        const MAX_VARIATIONS_AI = 6;
         setGeneratedImages((prev) => [...prev, ...images].slice(-MAX_VARIATIONS_AI));
         setGeneratedImage(images[images.length - 1]);
         update({ generatedAdImage: images[images.length - 1], primaryColor: palette.primary });
@@ -708,13 +708,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
       const palette = selectedPalette(primaryColor, secondaryColor);
 
-      // Rotação determinística entre as 3 variantes do compositor (V0/V1/V2)
-      // evitando a última usada — garante imagem nova a cada clique.
-      const TOTAL_VARIANTS = 3;
-      const lastUsed = variantHistoryRef.current[variantHistoryRef.current.length - 1];
-      const candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => v !== lastUsed);
+      // Rotação determinística entre as 6 variantes do compositor
+      // (V0/V1/V2 originais + V3/V4/V5 estilo CVC e split editorial),
+      // evitando as 2 últimas usadas — garante imagem nova a cada clique.
+      const TOTAL_VARIANTS = 6;
+      const lastUsed = variantHistoryRef.current.slice(-2);
+      const candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => !lastUsed.includes(v));
       const nextVariant = candidates[Math.floor(Math.random() * candidates.length)];
-      variantHistoryRef.current = [...variantHistoryRef.current.slice(-2), nextVariant];
+      variantHistoryRef.current = [...variantHistoryRef.current.slice(-4), nextVariant];
 
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy) => {
@@ -759,8 +760,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         secondary: palette.secondary,
       });
 
-      // Acumula até 3 variações lado a lado (não substitui as anteriores)
-      const MAX_VARIATIONS = 3;
+      // Acumula até 6 variações lado a lado (não substitui as anteriores)
+      const MAX_VARIATIONS = 6;
       setGeneratedImages((prev) => {
         const merged = [...prev, ...imagesCustom].slice(-MAX_VARIATIONS);
         return merged;
