@@ -1369,14 +1369,19 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     if (variant === 2) {
       ctx.fillStyle = "#f7f4ef"; ctx.fillRect(0, 0, width, height);
 
-      // REGRA DE LEGIBILIDADE V2:
-      // - Card de preço e faixa headline = primaryColor → texto principal contrasta automaticamente.
-      // - Label de topo do preço = secondaryColor mas só se contrastar; senão usa contraste forte.
-      // - Benefits sobre fundo bege #f7f4ef → primaryColor garantido contra creme; se for muito claro, vira preto.
+      // REGRA DE CORES V2 (mapeamento estrito):
+      // - card_background / faixa headline = user_primary_color
+      // - TODOS os textos (tagline, título, duração, total, preço, parcelas) = user_secondary_color
+      // - Ícones de amenities = user_secondary_color
+      // - Discount badge: bg = user_secondary_color, texto branco fixo
+      // ensureContrast só atua como fallback de segurança quando primária ≈ secundária.
       const v2CardBg = primaryColor;
-      const v2OnCard = contrastOn(v2CardBg);
+      const v2OnCard = contrastOn(v2CardBg); // fallback de segurança
       const v2CardLabel = ensureContrast(secondaryColor, v2CardBg, 0.35);
-      const v2BenefitColor = ensureContrast(primaryColor, "#f7f4ef", 0.35);
+      // Benefits ficam sobre fundo creme #f7f4ef → secundária com fallback contra creme.
+      const v2BenefitColor = ensureContrast(secondaryColor, "#f7f4ef", 0.35);
+      // Texto da faixa headline (sobre primária) = secundária com contraste garantido.
+      const v2HeadlineColor = v2CardLabel;
 
       // Lista completa de benefits (até 6) — TODOS devem aparecer
       const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
