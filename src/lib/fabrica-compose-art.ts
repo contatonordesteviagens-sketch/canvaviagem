@@ -1159,6 +1159,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     // Painel superior (cor secundária) com altura ADAPTATIVA: encolhe quando há
     // pouco texto, expande quando o usuário adiciona mais benefits.
     if (variant === 0) {
+      // REGRA GLOBAL DE LEGIBILIDADE: texto sempre tem que destacar do fundo.
+      // Painel = secondaryColor → texto principal = primaryColor com contraste garantido.
+      // Badge  = primaryColor   → texto da badge = secondaryColor com contraste garantido.
+      const v0PanelBg = secondaryColor;
+      const v0OnPanel = ensureContrast(primaryColor, v0PanelBg, 0.35);
+      const v0BadgeBg = primaryColor;
+      const v0OnBadge = ensureContrast(secondaryColor, v0BadgeBg, 0.35);
       // 1) Calcula tamanho do título para saber a altura real
       ctx.textAlign = "left";
       let titleSize = 78;
