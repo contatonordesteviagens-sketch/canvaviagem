@@ -1206,14 +1206,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               />
             </div>
             <div>
-              <div className="flex items-baseline justify-between mb-1.5">
-                <label className={`${labelCls} mb-0`}>Valor ({currencySymbol})</label>
-                {formattedPriceForAd && (
-                  <span className="text-[10px] text-emerald-300/80 font-mono">
-                    → {currencySymbol} {formattedPriceForAd}
-                  </span>
-                )}
-              </div>
+              <label className={labelCls}>Valor ({currencySymbol})</label>
               <div className="flex gap-1.5">
                 <select
                   value={currency}
@@ -1230,14 +1223,24 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 <input
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
-                  placeholder={currency === "BRL" ? "1499,90" : "1499.90"}
+                  onBlur={() => {
+                    const f = formatPriceValue(price, currency);
+                    if (f) setPrice(f);
+                  }}
+                  placeholder={currency === "BRL" ? "1.499,90" : "1,499.90"}
                   inputMode="decimal"
                   className={`${inputCls} flex-1`}
                 />
               </div>
-              <p className="text-[10px] text-white/40 mt-1">
-                Padrão {currency}. Milhares e decimais são formatados automaticamente.
-              </p>
+              {formattedPriceForAd ? (
+                <p className="text-[11px] text-emerald-300/90 font-mono mt-1.5">
+                  {currencySymbol} {formattedPriceForAd}
+                </p>
+              ) : (
+                <p className="text-[10px] text-white/40 mt-1.5">
+                  Milhares e decimais formatados automaticamente.
+                </p>
+              )}
             </div>
           </div>
         </div>
