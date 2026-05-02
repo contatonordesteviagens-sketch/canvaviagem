@@ -1200,20 +1200,20 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       );
 
       // 5) Pinta painel
-      ctx.fillStyle = secondaryColor;
+      ctx.fillStyle = v0PanelBg;
       ctx.fillRect(0, 0, width, topH);
 
       // 6) Badge "Saindo de"
       const badgeY = logoH + 28;
-      fillRoundRect(ctx, left, badgeY, 500, badgeH, 8, primaryColor);
-      ctx.fillStyle = secondaryColor;
+      fillRoundRect(ctx, left, badgeY, 500, badgeH, 8, v0BadgeBg);
+      ctx.fillStyle = v0OnBadge;
       ctx.font = "800 26px Inter, Arial, sans-serif";
       ctx.textAlign = "left"; ctx.textBaseline = "middle";
       ctx.fillText(badgeText, left + 20, badgeY + badgeH / 2);
       ctx.textBaseline = "alphabetic";
 
       // 7) Headline (1 linha, fonte adaptativa)
-      ctx.fillStyle = primaryColor;
+      ctx.fillStyle = v0OnPanel;
       ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
       const titleY = badgeY + badgeH + topPaddingBeforeTitle + titleSize;
       ctx.fillText(titleText, left, titleY);
@@ -1227,7 +1227,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const priceX = width - 60 - priceBlockW; // encosta no padding direito
       const benefitsMaxW = priceX - 24 - benefitsX;
 
-      ctx.fillStyle = primaryColor;
+      ctx.fillStyle = v0OnPanel;
       ctx.font = "700 26px Inter, Arial, sans-serif";
       const iconForIndex = (i: number, fallback: string) =>
         ICON_SYMBOL[(benefitsList[i]?.icon as IconKey) || (fallback as IconKey)] || ICON_SYMBOL.check;
@@ -1245,14 +1245,14 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       });
 
       // Divisor vertical
-      ctx.fillStyle = primaryColor; ctx.globalAlpha = 0.2;
+      ctx.fillStyle = v0OnPanel; ctx.globalAlpha = 0.2;
       ctx.fillRect(priceX - 24, rowTopY, 2, contentRowH);
       ctx.globalAlpha = 1;
 
       // Preço — agora CENTRALIZADO dentro do bloco direito
       const priceCenterX = priceX + priceBlockW / 2;
       ctx.textAlign = "center";
-      ctx.fillStyle = primaryColor; ctx.font = "600 22px Inter, Arial, sans-serif";
+      ctx.fillStyle = v0OnPanel; ctx.font = "600 22px Inter, Arial, sans-serif";
       ctx.fillText((topLabel || "por apenas").toString(), priceCenterX, rowTopY + 28);
       const priceStr = mainPrice || `${curSym} ${price}`;
       // Auto-shrink do preço pra não vazar do bloco direito
@@ -1262,9 +1262,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         priceFs -= 4;
         ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
       }
-      ctx.fillStyle = primaryColor;
+      ctx.fillStyle = v0OnPanel;
       ctx.fillText(priceStr, priceCenterX, rowTopY + 92);
-      ctx.font = "600 20px Inter, Arial, sans-serif"; ctx.fillStyle = primaryColor;
+      ctx.font = "600 20px Inter, Arial, sans-serif"; ctx.fillStyle = v0OnPanel;
       ctx.globalAlpha = 0.7;
       ctx.fillText(bottomSuffix, priceCenterX, rowTopY + 120);
       ctx.globalAlpha = 1;
