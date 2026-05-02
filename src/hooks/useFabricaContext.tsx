@@ -123,6 +123,9 @@ export interface FabricaState {
   lastPaymentSuffix?: string;
   lastCurrency?: string;
   lastAdTitle?: string;
+  lastPacoteDays?: string;
+  lastPacoteIcons?: string[]; // IconKey[]
+  lastHideCents?: boolean;
 }
 
 const defaultState: FabricaState = {
