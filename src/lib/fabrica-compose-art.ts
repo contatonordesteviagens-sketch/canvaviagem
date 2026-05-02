@@ -483,10 +483,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
       }
 
-      // 2) Quantidade de benefits que serão exibidos (1 a 4)
-      const benefitsList = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 4);
+      // 2) Quantidade de benefits que serão exibidos (até 6) — TODOS aparecem
+      const benefitsList = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
       const benefitsCount = Math.max(1, benefitsList.length);
-      const benefitLineH = 44;
+      const benefitLineH = benefitsCount <= 4 ? 44 : benefitsCount === 5 ? 38 : 34;
       const benefitsBlockH = benefitsCount * benefitLineH;
 
       // 3) Altura do bloco preço (fixa, ~120px)
