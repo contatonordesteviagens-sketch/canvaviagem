@@ -640,6 +640,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             variation: freshSeedCustom,
             forceVariant: nextVariant,
             titleOverride: resolvedAdTitle,
+            titleVariations: adTitleVariations,
           });
           if (state.logoBase64) {
             try {
