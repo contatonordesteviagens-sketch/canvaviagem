@@ -1257,12 +1257,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 <span className="text-[10px] text-white/40">{hint}</span>
               </div>
               {/* Bolinhas da paleta — grid 8 col, 4 linhas */}
-              <div className="grid grid-cols-8 gap-1.5 mb-3">
+              <div className="grid grid-cols-10 gap-1 mb-3">
                 {PRESET_COLORS.map((c) => (
                   <button
                     key={c}
                     onClick={() => setter(c)}
-                    className={`w-6 h-6 rounded-full border-2 transition-all ${value.toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-lg" : "border-white/20 hover:border-white/60"}`}
+                    className={`w-5 h-5 rounded-full border transition-all ${value.toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-md" : "border-white/20 hover:border-white/60"}`}
                     style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
                     aria-label={c}
                     title={c}
