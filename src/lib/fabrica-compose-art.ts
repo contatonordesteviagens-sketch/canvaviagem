@@ -46,6 +46,10 @@ interface ComposeTravelAdOptions {
   totalOverride?: string;
   /** V3: controla se a linha de total aparece no box. Default true. */
   showTotal?: boolean;
+  /** V3: texto da faixa azul do Pix. Default "{N}% OFF À VISTA NO pix". */
+  pixBannerText?: string;
+  /** V3: mostra/esconde a faixa azul do Pix. Default true. */
+  showPixBanner?: boolean;
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
@@ -121,92 +125,138 @@ function drawMonoIcon(
 
   switch (kind) {
     case "plane": {
-      // avião estilizado (silhueta horizontal)
+      // Avião visto de cima — corpo + asas largas + cauda
       ctx.translate(cx, cy);
-      ctx.rotate(-Math.PI / 8);
+      ctx.rotate(-Math.PI / 6);
       ctx.beginPath();
-      ctx.moveTo(-s * 0.45, 0);
-      ctx.lineTo(-s * 0.05, -s * 0.08);
-      ctx.lineTo(-s * 0.1, -s * 0.32);
-      ctx.lineTo(s * 0.0, -s * 0.32);
-      ctx.lineTo(s * 0.18, -s * 0.08);
-      ctx.lineTo(s * 0.45, -s * 0.04);
-      ctx.lineTo(s * 0.45, s * 0.04);
-      ctx.lineTo(s * 0.18, s * 0.08);
-      ctx.lineTo(s * 0.0, s * 0.32);
-      ctx.lineTo(-s * 0.1, s * 0.32);
-      ctx.lineTo(-s * 0.05, s * 0.08);
-      ctx.lineTo(-s * 0.45, 0);
+      // fuselagem
+      ctx.moveTo(0, -s * 0.46);
+      ctx.lineTo(s * 0.06, -s * 0.34);
+      // asa direita
+      ctx.lineTo(s * 0.06, -s * 0.06);
+      ctx.lineTo(s * 0.46, s * 0.14);
+      ctx.lineTo(s * 0.46, s * 0.22);
+      ctx.lineTo(s * 0.06, s * 0.16);
+      // corpo p/ cauda
+      ctx.lineTo(s * 0.06, s * 0.32);
+      // cauda direita
+      ctx.lineTo(s * 0.2, s * 0.42);
+      ctx.lineTo(s * 0.2, s * 0.48);
+      ctx.lineTo(0, s * 0.42);
+      // espelha
+      ctx.lineTo(-s * 0.2, s * 0.48);
+      ctx.lineTo(-s * 0.2, s * 0.42);
+      ctx.lineTo(-s * 0.06, s * 0.32);
+      ctx.lineTo(-s * 0.06, s * 0.16);
+      ctx.lineTo(-s * 0.46, s * 0.22);
+      ctx.lineTo(-s * 0.46, s * 0.14);
+      ctx.lineTo(-s * 0.06, -s * 0.06);
+      ctx.lineTo(-s * 0.06, -s * 0.34);
       ctx.closePath();
       ctx.fill();
       break;
     }
     case "bus": {
-      // ônibus/van: corpo arredondado + 2 rodas
-      const bx = x + s * 0.08, by = y + s * 0.18, bw = s * 0.84, bh = s * 0.5;
-      roundRect(ctx, bx, by, bw, bh, s * 0.1);
+      // Van/ônibus — corpo arredondado largo + 2 rodas grandes
+      const bx = x + s * 0.05, by = y + s * 0.22, bw = s * 0.9, bh = s * 0.46;
+      roundRect(ctx, bx, by, bw, bh, s * 0.14);
       ctx.fill();
-      // janelas (recortes brancos): desenhamos como retângulos da cor de fundo seria errado;
-      // em vez disso, deixamos silhueta sólida — fica mais limpo monocromático.
-      // rodas
+      // rodas (silhueta sólida, levemente encostadas no corpo)
       ctx.beginPath();
-      ctx.arc(bx + bw * 0.22, by + bh + s * 0.04, s * 0.1, 0, Math.PI * 2);
-      ctx.arc(bx + bw * 0.78, by + bh + s * 0.04, s * 0.1, 0, Math.PI * 2);
+      ctx.arc(bx + bw * 0.22, by + bh + s * 0.04, s * 0.13, 0, Math.PI * 2);
+      ctx.arc(bx + bw * 0.78, by + bh + s * 0.04, s * 0.13, 0, Math.PI * 2);
       ctx.fill();
+      // pequena saliência indicando para-brisa (recorte branco)
+      ctx.save();
+      ctx.globalCompositeOperation = "destination-out";
+      roundRect(ctx, bx + s * 0.1, by + s * 0.08, bw - s * 0.2, s * 0.16, s * 0.05);
+      ctx.fill();
+      ctx.restore();
       break;
     }
     case "hotel": {
-      // prédio com telhado plano + janelas indicadas como entalhes
-      const hx = x + s * 0.12, hy = y + s * 0.15, hw = s * 0.76, hh = s * 0.7;
-      roundRect(ctx, hx, hy, hw, hh, s * 0.06);
+      // Prédio: base + cobertura inclinada + janelas
+      const hx = x + s * 0.1, hy = y + s * 0.28, hw = s * 0.8, hh = s * 0.6;
+      ctx.fillRect(hx, hy, hw, hh);
+      // telhado
+      ctx.beginPath();
+      ctx.moveTo(hx - s * 0.04, hy);
+      ctx.lineTo(hx + hw + s * 0.04, hy);
+      ctx.lineTo(hx + hw, hy - s * 0.12);
+      ctx.lineTo(hx, hy - s * 0.12);
+      ctx.closePath();
       ctx.fill();
-      // porta (entalhe central) — desenhamos com destination-out para criar o "vazio"
+      // janelas e porta (recortes)
       ctx.save();
       ctx.globalCompositeOperation = "destination-out";
-      const dw = s * 0.16, dh = s * 0.22;
-      ctx.fillRect(hx + (hw - dw) / 2, hy + hh - dh, dw, dh);
+      const winS = s * 0.1;
+      const gap = s * 0.08;
+      for (let r = 0; r < 2; r++) {
+        for (let c = 0; c < 3; c++) {
+          ctx.fillRect(hx + s * 0.1 + c * (winS + gap), hy + s * 0.08 + r * (winS + gap * 0.6), winS, winS);
+        }
+      }
+      // porta
+      ctx.fillRect(hx + hw / 2 - s * 0.08, hy + hh - s * 0.2, s * 0.16, s * 0.2);
       ctx.restore();
       break;
     }
     case "coffee": {
-      // xícara com alça
-      const cx2 = x + s * 0.1, cy2 = y + s * 0.32, cw = s * 0.6, ch = s * 0.42;
-      roundRect(ctx, cx2, cy2, cw, ch, s * 0.08);
+      // Xícara cheia + alça + pires + vapor
+      const cw = s * 0.62, ch = s * 0.42;
+      const cxL = cx - cw / 2, cyT = cy - ch / 2 + s * 0.04;
+      // corpo
+      ctx.beginPath();
+      ctx.moveTo(cxL, cyT);
+      ctx.lineTo(cxL + cw, cyT);
+      ctx.lineTo(cxL + cw - s * 0.06, cyT + ch);
+      ctx.lineTo(cxL + s * 0.06, cyT + ch);
+      ctx.closePath();
       ctx.fill();
       // alça
-      ctx.lineWidth = s * 0.08;
+      ctx.lineWidth = s * 0.07;
       ctx.beginPath();
-      ctx.arc(cx2 + cw + s * 0.04, cy2 + ch / 2, s * 0.14, -Math.PI / 2, Math.PI / 2);
+      ctx.arc(cxL + cw + s * 0.04, cyT + ch * 0.45, s * 0.13, -Math.PI / 2.2, Math.PI / 2.2);
       ctx.stroke();
       // pires
-      ctx.fillRect(x + s * 0.06, cy2 + ch + s * 0.04, s * 0.7, s * 0.06);
-      // vapor
+      roundRect(ctx, cx - s * 0.42, cyT + ch + s * 0.02, s * 0.84, s * 0.08, s * 0.04);
+      ctx.fill();
+      // vapor (3 fios)
       ctx.lineWidth = s * 0.06;
-      ctx.beginPath();
-      ctx.moveTo(x + s * 0.22, cy2 - s * 0.04);
-      ctx.quadraticCurveTo(x + s * 0.3, cy2 - s * 0.18, x + s * 0.22, cy2 - s * 0.32);
-      ctx.moveTo(x + s * 0.42, cy2 - s * 0.04);
-      ctx.quadraticCurveTo(x + s * 0.5, cy2 - s * 0.18, x + s * 0.42, cy2 - s * 0.32);
-      ctx.stroke();
+      ctx.lineCap = "round";
+      for (let i = -1; i <= 1; i++) {
+        const vx = cx + i * s * 0.16;
+        ctx.beginPath();
+        ctx.moveTo(vx, cyT - s * 0.04);
+        ctx.quadraticCurveTo(vx + s * 0.08, cyT - s * 0.18, vx, cyT - s * 0.32);
+        ctx.stroke();
+      }
       break;
     }
     case "camera": {
-      // câmera: corpo + lente
-      const bx = x + s * 0.08, by = y + s * 0.28, bw = s * 0.84, bh = s * 0.52;
-      roundRect(ctx, bx, by, bw, bh, s * 0.08);
+      // Câmera: corpo + saliência do flash + lente com anel
+      const bx = x + s * 0.05, by = y + s * 0.3, bw = s * 0.9, bh = s * 0.5;
+      roundRect(ctx, bx, by, bw, bh, s * 0.1);
       ctx.fill();
-      // saliência do visor
-      ctx.fillRect(x + s * 0.34, y + s * 0.18, s * 0.32, s * 0.14);
-      // lente (círculo recortado para destacar)
+      // saliência superior (visor)
+      roundRect(ctx, x + s * 0.3, y + s * 0.18, s * 0.4, s * 0.16, s * 0.04);
+      ctx.fill();
+      // flash
+      ctx.fillRect(x + s * 0.74, y + s * 0.2, s * 0.1, s * 0.1);
+      // lente (anel grosso)
       ctx.beginPath();
-      ctx.arc(cx, by + bh / 2, s * 0.18, 0, Math.PI * 2);
+      ctx.arc(cx, by + bh / 2, s * 0.2, 0, Math.PI * 2);
       ctx.fill();
       ctx.save();
       ctx.globalCompositeOperation = "destination-out";
       ctx.beginPath();
-      ctx.arc(cx, by + bh / 2, s * 0.09, 0, Math.PI * 2);
+      ctx.arc(cx, by + bh / 2, s * 0.12, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
+      // ponto central da lente
+      ctx.beginPath();
+      ctx.arc(cx, by + bh / 2, s * 0.06, 0, Math.PI * 2);
+      ctx.fill();
       break;
     }
     case "ship": {
@@ -234,12 +284,13 @@ function drawMonoIcon(
       ctx.beginPath();
       ctx.arc(cx, cy, s * 0.22, 0, Math.PI * 2);
       ctx.fill();
-      ctx.lineWidth = s * 0.07;
+      ctx.lineWidth = s * 0.08;
+      ctx.lineCap = "round";
       for (let i = 0; i < 8; i++) {
         const a = (Math.PI * 2 * i) / 8;
         ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(a) * s * 0.3, cy + Math.sin(a) * s * 0.3);
-        ctx.lineTo(cx + Math.cos(a) * s * 0.42, cy + Math.sin(a) * s * 0.42);
+        ctx.moveTo(cx + Math.cos(a) * s * 0.32, cy + Math.sin(a) * s * 0.32);
+        ctx.lineTo(cx + Math.cos(a) * s * 0.44, cy + Math.sin(a) * s * 0.44);
         ctx.stroke();
       }
       break;
@@ -260,26 +311,89 @@ function drawMonoIcon(
       break;
     }
     case "food": {
-      // garfo + faca estilizados
-      ctx.lineWidth = s * 0.08;
+      // garfo (3 dentes) + faca
+      ctx.lineWidth = s * 0.07;
+      ctx.lineCap = "round";
+      // garfo
       ctx.beginPath();
-      ctx.moveTo(cx - s * 0.18, y + s * 0.1);
-      ctx.lineTo(cx - s * 0.18, y + s * 0.9);
-      ctx.moveTo(cx + s * 0.16, y + s * 0.1);
-      ctx.lineTo(cx + s * 0.16, y + s * 0.9);
+      ctx.moveTo(cx - s * 0.22, y + s * 0.1);
+      ctx.lineTo(cx - s * 0.22, y + s * 0.9);
+      ctx.moveTo(cx - s * 0.34, y + s * 0.1);
+      ctx.lineTo(cx - s * 0.34, y + s * 0.32);
+      ctx.moveTo(cx - s * 0.1, y + s * 0.1);
+      ctx.lineTo(cx - s * 0.1, y + s * 0.32);
       ctx.stroke();
+      ctx.fillRect(cx - s * 0.36, y + s * 0.3, s * 0.28, s * 0.08);
+      // faca
       ctx.beginPath();
-      ctx.arc(cx + s * 0.16, y + s * 0.28, s * 0.12, 0, Math.PI * 2);
+      ctx.moveTo(cx + s * 0.18, y + s * 0.1);
+      ctx.lineTo(cx + s * 0.32, y + s * 0.1);
+      ctx.lineTo(cx + s * 0.28, y + s * 0.46);
+      ctx.lineTo(cx + s * 0.22, y + s * 0.46);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillRect(cx + s * 0.22, y + s * 0.46, s * 0.06, s * 0.42);
+      break;
+    }
+    case "check": {
+      ctx.lineWidth = s * 0.16;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(x + s * 0.18, cy + s * 0.04);
+      ctx.lineTo(x + s * 0.42, cy + s * 0.24);
+      ctx.lineTo(x + s * 0.84, cy - s * 0.22);
+      ctx.stroke();
+      break;
+    }
+    case "star": {
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const a = -Math.PI / 2 + (Math.PI * i) / 5;
+        const r = i % 2 === 0 ? s * 0.45 : s * 0.2;
+        const px = cx + Math.cos(a) * r;
+        const py = cy + Math.sin(a) * r;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
       ctx.fill();
       break;
     }
-    case "guide":
-    case "wifi":
-    case "check":
-    case "star":
-    case "heart":
+    case "heart": {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy + s * 0.36);
+      ctx.bezierCurveTo(cx - s * 0.6, cy - s * 0.06, cx - s * 0.24, cy - s * 0.42, cx, cy - s * 0.12);
+      ctx.bezierCurveTo(cx + s * 0.24, cy - s * 0.42, cx + s * 0.6, cy - s * 0.06, cx, cy + s * 0.36);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case "guide": {
+      // pessoa: cabeça + tronco
+      ctx.beginPath();
+      ctx.arc(cx, y + s * 0.26, s * 0.16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx - s * 0.34, y + s * 0.92);
+      ctx.quadraticCurveTo(cx, y + s * 0.4, cx + s * 0.34, y + s * 0.92);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case "wifi": {
+      ctx.lineWidth = s * 0.09;
+      ctx.lineCap = "round";
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.arc(cx, cy + s * 0.22, s * (0.18 + i * 0.14), -Math.PI * 0.75, -Math.PI * 0.25);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.arc(cx, cy + s * 0.22, s * 0.06, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
     default: {
-      // fallback: círculo cheio (mantém monocromia)
       ctx.beginPath();
       ctx.arc(cx, cy, s * 0.32, 0, Math.PI * 2);
       ctx.fill();
@@ -418,6 +532,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     currencySymbol,
     totalOverride,
     showTotal = true,
+    pixBannerText,
+    showPixBanner = true,
   } = options;
   const curSym = (currencySymbol || "R$").trim();
   const priceValueText = (price || "").trim();
@@ -790,14 +906,35 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const descMatch = (promoName || "").match(/(\d{1,2})\s*%/);
       const descN = descMatch ? descMatch[1] : "5";
 
-      // ── [BOX] amarelo arredondado ──────────────────────────────────────────
+      // ── [BOX] amarelo arredondado — altura DINÂMICA conforme conteúdo ─────
       const boxX = 60;
       const boxY = 70;
       const boxW = 720;
-      const boxH = 600;
       const boxR = 36;
       const yellow = "#FFD400";
+      const yellowDark = "#E6B800"; // tom mais escuro para anel ao redor do preço
       const navy = "#0B2B7A";
+
+      // Pré-cálculos de altura por seção
+      const padTop = 36;
+      const titleH = 50; // "PACOTE"
+      const titleGap = 12;
+      const destH = 60;  // destino
+      const destGap = 18;
+      const infoH = 42;  // dias | ícones
+      const infoGap = 22;
+      const priceBlockH = 150; // bloco grande do preço com ring
+      const totalH = (showTotal && (totalOverride || !isNaN(totalNum))) ? 36 : 0;
+      const totalGap = totalH ? 14 : 0;
+      const stripeH = 64;
+      const stripeGap = showPixBanner ? 22 : 0;
+      const padBottom = 36;
+
+      const boxH =
+        padTop + titleH + titleGap + destH + destGap + infoH + infoGap +
+        priceBlockH + totalGap + totalH +
+        (showPixBanner ? stripeGap + stripeH : 0) +
+        padBottom;
 
       // sombra suave
       ctx.save();
@@ -808,14 +945,14 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.restore();
 
       const cx = boxX + boxW / 2;
-      let cursorY = boxY + 70;
+      let cursorY = boxY + padTop + 32; // baseline aproximada do título
 
       // [TITLE] PACOTE
       ctx.fillStyle = navy;
       ctx.textAlign = "center";
       ctx.font = "900 44px Inter, Arial, sans-serif";
       ctx.fillText("PACOTE", cx, cursorY);
-      cursorY += 56;
+      cursorY += titleGap + 40;
 
       // destino (maior, peso médio)
       ctx.font = "500 56px Inter, Arial, sans-serif";
@@ -825,14 +962,14 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.font = `500 ${destSize}px Inter, Arial, sans-serif`;
       }
       ctx.fillText(destinoUp, cx, cursorY);
-      cursorY += 64;
+      cursorY += destGap + 36;
 
       // [INFO] dias | ícones (TODOS monocromáticos, mesma cor navy)
-      ctx.font = "700 32px Inter, Arial, sans-serif";
+      ctx.font = "700 30px Inter, Arial, sans-serif";
       const daysW = ctx.measureText(daysText).width;
       const sepGap = 18;
-      const iconSize = 38;
-      const iconGap = 22;
+      const iconSize = 40;
+      const iconGap = 18;
       const iconsTotal = iconList.length * iconSize + Math.max(0, iconList.length - 1) * iconGap;
       const sepW = 4;
       const infoTotalW = daysW + sepGap + sepW + sepGap + iconsTotal;
@@ -850,12 +987,22 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         drawMonoIcon(ctx, k, ix, infoY, iconSize, navy);
       });
       ctx.textBaseline = "alphabetic";
-      cursorY += 70;
+      cursorY += infoGap + 28;
 
-      // [INSTALL + PRICE] bloco lado a lado — com auto-shrink e gap mínimo
-      const priceBlockY = cursorY + 20;
-      const leftColX = boxX + 50;
-      const rightEdgeX = boxX + boxW - 50;
+      // [PRICE BLOCK] anel amarelo escuro ao redor do preço
+      const ringX = boxX + 30;
+      const ringY = cursorY - 8;
+      const ringW = boxW - 60;
+      const ringH = priceBlockH - 8;
+      ctx.save();
+      ctx.fillStyle = yellowDark;
+      roundRect(ctx, ringX, ringY, ringW, ringH, 24);
+      ctx.fill();
+      ctx.restore();
+
+      const priceBlockY = ringY + 30;
+      const leftColX = ringX + 28;
+      const rightEdgeX = ringX + ringW - 28;
       const minGap = 30;
 
       // Quebra "R$ 229" em símbolo pequeno + valor gigante
@@ -863,13 +1010,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const sym = priceParts ? priceParts[1].trim() : curSym;
       const valNum = priceParts ? priceParts[2].trim() : priceStr;
 
-      // Largura disponível à direita: do fim da coluna esquerda até a borda direita.
-      // Coluna esquerda ocupa "12X" em 64px (~ até 90px). Reservamos 130px à esquerda.
       const leftReservedW = 130;
-      const maxPriceW = boxW - 100 - leftReservedW - minGap; // 100 = 50 padding cada lado
-      let priceSize = 130;
+      const maxPriceW = ringW - 56 - leftReservedW - minGap;
+      let priceSize = 120;
       ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(valNum).width > maxPriceW && priceSize > 70) {
+      while (ctx.measureText(valNum).width > maxPriceW && priceSize > 64) {
         priceSize -= 4;
         ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
       }
@@ -879,59 +1024,68 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // Lado esquerdo
       ctx.textAlign = "left";
       ctx.fillStyle = navy;
-      ctx.font = "600 22px Inter, Arial, sans-serif";
+      ctx.font = "600 20px Inter, Arial, sans-serif";
       ctx.fillText("a partir de", leftColX, priceBlockY);
-      ctx.font = "900 64px Inter, Arial, sans-serif";
-      ctx.fillText(`${parcN}X`, leftColX, priceBlockY + 70);
-      ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText("sem juros", leftColX, priceBlockY + 100);
+      ctx.font = "900 56px Inter, Arial, sans-serif";
+      ctx.fillText(`${parcN}X`, leftColX, priceBlockY + 60);
+      ctx.font = "600 20px Inter, Arial, sans-serif";
+      ctx.fillText("sem juros", leftColX, priceBlockY + 88);
 
-      // Lado direito (preço gigante alinhado à direita, símbolo à esquerda do número)
-      const priceRightX = rightEdgeX;
+      // Lado direito (preço gigante)
       ctx.textAlign = "right";
       ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
-      ctx.fillText(valNum, priceRightX, priceBlockY + 90);
+      ctx.fillText(valNum, rightEdgeX, priceBlockY + 84);
       ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
-      ctx.fillText(sym, priceRightX - valW - 8, priceBlockY + 90 - priceSize * 0.5);
+      ctx.fillText(sym, rightEdgeX - valW - 8, priceBlockY + 84 - priceSize * 0.5);
 
-      cursorY = priceBlockY + 130;
+      cursorY = ringY + ringH + totalGap;
 
       // [TOTAL] rodapé do box (apenas se showTotal)
-      if (showTotal && totalStr) {
+      if (totalH > 0) {
         ctx.textAlign = "center";
-        ctx.font = "600 24px Inter, Arial, sans-serif";
+        ctx.font = "600 22px Inter, Arial, sans-serif";
         ctx.fillStyle = navy;
-        ctx.fillText(totalStr, cx, cursorY);
+        ctx.fillText(totalStr, cx, cursorY + 22);
+        cursorY += totalH;
       }
-      cursorY += 40;
 
-      // [PROMO] faixa horizontal azul com texto Pix
-      const stripeH = 70;
-      const stripeY = boxY + boxH - stripeH - 28;
-      const stripeX = boxX + 40;
-      const stripeW = boxW - 80;
-      fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 18, navy);
-      ctx.fillStyle = "#ffffff";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.font = "900 28px Inter, Arial, sans-serif";
-      const pixText = `${descN}% OFF À VISTA NO`;
-      const pixTextW = ctx.measureText(pixText).width;
-      const pixLabelW = ctx.measureText("pix").width;
-      const pixIconSize = 40;
-      const pixGap = 12;
-      const totalPixW = pixTextW + pixGap + pixIconSize + pixGap + pixLabelW;
-      const pixStartX = stripeX + (stripeW - totalPixW) / 2;
-      ctx.textAlign = "left";
-      ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2 + 1);
-      // Logo Pix oficial-like (4 losangos)
-      const pxCx = pixStartX + pixTextW + pixGap + pixIconSize / 2;
-      const pxCy = stripeY + stripeH / 2;
-      drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "800 30px Inter, Arial, sans-serif";
-      ctx.fillText("pix", pxCx + pixIconSize / 2 + pixGap, stripeY + stripeH / 2 + 1);
-      ctx.textBaseline = "alphabetic";
+      // [PROMO] faixa horizontal azul com texto Pix (opcional)
+      if (showPixBanner) {
+        const stripeY = boxY + boxH - stripeH - 24;
+        const stripeX = boxX + 40;
+        const stripeW = boxW - 80;
+        fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 16, navy);
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "900 26px Inter, Arial, sans-serif";
+
+        const customBanner = (pixBannerText || "").trim();
+        if (customBanner) {
+          // Modo texto livre: usuário definiu uma frase customizada
+          ctx.fillText(customBanner, stripeX + stripeW / 2, stripeY + stripeH / 2 + 1);
+        } else {
+          // Modo padrão: "{N}% OFF À VISTA NO  ◇ pix"
+          const pixText = `${descN}% OFF À VISTA NO`;
+          const pixTextW = ctx.measureText(pixText).width;
+          const pixIconSize = 36;
+          const pixGap = 12;
+          ctx.font = "800 28px Inter, Arial, sans-serif";
+          const pixLabelW = ctx.measureText("pix").width;
+          ctx.font = "900 26px Inter, Arial, sans-serif";
+          const totalPixW = pixTextW + pixGap + pixIconSize + pixGap + pixLabelW;
+          const pixStartX = stripeX + (stripeW - totalPixW) / 2;
+          ctx.textAlign = "left";
+          ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2 + 1);
+          const pxCx = pixStartX + pixTextW + pixGap + pixIconSize / 2;
+          const pxCy = stripeY + stripeH / 2;
+          drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "800 28px Inter, Arial, sans-serif";
+          ctx.fillText("pix", pxCx + pixIconSize / 2 + pixGap, stripeY + stripeH / 2 + 1);
+        }
+        ctx.textBaseline = "alphabetic";
+      }
 
       return canvas.toDataURL("image/png");
     }

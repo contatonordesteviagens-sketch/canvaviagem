@@ -330,6 +330,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setShowTotal = (v: boolean) => { setShowTotalState(v); update({ showTotal: v }); };
   const [totalOverride, setTotalOverrideState] = useState<string>(state.totalOverride || "");
   const setTotalOverride = (v: string) => { setTotalOverrideState(v); update({ totalOverride: v }); };
+  // V3: faixa azul do Pix (editável e ocultável)
+  const [showPixBanner, setShowPixBannerState] = useState<boolean>((state as any).showPixBanner !== false);
+  const setShowPixBanner = (v: boolean) => { setShowPixBannerState(v); update({ showPixBanner: v } as any); };
+  const [pixBannerText, setPixBannerTextState] = useState<string>((state as any).pixBannerText || "");
+  const setPixBannerText = (v: string) => { setPixBannerTextState(v); update({ pixBannerText: v } as any); };
 
   // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
   const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
@@ -570,6 +575,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               titleOverride: resolvedAdTitle,
               titleVariations: adTitleVariations,
               totalOverride: totalOverride || undefined,
+              showPixBanner,
+              pixBannerText: pixBannerText || undefined,
               showTotal,
             });
             if (state.logoBase64) {
@@ -774,6 +781,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             titleOverride: resolvedAdTitle,
             titleVariations: adTitleVariations,
             totalOverride: totalOverride || undefined,
+              showPixBanner,
+              pixBannerText: pixBannerText || undefined,
             showTotal,
           });
           if (state.logoBase64) {
@@ -1325,33 +1334,61 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               </datalist>
             </div>
           </div>
-          {/* Opções V3: sem centavos / total customizável */}
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
-            <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
+          {/* Opções de preço (aplicam a todas variantes) */}
+          <div className="mt-3">
+            <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5 w-fit">
               <input
                 type="checkbox"
                 checked={hideCents}
                 onChange={(e) => setHideCents(e.target.checked)}
                 className="accent-yellow-400 w-4 h-4"
               />
-              Sem centavos
+              Sem centavos (ex.: 423 em vez de 423,43)
             </label>
-            <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
+          </div>
+
+          {/* Opções exclusivas da V3 (variação CVC) */}
+          <div className="mt-3 bg-amber-400/[0.06] border border-amber-300/20 rounded-xl p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-300/90">Opções da variação V3</span>
+              <span className="text-[10px] text-white/40">(box amarelo · só afeta a V3)</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+              <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
+                <input
+                  type="checkbox"
+                  checked={showTotal}
+                  onChange={(e) => setShowTotal(e.target.checked)}
+                  className="accent-yellow-400 w-4 h-4"
+                />
+                Mostrar linha "Total"
+              </label>
               <input
-                type="checkbox"
-                checked={showTotal}
-                onChange={(e) => setShowTotal(e.target.checked)}
-                className="accent-yellow-400 w-4 h-4"
+                value={totalOverride}
+                onChange={(e) => setTotalOverride(e.target.value)}
+                placeholder='Total (auto). Ex.: "Total por casal: R$ 3.998"'
+                disabled={!showTotal}
+                className={`${inputCls} ${!showTotal ? "opacity-50" : ""}`}
               />
-              Mostrar total no anúncio
-            </label>
-            <input
-              value={totalOverride}
-              onChange={(e) => setTotalOverride(e.target.value)}
-              placeholder='Total (auto). Ex.: "Total por casal: R$ 3.998"'
-              disabled={!showTotal}
-              className={`${inputCls} ${!showTotal ? "opacity-50" : ""}`}
-            />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
+                <input
+                  type="checkbox"
+                  checked={showPixBanner}
+                  onChange={(e) => setShowPixBanner(e.target.checked)}
+                  className="accent-yellow-400 w-4 h-4"
+                />
+                Mostrar faixa azul do Pix
+              </label>
+              <input
+                value={pixBannerText}
+                onChange={(e) => setPixBannerText(e.target.value)}
+                placeholder='Texto da faixa (auto: "5% OFF À VISTA NO pix")'
+                disabled={!showPixBanner}
+                className={`${inputCls} ${!showPixBanner ? "opacity-50" : ""}`}
+              />
+            </div>
           </div>
           {formattedPriceForAd && (
             <p className="text-[11px] text-emerald-300/90 font-mono mt-2">
