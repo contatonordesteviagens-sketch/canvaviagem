@@ -38,6 +38,8 @@ interface ComposeTravelAdOptions {
   forceVariant?: number;
   /** Quando definido, sobrescreve o pool aleatório de headlines e usa este texto como título principal em todas as variantes. */
   titleOverride?: string;
+  /** Pool de variações de título (uma por variante). Se fornecido, tem prioridade sobre titleOverride: usa-se titleVariations[variantIndex % len]. */
+  titleVariations?: string[];
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
