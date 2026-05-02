@@ -19,6 +19,33 @@ function shadeColor(hex: string, percent: number): string {
   return "#" + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
 }
 
+// Luminância relativa (0..1) de uma cor hex.
+function luminance(hex: string): number {
+  let h = (hex || "").trim().replace("#", "");
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  if (h.length !== 6) return 0.5;
+  const num = parseInt(h, 16);
+  const r = ((num >> 16) & 0xff) / 255;
+  const g = ((num >> 8) & 0xff) / 255;
+  const b = (num & 0xff) / 255;
+  return 0.299 * r + 0.587 * g + 0.114 * b;
+}
+
+// Retorna preto ou branco com melhor contraste sobre `bg`.
+function contrastOn(bg: string): string {
+  return luminance(bg) > 0.6 ? "#0d0d0d" : "#ffffff";
+}
+
+/**
+ * Garante contraste mínimo entre `fg` (cor preferida do usuário) e `bg`.
+ * Se a diferença de luminância for baixa, devolve preto/branco em vez de `fg`.
+ */
+function ensureContrast(fg: string, bg: string, minDelta = 0.35): string {
+  const dl = Math.abs(luminance(fg) - luminance(bg));
+  if (dl >= minDelta) return fg;
+  return contrastOn(bg);
+}
+
 export type PaymentMode =
   | "installments"
   | "cash"
