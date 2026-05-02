@@ -8,7 +8,7 @@
 
 import type { StrategyId } from "@/data/fabrica-prompts";
 
-export type CategoriaId = "oferta_pacote" | "experiencia_destino" | "autoridade_dark";
+export type CategoriaId = "oferta_pacote" | "autoridade_dark";
 
 export interface CategoriaMeta {
   id: CategoriaId;
@@ -45,25 +45,6 @@ export const CATEGORIAS: CategoriaMeta[] = [
       { code: "OP6", templateId: "side_hero_performance" },
     ],
     legacyStrategy: "matriz",
-  },
-  {
-    id: "experiencia_destino",
-    name: "Experiência de Destino",
-    badge: "DESEJO",
-    emoji: "🔵",
-    description:
-      "Emoção, narrativa visual e desejo. Foto cinematográfica do destino com presença discreta de oferta.",
-    focus: ["Emoção", "Foto impactante", "Narrativa", "Aspiracional"],
-    accent: "#2563eb",
-    prompts: [
-      { code: "ED1", templateId: "iconic_landmark" },
-      { code: "ED2", templateId: "split_yellow_side" },
-      { code: "ED3", templateId: "elegant_center" },
-      { code: "ED4", templateId: "editorial_visual" },
-      { code: "ED5", templateId: "top_editorial_photo" },
-      { code: "ED6", templateId: "two_scene_editorial" },
-    ],
-    legacyStrategy: "vitrine",
   },
   {
     id: "autoridade_dark",

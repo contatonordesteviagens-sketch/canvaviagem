@@ -82,7 +82,6 @@ const PAYMENT_PRESETS: PaymentPreset[] = [
 
 const CATEGORY_LOCAL_STRATEGIES: Record<CategoriaId, StrategyId[]> = {
   oferta_pacote: ["matriz", "gancho", "ancora", "vitrine"],
-  experiencia_destino: ["experiencia_hero", "experiencia_postcard", "experiencia_editorial", "experiencia_lifestyle"],
   autoridade_dark: [],
 };
 
@@ -409,7 +408,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // ===== MODO IA PURA: gera 1 prompt da categoria; Experiência usa fluxo seguro sem texto da IA =====
       if (genMode === "ai") {
         const cat = getCategoria(categoria);
-        const isAiExperienceStory = categoria === "experiencia_destino";
+        const isAiExperienceStory = false;
         const guard = getForbiddenSets(categoria, "ai", format);
         const categoryLastKey = scopedTemplateKey("last", categoria, "ai");
         const categoryRecentKey = scopedTemplateKey("recent", categoria, "ai");
@@ -442,7 +441,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         const results = await Promise.all(
           picks.map((pick, idx) => supabase.functions.invoke("fabrica-generate-ad", {
             body: {
-              strategy: categoria === "oferta_pacote" ? "ancora" : categoria === "experiencia_destino" ? "vitrine" : "matriz",
+              strategy: categoria === "oferta_pacote" ? "ancora" : "matriz",
               format,
               // 🚨 HACK DE EMERGÊNCIA: Injeta ordens no único campo que o servidor antigo lê
               destination: `${destination.toUpperCase()} (STRICT RULE: NO PEOPLE, ONLY LANDSCAPE. WRITE FULL TITLE: "Pacote para ${destination}". NO ICONS IN PRICE TAG)`,
