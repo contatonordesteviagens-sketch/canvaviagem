@@ -282,6 +282,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [destination, setDestination] = useState(state.destinos?.[0] || "");
   const [price, setPriceState] = useState(state.lastPrice || "149,90");
   const setPrice = (p: string) => { setPriceState(p); update({ lastPrice: p }); };
+  const [currency, setCurrency] = useState<Currency>("BRL");
+  // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
+  const formattedPriceForAd = formatPriceValue(price, currency);
+  const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
 
   const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
   const setInstallments = (i: string) => { setInstallmentsState(i); update({ lastInstallments: i }); };
