@@ -967,37 +967,25 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       return cardH;
     };
 
-    // ── V3 · CVC FULLBLEED — foto cobre, card amarelo no canto SUPERIOR ESQUERDO ──
+    // ── V3 · CVC FULLBLEED — foto de fundo, card amarelo grande dominando o topo
+    // (estilo Maceió/CVC: card centralizado, ocupando ~85% da largura).
     if (variant === 3) {
-      const c3 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.55);
+      const c3 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.7);
       ctx.drawImage(image, c3.sx, c3.sy, c3.sw, c3.sh, 0, 0, width, height);
-      // Vinheta inferior pra texto/marca caso queira
-      const g3 = ctx.createLinearGradient(0, height * 0.65, 0, height);
-      g3.addColorStop(0, "rgba(0,0,0,0)");
-      g3.addColorStop(1, "rgba(0,0,0,0.55)");
-      ctx.fillStyle = g3;
-      ctx.fillRect(0, height * 0.65, width, height * 0.35);
 
-      // Card no canto superior esquerdo
-      const cardW = Math.round(width * 0.50);
-      const cardX = 60;
-      const cardY = 60 + (hasLogo ? 100 : 0);
+      // Vinheta sutil no topo para dar contraste com o card
+      const g3 = ctx.createLinearGradient(0, 0, 0, height * 0.4);
+      g3.addColorStop(0, "rgba(0,0,0,0.25)");
+      g3.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g3;
+      ctx.fillRect(0, 0, width, height * 0.4);
+
+      // Card grande, centralizado horizontalmente, ancorado no topo (com folga p/ logo)
+      const cardW = Math.round(width * 0.86);
+      const cardX = Math.round((width - cardW) / 2);
+      const cardY = (hasLogo ? 180 : 80) + (format === "story" ? 80 : 0);
       drawCvcStyleCard(cardX, cardY, cardW, { tagText: "PACOTE" });
 
-      // Caption inferior (1 linha discreta) — usa titleText ou subtítulo
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "700 24px Inter, Arial, sans-serif";
-      ctx.textAlign = "left";
-      const cap = (titleText || subtitleText || "").trim();
-      if (cap) {
-        let cs = 24;
-        ctx.font = `700 ${cs}px Inter, Arial, sans-serif`;
-        while (ctx.measureText(cap).width > contentWidth && cs > 14) {
-          cs -= 2;
-          ctx.font = `700 ${cs}px Inter, Arial, sans-serif`;
-        }
-        ctx.fillText(cap, left, height - 60);
-      }
       return canvas.toDataURL("image/png");
     }
 
