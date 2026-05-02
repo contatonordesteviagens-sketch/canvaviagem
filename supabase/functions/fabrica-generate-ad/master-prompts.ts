@@ -1024,6 +1024,7 @@ export const MASTER_TEMPLATES = [
   { id: "ticket_pix_card",    name: "OP5 · Bilhete Pix",              builder: promptTicketPixCard },
   { id: "side_hero_performance", name: "OP6 · Faixa Lateral Hero",    builder: promptSideHeroPerformance },
   { id: "yellow_box_cvc",     name: "OP7 · Box Amarelo CVC (V3)",     builder: promptYellowBoxCVC },
+  { id: "premium_blue_box",   name: "OP8 · Box Azul Premium (V4)",    builder: promptPremiumBlueBoxV4 },
   // 🔵 EXPERIÊNCIA DESTINO
   { id: "iconic_landmark",    name: "ED1 · Hero Cinematográfico",     builder: promptIconicLandmark },
   { id: "split_yellow_side",  name: "ED2 · Split Suave",              builder: promptSplitYellowSide },
