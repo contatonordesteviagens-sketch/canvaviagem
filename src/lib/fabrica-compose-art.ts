@@ -545,11 +545,18 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillRect(priceX - 24, rowTopY, 2, contentRowH);
       ctx.globalAlpha = 1;
 
-      // Preço (alinhado ao topo do bloco)
+      // Preço (alinhado ao topo do bloco) — respeita rótulo personalizado (topLabel)
       ctx.fillStyle = primaryColor; ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText("por apenas", priceX, rowTopY + 28);
+      ctx.fillText((topLabel || "por apenas").toString(), priceX, rowTopY + 28);
       ctx.fillStyle = primaryColor; ctx.font = "900 60px Inter, Arial, sans-serif";
       const priceStr = mainPrice || `R$ ${price}`;
+      // Auto-shrink do preço pra não vazar
+      let priceFs = 60;
+      ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(priceStr).width > (width - priceX - 80) && priceFs > 30) {
+        priceFs -= 4;
+        ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+      }
       ctx.fillText(priceStr, priceX, rowTopY + 92);
       ctx.font = "600 20px Inter, Arial, sans-serif"; ctx.fillStyle = primaryColor;
       ctx.globalAlpha = 0.7;
