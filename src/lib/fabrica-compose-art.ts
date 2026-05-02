@@ -862,10 +862,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   const renderSafeSquareOffer = () => {
-    // Variantes válidas: V0, V1, V2 (ativas) + V3 (estrutura reservada — layout ainda não definido).
-    const TOTAL_VARIANTS = 4;
+    // Variantes ATIVAS no rotacionador: V0, V1, V2, V3.
+    // V4 = RESERVADA (estrutura inicializada, layout/CSS ainda não implementado).
+    //      Não entra na rotação automática; só será renderizada se forceVariant === 4.
+    const TOTAL_VARIANTS = 4; // pool de rotação (V0–V3). V4 fica fora até ser ativada.
+    const TOTAL_VARIANTS_INCLUDING_RESERVED = 5; // V0–V4 (referência futura)
     let variant = typeof forceVariant === "number"
-      ? ((forceVariant % TOTAL_VARIANTS) + TOTAL_VARIANTS) % TOTAL_VARIANTS
+      ? ((forceVariant % TOTAL_VARIANTS_INCLUDING_RESERVED) + TOTAL_VARIANTS_INCLUDING_RESERVED) % TOTAL_VARIANTS_INCLUDING_RESERVED
       : Math.abs(variation) % TOTAL_VARIANTS;
 
     // ── V3 · ESTRUTURA (oferta com box destacado) ───────────────────────────
@@ -1473,6 +1476,20 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       });
 
       return canvas.toDataURL("image/png");
+    }
+
+    // ── V4 · RESERVADA ──────────────────────────────────────────────────────
+    // Estrutura inicializada para futura variação de criativo de viagem.
+    // Herda os MESMOS dados dinâmicos do formulário lateral já disponíveis
+    // no escopo de composeTravelAd (destination, highlights, mainPrice, price,
+    // curSym, installments, promoName, primaryColor, secondaryColor, hasLogo,
+    // titleText, paymentMode, etc.).
+    //
+    // Layout/CSS NÃO implementado ainda — quando forceVariant === 4, faz
+    // fallback temporário para V0 para não quebrar a renderização. Substituir
+    // este bloco pelo layout definitivo quando aprovado.
+    if (variant === 4) {
+      variant = 0; // fallback temporário até o layout V4 ser definido
     }
 
     // ── V3 · FULLBLEED com card centralizado flutuante ─────────────────────
