@@ -160,9 +160,30 @@ interface PaymentPreset {
 }
 
 const PAYMENT_PRESETS: PaymentPreset[] = [
-  { id: "installments", name: "Parcelado",          emoji: "💳", description: "Ex: 10x R$ 149,90",       hint: "Parcelas: 10x · Valor: 149,90" },
-  { id: "cash",         name: "À vista",            emoji: "💰", description: "Ex: À VISTA R$ 1.499",    hint: "Valor: 1.499" },
-  { id: "down_plus",    name: "Entrada + parcelas", emoji: "💵", description: "Ex: ENTRADA + 10x R$ 149", hint: "Parcelas: ENTRADA R$ 200 + 10x · Valor: 149" },
+  { id: "installments",              name: "Parcelado",      emoji: "💳", description: "Ex: 10x R$ 149,90",          hint: "Parcelas: 10x · Valor: 149,90" },
+  { id: "installments_no_interest",  name: "Sem juros",      emoji: "🟢", description: "Ex: 12x SEM JUROS R$ 229",   hint: "Parcelas: 12x · Selo destaca 'sem juros'" },
+  { id: "cash",                      name: "À vista",        emoji: "💰", description: "Ex: À VISTA R$ 1.499",       hint: "Valor: 1.499" },
+  { id: "from",                      name: "A partir de",    emoji: "🎯", description: "Ex: A PARTIR DE R$ 229",     hint: "Valor: 229" },
+  { id: "cash_pix_off",              name: "Pix 5% OFF",     emoji: "💠", description: "Inclui faixa '5% OFF À VISTA NO PIX'", hint: "Valor à vista no Pix" },
+  { id: "down_plus",                 name: "Entrada + parc", emoji: "💵", description: "Ex: ENTRADA + 10x R$ 149",   hint: "Parcelas: ENTRADA R$ 200 + 10x · Valor: 149" },
+];
+
+const INSTALLMENT_QUICK: string[] = ["3x", "6x", "10x", "12x", "12x sem juros"];
+
+const PACOTE_DAYS_PRESETS: string[] = ["3 dias", "4 dias", "5 dias", "6 dias", "7 dias", "10 dias"];
+
+const PACOTE_ICON_PRESETS: { key: IconKey; label: string; glyph: string }[] = [
+  { key: "plane",  label: "Aéreo",   glyph: "✈" },
+  { key: "bus",    label: "Ônibus",  glyph: "🚌" },
+  { key: "hotel",  label: "Hotel",   glyph: "🏨" },
+  { key: "coffee", label: "Café",    glyph: "☕" },
+  { key: "camera", label: "Passeio", glyph: "📷" },
+  { key: "ship",   label: "Cruzeiro", glyph: "⛴" },
+  { key: "palm",   label: "Praia",   glyph: "🌴" },
+  { key: "food",   label: "Refeição", glyph: "🍽" },
+  { key: "map",    label: "Roteiro", glyph: "📍" },
+  { key: "guide",  label: "Guia",    glyph: "👤" },
+  { key: "wifi",   label: "Wi-Fi",   glyph: "📶" },
 ];
 
 const AD_TITLE_PRESETS: string[] = [
