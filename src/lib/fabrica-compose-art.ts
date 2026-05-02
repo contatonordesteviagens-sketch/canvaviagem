@@ -1419,6 +1419,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.fillText(label, tx, ty);
       });
 
+      drawGlobalExtras();
       return canvas.toDataURL("image/png");
     }
 
