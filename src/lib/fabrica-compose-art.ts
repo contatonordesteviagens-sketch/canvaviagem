@@ -1435,7 +1435,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const titleBlockH = titleLines * 38;
       const destBlockH = 96;
       const infoBlockH = infoBits4.length ? 36 : 0;
-      const priceBlockH = showTotal4 ? 200 : 168;
+      // price_block: prefix + installments line + price gigante + total + faixa pix
+      const installLineH = parcelasText4 ? 26 : 0;
+      const totalLineH = showTotal4 ? 24 : 0;
+      const pixStripH = (showBadge4 || showPixBanner !== false) ? 44 : 0;
+      const priceBlockH = 64 + installLineH + 110 + 14 + totalLineH + (pixStripH ? pixStripH + 14 : 0);
       const sep = 22;
       const boxH =
         boxPadY +
