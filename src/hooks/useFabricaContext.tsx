@@ -123,6 +123,10 @@ export interface FabricaState {
   lastPaymentSuffix?: string;
   lastCurrency?: string;
   lastAdTitle?: string;
+  // V3: opções extras de preço/total
+  hideCents?: boolean;
+  showTotal?: boolean;
+  totalOverride?: string;
 }
 
 const defaultState: FabricaState = {
@@ -193,6 +197,9 @@ const defaultState: FabricaState = {
   lastPaymentSuffix: "por pessoa",
   lastCurrency: "BRL",
   lastAdTitle: "Pacote {destino}",
+  hideCents: false,
+  showTotal: true,
+  totalOverride: "",
 };
 
 const STORAGE_KEY = "fabrica-context-v1";

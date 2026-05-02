@@ -1,107 +1,78 @@
-## Objetivo
+## Correções na V3 e melhorias no input de preço
 
-Melhorar os anúncios da Fábrica adicionando 3 novos comportamentos no Phase 3:
-
-1. Novo campo **"Título do anúncio"** com presets editáveis (substitui o headline aleatório atual).
-2. **Lixeira** acima de cada variação gerada para excluir individualmente.
-3. **Baixar todas as variações visíveis** em um único clique (1,2 ou 3 png, baixar separadamente). 
+Cinco ajustes coordenados — todos preservam V0/V1/V2 intactos.
 
 ---
 
-## 1. Novo seletor de Título (4º campo da grade)
+### 1. Ícones todos da mesma cor (V3)
 
-### Layout do bloco "3 · Dados do anúncio"
+Hoje a linha "7 dias | ✈ 🚌 🏨 ☕ 📷" usa **emojis** via `ICON_SYMBOL`, que o navegador renderiza coloridos automaticamente (café marrom, xícara colorida, etc.).
 
-Hoje a grade tem 2 colunas × 1 linha (Destino + Promoção). Vai virar **2 colunas × 2 linhas**:
-
-```text
-┌─────────────────┬─────────────────┐
-│ Destino *       │ Nome da promoção│
-├─────────────────┼─────────────────┤
-│ Modo do preço   │ Título do anúncio (NOVO)
-└─────────────────┴─────────────────┘
-```
-
-(O bloco "Modo de exibição do preço" hoje fica abaixo solto — vamos encaixá-lo na grade junto com o novo campo Título, como você pediu: "essas quatro opções em uma grade, duas fileiras para cada".)
-
-### Campo "Título do anúncio"
-
-- Dropdown/Select com 16 presets, cada um usando o placeholder `{destino}` substituído dinamicamente pelo valor do campo Destino.
-- Abaixo do select, um **input editável** mostrando o título resolvido (ex.: "Pacote Jericoacoara"), que o usuário pode customizar livremente.
-- Opção extra "✏️ Personalizado" no topo do dropdown que apenas habilita edição livre.
-
-### Lista de presets (com `{destino}` como variável) Essa parte não deve ocupar muitos espaços e nem mostrar todas as opções, ao clicar essa parte aparece uma lista para escolher uma das opções de titulos
-
-```
-1.  Conheça o melhor de {destino}
-2.  Descubra {destino}
-3.  Pacote {destino}
-4.  Explore {destino}
-5.  {destino} vai te surpreender
-6.  Você precisa conhecer {destino}!
-7.  O que fazer em {destino}
-8.  O melhor de {destino}
-9.  Meu sonho se chama {destino}
-10. Partiu {destino}
-11. Sua próxima viagem é {destino}
-12. Pacote Promocional {destino}
-13. Viagem Completa {destino}
-14. {destino} te espera
-15. Vamos para {destino}?
-16. ✏️ Personalizado (texto livre)
-```
-
-Padrão inicial: preset 3 ("Pacote {destino}"). Persistido em `state.lastAdTitle` no FabricaContext.
-
-### O frase "Sua próxima viagem começa agora"
-
-Conforme você pediu, será **removida** dos pools automáticos do composer.
+**Solução**: na V3 substituir os emojis por **ícones vetoriais monocromáticos** sem espaçamentos vazios todos preenchidos, desenhados via `Path2D` na cor navy (#0B2B7A) — avião, ônibus, hotel, café e câmera, todos na mesma cor. Não afeta V0/V1/V2 que continuam usando os emojis. Adicionar apenas icones que foram selecionados pelo usuário, na imagem tem 1 icone à mais do avião que não foi selecionado, selecionei quatro opções de ícone e apareceu um ícone a mais de um avião. 
 
 ---
 
-## 2. Pipeline do título até a arte
+### 2. Sobreposição "10x R$200,00" (V3)
 
-- Adicionar 2 campos opcionais na interface `ComposeTravelAdOptions` em `src/lib/fabrica-compose-art.ts`:
-  - `titleOverride?: string` — quando preenchido, ignora o pool aleatório e usa esse texto como `titleText` em **todas as variantes** (V0/V1/V2 + experiência).
-  - Auto-shrink já existente cobre títulos longos.
-- Em `Phase3ArtFactory.tsx`, passar `titleOverride: resolvedTitle` em todas as 3 chamadas a `composeTravelAd` (modo Foto, modo Sua Imagem, modo IA Pura).
-- Remover "Sua próxima viagem começa agora" de `ofertaBase` no composer.
+O lado esquerdo (`12X / sem juros`) e o preço gigante da direita estão colidindo quando o valor é grande (R$ 200,00 → 7 caracteres). 
 
----
+**Solução**:
 
-## 3. Lixeira para excluir variação individual
-
-Em `src/pages/fabrica/Phase3ArtFactory.tsx`, no bloco que renderiza `generatedImages.map(...)`:
-
-- Adicionar wrapper `relative` no card da imagem.
-- Botão flutuante no canto superior direito de cada imagem:
-  - Ícone `Trash2` (lucide), fundo preto translúcido (`bg-black/60`), borda branca sutil, hover vermelho.
-  - `onClick` chama `setGeneratedImages(prev => prev.filter((_, i) => i !== idx))`.
-  - Sempre visível (não só no hover) para clareza em mobile.
-
-Nada de tooltip extra; o ícone é autoexplicativo.
+- Calcular largura real do preço gigante e **reduzir o font-size** automaticamente (130 → mín 80px) até caber em ~62% do box.
+- Empurrar a coluna esquerda mais para a borda e a direita mais para fora, com **gap mínimo garantido de 30px** entre os dois blocos.
+- Alinhar verticalmente o "12X" com o centro óptico do preço.
 
 ---
 
-## 4. Botão "Baixar todas" (substitui "Baixar imagem")
+### 3. "Total por pessoa" editável
 
-Hoje o botão "Baixar imagem" baixa apenas a última. Vai virar **"Baixar todas"** com este comportamento:
+Hoje a V3 calcula `preço × parcelas` automaticamente e exibe `Total por pessoa: R$ X.XXX` — fixo.
 
-- Se `generatedImages.length === 1` → baixa diretamente o PNG (igual hoje).
-- Se `generatedImages.length > 1` → baixa em sequência cada PNG visível, usando o truque de `<a download>` em loop com pequeno `setTimeout` entre cada (≈300 ms) para evitar bloqueio de pop-up. Nomes: `anuncio-{destino}-{format}-1.png`, `-2.png`, `-3.png`.
-- Texto auxiliar abaixo do par de botões: *"Ao clicar, todas as variações visíveis acima serão baixadas. Imagens excluídas não entram no download."*
-- Se `generatedImages.length === 0` → botão desabilitado.
+**Solução**: adicionar dois novos campos opcionais no painel **VALOR (R$)**:
 
-(Optei por baixar PNGs em sequência em vez de empacotar em ZIP para evitar adicionar a dependência `jszip` — mais simples e sem bibliotecas novas. Se você preferir ZIP único depois, é uma troca pequena.)
+- Checkbox **"Mostrar total"** (on/off) — controla se a linha aparece.
+- Campo de texto **"Total"** — livre. Se vazio, calcula automaticamente. Se preenchido, usa o que o usuário digitou (ex.: "R$ 1.999 por casal").
+- Dropdown rápido com sugestões: "por pessoa", "por casal", "por pacote", "valor total".
+
+Os valores ficam persistidos no `useFabricaContext` (`totalOverride`, `showTotal`) e são passados para o compositor.
 
 ---
 
-## Arquivos a alterar
+### 4. Logo do Pix correta
 
-- `src/lib/fabrica-compose-art.ts` — novo campo `titleOverride`; remover frase do pool.
-- `src/pages/fabrica/Phase3ArtFactory.tsx` — novo state `adTitlePreset` + `adTitleCustom`; reorganizar grade do bloco "Dados"; passar `titleOverride` nas 3 chamadas; lixeira por imagem; botão "Baixar todas" + aviso.
-- `src/hooks/useFabricaContext.tsx` — persistir `lastAdTitle` (1 campo opcional, opcional mas recomendado).
+Hoje desenho um losango ciano genérico. O símbolo oficial do Pix é composto por **4 losangos pequenos** formando um padrão de "X" (dois claros + dois escuros).
 
-## Memória a atualizar
+**Solução**: substituir o desenho atual por uma renderização vetorial mais fiel ao logotipo oficial do Pix — quatro losangos arredondados em branco/turquesa formando o glifo característico, mantido nas mesmas dimensões dentro da faixa azul.
 
-- Atualizar `mem://features/fabrica-ad-generation-rules` registrando: título passou a ser escolhível por preset com variável `{destino}` e o composer respeita `titleOverride` quando presente.
+---
+
+### 5. Opção "Remover centavos" no campo VALOR (R$)
+
+Pedido: ao marcar a checkbox, "423,43" vira "423"; "4234,XX" vira "4.234".
+
+**Solução**:
+
+- Adicionar checkbox **"Sem centavos"** ao lado do campo VALOR.
+- Quando ativa: a função `formatPriceValue` é chamada com flag `noCents=true`, que zera a parte decimal e formata só o inteiro com separador de milhar (`Intl.NumberFormat` com `maximumFractionDigits: 0`).
+- A flag fica persistida em `state.hideCents` no contexto e se aplica em todas as variantes (V0/V1/V2/V3) e no IA Pura (passada como parte do `installmentValue`/`totalValue` já formatados).
+- Toggle 100% reversível: desmarcar restaura "423,43" automaticamente a partir do valor digitado.
+
+---
+
+## Detalhes técnicos
+
+**Arquivos a editar:**
+
+- `src/lib/fabrica-compose-art.ts` — bloco `if (variant === 3)`: novos ícones vetoriais (função `drawMonoIcon(ctx, kind, x, y, size, color)`), ajuste de layout do preço com auto-shrink, novo glifo Pix com 4 losangos, leitura de `totalOverride` / `showTotal`.
+- `src/hooks/useFabricaContext.tsx` — adicionar `hideCents: boolean`, `totalOverride: string`, `showTotal: boolean` ao state e setters.
+- `src/pages/fabrica/Phase3ArtFactory.tsx` — checkbox "Sem centavos" no campo VALOR, checkbox "Mostrar total" + input "Total" no bloco de pagamento, propagar via `composeTravelAd({ totalOverride, showTotal })`.
+- `src/lib/fabrica-compose-art.ts` (interface) — aceitar `totalOverride?: string` e `showTotal?: boolean`.
+- `formatPriceValue` — aceitar `{ noCents?: boolean }` e respeitar a flag.
+
+**Não vou tocar:**
+
+- V0, V1, V2 (layout, cores, tipografia).
+- Lógica de rotação de variantes (V3 continua sorteada normalmente).
+- Edge function de IA Pura (o prompt OP7 já está correto e os valores já chegam pré-formatados).
+
+Após as mudanças, testarei mentalmente os 4 cenários: preço pequeno (R$ 99), médio (R$ 1.499,90), grande (R$ 12.999,00) e com centavos removidos (R$ 4.234) — todos devem caber sem sobreposição.

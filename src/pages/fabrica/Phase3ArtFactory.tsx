@@ -84,7 +84,7 @@ const CURRENCY_PRESETS: { id: Currency; symbol: string; label: string; locale: s
  *     "1499,90"  → BRL: "1.499,90"
  *     "1499.9"   → BRL: "1.499,90"
  */
-const formatPriceValue = (raw: string, currency: Currency, assumeCents = false): string => {
+const formatPriceValue = (raw: string, currency: Currency, assumeCents = false, noCents = false): string => {
   const value = (raw || "").trim();
   if (!value) return "";
   const cleaned = value.replace(/[^\d.,]/g, "");
@@ -117,12 +117,15 @@ const formatPriceValue = (raw: string, currency: Currency, assumeCents = false):
     decPart = "";
   }
 
+  // Se "Sem centavos" estiver marcado, descarta a parte decimal
+  if (noCents) decPart = "";
+
   const num = Number(intPart || "0") + (decPart ? Number(decPart) / 100 : 0);
   const preset = CURRENCY_PRESETS.find((c) => c.id === currency)!;
   try {
     return new Intl.NumberFormat(preset.locale, {
       minimumFractionDigits: decPart ? 2 : 0,
-      maximumFractionDigits: 2,
+      maximumFractionDigits: noCents ? 0 : 2,
     }).format(num);
   } catch {
     return value;
@@ -314,8 +317,22 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setPrice = (p: string) => { setPriceState(p); update({ lastPrice: p }); };
   const [currency, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
   const setCurrency = (c: Currency) => { setCurrencyState(c); update({ lastCurrency: c }); };
+  // V3: opções extras
+  const [hideCents, setHideCentsState] = useState<boolean>(!!state.hideCents);
+  const setHideCents = (v: boolean) => {
+    setHideCentsState(v);
+    update({ hideCents: v });
+    // Reformata o preço atual respeitando a nova flag
+    const reformatted = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, v);
+    if (reformatted) setPriceState(reformatted);
+  };
+  const [showTotal, setShowTotalState] = useState<boolean>(state.showTotal !== false);
+  const setShowTotal = (v: boolean) => { setShowTotalState(v); update({ showTotal: v }); };
+  const [totalOverride, setTotalOverrideState] = useState<string>(state.totalOverride || "");
+  const setTotalOverride = (v: string) => { setTotalOverrideState(v); update({ totalOverride: v }); };
+
   // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
-  const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency);
+  const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
   const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
 
   const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
@@ -552,6 +569,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               forceVariant: nextVariantPhoto,
               titleOverride: resolvedAdTitle,
               titleVariations: adTitleVariations,
+              totalOverride: totalOverride || undefined,
+              showTotal,
             });
             if (state.logoBase64) {
               try {
@@ -754,6 +773,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             forceVariant: nextVariant,
             titleOverride: resolvedAdTitle,
             titleVariations: adTitleVariations,
+            totalOverride: totalOverride || undefined,
+            showTotal,
           });
           if (state.logoBase64) {
             try {
@@ -1279,7 +1300,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   value={price}
                   onChange={(e) => setPrice(formatPriceWhileTyping(e.target.value, currency))}
                   onBlur={() => {
-                    const f = formatPriceValue(stripCurrencyFromPrice(price, currency), currency);
+                    const f = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
                     if (f) setPrice(f);
                   }}
                   placeholder={currency === "BRL" ? "1.499,90" : "1,499.90"}
@@ -1303,6 +1324,34 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 ))}
               </datalist>
             </div>
+          </div>
+          {/* Opções V3: sem centavos / total customizável */}
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
+            <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
+              <input
+                type="checkbox"
+                checked={hideCents}
+                onChange={(e) => setHideCents(e.target.checked)}
+                className="accent-yellow-400 w-4 h-4"
+              />
+              Sem centavos
+            </label>
+            <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
+              <input
+                type="checkbox"
+                checked={showTotal}
+                onChange={(e) => setShowTotal(e.target.checked)}
+                className="accent-yellow-400 w-4 h-4"
+              />
+              Mostrar total no anúncio
+            </label>
+            <input
+              value={totalOverride}
+              onChange={(e) => setTotalOverride(e.target.value)}
+              placeholder='Total (auto). Ex.: "Total por casal: R$ 3.998"'
+              disabled={!showTotal}
+              className={`${inputCls} ${!showTotal ? "opacity-50" : ""}`}
+            />
           </div>
           {formattedPriceForAd && (
             <p className="text-[11px] text-emerald-300/90 font-mono mt-2">
