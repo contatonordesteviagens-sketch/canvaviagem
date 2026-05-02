@@ -553,9 +553,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // Paleta — sempre usa exatamente as cores selecionadas pelo usuário.
         const palette = selectedPalette(primaryColor, secondaryColor);
 
-        // Rotação determinística entre as 4 variantes do compositor (V0/V1/V2/V3)
-        // evitando as 2 últimas usadas — garante imagem nova a cada clique e cobre V3.
-        const TOTAL_VARIANTS_PHOTO = 4;
+        // Rotação determinística entre as 5 variantes do compositor (V0/V1/V2/V3/V4)
+        // evitando as 2 últimas usadas — garante imagem nova a cada clique e cobre V4.
+        const TOTAL_VARIANTS_PHOTO = 5;
         const recentPhoto = variantHistoryRef.current.slice(-2);
         let candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i).filter((v) => !recentPhoto.includes(v));
         if (candidatesPhoto.length === 0) {
@@ -659,6 +659,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
         toast.info(`Gerando ${picks.length} ${picks.length === 1 ? "variação" : "variações"} em IA Pura — ${cat.name}`);
 
+        // Prompt cinematográfico estruturado para o BG da V4 (Gemini Nano Banana 2)
+        // Consome o campo "Destino" preenchido no formulário lateral.
+        const v4BackgroundPrompt = `Fotografia ultra-realista 4k, estilo cinematográfico e editorial de agência de turismo premium focada em conversão. Vista panorâmica, ampla e imersiva de ${destination || "destino paradisíaco"}. Iluminação natural de golden hour ou dia ensolarado com céu azul vibrante e nuvens suaves. Composição com grande profundidade de campo: destacar a arquitetura histórica local, castelos ou belezas naturais em segundo e terceiro plano. DEIXAR OBRIGATORIAMENTE o centro e a base da imagem como 'negative space' (espaço mais limpo e levemente desfocado) para perfeita leitura de textos e sobreposição de elementos gráficos. Renderização fotorrealista em altíssima definição. NO TEXT, NO LOGOS, NO PEOPLE in foreground.`;
+
         const results = await Promise.all(
           picks.map((pick, idx) => supabase.functions.invoke("fabrica-generate-ad", {
             body: {
@@ -686,6 +690,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               duration: "5 NOITES",
               forbiddenHeadlines: guard.headlines,
               forbiddenLayouts: guard.layouts,
+              // V4: prompt cinematográfico injetado para o BG (negative space p/ overlay)
+              customPrompt: v4BackgroundPrompt,
             },
           }))
         );
@@ -759,9 +765,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
       const palette = selectedPalette(primaryColor, secondaryColor);
 
-      // Rotação determinística entre as 4 variantes do compositor (V0/V1/V2/V3)
-      // evitando as 2 últimas usadas — garante imagem nova a cada clique e cobre V3.
-      const TOTAL_VARIANTS = 4;
+      // Rotação determinística entre as 5 variantes do compositor (V0/V1/V2/V3/V4)
+      // evitando as 2 últimas usadas — garante imagem nova a cada clique e cobre V4.
+      const TOTAL_VARIANTS = 5;
       const recent = variantHistoryRef.current.slice(-2);
       let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => !recent.includes(v));
       if (candidates.length === 0) {
