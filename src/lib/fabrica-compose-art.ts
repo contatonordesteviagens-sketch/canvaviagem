@@ -450,7 +450,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   const renderSafeSquareOffer = () => {
-    const variant = Math.abs(variation) % 4;
+    // Apenas 3 variantes válidas (V0, V1, V2). V3 fullbleed foi descontinuada para Sua Imagem.
+    const variant = typeof forceVariant === "number"
+      ? ((forceVariant % 3) + 3) % 3
+      : Math.abs(variation) % 3;
     const logoH = hasLogo ? 130 : 0;
     const destUp = (destination || "DESTINO").toUpperCase();
 
