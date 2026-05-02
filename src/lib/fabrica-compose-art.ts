@@ -34,6 +34,8 @@ interface ComposeTravelAdOptions {
   paymentSuffix?: string;
   strategy?: "ancora" | "vitrine" | "matriz" | "gancho" | "experiencia_hero" | "experiencia_editorial" | "experiencia_postcard" | "experiencia_lifestyle";
   variation?: number;
+  /** Força uma variante específica (0..2 para Sua Imagem + Oferta + 1:1). Quando definido, ignora variation%N. */
+  forceVariant?: number;
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
