@@ -1478,19 +1478,260 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       return canvas.toDataURL("image/png");
     }
 
-    // ── V4 · RESERVADA ──────────────────────────────────────────────────────
-    // Estrutura inicializada para futura variação de criativo de viagem.
-    // Herda os MESMOS dados dinâmicos do formulário lateral já disponíveis
-    // no escopo de composeTravelAd (destination, highlights, mainPrice, price,
-    // curSym, installments, promoName, primaryColor, secondaryColor, hasLogo,
-    // titleText, paymentMode, etc.).
+    // ── V4 · CIRCUITO BR — card azul flutuante centralizado + pílula Pix vazada ─
+    // Estrutura ref. anúncio "Circuito Portugal": foto cinematográfica do destino
+    // ocupando 100% do canvas; card primário arredondado centralizado mais abaixo
+    // do meio (deixa céu/paisagem visível em cima); pílula Pix em formato pílula
+    // "vazando" metade para fora da borda inferior do card.
     //
-    // Layout/CSS NÃO implementado ainda — quando forceVariant === 4, faz
-    // fallback temporário para V0 para não quebrar a renderização. Substituir
-    // este bloco pelo layout definitivo quando aprovado.
+    // Mapeamento estrito form → render:
+    //   BG          → image (Foto Real / Sua Imagem / IA Pura por Destino)
+    //   card.bg     → primaryColor
+    //   tagline     → promoName               cor: secondaryColor
+    //   título      → titleText (resolvido)   cor: branco
+    //   info        → daysText | ícones       cor: secondaryColor (mono)
+    //   12X pill bg → secondaryColor          texto: primaryColor
+    //   "a partir de"/"sem juros"/"Total ..." → branco
+    //   R$ + valor  → branco (valor SEM vírgula/centavos — absoluto)
+    //   pix pill    → bg secondaryColor, texto branco, vazando bottom: -28
     if (variant === 4) {
-      variant = 0; // fallback temporário até o layout V4 ser definido
+      // [BG] foto cobre 100%
+      const cBgV4 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.42);
+      ctx.drawImage(image, cBgV4.sx, cBgV4.sy, cBgV4.sw, cBgV4.sh, 0, 0, width, height);
+
+      // ── Dados ────────────────────────────────────────────────────────────
+      const v4Primary = primaryColor || "#0B2B7A";
+      const v4Secondary = secondaryColor || "#FFE600";
+      const v4OnSecondary = ensureContrast(v4Primary, v4Secondary, 0.4); // contraste do texto sobre amarelo
+      const destinoV4 = (destination || "DESTINO").toUpperCase();
+      // Tagline do topo = promoName (se vazio, usa "PACOTE" como neutro)
+      const taglineV4 = ((promoName || "PACOTE").trim()).toUpperCase();
+      // Título = primeira linha do titleText OU destino (sem repetir tagline)
+      const titleLineV4 = (() => {
+        const t = (titleText || destinoV4).trim();
+        const firstLine = t.split(/\r?\n/)[0] || t;
+        // remove tagline duplicada se titleText começar com ela
+        return firstLine.replace(new RegExp(`^${taglineV4}\\s*`, "i"), "").trim() || destinoV4;
+      })();
+
+      const daysItemV4 = highlights.find((h) => /\d+\s*dia|\d+\s*noite/i.test(h?.text || ""));
+      const daysTextV4 = (daysItemV4?.text || "5 dias").trim();
+      const iconListV4: IconKey[] = (() => {
+        const fromHl = highlights
+          .map((h) => h?.icon as IconKey | undefined)
+          .filter((k): k is IconKey => !!k && k !== "check");
+        if (fromHl.length === 0) return ["coffee", "users", "bus", "camera"] as IconKey[];
+        const seen = new Set<IconKey>(); const out: IconKey[] = [];
+        for (const k of fromHl) { if (!seen.has(k)) { seen.add(k); out.push(k); if (out.length >= 5) break; } }
+        return out;
+      })();
+
+      // Parcelas
+      const instMatchV4 = (installments || "12x").match(/(\d{1,2})\s*x/i);
+      const parcNV4 = instMatchV4 ? instMatchV4[1] : "12";
+
+      // Preço ABSOLUTO (sem vírgula/centavos) — V4 spec
+      const priceRawV4 = (price || "").trim();
+      const priceNumV4 = parseFloat(priceRawV4.replace(/\./g, "").replace(",", "."));
+      const valNumV4 = !isNaN(priceNumV4)
+        ? Math.trunc(priceNumV4).toLocaleString("pt-BR", { maximumFractionDigits: 0 })
+        : priceRawV4.replace(/[.,]\d{1,2}$/, "");
+
+      // Total: usa override OU calcula
+      const totalNumV4 = !isNaN(priceNumV4) ? priceNumV4 * parseInt(parcNV4, 10) : NaN;
+      const fmtBRv4 = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      const totalStrV4 = (totalOverride && totalOverride.trim())
+        || (!isNaN(totalNumV4) ? `Total ${(paymentSuffix || "por pessoa").trim()}: ${curSym} ${fmtBRv4(totalNumV4)}` : "");
+
+      // Desconto p/ pílula Pix
+      const descMatchV4 = (promoName || "").match(/(\d{1,2})\s*%/);
+      const descNV4 = descMatchV4 ? descMatchV4[1] : "5";
+
+      // ── [CARD] dimensões e posição (centralizado, mais abaixo do centro) ─
+      const cardMarginX = Math.round(width * 0.08);
+      const cardW = width - cardMarginX * 2;
+      // Altura adaptativa
+      const cardPadTop = 36;
+      const tagH = 56;
+      const tagGap = 6;
+      const titleH = 70;
+      const titleGap = 18;
+      const infoH = 46;
+      const infoGap = 26;
+      const priceBlockH = 170;
+      const totalGap = (showTotal && totalStrV4) ? 14 : 0;
+      const totalHv4 = (showTotal && totalStrV4) ? 28 : 0;
+      const cardPadBottom = 36;
+      const cardH = cardPadTop + tagH + tagGap + titleH + titleGap + infoH + infoGap + priceBlockH + totalGap + totalHv4 + cardPadBottom;
+
+      // Posição vertical: card começa em ~32% para deixar céu visível em cima.
+      const cardX = cardMarginX;
+      const cardY = Math.round(height * 0.18);
+      const cardR = 28;
+
+      // Sombra suave
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.32)";
+      ctx.shadowBlur = 32;
+      ctx.shadowOffsetY = 10;
+      fillRoundRect(ctx, cardX, cardY, cardW, cardH, cardR, v4Primary);
+      ctx.restore();
+
+      const cxV4 = cardX + cardW / 2;
+      let cyV4 = cardY + cardPadTop + 44; // baseline aproximada da tagline
+
+      // [TAGLINE] cor secundária, peso black
+      ctx.textAlign = "left";
+      ctx.fillStyle = v4Secondary;
+      let tagSize = 56;
+      ctx.font = `900 ${tagSize}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(taglineV4).width > cardW - 80 && tagSize > 28) {
+        tagSize -= 2;
+        ctx.font = `900 ${tagSize}px Inter, Arial, sans-serif`;
+      }
+      ctx.fillText(taglineV4, cardX + 36, cyV4);
+      cyV4 += tagGap + 56;
+
+      // [TÍTULO/DESTINO] branco, regular (mais leve), maior
+      ctx.fillStyle = "#ffffff";
+      let titSize = 72;
+      ctx.font = `400 ${titSize}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(titleLineV4).width > cardW - 80 && titSize > 36) {
+        titSize -= 2;
+        ctx.font = `400 ${titSize}px Inter, Arial, sans-serif`;
+      }
+      ctx.fillText(titleLineV4, cardX + 36, cyV4);
+      cyV4 += titleGap + 26;
+
+      // [INFO] dias | ícones — todos secondaryColor
+      const infoYv4 = cyV4 + 8;
+      ctx.fillStyle = v4Secondary;
+      ctx.font = "700 32px Inter, Arial, sans-serif";
+      ctx.textBaseline = "middle";
+      const infoStartX = cardX + 36;
+      ctx.fillText(daysTextV4, infoStartX, infoYv4);
+      const daysWv4 = ctx.measureText(daysTextV4).width;
+      // separador "|"
+      ctx.fillText("|", infoStartX + daysWv4 + 14, infoYv4);
+      const sepWv4 = ctx.measureText("|").width;
+      // ícones na mesma linha
+      const iconSizeV4 = 36;
+      const iconGapV4 = 14;
+      let iconCursor = infoStartX + daysWv4 + 14 + sepWv4 + 18;
+      iconListV4.forEach((k) => {
+        drawMonoIcon(ctx, k, iconCursor + iconSizeV4 / 2, infoYv4, iconSizeV4, v4Secondary);
+        iconCursor += iconSizeV4 + iconGapV4;
+      });
+      ctx.textBaseline = "alphabetic";
+      cyV4 += infoGap + 38;
+
+      // [PRICE BLOCK] — esquerda: "a partir de" + pílula 12X + "sem juros"
+      //                 direita: R$ pequeno + valor GIGANTE branco
+      const priceY = cyV4;
+      const leftX = cardX + 36;
+      const rightEdge = cardX + cardW - 36;
+
+      // Esquerda
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "600 22px Inter, Arial, sans-serif";
+      ctx.fillText("a partir de", leftX, priceY + 24);
+
+      // Pílula 12X (fundo secundário, texto primário)
+      const pillTxt = `${parcNV4}X`;
+      ctx.font = "900 38px Inter, Arial, sans-serif";
+      const pillTxtW = ctx.measureText(pillTxt).width;
+      const pillPadX = 18;
+      const pillPadY = 8;
+      const pillW = pillTxtW + pillPadX * 2;
+      const pillH = 52;
+      const pillX = leftX;
+      const pillY = priceY + 36;
+      fillRoundRect(ctx, pillX, pillY, pillW, pillH, 12, v4Secondary);
+      ctx.fillStyle = v4OnSecondary;
+      ctx.textBaseline = "middle";
+      ctx.textAlign = "center";
+      ctx.fillText(pillTxt, pillX + pillW / 2, pillY + pillH / 2 + 1);
+      ctx.textBaseline = "alphabetic";
+      ctx.textAlign = "left";
+
+      // "sem juros" abaixo da pílula
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "600 22px Inter, Arial, sans-serif";
+      ctx.fillText("sem juros", leftX, pillY + pillH + 28);
+
+      // Direita: R$ médio + valor GIGANTE
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#ffffff";
+      // Auto-shrink valor
+      const reservedLeftPrice = pillX + pillW + 24;
+      const maxValW = rightEdge - reservedLeftPrice - 90; // -90 para o R$
+      let valSize = 140;
+      ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(valNumV4).width > maxValW && valSize > 64) {
+        valSize -= 4;
+        ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
+      }
+      const valWv4 = ctx.measureText(valNumV4).width;
+      ctx.fillText(valNumV4, rightEdge, priceY + 130);
+      // R$ médio à esquerda do valor
+      const symSizeV4 = Math.round(valSize * 0.34);
+      ctx.font = `700 ${symSizeV4}px Inter, Arial, sans-serif`;
+      ctx.fillText(curSym, rightEdge - valWv4 - 10, priceY + 130 - valSize * 0.46);
+
+      cyV4 = priceY + priceBlockH;
+
+      // [TOTAL] (opcional)
+      if (totalHv4 > 0) {
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "600 22px Inter, Arial, sans-serif";
+        ctx.fillText(totalStrV4, cxV4, cyV4 + 18);
+      }
+
+      // [BADGE PIX] pílula vazada na borda inferior — bottom: -20
+      if (showPixBanner) {
+        const pixLabel = (pixBannerText && pixBannerText.trim())
+          || `${descNV4}% OFF À VISTA NO`;
+        ctx.font = "900 26px Inter, Arial, sans-serif";
+        const pixLabelW = ctx.measureText(pixLabel).width;
+        const pixIconSize = 32;
+        const pixGap = 10;
+        ctx.font = "900 26px Inter, Arial, sans-serif";
+        const pixWordW = ctx.measureText("pix").width;
+        const pixPadX = 22;
+        const pixTotalW = pixLabelW + pixGap + pixIconSize + 6 + pixWordW + pixPadX * 2;
+        const pixHbadge = 60;
+        const pixXbadge = cxV4 - pixTotalW / 2;
+        const pixYbadge = cardY + cardH - pixHbadge / 2; // metade vazando para fora
+
+        // sombra
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.28)";
+        ctx.shadowBlur = 18;
+        ctx.shadowOffsetY = 6;
+        fillRoundRect(ctx, pixXbadge, pixYbadge, pixTotalW, pixHbadge, pixHbadge / 2, v4Secondary);
+        ctx.restore();
+
+        // texto + logo pix
+        ctx.fillStyle = v4OnSecondary;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.font = "900 26px Inter, Arial, sans-serif";
+        const txtX = pixXbadge + pixPadX;
+        const midY = pixYbadge + pixHbadge / 2;
+        ctx.fillText(pixLabel, txtX, midY + 1);
+        const pxIconCx = txtX + pixLabelW + pixGap + pixIconSize / 2;
+        drawPixLogo(ctx, pxIconCx, midY, pixIconSize, v4OnSecondary);
+        ctx.font = "900 26px Inter, Arial, sans-serif";
+        ctx.fillStyle = v4OnSecondary;
+        ctx.fillText("pix", pxIconCx + pixIconSize / 2 + 6, midY + 1);
+        ctx.textBaseline = "alphabetic";
+      }
+
+      return canvas.toDataURL("image/png");
     }
+
 
     // ── V3 · FULLBLEED com card centralizado flutuante ─────────────────────
     // Foto ocupa 100% da tela. Card semi-transparente centralizado na base.
