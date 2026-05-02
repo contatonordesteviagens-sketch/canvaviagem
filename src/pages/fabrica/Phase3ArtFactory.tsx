@@ -1201,13 +1201,38 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               />
             </div>
             <div>
-              <label className={labelCls}>Valor (R$)</label>
-              <input
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="149,90"
-                className={inputCls}
-              />
+              <div className="flex items-baseline justify-between mb-1.5">
+                <label className={`${labelCls} mb-0`}>Valor ({currencySymbol})</label>
+                {formattedPriceForAd && (
+                  <span className="text-[10px] text-emerald-300/80 font-mono">
+                    → {currencySymbol} {formattedPriceForAd}
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-1.5">
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value as Currency)}
+                  className="bg-white/[0.06] border border-white/10 rounded-xl px-2 py-3 text-white text-xs outline-none focus:border-white/40 cursor-pointer"
+                  title="Moeda"
+                >
+                  {CURRENCY_PRESETS.map((c) => (
+                    <option key={c.id} value={c.id} className="bg-neutral-900">
+                      {c.symbol}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder={currency === "BRL" ? "1499,90" : "1499.90"}
+                  inputMode="decimal"
+                  className={`${inputCls} flex-1`}
+                />
+              </div>
+              <p className="text-[10px] text-white/40 mt-1">
+                Padrão {currency}. Milhares e decimais são formatados automaticamente.
+              </p>
             </div>
           </div>
         </div>
