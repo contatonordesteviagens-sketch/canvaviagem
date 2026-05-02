@@ -313,14 +313,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setFormat = (f: "square" | "story") => { setFormatState(f); update({ lastFormat: f }); };
 
   const [destination, setDestination] = useState(state.destinos?.[0] || "");
+  const hideCentsRef = useRef<boolean>(!!state.hideCents);
+  const priceWithCentsRef = useRef<string>(state.lastPrice || "149,90");
   const [price, setPriceState] = useState(state.lastPrice || "149,90");
   const setPrice = (p: string) => {
     setPriceState(p);
     update({ lastPrice: p });
-    // Mantém referência do valor com centavos para restaurar ao desmarcar "Sem centavos"
     if (!hideCentsRef.current) priceWithCentsRef.current = p;
   };
-  const hideCentsRef = useRef<boolean>(!!state.hideCents);
   const [currency, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
   const setCurrency = (c: Currency) => { setCurrencyState(c); update({ lastCurrency: c }); };
   // Opções extras de preço (aplicam a TODAS as variações V0/V1/V2/V3)
