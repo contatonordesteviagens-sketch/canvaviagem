@@ -1,6 +1,24 @@
 type Format = "square" | "story";
 type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | "camera" | "map" | "food" | "ship" | "palm" | "coffee" | "guide" | "wifi";
 
+// Escurece (percent < 0) ou clareia (percent > 0) uma cor hex (#rgb / #rrggbb).
+// Usado para derivar tons (ex.: anel mais escuro do box V3 a partir do secondaryColor).
+function shadeColor(hex: string, percent: number): string {
+  let h = (hex || "").trim().replace("#", "");
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  if (h.length !== 6) return hex;
+  const num = parseInt(h, 16);
+  let r = (num >> 16) & 0xff;
+  let g = (num >> 8) & 0xff;
+  let b = num & 0xff;
+  const t = percent < 0 ? 0 : 255;
+  const p = Math.abs(percent) / 100;
+  r = Math.round((t - r) * p) + r;
+  g = Math.round((t - g) * p) + g;
+  b = Math.round((t - b) * p) + b;
+  return "#" + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
+}
+
 export type PaymentMode =
   | "installments"
   | "cash"
@@ -911,9 +929,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const boxY = 70;
       const boxW = 720;
       const boxR = 36;
-      const yellow = "#FFD400";
-      const yellowDark = "#E6B800"; // tom mais escuro para anel ao redor do preço
-      const navy = "#0B2B7A";
+      // V3 respeita as cores selecionadas pelo usuário:
+      // - "yellow" = secondaryColor (fundo do box)
+      // - "navy"   = primaryColor   (textos, ícones e faixa Pix)
+      const yellow = secondaryColor || "#FFD400";
+      const navy = primaryColor || "#0B2B7A";
+      const yellowDark = shadeColor(yellow, -12); // anel ao redor do preço (variação mais escura do secundário)
 
       // Pré-cálculos de altura por seção
       const padTop = 36;
