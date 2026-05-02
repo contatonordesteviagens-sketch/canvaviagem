@@ -84,7 +84,7 @@ const CURRENCY_PRESETS: { id: Currency; symbol: string; label: string; locale: s
  *     "1499,90"  → BRL: "1.499,90"
  *     "1499.9"   → BRL: "1.499,90"
  */
-const formatPriceValue = (raw: string, currency: Currency, assumeCents = false): string => {
+const formatPriceValue = (raw: string, currency: Currency, assumeCents = false, noCents = false): string => {
   const value = (raw || "").trim();
   if (!value) return "";
   const cleaned = value.replace(/[^\d.,]/g, "");
@@ -117,12 +117,15 @@ const formatPriceValue = (raw: string, currency: Currency, assumeCents = false):
     decPart = "";
   }
 
+  // Se "Sem centavos" estiver marcado, descarta a parte decimal
+  if (noCents) decPart = "";
+
   const num = Number(intPart || "0") + (decPart ? Number(decPart) / 100 : 0);
   const preset = CURRENCY_PRESETS.find((c) => c.id === currency)!;
   try {
     return new Intl.NumberFormat(preset.locale, {
       minimumFractionDigits: decPart ? 2 : 0,
-      maximumFractionDigits: 2,
+      maximumFractionDigits: noCents ? 0 : 2,
     }).format(num);
   } catch {
     return value;
