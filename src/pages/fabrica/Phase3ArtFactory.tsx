@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { composeTravelAd, type PaymentMode } from "@/lib/fabrica-compose-art";
 import { getForbiddenSets, registerGeneration, freshSeed } from "@/lib/fabrica-generation-guard";
 import {
-  Loader2, Download, Sparkles, ArrowRight, Plus, X,
+  Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown,
   Bus, Hotel, Plane, Check, Star, Heart, Sun, Camera, MapPin, Utensils, Ship, Palmtree, Coffee, Wifi, User,
   Square, Smartphone, Image as ImageIcon, Upload, Link2, Search, Wand2,
 } from "lucide-react";
