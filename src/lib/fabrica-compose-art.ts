@@ -40,6 +40,8 @@ interface ComposeTravelAdOptions {
   titleOverride?: string;
   /** Pool de variações de título (uma por variante). Se fornecido, tem prioridade sobre titleOverride: usa-se titleVariations[variantIndex % len]. */
   titleVariations?: string[];
+  /** Símbolo de moeda exibido antes do preço (R$, US$, €, £, AR$). Default "R$". */
+  currencySymbol?: string;
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
