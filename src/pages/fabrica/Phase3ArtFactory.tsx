@@ -1232,7 +1232,73 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
         </div>
 
-        {/* Modo de pagamento — compacto */}
+        {/* Detalhes do pacote — quantidade de dias + ícones (usado no card CVC) */}
+        <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3 space-y-3">
+          <div className="flex items-baseline justify-between">
+            <label className={labelCls}>Detalhes do pacote</label>
+            <span className="text-[10px] text-white/40">Aparecem no card amarelo (V3)</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] uppercase tracking-widest font-bold text-white/50 mb-1 block">Quantidade de dias</label>
+              <input
+                value={pacoteDays}
+                onChange={(e) => setPacoteDays(e.target.value)}
+                placeholder="Ex: 7 dias"
+                list="fabrica-pacote-days"
+                className={inputCls}
+              />
+              <datalist id="fabrica-pacote-days">
+                {PACOTE_DAYS_PRESETS.map((d) => (<option key={d} value={d} />))}
+              </datalist>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {PACOTE_DAYS_PRESETS.map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setPacoteDays(d)}
+                    className={`px-2 py-1 rounded-full text-[10px] border transition-colors ${
+                      pacoteDays === d ? "text-black" : "bg-white/[0.05] border-white/10 text-white/70 hover:border-white/30"
+                    }`}
+                    style={pacoteDays === d ? { background: secondaryColor, borderColor: secondaryColor } : undefined}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] uppercase tracking-widest font-bold text-white/50 mb-1 block">
+                Ícones inclusos · {pacoteIcons.length}/6
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {PACOTE_ICON_PRESETS.map((opt) => {
+                  const active = pacoteIcons.includes(opt.key);
+                  return (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => togglePacoteIcon(opt.key)}
+                      className={`px-2 py-1 rounded-lg text-[11px] border-2 transition-colors flex items-center gap-1 ${
+                        active ? "" : "border-white/[0.08] bg-white/[0.02] text-white/70 hover:border-white/20"
+                      }`}
+                      style={active ? { borderColor: secondaryColor, background: `${secondaryColor}1a`, color: "#fff" } : undefined}
+                      title={opt.label}
+                    >
+                      <span className="text-base leading-none">{opt.glyph}</span>
+                      <span className="hidden sm:inline">{opt.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-white/40 mt-1.5">Toque para incluir/remover. Ordem da seleção define a ordem na imagem.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Modo de pagamento — 6 opções em grid 3×2 */}
         <div>
           <label className={labelCls}>Modo de exibição do preço</label>
           <div className="grid grid-cols-3 gap-1.5 mb-3">
@@ -1242,8 +1308,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 onClick={() => {
                   const isChangingMode = paymentMode !== p.id;
                   setPaymentMode(p.id);
-                  if (p.id === "installments" && (isChangingMode || !installments.trim())) setInstallments("10x");
+                  if ((p.id === "installments" || p.id === "installments_no_interest") && (isChangingMode || !installments.trim())) {
+                    setInstallments(p.id === "installments_no_interest" ? "12x" : "10x");
+                  }
                   if (p.id === "cash" && (isChangingMode || !paymentLabelState.trim())) setPaymentLabel("À VISTA");
+                  if (p.id === "cash_pix_off" && (isChangingMode || !paymentLabelState.trim())) setPaymentLabel("À VISTA NO PIX");
+                  if (p.id === "from" && (isChangingMode || !paymentLabelState.trim())) setPaymentLabel("A PARTIR DE");
                   if (p.id === "down_plus" && (isChangingMode || !installments.trim())) setInstallments("Entrada + 10x");
                   if (!paymentSuffix.trim()) setPaymentSuffix("por pessoa");
                 }}
@@ -1262,25 +1332,70 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className={labelCls}>
-                {paymentMode === "installments" ? "Parcela" : paymentMode === "down_plus" ? "Entrada + parcela" : "Rótulo"}
+                {paymentMode === "installments" || paymentMode === "installments_no_interest" ? "Parcela"
+                  : paymentMode === "down_plus" ? "Entrada + parcela" : "Rótulo"}
               </label>
               <input
                 value={paymentLabel}
                 onChange={(e) =>
-                  paymentMode === "installments" || paymentMode === "down_plus"
+                  paymentMode === "installments" || paymentMode === "down_plus" || paymentMode === "installments_no_interest"
                     ? setInstallments(e.target.value)
                     : setPaymentLabel(e.target.value)
                 }
                 placeholder={
                   paymentMode === "installments" ? "10x" :
+                  paymentMode === "installments_no_interest" ? "12x" :
                   paymentMode === "down_plus" ? "ENTRADA R$ 200 + 10x" :
+                  paymentMode === "from" ? "A PARTIR DE" :
+                  paymentMode === "cash_pix_off" ? "À VISTA NO PIX" :
                   "À VISTA"
                 }
                 className={inputCls}
               />
+              {(paymentMode === "installments" || paymentMode === "installments_no_interest") && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {INSTALLMENT_QUICK.map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => {
+                        if (q === "12x sem juros") {
+                          setPaymentMode("installments_no_interest");
+                          setInstallments("12x");
+                        } else {
+                          setInstallments(q);
+                        }
+                      }}
+                      className={`px-2 py-0.5 rounded-full text-[10px] border transition-colors ${
+                        installments === q.replace(" sem juros", "") && (q === "12x sem juros" ? paymentMode === "installments_no_interest" : paymentMode === "installments")
+                          ? "text-black"
+                          : "bg-white/[0.05] border-white/10 text-white/70 hover:border-white/30"
+                      }`}
+                      style={
+                        installments === q.replace(" sem juros", "") && (q === "12x sem juros" ? paymentMode === "installments_no_interest" : paymentMode === "installments")
+                          ? { background: secondaryColor, borderColor: secondaryColor }
+                          : undefined
+                      }
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div>
-              <label className={labelCls}>Valor ({currencySymbol})</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className={labelCls + " mb-0"}>Valor ({currencySymbol})</label>
+                <label className="flex items-center gap-1 cursor-pointer select-none" title="Remover centavos do preço">
+                  <input
+                    type="checkbox"
+                    checked={hideCents}
+                    onChange={(e) => setHideCents(e.target.checked)}
+                    className="w-3 h-3 accent-yellow-400"
+                  />
+                  <span className="text-[10px] text-white/60 font-semibold">sem centavos</span>
+                </label>
+              </div>
               <div className="flex gap-1.5">
                 <select
                   value={currency}
@@ -1322,15 +1437,30 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 list="fabrica-price-suffixes"
               />
               <datalist id="fabrica-price-suffixes">
-                {['por pessoa', 'por casal', 'por pacote', 'por grupo', 'total do pacote'].map((option) => (
+                {['por pessoa', 'por casal', 'por pacote', 'por grupo', 'total do pacote', 'por família', 'no Pix'].map((option) => (
                   <option key={option} value={option} />
                 ))}
               </datalist>
+              <div className="flex flex-wrap gap-1 mt-1.5">
+                {['por pessoa', 'por casal', 'por pacote', 'total do pacote'].map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setPaymentSuffix(opt)}
+                    className={`px-2 py-0.5 rounded-full text-[10px] border transition-colors ${
+                      paymentSuffix === opt ? "text-black" : "bg-white/[0.05] border-white/10 text-white/70 hover:border-white/30"
+                    }`}
+                    style={paymentSuffix === opt ? { background: secondaryColor, borderColor: secondaryColor } : undefined}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
           {formattedPriceForAd && (
             <p className="text-[11px] text-emerald-300/90 font-mono mt-2">
-              Prévia: {paymentLabel ? `${paymentLabel} · ` : ""}{currencySymbol} {formattedPriceForAd}{paymentSuffix ? ` · ${paymentSuffix}` : ""}
+              Prévia: {paymentLabel ? `${paymentLabel} · ` : ""}{currencySymbol} {hideCents ? formattedPriceForAd.replace(/[,.]\d{1,2}\s*$/u, "") : formattedPriceForAd}{paymentSuffix ? ` · ${paymentSuffix}` : ""}
             </p>
           )}
         </div>
