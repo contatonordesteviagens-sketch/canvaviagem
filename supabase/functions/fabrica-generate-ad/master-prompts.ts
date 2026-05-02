@@ -911,6 +911,50 @@ TIPOGRAFIA: Apenas sólida, Ultra-Bold. PROIBIDO outline, vazado, neon, glow.
 
 
 // ============================================================
+// V3 (CVC YELLOW BOX) — Equivalente IA do template canvas V3
+// ============================================================
+export function promptYellowBoxCVC(v: MasterPromptVars): string {
+  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "v3-cvc", v.forbiddenHeadlines);
+  const isSquare = v.format === "square";
+  return `
+Banner publicitário de viagem ${isSquare ? "quadrado 1:1" : "vertical 9:16"} no estilo "CVC / Decolar / Hurb" — agência de viagem brasileira tradicional, foco em conversão direta.
+
+FUNDO: Foto aérea (drone) REAL do destino "${v.destination}" ocupando 100% do banner — mar azul-turquesa, praia, cidade ou paisagem icônica reconhecível, luz natural cristalina, alta definição. Sem efeitos artísticos, sem ilustração, sem 3D.
+
+ELEMENTO PRINCIPAL — GRANDE BOX AMARELO:
+Um grande retângulo na cor AMARELO VIBRANTE (#FFD400) com cantos bem arredondados (raio ~36px), posicionado ${isSquare ? "ocupando ~55% da largura à esquerda do banner, alinhado verticalmente ao centro" : "no terço superior do banner, ocupando ~85% da largura"}, com leve sombra sutil para destacar do fundo fotográfico.
+
+DENTRO DO BOX (hierarquia vertical, do topo para a base):
+1. TOPO: tag pequena "PACOTE" (uppercase, Bold pequeno, preto) + logo discreta opcional no canto superior direito.
+2. NOME DO DESTINO: "${v.destination.toUpperCase()}" em Ultra-Bold preto, tamanho grande (dominante no box).
+3. LINHA DE INFO: "${v.duration || "7 DIAS"}" + linha horizontal de 4-5 ícones MONOCROMÁTICOS pretos em outline fino (avião, ônibus, hotel, café, câmera). Sem ícones coloridos.
+4. BLOCO DE PREÇO (split horizontal):
+   - Esquerda: "a partir de" + "${v.installments}x sem juros" (Bold pequena, preto)
+   - Direita: "R$ ${v.installmentValue}" em tamanho GIGANTE (a maior tipografia do banner inteiro), Ultra-Bold preto. Formato BRL: ponto separa milhar, vírgula separa centavos.
+5. TOTAL POR PESSOA: linha pequena "Total: R$ ${v.totalValue} por pessoa" — regular pequena, preto.
+6. FAIXA INFERIOR PROMOCIONAL: faixa AZUL-MARINHO (#0A2540) ou cor primária ${v.primaryHex} no rodapé do box (cantos inferiores arredondados acompanhando o box). Texto branco Bold "${v.promoName} à vista no Pix" + pequeno ícone monocromático branco do Pix ao lado.
+
+TEXTOS EXATOS — escreva SOMENTE esses, sem inventar palavras adicionais:
+- «PACOTE»
+- «${v.destination.toUpperCase()}»
+- «${v.duration || "7 DIAS"}»
+- «a partir de»
+- «${v.installments}x sem juros»
+- «R$ ${v.installmentValue}»
+- «Total: R$ ${v.totalValue} por pessoa»
+- «${v.promoName} à vista no Pix»
+
+REGRAS ABSOLUTAS:
+- Hierarquia visual clara: o R$ do preço é SEMPRE o maior elemento do banner.
+- NÃO usar ícones coloridos. Apenas monocromáticos pretos dentro do box.
+- NÃO poluir. Respiração entre os blocos.
+- Texto perfeitamente escrito, sem erros, sem letras cortadas.
+- Box amarelo com sombra sutil. Fundo fotográfico nítido, cores naturais.
+- Qualidade editorial profissional, resolução 8K.
+`;
+}
+
+// ============================================================
 // REGISTRO DE TEMPLATES
 // ============================================================
 export const MASTER_TEMPLATES = [
@@ -921,6 +965,7 @@ export const MASTER_TEMPLATES = [
   { id: "maceio_style",       name: "OP4 · Barra Lateral Performance",builder: promptMaceioStyle },
   { id: "ticket_pix_card",    name: "OP5 · Bilhete Pix",              builder: promptTicketPixCard },
   { id: "side_hero_performance", name: "OP6 · Faixa Lateral Hero",    builder: promptSideHeroPerformance },
+  { id: "yellow_box_cvc",     name: "OP7 · Box Amarelo CVC (V3)",     builder: promptYellowBoxCVC },
   // 🔵 EXPERIÊNCIA DESTINO
   { id: "iconic_landmark",    name: "ED1 · Hero Cinematográfico",     builder: promptIconicLandmark },
   { id: "split_yellow_side",  name: "ED2 · Split Suave",              builder: promptSplitYellowSide },
