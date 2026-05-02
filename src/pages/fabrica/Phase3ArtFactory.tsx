@@ -663,13 +663,27 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // Consome o campo "Destino" preenchido no formulário lateral.
         const v4BackgroundPrompt = `Fotografia ultra-realista 4k, estilo cinematográfico e editorial de agência de turismo premium focada em conversão. Vista panorâmica, ampla e imersiva de ${destination || "destino paradisíaco"}. Iluminação natural de golden hour ou dia ensolarado com céu azul vibrante e nuvens suaves. Composição com grande profundidade de campo: destacar a arquitetura histórica local, castelos ou belezas naturais em segundo e terceiro plano. DEIXAR OBRIGATORIAMENTE o centro e a base da imagem como 'negative space' (espaço mais limpo e levemente desfocado) para perfeita leitura de textos e sobreposição de elementos gráficos. Renderização fotorrealista em altíssima definição. NO TEXT, NO LOGOS, NO PEOPLE in foreground.`;
 
+        // ── Decisão V4 em IA Pura (apenas Oferta de Pacote) ─────────────────
+        // Sorteia se esta geração será V4 (compositor card) ou IA tradicional,
+        // respeitando histórico para garantir variedade entre cliques.
+        const isOfertaIA = categoria === "oferta_pacote";
+        const TOTAL_VARIANTS_AI = 5;
+        const recentAi = variantHistoryRef.current.slice(-2);
+        let candidatesAi = Array.from({ length: TOTAL_VARIANTS_AI }, (_, i) => i).filter((v) => !recentAi.includes(v));
+        if (candidatesAi.length === 0) candidatesAi = Array.from({ length: TOTAL_VARIANTS_AI }, (_, i) => i);
+        const nextVariantAi = isOfertaIA ? candidatesAi[Math.floor(Math.random() * candidatesAi.length)] : -1;
+        const useV4Composer = nextVariantAi === 4;
+        if (isOfertaIA) variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantAi];
+
         const results = await Promise.all(
           picks.map((pick, idx) => supabase.functions.invoke("fabrica-generate-ad", {
             body: {
               strategy: categoria === "oferta_pacote" ? "ancora" : categoria === "experiencia_destino" ? "vitrine" : "matriz",
               format,
               // 🚨 HACK DE EMERGÊNCIA: Injeta ordens no único campo que o servidor antigo lê
-              destination: `${destination.toUpperCase()} (STRICT RULE: NO PEOPLE, ONLY LANDSCAPE. WRITE FULL TITLE: "Pacote para ${destination}". NO ICONS IN PRICE TAG)`,
+              destination: useV4Composer
+                ? destination.toUpperCase()
+                : `${destination.toUpperCase()} (STRICT RULE: NO PEOPLE, ONLY LANDSCAPE. WRITE FULL TITLE: "Pacote para ${destination}". NO ICONS IN PRICE TAG)`,
               niche: state.niche,
               agencyName: state.agencyName,
               agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
@@ -683,15 +697,15 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               promoName: (promoName || "Oferta Especial").toUpperCase(),
               highlights,
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
-              templateId: pick.templateId,
-              photoOnly: false, // Voltamos para a IA profissional
-              variation: freshSeedAi + idx + Math.random(), // Garante que NUNCA repita a imagem
+              templateId: useV4Composer ? undefined : pick.templateId,
+              photoOnly: useV4Composer ? true : false,
+              variation: freshSeedAi + idx + Math.random(),
               packageType: "Voo + Hotel",
               duration: "5 NOITES",
               forbiddenHeadlines: guard.headlines,
               forbiddenLayouts: guard.layouts,
-              // V4: prompt cinematográfico injetado para o BG (negative space p/ overlay)
-              customPrompt: v4BackgroundPrompt,
+              // V4: injeta prompt cinematográfico apenas quando V4 foi sorteado
+              ...(useV4Composer ? { customPrompt: v4BackgroundPrompt } : {}),
             },
           }))
         );
@@ -704,12 +718,50 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           if (result.error) throw result.error;
           if (result.data?.error) throw new Error(result.data.error);
           if (!result.data?.image) throw new Error("Nenhuma imagem foi gerada.");
-          
+
           let img = result.data.image as string;
           // Ajusta o enquadramento se a IA entregar algo fora do aspecto (especialmente em Square)
           try { img = await reframeImageToAspect(img, format); }
           catch (e) { console.warn("reframe failed", e); }
-          
+
+          // V4 em IA Pura: aplica o compositor (card flutuante) sobre o BG gerado
+          if (useV4Composer) {
+            try {
+              img = await composeTravelAd({
+                imageUrl: img,
+                format,
+                destination,
+                city: state.city,
+                primaryColor: palette.primary,
+                secondaryColor: palette.secondary,
+                price: formattedPriceForAd || price,
+                currencySymbol,
+                installments,
+                promoName,
+                highlights,
+                hasLogo: !!state.logoBase64,
+                paymentMode,
+                paymentLabel: paymentLabel || undefined,
+                paymentSuffix,
+                strategy: "ancora",
+                variation: freshSeedAi,
+                forceVariant: 4,
+                titleOverride: resolvedAdTitle,
+                titleVariations: adTitleVariations,
+                totalOverride: totalOverride || undefined,
+                showPixBanner,
+                pixBannerText: pixBannerText || undefined,
+                showTotal,
+              });
+              if (state.logoBase64) {
+                const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
+                img = await composeLogoOnImage(img, state.logoBase64);
+              }
+            } catch (e) {
+              console.warn("V4 composer (IA pura) falhou, mantendo BG cru:", e);
+            }
+          }
+
           images.push(img);
           if (result.data.provider) providerSeen = result.data.provider;
         }
