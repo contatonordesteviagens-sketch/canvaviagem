@@ -196,6 +196,9 @@ const defaultState: FabricaState = {
   lastPaymentSuffix: "por pessoa",
   lastCurrency: "BRL",
   lastAdTitle: "Pacote {destino}",
+  lastPacoteDays: "7 dias",
+  lastPacoteIcons: ["plane", "bus", "hotel", "coffee", "camera"],
+  lastHideCents: false,
 };
 
 const STORAGE_KEY = "fabrica-context-v1";
