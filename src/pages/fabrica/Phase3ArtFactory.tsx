@@ -726,7 +726,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       </div>
 
       {/* 1b · Galeria Pexels/Google (modo foto) */}
-      {genMode === "photo" && categoria !== "autoridade_dark" && (
+      {genMode === "photo" && (
         <div className={sectionCls}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">1 · Escolha uma foto real</h3>
