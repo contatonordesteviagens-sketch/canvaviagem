@@ -3,8 +3,10 @@ type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | 
 
 export type PaymentMode =
   | "installments"
+  | "installments_no_interest"
   | "cash"
   | "cash_discount"
+  | "cash_pix_off"
   | "from"
   | "daily"
   | "monthly"
@@ -32,6 +34,14 @@ interface ComposeTravelAdOptions {
   paymentMode?: PaymentMode;
   paymentLabel?: string;
   paymentSuffix?: string;
+  /** Quantidade de dias do pacote (ex: "7 dias"). Quando definido, sobrescreve a leitura via highlights[0]. */
+  pacoteDays?: string;
+  /** Ícones do pacote (ordem visual da linha de ícones do card CVC). */
+  pacoteIcons?: IconKey[];
+  /** Quando true, omite os centavos do preço principal (ex: 229 ao invés de 229,00). */
+  hideCents?: boolean;
+  /** Quando true, força exibir a faixa "5% OFF À VISTA NO PIX" no card CVC (V3/V4). Default: liga sozinho quando paymentMode = "cash_pix_off". */
+  showPixStripe?: boolean;
   strategy?: "ancora" | "vitrine" | "matriz" | "gancho" | "experiencia_hero" | "experiencia_editorial" | "experiencia_postcard" | "experiencia_lifestyle";
   variation?: number;
   /** Força uma variante específica (0..2 para Sua Imagem + Oferta + 1:1). Quando definido, ignora variation%N. */
