@@ -46,6 +46,10 @@ interface ComposeTravelAdOptions {
   totalOverride?: string;
   /** V3: controla se a linha de total aparece no box. Default true. */
   showTotal?: boolean;
+  /** V3: texto da faixa azul do Pix. Default "{N}% OFF À VISTA NO pix". */
+  pixBannerText?: string;
+  /** V3: mostra/esconde a faixa azul do Pix. Default true. */
+  showPixBanner?: boolean;
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
