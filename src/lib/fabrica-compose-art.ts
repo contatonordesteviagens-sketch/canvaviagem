@@ -472,10 +472,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   const renderSafeSquareOffer = () => {
-    // Apenas 3 variantes válidas (V0, V1, V2). V3 fullbleed foi descontinuada para Sua Imagem.
+    // 6 variantes válidas: V0/V1/V2 (originais aprovados) + V3/V4/V5 (CVC fullbleed-topo-esquerdo,
+    // CVC card centralizado topo, Split editorial 50/50 estilo Maragogi).
     const variant = typeof forceVariant === "number"
-      ? ((forceVariant % 3) + 3) % 3
-      : Math.abs(variation) % 3;
+      ? ((forceVariant % 6) + 6) % 6
+      : Math.abs(variation) % 6;
     const logoH = hasLogo ? 130 : 0;
     const destUp = (destination || "DESTINO").toUpperCase();
 
