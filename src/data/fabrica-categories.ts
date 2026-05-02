@@ -65,25 +65,6 @@ export const CATEGORIAS: CategoriaMeta[] = [
     ],
     legacyStrategy: "vitrine",
   },
-  {
-    id: "autoridade_dark",
-    name: "Autoridade Premium",
-    badge: "AGÊNCIA 3D",
-    emoji: "⬛",
-    description:
-      "Dark Mode estilo Kriptopix Fintech: tipografia Ultra-Bold sólida, objetos 3D metálicos foscos (mala, avião, ônibus, globo), pessoas executivas. Sem neon, sem fotos de turismo.",
-    focus: ["Dark Mode Fosco", "Pessoas Reais", "3D Metálico", "Tipografia Sólida"],
-    accent: "#ffffff",
-    prompts: [
-      { code: "DK1", templateId: "dark_neon_glassmorphism" },
-      { code: "DK2", templateId: "dark_3d_icons_floating" },
-      { code: "DK3", templateId: "dark_minimal_geometric" },
-      { code: "DK4", templateId: "dark_person_brutal" },
-      { code: "DK5", templateId: "dark_airplane_premium" },
-      { code: "DK6", templateId: "dark_group_travel" },
-    ],
-    legacyStrategy: "matriz",
-  },
 ];
 
 export function getCategoria(id: CategoriaId): CategoriaMeta {
