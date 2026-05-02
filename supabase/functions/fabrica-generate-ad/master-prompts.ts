@@ -279,12 +279,13 @@ function buildBrain(v: MasterPromptVars, opts: {
   specialization?: string;
 }): string {
   const valueBlock = opts.category === "oferta"
-    ? `[BLOCO DE PREÇO — CARD ÚNICO E LIMPO]
-APENAS DOIS textos dentro do card, nesta ordem:
-  1) "${v.installments}x R$ ${v.installmentValue}"  ← MAIOR ELEMENTO, ULTRA-BOLD, fonte gigante
-  2) "Total R$ ${v.totalValue}"  ← linha pequena, fina, abaixo do preço
-🚫 PROIBIDO dentro do card: ícones (avião/ônibus/hotel/mala/câmera/xícara/estrelas), bullets, listas, duração, selos extras, múltiplas linhas de copy. Card 100% tipográfico, mínimo absoluto.
-Selo único permitido FORA do card (canto, opcional, pequeno): "${v.promoName.toUpperCase()}"`
+    ? `[BLOCO DE PREÇO — CARD LIMPO E PROFISSIONAL]
+APENAS três informações dentro do card, nesta ordem vertical e bem espaçadas:
+  1) Valor da parcela: ${v.installments}x R$ ${v.installmentValue}  ← MAIOR ELEMENTO, ULTRA-BOLD
+  2) Texto pequeno: "Total por pessoa: R$ ${v.totalValue}"
+  3) Duração: ${v.duration}
+🚫 PROIBIDO dentro do card: ícones de avião, ônibus, hotel, mala, câmera, xícara, estrelas ou QUALQUER pictograma. Sem listas com bullets. Sem fileiras de ícones. Card 100% tipográfico.
+Selo único permitido (fora do card, opcional): "${v.promoName.toUpperCase()}"`
     : opts.category === "autoridade_dark"
     ? `[BLOCO DE INFORMAÇÕES — DARK PREMIUM]
 ${v.installments}x R$ ${v.installmentValue}     ← FONTE GIGANTE, ULTRA-BOLD, COR SÓLIDA SEM BRILHO
@@ -319,30 +320,6 @@ SEM NENHUM PREÇO, SEM PARCELAS, SEM SELOS.`;
         "LAYOUT ÚNICO DESTA GERAÇÃO: texto central leve sobre foto com muito respiro e espaço negativo ao redor",
       ];
   const variationIndex = Math.abs([...creativeSeed].reduce((acc, char) => acc + char.charCodeAt(0), 0)) % variationDirectives.length;
-
-  // 📸 ÂNCORAS FOTOGRÁFICAS REAIS — só Oferta (3 ângulos rotativos por seed)
-  const ofertaCameraAngles = [
-    "aerial drone shot from 80m altitude, top-down 30° tilt, shot on DJI Mavic 3 Pro, golden hour, ultra-sharp",
-    "ground-level wide angle 24mm, eye-level perspective, shot on Sony A7R IV f/8, midday natural light, crystal clear",
-    "cinematic side perspective 50mm, slight low-angle hero shot, shot on Hasselblad H6D medium format, blue hour, editorial",
-  ];
-  const seedSum = Math.abs([...creativeSeed].reduce((acc, char) => acc + char.charCodeAt(0), 0));
-  const ofertaCameraAngle = ofertaCameraAngles[seedSum % 3];
-  const ofertaPhotoAnchor = opts.category === "oferta"
-    ? `\n[FOTOGRAFIA REAL — ÂNCORA OBRIGATÓRIA]\nReal travel photography, ${ofertaCameraAngle}, Condé Nast Traveler editorial aesthetic, vibrant saturated colors, professional travel catalog quality. NO 3D render, NO illustration, NO AI artifacts.\n`
-    : "";
-
-  // 🔒 VARIATION LOCK — bloqueia repetições recentes
-  const forbiddenLayoutsTxt = (v.forbiddenLayouts && v.forbiddenLayouts.length > 0)
-    ? v.forbiddenLayouts.slice(0, 4).join(", ")
-    : "";
-  const forbiddenHeadlinesTxt = (v.forbiddenHeadlines && v.forbiddenHeadlines.length > 0)
-    ? v.forbiddenHeadlines.slice(0, 4).map((h) => `"${h}"`).join(", ")
-    : "";
-  const variationLock = opts.category === "oferta"
-    ? `\n[🔒 VARIATION LOCK — seed=${creativeSeed}]\nThis generation MUST be visually distinct from the previous ones.${forbiddenLayoutsTxt ? `\nAvoid these prior compositions: ${forbiddenLayoutsTxt}.` : ""}${forbiddenHeadlinesTxt ? `\nAvoid these prior headlines: ${forbiddenHeadlinesTxt}.` : ""}\nUse a DIFFERENT camera angle, time of day and color temperature than the previous generation.\n`
-    : "";
-
   const promoLine = opts.category === "oferta" || opts.category === "autoridade_dark"
     ? `Selo: "${v.promoName}"`
     : `Chamada editorial secundária: "${opts.experienceDescription || `Dias leves em ${v.destination}, com calma, beleza e curadoria.`}" — sem selo promocional.`;
@@ -388,7 +365,6 @@ Este anúncio DEVE seguir a câmera, iluminação e estruturação exatas inform
 
 [FOTOGRAFIA PRINCIPAL — REGRAS DE CENA]
 Cena extremamente realista e detalhada de ${v.destination}, com iluminação ${opts.lighting}, mostrando ${opts.sceneDescription}.
-${ofertaPhotoAnchor}${variationLock}
 
 🚫 STRICTLY NO PEOPLE — REGRA NEGATIVA ABSOLUTA:
 - PROIBIDO qualquer figura humana, modelo, casal, família, criança, silhueta, mão, pé, rosto ou parte de corpo na fotografia.
