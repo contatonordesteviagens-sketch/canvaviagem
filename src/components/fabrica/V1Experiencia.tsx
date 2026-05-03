@@ -56,6 +56,7 @@ export function mapStateToV1Experiencia(
     primaryColor: state.primaryColor,
     secondaryColor: state.secondaryColor,
     format: state.lastFormat === "square" ? "square" : "story",
+    baseTextMode: ((state as any).baseTextMode as BaseTextMode) || "light",
   };
 }
 
@@ -70,9 +71,13 @@ export function V1Experiencia(props: V1ExperienciaProps) {
     slogan,
     destination,
     format = "story",
+    baseTextMode = "light",
   } = props;
 
   const aspect = format === "square" ? "aspect-square" : "aspect-[9/16]";
+  const textStyle = getContrastTextStyle(baseTextMode);
+  const dropClass = getDropShadowClass(baseTextMode);
+  const textColorCls = baseTextMode === "dark" ? "text-neutral-900" : "text-white";
 
   return (
     <article
