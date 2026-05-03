@@ -951,7 +951,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         const nextVariantAi = forcedVariant !== null && forcedVariant >= 0 && forcedVariant < totalVariantsAi
           ? forcedVariant
           : candidatesAi[Math.floor(Math.random() * candidatesAi.length)];
-        const useV4Composer = isOfertaIA && nextVariantAi === 4;
+        const shouldComposeOfertaAi = isOfertaIA;
         variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantAi];
 
         const results = await Promise.all(
@@ -975,18 +975,16 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               promoName: (promoName || "Oferta Especial").toUpperCase(),
               highlights: categoria === "experiencia_destino" ? [] : highlights,
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
-              templateId: useV4Composer ? undefined : pick.templateId,
-              photoOnly: useV4Composer ? true : false,
-              variation: forcedVariant !== null ? forcedVariant : freshSeedAi + idx + Math.random(),
+              templateId: shouldComposeOfertaAi ? undefined : pick.templateId,
+              photoOnly: shouldComposeOfertaAi ? true : false,
+              variation: forcedVariant !== null ? forcedVariant : nextVariantAi,
               packageType: "Voo + Hotel",
               duration: categoria === "experiencia_destino" ? (travelPeriod || "5 dias") : "5 NOITES",
               forbiddenHeadlines: guard.headlines,
               forbiddenLayouts: guard.layouts,
               ...(isAiExperienceStory
                 ? { customPrompt: experienceBackgroundPrompt(nextVariantAi) }
-                : useV4Composer
-                  ? { customPrompt: v4BackgroundPrompt }
-                  : {}),
+                : {}),
             },
           }))
         );
@@ -1046,7 +1044,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             } catch (e) {
               console.warn("Compositor Experiência (IA pura) falhou, mantendo BG cru:", e);
             }
-          } else if (useV4Composer) {
+          } else if (shouldComposeOfertaAi) {
             try {
               img = await composeTravelAd({
                 imageUrl: img,
@@ -1066,7 +1064,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 paymentSuffix,
                 strategy: "ancora",
                 variation: freshSeedAi,
-                forceVariant: 4,
+                forceVariant: nextVariantAi,
                 titleOverride: resolvedAdTitle,
                 titleVariations: adTitleVariations,
                 travelPeriod,
@@ -1084,7 +1082,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 img = await composeLogoOnImage(img, state.logoBase64);
               }
             } catch (e) {
-              console.warn("V4 composer (IA pura) falhou, mantendo BG cru:", e);
+              console.warn("Compositor Oferta (IA pura) falhou, mantendo BG cru:", e);
             }
           }
 
