@@ -954,7 +954,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // ── [BOX] amarelo arredondado — altura DINÂMICA conforme conteúdo ─────
       const boxX = 60;
       const boxY = 70;
-      const boxW = 720;
+      const boxW = Math.round(width * 0.64);
       const boxR = 36;
       // V3 respeita as cores selecionadas pelo usuário:
       // - "yellow" = secondaryColor (fundo do box)
@@ -1053,17 +1053,19 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.restore();
 
       const priceBlockY = ringY + 30;
-      const leftColX = ringX + 28;
-      const rightEdgeX = ringX + ringW - 28;
-      const minGap = 30;
+      const priceGroupW = Math.min(ringW - 48, Math.round(width * 0.46));
+      const priceGroupX = ringX + (ringW - priceGroupW) / 2;
+      const leftColX = priceGroupX;
+      const rightEdgeX = priceGroupX + priceGroupW;
+      const minGap = 18;
 
       // Quebra "R$ 229" em símbolo pequeno + valor gigante
       const priceParts = priceStr.match(/^(\D+)\s*([\d.,]+)$/);
       const sym = priceParts ? priceParts[1].trim() : curSym;
       const valNum = priceParts ? priceParts[2].trim() : priceStr;
 
-      const leftReservedW = 130;
-      const maxPriceW = ringW - 56 - leftReservedW - minGap;
+      const leftReservedW = 118;
+      const maxPriceW = priceGroupW - leftReservedW - minGap - 58;
       let priceSize = 120;
       ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
       while (ctx.measureText(valNum).width > maxPriceW && priceSize > 64) {
