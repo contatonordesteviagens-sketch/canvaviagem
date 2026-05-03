@@ -173,9 +173,11 @@ export function V2Experiencia(props: V2ExperienciaProps) {
       ? "text-6xl sm:text-7xl"
       : "text-7xl sm:text-8xl";
 
-  // Acento dourado refinado (metal escovado)
-  const goldGradient =
-    "linear-gradient(135deg, #b8860b 0%, #f5d97a 35%, #fff5cc 50%, #f5d97a 65%, #a87808 100%)";
+  // Acento metálico baseado nas cores da marca (primária + secundária)
+  // Substitui o dourado fixo, respeitando a identidade visual escolhida.
+  const goldGradient = `linear-gradient(135deg, ${secondaryColor} 0%, ${primaryColor} 35%, #ffffff 50%, ${primaryColor} 65%, ${secondaryColor} 100%)`;
+  // Cor sólida de contraste para ícones sobre o gradiente metálico
+  const accentInk = secondaryColor;
 
   return (
     <article
