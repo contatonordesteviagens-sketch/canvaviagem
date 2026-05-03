@@ -33,6 +33,8 @@ function luminance(hex: string): number {
 
 // Retorna preto ou branco com melhor contraste sobre `bg`.
 function contrastOn(bg: string): string {
+  const normalized = (bg || "").trim().toLowerCase();
+  if (normalized === "#0c2340") return "#ffffff";
   return luminance(bg) > 0.6 ? "#0d0d0d" : "#ffffff";
 }
 
