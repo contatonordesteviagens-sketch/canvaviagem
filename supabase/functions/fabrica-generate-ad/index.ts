@@ -179,7 +179,13 @@ Qualidade cinematográfica, iluminação natural perfeita, cores vivas e saturad
         const destLuxo = body.destination || "destino paradisíaco";
         const isV1 = variation === 1;
         const isV2 = variation === 2;
-        if (isV2) {
+        const isV3 = variation === 3;
+        if (isV3) {
+          // V3_Experiencia · NOTURNA / DARK PREMIUM (cinematic aerial night)
+          prompt = `A highly detailed, ultra-high-resolution cinematic aerial night photograph of ${destLuxo}. The city grid or landscape is illuminated by warm streetlights and glowing building windows against the deep, dark night. Photorealistic, high-contrast dark aesthetic, perfect for a high-end premium travel advertisement.
+${safeZoneRules(format)}
+Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
+        } else if (isV2) {
           // V2_Experiencia · DRONE AÉREO PREMIUM (cenário para painéis de UI luxuosos)
           prompt = `Fotografia profissional de drone, altamente detalhada e de altíssima resolução. Vista aérea espetacular, imersiva e cinematográfica de ${destLuxo}. Composição limpa, iluminação natural brilhante de golden hour, fotorrealista. Cenário de luxo e alto padrão. A imagem serve como um cenário de fundo premium, deixando espaço livre para sobreposição de painéis de interface.
 ${safeZoneRules(format)}
