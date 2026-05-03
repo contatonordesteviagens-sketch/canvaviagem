@@ -131,6 +131,11 @@ export interface FabricaState {
   // V3: faixa do Pix (editável)
   showPixBanner?: boolean;
   pixBannerText?: string;
+  // Tipografia global do anúncio
+  fontFamily?: string;
+  titleScale?: number;
+  descScale?: number;
+  textColorOverride?: string;
 }
 
 const defaultState: FabricaState = {
@@ -207,6 +212,10 @@ const defaultState: FabricaState = {
   totalOverride: "",
   showPixBanner: true,
   pixBannerText: "",
+  fontFamily: "Inter",
+  titleScale: 1,
+  descScale: 1,
+  textColorOverride: "",
 };
 
 const STORAGE_KEY = "fabrica-context-v1";

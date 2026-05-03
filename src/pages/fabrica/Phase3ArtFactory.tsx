@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { type StrategyId } from "@/data/fabrica-prompts";
 import { CATEGORIAS, getCategoria, pickPromptsForCategoria, type CategoriaId } from "@/data/fabrica-categories";
@@ -344,6 +344,35 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [pixBannerText, setPixBannerTextState] = useState<string>((state as any).pixBannerText || "");
   const setPixBannerText = (v: string) => { setPixBannerTextState(v); update({ pixBannerText: v } as any); };
 
+  // Tipografia global (família + escala título/descrição + cor de override)
+  const [fontFamily, setFontFamilyState] = useState<string>((state as any).fontFamily || "Inter");
+  const setFontFamily = (v: string) => { setFontFamilyState(v); update({ fontFamily: v } as any); };
+  const [titleScale, setTitleScaleState] = useState<number>(((state as any).titleScale as number) || 1);
+  const setTitleScale = (v: number) => { setTitleScaleState(v); update({ titleScale: v } as any); };
+  const [descScale, setDescScaleState] = useState<number>(((state as any).descScale as number) || 1);
+  const setDescScale = (v: number) => { setDescScaleState(v); update({ descScale: v } as any); };
+  const [textColorOverride, setTextColorOverrideState] = useState<string>((state as any).textColorOverride || "");
+  const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
+  const [fontOptionsOpen, setFontOptionsOpen] = useState(false);
+  const FONT_PRESETS = ["Inter", "Poppins", "Montserrat", "Roboto", "Oswald", "Bebas Neue", "Playfair Display", "Lora", "Raleway", "Nunito", "Work Sans", "DM Sans"];
+
+  // Carrega Google Font dinamicamente quando o usuário escolhe uma família custom
+  useEffect(() => {
+    if (!fontFamily || fontFamily === "Inter") return;
+    const id = `gf-${fontFamily.replace(/\s+/g, "-").toLowerCase()}`;
+    if (document.getElementById(id)) return;
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;500;600;700;800;900&display=swap`;
+    document.head.appendChild(link);
+    // Garante que o canvas use a fonte já carregada antes de renderizar
+    if ((document as any).fonts?.load) {
+      (document as any).fonts.load(`900 32px "${fontFamily}"`).catch(() => {});
+      (document as any).fonts.load(`400 16px "${fontFamily}"`).catch(() => {});
+    }
+  }, [fontFamily]);
+
   // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
   const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
   const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
@@ -603,6 +632,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               showPixBanner,
               pixBannerText: pixBannerText || undefined,
               showTotal,
+              fontFamily,
+              titleScale,
+              descScale,
+              textColorOverride: textColorOverride || undefined,
             });
             if (state.logoBase64) {
               try {
@@ -765,6 +798,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 showPixBanner,
                 pixBannerText: pixBannerText || undefined,
                 showTotal,
+                fontFamily,
+                titleScale,
+                descScale,
+                textColorOverride: textColorOverride || undefined,
               });
               if (state.logoBase64) {
                 const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
@@ -869,6 +906,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               showPixBanner,
               pixBannerText: pixBannerText || undefined,
             showTotal,
+            fontFamily,
+            titleScale,
+            descScale,
+            textColorOverride: textColorOverride || undefined,
           });
           if (state.logoBase64) {
             try {
@@ -1607,6 +1648,91 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             <p className="text-[11px] text-emerald-300/90 font-mono mt-2">
               Prévia: {paymentLabel ? `${paymentLabel} · ` : ""}{currencySymbol} {formattedPriceForAd}{paymentSuffix ? ` · ${paymentSuffix}` : ""}
             </p>
+          )}
+        </div>
+
+        {/* Tipografia — colapsável, aplica a TODAS variações/categorias */}
+        <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setFontOptionsOpen((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-white">Tipografia</span>
+              <span className="text-[10px] text-white/40" style={{ fontFamily: `${fontFamily}, Inter, sans-serif` }}>
+                {fontFamily} · T {Math.round(titleScale * 100)}% · D {Math.round(descScale * 100)}%
+              </span>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${fontOptionsOpen ? "rotate-180" : ""}`} />
+          </button>
+          {fontOptionsOpen && (
+            <div className="px-4 pb-4 pt-1 space-y-3 border-t border-white/10">
+              <div>
+                <label className={labelCls}>Fonte</label>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {FONT_PRESETS.map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setFontFamily(f)}
+                      className={`px-2.5 py-1 rounded-lg text-[12px] border transition-colors ${
+                        fontFamily === f ? "border-yellow-400 bg-yellow-400/10 text-white" : "border-white/10 bg-white/[0.03] text-white/70 hover:border-white/30"
+                      }`}
+                      style={{ fontFamily: `${f}, Inter, sans-serif` }}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  value={fontFamily}
+                  onChange={(e) => setFontFamily(e.target.value)}
+                  placeholder="Nome da fonte (Google Fonts)"
+                  className={inputCls}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>Título <span className="text-white/40">({Math.round(titleScale * 100)}%)</span></label>
+                  <input type="range" min={0.6} max={1.6} step={0.05} value={titleScale}
+                    onChange={(e) => setTitleScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
+                </div>
+                <div>
+                  <label className={labelCls}>Descrição <span className="text-white/40">({Math.round(descScale * 100)}%)</span></label>
+                  <input type="range" min={0.6} max={1.6} step={0.05} value={descScale}
+                    onChange={(e) => setDescScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
+                </div>
+              </div>
+
+              <div>
+                <label className={labelCls}>Cor do texto <span className="text-white/40">(substitui o branco padrão)</span></label>
+                <div className="flex gap-2 items-center">
+                  <label className="relative w-10 h-10 rounded-full cursor-pointer flex-shrink-0 overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
+                    style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}>
+                    <input type="color" value={textColorOverride || "#ffffff"}
+                      onChange={(e) => setTextColorOverride(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
+                    <span className="absolute inset-1.5 rounded-full border border-white/40" style={{ background: textColorOverride || "#ffffff" }} />
+                  </label>
+                  <input value={textColorOverride} onChange={(e) => setTextColorOverride(e.target.value)}
+                    placeholder="Padrão (branco)"
+                    className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase" />
+                  {textColorOverride && (
+                    <button onClick={() => setTextColorOverride("")}
+                      className="text-[11px] text-white/60 hover:text-white px-2 py-1 rounded border border-white/10">
+                      Limpar
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <button
+                onClick={() => { setFontFamily("Inter"); setTitleScale(1); setDescScale(1); setTextColorOverride(""); }}
+                className="text-[11px] text-white/60 hover:text-white underline"
+              >
+                Restaurar padrão
+              </button>
+            </div>
           )}
         </div>
 

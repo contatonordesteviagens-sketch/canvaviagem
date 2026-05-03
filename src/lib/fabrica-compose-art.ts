@@ -97,6 +97,14 @@ interface ComposeTravelAdOptions {
   pixBannerText?: string;
   /** V3: mostra/esconde a faixa azul do Pix. Default true. */
   showPixBanner?: boolean;
+  /** Família de fonte global a aplicar em TODOS os textos do anúncio. Default: Inter. */
+  fontFamily?: string;
+  /** Multiplicador de escala global para títulos/preços/textos grandes (>=22px). Default 1. */
+  titleScale?: number;
+  /** Multiplicador de escala global para descrição/labels/textos pequenos (<22px). Default 1. */
+  descScale?: number;
+  /** Cor que substitui o texto branco padrão (#fff/#ffffff). Útil para alinhar texto à identidade da marca. */
+  textColorOverride?: string;
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
@@ -582,6 +590,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     showTotal = true,
     pixBannerText,
     showPixBanner = true,
+    fontFamily,
+    titleScale = 1,
+    descScale = 1,
+    textColorOverride,
   } = options;
   const curSym = (currencySymbol || "R$").trim();
   const priceValueText = (price || "").trim();
@@ -596,6 +608,69 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   canvas.height = height;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas 2D não suportado");
+
+  // ====== Font customization global (família + escala título/descrição) ======
+  // Intercepta o setter de `font` e o `fillStyle` para que TODAS as variantes/categorias
+  // respeitem as escolhas do usuário sem precisar reescrever cada ctx.font do arquivo.
+  const userFamily = (fontFamily || "").trim();
+  const wantsCustomFont = !!userFamily && userFamily.toLowerCase() !== "inter";
+  const wantsScale = (titleScale !== 1) || (descScale !== 1);
+  const wantsColorOverride = !!textColorOverride && /^#?[0-9a-f]{3,8}$/i.test(textColorOverride.replace("#", ""));
+  const overrideColorHex = wantsColorOverride
+    ? (textColorOverride!.startsWith("#") ? textColorOverride! : `#${textColorOverride}`)
+    : "";
+
+  if (wantsCustomFont || wantsScale) {
+    const fontRe = /^(.*?)(\d+(?:\.\d+)?)px\s+(.+)$/; // captura: prefix(weight/style) | size | family
+    const proto = Object.getPrototypeOf(ctx) as any;
+    const desc = Object.getOwnPropertyDescriptor(proto, "font");
+    if (desc && desc.set && desc.get) {
+      const origSet = desc.set.bind(ctx);
+      const origGet = desc.get.bind(ctx);
+      Object.defineProperty(ctx, "font", {
+        configurable: true,
+        get: () => origGet(),
+        set: (val: string) => {
+          try {
+            const m = String(val).match(fontRe);
+            if (m) {
+              const prefix = m[1].trim();
+              const size = parseFloat(m[2]);
+              const fam = wantsCustomFont ? `${userFamily}, Inter, Arial, sans-serif` : m[3];
+              const scale = size >= 22 ? titleScale : descScale;
+              const newSize = Math.max(8, Math.round(size * scale));
+              origSet(`${prefix ? prefix + " " : ""}${newSize}px ${fam}`);
+              return;
+            }
+          } catch {}
+          origSet(val);
+        },
+      });
+    }
+  }
+
+  if (wantsColorOverride) {
+    const proto = Object.getPrototypeOf(ctx) as any;
+    const desc = Object.getOwnPropertyDescriptor(proto, "fillStyle");
+    if (desc && desc.set && desc.get) {
+      const origSet = desc.set.bind(ctx);
+      const origGet = desc.get.bind(ctx);
+      Object.defineProperty(ctx, "fillStyle", {
+        configurable: true,
+        get: () => origGet(),
+        set: (val: any) => {
+          if (typeof val === "string") {
+            const v = val.trim().toLowerCase();
+            if (v === "#fff" || v === "#ffffff" || v === "white" || v === "rgb(255,255,255)" || v === "rgb(255, 255, 255)") {
+              origSet(overrideColorHex);
+              return;
+            }
+          }
+          origSet(val);
+        },
+      });
+    }
+  }
 
   const image = await loadImage(imageUrl);
 
