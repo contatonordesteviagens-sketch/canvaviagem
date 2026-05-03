@@ -195,19 +195,31 @@ export function V3Experiencia(props: V3ExperienciaProps) {
         data-region="bottom-cluster"
         className="absolute left-0 right-0 bottom-0 flex flex-col items-center gap-4 px-6 pb-10 z-10"
       >
-        {adTitle ? (
-          <h1
-            data-field="adTitle"
-            className="text-white text-center font-bold uppercase leading-[0.95] tracking-tight text-6xl sm:text-7xl md:text-8xl drop-shadow-2xl shadow-black"
-            style={{
-              fontFamily: titleFont,
-              textShadow:
-                "0 4px 18px rgba(0,0,0,0.85), 0 2px 6px rgba(0,0,0,0.95)",
-            }}
-          >
-            {adTitle}
-          </h1>
-        ) : null}
+        {adTitle ? (() => {
+          const len = adTitle.length;
+          // Auto-fit: texto curto = gigante, longo = reduz
+          const sizeClass =
+            len <= 14
+              ? "text-6xl sm:text-7xl md:text-8xl"
+              : len <= 24
+                ? "text-5xl sm:text-6xl md:text-7xl"
+                : len <= 40
+                  ? "text-4xl sm:text-5xl md:text-6xl"
+                  : "text-3xl sm:text-4xl md:text-5xl";
+          return (
+            <h1
+              data-field="adTitle"
+              className={`text-white text-center font-bold uppercase leading-[0.95] tracking-tight drop-shadow-2xl shadow-black ${sizeClass}`}
+              style={{
+                fontFamily: titleFont,
+                textShadow:
+                  "0 4px 18px rgba(0,0,0,0.85), 0 2px 6px rgba(0,0,0,0.95)",
+              }}
+            >
+              {adTitle}
+            </h1>
+          );
+        })() : null}
 
         <div className="flex flex-col items-center gap-2.5 w-full mt-2">
           {travelPeriod ? (
