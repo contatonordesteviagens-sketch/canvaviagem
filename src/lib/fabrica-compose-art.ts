@@ -2568,11 +2568,203 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
   // ============================================================
   // V3_Experiencia · NOTURNA / DARK PREMIUM (canvas)
-  // Estrutura lógica criada — layout/CSS pendente.
-  // Placeholder: reusa V0_Experiencia para não quebrar o fluxo.
+  // Background universal + overlay forte + topo (sans branco) +
+  // título maciço serif (drop-shadow) + botão sólido (Primária)
+  // + botão outline (borda Primária). Funciona nos 3 modos.
   // ============================================================
+  const renderV3Experiencia = (): string => {
+    // 1) BG cover
+    const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
+    ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+
+    // 2) Overlay OBRIGATÓRIO Dark Premium (gradiente + vinheta radial)
+    const grad = ctx.createLinearGradient(0, 0, 0, height);
+    grad.addColorStop(0, "rgba(0,0,0,0.65)");
+    grad.addColorStop(0.5, "rgba(0,0,0,0.25)");
+    grad.addColorStop(1, "rgba(0,0,0,0.85)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+    const rg = ctx.createRadialGradient(width / 2, height / 2, Math.min(width, height) * 0.35, width / 2, height / 2, Math.max(width, height) * 0.7);
+    rg.addColorStop(0, "rgba(0,0,0,0)");
+    rg.addColorStop(1, "rgba(0,0,0,0.55)");
+    ctx.fillStyle = rg;
+    ctx.fillRect(0, 0, width, height);
+
+    const cx = width / 2;
+    const isStory = format === "story";
+    const serif = `'Playfair Display', 'Cormorant Garamond', Georgia, serif`;
+    const sans = `Inter, Arial, sans-serif`;
+
+    // Helpers de cor / contraste (consistente com o componente React)
+    const hexToRgbLocal = (hex: string) => {
+      const c = hex.replace("#", "");
+      if (c.length !== 6) return null;
+      const r = parseInt(c.slice(0, 2), 16);
+      const g = parseInt(c.slice(2, 4), 16);
+      const b = parseInt(c.slice(4, 6), 16);
+      return [r, g, b].some(Number.isNaN) ? null : { r, g, b };
+    };
+    const lum = (hex: string): number => {
+      const rgb = hexToRgbLocal(hex);
+      if (!rgb) return 0.5;
+      const s = [rgb.r, rgb.g, rgb.b].map((v) => {
+        const x = v / 255;
+        return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * s[0] + 0.7152 * s[1] + 0.0722 * s[2];
+    };
+    const cr = (a: string, b: string) => {
+      const L1 = lum(a);
+      const L2 = lum(b);
+      const [hi, lo] = L1 > L2 ? [L1, L2] : [L2, L1];
+      return (hi + 0.05) / (lo + 0.05);
+    };
+    const onPrimary = cr(primaryColor, secondaryColor) >= 4.5
+      ? secondaryColor
+      : (cr(primaryColor, "#FFFFFF") >= cr(primaryColor, "#000000") ? "#FFFFFF" : "#000000");
+
+    ctx.textBaseline = "alphabetic";
+    ctx.textAlign = "center";
+
+    // 3) TOPO · promoName (sans branco pequeno, pt-8)
+    const topPad = isStory ? 110 : 70;
+    if (promoName && promoName.trim()) {
+      const sz = isStory ? 30 : 24;
+      ctx.font = `500 ${sz}px ${sans}`;
+      ctx.fillStyle = "#ffffff";
+      ctx.shadowColor = "rgba(0,0,0,0.7)";
+      ctx.shadowBlur = 10;
+      ctx.fillText(promoName.trim(), cx, topPad);
+      ctx.shadowBlur = 0;
+    }
+
+    // 4) CLUSTER INFERIOR
+    const padBottom = isStory ? 90 : 64;
+
+    // 4c) Botão outline (1º highlight) — desenhado primeiro p/ medir alturas
+    const firstHL = (highlights && highlights.length > 0)
+      ? (typeof (highlights as any)[0] === "string" ? (highlights as any)[0] : (highlights as any)[0]?.text || "")
+      : "";
+
+    const drawPillSolid = (text: string, yBase: number) => {
+      const fs = isStory ? 28 : 22;
+      ctx.font = `700 ${fs}px ${sans}`;
+      const tw = ctx.measureText(text).width;
+      const padX = isStory ? 44 : 32;
+      const padY = isStory ? 18 : 14;
+      const w = tw + padX * 2;
+      const h = fs + padY * 2;
+      const x = cx - w / 2;
+      const y = yBase - h;
+      const r = h / 2;
+      ctx.fillStyle = primaryColor;
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = onPrimary;
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, cx, y + h / 2 + 1);
+      ctx.textBaseline = "alphabetic";
+      return h;
+    };
+
+    const drawPillOutline = (text: string, yBase: number) => {
+      const fs = isStory ? 28 : 22;
+      ctx.font = `700 ${fs}px ${sans}`;
+      const tw = ctx.measureText(text).width;
+      const padX = isStory ? 44 : 32;
+      const padY = isStory ? 18 : 14;
+      const w = tw + padX * 2;
+      const h = fs + padY * 2;
+      const x = cx - w / 2;
+      const y = yBase - h;
+      const r = h / 2;
+      ctx.lineWidth = isStory ? 4 : 3;
+      ctx.strokeStyle = primaryColor;
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.fillStyle = primaryColor;
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, cx, y + h / 2 + 1);
+      ctx.textBaseline = "alphabetic";
+      return h;
+    };
+
+    const gap = isStory ? 18 : 14;
+    let cursorY = height - padBottom;
+
+    if (firstHL) {
+      const hOut = drawPillOutline(firstHL, cursorY);
+      cursorY -= hOut + gap;
+    }
+    if (travelPeriod && travelPeriod.trim()) {
+      const hSol = drawPillSolid(travelPeriod.trim(), cursorY);
+      cursorY -= hSol + gap;
+    }
+
+    // 4a) Título maciço (serif uppercase GIGANTE) — acima dos botões
+    const title = (titleText || "").trim();
+    if (title) {
+      const titleSize = isStory ? 150 : 110;
+      const userFamilyLocal = (fontFamily || "").trim();
+      const fam = userFamilyLocal && userFamilyLocal.toLowerCase() !== "inter"
+        ? `'${userFamilyLocal}', ${serif}`
+        : serif;
+      ctx.font = `900 ${titleSize}px ${fam}`;
+      ctx.fillStyle = "#ffffff";
+      ctx.shadowColor = "rgba(0,0,0,0.95)";
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetY = 4;
+      // wrap simples
+      const maxW = width - (isStory ? 120 : 100);
+      const words = title.toUpperCase().split(/\s+/);
+      const lines: string[] = [];
+      let cur = "";
+      for (const w of words) {
+        const test = cur ? `${cur} ${w}` : w;
+        if (ctx.measureText(test).width > maxW && cur) {
+          lines.push(cur);
+          cur = w;
+        } else {
+          cur = test;
+        }
+      }
+      if (cur) lines.push(cur);
+      const lineH = titleSize * 0.95;
+      let ty = cursorY - (lines.length - 1) * lineH - lineH * 0.15;
+      for (const ln of lines) {
+        ctx.fillText(ln, cx, ty);
+        ty += lineH;
+      }
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
+    }
+
+    ctx.textAlign = "left";
+    return canvas.toDataURL("image/png");
+  };
+
   if (isExperience && typeof forceVariant === "number" && forceVariant === 3) {
-    return renderV0Experiencia();
+    return renderV3Experiencia();
   }
 
   if (strategy === "ancora") {
