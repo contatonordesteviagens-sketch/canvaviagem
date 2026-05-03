@@ -2384,17 +2384,17 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const goldW = Math.min(width - 100, tw + padX * 2);
       const goldX = cx - goldW / 2;
       const goldY = afterTitleY;
-      // gradiente dourado horizontal
+      // gradiente baseado nas cores da marca (primária + secundária)
       const gg = ctx.createLinearGradient(goldX, goldY, goldX + goldW, goldY);
-      gg.addColorStop(0, "#CA8A04"); // yellow-600
-      gg.addColorStop(0.5, "#FACC15"); // yellow-400
-      gg.addColorStop(1, "#A16207"); // yellow-700
+      gg.addColorStop(0, secondaryColor);
+      gg.addColorStop(0.5, primaryColor);
+      gg.addColorStop(1, secondaryColor);
       ctx.save();
       ctx.fillStyle = gg;
       roundRect(ctx, goldX, goldY, goldW, goldH, goldH / 2);
       ctx.fill();
-      // ring claro
-      ctx.strokeStyle = "rgba(255, 240, 180, 0.7)";
+      // ring claro sutil
+      ctx.strokeStyle = "rgba(255,255,255,0.35)";
       ctx.lineWidth = 1.5;
       roundRect(ctx, goldX, goldY, goldW, goldH, goldH / 2);
       ctx.stroke();
