@@ -642,13 +642,14 @@ Clean modern UI, flawless spelling, high contrast, perfect alignment, premium vi
     const installmentLabel = v.installments === "1" ? "À VISTA" : `${v.installments}x`;
     const pixText = "5% OFF À VISTA NO PIX";
 
-    return `[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA E SAFE ZONES]
+    return `[CRITICAL SYSTEM RULES - READ TWICE: 1. NEVER use dark text on a dark background. 2. NEVER overlap elements; respect padding. 3. Icons MUST be single-color (monochromatic), NOT colorful.]
+[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA E SAFE ZONES]
 A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/2 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Stories Vertical 9:16) associada à Versão de Layout: V0 (Split Horizontal 45/55).
-É TERMINANTEMENTE PROIBIDO misturar esta lógica com V1, V2, V3 ou com o estilo "Experiência de Destino".
+É TERMINANTEMENTE PROIBIDO misturar esta lógica com V1, V2, V3, V4 ou com o estilo "Experiência de Destino".
 OBRIGATÓRIO: respeitar limites da interface do Instagram Stories e aplicar contraste máximo.
 
 [IMAGE]
-A high-end, clean vertical 9:16 travel advertisement (1080x1920, 8K). The layout features a sharp, perfectly straight horizontal split.
+A high-end, clean vertical 9:16 travel advertisement (1080x1920, 8K). Sharp, perfectly straight horizontal split.
 
 [STRICT UI SAFE ZONES — INSTAGRAM STORIES]
 - The TOP 20% (≈384px) MUST remain completely empty of typography, UI elements, or logos — reserved for Instagram header.
@@ -657,40 +658,46 @@ A high-end, clean vertical 9:16 travel advertisement (1080x1920, 8K). The layout
 
 [TOP HALF — PHOTO · 45% of canvas height, immediately below the top safe zone]
 A full-width 8K photorealistic image of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant, highly detailed, natural daylight, cinematic.
-In the top-left corner of this photo area, place a small ${agencyTag}.
+Strictly BELOW the top 20% safe zone, in the top-left corner of this photo area, place a small ${agencyTag}.
 
 [BOTTOM HALF — UI DESIGN · 55% of canvas height, ending above the bottom safe zone]
 Solid background using the PRIMARY brand color ${v.primaryHex}, stretching all the way down to cover the entire bottom section.
 
-Just below the photo split: a solid ${v.secondaryHex} rounded pill button containing bold DARK text "${originPill}".
+[TAG BUTTON & PADDING]
+Just below the photo split, leave an EMPTY gap (padding ≥ 40px), then place a solid DARK rounded pill button. The text inside MUST be PURE WHITE (#FFFFFF) bold reading "${originPill}". (Rule: Dark background = White Text.)
 
-Below the button: main headline "${v.promoName || `Pacote ${v.destination}`}" in massive, heavy ultra-bold font.
-🚨 CRITICAL CONTRAST RULE: this headline MUST be PURE WHITE (#FFFFFF) for maximum contrast against the ${v.primaryHex} background. Never paint the headline in dark tones over the primary background.
+[HEADLINE]
+Below the tag button: main headline "${v.promoName || `Pacote ${v.destination}`}" in MASSIVE, heavy ultra-bold font, color ${v.primaryTextHex || "PURE WHITE (#FFFFFF)"}.
+🚨 CRITICAL CONTRAST: headline MUST be PURE WHITE for maximum contrast against the ${v.primaryHex} background. Never dark headline on dark/saturated primary.
 
-Below the headline: a vertical stack of FOUR clean, solid PURE WHITE pill-buttons.
-🚨 CRITICAL RULE FOR INCLUSIONS: every single white pill MUST contain a minimalist DARK icon on the left and clearly rendered DARK TEXT. NEVER leave any pill empty. The four labels are:
+[INCLUSIONS — vertical stack]
+A vertical stack of FOUR inclusion items. Each item = ONE perfectly matching MONOCHROMATIC solid-color icon (all icons identical color, NO colorful emojis, NO multi-color, NO 3D) + LARGE bold text in ${v.primaryTextHex || "PURE WHITE (#FFFFFF)"}. ZERO overlap, generous spacing between items. Labels:
    • "${b1}"
    • "${b2}"
    • "${b3}"
    • "${b4}"
 
 [PRICE BLOCK — safely above the bottom 20% empty zone]
-A large, solid ${v.secondaryHex} rectangular block. ALL text inside MUST be DARK for high contrast against the light secondary background, neatly stacked with ZERO overlapping:
-- Top center: bold DARK text "${v.promoName || `OFERTA ${v.destination}`}".
-- Below: small DARK text "PACOTE ${v.destination}" and "${v.duration}".
-- Below: small DARK text "a partir de".
-- Then: a solid DARK ${v.primaryHex} rounded badge containing bold BRIGHT text "${installmentLabel}", placed next to a MASSIVE extra-bold DARK price "R$ ${v.installmentValue}", with small DARK text "por pessoa" below.
-- At the very bottom edge of the block: a solid DARKER ${v.primaryHex} footer strip containing bold BRIGHT text "${pixText}".
+A large, solid DARK rectangular block (deep charcoal/near-black) with rounded corners.
+🚨 INSIDE this DARK block, ALL text MUST be PURE WHITE (#FFFFFF). ZERO dark-on-dark, ZERO overlap.
+Stacked neatly inside, top to bottom:
+- Bold PURE WHITE text: "${v.promoName || `OFERTA ${v.destination}`}".
+- Small PURE WHITE text: "PACOTE ${v.destination}" and "${v.duration}".
+- Small PURE WHITE text: "a partir de".
+- A solid ${v.secondaryHex} rounded badge containing bold ${v.secondaryTextHex || "DARK"} text "${installmentLabel}", placed next to a MASSIVE extra-bold PURE WHITE price "R$ ${v.installmentValue}", with small PURE WHITE text "por pessoa" below.
+- At the very bottom edge of the block: a footer strip in ${v.secondaryHex} containing bold ${v.secondaryTextHex || "DARK"} text "${pixText}".
 
 [AESTHETIC]
 Clean modern UI, flawless spelling, ZERO text overlapping, perfect alignment strictly inside the central 60% block, high contrast, premium Brazilian travel agency feel.
 
 [REGRAS DE ISOLAMENTO]
 🚫 PROIBIDO: qualquer elemento dentro dos 20% do topo ou dos 20% da base.
-🚫 PROIBIDO: headline em cor escura sobre o bloco ${v.primaryHex}; texto claro sobre o bloco ${v.secondaryHex}.
-🚫 PROIBIDO: pílulas brancas vazias — TODAS devem conter texto escuro + ícone correspondentes.
-🚫 PROIBIDO: full-bleed photo, glass card translúcido, gradientes, ícones 3D, watermarks, copiar layouts V1/V2/V3/V4 ou Experiência.
-✅ OBRIGATÓRIO: split horizontal foto (topo 45%) + UI sólida ${v.primaryHex} (fundo 55%), preço como bloco dominante ${v.secondaryHex} com texto escuro, contraste máximo.
+🚫 PROIBIDO: headline em cor escura sobre o bloco ${v.primaryHex}.
+🚫 PROIBIDO: texto escuro dentro do bloco DARK de preço (deve ser PURE WHITE).
+🚫 PROIBIDO: ícones coloridos, emojis, multi-color ou 3D — apenas MONOCROMÁTICOS sólidos.
+🚫 PROIBIDO: qualquer sobreposição entre logo, headline, ícones ou bloco de preço.
+🚫 PROIBIDO: full-bleed photo até o rodapé, glass card translúcido, gradientes, watermarks, copiar layouts V1/V2/V3/V4 ou Experiência.
+✅ OBRIGATÓRIO: foto topo (45%) + UI sólida ${v.primaryHex} (55%), bloco DARK de preço com texto PURE WHITE, ícones MONOCROMÁTICOS, contraste máximo, padding explícito sob a logo e abaixo do split.
 ✅ Aspect ratio: 9:16 absoluto. Sem letterbox.`;
   }
 
