@@ -902,6 +902,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // ===== MODO IA PURA: gera 1 prompt da categoria; Experiência usa fluxo seguro sem texto da IA =====
       if (genMode === "ai") {
         const cat = getCategoria(categoria);
+        // HÍBRIDO: para Experiência de Destino (qualquer formato — square 1:1 ou story 9:16),
+        // a IA gera APENAS o fundo fotográfico limpo; o motor Canvas (composeTravelAd)
+        // desenha por cima logo, textos, preço, ícones e contraste com HEX exato.
         const isAiExperienceStory = categoria === "experiencia_destino";
         const guard = getForbiddenSets(categoria, "ai", format);
         const categoryLastKey = scopedTemplateKey("last", categoria, "ai");
