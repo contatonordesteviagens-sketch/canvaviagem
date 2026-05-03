@@ -571,7 +571,7 @@ Clean modern UI, flawless spelling, zero text overlapping, perfect alignment, pr
 ✅ Aspect ratio: 1:1 absoluto.`;
     }
 
-    return `[CRITICAL DESIGN LOGIC & CONTRAST RULE: NEVER generate light text on a light background. NEVER generate dark text on a dark background. Strictly obey the color variables provided.]
+    return `[CRITICAL SYSTEM RULES - READ TWICE: 1. NEVER use dark text on a dark background. 2. NEVER overlap elements; respect padding. 3. Icons MUST be single-color (monochromatic), NOT colorful.]
 [SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA]
 A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) associada à Versão de Layout: V0.
 Sob NENHUMA hipótese esta estrutura deve ser herdada por V1, V2, V3, V4 ou Experiência.
@@ -582,20 +582,29 @@ A premium, clean modern travel advertisement with a strict 1:1 square aspect rat
 
 [TOP HALF — DESIGN UI]
 Solid background using the PRIMARY brand color ${v.primaryHex}. Generous internal padding.
-- Top-left corner: ${agencyTag}.
-- Below the logo: a DARK rounded pill button containing PURE WHITE bold text "${originPill}".
-- Main headline: "${headline}" in MASSIVE, extra-large, ultra-bold sans-serif font.
-  🚨 CRITICAL CONTRAST: headline color MUST contrast strongly with ${v.primaryHex} (use PURE WHITE if primary is dark/saturated, deep dark if primary is light). Never light-on-light or dark-on-dark.
-- Below the headline: ONE delicate, perfectly straight VERTICAL line splitting the lower portion of the top half into two columns.
 
-[LEFT SIDE OF SPLIT — Inclusions]
-A vertical stack with FOUR items. The AI MUST use matching MONOCHROMATIC line icons (all the EXACT same single color) next to LARGE, highly visible bold text in the same contrasting color as the headline:
+[LOGO & PADDING]
+Top-left corner: ${agencyTag}.
+🚨 CRITICAL: Leave a LARGE, completely EMPTY gap of vertical space (padding ≥ 60px) directly below the logo. Absolutely NO element (text, icon, pill, line) can touch or overlap the logo area.
+
+[TAG BUTTON — below the empty gap]
+A DARK rounded pill button. The text inside this dark button MUST be PURE WHITE (#FFFFFF) bold reading "${originPill}". (Rule: Dark background = White Text — never violate this.)
+
+[MAIN HEADLINE]
+"${headline}" in MASSIVE, extra-large, ultra-bold sans-serif font, color ${v.primaryTextHex || "PURE WHITE (#FFFFFF)"}.
+🚨 CRITICAL CONTRAST: headline MUST contrast strongly with ${v.primaryHex}. Never light-on-light or dark-on-dark.
+
+[SPLIT SECTION]
+Below the headline, ONE delicate, perfectly straight VERTICAL line divides the lower portion of the top half into two columns.
+
+[LEFT SIDE — Inclusions]
+A vertical stack with FOUR items. The AI MUST use perfectly matching MONOCHROMATIC line icons (all the EXACT same single color, NO colorful emojis, NO multi-color, NO 3D) next to LARGE, highly visible bold text in the same contrasting color as the headline:
 ${benefitsList}
 
-[RIGHT SIDE OF SPLIT — Price Highlight Block]
+[RIGHT SIDE — Price Highlight Block]
 A prominent, solid DARK contrasting rectangular block (deep charcoal/near-black) with rounded corners.
 🚨 INSIDE this dark block, ALL text MUST be PURE WHITE (#FFFFFF) for maximum contrast.
-Stacked neatly inside, top to bottom:
+Stacked neatly inside, top to bottom, with ZERO overlap:
 - LARGE PURE WHITE text: "${v.installments === "1" ? "À VISTA" : `EM ATÉ ${v.installments}x`}".
 - GIGANTIC, screen-dominating, extra-bold PURE WHITE text: "R$ ${v.installmentValue}".
 - LARGE PURE WHITE text: "por pessoa".
@@ -607,10 +616,11 @@ An 8K photorealistic, ultra-detailed travel photograph of ${v.destination}. Scen
 Clean modern UI, flawless spelling, high contrast, perfect alignment, premium visual hierarchy.
 
 [REGRAS DE ISOLAMENTO]
-🚫 PROIBIDO: gradientes, brilho neon, cards flutuantes sobre a foto, texto sobre a foto, ícones 3D coloridos ou multi-color, watermarks.
+🚫 PROIBIDO: gradientes, brilho neon, cards flutuantes sobre a foto, texto sobre a foto, ícones 3D coloridos ou multi-color, emojis, watermarks.
 🚫 PROIBIDO: texto claro em fundo claro; texto escuro em fundo escuro.
+🚫 PROIBIDO: qualquer elemento tocando ou sobrepondo a logo (gap mínimo obrigatório).
 🚫 PROIBIDO copiar layouts de V1/V2/V3/V4 ou de Experiência.
-✅ OBRIGATÓRIO: split horizontal exato 50/50, linha vertical divisória no top half, ícones MONOCROMÁTICOS, bloco DARK dominante de preço com texto branco, pill superior DARK com texto branco.
+✅ OBRIGATÓRIO: split horizontal exato 50/50, gap vazio sob a logo, linha vertical divisória, ícones MONOCROMÁTICOS idênticos, bloco DARK dominante de preço com texto PURE WHITE, pill superior DARK com texto PURE WHITE.
 ✅ Aspect ratio: 1:1 absoluto. Sem letterbox.`;
   }
 
