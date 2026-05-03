@@ -932,9 +932,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
         toast.info(`Gerando ${picks.length} ${picks.length === 1 ? "variação" : "variações"} em IA Pura — ${cat.name}`);
 
-        // Prompt cinematográfico estruturado para o BG da V4 (Gemini Nano Banana 2)
-        // Consome o campo "Destino" preenchido no formulário lateral.
-        const v4BackgroundPrompt = `Fotografia ultra-realista 4k, estilo cinematográfico e editorial de agência de turismo premium focada em conversão. Vista panorâmica, ampla e imersiva de ${destination || "destino paradisíaco"}. Iluminação natural de golden hour ou dia ensolarado com céu azul vibrante e nuvens suaves. Composição com grande profundidade de campo: destacar a arquitetura histórica local, castelos ou belezas naturais em segundo e terceiro plano. DEIXAR OBRIGATORIAMENTE o centro e a base da imagem como 'negative space' (espaço mais limpo e levemente desfocado) para perfeita leitura de textos e sobreposição de elementos gráficos. Renderização fotorrealista em altíssima definição. NO TEXT, NO LOGOS, NO PEOPLE in foreground.`;
         const experienceBackgroundPrompt = (variant: number) => variant === 1
           ? `Fotografia editorial de viagens de luxo, cinematográfica e de altíssima qualidade (8K). Uma tomada ampla e ultrarrealista de ${destination || "destino paradisíaco"}. A iluminação é rim lighting (luz de contorno), criando uma luz suave, serena e exclusiva. Composição limpa, sem desfoque de movimento. A atmosfera geral é de uma beleza estonteante e de alto padrão. Espaço central livre e escurecido sutilmente para sobreposição de tipografia branca perfeitamente nítida. Sem texto, sem logos, sem watermarks, sem ícones, sem pictogramas.`
           : `Fotografia publicitária comercial de altíssimo padrão, hiper-realista e cinematográfica. Um cenário de extremo luxo e exclusividade em ${destination || "destino paradisíaco"}. Iluminação dramática e profunda que combine com um tom sofisticado. Centro e parte superior com negative space absoluto para tipografia branca. Sem texto, sem logos, sem watermarks, sem ícones, sem pictogramas.`;
@@ -951,7 +948,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         const nextVariantAi = forcedVariant !== null && forcedVariant >= 0 && forcedVariant < totalVariantsAi
           ? forcedVariant
           : candidatesAi[Math.floor(Math.random() * candidatesAi.length)];
-        const useV4Composer = isOfertaIA && nextVariantAi === 4;
+        const shouldComposeOfertaAi = isOfertaIA;
         variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantAi];
 
         const results = await Promise.all(
@@ -975,18 +972,16 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               promoName: (promoName || "Oferta Especial").toUpperCase(),
               highlights: categoria === "experiencia_destino" ? [] : highlights,
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
-              templateId: useV4Composer ? undefined : pick.templateId,
-              photoOnly: useV4Composer ? true : false,
-              variation: forcedVariant !== null ? forcedVariant : freshSeedAi + idx + Math.random(),
+              templateId: shouldComposeOfertaAi ? undefined : pick.templateId,
+              photoOnly: shouldComposeOfertaAi ? true : false,
+              variation: forcedVariant !== null ? forcedVariant : nextVariantAi,
               packageType: "Voo + Hotel",
               duration: categoria === "experiencia_destino" ? (travelPeriod || "5 dias") : "5 NOITES",
               forbiddenHeadlines: guard.headlines,
               forbiddenLayouts: guard.layouts,
               ...(isAiExperienceStory
                 ? { customPrompt: experienceBackgroundPrompt(nextVariantAi) }
-                : useV4Composer
-                  ? { customPrompt: v4BackgroundPrompt }
-                  : {}),
+                : {}),
             },
           }))
         );
@@ -1046,7 +1041,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             } catch (e) {
               console.warn("Compositor Experiência (IA pura) falhou, mantendo BG cru:", e);
             }
-          } else if (useV4Composer) {
+          } else if (shouldComposeOfertaAi) {
             try {
               img = await composeTravelAd({
                 imageUrl: img,
@@ -1066,7 +1061,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 paymentSuffix,
                 strategy: "ancora",
                 variation: freshSeedAi,
-                forceVariant: 4,
+                forceVariant: nextVariantAi,
                 titleOverride: resolvedAdTitle,
                 titleVariations: adTitleVariations,
                 travelPeriod,
@@ -1084,7 +1079,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 img = await composeLogoOnImage(img, state.logoBase64);
               }
             } catch (e) {
-              console.warn("V4 composer (IA pura) falhou, mantendo BG cru:", e);
+              console.warn("Compositor Oferta (IA pura) falhou, mantendo BG cru:", e);
             }
           }
 
