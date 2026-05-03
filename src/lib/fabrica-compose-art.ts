@@ -2260,15 +2260,310 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     return renderV1Experiencia();
   }
   // ============================================================
-  // V2_Experiencia · ROTEAMENTO (estrutura lógica — sem layout ainda)
-  // ------------------------------------------------------------
-  // Reservado exclusivamente para a categoria "Experiência de Destino".
-  // Layout/CSS ainda NÃO implementados — fallback temporário usa o
-  // canvas da V1 para não quebrar o fluxo até o design ser definido.
-  // NÃO altera renderização da V0 nem da V1.
+  // V2_Experiencia · LUXO MATERIAL (canvas)
+  // Botão fosco + título maciço + botão dourado + painel esquerdo
+  // (selo premium) + painel direito (estuque listrado com ícones)
+  // + banner inferior (CTA estático). Funciona nos 3 modos:
+  // Foto Real, Sua Imagem e IA Pura — sempre sobre `image` recebida.
   // ============================================================
+  const renderV2Experiencia = (): string => {
+    const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
+    ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+
+    // Overlay gradiente (top + bottom mais escuros para contraste)
+    const grad = ctx.createLinearGradient(0, 0, 0, height);
+    grad.addColorStop(0, "rgba(0,0,0,0.32)");
+    grad.addColorStop(0.45, "rgba(0,0,0,0.05)");
+    grad.addColorStop(1, "rgba(0,0,0,0.55)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+
+    const cx = width / 2;
+    const isStory = format === "story";
+    const sansFamily = (fontFamily && fontFamily.trim() && fontFamily.trim().toLowerCase() !== "inter")
+      ? `'${fontFamily}', Inter, Arial, sans-serif`
+      : `Inter, Arial, sans-serif`;
+    const serifFamily = (fontFamily && fontFamily.trim() && fontFamily.trim().toLowerCase() !== "inter")
+      ? `'${fontFamily}', 'Playfair Display', Georgia, serif`
+      : `'Playfair Display', 'Bodoni Moda', Georgia, serif`;
+
+    const withShadow = (cb: () => void, blur = 14, alpha = 0.55) => {
+      ctx.save();
+      ctx.shadowColor = `rgba(0,0,0,${alpha})`;
+      ctx.shadowBlur = blur;
+      cb();
+      ctx.restore();
+    };
+
+    // ───── TOPO ─────
+    const padTopBase = isStory ? (hasLogo ? 240 : 120) : (hasLogo ? 170 : 80);
+    let topY = padTopBase;
+
+    // Botão Topo · Polímero Fosco (cor primária com transparência)
+    const promoTxt = (promoName || "").trim().toUpperCase();
+    if (promoTxt) {
+      const btnFontSize = isStory ? 28 : 22;
+      ctx.font = `700 ${btnFontSize}px ${sansFamily}`;
+      const txtMetrics = ctx.measureText(`✓  ${promoTxt}`);
+      const btnPadX = isStory ? 36 : 28;
+      const btnH = isStory ? 70 : 56;
+      const btnW = Math.min(width - 80, txtMetrics.width + btnPadX * 2);
+      const btnX = cx - btnW / 2;
+      const btnY = topY;
+      // fundo fosco
+      ctx.save();
+      ctx.fillStyle = primaryColor;
+      ctx.globalAlpha = 0.78;
+      roundRect(ctx, btnX, btnY, btnW, btnH, btnH / 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      // ring branco sutil
+      ctx.strokeStyle = "rgba(255,255,255,0.22)";
+      ctx.lineWidth = 2;
+      roundRect(ctx, btnX, btnY, btnW, btnH, btnH / 2);
+      ctx.stroke();
+      ctx.restore();
+      // texto branco com check
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = `700 ${btnFontSize}px ${sansFamily}`;
+      ctx.fillText(`✓  ${promoTxt}`, cx, btnY + btnH / 2 + 1);
+      topY += btnH + (isStory ? 28 : 20);
+    }
+
+    // Título Maciço · branco com sombra forte
+    const adRaw = (titleText || (destination || "").toUpperCase() || "EXPERIÊNCIA ÚNICA").trim();
+    const titleText2 = adRaw.toUpperCase();
+    const maxTitleW = width - (isStory ? 100 : 120);
+
+    const wrap = (text: string, maxWidth: number, font: string, maxLines = 3): string[] => {
+      ctx.font = font;
+      const words = text.split(/\s+/);
+      const lines: string[] = [];
+      let cur = "";
+      for (const w of words) {
+        const next = cur ? `${cur} ${w}` : w;
+        if (ctx.measureText(next).width <= maxWidth) cur = next;
+        else { if (cur) lines.push(cur); cur = w; }
+      }
+      if (cur) lines.push(cur);
+      return lines.slice(0, maxLines);
+    };
+
+    let titleSize = isStory ? 132 : 96;
+    let titleFont = `900 ${titleSize}px ${sansFamily}`;
+    let titleLines = wrap(titleText2, maxTitleW, titleFont);
+    while (
+      (titleLines.length > 3 || titleLines.some((l) => ctx.measureText(l).width > maxTitleW)) &&
+      titleSize > 48
+    ) {
+      titleSize -= 6;
+      titleFont = `900 ${titleSize}px ${sansFamily}`;
+      titleLines = wrap(titleText2, maxTitleW, titleFont);
+    }
+    ctx.font = titleFont;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#ffffff";
+    const titleLineH = Math.round(titleSize * 0.95);
+    let lineY = topY + titleSize * 0.88;
+    withShadow(() => {
+      titleLines.forEach((line, i) => ctx.fillText(line, cx, lineY + i * titleLineH));
+    }, 24, 0.6);
+    let afterTitleY = lineY + (titleLines.length - 1) * titleLineH + (isStory ? 32 : 24);
+
+    // Botão Dourado · período/data
+    const period = (travelPeriod && travelPeriod.trim()) ? travelPeriod.trim() : "DATAS EXCLUSIVAS";
+    {
+      const goldFont = isStory ? 26 : 20;
+      ctx.font = `700 ${goldFont}px ${sansFamily}`;
+      const tw = ctx.measureText(period.toUpperCase()).width;
+      const padX = isStory ? 32 : 24;
+      const goldH = isStory ? 60 : 48;
+      const goldW = Math.min(width - 100, tw + padX * 2);
+      const goldX = cx - goldW / 2;
+      const goldY = afterTitleY;
+      // gradiente dourado horizontal
+      const gg = ctx.createLinearGradient(goldX, goldY, goldX + goldW, goldY);
+      gg.addColorStop(0, "#CA8A04"); // yellow-600
+      gg.addColorStop(0.5, "#FACC15"); // yellow-400
+      gg.addColorStop(1, "#A16207"); // yellow-700
+      ctx.save();
+      ctx.fillStyle = gg;
+      roundRect(ctx, goldX, goldY, goldW, goldH, goldH / 2);
+      ctx.fill();
+      // ring claro
+      ctx.strokeStyle = "rgba(255, 240, 180, 0.7)";
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, goldX, goldY, goldW, goldH, goldH / 2);
+      ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = `700 ${goldFont}px ${sansFamily}`;
+      ctx.fillText(period.toUpperCase(), cx, goldY + goldH / 2 + 1);
+    }
+
+    // ───── PAINÉIS LATERAIS ─────
+    const panelMidY = Math.round(height * 0.55);
+
+    // Painel ESQUERDO · selo premium (cor secundária fosca)
+    const leftHl = (highlights && highlights[0]) ? (highlights[0] as any) : null;
+    const leftText = ((leftHl && (typeof leftHl === "string" ? leftHl : leftHl.text)) || "EXCLUSIVO").toString().toUpperCase();
+    {
+      const pad = 28;
+      const labelFont = isStory ? 20 : 16;
+      const valueFont = isStory ? 44 : 34;
+      ctx.font = `800 ${valueFont}px ${sansFamily}`;
+      const lines = wrap(leftText, isStory ? 360 : 280, `800 ${valueFont}px ${sansFamily}`, 2);
+      const lineH = Math.round(valueFont * 1.05);
+      const blockH = pad * 2 + (labelFont + 14) + lines.length * lineH;
+      ctx.font = `800 ${valueFont}px ${sansFamily}`;
+      const widest = Math.max(...lines.map((l) => ctx.measureText(l).width));
+      const blockW = Math.min(isStory ? 480 : 360, widest + pad * 2);
+      const lx = 0;
+      const ly = panelMidY - blockH / 2;
+      ctx.save();
+      ctx.fillStyle = secondaryColor;
+      ctx.globalAlpha = 0.9;
+      roundRect(ctx, lx, ly, blockW, blockH, 16);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "rgba(255,255,255,0.18)";
+      ctx.lineWidth = 1.2;
+      roundRect(ctx, lx, ly, blockW, blockH, 16);
+      ctx.stroke();
+      ctx.restore();
+      // label "DESTAQUE"
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.font = `700 ${labelFont}px ${sansFamily}`;
+      ctx.fillText("◆ DESTAQUE", lx + pad, ly + pad + labelFont * 0.9);
+      // valor (serif do formulário)
+      ctx.font = `800 ${valueFont}px ${serifFamily}`;
+      ctx.fillStyle = "#ffffff";
+      lines.forEach((l, i) => {
+        ctx.fillText(l, lx + pad, ly + pad + labelFont + 14 + (i + 1) * lineH - lineH * 0.15);
+      });
+    }
+
+    // Painel DIREITO · highlights restantes (estuque listrado branco translúcido)
+    const rightHls = (highlights || []).slice(1, 4)
+      .map((h: any) => typeof h === "string" ? { text: h, icon: undefined } : { text: h?.text || "", icon: h?.icon })
+      .filter((h: any) => h.text);
+    if (rightHls.length > 0) {
+      const pad = 22;
+      const itemFont = isStory ? 24 : 19;
+      const iconBox = isStory ? 48 : 38;
+      const gap = isStory ? 22 : 16;
+      const itemH = Math.max(iconBox, itemFont + 10);
+      const blockW = isStory ? 520 : 380;
+      const blockH = pad * 2 + rightHls.length * itemH + (rightHls.length - 1) * gap;
+      const rx = width - blockW;
+      const ry = panelMidY - blockH / 2;
+      // fundo branco translúcido
+      ctx.save();
+      ctx.fillStyle = "rgba(255,255,255,0.12)";
+      roundRect(ctx, rx, ry, blockW, blockH, 16);
+      ctx.fill();
+      // border-l grossa
+      ctx.fillStyle = "rgba(255,255,255,0.30)";
+      ctx.fillRect(rx, ry, 3, blockH);
+      // listras verticais sutis (estuque)
+      ctx.globalAlpha = 0.18;
+      ctx.strokeStyle = "rgba(255,255,255,0.6)";
+      ctx.lineWidth = 1;
+      for (let xx = rx + 14; xx < rx + blockW - 4; xx += 10) {
+        ctx.beginPath();
+        ctx.moveTo(xx, ry + 6);
+        ctx.lineTo(xx, ry + blockH - 6);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.restore();
+      // itens
+      rightHls.forEach((h: any, i: number) => {
+        const iy = ry + pad + i * (itemH + gap);
+        // disco branco com ícone na cor primária
+        ctx.save();
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(rx + pad + iconBox / 2, iy + itemH / 2, iconBox / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        const iconKey = (h.icon || (["star", "heart", "check"] as IconKey[])[i % 3]) as IconKey;
+        drawMonoIcon(ctx, iconKey, rx + pad + iconBox / 2, iy + itemH / 2, iconBox * 0.6, primaryColor);
+        // texto serif na cor secundária
+        ctx.fillStyle = secondaryColor;
+        ctx.font = `700 ${itemFont}px ${serifFamily}`;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        const tx = rx + pad + iconBox + 14;
+        const maxW = blockW - (iconBox + pad * 2 + 14);
+        let label = h.text;
+        // trunca elegante
+        while (ctx.measureText(label).width > maxW && label.length > 6) {
+          label = label.slice(0, -2);
+        }
+        if (label !== h.text) label = label.replace(/\s+\S*$/, "") + "…";
+        ctx.fillText(label, tx, iy + itemH / 2 + 1);
+      });
+    }
+
+    // ───── BANNER INFERIOR · CTA estático ─────
+    {
+      const bannerH = isStory ? 110 : 84;
+      const margin = isStory ? 24 : 18;
+      const bx = margin;
+      const by = height - bannerH - margin;
+      const bw = width - margin * 2;
+      ctx.save();
+      ctx.fillStyle = secondaryColor;
+      roundRect(ctx, bx, by, bw, bannerH, 18);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.14)";
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, bx, by, bw, bannerH, 18);
+      ctx.stroke();
+      ctx.restore();
+      const ctaFont = isStory ? 34 : 26;
+      ctx.font = `800 ${ctaFont}px ${sansFamily}`;
+      ctx.fillStyle = primaryColor;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const ctaLabel = "DESCUBRA ESSA EXPERIÊNCIA";
+      const labelW = ctx.measureText(ctaLabel).width;
+      const arrowSize = ctaFont * 1.1;
+      const totalW = labelW + arrowSize + 18;
+      const startX = bx + bw / 2 - totalW / 2;
+      ctx.textAlign = "left";
+      ctx.fillText(ctaLabel, startX, by + bannerH / 2 + 1);
+      // seta dourada
+      const ax = startX + labelW + 18;
+      const ay = by + bannerH / 2;
+      ctx.strokeStyle = "#EAB308";
+      ctx.fillStyle = "#EAB308";
+      ctx.lineWidth = arrowSize * 0.18;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(ax + arrowSize, ay);
+      ctx.moveTo(ax + arrowSize - arrowSize * 0.32, ay - arrowSize * 0.32);
+      ctx.lineTo(ax + arrowSize, ay);
+      ctx.lineTo(ax + arrowSize - arrowSize * 0.32, ay + arrowSize * 0.32);
+      ctx.stroke();
+    }
+
+    ctx.textAlign = "left";
+    return canvas.toDataURL("image/png");
+  };
+
   if (isExperience && typeof forceVariant === "number" && forceVariant === 2) {
-    return renderV1Experiencia();
+    return renderV2Experiencia();
   }
 
   if (strategy === "ancora") {
