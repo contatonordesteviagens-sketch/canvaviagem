@@ -142,6 +142,7 @@ export function mapStateToV2Experiencia(
     logoBase64: state.logoBase64 || "",
 
     format: state.lastFormat === "square" ? "square" : "story",
+    baseTextMode: ((state as any).baseTextMode as BaseTextMode) || "light",
   };
 }
 
