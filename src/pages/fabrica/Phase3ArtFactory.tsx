@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { composeTravelAd, type PaymentMode } from "@/lib/fabrica-compose-art";
 import { getForbiddenSets, registerGeneration, freshSeed } from "@/lib/fabrica-generation-guard";
 import {
-  Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown,
+  Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown, RotateCcw,
   Bus, Hotel, Plane, Check, Star, Heart, Sun, Camera, MapPin, Utensils, Ship, Palmtree, Coffee, Wifi, User,
   Square, Smartphone, Image as ImageIcon, Upload, Link2, Search, Wand2,
 } from "lucide-react";
@@ -2103,11 +2103,30 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
         {/* Benefícios — em Experiência de Destino usa apenas texto, sem selector de ícones. */}
         <div>
-          <div className="flex items-baseline justify-between mb-2">
+          <div className="flex items-baseline justify-between mb-2 gap-2">
             <label className={labelCls}>{categoria === "experiencia_destino" ? "Descrição da experiência" : "Benefícios / Inclusos"}</label>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const defaults = categoria === "experiencia_destino"
+                    ? DEFAULT_EXPERIENCE_HIGHLIGHTS
+                    : DEFAULT_HIGHLIGHTS;
+                  setHighlights(defaults);
+                  setNewHl("");
+                  setEditingIconIdx(null);
+                  toast.success("Benefícios restaurados ao padrão");
+                }}
+                className="flex items-center gap-1 text-[10px] text-white/50 hover:text-white transition-colors"
+                title="Restaurar benefícios padrão"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Restaurar
+              </button>
               <span className="text-[10px] text-white/40">
                 {highlights.length}/{MAX_HIGHLIGHTS}{categoria === "experiencia_destino" ? " · texto da experiência" : " · clique no ícone para trocar"}
               </span>
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {highlights.map((h, i) => {
