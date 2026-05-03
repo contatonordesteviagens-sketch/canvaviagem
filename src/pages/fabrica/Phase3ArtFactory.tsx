@@ -1353,7 +1353,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
         {/* Categoria - Compacta */}
         <div>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">1 · Estilo do Anúncio</h3>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">1 · Tipo de Anúncio</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {CATEGORIAS.map((c) => {
               const selected = categoria === c.id;
