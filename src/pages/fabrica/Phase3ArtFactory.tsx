@@ -519,7 +519,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
   const [paymentLabelState, setPaymentLabelState] = useState(state.lastPaymentLabel || "");
   const setPaymentLabel = (label: string) => { setPaymentLabelState(label); update({ lastPaymentLabel: label }); };
-  const [paymentSuffixState, setPaymentSuffixState] = useState(state.lastPaymentSuffix || "por pessoa");
+  const [paymentSuffixState, setPaymentSuffixState] = useState(() => {
+    const savedSuffix = state.lastPaymentSuffix || "por pessoa";
+    return (state.lastCategoria as CategoriaId) === "experiencia_destino" && DEFAULT_SUFFIXES_OFERTA.has(savedSuffix)
+      ? DEFAULT_SUFFIX_EXPERIENCIA
+      : savedSuffix;
+  });
   const setPaymentSuffix = (suffix: string) => { setPaymentSuffixState(suffix); update({ lastPaymentSuffix: suffix }); };
   const paymentLabel = paymentMode === "installments" || paymentMode === "down_plus" ? installments : paymentLabelState;
   const paymentSuffix = paymentSuffixState;
