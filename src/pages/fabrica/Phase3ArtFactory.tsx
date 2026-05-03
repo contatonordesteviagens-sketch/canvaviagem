@@ -2044,132 +2044,114 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           )}
         </div>
 
-        {/* Paleta da marca (extraída automaticamente da logo na Fase 1) */}
-        {state.brandPalette && state.brandPalette.swatches?.length > 0 ? (
-          <div
-            className="relative rounded-xl p-4 border"
-            style={{
-              borderColor: `${state.brandPalette.primary}66`,
-              background: `linear-gradient(135deg, ${state.brandPalette.primary}1a 0%, ${state.brandPalette.secondary}14 100%)`,
-            }}
+        {/* Cores — colapsável (mesmo padrão de Tipografia).
+            Inclui Paleta da marca (auto-detectada da logo) + Primária/Secundária/Texto. */}
+        <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setColorsOpen((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
           >
-            <div className="flex items-baseline justify-between mb-3">
-              <label className={labelCls}>🎨 Paleta da sua marca</label>
-              <span className="text-[10px] text-white/50">detectada automaticamente da sua logo</span>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-sm font-bold text-white">Cores</span>
+              <span className="inline-flex items-center gap-1.5 ml-1">
+                <span className="w-3.5 h-3.5 rounded-full border border-white/30" style={{ background: primaryColor }} />
+                <span className="w-3.5 h-3.5 rounded-full border border-white/30" style={{ background: secondaryColor }} />
+                <span className="w-3.5 h-3.5 rounded-full border border-white/30" style={{ background: textColorOverride || effectiveTextColor }} />
+              </span>
+              <span className="text-[10px] text-white/40 truncate">
+                {primaryColor.toUpperCase()} · {secondaryColor.toUpperCase()} · texto {(textColorOverride || effectiveTextColor).toUpperCase()}
+                {!textColorOverride && <span className="text-white/30"> (auto)</span>}
+              </span>
             </div>
+            <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${colorsOpen ? "rotate-180" : ""}`} />
+          </button>
 
-            {/* Primária + Secundária detectadas (destaque) */}
-            <div className="flex items-center gap-3 mb-3">
-              <button
-                onClick={() => setPrimaryColor(state.brandPalette!.primary)}
-                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-white/15 bg-black/30 hover:bg-black/50 transition-colors"
-                title="Aplicar como cor primária"
-              >
-                <span className="w-5 h-5 rounded-full border border-white/30" style={{ background: state.brandPalette.primary }} />
-                <span className="text-[11px] font-bold text-white/80">Primária</span>
-              </button>
-              <button
-                onClick={() => setSecondaryColor(state.brandPalette!.secondary)}
-                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-white/15 bg-black/30 hover:bg-black/50 transition-colors"
-                title="Aplicar como cor secundária"
-              >
-                <span className="w-5 h-5 rounded-full border border-white/30" style={{ background: state.brandPalette.secondary }} />
-                <span className="text-[11px] font-bold text-white/80">Secundária</span>
-              </button>
-              <button
-                onClick={() => {
-                  setPrimaryColor(state.brandPalette!.primary);
-                  setSecondaryColor(state.brandPalette!.secondary);
-                  toast.success("Paleta da marca aplicada!");
-                }}
-                className="ml-auto text-[11px] font-bold px-3 py-1.5 rounded-lg text-black"
-                style={{ background: `linear-gradient(135deg, ${state.brandPalette.primary}, ${state.brandPalette.secondary})` }}
-              >
-                Aplicar paleta
-              </button>
-            </div>
+          {colorsOpen && (
+            <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
+              {/* Paleta da marca (extraída automaticamente da logo na Fase 1) */}
+              {state.brandPalette && state.brandPalette.swatches?.length > 0 ? (
+                <BrandPaletteBlock
+                  palette={state.brandPalette}
+                  primaryColor={primaryColor}
+                  secondaryColor={secondaryColor}
+                  textColorOverride={textColorOverride}
+                  setPrimaryColor={setPrimaryColor}
+                  setSecondaryColor={setSecondaryColor}
+                  setTextColorOverride={setTextColorOverride}
+                />
+              ) : !state.logoBase64 ? (
+                <div className="rounded-xl p-3 border border-dashed border-white/15 bg-white/[0.02] text-[11px] text-white/55">
+                  🎨 <strong className="text-white/80">Paleta automática:</strong> envie a logo da sua agência na Fase 1 para detectarmos as cores da sua marca automaticamente.
+                </div>
+              ) : null}
 
-            {/* Outras cores detectadas */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] uppercase tracking-wider text-white/40">Mais cores:</span>
-              {state.brandPalette.swatches.map((c) => {
-                const isPrimary = isSameHex(c, primaryColor);
-                const isSecondary = isSameHex(c, secondaryColor);
-                return (
-                  <button
-                    key={c}
-                    onClick={() => setPrimaryColor(c)}
-                    onContextMenu={(e) => { e.preventDefault(); setSecondaryColor(c); }}
-                    className={`w-7 h-7 rounded-full border transition-transform hover:scale-110 shadow-md ${
-                      isPrimary || isSecondary ? "border-white scale-110" : "border-white/20"
-                    }`}
-                    style={{ background: c }}
-                    title={`${c} — clique: primária • clique direito: secundária`}
-                  />
-                );
-              })}
-            </div>
-            <p className="text-[10px] text-white/45 mt-2">
-              Clique em uma cor para usar como primária. Clique direito (ou aperte Aplicar paleta) para sincronizar tudo.
-            </p>
-          </div>
-        ) : !state.logoBase64 ? (
-          <div className="rounded-xl p-3 border border-dashed border-white/15 bg-white/[0.02] text-[11px] text-white/55">
-            🎨 <strong className="text-white/80">Paleta automática:</strong> envie a logo da sua agência na Fase 1 para detectarmos as cores da sua marca automaticamente.
-          </div>
-        ) : null}
-
-        {/* Cores — Primária | Secundária em 2 colunas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {[
-            { label: "Cor primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo principal" },
-            { label: "Cor secundária", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
-          ].map(({ label, value, setter, hint }) => (
-            <div key={label} className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
-              <div className="flex items-baseline justify-between mb-2">
-                <label className={labelCls}>{label}</label>
-                <span className="text-[10px] text-white/40">{hint}</span>
-              </div>
-              {/* Bolinhas da paleta — grid 8 col, 4 linhas */}
-              <div className="grid grid-cols-10 gap-1 mb-3">
-                {PRESET_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setter(c)}
-                    className={`w-5 h-5 rounded-full border transition-all ${value.toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-md" : "border-white/20 hover:border-white/60"}`}
-                    style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
-                    aria-label={c}
-                    title={c}
-                  />
+              {/* Cor primária / secundária / texto — 3 colunas no desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  { label: "Cor primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo principal" },
+                  { label: "Cor secundária", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
+                  { label: "Cor do texto", value: textColorOverride || effectiveTextColor, setter: setTextColorOverride, hint: textColorOverride ? "manual" : "auto-contraste" },
+                ].map(({ label, value, setter, hint }) => (
+                  <div key={label} className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
+                    <div className="flex items-baseline justify-between mb-2">
+                      <label className={labelCls}>{label}</label>
+                      <span className="text-[10px] text-white/40">{hint}</span>
+                    </div>
+                    <div className="grid grid-cols-10 gap-1 mb-3">
+                      {PRESET_COLORS.map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => setter(c)}
+                          className={`w-5 h-5 rounded-full border transition-all ${value.toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-md" : "border-white/20 hover:border-white/60"}`}
+                          style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
+                          aria-label={c}
+                          title={c}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <label
+                        className="relative w-10 h-10 rounded-full cursor-pointer flex-shrink-0 overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
+                        style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}
+                        title="Escolher cor personalizada"
+                      >
+                        <input
+                          type="color"
+                          value={value}
+                          onChange={(e) => setter(e.target.value)}
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                        />
+                        <span
+                          className="absolute inset-1.5 rounded-full border border-white/40"
+                          style={{ background: value }}
+                        />
+                      </label>
+                      <input
+                        value={value}
+                        onChange={(e) => setter(e.target.value)}
+                        placeholder="#000000"
+                        className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase"
+                      />
+                      {label === "Cor do texto" && textColorOverride && (
+                        <button
+                          onClick={() => setTextColorOverride("")}
+                          className="text-[11px] text-white/60 hover:text-white px-2 py-1 rounded border border-white/10 flex-shrink-0"
+                          title="Voltar ao auto-contraste"
+                        >
+                          Auto
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
-              {/* Color picker redondo (gradiente arco-íris) + HEX */}
-              <div className="flex gap-2 items-center">
-                <label
-                  className="relative w-10 h-10 rounded-full cursor-pointer flex-shrink-0 overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
-                  style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}
-                  title="Escolher cor personalizada"
-                >
-                  <input
-                    type="color"
-                    value={value}
-                    onChange={(e) => setter(e.target.value)}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                  />
-                  <span
-                    className="absolute inset-1.5 rounded-full border border-white/40"
-                    style={{ background: value }}
-                  />
-                </label>
-                <input
-                  value={value}
-                  onChange={(e) => setter(e.target.value)}
-                  placeholder="#000000"
-                  className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase"
-                />
-              </div>
+
+              <p className="text-[10px] text-white/40">
+                💡 A <strong className="text-white/70">cor do texto</strong> em <em>Auto</em> escolhe entre branco e preto baseado no fundo da imagem para garantir leitura. Defina manualmente apenas se quiser sobrescrever.
+              </p>
             </div>
-          ))}
+          )}
         </div>
 
         {/* Benefícios — em Experiência de Destino usa apenas texto, sem selector de ícones. */}
