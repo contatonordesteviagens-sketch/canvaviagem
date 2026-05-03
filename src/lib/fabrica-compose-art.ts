@@ -2566,6 +2566,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     return renderV2Experiencia();
   }
 
+  // ============================================================
+  // V3_Experiencia · NOTURNA / DARK PREMIUM (canvas)
+  // Estrutura lógica criada — layout/CSS pendente.
+  // Placeholder: reusa V0_Experiencia para não quebrar o fluxo.
+  // ============================================================
+  if (isExperience && typeof forceVariant === "number" && forceVariant === 3) {
+    return renderV0Experiencia();
+  }
+
   if (strategy === "ancora") {
     ctx.fillStyle = primaryColor;
     ctx.fillRect(0, 0, width, height);
