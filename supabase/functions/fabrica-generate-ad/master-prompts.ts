@@ -662,66 +662,50 @@ Clean modern UI, flawless spelling, high contrast, perfect alignment, premium vi
       : ["Transporte incluso", "Hospedagem", "Café da manhã", "Guia local"];
     const [b1, b2, b3, b4] = [0,1,2,3].map((i) => benefits[i] || "");
     const originPill = v.city ? `Saindo de ${v.city}` : (v.agencyName || "Pacote exclusivo");
-    const agencyTag = v.agencyName ? `minimalist logo placeholder for agency "${v.agencyName}"` : "minimalist logo placeholder";
-    const installmentLabel = v.installments === "1" ? "À VISTA" : `${v.installments}x`;
-    const pixText = "5% OFF À VISTA NO PIX";
+    const agencyTag = v.agencyName ? `placeholder de logo minimalista para a agência "${v.agencyName}"` : "placeholder de logo minimalista";
+    const primaryTxt = v.primaryTextHex || "#FFFFFF";
+    const secondaryTxt = v.secondaryTextHex || "#FFFFFF";
+    const headlineTxt = v.promoName || `Pacote ${v.destination}`;
 
-    return `[CRITICAL SYSTEM RULES - READ TWICE: 1. NEVER use dark text on a dark background. 2. NEVER overlap elements; respect padding. 3. Icons MUST be single-color (monochromatic), NOT colorful.]
-[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA E SAFE ZONES]
-A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/2 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Stories Vertical 9:16) associada à Versão de Layout: V0 (Split Horizontal 45/55).
-É TERMINANTEMENTE PROIBIDO misturar esta lógica com V1, V2, V3, V4 ou com o estilo "Experiência de Destino".
-OBRIGATÓRIO: respeitar limites da interface do Instagram Stories e aplicar contraste máximo.
+    return `[COMANDO MESTRE DO SISTEMA: CORES EXATAS DA MARCA E SUBSTITUIÇÃO ABSOLUTA DE CONTRASTE. A IA DEVE: 1. Usar os códigos de cor HEX exatos fornecidos para todos os fundos e formas. 2. Usar estritamente as cores de texto calculadas atribuídas para a tipografia para garantir legibilidade. 3. Todos os ícones de interface DEVEM ser perfeitamente monocromáticos e combinar com a cor do texto. NUNCA usar emojis coloridos. 4. NUNCA sobrepor elementos.]
+[COMANDO DE SISTEMA: ISOLAMENTO DE ESTRUTURA E SAFE ZONES. Aplicar ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/2 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Stories Vertical 9:16) - Layout V0.]
+PROIBIDO misturar com V1/V2/V3/V4 ou Experiência.
 
-[IMAGE]
-A high-end, clean vertical 9:16 travel advertisement (1080x1920, 8K). Sharp, perfectly straight horizontal split.
+IMAGEM: Um anúncio de viagem vertical 9:16 premium (1080x1920, 8K). Divisão horizontal nítida e perfeitamente reta cruzando o meio da tela (50/50).
 
-[STRICT UI SAFE ZONES — INSTAGRAM STORIES]
-- The TOP 20% (≈384px) MUST remain completely empty of typography, UI elements, or logos — reserved for Instagram header.
-- The BOTTOM 20% (≈384px) MUST remain completely empty — reserved for Instagram message box.
-- ALL critical content lives ONLY inside the central 60% vertical block.
+REGRA ESTRITA DE INTERFACE (ZONAS SEGURAS): Os 20% superiores e os 20% inferiores da imagem DEVEM permanecer completamente vazios de tipografia ou logotipos (reservados para header e caixa de mensagem do Instagram Stories).
 
-[TOP HALF — PHOTO · 45% of canvas height, immediately below the top safe zone]
-A full-width 8K photorealistic image of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant, highly detailed, natural daylight, cinematic.
-Strictly BELOW the top 20% safe zone, in the top-left corner of this photo area, place a small ${agencyTag}.
+METADE SUPERIOR (Design da Interface · 50% da tela): Fundo sólido usando EXATAMENTE o código de cor hex ${v.primaryHex}.
 
-[BOTTOM HALF — UI DESIGN · 55% of canvas height, ending above the bottom safe zone]
-Solid background using the PRIMARY brand color ${v.primaryHex}, stretching all the way down to cover the entire bottom section.
+LOGOTIPO E ESPAÇAMENTO: Colocado com segurança ABAIXO da zona segura superior de 20%, no canto superior esquerdo: ${agencyTag}. CRÍTICO: Deixe um enorme espaço vertical vazio (≥80px) diretamente abaixo do logotipo. Absolutamente NENHUM elemento pode tocar ou sobrepor o logotipo.
 
-[TAG BUTTON & PADDING]
-Just below the photo split, leave an EMPTY gap (padding ≥ 40px), then place a solid DARK rounded pill button. The text inside MUST be PURE WHITE (#FFFFFF) bold reading "${originPill}". (Rule: Dark background = White Text.)
+BOTÃO DE TAG: Colocado com segurança ABAIXO do enorme espaço vazio, um botão sólido em formato de pílula usando a cor hex EXATA ${v.secondaryHex}. O texto dentro deste botão DEVE SER renderizado em EXATO hex ${secondaryTxt} escrito "${originPill}".
 
-[HEADLINE]
-Below the tag button: main headline "${v.promoName || `Pacote ${v.destination}`}" in MASSIVE, heavy ultra-bold font, color ${v.primaryTextHex || "PURE WHITE (#FFFFFF)"}.
-🚨 CRITICAL CONTRAST: headline MUST be PURE WHITE for maximum contrast against the ${v.primaryHex} background. Never dark headline on dark/saturated primary.
+TÍTULO PRINCIPAL: Abaixo do botão, escrever "${headlineTxt}" usando uma fonte EXATO hex ${primaryTxt} GIGANTE, muito pesada e ultra-negrito.
 
-[INCLUSIONS — vertical stack]
-A vertical stack of FOUR inclusion items. Each item = ONE perfectly matching MONOCHROMATIC solid-color icon (all icons identical color, NO colorful emojis, NO multi-color, NO 3D) + LARGE bold text in ${v.primaryTextHex || "PURE WHITE (#FFFFFF)"}. ZERO overlap, generous spacing between items. Labels:
-   • "${b1}"
-   • "${b2}"
-   • "${b3}"
-   • "${b4}"
+INCLUSÕES E PREÇO (Lado a Lado): Uma delicada linha vertical EXATO ${primaryTxt} (com baixa opacidade) dividindo a área abaixo do título.
 
-[PRICE BLOCK — safely above the bottom 20% empty zone]
-A large, solid DARK rectangular block (deep charcoal/near-black) with rounded corners.
-🚨 INSIDE this DARK block, ALL text MUST be PURE WHITE (#FFFFFF). ZERO dark-on-dark, ZERO overlap.
-Stacked neatly inside, top to bottom:
-- Bold PURE WHITE text: "${v.promoName || `OFERTA ${v.destination}`}".
-- Small PURE WHITE text: "PACOTE ${v.destination}" and "${v.duration}".
-- Small PURE WHITE text: "a partir de".
-- A solid ${v.secondaryHex} rounded badge containing bold ${v.secondaryTextHex || "DARK"} text "${installmentLabel}", placed next to a MASSIVE extra-bold PURE WHITE price "R$ ${v.installmentValue}", with small PURE WHITE text "por pessoa" below.
-- At the very bottom edge of the block: a footer strip in ${v.secondaryHex} containing bold ${v.secondaryTextHex || "DARK"} text "${pixText}".
+Lado esquerdo: Uma pilha vertical de ícones estritamente MONOCROMÁTICOS (todos na MESMA cor exata ${primaryTxt}) ao lado do texto bold em EXATO ${primaryTxt}:
+  • "${b1}"
+  • "${b2}"
+  • "${b3}"
+  • "${b4}"
 
-[AESTHETIC]
-Clean modern UI, flawless spelling, ZERO text overlapping, perfect alignment strictly inside the central 60% block, high contrast, premium Brazilian travel agency feel.
+Lado direito: Um bloco retangular sólido e proeminente (cantos arredondados) usando a cor hex EXATA ${v.secondaryHex}. DENTRO deste bloco, TODO O TEXTO DEVE SER renderizado em EXATO hex ${secondaryTxt}. Empilhados perfeitamente com ZERO sobreposição:
+  - texto "À VISTA"
+  - texto extra-negrito MASSIVO "R$ ${v.installmentValue}"
+  - texto "por pessoa"
+
+METADE INFERIOR (Foto · 50% da tela): Uma imagem fotorrealista 8K de largura total de ${v.destination}. Cena: ${v.destinationDescription}. Vibrante, iluminação natural, cinematográfica — estendendo-se até a borda inferior (mas o conteúdo crítico já está acima da zona segura inferior de 20%).
+
+ESTÉTICA: Interface moderna e limpa, contraste alto e absoluto, zero sobreposição de textos, margens perfeitas, ortografia impecável.
 
 [REGRAS DE ISOLAMENTO]
 🚫 PROIBIDO: qualquer elemento dentro dos 20% do topo ou dos 20% da base.
-🚫 PROIBIDO: headline em cor escura sobre o bloco ${v.primaryHex}.
-🚫 PROIBIDO: texto escuro dentro do bloco DARK de preço (deve ser PURE WHITE).
-🚫 PROIBIDO: ícones coloridos, emojis, multi-color ou 3D — apenas MONOCROMÁTICOS sólidos.
-🚫 PROIBIDO: qualquer sobreposição entre logo, headline, ícones ou bloco de preço.
-🚫 PROIBIDO: full-bleed photo até o rodapé, glass card translúcido, gradientes, watermarks, copiar layouts V1/V2/V3/V4 ou Experiência.
-✅ OBRIGATÓRIO: foto topo (45%) + UI sólida ${v.primaryHex} (55%), bloco DARK de preço com texto PURE WHITE, ícones MONOCROMÁTICOS, contraste máximo, padding explícito sob a logo e abaixo do split.
+🚫 PROIBIDO: ignorar os HEX exatos fornecidos; ícones multi-color, coloridos, emojis ou 3D.
+🚫 PROIBIDO: sobreposição entre logo, headline, ícones ou bloco de preço.
+🚫 PROIBIDO: foto no topo, glass card, gradientes, watermarks, copiar layouts V1/V2/V3/V4 ou Experiência.
+✅ OBRIGATÓRIO: split horizontal 50/50, UI sólida EXATO ${v.primaryHex} no TOPO, foto na METADE INFERIOR, pílula EXATO ${v.secondaryHex} com texto EXATO ${secondaryTxt}, headline em EXATO ${primaryTxt}, ícones MONOCROMÁTICOS na cor EXATA ${primaryTxt}, price block EXATO ${v.secondaryHex} com texto EXATO ${secondaryTxt}.
 ✅ Aspect ratio: 9:16 absoluto. Sem letterbox.`;
   }
 
