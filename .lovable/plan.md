@@ -1,78 +1,29 @@
-## Correções na V3 e melhorias no input de preço
+# Adicionar Layout 1/1/2 V0 — Stories Split Horizontal
 
-Cinco ajustes coordenados — todos preservam V0/V1/V2 intactos.
+## Objetivo
+Implementar versão **V0** da nomenclatura **1/1/2** (Foto Real · Oferta de Pacote · Stories 9:16): foto no topo (45%), bloco UI sólido na cor secundária no fundo (55%), respeitando safe zones de 20% topo/base do Instagram. Atualmente esse formato só renderiza V2 (full-bleed glass card).
 
----
+## Arquivo a editar
+`supabase/functions/fabrica-generate-ad/master-prompts.ts` — função `promptClassicVertical`, bloco Stories 9:16 (linhas ~485-558).
 
-### 1. Ícones todos da mesma cor (V3)
+## Mudança técnica
+1. Detectar versão a partir de `v.creativeSeed` (formato `<tplId>-v<N>-...`) via regex `/-v(\d+)-/`.
+2. Se `ver === 0`, renderizar novo prompt V0 (split horizontal). Caso contrário, manter V2 atual (fallback).
+3. V2 permanece intocado — zero impacto em chamadas existentes.
 
-Hoje a linha "7 dias | ✈ 🚌 🏨 ☕ 📷" usa **emojis** via `ICON_SYMBOL`, que o navegador renderiza coloridos automaticamente (café marrom, xícara colorida, etc.).
+## Estrutura do prompt V0
+- **Header:** `[SYSTEM COMMAND: ISOLAMENTO 1/1/2 V0]` — proíbe herdar V1/V2/V3 ou Experiência.
+- **Safe zones:** topo 20% e base 20% completamente vazios.
+- **Top 45%:** foto 8K full-width de `v.destination` + logo placeholder no canto superior-esquerdo.
+- **Bottom 55%:** background sólido `v.secondaryHex`.
+  - Pill `v.primaryHex` com texto escuro (`Saindo de {v.city}` ou `agencyName`).
+  - Headline massivo BRANCO PURO (regra crítica de contraste sobre secondary).
+  - Stack de 4 pills BRANCAS sólidas com ícone + texto escuro (de `v.highlights` ou defaults: Transporte/Hospedagem/Café/Guia).
+- **Price block (acima da safe zone inferior):** retângulo sólido `v.primaryHex` com texto branco — promoName, "PACOTE {destino}", duração, "a partir de", badge `v.secondaryHex` com parcela, preço massivo, "por pessoa". Footer strip `v.secondaryHex` com `5% OFF À VISTA NO PIX`.
+- **Regras finais:** zero overlapping, contraste máximo, aspect ratio 9:16 absoluto.
 
-**Solução**: na V3 substituir os emojis por **ícones vetoriais monocromáticos** sem espaçamentos vazios todos preenchidos, desenhados via `Path2D` na cor navy (#0B2B7A) — avião, ônibus, hotel, café e câmera, todos na mesma cor. Não afeta V0/V1/V2 que continuam usando os emojis. Adicionar apenas icones que foram selecionados pelo usuário, na imagem tem 1 icone à mais do avião que não foi selecionado, selecionei quatro opções de ícone e apareceu um ícone a mais de um avião. 
+## Deploy
+Após edição, redeploy de `fabrica-generate-ad`.
 
----
-
-### 2. Sobreposição "10x R$200,00" (V3)
-
-O lado esquerdo (`12X / sem juros`) e o preço gigante da direita estão colidindo quando o valor é grande (R$ 200,00 → 7 caracteres). 
-
-**Solução**:
-
-- Calcular largura real do preço gigante e **reduzir o font-size** automaticamente (130 → mín 80px) até caber em ~62% do box.
-- Empurrar a coluna esquerda mais para a borda e a direita mais para fora, com **gap mínimo garantido de 30px** entre os dois blocos.
-- Alinhar verticalmente o "12X" com o centro óptico do preço.
-
----
-
-### 3. "Total por pessoa" editável
-
-Hoje a V3 calcula `preço × parcelas` automaticamente e exibe `Total por pessoa: R$ X.XXX` — fixo.
-
-**Solução**: adicionar dois novos campos opcionais no painel **VALOR (R$)**:
-
-- Checkbox **"Mostrar total"** (on/off) — controla se a linha aparece.
-- Campo de texto **"Total"** — livre. Se vazio, calcula automaticamente. Se preenchido, usa o que o usuário digitou (ex.: "R$ 1.999 por casal").
-- Dropdown rápido com sugestões: "por pessoa", "por casal", "por pacote", "valor total".
-
-Os valores ficam persistidos no `useFabricaContext` (`totalOverride`, `showTotal`) e são passados para o compositor.
-
----
-
-### 4. Logo do Pix correta
-
-Hoje desenho um losango ciano genérico. O símbolo oficial do Pix é composto por **4 losangos pequenos** formando um padrão de "X" (dois claros + dois escuros).
-
-**Solução**: substituir o desenho atual por uma renderização vetorial mais fiel ao logotipo oficial do Pix — quatro losangos arredondados em branco/turquesa formando o glifo característico, mantido nas mesmas dimensões dentro da faixa azul.
-
----
-
-### 5. Opção "Remover centavos" no campo VALOR (R$)
-
-Pedido: ao marcar a checkbox, "423,43" vira "423"; "4234,XX" vira "4.234".
-
-**Solução**:
-
-- Adicionar checkbox **"Sem centavos"** ao lado do campo VALOR.
-- Quando ativa: a função `formatPriceValue` é chamada com flag `noCents=true`, que zera a parte decimal e formata só o inteiro com separador de milhar (`Intl.NumberFormat` com `maximumFractionDigits: 0`).
-- A flag fica persistida em `state.hideCents` no contexto e se aplica em todas as variantes (V0/V1/V2/V3) e no IA Pura (passada como parte do `installmentValue`/`totalValue` já formatados).
-- Toggle 100% reversível: desmarcar restaura "423,43" automaticamente a partir do valor digitado.
-
----
-
-## Detalhes técnicos
-
-**Arquivos a editar:**
-
-- `src/lib/fabrica-compose-art.ts` — bloco `if (variant === 3)`: novos ícones vetoriais (função `drawMonoIcon(ctx, kind, x, y, size, color)`), ajuste de layout do preço com auto-shrink, novo glifo Pix com 4 losangos, leitura de `totalOverride` / `showTotal`.
-- `src/hooks/useFabricaContext.tsx` — adicionar `hideCents: boolean`, `totalOverride: string`, `showTotal: boolean` ao state e setters.
-- `src/pages/fabrica/Phase3ArtFactory.tsx` — checkbox "Sem centavos" no campo VALOR, checkbox "Mostrar total" + input "Total" no bloco de pagamento, propagar via `composeTravelAd({ totalOverride, showTotal })`.
-- `src/lib/fabrica-compose-art.ts` (interface) — aceitar `totalOverride?: string` e `showTotal?: boolean`.
-- `formatPriceValue` — aceitar `{ noCents?: boolean }` e respeitar a flag.
-
-**Não vou tocar:**
-
-- V0, V1, V2 (layout, cores, tipografia).
-- Lógica de rotação de variantes (V3 continua sorteada normalmente).
-- Edge function de IA Pura (o prompt OP7 já está correto e os valores já chegam pré-formatados).
-
-Após as mudanças, testarei mentalmente os 4 cenários: preço pequeno (R$ 99), médio (R$ 1.499,90), grande (R$ 12.999,00) e com centavos removidos (R$ 4.234) — todos devem caber sem sobreposição.
+## Sem mudanças
+Front-end, `index.ts`, V0 do 1/1/1 (square), V2 do 1/1/2 — todos preservados.
