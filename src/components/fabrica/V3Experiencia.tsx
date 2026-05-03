@@ -2,16 +2,14 @@
 // V3_Experiencia · NOTURNA / DARK PREMIUM
 // (Categoria "Experiência de Destino")
 // ------------------------------------------------------------
-// ESTRUTURA LÓGICA APENAS — sem layout/CSS final.
-// Este componente é um STUB que apenas mapeia os dados do
-// formulário lateral e renderiza um placeholder mínimo, para que
-// o seletor de versão (V3) funcione no fluxo da Fábrica.
+// ESTRUTURA ESPACIAL + MAPEAMENTO DE DADOS (sem design final).
+// Background universal (Foto Real / Sua Imagem / IA Pura) +
+// regiões isoladas: TOPO (Nome da experiência) e CLUSTER
+// INFERIOR (Título maciço, Botão sólido = data, Botão outline =
+// 1º item da descrição).
 //
-// Renderização real (Tailwind + canvas) será implementada
-// em uma próxima etapa, sem tocar nas variações já existentes:
-//   • Oferta de Pacote: V0..V5
-//   • Experiência de Destino: V0_Experiencia, V1_Experiencia,
-//     V2_Experiencia (todas CONGELADAS).
+// CSS final será aplicado em etapa posterior. NÃO toca em
+// V0/V1/V2_Experiencia nem em variações de Oferta de Pacote.
 // ============================================================
 
 import type { FabricaState } from "@/hooks/useFabricaContext";
@@ -22,17 +20,17 @@ export interface V3ExperienciaHighlight {
 }
 
 export interface V3ExperienciaProps {
-  // Background
+  // Background universal (suporta os 3 modos)
   backgroundImage: string;
   destination: string;
 
-  // Identidade da experiência
+  // TOPO (texto isolado)
   promoName: string;
-  adTitle: string;
-  travelPeriod: string;
 
-  // Conteúdo
-  highlights: V3ExperienciaHighlight[];
+  // CLUSTER INFERIOR
+  adTitle: string;            // Título maciço
+  travelPeriod: string;       // Botão sólido (dias / data)
+  firstHighlight: string;     // Botão outline (1º item da descrição)
 
   // Identidade visual herdada do formulário lateral
   primaryColor: string;
@@ -64,28 +62,47 @@ export function mapStateToV3Experiencia(
     /\{destino\}/gi,
     destination,
   );
+  const highlights = normalizeHighlights(state.lastHighlights || []);
 
   return {
     backgroundImage,
     destination,
+
+    // TOPO
     promoName: state.lastPromoName || "",
+
+    // CLUSTER INFERIOR
     adTitle: resolvedAdTitle,
     travelPeriod: (state.lastTravelPeriod || "").trim(),
-    highlights: normalizeHighlights(state.lastHighlights || []),
+    firstHighlight: highlights[0]?.text || "",
+
+    // Identidade
     primaryColor: state.primaryColor,
     secondaryColor: state.secondaryColor,
     fontFamily: (state as any).fontFamily,
     logoBase64: state.logoBase64 || "",
+
     format: state.lastFormat === "square" ? "square" : "story",
   };
 }
 
 /**
- * STUB visual — apenas estrutura lógica.
- * O design/CSS noturno premium será implementado em etapa posterior.
+ * Estrutura React/HTML da V3_Experiencia.
+ * O background é UNIVERSAL — flutua sobre qualquer imagem
+ * (upload do usuário, Pexels/Unsplash ou IA Pura).
+ * As regiões abaixo são posicionadas de forma independente.
  */
 export function V3Experiencia(props: V3ExperienciaProps) {
-  const { backgroundImage, destination, format = "story" } = props;
+  const {
+    backgroundImage,
+    destination,
+    promoName,
+    adTitle,
+    travelPeriod,
+    firstHighlight,
+    format = "story",
+  } = props;
+
   const aspect = format === "square" ? "aspect-square" : "aspect-[9/16]";
 
   return (
@@ -94,18 +111,77 @@ export function V3Experiencia(props: V3ExperienciaProps) {
       data-category="experiencia_destino"
       className={`relative w-full ${aspect} overflow-hidden rounded-xl bg-black select-none`}
     >
-      <img
-        src={backgroundImage}
-        alt={destination || "destino"}
-        className="absolute inset-0 w-full h-full object-cover opacity-90"
-        draggable={false}
+      {/* ─────────────────────────────────────────────
+          1 · BACKGROUND UNIVERSAL
+          Renderiza a imagem independentemente do modo
+          (Foto Real / Sua Imagem / IA Pura).
+          UI flutua de forma independente acima.
+         ───────────────────────────────────────────── */}
+      <div
+        data-region="background"
+        className="absolute inset-0 w-full h-full"
+        style={{
+          backgroundImage: `url("${backgroundImage}")`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+        aria-label={destination || "destino"}
       />
-      {/* Placeholder — layout noturno premium pendente */}
-      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-        <span className="text-white/40 text-[10px] uppercase tracking-[0.3em]">
-          V3 · Noturna (em construção)
-        </span>
-      </div>
+
+      {/* ─────────────────────────────────────────────
+          2 · TOPO · texto isolado
+          Consome: Nome da experiência (state.lastPromoName)
+         ───────────────────────────────────────────── */}
+      <header
+        data-region="top"
+        className="absolute top-0 left-0 right-0 flex justify-center pt-6 px-6 z-10"
+      >
+        {promoName ? (
+          <span data-field="promoName" className="text-white">
+            {promoName}
+          </span>
+        ) : null}
+      </header>
+
+      {/* ─────────────────────────────────────────────
+          3 · CLUSTER INFERIOR · agrupamento centro-baixo
+          - Título maciço  → adTitle
+          - Botão sólido   → travelPeriod (dias/data)
+          - Botão outline  → firstHighlight (1º item da descrição)
+         ───────────────────────────────────────────── */}
+      <section
+        data-region="bottom-cluster"
+        className="absolute left-0 right-0 bottom-0 flex flex-col items-center gap-3 px-6 pb-10 z-10"
+      >
+        {adTitle ? (
+          <h1 data-field="adTitle" className="text-white text-center">
+            {adTitle}
+          </h1>
+        ) : null}
+
+        {travelPeriod ? (
+          <button
+            type="button"
+            data-field="travelPeriod"
+            data-style="solid"
+            className="text-white"
+          >
+            {travelPeriod}
+          </button>
+        ) : null}
+
+        {firstHighlight ? (
+          <button
+            type="button"
+            data-field="firstHighlight"
+            data-style="outline"
+            className="text-white"
+          >
+            {firstHighlight}
+          </button>
+        ) : null}
+      </section>
     </article>
   );
 }
