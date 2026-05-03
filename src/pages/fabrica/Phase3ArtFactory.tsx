@@ -505,6 +505,17 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const effectiveTextColor = textColorOverride || autoTextColor;
   const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
   const [fontOptionsOpen, setFontOptionsOpen] = useState(false);
+  const [colorsOpen, setColorsOpen] = useState(false);
+  // "Cor dos textos base": força textos claros ou escuros nas artes
+  const [baseTextMode, setBaseTextModeState] = useState<"light" | "dark">(
+    (((state as any).baseTextMode as "light" | "dark") || "light")
+  );
+  const setBaseTextMode = (m: "light" | "dark") => {
+    setBaseTextModeState(m);
+    update({ baseTextMode: m } as any);
+    // sincroniza com o override de cor de texto já existente
+    setTextColorOverride(m === "light" ? "#FFFFFF" : "#0A0A0A");
+  };
   const FONT_PRESETS = ["Inter", "Poppins", "Montserrat", "Roboto", "Oswald", "Bebas Neue", "Playfair Display", "Lora", "Raleway", "Nunito", "Work Sans", "DM Sans"];
 
   // Carrega Google Font dinamicamente quando o usuário escolhe uma família custom
@@ -2055,57 +2066,96 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           )}
         </div>
 
-        {/* Cores — Primária | Secundária em 2 colunas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {[
-            { label: "Cor primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo principal" },
-            { label: "Cor secundária", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
-          ].map(({ label, value, setter, hint }) => (
-            <div key={label} className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
-              <div className="flex items-baseline justify-between mb-2">
-                <label className={labelCls}>{label}</label>
-                <span className="text-[10px] text-white/40">{hint}</span>
-              </div>
-              {/* Bolinhas da paleta — grid 8 col, 4 linhas */}
-              <div className="grid grid-cols-10 gap-1 mb-3">
-                {PRESET_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setter(c)}
-                    className={`w-5 h-5 rounded-full border transition-all ${value.toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-md" : "border-white/20 hover:border-white/60"}`}
-                    style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
-                    aria-label={c}
-                    title={c}
-                  />
-                ))}
-              </div>
-              {/* Color picker redondo (gradiente arco-íris) + HEX */}
-              <div className="flex gap-2 items-center">
-                <label
-                  className="relative w-10 h-10 rounded-full cursor-pointer flex-shrink-0 overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
-                  style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}
-                  title="Escolher cor personalizada"
-                >
-                  <input
-                    type="color"
-                    value={value}
-                    onChange={(e) => setter(e.target.value)}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                  />
-                  <span
-                    className="absolute inset-1.5 rounded-full border border-white/40"
-                    style={{ background: value }}
-                  />
-                </label>
-                <input
-                  value={value}
-                  onChange={(e) => setter(e.target.value)}
-                  placeholder="#000000"
-                  className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase"
+        {/* Cores — colapsável (mesmo padrão de Tipografia) */}
+        <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setColorsOpen((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="text-sm font-bold text-white">Cores</span>
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="w-4 h-4 rounded-full border border-white/30 shadow-sm"
+                  style={{ background: primaryColor }}
+                  title={`Primária ${primaryColor}`}
                 />
+                <span
+                  className="w-4 h-4 rounded-full border border-white/30 shadow-sm"
+                  style={{ background: secondaryColor }}
+                  title={`Secundária ${secondaryColor}`}
+                />
+                <span className="text-[10px] text-white/40 ml-1">
+                  · {baseTextMode === "light" ? "Textos claros" : "Textos escuros"}
+                </span>
               </div>
             </div>
-          ))}
+            <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${colorsOpen ? "rotate-180" : ""}`} />
+          </button>
+          {colorsOpen && (
+            <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
+              {/* Bolinhas de cor — clicar abre o color picker nativo */}
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: "Cor primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo principal" },
+                  { label: "Cor secundária", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
+                ].map(({ label, value, setter, hint }) => (
+                  <div key={label} className="flex flex-col items-start gap-2">
+                    <div className="flex items-baseline justify-between w-full">
+                      <label className={labelCls}>{label}</label>
+                      <span className="text-[10px] text-white/40">{hint}</span>
+                    </div>
+                    <label
+                      className="relative w-12 h-12 rounded-full cursor-pointer overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
+                      style={{ background: value }}
+                      title="Clique para escolher uma cor"
+                    >
+                      <input
+                        type="color"
+                        value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#000000"}
+                        onChange={(e) => setter(e.target.value)}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                    </label>
+                    <span className="text-[10px] text-white/50 font-mono uppercase">{value}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Cor dos Textos Base */}
+              <div>
+                <label className={labelCls}>Cor dos textos base</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBaseTextMode("light")}
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all ${
+                      baseTextMode === "light"
+                        ? "bg-white text-black border-white"
+                        : "bg-white/[0.04] text-white/70 border-white/10 hover:border-white/30"
+                    }`}
+                  >
+                    <span className="w-3 h-3 rounded-full bg-white border border-black/20" />
+                    Textos claros
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBaseTextMode("dark")}
+                    className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all ${
+                      baseTextMode === "dark"
+                        ? "bg-neutral-900 text-white border-white"
+                        : "bg-white/[0.04] text-white/70 border-white/10 hover:border-white/30"
+                    }`}
+                  >
+                    <span className="w-3 h-3 rounded-full bg-neutral-900 border border-white/40" />
+                    Textos escuros
+                  </button>
+                </div>
+                <p className="text-[10px] text-white/40 mt-1.5">Define a cor dos textos sobre a arte para garantir legibilidade.</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Benefícios — em Experiência de Destino usa apenas texto, sem selector de ícones. */}
