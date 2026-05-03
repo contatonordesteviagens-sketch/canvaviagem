@@ -922,7 +922,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // HÍBRIDO: para Experiência de Destino (qualquer formato — square 1:1 ou story 9:16),
         // a IA gera APENAS o fundo fotográfico limpo; o motor Canvas (composeTravelAd)
         // desenha por cima logo, textos, preço, ícones e contraste com HEX exato.
-        const isAiExperienceStory = categoria === "experiencia_destino";
+        const isAiExperienceStory = categoria === "experiencia_destino" && (format === "square" || format === "story");
         const guard = getForbiddenSets(categoria, "ai", format);
         const categoryLastKey = scopedTemplateKey("last", categoria, "ai");
         const categoryRecentKey = scopedTemplateKey("recent", categoria, "ai");
