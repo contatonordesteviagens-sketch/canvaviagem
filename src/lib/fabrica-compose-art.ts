@@ -1318,7 +1318,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // 7) Headline (1 linha, fonte adaptativa)
       ctx.fillStyle = v0OnPanel;
       ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
-      const titleY = badgeY + badgeH + topPaddingBeforeTitle + titleSize;
+      const titleY = Math.max(badgeY + badgeH + topPaddingBeforeTitle + titleSize, logoH + 40 + titleSize);
       ctx.fillText(titleText, left, titleY);
 
       // 8) Benefits + Preço lado a lado — preço ALINHADO À DIREITA pra eliminar
