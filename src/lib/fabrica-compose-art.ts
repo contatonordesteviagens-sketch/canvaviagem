@@ -1958,16 +1958,16 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillText(cityFmt ? `Saindo de ${cityFmt}` : "Roteiro especial", left, safeTop + 54);
     drawTextBlock(ctx, titleText, left, safeTop + 170, columnW, 78, 3, { fontWeight: "800", baseFontSize: 74, minFontSize: 42 });
     ctx.fillStyle = "#2b2118";
-    ctx.font = "500 29px Inter, Arial, sans-serif";
-    drawTextBlock(ctx, "Uma experiência pensada para viver o destino com calma, beleza e curadoria.", left, safeTop + 420, columnW, 42, 4, { fontWeight: "500", baseFontSize: 29, minFontSize: 22 });
-    ctx.font = "700 26px Inter, Arial, sans-serif";
+    ctx.font = "500 38px Inter, Arial, sans-serif";
+    drawTextBlock(ctx, "Uma experiência pensada para viver o destino com calma, beleza e curadoria.", left, safeTop + 420, columnW, 50, 4, { fontWeight: "500", baseFontSize: 38, minFontSize: 28 });
+    ctx.font = "700 32px Inter, Arial, sans-serif";
     shownHighlights.slice(0, 4).forEach((item, idx) => {
       ctx.fillStyle = primaryColor;
-      ctx.fillText("•", left, safeTop + 620 + idx * 62);
+      ctx.fillText("•", left, safeTop + 640 + idx * 70);
       ctx.fillStyle = "#2b2118";
-      ctx.fillText(item.text, left + 34, safeTop + 620 + idx * 62);
+      ctx.fillText(item.text, left + 38, safeTop + 640 + idx * 70);
     });
-    ctx.font = "700 24px Inter, Arial, sans-serif";
+    ctx.font = "700 28px Inter, Arial, sans-serif";
     ctx.fillStyle = primaryColor;
     ctx.fillText("Consulte disponibilidade", left, Math.min(panelBottom - 90, safeTop + 930));
   } else if (strategy === "experiencia_postcard") {
