@@ -2117,10 +2117,140 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   //    da V1 ser definido. NÃO altera a renderização da V0.
   // ============================================================
   const renderV1Experiencia = (): string => {
-    // TODO(V1_Experiencia): implementar layout próprio (luxo alternativo).
-    // Por enquanto, mantém um fallback seguro reutilizando a V0 para
-    // garantir continuidade visual durante o desenvolvimento.
-    return renderV0Experiencia();
+    // ===== V1_Experiencia · LUXO CINEMATOGRÁFICO (canvas) =====
+    // 3 blocos centralizados (topo · centro · slogan), todos em branco,
+    // overlay sutil bg-black/30. Tipografia: Serif (Playfair) + Cursive
+    // (Dancing Script) + Italic. Logo composto pelo overlay automático.
+
+    const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
+    ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+
+    // Overlay sutil — bg-black/30
+    ctx.fillStyle = "rgba(0,0,0,0.30)";
+    ctx.fillRect(0, 0, width, height);
+
+    const cx = width / 2;
+    const isStory = format === "story";
+
+    const serif = `'Playfair Display', 'Bodoni Moda', Georgia, serif`;
+    const script = `'Dancing Script', 'Great Vibes', cursive`;
+
+    // Reservas de margem (px)
+    const padTop = isStory ? (hasLogo ? 200 : 110) : (hasLogo ? 140 : 80);
+    const padBottom = isStory ? 90 : 70;
+
+    // Helper: shadow sutil (sempre ativa no V1 para garantir leitura sobre céu/fundo claro)
+    const withShadow = (cb: () => void) => {
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.45)";
+      ctx.shadowBlur = 10;
+      cb();
+      ctx.restore();
+    };
+
+    // Helper de tracking simulado (insere espaços finos entre letras)
+    const trackText = (s: string) => s.split("").join("\u2009");
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#ffffff";
+
+    // ───────────────────────────────────────────────
+    // BLOCO SUPERIOR — promoName (serif uppercase widest) + travelPeriod (cursive)
+    // ───────────────────────────────────────────────
+    const promo = (promoName || "").trim().toUpperCase();
+    const promoSize = isStory ? 30 : 24;
+    let topY = padTop;
+    if (promo) {
+      ctx.font = `600 ${promoSize}px ${serif}`;
+      withShadow(() => ctx.fillText(trackText(promo), cx, topY));
+      topY += promoSize + (isStory ? 18 : 14);
+    }
+
+    // travelPeriod (cursive)
+    const period = (travelPeriod && travelPeriod.trim())
+      ? travelPeriod.trim()
+      : "uma jornada inesquecível";
+    const periodSize = isStory ? 36 : 28;
+    ctx.font = `600 ${periodSize}px ${script}`;
+    withShadow(() => ctx.fillText(period, cx, topY + periodSize * 0.85));
+
+    // ───────────────────────────────────────────────
+    // BLOCO CENTRAL — experienceDescription (serif bold uppercase) + adTitle (serif normal)
+    // ───────────────────────────────────────────────
+    const benefitsText = ((highlights || [])
+      .map((h: any) => (typeof h === "string" ? h : h?.text))
+      .filter((t: any) => t && String(t).trim().length > 0)
+      .join(" · ")) || (destination || "").toUpperCase();
+    const desc = benefitsText.toUpperCase();
+
+    // Quebra de linha simples (até 2 linhas)
+    const wrapLines = (text: string, maxWidth: number, font: string): string[] => {
+      ctx.font = font;
+      const words = text.split(/\s+/);
+      const lines: string[] = [];
+      let current = "";
+      for (const w of words) {
+        const next = current ? `${current} ${w}` : w;
+        if (ctx.measureText(next).width <= maxWidth) {
+          current = next;
+        } else {
+          if (current) lines.push(current);
+          current = w;
+        }
+      }
+      if (current) lines.push(current);
+      return lines.slice(0, 2);
+    };
+
+    const maxTextW = width - (isStory ? 80 : 100);
+    let descSize = isStory ? 72 : 56;
+    let descFont = `800 ${descSize}px ${serif}`;
+    let descLines = wrapLines(desc, maxTextW, descFont);
+    while (descLines.some((l) => ctx.measureText(l).width > maxTextW) && descSize > 36) {
+      descSize -= 4;
+      descFont = `800 ${descSize}px ${serif}`;
+      descLines = wrapLines(desc, maxTextW, descFont);
+    }
+
+    const adSize = isStory ? 26 : 22;
+    const adFont = `400 ${adSize}px ${serif}`;
+    const ad = (titleText || "").trim();
+
+    const lineGap = Math.round(descSize * 0.18);
+    const descBlockH = descLines.length * descSize + Math.max(0, descLines.length - 1) * lineGap;
+    const adH = ad ? adSize + 14 : 0;
+    const centerBlockH = descBlockH + adH;
+
+    const centerY = (height / 2) - centerBlockH / 2 + descSize * 0.85;
+    ctx.font = descFont;
+    withShadow(() => {
+      descLines.forEach((line, i) => {
+        const y = centerY + i * (descSize + lineGap);
+        ctx.fillText(line, cx, y);
+      });
+    });
+
+    if (ad) {
+      const adY = centerY + (descLines.length - 1) * (descSize + lineGap) + adSize + 18;
+      ctx.font = adFont;
+      ctx.fillStyle = "rgba(255,255,255,0.95)";
+      withShadow(() => ctx.fillText(ad, cx, adY));
+      ctx.fillStyle = "#ffffff";
+    }
+
+    // ───────────────────────────────────────────────
+    // BLOCO INFERIOR — slogan (serif italic medium)
+    // ───────────────────────────────────────────────
+    const slogan = (paymentSuffix && paymentSuffix.trim())
+      ? paymentSuffix.trim()
+      : "Sua viagem começa aqui";
+    const sloganSize = isStory ? 26 : 22;
+    ctx.font = `italic 500 ${sloganSize}px ${serif}`;
+    withShadow(() => ctx.fillText(slogan, cx, height - padBottom));
+
+    ctx.textAlign = "left";
+    return canvas.toDataURL("image/png");
   };
 
   if (isExperience && typeof forceVariant === "number" && forceVariant === 0) {
