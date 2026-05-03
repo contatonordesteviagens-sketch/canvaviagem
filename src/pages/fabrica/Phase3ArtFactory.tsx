@@ -924,7 +924,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // Sorteia se esta geração será V4 (compositor card) ou IA tradicional,
         // respeitando histórico para garantir variedade entre cliques.
         const isOfertaIA = categoria === "oferta_pacote";
-        const totalVariantsAi = isAiExperienceStory ? 2 : 5;
+        // Experiência de Destino: V0, V1 e V2 (V2 = estrutura lógica criada — layout pendente)
+        const totalVariantsAi = isAiExperienceStory ? 3 : 5;
         const recentAi = variantHistoryRef.current.slice(-2);
         let candidatesAi = Array.from({ length: totalVariantsAi }, (_, i) => i).filter((v) => !recentAi.includes(v));
         if (candidatesAi.length === 0) candidatesAi = Array.from({ length: totalVariantsAi }, (_, i) => i);

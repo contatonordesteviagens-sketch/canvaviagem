@@ -2259,6 +2259,17 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   if (isExperience && typeof forceVariant === "number" && forceVariant === 1) {
     return renderV1Experiencia();
   }
+  // ============================================================
+  // V2_Experiencia · ROTEAMENTO (estrutura lógica — sem layout ainda)
+  // ------------------------------------------------------------
+  // Reservado exclusivamente para a categoria "Experiência de Destino".
+  // Layout/CSS ainda NÃO implementados — fallback temporário usa o
+  // canvas da V1 para não quebrar o fluxo até o design ser definido.
+  // NÃO altera renderização da V0 nem da V1.
+  // ============================================================
+  if (isExperience && typeof forceVariant === "number" && forceVariant === 2) {
+    return renderV1Experiencia();
+  }
 
   if (strategy === "ancora") {
     ctx.fillStyle = primaryColor;
