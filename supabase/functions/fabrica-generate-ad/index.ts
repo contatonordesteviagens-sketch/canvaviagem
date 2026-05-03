@@ -232,8 +232,8 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
       prompt = `Anúncio de viagem profissional para ${dest}. ${safeZoneRules(format)}`;
     }
 
-    const imageTemperature = body.photoOnly ? 0.72 : 1.1;
-    const imageTopP = body.photoOnly ? 0.88 : 0.96;
+    const imageTemperature = forcePhotoOnly ? 0.72 : 1.1;
+    const imageTopP = forcePhotoOnly ? 0.88 : 0.96;
 
     console.log("fabrica-generate-ad", { templateId: usedTemplateId, format, provider, isOferta, isAutoridade, isExperiencia });
 
@@ -247,7 +247,7 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
       try {
         const geminiBody: Record<string, unknown> = {
           contents: [{
-            parts: isOferta
+            parts: isOferta && !forcePhotoOnly
               ? [
                   { inline_data: { mime_type: "image/jpeg", data: await fetchImageAsBase64(CVC_REF_URL) } },
                   { text: "Use este anúncio de agência de viagem como referência visual de layout e estilo. Replique a estrutura (foto de fundo + caixa de preço), mas use EXCLUSIVAMENTE as cores, destino e informações do prompt a seguir. PROIBIDO copiar logos ou marcas da referência.\n\n" + prompt },
@@ -329,7 +329,7 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
           model: "google/gemini-3.1-flash-image-preview",
           messages: [{
             role: "user",
-            content: isOferta
+            content: isOferta && !forcePhotoOnly
               ? [
                   { type: "image_url", image_url: { url: CVC_REF_URL } },
                   { type: "text", text: "Use este anúncio como referência visual de layout (foto de fundo + caixa de preço estilo agência brasileira). Replique a ESTRUTURA, mas use EXCLUSIVAMENTE as cores, destino e dados do prompt. PROIBIDO copiar logos ou marcas.\n\n" + prompt },
