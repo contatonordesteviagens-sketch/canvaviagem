@@ -54,6 +54,16 @@ const DEFAULT_HIGHLIGHTS: Highlight[] = [
   { text: "Guia local", icon: "guide" },
 ];
 
+const DEFAULT_EXPERIENCE_HIGHLIGHTS: Highlight[] = [
+  { text: "EXPERIÊNCIA SENSORIAL", icon: "check" },
+  { text: "MOMENTOS INESQUECÍVEIS", icon: "check" },
+  { text: "CURADORIA PREMIUM", icon: "check" },
+];
+
+const sameHighlightTexts = (items: Highlight[], defaults: Highlight[]) =>
+  items.length === defaults.length &&
+  items.every((item, index) => item.text === defaults[index]?.text);
+
 // Paleta enxuta: 10 cores distintas (sem repetir tons próximos)
 const PRESET_COLORS = [
   "#000000", // preto
