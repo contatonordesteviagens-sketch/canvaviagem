@@ -12,6 +12,11 @@ const corsHeaders = {
 type Strategy = "ancora" | "vitrine" | "matriz" | "gancho";
 type Format = "square" | "story";
 
+type GeminiImagePart = {
+  inline_data?: { data?: string; mime_type?: string };
+  inlineData?: { data?: string; mimeType?: string };
+};
+
 interface Highlight {
   text: string;
   icon?: string;
@@ -77,6 +82,17 @@ Concentre TODO o conteúdo importante no MIOLO CENTRAL — entre 18% e 80% da al
   }
   return `FORMATO QUADRADO 1:1 — para o feed do Instagram (1080x1080).
 GERE A IMAGEM EM PROPORÇÃO QUADRADA. Composição equilibrada, perfeita para o grid.`;
+}
+
+function extractGeminiImageUrl(data: any): string | undefined {
+  const parts: GeminiImagePart[] = data?.candidates?.[0]?.content?.parts || [];
+  const imgPart = parts.find((p) =>
+    p?.inline_data?.data || p?.inlineData?.data
+  );
+  const inline = imgPart?.inline_data || imgPart?.inlineData;
+  if (!inline?.data) return undefined;
+  const mime = inline.mime_type || inline.mimeType || "image/png";
+  return `data:${mime};base64,${inline.data}`;
 }
 
 serve(async (req) => {
@@ -240,23 +256,53 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
           },
         };
 
-        const gemResp = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${USER_GEMINI_API_KEY}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(geminiBody),
-          }
-        );
+        const geminiModelCandidates = [
+          "gemini-2.5-flash-image",
+          "gemini-2.0-flash-exp-image-generation",
+          "gemini-2.0-flash-preview-image-generation",
+          "gemini-2.5-flash-image-preview",
+        ];
+        let lastStatus = 0;
+        let lastErrText = "";
 
-        if (gemResp.ok) {
-          const gemData = await gemResp.json();
-          const imgPart = gemData.candidates?.[0]?.content?.parts?.find((p: any) => p.inline_data?.mime_type?.startsWith("image/"));
-          if (imgPart?.inline_data?.data) {
-            imageUrl = `data:${imgPart.inline_data.mime_type};base64,${imgPart.inline_data.data}`;
+        for (const modelName of geminiModelCandidates) {
+          const gemResp = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${USER_GEMINI_API_KEY}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(geminiBody),
+            }
+          );
+          lastStatus = gemResp.status;
+
+          if (gemResp.ok) {
+            const gemData = await gemResp.json();
+            imageUrl = extractGeminiImageUrl(gemData);
+            if (imageUrl) {
+              provider = "user_gemini";
+              break;
+            }
+            lastErrText = "Gemini respondeu sem imagem inline.";
+            break;
           }
-        } else {
-          console.warn("User Gemini failed:", await gemResp.text());
+
+          lastErrText = await gemResp.text();
+          if (gemResp.status !== 404) break;
+        }
+
+        if (!imageUrl) {
+          console.warn("User Gemini failed:", lastStatus, lastErrText.slice(0, 300));
+          const userKeyActionableError = lastStatus === 401 || lastStatus === 403 || lastStatus === 429;
+          if (userKeyActionableError) {
+            const message = lastStatus === 429
+              ? "Sua cota do Gemini foi atingida. Aguarde ou verifique o faturamento da sua chave Gemini."
+              : "Sua chave Gemini é inválida ou foi revogada. Atualize-a em Configurações.";
+            return new Response(JSON.stringify({ error: message, provider: "user_gemini", action: "update_user_key", fallback: false }), {
+              status: 200,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
           if (LOVABLE_API_KEY) provider = "lovable_ai";
         }
       } catch (e) {
@@ -298,8 +344,13 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos esgotados. Adicione sua chave Gemini em Configurações.", provider, action: "add_user_key" }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        return new Response(JSON.stringify({
+          error: "Créditos esgotados no provedor de IA. A chave Gemini do projeto não conseguiu gerar a imagem antes do fallback.",
+          provider,
+          action: "add_user_key",
+          fallback: false,
+        }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (!response.ok) {
