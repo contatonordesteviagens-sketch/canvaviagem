@@ -1414,7 +1414,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
         </div>
 
-        <div>
+        <div hidden={categoria === "experiencia_destino"} aria-hidden={categoria === "experiencia_destino"}>
           <label className={labelCls}>Dias / data da viagem</label>
           <div className="relative">
             <input
