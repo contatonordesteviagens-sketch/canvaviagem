@@ -344,6 +344,18 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [pixBannerText, setPixBannerTextState] = useState<string>((state as any).pixBannerText || "");
   const setPixBannerText = (v: string) => { setPixBannerTextState(v); update({ pixBannerText: v } as any); };
 
+  // Tipografia global (família + escala título/descrição + cor de override)
+  const [fontFamily, setFontFamilyState] = useState<string>((state as any).fontFamily || "Inter");
+  const setFontFamily = (v: string) => { setFontFamilyState(v); update({ fontFamily: v } as any); };
+  const [titleScale, setTitleScaleState] = useState<number>(((state as any).titleScale as number) || 1);
+  const setTitleScale = (v: number) => { setTitleScaleState(v); update({ titleScale: v } as any); };
+  const [descScale, setDescScaleState] = useState<number>(((state as any).descScale as number) || 1);
+  const setDescScale = (v: number) => { setDescScaleState(v); update({ descScale: v } as any); };
+  const [textColorOverride, setTextColorOverrideState] = useState<string>((state as any).textColorOverride || "");
+  const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
+  const [fontOptionsOpen, setFontOptionsOpen] = useState(false);
+  const FONT_PRESETS = ["Inter", "Poppins", "Montserrat", "Roboto", "Oswald", "Bebas Neue", "Playfair Display", "Lora", "Raleway", "Nunito", "Work Sans", "DM Sans"];
+
   // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
   const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
   const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
