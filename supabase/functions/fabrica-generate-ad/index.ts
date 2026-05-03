@@ -298,8 +298,8 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
             const message = lastStatus === 429
               ? "Sua cota do Gemini foi atingida. Aguarde ou verifique o faturamento da sua chave Gemini."
               : "Sua chave Gemini é inválida ou foi revogada. Atualize-a em Configurações.";
-            return new Response(JSON.stringify({ error: message, provider: "user_gemini", action: "update_user_key" }), {
-              status: lastStatus === 429 ? 429 : 401,
+            return new Response(JSON.stringify({ error: message, provider: "user_gemini", action: "update_user_key", fallback: false }), {
+              status: 200,
               headers: { ...corsHeaders, "Content-Type": "application/json" },
             });
           }
