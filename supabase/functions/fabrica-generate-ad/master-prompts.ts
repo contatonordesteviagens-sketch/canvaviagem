@@ -872,39 +872,3 @@ REGRAS ABSOLUTAS:
 `;
 }
 
-// ============================================================
-// REGISTRO DE TEMPLATES
-// ============================================================
-export const MASTER_TEMPLATES = [
-  // 🔴 OFERTA PACOTE
-  { id: "classic_vertical",   name: "OP1 · Cartão Dividido",          builder: promptClassicVertical },
-  { id: "cancun_style",       name: "OP2 · Cartão Central Flutuante", builder: promptCancunStyle },
-  { id: "gramado_style",      name: "OP3 · Cartão Aéreo (Top Down)",  builder: promptGramadoStyle },
-  { id: "maceio_style",       name: "OP4 · Barra Lateral Performance",builder: promptMaceioStyle },
-  { id: "ticket_pix_card",    name: "OP5 · Bilhete Pix",              builder: promptTicketPixCard },
-  { id: "side_hero_performance", name: "OP6 · Faixa Lateral Hero",    builder: promptSideHeroPerformance },
-  { id: "yellow_box_cvc",     name: "OP7 · Box Amarelo CVC (V3)",     builder: promptYellowBoxCVC },
-  // 🔵 EXPERIÊNCIA DESTINO
-  { id: "iconic_landmark",    name: "ED1 · Hero Cinematográfico",     builder: promptIconicLandmark },
-  { id: "split_yellow_side",  name: "ED2 · Split Suave",              builder: promptSplitYellowSide },
-  { id: "elegant_center",     name: "ED3 · Story Lifestyle",          builder: promptElegantCenterCard },
-  { id: "editorial_visual",   name: "ED4 · Multi Experiência (Grid)", builder: promptEditorialVisual },
-  { id: "top_editorial_photo", name: "ED5 · Minimalista Premium",     builder: promptTopEditorialPhoto },
-  { id: "two_scene_editorial", name: "ED6 · Duas Cenas Editoriais",   builder: promptTwoSceneEditorial },
-  // ⬛ AUTORIDADE PREMIUM (DARK 3D)
-  { id: "dark_neon_glassmorphism", name: "DK1 · Vidro e Neon",        builder: promptDarkNeonGlassmorphism },
-  { id: "dark_3d_icons_floating",  name: "DK2 · Ícones 3D Flutuando", builder: promptDark3DIconsFloating },
-  { id: "dark_minimal_geometric",  name: "DK3 · Geométrico Minimal",  builder: promptDarkMinimalGeometric },
-] as const;
-
-export type MasterTemplateId = typeof MASTER_TEMPLATES[number]["id"];
-
-export function getTemplateById(id: string) {
-  return MASTER_TEMPLATES.find((t) => t.id === id);
-}
-
-export function pickRandomTemplates(n: number, exclude: string[] = []): typeof MASTER_TEMPLATES[number][] {
-  const pool = MASTER_TEMPLATES.filter((t) => !exclude.includes(t.id));
-  const shuffled = [...pool].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, n);
-}
