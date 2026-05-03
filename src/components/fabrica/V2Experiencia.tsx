@@ -363,7 +363,7 @@ export function V2Experiencia(props: V2ExperienciaProps) {
                       <Icon
                         className="w-3 h-3"
                         strokeWidth={2.5}
-                        style={{ color: "#3a2a05" }}
+                        style={{ color: accentInk }}
                       />
                     </span>
                     <span
@@ -413,7 +413,7 @@ export function V2Experiencia(props: V2ExperienciaProps) {
             <ArrowRight
               className="w-3.5 h-3.5"
               strokeWidth={3}
-              style={{ color: "#3a2a05" }}
+              style={{ color: accentInk }}
             />
           </span>
         </div>
