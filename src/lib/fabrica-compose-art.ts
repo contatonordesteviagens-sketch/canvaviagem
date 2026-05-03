@@ -1566,7 +1566,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         : priceRawV4;
 
       // Total: usa override OU calcula (mesma regra de centavos)
-      const totalNumV4 = !isNaN(priceNumV4) ? priceNumV4 * parseInt(parcNV4, 10) : NaN;
+      const totalMultiplierV4 = (paymentMode === "cash" || paymentMode === "cash_discount") ? 1 : parseInt(parcNV4, 10);
+      const totalNumV4 = !isNaN(priceNumV4) ? priceNumV4 * totalMultiplierV4 : NaN;
       const totalStrV4 = (totalOverride && totalOverride.trim())
         || (!isNaN(totalNumV4) ? `Total ${(paymentSuffix || "por pessoa").trim()}: ${curSym} ${fmtBRv4(totalNumV4, hasCentsV4)}` : "");
 
@@ -1689,24 +1690,39 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.font = "600 22px Inter, Arial, sans-serif";
       ctx.fillText(leftBottomV4, leftX, pillY + pillH + 28);
 
-      // Direita: R$ médio + valor GIGANTE
+      // Direita: R$ + centavos pequenos; valor principal gigante.
       ctx.textAlign = "right";
       ctx.fillStyle = "#ffffff";
       // Auto-shrink valor
       const reservedLeftPrice = pillX + pillW + 20;
       const maxValW = rightEdge - reservedLeftPrice - 70; // reserva menor p/ aproximar R$ + valor da pílula
+      const centsMatchV4 = valNumV4.match(/^(.+?)([,.]\d{1,2})$/);
+      const mainValV4 = centsMatchV4 ? centsMatchV4[1] : valNumV4;
+      const centsValV4 = centsMatchV4 ? centsMatchV4[2] : "";
       let valSize = 140;
       ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(valNumV4).width > maxValW && valSize > 64) {
+      let smallPriceSize = Math.round(valSize * 0.34);
+      let mainValWv4 = ctx.measureText(mainValV4).width;
+      ctx.font = `700 ${smallPriceSize}px Inter, Arial, sans-serif`;
+      let centsWv4 = centsValV4 ? ctx.measureText(centsValV4).width : 0;
+      while (mainValWv4 + centsWv4 > maxValW && valSize > 64) {
         valSize -= 4;
         ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
+        mainValWv4 = ctx.measureText(mainValV4).width;
+        smallPriceSize = Math.round(valSize * 0.34);
+        ctx.font = `700 ${smallPriceSize}px Inter, Arial, sans-serif`;
+        centsWv4 = centsValV4 ? ctx.measureText(centsValV4).width : 0;
       }
-      const valWv4 = ctx.measureText(valNumV4).width;
-      ctx.fillText(valNumV4, rightEdge, priceY + 130);
-      // R$ médio à esquerda do valor
-      const symSizeV4 = Math.round(valSize * 0.34);
-      ctx.font = `700 ${symSizeV4}px Inter, Arial, sans-serif`;
-      ctx.fillText(curSym, rightEdge - valWv4 - 10, priceY + 130 - valSize * 0.46);
+      const priceBaseY = priceY + 130;
+      const mainRightX = rightEdge - centsWv4;
+      ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
+      ctx.fillText(mainValV4, mainRightX, priceBaseY);
+      if (centsValV4) {
+        ctx.font = `700 ${smallPriceSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(centsValV4, rightEdge, priceBaseY - valSize * 0.08);
+      }
+      ctx.font = `700 ${smallPriceSize}px Inter, Arial, sans-serif`;
+      ctx.fillText(curSym, mainRightX - mainValWv4 - 10, priceBaseY - valSize * 0.46);
 
       cyV4 = priceY + priceBlockH;
 
