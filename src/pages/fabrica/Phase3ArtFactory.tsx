@@ -1491,24 +1491,31 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                     className="absolute left-0 right-0 mt-2 max-h-80 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1"
                     style={{ borderColor: `${secondaryColor}66` }}
                   >
-                    <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
-                      Escolha um modelo · {AD_TITLE_PRESETS.length} opções
-                    </div>
-                    {AD_TITLE_PRESETS.map((tpl) => {
-                      const preview = tpl.replace(/\{destino\}/gi, destination?.trim() || "Destino");
-                      const active = tpl === adTitleTemplate;
+                    {(() => {
+                      const presets = categoria === "experiencia_destino" ? AD_TITLE_PRESETS_EXPERIENCIA : AD_TITLE_PRESETS;
                       return (
-                        <button
-                          key={tpl}
-                          type="button"
-                          onClick={() => { setAdTitleTemplate(tpl); setAdTitleMenuOpen(false); }}
-                          className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
-                        >
-                          {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
-                          <span className={active ? "" : "ml-5"}>{preview}</span>
-                        </button>
+                        <>
+                          <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
+                            Escolha um modelo · {presets.length} opções
+                          </div>
+                          {presets.map((tpl) => {
+                            const preview = tpl.replace(/\{destino\}/gi, destination?.trim() || "Destino");
+                            const active = tpl === adTitleTemplate;
+                            return (
+                              <button
+                                key={tpl}
+                                type="button"
+                                onClick={() => { setAdTitleTemplate(tpl); setAdTitleMenuOpen(false); }}
+                                className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
+                              >
+                                {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                                <span className={active ? "" : "ml-5"}>{preview}</span>
+                              </button>
+                            );
+                          })}
+                        </>
                       );
-                    })}
+                    })()}
                   </div>
                 </>
               )}
