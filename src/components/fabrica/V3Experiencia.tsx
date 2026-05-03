@@ -164,10 +164,14 @@ export function V3Experiencia(props: V3ExperienciaProps) {
         aria-label={destination || "destino"}
       />
 
-      {/* OVERLAY OBRIGATÓRIO — força legibilidade Dark Premium */}
+      {/* OVERLAY OBRIGATÓRIO — força legibilidade. Inverte para "lavagem clara" no modo Textos Escuros */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/65"
+        className={`absolute inset-0 ${
+          isDarkText
+            ? "bg-gradient-to-t from-white/85 via-white/25 to-white/65"
+            : "bg-gradient-to-t from-black/85 via-black/25 to-black/65"
+        }`}
       />
       {/* Vinheta lateral sutil para profundidade noturna */}
       <div
