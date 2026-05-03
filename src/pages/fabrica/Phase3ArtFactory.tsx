@@ -635,12 +635,21 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     img.onload = () => {
       if (cancelled) return;
       try {
-        const w = 32, h = 32;
+        // Amostra a REGIÃO onde o texto vai sobrepor (não a imagem inteira),
+        // evitando "fundo claro + texto claro" ou "fundo escuro + texto escuro".
+        // Story (vertical): texto fica majoritariamente no terço inferior.
+        // Square: texto/cards ficam no centro/inferior.
+        const isStory = img.naturalHeight > img.naturalWidth;
+        const sx = Math.floor(img.naturalWidth * 0.08);
+        const sw = Math.floor(img.naturalWidth * 0.84);
+        const sy = isStory ? Math.floor(img.naturalHeight * 0.55) : Math.floor(img.naturalHeight * 0.45);
+        const sh = isStory ? Math.floor(img.naturalHeight * 0.35) : Math.floor(img.naturalHeight * 0.45);
+        const w = 48, h = 48;
         const canvas = document.createElement("canvas");
         canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
-        ctx.drawImage(img, 0, 0, w, h);
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
         const data = ctx.getImageData(0, 0, w, h).data;
         let sum = 0, n = 0;
         for (let i = 0; i < data.length; i += 4) {
@@ -649,9 +658,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           n++;
         }
         const lum = n ? sum / n : 0.5;
-        setAutoTextColor(lum > 0.55 ? "#0d0d0d" : "#ffffff");
+        // Threshold mais conservador: prefere branco quando ambíguo (mais legível com scrim escuro).
+        setAutoTextColor(lum > 0.62 ? "#0d0d0d" : "#ffffff");
       } catch {
-        // tainted canvas → fallback seguro (branco com sombra cobre a maioria dos casos)
         setAutoTextColor("#ffffff");
       }
     };
