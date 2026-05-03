@@ -464,6 +464,7 @@ function BrandPaletteBlock({
   );
 }
 
+export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const { state, update } = useFabricaContext();
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
   const setCategoria = (c: CategoriaId) => {
