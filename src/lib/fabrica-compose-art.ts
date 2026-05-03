@@ -681,6 +681,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ]);
     } catch {}
   }
+  // V0_Experiencia usa Playfair Display — pré-carrega para evitar fallback.
+  if (strategy.startsWith("experiencia_") && (document as any).fonts?.load) {
+    try {
+      await Promise.all([
+        (document as any).fonts.load(`800 44px "Playfair Display"`),
+        (document as any).fonts.load(`700 36px "Playfair Display"`),
+      ]);
+    } catch {}
+  }
 
   const image = await loadImage(imageUrl);
 
@@ -1927,14 +1936,176 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   //    As variações da categoria "Oferta de Pacote" permanecem intactas.
   // ============================================================
   const renderV0Experiencia = (): string => {
-    // BG neutro provisório — apenas para confirmar que a rota foi atingida.
-    // O layout real será construído em uma próxima etapa.
-    ctx.fillStyle = "#0a0a0a";
+    // ===== V0_Experiencia · LUXO & DESEJO (canvas) =====
+    // Desenha: BG (cover) + overlay degradê + topo (promoName serif + adTitle)
+    // + pílula (1º benefício/período) + headline (linha clara + linha black)
+    // + CTA "RESERVE AGORA" (cor secundária) + rodapé legal.
+    // O LOGO é composto depois pelo composeLogoOnImage (overlay automático).
+
+    // 1) BG cover
+    const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
+    ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+
+    // 2) Overlay degradê (from-black/60 via-black/30 to-black/80)
+    const grad = ctx.createLinearGradient(0, 0, 0, height);
+    grad.addColorStop(0, "rgba(0,0,0,0.60)");
+    grad.addColorStop(0.5, "rgba(0,0,0,0.30)");
+    grad.addColorStop(1, "rgba(0,0,0,0.80)");
+    ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
-    const crop = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
-    ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, height);
+
+    // Helpers
+    const cx = width / 2;
+    const isStory = format === "story";
+    // Reserva de topo p/ logo (composto depois)
+    const topReserve = hasLogo ? (isStory ? 220 : 150) : (isStory ? 120 : 90);
+
+    // Famílias
+    const serif = `'Playfair Display', 'Cormorant Garamond', Georgia, serif`;
+    const sans = `Inter, Arial, sans-serif`;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#ffffff";
+
+    // 3) TOPO · promoName (serif bold uppercase tracking-wider)
+    const promoUpper = (promoName || "EXPERIÊNCIA EXCLUSIVA").toUpperCase();
+    const promoSize = isStory ? 44 : 36;
+    ctx.font = `800 ${promoSize}px ${serif}`;
+    ctx.shadowColor = "rgba(0,0,0,0.45)";
+    ctx.shadowBlur = 8;
+    // tracking simulado: insere espaços finos
+    const tracked = promoUpper.split("").join("\u2009");
+    ctx.fillText(tracked, cx, topReserve + promoSize);
+    ctx.shadowBlur = 0;
+
+    // adTitle (sans light)
+    const subY = topReserve + promoSize + (isStory ? 56 : 44);
+    if (titleText && titleText.trim()) {
+      ctx.font = `300 ${isStory ? 28 : 22}px ${sans}`;
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      ctx.fillText(titleText.trim(), cx, subY);
+    }
+
+    // 4) PÍLULA (bg branco translúcido, rounded-full)
+    const pillText = (() => {
+      const first = highlights?.[0]?.text?.trim();
+      if (first) return first;
+      if (travelPeriod && travelPeriod.trim()) return travelPeriod.trim();
+      return "";
+    })();
+    const pillY = subY + (isStory ? 50 : 38);
+    if (pillText) {
+      const pillFontSize = isStory ? 24 : 20;
+      ctx.font = `500 ${pillFontSize}px ${sans}`;
+      const padX = isStory ? 32 : 26;
+      const padY = isStory ? 14 : 11;
+      const tw = ctx.measureText(pillText).width;
+      const pw = tw + padX * 2;
+      const ph = pillFontSize + padY * 2;
+      const px = cx - pw / 2;
+      const py = pillY;
+      // bg-white/20
+      ctx.fillStyle = "rgba(255,255,255,0.20)";
+      const r = ph / 2;
+      ctx.beginPath();
+      ctx.moveTo(px + r, py);
+      ctx.lineTo(px + pw - r, py);
+      ctx.arcTo(px + pw, py, px + pw, py + r, r);
+      ctx.lineTo(px + pw, py + ph - r);
+      ctx.arcTo(px + pw, py + ph, px + pw - r, py + ph, r);
+      ctx.lineTo(px + r, py + ph);
+      ctx.arcTo(px, py + ph, px, py + ph - r, r);
+      ctx.lineTo(px, py + r);
+      ctx.arcTo(px, py, px + r, py, r);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.textBaseline = "middle";
+      ctx.fillText(pillText, cx, py + ph / 2 + 1);
+      ctx.textBaseline = "alphabetic";
+    }
+
+    // 5) HEADLINE PRINCIPAL (centro/baixo)
+    // Linha 1: highlightLine (preço/desconto) em sans light
+    // Linha 2: destino em sans black
+    const highlightLine = (() => {
+      if (priceWithSymbol && priceValueText) return priceWithSymbol;
+      return "";
+    })();
+    const headlineLine2 = destFmt ? destFmt.toUpperCase() : "NESSA VIAGEM.";
+
+    const blockBottom = height - (isStory ? 380 : 260); // espaço p/ CTA + legal
+    const line2Size = isStory ? 110 : 78;
+    const line1Size = isStory ? 56 : 42;
+    const gap = isStory ? 14 : 10;
+
+    ctx.shadowColor = "rgba(0,0,0,0.55)";
+    ctx.shadowBlur = 10;
+
+    // posiciona linha 2 acima do CTA
+    const line2Y = blockBottom;
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `800 ${line2Size}px ${sans}`;
+    // truncamento simples se passar
+    let l2 = headlineLine2;
+    while (ctx.measureText(l2).width > width - 80 && l2.length > 4) {
+      l2 = l2.slice(0, -2);
+    }
+    if (l2 !== headlineLine2) l2 = l2.slice(0, -1) + "…";
+    ctx.fillText(l2, cx, line2Y);
+
+    if (highlightLine) {
+      ctx.font = `300 ${line1Size}px ${sans}`;
+      ctx.fillText(highlightLine, cx, line2Y - line2Size - gap + 8);
+    }
+    ctx.shadowBlur = 0;
+
+    // 6) CTA "RESERVE AGORA" (cor secundária, rounded-md, tracking-wider)
+    const ctaLabel = "RESERVE AGORA";
+    const ctaFontSize = isStory ? 30 : 24;
+    ctx.font = `800 ${ctaFontSize}px ${sans}`;
+    const ctaTracked = ctaLabel.split("").join("\u2009");
+    const ctaTw = ctx.measureText(ctaTracked).width;
+    const ctaPadX = isStory ? 56 : 44;
+    const ctaPadY = isStory ? 24 : 18;
+    const ctaW = ctaTw + ctaPadX * 2;
+    const ctaH = ctaFontSize + ctaPadY * 2;
+    const ctaX = cx - ctaW / 2;
+    const ctaY = line2Y + (isStory ? 60 : 40);
+    const ctaR = isStory ? 10 : 8;
+
+    // bg = cor secundária
+    ctx.fillStyle = secondaryColor || "#FCD34D";
+    ctx.beginPath();
+    ctx.moveTo(ctaX + ctaR, ctaY);
+    ctx.lineTo(ctaX + ctaW - ctaR, ctaY);
+    ctx.arcTo(ctaX + ctaW, ctaY, ctaX + ctaW, ctaY + ctaR, ctaR);
+    ctx.lineTo(ctaX + ctaW, ctaY + ctaH - ctaR);
+    ctx.arcTo(ctaX + ctaW, ctaY + ctaH, ctaX + ctaW - ctaR, ctaY + ctaH, ctaR);
+    ctx.lineTo(ctaX + ctaR, ctaY + ctaH);
+    ctx.arcTo(ctaX, ctaY + ctaH, ctaX, ctaY + ctaH - ctaR, ctaR);
+    ctx.lineTo(ctaX, ctaY + ctaR);
+    ctx.arcTo(ctaX, ctaY, ctaX + ctaR, ctaY, ctaR);
+    ctx.closePath();
+    ctx.fill();
+
+    // texto branco
+    ctx.fillStyle = "#ffffff";
+    ctx.textBaseline = "middle";
+    ctx.fillText(ctaTracked, cx, ctaY + ctaH / 2 + 1);
+    ctx.textBaseline = "alphabetic";
+
+    // 7) RODAPÉ legal
+    const legal = "Imagem ilustrativa, gerada mediante IA não condiz 100% com a realidade.";
+    ctx.font = `400 ${isStory ? 18 : 14}px ${sans}`;
+    ctx.fillStyle = "rgba(220,220,220,0.75)";
+    ctx.fillText(legal, cx, height - (isStory ? 36 : 24));
+
+    ctx.textAlign = "left";
     return canvas.toDataURL("image/png");
   };
+
 
   if (isExperience && typeof forceVariant === "number" && forceVariant === 0) {
     return renderV0Experiencia();
