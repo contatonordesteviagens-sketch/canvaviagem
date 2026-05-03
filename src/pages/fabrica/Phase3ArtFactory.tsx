@@ -1305,7 +1305,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             </p>
           )}
 
-          {/* Seletor de Versão (V0..V4) — para correções cirúrgicas em cada layout */}
+          {/* Seletor de Versão (V0..V5) — para correções cirúrgicas em cada layout */}
+          {/* V5 é exclusiva da categoria "Oferta de Pacote" (estrutura lógica reservada — layout a implementar). */}
           <div className="mt-4">
             <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">
               0b · Versão do Layout
@@ -1318,16 +1319,22 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               >
                 Auto
               </button>
-              {[0, 1, 2, 3, 4].map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setForcedVariant(v)}
-                  className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${forcedVariant === v ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-                  title={`Forçar variação V${v}`}
-                >
-                  V{v}
-                </button>
-              ))}
+              {[0, 1, 2, 3, 4, 5].map((v) => {
+                // V5: exclusiva de Oferta de Pacote
+                const isV5 = v === 5;
+                const isAvailable = !isV5 || categoria === "oferta_pacote";
+                if (!isAvailable) return null;
+                return (
+                  <button
+                    key={v}
+                    onClick={() => setForcedVariant(v)}
+                    className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${forcedVariant === v ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+                    title={isV5 ? "V5 · Hiper-estruturada (Oferta de Pacote)" : `Forçar variação V${v}`}
+                  >
+                    V{v}
+                  </button>
+                );
+              })}
             </div>
             <p className="text-[10px] text-white/40 mt-1.5 leading-snug">
               {forcedVariant === null
