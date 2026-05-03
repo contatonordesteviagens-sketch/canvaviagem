@@ -7,6 +7,11 @@
 // ============================================================
 
 import type { FabricaState } from "@/hooks/useFabricaContext";
+import {
+  getContrastTextStyle,
+  getDropShadowClass,
+  type BaseTextMode,
+} from "@/lib/fabrica-text-contrast";
 
 export interface V0ExperienciaProps {
   backgroundImage: string;
@@ -22,6 +27,7 @@ export interface V0ExperienciaProps {
   ctaLabel?: string;
   legalText?: string;
   format?: "story" | "square";
+  baseTextMode?: BaseTextMode;
 }
 
 export function mapStateToV0Experiencia(
