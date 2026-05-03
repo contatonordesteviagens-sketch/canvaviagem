@@ -161,9 +161,13 @@ export function V2Experiencia(props: V2ExperienciaProps) {
     secondaryColor,
     fontFamily,
     format = "story",
+    baseTextMode = "light",
   } = props;
 
   const aspect = format === "square" ? "aspect-square" : "aspect-[9/16]";
+  const textStyle = getContrastTextStyle(baseTextMode);
+  const dropClass = getDropShadowClass(baseTextMode);
+  const titleColor = baseTextMode === "dark" ? "#0A0A0A" : "#FFFFFF";
 
   // Tipografia editorial de luxo: serif para títulos/destaques, sans para tags
   const serifStack = `'${fontFamily || "Playfair Display"}', 'Playfair Display', 'Bodoni Moda', Georgia, serif`;
