@@ -681,12 +681,14 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ]);
     } catch {}
   }
-  // V0_Experiencia usa Playfair Display — pré-carrega para evitar fallback.
+  // V0/V1_Experiencia usam Playfair Display + Dancing Script — pré-carrega.
   if (strategy.startsWith("experiencia_") && (document as any).fonts?.load) {
     try {
       await Promise.all([
         (document as any).fonts.load(`800 44px "Playfair Display"`),
         (document as any).fonts.load(`700 36px "Playfair Display"`),
+        (document as any).fonts.load(`italic 500 24px "Playfair Display"`),
+        (document as any).fonts.load(`600 32px "Dancing Script"`),
       ]);
     } catch {}
   }
