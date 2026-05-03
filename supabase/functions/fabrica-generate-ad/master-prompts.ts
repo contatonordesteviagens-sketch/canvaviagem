@@ -748,6 +748,71 @@ Clean modern UI, flawless spelling, perfect alignment, high contrast, premium Br
   }
 
   // ──────────────────────────────────────────────────────────────────────
+  // 🔒 NOMENCLATURA 1/1/2 · V1 — VERTICAL UI/PHOTO SPLIT (Stories 9:16)
+  // Top metade = UI sólida primária + ícones monocromáticos.
+  // Bottom metade = foto-card com borda secundária + price box DARK.
+  // ──────────────────────────────────────────────────────────────────────
+  if (ver === 1) {
+    const benefits = (v.highlights && v.highlights.length > 0)
+      ? v.highlights.slice(0, 4)
+      : ["Transporte incluso", "Hospedagem", "Café da manhã", "Guia local"];
+    const [b1, b2, b3, b4] = [0,1,2,3].map((i) => benefits[i] || "");
+    const agencyTag = v.agencyName ? `minimalist logo placeholder for agency "${v.agencyName}"` : "minimalist logo placeholder";
+    const priceLabel = v.installments === "1" ? "À VISTA" : `EM ATÉ ${v.installments}x`;
+
+    return `[CRITICAL DESIGN LOGIC & CONTRAST RULE: NEVER generate light text on a light background. NEVER generate dark text on a dark background. Strictly obey the color variables provided.]
+[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA E SAFE ZONES]
+A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/2 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Stories Vertical 9:16) associada à Versão de Layout: V1.
+É TERMINANTEMENTE PROIBIDO misturar esta lógica com V0, V2, V3, V4 ou Experiência.
+OBRIGATÓRIO: respeitar limites da interface do Instagram Stories.
+
+[IMAGE]
+A premium vertical 9:16 travel advertisement (1080x1920, 8K).
+
+[STRICT UI SAFE ZONES — INSTAGRAM STORIES]
+- The TOP 20% (≈384px) MUST remain completely empty of typography, logos, or primary subjects.
+- The BOTTOM 20% (≈384px) MUST remain completely empty.
+- ALL critical content lives ONLY inside the central 60% vertical block.
+
+[BACKGROUND]
+Solid ${v.primaryHex} background stretching across the ENTIRE canvas (full bleed).
+
+[TOP HALF — UI · safely below the top 20% safe zone]
+- Top-left corner of the central area: ${agencyTag}.
+- 🚨 CRITICAL PADDING: a generous EMPTY vertical space (≥80px) directly below the logo BEFORE any text begins.
+- Below the padding, stacked top to bottom (ALL text in ${v.primaryTextHex || "PURE WHITE"} for maximum contrast against ${v.primaryHex}):
+   • Small text: "${v.promoName || "OFERTA EXCLUSIVA"}".
+   • MASSIVE ultra-bold text: "${v.destination}".
+   • Medium text: "${v.duration || "Pacote completo"}".
+
+[INCLUSIONS — vertical pill stack]
+A vertical stack of FOUR translucent (semi-transparent white, ~15% opacity) pill-buttons.
+🚨 The AI MUST use perfectly matching MONOCHROMATIC line icons (all the EXACT same single ${v.primaryTextHex || "white"} tone) on the left of each pill, next to bold ${v.primaryTextHex || "PURE WHITE"} text:
+   • "${b1}"
+   • "${b2}"
+   • "${b3}"
+   • "${b4}"
+
+[BOTTOM HALF — Photo & Price · strictly above the bottom 20% safe zone]
+A large 8K photorealistic image of ${v.destination} (${v.destinationDescription}) placed as a CARD with rounded corners. A solid ${v.secondaryHex} border (≈20px thick) is visible behind the photo card.
+Overlapping the BOTTOM-LEFT corner of the photo card (and strictly kept ABOVE the bottom 20% safe zone): a DARK rectangular highlight box (deep charcoal/near-black) with rounded corners.
+🚨 INSIDE the dark box, ALL text MUST be PURE WHITE (#FFFFFF). Stacked neatly with ZERO overlap:
+- Small PURE WHITE text "${priceLabel}".
+- MASSIVE extra-bold PURE WHITE text "R$ ${v.installmentValue}".
+- Small PURE WHITE text "por pessoa".
+
+[AESTHETIC]
+Clean modern UI, flawless spelling, perfect alignment, premium high contrast.
+
+[REGRAS DE ISOLAMENTO]
+🚫 PROIBIDO: qualquer elemento dentro dos 20% do topo ou dos 20% da base.
+🚫 PROIBIDO: split horizontal 45/55, ribbon central, glass card, full-bleed photo sem borda, gradientes, ícones 3D ou multi-color, watermarks, copiar V0/V2/V3/V4 ou Experiência.
+🚫 PROIBIDO: texto claro em fundo claro; texto escuro em fundo escuro; começar texto colado abaixo da logo.
+✅ OBRIGATÓRIO: fundo sólido ${v.primaryHex} full-bleed, padding abaixo da logo, ícones MONOCROMÁTICOS em pílulas translúcidas, foto-card com borda ${v.secondaryHex}, price box DARK com texto branco puro sobreposto ao canto inferior esquerdo da foto.
+✅ Aspect ratio: 9:16 absoluto. Sem letterbox.`;
+  }
+
+  // ──────────────────────────────────────────────────────────────────────
   // 🔒 NOMENCLATURA 1/1/2 · V2 — RIBBON CENTRAL + GRID 2x2 (Stories 9:16)
   // ──────────────────────────────────────────────────────────────────────
   {
