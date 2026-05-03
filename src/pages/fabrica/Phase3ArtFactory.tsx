@@ -351,6 +351,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const { state, update } = useFabricaContext();
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
   const setCategoria = (c: CategoriaId) => {
+    const previousCategoria = categoria;
     setCategoriaState(c);
     update({ lastCategoria: c });
     // Troca defaults de promoName / adTitle quando ainda são padrões da outra categoria
@@ -377,6 +378,23 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         const next = "Pacote {destino}";
         update({ lastAdTitle: next });
         return next;
+      }
+      return prev;
+    });
+    setHighlightsState((prev) => {
+      const shouldUseExperienceDefaults =
+        c === "experiencia_destino" &&
+        (previousCategoria !== "experiencia_destino" || sameHighlightTexts(prev, DEFAULT_HIGHLIGHTS));
+      const shouldRestoreOfferDefaults =
+        c === "oferta_pacote" &&
+        sameHighlightTexts(prev, DEFAULT_EXPERIENCE_HIGHLIGHTS);
+      if (shouldUseExperienceDefaults) {
+        update({ lastHighlights: DEFAULT_EXPERIENCE_HIGHLIGHTS });
+        return DEFAULT_EXPERIENCE_HIGHLIGHTS;
+      }
+      if (shouldRestoreOfferDefaults) {
+        update({ lastHighlights: DEFAULT_HIGHLIGHTS });
+        return DEFAULT_HIGHLIGHTS;
       }
       return prev;
     });
