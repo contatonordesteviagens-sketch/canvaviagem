@@ -1353,7 +1353,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
         {/* Categoria - Compacta */}
         <div>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">1 · Estilo do Anúncio</h3>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">1 · Tipo de Anúncio</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {CATEGORIAS.map((c) => {
               const selected = categoria === c.id;
@@ -1385,6 +1385,35 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           <p className="text-[10px] text-white/40 mt-2">
             Cada clique gera 1 imagem única. A próxima geração troca layout, texto e formatação automaticamente.
           </p>
+        </div>
+
+        {/* Formato do Anúncio */}
+        <div>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">2 · Formato do Anúncio</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setFormat("square")}
+              className={`p-4 rounded-xl border-2 text-left transition-all ${
+                format === "square" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
+              }`}
+              style={format === "square" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
+            >
+              <Square className="w-6 h-6 mb-2 text-white/80" />
+              <div className="text-sm font-bold text-white">Quadrado 1:1</div>
+              <div className="text-[11px] text-white/55">Feed Instagram (1080×1080)</div>
+            </button>
+            <button
+              onClick={() => setFormat("story")}
+              className={`p-4 rounded-xl border-2 text-left transition-all ${
+                format === "story" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
+              }`}
+              style={format === "story" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
+            >
+              <Smartphone className="w-6 h-6 mb-2 text-white/80" />
+              <div className="text-sm font-bold text-white">Stories / Reels 9:16</div>
+              <div className="text-[11px] text-white/55">Vertical com safe zones (1080×1920)</div>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1554,35 +1583,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           )}
         </div>
       )}
-
-      {/* 2 · Formato */}
-      <div className={sectionCls}>
-        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-3">2 · Formato</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => setFormat("square")}
-            className={`p-4 rounded-xl border-2 text-left transition-all ${
-              format === "square" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
-            }`}
-            style={format === "square" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
-          >
-            <Square className="w-6 h-6 mb-2 text-white/80" />
-            <div className="text-sm font-bold text-white">Quadrado 1:1</div>
-            <div className="text-[11px] text-white/55">Feed Instagram (1080×1080)</div>
-          </button>
-          <button
-            onClick={() => setFormat("story")}
-            className={`p-4 rounded-xl border-2 text-left transition-all ${
-              format === "story" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
-            }`}
-            style={format === "story" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
-          >
-            <Smartphone className="w-6 h-6 mb-2 text-white/80" />
-            <div className="text-sm font-bold text-white">Stories / Reels 9:16</div>
-            <div className="text-[11px] text-white/55">Vertical com safe zones (1080×1920)</div>
-          </button>
-        </div>
-      </div>
 
       {/* 3 · Dados */}
       <div className={`${sectionCls} space-y-4`}>
