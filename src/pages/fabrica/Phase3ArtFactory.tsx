@@ -1964,8 +1964,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 </div>
               </div>
             )}
-        </div>
-        )}
+          </div>
 
           {formattedPriceForAd && (
             <p className="text-[11px] text-emerald-300/90 font-mono mt-2">
@@ -1973,6 +1972,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             </p>
           )}
         </div>
+        )}
 
         {/* Tipografia — colapsável (mesmo padrão dos outros blocos) */}
         <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
