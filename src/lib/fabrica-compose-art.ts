@@ -97,6 +97,14 @@ interface ComposeTravelAdOptions {
   pixBannerText?: string;
   /** V3: mostra/esconde a faixa azul do Pix. Default true. */
   showPixBanner?: boolean;
+  /** Família de fonte global a aplicar em TODOS os textos do anúncio. Default: Inter. */
+  fontFamily?: string;
+  /** Multiplicador de escala global para títulos/preços/textos grandes (>=22px). Default 1. */
+  titleScale?: number;
+  /** Multiplicador de escala global para descrição/labels/textos pequenos (<22px). Default 1. */
+  descScale?: number;
+  /** Cor que substitui o texto branco padrão (#fff/#ffffff). Útil para alinhar texto à identidade da marca. */
+  textColorOverride?: string;
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
