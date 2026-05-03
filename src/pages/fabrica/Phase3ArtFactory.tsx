@@ -1425,8 +1425,48 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
 
           <div>
-            <label className={labelCls}>Nome da promoção</label>
-            <input value={promoName} onChange={(e) => setPromoName(e.target.value)} placeholder="Ex: BLACK FRIDAY" className={inputCls} />
+            <label className={labelCls}>
+              {categoria === "experiencia_destino" ? "Nome da experiência" : "Nome da promoção"}
+            </label>
+            {categoria === "experiencia_destino" ? (
+              <div className="relative">
+                <input
+                  value={promoName}
+                  onChange={(e) => setPromoName(e.target.value)}
+                  onFocus={() => setPromoMenuOpen(true)}
+                  onClick={() => setPromoMenuOpen(true)}
+                  placeholder="Ex: EXPERIÊNCIA EXCLUSIVA"
+                  className={`${inputCls} pr-10 cursor-pointer`}
+                />
+                <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${promoMenuOpen ? "rotate-180" : ""}`} />
+                {promoMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setPromoMenuOpen(false)} />
+                    <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
+                      <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
+                        Sugestões luxo · {PROMO_NAME_PRESETS_EXPERIENCIA.length}
+                      </div>
+                      {PROMO_NAME_PRESETS_EXPERIENCIA.map((p) => {
+                        const active = promoName === p;
+                        return (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => { setPromoName(p); setPromoMenuOpen(false); }}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
+                          >
+                            {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                            <span className={active ? "" : "ml-5"}>{p}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <input value={promoName} onChange={(e) => setPromoName(e.target.value)} placeholder="Ex: BLACK FRIDAY" className={inputCls} />
+            )}
           </div>
 
           <div className="sm:col-span-2">
