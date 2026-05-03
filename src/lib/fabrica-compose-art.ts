@@ -652,24 +652,58 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     }
   }
 
-  // Override de cor: aplica a TODOS os textos (fillText/strokeText), preservando
-  // backgrounds e elementos gráficos (fillRect, etc).
-  if (wantsColorOverride) {
+  // ─── TRAVA DE LEGIBILIDADE GLOBAL (V0..V5 · todas as categorias) ───
+  // Intercepta TODO ctx.fillText/strokeText para:
+  //  1) (opcional) aplicar override de cor escolhido pelo usuário
+  //  2) aplicar drop-shadow forte e OPOSTO ao baseTextMode, garantindo
+  //     contraste mesmo quando o texto cai sobre área clara/escura da foto.
+  // baseTextMode === "light"  → texto claro + sombra preta
+  // baseTextMode === "dark"   → texto escuro + sombra branca
+  {
     const origFillText = ctx.fillText.bind(ctx);
     const origStrokeText = ctx.strokeText.bind(ctx);
+    const shadowColor = baseTextMode === "dark"
+      ? "rgba(255,255,255,0.85)"
+      : "rgba(0,0,0,0.85)";
+
+    const withLegibility = (draw: () => void, applyOverride: boolean) => {
+      const prevFill = ctx.fillStyle;
+      const prevStroke = ctx.strokeStyle;
+      const prevShadowColor = ctx.shadowColor;
+      const prevShadowBlur = ctx.shadowBlur;
+      const prevShadowOffX = ctx.shadowOffsetX;
+      const prevShadowOffY = ctx.shadowOffsetY;
+      try {
+        if (applyOverride) {
+          ctx.fillStyle = overrideColorHex;
+          ctx.strokeStyle = overrideColorHex;
+        }
+        ctx.shadowColor = shadowColor;
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 2;
+        draw();
+      } finally {
+        ctx.fillStyle = prevFill;
+        ctx.strokeStyle = prevStroke;
+        ctx.shadowColor = prevShadowColor;
+        ctx.shadowBlur = prevShadowBlur;
+        ctx.shadowOffsetX = prevShadowOffX;
+        ctx.shadowOffsetY = prevShadowOffY;
+      }
+    };
+
     ctx.fillText = ((text: string, x: number, y: number, maxWidth?: number) => {
-      const prev = ctx.fillStyle;
-      ctx.fillStyle = overrideColorHex;
-      if (maxWidth !== undefined) origFillText(text, x, y, maxWidth);
-      else origFillText(text, x, y);
-      ctx.fillStyle = prev;
+      withLegibility(() => {
+        if (maxWidth !== undefined) origFillText(text, x, y, maxWidth);
+        else origFillText(text, x, y);
+      }, wantsColorOverride);
     }) as any;
     ctx.strokeText = ((text: string, x: number, y: number, maxWidth?: number) => {
-      const prev = ctx.strokeStyle;
-      ctx.strokeStyle = overrideColorHex;
-      if (maxWidth !== undefined) origStrokeText(text, x, y, maxWidth);
-      else origStrokeText(text, x, y);
-      ctx.strokeStyle = prev;
+      withLegibility(() => {
+        if (maxWidth !== undefined) origStrokeText(text, x, y, maxWidth);
+        else origStrokeText(text, x, y);
+      }, wantsColorOverride);
     }) as any;
   }
 
