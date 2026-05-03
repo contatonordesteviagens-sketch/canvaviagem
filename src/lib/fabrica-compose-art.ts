@@ -1383,86 +1383,117 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     // ── V1 · REF "Black Friday" — painel escuro ESQUERDA + coluna fotos DIREITA ──
     // Painel primário na esquerda com texto/preço; coluna direita com foto empilhada
     if (variant === 1) {
-      const panelW = 460;
-      const colX = panelW + 24; const colW = width - colX - 24;
-      // REGRA DE LEGIBILIDADE: painel esquerdo = primaryColor → texto deve contrastar.
-      // Accent = secondaryColor mas só se contrastar; caso contrário, fallback p/ branco/preto.
+      // ── V1 STORIES 9:16 — REFATORADO: painel esquerdo SÓLIDO + foto sangrada à direita ─
+      const panelW = Math.round(width * 0.44);
+      const photoX = panelW;
+      const photoW = width - panelW;
       const v1PanelBg = primaryColor;
-      const v1OnPanel = contrastOn(v1PanelBg); // texto principal sempre legível
-      const v1Accent = ensureContrast(secondaryColor, v1PanelBg, 0.35);
-      // Fundo esquerdo (cor primária)
-      ctx.fillStyle = v1PanelBg; ctx.fillRect(0, 0, panelW, height);
-      // Fundo direito (cor secundária)
-      ctx.fillStyle = secondaryColor; ctx.fillRect(panelW, 0, width - panelW, height);
-      // Texto no painel esquerdo
-      const px = left; const pw = panelW - left - 24;
-      ctx.fillStyle = v1Accent;
-      ctx.font = "900 22px Inter, Arial, sans-serif";
-      ctx.fillText((promoName || "OFERTA ESPECIAL").toUpperCase(), px, logoH + 54);
-      // Destino grande
+      const v1OnPanel = contrastOn(v1PanelBg);
+      const v1Accent  = ensureContrast(secondaryColor, v1PanelBg, 0.45);
+
+      // 1) PAINEL ESQUERDO sólido
+      ctx.fillStyle = v1PanelBg;
+      ctx.fillRect(0, 0, panelW, height);
+
+      // 2) FOTO sangrada à direita (sem moldura)
+      const c1 = fitCover(image.naturalWidth, image.naturalHeight, photoW, height, 0.40);
+      ctx.drawImage(image, c1.sx, c1.sy, c1.sw, c1.sh, photoX, 0, photoW, height);
+
+      // 3) Layout do painel
+      const px = 56;
+      const pw = panelW - px * 2;
+      const logoReserve = hasLogo ? 230 : 80;
+
+      // 4) BADGE pílula
+      const badgeText = (promoName || "OFERTA ESPECIAL").toUpperCase();
+      const badgeBg   = v1Accent;
+      const badgeFg   = contrastOn(badgeBg);
+      const badgeH    = 56;
+      const badgeY    = logoReserve;
+      ctx.font = "800 22px Inter, Arial, sans-serif";
+      const badgeTextW = ctx.measureText(badgeText).width;
+      const badgeW = Math.min(pw, badgeTextW + 40);
+      fillRoundRect(ctx, px, badgeY, badgeW, badgeH, badgeH / 2, badgeBg);
+      ctx.fillStyle = badgeFg;
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.fillText(badgeText, px + 20, badgeY + badgeH / 2);
+      ctx.textBaseline = "alphabetic";
+
+      // 5) DESTINO
+      const destY = badgeY + badgeH + 36;
       ctx.fillStyle = v1OnPanel;
-      drawTextBlock(ctx, destUp, px, logoH + 100, pw, 78, 2, { fontWeight: "900", baseFontSize: 72, minFontSize: 36 });
+      let destSize = 86;
+      ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(destUp).width > pw && destSize > 44) {
+        destSize -= 4;
+        ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
+      }
+      ctx.fillText(destUp, px, destY + destSize * 0.85);
 
-      // Headline (titleText escolhido pelo usuário) — abaixo do destino
+      // 6) Headline
+      const subY = destY + destSize + 20;
       ctx.fillStyle = v1Accent;
-      ctx.font = "800 24px Inter, Arial, sans-serif";
-      drawTextBlock(ctx, titleText, px, logoH + 240, pw, 30, 2, { fontWeight: "800", baseFontSize: 24, minFontSize: 16 });
+      const subSize = 26;
+      ctx.font = `700 ${subSize}px Inter, Arial, sans-serif`;
+      const subLines = wrapText(ctx, titleText || "", pw, subSize).slice(0, 2);
+      subLines.forEach((ln, i) => ctx.fillText(ln, px, subY + i * (subSize + 6)));
+      const subBlockH = subLines.length * (subSize + 6);
 
-      // Benefits — até 6 itens em pílulas, altura adaptativa
+      // 7) PRICE CARD ancorado no rodapé
+      const priceBlockH = 200;
+      const priceBlockY = height - 80 - priceBlockH;
+
+      // 8) BENEFITS — pílulas adaptativas no espaço restante
       const benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
-      const hlStart = logoH + 320;
-      const pillH = benefitsListV1.length <= 4 ? 68 : benefitsListV1.length === 5 ? 56 : 50;
-      const pillGap = benefitsListV1.length <= 4 ? 14 : 10;
-      const pillFont = benefitsListV1.length <= 4 ? 28 : benefitsListV1.length === 5 ? 24 : 22;
-      // Pílula com tinta no mesmo tom do painel mas mais clara/escura, p/ contraste consistente
-      const pillBgV1 = v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.12)";
+      const hlStart = subY + subBlockH + 32;
+      const hlAvailH = priceBlockY - 28 - hlStart;
+      const count = Math.max(1, benefitsListV1.length);
+      const pillGap = 14;
+      const pillH = Math.max(44, Math.min(72, Math.floor((hlAvailH - pillGap * (count - 1)) / count)));
+      const pillFont = pillH >= 60 ? 26 : pillH >= 50 ? 22 : 20;
+      const iconFont = pillH >= 60 ? 30 : 26;
+      const pillBg = v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.14)";
+
       benefitsListV1.forEach((h, i) => {
         const py = hlStart + i * (pillH + pillGap);
-        fillRoundRect(ctx, px, py, pw, pillH, pillH / 2, pillBgV1);
-        ctx.fillStyle = v1Accent; ctx.font = `700 ${pillFont}px Inter, Arial, sans-serif`;
+        fillRoundRect(ctx, px, py, pw, pillH, 14, pillBg);
+        ctx.fillStyle = v1Accent;
+        ctx.font = `400 ${iconFont}px Inter, Arial, sans-serif`;
         ctx.textBaseline = "middle";
-        ctx.fillText(ICON_SYMBOL[h.icon || "check"] || "✓", px + 18, py + pillH / 2);
+        ctx.fillText(ICON_SYMBOL[h.icon || "check"] || "✓", px + 22, py + pillH / 2);
         ctx.fillStyle = v1OnPanel;
-        // Auto-shrink texto da pill
-        let pf = pillFont;
-        ctx.font = `700 ${pf}px Inter, Arial, sans-serif`;
-        const maxTw = pw - 64;
-        while (ctx.measureText(h.text).width > maxTw && pf > 14) {
-          pf -= 2;
-          ctx.font = `700 ${pf}px Inter, Arial, sans-serif`;
+        let tf = pillFont;
+        ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
+        const maxTw = pw - 78;
+        while (ctx.measureText(h.text).width > maxTw && tf > 14) {
+          tf -= 2;
+          ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
         }
-        ctx.fillText(h.text, px + 52, py + pillH / 2);
+        ctx.fillText(h.text, px + 64, py + pillH / 2);
         ctx.textBaseline = "alphabetic";
       });
-      // Price card no painel esquerdo, base — overlay escuro/claro de acordo com o painel
-      const priceCardOverlay = v1OnPanel === "#ffffff" ? "rgba(0,0,0,0.3)" : "rgba(255,255,255,0.25)";
-      fillRoundRect(ctx, px, height - 200, pw, 172, 16, priceCardOverlay);
-      ctx.fillStyle = v1Accent; ctx.font = "700 22px Inter, Arial, sans-serif";
+
+      // 9) PRICE CARD overlay
+      const priceCardOverlay = v1OnPanel === "#ffffff" ? "rgba(0,0,0,0.32)" : "rgba(255,255,255,0.28)";
+      fillRoundRect(ctx, px, priceBlockY, pw, priceBlockH, 18, priceCardOverlay);
       ctx.textAlign = "center";
-      ctx.fillText((topLabel || "APENAS HOJE:").toString().toUpperCase(), px + pw / 2, height - 168);
+      ctx.fillStyle = v1Accent;
+      ctx.font = "800 22px Inter, Arial, sans-serif";
+      ctx.fillText((topLabel || "À VISTA").toString().toUpperCase(), px + pw / 2, priceBlockY + 42);
       ctx.fillStyle = v1OnPanel;
-      // Auto-shrink preço
       const priceStrV1 = mainPrice || `${curSym} ${price}`;
-      let pfsV1 = 62;
+      let pfsV1 = 76;
       ctx.font = `900 ${pfsV1}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(priceStrV1).width > pw - 24 && pfsV1 > 28) {
+      while (ctx.measureText(priceStrV1).width > pw - 32 && pfsV1 > 30) {
         pfsV1 -= 4;
         ctx.font = `900 ${pfsV1}px Inter, Arial, sans-serif`;
       }
-      ctx.fillText(priceStrV1, px + pw / 2, height - 100);
-      ctx.font = "600 20px Inter, Arial, sans-serif";
-      ctx.fillText(bottomSuffix, px + pw / 2, height - 68);
+      ctx.fillText(priceStrV1, px + pw / 2, priceBlockY + 42 + pfsV1 + 8);
+      ctx.fillStyle = v1Accent;
+      ctx.font = "600 22px Inter, Arial, sans-serif";
+      ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, priceBlockY + priceBlockH - 28);
       ctx.textAlign = "left";
-      // Foto ÚNICA no lado direito (sem duplicação) — ocupa toda a altura
-      const gap1 = 16;
-      const pY = gap1;
-      const photoH1 = height - gap1 * 2;
-      const c1 = fitCover(image.naturalWidth, image.naturalHeight, colW, photoH1, 0.40);
-      ctx.save();
-      fillRoundRect(ctx, colX, pY, colW, photoH1, 20, "#000");
-      ctx.clip();
-      ctx.drawImage(image, c1.sx, c1.sy, c1.sw, c1.sh, colX, pY, colW, photoH1);
-      ctx.restore();
+
       return canvas.toDataURL("image/png");
     }
 
