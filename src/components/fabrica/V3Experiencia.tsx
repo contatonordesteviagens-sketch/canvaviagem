@@ -232,11 +232,11 @@ export function V3Experiencia(props: V3ExperienciaProps) {
           return (
             <h1
               data-field="adTitle"
-              className={`text-white text-center font-bold uppercase leading-tight tracking-wide drop-shadow-2xl drop-shadow-[0_10px_10px_rgba(0,0,0,0.6)] ${sizeClass}`}
+              className={`text-center font-bold uppercase leading-tight tracking-wide ${dropClass} ${sizeClass}`}
               style={{
                 fontFamily: titleFont,
-                textShadow:
-                  "0 8px 24px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.45)",
+                color: titleColor,
+                textShadow: textStyle.textShadow,
               }}
             >
               {adTitle}
