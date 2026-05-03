@@ -133,8 +133,7 @@ serve(async (req) => {
 Cena: ${scene}.
 ${safeZoneRules(format)}
 Estilo: fotografia editorial de viagem profissional, sem texto, sem logos, sem watermarks.
-Qualidade cinematográfica, iluminação natural perfeita, cores vivas e saturadas.
-REGRA DE CONTRASTE OBRIGATÓRIA: a área central e a base da imagem devem ter tonalidade ESCURA E UNIFORME (azul-marinho profundo, verde-floresta, sombras dramáticas) ou CLARA E UNIFORME (céu claro, areia, neblina suave) — NUNCA misture pontos muito claros e muito escuros nessas regiões, pois textos brancos ou pretos serão sobrepostos. Evite alto-contraste local na faixa onde o texto vai aparecer.`;
+Qualidade cinematográfica, iluminação natural perfeita, cores vivas e saturadas.`;
     } else if (body.templateId) {
       const tpl = getTemplateById(body.templateId);
       if (!tpl) {

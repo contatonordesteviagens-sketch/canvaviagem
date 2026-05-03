@@ -366,102 +366,6 @@ const pickPhotoRefs = (
   return Array.from({ length: count }, () => primary);
 };
 
-// Bloco da Paleta da Marca: cada cor detectada vira 3 botões claros
-// (Primária / Secundária / Texto) — elimina ambiguidade do clique direito
-// e garante que o usuário consegue aplicar qualquer cor onde quiser.
-function BrandPaletteBlock({
-  palette,
-  primaryColor,
-  secondaryColor,
-  textColorOverride,
-  setPrimaryColor,
-  setSecondaryColor,
-  setTextColorOverride,
-}: {
-  palette: { primary: string; secondary: string; accent: string; swatches: string[] };
-  primaryColor: string;
-  secondaryColor: string;
-  textColorOverride: string;
-  setPrimaryColor: (c: string) => void;
-  setSecondaryColor: (c: string) => void;
-  setTextColorOverride: (c: string) => void;
-}) {
-  // Minimalismo: apenas 3 cores (primária, secundária e acento) detectadas da logo.
-  const trio = [palette.primary, palette.secondary, palette.accent].filter(Boolean);
-  const seen = new Set<string>();
-  const swatches = trio.filter((c) => {
-    const k = c.toLowerCase();
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
-
-  return (
-    <div className="rounded-xl p-3 border border-white/10 bg-white/[0.02]">
-      <div className="flex items-center justify-between mb-2.5">
-        <label className="text-[11px] uppercase tracking-widest text-white/60 font-semibold">Paleta da sua marca</label>
-        <button
-          type="button"
-          onClick={() => {
-            setPrimaryColor(palette.primary);
-            setSecondaryColor(palette.secondary);
-            toast.success("Paleta aplicada");
-          }}
-          className="text-[10px] font-medium px-2 py-1 rounded-md bg-white/10 hover:bg-white/15 text-white/80 border border-white/10"
-        >
-          Aplicar
-        </button>
-      </div>
-
-      <div className="flex items-center gap-2">
-        {swatches.map((c) => {
-          const isPrimary = isSameHex(c, primaryColor);
-          const isSecondary = isSameHex(c, secondaryColor);
-          const isText = isSameHex(c, textColorOverride);
-          const ring = isPrimary || isSecondary || isText ? "ring-2 ring-white/70" : "ring-1 ring-white/15";
-          const role = isPrimary ? "P" : isSecondary ? "S" : isText ? "T" : "";
-          return (
-            <div key={c} className="flex flex-col items-center gap-1">
-              <div className="relative group">
-                <button
-                  type="button"
-                  onClick={() => setPrimaryColor(c)}
-                  className={`w-9 h-9 rounded-full ${ring} transition-all hover:scale-110 shadow-sm`}
-                  style={{ background: c }}
-                  title={`${c.toUpperCase()} — clique: primária`}
-                />
-                {role && (
-                  <span className="absolute -top-1 -right-1 text-[9px] font-bold bg-white text-black rounded-full w-4 h-4 flex items-center justify-center shadow">
-                    {role}
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-0.5">
-                <button
-                  type="button"
-                  onClick={() => setSecondaryColor(c)}
-                  className="text-[9px] px-1.5 py-0.5 rounded text-white/60 hover:text-white hover:bg-white/10"
-                  title="Usar como secundária"
-                >S</button>
-                <button
-                  type="button"
-                  onClick={() => setTextColorOverride(c)}
-                  className="text-[9px] px-1.5 py-0.5 rounded text-white/60 hover:text-white hover:bg-white/10"
-                  title="Usar como cor do texto"
-                >T</button>
-              </div>
-            </div>
-          );
-        })}
-        <p className="text-[10px] text-white/40 ml-2 leading-tight">
-          Clique na bolinha p/ <strong className="text-white/60">primária</strong>.<br />
-          <strong className="text-white/60">S</strong> = secundária · <strong className="text-white/60">T</strong> = texto.
-        </p>
-      </div>
-    </div>
-  );
-}
-
 export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const { state, update } = useFabricaContext();
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
@@ -594,8 +498,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const effectiveTextColor = textColorOverride || autoTextColor;
   const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
   const [fontOptionsOpen, setFontOptionsOpen] = useState(false);
-  const [colorsOpen, setColorsOpen] = useState(false);
-  const [openColorPicker, setOpenColorPicker] = useState<"primary" | "secondary" | "text" | null>(null);
   const FONT_PRESETS = ["Inter", "Poppins", "Montserrat", "Roboto", "Oswald", "Bebas Neue", "Playfair Display", "Lora", "Raleway", "Nunito", "Work Sans", "DM Sans"];
 
   // Carrega Google Font dinamicamente quando o usuário escolhe uma família custom
@@ -614,26 +516,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       (document as any).fonts.load(`400 16px "${fontFamily}"`).catch(() => {});
     }
   }, [fontFamily]);
-
-  // Fallback: se já existe logo mas ainda não há paleta extraída (ex.: logo
-  // enviada antes da feature existir), roda a extração ao entrar na Fase 3.
-  useEffect(() => {
-    if (!state.logoBase64) return;
-    if (state.brandPalette && state.brandPalette.swatches?.length) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const { extractBrandPaletteFromImage } = await import("@/lib/fabrica-color-extract");
-        const palette = await extractBrandPaletteFromImage(state.logoBase64);
-        if (!cancelled && palette) {
-          update({ brandPalette: palette });
-          toast.success("Paleta da sua marca detectada!");
-        }
-      } catch {}
-    })();
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.logoBase64]);
 
   // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
   const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
@@ -1186,16 +1068,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               }
             } catch (e) {
               console.warn("V4 composer (IA pura) falhou, mantendo BG cru:", e);
-            }
-          } else if (state.logoBase64) {
-            // Caminho IA Pura "tradicional" (template do backend) — a IA já desenha
-            // o anúncio inteiro mas frequentemente NÃO insere a logo do usuário,
-            // ou inventa uma logo aleatória. Garantimos a logo correta via overlay.
-            try {
-              const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
-              img = await composeLogoOnImage(img, state.logoBase64);
-            } catch (e) {
-              console.warn("Falha ao compor logo (IA pura):", e);
             }
           }
 
@@ -2131,8 +2003,45 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 </div>
               </div>
 
+              {/* Cor do texto: mesmo padrão das cores Primária/Secundária */}
+              <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
+                <div className="flex items-baseline justify-between mb-2">
+                  <label className={labelCls}>Cor do texto</label>
+                  <span className="text-[10px] text-white/40">aplica em todos os textos</span>
+                </div>
+                <div className="grid grid-cols-10 gap-1 mb-3">
+                  {PRESET_COLORS.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setTextColorOverride(c)}
+                      className={`w-5 h-5 rounded-full border transition-all ${(textColorOverride || "").toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-md" : "border-white/20 hover:border-white/60"}`}
+                      style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
+                      aria-label={c}
+                      title={c}
+                    />
+                  ))}
+                </div>
+                <div className="flex gap-2 items-center">
+                  <label className="relative w-10 h-10 rounded-full cursor-pointer flex-shrink-0 overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
+                    style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}>
+                    <input type="color" value={textColorOverride || "#ffffff"}
+                      onChange={(e) => setTextColorOverride(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
+                    <span className="absolute inset-1.5 rounded-full border border-white/40" style={{ background: textColorOverride || "#ffffff" }} />
+                  </label>
+                  <input value={textColorOverride} onChange={(e) => setTextColorOverride(e.target.value)}
+                    placeholder="Padrão (branco)"
+                    className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase" />
+                  {textColorOverride && (
+                    <button onClick={() => setTextColorOverride("")}
+                      className="text-[11px] text-white/60 hover:text-white px-2 py-1 rounded border border-white/10">
+                      Limpar
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <button
-                onClick={() => { setFontFamily("Inter"); setTitleScale(1); setDescScale(1); }}
+                onClick={() => { setFontFamily("Inter"); setTitleScale(1); setDescScale(1); setTextColorOverride(""); }}
                 className="text-[11px] text-white/60 hover:text-white underline"
               >
                 Restaurar padrão
@@ -2141,133 +2050,94 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           )}
         </div>
 
-        {/* Cores — colapsável (mesmo padrão de Tipografia).
-            Inclui Paleta da marca (auto-detectada da logo) + Primária/Secundária/Texto. */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setColorsOpen((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-sm font-bold text-white">Cores</span>
-              <span className="inline-flex items-center gap-1.5 ml-1">
-                <span className="w-3.5 h-3.5 rounded-full border border-white/30" style={{ background: primaryColor }} />
-                <span className="w-3.5 h-3.5 rounded-full border border-white/30" style={{ background: secondaryColor }} />
-                <span className="w-3.5 h-3.5 rounded-full border border-white/30" style={{ background: textColorOverride || effectiveTextColor }} />
-              </span>
-              <span className="text-[10px] text-white/40 truncate">
-                {primaryColor.toUpperCase()} · {secondaryColor.toUpperCase()} · texto {(textColorOverride || effectiveTextColor).toUpperCase()}
-                {!textColorOverride && <span className="text-white/30"> (auto)</span>}
-              </span>
+        {/* Paleta da marca (extraída automaticamente da logo na Fase 1) */}
+        {state.brandPalette && state.brandPalette.swatches?.length > 0 && (
+          <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/10 rounded-xl p-3">
+            <div className="flex items-baseline justify-between mb-2">
+              <label className={labelCls}>🎨 Paleta da sua marca</label>
+              <span className="text-[10px] text-white/40">detectada da sua logo</span>
             </div>
-            <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${colorsOpen ? "rotate-180" : ""}`} />
-          </button>
-
-          {colorsOpen && (
-            <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
-              {/* Paleta da marca (extraída automaticamente da logo na Fase 1) */}
-              {state.brandPalette && state.brandPalette.swatches?.length > 0 ? (
-                <BrandPaletteBlock
-                  palette={state.brandPalette}
-                  primaryColor={primaryColor}
-                  secondaryColor={secondaryColor}
-                  textColorOverride={textColorOverride}
-                  setPrimaryColor={setPrimaryColor}
-                  setSecondaryColor={setSecondaryColor}
-                  setTextColorOverride={setTextColorOverride}
-                />
-              ) : !state.logoBase64 ? (
-                <div className="rounded-xl p-3 border border-dashed border-white/15 bg-white/[0.02] text-[11px] text-white/55">
-                  🎨 <strong className="text-white/80">Paleta automática:</strong> envie a logo da sua agência na Fase 1 para detectarmos as cores da sua marca automaticamente.
-                </div>
-              ) : null}
-
-              {/* Cor primária / secundária / texto — 3 colunas, minimalista.
-                  A paleta de presets só aparece ao clicar na bolinha (popover). */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {[
-                  { key: "primary", label: "Primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo" },
-                  { key: "secondary", label: "Secundária", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
-                  { key: "text", label: "Texto", value: textColorOverride || effectiveTextColor, setter: setTextColorOverride, hint: textColorOverride ? "manual" : "auto" },
-                ].map(({ key, label, value, setter, hint }) => {
-                  const open = openColorPicker === key;
-                  return (
-                    <div key={key} className="relative bg-white/[0.02] border border-white/10 rounded-xl p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="text-[11px] uppercase tracking-wider text-white/60 font-semibold">{label}</label>
-                        <span className="text-[10px] text-white/40">{hint}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setOpenColorPicker(open ? null : (key as any))}
-                          className="w-9 h-9 rounded-full border-2 border-white/20 hover:border-white/60 transition-all shadow-sm flex-shrink-0"
-                          style={{ background: value, boxShadow: value.toLowerCase() === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
-                          title="Abrir paleta"
-                        />
-                        <input
-                          value={value}
-                          onChange={(e) => setter(e.target.value)}
-                          placeholder="#000000"
-                          className="flex-1 min-w-0 bg-white/[0.04] border border-white/10 rounded-lg px-2.5 py-1.5 text-white text-xs outline-none focus:border-white/40 font-mono uppercase"
-                        />
-                        {key === "text" && textColorOverride && (
-                          <button
-                            onClick={() => setTextColorOverride("")}
-                            className="text-[10px] text-white/60 hover:text-white px-2 py-1 rounded border border-white/10 flex-shrink-0"
-                            title="Voltar ao auto-contraste"
-                          >
-                            Auto
-                          </button>
-                        )}
-                      </div>
-
-                      {open && (
-                        <>
-                          <div className="fixed inset-0 z-40" onClick={() => setOpenColorPicker(null)} />
-                          <div className="absolute z-50 left-3 right-3 mt-2 p-3 rounded-xl bg-[#0f0f12] border border-white/15 shadow-2xl">
-                            <div className="grid grid-cols-10 gap-1.5 mb-2.5">
-                              {PRESET_COLORS.map((c) => (
-                                <button
-                                  key={c}
-                                  onClick={() => { setter(c); setOpenColorPicker(null); }}
-                                  className={`w-5 h-5 rounded-full border transition-all ${value.toLowerCase() === c.toLowerCase() ? "border-white scale-125" : "border-white/20 hover:border-white/60"}`}
-                                  style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
-                                  title={c}
-                                />
-                              ))}
-                            </div>
-                            <label
-                              className="flex items-center gap-2 text-[10px] text-white/60 hover:text-white cursor-pointer"
-                              title="Cor personalizada"
-                            >
-                              <span
-                                className="w-5 h-5 rounded-full border border-white/30 flex-shrink-0"
-                                style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}
-                              />
-                              <span>Personalizada</span>
-                              <input
-                                type="color"
-                                value={value}
-                                onChange={(e) => setter(e.target.value)}
-                                className="opacity-0 w-0 h-0"
-                              />
-                            </label>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  );
-                })}
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-1.5">
+                {state.brandPalette.swatches.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => { setPrimaryColor(c); }}
+                    className="w-7 h-7 rounded-full border border-white/20 hover:scale-110 transition-transform shadow-md"
+                    style={{ background: c }}
+                    title={`Aplicar como cor primária: ${c}`}
+                  />
+                ))}
               </div>
-
-              <p className="text-[10px] text-white/40">
-                💡 <em>Auto</em> escolhe branco ou preto pelo contraste. Defina o texto manualmente só se quiser sobrescrever.
-              </p>
-
+              <button
+                onClick={() => {
+                  if (!state.brandPalette) return;
+                  setPrimaryColor(state.brandPalette.primary);
+                  setSecondaryColor(state.brandPalette.secondary);
+                  toast.success("Paleta da marca aplicada!");
+                }}
+                className="text-[11px] font-bold px-3 py-1.5 rounded-lg border border-white/20 bg-white/[0.06] hover:bg-white/[0.12] text-white"
+              >
+                Aplicar paleta
+              </button>
             </div>
-          )}
+            <p className="text-[10px] text-white/40 mt-2">
+              Clique numa cor para usar como primária, ou aplique a paleta completa (primária + secundária).
+            </p>
+          </div>
+        )}
+
+        {/* Cores — Primária | Secundária em 2 colunas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            { label: "Cor primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo principal" },
+            { label: "Cor secundária", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
+          ].map(({ label, value, setter, hint }) => (
+            <div key={label} className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
+              <div className="flex items-baseline justify-between mb-2">
+                <label className={labelCls}>{label}</label>
+                <span className="text-[10px] text-white/40">{hint}</span>
+              </div>
+              {/* Bolinhas da paleta — grid 8 col, 4 linhas */}
+              <div className="grid grid-cols-10 gap-1 mb-3">
+                {PRESET_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setter(c)}
+                    className={`w-5 h-5 rounded-full border transition-all ${value.toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-md" : "border-white/20 hover:border-white/60"}`}
+                    style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
+                    aria-label={c}
+                    title={c}
+                  />
+                ))}
+              </div>
+              {/* Color picker redondo (gradiente arco-íris) + HEX */}
+              <div className="flex gap-2 items-center">
+                <label
+                  className="relative w-10 h-10 rounded-full cursor-pointer flex-shrink-0 overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
+                  style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}
+                  title="Escolher cor personalizada"
+                >
+                  <input
+                    type="color"
+                    value={value}
+                    onChange={(e) => setter(e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                  <span
+                    className="absolute inset-1.5 rounded-full border border-white/40"
+                    style={{ background: value }}
+                  />
+                </label>
+                <input
+                  value={value}
+                  onChange={(e) => setter(e.target.value)}
+                  placeholder="#000000"
+                  className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase"
+                />
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Benefícios — em Experiência de Destino usa apenas texto, sem selector de ícones. */}
