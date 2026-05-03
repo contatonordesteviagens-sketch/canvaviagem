@@ -551,6 +551,69 @@ Clean modern UI, flawless spelling, ZERO text overlapping, perfect alignment str
   }
 
   // ──────────────────────────────────────────────────────────────────────
+  // 🔒 NOMENCLATURA 1/1/2 · V4 — FULL-BLEED + CARD CENTRAL FLUTUANTE (Stories 9:16)
+  // Foto cobre 100% da tela; card sólido na cor PRIMÁRIA flutua centralizado.
+  // Pill secundária sobreposta exatamente na borda inferior do card.
+  // ──────────────────────────────────────────────────────────────────────
+  if (ver === 4) {
+    const agencyTag = v.agencyName ? `minimalist logo placeholder for agency "${v.agencyName}"` : "minimalist logo placeholder";
+    const installmentLabel = v.installments === "1" ? "À VISTA" : `${v.installments}x`;
+    const pixText = "5% OFF À VISTA NO PIX";
+    const travelDates = v.duration || "DATAS A CONFIRMAR";
+
+    return `[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA E SAFE ZONES]
+A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/2 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Stories Vertical 9:16) associada à Versão de Layout: V4 (Foto Full-Bleed + Card Central Flutuante).
+É TERMINANTEMENTE PROIBIDO misturar esta lógica com V0, V1, V2, V3 ou com o estilo "Experiência de Destino".
+OBRIGATÓRIO: respeitar limites da interface do Instagram Stories e usar layout de card flutuante centralizado.
+
+[IMAGE]
+A high-end, premium vertical 9:16 travel advertisement (1080x1920, 8K).
+
+[STRICT UI SAFE ZONES — INSTAGRAM STORIES]
+- The TOP 20% (≈384px) MUST remain completely empty of typography, UI elements, or logos.
+- The BOTTOM 20% (≈384px) MUST remain completely empty.
+- ALL critical UI lives ONLY inside the central 60% vertical block.
+
+[BACKGROUND — FULL BLEED]
+A full-bleed, 8K photorealistic vertical photograph of ${v.destination} covering 100% of the canvas. Scene: ${v.destinationDescription}. Vibrant, highly detailed, cinematic.
+
+[UI LAYOUT]
+Just below the top 20% safe zone, in the top-left corner, place a small ${agencyTag}.
+
+[CENTER FLOATING CARD]
+Centered vertically and horizontally inside the central 60% safe area, place a large solid ${v.primaryHex} rectangular floating card with slightly rounded corners and subtle drop-shadow.
+
+[INSIDE THE CARD — CRITICAL HIGH-CONTRAST RULE]
+🚨 ALL text inside this card MUST be PURE WHITE (#FFFFFF) — except text inside the secondary-colored pill (which uses dark text). Never paint text in dark tones over the primary-colored card.
+
+Card content, top to bottom:
+1. Massive ultra-bold PURE WHITE text: "${v.promoName || `OFERTA ${v.destination}`}".
+2. Medium elegant PURE WHITE text: "${v.destination}".
+3. Bold PURE WHITE text showing dates: "${travelDates}", followed by a single horizontal row of small minimalist ${v.secondaryHex} icons (plane, hotel, coffee, guide).
+
+[PRICE BLOCK — INSIDE THE CARD, SPLIT INTO TWO COLUMNS]
+- LEFT column (stacked vertically):
+   • small PURE WHITE text "pagamento"
+   • a solid ${v.secondaryHex} rounded pill containing bold DARK text "${installmentLabel}"
+   • small PURE WHITE text "por pessoa"
+- RIGHT column:
+   • Massive extra-bold PURE WHITE text "R$ ${v.installmentValue}"
+
+[FLOATING EDGE BUTTON — overlapping the bottom edge of the card]
+Perfectly centered and overlapping the EXACT bottom horizontal edge of the floating card (50% above the edge, 50% below), place a bright solid ${v.secondaryHex} rounded pill button containing bold DARK text "${pixText}".
+
+[AESTHETIC]
+Clean modern UI, flawless spelling, perfect alignment, high contrast, premium Brazilian travel agency feel.
+
+[REGRAS DE ISOLAMENTO]
+🚫 PROIBIDO: qualquer elemento dentro dos 20% do topo ou dos 20% da base.
+🚫 PROIBIDO: texto escuro sobre o card ${v.primaryHex} (exceto dentro da pill secundária).
+🚫 PROIBIDO: split horizontal 45/55, glass card translúcido, gradientes, ícones 3D, watermarks, copiar layouts V0/V1/V2/V3 ou Experiência.
+✅ OBRIGATÓRIO: foto full-bleed 9:16, card sólido ${v.primaryHex} centralizado, pill ${v.secondaryHex} sobrepondo borda inferior, contraste máximo (branco puro no card / escuro na pill).
+✅ Aspect ratio: 9:16 absoluto. Sem letterbox.`;
+  }
+
+  // ──────────────────────────────────────────────────────────────────────
   // 🔒 NOMENCLATURA 1/1/2 · V2 — FULL-BLEED + TRANSLUCENT GLASS CARD (Stories 9:16)
   // ──────────────────────────────────────────────────────────────────────
   {

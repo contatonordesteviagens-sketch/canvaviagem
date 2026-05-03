@@ -1,29 +1,29 @@
-# Adicionar Layout 1/1/2 V0 — Stories Split Horizontal
+# Adicionar Layout 1/1/2 V4 — Card Central Flutuante
 
 ## Objetivo
-Implementar versão **V0** da nomenclatura **1/1/2** (Foto Real · Oferta de Pacote · Stories 9:16): foto no topo (45%), bloco UI sólido na cor secundária no fundo (55%), respeitando safe zones de 20% topo/base do Instagram. Atualmente esse formato só renderiza V2 (full-bleed glass card).
+Adicionar versão **V4** ao prompt de Stories 9:16 (Foto Real · Oferta de Pacote): foto full-bleed de fundo + card sólido na cor primária centralizado + pill na cor secundária sobreposta exatamente na borda inferior do card.
 
 ## Arquivo a editar
-`supabase/functions/fabrica-generate-ad/master-prompts.ts` — função `promptClassicVertical`, bloco Stories 9:16 (linhas ~485-558).
+`supabase/functions/fabrica-generate-ad/master-prompts.ts` — função `promptClassicVertical`. Inserir novo branch `if (ver === 4)` logo antes do bloco V2 atual (após linha 551).
 
-## Mudança técnica
-1. Detectar versão a partir de `v.creativeSeed` (formato `<tplId>-v<N>-...`) via regex `/-v(\d+)-/`.
-2. Se `ver === 0`, renderizar novo prompt V0 (split horizontal). Caso contrário, manter V2 atual (fallback).
-3. V2 permanece intocado — zero impacto em chamadas existentes.
+## Roteamento
+Reutiliza o detector de versão já presente (`/-v(\d+)-/` em `creativeSeed`). Sem mudanças no `index.ts` ou no front-end. V0, V2 permanecem intocados.
 
-## Estrutura do prompt V0
-- **Header:** `[SYSTEM COMMAND: ISOLAMENTO 1/1/2 V0]` — proíbe herdar V1/V2/V3 ou Experiência.
-- **Safe zones:** topo 20% e base 20% completamente vazios.
-- **Top 45%:** foto 8K full-width de `v.destination` + logo placeholder no canto superior-esquerdo.
-- **Bottom 55%:** background sólido `v.secondaryHex`.
-  - Pill `v.primaryHex` com texto escuro (`Saindo de {v.city}` ou `agencyName`).
-  - Headline massivo BRANCO PURO (regra crítica de contraste sobre secondary).
-  - Stack de 4 pills BRANCAS sólidas com ícone + texto escuro (de `v.highlights` ou defaults: Transporte/Hospedagem/Café/Guia).
-- **Price block (acima da safe zone inferior):** retângulo sólido `v.primaryHex` com texto branco — promoName, "PACOTE {destino}", duração, "a partir de", badge `v.secondaryHex` com parcela, preço massivo, "por pessoa". Footer strip `v.secondaryHex` com `5% OFF À VISTA NO PIX`.
-- **Regras finais:** zero overlapping, contraste máximo, aspect ratio 9:16 absoluto.
-
-## Deploy
-Após edição, redeploy de `fabrica-generate-ad`.
+## Estrutura do prompt V4
+- **Header isolamento:** aplica só a 1/1/2 V4; proíbe herdar V0/V1/V2/V3/Experiência.
+- **Safe zones Instagram:** topo 20% e base 20% vazios.
+- **Background:** foto 8K full-bleed de `v.destination`.
+- **Logo:** placeholder no canto superior-esquerdo, abaixo da safe zone.
+- **Card central:** sólido `v.primaryHex`, retangular, cantos levemente arredondados, drop-shadow.
+- **Conteúdo do card (texto BRANCO PURO obrigatório):**
+  - `v.promoName` ultra-bold massivo
+  - `v.destination` médio elegante
+  - `v.duration` (datas) + linha de ícones minimalistas em `v.secondaryHex`
+- **Bloco de preço (2 colunas dentro do card):**
+  - Esquerda: "pagamento" + pill `v.secondaryHex` com parcela (texto escuro) + "por pessoa"
+  - Direita: `R$ {v.installmentValue}` massivo branco
+- **Pill flutuante de borda:** pill sólida `v.secondaryHex` com `5% OFF À VISTA NO PIX` sobreposta exatamente na borda inferior do card (50% dentro / 50% fora).
+- **Regras finais:** contraste máximo, aspect ratio 9:16 absoluto, zero overlap de texto.
 
 ## Sem mudanças
-Front-end, `index.ts`, V0 do 1/1/1 (square), V2 do 1/1/2 — todos preservados.
+Front-end, `index.ts`, V0/V2 do 1/1/2, V0 do 1/1/1 — todos preservados.
