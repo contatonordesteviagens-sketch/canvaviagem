@@ -22,21 +22,22 @@ export async function composeLogoOnImage(
           if (!ctx) return reject(new Error("Canvas 2D não suportado"));
           ctx.drawImage(base, 0, 0);
 
-          // Logo dentro da safe-zone do Instagram (top ~14% Stories, ~11% Square).
-          // Largura máxima 18% do menor lado pra não competir com a foto/headline.
-          const minSide = Math.min(canvas.width, canvas.height);
-          const isStory = canvas.height > canvas.width;
-          const maxLogoW = minSide * 0.18;
-          const maxLogoH = minSide * 0.10;
+          // CRITICAL: a logo precisa caber DENTRO da reserva de topo do composeTravelAd
+          // (logoH ≈ 130px no canvas-base de 1080). Senão o box branco invade o badge
+          // "Saindo de ..." e o título. Trabalhamos em proporção do canvas real.
+          const baseRef = 1080; // composeTravelAd usa esta base p/ logoH=130
+          const reserveH = Math.round((130 / baseRef) * canvas.width); // ~130 num 1080
+          const padY = Math.round(reserveH * 0.12); // pequeno respiro do topo
+          const padX = Math.round(canvas.width * 0.06);
+          const maxLogoH = reserveH - padY * 2; // garante ficar dentro da reserva
+          const maxLogoW = Math.min(canvas.width * 0.22, reserveH * 2.4);
           const ratio = logo.naturalWidth / logo.naturalHeight;
-          let lw = maxLogoW;
-          let lh = lw / ratio;
-          if (lh > maxLogoH) {
-            lh = maxLogoH;
-            lw = lh * ratio;
+          let lh = maxLogoH;
+          let lw = lh * ratio;
+          if (lw > maxLogoW) {
+            lw = maxLogoW;
+            lh = lw / ratio;
           }
-          const padX = canvas.width * 0.07; // 7% lateral — bate com safe lateral do composeTravelAd
-          const padY = isStory ? canvas.height * 0.06 : canvas.height * 0.04;
 
           // Reserva uma área opaca maior que a logo para cobrir qualquer badge/texto que a IA/canvas
           // tenha tentado colocar no canto superior esquerdo. Isso evita "logo em cima do local".
