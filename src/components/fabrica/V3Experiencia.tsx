@@ -113,6 +113,7 @@ export function mapStateToV3Experiencia(
     fontFamily: (state as any).fontFamily,
     logoBase64: state.logoBase64 || "",
     format: state.lastFormat === "square" ? "square" : "story",
+    baseTextMode: ((state as any).baseTextMode as BaseTextMode) || "light",
   };
 }
 
