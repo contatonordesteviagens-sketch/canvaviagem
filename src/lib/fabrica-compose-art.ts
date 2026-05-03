@@ -1516,8 +1516,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         return firstLine.replace(new RegExp(`^${taglineV4}\\s*`, "i"), "").trim() || destinoV4;
       })();
 
-      const daysItemV4 = highlights.find((h) => /\d+\s*dia|\d+\s*noite/i.test(h?.text || ""));
-      const daysTextV4 = (daysItemV4?.text || "5 dias").trim();
+      const daysItemV4 = highlights.find((h) => /\d+\s*dia|\d+\s*noite|janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro/i.test(h?.text || ""));
+      const daysTextV4 = (travelPeriod?.trim() || daysItemV4?.text || "5 dias").trim();
       const iconListV4: IconKey[] = (() => {
         const fromHl = highlights
           .map((h) => h?.icon as IconKey | undefined)
@@ -1528,9 +1528,27 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         return out;
       })();
 
-      // Parcelas
-      const instMatchV4 = (installments || "12x").match(/(\d{1,2})\s*x/i);
-      const parcNV4 = instMatchV4 ? instMatchV4[1] : "12";
+      // Chamada do pagamento sincronizada com o modo escolhido no formulário.
+      const instMatchV4 = (installments || "10x").match(/(\d{1,2})\s*x/i);
+      const parcNV4 = instMatchV4 ? instMatchV4[1] : "1";
+      const leftTopV4 = (() => {
+        if (paymentMode === "cash" || paymentMode === "cash_discount") return paymentLabel || "À VISTA";
+        if (paymentMode === "down_plus") return paymentLabel || "entrada +";
+        return "a partir de";
+      })();
+      const pillTxt = (() => {
+        if (paymentMode === "cash" || paymentMode === "cash_discount") return "À VISTA";
+        if (paymentMode === "down_plus") {
+          const clean = (installments || paymentLabel || "Entrada + 10x").replace(/entrada\s*\+?/i, "").trim();
+          return clean || `${parcNV4}X`;
+        }
+        return `${parcNV4}X`;
+      })().toUpperCase();
+      const leftBottomV4 = (() => {
+        if (paymentMode === "cash" || paymentMode === "cash_discount") return (paymentSuffix || "por pessoa").trim();
+        if (paymentMode === "down_plus") return "parcelas";
+        return "sem juros";
+      })();
 
       // Preço V4 — respeita o toggle "Mostrar centavos" do formulário.
       // Se o `price` recebido já vem com vírgula/centavos (ex: "423,00"), preserva.
