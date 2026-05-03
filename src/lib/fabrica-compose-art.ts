@@ -1914,6 +1914,32 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     return renderSafeSquareOffer();
   }
 
+  // ============================================================
+  // V0_Experiencia · ROTEAMENTO (estrutura lógica — sem layout ainda)
+  // ------------------------------------------------------------
+  // Renderiza SOMENTE quando a categoria "Experiência de Destino"
+  // estiver selecionada (isExperience === true) e a variante forçada
+  // for 0 (V0). Herda todos os dados do formulário lateral via
+  // o escopo de composeTravelAd (destination, promoName, primaryColor,
+  // secondaryColor, highlights, currencySymbol, fontFamily, etc.).
+  //
+  // ⚠️ Layout/CSS NÃO implementados ainda — placeholder mínimo.
+  //    As variações da categoria "Oferta de Pacote" permanecem intactas.
+  // ============================================================
+  const renderV0Experiencia = (): string => {
+    // BG neutro provisório — apenas para confirmar que a rota foi atingida.
+    // O layout real será construído em uma próxima etapa.
+    ctx.fillStyle = "#0a0a0a";
+    ctx.fillRect(0, 0, width, height);
+    const crop = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
+    ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, height);
+    return canvas.toDataURL("image/png");
+  };
+
+  if (isExperience && typeof forceVariant === "number" && forceVariant === 0) {
+    return renderV0Experiencia();
+  }
+
   if (strategy === "ancora") {
     ctx.fillStyle = primaryColor;
     ctx.fillRect(0, 0, width, height);
