@@ -173,11 +173,9 @@ export function V2Experiencia(props: V2ExperienciaProps) {
       ? "text-6xl sm:text-7xl"
       : "text-7xl sm:text-8xl";
 
-  // Acento metálico baseado nas cores da marca (primária + secundária)
-  // Substitui o dourado fixo, respeitando a identidade visual escolhida.
-  const goldGradient = `linear-gradient(135deg, ${secondaryColor} 0%, ${primaryColor} 35%, #ffffff 50%, ${primaryColor} 65%, ${secondaryColor} 100%)`;
-  // Cor sólida de contraste para ícones sobre o gradiente metálico
-  const accentInk = secondaryColor;
+  // Acento dourado refinado (metal escovado)
+  const goldGradient =
+    "linear-gradient(135deg, #b8860b 0%, #f5d97a 35%, #fff5cc 50%, #f5d97a 65%, #a87808 100%)";
 
   return (
     <article
@@ -315,7 +313,7 @@ export function V2Experiencia(props: V2ExperienciaProps) {
               backgroundClip: "text",
             }}
           >
-            <Gem className="w-3 h-3" style={{ color: primaryColor }} />
+            <Gem className="w-3 h-3" style={{ color: "#f5d97a" }} />
             <span className="text-[9px] uppercase tracking-[0.3em] font-bold">
               Destaque
             </span>
@@ -363,7 +361,7 @@ export function V2Experiencia(props: V2ExperienciaProps) {
                       <Icon
                         className="w-3 h-3"
                         strokeWidth={2.5}
-                        style={{ color: accentInk }}
+                        style={{ color: "#3a2a05" }}
                       />
                     </span>
                     <span
@@ -413,7 +411,7 @@ export function V2Experiencia(props: V2ExperienciaProps) {
             <ArrowRight
               className="w-3.5 h-3.5"
               strokeWidth={3}
-              style={{ color: accentInk }}
+              style={{ color: "#3a2a05" }}
             />
           </span>
         </div>

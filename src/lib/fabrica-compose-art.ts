@@ -2384,17 +2384,17 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const goldW = Math.min(width - 100, tw + padX * 2);
       const goldX = cx - goldW / 2;
       const goldY = afterTitleY;
-      // gradiente baseado nas cores da marca (primária + secundária)
+      // gradiente dourado horizontal
       const gg = ctx.createLinearGradient(goldX, goldY, goldX + goldW, goldY);
-      gg.addColorStop(0, secondaryColor);
-      gg.addColorStop(0.5, primaryColor);
-      gg.addColorStop(1, secondaryColor);
+      gg.addColorStop(0, "#CA8A04"); // yellow-600
+      gg.addColorStop(0.5, "#FACC15"); // yellow-400
+      gg.addColorStop(1, "#A16207"); // yellow-700
       ctx.save();
       ctx.fillStyle = gg;
       roundRect(ctx, goldX, goldY, goldW, goldH, goldH / 2);
       ctx.fill();
-      // ring claro sutil
-      ctx.strokeStyle = "rgba(255,255,255,0.35)";
+      // ring claro
+      ctx.strokeStyle = "rgba(255, 240, 180, 0.7)";
       ctx.lineWidth = 1.5;
       roundRect(ctx, goldX, goldY, goldW, goldH, goldH / 2);
       ctx.stroke();
@@ -2541,11 +2541,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const startX = bx + bw / 2 - totalW / 2;
       ctx.textAlign = "left";
       ctx.fillText(ctaLabel, startX, by + bannerH / 2 + 1);
-      // seta na cor primária (respeitando a identidade visual)
+      // seta dourada
       const ax = startX + labelW + 18;
       const ay = by + bannerH / 2;
-      ctx.strokeStyle = primaryColor;
-      ctx.fillStyle = primaryColor;
+      ctx.strokeStyle = "#EAB308";
+      ctx.fillStyle = "#EAB308";
       ctx.lineWidth = arrowSize * 0.18;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
