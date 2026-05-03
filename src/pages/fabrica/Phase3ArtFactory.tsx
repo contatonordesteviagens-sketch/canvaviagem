@@ -1803,26 +1803,20 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className={labelCls}>
-                {paymentMode === "installments" ? "Parcela" : paymentMode === "down_plus" ? "Entrada + parcela" : "Rótulo"}
-              </label>
-              <input
-                value={paymentLabel}
-                onChange={(e) =>
-                  paymentMode === "installments" || paymentMode === "down_plus"
-                    ? setInstallments(e.target.value)
-                    : setPaymentLabel(e.target.value)
-                }
-                placeholder={
-                  paymentMode === "installments" ? "10x" :
-                  paymentMode === "down_plus" ? "ENTRADA R$ 200 + 10x" :
-                  "À VISTA"
-                }
-                className={inputCls}
-              />
-            </div>
+          <div className={`grid grid-cols-1 ${paymentMode === "cash" ? "sm:grid-cols-2" : "sm:grid-cols-3"} gap-3`}>
+            {paymentMode !== "cash" && (
+              <div>
+                <label className={labelCls}>
+                  {paymentMode === "installments" ? "Parcela" : "Entrada + parcela"}
+                </label>
+                <input
+                  value={paymentLabel}
+                  onChange={(e) => setInstallments(e.target.value)}
+                  placeholder={paymentMode === "installments" ? "10x" : "ENTRADA R$ 200 + 10x"}
+                  className={inputCls}
+                />
+              </div>
+            )}
             <div>
               <label className={labelCls}>Valor ({currencySymbol})</label>
               <div className="flex gap-1.5">
