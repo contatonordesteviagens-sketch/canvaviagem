@@ -673,7 +673,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         const recentAi = variantHistoryRef.current.slice(-2);
         let candidatesAi = Array.from({ length: TOTAL_VARIANTS_AI }, (_, i) => i).filter((v) => !recentAi.includes(v));
         if (candidatesAi.length === 0) candidatesAi = Array.from({ length: TOTAL_VARIANTS_AI }, (_, i) => i);
-        const nextVariantAi = isOfertaIA ? candidatesAi[Math.floor(Math.random() * candidatesAi.length)] : -1;
+        const nextVariantAi = isOfertaIA ? (forcedVariant !== null ? forcedVariant : candidatesAi[Math.floor(Math.random() * candidatesAi.length)]) : -1;
         const useV4Composer = nextVariantAi === 4;
         if (isOfertaIA) variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantAi];
 
