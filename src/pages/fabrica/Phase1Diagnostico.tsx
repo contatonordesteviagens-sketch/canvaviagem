@@ -167,8 +167,19 @@ export const Phase1Diagnostico = ({ onComplete }: Props) => {
 
         // Exporta como webp/jpeg comprimido para economizar muito espaço
         const base64 = canvas.toDataURL("image/webp", 0.8);
-        update({ logoBase64: base64 });
-        toast.success("Logo carregada e otimizada!");
+
+        // Extrai paleta dominante (cor primária + secundária) dos pixels
+        const palette = extractPaletteFromCanvas(ctx, canvas.width, canvas.height);
+        const updates: Record<string, string> = { logoBase64: base64 };
+        if (palette.primary) updates.primaryColor = palette.primary;
+        if (palette.secondary) updates.secondaryColor = palette.secondary;
+        update(updates);
+
+        if (palette.primary) {
+          toast.success("Logo carregada! Paleta de cores extraída automaticamente.");
+        } else {
+          toast.success("Logo carregada e otimizada!");
+        }
       };
       img.src = event.target?.result as string;
     };
