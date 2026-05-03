@@ -2541,11 +2541,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const startX = bx + bw / 2 - totalW / 2;
       ctx.textAlign = "left";
       ctx.fillText(ctaLabel, startX, by + bannerH / 2 + 1);
-      // seta dourada
+      // seta na cor primária (respeitando a identidade visual)
       const ax = startX + labelW + 18;
       const ay = by + bannerH / 2;
-      ctx.strokeStyle = "#EAB308";
-      ctx.fillStyle = "#EAB308";
+      ctx.strokeStyle = primaryColor;
+      ctx.fillStyle = primaryColor;
       ctx.lineWidth = arrowSize * 0.18;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
