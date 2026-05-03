@@ -391,6 +391,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [variationCounter, setVariationCounter] = useState(0);
   // Histórico das últimas variantes do compositor canvas (modo Sua Imagem) para forçar rotação
   const variantHistoryRef = useRef<number[]>([]);
+  // Versão forçada (null = automático/rotação). 0..4 fixa a variante exata para correções cirúrgicas.
+  const [forcedVariant, setForcedVariant] = useState<number | null>(null);
   const [lastProvider, setLastProvider] = useState<"user_gemini" | "lovable_ai" | null>(null);
   const [generationCount, setGenerationCount] = useState<number>(() => {
     const saved = localStorage.getItem("fabrica_gen_count");
@@ -561,7 +563,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         if (candidatesPhoto.length === 0) {
           candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i);
         }
-        const nextVariantPhoto = candidatesPhoto[Math.floor(Math.random() * candidatesPhoto.length)];
+        const nextVariantPhoto = forcedVariant !== null ? forcedVariant : candidatesPhoto[Math.floor(Math.random() * candidatesPhoto.length)];
         variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantPhoto];
 
         const composed = await Promise.all(
@@ -671,7 +673,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         const recentAi = variantHistoryRef.current.slice(-2);
         let candidatesAi = Array.from({ length: TOTAL_VARIANTS_AI }, (_, i) => i).filter((v) => !recentAi.includes(v));
         if (candidatesAi.length === 0) candidatesAi = Array.from({ length: TOTAL_VARIANTS_AI }, (_, i) => i);
-        const nextVariantAi = isOfertaIA ? candidatesAi[Math.floor(Math.random() * candidatesAi.length)] : -1;
+        const nextVariantAi = isOfertaIA ? (forcedVariant !== null ? forcedVariant : candidatesAi[Math.floor(Math.random() * candidatesAi.length)]) : -1;
         const useV4Composer = nextVariantAi === 4;
         if (isOfertaIA) variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantAi];
 
@@ -825,7 +827,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       if (candidates.length === 0) {
         candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i);
       }
-      const nextVariant = candidates[Math.floor(Math.random() * candidates.length)];
+      const nextVariant = forcedVariant !== null ? forcedVariant : candidates[Math.floor(Math.random() * candidates.length)];
       variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariant];
 
       const imagesCustom = await Promise.all(
@@ -991,7 +993,39 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               🔒 A imagem é processada <strong>apenas em memória</strong> para gerar o anúncio.
             </p>
           )}
+
+          {/* Seletor de Versão (V0..V4) — para correções cirúrgicas em cada layout */}
+          <div className="mt-4">
+            <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">
+              0b · Versão do Layout
+            </h3>
+            <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full gap-1">
+              <button
+                onClick={() => setForcedVariant(null)}
+                className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${forcedVariant === null ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+                title="Rotação automática (sorteia entre V0..V4)"
+              >
+                Auto
+              </button>
+              {[0, 1, 2, 3, 4].map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setForcedVariant(v)}
+                  className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${forcedVariant === v ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+                  title={`Forçar variação V${v}`}
+                >
+                  V{v}
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-white/40 mt-1.5 leading-snug">
+              {forcedVariant === null
+                ? "Rotação automática entre V0..V4 a cada clique."
+                : <>Gerando sempre a <strong className="text-white">V{forcedVariant}</strong>. Selecione "Auto" para retomar a rotação.</>}
+            </p>
+          </div>
         </div>
+
 
         {/* Categoria - Compacta */}
         <div>
