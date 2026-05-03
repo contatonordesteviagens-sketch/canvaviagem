@@ -1921,7 +1921,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   ctx.fillStyle = "#0a0a0a"; // Fundo neutro escuro sempre
   ctx.fillRect(0, 0, width, height);
 
-  if (format === "square" && !isExperience) {
+  if (!isExperience) {
     return renderSafeSquareOffer();
   }
 
