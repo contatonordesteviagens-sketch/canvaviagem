@@ -178,7 +178,13 @@ Qualidade cinematográfica, iluminação natural perfeita, cores vivas e saturad
       if (isExperiencia) {
         const destLuxo = body.destination || "destino paradisíaco";
         const isV1 = variation === 1;
-        if (isV1) {
+        const isV2 = variation === 2;
+        if (isV2) {
+          // V2_Experiencia · DRONE AÉREO PREMIUM (cenário para painéis de UI luxuosos)
+          prompt = `Fotografia profissional de drone, altamente detalhada e de altíssima resolução. Vista aérea espetacular, imersiva e cinematográfica de ${destLuxo}. Composição limpa, iluminação natural brilhante de golden hour, fotorrealista. Cenário de luxo e alto padrão. A imagem serve como um cenário de fundo premium, deixando espaço livre para sobreposição de painéis de interface.
+${safeZoneRules(format)}
+Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
+        } else if (isV1) {
           prompt = `Fotografia editorial de viagens de luxo, cinematográfica e de altíssima qualidade (8K). Uma tomada ampla e ultrarrealista de ${destLuxo}. A iluminação é rim lighting (luz de contorno), criando uma luz suave, serena e exclusiva. Composição limpa, sem desfoque de movimento. A atmosfera geral é de uma beleza estonteante e de alto padrão. Espaço central livre e escurecido sutilmente para sobreposição de tipografia branca perfeitamente nítida.
 ${safeZoneRules(format)}
 Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
