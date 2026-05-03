@@ -523,51 +523,55 @@ Clean modern UI, flawless spelling, perfect alignment, zero overlapping text, hi
     // 🔒 1/1/1 · V1 — SPLIT VERTICAL ESQUERDA/DIREITA + ÍCONES MONOCROMÁTICOS
     if (sqVer === 1) {
       const priceLabel = v.installments === "1" ? "À VISTA" : `EM ATÉ ${v.installments}x`;
-      return `[CRITICAL DESIGN LOGIC & CONTRAST RULE: NEVER generate light text on a light background. NEVER generate dark text on a dark background. IF a background is dark, text MUST be pure white. Strictly obey the color variables provided.]
+      const priceComplement = v.installments === "1" ? "por pessoa" : "por pessoa";
+      const primaryTxt = v.primaryTextHex || "#FFFFFF";
+      const secondaryTxt = v.secondaryTextHex || "#FFFFFF";
+      return `[CRITICAL SYSTEM COMMAND: EXACT BRAND COLORS & ABSOLUTE CONTRAST. The AI MUST use the EXACT HEX color codes provided for backgrounds. The AI MUST strictly use the EXACT text colors assigned for typography. Icons MUST be monochromatic.]
 [SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA]
-A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) associada à Versão de Layout: V1.
-OBRIGATÓRIO: Layout com divisão vertical (esquerda/direita), ícones monocromáticos e padding seguro abaixo da logo.
+Aplicar ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) — Layout V1 (Divisão Vertical).
 PROIBIDO copiar V0/V2/V3/V4 ou Experiência.
 
 [IMAGE]
-A high-end, premium travel advertisement with a strict 1:1 square aspect ratio (1080x1080, 8K). The layout features a sharp, perfectly straight vertical split.
+A high-end travel advertisement with a 1:1 square aspect ratio (1080x1080, 8K). Sharp vertical split perfectly down the middle.
 
 [LEFT PANEL — UI Design · 45% width]
-Solid ${v.primaryHex} background covering the full height of the left 45%.
-- Top-left corner: ${agencyTag}.
-- 🚨 CRITICAL PADDING: a generous EMPTY vertical space (≥60px) directly below the logo BEFORE any text begins.
-- Below the padding, stacked top to bottom (ALL text in ${v.primaryTextHex || "PURE WHITE"} for maximum contrast against ${v.primaryHex}):
-   • Small text: "${v.promoName || "OFERTA EXCLUSIVA"}".
-   • MASSIVE ultra-bold text: "${v.destination}".
-   • Medium text: "${v.duration || "Pacote completo"}".
+Solid background using EXACT color hex code ${v.primaryHex}.
+🚨 MANDATORY TEXT COLOR: every letter, word and icon on this LEFT panel MUST be rendered in EXACT hex ${primaryTxt}. NO exceptions.
 
-[INCLUSIONS — vertical pill stack]
-Below the headline, a vertical stack of FOUR neatly aligned translucent (semi-transparent white, ~15% opacity) pill-buttons.
-🚨 The AI MUST use perfectly matching MONOCHROMATIC line icons (all the EXACT same single ${v.primaryTextHex || "white"} tone) on the left of each pill, next to bold ${v.primaryTextHex || "PURE WHITE"} text:
+[LOGO & SPACING]
+Top-left corner: ${agencyTag}. Leave a large EMPTY vertical gap (≥60px) directly below the logo before any element.
+
+[TYPOGRAPHY — starting below the gap, stacked]
+- Small text in ${primaryTxt}: "${v.promoName || "OFERTA EXCLUSIVA"}".
+- MASSIVE, ultra-bold text in ${primaryTxt}: "${v.destination}".
+- Medium text in ${primaryTxt}: "${headline}".
+
+[ICONS — vertical pill stack]
+A vertical stack of FOUR pill-buttons using strictly MONOCHROMATIC line icons (all the EXACT same single ${primaryTxt} tone) next to bold ${primaryTxt} text:
    • "${sb1}"
    • "${sb2}"
    • "${sb3}"
    • "${sb4}"
 
-[PRICE BLOCK — bottom-left corner of the LEFT PANEL]
-A prominent, DARKER contrasting rectangular highlight box (deep charcoal/near-black) with rounded corners.
-🚨 INSIDE the dark box, ALL text MUST be PURE WHITE (#FFFFFF). Stacked neatly with ZERO overlap:
-- Small PURE WHITE text "${priceLabel}".
-- MASSIVE extra-bold PURE WHITE text "R$ ${v.installmentValue}".
-- Small PURE WHITE text "por pessoa".
+[PRICE BLOCK — bottom-left of the LEFT PANEL]
+A rectangular highlight box with rounded corners using EXACT hex ${v.secondaryHex}.
+🚨 INSIDE this block, ALL text MUST be rendered in EXACT hex ${secondaryTxt}. Stacked neatly with ZERO overlap:
+- Small ${secondaryTxt} text: "${priceLabel}".
+- MASSIVE extra-bold ${secondaryTxt} text: "R$ ${v.installmentValue}".
+- Small ${secondaryTxt} text: "${priceComplement}".
 
 [RIGHT PANEL — Photo · 55% width]
-An 8K photorealistic image of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant, cinematic, natural daylight.
-The photo is framed like a card with slightly rounded corners, revealing a solid ${v.secondaryHex} border (≈24px thick) around its outer edges.
+An 8K photorealistic image of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant scenery, cinematic, natural daylight.
+Framed like a card with slightly rounded corners and a border (≈24px) using EXACT hex ${v.secondaryHex}.
 
 [AESTHETIC]
-Clean modern UI, flawless spelling, zero text overlapping, perfect alignment, premium high contrast.
+Clean modern UI, flawless spelling, zero overlapping text, perfect alignment, premium high contrast.
 
 [REGRAS DE ISOLAMENTO]
 🚫 PROIBIDO: split horizontal, ribbon central, full-bleed photo, gradientes, ícones 3D ou multi-color, watermarks, copiar V0/V2/V3/V4 ou Experiência.
-🚫 PROIBIDO: texto claro em fundo claro; texto escuro em fundo escuro.
+🚫 PROIBIDO: texto claro em fundo claro; texto escuro em fundo escuro; ignorar os HEX exatos fornecidos.
 🚫 PROIBIDO: começar texto colado abaixo da logo (padding obrigatório).
-✅ OBRIGATÓRIO: split vertical 45/55, padding generoso abaixo da logo, ícones MONOCROMÁTICOS em pílulas translúcidas, bloco DARK de preço com texto branco puro, foto direita com borda ${v.secondaryHex}.
+✅ OBRIGATÓRIO: split vertical 45/55, fundo esquerdo EXATO ${v.primaryHex} com texto EXATO ${primaryTxt}, price block EXATO ${v.secondaryHex} com texto EXATO ${secondaryTxt}, foto direita com borda ${v.secondaryHex}.
 ✅ Aspect ratio: 1:1 absoluto.`;
     }
 
