@@ -482,17 +482,57 @@ Clean modern UI, highly professional, razor-sharp typography, perfect alignment,
 ✅ Aspect ratio: 1:1 absoluto. Sem letterbox.`;
   }
 
-  // STORY 9:16 e fallback — comportamento original via buildBrain
-  return buildBrain(v, {
-    category: "oferta",
-    layout:
-      "DIVISÃO HORIZONTAL — topo com fotografia full-bleed do destino e base com bloco sólido vibrante. O bloco sólido possui muito espaço livre interno.",
-    lighting: "natural diurna brilhante, hora dourada, cores vivas, sombras nítidas",
-    sceneDescription: v.destinationDescription,
-    headline,
-    specialization:
-      "• Bloco de conversão íntegro e separado. O cartão de oferta DEVE ficar com folga, SEM encostar nas bordas ou na foto principal.\n• DIVISÃO VISUAL clara entre foto e bloco.\n• PREÇO espaçado e legível, com margem vazia ao seu redor.\n• Cores obrigatórias: bloco na cor primária e destaques na cor secundária.",
-  });
+  // ──────────────────────────────────────────────────────────────────────
+  // 🔒 NOMENCLATURA 1/1/2 · V0 — ISOLAMENTO + SAFE ZONES (Stories 9:16)
+  // Foto Real / Oferta de Pacote / Stories Vertical 9:16 · Versão V0
+  // ──────────────────────────────────────────────────────────────────────
+  {
+    const benefits = (v.highlights && v.highlights.length > 0)
+      ? v.highlights.slice(0, 4)
+      : ["Transporte incluso", "Hospedagem", "Café da manhã", "Guia local"];
+    const benefitsList = benefits.map((b, i) => `      ${i + 1}. ${b}`).join("\n");
+    const originPill = v.city ? `Saindo de ${v.city}` : (v.agencyName || "Pacote exclusivo");
+    const agencyTag = v.agencyName ? `placeholder discreto para a logo da agência "${v.agencyName}"` : "placeholder minimalista para logo da agência";
+
+    return `[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA E SAFE ZONES]
+A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/2 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Stories Vertical 9:16) associada à Versão de Layout: V0.
+É TERMINANTEMENTE PROIBIDO misturar esta lógica com outras versões (V1, V2, V3) ou com o estilo "Experiência de Destino".
+OBRIGATÓRIO: respeitar limites da interface do Instagram Stories.
+
+[IMAGEM]
+A premium, minimalist vertical 9:16 travel advertisement (1080x1920, 8K resolution).
+
+[STRICT UI SAFE ZONES]
+- The TOP 20% of the entire canvas (≈384px from the top) MUST remain completely empty of any typography, logos, icons or primary subjects — reserved for Instagram header.
+- The BOTTOM 20% of the entire canvas (≈384px from the base) MUST remain completely empty — reserved for Instagram message box and reactions.
+- ALL critical content must live ONLY inside the central 60% vertical block (between 20% and 80% of the canvas height).
+
+[TOP SECTION — DESIGN UI · starts BELOW the top safe zone]
+Solid background using the primary brand color ${v.primaryHex}. Generous internal padding.
+- Top-left of this section: ${agencyTag}.
+- Below logo: a rounded pill button using the secondary color ${v.secondaryHex} as background, with bold contrasting text reading "${originPill}".
+- Main headline (large, ultra-bold sans-serif, contrasting color, razor-sharp): "${headline}".
+- Two-column layout divided by ONE thin perfectly straight VERTICAL line:
+  · LEFT column (stacked vertically, minimalist line icons + short text):
+${benefitsList}
+  · RIGHT column:
+      • Small label: "${v.installments === "1" ? "À VISTA" : `EM ATÉ ${v.installments}x`}"
+      • MASSIVE extra-bold price: "R$ ${v.installmentValue}"
+      • Below the price, small text: "por pessoa"
+
+[BOTTOM SECTION — PHOTO · ends ABOVE the bottom safe zone]
+An 8K photorealistic, ultra-detailed travel photograph of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant, cinematic, natural daylight, perfect framing — fills the lower portion of the central 60% block.
+
+[AESTHETIC]
+Clean modern UI, sharp high-contrast text, perfect alignment strictly within the central vertical block. Minimalist, premium, professional.
+
+[REGRAS DE ISOLAMENTO]
+🚫 PROIBIDO: texto/logo/preço dentro dos 20% do topo ou dos 20% da base.
+🚫 PROIBIDO: gradientes, neon, cards flutuantes sobre a foto, ícones 3D, watermarks.
+🚫 PROIBIDO copiar layouts de V1/V2/V3 ou de Experiência.
+✅ OBRIGATÓRIO: aspect ratio 9:16 absoluto, divisão UI (top) + foto (bottom) DENTRO do bloco central de 60%, linha vertical divisória nos benefícios, preço dominante.
+✅ Cores: primária ${v.primaryHex} = fundo do bloco UI. Secundária ${v.secondaryHex} = pill + acentos.`;
+  }
 }
 
 // 🔥 OP2 — CARTÃO CENTRAL FLUTUANTE
