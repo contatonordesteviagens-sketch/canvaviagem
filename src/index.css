@@ -112,3 +112,8 @@
 .animate-slide-up {
   animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
+/* V1_Experiencia · cursive utility (Dancing Script) */
+.font-fabrica-script {
+  font-family: 'Dancing Script', 'Great Vibes', 'Brush Script MT', cursive;
+  font-weight: 600;
+}
