@@ -596,6 +596,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     titleScale = 1,
     descScale = 1,
     textColorOverride,
+    baseTextMode = "light",
   } = options;
   const curSym = (currencySymbol || "R$").trim();
   const priceValueText = (price || "").trim();
