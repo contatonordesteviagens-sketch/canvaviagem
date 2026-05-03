@@ -358,8 +358,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [adTitleTemplate, setAdTitleTemplateState] = useState(state.lastAdTitle || "Pacote {destino}");
   const setAdTitleTemplate = (t: string) => { setAdTitleTemplateState(t); update({ lastAdTitle: t }); };
   const [adTitleMenuOpen, setAdTitleMenuOpen] = useState(false);
-  const [travelPeriod, setTravelPeriodState] = useState((state as any).lastTravelPeriod || "5 dias");
-  const setTravelPeriod = (v: string) => { setTravelPeriodState(v); update({ lastTravelPeriod: v } as any); };
+  const [travelPeriod, setTravelPeriodState] = useState(state.lastTravelPeriod || "5 dias");
+  const setTravelPeriod = (v: string) => { setTravelPeriodState(v); update({ lastTravelPeriod: v }); };
   const [travelPeriodMenuOpen, setTravelPeriodMenuOpen] = useState(false);
   const [destMenuOpen, setDestMenuOpen] = useState(false);
   const [suffixMenuOpen, setSuffixMenuOpen] = useState(false);
