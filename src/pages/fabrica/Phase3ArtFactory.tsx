@@ -828,18 +828,23 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // Prompt cinematográfico estruturado para o BG da V4 (Gemini Nano Banana 2)
         // Consome o campo "Destino" preenchido no formulário lateral.
         const v4BackgroundPrompt = `Fotografia ultra-realista 4k, estilo cinematográfico e editorial de agência de turismo premium focada em conversão. Vista panorâmica, ampla e imersiva de ${destination || "destino paradisíaco"}. Iluminação natural de golden hour ou dia ensolarado com céu azul vibrante e nuvens suaves. Composição com grande profundidade de campo: destacar a arquitetura histórica local, castelos ou belezas naturais em segundo e terceiro plano. DEIXAR OBRIGATORIAMENTE o centro e a base da imagem como 'negative space' (espaço mais limpo e levemente desfocado) para perfeita leitura de textos e sobreposição de elementos gráficos. Renderização fotorrealista em altíssima definição. NO TEXT, NO LOGOS, NO PEOPLE in foreground.`;
+        const experienceBackgroundPrompt = (variant: number) => variant === 1
+          ? `Fotografia editorial de viagens de luxo, cinematográfica e de altíssima qualidade (8K). Uma tomada ampla e ultrarrealista de ${destination || "destino paradisíaco"}. A iluminação é rim lighting (luz de contorno), criando uma luz suave, serena e exclusiva. Composição limpa, sem desfoque de movimento. A atmosfera geral é de uma beleza estonteante e de alto padrão. Espaço central livre e escurecido sutilmente para sobreposição de tipografia branca perfeitamente nítida. Sem texto, sem logos, sem watermarks, sem ícones, sem pictogramas.`
+          : `Fotografia publicitária comercial de altíssimo padrão, hiper-realista e cinematográfica. Um cenário de extremo luxo e exclusividade em ${destination || "destino paradisíaco"}. Iluminação dramática e profunda que combine com um tom sofisticado. Centro e parte superior com negative space absoluto para tipografia branca. Sem texto, sem logos, sem watermarks, sem ícones, sem pictogramas.`;
 
         // ── Decisão V4 em IA Pura (apenas Oferta de Pacote) ─────────────────
         // Sorteia se esta geração será V4 (compositor card) ou IA tradicional,
         // respeitando histórico para garantir variedade entre cliques.
         const isOfertaIA = categoria === "oferta_pacote";
-        const TOTAL_VARIANTS_AI = 5;
+        const totalVariantsAi = isAiExperienceStory ? 2 : 5;
         const recentAi = variantHistoryRef.current.slice(-2);
-        let candidatesAi = Array.from({ length: TOTAL_VARIANTS_AI }, (_, i) => i).filter((v) => !recentAi.includes(v));
-        if (candidatesAi.length === 0) candidatesAi = Array.from({ length: TOTAL_VARIANTS_AI }, (_, i) => i);
-        const nextVariantAi = isOfertaIA ? (forcedVariant !== null ? forcedVariant : candidatesAi[Math.floor(Math.random() * candidatesAi.length)]) : -1;
-        const useV4Composer = nextVariantAi === 4;
-        if (isOfertaIA) variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantAi];
+        let candidatesAi = Array.from({ length: totalVariantsAi }, (_, i) => i).filter((v) => !recentAi.includes(v));
+        if (candidatesAi.length === 0) candidatesAi = Array.from({ length: totalVariantsAi }, (_, i) => i);
+        const nextVariantAi = forcedVariant !== null && candidatesAi.includes(forcedVariant)
+          ? forcedVariant
+          : candidatesAi[Math.floor(Math.random() * candidatesAi.length)];
+        const useV4Composer = isOfertaIA && nextVariantAi === 4;
+        variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantAi];
 
         const results = await Promise.all(
           picks.map((pick, idx) => supabase.functions.invoke("fabrica-generate-ad", {
