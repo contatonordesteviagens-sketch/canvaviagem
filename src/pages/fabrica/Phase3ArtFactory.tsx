@@ -340,7 +340,37 @@ const pickPhotoRefs = (
 export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const { state, update } = useFabricaContext();
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
-  const setCategoria = (c: CategoriaId) => { setCategoriaState(c); update({ lastCategoria: c }); };
+  const setCategoria = (c: CategoriaId) => {
+    setCategoriaState(c);
+    update({ lastCategoria: c });
+    // Troca defaults de promoName / adTitle quando ainda são padrões da outra categoria
+    setPromoNameState((prev) => {
+      if (c === "experiencia_destino" && DEFAULT_PROMO_NAMES_OFERTA.has(prev)) {
+        const next = PROMO_NAME_PRESETS_EXPERIENCIA[0];
+        update({ lastPromoName: next });
+        return next;
+      }
+      if (c === "oferta_pacote" && DEFAULT_PROMO_NAMES_EXPERIENCIA.has(prev)) {
+        const next = "OFERTA ESPECIAL";
+        update({ lastPromoName: next });
+        return next;
+      }
+      return prev;
+    });
+    setAdTitleTemplateState((prev) => {
+      if (c === "experiencia_destino" && DEFAULT_AD_TITLES_OFERTA.has(prev)) {
+        const next = AD_TITLE_PRESETS_EXPERIENCIA[0];
+        update({ lastAdTitle: next });
+        return next;
+      }
+      if (c === "oferta_pacote" && DEFAULT_AD_TITLES_EXPERIENCIA.has(prev)) {
+        const next = "Pacote {destino}";
+        update({ lastAdTitle: next });
+        return next;
+      }
+      return prev;
+    });
+  };
 
   const strategy: StrategyId = getCategoria(categoria).legacyStrategy;
   const [lastTemplateId, setLastTemplateId] = useState<string | null>(() => localStorage.getItem("fabrica_last_template_id"));
