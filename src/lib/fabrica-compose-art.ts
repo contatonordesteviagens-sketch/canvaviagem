@@ -33,6 +33,8 @@ function luminance(hex: string): number {
 
 // Retorna preto ou branco com melhor contraste sobre `bg`.
 function contrastOn(bg: string): string {
+  const normalized = (bg || "").trim().toLowerCase();
+  if (normalized === "#0c2340") return "#ffffff";
   return luminance(bg) > 0.6 ? "#0d0d0d" : "#ffffff";
 }
 
@@ -1316,7 +1318,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // 7) Headline (1 linha, fonte adaptativa)
       ctx.fillStyle = v0OnPanel;
       ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
-      const titleY = badgeY + badgeH + topPaddingBeforeTitle + titleSize;
+      const titleY = Math.max(badgeY + badgeH + topPaddingBeforeTitle + titleSize, logoH + 40 + titleSize);
       ctx.fillText(titleText, left, titleY);
 
       // 8) Benefits + Preço lado a lado — preço ALINHADO À DIREITA pra eliminar
