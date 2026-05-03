@@ -681,6 +681,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ]);
     } catch {}
   }
+  // V0_Experiencia usa Playfair Display — pré-carrega para evitar fallback.
+  if (isExperience && (document as any).fonts?.load) {
+    try {
+      await Promise.all([
+        (document as any).fonts.load(`800 44px "Playfair Display"`),
+        (document as any).fonts.load(`700 36px "Playfair Display"`),
+      ]);
+    } catch {}
+  }
 
   const image = await loadImage(imageUrl);
 
