@@ -18,6 +18,8 @@ type CustomSource = "upload" | "link";
 
 interface Props { onNext: () => void; onBack: () => void; }
 
+const FABRICA_RENDER_ENGINE_VERSION = "canvas-hybrid-photo-only-v2";
+
 const BADGE_BG: Record<string, string> = {
   blue: "bg-blue-500/15 text-blue-400 border-blue-500/30",
   purple: "bg-purple-500/15 text-purple-400 border-purple-500/30",
@@ -620,6 +622,21 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     const saved = localStorage.getItem("fabrica_gen_count");
     return saved ? parseInt(saved, 10) : 0;
   });
+
+  useEffect(() => {
+    const key = "fabrica-render-engine-version";
+    if (localStorage.getItem(key) === FABRICA_RENDER_ENGINE_VERSION) return;
+    localStorage.removeItem("fabrica-heavy-v1:generatedAdImage");
+    localStorage.removeItem("fabrica_last_template_id");
+    localStorage.removeItem("fabrica_recent_template_ids");
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith("fabrica:") && (k.includes(":ai:") || k.includes(":recent") || k.includes(":last")))
+      .forEach((k) => localStorage.removeItem(k));
+    setGeneratedImage("");
+    setGeneratedImages([]);
+    update({ generatedAdImage: "" });
+    localStorage.setItem(key, FABRICA_RENDER_ENGINE_VERSION);
+  }, [update]);
 
   // ===== Modo de geração =====
   const [genMode, setGenMode] = useState<GenMode>("photo");
