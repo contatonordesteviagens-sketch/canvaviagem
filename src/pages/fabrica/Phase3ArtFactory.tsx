@@ -1453,8 +1453,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
         </div>
 
-        {/* Modo de pagamento — compacto */}
-        <div>
+        {/* Modo de pagamento — compacto · oculto em "Experiência de Destino" */}
+        <div hidden={categoria === "experiencia_destino"} aria-hidden={categoria === "experiencia_destino"}>
           <label className={labelCls}>Modo de exibição do preço</label>
           <div className="grid grid-cols-3 gap-1.5 mb-3">
             {PAYMENT_PRESETS.map((p) => (
