@@ -428,6 +428,28 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       }
       return prev;
     });
+
+    // Padronização de CORES por categoria — só sobrescreve se o usuário ainda
+    // estiver com os defaults da OUTRA categoria (preserva customização manual).
+    setPrimaryColorState((prevP) => {
+      const prevS = secondaryColor;
+      if (c === "experiencia_destino" && isDefaultColorsOferta(prevP, prevS)) {
+        setSecondaryColorState(DEFAULT_COLORS_EXPERIENCIA.secondary);
+        update({ primaryColor: DEFAULT_COLORS_EXPERIENCIA.primary, secondaryColor: DEFAULT_COLORS_EXPERIENCIA.secondary });
+        return DEFAULT_COLORS_EXPERIENCIA.primary;
+      }
+      if (c === "oferta_pacote" && isDefaultColorsExperiencia(prevP, prevS)) {
+        setSecondaryColorState(DEFAULT_COLORS_OFERTA.secondary);
+        update({ primaryColor: DEFAULT_COLORS_OFERTA.primary, secondaryColor: DEFAULT_COLORS_OFERTA.secondary });
+        return DEFAULT_COLORS_OFERTA.primary;
+      }
+      return prevP;
+    });
+
+    // Limpa override manual de cor de texto ao trocar categoria —
+    // o auto-contraste (claro/escuro baseado na imagem) volta a valer.
+    setTextColorOverrideState("");
+    update({ textColorOverride: "" } as any);
   };
 
   const strategy: StrategyId = getCategoria(categoria).legacyStrategy;
