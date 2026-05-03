@@ -129,6 +129,7 @@ export function V3Experiencia(props: V3ExperienciaProps) {
     secondaryColor,
     fontFamily,
     format = "story",
+    baseTextMode = "light",
   } = props;
 
   const aspect = format === "square" ? "aspect-square" : "aspect-[9/16]";
@@ -136,6 +137,10 @@ export function V3Experiencia(props: V3ExperienciaProps) {
     fontFamily ||
     "'Playfair Display', 'Cormorant Garamond', 'Bodoni Moda', Georgia, serif";
   const onPrimaryText = safeOnPrimary(primaryColor, secondaryColor);
+  const isDarkText = baseTextMode === "dark";
+  const textStyle = getContrastTextStyle(baseTextMode);
+  const dropClass = getDropShadowClass(baseTextMode);
+  const titleColor = isDarkText ? "#0A0A0A" : "#FFFFFF";
 
   return (
     <article
