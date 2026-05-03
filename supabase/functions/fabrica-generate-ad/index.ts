@@ -149,6 +149,9 @@ Qualidade cinematográfica, iluminação natural perfeita, cores vivas e saturad
       const totalNum = priceNumeric * installmentsCount;
       const formatBR = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+      const primaryHex = (body.primaryColor || "#0c2340").toUpperCase();
+      const secondaryHex = (body.secondaryColor || "#FCD34D").toUpperCase();
+
       const vars: MasterPromptVars = {
         destination: (body.destination || "DESTINO").toUpperCase(),
         destinationDescription: nicheToScene(body.niche, body.destination),
@@ -159,8 +162,10 @@ Qualidade cinematográfica, iluminação natural perfeita, cores vivas e saturad
         duration: body.duration || "5 NOITES",
         promoName: (body.promoName || "OFERTA EXCLUSIVA").toUpperCase(),
         city: body.city || "sua cidade",
-        primaryHex: (body.primaryColor || "#0c2340").toUpperCase(),
-        secondaryHex: (body.secondaryColor || "#FCD34D").toUpperCase(),
+        primaryHex,
+        secondaryHex,
+        primaryTextHex: pickContrastText(primaryHex),
+        secondaryTextHex: pickContrastText(secondaryHex),
         agencyName: body.agencyName || "",
         highlights: (body.highlights || []).map((h) => typeof h === "string" ? h : h.text),
         creativeSeed: `${tpl.id}-v${variation}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -169,7 +174,7 @@ Qualidade cinematográfica, iluminação natural perfeita, cores vivas e saturad
         format,
       };
 
-      prompt = tpl.builder(vars);
+      prompt = `${CRITICAL_CONTRAST_HEADER}\n\n${tpl.builder(vars)}`;
       usedTemplateId = tpl.id;
 
       // ── V0 / V1 _Experiencia · LUXO override ────────────────────────────
