@@ -60,6 +60,9 @@ const DEFAULT_EXPERIENCE_HIGHLIGHTS: Highlight[] = [
   { text: "CURADORIA PREMIUM", icon: "check" },
 ];
 
+const DEFAULT_SUFFIXES_OFERTA = new Set(["por pessoa", "por casal", "por pacote", "por grupo", "total do pacote"]);
+const DEFAULT_SUFFIX_EXPERIENCIA = "Sua viagem começa aqui";
+
 const sameHighlightTexts = (items: Highlight[], defaults: Highlight[]) =>
   items.length === defaults.length &&
   items.every((item, index) => item.text === defaults[index]?.text);
