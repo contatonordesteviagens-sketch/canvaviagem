@@ -188,6 +188,12 @@ const AD_TITLE_PRESETS: string[] = [
   "Vamos para {destino}?",
 ];
 
+const TRAVEL_PERIOD_PRESETS: string[] = [
+  "5 dias", "7 dias", "10 dias", "15 dias", "Final de semana",
+  "Janeiro", "Julho", "Dezembro", "Feriado prolongado", "12 a 18/01",
+  "Data flexível", "Saídas semanais",
+];
+
 /**
  * Gera um pool de 3 variações de título a partir do template escolhido pelo usuário.
  * A primeira posição é SEMPRE o título exato escolhido (respeitando a edição do usuário).
@@ -352,6 +358,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [adTitleTemplate, setAdTitleTemplateState] = useState(state.lastAdTitle || "Pacote {destino}");
   const setAdTitleTemplate = (t: string) => { setAdTitleTemplateState(t); update({ lastAdTitle: t }); };
   const [adTitleMenuOpen, setAdTitleMenuOpen] = useState(false);
+  const [travelPeriod, setTravelPeriodState] = useState((state as any).lastTravelPeriod || "5 dias");
+  const setTravelPeriod = (v: string) => { setTravelPeriodState(v); update({ lastTravelPeriod: v } as any); };
+  const [travelPeriodMenuOpen, setTravelPeriodMenuOpen] = useState(false);
   const [destMenuOpen, setDestMenuOpen] = useState(false);
   const [suffixMenuOpen, setSuffixMenuOpen] = useState(false);
   const [priceOptionsOpen, setPriceOptionsOpen] = useState(false);
