@@ -74,22 +74,6 @@ export function V0Experiencia(props: V0ExperienciaProps) {
   const dropClass = getDropShadowClass(baseTextMode);
   const textColorCls = baseTextMode === "dark" ? "text-neutral-900" : "text-white";
 
-export function V0Experiencia(props: V0ExperienciaProps) {
-  const {
-    backgroundImage,
-    logoBase64,
-    destination,
-    promoName,
-    adTitle,
-    highlights,
-    travelPeriod,
-    highlightLine,
-    secondaryColor,
-    ctaLabel = "RESERVE AGORA",
-    legalText = "Imagem ilustrativa, gerada mediante IA não condiz 100% com a realidade.",
-    format = "story",
-  } = props;
-
   const pillText = highlights?.[0]?.text || travelPeriod || "";
   const aspect = format === "square" ? "aspect-square" : "aspect-[9/16]";
 
