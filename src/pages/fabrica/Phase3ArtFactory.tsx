@@ -384,6 +384,17 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       }
       return prev;
     });
+    setPaymentSuffixState((prev) => {
+      if (c === "experiencia_destino" && DEFAULT_SUFFIXES_OFERTA.has(prev)) {
+        update({ lastPaymentSuffix: DEFAULT_SUFFIX_EXPERIENCIA });
+        return DEFAULT_SUFFIX_EXPERIENCIA;
+      }
+      if (c === "oferta_pacote" && prev === DEFAULT_SUFFIX_EXPERIENCIA) {
+        update({ lastPaymentSuffix: "por pessoa" });
+        return "por pessoa";
+      }
+      return prev;
+    });
     setHighlightsState((prev) => {
       const shouldUseExperienceDefaults =
         c === "experiencia_destino" &&
