@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Download, MessageCircle, ArrowRight, Upload, Check, Save, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { WhatsappSendModal } from "@/components/fabrica/WhatsappSendModal";
+import { extractPaletteFromCanvas } from "@/lib/extract-palette";
 
 const AGENCY_TYPES: { v: AgencyType; l: string }[] = [
   { v: "autonoma", l: "Agente autônomo / Freelancer" },
