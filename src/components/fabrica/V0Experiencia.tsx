@@ -100,35 +100,44 @@ export function V0Experiencia(props: V0ExperienciaProps) {
       />
 
       {/* Conteúdo */}
-      <div className="relative z-10 flex flex-col items-center h-full w-full px-6 pt-8 pb-10 text-white text-center">
+      <div className={`relative z-10 flex flex-col items-center h-full w-full px-6 pt-8 pb-10 text-center ${textColorCls}`}>
         {/* 2 · TOPO ─ logo + categoria + subtítulo */}
         <header className="flex flex-col items-center gap-3 w-full">
           {logoBase64 ? (
             <img
               src={logoBase64}
               alt="Logo"
-              className="h-12 w-auto object-contain mb-1 drop-shadow-lg"
+              className={`h-12 w-auto object-contain mb-1 ${dropClass}`}
             />
           ) : null}
 
           {promoName ? (
             <h2
-              className="text-[15px] sm:text-base tracking-[0.18em] uppercase font-bold text-white drop-shadow"
-              style={{ fontFamily: "'Playfair Display', 'Cormorant Garamond', Georgia, serif" }}
+              className={`text-[15px] sm:text-base tracking-[0.18em] uppercase font-bold ${textColorCls} ${dropClass}`}
+              style={{ fontFamily: "'Playfair Display', 'Cormorant Garamond', Georgia, serif", ...textStyle }}
             >
               {promoName}
             </h2>
           ) : null}
 
           {adTitle ? (
-            <p className="text-[11px] sm:text-xs font-light tracking-wide text-white/90">
+            <p
+              className={`text-[11px] sm:text-xs font-light tracking-wide ${textColorCls} ${dropClass}`}
+              style={textStyle}
+            >
               {adTitle}
             </p>
           ) : null}
 
           {/* 3 · PÍLULA ─ benefício / período */}
           {pillText ? (
-            <span className="mt-2 inline-flex items-center px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-[11px] sm:text-xs font-medium text-white tracking-wide">
+            <span
+              className={`mt-2 inline-flex items-center px-4 py-1.5 rounded-full backdrop-blur-sm text-[11px] sm:text-xs font-medium tracking-wide ${textColorCls} ${dropClass}`}
+              style={{
+                background: baseTextMode === "dark" ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.2)",
+                ...textStyle,
+              }}
+            >
               {pillText}
             </span>
           ) : null}
@@ -137,11 +146,17 @@ export function V0Experiencia(props: V0ExperienciaProps) {
         {/* 4 · TÍTULO PRINCIPAL ─ desconto + destino */}
         <section className="flex-1 flex flex-col items-center justify-center gap-1 w-full">
           {highlightLine ? (
-            <p className="text-2xl sm:text-3xl font-light text-white tracking-wide drop-shadow-md leading-tight">
+            <p
+              className={`text-2xl sm:text-3xl font-light tracking-wide leading-tight ${textColorCls} ${dropClass}`}
+              style={textStyle}
+            >
               {highlightLine}
             </p>
           ) : null}
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight drop-shadow-md leading-[1.05]">
+          <h1
+            className={`text-3xl sm:text-5xl font-extrabold tracking-tight leading-[1.05] ${textColorCls} ${dropClass}`}
+            style={textStyle}
+          >
             {headlineLine2}
           </h1>
         </section>
