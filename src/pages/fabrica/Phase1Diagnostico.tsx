@@ -155,7 +155,7 @@ export const Phase1Diagnostico = ({ onComplete }: Props) => {
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
-      img.onload = () => {
+      img.onload = async () => {
         const canvas = document.createElement("canvas");
         const MAX_WIDTH = 800;
         const scale = Math.min(1, MAX_WIDTH / img.width);
@@ -168,7 +168,24 @@ export const Phase1Diagnostico = ({ onComplete }: Props) => {
         // Exporta como webp/jpeg comprimido para economizar muito espaço
         const base64 = canvas.toDataURL("image/webp", 0.8);
         update({ logoBase64: base64 });
-        toast.success("Logo carregada e otimizada!");
+
+        // Extrai paleta da marca automaticamente
+        try {
+          const { extractBrandPaletteFromImage } = await import("@/lib/fabrica-color-extract");
+          const palette = await extractBrandPaletteFromImage(base64);
+          if (palette) {
+            update({
+              brandPalette: palette,
+              primaryColor: palette.primary,
+              secondaryColor: palette.secondary,
+            });
+            toast.success("Logo carregada — paleta da marca detectada!");
+          } else {
+            toast.success("Logo carregada e otimizada!");
+          }
+        } catch {
+          toast.success("Logo carregada e otimizada!");
+        }
       };
       img.src = event.target?.result as string;
     };
