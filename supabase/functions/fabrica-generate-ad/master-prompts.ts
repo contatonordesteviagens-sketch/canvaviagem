@@ -524,20 +524,56 @@ export function promptSideHeroPerformance(v: MasterPromptVars): string {
 // 🔵 EXPERIÊNCIA DE DESTINO — ED1..ED6 (editorial, sem cara de oferta)
 // ============================================================
 
-// 🌍 ED1 — HERO CINEMATOGRÁFICO (FULL IMAGE)
+// 🌍 ED1 — LUXO EDITORIAL COMERCIAL (LOGO + PÍLULA + % OFF + CTA)
 export function promptIconicLandmark(v: MasterPromptVars): string {
-  const headline = pickExperienciaHeadline(v.destination, v.creativeSeed || "ed1", v.forbiddenHeadlines);
-  return buildBrain(v, {
-    category: "experiencia",
-    layout:
-      "FULL-BLEED CINEMATOGRÁFICO — a fotografia ocupa 100% da composição, sem divisões duras. Texto leve sobreposto, com gradiente sutil apenas para legibilidade. Sem cartões, sem caixas.",
-    lighting: "natural perfeita, hora dourada cinematográfica, profundidade de campo realista, cores vibrantes e atmosféricas",
-    sceneDescription: `${v.destination} com riqueza de detalhes — céu dramático, luz dourada, paisagem natural intocada e arquitetura icônica, água cristalina ou paisagem icônica. ${v.destinationDescription}`,
-    headline,
-    experienceDescription: `Uma experiência inesquecível em ${v.destination}.`,
-    specialization:
-      "• ÚNICO bloco de texto: '" + headline + "' — centralizado, fonte elegante, muito respiro ao redor.\n• NENHUM subtítulo adicional, NENHUMA lista, NENHUM ícone.\n• PROIBIDO caixa de preço ou cartão promocional.\n• Estilo: capa de revista de viagem. 90% foto, 10% texto.",
-  });
+  const agencyName = (v.agencyName || "VIAGEM PREMIUM").trim();
+  const parts = agencyName.split(/\s+/);
+  const logoFirst = parts[0] || "Viagem";
+  const logoSecond = parts.slice(1).join(" ") || "Premium";
+  const discount = (() => {
+    const m = (v.promoName || "").match(/(\d{1,2})\s*%/);
+    return m ? m[1] : "30";
+  })();
+  const pillText = (v.promoName || "EXPERIÊNCIA DE LUXO EXCLUSIVA").toUpperCase().slice(0, 48);
+  const cta = "RESERVE AGORA";
+  const finePrint = "Sujeito a disponibilidade. Consulte condições.";
+
+  return `
+Uma imagem publicitária comercial profissional e de alta qualidade, composta com precisão em tom profundo e cinematográfico, combinando com a iluminação de ${v.destination} em cenário de LUXO. Fotografia ultra-realista do destino: ${v.destinationDescription}. Atmosfera premium, hora dourada, profundidade de campo realista, cores ricas e atmosféricas. Gradiente escuro translúcido sutil sobreposto APENAS para garantir legibilidade do texto centralizado.
+
+⚠️ TIPOGRAFIA — REGRA CRÍTICA: todos os elementos de texto usam EXATAMENTE os mesmos estilos, pesos e alinhamento descritos abaixo. Letras SÓLIDAS, totalmente preenchidas, sem outline, sem neon, sem glow. Renderização nítida, cada caractere perfeitamente legível.
+
+COMPOSIÇÃO (de cima para baixo, tudo CENTRALIZADO no eixo vertical da arte):
+
+1) LOGOTIPO TOPO CENTRAL — pequeno, elegante:
+   • "${logoFirst}" em SERIFADA NEGRITO (estilo Playfair / Didot Bold)
+   • "${logoSecond}" em SANS-SERIF LEVE (estilo Inter Light / Helvetica Light) ao lado, mesma linha base
+   • Logo branco puro, tamanho discreto (≈ 6% da altura).
+
+2) MICRO-TÍTULO logo abaixo do logo: texto pequeno em SANS-SERIF caixa-alta espaçada, branco translúcido — "EXPERIÊNCIAS DE LUXO".
+
+3) BOTÃO PÍLULA cinza-claro translúcido (#E5E5E5 com 90% opacidade), formato de pílula perfeitamente arredondado, padding generoso, contendo o texto SANS-SERIF MEDIUM em cinza escuro:
+   "${pillText}"
+
+4) TÍTULO PRINCIPAL em DUAS LINHAS centralizadas, branco puro com sombra muito leve:
+   • Linha 1: "${discount}% OFF" — SANS-SERIF LIGHT, gigante (≈ 18% da altura)
+   • Linha 2: "Nessa Viagem." — SANS-SERIF BOLD, mesmo tamanho da linha 1
+   Espaçamento generoso entre as duas linhas. Tracking refinado.
+
+5) BOTÃO CTA cinza-escuro (#2A2A2A) ou cor secundária ${v.secondaryHex}, formato pílula, padding amplo, contendo SANS-SERIF BOLD CAIXA-ALTA centralizado em branco:
+   "${cta}"
+
+6) RODAPÉ — texto SANS-SERIF cinza-claro MUITO PEQUENO e discreto, centralizado na base:
+   "${finePrint}"
+
+REGRAS ABSOLUTAS:
+- NENHUM cartão de preço, NENHUMA bandeira de companhia aérea, NENHUM ícone extra.
+- NENHUMA pessoa visível na cena.
+- Hierarquia clara: logo → micro-título → pílula → headline gigante → CTA → fine print.
+- Fundo é a fotografia do destino, ocupando 100% da arte; todos os textos flutuam sobre ela.
+- Qualidade de revista de luxo, alta resolução, nítido em todos os caracteres.
+${formatRule(v.format)}
+`.trim();
 }
 
 // 🌍 ED2 — SPLIT SUAVE (IMAGEM + TEXTO LEVE)
