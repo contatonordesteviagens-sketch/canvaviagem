@@ -916,7 +916,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // Junta histórico local com o GenerationGuard para evitar repetir templates
         const mergedRecent = Array.from(new Set([...storedRecent, ...guard.layouts]));
         const picks = isAiExperienceStory
-          ? [{ code: "ED_SAFE_STORY", templateId: "photo_only_experience_story" }]
+          ? [{ code: "ED_SAFE_BACKGROUND", templateId: "photo_only_experience_background" }]
           : pickPromptsForCategoria(categoria, 1, storedLast, mergedRecent);
         const freshSeedAi = freshSeed(generationSeed);
 
@@ -957,6 +957,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           ? forcedVariant
           : candidatesAi[Math.floor(Math.random() * candidatesAi.length)];
         const shouldComposeOfertaAi = isOfertaIA;
+        const mustComposeWithCanvas = isAiExperienceStory || shouldComposeOfertaAi;
         variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantAi];
 
         const results = await Promise.all(
@@ -980,8 +981,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               promoName: (promoName || "Oferta Especial").toUpperCase(),
               highlights: categoria === "experiencia_destino" ? [] : highlights,
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
-              templateId: shouldComposeOfertaAi ? undefined : pick.templateId,
-              photoOnly: shouldComposeOfertaAi ? true : false,
+              templateId: mustComposeWithCanvas ? undefined : pick.templateId,
+              photoOnly: true,
+              canvasOnly: mustComposeWithCanvas,
               variation: forcedVariant !== null ? forcedVariant : nextVariantAi,
               packageType: "Voo + Hotel",
               duration: categoria === "experiencia_destino" ? (travelPeriod || "5 dias") : "5 NOITES",
