@@ -344,8 +344,13 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos esgotados. Adicione sua chave Gemini em Configurações.", provider, action: "add_user_key" }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        return new Response(JSON.stringify({
+          error: "Créditos esgotados no provedor de IA. A chave Gemini do projeto não conseguiu gerar a imagem antes do fallback.",
+          provider,
+          action: "add_user_key",
+          fallback: false,
+        }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (!response.ok) {
