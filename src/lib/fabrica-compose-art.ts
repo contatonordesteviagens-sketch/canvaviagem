@@ -2096,11 +2096,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillText(ctaTracked, cx, ctaY + ctaH / 2 + 1);
     ctx.textBaseline = "alphabetic";
 
-    // 7) RODAPÉ legal
-    const legal = "Imagem ilustrativa, gerada mediante IA não condiz 100% com a realidade.";
-    ctx.font = `400 ${isStory ? 18 : 14}px ${sans}`;
-    ctx.fillStyle = "rgba(220,220,220,0.75)";
-    ctx.fillText(legal, cx, height - (isStory ? 36 : 24));
+    // 7) Rodapé legal removido a pedido — fotos são reais, não há IA aqui.
 
     ctx.textAlign = "left";
     return canvas.toDataURL("image/png");

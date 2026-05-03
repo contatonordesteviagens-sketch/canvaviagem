@@ -1797,8 +1797,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           ))}
         </div>
 
-        {/* Benefícios — grade 2 colunas com botão adicionar (até 6) */}
-        <div>
+        {/* Benefícios — escondido na categoria "Experiência de Destino" (V0/V1/V2/V3 · feed e story).
+            Layout luxo não usa pílula de ícones; mantém-se intacto na categoria "Oferta de Pacote". */}
+        <div hidden={categoria === "experiencia_destino"} aria-hidden={categoria === "experiencia_destino"}>
           <div className="flex items-baseline justify-between mb-2">
             <label className={labelCls}>Benefícios / Inclusos</label>
             <span className="text-[10px] text-white/40">{highlights.length}/{MAX_HIGHLIGHTS} · clique no ícone para trocar</span>
