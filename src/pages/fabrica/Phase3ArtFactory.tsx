@@ -505,6 +505,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const effectiveTextColor = textColorOverride || autoTextColor;
   const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
   const [fontOptionsOpen, setFontOptionsOpen] = useState(false);
+  const [advancedSizeOpen, setAdvancedSizeOpen] = useState(false);
   const [colorsOpen, setColorsOpen] = useState(false);
   // "Cor dos textos base": força textos claros ou escuros nas artes
   const [baseTextMode, setBaseTextModeState] = useState<"light" | "dark">(
@@ -2000,18 +2001,30 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 <p className="text-[10px] text-white/40 mt-1.5">A fonte escolhida é aplicada a todas as artes geradas.</p>
               </div>
 
-              {/* Sliders */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelCls}>Título <span className="text-white/40">({Math.round(titleScale * 100)}%)</span></label>
-                  <input type="range" min={0.6} max={1.6} step={0.05} value={titleScale}
-                    onChange={(e) => setTitleScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
-                </div>
-                <div>
-                  <label className={labelCls}>Descrição <span className="text-white/40">({Math.round(descScale * 100)}%)</span></label>
-                  <input type="range" min={0.6} max={1.6} step={0.05} value={descScale}
-                    onChange={(e) => setDescScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
-                </div>
+              {/* Ajustes Avançados de Tamanho — accordion interno */}
+              <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setAdvancedSizeOpen((v) => !v)}
+                  className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/[0.04] transition-colors"
+                >
+                  <span className="text-[12px] font-semibold text-white/85">⚙️ Ajustes Avançados de Tamanho</span>
+                  <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${advancedSizeOpen ? "rotate-180" : ""}`} />
+                </button>
+                {advancedSizeOpen && (
+                  <div className="px-3 pb-3 pt-2 grid grid-cols-2 gap-3 border-t border-white/10">
+                    <div>
+                      <label className={labelCls}>Título <span className="text-white/40">({Math.round(titleScale * 100)}%)</span></label>
+                      <input type="range" min={0.6} max={1.6} step={0.05} value={titleScale}
+                        onChange={(e) => setTitleScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Descrição <span className="text-white/40">({Math.round(descScale * 100)}%)</span></label>
+                      <input type="range" min={0.6} max={1.6} step={0.05} value={descScale}
+                        onChange={(e) => setDescScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Cor do texto: mesmo padrão das cores Primária/Secundária */}
