@@ -59,7 +59,8 @@ export function pickContrastText(hex: string): "#000000" | "#FFFFFF" {
  * Bloco de instrução INEGOCIÁVEL — adicionado no topo de TODO prompt gerado.
  * Proíbe low-contrast (light-on-light / dark-on-dark).
  */
-export const CRITICAL_CONTRAST_HEADER = `[CRITICAL DESIGN LOGIC & CONTRAST RULE: The AI MUST strictly obey logical UI contrast rules. NEVER generate light text on a light background. NEVER generate dark text on a dark background. IF a button or shape is white or light-colored, the text inside it MUST be pure black or very dark. IF a button or shape is dark, the text inside it MUST be pure white. Failure to provide legible, high-contrast text is a critical error.]`;
+export const CRITICAL_CONTRAST_HEADER = `[MASTER SYSTEM COMMAND: EXACT BRAND COLORS & ABSOLUTE CONTRAST OVERRIDE. The AI MUST apply the following rules to the entire image, regardless of the specific layout, style, or category: 1. You MUST use the exact HEX color codes provided in the prompt for all backgrounds, shapes, and buttons. 2. You MUST strictly use the assigned calculated text colors (PURE WHITE or PURE BLACK) for all typography inside those shapes to guarantee legibility. 3. All UI icons MUST be perfectly monochromatic. NEVER use external color logic, gradients, or colorful emojis.]
+[CRITICAL DESIGN LOGIC & CONTRAST RULE: The AI MUST strictly obey logical UI contrast rules. NEVER generate light text on a light background. NEVER generate dark text on a dark background. IF a button or shape is white or light-colored, the text inside it MUST be pure black or very dark. IF a button or shape is dark, the text inside it MUST be pure white. Failure to provide legible, high-contrast text is a critical error.]`;
 
 // ============================================================
 // 🔴 REGRAS ESPECÍFICAS — OFERTA DE PACOTE
