@@ -114,7 +114,7 @@ export async function extractBrandPaletteFromImage(src: string): Promise<BrandPa
           primary,
           secondary,
           accent,
-          swatches: distinct.slice(0, 6).map((c) => c.hex),
+          swatches: distinct.slice(0, 4).map((c) => c.hex),
         });
       } catch (err) {
         console.error("extractBrandPaletteFromImage error:", err);
