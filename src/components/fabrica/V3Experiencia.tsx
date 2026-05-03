@@ -200,8 +200,8 @@ export function V3Experiencia(props: V3ExperienciaProps) {
         {promoName ? (
           <span
             data-field="promoName"
-            className="text-white text-[13px] sm:text-sm font-medium tracking-widest uppercase text-center drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]"
-            style={{ fontFamily: "Inter, system-ui, sans-serif" }}
+            className={`text-[13px] sm:text-sm font-medium tracking-widest uppercase text-center ${dropClass}`}
+            style={{ fontFamily: "Inter, system-ui, sans-serif", ...textStyle }}
           >
             {promoName}
           </span>
