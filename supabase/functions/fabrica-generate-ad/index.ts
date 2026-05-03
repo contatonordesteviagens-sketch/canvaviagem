@@ -181,11 +181,11 @@ Qualidade cinematográfica, iluminação natural perfeita, cores vivas e saturad
         if (isV1) {
           prompt = `Fotografia editorial de viagens de luxo, cinematográfica e de altíssima qualidade (8K). Uma tomada ampla e ultrarrealista de ${destLuxo}. A iluminação é rim lighting (luz de contorno), criando uma luz suave, serena e exclusiva. Composição limpa, sem desfoque de movimento. A atmosfera geral é de uma beleza estonteante e de alto padrão. Espaço central livre e escurecido sutilmente para sobreposição de tipografia branca perfeitamente nítida.
 ${safeZoneRules(format)}
-Sem texto, sem logos, sem watermarks na imagem.`;
+Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
         } else {
           prompt = `Fotografia publicitária comercial de altíssimo padrão, hiper-realista e cinematográfica. Um cenário de extremo luxo e exclusividade em ${destLuxo}. Iluminação dramática e profunda (chiaroscuro ou sunset premium) que combine com um tom profundo e sofisticado. A imagem deve ter foco perfeito (sharp focus) no cenário ao fundo, deixando OBRIGATORIAMENTE o centro e a parte superior levemente escurecidos e com 'negative space' absoluto (sem elementos visuais concorrentes) para a perfeita leitura de fontes serifadas brancas e botões. Qualidade 8k, nítida.
 ${safeZoneRules(format)}
-Sem texto, sem logos, sem watermarks na imagem.`;
+Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
         }
       }
     } else {

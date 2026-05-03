@@ -54,6 +54,19 @@ const DEFAULT_HIGHLIGHTS: Highlight[] = [
   { text: "Guia local", icon: "guide" },
 ];
 
+const DEFAULT_EXPERIENCE_HIGHLIGHTS: Highlight[] = [
+  { text: "EXPERIÊNCIA SENSORIAL", icon: "check" },
+  { text: "MOMENTOS INESQUECÍVEIS", icon: "check" },
+  { text: "CURADORIA PREMIUM", icon: "check" },
+];
+
+const DEFAULT_SUFFIXES_OFERTA = new Set(["por pessoa", "por casal", "por pacote", "por grupo", "total do pacote"]);
+const DEFAULT_SUFFIX_EXPERIENCIA = "Sua viagem começa aqui";
+
+const sameHighlightTexts = (items: Highlight[], defaults: Highlight[]) =>
+  items.length === defaults.length &&
+  items.every((item, index) => item.text === defaults[index]?.text);
+
 // Paleta enxuta: 10 cores distintas (sem repetir tons próximos)
 const PRESET_COLORS = [
   "#000000", // preto
@@ -341,6 +354,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const { state, update } = useFabricaContext();
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
   const setCategoria = (c: CategoriaId) => {
+    const previousCategoria = categoria;
     setCategoriaState(c);
     update({ lastCategoria: c });
     // Troca defaults de promoName / adTitle quando ainda são padrões da outra categoria
@@ -367,6 +381,34 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         const next = "Pacote {destino}";
         update({ lastAdTitle: next });
         return next;
+      }
+      return prev;
+    });
+    setPaymentSuffixState((prev) => {
+      if (c === "experiencia_destino" && DEFAULT_SUFFIXES_OFERTA.has(prev)) {
+        update({ lastPaymentSuffix: DEFAULT_SUFFIX_EXPERIENCIA });
+        return DEFAULT_SUFFIX_EXPERIENCIA;
+      }
+      if (c === "oferta_pacote" && prev === DEFAULT_SUFFIX_EXPERIENCIA) {
+        update({ lastPaymentSuffix: "por pessoa" });
+        return "por pessoa";
+      }
+      return prev;
+    });
+    setHighlightsState((prev) => {
+      const shouldUseExperienceDefaults =
+        c === "experiencia_destino" &&
+        (previousCategoria !== "experiencia_destino" || sameHighlightTexts(prev, DEFAULT_HIGHLIGHTS));
+      const shouldRestoreOfferDefaults =
+        c === "oferta_pacote" &&
+        sameHighlightTexts(prev, DEFAULT_EXPERIENCE_HIGHLIGHTS);
+      if (shouldUseExperienceDefaults) {
+        update({ lastHighlights: DEFAULT_EXPERIENCE_HIGHLIGHTS });
+        return DEFAULT_EXPERIENCE_HIGHLIGHTS;
+      }
+      if (shouldRestoreOfferDefaults) {
+        update({ lastHighlights: DEFAULT_HIGHLIGHTS });
+        return DEFAULT_HIGHLIGHTS;
       }
       return prev;
     });
@@ -477,7 +519,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
   const [paymentLabelState, setPaymentLabelState] = useState(state.lastPaymentLabel || "");
   const setPaymentLabel = (label: string) => { setPaymentLabelState(label); update({ lastPaymentLabel: label }); };
-  const [paymentSuffixState, setPaymentSuffixState] = useState(state.lastPaymentSuffix || "por pessoa");
+  const [paymentSuffixState, setPaymentSuffixState] = useState(() => {
+    const savedSuffix = state.lastPaymentSuffix || "por pessoa";
+    return (state.lastCategoria as CategoriaId) === "experiencia_destino" && DEFAULT_SUFFIXES_OFERTA.has(savedSuffix)
+      ? DEFAULT_SUFFIX_EXPERIENCIA
+      : savedSuffix;
+  });
   const setPaymentSuffix = (suffix: string) => { setPaymentSuffixState(suffix); update({ lastPaymentSuffix: suffix }); };
   const paymentLabel = paymentMode === "installments" || paymentMode === "down_plus" ? installments : paymentLabelState;
   const paymentSuffix = paymentSuffixState;
@@ -487,7 +534,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setPrimaryColor = (c: string) => { setPrimaryColorState(c); update({ primaryColor: c }); };
   const setSecondaryColor = (c: string) => { setSecondaryColorState(c); update({ secondaryColor: c }); };
 
-  const [highlights, setHighlightsState] = useState<Highlight[]>(state.lastHighlights || DEFAULT_HIGHLIGHTS);
+  const [highlights, setHighlightsState] = useState<Highlight[]>(() => {
+    const savedHighlights = state.lastHighlights || DEFAULT_HIGHLIGHTS;
+    if ((state.lastCategoria as CategoriaId) === "experiencia_destino" && sameHighlightTexts(savedHighlights, DEFAULT_HIGHLIGHTS)) {
+      return DEFAULT_EXPERIENCE_HIGHLIGHTS;
+    }
+    return savedHighlights;
+  });
   const setHighlights = (h: Highlight[]) => { setHighlightsState(h); update({ lastHighlights: h }); };
   const [editingIconIdx, setEditingIconIdx] = useState<number | null>(null);
   const [newHl, setNewHl] = useState("");
@@ -775,28 +828,34 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // Prompt cinematográfico estruturado para o BG da V4 (Gemini Nano Banana 2)
         // Consome o campo "Destino" preenchido no formulário lateral.
         const v4BackgroundPrompt = `Fotografia ultra-realista 4k, estilo cinematográfico e editorial de agência de turismo premium focada em conversão. Vista panorâmica, ampla e imersiva de ${destination || "destino paradisíaco"}. Iluminação natural de golden hour ou dia ensolarado com céu azul vibrante e nuvens suaves. Composição com grande profundidade de campo: destacar a arquitetura histórica local, castelos ou belezas naturais em segundo e terceiro plano. DEIXAR OBRIGATORIAMENTE o centro e a base da imagem como 'negative space' (espaço mais limpo e levemente desfocado) para perfeita leitura de textos e sobreposição de elementos gráficos. Renderização fotorrealista em altíssima definição. NO TEXT, NO LOGOS, NO PEOPLE in foreground.`;
+        const experienceBackgroundPrompt = (variant: number) => variant === 1
+          ? `Fotografia editorial de viagens de luxo, cinematográfica e de altíssima qualidade (8K). Uma tomada ampla e ultrarrealista de ${destination || "destino paradisíaco"}. A iluminação é rim lighting (luz de contorno), criando uma luz suave, serena e exclusiva. Composição limpa, sem desfoque de movimento. A atmosfera geral é de uma beleza estonteante e de alto padrão. Espaço central livre e escurecido sutilmente para sobreposição de tipografia branca perfeitamente nítida. Sem texto, sem logos, sem watermarks, sem ícones, sem pictogramas.`
+          : `Fotografia publicitária comercial de altíssimo padrão, hiper-realista e cinematográfica. Um cenário de extremo luxo e exclusividade em ${destination || "destino paradisíaco"}. Iluminação dramática e profunda que combine com um tom sofisticado. Centro e parte superior com negative space absoluto para tipografia branca. Sem texto, sem logos, sem watermarks, sem ícones, sem pictogramas.`;
 
         // ── Decisão V4 em IA Pura (apenas Oferta de Pacote) ─────────────────
         // Sorteia se esta geração será V4 (compositor card) ou IA tradicional,
         // respeitando histórico para garantir variedade entre cliques.
         const isOfertaIA = categoria === "oferta_pacote";
-        const TOTAL_VARIANTS_AI = 5;
+        const totalVariantsAi = isAiExperienceStory ? 2 : 5;
         const recentAi = variantHistoryRef.current.slice(-2);
-        let candidatesAi = Array.from({ length: TOTAL_VARIANTS_AI }, (_, i) => i).filter((v) => !recentAi.includes(v));
-        if (candidatesAi.length === 0) candidatesAi = Array.from({ length: TOTAL_VARIANTS_AI }, (_, i) => i);
-        const nextVariantAi = isOfertaIA ? (forcedVariant !== null ? forcedVariant : candidatesAi[Math.floor(Math.random() * candidatesAi.length)]) : -1;
-        const useV4Composer = nextVariantAi === 4;
-        if (isOfertaIA) variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantAi];
+        let candidatesAi = Array.from({ length: totalVariantsAi }, (_, i) => i).filter((v) => !recentAi.includes(v));
+        if (candidatesAi.length === 0) candidatesAi = Array.from({ length: totalVariantsAi }, (_, i) => i);
+        const nextVariantAi = forcedVariant !== null && forcedVariant >= 0 && forcedVariant < totalVariantsAi
+          ? forcedVariant
+          : candidatesAi[Math.floor(Math.random() * candidatesAi.length)];
+        const useV4Composer = isOfertaIA && nextVariantAi === 4;
+        variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantAi];
 
         const results = await Promise.all(
           picks.map((pick, idx) => supabase.functions.invoke("fabrica-generate-ad", {
             body: {
               strategy: categoria === "oferta_pacote" ? "ancora" : categoria === "experiencia_destino" ? "vitrine" : "matriz",
               format,
-              // 🚨 HACK DE EMERGÊNCIA: Injeta ordens no único campo que o servidor antigo lê
-              destination: useV4Composer
-                ? destination.toUpperCase()
-                : `${destination.toUpperCase()} (STRICT RULE: NO PEOPLE, ONLY LANDSCAPE. WRITE FULL TITLE: "Pacote para ${destination}". NO ICONS IN PRICE TAG)`,
+              destination: isAiExperienceStory
+                ? destination
+                : useV4Composer
+                  ? destination.toUpperCase()
+                  : `${destination.toUpperCase()} (STRICT RULE: NO PEOPLE, ONLY LANDSCAPE. WRITE FULL TITLE: "Pacote para ${destination}". NO ICONS IN PRICE TAG)`,
               niche: state.niche,
               agencyName: state.agencyName,
               agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
@@ -808,17 +867,20 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               currencySymbol,
               installments,
               promoName: (promoName || "Oferta Especial").toUpperCase(),
-              highlights,
+              highlights: categoria === "experiencia_destino" ? [] : highlights,
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
               templateId: useV4Composer ? undefined : pick.templateId,
               photoOnly: useV4Composer ? true : false,
-              variation: freshSeedAi + idx + Math.random(),
+              variation: isAiExperienceStory && forcedVariant !== null ? forcedVariant : freshSeedAi + idx + Math.random(),
               packageType: "Voo + Hotel",
-              duration: "5 NOITES",
+              duration: categoria === "experiencia_destino" ? (travelPeriod || "5 dias") : "5 NOITES",
               forbiddenHeadlines: guard.headlines,
               forbiddenLayouts: guard.layouts,
-              // V4: injeta prompt cinematográfico apenas quando V4 foi sorteado
-              ...(useV4Composer ? { customPrompt: v4BackgroundPrompt } : {}),
+              ...(isAiExperienceStory
+                ? { customPrompt: experienceBackgroundPrompt(nextVariantAi) }
+                : useV4Composer
+                  ? { customPrompt: v4BackgroundPrompt }
+                  : {}),
             },
           }))
         );
@@ -837,8 +899,48 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           try { img = await reframeImageToAspect(img, format); }
           catch (e) { console.warn("reframe failed", e); }
 
-          // V4 em IA Pura: aplica o compositor (card flutuante) sobre o BG gerado
-          if (useV4Composer) {
+          // Experiência em IA Pura: IA gera só o fundo; textos/dias vêm do compositor local.
+          if (isAiExperienceStory) {
+            try {
+              img = await composeTravelAd({
+                imageUrl: img,
+                format,
+                destination,
+                city: state.city,
+                primaryColor: palette.primary,
+                secondaryColor: palette.secondary,
+                price: formattedPriceForAd || price,
+                currencySymbol,
+                installments,
+                promoName,
+                highlights,
+                hasLogo: !!state.logoBase64,
+                paymentMode,
+                paymentLabel: paymentLabel || undefined,
+                paymentSuffix,
+                strategy: aiExperienceStrategy,
+                variation: freshSeedAi,
+                forceVariant: nextVariantAi,
+                titleOverride: resolvedAdTitle,
+                titleVariations: adTitleVariations,
+                travelPeriod,
+                totalOverride: totalOverride || undefined,
+                showPixBanner,
+                pixBannerText: pixBannerText || undefined,
+                showTotal,
+                fontFamily,
+                titleScale,
+                descScale,
+                textColorOverride: textColorOverride || undefined,
+              });
+              if (state.logoBase64) {
+                const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
+                img = await composeLogoOnImage(img, state.logoBase64);
+              }
+            } catch (e) {
+              console.warn("Compositor Experiência (IA pura) falhou, mantendo BG cru:", e);
+            }
+          } else if (useV4Composer) {
             try {
               img = await composeTravelAd({
                 imageUrl: img,
@@ -1529,7 +1631,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
         </div>
 
-        <div hidden={categoria === "experiencia_destino"} aria-hidden={categoria === "experiencia_destino"}>
+        <div>
           <label className={labelCls}>Dias / data da viagem</label>
           <div className="relative">
             <input
@@ -1912,12 +2014,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           ))}
         </div>
 
-        {/* Benefícios — escondido na categoria "Experiência de Destino" (V0/V1/V2/V3 · feed e story).
-            Layout luxo não usa pílula de ícones; mantém-se intacto na categoria "Oferta de Pacote". */}
-        <div hidden={categoria === "experiencia_destino"} aria-hidden={categoria === "experiencia_destino"}>
+        {/* Benefícios — em Experiência de Destino usa apenas texto, sem selector de ícones. */}
+        <div>
           <div className="flex items-baseline justify-between mb-2">
-            <label className={labelCls}>Benefícios / Inclusos</label>
-            <span className="text-[10px] text-white/40">{highlights.length}/{MAX_HIGHLIGHTS} · clique no ícone para trocar</span>
+            <label className={labelCls}>{categoria === "experiencia_destino" ? "Descrição da experiência" : "Benefícios / Inclusos"}</label>
+              <span className="text-[10px] text-white/40">
+                {highlights.length}/{MAX_HIGHLIGHTS}{categoria === "experiencia_destino" ? " · texto da experiência" : " · clique no ícone para trocar"}
+              </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {highlights.map((h, i) => {
@@ -1925,14 +2028,16 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               return (
                 <div key={i} className="bg-white/[0.04] border border-white/10 rounded-lg">
                   <div className="flex gap-1.5 items-center px-2.5 py-2">
-                    <button
-                      onClick={() => setEditingIconIdx(editingIconIdx === i ? null : i)}
-                      className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
-                      style={{ color: secondaryColor }}
-                      title="Trocar ícone"
-                    >
-                      <IconComp className="w-4 h-4" />
-                    </button>
+                    {categoria !== "experiencia_destino" && (
+                      <button
+                        onClick={() => setEditingIconIdx(editingIconIdx === i ? null : i)}
+                        className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
+                        style={{ color: secondaryColor }}
+                        title="Trocar ícone"
+                      >
+                        <IconComp className="w-4 h-4" />
+                      </button>
+                    )}
                     <input
                       value={h.text}
                       onChange={(e) => updateHighlightText(i, e.target.value)}
@@ -1946,7 +2051,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                       <X className="w-4 h-4" />
                     </button>
                   </div>
-                  {editingIconIdx === i && (
+                  {categoria !== "experiencia_destino" && editingIconIdx === i && (
                     <div className="border-t border-white/10 p-2 grid grid-cols-8 gap-1">
                       {ICON_OPTIONS.map(({ key, Icon, label }) => (
                         <button
@@ -1972,7 +2077,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   value={newHl}
                   onChange={(e) => setNewHl(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && addHighlight()}
-                  placeholder="Ex: Bebidas inclusas"
+                  placeholder={categoria === "experiencia_destino" ? "Ex: Pôr do sol privativo" : "Ex: Bebidas inclusas"}
                   className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder:text-white/30 outline-none"
                 />
                 <button
