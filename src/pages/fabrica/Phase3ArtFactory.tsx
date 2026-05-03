@@ -505,6 +505,17 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const effectiveTextColor = textColorOverride || autoTextColor;
   const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
   const [fontOptionsOpen, setFontOptionsOpen] = useState(false);
+  const [colorsOpen, setColorsOpen] = useState(false);
+  // "Cor dos textos base": força textos claros ou escuros nas artes
+  const [baseTextMode, setBaseTextModeState] = useState<"light" | "dark">(
+    (((state as any).baseTextMode as "light" | "dark") || "light")
+  );
+  const setBaseTextMode = (m: "light" | "dark") => {
+    setBaseTextModeState(m);
+    update({ baseTextMode: m } as any);
+    // sincroniza com o override de cor de texto já existente
+    setTextColorOverride(m === "light" ? "#FFFFFF" : "#0A0A0A");
+  };
   const FONT_PRESETS = ["Inter", "Poppins", "Montserrat", "Roboto", "Oswald", "Bebas Neue", "Playfair Display", "Lora", "Raleway", "Nunito", "Work Sans", "DM Sans"];
 
   // Carrega Google Font dinamicamente quando o usuário escolhe uma família custom
