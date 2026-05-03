@@ -315,7 +315,7 @@ export function V2Experiencia(props: V2ExperienciaProps) {
               backgroundClip: "text",
             }}
           >
-            <Gem className="w-3 h-3" style={{ color: "#f5d97a" }} />
+            <Gem className="w-3 h-3" style={{ color: primaryColor }} />
             <span className="text-[9px] uppercase tracking-[0.3em] font-bold">
               Destaque
             </span>
