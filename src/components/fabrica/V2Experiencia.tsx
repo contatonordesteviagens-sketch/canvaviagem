@@ -73,7 +73,7 @@ const TRAVEL_PERIOD_FALLBACK = "Datas exclusivas";
 
 function normalizeHighlights(raw: any[]): V2ExperienciaHighlight[] {
   return (raw || [])
-    .map((h) => {
+    .map((h): V2ExperienciaHighlight | null => {
       if (typeof h === "string") return { text: h };
       if (h && typeof h === "object") return { text: h.text || "", icon: h.icon };
       return null;
