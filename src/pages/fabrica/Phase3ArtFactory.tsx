@@ -2077,66 +2077,80 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 </div>
               )}
 
-              {/* Linha única: 3 swatches inline (Primária | Secundária | Texto) */}
-              <div className="grid grid-cols-3 gap-3">
+              {/* Linha minimalista: 3 círculos discretos (Primária | Secundária | Texto) */}
+              <div className="flex items-center justify-between gap-3">
                 {[
                   { label: "Primária", value: primaryColor, setter: setPrimaryColor, isText: false },
                   { label: "Secundária", value: secondaryColor, setter: setSecondaryColor, isText: false },
                   { label: "Texto", value: textColorOverride || effectiveTextColor, setter: setTextColorOverride, isText: true },
                 ].map(({ label, value, setter, isText }) => (
-                  <div key={label}>
-                    <label className={labelCls}>{label}</label>
-                    <div className="flex flex-col items-stretch gap-1.5">
-                      <label
-                        className="relative w-full aspect-square rounded-xl cursor-pointer overflow-hidden border-2 border-white/15 hover:border-white/40 transition-all shadow-md"
-                        style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}
-                        title="Abrir seletor arco-íris"
-                      >
-                        <input
-                          type="color"
-                          value={value || "#ffffff"}
-                          onChange={(e) => setter(e.target.value)}
-                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                        />
-                        <span
-                          className="absolute inset-2 rounded-lg border border-white/30"
-                          style={{ background: value || "#ffffff" }}
-                        />
-                      </label>
+                  <div key={label} className="flex flex-col items-center gap-1.5 flex-1">
+                    <label className="relative w-10 h-10 rounded-full cursor-pointer border border-white/20 hover:border-white/50 transition-colors shadow-sm" style={{ background: value || "#ffffff" }} title="Abrir seletor de cor">
                       <input
-                        value={isText ? (textColorOverride || "") : value}
+                        type="color"
+                        value={value || "#ffffff"}
                         onChange={(e) => setter(e.target.value)}
-                        placeholder={isText ? "auto" : "#000000"}
-                        className="w-full bg-white/[0.04] border border-white/10 rounded-md px-2 py-1 text-white text-[11px] outline-none focus:border-white/40 font-mono uppercase text-center"
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                       />
-                    </div>
+                    </label>
+                    <span className="text-[10px] text-white/60 font-medium">{label}</span>
+                    {isText && !textColorOverride && (
+                      <span className="text-[9px] text-white/40 -mt-1">auto</span>
+                    )}
                   </div>
                 ))}
               </div>
 
-              {/* Atalhos rápidos para cor de texto: Claro / Escuro / Auto */}
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-white/50 uppercase tracking-wider font-semibold">Texto rápido:</span>
-                <button
-                  onClick={() => setTextColorOverride("#ffffff")}
-                  className={`text-[11px] font-semibold px-2.5 py-1 rounded border transition-colors ${textColorOverride.toLowerCase() === "#ffffff" ? "bg-white text-black border-white" : "bg-white/[0.04] text-white/80 border-white/15 hover:border-white/40"}`}
-                >
-                  Claro
-                </button>
-                <button
-                  onClick={() => setTextColorOverride("#0d0d0d")}
-                  className={`text-[11px] font-semibold px-2.5 py-1 rounded border transition-colors ${textColorOverride.toLowerCase() === "#0d0d0d" ? "bg-black text-white border-white" : "bg-white/[0.04] text-white/80 border-white/15 hover:border-white/40"}`}
-                >
-                  Escuro
-                </button>
-                <button
-                  onClick={() => setTextColorOverride("")}
-                  className={`text-[11px] font-semibold px-2.5 py-1 rounded border transition-colors ${!textColorOverride ? "bg-white/15 text-white border-white/40" : "bg-white/[0.04] text-white/80 border-white/15 hover:border-white/40"}`}
-                  title="Detecta automaticamente claro ou escuro com base no fundo"
-                >
-                  Auto
-                </button>
+              {/* Controle unificado de Texto: Auto · Claro · Escuro */}
+              <div className="flex items-center gap-1.5">
+                {[
+                  { id: "", label: "Auto" },
+                  { id: "#ffffff", label: "Claro" },
+                  { id: "#0d0d0d", label: "Escuro" },
+                ].map((opt) => {
+                  const active = (textColorOverride || "").toLowerCase() === opt.id.toLowerCase();
+                  return (
+                    <button
+                      key={opt.label}
+                      onClick={() => setTextColorOverride(opt.id)}
+                      className={`flex-1 text-[11px] font-semibold px-2 py-1.5 rounded border transition-colors ${active ? "bg-white/15 text-white border-white/40" : "bg-white/[0.04] text-white/70 border-white/10 hover:border-white/30"}`}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
+
+              {/* Aviso de contraste (WCAG) */}
+              {(() => {
+                const hexToRgb = (h: string) => {
+                  const c = h.replace("#", "");
+                  return [parseInt(c.slice(0,2),16), parseInt(c.slice(2,4),16), parseInt(c.slice(4,6),16)];
+                };
+                const lum = (h: string) => {
+                  const [r,g,b] = hexToRgb(h).map((v) => {
+                    const s = v/255; return s <= 0.03928 ? s/12.92 : Math.pow((s+0.055)/1.055, 2.4);
+                  });
+                  return 0.2126*r + 0.7152*g + 0.0722*b;
+                };
+                const ratio = (a: string, b: string) => {
+                  const la = lum(a), lb = lum(b);
+                  return (Math.max(la,lb)+0.05)/(Math.min(la,lb)+0.05);
+                };
+                try {
+                  const txt = (textColorOverride || effectiveTextColor || "#ffffff");
+                  const bg = primaryColor || "#000000";
+                  const r = ratio(txt, bg);
+                  if (r < 3) {
+                    return (
+                      <div className="flex items-center gap-1.5 text-[10px] text-amber-300/90 bg-amber-500/10 border border-amber-500/20 rounded px-2 py-1">
+                        ⚠ Baixo contraste entre texto e fundo (WCAG {r.toFixed(1)}:1). Tente usar Auto.
+                      </div>
+                    );
+                  }
+                } catch {}
+                return null;
+              })()}
             </div>
           )}
         </div>
