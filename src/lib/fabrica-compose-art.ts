@@ -1988,9 +1988,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     }
 
     // 4) PÍLULA (bg branco translúcido, rounded-full)
+    // V0_Experiencia NÃO usa highlights/ícones — apenas período da viagem se existir.
     const pillText = (() => {
-      const first = highlights?.[0]?.text?.trim();
-      if (first) return first;
       if (travelPeriod && travelPeriod.trim()) return travelPeriod.trim();
       return "";
     })();
