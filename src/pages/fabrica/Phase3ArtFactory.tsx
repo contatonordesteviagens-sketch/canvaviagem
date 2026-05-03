@@ -1031,87 +1031,42 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           try { img = await reframeImageToAspect(img, format); }
           catch (e) { console.warn("reframe failed", e); }
 
-          // Experiência em IA Pura: IA gera só o fundo; textos/dias vêm do compositor local.
-          if (isAiExperienceStory) {
-            try {
-              img = await composeTravelAd({
-                imageUrl: img,
-                format,
-                destination,
-                city: state.city,
-                primaryColor: palette.primary,
-                secondaryColor: palette.secondary,
-                price: formattedPriceForAd || price,
-                currencySymbol,
-                installments,
-                promoName,
-                highlights,
-                hasLogo: !!state.logoBase64,
-                paymentMode,
-                paymentLabel: paymentLabel || undefined,
-                paymentSuffix,
-                strategy: aiExperienceStrategy,
-                variation: freshSeedAi,
-                forceVariant: nextVariantAi,
-                titleOverride: resolvedAdTitle,
-                titleVariations: adTitleVariations,
-                travelPeriod,
-                totalOverride: totalOverride || undefined,
-                showPixBanner,
-                pixBannerText: pixBannerText || undefined,
-                showTotal,
-                fontFamily,
-                titleScale,
-                descScale,
-                textColorOverride: effectiveTextColor,
-              });
-              if (state.logoBase64) {
-                const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
-                img = await composeLogoOnImage(img, state.logoBase64);
-              }
-            } catch (e) {
-              console.warn("Compositor Experiência (IA pura) falhou, mantendo BG cru:", e);
-            }
-          } else if (shouldComposeOfertaAi) {
-            try {
-              img = await composeTravelAd({
-                imageUrl: img,
-                format,
-                destination,
-                city: state.city,
-                primaryColor: palette.primary,
-                secondaryColor: palette.secondary,
-                price: formattedPriceForAd || price,
-                currencySymbol,
-                installments,
-                promoName,
-                highlights,
-                hasLogo: !!state.logoBase64,
-                paymentMode,
-                paymentLabel: paymentLabel || undefined,
-                paymentSuffix,
-                strategy: "ancora",
-                variation: freshSeedAi,
-                forceVariant: nextVariantAi,
-                titleOverride: resolvedAdTitle,
-                titleVariations: adTitleVariations,
-                travelPeriod,
-                totalOverride: totalOverride || undefined,
-                showPixBanner,
-                pixBannerText: pixBannerText || undefined,
-                showTotal,
-                fontFamily,
-                titleScale,
-                descScale,
-                textColorOverride: effectiveTextColor,
-              });
-              if (state.logoBase64) {
-                const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
-                img = await composeLogoOnImage(img, state.logoBase64);
-              }
-            } catch (e) {
-              console.warn("Compositor Oferta (IA pura) falhou, mantendo BG cru:", e);
-            }
+          // TRAVA DE CÓDIGO: a IA entrega apenas o fundo. A arte final SEMPRE passa pelo Canvas.
+          // Não existe fallback para imagem crua: se o Canvas falhar, a geração falha.
+          img = await composeTravelAd({
+            imageUrl: img,
+            format,
+            destination,
+            city: state.city,
+            primaryColor: palette.primary,
+            secondaryColor: palette.secondary,
+            price: formattedPriceForAd || price,
+            currencySymbol,
+            installments,
+            promoName,
+            highlights,
+            hasLogo: !!state.logoBase64,
+            paymentMode,
+            paymentLabel: paymentLabel || undefined,
+            paymentSuffix,
+            strategy: isAiExperienceStory ? aiExperienceStrategy : "ancora",
+            variation: freshSeedAi,
+            forceVariant: nextVariantAi,
+            titleOverride: resolvedAdTitle,
+            titleVariations: adTitleVariations,
+            travelPeriod,
+            totalOverride: totalOverride || undefined,
+            showPixBanner,
+            pixBannerText: pixBannerText || undefined,
+            showTotal,
+            fontFamily,
+            titleScale,
+            descScale,
+            textColorOverride: effectiveTextColor,
+          });
+          if (state.logoBase64) {
+            const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
+            img = await composeLogoOnImage(img, state.logoBase64);
           }
 
           images.push(img);

@@ -113,7 +113,9 @@ serve(async (req) => {
     }
 
     const body = (await req.json()) as AdParams & { customPrompt?: string };
-    const forcePhotoOnly = body.photoOnly === true || body.canvasOnly === true;
+    // TRAVA GLOBAL: esta função NUNCA mais gera UI. Mesmo que um cliente antigo envie
+    // templateId/photoOnly:false, a IA recebe somente prompt fotográfico de fundo.
+    const forcePhotoOnly = true;
 
     if (!body.templateId && !forcePhotoOnly && !body.customPrompt) {
       if (!body.strategy || !["ancora", "vitrine", "matriz", "gancho"].includes(body.strategy)) {
