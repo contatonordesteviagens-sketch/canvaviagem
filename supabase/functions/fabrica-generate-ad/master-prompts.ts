@@ -518,35 +518,37 @@ A full-width 8K photorealistic image of ${v.destination}. Scene: ${v.destination
 In the top-left corner of this photo area, place a small ${agencyTag}.
 
 [BOTTOM HALF — UI DESIGN · 55% of canvas height, ending above the bottom safe zone]
-Solid background using the secondary brand color ${v.secondaryHex}.
+Solid background using the PRIMARY brand color ${v.primaryHex}, stretching all the way down to cover the entire bottom section.
 
-Just below the photo split: a solid ${v.primaryHex} rounded pill button containing bold DARK text "${originPill}".
+Just below the photo split: a solid ${v.secondaryHex} rounded pill button containing bold DARK text "${originPill}".
 
 Below the button: main headline "${v.promoName || `Pacote ${v.destination}`}" in massive, heavy ultra-bold font.
-🚨 CRITICAL CONTRAST RULE: this headline MUST be PURE WHITE (#FFFFFF) for maximum contrast against the ${v.secondaryHex} background. Never paint the headline in dark tones over the secondary background.
+🚨 CRITICAL CONTRAST RULE: this headline MUST be PURE WHITE (#FFFFFF) for maximum contrast against the ${v.primaryHex} background. Never paint the headline in dark tones over the primary background.
 
-Below the headline: a vertical stack of FOUR clean, solid WHITE pill-buttons. Each contains a minimalist dark icon on the left and DARK text:
+Below the headline: a vertical stack of FOUR clean, solid PURE WHITE pill-buttons.
+🚨 CRITICAL RULE FOR INCLUSIONS: every single white pill MUST contain a minimalist DARK icon on the left and clearly rendered DARK TEXT. NEVER leave any pill empty. The four labels are:
    • "${b1}"
    • "${b2}"
    • "${b3}"
    • "${b4}"
 
 [PRICE BLOCK — safely above the bottom 20% empty zone]
-A large, solid ${v.primaryHex} rectangular block. ALL text inside MUST be neatly stacked with ZERO overlapping:
-- Top center: bold WHITE text "${v.promoName || `OFERTA ${v.destination}`}".
-- Below: small WHITE text "PACOTE ${v.destination}" and "${v.duration}".
-- Below: small WHITE text "a partir de".
-- Then: a solid ${v.secondaryHex} rounded badge containing bold DARK text "${installmentLabel}", placed next to a MASSIVE extra-bold WHITE price "R$ ${v.installmentValue}", with small WHITE text "por pessoa" below.
-- At the very bottom edge of the block: a solid ${v.secondaryHex} footer strip containing bold DARK text "${pixText}".
+A large, solid ${v.secondaryHex} rectangular block. ALL text inside MUST be DARK for high contrast against the light secondary background, neatly stacked with ZERO overlapping:
+- Top center: bold DARK text "${v.promoName || `OFERTA ${v.destination}`}".
+- Below: small DARK text "PACOTE ${v.destination}" and "${v.duration}".
+- Below: small DARK text "a partir de".
+- Then: a solid DARK ${v.primaryHex} rounded badge containing bold BRIGHT text "${installmentLabel}", placed next to a MASSIVE extra-bold DARK price "R$ ${v.installmentValue}", with small DARK text "por pessoa" below.
+- At the very bottom edge of the block: a solid DARKER ${v.primaryHex} footer strip containing bold BRIGHT text "${pixText}".
 
 [AESTHETIC]
-Clean modern UI, flawless spelling, ZERO text overlapping, perfect alignment strictly inside the central 60% block, premium Brazilian travel agency feel.
+Clean modern UI, flawless spelling, ZERO text overlapping, perfect alignment strictly inside the central 60% block, high contrast, premium Brazilian travel agency feel.
 
 [REGRAS DE ISOLAMENTO]
 🚫 PROIBIDO: qualquer elemento dentro dos 20% do topo ou dos 20% da base.
-🚫 PROIBIDO: headline em cor escura sobre o bloco ${v.secondaryHex} (regra de contraste).
-🚫 PROIBIDO: full-bleed photo, glass card translúcido, gradientes, ícones 3D, watermarks, copiar layouts V1/V2/V3 ou Experiência.
-✅ OBRIGATÓRIO: split horizontal foto (topo 45%) + UI sólida ${v.secondaryHex} (fundo 55%), preço como bloco dominante ${v.primaryHex}, contraste máximo (texto branco sobre secundária; texto escuro nos pills brancos).
+🚫 PROIBIDO: headline em cor escura sobre o bloco ${v.primaryHex}; texto claro sobre o bloco ${v.secondaryHex}.
+🚫 PROIBIDO: pílulas brancas vazias — TODAS devem conter texto escuro + ícone correspondentes.
+🚫 PROIBIDO: full-bleed photo, glass card translúcido, gradientes, ícones 3D, watermarks, copiar layouts V1/V2/V3/V4 ou Experiência.
+✅ OBRIGATÓRIO: split horizontal foto (topo 45%) + UI sólida ${v.primaryHex} (fundo 55%), preço como bloco dominante ${v.secondaryHex} com texto escuro, contraste máximo.
 ✅ Aspect ratio: 9:16 absoluto. Sem letterbox.`;
   }
 
