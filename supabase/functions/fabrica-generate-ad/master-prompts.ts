@@ -797,6 +797,7 @@ export const MASTER_TEMPLATES = [
   { id: "maceio_style",       name: "OP4 · Barra Lateral Performance",builder: promptMaceioStyle },
   { id: "ticket_pix_card",    name: "OP5 · Bilhete Pix",              builder: promptTicketPixCard },
   { id: "side_hero_performance", name: "OP6 · Faixa Lateral Hero",    builder: promptSideHeroPerformance },
+  { id: "yellow_box_cvc",     name: "OP7 · Box Amarelo CVC (V3)",     builder: promptYellowBoxCVC },
   // 🔵 EXPERIÊNCIA DESTINO
   { id: "iconic_landmark",    name: "ED1 · Hero Cinematográfico",     builder: promptIconicLandmark },
   { id: "split_yellow_side",  name: "ED2 · Split Suave",              builder: promptSplitYellowSide },
@@ -825,89 +826,6 @@ export function pickRandomTemplates(n: number, exclude: string[] = []): typeof M
   return shuffled.slice(0, n);
 }
 
-// ============================================================
-
-// DK1 — PESSOA CORPORATIVA + ÍCONES 3D FLUTUANDO
-export function promptDarkNeonGlassmorphism(v: MasterPromptVars): string {
-  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "dk1", v.forbiddenHeadlines);
-  return `
-Banner publicitário vertical 9:16 no estilo de uma fintech premium brasileira (referência: Kriptopix).
-
-FUNDO: Preto absoluto (#0A0A0A), sem gradientes, sem texturas.
-
-COMPOSIÇÃO: No lado esquerdo, texto em bloco com tipografia Ultra-Bold. No lado direito, objetos 3D de viagem flutuando (avião dourado, passaporte metálico, mala 3D) com luz de estúdio lateral suave.
-
-PESSOA: Opcional. Se incluída, deve ser uma pessoa com aparência executiva/profissional, roupa escura ou na cor ${v.primaryHex}, olhando para o lado ou para a câmera com expressão determinada.
-
-TEXTOS EXATOS — escreva SOMENTE esses textos, SEM inventar palavras:
-- Headline (fonte Ultra-Bold branca, grande): «${headline}»
-- Destino (fonte Bold, cor ${v.secondaryHex}): «${v.destination}»
-- Preço (fonte Ultra-Bold branca, tamanho gigante): «${v.installments}x R$ ${v.installmentValue}»
-- Botão CTA pequeno (pílula na cor ${v.secondaryHex} com seta): «Reserve Agora →»
-
-TIPOGRAFIA: APENAS fontes sólidas, cor sólida. PROIBIDO: outline, vazado, neon, glow.
-PALETA: Fundo preto + destaque obrigatório na cor ${v.secondaryHex} apenas em botão e acento.
-
-🛑 REGRAS ABSOLUTAS:
-- Texto perfeitamente escrito, sem erros ortográficos, sem letras cortadas na borda.
-- NÃO gere fotografias de praia, hotel, natureza ou turismo no fundo.
-- Máximo de 4 blocos de texto distintos na imagem inteira.
-- Qualidade editorial profissional, resolução 8K.
-`;
-}
-
-// DK2 — OBJETOS 3D DOURADOS GIGANTES + HEADLINE IMPACTANTE
-export function promptDark3DIconsFloating(v: MasterPromptVars): string {
-  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "dk2", v.forbiddenHeadlines);
-  return `
-Banner publicitário vertical 9:16 no estilo fintech premium (referência: Kriptopix - layout com moedas 3D gigantes acima de texto).
-
-FUNDO: Preto absoluto na metade superior. Na metade inferior, fundo levemente mais escuro ou igual.
-
-COMPOSIÇÃO: Na metade superior da tela, 2 a 3 objetos 3D de viagem em tamanho GIGANTE e proporção dominante (passaportes metálicos dourados, mala de viagem 3D, globo terrestre metálico, bilhete de avião 3D dourado). Os objetos têm acabamento FOSCO-METÁLICO com reflexos de luz de estúdio suave. Na metade inferior: texto e preço bem espaçados.
-
-LOGO DA MARCA no topo, discreta (apenas um ícone K ou similar).
-
-TEXTOS EXATOS — escreva SOMENTE esses textos, SEM inventar palavras:
-- Headline (fonte Ultra-Bold branca ou ${v.secondaryHex}, grande): «${headline}»
-- Destino (fonte Bold, branco): «${v.destination}»
-- Preço (fonte Ultra-Bold branca, tamanho gigante): «${v.installments}x R$ ${v.installmentValue}»
-- Botão CTA (pílula com seta na cor ${v.secondaryHex}): «Saiba mais →»
-
-TIPOGRAFIA: Apenas sólida. PROIBIDO outline, vazado, neon, glow.
-PALETA: Fundo preto + objetos em dourado-metálico + texto branco + acento ${v.secondaryHex}.
-
-🛑 REGRAS ABSOLUTAS:
-- Texto perfeitamente escrito, sem erros ortográficos, sem letras cortadas.
-- NÃO gere praia, hotel, natureza, céu.
-- Qualidade editorial profissional, resolução 8K.
-`;
-}
-
-// DK3 — SPLIT FUNDO PRETO + COR COM MOCKUP / MAPA DE ROTAS
-export function promptDarkMinimalGeometric(v: MasterPromptVars): string {
-  const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "dk3", v.forbiddenHeadlines);
-  return `
-Banner publicitário vertical 9:16 no estilo fintech premium (referência: Kriptopix - layout split preto + amarelo com mockup de app e rotas globais).
-
-COMPOSIÇÃO SPLIT VERTICAL:
-- TOPO (60% da tela): Fundo PRETO ABSOLUTO. Texto Bold branco grande à esquerda. À direita, um mockup 3D de celular mostrando um "app de pacotes de viagem" na tela, OU um globo terrestre abstrato em dourado-metálico com linhas de rotas tracejadas conectando cidades (estilo mapa de voos).
-- BASE (40% da tela): Fundo na cor ${v.secondaryHex} (amarelo ouro). Texto escuro sobre ele. Botão escuro com seta.
-
-TEXTOS EXATOS — escreva SOMENTE esses textos, SEM inventar palavras:
-- Headline (fonte Ultra-Bold branca no topo): «${headline}»
-- Destino (fonte Bold na cor ${v.secondaryHex} ou preto, dependendo da área): «${v.destination}»
-- Preço (fonte Ultra-Bold, cor contrastante): «${v.installments}x R$ ${v.installmentValue}»
-- Linha ícones de rotas: pontinhos com nomes de 2 ou 3 cidades conectando ao destino.
-
-TIPOGRAFIA: Apenas sólida, Ultra-Bold. PROIBIDO outline, vazado, neon, glow.
-
-🛑 REGRAS ABSOLUTAS:
-- Texto perfeitamente escrito, sem erros ortográficos, sem letras cortadas.
-- NÃO gere praia, hotel, natureza.
-- Qualidade editorial profissional, resolução 8K.
-`;
-}
 
 
 // ============================================================
@@ -954,39 +872,3 @@ REGRAS ABSOLUTAS:
 `;
 }
 
-// ============================================================
-// REGISTRO DE TEMPLATES
-// ============================================================
-export const MASTER_TEMPLATES = [
-  // 🔴 OFERTA PACOTE
-  { id: "classic_vertical",   name: "OP1 · Cartão Dividido",          builder: promptClassicVertical },
-  { id: "cancun_style",       name: "OP2 · Cartão Central Flutuante", builder: promptCancunStyle },
-  { id: "gramado_style",      name: "OP3 · Cartão Aéreo (Top Down)",  builder: promptGramadoStyle },
-  { id: "maceio_style",       name: "OP4 · Barra Lateral Performance",builder: promptMaceioStyle },
-  { id: "ticket_pix_card",    name: "OP5 · Bilhete Pix",              builder: promptTicketPixCard },
-  { id: "side_hero_performance", name: "OP6 · Faixa Lateral Hero",    builder: promptSideHeroPerformance },
-  { id: "yellow_box_cvc",     name: "OP7 · Box Amarelo CVC (V3)",     builder: promptYellowBoxCVC },
-  // 🔵 EXPERIÊNCIA DESTINO
-  { id: "iconic_landmark",    name: "ED1 · Hero Cinematográfico",     builder: promptIconicLandmark },
-  { id: "split_yellow_side",  name: "ED2 · Split Suave",              builder: promptSplitYellowSide },
-  { id: "elegant_center",     name: "ED3 · Story Lifestyle",          builder: promptElegantCenterCard },
-  { id: "editorial_visual",   name: "ED4 · Multi Experiência (Grid)", builder: promptEditorialVisual },
-  { id: "top_editorial_photo", name: "ED5 · Minimalista Premium",     builder: promptTopEditorialPhoto },
-  { id: "two_scene_editorial", name: "ED6 · Duas Cenas Editoriais",   builder: promptTwoSceneEditorial },
-  // ⬛ AUTORIDADE PREMIUM (DARK 3D)
-  { id: "dark_neon_glassmorphism", name: "DK1 · Vidro e Neon",        builder: promptDarkNeonGlassmorphism },
-  { id: "dark_3d_icons_floating",  name: "DK2 · Ícones 3D Flutuando", builder: promptDark3DIconsFloating },
-  { id: "dark_minimal_geometric",  name: "DK3 · Geométrico Minimal",  builder: promptDarkMinimalGeometric },
-] as const;
-
-export type MasterTemplateId = typeof MASTER_TEMPLATES[number]["id"];
-
-export function getTemplateById(id: string) {
-  return MASTER_TEMPLATES.find((t) => t.id === id);
-}
-
-export function pickRandomTemplates(n: number, exclude: string[] = []): typeof MASTER_TEMPLATES[number][] {
-  const pool = MASTER_TEMPLATES.filter((t) => !exclude.includes(t.id));
-  const shuffled = [...pool].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, n);
-}
