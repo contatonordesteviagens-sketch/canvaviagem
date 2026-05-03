@@ -54,7 +54,7 @@ A composição deve seguir o padrão visual de anúncios de agências de viagem 
    • Linha fina embaixo: "Total por pessoa: R$ X.XXX".
    • Faixa inferior contrastante (azul escuro ou cor primária) com "5% OFF À VISTA NO PIX" + ícone PIX.
 
-3. SELO/LOGO DA AGÊNCIA pequeno e discreto no canto inferior direito (círculo colorido).
+3. NUNCA desenhar selo/logo de agência — esse elemento é sobreposto depois pelo compositor. Deixe esse espaço vazio.
 
 4. TEXTO LATERAL VERTICAL fino na lateral esquerda em fonte miúda branca: condições legais ("Saída de [cidade] em DD/MM/AAAA. Hospedagem [hotel]. Oferta sujeita à disponibilidade. Consulte condições.").
 
@@ -843,7 +843,7 @@ ELEMENTO PRINCIPAL — GRANDE BOX AMARELO:
 Um grande retângulo na cor AMARELO VIBRANTE (#FFD400) com cantos bem arredondados (raio ~36px), posicionado ${isSquare ? "ocupando ~55% da largura à esquerda do banner, alinhado verticalmente ao centro" : "no terço superior do banner, ocupando ~85% da largura"}, com leve sombra sutil para destacar do fundo fotográfico.
 
 DENTRO DO BOX (hierarquia vertical, do topo para a base):
-1. TOPO: tag pequena "PACOTE" (uppercase, Bold pequeno, preto) + logo discreta opcional no canto superior direito.
+1. TOPO: tag pequena "PACOTE" (uppercase, Bold pequeno, preto). NUNCA desenhar logo — esse espaço fica vazio (será preenchido depois pelo compositor).
 2. NOME DO DESTINO: "${v.destination.toUpperCase()}" em Ultra-Bold preto, tamanho grande (dominante no box).
 3. LINHA DE INFO: "${v.duration || "7 DIAS"}" + linha horizontal de 4-5 ícones MONOCROMÁTICOS pretos em outline fino (avião, ônibus, hotel, café, câmera). Sem ícones coloridos.
 4. BLOCO DE PREÇO (split horizontal):

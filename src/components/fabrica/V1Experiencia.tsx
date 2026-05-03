@@ -8,6 +8,11 @@
 // ============================================================
 
 import type { FabricaState } from "@/hooks/useFabricaContext";
+import {
+  getContrastTextStyle,
+  getDropShadowClass,
+  type BaseTextMode,
+} from "@/lib/fabrica-text-contrast";
 
 export interface V1ExperienciaProps {
   backgroundImage: string;
@@ -21,6 +26,7 @@ export interface V1ExperienciaProps {
   primaryColor: string;
   secondaryColor: string;
   format?: "story" | "square";
+  baseTextMode?: BaseTextMode;
 }
 
 const TRAVEL_PERIOD_FALLBACK = "uma jornada inesquecível";
@@ -50,6 +56,7 @@ export function mapStateToV1Experiencia(
     primaryColor: state.primaryColor,
     secondaryColor: state.secondaryColor,
     format: state.lastFormat === "square" ? "square" : "story",
+    baseTextMode: ((state as any).baseTextMode as BaseTextMode) || "light",
   };
 }
 
@@ -64,9 +71,13 @@ export function V1Experiencia(props: V1ExperienciaProps) {
     slogan,
     destination,
     format = "story",
+    baseTextMode = "light",
   } = props;
 
   const aspect = format === "square" ? "aspect-square" : "aspect-[9/16]";
+  const textStyle = getContrastTextStyle(baseTextMode);
+  const dropClass = getDropShadowClass(baseTextMode);
+  const textColorCls = baseTextMode === "dark" ? "text-neutral-900" : "text-white";
 
   return (
     <article
@@ -86,22 +97,28 @@ export function V1Experiencia(props: V1ExperienciaProps) {
       <div aria-hidden className="absolute inset-0 bg-black/30" />
 
       {/* Conteúdo: 3 blocos centralizados (topo · centro · slogan) */}
-      <div className="relative z-10 flex flex-col items-center justify-between h-full w-full px-6 py-10 text-white text-center">
+      <div className={`relative z-10 flex flex-col items-center justify-between h-full w-full px-6 py-10 text-center ${textColorCls}`}>
         {/* 2 · BLOCO SUPERIOR — Identidade */}
         <header className="flex flex-col items-center gap-2 w-full">
           {logoBase64 ? (
             <img
               src={logoBase64}
               alt="Logo"
-              className="h-12 w-auto object-contain mb-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.4)]"
+              className={`h-12 w-auto object-contain mb-2 ${dropClass}`}
             />
           ) : null}
           {promoName ? (
-            <h2 className="font-serif uppercase tracking-[0.3em] text-sm sm:text-base font-semibold drop-shadow-md">
+            <h2
+              className={`font-serif uppercase tracking-[0.3em] text-sm sm:text-base font-semibold ${dropClass}`}
+              style={textStyle}
+            >
               {promoName}
             </h2>
           ) : null}
-          <p className="font-fabrica-script text-base sm:text-lg text-white/95 drop-shadow-md leading-tight">
+          <p
+            className={`font-fabrica-script text-base sm:text-lg leading-tight ${dropClass}`}
+            style={textStyle}
+          >
             {travelPeriod}
           </p>
         </header>
@@ -109,15 +126,15 @@ export function V1Experiencia(props: V1ExperienciaProps) {
         {/* 3 · BLOCO CENTRAL — Tipografia Principal */}
         <section className="flex flex-col items-center gap-3 w-full">
           <h1
-            className="font-serif font-bold uppercase text-3xl sm:text-5xl leading-tight tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
-            style={{ fontFamily: "'Playfair Display', 'Bodoni Moda', Georgia, serif" }}
+            className={`font-serif font-bold uppercase text-3xl sm:text-5xl leading-tight tracking-tight ${dropClass}`}
+            style={{ fontFamily: "'Playfair Display', 'Bodoni Moda', Georgia, serif", ...textStyle }}
           >
             {experienceDescription}
           </h1>
           {adTitle ? (
             <p
-              className="font-serif font-normal text-base sm:text-xl text-white/95 drop-shadow-md leading-snug"
-              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              className={`font-serif font-normal text-base sm:text-xl leading-snug ${dropClass}`}
+              style={{ fontFamily: "'Playfair Display', Georgia, serif", ...textStyle }}
             >
               {adTitle}
             </p>
@@ -126,7 +143,10 @@ export function V1Experiencia(props: V1ExperienciaProps) {
 
         {/* 4 · BLOCO INFERIOR — Slogan */}
         <footer className="w-full">
-          <p className="font-serif italic font-medium text-sm sm:text-base text-white drop-shadow-md">
+          <p
+            className={`font-serif italic font-medium text-sm sm:text-base ${dropClass}`}
+            style={textStyle}
+          >
             {slogan}
           </p>
         </footer>

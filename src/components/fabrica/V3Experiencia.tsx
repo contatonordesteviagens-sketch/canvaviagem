@@ -10,6 +10,11 @@
 // ============================================================
 
 import type { FabricaState } from "@/hooks/useFabricaContext";
+import {
+  getContrastTextStyle,
+  getDropShadowClass,
+  type BaseTextMode,
+} from "@/lib/fabrica-text-contrast";
 
 export interface V3ExperienciaHighlight {
   text: string;
@@ -36,6 +41,7 @@ export interface V3ExperienciaProps {
   logoBase64?: string;
 
   format?: "story" | "square";
+  baseTextMode?: BaseTextMode;
 }
 
 // ── Utilidades de cor para garantir contraste seguro no botão sólido ──
@@ -107,6 +113,7 @@ export function mapStateToV3Experiencia(
     fontFamily: (state as any).fontFamily,
     logoBase64: state.logoBase64 || "",
     format: state.lastFormat === "square" ? "square" : "story",
+    baseTextMode: ((state as any).baseTextMode as BaseTextMode) || "light",
   };
 }
 
@@ -122,6 +129,7 @@ export function V3Experiencia(props: V3ExperienciaProps) {
     secondaryColor,
     fontFamily,
     format = "story",
+    baseTextMode = "light",
   } = props;
 
   const aspect = format === "square" ? "aspect-square" : "aspect-[9/16]";
@@ -129,6 +137,10 @@ export function V3Experiencia(props: V3ExperienciaProps) {
     fontFamily ||
     "'Playfair Display', 'Cormorant Garamond', 'Bodoni Moda', Georgia, serif";
   const onPrimaryText = safeOnPrimary(primaryColor, secondaryColor);
+  const isDarkText = baseTextMode === "dark";
+  const textStyle = getContrastTextStyle(baseTextMode);
+  const dropClass = getDropShadowClass(baseTextMode);
+  const titleColor = isDarkText ? "#0A0A0A" : "#FFFFFF";
 
   return (
     <article
@@ -152,10 +164,14 @@ export function V3Experiencia(props: V3ExperienciaProps) {
         aria-label={destination || "destino"}
       />
 
-      {/* OVERLAY OBRIGATÓRIO — força legibilidade Dark Premium */}
+      {/* OVERLAY OBRIGATÓRIO — força legibilidade. Inverte para "lavagem clara" no modo Textos Escuros */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/65"
+        className={`absolute inset-0 ${
+          isDarkText
+            ? "bg-gradient-to-t from-white/85 via-white/25 to-white/65"
+            : "bg-gradient-to-t from-black/85 via-black/25 to-black/65"
+        }`}
       />
       {/* Vinheta lateral sutil para profundidade noturna */}
       <div
@@ -184,8 +200,8 @@ export function V3Experiencia(props: V3ExperienciaProps) {
         {promoName ? (
           <span
             data-field="promoName"
-            className="text-white text-[13px] sm:text-sm font-medium tracking-widest uppercase text-center drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]"
-            style={{ fontFamily: "Inter, system-ui, sans-serif" }}
+            className={`text-[13px] sm:text-sm font-medium tracking-widest uppercase text-center ${dropClass}`}
+            style={{ fontFamily: "Inter, system-ui, sans-serif", ...textStyle }}
           >
             {promoName}
           </span>
@@ -216,11 +232,11 @@ export function V3Experiencia(props: V3ExperienciaProps) {
           return (
             <h1
               data-field="adTitle"
-              className={`text-white text-center font-bold uppercase leading-tight tracking-wide drop-shadow-2xl drop-shadow-[0_10px_10px_rgba(0,0,0,0.6)] ${sizeClass}`}
+              className={`text-center font-bold uppercase leading-tight tracking-wide ${dropClass} ${sizeClass}`}
               style={{
                 fontFamily: titleFont,
-                textShadow:
-                  "0 8px 24px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.45)",
+                color: titleColor,
+                textShadow: textStyle.textShadow,
               }}
             >
               {adTitle}

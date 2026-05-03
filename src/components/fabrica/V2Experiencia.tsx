@@ -32,6 +32,11 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { FabricaState } from "@/hooks/useFabricaContext";
+import {
+  getContrastTextStyle,
+  getDropShadowClass,
+  type BaseTextMode,
+} from "@/lib/fabrica-text-contrast";
 
 export interface V2ExperienciaHighlight {
   text: string;
@@ -65,6 +70,7 @@ export interface V2ExperienciaProps {
   logoBase64?: string;
 
   format?: "story" | "square";
+  baseTextMode?: BaseTextMode;
 }
 
 const PREMIUM_BADGE_FALLBACK = "EXCLUSIVO";
@@ -136,6 +142,7 @@ export function mapStateToV2Experiencia(
     logoBase64: state.logoBase64 || "",
 
     format: state.lastFormat === "square" ? "square" : "story",
+    baseTextMode: ((state as any).baseTextMode as BaseTextMode) || "light",
   };
 }
 
@@ -154,9 +161,13 @@ export function V2Experiencia(props: V2ExperienciaProps) {
     secondaryColor,
     fontFamily,
     format = "story",
+    baseTextMode = "light",
   } = props;
 
   const aspect = format === "square" ? "aspect-square" : "aspect-[9/16]";
+  const textStyle = getContrastTextStyle(baseTextMode);
+  const dropClass = getDropShadowClass(baseTextMode);
+  const titleColor = baseTextMode === "dark" ? "#0A0A0A" : "#FFFFFF";
 
   // Tipografia editorial de luxo: serif para títulos/destaques, sans para tags
   const serifStack = `'${fontFamily || "Playfair Display"}', 'Playfair Display', 'Bodoni Moda', Georgia, serif`;
@@ -239,11 +250,11 @@ export function V2Experiencia(props: V2ExperienciaProps) {
         {adTitle && (
           <h1
             data-slot="title-massive"
-            className={`${titleSizeClass} font-bold leading-[0.92] tracking-[-0.015em] text-white`}
+            className={`${titleSizeClass} font-bold leading-[0.92] tracking-[-0.015em] ${dropClass}`}
             style={{
               fontFamily: serifStack,
-              textShadow:
-                "0 2px 4px rgba(0,0,0,0.45), 0 8px 32px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.05)",
+              color: titleColor,
+              textShadow: textStyle.textShadow,
             }}
           >
             {adTitle}
