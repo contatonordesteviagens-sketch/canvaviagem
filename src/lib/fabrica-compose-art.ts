@@ -105,6 +105,8 @@ interface ComposeTravelAdOptions {
   descScale?: number;
   /** Cor que substitui o texto branco padrão (#fff/#ffffff). Útil para alinhar texto à identidade da marca. */
   textColorOverride?: string;
+  /** Modo base dos textos: "light" (claros, com sombra escura) ou "dark" (escuros, com sombra clara). Default "light". */
+  baseTextMode?: "light" | "dark";
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
