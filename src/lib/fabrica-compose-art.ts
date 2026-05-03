@@ -2721,37 +2721,64 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       cursorY -= hSol + gap;
     }
 
-    // 4a) Título maciço (serif uppercase GIGANTE) — acima dos botões
+    // 4a) Título maciço (serif uppercase) — AUTO-FIT acima dos botões
+    // Texto curto = GIGANTE; texto longo = reduz tamanho até caber em largura
+    // e respeita altura disponível (limita nº de linhas).
     const title = (titleText || "").trim();
     if (title) {
-      const titleSize = isStory ? 150 : 110;
       const userFamilyLocal = (fontFamily || "").trim();
       const fam = userFamilyLocal && userFamilyLocal.toLowerCase() !== "inter"
         ? `'${userFamilyLocal}', ${serif}`
         : serif;
-      ctx.font = `900 ${titleSize}px ${fam}`;
+      const maxW = width - (isStory ? 120 : 100);
+      const topReserve = topPad + (isStory ? 48 : 36);
+      const availableH = Math.max(120, cursorY - topReserve);
+
+      const maxSize = isStory ? 150 : 110;
+      const minSize = isStory ? 56 : 44;
+      const words = title.toUpperCase().split(/\s+/);
+
+      const wrapAt = (size: number): string[] => {
+        ctx.font = `900 ${size}px ${fam}`;
+        const ls: string[] = [];
+        let cur = "";
+        for (const w of words) {
+          const test = cur ? `${cur} ${w}` : w;
+          if (ctx.measureText(test).width > maxW && cur) {
+            ls.push(cur);
+            cur = w;
+          } else {
+            cur = test;
+          }
+        }
+        if (cur) ls.push(cur);
+        return ls;
+      };
+
+      // Busca o maior tamanho onde TODAS as linhas cabem na largura
+      // E o bloco total cabe na altura disponível (máx 4 linhas).
+      let chosenSize = minSize;
+      let chosenLines: string[] = wrapAt(minSize);
+      for (let s = maxSize; s >= minSize; s -= 4) {
+        const ls = wrapAt(s);
+        ctx.font = `900 ${s}px ${fam}`;
+        const widestOk = ls.every((ln) => ctx.measureText(ln).width <= maxW);
+        const totalH = ls.length * (s * 0.95);
+        if (widestOk && ls.length <= 4 && totalH <= availableH) {
+          chosenSize = s;
+          chosenLines = ls;
+          break;
+        }
+      }
+
+      ctx.font = `900 ${chosenSize}px ${fam}`;
       ctx.fillStyle = "#ffffff";
       ctx.shadowColor = "rgba(0,0,0,0.95)";
       ctx.shadowBlur = 24;
       ctx.shadowOffsetY = 4;
-      // wrap simples
-      const maxW = width - (isStory ? 120 : 100);
-      const words = title.toUpperCase().split(/\s+/);
-      const lines: string[] = [];
-      let cur = "";
-      for (const w of words) {
-        const test = cur ? `${cur} ${w}` : w;
-        if (ctx.measureText(test).width > maxW && cur) {
-          lines.push(cur);
-          cur = w;
-        } else {
-          cur = test;
-        }
-      }
-      if (cur) lines.push(cur);
-      const lineH = titleSize * 0.95;
-      let ty = cursorY - (lines.length - 1) * lineH - lineH * 0.15;
-      for (const ln of lines) {
+      const lineH = chosenSize * 0.95;
+      let ty = cursorY - (chosenLines.length - 1) * lineH - lineH * 0.15;
+      for (const ln of chosenLines) {
         ctx.fillText(ln, cx, ty);
         ty += lineH;
       }
