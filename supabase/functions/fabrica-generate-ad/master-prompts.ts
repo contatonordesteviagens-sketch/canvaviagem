@@ -482,11 +482,76 @@ Clean modern UI, highly professional, razor-sharp typography, perfect alignment,
 ✅ Aspect ratio: 1:1 absoluto. Sem letterbox.`;
   }
 
+  // Detecta versão a partir do creativeSeed: "<tplId>-v<N>-..."
+  const seedMatch = (v.creativeSeed || "").match(/-v(\d+)-/);
+  const ver = seedMatch ? parseInt(seedMatch[1]) : 2;
+
+  // ──────────────────────────────────────────────────────────────────────
+  // 🔒 NOMENCLATURA 1/1/2 · V0 — SPLIT HORIZONTAL 45/55 (Stories 9:16)
+  // Foto no topo (45%) + bloco UI sólido na cor secundária (55%).
+  // ──────────────────────────────────────────────────────────────────────
+  if (ver === 0) {
+    const benefits = (v.highlights && v.highlights.length > 0)
+      ? v.highlights.slice(0, 4)
+      : ["Transporte incluso", "Hospedagem", "Café da manhã", "Guia local"];
+    const [b1, b2, b3, b4] = [0,1,2,3].map((i) => benefits[i] || "");
+    const originPill = v.city ? `Saindo de ${v.city}` : (v.agencyName || "Pacote exclusivo");
+    const agencyTag = v.agencyName ? `minimalist logo placeholder for agency "${v.agencyName}"` : "minimalist logo placeholder";
+    const installmentLabel = v.installments === "1" ? "À VISTA" : `${v.installments}x`;
+    const pixText = "5% OFF À VISTA NO PIX";
+
+    return `[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA E SAFE ZONES]
+A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/2 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Stories Vertical 9:16) associada à Versão de Layout: V0 (Split Horizontal 45/55).
+É TERMINANTEMENTE PROIBIDO misturar esta lógica com V1, V2, V3 ou com o estilo "Experiência de Destino".
+OBRIGATÓRIO: respeitar limites da interface do Instagram Stories e aplicar contraste máximo.
+
+[IMAGE]
+A high-end, clean vertical 9:16 travel advertisement (1080x1920, 8K). The layout features a sharp, perfectly straight horizontal split.
+
+[STRICT UI SAFE ZONES — INSTAGRAM STORIES]
+- The TOP 20% (≈384px) MUST remain completely empty of typography, UI elements, or logos — reserved for Instagram header.
+- The BOTTOM 20% (≈384px) MUST remain completely empty — reserved for Instagram message box.
+- ALL critical content lives ONLY inside the central 60% vertical block.
+
+[TOP HALF — PHOTO · 45% of canvas height, immediately below the top safe zone]
+A full-width 8K photorealistic image of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant, highly detailed, natural daylight, cinematic.
+In the top-left corner of this photo area, place a small ${agencyTag}.
+
+[BOTTOM HALF — UI DESIGN · 55% of canvas height, ending above the bottom safe zone]
+Solid background using the secondary brand color ${v.secondaryHex}.
+
+Just below the photo split: a solid ${v.primaryHex} rounded pill button containing bold DARK text "${originPill}".
+
+Below the button: main headline "${v.promoName || `Pacote ${v.destination}`}" in massive, heavy ultra-bold font.
+🚨 CRITICAL CONTRAST RULE: this headline MUST be PURE WHITE (#FFFFFF) for maximum contrast against the ${v.secondaryHex} background. Never paint the headline in dark tones over the secondary background.
+
+Below the headline: a vertical stack of FOUR clean, solid WHITE pill-buttons. Each contains a minimalist dark icon on the left and DARK text:
+   • "${b1}"
+   • "${b2}"
+   • "${b3}"
+   • "${b4}"
+
+[PRICE BLOCK — safely above the bottom 20% empty zone]
+A large, solid ${v.primaryHex} rectangular block. ALL text inside MUST be neatly stacked with ZERO overlapping:
+- Top center: bold WHITE text "${v.promoName || `OFERTA ${v.destination}`}".
+- Below: small WHITE text "PACOTE ${v.destination}" and "${v.duration}".
+- Below: small WHITE text "a partir de".
+- Then: a solid ${v.secondaryHex} rounded badge containing bold DARK text "${installmentLabel}", placed next to a MASSIVE extra-bold WHITE price "R$ ${v.installmentValue}", with small WHITE text "por pessoa" below.
+- At the very bottom edge of the block: a solid ${v.secondaryHex} footer strip containing bold DARK text "${pixText}".
+
+[AESTHETIC]
+Clean modern UI, flawless spelling, ZERO text overlapping, perfect alignment strictly inside the central 60% block, premium Brazilian travel agency feel.
+
+[REGRAS DE ISOLAMENTO]
+🚫 PROIBIDO: qualquer elemento dentro dos 20% do topo ou dos 20% da base.
+🚫 PROIBIDO: headline em cor escura sobre o bloco ${v.secondaryHex} (regra de contraste).
+🚫 PROIBIDO: full-bleed photo, glass card translúcido, gradientes, ícones 3D, watermarks, copiar layouts V1/V2/V3 ou Experiência.
+✅ OBRIGATÓRIO: split horizontal foto (topo 45%) + UI sólida ${v.secondaryHex} (fundo 55%), preço como bloco dominante ${v.primaryHex}, contraste máximo (texto branco sobre secundária; texto escuro nos pills brancos).
+✅ Aspect ratio: 9:16 absoluto. Sem letterbox.`;
+  }
+
   // ──────────────────────────────────────────────────────────────────────
   // 🔒 NOMENCLATURA 1/1/2 · V2 — FULL-BLEED + TRANSLUCENT GLASS CARD (Stories 9:16)
-  // Foto Real / Oferta de Pacote / Stories Vertical 9:16 · Versão V2
-  // Foto cobre 100% da tela; card translúcido escuro flutua sobreposto.
-  // Regra crítica: TODO texto dentro do card = BRANCO PURO (alto contraste).
   // ──────────────────────────────────────────────────────────────────────
   {
     const benefits = (v.highlights && v.highlights.length > 0)
