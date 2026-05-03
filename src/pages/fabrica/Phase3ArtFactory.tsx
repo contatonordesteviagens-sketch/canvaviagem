@@ -977,7 +977,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
               templateId: useV4Composer ? undefined : pick.templateId,
               photoOnly: useV4Composer ? true : false,
-              variation: isAiExperienceStory && forcedVariant !== null ? forcedVariant : freshSeedAi + idx + Math.random(),
+              variation: forcedVariant !== null ? forcedVariant : freshSeedAi + idx + Math.random(),
               packageType: "Voo + Hotel",
               duration: categoria === "experiencia_destino" ? (travelPeriod || "5 dias") : "5 NOITES",
               forbiddenHeadlines: guard.headlines,
