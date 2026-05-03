@@ -515,7 +515,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setPrimaryColor = (c: string) => { setPrimaryColorState(c); update({ primaryColor: c }); };
   const setSecondaryColor = (c: string) => { setSecondaryColorState(c); update({ secondaryColor: c }); };
 
-  const [highlights, setHighlightsState] = useState<Highlight[]>(state.lastHighlights || DEFAULT_HIGHLIGHTS);
+  const [highlights, setHighlightsState] = useState<Highlight[]>(() => {
+    const savedHighlights = state.lastHighlights || DEFAULT_HIGHLIGHTS;
+    if ((state.lastCategoria as CategoriaId) === "experiencia_destino" && sameHighlightTexts(savedHighlights, DEFAULT_HIGHLIGHTS)) {
+      return DEFAULT_EXPERIENCE_HIGHLIGHTS;
+    }
+    return savedHighlights;
+  });
   const setHighlights = (h: Highlight[]) => { setHighlightsState(h); update({ lastHighlights: h }); };
   const [editingIconIdx, setEditingIconIdx] = useState<number | null>(null);
   const [newHl, setNewHl] = useState("");
