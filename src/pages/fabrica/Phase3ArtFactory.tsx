@@ -1089,6 +1089,16 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             } catch (e) {
               console.warn("V4 composer (IA pura) falhou, mantendo BG cru:", e);
             }
+          } else if (state.logoBase64) {
+            // Caminho IA Pura "tradicional" (template do backend) — a IA já desenha
+            // o anúncio inteiro mas frequentemente NÃO insere a logo do usuário,
+            // ou inventa uma logo aleatória. Garantimos a logo correta via overlay.
+            try {
+              const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
+              img = await composeLogoOnImage(img, state.logoBase64);
+            } catch (e) {
+              console.warn("Falha ao compor logo (IA pura):", e);
+            }
           }
 
           images.push(img);
