@@ -614,6 +614,50 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [customLink, setCustomLink] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ====== Auto-contraste: detecta luminância média da imagem ativa e
+  // define cor de texto padrão (branca em fundos escuros, preta em fundos claros).
+  // Garante nitidez/legibilidade automaticamente; o usuário ainda pode sobrescrever.
+  useEffect(() => {
+    const activeUrl =
+      genMode === "photo" ? selectedPhotoUrl :
+      genMode === "custom" ? (customSource === "upload" ? customImageData : customLink.trim()) :
+      "";
+    if (!activeUrl) {
+      setAutoTextColor("#ffffff");
+      return;
+    }
+    let cancelled = false;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      if (cancelled) return;
+      try {
+        const w = 32, h = 32;
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, w, h);
+        const data = ctx.getImageData(0, 0, w, h).data;
+        let sum = 0, n = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i] / 255, g = data[i + 1] / 255, b = data[i + 2] / 255;
+          sum += 0.299 * r + 0.587 * g + 0.114 * b;
+          n++;
+        }
+        const lum = n ? sum / n : 0.5;
+        setAutoTextColor(lum > 0.55 ? "#0d0d0d" : "#ffffff");
+      } catch {
+        // tainted canvas → fallback seguro (branco com sombra cobre a maioria dos casos)
+        setAutoTextColor("#ffffff");
+      }
+    };
+    img.onerror = () => setAutoTextColor("#ffffff");
+    img.src = activeUrl;
+    return () => { cancelled = true; };
+  }, [genMode, selectedPhotoUrl, customImageData, customLink, customSource]);
+
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
