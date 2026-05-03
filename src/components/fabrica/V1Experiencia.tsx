@@ -8,6 +8,11 @@
 // ============================================================
 
 import type { FabricaState } from "@/hooks/useFabricaContext";
+import {
+  getContrastTextStyle,
+  getDropShadowClass,
+  type BaseTextMode,
+} from "@/lib/fabrica-text-contrast";
 
 export interface V1ExperienciaProps {
   backgroundImage: string;
@@ -21,6 +26,7 @@ export interface V1ExperienciaProps {
   primaryColor: string;
   secondaryColor: string;
   format?: "story" | "square";
+  baseTextMode?: BaseTextMode;
 }
 
 const TRAVEL_PERIOD_FALLBACK = "uma jornada inesquecível";
