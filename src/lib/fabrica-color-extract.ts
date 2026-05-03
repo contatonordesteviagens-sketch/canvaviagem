@@ -88,11 +88,11 @@ export async function extractBrandPaletteFromImage(src: string): Promise<BrandPa
         });
         list.sort((a, b) => b.score - a.score);
 
-        // Deduplica cores próximas (>40 de distância RGB)
+        // Deduplica cores próximas (>60 de distância RGB) — paleta minimalista
         const distinct: typeof list = [];
         for (const c of list) {
-          if (distinct.every((d) => colorDistance(d.hex, c.hex) > 40)) distinct.push(c);
-          if (distinct.length >= 8) break;
+          if (distinct.every((d) => colorDistance(d.hex, c.hex) > 60)) distinct.push(c);
+          if (distinct.length >= 4) break;
         }
 
         // Primary: melhor score com saturação >= 0.2 (se houver)
