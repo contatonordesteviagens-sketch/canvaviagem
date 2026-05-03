@@ -2050,6 +2050,43 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           )}
         </div>
 
+        {/* Paleta da marca (extraída automaticamente da logo na Fase 1) */}
+        {state.brandPalette && state.brandPalette.swatches?.length > 0 && (
+          <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/10 rounded-xl p-3">
+            <div className="flex items-baseline justify-between mb-2">
+              <label className={labelCls}>🎨 Paleta da sua marca</label>
+              <span className="text-[10px] text-white/40">detectada da sua logo</span>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-1.5">
+                {state.brandPalette.swatches.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => { setPrimaryColor(c); }}
+                    className="w-7 h-7 rounded-full border border-white/20 hover:scale-110 transition-transform shadow-md"
+                    style={{ background: c }}
+                    title={`Aplicar como cor primária: ${c}`}
+                  />
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  if (!state.brandPalette) return;
+                  setPrimaryColor(state.brandPalette.primary);
+                  setSecondaryColor(state.brandPalette.secondary);
+                  toast.success("Paleta da marca aplicada!");
+                }}
+                className="text-[11px] font-bold px-3 py-1.5 rounded-lg border border-white/20 bg-white/[0.06] hover:bg-white/[0.12] text-white"
+              >
+                Aplicar paleta
+              </button>
+            </div>
+            <p className="text-[10px] text-white/40 mt-2">
+              Clique numa cor para usar como primária, ou aplique a paleta completa (primária + secundária).
+            </p>
+          </div>
+        )}
+
         {/* Cores — Primária | Secundária em 2 colunas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
