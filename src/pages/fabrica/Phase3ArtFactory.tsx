@@ -517,6 +517,26 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     }
   }, [fontFamily]);
 
+  // Fallback: se já existe logo mas ainda não há paleta extraída (ex.: logo
+  // enviada antes da feature existir), roda a extração ao entrar na Fase 3.
+  useEffect(() => {
+    if (!state.logoBase64) return;
+    if (state.brandPalette && state.brandPalette.swatches?.length) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { extractBrandPaletteFromImage } = await import("@/lib/fabrica-color-extract");
+        const palette = await extractBrandPaletteFromImage(state.logoBase64);
+        if (!cancelled && palette) {
+          update({ brandPalette: palette });
+          toast.success("Paleta da sua marca detectada!");
+        }
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.logoBase64]);
+
   // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
   const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
   const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
@@ -2051,41 +2071,79 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         </div>
 
         {/* Paleta da marca (extraída automaticamente da logo na Fase 1) */}
-        {state.brandPalette && state.brandPalette.swatches?.length > 0 && (
-          <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/10 rounded-xl p-3">
-            <div className="flex items-baseline justify-between mb-2">
+        {state.brandPalette && state.brandPalette.swatches?.length > 0 ? (
+          <div
+            className="relative rounded-xl p-4 border"
+            style={{
+              borderColor: `${state.brandPalette.primary}66`,
+              background: `linear-gradient(135deg, ${state.brandPalette.primary}1a 0%, ${state.brandPalette.secondary}14 100%)`,
+            }}
+          >
+            <div className="flex items-baseline justify-between mb-3">
               <label className={labelCls}>🎨 Paleta da sua marca</label>
-              <span className="text-[10px] text-white/40">detectada da sua logo</span>
+              <span className="text-[10px] text-white/50">detectada automaticamente da sua logo</span>
             </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex items-center gap-1.5">
-                {state.brandPalette.swatches.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => { setPrimaryColor(c); }}
-                    className="w-7 h-7 rounded-full border border-white/20 hover:scale-110 transition-transform shadow-md"
-                    style={{ background: c }}
-                    title={`Aplicar como cor primária: ${c}`}
-                  />
-                ))}
-              </div>
+
+            {/* Primária + Secundária detectadas (destaque) */}
+            <div className="flex items-center gap-3 mb-3">
+              <button
+                onClick={() => setPrimaryColor(state.brandPalette!.primary)}
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-white/15 bg-black/30 hover:bg-black/50 transition-colors"
+                title="Aplicar como cor primária"
+              >
+                <span className="w-5 h-5 rounded-full border border-white/30" style={{ background: state.brandPalette.primary }} />
+                <span className="text-[11px] font-bold text-white/80">Primária</span>
+              </button>
+              <button
+                onClick={() => setSecondaryColor(state.brandPalette!.secondary)}
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-white/15 bg-black/30 hover:bg-black/50 transition-colors"
+                title="Aplicar como cor secundária"
+              >
+                <span className="w-5 h-5 rounded-full border border-white/30" style={{ background: state.brandPalette.secondary }} />
+                <span className="text-[11px] font-bold text-white/80">Secundária</span>
+              </button>
               <button
                 onClick={() => {
-                  if (!state.brandPalette) return;
-                  setPrimaryColor(state.brandPalette.primary);
-                  setSecondaryColor(state.brandPalette.secondary);
+                  setPrimaryColor(state.brandPalette!.primary);
+                  setSecondaryColor(state.brandPalette!.secondary);
                   toast.success("Paleta da marca aplicada!");
                 }}
-                className="text-[11px] font-bold px-3 py-1.5 rounded-lg border border-white/20 bg-white/[0.06] hover:bg-white/[0.12] text-white"
+                className="ml-auto text-[11px] font-bold px-3 py-1.5 rounded-lg text-black"
+                style={{ background: `linear-gradient(135deg, ${state.brandPalette.primary}, ${state.brandPalette.secondary})` }}
               >
                 Aplicar paleta
               </button>
             </div>
-            <p className="text-[10px] text-white/40 mt-2">
-              Clique numa cor para usar como primária, ou aplique a paleta completa (primária + secundária).
+
+            {/* Outras cores detectadas */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[10px] uppercase tracking-wider text-white/40">Mais cores:</span>
+              {state.brandPalette.swatches.map((c) => {
+                const isPrimary = isSameHex(c, primaryColor);
+                const isSecondary = isSameHex(c, secondaryColor);
+                return (
+                  <button
+                    key={c}
+                    onClick={() => setPrimaryColor(c)}
+                    onContextMenu={(e) => { e.preventDefault(); setSecondaryColor(c); }}
+                    className={`w-7 h-7 rounded-full border transition-transform hover:scale-110 shadow-md ${
+                      isPrimary || isSecondary ? "border-white scale-110" : "border-white/20"
+                    }`}
+                    style={{ background: c }}
+                    title={`${c} — clique: primária • clique direito: secundária`}
+                  />
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-white/45 mt-2">
+              Clique em uma cor para usar como primária. Clique direito (ou aperte Aplicar paleta) para sincronizar tudo.
             </p>
           </div>
-        )}
+        ) : !state.logoBase64 ? (
+          <div className="rounded-xl p-3 border border-dashed border-white/15 bg-white/[0.02] text-[11px] text-white/55">
+            🎨 <strong className="text-white/80">Paleta automática:</strong> envie a logo da sua agência na Fase 1 para detectarmos as cores da sua marca automaticamente.
+          </div>
+        ) : null}
 
         {/* Cores — Primária | Secundária em 2 colunas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
