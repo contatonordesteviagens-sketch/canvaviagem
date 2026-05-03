@@ -87,6 +87,8 @@ interface ComposeTravelAdOptions {
   titleVariations?: string[];
   /** Símbolo de moeda exibido antes do preço (R$, US$, €, £, AR$). Default "R$". */
   currencySymbol?: string;
+  /** V4: período exibido na linha de informações (ex.: "5 dias", "Janeiro", "12 a 18/01"). */
+  travelPeriod?: string;
   /** V3: texto livre do "Total" (ex.: "R$ 1.999 por casal"). Se vazio, calcula automático. */
   totalOverride?: string;
   /** V3: controla se a linha de total aparece no box. Default true. */
@@ -575,6 +577,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     titleOverride,
     titleVariations,
     currencySymbol,
+    travelPeriod,
     totalOverride,
     showTotal = true,
     pixBannerText,
