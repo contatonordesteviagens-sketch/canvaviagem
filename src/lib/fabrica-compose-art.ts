@@ -1545,8 +1545,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const descNV4 = descMatchV4 ? descMatchV4[1] : "5";
 
       // ── [CARD] dimensões e posição (centralizado, mais abaixo do centro) ─
-      const cardMarginX = Math.round(width * 0.08);
-      const cardW = width - cardMarginX * 2;
+      // V4 precisa ser compacto: evita o “mar” de fundo primário entre a pílula 10X e o preço.
+      const cardW = Math.round(width * (format === "story" ? 0.82 : 0.74));
+      const cardMarginX = Math.round((width - cardW) / 2);
       // Altura adaptativa
       const cardPadTop = 36;
       const tagH = 56;
@@ -1625,8 +1626,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // [PRICE BLOCK] — esquerda: "a partir de" + pílula 12X + "sem juros"
       //                 direita: R$ pequeno + valor GIGANTE branco
       const priceY = cyV4;
-      const leftX = cardX + 36;
-      const rightEdge = cardX + cardW - 36;
+      const priceGroupW = Math.min(cardW - 72, Math.round(width * (format === "story" ? 0.68 : 0.58)));
+      const priceGroupX = cxV4 - priceGroupW / 2;
+      const leftX = priceGroupX;
+      const rightEdge = priceGroupX + priceGroupW;
 
       // Esquerda
       ctx.textAlign = "left";
@@ -1661,8 +1664,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.textAlign = "right";
       ctx.fillStyle = "#ffffff";
       // Auto-shrink valor
-      const reservedLeftPrice = pillX + pillW + 24;
-      const maxValW = rightEdge - reservedLeftPrice - 90; // -90 para o R$
+      const reservedLeftPrice = pillX + pillW + 20;
+      const maxValW = rightEdge - reservedLeftPrice - 70; // reserva menor p/ aproximar R$ + valor da pílula
       let valSize = 140;
       ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
       while (ctx.measureText(valNumV4).width > maxValW && valSize > 64) {
