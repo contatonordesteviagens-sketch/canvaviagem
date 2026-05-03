@@ -443,9 +443,57 @@ export function promptClassicVertical(v: MasterPromptVars): string {
     const benefits = (v.highlights && v.highlights.length > 0)
       ? v.highlights.slice(0, 4)
       : ["Transporte incluso", "Hospedagem", "Café da manhã", "Guia local"];
+    const [sb1, sb2, sb3, sb4] = [0,1,2,3].map((i) => benefits[i] || "");
     const benefitsList = benefits.map((b, i) => `      ${i + 1}. ${b}`).join("\n");
     const originPill = v.city ? `Saindo de ${v.city}` : (v.agencyName || "Pacote exclusivo");
     const agencyTag = v.agencyName ? `placeholder discreto para a logo da agência "${v.agencyName}"` : "placeholder minimalista para logo da agência";
+    const sqSeedMatch = (v.creativeSeed || "").match(/-v(\d+)-/);
+    const sqVer = sqSeedMatch ? parseInt(sqSeedMatch[1]) : 0;
+    const sqInstallmentLabel = v.installments === "1" ? "À VISTA" : `${v.installments}x`;
+
+    // 🔒 1/1/1 · V2 — FAIXA CENTRAL HORIZONTAL + GRID 2x2
+    if (sqVer === 2) {
+      return `[CRITICAL DESIGN LOGIC & CONTRAST RULE: NEVER generate light text on a light background. NEVER generate dark text on a dark background. Strictly obey the color variables provided.]
+[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA]
+A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) associada à Versão de Layout: V2.
+OBRIGATÓRIO: Usar a estrutura de faixa central horizontal e grid 2x2. PROIBIDO copiar V0/V1/V3/V4 ou Experiência.
+
+[IMAGE]
+A premium, clean modern travel advertisement with a strict 1:1 square aspect ratio (1080x1080, 8K).
+
+[BACKGROUND]
+The base background of the entire LOWER HALF is a solid, clean OFF-WHITE (light cream #F7F3EC).
+
+[TOP SECTION — Photo · Top 45%]
+An 8K photorealistic image of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant scenery, cinematic. Framed like a card with slightly rounded TOP corners, sitting flush against the middle ribbon below.
+
+[MIDDLE RIBBON — The Divider]
+Directly below the photo, a solid ${v.primaryHex} horizontal ribbon stretches edge-to-edge across the full width.
+🚨 Centered inside this ribbon: massive, ultra-bold text reading "${v.promoName || `OFERTA ${v.destination}`}".
+🚨 CRITICAL CONTRAST: this ribbon text MUST be PURE WHITE (#FFFFFF) for absolute contrast against ${v.primaryHex}. Never use dark tones here.
+
+[BOTTOM SECTION — UI on OFF-WHITE background]
+Directly below the ribbon, perfectly centered, a clean 2x2 grid of inclusions. ALL text DARK on the off-white background.
+Row 1:
+  • minimalist DARK icon + bold DARK text "${sb1}"     |     minimalist DARK icon + bold DARK text "${sb2}"
+Row 2:
+  • minimalist DARK icon + bold DARK text "${sb3}"     |     minimalist DARK icon + bold DARK text "${sb4}"
+
+[PRICE BLOCK — bottom center]
+A large, solid ${v.primaryHex} rectangular block with rounded corners. INSIDE the block, neatly stacked with ZERO overlap:
+- Small PURE WHITE text "${sqInstallmentLabel}".
+- MASSIVE extra-bold PURE WHITE text "R$ ${v.installmentValue}".
+- Small PURE WHITE text "por pessoa".
+
+[AESTHETIC]
+Clean modern UI, flawless spelling, perfect alignment, zero overlapping text, high contrast.
+
+[REGRAS DE ISOLAMENTO]
+🚫 PROIBIDO: split horizontal 50/50 sem ribbon, gradientes, ícones 3D, watermarks, copiar V0/V1/V3/V4 ou Experiência.
+🚫 PROIBIDO: texto claro em fundo claro; texto escuro em fundo escuro.
+✅ OBRIGATÓRIO: foto topo (45%) + ribbon ${v.primaryHex} edge-to-edge com texto branco + grid 2x2 dark sobre off-white + price block ${v.primaryHex} com texto branco.
+✅ Aspect ratio: 1:1 absoluto.`;
+    }
 
     return `[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA]
 A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) associada à Versão de Layout: V0.
@@ -616,74 +664,61 @@ Clean modern UI, flawless spelling, perfect alignment, high contrast, premium Br
   }
 
   // ──────────────────────────────────────────────────────────────────────
-  // 🔒 NOMENCLATURA 1/1/2 · V2 — FULL-BLEED + TRANSLUCENT GLASS CARD (Stories 9:16)
+  // 🔒 NOMENCLATURA 1/1/2 · V2 — RIBBON CENTRAL + GRID 2x2 (Stories 9:16)
   // ──────────────────────────────────────────────────────────────────────
   {
     const benefits = (v.highlights && v.highlights.length > 0)
       ? v.highlights.slice(0, 4)
       : ["Transporte incluso", "Hospedagem", "Café da manhã", "Guia local"];
     const [b1, b2, b3, b4] = [0,1,2,3].map((i) => benefits[i] || "");
-    const originPill = v.city ? `Saindo de ${v.city}` : (v.agencyName || "Pacote exclusivo");
     const agencyTag = v.agencyName ? `minimalist logo placeholder for agency "${v.agencyName}"` : "minimalist logo placeholder";
-    const installmentLabel = v.installments === "1" ? "À VISTA" : `${v.installments}x sem juros`;
-    const pixText = "5% OFF À VISTA NO PIX";
+    const installmentLabel = v.installments === "1" ? "À VISTA" : `${v.installments}x`;
 
-    return `[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA E SAFE ZONES]
-A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/2 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Stories Vertical 9:16) associada à Versão de Layout: V2 (Full-Bleed Photo + Translucent Glass Card).
-É TERMINANTEMENTE PROIBIDO misturar esta lógica com V0, V1, V3 ou com o estilo "Experiência de Destino".
+    return `[CRITICAL DESIGN LOGIC & CONTRAST RULE: NEVER generate light text on a light background. NEVER generate dark text on a dark background. Strictly obey the color variables provided.]
+[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA E SAFE ZONES]
+A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/2 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Stories Vertical 9:16) associada à Versão de Layout: V2.
+É TERMINANTEMENTE PROIBIDO misturar esta lógica com V0, V1, V3, V4 ou com o estilo "Experiência de Destino".
 OBRIGATÓRIO: respeitar limites da interface do Instagram Stories.
 
 [IMAGE]
-A high-end, cinematic vertical 9:16 travel advertisement (1080x1920, 8K resolution).
+A high-end vertical 9:16 travel advertisement (1080x1920, 8K).
 
 [STRICT UI SAFE ZONES — INSTAGRAM STORIES]
-- The TOP 20% (≈384px) of the canvas MUST remain completely empty of typography, logos, icons or UI — reserved for Instagram header/username.
-- The BOTTOM 20% (≈384px) MUST remain completely empty — reserved for Instagram message box and reactions.
-- ALL critical UI lives ONLY inside the central 60% vertical block (between 20% and 80% of canvas height).
+- The TOP 20% (≈384px) MUST remain completely empty of typography, UI elements, or logos.
+- The BOTTOM 20% (≈384px) MUST remain completely empty.
+- ALL critical UI lives ONLY inside the central 60% vertical block.
 
-[BACKGROUND — FULL BLEED]
-A full-bleed, 8K photorealistic vertical photograph of ${v.destination} covering 100% of the canvas. Scene: ${v.destinationDescription}. Vibrant tropical scenery, crystal-clear water, perfect natural daylight, cinematic depth.
+[BACKGROUND]
+Solid clean OFF-WHITE (light cream #F7F3EC) covering the LOWER HALF of the canvas, from the ribbon down to the bottom safe zone.
 
-[FLOATING UI — INSIDE THE CENTRAL 60% BLOCK ONLY]
-Just below the top safe zone (around 20–22% from the top), in the top-left, place a small ${agencyTag}.
+[TOP SECTION — Photo]
+Starting exactly below the top 20% safe zone, a large 8K photorealistic image of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant, cinematic, natural daylight. The photo extends edge-to-edge horizontally and ends flush against the middle ribbon.
+In the top-left corner of the photo, place a small ${agencyTag}.
 
-[CENTER OVERLAY — TRANSLUCENT GLASS CARD]
-Centered within the central 60% block, place a large elegant DARK TRANSLUCENT glassmorphism card with generous rounded corners, subtle inner shadow, soft frosted-glass backdrop blur, and a thin 1px white-translucent border.
+[MIDDLE RIBBON — The Divider]
+Directly below the photo, a thick solid ${v.primaryHex} horizontal ribbon stretching edge-to-edge.
+🚨 Inside the ribbon: massive ultra-bold text "${v.promoName || `OFERTA ${v.destination}`}".
+🚨 CRITICAL CONTRAST: ribbon text MUST be PURE WHITE (#FFFFFF) for absolute contrast against ${v.primaryHex}. Never use dark text here.
 
-[INSIDE THE CARD — CRITICAL HIGH-CONTRAST RULE]
-🚨 ALL text inside this card MUST be PURE WHITE (#FFFFFF) — except text inside solid colored buttons/blocks. Never paint text in dark tones over the dark glass card.
+[BOTTOM SECTION — UI on OFF-WHITE background]
+On the off-white background below the ribbon, a perfectly aligned 2x2 grid of inclusions. ALL text DARK on the off-white background.
+- Left column: minimalist DARK icon + DARK text "${b1}" (top), then "${b3}" (bottom).
+- Right column: minimalist DARK icon + DARK text "${b2}" (top), then "${b4}" (bottom).
 
-Card content, top to bottom:
-1. A solid ${v.secondaryHex} rounded pill button containing bold DARK text "${originPill}".
-2. Bold pure WHITE text: "${v.promoName || `Pacote ${v.destination}`}".
-3. Massive heavy ultra-bold pure WHITE text: "${v.destination}".
-4. A vertical stack of FOUR translucent light-grey pill rows (semi-transparent over the dark card). Each row contains a minimalist white icon on the left and pure WHITE text:
-   • "${b1}"
-   • "${b2}"
-   • "${b3}"
-   • "${b4}"
-
-[PRICE BLOCK — ATTACHED TO BOTTOM OF THE GLASS CARD]
-A solid ${v.secondaryHex} rectangular block fused to the bottom edge of the translucent card. ALL text inside this block uses DARK color for contrast against the secondary background:
-- Small DARK text: "PACOTE"
-- Bold DARK text: "${v.destination}"
-- Small DARK text: "${v.duration} ✈️ 🚌 🏨 ☕"
-- Small DARK text: "a partir de"
-- A solid ${v.primaryHex} rounded badge containing bold WHITE text "${installmentLabel}", placed left of a MASSIVE extra-bold DARK price "R$ ${v.installmentValue}".
-- Below the price, small DARK text: "por pessoa"
-
-[PIX FOOTER STRIP]
-At the very bottom edge of the price block, a solid ${v.primaryHex} thin footer strip containing bold WHITE text "${pixText} 🔷".
+[PRICE BLOCK — safely above the bottom 20% empty zone]
+A massive, solid ${v.primaryHex} rounded rectangular block. INSIDE the block, neatly stacked with ZERO overlap:
+- Small PURE WHITE text "${installmentLabel}".
+- HUGE extra-bold PURE WHITE text "R$ ${v.installmentValue}".
+- Small PURE WHITE text "por pessoa".
 
 [AESTHETIC]
-Clean modern UI, premium glassmorphism, flawless spelling, razor-sharp typography, perfect alignment strictly inside the central 60% block, no clutter, professional Brazilian travel agency feel.
+Perfect alignment, crisp contrast, premium UI layout, flawless spelling, zero overlapping text.
 
 [REGRAS DE ISOLAMENTO]
-🚫 PROIBIDO: qualquer elemento (texto, logo, ícone, card) dentro dos 20% do topo ou dos 20% da base.
-🚫 PROIBIDO: texto escuro sobre o card translúcido escuro (regra de contraste — só BRANCO PURO).
-🚫 PROIBIDO: split horizontal 50/50, gradientes neon, ícones 3D, watermarks, copiar layouts V0/V1/V3 ou Experiência.
-✅ OBRIGATÓRIO: foto full-bleed 9:16, card translúcido centralizado com glassmorphism, contraste alto (texto branco no card / texto escuro nos blocos coloridos), preço dominante.
-✅ Cores: primária ${v.primaryHex} = badge de parcela + footer PIX. Secundária ${v.secondaryHex} = pill superior + bloco de preço.
+🚫 PROIBIDO: qualquer elemento dentro dos 20% do topo ou dos 20% da base.
+🚫 PROIBIDO: texto claro em fundo claro; texto escuro em fundo escuro.
+🚫 PROIBIDO: full-bleed photo, glass card translúcido, gradientes, ícones 3D, watermarks, copiar V0/V1/V3/V4 ou Experiência.
+✅ OBRIGATÓRIO: foto topo + ribbon ${v.primaryHex} edge-to-edge com texto branco + grid 2x2 dark sobre off-white + price block ${v.primaryHex} com texto branco.
 ✅ Aspect ratio: 9:16 absoluto. Sem letterbox.`;
   }
 }
