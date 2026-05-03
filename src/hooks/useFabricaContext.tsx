@@ -131,6 +131,11 @@ export interface FabricaState {
   // V3: faixa do Pix (editável)
   showPixBanner?: boolean;
   pixBannerText?: string;
+  // Tipografia global do anúncio
+  fontFamily?: string;
+  titleScale?: number;
+  descScale?: number;
+  textColorOverride?: string;
 }
 
 const defaultState: FabricaState = {
