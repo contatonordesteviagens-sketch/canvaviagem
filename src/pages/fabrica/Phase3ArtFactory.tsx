@@ -18,6 +18,8 @@ type CustomSource = "upload" | "link";
 
 interface Props { onNext: () => void; onBack: () => void; }
 
+const FABRICA_RENDER_ENGINE_VERSION = "canvas-hybrid-photo-only-v2";
+
 const BADGE_BG: Record<string, string> = {
   blue: "bg-blue-500/15 text-blue-400 border-blue-500/30",
   purple: "bg-purple-500/15 text-purple-400 border-purple-500/30",
@@ -621,6 +623,21 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     return saved ? parseInt(saved, 10) : 0;
   });
 
+  useEffect(() => {
+    const key = "fabrica-render-engine-version";
+    if (localStorage.getItem(key) === FABRICA_RENDER_ENGINE_VERSION) return;
+    localStorage.removeItem("fabrica-heavy-v1:generatedAdImage");
+    localStorage.removeItem("fabrica_last_template_id");
+    localStorage.removeItem("fabrica_recent_template_ids");
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith("fabrica_generation_cycle_") || k.startsWith("fabrica_strategy_history_") || k.startsWith("fabrica_last_template_ids_") || k.startsWith("fabrica_recent_template_ids_"))
+      .forEach((k) => localStorage.removeItem(k));
+    setGeneratedImage("");
+    setGeneratedImages([]);
+    update({ generatedAdImage: "" });
+    localStorage.setItem(key, FABRICA_RENDER_ENGINE_VERSION);
+  }, [update]);
+
   // ===== Modo de geração =====
   const [genMode, setGenMode] = useState<GenMode>("photo");
   const [searchEngine, setSearchEngine] = useState<"pexels" | "google">("pexels");
@@ -905,7 +922,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // HÍBRIDO: para Experiência de Destino (qualquer formato — square 1:1 ou story 9:16),
         // a IA gera APENAS o fundo fotográfico limpo; o motor Canvas (composeTravelAd)
         // desenha por cima logo, textos, preço, ícones e contraste com HEX exato.
-        const isAiExperienceStory = categoria === "experiencia_destino";
+        const isAiExperienceStory = categoria === "experiencia_destino" && (format === "square" || format === "story");
         const guard = getForbiddenSets(categoria, "ai", format);
         const categoryLastKey = scopedTemplateKey("last", categoria, "ai");
         const categoryRecentKey = scopedTemplateKey("recent", categoria, "ai");
@@ -916,7 +933,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // Junta histórico local com o GenerationGuard para evitar repetir templates
         const mergedRecent = Array.from(new Set([...storedRecent, ...guard.layouts]));
         const picks = isAiExperienceStory
-          ? [{ code: "ED_SAFE_STORY", templateId: "photo_only_experience_story" }]
+          ? [{ code: "ED_SAFE_BACKGROUND", templateId: "photo_only_experience_background" }]
           : pickPromptsForCategoria(categoria, 1, storedLast, mergedRecent);
         const freshSeedAi = freshSeed(generationSeed);
 
@@ -940,8 +957,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // ícones, botões) é desenhada depois pelo motor Canvas (composeTravelAd).
         const NEGATIVE_UI = `STRICT NEGATIVE CONSTRAINTS — the output MUST be a pure photograph only. ABSOLUTELY FORBIDDEN: any text, letters, numbers, words, captions, headlines, prices, currency symbols, dates, typography, fonts, watermarks, signatures, logos, brand marks, badges, stamps, stickers, labels, banners, ribbons, callouts, speech bubbles, icons, pictograms, emojis, arrows, frames, borders, overlays, color blocks, gradients painted on top, UI elements, buttons, cards, panels, mockup chrome, phone frames, social media UI, Instagram/Facebook/TikTok interface, hashtags, @mentions, QR codes, barcodes. The image must look like an untouched RAW photograph straight from a professional camera — nothing rendered, nothing added, no graphic design whatsoever.`;
         const experienceBackgroundPrompt = (variant: number) => (variant === 1
-          ? `Pure editorial travel photography, cinematic, ultra high quality 8K. Wide ultrarealistic shot of ${destination || "destino paradisíaco"}. Rim lighting, soft serene exclusive light, clean composition, no motion blur. Stunning high-end atmosphere. Subtle darker negative space across the frame to allow later typographic overlay (do NOT draw anything in that space).`
-          : `High-end commercial photography, hyperrealistic and cinematic. Extreme luxury and exclusivity scene at ${destination || "destino paradisíaco"}. Dramatic deep lighting, sophisticated tone. Generous negative space at top and center for later typographic overlay (do NOT draw anything there).`
+          ? `Pure editorial travel photography, cinematic, ultra high quality 8K. Wide ultrarealistic shot of ${destination || "destino paradisíaco"}. Rim lighting, soft serene exclusive light, clean uncluttered composition, no motion blur. Stunning high-end atmosphere. Smooth darker open areas across the frame, with no objects or visual markings in those open areas.`
+          : `High-end commercial photography, hyperrealistic and cinematic. Extreme luxury and exclusivity scene at ${destination || "destino paradisíaco"}. Dramatic deep lighting, sophisticated tone. Clean uncluttered open areas at the top and center, with no objects or visual markings in those open areas.`
         ) + " " + NEGATIVE_UI;
 
         // ── Decisão V4 em IA Pura (apenas Oferta de Pacote) ─────────────────
@@ -957,6 +974,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           ? forcedVariant
           : candidatesAi[Math.floor(Math.random() * candidatesAi.length)];
         const shouldComposeOfertaAi = isOfertaIA;
+        const mustComposeWithCanvas = isAiExperienceStory || shouldComposeOfertaAi;
         variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantAi];
 
         const results = await Promise.all(
@@ -980,8 +998,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               promoName: (promoName || "Oferta Especial").toUpperCase(),
               highlights: categoria === "experiencia_destino" ? [] : highlights,
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
-              templateId: shouldComposeOfertaAi ? undefined : pick.templateId,
-              photoOnly: shouldComposeOfertaAi ? true : false,
+              templateId: mustComposeWithCanvas ? undefined : pick.templateId,
+              photoOnly: true,
+              canvasOnly: mustComposeWithCanvas,
               variation: forcedVariant !== null ? forcedVariant : nextVariantAi,
               packageType: "Voo + Hotel",
               duration: categoria === "experiencia_destino" ? (travelPeriod || "5 dias") : "5 NOITES",
