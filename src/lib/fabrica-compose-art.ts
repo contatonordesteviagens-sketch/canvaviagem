@@ -649,27 +649,37 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     }
   }
 
+  // Override de cor: aplica a TODOS os textos (fillText/strokeText), preservando
+  // backgrounds e elementos gráficos (fillRect, etc).
   if (wantsColorOverride) {
-    const proto = Object.getPrototypeOf(ctx) as any;
-    const desc = Object.getOwnPropertyDescriptor(proto, "fillStyle");
-    if (desc && desc.set && desc.get) {
-      const origSet = desc.set.bind(ctx);
-      const origGet = desc.get.bind(ctx);
-      Object.defineProperty(ctx, "fillStyle", {
-        configurable: true,
-        get: () => origGet(),
-        set: (val: any) => {
-          if (typeof val === "string") {
-            const v = val.trim().toLowerCase();
-            if (v === "#fff" || v === "#ffffff" || v === "white" || v === "rgb(255,255,255)" || v === "rgb(255, 255, 255)") {
-              origSet(overrideColorHex);
-              return;
-            }
-          }
-          origSet(val);
-        },
-      });
-    }
+    const origFillText = ctx.fillText.bind(ctx);
+    const origStrokeText = ctx.strokeText.bind(ctx);
+    ctx.fillText = ((text: string, x: number, y: number, maxWidth?: number) => {
+      const prev = ctx.fillStyle;
+      ctx.fillStyle = overrideColorHex;
+      if (maxWidth !== undefined) origFillText(text, x, y, maxWidth);
+      else origFillText(text, x, y);
+      ctx.fillStyle = prev;
+    }) as any;
+    ctx.strokeText = ((text: string, x: number, y: number, maxWidth?: number) => {
+      const prev = ctx.strokeStyle;
+      ctx.strokeStyle = overrideColorHex;
+      if (maxWidth !== undefined) origStrokeText(text, x, y, maxWidth);
+      else origStrokeText(text, x, y);
+      ctx.strokeStyle = prev;
+    }) as any;
+  }
+
+  // Garante que a fonte custom esteja carregada ANTES de qualquer fillText.
+  if (wantsCustomFont && (document as any).fonts?.load) {
+    try {
+      await Promise.all([
+        (document as any).fonts.load(`900 60px "${userFamily}"`),
+        (document as any).fonts.load(`700 30px "${userFamily}"`),
+        (document as any).fonts.load(`500 20px "${userFamily}"`),
+        (document as any).fonts.load(`400 16px "${userFamily}"`),
+      ]);
+    } catch {}
   }
 
   const image = await loadImage(imageUrl);
