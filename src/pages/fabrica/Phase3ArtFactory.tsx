@@ -827,10 +827,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             body: {
               strategy: categoria === "oferta_pacote" ? "ancora" : categoria === "experiencia_destino" ? "vitrine" : "matriz",
               format,
-              // 🚨 HACK DE EMERGÊNCIA: Injeta ordens no único campo que o servidor antigo lê
-              destination: useV4Composer
-                ? destination.toUpperCase()
-                : `${destination.toUpperCase()} (STRICT RULE: NO PEOPLE, ONLY LANDSCAPE. WRITE FULL TITLE: "Pacote para ${destination}". NO ICONS IN PRICE TAG)`,
+              destination: isAiExperienceStory
+                ? destination
+                : useV4Composer
+                  ? destination.toUpperCase()
+                  : `${destination.toUpperCase()} (STRICT RULE: NO PEOPLE, ONLY LANDSCAPE. WRITE FULL TITLE: "Pacote para ${destination}". NO ICONS IN PRICE TAG)`,
               niche: state.niche,
               agencyName: state.agencyName,
               agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
@@ -846,7 +847,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
               templateId: useV4Composer ? undefined : pick.templateId,
               photoOnly: useV4Composer ? true : false,
-              variation: freshSeedAi + idx + Math.random(),
+              variation: isAiExperienceStory && forcedVariant !== null ? forcedVariant : freshSeedAi + idx + Math.random(),
               packageType: "Voo + Hotel",
               duration: categoria === "experiencia_destino" ? (travelPeriod || "5 dias") : "5 NOITES",
               forbiddenHeadlines: guard.headlines,
