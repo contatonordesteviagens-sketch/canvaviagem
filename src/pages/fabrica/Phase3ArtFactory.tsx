@@ -942,9 +942,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               format,
               destination: isAiExperienceStory
                 ? destination
-                : useV4Composer
-                  ? destination.toUpperCase()
-                  : `${destination.toUpperCase()} (STRICT RULE: NO PEOPLE, ONLY LANDSCAPE. WRITE FULL TITLE: "Pacote para ${destination}". NO ICONS IN PRICE TAG)`,
+                : destination.toUpperCase(),
               niche: state.niche,
               agencyName: state.agencyName,
               agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
