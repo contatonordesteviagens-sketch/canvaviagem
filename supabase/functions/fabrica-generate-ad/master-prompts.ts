@@ -575,56 +575,56 @@ Clean modern UI, flawless spelling, zero overlapping text, perfect alignment, pr
 ✅ Aspect ratio: 1:1 absoluto.`;
     }
 
-    return `[CRITICAL SYSTEM RULES - READ TWICE: 1. NEVER use dark text on a dark background. 2. NEVER overlap elements; respect padding. 3. Icons MUST be single-color (monochromatic), NOT colorful.]
+    const primaryTxt = v.primaryTextHex || "#FFFFFF";
+    const secondaryTxt = v.secondaryTextHex || "#FFFFFF";
+    return `[CRITICAL SYSTEM COMMAND: EXACT BRAND COLORS & ABSOLUTE CONTRAST. The AI MUST use the EXACT HEX color codes provided for backgrounds. The AI MUST strictly use the EXACT text colors assigned for typography. Icons MUST be monochromatic.]
 [SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA]
-A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) associada à Versão de Layout: V0.
+Aplicar ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) — Layout V0.
 Sob NENHUMA hipótese esta estrutura deve ser herdada por V1, V2, V3, V4 ou Experiência.
-OBRIGATÓRIO: Ícones monocromáticos, tipografia em escala ampliada e bloco DARK de destaque para o preço.
 
 [IMAGEM]
-A premium, clean modern travel advertisement with a strict 1:1 square aspect ratio (1080x1080, 8K). The layout features a sharp, perfectly straight horizontal split exactly at 50% height.
+A premium, clean modern travel advertisement with a strict 1:1 square aspect ratio (1080x1080, 8K). Sharp, perfectly straight horizontal split exactly at 50% height.
 
 [TOP HALF — DESIGN UI]
-Solid background using the PRIMARY brand color ${v.primaryHex}. Generous internal padding.
+Solid background using EXACT color hex code ${v.primaryHex}. Generous internal padding.
 
 [LOGO & PADDING]
 Top-left corner: ${agencyTag}.
-🚨 CRITICAL: Leave a LARGE, completely EMPTY gap of vertical space (padding ≥ 60px) directly below the logo. Absolutely NO element (text, icon, pill, line) can touch or overlap the logo area.
+🚨 CRITICAL: Leave a LARGE, completely EMPTY gap (≥60px) directly below the logo. Absolutely NO element can touch or overlap the logo area.
 
 [TAG BUTTON — below the empty gap]
-A DARK rounded pill button. The text inside this dark button MUST be PURE WHITE (#FFFFFF) bold reading "${originPill}". (Rule: Dark background = White Text — never violate this.)
+A pill button using EXACT color hex ${v.secondaryHex}. Text inside MUST be EXACT hex ${secondaryTxt}, bold, reading "${originPill}".
 
 [MAIN HEADLINE]
-"${headline}" in MASSIVE, extra-large, ultra-bold sans-serif font, color ${v.primaryTextHex || "PURE WHITE (#FFFFFF)"}.
-🚨 CRITICAL CONTRAST: headline MUST contrast strongly with ${v.primaryHex}. Never light-on-light or dark-on-dark.
+"${headline}" in MASSIVE, extra-large, ultra-bold sans-serif font, color EXACT hex ${primaryTxt}.
+🚨 CRITICAL CONTRAST: headline MUST contrast strongly with ${v.primaryHex}.
 
 [SPLIT SECTION]
 Below the headline, ONE delicate, perfectly straight VERTICAL line divides the lower portion of the top half into two columns.
 
 [LEFT SIDE — Inclusions]
-A vertical stack with FOUR items. The AI MUST use perfectly matching MONOCHROMATIC line icons (all the EXACT same single color, NO colorful emojis, NO multi-color, NO 3D) next to LARGE, highly visible bold text in the same contrasting color as the headline:
+A vertical stack with FOUR items. Use perfectly matching MONOCHROMATIC line icons (all the EXACT same single ${primaryTxt} tone, NO colorful, NO multi-color, NO 3D) next to LARGE bold text in EXACT hex ${primaryTxt}:
 ${benefitsList}
 
 [RIGHT SIDE — Price Highlight Block]
-A prominent, solid DARK contrasting rectangular block (deep charcoal/near-black) with rounded corners.
-🚨 INSIDE this dark block, ALL text MUST be PURE WHITE (#FFFFFF) for maximum contrast.
-Stacked neatly inside, top to bottom, with ZERO overlap:
-- LARGE PURE WHITE text: "${v.installments === "1" ? "À VISTA" : `EM ATÉ ${v.installments}x`}".
-- GIGANTIC, screen-dominating, extra-bold PURE WHITE text: "R$ ${v.installmentValue}".
-- LARGE PURE WHITE text: "por pessoa".
+A solid rectangular block with rounded corners using EXACT color hex ${v.secondaryHex}.
+🚨 INSIDE this block, ALL text MUST be rendered in EXACT hex ${secondaryTxt}. Stacked neatly with ZERO overlap:
+- Text "${v.installments === "1" ? "À VISTA" : `EM ATÉ ${v.installments}x`}" in ${secondaryTxt}.
+- MASSIVE extra-bold text "R$ ${v.installmentValue}" in ${secondaryTxt}.
+- Text "por pessoa" in ${secondaryTxt}.
 
 [BOTTOM HALF — PHOTO]
-An 8K photorealistic, ultra-detailed travel photograph of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant, cinematic, natural daylight — full-bleed across the bottom 50%.
+An 8K photorealistic, ultra-detailed travel photograph of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant scenery, cinematic, natural daylight — full-bleed across the bottom 50%.
 
 [AESTHETIC]
 Clean modern UI, flawless spelling, high contrast, perfect alignment, premium visual hierarchy.
 
 [REGRAS DE ISOLAMENTO]
 🚫 PROIBIDO: gradientes, brilho neon, cards flutuantes sobre a foto, texto sobre a foto, ícones 3D coloridos ou multi-color, emojis, watermarks.
-🚫 PROIBIDO: texto claro em fundo claro; texto escuro em fundo escuro.
+🚫 PROIBIDO: texto claro em fundo claro; texto escuro em fundo escuro; ignorar os HEX exatos fornecidos.
 🚫 PROIBIDO: qualquer elemento tocando ou sobrepondo a logo (gap mínimo obrigatório).
 🚫 PROIBIDO copiar layouts de V1/V2/V3/V4 ou de Experiência.
-✅ OBRIGATÓRIO: split horizontal exato 50/50, gap vazio sob a logo, linha vertical divisória, ícones MONOCROMÁTICOS idênticos, bloco DARK dominante de preço com texto PURE WHITE, pill superior DARK com texto PURE WHITE.
+✅ OBRIGATÓRIO: split horizontal exato 50/50, fundo topo EXATO ${v.primaryHex}, tag pill EXATO ${v.secondaryHex} com texto ${secondaryTxt}, ícones MONOCROMÁTICOS, price block EXATO ${v.secondaryHex} com texto ${secondaryTxt}.
 ✅ Aspect ratio: 1:1 absoluto. Sem letterbox.`;
   }
 
