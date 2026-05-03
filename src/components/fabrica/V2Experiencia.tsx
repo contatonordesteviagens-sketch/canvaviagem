@@ -250,11 +250,11 @@ export function V2Experiencia(props: V2ExperienciaProps) {
         {adTitle && (
           <h1
             data-slot="title-massive"
-            className={`${titleSizeClass} font-bold leading-[0.92] tracking-[-0.015em] text-white`}
+            className={`${titleSizeClass} font-bold leading-[0.92] tracking-[-0.015em] ${dropClass}`}
             style={{
               fontFamily: serifStack,
-              textShadow:
-                "0 2px 4px rgba(0,0,0,0.45), 0 8px 32px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.05)",
+              color: titleColor,
+              textShadow: textStyle.textShadow,
             }}
           >
             {adTitle}
