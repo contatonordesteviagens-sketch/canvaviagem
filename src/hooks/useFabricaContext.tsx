@@ -136,13 +136,6 @@ export interface FabricaState {
   titleScale?: number;
   descScale?: number;
   textColorOverride?: string;
-  // Paleta de marca extraída automaticamente da logo (Fase 1)
-  brandPalette?: {
-    primary: string;
-    secondary: string;
-    accent: string;
-    swatches: string[];
-  } | null;
 }
 
 const defaultState: FabricaState = {
@@ -223,7 +216,6 @@ const defaultState: FabricaState = {
   titleScale: 1,
   descScale: 1,
   textColorOverride: "",
-  brandPalette: null,
 };
 
 const STORAGE_KEY = "fabrica-context-v1";

@@ -498,7 +498,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const effectiveTextColor = textColorOverride || autoTextColor;
   const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
   const [fontOptionsOpen, setFontOptionsOpen] = useState(false);
-  const [colorOptionsOpen, setColorOptionsOpen] = useState(false);
   const FONT_PRESETS = ["Inter", "Poppins", "Montserrat", "Roboto", "Oswald", "Bebas Neue", "Playfair Display", "Lora", "Raleway", "Nunito", "Work Sans", "DM Sans"];
 
   // Carrega Google Font dinamicamente quando o usuário escolhe uma família custom
@@ -636,21 +635,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     img.onload = () => {
       if (cancelled) return;
       try {
-        // Amostra a REGIÃO onde o texto vai sobrepor (não a imagem inteira),
-        // evitando "fundo claro + texto claro" ou "fundo escuro + texto escuro".
-        // Story (vertical): texto fica majoritariamente no terço inferior.
-        // Square: texto/cards ficam no centro/inferior.
-        const isStory = img.naturalHeight > img.naturalWidth;
-        const sx = Math.floor(img.naturalWidth * 0.08);
-        const sw = Math.floor(img.naturalWidth * 0.84);
-        const sy = isStory ? Math.floor(img.naturalHeight * 0.55) : Math.floor(img.naturalHeight * 0.45);
-        const sh = isStory ? Math.floor(img.naturalHeight * 0.35) : Math.floor(img.naturalHeight * 0.45);
-        const w = 48, h = 48;
+        const w = 32, h = 32;
         const canvas = document.createElement("canvas");
         canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
-        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
         const data = ctx.getImageData(0, 0, w, h).data;
         let sum = 0, n = 0;
         for (let i = 0; i < data.length; i += 4) {
@@ -659,9 +649,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           n++;
         }
         const lum = n ? sum / n : 0.5;
-        // Threshold mais conservador: prefere branco quando ambíguo (mais legível com scrim escuro).
-        setAutoTextColor(lum > 0.62 ? "#0d0d0d" : "#ffffff");
+        setAutoTextColor(lum > 0.55 ? "#0d0d0d" : "#ffffff");
       } catch {
+        // tainted canvas → fallback seguro (branco com sombra cobre a maioria dos casos)
         setAutoTextColor("#ffffff");
       }
     };
@@ -2013,7 +2003,43 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 </div>
               </div>
 
-              {/* Cor do texto agora vive no bloco "Cores" colapsável abaixo */}
+              {/* Cor do texto: mesmo padrão das cores Primária/Secundária */}
+              <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
+                <div className="flex items-baseline justify-between mb-2">
+                  <label className={labelCls}>Cor do texto</label>
+                  <span className="text-[10px] text-white/40">aplica em todos os textos</span>
+                </div>
+                <div className="grid grid-cols-10 gap-1 mb-3">
+                  {PRESET_COLORS.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setTextColorOverride(c)}
+                      className={`w-5 h-5 rounded-full border transition-all ${(textColorOverride || "").toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-md" : "border-white/20 hover:border-white/60"}`}
+                      style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
+                      aria-label={c}
+                      title={c}
+                    />
+                  ))}
+                </div>
+                <div className="flex gap-2 items-center">
+                  <label className="relative w-10 h-10 rounded-full cursor-pointer flex-shrink-0 overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
+                    style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}>
+                    <input type="color" value={textColorOverride || "#ffffff"}
+                      onChange={(e) => setTextColorOverride(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
+                    <span className="absolute inset-1.5 rounded-full border border-white/40" style={{ background: textColorOverride || "#ffffff" }} />
+                  </label>
+                  <input value={textColorOverride} onChange={(e) => setTextColorOverride(e.target.value)}
+                    placeholder="Padrão (branco)"
+                    className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase" />
+                  {textColorOverride && (
+                    <button onClick={() => setTextColorOverride("")}
+                      className="text-[11px] text-white/60 hover:text-white px-2 py-1 rounded border border-white/10">
+                      Limpar
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <button
                 onClick={() => { setFontFamily("Inter"); setTitleScale(1); setDescScale(1); setTextColorOverride(""); }}
                 className="text-[11px] text-white/60 hover:text-white underline"
@@ -2024,135 +2050,57 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           )}
         </div>
 
-        {/* Cores — bloco unificado e colapsável (mesmo padrão da Tipografia) */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setColorOptionsOpen((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-sm font-bold text-white">Cores</span>
-              <div className="flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded-full border border-white/30" style={{ background: primaryColor }} title="Primária" />
-                <span className="w-4 h-4 rounded-full border border-white/30" style={{ background: secondaryColor }} title="Secundária" />
-                <span className="w-4 h-4 rounded-full border border-white/30" style={{ background: effectiveTextColor }} title="Texto" />
+        {/* Cores — Primária | Secundária em 2 colunas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            { label: "Cor primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo principal" },
+            { label: "Cor secundária", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
+          ].map(({ label, value, setter, hint }) => (
+            <div key={label} className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
+              <div className="flex items-baseline justify-between mb-2">
+                <label className={labelCls}>{label}</label>
+                <span className="text-[10px] text-white/40">{hint}</span>
               </div>
-              <span className="text-[10px] text-white/40 truncate">
-                {textColorOverride ? "texto manual" : "texto auto-contraste"}
-              </span>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${colorOptionsOpen ? "rotate-180" : ""}`} />
-          </button>
-          {colorOptionsOpen && (
-            <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
-              {/* Paleta da marca (se detectada) — atalho minimalista */}
-              {state.brandPalette && state.brandPalette.swatches?.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className={labelCls}>Paleta da sua marca</label>
-                    <button
-                      onClick={() => {
-                        if (!state.brandPalette) return;
-                        setPrimaryColor(state.brandPalette.primary);
-                        setSecondaryColor(state.brandPalette.secondary);
-                        toast.success("Paleta da marca aplicada!");
-                      }}
-                      className="text-[10px] font-semibold text-white/70 hover:text-white underline underline-offset-2"
-                    >
-                      Aplicar tudo
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    {state.brandPalette.swatches.map((c) => (
-                      <button
-                        key={c}
-                        onClick={() => setPrimaryColor(c)}
-                        className="w-6 h-6 rounded-full border border-white/20 hover:scale-110 transition-transform"
-                        style={{ background: c }}
-                        title={`Usar como primária: ${c}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Linha minimalista: 3 círculos discretos (Primária | Secundária | Texto) */}
-              <div className="flex items-center justify-between gap-3">
-                {[
-                  { label: "Primária", value: primaryColor, setter: setPrimaryColor, isText: false },
-                  { label: "Secundária", value: secondaryColor, setter: setSecondaryColor, isText: false },
-                  { label: "Texto", value: textColorOverride || effectiveTextColor, setter: setTextColorOverride, isText: true },
-                ].map(({ label, value, setter, isText }) => (
-                  <div key={label} className="flex flex-col items-center gap-1.5 flex-1">
-                    <label className="relative w-10 h-10 rounded-full cursor-pointer border border-white/20 hover:border-white/50 transition-colors shadow-sm" style={{ background: value || "#ffffff" }} title="Abrir seletor de cor">
-                      <input
-                        type="color"
-                        value={value || "#ffffff"}
-                        onChange={(e) => setter(e.target.value)}
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                      />
-                    </label>
-                    <span className="text-[10px] text-white/60 font-medium">{label}</span>
-                    {isText && !textColorOverride && (
-                      <span className="text-[9px] text-white/40 -mt-1">auto</span>
-                    )}
-                  </div>
+              {/* Bolinhas da paleta — grid 8 col, 4 linhas */}
+              <div className="grid grid-cols-10 gap-1 mb-3">
+                {PRESET_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setter(c)}
+                    className={`w-5 h-5 rounded-full border transition-all ${value.toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-md" : "border-white/20 hover:border-white/60"}`}
+                    style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
+                    aria-label={c}
+                    title={c}
+                  />
                 ))}
               </div>
-
-              {/* Controle unificado de Texto: Auto · Claro · Escuro */}
-              <div className="flex items-center gap-1.5">
-                {[
-                  { id: "", label: "Auto" },
-                  { id: "#ffffff", label: "Claro" },
-                  { id: "#0d0d0d", label: "Escuro" },
-                ].map((opt) => {
-                  const active = (textColorOverride || "").toLowerCase() === opt.id.toLowerCase();
-                  return (
-                    <button
-                      key={opt.label}
-                      onClick={() => setTextColorOverride(opt.id)}
-                      className={`flex-1 text-[11px] font-semibold px-2 py-1.5 rounded border transition-colors ${active ? "bg-white/15 text-white border-white/40" : "bg-white/[0.04] text-white/70 border-white/10 hover:border-white/30"}`}
-                    >
-                      {opt.label}
-                    </button>
-                  );
-                })}
+              {/* Color picker redondo (gradiente arco-íris) + HEX */}
+              <div className="flex gap-2 items-center">
+                <label
+                  className="relative w-10 h-10 rounded-full cursor-pointer flex-shrink-0 overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
+                  style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}
+                  title="Escolher cor personalizada"
+                >
+                  <input
+                    type="color"
+                    value={value}
+                    onChange={(e) => setter(e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                  <span
+                    className="absolute inset-1.5 rounded-full border border-white/40"
+                    style={{ background: value }}
+                  />
+                </label>
+                <input
+                  value={value}
+                  onChange={(e) => setter(e.target.value)}
+                  placeholder="#000000"
+                  className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase"
+                />
               </div>
-
-              {/* Aviso de contraste (WCAG) */}
-              {(() => {
-                const hexToRgb = (h: string) => {
-                  const c = h.replace("#", "");
-                  return [parseInt(c.slice(0,2),16), parseInt(c.slice(2,4),16), parseInt(c.slice(4,6),16)];
-                };
-                const lum = (h: string) => {
-                  const [r,g,b] = hexToRgb(h).map((v) => {
-                    const s = v/255; return s <= 0.03928 ? s/12.92 : Math.pow((s+0.055)/1.055, 2.4);
-                  });
-                  return 0.2126*r + 0.7152*g + 0.0722*b;
-                };
-                const ratio = (a: string, b: string) => {
-                  const la = lum(a), lb = lum(b);
-                  return (Math.max(la,lb)+0.05)/(Math.min(la,lb)+0.05);
-                };
-                try {
-                  const txt = (textColorOverride || effectiveTextColor || "#ffffff");
-                  const bg = primaryColor || "#000000";
-                  const r = ratio(txt, bg);
-                  if (r < 3) {
-                    return (
-                      <div className="flex items-center gap-1.5 text-[10px] text-amber-300/90 bg-amber-500/10 border border-amber-500/20 rounded px-2 py-1">
-                        ⚠ Baixo contraste entre texto e fundo (WCAG {r.toFixed(1)}:1). Tente usar Auto.
-                      </div>
-                    );
-                  }
-                } catch {}
-                return null;
-              })()}
             </div>
-          )}
+          ))}
         </div>
 
         {/* Benefícios — em Experiência de Destino usa apenas texto, sem selector de ícones. */}
