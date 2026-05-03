@@ -63,6 +63,22 @@ const DEFAULT_EXPERIENCE_HIGHLIGHTS: Highlight[] = [
 const DEFAULT_SUFFIXES_OFERTA = new Set(["por pessoa", "por casal", "por pacote", "por grupo", "total do pacote"]);
 const DEFAULT_SUFFIX_EXPERIENCIA = "Sua viagem começa aqui";
 
+// ====== Padronização de CORES por categoria ======
+// Estas cores são aplicadas automaticamente ao trocar de categoria, garantindo
+// um visual coerente com o "tom" daquela categoria (oferta = âmbar/quente,
+// experiência = navy/dourado luxo). O usuário pode customizar livremente depois;
+// só são re-aplicadas se ele ainda estiver usando os defaults da OUTRA categoria.
+const DEFAULT_COLORS_OFERTA = { primary: "#F59E0B", secondary: "#FCD34D" };
+const DEFAULT_COLORS_EXPERIENCIA = { primary: "#0C2340", secondary: "#C9A84C" };
+
+const isSameHex = (a: string, b: string) =>
+  (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
+
+const isDefaultColorsOferta = (p: string, s: string) =>
+  isSameHex(p, DEFAULT_COLORS_OFERTA.primary) && isSameHex(s, DEFAULT_COLORS_OFERTA.secondary);
+const isDefaultColorsExperiencia = (p: string, s: string) =>
+  isSameHex(p, DEFAULT_COLORS_EXPERIENCIA.primary) && isSameHex(s, DEFAULT_COLORS_EXPERIENCIA.secondary);
+
 const sameHighlightTexts = (items: Highlight[], defaults: Highlight[]) =>
   items.length === defaults.length &&
   items.every((item, index) => item.text === defaults[index]?.text);
