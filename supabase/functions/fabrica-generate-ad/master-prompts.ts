@@ -572,7 +572,7 @@ REGRAS ABSOLUTAS:
 - Hierarquia clara: logo → micro-título → pílula → headline gigante → CTA → fine print.
 - Fundo é a fotografia do destino, ocupando 100% da arte; todos os textos flutuam sobre ela.
 - Qualidade de revista de luxo, alta resolução, nítido em todos os caracteres.
-${formatRule(v.format)}
+FORMATO: ${v.format === "square" ? "QUADRADO 1:1 (1080x1080) para feed do Instagram." : "VERTICAL 9:16 (1080x1920) para Stories/Reels."} Mantenha todo o texto dentro de safe zones de 8% das bordas. Nada cortado.
 `.trim();
 }
 
