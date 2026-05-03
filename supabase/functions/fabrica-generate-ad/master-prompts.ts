@@ -483,55 +483,78 @@ Clean modern UI, highly professional, razor-sharp typography, perfect alignment,
   }
 
   // ──────────────────────────────────────────────────────────────────────
-  // 🔒 NOMENCLATURA 1/1/2 · V0 — ISOLAMENTO + SAFE ZONES (Stories 9:16)
-  // Foto Real / Oferta de Pacote / Stories Vertical 9:16 · Versão V0
+  // 🔒 NOMENCLATURA 1/1/2 · V2 — FULL-BLEED + TRANSLUCENT GLASS CARD (Stories 9:16)
+  // Foto Real / Oferta de Pacote / Stories Vertical 9:16 · Versão V2
+  // Foto cobre 100% da tela; card translúcido escuro flutua sobreposto.
+  // Regra crítica: TODO texto dentro do card = BRANCO PURO (alto contraste).
   // ──────────────────────────────────────────────────────────────────────
   {
     const benefits = (v.highlights && v.highlights.length > 0)
       ? v.highlights.slice(0, 4)
       : ["Transporte incluso", "Hospedagem", "Café da manhã", "Guia local"];
-    const benefitsList = benefits.map((b, i) => `      ${i + 1}. ${b}`).join("\n");
+    const [b1, b2, b3, b4] = [0,1,2,3].map((i) => benefits[i] || "");
     const originPill = v.city ? `Saindo de ${v.city}` : (v.agencyName || "Pacote exclusivo");
-    const agencyTag = v.agencyName ? `placeholder discreto para a logo da agência "${v.agencyName}"` : "placeholder minimalista para logo da agência";
+    const agencyTag = v.agencyName ? `minimalist logo placeholder for agency "${v.agencyName}"` : "minimalist logo placeholder";
+    const installmentLabel = v.installments === "1" ? "À VISTA" : `${v.installments}x sem juros`;
+    const pixText = "5% OFF À VISTA NO PIX";
 
     return `[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA E SAFE ZONES]
-A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/2 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Stories Vertical 9:16) associada à Versão de Layout: V0.
-É TERMINANTEMENTE PROIBIDO misturar esta lógica com outras versões (V1, V2, V3) ou com o estilo "Experiência de Destino".
+A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/2 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Stories Vertical 9:16) associada à Versão de Layout: V2 (Full-Bleed Photo + Translucent Glass Card).
+É TERMINANTEMENTE PROIBIDO misturar esta lógica com V0, V1, V3 ou com o estilo "Experiência de Destino".
 OBRIGATÓRIO: respeitar limites da interface do Instagram Stories.
 
-[IMAGEM]
-A premium, minimalist vertical 9:16 travel advertisement (1080x1920, 8K resolution).
+[IMAGE]
+A high-end, cinematic vertical 9:16 travel advertisement (1080x1920, 8K resolution).
 
-[STRICT UI SAFE ZONES]
-- The TOP 20% of the entire canvas (≈384px from the top) MUST remain completely empty of any typography, logos, icons or primary subjects — reserved for Instagram header.
-- The BOTTOM 20% of the entire canvas (≈384px from the base) MUST remain completely empty — reserved for Instagram message box and reactions.
-- ALL critical content must live ONLY inside the central 60% vertical block (between 20% and 80% of the canvas height).
+[STRICT UI SAFE ZONES — INSTAGRAM STORIES]
+- The TOP 20% (≈384px) of the canvas MUST remain completely empty of typography, logos, icons or UI — reserved for Instagram header/username.
+- The BOTTOM 20% (≈384px) MUST remain completely empty — reserved for Instagram message box and reactions.
+- ALL critical UI lives ONLY inside the central 60% vertical block (between 20% and 80% of canvas height).
 
-[TOP SECTION — DESIGN UI · starts BELOW the top safe zone]
-Solid background using the primary brand color ${v.primaryHex}. Generous internal padding.
-- Top-left of this section: ${agencyTag}.
-- Below logo: a rounded pill button using the secondary color ${v.secondaryHex} as background, with bold contrasting text reading "${originPill}".
-- Main headline (large, ultra-bold sans-serif, contrasting color, razor-sharp): "${headline}".
-- Two-column layout divided by ONE thin perfectly straight VERTICAL line:
-  · LEFT column (stacked vertically, minimalist line icons + short text):
-${benefitsList}
-  · RIGHT column:
-      • Small label: "${v.installments === "1" ? "À VISTA" : `EM ATÉ ${v.installments}x`}"
-      • MASSIVE extra-bold price: "R$ ${v.installmentValue}"
-      • Below the price, small text: "por pessoa"
+[BACKGROUND — FULL BLEED]
+A full-bleed, 8K photorealistic vertical photograph of ${v.destination} covering 100% of the canvas. Scene: ${v.destinationDescription}. Vibrant tropical scenery, crystal-clear water, perfect natural daylight, cinematic depth.
 
-[BOTTOM SECTION — PHOTO · ends ABOVE the bottom safe zone]
-An 8K photorealistic, ultra-detailed travel photograph of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant, cinematic, natural daylight, perfect framing — fills the lower portion of the central 60% block.
+[FLOATING UI — INSIDE THE CENTRAL 60% BLOCK ONLY]
+Just below the top safe zone (around 20–22% from the top), in the top-left, place a small ${agencyTag}.
+
+[CENTER OVERLAY — TRANSLUCENT GLASS CARD]
+Centered within the central 60% block, place a large elegant DARK TRANSLUCENT glassmorphism card with generous rounded corners, subtle inner shadow, soft frosted-glass backdrop blur, and a thin 1px white-translucent border.
+
+[INSIDE THE CARD — CRITICAL HIGH-CONTRAST RULE]
+🚨 ALL text inside this card MUST be PURE WHITE (#FFFFFF) — except text inside solid colored buttons/blocks. Never paint text in dark tones over the dark glass card.
+
+Card content, top to bottom:
+1. A solid ${v.secondaryHex} rounded pill button containing bold DARK text "${originPill}".
+2. Bold pure WHITE text: "${v.promoName || `Pacote ${v.destination}`}".
+3. Massive heavy ultra-bold pure WHITE text: "${v.destination}".
+4. A vertical stack of FOUR translucent light-grey pill rows (semi-transparent over the dark card). Each row contains a minimalist white icon on the left and pure WHITE text:
+   • "${b1}"
+   • "${b2}"
+   • "${b3}"
+   • "${b4}"
+
+[PRICE BLOCK — ATTACHED TO BOTTOM OF THE GLASS CARD]
+A solid ${v.secondaryHex} rectangular block fused to the bottom edge of the translucent card. ALL text inside this block uses DARK color for contrast against the secondary background:
+- Small DARK text: "PACOTE"
+- Bold DARK text: "${v.destination}"
+- Small DARK text: "${v.duration} ✈️ 🚌 🏨 ☕"
+- Small DARK text: "a partir de"
+- A solid ${v.primaryHex} rounded badge containing bold WHITE text "${installmentLabel}", placed left of a MASSIVE extra-bold DARK price "R$ ${v.installmentValue}".
+- Below the price, small DARK text: "por pessoa"
+
+[PIX FOOTER STRIP]
+At the very bottom edge of the price block, a solid ${v.primaryHex} thin footer strip containing bold WHITE text "${pixText} 🔷".
 
 [AESTHETIC]
-Clean modern UI, sharp high-contrast text, perfect alignment strictly within the central vertical block. Minimalist, premium, professional.
+Clean modern UI, premium glassmorphism, flawless spelling, razor-sharp typography, perfect alignment strictly inside the central 60% block, no clutter, professional Brazilian travel agency feel.
 
 [REGRAS DE ISOLAMENTO]
-🚫 PROIBIDO: texto/logo/preço dentro dos 20% do topo ou dos 20% da base.
-🚫 PROIBIDO: gradientes, neon, cards flutuantes sobre a foto, ícones 3D, watermarks.
-🚫 PROIBIDO copiar layouts de V1/V2/V3 ou de Experiência.
-✅ OBRIGATÓRIO: aspect ratio 9:16 absoluto, divisão UI (top) + foto (bottom) DENTRO do bloco central de 60%, linha vertical divisória nos benefícios, preço dominante.
-✅ Cores: primária ${v.primaryHex} = fundo do bloco UI. Secundária ${v.secondaryHex} = pill + acentos.`;
+🚫 PROIBIDO: qualquer elemento (texto, logo, ícone, card) dentro dos 20% do topo ou dos 20% da base.
+🚫 PROIBIDO: texto escuro sobre o card translúcido escuro (regra de contraste — só BRANCO PURO).
+🚫 PROIBIDO: split horizontal 50/50, gradientes neon, ícones 3D, watermarks, copiar layouts V0/V1/V3 ou Experiência.
+✅ OBRIGATÓRIO: foto full-bleed 9:16, card translúcido centralizado com glassmorphism, contraste alto (texto branco no card / texto escuro nos blocos coloridos), preço dominante.
+✅ Cores: primária ${v.primaryHex} = badge de parcela + footer PIX. Secundária ${v.secondaryHex} = pill superior + bloco de preço.
+✅ Aspect ratio: 9:16 absoluto. Sem letterbox.`;
   }
 }
 
