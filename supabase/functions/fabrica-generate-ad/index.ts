@@ -230,6 +230,10 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
       prompt = `Anúncio de viagem profissional para ${dest}. ${safeZoneRules(format)}`;
     }
 
+    // Anexa regras universais (contraste de texto + proibição de logos aleatórias)
+    // a TODOS os prompts (photoOnly, customPrompt, templates e overrides de Experiência).
+    prompt = `${prompt}\n\n${globalQualityRules("auto")}`;
+
     const imageTemperature = body.photoOnly ? 0.72 : 1.1;
     const imageTopP = body.photoOnly ? 0.88 : 0.96;
 
