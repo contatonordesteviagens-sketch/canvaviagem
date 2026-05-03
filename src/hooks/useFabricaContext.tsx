@@ -212,6 +212,10 @@ const defaultState: FabricaState = {
   totalOverride: "",
   showPixBanner: true,
   pixBannerText: "",
+  fontFamily: "Inter",
+  titleScale: 1,
+  descScale: 1,
+  textColorOverride: "",
 };
 
 const STORAGE_KEY = "fabrica-context-v1";
