@@ -188,6 +188,37 @@ const AD_TITLE_PRESETS: string[] = [
   "Vamos para {destino}?",
 ];
 
+// Presets de TÍTULO para a categoria "Experiência de Destino" (luxo / sensação)
+const AD_TITLE_PRESETS_EXPERIENCIA: string[] = [
+  "Sua próxima viagem é {destino}",
+  "Viva o melhor de {destino}",
+  "Momentos inesquecíveis em {destino}",
+  "Desperte os sentidos em {destino}",
+  "Experiência exclusiva em {destino}",
+  "Prazer em cada detalhe · {destino}",
+  "{destino} como você nunca viveu",
+  "All Inclusive · {destino}",
+  "Refúgio dos sonhos em {destino}",
+  "Descubra o lado secreto de {destino}",
+];
+
+// Nomes "promo" sofisticados para Experiência de Destino
+const PROMO_NAME_PRESETS_EXPERIENCIA: string[] = [
+  "EXPERIÊNCIA EXCLUSIVA",
+  "MOMENTOS INESQUECÍVEIS",
+  "PRAZER EM CADA VIAGEM",
+  "ALL INCLUSIVE",
+  "VIVÊNCIA PREMIUM",
+  "REFÚGIO DOS SONHOS",
+];
+
+// Defaults reconhecidos como "padrão da Oferta" — autorizados a serem sobrescritos
+// quando o usuário troca de categoria sem ter customizado.
+const DEFAULT_PROMO_NAMES_OFERTA = new Set(["OFERTA ESPECIAL", "Oferta Especial", "BLACK FRIDAY"]);
+const DEFAULT_AD_TITLES_OFERTA = new Set(["Pacote {destino}", "Conheça o melhor de {destino}", "Descubra {destino}"]);
+const DEFAULT_PROMO_NAMES_EXPERIENCIA = new Set(PROMO_NAME_PRESETS_EXPERIENCIA);
+const DEFAULT_AD_TITLES_EXPERIENCIA = new Set(AD_TITLE_PRESETS_EXPERIENCIA);
+
 const TRAVEL_PERIOD_PRESETS: string[] = [
   "5 dias", "7 dias", "10 dias", "15 dias", "Final de semana",
   "Janeiro", "Julho", "Dezembro", "Feriado prolongado", "12 a 18/01",
