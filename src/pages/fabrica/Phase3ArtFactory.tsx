@@ -2013,43 +2013,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 </div>
               </div>
 
-              {/* Cor do texto: mesmo padrão das cores Primária/Secundária */}
-              <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
-                <div className="flex items-baseline justify-between mb-2">
-                  <label className={labelCls}>Cor do texto</label>
-                  <span className="text-[10px] text-white/40">aplica em todos os textos</span>
-                </div>
-                <div className="grid grid-cols-10 gap-1 mb-3">
-                  {PRESET_COLORS.map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => setTextColorOverride(c)}
-                      className={`w-5 h-5 rounded-full border transition-all ${(textColorOverride || "").toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-md" : "border-white/20 hover:border-white/60"}`}
-                      style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
-                      aria-label={c}
-                      title={c}
-                    />
-                  ))}
-                </div>
-                <div className="flex gap-2 items-center">
-                  <label className="relative w-10 h-10 rounded-full cursor-pointer flex-shrink-0 overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
-                    style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}>
-                    <input type="color" value={textColorOverride || "#ffffff"}
-                      onChange={(e) => setTextColorOverride(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
-                    <span className="absolute inset-1.5 rounded-full border border-white/40" style={{ background: textColorOverride || "#ffffff" }} />
-                  </label>
-                  <input value={textColorOverride} onChange={(e) => setTextColorOverride(e.target.value)}
-                    placeholder="Padrão (branco)"
-                    className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase" />
-                  {textColorOverride && (
-                    <button onClick={() => setTextColorOverride("")}
-                      className="text-[11px] text-white/60 hover:text-white px-2 py-1 rounded border border-white/10">
-                      Limpar
-                    </button>
-                  )}
-                </div>
-              </div>
-
+              {/* Cor do texto agora vive no bloco "Cores" colapsável abaixo */}
               <button
                 onClick={() => { setFontFamily("Inter"); setTitleScale(1); setDescScale(1); setTextColorOverride(""); }}
                 className="text-[11px] text-white/60 hover:text-white underline"
