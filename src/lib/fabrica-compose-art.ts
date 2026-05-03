@@ -1435,7 +1435,20 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillStyle = v1Accent;
       const subSize = 26;
       ctx.font = `700 ${subSize}px Inter, Arial, sans-serif`;
-      const subLines = wrapText(ctx, titleText || "", pw, subSize).slice(0, 2);
+      const subWords = (titleText || "").split(/\s+/);
+      const subLines: string[] = [];
+      let curLine = "";
+      for (const w of subWords) {
+        const tryLine = curLine ? `${curLine} ${w}` : w;
+        if (ctx.measureText(tryLine).width > pw && curLine) {
+          subLines.push(curLine);
+          curLine = w;
+        } else {
+          curLine = tryLine;
+        }
+        if (subLines.length >= 2) break;
+      }
+      if (curLine && subLines.length < 2) subLines.push(curLine);
       subLines.forEach((ln, i) => ctx.fillText(ln, px, subY + i * (subSize + 6)));
       const subBlockH = subLines.length * (subSize + 6);
 
