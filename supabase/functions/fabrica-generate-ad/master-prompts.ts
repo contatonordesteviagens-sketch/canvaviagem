@@ -443,9 +443,57 @@ export function promptClassicVertical(v: MasterPromptVars): string {
     const benefits = (v.highlights && v.highlights.length > 0)
       ? v.highlights.slice(0, 4)
       : ["Transporte incluso", "Hospedagem", "Café da manhã", "Guia local"];
+    const [sb1, sb2, sb3, sb4] = [0,1,2,3].map((i) => benefits[i] || "");
     const benefitsList = benefits.map((b, i) => `      ${i + 1}. ${b}`).join("\n");
     const originPill = v.city ? `Saindo de ${v.city}` : (v.agencyName || "Pacote exclusivo");
     const agencyTag = v.agencyName ? `placeholder discreto para a logo da agência "${v.agencyName}"` : "placeholder minimalista para logo da agência";
+    const sqSeedMatch = (v.creativeSeed || "").match(/-v(\d+)-/);
+    const sqVer = sqSeedMatch ? parseInt(sqSeedMatch[1]) : 0;
+    const sqInstallmentLabel = v.installments === "1" ? "À VISTA" : `${v.installments}x`;
+
+    // 🔒 1/1/1 · V2 — FAIXA CENTRAL HORIZONTAL + GRID 2x2
+    if (sqVer === 2) {
+      return `[CRITICAL DESIGN LOGIC & CONTRAST RULE: NEVER generate light text on a light background. NEVER generate dark text on a dark background. Strictly obey the color variables provided.]
+[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA]
+A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) associada à Versão de Layout: V2.
+OBRIGATÓRIO: Usar a estrutura de faixa central horizontal e grid 2x2. PROIBIDO copiar V0/V1/V3/V4 ou Experiência.
+
+[IMAGE]
+A premium, clean modern travel advertisement with a strict 1:1 square aspect ratio (1080x1080, 8K).
+
+[BACKGROUND]
+The base background of the entire LOWER HALF is a solid, clean OFF-WHITE (light cream #F7F3EC).
+
+[TOP SECTION — Photo · Top 45%]
+An 8K photorealistic image of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant scenery, cinematic. Framed like a card with slightly rounded TOP corners, sitting flush against the middle ribbon below.
+
+[MIDDLE RIBBON — The Divider]
+Directly below the photo, a solid ${v.primaryHex} horizontal ribbon stretches edge-to-edge across the full width.
+🚨 Centered inside this ribbon: massive, ultra-bold text reading "${v.promoName || `OFERTA ${v.destination}`}".
+🚨 CRITICAL CONTRAST: this ribbon text MUST be PURE WHITE (#FFFFFF) for absolute contrast against ${v.primaryHex}. Never use dark tones here.
+
+[BOTTOM SECTION — UI on OFF-WHITE background]
+Directly below the ribbon, perfectly centered, a clean 2x2 grid of inclusions. ALL text DARK on the off-white background.
+Row 1:
+  • minimalist DARK icon + bold DARK text "${sb1}"     |     minimalist DARK icon + bold DARK text "${sb2}"
+Row 2:
+  • minimalist DARK icon + bold DARK text "${sb3}"     |     minimalist DARK icon + bold DARK text "${sb4}"
+
+[PRICE BLOCK — bottom center]
+A large, solid ${v.primaryHex} rectangular block with rounded corners. INSIDE the block, neatly stacked with ZERO overlap:
+- Small PURE WHITE text "${sqInstallmentLabel}".
+- MASSIVE extra-bold PURE WHITE text "R$ ${v.installmentValue}".
+- Small PURE WHITE text "por pessoa".
+
+[AESTHETIC]
+Clean modern UI, flawless spelling, perfect alignment, zero overlapping text, high contrast.
+
+[REGRAS DE ISOLAMENTO]
+🚫 PROIBIDO: split horizontal 50/50 sem ribbon, gradientes, ícones 3D, watermarks, copiar V0/V1/V3/V4 ou Experiência.
+🚫 PROIBIDO: texto claro em fundo claro; texto escuro em fundo escuro.
+✅ OBRIGATÓRIO: foto topo (45%) + ribbon ${v.primaryHex} edge-to-edge com texto branco + grid 2x2 dark sobre off-white + price block ${v.primaryHex} com texto branco.
+✅ Aspect ratio: 1:1 absoluto.`;
+    }
 
     return `[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA]
 A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) associada à Versão de Layout: V0.
