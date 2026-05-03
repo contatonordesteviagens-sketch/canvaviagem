@@ -252,10 +252,22 @@ export const Phase1Diagnostico = ({ onComplete }: Props) => {
                   <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Logo (opcional)</label>
                   <label className="flex items-center gap-3 p-3 bg-white/[0.04] border border-dashed border-white/10 rounded-xl cursor-pointer hover:border-white/30 transition-colors">
                     <Upload className="w-4 h-4 text-white/50" />
-                    <span className="text-sm text-white/70">{state.logoBase64 ? "Logo carregada ✓" : "Clique para enviar"}</span>
+                    <span className="text-sm text-white/70">{state.logoBase64 ? "Trocar logo (substitui a atual)" : "Clique para enviar"}</span>
                     <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                   </label>
-                  {state.logoBase64 && <img src={state.logoBase64} alt="Logo" className="mt-3 max-h-16 rounded-lg" />}
+                  {state.logoBase64 && (
+                    <div className="mt-3 flex items-center gap-3">
+                      <img src={state.logoBase64} alt="Logo" className="max-h-16 rounded-lg bg-white/5 p-1" />
+                      <button
+                        type="button"
+                        onClick={() => { update({ logoBase64: "" }); toast.success("Logo removida"); }}
+                        className="text-[11px] font-semibold text-red-300 hover:text-red-200 underline underline-offset-2"
+                      >
+                        Remover logo
+                      </button>
+                    </div>
+                  )}
+                  <p className="text-[10px] text-white/40 mt-1.5">Apenas uma logo fica salva. Ao enviar uma nova, a anterior é substituída automaticamente.</p>
                 </div>
               </div>
             </>
