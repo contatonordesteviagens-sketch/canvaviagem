@@ -682,7 +682,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     } catch {}
   }
   // V0_Experiencia usa Playfair Display — pré-carrega para evitar fallback.
-  if (isExperience && (document as any).fonts?.load) {
+  if (strategy.startsWith("experiencia_") && (document as any).fonts?.load) {
     try {
       await Promise.all([
         (document as any).fonts.load(`800 44px "Playfair Display"`),
