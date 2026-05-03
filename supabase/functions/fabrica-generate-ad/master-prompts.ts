@@ -495,38 +495,46 @@ Clean modern UI, flawless spelling, perfect alignment, zero overlapping text, hi
 ✅ Aspect ratio: 1:1 absoluto.`;
     }
 
-    return `[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA]
+    return `[CRITICAL DESIGN LOGIC & CONTRAST RULE: NEVER generate light text on a light background. NEVER generate dark text on a dark background. Strictly obey the color variables provided.]
+[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA]
 A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) associada à Versão de Layout: V0.
-Sob NENHUMA hipótese esta estrutura de layout, posicionamento ou proporção visual deve ser herdada, aplicada ou influenciar as versões V1, V2, V3 ou o estilo "Experiência de Destino".
-Executar APENAS para a V0.
+Sob NENHUMA hipótese esta estrutura deve ser herdada por V1, V2, V3, V4 ou Experiência.
+OBRIGATÓRIO: Ícones monocromáticos, tipografia em escala ampliada e bloco DARK de destaque para o preço.
 
 [IMAGEM]
-A premium, minimalist travel advertisement with a strict 1:1 square aspect ratio (1080x1080, 8K resolution). The layout features a sharp, perfectly straight horizontal split exactly at 50% height.
+A premium, clean modern travel advertisement with a strict 1:1 square aspect ratio (1080x1080, 8K). The layout features a sharp, perfectly straight horizontal split exactly at 50% height.
 
 [TOP HALF — DESIGN UI]
-Solid background using the primary brand color ${v.primaryHex} (NOT mustard-yellow unless that IS the primary). Internal padding generous on all sides.
+Solid background using the PRIMARY brand color ${v.primaryHex}. Generous internal padding.
 - Top-left corner: ${agencyTag}.
-- Below logo: a rounded pill button using the secondary color ${v.secondaryHex} as background, with bold contrasting text reading "${originPill}".
-- Main headline (large, ultra-bold sans-serif, contrasting color, razor-sharp): "${headline}".
-- Below the headline: ONE delicate, perfectly straight VERTICAL line splitting the lower portion of the top half in two columns.
-- LEFT column of the line (stacked vertically, minimalist line icons + short text):
+- Below the logo: a DARK rounded pill button containing PURE WHITE bold text "${originPill}".
+- Main headline: "${headline}" in MASSIVE, extra-large, ultra-bold sans-serif font.
+  🚨 CRITICAL CONTRAST: headline color MUST contrast strongly with ${v.primaryHex} (use PURE WHITE if primary is dark/saturated, deep dark if primary is light). Never light-on-light or dark-on-dark.
+- Below the headline: ONE delicate, perfectly straight VERTICAL line splitting the lower portion of the top half into two columns.
+
+[LEFT SIDE OF SPLIT — Inclusions]
+A vertical stack with FOUR items. The AI MUST use matching MONOCHROMATIC line icons (all the EXACT same single color) next to LARGE, highly visible bold text in the same contrasting color as the headline:
 ${benefitsList}
-- RIGHT column of the line:
-      • Small label: "${v.installments === "1" ? "À VISTA" : `EM ATÉ ${v.installments}x`}"
-      • MASSIVE extra-bold price: "R$ ${v.installmentValue}"
-      • Below the price, small text: "por pessoa"
+
+[RIGHT SIDE OF SPLIT — Price Highlight Block]
+A prominent, solid DARK contrasting rectangular block (deep charcoal/near-black) with rounded corners.
+🚨 INSIDE this dark block, ALL text MUST be PURE WHITE (#FFFFFF) for maximum contrast.
+Stacked neatly inside, top to bottom:
+- LARGE PURE WHITE text: "${v.installments === "1" ? "À VISTA" : `EM ATÉ ${v.installments}x`}".
+- GIGANTIC, screen-dominating, extra-bold PURE WHITE text: "R$ ${v.installmentValue}".
+- LARGE PURE WHITE text: "por pessoa".
 
 [BOTTOM HALF — PHOTO]
-An 8K photorealistic, ultra-detailed travel photograph of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant, cinematic, natural daylight, perfect framing — full-bleed across the bottom 50%.
+An 8K photorealistic, ultra-detailed travel photograph of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant, cinematic, natural daylight — full-bleed across the bottom 50%.
 
 [AESTHETIC]
-Clean modern UI, highly professional, razor-sharp typography, perfect alignment, generous whitespace inside the top half, no clutter.
+Clean modern UI, flawless spelling, high contrast, perfect alignment, premium visual hierarchy.
 
 [REGRAS DE ISOLAMENTO]
-🚫 PROIBIDO: gradientes, brilho neon, cards flutuantes sobre a foto, texto sobre a foto, ícones 3D, watermarks.
-🚫 PROIBIDO copiar layouts de V1/V2/V3 ou de Experiência (sem split horizontal? rejeitar).
-✅ OBRIGATÓRIO: split horizontal exato 50/50, linha vertical divisória no top half, preço como elemento dominante do bloco direito.
-✅ Cores: primária ${v.primaryHex} = fundo do top half. Secundária ${v.secondaryHex} = pill button + acentos.
+🚫 PROIBIDO: gradientes, brilho neon, cards flutuantes sobre a foto, texto sobre a foto, ícones 3D coloridos ou multi-color, watermarks.
+🚫 PROIBIDO: texto claro em fundo claro; texto escuro em fundo escuro.
+🚫 PROIBIDO copiar layouts de V1/V2/V3/V4 ou de Experiência.
+✅ OBRIGATÓRIO: split horizontal exato 50/50, linha vertical divisória no top half, ícones MONOCROMÁTICOS, bloco DARK dominante de preço com texto branco, pill superior DARK com texto branco.
 ✅ Aspect ratio: 1:1 absoluto. Sem letterbox.`;
   }
 
