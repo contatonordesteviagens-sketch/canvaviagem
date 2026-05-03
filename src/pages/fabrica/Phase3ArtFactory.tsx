@@ -595,6 +595,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
   const [fontOptionsOpen, setFontOptionsOpen] = useState(false);
   const [colorsOpen, setColorsOpen] = useState(false);
+  const [openColorPicker, setOpenColorPicker] = useState<"primary" | "secondary" | "text" | null>(null);
   const FONT_PRESETS = ["Inter", "Poppins", "Montserrat", "Roboto", "Oswald", "Bebas Neue", "Playfair Display", "Lora", "Raleway", "Nunito", "Work Sans", "DM Sans"];
 
   // Carrega Google Font dinamicamente quando o usuário escolhe uma família custom
