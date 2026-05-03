@@ -841,7 +841,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               fontFamily,
               titleScale,
               descScale,
-              textColorOverride: textColorOverride || undefined,
+              textColorOverride: effectiveTextColor,
             });
             if (state.logoBase64) {
               try {
@@ -1016,7 +1016,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 fontFamily,
                 titleScale,
                 descScale,
-                textColorOverride: textColorOverride || undefined,
+                textColorOverride: effectiveTextColor,
               });
               if (state.logoBase64) {
                 const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
@@ -1056,7 +1056,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 fontFamily,
                 titleScale,
                 descScale,
-                textColorOverride: textColorOverride || undefined,
+                textColorOverride: effectiveTextColor,
               });
               if (state.logoBase64) {
                 const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
@@ -1164,7 +1164,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             fontFamily,
             titleScale,
             descScale,
-            textColorOverride: textColorOverride || undefined,
+            textColorOverride: effectiveTextColor,
           });
           if (state.logoBase64) {
             try {
