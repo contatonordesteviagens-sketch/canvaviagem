@@ -563,7 +563,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         if (candidatesPhoto.length === 0) {
           candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i);
         }
-        const nextVariantPhoto = candidatesPhoto[Math.floor(Math.random() * candidatesPhoto.length)];
+        const nextVariantPhoto = forcedVariant !== null ? forcedVariant : candidatesPhoto[Math.floor(Math.random() * candidatesPhoto.length)];
         variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantPhoto];
 
         const composed = await Promise.all(
