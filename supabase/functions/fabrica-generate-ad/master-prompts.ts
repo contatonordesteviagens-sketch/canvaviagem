@@ -433,6 +433,56 @@ ${opts.category !== "experiencia" ? `• Parcela: «${v.installments}x R$ ${v.in
 // 🔥 OP1 — CARTÃO DIVIDIDO
 export function promptClassicVertical(v: MasterPromptVars): string {
   const headline = pickOfertaHeadline(v.destination, v.creativeSeed || "op1", v.forbiddenHeadlines);
+
+  // ──────────────────────────────────────────────────────────────────────
+  // 🔒 NOMENCLATURA 1/1/1 · V0 — ISOLAMENTO DE ESTRUTURA (Feed 1:1)
+  // Foto Real / Oferta de Pacote / Quadrado 1:1 · Versão V0
+  // Estrutura travada (split horizontal premium) + variáveis dinâmicas
+  // ──────────────────────────────────────────────────────────────────────
+  if (v.format === "square") {
+    const benefits = (v.highlights && v.highlights.length > 0)
+      ? v.highlights.slice(0, 4)
+      : ["Transporte incluso", "Hospedagem", "Café da manhã", "Guia local"];
+    const benefitsList = benefits.map((b, i) => `      ${i + 1}. ${b}`).join("\n");
+    const originPill = v.city ? `Saindo de ${v.city}` : (v.agencyName || "Pacote exclusivo");
+    const agencyTag = v.agencyName ? `placeholder discreto para a logo da agência "${v.agencyName}"` : "placeholder minimalista para logo da agência";
+
+    return `[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA]
+A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) associada à Versão de Layout: V0.
+Sob NENHUMA hipótese esta estrutura de layout, posicionamento ou proporção visual deve ser herdada, aplicada ou influenciar as versões V1, V2, V3 ou o estilo "Experiência de Destino".
+Executar APENAS para a V0.
+
+[IMAGEM]
+A premium, minimalist travel advertisement with a strict 1:1 square aspect ratio (1080x1080, 8K resolution). The layout features a sharp, perfectly straight horizontal split exactly at 50% height.
+
+[TOP HALF — DESIGN UI]
+Solid background using the primary brand color ${v.primaryHex} (NOT mustard-yellow unless that IS the primary). Internal padding generous on all sides.
+- Top-left corner: ${agencyTag}.
+- Below logo: a rounded pill button using the secondary color ${v.secondaryHex} as background, with bold contrasting text reading "${originPill}".
+- Main headline (large, ultra-bold sans-serif, contrasting color, razor-sharp): "${headline}".
+- Below the headline: ONE delicate, perfectly straight VERTICAL line splitting the lower portion of the top half in two columns.
+- LEFT column of the line (stacked vertically, minimalist line icons + short text):
+${benefitsList}
+- RIGHT column of the line:
+      • Small label: "${v.installments === "1" ? "À VISTA" : `EM ATÉ ${v.installments}x`}"
+      • MASSIVE extra-bold price: "R$ ${v.installmentValue}"
+      • Below the price, small text: "por pessoa"
+
+[BOTTOM HALF — PHOTO]
+An 8K photorealistic, ultra-detailed travel photograph of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant, cinematic, natural daylight, perfect framing — full-bleed across the bottom 50%.
+
+[AESTHETIC]
+Clean modern UI, highly professional, razor-sharp typography, perfect alignment, generous whitespace inside the top half, no clutter.
+
+[REGRAS DE ISOLAMENTO]
+🚫 PROIBIDO: gradientes, brilho neon, cards flutuantes sobre a foto, texto sobre a foto, ícones 3D, watermarks.
+🚫 PROIBIDO copiar layouts de V1/V2/V3 ou de Experiência (sem split horizontal? rejeitar).
+✅ OBRIGATÓRIO: split horizontal exato 50/50, linha vertical divisória no top half, preço como elemento dominante do bloco direito.
+✅ Cores: primária ${v.primaryHex} = fundo do top half. Secundária ${v.secondaryHex} = pill button + acentos.
+✅ Aspect ratio: 1:1 absoluto. Sem letterbox.`;
+  }
+
+  // STORY 9:16 e fallback — comportamento original via buildBrain
   return buildBrain(v, {
     category: "oferta",
     layout:
