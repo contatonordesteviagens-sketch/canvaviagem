@@ -25,6 +25,10 @@ export interface MasterPromptVars {
   city: string;
   primaryHex: string;
   secondaryHex: string;
+  /** Cor de texto auto-calculada para contraste sobre primaryHex (#000000 ou #FFFFFF). */
+  primaryTextHex?: string;
+  /** Cor de texto auto-calculada para contraste sobre secondaryHex (#000000 ou #FFFFFF). */
+  secondaryTextHex?: string;
   agencyName: string;
   highlights: string[];
   creativeSeed?: string;
@@ -35,6 +39,27 @@ export interface MasterPromptVars {
   /** Formato de saída: "square" (1:1 feed) ou "story" (9:16). Default: story. */
   format?: "square" | "story";
 }
+
+/**
+ * Luminance-based contrast picker (WCAG simplified).
+ * Retorna "#000000" para fundos claros, "#FFFFFF" para fundos escuros.
+ */
+export function pickContrastText(hex: string): "#000000" | "#FFFFFF" {
+  const h = (hex || "").replace("#", "").trim();
+  if (h.length !== 6) return "#FFFFFF";
+  const r = parseInt(h.slice(0, 2), 16) / 255;
+  const g = parseInt(h.slice(2, 4), 16) / 255;
+  const b = parseInt(h.slice(4, 6), 16) / 255;
+  const toLin = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  const L = 0.2126 * toLin(r) + 0.7152 * toLin(g) + 0.0722 * toLin(b);
+  return L > 0.5 ? "#000000" : "#FFFFFF";
+}
+
+/**
+ * Bloco de instrução INEGOCIÁVEL — adicionado no topo de TODO prompt gerado.
+ * Proíbe low-contrast (light-on-light / dark-on-dark).
+ */
+export const CRITICAL_CONTRAST_HEADER = `[CRITICAL DESIGN LOGIC & CONTRAST RULE: The AI MUST strictly obey logical UI contrast rules. NEVER generate light text on a light background. NEVER generate dark text on a dark background. IF a button or shape is white or light-colored, the text inside it MUST be pure black or very dark. IF a button or shape is dark, the text inside it MUST be pure white. Failure to provide legible, high-contrast text is a critical error.]`;
 
 // ============================================================
 // 🔴 REGRAS ESPECÍFICAS — OFERTA DE PACOTE
