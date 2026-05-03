@@ -188,6 +188,12 @@ const AD_TITLE_PRESETS: string[] = [
   "Vamos para {destino}?",
 ];
 
+const TRAVEL_PERIOD_PRESETS: string[] = [
+  "5 dias", "7 dias", "10 dias", "15 dias", "Final de semana",
+  "Janeiro", "Julho", "Dezembro", "Feriado prolongado", "12 a 18/01",
+  "Data flexível", "Saídas semanais",
+];
+
 /**
  * Gera um pool de 3 variações de título a partir do template escolhido pelo usuário.
  * A primeira posição é SEMPRE o título exato escolhido (respeitando a edição do usuário).
@@ -352,6 +358,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [adTitleTemplate, setAdTitleTemplateState] = useState(state.lastAdTitle || "Pacote {destino}");
   const setAdTitleTemplate = (t: string) => { setAdTitleTemplateState(t); update({ lastAdTitle: t }); };
   const [adTitleMenuOpen, setAdTitleMenuOpen] = useState(false);
+  const [travelPeriod, setTravelPeriodState] = useState(state.lastTravelPeriod || "5 dias");
+  const setTravelPeriod = (v: string) => { setTravelPeriodState(v); update({ lastTravelPeriod: v }); };
+  const [travelPeriodMenuOpen, setTravelPeriodMenuOpen] = useState(false);
   const [destMenuOpen, setDestMenuOpen] = useState(false);
   const [suffixMenuOpen, setSuffixMenuOpen] = useState(false);
   const [priceOptionsOpen, setPriceOptionsOpen] = useState(false);
@@ -589,6 +598,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               forceVariant: nextVariantPhoto,
               titleOverride: resolvedAdTitle,
               titleVariations: adTitleVariations,
+              travelPeriod,
               totalOverride: totalOverride || undefined,
               showPixBanner,
               pixBannerText: pixBannerText || undefined,
@@ -750,6 +760,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 forceVariant: 4,
                 titleOverride: resolvedAdTitle,
                 titleVariations: adTitleVariations,
+                travelPeriod,
                 totalOverride: totalOverride || undefined,
                 showPixBanner,
                 pixBannerText: pixBannerText || undefined,
@@ -853,6 +864,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             forceVariant: nextVariant,
             titleOverride: resolvedAdTitle,
             titleVariations: adTitleVariations,
+            travelPeriod,
             totalOverride: totalOverride || undefined,
               showPixBanner,
               pixBannerText: pixBannerText || undefined,
@@ -1358,6 +1370,45 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 <> Pré-visualização: <span className="font-semibold" style={{ color: secondaryColor }}>"{resolvedAdTitle}"</span></>
               )}
             </p>
+          </div>
+        </div>
+
+        <div>
+          <label className={labelCls}>Dias / data da viagem</label>
+          <div className="relative">
+            <input
+              value={travelPeriod}
+              onChange={(e) => setTravelPeriod(e.target.value)}
+              onFocus={() => setTravelPeriodMenuOpen(true)}
+              onClick={() => setTravelPeriodMenuOpen(true)}
+              placeholder="Ex: 5 dias, Janeiro, 12 a 18/01"
+              className={`${inputCls} pr-10 cursor-pointer`}
+            />
+            <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${travelPeriodMenuOpen ? "rotate-180" : ""}`} />
+            {travelPeriodMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setTravelPeriodMenuOpen(false)} />
+                <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
+                  <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
+                    Escolha um período · editável
+                  </div>
+                  {TRAVEL_PERIOD_PRESETS.map((opt) => {
+                    const active = travelPeriod === opt;
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => { setTravelPeriod(opt); setTravelPeriodMenuOpen(false); }}
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
+                      >
+                        {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                        <span className={active ? "" : "ml-5"}>{opt}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
         </div>
 

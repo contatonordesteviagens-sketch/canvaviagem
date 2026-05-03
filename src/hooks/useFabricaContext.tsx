@@ -123,6 +123,7 @@ export interface FabricaState {
   lastPaymentSuffix?: string;
   lastCurrency?: string;
   lastAdTitle?: string;
+  lastTravelPeriod?: string;
   // V3: opções extras de preço/total
   hideCents?: boolean;
   showTotal?: boolean;
@@ -200,6 +201,7 @@ const defaultState: FabricaState = {
   lastPaymentSuffix: "por pessoa",
   lastCurrency: "BRL",
   lastAdTitle: "Pacote {destino}",
+  lastTravelPeriod: "5 dias",
   hideCents: false,
   showTotal: true,
   totalOverride: "",
