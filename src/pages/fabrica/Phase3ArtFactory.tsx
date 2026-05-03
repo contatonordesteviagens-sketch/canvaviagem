@@ -411,11 +411,17 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
   const setInstallments = (i: string) => { setInstallmentsState(i); update({ lastInstallments: i }); };
 
-  const [promoName, setPromoNameState] = useState(state.lastPromoName || "OFERTA ESPECIAL");
+  const initialPromoDefault = ((state.lastCategoria as CategoriaId) === "experiencia_destino")
+    ? PROMO_NAME_PRESETS_EXPERIENCIA[0]
+    : "OFERTA ESPECIAL";
+  const initialAdTitleDefault = ((state.lastCategoria as CategoriaId) === "experiencia_destino")
+    ? AD_TITLE_PRESETS_EXPERIENCIA[0]
+    : "Pacote {destino}";
+  const [promoName, setPromoNameState] = useState(state.lastPromoName || initialPromoDefault);
   const setPromoName = (n: string) => { setPromoNameState(n); update({ lastPromoName: n }); };
 
   // Título do anúncio (com presets editáveis usando {destino})
-  const [adTitleTemplate, setAdTitleTemplateState] = useState(state.lastAdTitle || "Pacote {destino}");
+  const [adTitleTemplate, setAdTitleTemplateState] = useState(state.lastAdTitle || initialAdTitleDefault);
   const setAdTitleTemplate = (t: string) => { setAdTitleTemplateState(t); update({ lastAdTitle: t }); };
   const [adTitleMenuOpen, setAdTitleMenuOpen] = useState(false);
   const [travelPeriod, setTravelPeriodState] = useState(state.lastTravelPeriod || "5 dias");
