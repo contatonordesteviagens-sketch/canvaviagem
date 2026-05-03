@@ -493,6 +493,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [descScale, setDescScaleState] = useState<number>(((state as any).descScale as number) || 1);
   const setDescScale = (v: number) => { setDescScaleState(v); update({ descScale: v } as any); };
   const [textColorOverride, setTextColorOverrideState] = useState<string>((state as any).textColorOverride || "");
+  const [autoTextColor, setAutoTextColor] = useState<string>("#ffffff");
+  // Cor efetiva: se o usuário escolheu manualmente, respeita; senão usa auto-contraste.
+  const effectiveTextColor = textColorOverride || autoTextColor;
   const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
   const [fontOptionsOpen, setFontOptionsOpen] = useState(false);
   const FONT_PRESETS = ["Inter", "Poppins", "Montserrat", "Roboto", "Oswald", "Bebas Neue", "Playfair Display", "Lora", "Raleway", "Nunito", "Work Sans", "DM Sans"];
