@@ -1000,6 +1000,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
         for (const result of results) {
           if (result.error) throw result.error;
+          if (result.data?.error && result.data?.fallback === false) {
+            toast.error(result.data.error);
+            return;
+          }
           if (result.data?.error) throw new Error(result.data.error);
           if (!result.data?.image) throw new Error("Nenhuma imagem foi gerada.");
 
