@@ -79,6 +79,36 @@ Concentre TODO o conteúdo importante no MIOLO CENTRAL — entre 18% e 80% da al
 GERE A IMAGEM EM PROPORÇÃO QUADRADA. Composição equilibrada, perfeita para o grid.`;
 }
 
+// Regras universais aplicadas a TODOS os prompts (fundo, contraste de texto e logos).
+// Resolve dois problemas críticos:
+//  1. Texto ilegível por falta de contraste com o fundo.
+//  2. IA inventando logos/círculos/ícones aleatórios no canto.
+function globalQualityRules(textColorHint: "light" | "dark" | "auto" = "auto"): string {
+  const contrastLine =
+    textColorHint === "light"
+      ? "O TEXTO SERÁ BRANCO/CLARO — garanta áreas ESCURAS no terço inferior e nas zonas onde o texto será sobreposto (luminância < 0.35)."
+      : textColorHint === "dark"
+      ? "O TEXTO SERÁ PRETO/ESCURO — garanta áreas CLARAS no terço inferior e nas zonas onde o texto será sobreposto (luminância > 0.7)."
+      : "Reserve uma área de FORTE CONTRASTE no terço inferior para overlay de texto: ou (a) área bem ESCURA (com vinheta/sombra) que comporte texto BRANCO, ou (b) área bem CLARA (céu / superfície clara) que comporte texto PRETO. NUNCA cinza médio ambíguo, NUNCA fundo claro com pessoas/elementos claros, NUNCA fundo escuro com elementos escuros — isso causa texto ilegível.";
+
+  return `REGRAS UNIVERSAIS DE QUALIDADE (OBRIGATÓRIAS):
+
+1. CONTRASTE PARA TEXTO (CRÍTICO):
+${contrastLine}
+Se necessário, escureça/clareie levemente o terço inferior com vinheta natural. NUNCA gere imagem onde texto branco cairia sobre céu branco/areia clara, ou texto preto cairia sobre rocha escura/sombra.
+
+2. PROIBIÇÃO ABSOLUTA DE LOGOS, MARCAS E SÍMBOLOS:
+- NÃO inclua NENHUM logo, marca, watermark, círculo com letras, badge, selo, emblema, monograma, ícone de marca, escudo, brasão, símbolo corporativo ou qualquer elemento gráfico que pareça uma logo.
+- NÃO inclua círculos coloridos com iniciais, letras estilizadas, ou qualquer marca visual no canto da imagem.
+- NÃO inclua texto algum escrito na imagem (sem palavras, sem números, sem hashtags).
+- A logo do cliente será adicionada DEPOIS por overlay automático no canto superior esquerdo — esse canto deve estar LIMPO, sem elementos gráficos concorrentes.
+
+3. PROIBIÇÃO DE OVERLAYS GRÁFICOS:
+Nada de molduras decorativas, faixas com texto, banners, cartelas, tags, etiquetas de preço, balões, ou qualquer elemento de UI/banner desenhado pela IA.
+
+4. APENAS FOTOGRAFIA REAL E LIMPA do destino — sem ilustração, sem render 3D, sem montagem. Imagem natural pronta para receber overlay de texto e logo.`;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -199,6 +229,10 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
       const dest = body.destination || "destino paradisíaco";
       prompt = `Anúncio de viagem profissional para ${dest}. ${safeZoneRules(format)}`;
     }
+
+    // Anexa regras universais (contraste de texto + proibição de logos aleatórias)
+    // a TODOS os prompts (photoOnly, customPrompt, templates e overrides de Experiência).
+    prompt = `${prompt}\n\n${globalQualityRules("auto")}`;
 
     const imageTemperature = body.photoOnly ? 0.72 : 1.1;
     const imageTopP = body.photoOnly ? 0.88 : 0.96;
