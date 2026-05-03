@@ -356,6 +356,23 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [fontOptionsOpen, setFontOptionsOpen] = useState(false);
   const FONT_PRESETS = ["Inter", "Poppins", "Montserrat", "Roboto", "Oswald", "Bebas Neue", "Playfair Display", "Lora", "Raleway", "Nunito", "Work Sans", "DM Sans"];
 
+  // Carrega Google Font dinamicamente quando o usuário escolhe uma família custom
+  useEffect(() => {
+    if (!fontFamily || fontFamily === "Inter") return;
+    const id = `gf-${fontFamily.replace(/\s+/g, "-").toLowerCase()}`;
+    if (document.getElementById(id)) return;
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;500;600;700;800;900&display=swap`;
+    document.head.appendChild(link);
+    // Garante que o canvas use a fonte já carregada antes de renderizar
+    if ((document as any).fonts?.load) {
+      (document as any).fonts.load(`900 32px "${fontFamily}"`).catch(() => {});
+      (document as any).fonts.load(`400 16px "${fontFamily}"`).catch(() => {});
+    }
+  }, [fontFamily]);
+
   // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
   const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
   const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
