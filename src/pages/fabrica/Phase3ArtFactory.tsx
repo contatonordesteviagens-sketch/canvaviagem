@@ -630,7 +630,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     localStorage.removeItem("fabrica_last_template_id");
     localStorage.removeItem("fabrica_recent_template_ids");
     Object.keys(localStorage)
-      .filter((k) => k.startsWith("fabrica:") && (k.includes(":ai:") || k.includes(":recent") || k.includes(":last")))
+      .filter((k) => k.startsWith("fabrica_generation_cycle_") || k.startsWith("fabrica_strategy_history_") || k.startsWith("fabrica_last_template_ids_") || k.startsWith("fabrica_recent_template_ids_"))
       .forEach((k) => localStorage.removeItem(k));
     setGeneratedImage("");
     setGeneratedImages([]);
