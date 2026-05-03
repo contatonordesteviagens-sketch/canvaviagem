@@ -461,7 +461,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [format, setFormatState] = useState<"square" | "story">(state.lastFormat || "story");
   const setFormat = (f: "square" | "story") => { setFormatState(f); update({ lastFormat: f }); };
 
-  const [destination, setDestination] = useState(state.destinos?.[0] || "");
+  const [destinationState, setDestinationState] = useState(state.destinos?.[0] || "");
+  const destination = destinationState;
+  // Persiste destino no contexto/localStorage para sobreviver à navegação F1↔F3↔F4.
+  const setDestination = (v: string) => {
+    setDestinationState(v);
+    const rest = (state.destinos || []).slice(1);
+    update({ destinos: v.trim() ? [v, ...rest] : rest });
+  };
   const [price, setPriceState] = useState(state.lastPrice || "149,90");
   const setPrice = (p: string) => { setPriceState(p); update({ lastPrice: p }); };
   const [currency, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
