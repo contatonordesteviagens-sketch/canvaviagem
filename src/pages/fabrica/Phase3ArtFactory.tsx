@@ -505,6 +505,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const effectiveTextColor = textColorOverride || autoTextColor;
   const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
   const [fontOptionsOpen, setFontOptionsOpen] = useState(false);
+  const [advancedSizeOpen, setAdvancedSizeOpen] = useState(false);
   const [colorsOpen, setColorsOpen] = useState(false);
   // "Cor dos textos base": força textos claros ou escuros nas artes
   const [baseTextMode, setBaseTextModeState] = useState<"light" | "dark">(
