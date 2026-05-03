@@ -569,8 +569,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setPaymentSuffix = (suffix: string) => { setPaymentSuffixState(suffix); update({ lastPaymentSuffix: suffix }); };
   const paymentLabel = paymentMode === "installments" || paymentMode === "down_plus" ? installments : paymentLabelState;
   const paymentSuffix = paymentSuffixState;
-  const [primaryColor, setPrimaryColorState] = useState(state.primaryColor || "#F59E0B");
-  const [secondaryColor, setSecondaryColorState] = useState(state.secondaryColor || "#FCD34D");
+  const initialCategoryColors = ((state.lastCategoria as CategoriaId) === "experiencia_destino")
+    ? DEFAULT_COLORS_EXPERIENCIA
+    : DEFAULT_COLORS_OFERTA;
+  const [primaryColor, setPrimaryColorState] = useState(state.primaryColor || initialCategoryColors.primary);
+  const [secondaryColor, setSecondaryColorState] = useState(state.secondaryColor || initialCategoryColors.secondary);
   
   const setPrimaryColor = (c: string) => { setPrimaryColorState(c); update({ primaryColor: c }); };
   const setSecondaryColor = (c: string) => { setSecondaryColorState(c); update({ secondaryColor: c }); };
