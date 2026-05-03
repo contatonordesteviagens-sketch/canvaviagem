@@ -188,6 +188,37 @@ const AD_TITLE_PRESETS: string[] = [
   "Vamos para {destino}?",
 ];
 
+// Presets de TÍTULO para a categoria "Experiência de Destino" (luxo / sensação)
+const AD_TITLE_PRESETS_EXPERIENCIA: string[] = [
+  "Sua próxima viagem é {destino}",
+  "Viva o melhor de {destino}",
+  "Momentos inesquecíveis em {destino}",
+  "Desperte os sentidos em {destino}",
+  "Experiência exclusiva em {destino}",
+  "Prazer em cada detalhe · {destino}",
+  "{destino} como você nunca viveu",
+  "All Inclusive · {destino}",
+  "Refúgio dos sonhos em {destino}",
+  "Descubra o lado secreto de {destino}",
+];
+
+// Nomes "promo" sofisticados para Experiência de Destino
+const PROMO_NAME_PRESETS_EXPERIENCIA: string[] = [
+  "EXPERIÊNCIA EXCLUSIVA",
+  "MOMENTOS INESQUECÍVEIS",
+  "PRAZER EM CADA VIAGEM",
+  "ALL INCLUSIVE",
+  "VIVÊNCIA PREMIUM",
+  "REFÚGIO DOS SONHOS",
+];
+
+// Defaults reconhecidos como "padrão da Oferta" — autorizados a serem sobrescritos
+// quando o usuário troca de categoria sem ter customizado.
+const DEFAULT_PROMO_NAMES_OFERTA = new Set(["OFERTA ESPECIAL", "Oferta Especial", "BLACK FRIDAY"]);
+const DEFAULT_AD_TITLES_OFERTA = new Set(["Pacote {destino}", "Conheça o melhor de {destino}", "Descubra {destino}"]);
+const DEFAULT_PROMO_NAMES_EXPERIENCIA = new Set(PROMO_NAME_PRESETS_EXPERIENCIA);
+const DEFAULT_AD_TITLES_EXPERIENCIA = new Set(AD_TITLE_PRESETS_EXPERIENCIA);
+
 const TRAVEL_PERIOD_PRESETS: string[] = [
   "5 dias", "7 dias", "10 dias", "15 dias", "Final de semana",
   "Janeiro", "Julho", "Dezembro", "Feriado prolongado", "12 a 18/01",
@@ -309,7 +340,37 @@ const pickPhotoRefs = (
 export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const { state, update } = useFabricaContext();
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
-  const setCategoria = (c: CategoriaId) => { setCategoriaState(c); update({ lastCategoria: c }); };
+  const setCategoria = (c: CategoriaId) => {
+    setCategoriaState(c);
+    update({ lastCategoria: c });
+    // Troca defaults de promoName / adTitle quando ainda são padrões da outra categoria
+    setPromoNameState((prev) => {
+      if (c === "experiencia_destino" && DEFAULT_PROMO_NAMES_OFERTA.has(prev)) {
+        const next = PROMO_NAME_PRESETS_EXPERIENCIA[0];
+        update({ lastPromoName: next });
+        return next;
+      }
+      if (c === "oferta_pacote" && DEFAULT_PROMO_NAMES_EXPERIENCIA.has(prev)) {
+        const next = "OFERTA ESPECIAL";
+        update({ lastPromoName: next });
+        return next;
+      }
+      return prev;
+    });
+    setAdTitleTemplateState((prev) => {
+      if (c === "experiencia_destino" && DEFAULT_AD_TITLES_OFERTA.has(prev)) {
+        const next = AD_TITLE_PRESETS_EXPERIENCIA[0];
+        update({ lastAdTitle: next });
+        return next;
+      }
+      if (c === "oferta_pacote" && DEFAULT_AD_TITLES_EXPERIENCIA.has(prev)) {
+        const next = "Pacote {destino}";
+        update({ lastAdTitle: next });
+        return next;
+      }
+      return prev;
+    });
+  };
 
   const strategy: StrategyId = getCategoria(categoria).legacyStrategy;
   const [lastTemplateId, setLastTemplateId] = useState<string | null>(() => localStorage.getItem("fabrica_last_template_id"));
@@ -380,13 +441,20 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
   const setInstallments = (i: string) => { setInstallmentsState(i); update({ lastInstallments: i }); };
 
-  const [promoName, setPromoNameState] = useState(state.lastPromoName || "OFERTA ESPECIAL");
+  const initialPromoDefault = ((state.lastCategoria as CategoriaId) === "experiencia_destino")
+    ? PROMO_NAME_PRESETS_EXPERIENCIA[0]
+    : "OFERTA ESPECIAL";
+  const initialAdTitleDefault = ((state.lastCategoria as CategoriaId) === "experiencia_destino")
+    ? AD_TITLE_PRESETS_EXPERIENCIA[0]
+    : "Pacote {destino}";
+  const [promoName, setPromoNameState] = useState(state.lastPromoName || initialPromoDefault);
   const setPromoName = (n: string) => { setPromoNameState(n); update({ lastPromoName: n }); };
 
   // Título do anúncio (com presets editáveis usando {destino})
-  const [adTitleTemplate, setAdTitleTemplateState] = useState(state.lastAdTitle || "Pacote {destino}");
+  const [adTitleTemplate, setAdTitleTemplateState] = useState(state.lastAdTitle || initialAdTitleDefault);
   const setAdTitleTemplate = (t: string) => { setAdTitleTemplateState(t); update({ lastAdTitle: t }); };
   const [adTitleMenuOpen, setAdTitleMenuOpen] = useState(false);
+  const [promoMenuOpen, setPromoMenuOpen] = useState(false);
   const [travelPeriod, setTravelPeriodState] = useState(state.lastTravelPeriod || "5 dias");
   const setTravelPeriod = (v: string) => { setTravelPeriodState(v); update({ lastTravelPeriod: v }); };
   const [travelPeriodMenuOpen, setTravelPeriodMenuOpen] = useState(false);
@@ -1358,8 +1426,48 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
 
           <div>
-            <label className={labelCls}>Nome da promoção</label>
-            <input value={promoName} onChange={(e) => setPromoName(e.target.value)} placeholder="Ex: BLACK FRIDAY" className={inputCls} />
+            <label className={labelCls}>
+              {categoria === "experiencia_destino" ? "Nome da experiência" : "Nome da promoção"}
+            </label>
+            {categoria === "experiencia_destino" ? (
+              <div className="relative">
+                <input
+                  value={promoName}
+                  onChange={(e) => setPromoName(e.target.value)}
+                  onFocus={() => setPromoMenuOpen(true)}
+                  onClick={() => setPromoMenuOpen(true)}
+                  placeholder="Ex: EXPERIÊNCIA EXCLUSIVA"
+                  className={`${inputCls} pr-10 cursor-pointer`}
+                />
+                <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${promoMenuOpen ? "rotate-180" : ""}`} />
+                {promoMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setPromoMenuOpen(false)} />
+                    <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
+                      <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
+                        Sugestões luxo · {PROMO_NAME_PRESETS_EXPERIENCIA.length}
+                      </div>
+                      {PROMO_NAME_PRESETS_EXPERIENCIA.map((p) => {
+                        const active = promoName === p;
+                        return (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => { setPromoName(p); setPromoMenuOpen(false); }}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
+                          >
+                            {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                            <span className={active ? "" : "ml-5"}>{p}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <input value={promoName} onChange={(e) => setPromoName(e.target.value)} placeholder="Ex: BLACK FRIDAY" className={inputCls} />
+            )}
           </div>
 
           <div className="sm:col-span-2">
@@ -1383,24 +1491,31 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                     className="absolute left-0 right-0 mt-2 max-h-80 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1"
                     style={{ borderColor: `${secondaryColor}66` }}
                   >
-                    <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
-                      Escolha um modelo · {AD_TITLE_PRESETS.length} opções
-                    </div>
-                    {AD_TITLE_PRESETS.map((tpl) => {
-                      const preview = tpl.replace(/\{destino\}/gi, destination?.trim() || "Destino");
-                      const active = tpl === adTitleTemplate;
+                    {(() => {
+                      const presets = categoria === "experiencia_destino" ? AD_TITLE_PRESETS_EXPERIENCIA : AD_TITLE_PRESETS;
                       return (
-                        <button
-                          key={tpl}
-                          type="button"
-                          onClick={() => { setAdTitleTemplate(tpl); setAdTitleMenuOpen(false); }}
-                          className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
-                        >
-                          {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
-                          <span className={active ? "" : "ml-5"}>{preview}</span>
-                        </button>
+                        <>
+                          <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
+                            Escolha um modelo · {presets.length} opções
+                          </div>
+                          {presets.map((tpl) => {
+                            const preview = tpl.replace(/\{destino\}/gi, destination?.trim() || "Destino");
+                            const active = tpl === adTitleTemplate;
+                            return (
+                              <button
+                                key={tpl}
+                                type="button"
+                                onClick={() => { setAdTitleTemplate(tpl); setAdTitleMenuOpen(false); }}
+                                className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
+                              >
+                                {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                                <span className={active ? "" : "ml-5"}>{preview}</span>
+                              </button>
+                            );
+                          })}
+                        </>
                       );
-                    })}
+                    })()}
                   </div>
                 </>
               )}
