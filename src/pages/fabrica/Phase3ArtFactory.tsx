@@ -1775,8 +1775,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
         </div>
 
-        {/* Modo de pagamento — compacto · oculto em "Experiência de Destino" */}
-        <div hidden={categoria === "experiencia_destino"} aria-hidden={categoria === "experiencia_destino"}>
+        {/* Modo de pagamento — só existe em "Oferta de Pacote". Em "Experiência" o bloco inteiro some. */}
+        {categoria !== "experiencia_destino" && (
+        <div>
           <label className={labelCls}>Modo de exibição do preço</label>
           <div className="grid grid-cols-3 gap-1.5 mb-3">
             {PAYMENT_PRESETS.map((p) => (
@@ -1893,7 +1894,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
 
           {/* Opções de preço — colapsável, desativada por padrão, aplica a TODAS variações */}
-          <div hidden={categoria === "experiencia_destino"} aria-hidden={categoria === "experiencia_destino"} className="mt-4 bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
+          <div className="mt-4 bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
             <button
               type="button"
               onClick={() => {
@@ -1965,13 +1966,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             )}
           </div>
 
-
           {formattedPriceForAd && (
             <p className="text-[11px] text-emerald-300/90 font-mono mt-2">
               Prévia: {paymentLabel ? `${paymentLabel} · ` : ""}{currencySymbol} {formattedPriceForAd}{paymentSuffix ? ` · ${paymentSuffix}` : ""}
             </p>
           )}
         </div>
+        )}
 
         {/* Tipografia — colapsável (mesmo padrão dos outros blocos) */}
         <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
