@@ -1950,7 +1950,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         {/* Benefícios — em Experiência de Destino usa apenas texto, sem selector de ícones. */}
         <div>
           <div className="flex items-baseline justify-between mb-2">
-            <label className={labelCls}>Benefícios / Inclusos</label>
+            <label className={labelCls}>{categoria === "experiencia_destino" ? "Descrição da experiência" : "Benefícios / Inclusos"}</label>
               <span className="text-[10px] text-white/40">
                 {highlights.length}/{MAX_HIGHLIGHTS}{categoria === "experiencia_destino" ? " · texto da experiência" : " · clique no ícone para trocar"}
               </span>
@@ -2010,7 +2010,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   value={newHl}
                   onChange={(e) => setNewHl(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && addHighlight()}
-                  placeholder="Ex: Bebidas inclusas"
+                  placeholder={categoria === "experiencia_destino" ? "Ex: Pôr do sol privativo" : "Ex: Bebidas inclusas"}
                   className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder:text-white/30 outline-none"
                 />
                 <button
