@@ -1,48 +1,29 @@
 // ============================================================
-// V0_Experiencia · COMPONENTE SEMÂNTICO (estrutura + mapeamento)
+// V0_Experiencia · LUXO & DESEJO (Categoria "Experiência de Destino")
 // ------------------------------------------------------------
-// Layout focado em LUXO e DESEJO (categoria "Experiência de Destino").
-// Aqui apenas a ARQUITETURA de seções e o consumo dos campos do
-// formulário lateral. SEM CSS/design e SEM chamadas de API.
-//
-// Este componente ainda NÃO é renderizado em produção — serve como
-// blueprint da estrutura para a próxima etapa (estilização).
-// As variações da categoria "Oferta de Pacote" permanecem intactas.
+// Renderização visual completa (CSS + mapeamento). Não toca em
+// nenhuma variação da categoria "Oferta de Pacote".
+// Aspect 9:16 (story) por padrão; aceita "square" via prop.
 // ============================================================
 
 import type { FabricaState } from "@/hooks/useFabricaContext";
 
 export interface V0ExperienciaProps {
-  /** Imagem de fundo (URL ou base64) — IA Pura, Foto Real ou Sua Imagem. */
   backgroundImage: string;
-  /** Logo da agência em base64 (opcional). */
   logoBase64?: string;
-  /** Destino consumido do formulário lateral. */
   destination: string;
-  /** Nome da promoção (ex.: "TEMPORADA DOURADA"). */
   promoName: string;
-  /** Título do anúncio (subtítulo elegante). */
   adTitle: string;
-  /** Lista de benefícios/inclusos — usamos o 1º item ou os "dias de viagem". */
   highlights: Array<{ text: string; icon?: string }>;
-  /** Período de viagem (ex.: "5 dias", "Janeiro"). Fallback para a pílula. */
   travelPeriod?: string;
-  /** Texto de destaque (ex.: "30% OFF" / valor de desconto). */
   highlightLine?: string;
-  /** Cor primária da marca (texto/realces). */
   primaryColor: string;
-  /** Cor secundária da marca (CTA). */
   secondaryColor: string;
-  /** Texto do CTA (default "RESERVE AGORA"). */
   ctaLabel?: string;
-  /** Texto do rodapé legal (default genérico). */
   legalText?: string;
+  format?: "story" | "square";
 }
 
-/**
- * Constrói as props do V0_Experiencia a partir do estado global da Fábrica.
- * Centraliza o mapeamento `formulário → componente` para reuso.
- */
 export function mapStateToV0Experiencia(
   state: FabricaState,
   backgroundImage: string,
@@ -60,15 +41,11 @@ export function mapStateToV0Experiencia(
     primaryColor: state.primaryColor,
     secondaryColor: state.secondaryColor,
     ctaLabel: "RESERVE AGORA",
-    legalText: "Sujeito a disponibilidade. Consulte condições.",
+    legalText: "Imagem ilustrativa, gerada mediante IA não condiz 100% com a realidade.",
+    format: state.lastFormat === "square" ? "square" : "story",
   };
 }
 
-/**
- * V0_Experiencia — blueprint semântico (sem CSS).
- * Cada <section data-area="..."> mapeia 1:1 a especificação:
- *   bg / topo / pilula / titulo-principal / cta / rodape
- */
 export function V0Experiencia(props: V0ExperienciaProps) {
   const {
     backgroundImage,
@@ -81,63 +58,97 @@ export function V0Experiencia(props: V0ExperienciaProps) {
     highlightLine,
     secondaryColor,
     ctaLabel = "RESERVE AGORA",
-    legalText = "Sujeito a disponibilidade. Consulte condições.",
+    legalText = "Imagem ilustrativa, gerada mediante IA não condiz 100% com a realidade.",
+    format = "story",
   } = props;
 
-  // Pílula: 1º benefício, ou período de viagem como fallback.
   const pillText = highlights?.[0]?.text || travelPeriod || "";
+  const aspect = format === "square" ? "aspect-square" : "aspect-[9/16]";
+
+  // Linha 2 — destino (em caps) ou fallback estático
+  const headlineLine2 = destination ? destination.toUpperCase() : "NESSA VIAGEM.";
 
   return (
-    <article data-variant="V0_Experiencia" data-category="experiencia_destino">
-      {/* 1 · BACKGROUND ─ imagem do destino + overlay degradê (CSS depois) */}
-      <section data-area="bg">
-        <img data-role="bg-image" src={backgroundImage} alt={destination} />
-        <div data-role="bg-overlay" aria-hidden />
-      </section>
+    <article
+      data-variant="V0_Experiencia"
+      data-category="experiencia_destino"
+      className={`relative w-full ${aspect} overflow-hidden rounded-xl bg-black select-none`}
+      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+    >
+      {/* 1 · BACKGROUND ─ imagem + overlay degradê */}
+      <img
+        src={backgroundImage}
+        alt={destination || "destino"}
+        className="absolute inset-0 w-full h-full object-cover"
+        draggable={false}
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/80"
+      />
 
-      {/* 2 · TOPO ─ logo + título da categoria + subtítulo */}
-      <header data-area="topo">
-        {logoBase64 ? (
-          <img data-role="agency-logo" src={logoBase64} alt="Logo" />
-        ) : null}
-        <h2 data-role="category-title" data-font="serif">
-          {promoName}
-        </h2>
-        <p data-role="ad-subtitle" data-font="sans">
-          {adTitle}
-        </p>
-      </header>
+      {/* Conteúdo */}
+      <div className="relative z-10 flex flex-col items-center h-full w-full px-6 pt-8 pb-10 text-white text-center">
+        {/* 2 · TOPO ─ logo + categoria + subtítulo */}
+        <header className="flex flex-col items-center gap-3 w-full">
+          {logoBase64 ? (
+            <img
+              src={logoBase64}
+              alt="Logo"
+              className="h-12 w-auto object-contain mb-1 drop-shadow-lg"
+            />
+          ) : null}
 
-      {/* 3 · PÍLULA ─ benefício/dias de viagem */}
-      <div data-area="pilula" role="presentation">
-        <span data-role="pill-text">{pillText}</span>
-      </div>
+          {promoName ? (
+            <h2
+              className="text-[15px] sm:text-base tracking-[0.18em] uppercase font-bold text-white drop-shadow"
+              style={{ fontFamily: "'Playfair Display', 'Cormorant Garamond', Georgia, serif" }}
+            >
+              {promoName}
+            </h2>
+          ) : null}
 
-      {/* 4 · TÍTULO PRINCIPAL ─ destaque + destino */}
-      <section data-area="titulo-principal">
-        <p data-role="headline-line-1" data-weight="light">
-          {highlightLine}
-        </p>
-        <h1 data-role="headline-line-2" data-weight="black">
-          {destination ? destination.toUpperCase() : "NESSA VIAGEM."}
-        </h1>
-      </section>
+          {adTitle ? (
+            <p className="text-[11px] sm:text-xs font-light tracking-wide text-white/90">
+              {adTitle}
+            </p>
+          ) : null}
 
-      {/* 5 · CTA ─ usa cor secundária da marca */}
-      <div data-area="cta">
+          {/* 3 · PÍLULA ─ benefício / período */}
+          {pillText ? (
+            <span className="mt-2 inline-flex items-center px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-[11px] sm:text-xs font-medium text-white tracking-wide">
+              {pillText}
+            </span>
+          ) : null}
+        </header>
+
+        {/* 4 · TÍTULO PRINCIPAL ─ desconto + destino */}
+        <section className="flex-1 flex flex-col items-center justify-center gap-1 w-full">
+          {highlightLine ? (
+            <p className="text-2xl sm:text-3xl font-light text-white tracking-wide drop-shadow-md leading-tight">
+              {highlightLine}
+            </p>
+          ) : null}
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight drop-shadow-md leading-[1.05]">
+            {headlineLine2}
+          </h1>
+        </section>
+
+        {/* 5 · CTA */}
         <button
           type="button"
-          data-role="cta-button"
-          data-color-source="secondaryColor"
-          data-bg={secondaryColor}
+          className="mt-2 mb-6 px-8 py-3 rounded-md text-white font-bold text-xs sm:text-sm tracking-wider uppercase shadow-lg transition-transform hover:scale-[1.02]"
+          style={{ background: secondaryColor }}
         >
           {ctaLabel}
         </button>
       </div>
 
-      {/* 6 · RODAPÉ ─ aviso legal minúsculo */}
-      <footer data-area="rodape">
-        <small data-role="legal">{legalText}</small>
+      {/* 6 · RODAPÉ legal */}
+      <footer className="absolute bottom-2 left-0 right-0 z-10 text-center px-4">
+        <small className="text-[9px] sm:text-[10px] text-gray-300/80 tracking-wide">
+          {legalText}
+        </small>
       </footer>
     </article>
   );

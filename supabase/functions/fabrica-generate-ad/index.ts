@@ -171,6 +171,17 @@ Qualidade cinematográfica, iluminação natural perfeita, cores vivas e saturad
 
       prompt = tpl.builder(vars);
       usedTemplateId = tpl.id;
+
+      // ── V0_Experiencia · LUXO override ──────────────────────────────────
+      // Quando a categoria é "Experiência de Destino", substitui o prompt
+      // visual por uma cena de altíssimo padrão com negative space no
+      // centro/topo para leitura de fontes serifadas brancas e CTA.
+      if (isExperiencia) {
+        const destLuxo = body.destination || "destino paradisíaco";
+        prompt = `Fotografia publicitária comercial de altíssimo padrão, hiper-realista e cinematográfica. Um cenário de extremo luxo e exclusividade em ${destLuxo}. Iluminação dramática e profunda (chiaroscuro ou sunset premium) que combine com um tom profundo e sofisticado. A imagem deve ter foco perfeito (sharp focus) no cenário ao fundo, deixando OBRIGATORIAMENTE o centro e a parte superior levemente escurecidos e com 'negative space' absoluto (sem elementos visuais concorrentes) para a perfeita leitura de fontes serifadas brancas e botões. Qualidade 8k, nítida.
+${safeZoneRules(format)}
+Sem texto, sem logos, sem watermarks na imagem.`;
+      }
     } else {
       // Fallback: prompt genérico
       const dest = body.destination || "destino paradisíaco";
