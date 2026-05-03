@@ -863,7 +863,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               titleScale,
               descScale,
               textColorOverride: effectiveTextColor,
-              baseTextMode,
             });
             if (state.logoBase64) {
               try {
@@ -1038,7 +1037,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 titleScale,
                 descScale,
                 textColorOverride: effectiveTextColor,
-                baseTextMode,
               });
               if (state.logoBase64) {
                 const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
@@ -1079,7 +1077,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 titleScale,
                 descScale,
                 textColorOverride: effectiveTextColor,
-                baseTextMode,
               });
               if (state.logoBase64) {
                 const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
@@ -1188,7 +1185,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             titleScale,
             descScale,
             textColorOverride: effectiveTextColor,
-            baseTextMode,
           });
           if (state.logoBase64) {
             try {
