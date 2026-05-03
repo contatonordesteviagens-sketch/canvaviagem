@@ -935,9 +935,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
         toast.info(`Gerando ${picks.length} ${picks.length === 1 ? "variação" : "variações"} em IA Pura — ${cat.name}`);
 
-        const experienceBackgroundPrompt = (variant: number) => variant === 1
-          ? `Fotografia editorial de viagens de luxo, cinematográfica e de altíssima qualidade (8K). Uma tomada ampla e ultrarrealista de ${destination || "destino paradisíaco"}. A iluminação é rim lighting (luz de contorno), criando uma luz suave, serena e exclusiva. Composição limpa, sem desfoque de movimento. A atmosfera geral é de uma beleza estonteante e de alto padrão. Espaço central livre e escurecido sutilmente para sobreposição de tipografia branca perfeitamente nítida. Sem texto, sem logos, sem watermarks, sem ícones, sem pictogramas.`
-          : `Fotografia publicitária comercial de altíssimo padrão, hiper-realista e cinematográfica. Um cenário de extremo luxo e exclusividade em ${destination || "destino paradisíaco"}. Iluminação dramática e profunda que combine com um tom sofisticado. Centro e parte superior com negative space absoluto para tipografia branca. Sem texto, sem logos, sem watermarks, sem ícones, sem pictogramas.`;
+        // PROMPT DE FUNDO LIMPO — A IA é instruída a gerar APENAS a fotografia,
+        // sem nenhum elemento gráfico/tipográfico. Toda a UI (logo, textos, preço,
+        // ícones, botões) é desenhada depois pelo motor Canvas (composeTravelAd).
+        const NEGATIVE_UI = `STRICT NEGATIVE CONSTRAINTS — the output MUST be a pure photograph only. ABSOLUTELY FORBIDDEN: any text, letters, numbers, words, captions, headlines, prices, currency symbols, dates, typography, fonts, watermarks, signatures, logos, brand marks, badges, stamps, stickers, labels, banners, ribbons, callouts, speech bubbles, icons, pictograms, emojis, arrows, frames, borders, overlays, color blocks, gradients painted on top, UI elements, buttons, cards, panels, mockup chrome, phone frames, social media UI, Instagram/Facebook/TikTok interface, hashtags, @mentions, QR codes, barcodes. The image must look like an untouched RAW photograph straight from a professional camera — nothing rendered, nothing added, no graphic design whatsoever.`;
+        const experienceBackgroundPrompt = (variant: number) => (variant === 1
+          ? `Pure editorial travel photography, cinematic, ultra high quality 8K. Wide ultrarealistic shot of ${destination || "destino paradisíaco"}. Rim lighting, soft serene exclusive light, clean composition, no motion blur. Stunning high-end atmosphere. Subtle darker negative space across the frame to allow later typographic overlay (do NOT draw anything in that space).`
+          : `High-end commercial photography, hyperrealistic and cinematic. Extreme luxury and exclusivity scene at ${destination || "destino paradisíaco"}. Dramatic deep lighting, sophisticated tone. Generous negative space at top and center for later typographic overlay (do NOT draw anything there).`
+        ) + " " + NEGATIVE_UI;
 
         // ── Decisão V4 em IA Pura (apenas Oferta de Pacote) ─────────────────
         // Sorteia se esta geração será V4 (compositor card) ou IA tradicional,
