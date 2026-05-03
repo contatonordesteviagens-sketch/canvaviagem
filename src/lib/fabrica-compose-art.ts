@@ -2102,8 +2102,30 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
 
+  // ============================================================
+  // V1_Experiencia · ROTEAMENTO (estrutura lógica — sem layout ainda)
+  // ------------------------------------------------------------
+  // Renderiza SOMENTE quando a categoria "Experiência de Destino"
+  // estiver selecionada (isExperience === true) e a variante forçada
+  // for 1 (V1). Herda os mesmos dados do formulário lateral via o
+  // escopo de composeTravelAd.
+  //
+  // ⚠️ Layout/CSS NÃO implementados ainda — placeholder que reaproveita
+  //    o canvas de V0_Experiencia para não quebrar o fluxo até o design
+  //    da V1 ser definido. NÃO altera a renderização da V0.
+  // ============================================================
+  const renderV1Experiencia = (): string => {
+    // TODO(V1_Experiencia): implementar layout próprio (luxo alternativo).
+    // Por enquanto, mantém um fallback seguro reutilizando a V0 para
+    // garantir continuidade visual durante o desenvolvimento.
+    return renderV0Experiencia();
+  };
+
   if (isExperience && typeof forceVariant === "number" && forceVariant === 0) {
     return renderV0Experiencia();
+  }
+  if (isExperience && typeof forceVariant === "number" && forceVariant === 1) {
+    return renderV1Experiencia();
   }
 
   if (strategy === "ancora") {
