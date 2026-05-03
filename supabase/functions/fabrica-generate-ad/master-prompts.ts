@@ -520,6 +520,57 @@ Clean modern UI, flawless spelling, perfect alignment, zero overlapping text, hi
 ✅ Aspect ratio: 1:1 absoluto.`;
     }
 
+    // 🔒 1/1/1 · V1 — SPLIT VERTICAL ESQUERDA/DIREITA + ÍCONES MONOCROMÁTICOS
+    if (sqVer === 1) {
+      const priceLabel = v.installments === "1" ? "À VISTA" : `EM ATÉ ${v.installments}x`;
+      return `[CRITICAL DESIGN LOGIC & CONTRAST RULE: NEVER generate light text on a light background. NEVER generate dark text on a dark background. IF a background is dark, text MUST be pure white. Strictly obey the color variables provided.]
+[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA]
+A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) associada à Versão de Layout: V1.
+OBRIGATÓRIO: Layout com divisão vertical (esquerda/direita), ícones monocromáticos e padding seguro abaixo da logo.
+PROIBIDO copiar V0/V2/V3/V4 ou Experiência.
+
+[IMAGE]
+A high-end, premium travel advertisement with a strict 1:1 square aspect ratio (1080x1080, 8K). The layout features a sharp, perfectly straight vertical split.
+
+[LEFT PANEL — UI Design · 45% width]
+Solid ${v.primaryHex} background covering the full height of the left 45%.
+- Top-left corner: ${agencyTag}.
+- 🚨 CRITICAL PADDING: a generous EMPTY vertical space (≥60px) directly below the logo BEFORE any text begins.
+- Below the padding, stacked top to bottom (ALL text in ${v.primaryTextHex || "PURE WHITE"} for maximum contrast against ${v.primaryHex}):
+   • Small text: "${v.promoName || "OFERTA EXCLUSIVA"}".
+   • MASSIVE ultra-bold text: "${v.destination}".
+   • Medium text: "${v.duration || "Pacote completo"}".
+
+[INCLUSIONS — vertical pill stack]
+Below the headline, a vertical stack of FOUR neatly aligned translucent (semi-transparent white, ~15% opacity) pill-buttons.
+🚨 The AI MUST use perfectly matching MONOCHROMATIC line icons (all the EXACT same single ${v.primaryTextHex || "white"} tone) on the left of each pill, next to bold ${v.primaryTextHex || "PURE WHITE"} text:
+   • "${sb1}"
+   • "${sb2}"
+   • "${sb3}"
+   • "${sb4}"
+
+[PRICE BLOCK — bottom-left corner of the LEFT PANEL]
+A prominent, DARKER contrasting rectangular highlight box (deep charcoal/near-black) with rounded corners.
+🚨 INSIDE the dark box, ALL text MUST be PURE WHITE (#FFFFFF). Stacked neatly with ZERO overlap:
+- Small PURE WHITE text "${priceLabel}".
+- MASSIVE extra-bold PURE WHITE text "R$ ${v.installmentValue}".
+- Small PURE WHITE text "por pessoa".
+
+[RIGHT PANEL — Photo · 55% width]
+An 8K photorealistic image of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant, cinematic, natural daylight.
+The photo is framed like a card with slightly rounded corners, revealing a solid ${v.secondaryHex} border (≈24px thick) around its outer edges.
+
+[AESTHETIC]
+Clean modern UI, flawless spelling, zero text overlapping, perfect alignment, premium high contrast.
+
+[REGRAS DE ISOLAMENTO]
+🚫 PROIBIDO: split horizontal, ribbon central, full-bleed photo, gradientes, ícones 3D ou multi-color, watermarks, copiar V0/V2/V3/V4 ou Experiência.
+🚫 PROIBIDO: texto claro em fundo claro; texto escuro em fundo escuro.
+🚫 PROIBIDO: começar texto colado abaixo da logo (padding obrigatório).
+✅ OBRIGATÓRIO: split vertical 45/55, padding generoso abaixo da logo, ícones MONOCROMÁTICOS em pílulas translúcidas, bloco DARK de preço com texto branco puro, foto direita com borda ${v.secondaryHex}.
+✅ Aspect ratio: 1:1 absoluto.`;
+    }
+
     return `[CRITICAL DESIGN LOGIC & CONTRAST RULE: NEVER generate light text on a light background. NEVER generate dark text on a dark background. Strictly obey the color variables provided.]
 [SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA]
 A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) associada à Versão de Layout: V0.
