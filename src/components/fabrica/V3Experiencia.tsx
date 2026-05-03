@@ -168,16 +168,23 @@ export function V3Experiencia(props: V3ExperienciaProps) {
       />
 
       {/* ─────────────────────────────────────────────
-          2 · TOPO · texto isolado (sans-serif branco pequeno)
+          2 · TOPO · logo + nome da experiência
          ───────────────────────────────────────────── */}
       <header
         data-region="top"
-        className="absolute top-0 left-0 right-0 flex justify-center pt-8 px-6 z-10"
+        className="absolute top-0 left-0 right-0 flex flex-col items-center gap-3 pt-8 px-6 z-10"
       >
+        {props.logoBase64 ? (
+          <img
+            src={props.logoBase64}
+            alt="logo"
+            className="object-contain bg-transparent max-h-16 sm:max-h-20 w-auto drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]"
+          />
+        ) : null}
         {promoName ? (
           <span
             data-field="promoName"
-            className="text-white text-[13px] sm:text-sm font-medium tracking-wide text-center drop-shadow-lg"
+            className="text-white text-[13px] sm:text-sm font-medium tracking-widest uppercase text-center drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]"
             style={{ fontFamily: "Inter, system-ui, sans-serif" }}
           >
             {promoName}
@@ -187,33 +194,33 @@ export function V3Experiencia(props: V3ExperienciaProps) {
 
       {/* ─────────────────────────────────────────────
           3 · CLUSTER INFERIOR
-             - Título maciço serif branco com drop-shadow-2xl
-             - Botão sólido rounded-full (Cor Primária)
-             - Botão outline rounded-full (borda Primária)
+             - Título serif branco com sombra cinematográfica difusa
+             - Botão sólido (Cor Primária + glassmorphism)
+             - Botão outline (borda Primária + glassmorphism)
          ───────────────────────────────────────────── */}
       <section
         data-region="bottom-cluster"
-        className="absolute left-0 right-0 bottom-0 flex flex-col items-center gap-4 px-6 pb-10 z-10"
+        className="absolute left-0 right-0 bottom-0 flex flex-col items-center gap-6 px-6 pb-12 z-10"
       >
         {adTitle ? (() => {
           const len = adTitle.length;
-          // Auto-fit: texto curto = gigante, longo = reduz
+          // Auto-fit: texto curto = grande, longo = reduz (com respiro)
           const sizeClass =
             len <= 14
-              ? "text-6xl sm:text-7xl md:text-8xl"
+              ? "text-5xl sm:text-6xl md:text-7xl"
               : len <= 24
-                ? "text-5xl sm:text-6xl md:text-7xl"
+                ? "text-4xl sm:text-5xl md:text-6xl"
                 : len <= 40
-                  ? "text-4xl sm:text-5xl md:text-6xl"
-                  : "text-3xl sm:text-4xl md:text-5xl";
+                  ? "text-3xl sm:text-4xl md:text-5xl"
+                  : "text-2xl sm:text-3xl md:text-4xl";
           return (
             <h1
               data-field="adTitle"
-              className={`text-white text-center font-bold uppercase leading-[0.95] tracking-tight drop-shadow-2xl shadow-black ${sizeClass}`}
+              className={`text-white text-center font-bold uppercase leading-tight tracking-wide drop-shadow-2xl drop-shadow-[0_10px_10px_rgba(0,0,0,0.6)] ${sizeClass}`}
               style={{
                 fontFamily: titleFont,
                 textShadow:
-                  "0 4px 18px rgba(0,0,0,0.85), 0 2px 6px rgba(0,0,0,0.95)",
+                  "0 8px 24px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.45)",
               }}
             >
               {adTitle}
@@ -221,16 +228,17 @@ export function V3Experiencia(props: V3ExperienciaProps) {
           );
         })() : null}
 
-        <div className="flex flex-col items-center gap-2.5 w-full mt-2">
+        <div className="flex flex-col items-center gap-3 w-full">
           {travelPeriod ? (
             <button
               type="button"
               data-field="travelPeriod"
               data-style="solid"
-              className="rounded-full px-7 py-2.5 font-sans font-bold text-[13px] sm:text-sm tracking-wide shadow-xl shadow-black/50"
+              className="rounded-full px-7 py-2.5 font-sans font-bold text-[13px] sm:text-sm tracking-wide shadow-xl shadow-black/50 backdrop-blur-md bg-opacity-90"
               style={{
                 background: primaryColor,
                 color: onPrimaryText,
+                opacity: 0.92,
               }}
             >
               {travelPeriod}
@@ -242,10 +250,11 @@ export function V3Experiencia(props: V3ExperienciaProps) {
               type="button"
               data-field="firstHighlight"
               data-style="outline"
-              className="rounded-full px-7 py-2.5 font-sans font-bold text-[13px] sm:text-sm tracking-wide bg-transparent border-2 backdrop-blur-sm"
+              className="rounded-full px-7 py-2.5 font-sans font-bold text-[13px] sm:text-sm tracking-wide border-2 backdrop-blur-md"
               style={{
                 borderColor: primaryColor,
                 color: primaryColor,
+                background: "rgba(255,255,255,0.06)",
               }}
             >
               {firstHighlight}
