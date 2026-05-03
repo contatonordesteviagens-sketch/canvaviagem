@@ -517,6 +517,26 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     }
   }, [fontFamily]);
 
+  // Fallback: se já existe logo mas ainda não há paleta extraída (ex.: logo
+  // enviada antes da feature existir), roda a extração ao entrar na Fase 3.
+  useEffect(() => {
+    if (!state.logoBase64) return;
+    if (state.brandPalette && state.brandPalette.swatches?.length) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { extractBrandPaletteFromImage } = await import("@/lib/fabrica-color-extract");
+        const palette = await extractBrandPaletteFromImage(state.logoBase64);
+        if (!cancelled && palette) {
+          update({ brandPalette: palette });
+          toast.success("Paleta da sua marca detectada!");
+        }
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.logoBase64]);
+
   // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
   const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
   const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
