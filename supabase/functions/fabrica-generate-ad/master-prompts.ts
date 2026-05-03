@@ -476,47 +476,66 @@ export function promptClassicVertical(v: MasterPromptVars): string {
     const sqVer = sqSeedMatch ? parseInt(sqSeedMatch[1]) : 0;
     const sqInstallmentLabel = v.installments === "1" ? "À VISTA" : `${v.installments}x`;
 
-    // 🔒 1/1/1 · V2 — FAIXA CENTRAL HORIZONTAL + GRID 2x2
+    // 🔒 1/1/1 · V2 — FAIXA CENTRAL HORIZONTAL + GRID 2x2 (HEX BLINDADO)
     if (sqVer === 2) {
-      return `[CRITICAL DESIGN LOGIC & CONTRAST RULE: NEVER generate light text on a light background. NEVER generate dark text on a dark background. Strictly obey the color variables provided.]
-[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA]
-A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) associada à Versão de Layout: V2.
-OBRIGATÓRIO: Usar a estrutura de faixa central horizontal e grid 2x2. PROIBIDO copiar V0/V1/V3/V4 ou Experiência.
+      const primaryTxtV2 = v.primaryTextHex || "#FFFFFF";
+      return `[CRITICAL SYSTEM COMMAND: EXACT BRAND COLORS & ABSOLUTE CONTRAST. The AI MUST use the exact HEX color codes provided for backgrounds. The AI MUST strictly use the assigned text colors. Icons MUST be monochromatic.]
+[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA. Aplicar ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) - Layout V2.]
 
-[IMAGE]
-A premium, clean modern travel advertisement with a strict 1:1 square aspect ratio (1080x1080, 8K).
+IMAGEM: A premium, clean modern travel advertisement with a strict 1:1 square aspect ratio (1080x1080, 8K).
 
-[BACKGROUND]
-The base background of the entire LOWER HALF is a solid, clean OFF-WHITE (light cream #F7F3EC).
+TOP SECTION (Photo - Top 45%): An 8k photorealistic image of ${v.destination}. Scene: ${v.destinationDescription}. The photo is framed like a card with slightly rounded corners at the top, sitting flush against the middle ribbon. Top-left corner: a minimalist logo placeholder (${agencyTag}) with proper empty space around it.
 
-[TOP SECTION — Photo · Top 45%]
-An 8K photorealistic image of ${v.destination}. Scene: ${v.destinationDescription}. Vibrant scenery, cinematic. Framed like a card with slightly rounded TOP corners, sitting flush against the middle ribbon below.
+MIDDLE RIBBON: Directly below the photo, a thick, solid horizontal ribbon stretches edge-to-edge using EXACT color hex ${v.primaryHex}. CRITICAL: Inside this ribbon, the massive ultra-bold text "${v.promoName || `OFERTA ${v.destination}`}" MUST BE rendered in EXACT hex ${primaryTxtV2}.
 
-[MIDDLE RIBBON — The Divider]
-Directly below the photo, a solid ${v.primaryHex} horizontal ribbon stretches edge-to-edge across the full width.
-🚨 Centered inside this ribbon: massive, ultra-bold text reading "${v.promoName || `OFERTA ${v.destination}`}".
-🚨 CRITICAL CONTRAST: this ribbon text MUST be PURE WHITE (#FFFFFF) for absolute contrast against ${v.primaryHex}. Never use dark tones here.
+BOTTOM SECTION (Light Background): The base background of the entire lower half is a solid off-white (light cream #F7F3EC).
 
-[BOTTOM SECTION — UI on OFF-WHITE background]
-Directly below the ribbon, perfectly centered, a clean 2x2 grid of inclusions. ALL text DARK on the off-white background.
-Row 1:
-  • minimalist DARK icon + bold DARK text "${sb1}"     |     minimalist DARK icon + bold DARK text "${sb2}"
-Row 2:
-  • minimalist DARK icon + bold DARK text "${sb3}"     |     minimalist DARK icon + bold DARK text "${sb4}"
+INCLUSIONS: Centered on the off-white background is a perfectly aligned 2x2 grid. The AI MUST generate MONOCHROMATIC icons and the text MUST BE PURE BLACK (#000000) for high contrast against the cream background:
+  Row 1: "${sb1}"  |  "${sb2}"
+  Row 2: "${sb3}"  |  "${sb4}"
 
-[PRICE BLOCK — bottom center]
-A large, solid ${v.primaryHex} rectangular block with rounded corners. INSIDE the block, neatly stacked with ZERO overlap:
-- Small PURE WHITE text "${sqInstallmentLabel}".
-- MASSIVE extra-bold PURE WHITE text "R$ ${v.installmentValue}".
-- Small PURE WHITE text "por pessoa".
+PRICE BLOCK: At the bottom center, a massive, solid rectangular block using EXACT color hex ${v.primaryHex}. CRITICAL: Inside this block, ALL stacked text MUST BE rendered in EXACT hex ${primaryTxtV2}: small text "${sqInstallmentLabel}", massive extra-bold text "R$ ${v.installmentValue}", and small text "por pessoa".
 
-[AESTHETIC]
-Clean modern UI, flawless spelling, perfect alignment, zero overlapping text, high contrast.
+AESTHETIC: Clean modern UI, flawless spelling, zero overlapping text, perfect alignment.
 
 [REGRAS DE ISOLAMENTO]
-🚫 PROIBIDO: split horizontal 50/50 sem ribbon, gradientes, ícones 3D, watermarks, copiar V0/V1/V3/V4 ou Experiência.
-🚫 PROIBIDO: texto claro em fundo claro; texto escuro em fundo escuro.
-✅ OBRIGATÓRIO: foto topo (45%) + ribbon ${v.primaryHex} edge-to-edge com texto branco + grid 2x2 dark sobre off-white + price block ${v.primaryHex} com texto branco.
+🚫 PROIBIDO: gradientes, ícones 3D, multi-color, watermarks, copiar V0/V1/V3 ou Experiência, ignorar HEX exatos.
+✅ OBRIGATÓRIO: foto 45% topo + ribbon EXATO ${v.primaryHex} com texto EXATO ${primaryTxtV2} + grid 2x2 PRETO sobre cream + price block EXATO ${v.primaryHex} com texto EXATO ${primaryTxtV2}.
+✅ Aspect ratio: 1:1 absoluto.`;
+    }
+
+    // 🔒 1/1/1 · V3 — FOTO FULL-BLEED + CARD FLUTUANTE (HEX BLINDADO)
+    if (sqVer === 3) {
+      const primaryTxtV3 = v.primaryTextHex || "#FFFFFF";
+      const secondaryTxtV3 = v.secondaryTextHex || "#FFFFFF";
+      const priceLabelV3 = v.installments === "1" ? "À VISTA" : `EM ATÉ ${v.installments}x`;
+      const pixText = "5% OFF À VISTA NO PIX";
+      return `[CRITICAL SYSTEM COMMAND: EXACT BRAND COLORS & ABSOLUTE CONTRAST. The AI MUST use the exact HEX color codes provided for backgrounds. The AI MUST strictly use the assigned text colors. Icons MUST be monochromatic.]
+[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA. Aplicar ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) - Layout V3.]
+
+IMAGEM: A high-end cinematic travel advertisement with a strict 1:1 square aspect ratio (1080x1080, 8K).
+
+BACKGROUND: A full-bleed, 8k photorealistic image of ${v.destination} (${v.destinationDescription}) covering the entire square canvas.
+
+FLOATING UI CARD: Positioned in the upper-left quadrant is a large floating rectangular card with rounded corners using EXACT color hex ${v.primaryHex}.
+
+INSIDE THE MAIN CARD (Layout & Contrast Rules):
+
+LOGO & PADDING: Top-left corner of the card is a minimalist logo placeholder (${agencyTag}). Leave a massive empty gap of space (≥60px) to the right and below the logo. Absolutely NO text can touch the logo.
+
+TYPOGRAPHY: Safely spaced away from the logo, stacked neatly and rendered ENTIRELY in EXACT hex ${primaryTxtV3}: Bold text "${v.promoName || "OFERTA EXCLUSIVA"}", followed by massive ultra-bold text "${v.destination}".
+
+INCLUSIONS ROW: Below the headline, bold text "${v.duration}" in ${primaryTxtV3} followed by a horizontal row of perfectly matching MONOCHROMATIC icons (all in EXACT ${primaryTxtV3}). All elements here MUST BE rendered in EXACT hex ${primaryTxtV3}.
+
+INNER PRICE BLOCK: A smaller solid block inside the main card using EXACT color hex ${v.secondaryHex}. It contains stacked text rendered ENTIRELY in EXACT hex ${secondaryTxtV3}: "${priceLabelV3}" and massive extra-bold "R$ ${v.installmentValue}".
+
+BOTTOM BUTTON: At the very bottom of the floating card is a solid pill-shaped button using EXACT color hex ${v.secondaryHex}. The text inside MUST BE rendered in EXACT hex ${secondaryTxtV3} reading "${pixText}".
+
+AESTHETIC: Premium UI layout, perfect alignment, highly legible contrast, flawless spelling, zero overlap.
+
+[REGRAS DE ISOLAMENTO]
+🚫 PROIBIDO: split horizontal/vertical, ribbon central, gradientes, ícones 3D ou multi-color, watermarks, copiar V0/V1/V2 ou Experiência, ignorar HEX exatos.
+✅ OBRIGATÓRIO: foto full-bleed + card flutuante EXATO ${v.primaryHex} no quadrante superior-esquerdo, texto EXATO ${primaryTxtV3}, inner price EXATO ${v.secondaryHex} com texto EXATO ${secondaryTxtV3}, pill EXATO ${v.secondaryHex}.
 ✅ Aspect ratio: 1:1 absoluto.`;
     }
 
