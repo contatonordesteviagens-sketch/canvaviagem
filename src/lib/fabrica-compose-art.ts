@@ -1665,10 +1665,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.textAlign = "left";
       ctx.fillStyle = "#ffffff";
       ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText("a partir de", leftX, priceY + 24);
+      ctx.fillText(leftTopV4, leftX, priceY + 24);
 
-      // Pílula 12X (fundo secundário, texto primário)
-      const pillTxt = `${parcNV4}X`;
+      // Pílula sincronizada com o modo de pagamento (10X / À VISTA / Entrada + parcelas)
       ctx.font = "900 38px Inter, Arial, sans-serif";
       const pillTxtW = ctx.measureText(pillTxt).width;
       const pillPadX = 18;
@@ -1688,7 +1687,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // "sem juros" abaixo da pílula
       ctx.fillStyle = "#ffffff";
       ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText("sem juros", leftX, pillY + pillH + 28);
+      ctx.fillText(leftBottomV4, leftX, pillY + pillH + 28);
 
       // Direita: R$ médio + valor GIGANTE
       ctx.textAlign = "right";
