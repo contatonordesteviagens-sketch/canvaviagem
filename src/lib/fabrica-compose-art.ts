@@ -1532,7 +1532,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const instMatchV4 = (installments || "10x").match(/(\d{1,2})\s*x/i);
       const parcNV4 = instMatchV4 ? instMatchV4[1] : "1";
       const leftTopV4 = (() => {
-        if (paymentMode === "cash" || paymentMode === "cash_discount") return paymentLabel || "À VISTA";
+        if (paymentMode === "cash" || paymentMode === "cash_discount") return "pagamento";
         if (paymentMode === "down_plus") return "entrada +";
         return "a partir de";
       })();
