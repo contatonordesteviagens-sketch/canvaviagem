@@ -366,7 +366,104 @@ const pickPhotoRefs = (
   return Array.from({ length: count }, () => primary);
 };
 
-export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
+// Bloco da Paleta da Marca: cada cor detectada vira 3 botões claros
+// (Primária / Secundária / Texto) — elimina ambiguidade do clique direito
+// e garante que o usuário consegue aplicar qualquer cor onde quiser.
+function BrandPaletteBlock({
+  palette,
+  primaryColor,
+  secondaryColor,
+  textColorOverride,
+  setPrimaryColor,
+  setSecondaryColor,
+  setTextColorOverride,
+}: {
+  palette: { primary: string; secondary: string; accent: string; swatches: string[] };
+  primaryColor: string;
+  secondaryColor: string;
+  textColorOverride: string;
+  setPrimaryColor: (c: string) => void;
+  setSecondaryColor: (c: string) => void;
+  setTextColorOverride: (c: string) => void;
+}) {
+  return (
+    <div
+      className="relative rounded-xl p-4 border"
+      style={{
+        borderColor: `${palette.primary}66`,
+        background: `linear-gradient(135deg, ${palette.primary}1a 0%, ${palette.secondary}14 100%)`,
+      }}
+    >
+      <div className="flex items-baseline justify-between mb-3">
+        <label className="text-[11px] uppercase tracking-widest text-white/70 font-bold">🎨 Paleta da sua marca</label>
+        <button
+          type="button"
+          onClick={() => {
+            setPrimaryColor(palette.primary);
+            setSecondaryColor(palette.secondary);
+            toast.success("Paleta da marca aplicada!");
+          }}
+          className="text-[10px] font-bold px-2.5 py-1 rounded-md text-black"
+          style={{ background: `linear-gradient(135deg, ${palette.primary}, ${palette.secondary})` }}
+          title="Aplicar primária + secundária da logo"
+        >
+          Aplicar paleta
+        </button>
+      </div>
+
+      <div className="space-y-1.5">
+        {palette.swatches.map((c) => {
+          const isPrimary = isSameHex(c, primaryColor);
+          const isSecondary = isSameHex(c, secondaryColor);
+          const isText = isSameHex(c, textColorOverride);
+          return (
+            <div key={c} className="flex items-center gap-2">
+              <span
+                className="w-7 h-7 rounded-full border border-white/30 flex-shrink-0 shadow-md"
+                style={{ background: c }}
+                title={c}
+              />
+              <span className="text-[10px] font-mono text-white/50 w-16 flex-shrink-0">{c.toUpperCase()}</span>
+              <div className="flex gap-1 flex-1">
+                <button
+                  type="button"
+                  onClick={() => setPrimaryColor(c)}
+                  className={`flex-1 text-[10px] px-2 py-1 rounded-md border transition-all ${
+                    isPrimary ? "bg-white/20 border-white text-white font-bold" : "bg-white/5 border-white/15 text-white/70 hover:bg-white/10"
+                  }`}
+                >
+                  Primária
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSecondaryColor(c)}
+                  className={`flex-1 text-[10px] px-2 py-1 rounded-md border transition-all ${
+                    isSecondary ? "bg-white/20 border-white text-white font-bold" : "bg-white/5 border-white/15 text-white/70 hover:bg-white/10"
+                  }`}
+                >
+                  Secundária
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTextColorOverride(c)}
+                  className={`flex-1 text-[10px] px-2 py-1 rounded-md border transition-all ${
+                    isText ? "bg-white/20 border-white text-white font-bold" : "bg-white/5 border-white/15 text-white/70 hover:bg-white/10"
+                  }`}
+                >
+                  Texto
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="text-[10px] text-white/45 mt-2.5">
+        Clique em <strong className="text-white/70">Primária</strong>, <strong className="text-white/70">Secundária</strong> ou <strong className="text-white/70">Texto</strong> ao lado de cada cor para aplicar onde quiser.
+      </p>
+    </div>
+  );
+}
+
   const { state, update } = useFabricaContext();
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
   const setCategoria = (c: CategoriaId) => {
