@@ -41,6 +41,7 @@ export interface V3ExperienciaProps {
   logoBase64?: string;
 
   format?: "story" | "square";
+  baseTextMode?: BaseTextMode;
 }
 
 // ── Utilidades de cor para garantir contraste seguro no botão sólido ──
