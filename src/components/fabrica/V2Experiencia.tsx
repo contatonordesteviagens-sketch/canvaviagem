@@ -32,6 +32,11 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { FabricaState } from "@/hooks/useFabricaContext";
+import {
+  getContrastTextStyle,
+  getDropShadowClass,
+  type BaseTextMode,
+} from "@/lib/fabrica-text-contrast";
 
 export interface V2ExperienciaHighlight {
   text: string;
