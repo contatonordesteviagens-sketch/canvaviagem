@@ -1,29 +1,21 @@
-# Adicionar Layout 1/1/2 V4 — Card Central Flutuante
+# Corrigir V0 (1/1/2): inverter cores e forçar texto nas pílulas
 
 ## Objetivo
-Adicionar versão **V4** ao prompt de Stories 9:16 (Foto Real · Oferta de Pacote): foto full-bleed de fundo + card sólido na cor primária centralizado + pill na cor secundária sobreposta exatamente na borda inferior do card.
+Atualizar o prompt **1/1/2 V0** para casar com a especificação revisada do usuário:
+- **Bottom 55%** passa a usar a **cor PRIMÁRIA** como fundo (não a secundária).
+- **Top pill** muda para a **cor SECUNDÁRIA** com texto escuro.
+- **Headline** continua branco puro, agora sobre o fundo primário.
+- **4 pílulas brancas** ganham regra crítica: NUNCA podem ficar vazias — sempre renderizar texto escuro + ícone.
+- **Bloco de preço** passa a usar a **cor SECUNDÁRIA** como fundo, com TODO texto em DARK (alto contraste sobre fundo claro).
+- **Badge da parcela** vira escuro (`primaryHex`) com texto bright.
+- **Footer PIX** vira faixa escura (`primaryHex`) com texto bright.
 
-## Arquivo a editar
-`supabase/functions/fabrica-generate-ad/master-prompts.ts` — função `promptClassicVertical`. Inserir novo branch `if (ver === 4)` logo antes do bloco V2 atual (após linha 551).
+## Arquivo
+`supabase/functions/fabrica-generate-ad/master-prompts.ts` — substituir o bloco do prompt V0 (linhas ~520-550) preservando o cabeçalho de isolamento, safe zones e top half (foto).
 
-## Roteamento
-Reutiliza o detector de versão já presente (`/-v(\d+)-/` em `creativeSeed`). Sem mudanças no `index.ts` ou no front-end. V0, V2 permanecem intocados.
-
-## Estrutura do prompt V4
-- **Header isolamento:** aplica só a 1/1/2 V4; proíbe herdar V0/V1/V2/V3/Experiência.
-- **Safe zones Instagram:** topo 20% e base 20% vazios.
-- **Background:** foto 8K full-bleed de `v.destination`.
-- **Logo:** placeholder no canto superior-esquerdo, abaixo da safe zone.
-- **Card central:** sólido `v.primaryHex`, retangular, cantos levemente arredondados, drop-shadow.
-- **Conteúdo do card (texto BRANCO PURO obrigatório):**
-  - `v.promoName` ultra-bold massivo
-  - `v.destination` médio elegante
-  - `v.duration` (datas) + linha de ícones minimalistas em `v.secondaryHex`
-- **Bloco de preço (2 colunas dentro do card):**
-  - Esquerda: "pagamento" + pill `v.secondaryHex` com parcela (texto escuro) + "por pessoa"
-  - Direita: `R$ {v.installmentValue}` massivo branco
-- **Pill flutuante de borda:** pill sólida `v.secondaryHex` com `5% OFF À VISTA NO PIX` sobreposta exatamente na borda inferior do card (50% dentro / 50% fora).
-- **Regras finais:** contraste máximo, aspect ratio 9:16 absoluto, zero overlap de texto.
+## Regras adicionais reforçadas no prompt
+- "🚨 CRITICAL RULE FOR INCLUSIONS: every white pill MUST contain dark text + icon. NEVER leave any pill empty."
+- Atualizar PROIBIDOS: incluir "pílulas brancas vazias" e atualizar referência V4.
 
 ## Sem mudanças
-Front-end, `index.ts`, V0/V2 do 1/1/2, V0 do 1/1/1 — todos preservados.
+V2, V4 do 1/1/2, V0 do 1/1/1, front-end, `index.ts` — todos preservados.
