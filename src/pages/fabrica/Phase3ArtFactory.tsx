@@ -876,8 +876,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               duration: categoria === "experiencia_destino" ? (travelPeriod || "5 dias") : "5 NOITES",
               forbiddenHeadlines: guard.headlines,
               forbiddenLayouts: guard.layouts,
-              // V4: injeta prompt cinematográfico apenas quando V4 foi sorteado
-              ...(useV4Composer ? { customPrompt: v4BackgroundPrompt } : {}),
+              ...(isAiExperienceStory
+                ? { customPrompt: experienceBackgroundPrompt(nextVariantAi) }
+                : useV4Composer
+                  ? { customPrompt: v4BackgroundPrompt }
+                  : {}),
             },
           }))
         );
@@ -896,8 +899,48 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           try { img = await reframeImageToAspect(img, format); }
           catch (e) { console.warn("reframe failed", e); }
 
-          // V4 em IA Pura: aplica o compositor (card flutuante) sobre o BG gerado
-          if (useV4Composer) {
+          // Experiência em IA Pura: IA gera só o fundo; textos/dias vêm do compositor local.
+          if (isAiExperienceStory) {
+            try {
+              img = await composeTravelAd({
+                imageUrl: img,
+                format,
+                destination,
+                city: state.city,
+                primaryColor: palette.primary,
+                secondaryColor: palette.secondary,
+                price: formattedPriceForAd || price,
+                currencySymbol,
+                installments,
+                promoName,
+                highlights,
+                hasLogo: !!state.logoBase64,
+                paymentMode,
+                paymentLabel: paymentLabel || undefined,
+                paymentSuffix,
+                strategy: aiExperienceStrategy,
+                variation: freshSeedAi,
+                forceVariant: nextVariantAi,
+                titleOverride: resolvedAdTitle,
+                titleVariations: adTitleVariations,
+                travelPeriod,
+                totalOverride: totalOverride || undefined,
+                showPixBanner,
+                pixBannerText: pixBannerText || undefined,
+                showTotal,
+                fontFamily,
+                titleScale,
+                descScale,
+                textColorOverride: textColorOverride || undefined,
+              });
+              if (state.logoBase64) {
+                const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
+                img = await composeLogoOnImage(img, state.logoBase64);
+              }
+            } catch (e) {
+              console.warn("Compositor Experiência (IA pura) falhou, mantendo BG cru:", e);
+            }
+          } else if (useV4Composer) {
             try {
               img = await composeTravelAd({
                 imageUrl: img,
