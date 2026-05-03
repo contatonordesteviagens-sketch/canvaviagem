@@ -70,6 +70,7 @@ export interface V2ExperienciaProps {
   logoBase64?: string;
 
   format?: "story" | "square";
+  baseTextMode?: BaseTextMode;
 }
 
 const PREMIUM_BADGE_FALLBACK = "EXCLUSIVO";
