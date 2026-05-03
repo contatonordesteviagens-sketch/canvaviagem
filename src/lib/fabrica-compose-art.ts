@@ -1529,18 +1529,25 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const instMatchV4 = (installments || "12x").match(/(\d{1,2})\s*x/i);
       const parcNV4 = instMatchV4 ? instMatchV4[1] : "12";
 
-      // Preço ABSOLUTO (sem vírgula/centavos) — V4 spec
+      // Preço V4 — respeita o toggle "Mostrar centavos" do formulário.
+      // Se o `price` recebido já vem com vírgula/centavos (ex: "423,00"), preserva.
+      // Caso contrário, exibe absoluto (sem decimais).
       const priceRawV4 = (price || "").trim();
       const priceNumV4 = parseFloat(priceRawV4.replace(/\./g, "").replace(",", "."));
+      const hasCentsV4 = /[.,]\d{1,2}\s*$/.test(priceRawV4);
+      const fmtBRv4 = (n: number, withCents: boolean) =>
+        n.toLocaleString("pt-BR", {
+          minimumFractionDigits: withCents ? 2 : 0,
+          maximumFractionDigits: withCents ? 2 : 0,
+        });
       const valNumV4 = !isNaN(priceNumV4)
-        ? Math.trunc(priceNumV4).toLocaleString("pt-BR", { maximumFractionDigits: 0 })
-        : priceRawV4.replace(/[.,]\d{1,2}$/, "");
+        ? fmtBRv4(priceNumV4, hasCentsV4)
+        : priceRawV4;
 
-      // Total: usa override OU calcula
+      // Total: usa override OU calcula (mesma regra de centavos)
       const totalNumV4 = !isNaN(priceNumV4) ? priceNumV4 * parseInt(parcNV4, 10) : NaN;
-      const fmtBRv4 = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
       const totalStrV4 = (totalOverride && totalOverride.trim())
-        || (!isNaN(totalNumV4) ? `Total ${(paymentSuffix || "por pessoa").trim()}: ${curSym} ${fmtBRv4(totalNumV4)}` : "");
+        || (!isNaN(totalNumV4) ? `Total ${(paymentSuffix || "por pessoa").trim()}: ${curSym} ${fmtBRv4(totalNumV4, hasCentsV4)}` : "");
 
       // Desconto p/ pílula Pix
       const descMatchV4 = (promoName || "").match(/(\d{1,2})\s*%/);
