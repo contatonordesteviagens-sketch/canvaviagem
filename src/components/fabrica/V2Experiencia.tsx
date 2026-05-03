@@ -158,20 +158,24 @@ export function V2Experiencia(props: V2ExperienciaProps) {
 
   const aspect = format === "square" ? "aspect-square" : "aspect-[9/16]";
 
-  // Tipografia: usa a fonte selecionada no formulário, com fallback serifado de luxo
+  // Tipografia editorial de luxo: serif para títulos/destaques, sans para tags
   const serifStack = `'${fontFamily || "Playfair Display"}', 'Playfair Display', 'Bodoni Moda', Georgia, serif`;
-  const sansStack = `'${fontFamily || "Inter"}', Inter, system-ui, sans-serif`;
+  const sansStack = `'Inter', system-ui, -apple-system, sans-serif`;
 
-  // Comprimento adaptativo do título maciço
+  // Título cinematográfico — escala mais agressiva
   const titleLen = (adTitle || "").length;
   const titleSizeClass =
     titleLen > 60
-      ? "text-3xl sm:text-4xl"
-      : titleLen > 36
       ? "text-4xl sm:text-5xl"
-      : titleLen > 18
+      : titleLen > 36
       ? "text-5xl sm:text-6xl"
-      : "text-6xl sm:text-7xl";
+      : titleLen > 18
+      ? "text-6xl sm:text-7xl"
+      : "text-7xl sm:text-8xl";
+
+  // Acento dourado refinado (metal escovado)
+  const goldGradient =
+    "linear-gradient(135deg, #b8860b 0%, #f5d97a 35%, #fff5cc 50%, #f5d97a 65%, #a87808 100%)";
 
   return (
     <article
@@ -186,116 +190,183 @@ export function V2Experiencia(props: V2ExperienciaProps) {
         className="absolute inset-0 w-full h-full object-cover"
         draggable={false}
       />
-      {/* Overlay gradiente sutil para profundidade premium */}
+
+      {/* Overlay cinematográfico: vinheta superior e inferior + viés sutil para legibilidade */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/45"
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 22%, rgba(0,0,0,0.05) 45%, rgba(0,0,0,0.25) 72%, rgba(0,0,0,0.75) 100%)",
+        }}
+      />
+      {/* Vinheta radial nas bordas */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.45) 100%)",
+        }}
       />
 
       {/* ============ TOP CENTRAL CONTAINER ============ */}
       <header
         data-region="top"
-        className="absolute top-0 left-0 right-0 flex flex-col items-center text-center px-5 pt-6 gap-3"
+        className="absolute top-0 left-0 right-0 flex flex-col items-center text-center px-6 pt-7 gap-4"
       >
-        {/* Botão Topo · Polímero Fosco */}
+        {/* Tag superior · vidro escuro com borda dourada (refinado, neutro vs. cor da marca) */}
         {promoName && (
           <div
             data-slot="top-button-matte"
-            className="px-5 py-2 rounded-2xl backdrop-blur-md text-white text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] shadow-lg ring-1 ring-white/15"
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full backdrop-blur-xl bg-black/35 text-white text-[10px] sm:text-xs font-medium uppercase tracking-[0.32em] shadow-lg"
             style={{
-              backgroundColor: `${primaryColor}CC`, // /80 com transparência fosca
               fontFamily: sansStack,
+              border: "1px solid rgba(245, 217, 122, 0.45)",
+              boxShadow:
+                "inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 24px rgba(0,0,0,0.35)",
             }}
           >
-            <Check className="inline-block w-3.5 h-3.5 mr-1.5 -mt-0.5" />
+            <span
+              className="inline-block w-1 h-1 rounded-full"
+              style={{ background: goldGradient }}
+            />
             {promoName}
           </div>
         )}
 
-        {/* Texto Principal · Maciço/Texturizado */}
+        {/* Texto Principal · Editorial Serif gigante */}
         {adTitle && (
           <h1
             data-slot="title-massive"
-            className={`${titleSizeClass} font-black uppercase leading-[0.95] tracking-tight text-white drop-shadow-2xl [text-shadow:_0_4px_18px_rgba(0,0,0,0.55)]`}
-            style={{ fontFamily: sansStack }}
+            className={`${titleSizeClass} font-bold leading-[0.92] tracking-[-0.015em] text-white`}
+            style={{
+              fontFamily: serifStack,
+              textShadow:
+                "0 2px 4px rgba(0,0,0,0.45), 0 8px 32px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.05)",
+            }}
           >
             {adTitle}
           </h1>
         )}
 
-        {/* Botão Dourado · Metal escovado */}
+        {/* Período · Linha dourada com texto (sem caixa pesada) */}
         {travelPeriod && (
           <div
             data-slot="gold-button"
-            className="mt-1 px-5 py-2 rounded-2xl text-white text-xs sm:text-sm font-bold uppercase tracking-wider bg-gradient-to-r from-yellow-500 via-yellow-400 to-yellow-600 ring-1 ring-yellow-200/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_6px_18px_rgba(180,120,0,0.35)]"
+            className="flex items-center gap-3 mt-1"
             style={{ fontFamily: sansStack }}
           >
-            {travelPeriod}
+            <span
+              aria-hidden
+              className="inline-block h-px w-8"
+              style={{ background: goldGradient }}
+            />
+            <span
+              className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.4em]"
+              style={{
+                background: goldGradient,
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              {travelPeriod}
+            </span>
+            <span
+              aria-hidden
+              className="inline-block h-px w-8"
+              style={{ background: goldGradient }}
+            />
           </div>
         )}
       </header>
 
-      {/* ============ LEFT PANEL · Fosco / Selo Premium ============ */}
+      {/* ============ LEFT PANEL · Selo lateral vertical refinado ============ */}
       <aside
         data-region="left"
-        className="absolute left-0 top-1/2 -translate-y-1/2 max-w-[42%] pl-0"
+        className="absolute left-0 top-1/2 -translate-y-1/2 max-w-[40%]"
       >
         <div
           data-slot="premium-badge"
-          className="rounded-r-xl backdrop-blur-sm p-4 pr-5 shadow-xl ring-1 ring-white/10"
+          className="relative rounded-r-lg backdrop-blur-md py-3 pl-3 pr-5 shadow-2xl"
           style={{
-            backgroundColor: `${secondaryColor}E6`, // /90
+            backgroundColor: `${secondaryColor}F2`,
             fontFamily: serifStack,
+            borderLeft: "3px solid",
+            borderImage: `${goldGradient} 1`,
           }}
         >
-          <div className="flex items-center gap-2 mb-1.5 text-white/90">
-            <Gem className="w-4 h-4" />
-            <span
-              className="text-[10px] uppercase tracking-[0.25em] font-semibold"
-              style={{ fontFamily: sansStack }}
-            >
+          {/* Linha dourada vertical interna */}
+          <div
+            aria-hidden
+            className="absolute left-0 top-3 bottom-3 w-[2px]"
+            style={{ background: goldGradient }}
+          />
+          <div
+            className="flex items-center gap-1.5 mb-1.5"
+            style={{
+              fontFamily: sansStack,
+              background: goldGradient,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            <Gem className="w-3 h-3" style={{ color: "#f5d97a" }} />
+            <span className="text-[9px] uppercase tracking-[0.3em] font-bold">
               Destaque
             </span>
           </div>
-          <p className="text-white text-lg sm:text-2xl font-bold leading-tight uppercase drop-shadow-md">
+          <p className="text-white text-base sm:text-xl font-semibold leading-[1.05] uppercase tracking-tight">
             {leftHighlight?.text || premiumBadge}
           </p>
         </div>
       </aside>
 
-      {/* ============ RIGHT PANEL · Estuque listrado ============ */}
+      {/* ============ RIGHT PANEL · Vidro escuro com lista vertical ============ */}
       {rightHighlights.length > 0 && (
         <aside
           data-region="right"
-          className="absolute right-0 top-1/2 -translate-y-1/2 max-w-[46%]"
+          className="absolute right-0 top-1/2 -translate-y-1/2 max-w-[44%]"
         >
           <div
             data-slot="highlights-stack"
-            className="relative rounded-l-xl bg-white/10 backdrop-blur-md border-l-2 border-white/25 p-4 pl-5 shadow-xl"
+            className="relative rounded-l-lg backdrop-blur-md py-4 pl-4 pr-3 shadow-2xl"
+            style={{
+              backgroundColor: "rgba(15, 15, 20, 0.55)",
+              borderRight: "3px solid",
+              borderImage: `${goldGradient} 1`,
+            }}
           >
-            {/* Listras verticais sutis (estuque) */}
+            {/* Linha dourada vertical interna direita */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-l-xl opacity-30"
-              style={{
-                backgroundImage:
-                  "repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 1px, transparent 1px, transparent 8px)",
-              }}
+              className="absolute right-0 top-3 bottom-3 w-[2px]"
+              style={{ background: goldGradient }}
             />
-            <ul className="relative flex flex-col gap-3">
+            <ul className="relative flex flex-col gap-2.5">
               {rightHighlights.map((h, i) => {
                 const Icon = pickIcon(h.icon, i);
                 return (
                   <li key={i} className="flex items-center gap-2.5">
                     <span
-                      className="flex-shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/90 ring-1 ring-white/40 shadow-sm"
-                      style={{ color: primaryColor }}
+                      className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full"
+                      style={{
+                        background: goldGradient,
+                        boxShadow:
+                          "inset 0 1px 0 rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.4)",
+                      }}
                     >
-                      <Icon className="w-4 h-4" strokeWidth={2.4} />
+                      <Icon
+                        className="w-3 h-3"
+                        strokeWidth={2.5}
+                        style={{ color: "#3a2a05" }}
+                      />
                     </span>
                     <span
-                      className="text-xs sm:text-sm leading-tight font-semibold tracking-wide"
-                      style={{ fontFamily: serifStack, color: secondaryColor }}
+                      className="text-[11px] sm:text-sm leading-tight font-medium tracking-wide text-white"
+                      style={{ fontFamily: serifStack }}
                     >
                       {h.text}
                     </span>
@@ -307,30 +378,42 @@ export function V2Experiencia(props: V2ExperienciaProps) {
         </aside>
       )}
 
-      {/* ============ BOTTOM BANNER · CTA estático ============ */}
+      {/* ============ BOTTOM BANNER · CTA editorial com fio dourado ============ */}
       <footer
         data-region="bottom"
-        className="absolute bottom-0 left-0 right-0 px-3 pb-3"
+        className="absolute bottom-0 left-0 right-0 px-4 pb-4"
       >
+        {/* Fio dourado superior */}
+        <div
+          aria-hidden
+          className="h-px w-full mb-0"
+          style={{ background: goldGradient }}
+        />
         <div
           data-slot="cta-banner"
-          className="w-full rounded-t-xl py-3 px-4 flex items-center justify-center gap-2 shadow-2xl ring-1 ring-white/10"
+          className="w-full rounded-b-lg py-3.5 px-5 flex items-center justify-center gap-3 shadow-2xl"
           style={{
-            backgroundColor: secondaryColor,
+            background: `linear-gradient(180deg, ${secondaryColor} 0%, ${secondaryColor}EE 100%)`,
             fontFamily: sansStack,
+            boxShadow:
+              "inset 0 1px 0 rgba(255,255,255,0.08), 0 -4px 20px rgba(0,0,0,0.3)",
           }}
         >
           <span
-            className="font-bold text-sm sm:text-base uppercase tracking-[0.18em]"
-            style={{ color: primaryColor }}
+            className="font-semibold text-xs sm:text-sm uppercase tracking-[0.32em] text-white"
           >
             {ctaText.replace(/\s*→\s*$/, "")}
           </span>
-          <ArrowRight
-            className="w-5 h-5"
-            strokeWidth={2.5}
-            style={{ color: "#EAB308" /* dourado */ }}
-          />
+          <span
+            className="inline-flex items-center justify-center w-6 h-6 rounded-full"
+            style={{ background: goldGradient }}
+          >
+            <ArrowRight
+              className="w-3.5 h-3.5"
+              strokeWidth={3}
+              style={{ color: "#3a2a05" }}
+            />
+          </span>
         </div>
       </footer>
     </article>
