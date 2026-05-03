@@ -1651,47 +1651,39 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           )}
         </div>
 
-        {/* Tipografia — colapsável, aplica a TODAS variações/categorias */}
+        {/* Tipografia — colapsável (mesmo padrão dos outros blocos) */}
         <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
           <button
             type="button"
             onClick={() => setFontOptionsOpen((v) => !v)}
             className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <span className="text-sm font-bold text-white">Tipografia</span>
-              <span className="text-[10px] text-white/40" style={{ fontFamily: `${fontFamily}, Inter, sans-serif` }}>
+              <span className="text-[10px] text-white/40 truncate" style={{ fontFamily: `${fontFamily}, Inter, sans-serif` }}>
                 {fontFamily} · T {Math.round(titleScale * 100)}% · D {Math.round(descScale * 100)}%
               </span>
             </div>
             <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${fontOptionsOpen ? "rotate-180" : ""}`} />
           </button>
           {fontOptionsOpen && (
-            <div className="px-4 pb-4 pt-1 space-y-3 border-t border-white/10">
+            <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
+              {/* Fonte: select + chips */}
               <div>
                 <label className={labelCls}>Fonte</label>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {FONT_PRESETS.map((f) => (
-                    <button
-                      key={f}
-                      onClick={() => setFontFamily(f)}
-                      className={`px-2.5 py-1 rounded-lg text-[12px] border transition-colors ${
-                        fontFamily === f ? "border-yellow-400 bg-yellow-400/10 text-white" : "border-white/10 bg-white/[0.03] text-white/70 hover:border-white/30"
-                      }`}
-                      style={{ fontFamily: `${f}, Inter, sans-serif` }}
-                    >
-                      {f}
-                    </button>
-                  ))}
-                </div>
-                <input
-                  value={fontFamily}
+                <select
+                  value={FONT_PRESETS.includes(fontFamily) ? fontFamily : "Inter"}
                   onChange={(e) => setFontFamily(e.target.value)}
-                  placeholder="Nome da fonte (Google Fonts)"
                   className={inputCls}
-                />
+                >
+                  {FONT_PRESETS.map((f) => (
+                    <option key={f} value={f}>{f}</option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-white/40 mt-1.5">A fonte escolhida é aplicada a todas as artes geradas.</p>
               </div>
 
+              {/* Sliders */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelCls}>Título <span className="text-white/40">({Math.round(titleScale * 100)}%)</span></label>
@@ -1705,8 +1697,24 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 </div>
               </div>
 
-              <div>
-                <label className={labelCls}>Cor do texto <span className="text-white/40">(substitui o branco padrão)</span></label>
+              {/* Cor do texto: mesmo padrão das cores Primária/Secundária */}
+              <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
+                <div className="flex items-baseline justify-between mb-2">
+                  <label className={labelCls}>Cor do texto</label>
+                  <span className="text-[10px] text-white/40">aplica em todos os textos</span>
+                </div>
+                <div className="grid grid-cols-10 gap-1 mb-3">
+                  {PRESET_COLORS.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setTextColorOverride(c)}
+                      className={`w-5 h-5 rounded-full border transition-all ${(textColorOverride || "").toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-md" : "border-white/20 hover:border-white/60"}`}
+                      style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
+                      aria-label={c}
+                      title={c}
+                    />
+                  ))}
+                </div>
                 <div className="flex gap-2 items-center">
                   <label className="relative w-10 h-10 rounded-full cursor-pointer flex-shrink-0 overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
                     style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}>
