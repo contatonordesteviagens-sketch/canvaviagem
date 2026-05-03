@@ -1557,7 +1557,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
         </div>
 
-        <div hidden={categoria === "experiencia_destino"} aria-hidden={categoria === "experiencia_destino"}>
+        <div>
           <label className={labelCls}>Dias / data da viagem</label>
           <div className="relative">
             <input
@@ -1940,12 +1940,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           ))}
         </div>
 
-        {/* Benefícios — escondido na categoria "Experiência de Destino" (V0/V1/V2/V3 · feed e story).
-            Layout luxo não usa pílula de ícones; mantém-se intacto na categoria "Oferta de Pacote". */}
-        <div hidden={categoria === "experiencia_destino"} aria-hidden={categoria === "experiencia_destino"}>
+        {/* Benefícios — em Experiência de Destino usa apenas texto, sem selector de ícones. */}
+        <div>
           <div className="flex items-baseline justify-between mb-2">
             <label className={labelCls}>Benefícios / Inclusos</label>
-            <span className="text-[10px] text-white/40">{highlights.length}/{MAX_HIGHLIGHTS} · clique no ícone para trocar</span>
+              <span className="text-[10px] text-white/40">
+                {highlights.length}/{MAX_HIGHLIGHTS}{categoria === "experiencia_destino" ? " · texto da experiência" : " · clique no ícone para trocar"}
+              </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {highlights.map((h, i) => {
@@ -1953,14 +1954,16 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               return (
                 <div key={i} className="bg-white/[0.04] border border-white/10 rounded-lg">
                   <div className="flex gap-1.5 items-center px-2.5 py-2">
-                    <button
-                      onClick={() => setEditingIconIdx(editingIconIdx === i ? null : i)}
-                      className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
-                      style={{ color: secondaryColor }}
-                      title="Trocar ícone"
-                    >
-                      <IconComp className="w-4 h-4" />
-                    </button>
+                    {categoria !== "experiencia_destino" && (
+                      <button
+                        onClick={() => setEditingIconIdx(editingIconIdx === i ? null : i)}
+                        className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
+                        style={{ color: secondaryColor }}
+                        title="Trocar ícone"
+                      >
+                        <IconComp className="w-4 h-4" />
+                      </button>
+                    )}
                     <input
                       value={h.text}
                       onChange={(e) => updateHighlightText(i, e.target.value)}
@@ -1974,7 +1977,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                       <X className="w-4 h-4" />
                     </button>
                   </div>
-                  {editingIconIdx === i && (
+                  {categoria !== "experiencia_destino" && editingIconIdx === i && (
                     <div className="border-t border-white/10 p-2 grid grid-cols-8 gap-1">
                       {ICON_OPTIONS.map(({ key, Icon, label }) => (
                         <button
