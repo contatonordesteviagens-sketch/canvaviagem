@@ -49,8 +49,30 @@ export function mapStateToV0Experiencia(
     ctaLabel: "RESERVE AGORA",
     legalText: "Imagem ilustrativa, gerada mediante IA não condiz 100% com a realidade.",
     format: state.lastFormat === "square" ? "square" : "story",
+    baseTextMode: ((state as any).baseTextMode as BaseTextMode) || "light",
   };
 }
+
+export function V0Experiencia(props: V0ExperienciaProps) {
+  const {
+    backgroundImage,
+    logoBase64,
+    destination,
+    promoName,
+    adTitle,
+    highlights,
+    travelPeriod,
+    highlightLine,
+    secondaryColor,
+    ctaLabel = "RESERVE AGORA",
+    legalText = "Imagem ilustrativa, gerada mediante IA não condiz 100% com a realidade.",
+    format = "story",
+    baseTextMode = "light",
+  } = props;
+
+  const textStyle = getContrastTextStyle(baseTextMode);
+  const dropClass = getDropShadowClass(baseTextMode);
+  const textColorCls = baseTextMode === "dark" ? "text-neutral-900" : "text-white";
 
 export function V0Experiencia(props: V0ExperienciaProps) {
   const {
