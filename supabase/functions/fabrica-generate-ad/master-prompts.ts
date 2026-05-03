@@ -44,15 +44,21 @@ export interface MasterPromptVars {
  * Luminance-based contrast picker (WCAG simplified).
  * Retorna "#000000" para fundos claros, "#FFFFFF" para fundos escuros.
  */
-export function pickContrastText(hex: string): "#000000" | "#FFFFFF" {
-  const h = (hex || "").replace("#", "").trim();
-  if (h.length !== 6) return "#FFFFFF";
-  const r = parseInt(h.slice(0, 2), 16) / 255;
-  const g = parseInt(h.slice(2, 4), 16) / 255;
-  const b = parseInt(h.slice(4, 6), 16) / 255;
-  const toLin = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
-  const L = 0.2126 * toLin(r) + 0.7152 * toLin(g) + 0.0722 * toLin(b);
-  return L > 0.5 ? "#000000" : "#FFFFFF";
+/**
+ * Calcula a cor do texto (preto ou branco) ideal para um fundo HEX
+ * usando a fórmula YIQ de percepção de brilho.
+ *  - YIQ >= 128 → fundo claro → texto PRETO (#000000)
+ *  - YIQ <  128 → fundo escuro → texto BRANCO (#FFFFFF)
+ */
+export function pickContrastText(hexColor: string): "#000000" | "#FFFFFF" {
+  let hex = (hexColor || "").replace("#", "").trim();
+  if (hex.length === 3) hex = hex.split("").map((c) => c + c).join("");
+  if (hex.length !== 6) return "#FFFFFF"; // fallback seguro
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? "#000000" : "#FFFFFF";
 }
 
 /**
