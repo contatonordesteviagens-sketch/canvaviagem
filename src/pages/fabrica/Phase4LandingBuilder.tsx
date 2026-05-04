@@ -373,7 +373,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         </div>
       )}
 
-      <PublishOnLovableCard primaryColor={state.primaryColor} html={previewHTML} />
+      <PublishOnLovableCard primaryColor={state.primaryColor} html={previewHTML} onBack={onBack} onNext={onNext} />
     </div>
   );
 };
@@ -675,7 +675,17 @@ const ImageGallery = ({
   );
 };
 
-const PublishOnLovableCard = ({ primaryColor, html }: { primaryColor: string; html: string }) => {
+const PublishOnLovableCard = ({
+  primaryColor,
+  html,
+  onBack,
+  onNext,
+}: {
+  primaryColor: string;
+  html: string;
+  onBack: () => void;
+  onNext: () => void;
+}) => {
   const copyHtml = async () => {
     try {
       await navigator.clipboard.writeText(html);
@@ -791,7 +801,7 @@ const PublishOnLovableCard = ({ primaryColor, html }: { primaryColor: string; ht
           <button
             onClick={onNext}
             className="flex-[2] py-4 rounded-xl font-black text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
-            style={{ background: state.primaryColor }}
+            style={{ background: primaryColor }}
           >
             Próximo Passo: Diagnóstico <Rocket className="w-5 h-5" />
           </button>
