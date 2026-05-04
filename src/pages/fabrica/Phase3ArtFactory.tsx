@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import { type StrategyId } from "@/data/fabrica-prompts";
 import { CATEGORIAS, getCategoria, pickPromptsForCategoria, type CategoriaId } from "@/data/fabrica-categories";
 import { supabase } from "@/integrations/supabase/client";
@@ -370,7 +372,57 @@ const pickPhotoRefs = (
 
 export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const { state, update } = useFabricaContext();
+  const { user } = useAuth();
+  const { data: savedProjects } = useDiagnosticos();
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
+  const setCategoria = (c: CategoriaId) => {
+    const previousCategoria = categoria;
+    setCategoriaState(c);
+    update({ lastCategoria: c });
+    if (c === "experiencia_destino" && previousCategoria !== "experiencia_destino") {
+      setHighlights(DEFAULT_EXPERIENCE_HIGHLIGHTS);
+    } else if (c !== "experiencia_destino" && previousCategoria === "experiencia_destino") {
+      setHighlights(DEFAULT_HIGHLIGHTS);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 400;
+        const MAX_HEIGHT = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        update({ logoBase64: canvas.toDataURL("image/png") });
+        toast.success("Logo adicionada com sucesso!");
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const setCategoria = (c: CategoriaId) => {
     const previousCategoria = categoria;
     setCategoriaState(c);
@@ -885,7 +937,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             if (state.logoBase64) {
               try {
                 const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
-                img = await composeLogoOnImage(img, state.logoBase64);
+                img = await composeLogoOnImage(img, state.logoBase64, state.whatsapp, state.instagram);
               } catch (e) {
                 console.warn("Falha ao compor logo:", e);
               }
@@ -1066,7 +1118,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           });
           if (state.logoBase64) {
             const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
-            img = await composeLogoOnImage(img, state.logoBase64);
+            img = await composeLogoOnImage(img, state.logoBase64, state.whatsapp, state.instagram);
           }
 
           images.push(img);
@@ -1171,7 +1223,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           if (state.logoBase64) {
             try {
               const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
-              img = await composeLogoOnImage(img, state.logoBase64);
+              img = await composeLogoOnImage(img, state.logoBase64, state.whatsapp, state.instagram);
             } catch (e) {
               console.warn("Falha ao compor logo:", e);
             }
@@ -1269,6 +1321,75 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           <div className="text-right shrink-0">
             <div className="text-[10px] text-white/40 uppercase tracking-wider">Geradas</div>
             <div className="text-lg font-bold text-white">{generationCount}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* NOVO TOPO: Perfil e Logo */}
+      <div className={`${sectionCls} space-y-5 mb-8`}>
+        {user && savedProjects && savedProjects.length > 0 && (
+          <div className="p-5 bg-white/[0.04] border border-white/10 rounded-2xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full" style={{ background: primaryColor }}></div>
+            <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">📂 Carregar Cliente / Projeto Salvo</label>
+            <select
+              onChange={(e) => {
+                const p = savedProjects.find(x => x.id === e.target.value);
+                if (p && p.state_snapshot) {
+                   update({ ...p.state_snapshot, diagnosticoCompleto: false });
+                   toast.success(`Cliente "${p.agency_name}" carregado! Todas as configs (logo, cor, etc) foram restauradas.`);
+                }
+                e.target.value = "";
+              }}
+              className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors"
+            >
+              <option value="" className="bg-zinc-900">Selecione um cliente salvo...</option>
+              {savedProjects.map((p) => (
+                <option key={p.id} value={p.id} className="bg-zinc-900">{p.agency_name || "Sem Nome"} (Salvo em {new Date(p.updated_at).toLocaleDateString()})</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Logo da Empresa *</label>
+            <label className="flex items-center gap-3 p-3 bg-white/[0.04] border border-dashed border-white/10 rounded-xl cursor-pointer hover:border-white/30 transition-colors">
+              <Upload className="w-4 h-4 text-white/50" />
+              <span className="text-sm text-white/70">{state.logoBase64 ? "Trocar logo" : "Clique para enviar"}</span>
+              <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+            </label>
+            {state.logoBase64 && (
+              <div className="mt-3 flex items-center gap-3">
+                <img src={state.logoBase64} alt="Logo" className="max-h-16 rounded-lg bg-white/5 p-1" />
+                <button
+                  type="button"
+                  onClick={() => { update({ logoBase64: "" }); toast.success("Logo removida"); }}
+                  className="text-[11px] font-semibold text-red-300 hover:text-red-200 underline underline-offset-2"
+                >
+                  Remover
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className={labelCls}>WhatsApp (aparecerá no rodapé)</label>
+              <input
+                value={state.whatsapp || ""}
+                onChange={(e) => update({ whatsapp: e.target.value })}
+                placeholder="(11) 99999-9999"
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Instagram (aparecerá no rodapé)</label>
+              <input
+                value={state.instagram || ""}
+                onChange={(e) => update({ instagram: e.target.value.replace(/^@/, "") })}
+                placeholder="@suaagencia"
+                className={inputCls}
+              />
+            </div>
           </div>
         </div>
       </div>

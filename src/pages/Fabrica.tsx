@@ -11,10 +11,10 @@ import SeoMetadata from "@/components/SeoMetadata";
 import { ComingSoonGate, isFabricaUnlocked } from "@/components/fabrica/ComingSoonGate";
 
 const PHASES = [
-  { num: 1, label: "Diagnóstico" },
-  { num: 2, label: "Plano" },
-  { num: 3, label: "Destinos Ads" },
-  { num: 4, label: "Seu Site" },
+  { num: 1, label: "ADS Destino" },
+  { num: 2, label: "Seu Site" },
+  { num: 3, label: "Diagnóstico" },
+  { num: 4, label: "Plano" },
 ];
 
 const FabricaInner = () => {
@@ -122,10 +122,10 @@ const FabricaInner = () => {
         </div>
 
         {/* Phase content */}
-        {state.currentPhase === 1 && <Phase1Diagnostico onComplete={() => setPhase(2)} />}
-        {state.currentPhase === 2 && <Phase2Ativos onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
-        {state.currentPhase === 3 && <Phase3ArtFactory onNext={() => setPhase(4)} onBack={() => setPhase(2)} />}
-        {state.currentPhase === 4 && <Phase4LandingBuilder onBack={() => setPhase(3)} />}
+        {state.currentPhase === 1 && <Phase3ArtFactory onNext={() => setPhase(2)} onBack={() => setPhase(3)} />}
+        {state.currentPhase === 2 && <Phase4LandingBuilder onBack={() => setPhase(1)} />}
+        {state.currentPhase === 3 && <Phase1Diagnostico onComplete={() => setPhase(4)} />}
+        {state.currentPhase === 4 && <Phase2Ativos onNext={() => setPhase(1)} onBack={() => setPhase(3)} />}
       </div>
     </div>
   );
