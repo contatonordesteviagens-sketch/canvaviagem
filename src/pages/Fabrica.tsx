@@ -6,9 +6,9 @@ import { Phase2Ativos } from "@/pages/fabrica/Phase2Ativos";
 import { Phase3ArtFactory } from "@/pages/fabrica/Phase3ArtFactory";
 import { Phase4LandingBuilder } from "@/pages/fabrica/Phase4LandingBuilder";
 import { ArrowLeft, Factory } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
-import { ComingSoonGate, isFabricaUnlocked } from "@/components/fabrica/ComingSoonGate";
+import { ComingSoonGate } from "@/components/fabrica/ComingSoonGate";
 
 const PHASES = [
   { num: 1, label: "ADS Destino" },
@@ -133,8 +133,10 @@ const FabricaInner = () => {
 
 const Fabrica = () => {
   const navigate = useNavigate();
-  const [unlocked, setUnlocked] = useState(() => isFabricaUnlocked());
-  const [gateOpen, setGateOpen] = useState(() => !isFabricaUnlocked());
+  const location = useLocation();
+  const arrivedUnlocked = (location.state as { fabricaUnlocked?: boolean } | null)?.fabricaUnlocked === true;
+  const [unlocked, setUnlocked] = useState(() => arrivedUnlocked);
+  const [gateOpen, setGateOpen] = useState(() => !arrivedUnlocked);
 
   return (
     <>
@@ -150,7 +152,7 @@ const Fabrica = () => {
         open={gateOpen && !unlocked}
         onOpenChange={(open) => {
           setGateOpen(open);
-          if (!open && !unlocked && !isFabricaUnlocked()) navigate("/");
+          if (!open && !unlocked) navigate("/");
         }}
         onUnlock={() => {
           setUnlocked(true);
