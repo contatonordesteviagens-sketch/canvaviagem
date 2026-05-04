@@ -277,8 +277,8 @@ async function drawFinalBranding(
   if (!logoUrl && contactsToDraw.length === 0) return;
 
   const isStory = ch > cw;
-  const footerHeight = isStory ? 160 : 110;
-  const safeBottomMargin = isStory ? 280 : 0;
+  const footerHeight = isStory ? 140 : 100;
+  const safeBottomMargin = isStory ? 340 : 0; // Sincronizado com safeBottom (580 - 140 - 100 de margem)
   const footerY = ch - footerHeight - safeBottomMargin;
 
   // 1. Fundo do Rodapé (VÉU GRADIENTE ESCURO)
@@ -294,7 +294,8 @@ async function drawFinalBranding(
   ctx.fillRect(0, veilStartY, cw, ch - veilStartY);
   ctx.restore();
 
-  const padX = isStory ? 65 : 50;
+  const padX = isStory ? 80 : 60; // Mais margem lateral
+  const bgPad = isStory ? 10 : 8;
   const centerY = footerY + footerHeight / 2;
 
   // 2. Logo (Esquerda) - Medição e Desenho
@@ -354,8 +355,8 @@ async function drawFinalBranding(
   ctx.shadowColor = "rgba(0,0,0,0.8)";
   ctx.shadowBlur = 6;
 
-  let textRightX = cw - (isStory ? 65 : 60);
-  const itemGap = 15;
+  let textRightX = cw - (isStory ? 80 : 60); // Sincronizado com a margem do logo
+  const itemGap = 20; // Aumentado o gap entre ícone e texto
   const logoEdge = logoUrl ? (padX + lw + bgPad * 2 + 30) : padX;
   const maxAvailableWidth = textRightX - logoEdge;
 
@@ -1015,7 +1016,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     : [...ofertaBase, ...ofertaWithDest];
 
   const safeTop = format === "story" ? 280 : 0;
-  const safeBottom = format === "story" ? 420 : 120;
+  const safeBottom = format === "story" ? 580 : 120; // Aumentado para 580 para garantir separação total do rodapé
   const panelBottom = height - safeBottom;
   const left = 80;
   const right = width - 80;
@@ -3212,9 +3213,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     drawBadge(left, topY, panelW - left - 28);
     ctx.fillStyle = "#ffffff";
     drawTextBlock(ctx, titleText, left, topY + 150, panelW - left - 36, 70, 2, { baseFontSize: 66, minFontSize: 38 });
-    drawPromoKicker(left, topY + 300);
     const pillsH = drawHighlightsBlock(left, topY + 396, panelW - left - 36, 5, false, format !== "story");
-    drawPriceCard(left, Math.min(panelBottom - 170, topY + 420 + pillsH), panelW - left - 36, 146, "left");
+    const priceY = Math.min(panelBottom - 300, topY + 420 + pillsH);
+    drawPriceCard(left, priceY, panelW - left - 36, 146, "left");
   } else if (strategy === "matriz") {
     ctx.fillStyle = primaryColor;
     ctx.fillRect(0, 0, width, height);
@@ -3233,7 +3234,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const rightColX = left + leftColW + 24;
     const rightColW = contentWidth - leftColW - 24;
     const pillsH = drawHighlightsBlock(rightColX, lowerY + 8, rightColW, 5, true, format !== "story");
-    const priceY = Math.min(panelBottom - 180, lowerY + pillsH + 40);
+    const priceY = Math.min(panelBottom - 300, lowerY + pillsH + 40);
     drawPriceCard(rightColX, priceY, rightColW, 154, "right");
   } else if (strategy === "gancho") {
     // Foto de fundo cobre toda a tela com gradiente escurecido na base
@@ -3419,8 +3420,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, 5, false);
     cursorY += pillsH + 28;
 
-    drawPriceCard(left, cursorY, contentWidth, 168, "right");
-    drawPromoKicker(left + 32, cursorY + 52, "#111111");
+    drawPriceCard(left, Math.min(cursorY, panelBottom - 320), contentWidth, 168, "right");
+    drawPromoKicker(left + 32, Math.min(cursorY + 52, panelBottom - 268), "#111111");
   }
 
   ctx.textAlign = "left";

@@ -47,9 +47,13 @@ O sistema foi submetido a um teste de estresse com as seguintes configurações:
 
 ---
 
-## 🎨 Princípios de Design (Guidelines)
-- **Minimalismo**: Menos é mais. Os contatos devem ser discretos e elegantes.
-- **Contraste**: A legibilidade é prioritária. Se o fundo for claro, o texto deve ser escuro e o véu do rodapé deve ser invertido.
+## 🎨 Princípios de Design (Guidelines) - ESTÉTICA OBRIGATÓRIA
+- **Rodapé de Branding**: Deve ser SEMPRE um **véu gradiente escuro** com **texto branco em negrito (700)**.
+  - ❌ NUNCA use textos pretos ou fundos claros no rodapé.
+  - **Margem de Segurança (Stories)**: O rodapé começa a **580px** do fundo da imagem para garantir separação TOTAL de qualquer elemento do Instagram.
+  - **Zonas de Não-Sobreposição**: O motor garante que o card de preço (Price Card) termine antes de 1340px de altura (panelBottom - 580) para nunca tocar no branding.
+- **Ícones**: Devem ter espessura visível (lineWidth ~0.10) e sombra projetada.
+- **Minimalismo**: Menos é mais. Os contatos devem ser discretos e elegantes, mas sempre legíveis.
 - **Premium**: A IA nunca deve gerar textos ou logos próprios. Ela gera a fotografia, o Canvas gera a arte final.
 
 ---
