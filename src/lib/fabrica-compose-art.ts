@@ -1930,7 +1930,6 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.restore();
 
       // 5) Faixa horizontal com headline
-      const faixaY = photoTop + fH2 + 16;
       fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, v2CardBg);
       ctx.fillStyle = v2HeadlineColor;
       ctx.textAlign = "left";
