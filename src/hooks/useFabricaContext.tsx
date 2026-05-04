@@ -136,6 +136,10 @@ export interface FabricaState {
   titleScale?: number;
   descScale?: number;
   textColorOverride?: string;
+  footerContact1Icon?: "whatsapp_green" | "whatsapp_custom" | "instagram_gradient" | "instagram_custom" | "none";
+  footerContact1Value?: string;
+  footerContact2Icon?: "whatsapp_green" | "whatsapp_custom" | "instagram_gradient" | "instagram_custom" | "none";
+  footerContact2Value?: string;
 }
 
 const defaultState: FabricaState = {
@@ -216,6 +220,10 @@ const defaultState: FabricaState = {
   titleScale: 1,
   descScale: 1,
   textColorOverride: "",
+  footerContact1Icon: "whatsapp_green",
+  footerContact1Value: "",
+  footerContact2Icon: "instagram_gradient",
+  footerContact2Value: "",
 };
 
 const STORAGE_KEY = "fabrica-context-v1";

@@ -111,6 +111,10 @@ interface ComposeTravelAdOptions {
   logoDataUrl?: string;
   whatsapp?: string;
   instagram?: string;
+  footerContact1Icon?: string;
+  footerContact1Value?: string;
+  footerContact2Icon?: string;
+  footerContact2Value?: string;
 }
 
 /** Formata telefone no padrão (XX) 9 XXXX-XXXX */
@@ -122,34 +126,47 @@ function formatAdPhone(val: string): string {
 }
 
 /** Desenha ícone do WhatsApp colorido */
-function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, colorMode: "green" | "custom" = "green", customColor: string = "#ffffff") {
   ctx.save();
   ctx.translate(x, y);
   ctx.shadowColor = "rgba(0,0,0,0.4)";
   ctx.shadowBlur = 5;
-  ctx.fillStyle = "#25D366";
-  ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = "white";
-  ctx.beginPath(); ctx.arc(0, 0, size / 3, 0.4, 5.8); ctx.lineTo(-size / 5, size / 3); ctx.fill();
+  if (colorMode === "green") {
+    ctx.fillStyle = "#25D366";
+    ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "white";
+    ctx.beginPath(); ctx.arc(0, 0, size / 3, 0.4, 5.8); ctx.lineTo(-size / 5, size / 3); ctx.fill();
+  } else {
+    ctx.fillStyle = customColor;
+    ctx.beginPath(); ctx.arc(0, 0, size * 0.4, 0.4, 5.8); ctx.lineTo(-size * 0.25, size * 0.4); ctx.fill();
+  }
   ctx.restore();
 }
 
 /** Desenha ícone do Instagram com gradiente oficial */
-function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, colorMode: "gradient" | "custom" = "gradient", customColor: string = "#ffffff") {
   ctx.save();
   ctx.translate(x, y);
   ctx.shadowColor = "rgba(0,0,0,0.4)";
   ctx.shadowBlur = 5;
-  const g = ctx.createRadialGradient(0, 0, 0, 0, 0, size / 2);
-  g.addColorStop(0, "#f09433"); g.addColorStop(0.25, "#e6683c"); g.addColorStop(0.5, "#dc2743");
-  g.addColorStop(0.75, "#cc2366"); g.addColorStop(1, "#bc1888");
-  ctx.fillStyle = g;
-  ctx.beginPath(); ctx.roundRect(-size / 2, -size / 2, size, size, size * 0.2); ctx.fill();
-  ctx.strokeStyle = "white"; ctx.lineWidth = size * 0.08;
-  ctx.strokeRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6);
-  ctx.beginPath(); ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); ctx.stroke();
-  ctx.fillStyle = "white";
-  ctx.beginPath(); ctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); ctx.fill();
+  if (colorMode === "gradient") {
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, size / 2);
+    g.addColorStop(0, "#f09433"); g.addColorStop(0.25, "#e6683c"); g.addColorStop(0.5, "#dc2743");
+    g.addColorStop(0.75, "#cc2366"); g.addColorStop(1, "#bc1888");
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.roundRect(-size / 2, -size / 2, size, size, size * 0.2); ctx.fill();
+    ctx.strokeStyle = "white"; ctx.lineWidth = size * 0.08;
+    ctx.strokeRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6);
+    ctx.beginPath(); ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = "white";
+    ctx.beginPath(); ctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); ctx.fill();
+  } else {
+    ctx.strokeStyle = customColor; ctx.lineWidth = size * 0.08;
+    ctx.strokeRect(-size * 0.35, -size * 0.35, size * 0.7, size * 0.7);
+    ctx.beginPath(); ctx.arc(0, 0, size * 0.18, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = customColor;
+    ctx.beginPath(); ctx.arc(size * 0.22, -size * 0.22, size * 0.04, 0, Math.PI * 2); ctx.fill();
+  }
   ctx.restore();
 }
 
@@ -162,26 +179,33 @@ async function drawFinalBranding(
   cw: number,
   ch: number,
   logoUrl?: string,
-  whatsapp?: string,
-  instagram?: string
+  contact1?: { icon: string; value: string },
+  contact2?: { icon: string; value: string },
+  textColorOverride?: string
 ) {
-  if (!logoUrl && !whatsapp && !instagram) return;
+  const contactsToDraw: { icon: string; value: string }[] = [];
+  if (contact1 && contact1.icon !== "none" && contact1.value) contactsToDraw.push(contact1);
+  if (contact2 && contact2.icon !== "none" && contact2.value) contactsToDraw.push(contact2);
+
+  if (!logoUrl && contactsToDraw.length === 0) return;
 
   const isStory = ch > cw;
   const footerHeight = isStory ? 160 : 110;
-  const footerY = ch - footerHeight;
+  const safeBottomMargin = isStory ? 250 : 0;
+  const footerY = ch - footerHeight - safeBottomMargin;
 
   // 1. Fundo do Rodapé (VÉU GRADIENTE)
-  const grad = ctx.createLinearGradient(0, footerY, 0, ch);
+  const veilStartY = footerY - 50;
+  const grad = ctx.createLinearGradient(0, veilStartY, 0, ch);
   grad.addColorStop(0, "rgba(0,0,0,0.0)");
-  grad.addColorStop(0.5, "rgba(0,0,0,0.45)");
-  grad.addColorStop(1, "rgba(0,0,0,0.75)");
+  grad.addColorStop(0.3, "rgba(0,0,0,0.45)");
+  grad.addColorStop(1, "rgba(0,0,0,0.85)");
   ctx.save();
   ctx.fillStyle = grad;
-  ctx.fillRect(0, footerY, cw, footerHeight);
+  ctx.fillRect(0, veilStartY, cw, ch - veilStartY);
   ctx.restore();
 
-  const padX = 50;
+  const padX = isStory ? 65 : 50;
   const centerY = footerY + footerHeight / 2;
 
   // 2. Logo (Esquerda)
@@ -217,28 +241,31 @@ async function drawFinalBranding(
   ctx.textBaseline = "middle";
   const fontSize = isStory ? 38 : 32;
   ctx.font = `700 ${fontSize}px Inter, sans-serif`;
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = textColorOverride || "#ffffff";
   ctx.shadowColor = "rgba(0,0,0,0.5)";
   ctx.shadowBlur = 5;
 
-  let textRightX = cw - 60;
+  let textRightX = cw - (isStory ? 65 : 60);
   const iconSize = fontSize * 1.1;
   const itemGap = 15;
 
-  if (instagram) {
-    const handle = instagram.startsWith("@") ? instagram : `@${instagram}`;
-    const yPos = whatsapp ? centerY + (footerHeight * 0.18) : centerY;
-    ctx.fillText(handle, textRightX, yPos);
-    const textWidth = ctx.measureText(handle).width;
-    drawAdInstagramIcon(ctx, textRightX - textWidth - itemGap - iconSize/2, yPos, iconSize);
-  }
+  let yPos = contactsToDraw.length === 2 ? centerY + (footerHeight * 0.18) : centerY;
 
-  if (whatsapp) {
-    const num = formatAdPhone(whatsapp);
-    const yPos = instagram ? centerY - (footerHeight * 0.18) : centerY;
-    ctx.fillText(num, textRightX, yPos);
-    const textWidth = ctx.measureText(num).width;
-    drawAdWhatsAppIcon(ctx, textRightX - textWidth - itemGap - iconSize/2, yPos, iconSize);
+  for (const c of contactsToDraw) {
+    let displayValue = c.value;
+    if (c.icon.startsWith("whatsapp")) displayValue = formatAdPhone(c.value);
+    if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
+
+    ctx.fillText(displayValue, textRightX, yPos);
+    const textWidth = ctx.measureText(displayValue).width;
+    const iconX = textRightX - textWidth - itemGap - iconSize/2;
+
+    if (c.icon === "whatsapp_green") drawAdWhatsAppIcon(ctx, iconX, yPos, iconSize, "green");
+    else if (c.icon === "whatsapp_custom") drawAdWhatsAppIcon(ctx, iconX, yPos, iconSize, "custom", ctx.fillStyle);
+    else if (c.icon === "instagram_gradient") drawAdInstagramIcon(ctx, iconX, yPos, iconSize, "gradient");
+    else if (c.icon === "instagram_custom") drawAdInstagramIcon(ctx, iconX, yPos, iconSize, "custom", ctx.fillStyle);
+
+    yPos -= (footerHeight * 0.36);
   }
   ctx.restore();
 }
@@ -862,8 +889,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ? [...experienceBase, ...experienceWithDest]
     : [...ofertaBase, ...ofertaWithDest];
 
-  const safeTop = format === "story" ? 270 : 120;
-  const safeBottom = format === "story" ? 345 : 120;
+  const safeTop = format === "story" ? 280 : 0;
+  const safeBottom = format === "story" ? 420 : 120;
   const panelBottom = height - safeBottom;
   const left = 80;
   const right = width - 80;
@@ -1377,7 +1404,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.textBaseline = "alphabetic";
       }
 
-      await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
+      await drawFinalBranding(
+      ctx, width, height, logoDataUrl, 
+      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      effectiveTextColor
+    );
       return canvas.toDataURL("image/png");
     }
 
@@ -1503,7 +1535,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const photoH0 = height - topH;
       const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
       ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
-      await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
+      await drawFinalBranding(
+      ctx, width, height, logoDataUrl, 
+      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      effectiveTextColor
+    );
       return canvas.toDataURL("image/png");
     }
 
@@ -1634,7 +1671,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, priceBlockY + priceBlockH - 28);
       ctx.textAlign = "left";
 
-      await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
+      await drawFinalBranding(
+      ctx, width, height, logoDataUrl, 
+      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      effectiveTextColor
+    );
       return canvas.toDataURL("image/png");
     }
 
@@ -1747,7 +1789,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.fillText(label, tx, ty);
       });
 
-      await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
+      await drawFinalBranding(
+      ctx, width, height, logoDataUrl, 
+      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      effectiveTextColor
+    );
       return canvas.toDataURL("image/png");
     }
 
@@ -2045,7 +2092,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.textBaseline = "alphabetic";
       }
 
-      await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
+      await drawFinalBranding(
+      ctx, width, height, logoDataUrl, 
+      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      effectiveTextColor
+    );
       return canvas.toDataURL("image/png");
     }
 
@@ -2085,7 +2137,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = "600 24px Inter, Arial, sans-serif";
     ctx.fillText([bottomSuffix, installments ? `${installments} sem juros` : ""].filter(Boolean).join(" · "), width / 2, cardY3 + 356);
     ctx.textAlign = "left";
-    await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
+    await drawFinalBranding(
+      ctx, width, height, logoDataUrl, 
+      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      effectiveTextColor
+    );
     return canvas.toDataURL("image/png");
   };
 
@@ -2277,7 +2334,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     // 7) Rodapé legal removido a pedido — fotos são reais, não há IA aqui.
 
     ctx.textAlign = "left";
-    await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
+    await drawFinalBranding(
+      ctx, width, height, logoDataUrl, 
+      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      effectiveTextColor
+    );
     return canvas.toDataURL("image/png");
   };
 
@@ -2428,7 +2490,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     withShadow(() => ctx.fillText(slogan, cx, height - padBottom));
 
     ctx.textAlign = "left";
-    await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
+    await drawFinalBranding(
+      ctx, width, height, logoDataUrl, 
+      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      effectiveTextColor
+    );
     return canvas.toDataURL("image/png");
   };
 
@@ -2738,7 +2805,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     }
 
     ctx.textAlign = "left";
-    await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
+    await drawFinalBranding(
+      ctx, width, height, logoDataUrl, 
+      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      effectiveTextColor
+    );
     return canvas.toDataURL("image/png");
   };
 
@@ -2967,7 +3039,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     }
 
     ctx.textAlign = "left";
-    await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
+    await drawFinalBranding(
+      ctx, width, height, logoDataUrl, 
+      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      effectiveTextColor
+    );
     return canvas.toDataURL("image/png");
   };
 
@@ -3203,7 +3280,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
-  await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
+  await drawFinalBranding(
+      ctx, width, height, logoDataUrl, 
+      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      effectiveTextColor
+    );
   return canvas.toDataURL("image/png");
 }
 

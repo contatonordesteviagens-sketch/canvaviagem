@@ -712,7 +712,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               descScale,
               logoDataUrl: state.logoBase64 || undefined,
             whatsapp: state.whatsapp || undefined,
+            footerContact1Icon: state.footerContact1Icon || undefined,
+            footerContact1Value: state.footerContact1Value !== undefined ? state.footerContact1Value : state.whatsapp,
+
             instagram: state.instagram || undefined,
+            footerContact2Icon: state.footerContact2Icon || undefined,
+            footerContact2Value: state.footerContact2Value !== undefined ? state.footerContact2Value : state.instagram,
           });
           return img;
         })
@@ -889,7 +894,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             textColorOverride: effectiveTextColor,
             logoDataUrl: state.logoBase64 || undefined,
             whatsapp: state.whatsapp || undefined,
+            footerContact1Icon: state.footerContact1Icon || undefined,
+            footerContact1Value: state.footerContact1Value !== undefined ? state.footerContact1Value : state.whatsapp,
+
             instagram: state.instagram || undefined,
+            footerContact2Icon: state.footerContact2Icon || undefined,
+            footerContact2Value: state.footerContact2Value !== undefined ? state.footerContact2Value : state.instagram,
           });
 
           images.push(img);
@@ -992,7 +1002,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             textColorOverride: effectiveTextColor,
             logoDataUrl: state.logoBase64 || undefined,
             whatsapp: state.whatsapp || undefined,
+            footerContact1Icon: state.footerContact1Icon || undefined,
+            footerContact1Value: state.footerContact1Value !== undefined ? state.footerContact1Value : state.whatsapp,
+
             instagram: state.instagram || undefined,
+            footerContact2Icon: state.footerContact2Icon || undefined,
+            footerContact2Value: state.footerContact2Value !== undefined ? state.footerContact2Value : state.instagram,
           });
           return img;
         })
@@ -1138,23 +1153,55 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             )}
           </div>
           <div className="space-y-4">
-            <div>
-              <label className={labelCls}>WhatsApp (aparecerá no rodapé)</label>
-              <input
-                value={state.whatsapp || ""}
-                onChange={(e) => update({ whatsapp: e.target.value })}
-                placeholder="(11) 99999-9999"
-                className={inputCls}
-              />
+            <div className="flex gap-2">
+              <div className="w-1/3">
+                <label className={labelCls}>Ícone 1</label>
+                <select
+                  value={state.footerContact1Icon || "whatsapp_green"}
+                  onChange={(e) => update({ footerContact1Icon: e.target.value as any })}
+                  className={inputCls}
+                >
+                  <option value="whatsapp_green">WhatsApp Verde</option>
+                  <option value="whatsapp_custom">WhatsApp Sólido</option>
+                  <option value="instagram_gradient">Insta Colorido</option>
+                  <option value="instagram_custom">Insta Sólido</option>
+                  <option value="none">Nenhum</option>
+                </select>
+              </div>
+              <div className="w-2/3">
+                <label className={labelCls}>Contato 1 (aparecerá no rodapé)</label>
+                <input
+                  value={state.footerContact1Value !== undefined ? state.footerContact1Value : (state.whatsapp || "")}
+                  onChange={(e) => update({ footerContact1Value: e.target.value })}
+                  placeholder="(11) 99999-9999"
+                  className={inputCls}
+                />
+              </div>
             </div>
-            <div>
-              <label className={labelCls}>Instagram (aparecerá no rodapé)</label>
-              <input
-                value={state.instagram || ""}
-                onChange={(e) => update({ instagram: e.target.value.replace(/^@/, "") })}
-                placeholder="@suaagencia"
-                className={inputCls}
-              />
+            <div className="flex gap-2">
+              <div className="w-1/3">
+                <label className={labelCls}>Ícone 2</label>
+                <select
+                  value={state.footerContact2Icon || "instagram_gradient"}
+                  onChange={(e) => update({ footerContact2Icon: e.target.value as any })}
+                  className={inputCls}
+                >
+                  <option value="whatsapp_green">WhatsApp Verde</option>
+                  <option value="whatsapp_custom">WhatsApp Sólido</option>
+                  <option value="instagram_gradient">Insta Colorido</option>
+                  <option value="instagram_custom">Insta Sólido</option>
+                  <option value="none">Nenhum</option>
+                </select>
+              </div>
+              <div className="w-2/3">
+                <label className={labelCls}>Contato 2 (aparecerá no rodapé)</label>
+                <input
+                  value={state.footerContact2Value !== undefined ? state.footerContact2Value : (state.instagram || "")}
+                  onChange={(e) => update({ footerContact2Value: e.target.value.replace(/^@/, "") })}
+                  placeholder="@suaagencia"
+                  className={inputCls}
+                />
+              </div>
             </div>
           </div>
         </div>
