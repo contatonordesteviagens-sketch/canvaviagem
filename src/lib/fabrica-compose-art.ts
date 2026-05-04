@@ -1003,11 +1003,42 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
   const cityFmt = toTitle(city);
   const destFmt = toTitle(destination);
-  const isExperience = strategy.startsWith("experiencia_");
   const hasDest = destFmt.length > 0;
 
   // Pools de headlines — variantes que dependem do destino só entram se houver destino preenchido.
   // Frases banidas globalmente (alinhado com edge function): "O melhor de", "Seu próximo destino é esse".
+  // ===========================================================================
+  // 🛡️ SISTEMA DE BLINDAGEM CANVA VIAGEM (NÍVEL 3) 🛡️
+  // ---------------------------------------------------------------------------
+  // REGRA 1: SEGURANÇA TOTAL INSTAGRAM (340px bottom offset em Stories).
+  // REGRA 2: SEPARAÇÃO CATEGÓRICA (Experiência != Oferta).
+  // REGRA 3: HIGIENIZAÇÃO DE ESTADO (Nenhum dado de preço vaza para ads de luxo).
+  // ===========================================================================
+  const isExperience = !!options.isExperience; 
+  const isStory = format === "story";
+  const curSym = currencySymbol || "R$";
+
+  // Higienização Imutável (Garante que nunca haverá preço em Experience)
+  const price = isExperience ? "" : (options.price || "");
+  const installments = isExperience ? "" : (options.installments || "");
+  const showTotal = isExperience ? false : (options.showTotal !== false);
+  const showPixBanner = isExperience ? false : (options.showPixBanner !== false);
+
+  const RULES = {
+    SAFE_BOTTOM: isStory ? 480 : 120, // Zona de exclusão absoluta para conteúdo dinâmico
+    SAFE_TOP: isStory ? 280 : 60,
+    LEFT: 80,
+    RIGHT: width - 80,
+    PANEL_BOTTOM: height - (isStory ? 480 : 120)
+  };
+
+  const panelBottom = RULES.PANEL_BOTTOM;
+  const left = RULES.LEFT;
+  const right = RULES.RIGHT;
+  const contentWidth = right - left;
+  const safeTop = RULES.SAFE_TOP;
+  const safeBottom = RULES.SAFE_BOTTOM;
+
   const experienceBase = [
     "Momentos que ficam para sempre",
     "Partiu viajar?",
@@ -1032,12 +1063,6 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ? [...experienceBase, ...experienceWithDest]
     : [...ofertaBase, ...ofertaWithDest];
 
-  const safeTop = format === "story" ? 280 : 60;
-  const safeBottom = format === "story" ? 480 : 120; // Reduzido de 540 para 480 para melhor equilíbrio visual, mantendo segurança
-  const panelBottom = height - safeBottom;
-  const left = 80;
-  const right = width - 80;
-  const contentWidth = right - left;
   // Sempre mostra até 5 benefícios (story OU quadrado) — o usuário escolheu 5/5 e os 5 devem aparecer.
   const shownHighlights = highlights.slice(0, 6);
   const badgeText = cityFmt ? `Saindo de ${cityFmt}` : "Pacote completo";
