@@ -4,7 +4,7 @@ import { CategoryType } from "./CategoryNav";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Dock } from "@/components/ui/Dock";
 import { useNavigate } from "react-router-dom";
-import { ComingSoonGate, isFabricaUnlocked } from "@/components/fabrica/ComingSoonGate";
+import { ComingSoonGate } from "@/components/fabrica/ComingSoonGate";
 
 interface BottomNavProps {
   activeCategory: CategoryType;
@@ -25,11 +25,7 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
     } else if (category === "calendar") {
       navigate("/calendar");
     } else if (category === "fabrica") {
-      if (isFabricaUnlocked()) {
-        navigate("/fabrica");
-      } else {
-        setGateOpen(true);
-      }
+      setGateOpen(true);
     } else {
       onCategoryChange(category as CategoryType);
       navigate("/"); // Ensure we are on home to see content
@@ -84,7 +80,7 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
       <ComingSoonGate
         open={gateOpen}
         onOpenChange={setGateOpen}
-        onUnlock={() => navigate("/fabrica")}
+        onUnlock={() => navigate("/fabrica", { state: { fabricaUnlocked: true } })}
       />
     </>
   );
