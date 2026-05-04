@@ -132,31 +132,6 @@ const FabricaInner = () => {
 };
 
 const Fabrica = () => {
-  const { isAdmin } = useAuth();
-  const navigate = useNavigate();
-  const [unlocked, setUnlocked] = useState(() => isFabricaUnlocked() || isAdmin);
-  const [gateOpen, setGateOpen] = useState(!unlocked);
-
-  useEffect(() => {
-    if (isAdmin) setUnlocked(true);
-  }, [isAdmin]);
-
-  if (!unlocked) {
-    return (
-      <>
-        <SeoMetadata title="Em breve | Canva Viagem" description="Funcionalidade em breve." />
-        <ComingSoonGate
-          open={gateOpen}
-          onOpenChange={(open) => {
-            setGateOpen(open);
-            if (!open && !isFabricaUnlocked()) navigate("/");
-          }}
-          onUnlock={() => setUnlocked(true)}
-        />
-      </>
-    );
-  }
-
   return (
     <>
       <SeoMetadata title="Fábrica de Destinos | Canva Viagem" description="Sistema completo de marketing e geração de anúncios com IA para agências de viagens." />
