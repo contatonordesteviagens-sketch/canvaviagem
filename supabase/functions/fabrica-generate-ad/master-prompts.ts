@@ -145,6 +145,54 @@ export function promptDarkGroupTravel(v: MasterPromptVars): string {
   return cleanPhotoPrompt(v, "realistic premium photograph of a tourism bus, luggage, or group-travel object scene without people", "commercial studio or outdoor light, clean uncluttered composition");
 }
 
+export function promptForcaBruta1x1V1(v: MasterPromptVars): string {
+  return `[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA. A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) associada à Versão de Layout: V1.]
+
+IMAGEM: A high-end travel advertisement with a 1:1 square aspect ratio. The layout features a sharp vertical split perfectly down the middle.
+
+LEFT PANEL (UI Design - 45% width): Solid ${v.primaryHex} background.
+
+MANDATORY COLOR RULE: Every single letter, word, number, and icon on this left panel MUST BE RENDERED IN BRIGHT PURE WHITE color. No exceptions.
+
+LOGO & SPACING: Top left corner: a minimalist logo placeholder. CRITICAL INSTRUCTION: You MUST leave a large empty vertical gap (padding) directly below the logo. Absolutely no text can touch the logo.
+
+TYPOGRAPHY (ALL PURE WHITE): Starting below the empty gap: small PURE WHITE text '${v.promoName}'. Below that: massive, ultra-bold PURE WHITE text '${v.destination}'. Below that: medium PURE WHITE text '${v.city}'.
+
+ICONS (PURE WHITE ONLY): A vertical stack of translucent pill-buttons. The AI MUST use perfectly matching solid PURE WHITE monochromatic icons (NO colorful emojis) next to PURE WHITE text: '${v.highlights[0] || "Transporte incluso"}', '${v.highlights[1] || "Hospedagem"}', '${v.highlights[2] || "Café da manhã"}', '${v.highlights[3] || "Guia local"}'.
+
+PRICE BLOCK: At the bottom left, a darker rectangular highlight box. Inside it, stacked neatly: small PURE WHITE text '${v.installments}', massive extra-bold PURE WHITE text 'R$ ${v.installmentValue}', and small PURE WHITE text 'Total R$ ${v.totalValue}'.
+
+RIGHT PANEL (Photo - 55% width): An 8k photorealistic image of ${v.destination} (vibrant scenery). The photo is framed like a card with slightly rounded corners and a ${v.secondaryHex} border.`;
+}
+
+export function promptForcaBruta9x16V1(v: MasterPromptVars): string {
+  return `[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA E SAFE ZONES. A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/2 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Stories Vertical 9:16) associada à Versão de Layout: V1.]
+
+IMAGEM: A premium vertical 9:16 travel advertisement.
+
+STRICT UI RULE (SAFE ZONES): The top 20% and the bottom 20% MUST remain completely empty of typography or logos.
+
+BACKGROUND: Solid ${v.primaryHex} background stretching across the entire image.
+
+MANDATORY COLOR RULE FOR ALL TEXT: Every single word and icon generated on the solid background MUST BE BRIGHT PURE WHITE.
+
+TOP HALF UI (Safely below the top 20% zone):
+
+Minimalist logo placeholder at the top left.
+
+CRITICAL INSTRUCTION: Leave a large empty gap (padding) directly below the logo.
+
+Starting below the gap: small PURE WHITE text '${v.promoName}'.
+
+Massive, ultra-bold PURE WHITE text '${v.destination}'.
+
+Medium PURE WHITE text '${v.city}'.
+
+A vertical stack of pill-buttons using ONLY solid PURE WHITE monochromatic icons alongside PURE WHITE text: '${v.highlights[0] || "Transporte incluso"}', '${v.highlights[1] || "Hospedagem"}', '${v.highlights[2] || "Café da manhã"}', '${v.highlights[3] || "Guia local"}'.
+
+BOTTOM HALF (Photo & Price): An 8k photorealistic image of ${v.destination} placed as a large card with rounded corners, showing a ${v.secondaryHex} border behind it. Overlapping the bottom left corner of the photo card (strictly ABOVE the bottom 20% safe zone) is a dark highlight box containing: small PURE WHITE text '${v.installments}', massive extra-bold PURE WHITE text 'R$ ${v.installmentValue}', and small PURE WHITE text 'Total R$ ${v.totalValue}'.`;
+}
+
 export const MASTER_TEMPLATES = [
   { id: "classic_vertical", name: "OP1 · Foto limpa", builder: promptClassicVertical },
   { id: "cancun_style", name: "OP2 · Foto limpa", builder: promptCancunStyle },
@@ -165,6 +213,8 @@ export const MASTER_TEMPLATES = [
   { id: "dark_person_brutal", name: "DK4 · Foto limpa", builder: promptDarkPersonBrutal },
   { id: "dark_airplane_premium", name: "DK5 · Foto limpa", builder: promptDarkAirplanePremium },
   { id: "dark_group_travel", name: "DK6 · Foto limpa", builder: promptDarkGroupTravel },
+  { id: "forca_bruta_1x1_v1", name: "FB1 · Força Bruta 1:1", builder: promptForcaBruta1x1V1 },
+  { id: "forca_bruta_9x16_v1", name: "FB2 · Força Bruta 9:16", builder: promptForcaBruta9x16V1 },
 ] as const;
 
 export type MasterTemplateId = typeof MASTER_TEMPLATES[number]["id"];

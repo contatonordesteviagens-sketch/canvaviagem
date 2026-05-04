@@ -113,9 +113,10 @@ serve(async (req) => {
     }
 
     const body = (await req.json()) as AdParams & { customPrompt?: string };
-    // TRAVA GLOBAL: esta função NUNCA mais gera UI. Mesmo que um cliente antigo envie
-    // templateId/photoOnly:false, a IA recebe somente prompt fotográfico de fundo.
-    const forcePhotoOnly = true;
+    // Se o template for de força bruta, a IA tentará renderizar a UI na marra
+    const isForcaBruta = body.templateId?.startsWith("forca_bruta");
+    // TRAVA GLOBAL: esta função NUNCA mais gera UI, exceto nos templates Força Bruta
+    const forcePhotoOnly = !isForcaBruta;
 
     if (!body.templateId && !forcePhotoOnly && !body.customPrompt) {
       if (!body.strategy || !["ancora", "vitrine", "matriz", "gancho"].includes(body.strategy)) {
