@@ -193,6 +193,96 @@ A vertical stack of pill-buttons using ONLY solid PURE WHITE monochromatic icons
 BOTTOM HALF (Photo & Price): An 8k photorealistic image of ${v.destination} placed as a large card with rounded corners, showing a ${v.secondaryHex} border behind it. Overlapping the bottom left corner of the photo card (strictly ABOVE the bottom 20% safe zone) is a dark highlight box containing: small PURE WHITE text '${v.installments}', massive extra-bold PURE WHITE text 'R$ ${v.installmentValue}', and small PURE WHITE text 'Total R$ ${v.totalValue}'.`;
 }
 
+export function promptForcaBruta1x1V0(v: MasterPromptVars): string {
+  return `[CRITICAL SYSTEM RULES - READ TWICE: 1. NEVER use dark text on a dark background. 2. NEVER overlap elements; respect padding. 3. Icons MUST be single-color (monochromatic), NOT colorful.]
+[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA. A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) associada à Versão de Layout: V0.]
+
+IMAGEM: A premium, clean modern travel advertisement with a strict 1:1 square aspect ratio. The layout features a sharp, perfectly straight horizontal split.
+
+TOP HALF (Design UI): Solid ${v.primaryHex} background.
+
+LOGO & PADDING: Top left: minimalist logo placeholder. CRITICAL: Leave a large, empty gap of space (padding) directly below the logo. Absolutely NO elements can touch or overlap the logo.
+
+TAG BUTTON (Below the empty gap): A dark rounded pill button. The text inside this dark button MUST be PURE WHITE reading '${v.promoName}'. (Rule: Dark background = White Text).
+
+MAIN HEADLINE: '${v.destination}' in MASSIVE, extra-large, ultra-bold PURE WHITE font.
+
+SPLIT SECTION: Below the headline, a delicate vertical line splitting the area.
+
+LEFT SIDE (Inclusions): A vertical stack. The AI MUST use perfectly matching MONOCHROMATIC icons (all identical in color, NO colorful emojis) next to LARGE PURE WHITE text: '${v.highlights[0] || "Transporte"}', '${v.highlights[1] || "Hospedagem"}', '${v.highlights[2] || "Passeios"}', '${v.highlights[3] || "Guia"}'.
+
+RIGHT SIDE (Price Highlight Block): A prominent, solid DARK contrasting rectangular block with rounded corners. INSIDE this dark block, ALL text MUST be PURE WHITE for maximum contrast. Stacked neatly inside: LARGE text 'À VISTA', followed by a GIGANTIC, extra-bold text 'R$ ${v.installmentValue}', and LARGE text '${v.installments}'.
+
+BOTTOM HALF (Photo): An 8k photorealistic image of ${v.destination} (vibrant scenery).
+
+AESTHETIC: Clean modern UI, flawless spelling, high contrast, perfect alignment.`;
+}
+
+export function promptForcaBruta9x16V0(v: MasterPromptVars): string {
+  return `[CRITICAL SYSTEM RULES - READ TWICE: 1. NEVER use dark text on a dark background. 2. NEVER overlap elements; respect padding. 3. Icons MUST be single-color (monochromatic), NOT colorful.]
+[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA E SAFE ZONES. A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/2 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Stories Vertical 9:16) associada à Versão de Layout: V0.]
+
+IMAGEM: A high-end vertical 9:16 travel advertisement. Sharp horizontal split.
+
+STRICT UI RULE (SAFE ZONES): Top 20% and bottom 20% MUST remain completely empty of typography or logos.
+
+TOP HALF (Photo - 45%): Full-width 8k photorealistic image of ${v.destination}. Strictly below the top 20% safe zone, in the top-left, is a minimalist logo placeholder.
+
+BOTTOM HALF (UI Design - 55%): Solid ${v.primaryHex} background stretching to the bottom.
+
+TAG BUTTON & PADDING: Just below the photo split, leave an empty gap, then place a solid DARK rounded pill button. The text inside MUST be PURE WHITE reading '${v.promoName}'.
+
+HEADLINE: Below the button, main headline '${v.destination}' in MASSIVE, heavy ultra-bold PURE WHITE font.
+
+INCLUSIONS: A vertical stack. The AI MUST generate MONOCHROMATIC solid-color icons (NO colorful emojis) next to PURE WHITE text: '${v.highlights[0] || "Transporte"}', '${v.highlights[1] || "Hospedagem"}', '${v.highlights[2] || "Café da manhã"}', '${v.highlights[3] || "Seguro"}'.
+
+PRICE BLOCK (Safely above bottom 20%): A large, solid DARK rectangular block with rounded corners to highlight the price. INSIDE this dark block, ALL text MUST be PURE WHITE. Stacked neatly: Bold text '${v.promoName}', small text 'PACOTE ${v.destination}'. Below that, 'a partir de', then a badge with '${v.installments}' next to massive extra-bold 'R$ ${v.installmentValue}'. At the very bottom edge, a footer strip with 'Total R$ ${v.totalValue}'.`;
+}
+
+export function promptForcaBruta1x1V2(v: MasterPromptVars): string {
+  return `[CRITICAL DESIGN LOGIC & CONTRAST RULE: NEVER generate light text on a light background. NEVER generate dark text on a dark background. Strictly obey the color variables provided.]
+[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA. A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/1 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Quadrado 1:1) associada à Versão de Layout: V2. OBRIGATÓRIO: Usar a estrutura de faixa central horizontal e grid 2x2.]
+
+IMAGEM: A premium, clean modern travel advertisement with a strict 1:1 square aspect ratio.
+
+BACKGROUND: The base background of the entire lower half is a solid, clean off-white (light cream).
+
+TOP SECTION (Photo - Top 45%): An 8k photorealistic image of ${v.destination} (vibrant scenery). The photo is framed like a card with slightly rounded corners at the top, sitting flush against the middle ribbon.
+
+MIDDLE RIBBON (The Divider): Directly below the photo, a solid ${v.primaryHex} horizontal ribbon stretches edge-to-edge across the entire width of the image. Centered inside this ribbon is massive, ultra-bold PURE WHITE text reading: '${v.destination}'.
+
+BOTTOM SECTION (UI Design on off-white background):
+
+Directly below the ribbon, centered, is a perfectly aligned 2x2 grid of inclusions. Row 1: minimalist icon + dark text '${v.highlights[0] || "Transporte"}' AND minimalist icon + dark text '${v.highlights[1] || "Hotel"}'. Row 2: minimalist icon + dark text '${v.highlights[2] || "Passeios"}' AND minimalist icon + dark text '${v.highlights[3] || "Seguro"}'.
+
+At the bottom center, a large, solid ${v.primaryHex} rectangular block with rounded corners. INSIDE this block, stacked neatly: small PURE WHITE text '${v.promoName}', massive extra-bold PURE WHITE text 'R$ ${v.installmentValue}', and small PURE WHITE text '${v.installments}'.
+
+AESTHETIC: Clean modern UI, flawless spelling, zero overlapping text.`;
+}
+
+export function promptForcaBruta9x16V2(v: MasterPromptVars): string {
+  return `[CRITICAL DESIGN LOGIC & CONTRAST RULE: NEVER generate light text on a light background. NEVER generate dark text on a dark background. Strictly obey the color variables provided.]
+[SYSTEM COMMAND: ISOLAMENTO DE ESTRUTURA E SAFE ZONES. A instrução a seguir aplica-se ÚNICA E EXCLUSIVAMENTE à Nomenclatura: 1/1/2 (Modo: Foto Real | Estilo: Oferta de Pacote | Formato: Stories Vertical 9:16) associada à Versão de Layout: V2. OBRIGATÓRIO: Respeitar limites da interface do Instagram.]
+
+IMAGEM: A high-end vertical 9:16 travel advertisement.
+
+STRICT UI RULE (SAFE ZONES): The top 20% and the bottom 20% of the entire canvas MUST remain completely empty of any typography, UI elements, or logos to act as safe zones.
+
+BACKGROUND: Solid clean off-white (light cream) covering the lower half.
+
+TOP SECTION (Photo): Starting exactly below the top 20% safe zone, a large 8k photorealistic image of ${v.destination}. Top-left corner of the photo has a minimalist logo placeholder.
+
+MIDDLE RIBBON: Directly below the photo, a thick, solid ${v.primaryHex} horizontal ribbon stretching edge-to-edge. Inside, massive ultra-bold PURE WHITE text: '${v.destination}'.
+
+BOTTOM SECTION (UI):
+
+On the off-white background below the ribbon, a perfectly aligned 2x2 grid. Left column: '${v.highlights[0] || "Transporte"}', '${v.highlights[2] || "Passeios"}' with icons. Right column: '${v.highlights[1] || "Hospedagem"}', '${v.highlights[3] || "Seguro"}' with icons. All text here is dark.
+
+Safely above the bottom 20% safe zone, a massive solid ${v.primaryHex} rounded rectangular block. Inside, stacked: small PURE WHITE text '${v.promoName}', huge extra-bold PURE WHITE text 'R$ ${v.installmentValue}', small PURE WHITE text '${v.installments}'.
+
+AESTHETIC: Perfect alignment, crisp contrast, premium UI layout.`;
+}
+
 export const MASTER_TEMPLATES = [
   { id: "classic_vertical", name: "OP1 · Foto limpa", builder: promptClassicVertical },
   { id: "cancun_style", name: "OP2 · Foto limpa", builder: promptCancunStyle },
@@ -213,8 +303,12 @@ export const MASTER_TEMPLATES = [
   { id: "dark_person_brutal", name: "DK4 · Foto limpa", builder: promptDarkPersonBrutal },
   { id: "dark_airplane_premium", name: "DK5 · Foto limpa", builder: promptDarkAirplanePremium },
   { id: "dark_group_travel", name: "DK6 · Foto limpa", builder: promptDarkGroupTravel },
-  { id: "forca_bruta_1x1_v1", name: "FB1 · Força Bruta 1:1", builder: promptForcaBruta1x1V1 },
-  { id: "forca_bruta_9x16_v1", name: "FB2 · Força Bruta 9:16", builder: promptForcaBruta9x16V1 },
+  { id: "forca_bruta_1x1_v1", name: "FB1 · Força Bruta 1:1 V1", builder: promptForcaBruta1x1V1 },
+  { id: "forca_bruta_9x16_v1", name: "FB2 · Força Bruta 9:16 V1", builder: promptForcaBruta9x16V1 },
+  { id: "forca_bruta_1x1_v0", name: "FB3 · Força Bruta 1:1 V0", builder: promptForcaBruta1x1V0 },
+  { id: "forca_bruta_9x16_v0", name: "FB4 · Força Bruta 9:16 V0", builder: promptForcaBruta9x16V0 },
+  { id: "forca_bruta_1x1_v2", name: "FB5 · Força Bruta 1:1 V2", builder: promptForcaBruta1x1V2 },
+  { id: "forca_bruta_9x16_v2", name: "FB6 · Força Bruta 9:16 V2", builder: promptForcaBruta9x16V2 },
 ] as const;
 
 export type MasterTemplateId = typeof MASTER_TEMPLATES[number]["id"];
