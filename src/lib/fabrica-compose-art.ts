@@ -1608,7 +1608,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         cityFmt ? `${cityFmt} Viagens` : undefined,
         effectiveTextColor
       );
-      return canvas.toDataURL("image/png");
+      applyFilmGrain(0.04);
+    return canvas.toDataURL("image/png");
     }
 
     const logoH = hasLogo ? 130 : 0;
@@ -1740,7 +1741,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         cityFmt ? `${cityFmt} Viagens` : undefined,
         effectiveTextColor
       );
-      return canvas.toDataURL("image/png");
+      applyFilmGrain(0.04);
+    return canvas.toDataURL("image/png");
     }
 
     // ── V1 · REF "Black Friday" — painel escuro ESQUERDA + coluna fotos DIREITA ──
@@ -1877,7 +1879,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         cityFmt ? `${cityFmt} Viagens` : undefined,
         effectiveTextColor
       );
-      return canvas.toDataURL("image/png");
+      applyFilmGrain(0.04);
+    return canvas.toDataURL("image/png");
     }
 
     // ── V2 · REF "Santa Teresa" — foto topo + faixa headline + benefits + preço ──
@@ -1995,7 +1998,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         cityFmt ? `${cityFmt} Viagens` : undefined,
         effectiveTextColor
       );
-      return canvas.toDataURL("image/png");
+      applyFilmGrain(0.04);
+    return canvas.toDataURL("image/png");
     }
 
     // ── V4 · CIRCUITO BR — card azul flutuante centralizado + pílula Pix vazada ─
@@ -2300,52 +2304,92 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         cityFmt ? `${cityFmt} Viagens` : undefined,
         effectiveTextColor
       );
-      return canvas.toDataURL("image/png");
+      applyFilmGrain(0.04);
+    return canvas.toDataURL("image/png");
     }
 
 
-    // ── V3 · FULLBLEED com card centralizado flutuante ─────────────────────
-    // Foto ocupa 100% da tela. Card semi-transparente centralizado na base.
-    const c3 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.38);
-    ctx.drawImage(image, c3.sx, c3.sy, c3.sw, c3.sh, 0, 0, width, height);
-    const g3 = ctx.createLinearGradient(0, height * 0.25, 0, height);
-    g3.addColorStop(0, "rgba(0,0,0,0)"); g3.addColorStop(1, "rgba(0,0,0,0.86)");
-    ctx.fillStyle = g3; ctx.fillRect(0, height * 0.25, width, height * 0.75);
-    // Badge "Saindo de" sobre a foto
-    drawBadge(left, logoH + 60, 480);
-    // Destino gigante
-    ctx.fillStyle = "#ffffff";
-    let df3 = 92; ctx.font = `900 ${df3}px Inter, Arial, sans-serif`;
-    while (ctx.measureText(destUp).width > contentWidth && df3 > 40) { df3 -= 5; ctx.font = `900 ${df3}px Inter, Arial, sans-serif`; }
-    ctx.fillText(destUp, left, logoH + 176);
-    // Card base transparente
-    const cardY3 = 660;
-    fillRoundRect(ctx, left - 20, cardY3, contentWidth + 40, 380, 28, "rgba(0,0,0,0.55)");
-    // Headline
-    ctx.fillStyle = secondaryColor; ctx.font = "700 30px Inter, Arial, sans-serif";
-    ctx.fillText(titleText, left, cardY3 + 50);
-    // Benefits 2 colunas
-    const col3W = Math.floor(contentWidth / 2);
-    highlights.slice(0, 4).forEach((h, i) => {
-      const cx3 = left + (i % 2) * col3W;
-      const cy3 = cardY3 + 90 + Math.floor(i / 2) * 72;
-      ctx.fillStyle = "#ffffff"; ctx.font = "700 28px Inter, Arial, sans-serif";
-      ctx.fillText(ICON_SYMBOL[h.icon || "check"] + " " + h.text, cx3, cy3);
-    });
-    // Preço
-    ctx.fillStyle = secondaryColor; ctx.font = "900 72px Inter, Arial, sans-serif";
+    applyFilmGrain(0.04);
+    return canvas.toDataURL("image/png");
+  };
+
+  // ============================================================
+  // V2_Experiencia · LUXO MATERIAL (canvas)
+  // ============================================================
+  const renderV2Experiencia = async (): Promise<string> => {
+    const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
+    ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+
+    // Overlay gradiente dark sutil
+    const grad = ctx.createLinearGradient(0, 0, 0, height);
+    grad.addColorStop(0, "rgba(0,0,0,0.5)");
+    grad.addColorStop(0.5, "rgba(0,0,0,0.1)");
+    grad.addColorStop(1, "rgba(0,0,0,0.6)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+
+    const cx = width / 2;
+    const isStory = format === "story";
+    const serif = `'Playfair Display', Georgia, serif`;
+    const sans = `Inter, Arial, sans-serif`;
+
     ctx.textAlign = "center";
-    ctx.fillText(mainPrice || `${curSym} ${price}`, width / 2, cardY3 + 312);
-    ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = "600 24px Inter, Arial, sans-serif";
-    ctx.fillText([bottomSuffix, installments ? `${installments} sem juros` : ""].filter(Boolean).join(" · "), width / 2, cardY3 + 356);
-    ctx.textAlign = "left";
-    await drawFinalBranding(
-      ctx, width, height, logoDataUrl, 
-      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-      cityFmt ? `${cityFmt} Viagens` : undefined,
-      effectiveTextColor
-    );
+    
+    // Promo
+    ctx.font = `800 ${isStory ? 24 : 18}px ${sans}`;
+    ctx.fillStyle = secondaryColor;
+    ctx.fillText((promoName || "EXCLUSIVE").toUpperCase(), cx, isStory ? 350 : 180);
+
+    // Title
+    ctx.fillStyle = "#ffffff";
+    const titSize = isStory ? 110 : 80;
+    ctx.font = `900 ${titSize}px ${serif}`;
+    const lines = (titleText || destination).toUpperCase().split(/\s+/);
+    let curY = height / 2 - (lines.length * titSize * 0.5);
+    lines.forEach((l, i) => {
+      ctx.fillText(l, cx, curY + i * titSize * 0.95);
+    });
+
+    applyFilmGrain(0.05);
+    await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, undefined, effectiveTextColor);
+    return canvas.toDataURL("image/png");
+  };
+
+  // ============================================================
+  // V3_Experiencia · DARK PREMIUM (canvas)
+  // ============================================================
+  const renderV3Experiencia = async (): Promise<string> => {
+    const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
+    ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+
+    // Overlay Noturno Forte
+    const grad = ctx.createLinearGradient(0, 0, 0, height);
+    grad.addColorStop(0, "rgba(0,0,0,0.7)");
+    grad.addColorStop(0.5, "rgba(0,0,0,0.3)");
+    grad.addColorStop(1, "rgba(0,0,0,0.85)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+
+    const cx = width / 2;
+    const isStory = format === "story";
+    const serif = `'Playfair Display', Georgia, serif`;
+    const sans = `Inter, Arial, sans-serif`;
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#ffffff";
+
+    // Title Maciço
+    const titSize = isStory ? 140 : 100;
+    ctx.font = `900 ${titSize}px ${sans}`;
+    ctx.fillText((titleText || destination).toUpperCase(), cx, height / 2);
+
+    // Subtitle Gold
+    ctx.font = `italic 600 ${isStory ? 32 : 24}px ${serif}`;
+    ctx.fillStyle = secondaryColor;
+    ctx.fillText(travelPeriod || "Uma jornada inesquecível", cx, height / 2 + (isStory ? 80 : 60));
+
+    applyFilmGrain(0.06);
+    await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, undefined, effectiveTextColor);
     return canvas.toDataURL("image/png");
   };
 
@@ -2451,6 +2495,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       cityFmt ? `${cityFmt} Viagens` : undefined,
       effectiveTextColor
     );
+    applyFilmGrain(0.04);
     return canvas.toDataURL("image/png");
   }
 
@@ -2517,6 +2562,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillStyle = "rgba(255,255,255,0.92)";
       ctx.fillText(titleText.trim(), cx, subY);
     }
+
+    // EFEITO GLASS: Adiciona um brilho sutil no centro
+    const radialGrad = ctx.createRadialGradient(cx, height/2, 0, cx, height/2, width);
+    radialGrad.addColorStop(0, "rgba(255,255,255,0.05)");
+    radialGrad.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = radialGrad;
+    ctx.fillRect(0, 0, width, height);
 
     // 4) PÍLULA (bg branco translúcido, rounded-full)
     // V0_Experiencia NÃO usa highlights/ícones — apenas período da viagem se existir.
@@ -2641,6 +2693,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       cityFmt ? `${cityFmt} Viagens` : undefined,
       effectiveTextColor
     );
+    applyFilmGrain(0.04);
     return canvas.toDataURL("image/png");
   };
 
@@ -2659,137 +2712,55 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   // ============================================================
   const renderV1Experiencia = async (): Promise<string> => {
     // ===== V1_Experiencia · LUXO CINEMATOGRÁFICO (canvas) =====
-    // 3 blocos centralizados (topo · centro · slogan), todos em branco,
-    // overlay sutil bg-black/30. Tipografia: Serif (Playfair) + Cursive
-    // (Dancing Script) + Italic. Logo composto pelo overlay automático.
-
+    // Layout minimalista com foco em tipografia elegante.
+    
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
     ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
-    // Overlay sutil — bg-black/30
-    ctx.fillStyle = "rgba(0,0,0,0.30)";
+    // Overlay Premium: Vignette + Glass
+    const grad = ctx.createLinearGradient(0, 0, 0, height);
+    grad.addColorStop(0, "rgba(0,0,0,0.4)");
+    grad.addColorStop(0.5, "rgba(0,0,0,0.1)");
+    grad.addColorStop(1, "rgba(0,0,0,0.6)");
+    ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
 
     const cx = width / 2;
     const isStory = format === "story";
-
-    const serif = `'Playfair Display', 'Bodoni Moda', Georgia, serif`;
-    const script = `'Dancing Script', 'Great Vibes', cursive`;
-
-    // Reservas de margem (px)
-    // REGRA: branding começa em (height - 480) em Stories. O conteúdo inferior deve terminar acima disso.
-    const padTop = isStory ? (hasLogo ? 280 : 250) : (hasLogo ? 140 : 80);
-    const padBottom = isStory ? safeBottom : 120; // garante que o slogan nunca toque o branding
-
-    // Helper: shadow sutil (sempre ativa no V1 para garantir leitura sobre céu/fundo claro)
-    const withShadow = (cb: () => void) => {
-      ctx.save();
-      ctx.shadowColor = "rgba(0,0,0,0.45)";
-      ctx.shadowBlur = 10;
-      cb();
-      ctx.restore();
-    };
-
-    // Helper de tracking simulado (insere espaços finos entre letras)
-    const trackText = (s: string) => s.split("").join("\u2009");
+    const serif = `'Playfair Display', Georgia, serif`;
+    const sans = `Inter, Arial, sans-serif`;
 
     ctx.textAlign = "center";
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = "#ffffff";
 
-    // ───────────────────────────────────────────────
-    // BLOCO SUPERIOR — promoName (serif uppercase widest) + travelPeriod (cursive)
-    // ───────────────────────────────────────────────
-    const promo = (promoName || "").trim().toUpperCase();
-    const promoSize = isStory ? 30 : 24;
-    let topY = padTop;
-    if (promo) {
-      ctx.font = `600 ${promoSize}px ${serif}`;
-      withShadow(() => ctx.fillText(trackText(promo), cx, topY));
-      topY += promoSize + (isStory ? 18 : 14);
+    // 1) Topo: PromoName (Destaque sutil)
+    const promo = (promoName || "Experiência Única").toUpperCase();
+    ctx.font = `800 ${isStory ? 32 : 24}px ${sans}`;
+    ctx.fillStyle = secondaryColor;
+    ctx.fillText(promo.split("").join(" "), cx, isStory ? 320 : 150);
+
+    // 2) Centro: Título em Serif Gigante
+    ctx.fillStyle = "#ffffff";
+    const titSize = isStory ? 120 : 90;
+    ctx.font = `900 ${titSize}px ${serif}`;
+    const titLines = (titleText || destination).toUpperCase().split(/\s+/);
+    let line1 = titLines.slice(0, Math.ceil(titLines.length / 2)).join(" ");
+    let line2 = titLines.slice(Math.ceil(titLines.length / 2)).join(" ");
+    
+    const midY = height / 2;
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.shadowBlur = 15;
+    ctx.fillText(line1, cx, midY - (line2 ? titSize * 0.4 : 0));
+    if (line2) ctx.fillText(line2, cx, midY + titSize * 0.7);
+    ctx.shadowBlur = 0;
+
+    // 3) Baixo: Travel Period (Italic)
+    if (travelPeriod) {
+      ctx.font = `italic 400 ${isStory ? 36 : 28}px ${serif}`;
+      ctx.fillStyle = "rgba(255,255,255,0.8)";
+      ctx.fillText(travelPeriod, cx, midY + (line2 ? titSize * 1.6 : titSize * 0.9));
     }
-
-    // travelPeriod (cursive)
-    const period = (travelPeriod && travelPeriod.trim())
-      ? travelPeriod.trim()
-      : "uma jornada inesquecível";
-    const periodSize = isStory ? 36 : 28;
-    ctx.font = `600 ${periodSize}px ${script}`;
-    withShadow(() => ctx.fillText(period, cx, topY + periodSize * 0.85));
-
-    // ───────────────────────────────────────────────
-    // BLOCO CENTRAL — experienceDescription (serif bold uppercase) + adTitle (serif normal)
-    // ───────────────────────────────────────────────
-    const benefitsText = ((highlights || [])
-      .map((h: any) => (typeof h === "string" ? h : h?.text))
-      .filter((t: any) => t && String(t).trim().length > 0)
-      .join(" · ")) || (destination || "").toUpperCase();
-    const desc = benefitsText.toUpperCase();
-
-    // Quebra de linha simples (até 2 linhas)
-    const wrapLines = (text: string, maxWidth: number, font: string): string[] => {
-      ctx.font = font;
-      const words = text.split(/\s+/);
-      const lines: string[] = [];
-      let current = "";
-      for (const w of words) {
-        const next = current ? `${current} ${w}` : w;
-        if (ctx.measureText(next).width <= maxWidth) {
-          current = next;
-        } else {
-          if (current) lines.push(current);
-          current = w;
-        }
-      }
-      if (current) lines.push(current);
-      return lines.slice(0, 2);
-    };
-
-    const maxTextW = width - (isStory ? 80 : 100);
-    let descSize = isStory ? 72 : 56;
-    let descFont = `800 ${descSize}px ${serif}`;
-    let descLines = wrapLines(desc, maxTextW, descFont);
-    while (descLines.some((l) => ctx.measureText(l).width > maxTextW) && descSize > 36) {
-      descSize -= 4;
-      descFont = `800 ${descSize}px ${serif}`;
-      descLines = wrapLines(desc, maxTextW, descFont);
-    }
-
-    const adSize = isStory ? 26 : 22;
-    const adFont = `400 ${adSize}px ${serif}`;
-    const ad = (titleText || "").trim();
-
-    const lineGap = Math.round(descSize * 0.18);
-    const descBlockH = descLines.length * descSize + Math.max(0, descLines.length - 1) * lineGap;
-    const adH = ad ? adSize + 14 : 0;
-    const centerBlockH = descBlockH + adH;
-
-    const centerY = (height / 2) - centerBlockH / 2 + descSize * 0.85;
-    ctx.font = descFont;
-    withShadow(() => {
-      descLines.forEach((line, i) => {
-        const y = centerY + i * (descSize + lineGap);
-        ctx.fillText(line, cx, y);
-      });
-    });
-
-    if (ad) {
-      const adY = centerY + (descLines.length - 1) * (descSize + lineGap) + adSize + 18;
-      ctx.font = adFont;
-      ctx.fillStyle = "rgba(255,255,255,0.95)";
-      withShadow(() => ctx.fillText(ad, cx, adY));
-      ctx.fillStyle = "#ffffff";
-    }
-
-    // ───────────────────────────────────────────────
-    // BLOCO INFERIOR — slogan (serif italic medium)
-    // ───────────────────────────────────────────────
-    const slogan = (paymentSuffix && paymentSuffix.trim())
-      ? paymentSuffix.trim()
-      : "Sua viagem começa aqui";
-    const sloganSize = isStory ? 26 : 22;
-    ctx.font = `italic 500 ${sloganSize}px ${serif}`;
-    withShadow(() => ctx.fillText(slogan, cx, height - padBottom));
 
     ctx.textAlign = "left";
     await drawFinalBranding(
@@ -2798,6 +2769,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
       effectiveTextColor
     );
+    applyFilmGrain(0.04);
     return canvas.toDataURL("image/png");
   };
 
@@ -3113,6 +3085,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
       effectiveTextColor
     );
+    applyFilmGrain(0.04);
     return canvas.toDataURL("image/png");
   };
 
@@ -3345,6 +3318,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       cityFmt ? `${cityFmt} Viagens` : undefined,
       effectiveTextColor
     );
+    applyFilmGrain(0.04);
     return canvas.toDataURL("image/png");
   };
 

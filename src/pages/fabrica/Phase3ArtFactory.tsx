@@ -273,22 +273,15 @@ const TRAVEL_PERIOD_PRESETS: string[] = [
  * As próximas duas posições vêm de presets "vizinhos" do mesmo grupo semântico, evitando
  * que as 3 imagens geradas mostrem exatamente o mesmo headline.
  */
-const TITLE_NEIGHBORS: Record<string, string[]> = {
-  "Conheça o melhor de {destino}": ["O melhor de {destino}", "Descubra {destino}"],
-  "Descubra {destino}": ["Conheça o melhor de {destino}", "Explore {destino}"],
-  "Pacote {destino}": ["Pacote Promocional {destino}", "Viagem Completa {destino}"],
-  "Explore {destino}": ["Descubra {destino}", "Vamos para {destino}?"],
-  "{destino} vai te surpreender": ["Você precisa conhecer {destino}!", "{destino} te espera"],
-  "Você precisa conhecer {destino}!": ["{destino} vai te surpreender", "Vamos para {destino}?"],
-  "O que fazer em {destino}": ["Conheça o melhor de {destino}", "Explore {destino}"],
-  "O melhor de {destino}": ["Conheça o melhor de {destino}", "Descubra {destino}"],
-  "Meu sonho se chama {destino}": ["Sua próxima viagem é {destino}", "Partiu {destino}"],
-  "Partiu {destino}": ["Vamos para {destino}?", "Sua próxima viagem é {destino}"],
-  "Sua próxima viagem é {destino}": ["Partiu {destino}", "Meu sonho se chama {destino}"],
-  "Pacote Promocional {destino}": ["Pacote {destino}", "Viagem Completa {destino}"],
-  "Viagem Completa {destino}": ["Pacote {destino}", "Pacote Promocional {destino}"],
-  "{destino} te espera": ["Vamos para {destino}?", "{destino} vai te surpreender"],
   "Vamos para {destino}?": ["Partiu {destino}", "{destino} te espera"],
+  // Vizinhos de Experiência
+  "Sua próxima viagem é {destino}": ["Viva o melhor de {destino}", "Momentos inesquecíveis em {destino}"],
+  "Viva o melhor de {destino}": ["Sua próxima viagem é {destino}", "Experiência exclusiva em {destino}"],
+  "Momentos inesquecíveis em {destino}": ["Desperte os sentidos em {destino}", "Prazer em cada detalhe · {destino}"],
+  "Desperte os sentidos em {destino}": ["Momentos inesquecíveis em {destino}", "Refúgio dos sonhos em {destino}"],
+  "Experiência exclusiva em {destino}": ["Viva o melhor de {destino}", "{destino} como você nunca viveu"],
+  "Prazer em cada detalhe · {destino}": ["All Inclusive · {destino}", "Experiência exclusiva em {destino}"],
+  "{destino} como você nunca viveu}": ["Descubra o lado secreto de {destino}", "Viva o melhor de {destino}"],
 };
 
 const buildTitleVariations = (template: string, destination: string): string[] => {
@@ -297,7 +290,9 @@ const buildTitleVariations = (template: string, destination: string): string[] =
   const main = fill(template);
   // Se o template foi editado (não bate com nenhum preset), reaproveita vizinhos do preset mais próximo.
   const neighbors = TITLE_NEIGHBORS[template] || [];
-  const fallback = AD_TITLE_PRESETS.filter((p) => p !== template).slice(0, 2);
+  const isExperienceTemplate = AD_TITLE_PRESETS_EXPERIENCIA.includes(template);
+  const poolForFallback = isExperienceTemplate ? AD_TITLE_PRESETS_EXPERIENCIA : AD_TITLE_PRESETS;
+  const fallback = poolForFallback.filter((p) => p !== template).slice(0, 2);
   const pool = [main, ...neighbors.map(fill), ...fallback.map(fill)];
   // dedup mantendo ordem
   const seen = new Set<string>();
@@ -1004,10 +999,17 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // sem nenhum elemento gráfico/tipográfico. Toda a UI (logo, textos, preço,
         // ícones, botões) é desenhada depois pelo motor Canvas (composeTravelAd).
         const NEGATIVE_UI = `STRICT NEGATIVE CONSTRAINTS — the output MUST be a pure photograph only. ABSOLUTELY FORBIDDEN: any text, letters, numbers, words, captions, headlines, prices, currency symbols, dates, typography, fonts, watermarks, signatures, logos, brand marks, badges, stamps, stickers, labels, banners, ribbons, callouts, speech bubbles, icons, pictograms, emojis, arrows, frames, borders, overlays, color blocks, gradients painted on top, UI elements, buttons, cards, panels, mockup chrome, phone frames, social media UI, Instagram/Facebook/TikTok interface, hashtags, @mentions, QR codes, barcodes. The image must look like an untouched RAW photograph straight from a professional camera — nothing rendered, nothing added, no graphic design whatsoever.`;
-        const experienceBackgroundPrompt = (variant: number) => (variant === 1
-          ? `Pure editorial travel photography, cinematic, ultra high quality 8K. Wide ultrarealistic shot of ${destination || "destino paradisíaco"}. Rim lighting, soft serene exclusive light, clean uncluttered composition, no motion blur. Stunning high-end atmosphere. Smooth darker open areas across the frame, with no objects or visual markings in those open areas.`
-          : `High-end commercial photography, hyperrealistic and cinematic. Extreme luxury and exclusivity scene at ${destination || "destino paradisíaco"}. Dramatic deep lighting, sophisticated tone. Clean uncluttered open areas at the top and center, with no objects or visual markings in those open areas.`
-        ) + " " + NEGATIVE_UI;
+        const experienceBackgroundPrompt = (variant: number) => {
+          const base = `Ultra-high-end editorial travel photography, cinematic 8K, Shot on RED. Magnificent landscape of ${destination || "paradise destination"}.`;
+          const variants = [
+            `Misty morning light, ethereal atmosphere, soft focus background, minimalist composition. Luxury resort architecture visible in the distance. Wide lens.`,
+            `Golden hour sunset, dramatic long shadows, deep blue ocean, golden sand. Rim lighting on palm trees. Tropical paradise vibe.`,
+            `Night photography, luxury outdoor lounge with fire pit, starry sky, turquoise pool glowing. Sophisticated and mysterious atmosphere.`,
+            `Aerial view, turquoise water patterns, white sandbars, luxury yacht anchored. Minimalist blue and white palette.`,
+            `Elegant interior of a luxury villa overlooking the ocean through floor-to-ceiling windows. Morning light, white linen, neutral tones.`,
+          ];
+          return `${base} ${variants[variant % variants.length]} ${NEGATIVE_UI}`;
+        };
 
         // ── Decisão V4 em IA Pura (apenas Oferta de Pacote) ─────────────────
         // Sorteia se esta geração será V4 (compositor card) ou IA tradicional,
