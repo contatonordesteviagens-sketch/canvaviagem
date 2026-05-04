@@ -1772,7 +1772,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
       // 7) PRICE CARD ancorado no rodapé
       const priceBlockH = 200;
-      const priceBlockY = height - 80 - priceBlockH;
+      const priceBlockY = panelBottom - priceBlockH;
 
       // 8) BENEFITS — pílulas adaptativas no espaço restante
       const benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
@@ -1863,13 +1863,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const priceCardW = Math.round(width * 0.66);
       const priceCardH = 168;
       const priceCardX = Math.round((width - priceCardW) / 2);
-      const priceCardY = height - 56 - priceCardH;
+      const priceCardY = panelBottom - priceCardH;
       fillRoundRect(ctx, priceCardX, priceCardY, priceCardW, priceCardH, 16, v2CardBg);
       ctx.fillStyle = v2CardLabel; ctx.font = "700 24px Inter, Arial, sans-serif";
       ctx.textAlign = "center";
       ctx.fillText((topLabel || "por apenas").toString(), priceCardX + priceCardW / 2, priceCardY + 40);
-      // Valor do preço usa a cor SECUNDÁRIA (ex.: amarelo) para destacar contra o card primário.
-      // Se a secundária não tiver contraste suficiente, ensureContrast troca para branco/preto.
       ctx.fillStyle = v2CardLabel;
       // Auto-shrink preço V2
       const priceStrV2 = mainPrice || `${curSym} ${price}`;
@@ -1885,9 +1883,6 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(bottomSuffix, priceCardX + priceCardW / 2, priceCardY + 144);
       ctx.textAlign = "left";
 
-      // 2) Faixa headline (altura adaptativa)
-      const faixaH = 110;
-
       // 3) Cálculo de altura dos benefits — TODOS devem caber.
       const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
       const benefitFontSize = benefitRowsV2 <= 2 ? 30 : 25;
@@ -1897,11 +1892,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const benefitsBottomPad = 28;
       const benefitsAreaH = benefitsTopPad + benefitsBlockH + benefitsBottomPad;
 
+      // 2) Faixa headline
+      const faixaH = 110;
+      const faixaY = priceCardY - benefitsAreaH - faixaH;
+
       // 4) Foto superior — calcula altura dinâmica para preencher tudo que sobra acima
       const photoTop = 16;
-      const photoBottom = priceCardY - benefitsAreaH - faixaH - 16;
+      const photoBottom = faixaY - 16;
       const fW2 = width - 32;
-      const fH2 = Math.max(Math.round(height * 0.34), photoBottom - photoTop);
+      const fH2 = Math.max(Math.round(height * 0.30), photoBottom - photoTop);
       const c2 = fitCover(image.naturalWidth, image.naturalHeight, fW2, fH2, 0.36);
       ctx.save();
       fillRoundRect(ctx, 16, photoTop, fW2, fH2, 22, "#ccc");
@@ -1924,7 +1923,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(titleText, left, faixaY + faixaH / 2);
       ctx.textBaseline = "alphabetic";
 
-      // 6) Benefits — duas colunas para ocupar o espaço inferior sem deixar vazio à direita
+      // 6) Benefits — duas colunas
       const benefitsTop = faixaY + faixaH + benefitsTopPad;
       const colGapV2 = 28;
       const colWV2 = (contentWidth - colGapV2) / 2;
@@ -2423,7 +2422,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     // blockBottom reserva espaço para o rodapé (branding) + CTA + linha legal.
     // REGRA: branding ocupa de (height - 480) para baixo em Stories.
     //         CTA fica acima disso. Margem de seguraça total de 520px do fundo no Story.
-    const brandingSafeY = isStory ? height - 520 : height - 260; // acima do branding
+    const brandingSafeY = panelBottom; // acima do branding
     const ctaHeight = isStory ? 90 : 70; // altura estimada do botão CTA
     const legalHeight = isStory ? 50 : 30;
     const blockBottom = brandingSafeY - legalHeight - ctaHeight - (isStory ? 30 : 20);
@@ -2542,7 +2541,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     // Reservas de margem (px)
     // REGRA: branding começa em (height - 480) em Stories. O conteúdo inferior deve terminar acima disso.
     const padTop = isStory ? (hasLogo ? 280 : 250) : (hasLogo ? 140 : 80);
-    const padBottom = isStory ? 520 : 120; // aumentado de 280 para 520 no Story — garante que o slogan nunca toque o branding
+    const padBottom = isStory ? safeBottom : 120; // garante que o slogan nunca toque o branding
 
     // Helper: shadow sutil (sempre ativa no V1 para garantir leitura sobre céu/fundo claro)
     const withShadow = (cb: () => void) => {
