@@ -281,7 +281,7 @@ async function drawFinalBranding(
   const isStory = ch > cw;
   const footerHeight = isStory ? 120 : 100;
   // Move o rodapé para cima da barra de mensagens do Instagram (aprox 280px do fundo)
-  const safeBottomMargin = isStory ? 280 : 20; 
+  const safeBottomMargin = isStory ? 340 : 20; // Subido de 280 para 340 para limpar a reply bar do Instagram
   const footerY = ch - footerHeight - safeBottomMargin;
 
   // 1. Fundo do Rodapé (VÉU GRADIENTE ESCURO)
@@ -1033,7 +1033,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     : [...ofertaBase, ...ofertaWithDest];
 
   const safeTop = format === "story" ? 280 : 60;
-  const safeBottom = format === "story" ? 440 : 120; // 440px é o limite real para não bater na UI do Instagram
+  const safeBottom = format === "story" ? 540 : 120; // Aumentado de 440 para 540 para acompanhar o novo offset do branding
   const panelBottom = height - safeBottom;
   const left = 80;
   const right = width - 80;
@@ -3254,7 +3254,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // 48% de panelBottom = painel menor, foto tem mais espaço visível
       const panelH = Math.round(panelBottom * 0.48);
       const panelY = panelBottom - panelH;
-      fillRoundRect(ctx, left - 20, panelY, contentWidth + 40, panelH, 0, `rgba(${parseInt(primaryColor.slice(1,3),16)},${parseInt(primaryColor.slice(3,5),16)},${parseInt(primaryColor.slice(5,7),16)},0.82)`);
+      fillRoundRect(ctx, left - 20, panelY, contentWidth + 40, panelH, 0, `rgba(${parseInt(primaryColor.slice(1,3),16)},${parseInt(primaryColor.slice(3,5),16)},${parseInt(primaryColor.slice(5,7),16)},0.92)`);
 
       const topY = panelY + 32;
       drawBadge(left, topY, contentWidth);
