@@ -26,7 +26,8 @@ function darken(hex: string, amount = 0.7) {
 export function buildLandingHTML(state: FabricaState): string {
   const color = state.primaryColor || "#0F2742";
   const colorDark = darken(color, 0.45);
-  const wpp = (state.whatsapp || "").replace(/\D/g, "");
+  const rawWpp = (state.whatsapp || "").replace(/\D/g, "");
+  const wpp = rawWpp.startsWith("55") ? rawWpp : `55${rawWpp}`;
   const sc = state.siteContent;
   const agencia = state.agencyName || "Sua Agência de Viagem";
   const cidade = state.city || "Brasil";
@@ -44,7 +45,7 @@ export function buildLandingHTML(state: FabricaState): string {
       ];
 
   const wppMsg = (titulo: string) =>
-    `https://wa.me/55${wpp}?text=${encodeURIComponent(`Olá! Tenho interesse em ${titulo}.`)}`;
+    `https://wa.me/${wpp}?text=${encodeURIComponent(`Olá! Tenho interesse em ${titulo}.`)}`;
 
   // Stats default (a agência pode editar depois). Usamos números crescentes para autoridade.
   const stats = [
@@ -61,6 +62,8 @@ export function buildLandingHTML(state: FabricaState): string {
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   };
 
+  const heroImg = sc.galleryImages?.[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80";
+  
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -112,11 +115,12 @@ img{max-width:100%;display:block}
 
 /* HERO */
 .hero{position:relative;padding:64px 0 56px;background:linear-gradient(135deg,#0a1525 0%,#1a2c44 50%,${colorDark} 100%);color:#fff;overflow:hidden}
-.hero::before{content:"";position:absolute;inset:0;background:url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80") center/cover;opacity:.2;mix-blend-mode:luminosity}
+.hero::before{content:"";position:absolute;inset:0;background:url("${heroImg}") center/cover;opacity:.2;mix-blend-mode:luminosity}
 .hero-grid{position:relative;display:grid;grid-template-columns:1fr;gap:48px;align-items:center;z-index:1}
-.hero .eyebrow{color:#fff;opacity:.8}
-.hero h1{font-size:clamp(34px,6vw,72px);font-weight:800;color:#fff;margin:14px 0 20px;letter-spacing:-0.03em}
-.hero p.lead{font-size:17px;opacity:.85;max-width:620px;margin-bottom:32px;line-height:1.7}
+.hero-content{background:rgba(0,0,0,0.3);backdrop-filter:blur(10px);padding:40px;border-radius:24px;border:1px solid rgba(255,255,255,0.1);max-width:800px}
+.hero .eyebrow{color:#fff;opacity:.8;display:inline-block;margin-bottom:12px}
+.hero h1{font-size:clamp(34px,6vw,72px);font-weight:800;color:#fff;margin:0 0 20px;letter-spacing:-0.03em;line-height:1.1}
+.hero p.lead{font-size:18px;opacity:.85;margin-bottom:32px;line-height:1.7}
 .hero-actions{display:flex;flex-wrap:wrap;gap:12px}
 .hero-actions .btn{flex:1 1 auto;min-width:160px;justify-content:center}
 .stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:64px;padding:32px 0;border-top:1px solid rgba(255,255,255,.15);position:relative;z-index:1}
@@ -264,7 +268,7 @@ footer{background:var(--ink);color:#9ba3ad;padding:64px 0 28px}
       <a href="#destinos">Destinos</a>
       <a href="#por-que">Por Que Nós</a>
       <a href="#orcamento">Orçamento</a>
-      <a href="https://wa.me/55${wpp}" target="_blank" rel="noopener" class="nav-cta">WhatsApp</a>
+      <a href="https://wa.me/${wpp}" target="_blank" rel="noopener" class="nav-cta">WhatsApp</a>
     </nav>
   </div>
 </header>
@@ -273,7 +277,7 @@ footer{background:var(--ink);color:#9ba3ad;padding:64px 0 28px}
 ${sc.sections?.hero === false ? "" : `<section id="inicio" class="hero">
   <div class="container">
     <div class="hero-grid">
-      <div>
+      <div class="hero-content">
         <span class="eyebrow">Consultoria Premium de Viagens</span>
         <h1>${esc(headline)}</h1>
         <p class="lead">${esc(subheadline)}</p>
@@ -394,7 +398,7 @@ ${sc.sections?.orcamento === false ? "" : `<section id="orcamento">
           <div class="contact-item"><div class="contact-icon">📍</div><div><strong>Localização</strong><span>${esc(cidade)}</span></div></div>
         </div>
       </div>
-      <form class="orc-form" onsubmit="event.preventDefault();const f=this;const msg=encodeURIComponent('Olá! Quero um orçamento.\\n\\nNome: '+f.nome.value+'\\nWhatsApp: '+f.wpp.value+'\\nE-mail: '+f.email.value+'\\nDestino: '+f.destino.value+'\\nViajantes: '+f.viaj.value+'\\nIda: '+f.ida.value+'\\nVolta: '+f.volta.value+'\\nObs: '+f.obs.value);window.open('https://wa.me/55${wpp}?text='+msg,'_blank')">
+      <form class="orc-form" onsubmit="event.preventDefault();const f=this;const msg=encodeURIComponent('Olá! Quero um orçamento.\\n\\nNome: '+f.nome.value+'\\nWhatsApp: '+f.wpp.value+'\\nE-mail: '+f.email.value+'\\nDestino: '+f.destino.value+'\\nViajantes: '+f.viaj.value+'\\nIda: '+f.ida.value+'\\nVolta: '+f.volta.value+'\\nObs: '+f.obs.value);window.open('https://wa.me/${wpp}?text='+msg,'_blank')">
         <div class="form-row">
           <div class="field"><label>Nome Completo</label><input name="nome" required placeholder="Ex: Maria Silva"></div>
           <div class="field"><label>WhatsApp</label><input name="wpp" required placeholder="(00) 00000-0000"></div>
@@ -471,7 +475,7 @@ ${
   </div>
 </footer>
 
-<a href="https://wa.me/55${wpp}" class="wpp-float" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
+<a href="https://wa.me/${wpp}" class="wpp-float" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
 
 </body>
 </html>`;
