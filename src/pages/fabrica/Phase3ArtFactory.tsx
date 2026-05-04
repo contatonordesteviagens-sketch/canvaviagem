@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { composeTravelAd, formatAdPhone, type PaymentMode } from "@/lib/fabrica-compose-art";
 import { getForbiddenSets, registerGeneration, freshSeed } from "@/lib/fabrica-generation-guard";
 import {
-  Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown, RotateCcw, RefreshCw,
+  Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown, RotateCcw,
   Bus, Hotel, Plane, Check, Star, Heart, Sun, Camera, MapPin, Utensils, Ship, Palmtree, Coffee, Wifi, User,
   Square, Smartphone, Image as ImageIcon, Upload, Link2, Search, Wand2,
 } from "lucide-react";
@@ -1357,7 +1357,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 <img src={state.logoBase64} alt="Logo" className="max-w-full max-h-full object-contain" />
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 cursor-pointer transition-all backdrop-blur-sm">
                   <label className="p-2 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-colors" title="Trocar Logo">
-                    <RefreshCw className="w-4 h-4 text-white" />
+                    <RotateCcw className="w-4 h-4 text-white" />
                     <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                   </label>
                   <button
