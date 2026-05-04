@@ -785,6 +785,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const overrideColorHex = wantsColorOverride
     ? (textColorOverride!.startsWith("#") ? textColorOverride! : `#${textColorOverride}`)
     : "";
+  const effectiveTextColor = overrideColorHex || textColorOverride || undefined;
 
   if (wantsCustomFont || wantsScale) {
     const fontRe = /^(.*?)(\d+(?:\.\d+)?)px\s+(.+)$/; // captura: prefix(weight/style) | size | family
