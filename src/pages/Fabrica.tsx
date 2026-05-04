@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { FabricaProvider, useFabricaContext } from "@/hooks/useFabricaContext";
 import { Phase1Diagnostico } from "@/pages/fabrica/Phase1Diagnostico";
@@ -137,6 +137,7 @@ const Fabrica = () => {
   const arrivedUnlocked = (location.state as { fabricaUnlocked?: boolean } | null)?.fabricaUnlocked === true;
   const [unlocked, setUnlocked] = useState(() => arrivedUnlocked);
   const [gateOpen, setGateOpen] = useState(() => !arrivedUnlocked);
+  const unlockedRef = useRef(arrivedUnlocked);
 
   return (
     <>
@@ -152,9 +153,10 @@ const Fabrica = () => {
         open={gateOpen && !unlocked}
         onOpenChange={(open) => {
           setGateOpen(open);
-          if (!open && !unlocked) navigate("/");
+          if (!open && !unlockedRef.current) navigate("/");
         }}
         onUnlock={() => {
+          unlockedRef.current = true;
           setUnlocked(true);
           setGateOpen(false);
         }}
