@@ -3220,13 +3220,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const panelY = panelBottom - panelH;
       fillRoundRect(ctx, left - 20, panelY, contentWidth + 40, panelH, 0, `rgba(${parseInt(primaryColor.slice(1,3),16)},${parseInt(primaryColor.slice(3,5),16)},${parseInt(primaryColor.slice(5,7),16)},0.82)`);
 
-      const topY = panelY + 36;
+      const topY = panelY + 32;
       drawBadge(left, topY, contentWidth);
       ctx.fillStyle = "#ffffff";
-      drawTextBlock(ctx, titleText, left, topY + 112, contentWidth, 80, 2, { baseFontSize: 76, minFontSize: 44 });
-      const pillsH = drawHighlightsBlock(left, topY + 228, contentWidth, 4, false, true);
-      const priceY = Math.min(panelBottom - 320, topY + 260 + pillsH);
-      drawPriceCard(left, priceY, contentWidth, 146, "right");
+      drawTextBlock(ctx, titleText, left, topY + 104, contentWidth, 74, 2, { baseFontSize: 70, minFontSize: 40 });
+      const pillsH = drawHighlightsBlock(left, topY + 212, contentWidth, 3, false, true);
+      // price card: nunca ultrapassa panelBottom - 300
+      const priceCapY = panelBottom - 310;
+      const priceY = Math.min(priceCapY, topY + 242 + pillsH);
+      if (priceY < priceCapY + 10) drawPriceCard(left, priceY, contentWidth, 146, "right");
     } else {
       // Square: layout original com painel lateral
       ctx.fillStyle = primaryColor;
@@ -3441,47 +3443,48 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(item.text, left + 46, photoH + 340 + idx * 58);
     });
   } else {
-    // Fallback vitrine: foto no topo + painel de cor na base
-    // Story: foto ocupa ~55% da tela, painel ~30%, safe zone 15%
-    const bottomHeight = format === "story" ? 520 : 560;
+    // Fallback vitrine: foto no topo + painel de cor na base.
+    // REGRA PRINCIPAL: o painel SEMPRE termina em panelBottom (= height - safeBottom).
+    // O banding footer começa ABAIXO de panelBottom, então nunca haverá sobreposição.
     const photoHeight = format === "story"
-      ? Math.round(height * 0.55)  // 55% = ~1056px de foto, bem visível
-      : height - safeBottom - bottomHeight;
+      ? Math.round(height * 0.42)  // 42% de foto = 806px; dá 534px para o painel
+      : Math.round(height * 0.40);
     const bottomY = photoHeight;
+    // painel exatamente da borda inferior da foto até panelBottom
+    const bottomHeight = panelBottom - bottomY;
 
     const crop = fitCover(image.naturalWidth, image.naturalHeight, width, photoHeight, format === "story" ? 0.35 : 0.4);
     ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, photoHeight);
 
-    const photoGradient = ctx.createLinearGradient(0, photoHeight - 160, 0, photoHeight);
+    const photoGradient = ctx.createLinearGradient(0, photoHeight - 120, 0, photoHeight);
     photoGradient.addColorStop(0, "rgba(0,0,0,0)");
-    photoGradient.addColorStop(1, "rgba(0,0,0,0.25)");
+    photoGradient.addColorStop(1, "rgba(0,0,0,0.28)");
     ctx.fillStyle = photoGradient;
-    ctx.fillRect(0, photoHeight - 160, width, 160);
+    ctx.fillRect(0, photoHeight - 120, width, 120);
 
     ctx.fillStyle = primaryColor;
     ctx.fillRect(0, bottomY, width, bottomHeight);
 
-    let cursorY = bottomY + 36;
+    let cursorY = bottomY + 32;
     drawBadge(left, cursorY, contentWidth);
-    cursorY += 82; // compacto
+    cursorY += 76;
 
     ctx.fillStyle = "#ffffff";
-    drawTextBlock(ctx, titleText, left, cursorY + 48, contentWidth, 72, 2, { baseFontSize: 68, minFontSize: 38 });
-    cursorY += 140;
+    const titleMaxH = format === "story" ? 70 : 80;
+    const titleBase = format === "story" ? 62 : 72;
+    drawTextBlock(ctx, titleText, left, cursorY + 48, contentWidth, titleMaxH, 2, { baseFontSize: titleBase, minFontSize: 36 });
+    cursorY += format === "story" ? 120 : 140;
 
-    if (format !== "story") {
-      // Square: destaca highlights
-      const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, 5, false);
-      cursorY += pillsH + 24;
-    } else {
-      // Story compacto: apenas 3 highlights
-      const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, 3, false, true);
-      cursorY += pillsH + 20;
+    // Highlights compactos (máx 3 no Story para economizar espaço)
+    const maxPills = format === "story" ? 3 : 5;
+    const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, maxPills, false, format === "story");
+    cursorY += pillsH + 16;
+
+    // Price card: cap duro = panelBottom - 300 para garantir folga antes do branding
+    const priceCapY = panelBottom - 300;
+    if (cursorY <= priceCapY) {
+      drawPriceCard(left, Math.min(cursorY, priceCapY), contentWidth, 168, "right");
     }
-
-    // Cap duro: price card deve terminar pelo menos 200px acima do branding footer
-    const priceCapY = panelBottom - 250; // ~1090 no story
-    drawPriceCard(left, Math.min(cursorY, priceCapY), contentWidth, 168, "right");
   }
 
   ctx.textAlign = "left";
