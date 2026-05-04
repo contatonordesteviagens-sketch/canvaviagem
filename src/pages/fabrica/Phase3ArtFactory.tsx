@@ -520,6 +520,17 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   });
 
   const [lastProvider, setLastProvider] = useState<string | null>(null);
+  const [textColorOverrideState, setTextColorOverrideState] = useState<string>(state.textColorOverride || "");
+  const [autoTextColor, setAutoTextColor] = useState<string>("#ffffff");
+  const [newHl, setNewHl] = useState<string>("");
+  const [editingIconIdx, setEditingIconIdx] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<string>(state.generatedAdImage || "");
+  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [variationCounter, setVariationCounter] = useState(0);
+  const [generationCount, setGenerationCount] = useState(0);
+  const [forcedVariant, setForcedVariant] = useState<number | null>(null);
+  const variantHistoryRef = useRef<number[]>([]);
   const [genMode, setGenMode] = useState<GenMode>("photo");
   const [searchEngine, setSearchEngine] = useState<"pexels" | "google">("pexels");
   const [photoQuery, setPhotoQuery] = useState("");
