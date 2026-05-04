@@ -1177,7 +1177,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     // 3. Linha de info: "X dias ✈ 🚌 🏨 ☕"
     const firstHL = highlights[0];
     const firstHLText = typeof firstHL === "string" ? firstHL : (firstHL?.text || "");
-    const days = firstHLText.match(/(\d+)\s*dias?/i)?.[0] || "5 dias";
+    const daysFromHl = firstHLText.match(/(\d+)\s*dias?/i)?.[0];
+    const days = (travelPeriod && travelPeriod.trim()) || daysFromHl || "5 dias";
     ctx.font = `700 17px Inter, Arial, sans-serif`;
     ctx.fillText(`${days}   ✈   🚌   🏨   ☕`, cx, y + 92);
 
@@ -1239,10 +1240,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     // re-arredonda só os cantos inferiores
     fillRoundRect(ctx, x, stripeY, w, stripeH, radius, primaryColor);
     ctx.fillRect(x, stripeY, w, 6);
-    ctx.fillStyle = "#ffffff";
+    const pixText = (pixBannerText || "").trim() || "5% OFF À VISTA NO PIX  💠";
     ctx.font = `900 18px Inter, Arial, sans-serif`;
     ctx.textAlign = "center";
-    ctx.fillText("5% OFF À VISTA NO PIX  💠", cx, stripeY + 26);
+    ctx.fillText(pixText, cx, stripeY + 26);
 
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
@@ -1309,7 +1310,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // ── Dados dinâmicos ────────────────────────────────────────────────────
       const destinoUp = (destination || "DESTINO").toUpperCase();
       const daysItem = highlights.find((h) => /\d+\s*dia/i.test(h?.text || ""));
-      const daysText = (daysItem?.text || "7 dias").trim();
+      const daysText = (travelPeriod && travelPeriod.trim()) || (daysItem?.text || "5 dias").trim();
       // Ícones: usa APENAS os selecionados pelo usuário (sem merge com defaults).
       // Se nenhum highlight tiver ícone, usa um conjunto padrão mínimo.
       const iconList: IconKey[] = (() => {
