@@ -336,16 +336,25 @@ async function drawFinalBranding(
     }
   } else {
     // WORDMARK FALLBACK
-    const name = agencyName || "Sua Agência";
+    const name = (agencyName || "Sua Agência").toUpperCase();
     ctx.save();
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "#ffffff";
-    ctx.font = `800 ${isStory ? 44 : 36}px ${fontFamily || 'Inter'}, sans-serif`;
+    let wordmarkSize = isStory ? 44 : 36;
+    ctx.font = `800 ${wordmarkSize}px ${fontFamily || 'Inter'}, sans-serif`;
+    
+    // Auto-shrink Wordmark
+    const maxWordmarkW = cw * 0.45;
+    while (ctx.measureText(name).width > maxWordmarkW && wordmarkSize > 18) {
+      wordmarkSize -= 2;
+      ctx.font = `800 ${wordmarkSize}px ${fontFamily || 'Inter'}, sans-serif`;
+    }
+    
     ctx.shadowColor = "rgba(0,0,0,0.8)";
     ctx.shadowBlur = 10;
-    ctx.fillText(name.toUpperCase(), padX, centerY);
-    lw = ctx.measureText(name.toUpperCase()).width;
+    ctx.fillText(name, padX, centerY);
+    lw = ctx.measureText(name).width;
     ctx.restore();
   }
 
@@ -1393,16 +1402,19 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         (showPixBanner ? stripeGap + stripeH : 0) +
         padBottom;
 
+      // Safety: Se o box for grande demais (muitos benefícios/texto), escala o topo
+      const safeBoxY = Math.min(boxY, panelBottom - boxH - 20);
+
       // sombra suave
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.25)";
       ctx.shadowBlur = 28;
       ctx.shadowOffsetY = 8;
-      fillRoundRect(ctx, boxX, boxY, boxW, boxH, boxR, yellow);
+      fillRoundRect(ctx, boxX, safeBoxY, boxW, boxH, boxR, yellow);
       ctx.restore();
 
       const cx = boxX + boxW / 2;
-      let cursorY = boxY + padTop + 32; // baseline aproximada do título
+      let cursorY = safeBoxY + padTop + 32; // baseline aproximada do título
 
       // [TITLE] PACOTE
       ctx.fillStyle = navy;
@@ -1897,10 +1909,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const faixaY = priceCardY - benefitsAreaH - faixaH;
 
       // 4) Foto superior — calcula altura dinâmica para preencher tudo que sobra acima
-      const photoTop = 16;
+      const photoTop = safeTop - 20; // Sobe um pouco mais a foto no V2
       const photoBottom = faixaY - 16;
       const fW2 = width - 32;
-      const fH2 = Math.max(Math.round(height * 0.30), photoBottom - photoTop);
+      const minPhotoH = Math.round(height * 0.28);
+      const fH2 = Math.max(minPhotoH, photoBottom - photoTop);
       const c2 = fitCover(image.naturalWidth, image.naturalHeight, fW2, fH2, 0.36);
       ctx.save();
       fillRoundRect(ctx, 16, photoTop, fW2, fH2, 22, "#ccc");
@@ -2068,7 +2081,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
       // Posição vertical: card começa em ~32% para deixar céu visível em cima.
       const cardX = cardMarginX;
-      const cardY = format === "story" ? Math.round(height * 0.22) : Math.round(height * 0.16);
+      const idealCardY = format === "story" ? Math.round(height * 0.24) : Math.round(height * 0.16);
+      const cardY = Math.min(idealCardY, panelBottom - cardH - 20);
       const cardR = 28;
 
       // Sombra suave
