@@ -267,6 +267,7 @@ async function drawFinalBranding(
   logoUrl?: string,
   contact1?: { icon: string; value: string },
   contact2?: { icon: string; value: string },
+  agencyName?: string,
   textColorOverride?: string,
   fontFamily: string = "Inter"
 ) {
@@ -278,8 +279,9 @@ async function drawFinalBranding(
   if (!logoUrl && contactsToDraw.length === 0) return;
 
   const isStory = ch > cw;
-  const footerHeight = isStory ? 140 : 100;
-  const safeBottomMargin = isStory ? 340 : 0; // Sincronizado com safeBottom (580 - 140 - 100 de margem)
+  const footerHeight = isStory ? 120 : 100;
+  // Move o rodapé para cima da barra de mensagens do Instagram (aprox 280px do fundo)
+  const safeBottomMargin = isStory ? 280 : 20; 
   const footerY = ch - footerHeight - safeBottomMargin;
 
   // 1. Fundo do Rodapé (VÉU GRADIENTE ESCURO)
@@ -299,14 +301,14 @@ async function drawFinalBranding(
   const bgPad = isStory ? 10 : 8;
   const centerY = footerY + footerHeight / 2;
 
-  // 2. Logo (Esquerda) - Medição e Desenho
+  // 2. Logo (Esquerda)
   let lw = 0;
   let lh = 0;
 
   if (logoUrl) {
     try {
       const logo = await loadImage(logoUrl);
-      const maxLogoH = footerHeight * 0.75;
+      const maxLogoH = footerHeight * 0.85;
       const maxLogoW = cw * 0.35;
       const ratio = logo.naturalWidth / logo.naturalHeight;
       lh = maxLogoH;
@@ -318,27 +320,33 @@ async function drawFinalBranding(
       
       ctx.save();
       // Moldura Premium (Sombra suave e borda sutil)
-      ctx.shadowColor = "rgba(0,0,0,0.3)";
-      ctx.shadowBlur = 12;
-      ctx.shadowOffsetY = 4;
+      ctx.shadowColor = "rgba(0,0,0,0.4)";
+      ctx.shadowBlur = 15;
+      ctx.shadowOffsetY = 5;
       
-      // Desenha fundo branco com cantos arredondados ou circular se for quase quadrado
       const isSquareLogo = Math.abs(ratio - 1) < 0.2;
-      const radius = isSquareLogo ? (lw + bgPad * 2) / 2 : 16;
+      const radius = isSquareLogo ? (lw + bgPad * 2) / 2 : 12;
       
       fillRoundRect(ctx, padX, centerY - lh / 2 - bgPad, lw + bgPad * 2, lh + bgPad * 2, radius, "#ffffff");
       
-      // Borda fina para definição
-      ctx.strokeStyle = "rgba(255,255,255,0.2)";
-      ctx.lineWidth = 2;
-      roundRect(ctx, padX, centerY - lh / 2 - bgPad, lw + bgPad * 2, lh + bgPad * 2, radius);
-      ctx.stroke();
-
       ctx.drawImage(logo, padX + bgPad, centerY - lh / 2, lw, lh);
       ctx.restore();
     } catch (e) {
       console.warn("Falha ao carregar logo para branding", e);
     }
+  } else {
+    // WORDMARK FALLBACK
+    const name = agencyName || "Sua Agência";
+    ctx.save();
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `800 ${isStory ? 44 : 36}px ${fontFamily || 'Inter'}, sans-serif`;
+    ctx.shadowColor = "rgba(0,0,0,0.8)";
+    ctx.shadowBlur = 10;
+    ctx.fillText(name.toUpperCase(), padX, centerY);
+    lw = ctx.measureText(name.toUpperCase()).width;
+    ctx.restore();
   }
 
   // 3. Contatos (Direita)
@@ -1015,8 +1023,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ? [...experienceBase, ...experienceWithDest]
     : [...ofertaBase, ...ofertaWithDest];
 
-  const safeTop = format === "story" ? 280 : 0;
-  const safeBottom = format === "story" ? 580 : 120; // Aumentado para 580 para garantir separação total do rodapé
+  const safeTop = format === "story" ? 280 : 60;
+  const safeBottom = format === "story" ? 440 : 120; // 440px é o limite real para não bater na UI do Instagram
   const panelBottom = height - safeBottom;
   const left = 80;
   const right = width - 80;
@@ -1184,9 +1192,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     if (/^\d+X$/.test(installmentsText)) installmentsText = `${installmentsText.slice(0, -1)}x de`;
     
     const priceText = mainPrice || `${curSym} ${price}`;
-    // Tamanho fixo baseado no comprimento do texto — evita inconsistência visual entre gerações
+    // Tamanho robusto para impacto visual
     const textLen = priceText.replace(/\s/g, "").length;
-    const priceFontSize = textLen <= 8 ? 56 : textLen <= 11 ? 50 : textLen <= 14 ? 44 : 38;
+    const priceFontSize = textLen <= 8 ? 64 : textLen <= 11 ? 54 : textLen <= 14 ? 48 : 42;
     ctx.font = `900 ${priceFontSize}px Inter, Arial, sans-serif`;
     const priceW = ctx.measureText(priceText).width;
 
@@ -1549,11 +1557,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       }
 
       await drawFinalBranding(
-      ctx, width, height, logoDataUrl, 
-      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-      effectiveTextColor
-    );
+        ctx, width, height, logoDataUrl, 
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        cityFmt ? `${cityFmt} Viagens` : undefined,
+        effectiveTextColor
+      );
       return canvas.toDataURL("image/png");
     }
 
@@ -1680,11 +1689,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
       ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
       await drawFinalBranding(
-      ctx, width, height, logoDataUrl, 
-      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-      effectiveTextColor
-    );
+        ctx, width, height, logoDataUrl, 
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        cityFmt ? `${cityFmt} Viagens` : undefined,
+        effectiveTextColor
+      );
       return canvas.toDataURL("image/png");
     }
 
@@ -1816,11 +1826,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.textAlign = "left";
 
       await drawFinalBranding(
-      ctx, width, height, logoDataUrl, 
-      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-      effectiveTextColor
-    );
+        ctx, width, height, logoDataUrl, 
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        cityFmt ? `${cityFmt} Viagens` : undefined,
+        effectiveTextColor
+      );
       return canvas.toDataURL("image/png");
     }
 
@@ -1934,11 +1945,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       });
 
       await drawFinalBranding(
-      ctx, width, height, logoDataUrl, 
-      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-      effectiveTextColor
-    );
+        ctx, width, height, logoDataUrl, 
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        cityFmt ? `${cityFmt} Viagens` : undefined,
+        effectiveTextColor
+      );
       return canvas.toDataURL("image/png");
     }
 
@@ -2057,7 +2069,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
       // Posição vertical: card começa em ~32% para deixar céu visível em cima.
       const cardX = cardMarginX;
-      const cardY = Math.round(height * 0.18);
+      const cardY = format === "story" ? Math.round(height * 0.22) : Math.round(height * 0.16);
       const cardR = 28;
 
       // Sombra suave
@@ -2237,11 +2249,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       }
 
       await drawFinalBranding(
-      ctx, width, height, logoDataUrl, 
-      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-      effectiveTextColor
-    );
+        ctx, width, height, logoDataUrl, 
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        cityFmt ? `${cityFmt} Viagens` : undefined,
+        effectiveTextColor
+      );
       return canvas.toDataURL("image/png");
     }
 
@@ -2285,6 +2298,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx, width, height, logoDataUrl, 
       options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
       options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      cityFmt ? `${cityFmt} Viagens` : undefined,
       effectiveTextColor
     );
     return canvas.toDataURL("image/png");
@@ -2487,6 +2501,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx, width, height, logoDataUrl, 
       options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
       options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      cityFmt ? `${cityFmt} Viagens` : undefined,
       effectiveTextColor
     );
     return canvas.toDataURL("image/png");
@@ -3193,6 +3208,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx, width, height, logoDataUrl, 
       options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
       options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      cityFmt ? `${cityFmt} Viagens` : undefined,
       effectiveTextColor
     );
     return canvas.toDataURL("image/png");
@@ -3494,8 +3510,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   ctx.textBaseline = "alphabetic";
   await drawFinalBranding(
       ctx, width, height, logoDataUrl, 
-      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      (options as any).footerContact1Icon ? { icon: (options as any).footerContact1Icon, value: (options as any).footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+      (options as any).footerContact2Icon ? { icon: (options as any).footerContact2Icon, value: (options as any).footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      cityFmt ? `${cityFmt} Viagens` : undefined,
       effectiveTextColor
     );
   return canvas.toDataURL("image/png");
