@@ -1184,12 +1184,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     if (/^\d+X$/.test(installmentsText)) installmentsText = `${installmentsText.slice(0, -1)}x de`;
     
     const priceText = mainPrice || `${curSym} ${price}`;
-    let priceFontSize = 56;
+    // Tamanho fixo baseado no comprimento do texto — evita inconsistência visual entre gerações
+    const textLen = priceText.replace(/\s/g, "").length;
+    const priceFontSize = textLen <= 8 ? 56 : textLen <= 11 ? 50 : textLen <= 14 ? 44 : 38;
     ctx.font = `900 ${priceFontSize}px Inter, Arial, sans-serif`;
-    while (ctx.measureText(priceText).width > innerW * 0.65 && priceFontSize > 42) {
-      priceFontSize -= 2;
-      ctx.font = `900 ${priceFontSize}px Inter, Arial, sans-serif`;
-    }
     const priceW = ctx.measureText(priceText).width;
 
     // Selo arredondado de parcelas (cor primária com texto secundário)
@@ -3217,7 +3215,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillRect(0, 0, width, panelBottom);
 
       // Painel de conteúdo na base (sobre o gradiente)
-      const panelH = Math.round(panelBottom * 0.62);
+      // 48% de panelBottom = painel menor, foto tem mais espaço visível
+      const panelH = Math.round(panelBottom * 0.48);
       const panelY = panelBottom - panelH;
       fillRoundRect(ctx, left - 20, panelY, contentWidth + 40, panelH, 0, `rgba(${parseInt(primaryColor.slice(1,3),16)},${parseInt(primaryColor.slice(3,5),16)},${parseInt(primaryColor.slice(5,7),16)},0.82)`);
 
@@ -3442,8 +3441,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(item.text, left + 46, photoH + 340 + idx * 58);
     });
   } else {
-    const bottomHeight = format === "story" ? 770 : 560;
-    const photoHeight = height - safeBottom - bottomHeight;
+    // Fallback vitrine: foto no topo + painel de cor na base
+    // Story: foto ocupa ~55% da tela, painel ~30%, safe zone 15%
+    const bottomHeight = format === "story" ? 520 : 560;
+    const photoHeight = format === "story"
+      ? Math.round(height * 0.55)  // 55% = ~1056px de foto, bem visível
+      : height - safeBottom - bottomHeight;
     const bottomY = photoHeight;
 
     const crop = fitCover(image.naturalWidth, image.naturalHeight, width, photoHeight, format === "story" ? 0.35 : 0.4);
@@ -3458,19 +3461,27 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = primaryColor;
     ctx.fillRect(0, bottomY, width, bottomHeight);
 
-    let cursorY = bottomY + 40;
+    let cursorY = bottomY + 36;
     drawBadge(left, cursorY, contentWidth);
-    cursorY += 92;
+    cursorY += 82; // compacto
 
     ctx.fillStyle = "#ffffff";
-    drawTextBlock(ctx, titleText, left, cursorY + 56, contentWidth, 80, 2, { baseFontSize: 76, minFontSize: 44 });
-    cursorY += 168;
+    drawTextBlock(ctx, titleText, left, cursorY + 48, contentWidth, 72, 2, { baseFontSize: 68, minFontSize: 38 });
+    cursorY += 140;
 
-    const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, 5, false);
-    cursorY += pillsH + 28;
+    if (format !== "story") {
+      // Square: destaca highlights
+      const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, 5, false);
+      cursorY += pillsH + 24;
+    } else {
+      // Story compacto: apenas 3 highlights
+      const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, 3, false, true);
+      cursorY += pillsH + 20;
+    }
 
-    drawPriceCard(left, Math.min(cursorY, panelBottom - 320), contentWidth, 168, "right");
-    drawPromoKicker(left + 32, Math.min(cursorY + 52, panelBottom - 268), "#111111");
+    // Cap duro: price card deve terminar pelo menos 200px acima do branding footer
+    const priceCapY = panelBottom - 250; // ~1090 no story
+    drawPriceCard(left, Math.min(cursorY, priceCapY), contentWidth, 168, "right");
   }
 
   ctx.textAlign = "left";
