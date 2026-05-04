@@ -191,7 +191,7 @@ async function drawFinalBranding(
 
   const isStory = ch > cw;
   const footerHeight = isStory ? 160 : 110;
-  const safeBottomMargin = isStory ? 250 : 0;
+  const safeBottomMargin = isStory ? 280 : 0;
   const footerY = ch - footerHeight - safeBottomMargin;
 
   // 1. Fundo do Rodapé (VÉU GRADIENTE)

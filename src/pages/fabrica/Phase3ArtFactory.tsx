@@ -1369,13 +1369,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 <select
                   value={state.footerContact1Icon || "whatsapp_green"}
                   onChange={(e) => update({ footerContact1Icon: e.target.value as any })}
-                  className={inputCls}
+                  className="w-full bg-zinc-900/90 border border-white/10 rounded-xl px-3 py-3 text-white outline-none focus:border-white/40"
                 >
-                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Verde</option>
-                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
-                  <option value="instagram_gradient" className="bg-zinc-900">Insta Colorido</option>
-                  <option value="instagram_custom" className="bg-zinc-900">Insta Sólido</option>
-                  <option value="none" className="bg-zinc-900">Nenhum</option>
+                  <option value="whatsapp_green" className="bg-zinc-900 text-white">WhatsApp Verde</option>
+                  <option value="whatsapp_custom" className="bg-zinc-900 text-white">WhatsApp Sólido</option>
+                  <option value="instagram_gradient" className="bg-zinc-900 text-white">Insta Colorido</option>
+                  <option value="instagram_custom" className="bg-zinc-900 text-white">Insta Sólido</option>
+                  <option value="none" className="bg-zinc-900 text-white">Nenhum</option>
                 </select>
               </div>
               <div className="w-2/3">
@@ -1394,13 +1394,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 <select
                   value={state.footerContact2Icon || "instagram_gradient"}
                   onChange={(e) => update({ footerContact2Icon: e.target.value as any })}
-                  className={inputCls}
+                  className="w-full bg-zinc-900/90 border border-white/10 rounded-xl px-3 py-3 text-white outline-none focus:border-white/40"
                 >
-                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Verde</option>
-                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
-                  <option value="instagram_gradient" className="bg-zinc-900">Insta Colorido</option>
-                  <option value="instagram_custom" className="bg-zinc-900">Insta Sólido</option>
-                  <option value="none" className="bg-zinc-900">Nenhum</option>
+                  <option value="whatsapp_green" className="bg-zinc-900 text-white">WhatsApp Verde</option>
+                  <option value="whatsapp_custom" className="bg-zinc-900 text-white">WhatsApp Sólido</option>
+                  <option value="instagram_gradient" className="bg-zinc-900 text-white">Insta Colorido</option>
+                  <option value="instagram_custom" className="bg-zinc-900 text-white">Insta Sólido</option>
+                  <option value="none" className="bg-zinc-900 text-white">Nenhum</option>
                 </select>
               </div>
               <div className="w-2/3">
