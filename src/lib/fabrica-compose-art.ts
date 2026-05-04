@@ -131,17 +131,54 @@ export function formatAdPhone(val: string): string {
 function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, colorMode: "green" | "custom" = "green", customColor: string = "#ffffff") {
   ctx.save();
   ctx.translate(x, y);
-  ctx.shadowColor = "rgba(0,0,0,0.4)";
-  ctx.shadowBlur = 5;
+  ctx.shadowColor = "rgba(0,0,0,0.3)";
+  ctx.shadowBlur = 4;
+
+  if (colorMode === "green") {
+    // Fundo Verde
+    ctx.fillStyle = "#25D366";
+    ctx.beginPath(); 
+    ctx.arc(0, 0, size * 0.48, 0, Math.PI * 2); 
+    ctx.fill();
+    // Balão Branco
+    ctx.fillStyle = "white";
+  } else {
+    // Sólido Custom
+    ctx.fillStyle = customColor;
+  }
+
+  // Desenha o corpo do balão
+  ctx.beginPath();
+  ctx.arc(0, -size * 0.02, size * 0.4, 0.7, 5.5);
+  ctx.lineTo(-size * 0.35, size * 0.45);
+  ctx.closePath();
+  ctx.fill();
+
+  // Recorte do Telefone (sempre "fura" o balão se for custom, ou desenha verde se for fundo branco)
   if (colorMode === "green") {
     ctx.fillStyle = "#25D366";
-    ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "white";
-    ctx.beginPath(); ctx.arc(0, 0, size / 3, 0.4, 5.8); ctx.lineTo(-size / 5, size / 3); ctx.fill();
   } else {
-    ctx.fillStyle = customColor;
-    ctx.beginPath(); ctx.arc(0, 0, size * 0.4, 0.4, 5.8); ctx.lineTo(-size * 0.25, size * 0.4); ctx.fill();
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fillStyle = "black"; // Valor não importa com destination-out
   }
+
+  // Desenha fone (silhueta)
+  ctx.beginPath();
+  ctx.arc(0, 0, size * 0.22, 0.8, 2.3); // curva do fone
+  ctx.lineWidth = size * 0.12;
+  ctx.lineCap = "round";
+  ctx.stroke();
+  
+  // Pontas do fone
+  ctx.save();
+  ctx.rotate(0.8);
+  ctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16);
+  ctx.restore();
+  ctx.save();
+  ctx.rotate(2.3);
+  ctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16);
+  ctx.restore();
+
   ctx.restore();
 }
 
@@ -149,26 +186,45 @@ function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number,
 function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, colorMode: "gradient" | "custom" = "gradient", customColor: string = "#ffffff") {
   ctx.save();
   ctx.translate(x, y);
-  ctx.shadowColor = "rgba(0,0,0,0.4)";
-  ctx.shadowBlur = 5;
+  ctx.shadowColor = "rgba(0,0,0,0.3)";
+  ctx.shadowBlur = 4;
+
   if (colorMode === "gradient") {
-    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, size / 2);
-    g.addColorStop(0, "#f09433"); g.addColorStop(0.25, "#e6683c"); g.addColorStop(0.5, "#dc2743");
-    g.addColorStop(0.75, "#cc2366"); g.addColorStop(1, "#bc1888");
+    const g = ctx.createRadialGradient(size * 0.1, size * 0.1, 0, 0, 0, size * 0.7);
+    g.addColorStop(0, "#f09433"); 
+    g.addColorStop(0.25, "#e6683c"); 
+    g.addColorStop(0.5, "#dc2743");
+    g.addColorStop(0.75, "#cc2366"); 
+    g.addColorStop(1, "#bc1888");
     ctx.fillStyle = g;
-    ctx.beginPath(); ctx.roundRect(-size / 2, -size / 2, size, size, size * 0.2); ctx.fill();
-    ctx.strokeStyle = "white"; ctx.lineWidth = size * 0.08;
-    ctx.strokeRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6);
-    ctx.beginPath(); ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); 
+    ctx.roundRect(-size / 2, -size / 2, size, size, size * 0.25); 
+    ctx.fill();
+    
+    // Elementos internos brancos
+    ctx.strokeStyle = "white";
     ctx.fillStyle = "white";
-    ctx.beginPath(); ctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); ctx.fill();
   } else {
-    ctx.strokeStyle = customColor; ctx.lineWidth = size * 0.08;
-    ctx.strokeRect(-size * 0.35, -size * 0.35, size * 0.7, size * 0.7);
-    ctx.beginPath(); ctx.arc(0, 0, size * 0.18, 0, Math.PI * 2); ctx.stroke();
     ctx.fillStyle = customColor;
-    ctx.beginPath(); ctx.arc(size * 0.22, -size * 0.22, size * 0.04, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); 
+    ctx.roundRect(-size / 2, -size / 2, size, size, size * 0.25); 
+    ctx.fill();
+    
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.strokeStyle = "black";
+    ctx.fillStyle = "black";
   }
+
+  // Câmera
+  ctx.lineWidth = size * 0.08;
+  ctx.strokeRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6);
+  ctx.beginPath(); 
+  ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); 
+  ctx.stroke();
+  ctx.beginPath(); 
+  ctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); 
+  ctx.fill();
+
   ctx.restore();
 }
 
