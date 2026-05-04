@@ -20,8 +20,10 @@ export async function composeLogoOnImage(
 
         if (logoDataUrl || whatsapp || instagram) {
           const isStory = ch > cw;
+          // Margem de segurança para Stories (280px na base para não cobrir UI do Insta)
+          const safeBottomMargin = isStory ? 280 : 0;
           const footerHeight = isStory ? 160 : 110;
-          const footerY = ch - footerHeight;
+          const footerY = ch - footerHeight - safeBottomMargin;
 
           // 1. Fundo do Rodapé (VÉU SEMITRANSPARENTE)
           const grad = ctx.createLinearGradient(0, footerY, 0, ch);

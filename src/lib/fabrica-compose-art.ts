@@ -170,6 +170,18 @@ function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number
   ctx.restore();
 }
 
+/** Desenha ícone de Site / Globo */
+function drawAdWebsiteIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string = "#ffffff") {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = size * 0.08;
+  ctx.beginPath(); ctx.arc(0, 0, size * 0.45, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(0, 0, size * 0.18, size * 0.45, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-size * 0.45, 0); ctx.lineTo(size * 0.45, 0); ctx.stroke();
+  ctx.restore();
+}
+
 /** 
  * DESENHA O BRANDING FINAL (Rodapé, Logo, WhatsApp, Instagram)
  * Unificado para evitar cache e garantir consistência.
@@ -181,7 +193,8 @@ async function drawFinalBranding(
   logoUrl?: string,
   contact1?: { icon: string; value: string },
   contact2?: { icon: string; value: string },
-  textColorOverride?: string
+  textColorOverride?: string,
+  fontFamily: string = "Inter"
 ) {
   const contactsToDraw: { icon: string; value: string }[] = [];
   if (contact1 && contact1.icon !== "none" && contact1.value) contactsToDraw.push(contact1);
@@ -240,7 +253,8 @@ async function drawFinalBranding(
   ctx.textAlign = "right";
   ctx.textBaseline = "middle";
   const fontSize = isStory ? 38 : 32;
-  ctx.font = `700 ${fontSize}px Inter, sans-serif`;
+  const safeFont = fontFamily || "Inter";
+  ctx.font = `700 ${fontSize}px ${safeFont}, sans-serif`;
   ctx.fillStyle = textColorOverride || "#ffffff";
   ctx.shadowColor = "rgba(0,0,0,0.5)";
   ctx.shadowBlur = 5;
@@ -264,6 +278,7 @@ async function drawFinalBranding(
     else if (c.icon === "whatsapp_custom") drawAdWhatsAppIcon(ctx, iconX, yPos, iconSize, "custom", ctx.fillStyle);
     else if (c.icon === "instagram_gradient") drawAdInstagramIcon(ctx, iconX, yPos, iconSize, "gradient");
     else if (c.icon === "instagram_custom") drawAdInstagramIcon(ctx, iconX, yPos, iconSize, "custom", ctx.fillStyle);
+    else if (c.icon === "website") drawAdWebsiteIcon(ctx, iconX, yPos, iconSize, ctx.fillStyle);
 
     yPos -= (footerHeight * 0.36);
   }

@@ -136,9 +136,9 @@ export interface FabricaState {
   titleScale?: number;
   descScale?: number;
   textColorOverride?: string;
-  footerContact1Icon?: "whatsapp_green" | "whatsapp_custom" | "instagram_gradient" | "instagram_custom" | "none";
+   footerContact1Icon?: "whatsapp_green" | "whatsapp_custom" | "instagram_gradient" | "instagram_custom" | "website" | "none";
   footerContact1Value?: string;
-  footerContact2Icon?: "whatsapp_green" | "whatsapp_custom" | "instagram_gradient" | "instagram_custom" | "none";
+  footerContact2Icon?: "whatsapp_green" | "whatsapp_custom" | "instagram_gradient" | "instagram_custom" | "website" | "none";
   footerContact2Value?: string;
 }
 

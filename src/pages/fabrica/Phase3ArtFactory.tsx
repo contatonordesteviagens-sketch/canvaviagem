@@ -905,6 +905,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               promoName,
               highlights,
               hasLogo: !!state.logoBase64,
+              logoDataUrl: state.logoBase64,
+              footerContact1Icon: state.footerContact1Icon,
+              footerContact1Value: state.footerContact1Value,
+              footerContact2Icon: state.footerContact2Icon,
+              footerContact2Value: state.footerContact2Value,
+              whatsapp: state.whatsapp,
+              instagram: state.instagram,
               paymentMode,
               paymentLabel: paymentLabel || undefined,
               paymentSuffix,
@@ -923,14 +930,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               descScale,
               textColorOverride: effectiveTextColor,
             });
-            if (state.logoBase64) {
-              try {
-                const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
-                img = await composeLogoOnImage(img, state.logoBase64, state.whatsapp, state.instagram);
-              } catch (e) {
-                console.warn("Falha ao compor logo:", e);
-              }
-            }
             return img;
           })
         );
@@ -1375,6 +1374,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   <option value="whatsapp_custom" className="bg-zinc-900 text-white">WhatsApp Sólido</option>
                   <option value="instagram_gradient" className="bg-zinc-900 text-white">Insta Colorido</option>
                   <option value="instagram_custom" className="bg-zinc-900 text-white">Insta Sólido</option>
+                  <option value="website" className="bg-zinc-900 text-white">Site / Link</option>
                   <option value="none" className="bg-zinc-900 text-white">Nenhum</option>
                 </select>
               </div>
@@ -1382,7 +1382,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 <label className={labelCls}>Contato 1 (rodapé)</label>
                 <input
                   value={state.footerContact1Value !== undefined ? state.footerContact1Value : (state.whatsapp || "")}
-                  onChange={(e) => update({ footerContact1Value: e.target.value })}
+                  onChange={(e) => {
+                    const isPhone = state.footerContact1Icon?.startsWith("whatsapp");
+                    const val = isPhone ? formatAdPhone(e.target.value) : e.target.value;
+                    update({ footerContact1Value: val });
+                  }}
                   placeholder="(11) 99999-9999"
                   className={inputCls}
                 />
@@ -1400,6 +1404,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   <option value="whatsapp_custom" className="bg-zinc-900 text-white">WhatsApp Sólido</option>
                   <option value="instagram_gradient" className="bg-zinc-900 text-white">Insta Colorido</option>
                   <option value="instagram_custom" className="bg-zinc-900 text-white">Insta Sólido</option>
+                  <option value="website" className="bg-zinc-900 text-white">Site / Link</option>
                   <option value="none" className="bg-zinc-900 text-white">Nenhum</option>
                 </select>
               </div>
@@ -1407,7 +1412,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 <label className={labelCls}>Contato 2 (rodapé)</label>
                 <input
                   value={state.footerContact2Value !== undefined ? state.footerContact2Value : (state.instagram || "")}
-                  onChange={(e) => update({ footerContact2Value: e.target.value.replace(/^@/, "") })}
+                  onChange={(e) => {
+                    const isPhone = state.footerContact2Icon?.startsWith("whatsapp");
+                    const isInsta = state.footerContact2Icon?.startsWith("instagram");
+                    let val = e.target.value;
+                    if (isPhone) val = formatAdPhone(val);
+                    else if (isInsta) val = val.replace(/^@/, "");
+                    update({ footerContact2Value: val });
+                  }}
                   placeholder="@suaagencia"
                   className={inputCls}
                 />
