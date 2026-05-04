@@ -151,16 +151,16 @@ function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number,
 
     // Fone Verde
     ctx.fillStyle = "#25D366";
-    ctx.lineWidth = size * 0.08; // Reduzido de 0.12 para 0.08 (fininho)
+    ctx.lineWidth = size * 0.10; // Aumentado para 0.10 (mais visível)
     ctx.lineCap = "round";
     ctx.beginPath();
     ctx.arc(0, 0, size * 0.22, 0.8, 2.3);
     ctx.stroke();
     // Pontas do fone
-    ctx.save(); ctx.rotate(0.8); ctx.fillRect(size * 0.16, -size * 0.08, size * 0.10, size * 0.14); ctx.restore();
-    ctx.save(); ctx.rotate(2.3); ctx.fillRect(size * 0.16, -size * 0.08, size * 0.10, size * 0.14); ctx.restore();
+    ctx.save(); ctx.rotate(0.8); ctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); ctx.restore();
+    ctx.save(); ctx.rotate(2.3); ctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); ctx.restore();
   } else {
-    // MODO MONOCROMÁTICO (Recorte real usando buffer para não furar o fundo do anúncio)
+    // MODO MONOCROMÁTICO (Recorte real usando buffer)
     const buffer = document.createElement("canvas");
     buffer.width = size;
     buffer.height = size;
@@ -175,15 +175,15 @@ function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number,
       bctx.closePath();
       bctx.fill();
 
-      // Fura o fone (fininho)
+      // Fura o fone
       bctx.globalCompositeOperation = "destination-out";
-      bctx.lineWidth = size * 0.07; // Reduzido para 0.07 (fininho)
+      bctx.lineWidth = size * 0.10; // Aumentado para 0.10
       bctx.lineCap = "round";
       bctx.beginPath();
       bctx.arc(0, 0, size * 0.22, 0.8, 2.3);
       bctx.stroke();
-      bctx.save(); bctx.rotate(0.8); bctx.fillRect(size * 0.16, -size * 0.08, size * 0.10, size * 0.14); bctx.restore();
-      bctx.save(); bctx.rotate(2.3); bctx.fillRect(size * 0.16, -size * 0.08, size * 0.10, size * 0.14); bctx.restore();
+      bctx.save(); bctx.rotate(0.8); bctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); bctx.restore();
+      bctx.save(); bctx.rotate(2.3); bctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); bctx.restore();
       
       ctx.drawImage(buffer, -size/2, -size/2);
     }
@@ -213,13 +213,13 @@ function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number
     
     ctx.strokeStyle = "white";
     ctx.fillStyle = "white";
-    // Câmera (fininha)
-    ctx.lineWidth = size * 0.06; // Reduzido de 0.08 para 0.06
+    // Câmera
+    ctx.lineWidth = size * 0.08; 
     ctx.strokeRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6);
     ctx.beginPath(); ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); ctx.stroke();
     ctx.beginPath(); ctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); ctx.fill();
   } else {
-    // MODO MONOCROMÁTICO (Usa buffer para recorte real)
+    // MODO MONOCROMÁTICO
     const buffer = document.createElement("canvas");
     buffer.width = size;
     buffer.height = size;
@@ -232,7 +232,7 @@ function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number
       bctx.fill();
       
       bctx.globalCompositeOperation = "destination-out";
-      bctx.lineWidth = size * 0.05; // Reduzido para 0.05 (fininho)
+      bctx.lineWidth = size * 0.08;
       bctx.strokeRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6);
       bctx.beginPath(); bctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); bctx.stroke();
       bctx.beginPath(); bctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); bctx.fill();
@@ -281,21 +281,14 @@ async function drawFinalBranding(
   const safeBottomMargin = isStory ? 280 : 0;
   const footerY = ch - footerHeight - safeBottomMargin;
 
-  // 1. Fundo do Rodapé (VÉU GRADIENTE)
-  // Inteligência de Contraste: se o texto for escuro, o véu deve ser claro.
-  const isDarkText = textColorOverride && ["#000000", "#0d0d0d", "#0a0a0a", "#1a1a1a"].includes(textColorOverride.toLowerCase());
-  
+  // 1. Fundo do Rodapé (VÉU GRADIENTE ESCURO)
+  // O usuário prefere SEMPRE o véu escuro com letras brancas para garantir o look "Premium".
   const veilStartY = footerY - 50;
   const grad = ctx.createLinearGradient(0, veilStartY, 0, ch);
-  if (isDarkText) {
-    grad.addColorStop(0, "rgba(255,255,255,0.0)");
-    grad.addColorStop(0.3, "rgba(255,255,255,0.3)");
-    grad.addColorStop(1, "rgba(255,255,255,0.65)");
-  } else {
-    grad.addColorStop(0, "rgba(0,0,0,0.0)");
-    grad.addColorStop(0.3, "rgba(0,0,0,0.45)");
-    grad.addColorStop(1, "rgba(0,0,0,0.85)");
-  }
+  grad.addColorStop(0, "rgba(0,0,0,0.0)");
+  grad.addColorStop(0.3, "rgba(0,0,0,0.55)");
+  grad.addColorStop(1, "rgba(0,0,0,0.92)");
+  
   ctx.save();
   ctx.fillStyle = grad;
   ctx.fillRect(0, veilStartY, cw, ch - veilStartY);
@@ -351,16 +344,15 @@ async function drawFinalBranding(
   ctx.save();
   ctx.textAlign = "right";
   ctx.textBaseline = "middle";
-  // Reduzido o tamanho base da fonte para ser mais elegante (suave)
-  const fontSize = isStory ? 32 : 26; 
+  // Revertido para Bold (700) e tamanhos mais impactantes conforme desejo do usuário
+  const fontSize = isStory ? 36 : 30; 
   const safeFont = fontFamily || "Inter";
-  // Alterado de 700 (Bold) para 500 (Medium) para ser mais fino e suave
-  ctx.font = `500 ${fontSize}px ${safeFont}, sans-serif`;
+  ctx.font = `700 ${fontSize}px ${safeFont}, sans-serif`;
   
-  // Cor do texto com sombra suave
-  ctx.fillStyle = textColorOverride || "#ffffff";
-  ctx.shadowColor = isDarkText ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)";
-  ctx.shadowBlur = 4;
+  // Rodapé sempre BRANCO com sombra escura (look clássico Canva Viagem)
+  ctx.fillStyle = "#ffffff";
+  ctx.shadowColor = "rgba(0,0,0,0.8)";
+  ctx.shadowBlur = 6;
 
   let textRightX = cw - (isStory ? 65 : 60);
   const itemGap = 15;
@@ -374,18 +366,17 @@ async function drawFinalBranding(
     if (c.icon.startsWith("whatsapp")) displayValue = formatAdPhone(c.value);
     if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
 
-    // Auto-shrink mais agressivo para o texto do contato para evitar colisão com logo
+    // Auto-shrink para evitar colisão
     let currentFontSize = fontSize;
     const iconSizeFactor = 1.1;
     let currentIconSize = currentFontSize * iconSizeFactor;
     
-    ctx.font = `500 ${currentFontSize}px ${safeFont}, sans-serif`;
-    // Se o texto for muito longo, reduz até 16px
+    ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
     const safetyMargin = 40;
     while (ctx.measureText(displayValue).width + currentIconSize + itemGap + safetyMargin > maxAvailableWidth && currentFontSize > 16) {
       currentFontSize -= 1;
       currentIconSize = currentFontSize * iconSizeFactor;
-      ctx.font = `500 ${currentFontSize}px ${safeFont}, sans-serif`;
+      ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
     }
 
     ctx.fillText(displayValue, textRightX, yPos);
