@@ -2300,17 +2300,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx, width, height, logoDataUrl, 
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        cityFmt ? `${cityFmt} Viagens` : undefined,
-        effectiveTextColor
+        effectiveTextColor,
+        cityFmt ? `${cityFmt} Viagens` : undefined
       );
       applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
     }
-
-
-    applyFilmGrain(ctx, width, height, 0.04);
-    return canvas.toDataURL("image/png");
-  };
 
   // ============================================================
   // V2_Experiencia · LUXO MATERIAL (canvas)
@@ -2319,11 +2314,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
     ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
-    // Overlay gradiente dark sutil
     const grad = ctx.createLinearGradient(0, 0, 0, height);
-    grad.addColorStop(0, "rgba(0,0,0,0.5)");
-    grad.addColorStop(0.5, "rgba(0,0,0,0.1)");
-    grad.addColorStop(1, "rgba(0,0,0,0.6)");
+    grad.addColorStop(0, "rgba(0,0,0,0.6)");
+    grad.addColorStop(0.5, "rgba(0,0,0,0.2)");
+    grad.addColorStop(1, "rgba(0,0,0,0.7)");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
 
@@ -2333,13 +2327,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const sans = `Inter, Arial, sans-serif`;
 
     ctx.textAlign = "center";
-    
-    // Promo
+    ctx.textBaseline = "alphabetic";
+
+    const promo = (promoName || "Exclusive").toUpperCase();
     ctx.font = `800 ${isStory ? 24 : 18}px ${sans}`;
     ctx.fillStyle = secondaryColor;
-    ctx.fillText((promoName || "EXCLUSIVE").toUpperCase(), cx, isStory ? 350 : 180);
+    ctx.fillText(promo, cx, isStory ? 350 : 180);
 
-    // Title
     ctx.fillStyle = "#ffffff";
     const titSize = isStory ? 110 : 80;
     ctx.font = `900 ${titSize}px ${serif}`;
@@ -2349,8 +2343,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(l, cx, curY + i * titSize * 0.95);
     });
 
-    applyFilmGrain(0.05);
-    await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, undefined, effectiveTextColor);
+    ctx.strokeStyle = secondaryColor;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(cx - 100, curY + lines.length * titSize * 0.95 + 40);
+    ctx.lineTo(cx + 100, curY + lines.length * titSize * 0.95 + 40);
+    ctx.stroke();
+
+    applyFilmGrain(ctx, width, height, 0.04);
+    await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor);
     return canvas.toDataURL("image/png");
   };
 
@@ -2387,8 +2388,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = secondaryColor;
     ctx.fillText(travelPeriod || "Uma jornada inesquecível", cx, height / 2 + (isStory ? 80 : 60));
 
-    applyFilmGrain(0.06);
-    await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, undefined, effectiveTextColor);
+    applyFilmGrain(ctx, width, height, 0.05);
+    await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor);
     return canvas.toDataURL("image/png");
   };
 
@@ -2763,6 +2764,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx, width, height, logoDataUrl, 
       options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
       options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      undefined,
       effectiveTextColor
     );
     applyFilmGrain(ctx, width, height, 0.04);
@@ -2918,7 +2920,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillStyle = "#ffffff";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.font = `700 ${goldFont}px ${sansFamily}`;
+      ctx.font = `700 ${goldFont}px ${sans}`;
       ctx.fillText(period.toUpperCase(), cx, goldY + goldH / 2 + 1);
     }
 
@@ -2932,11 +2934,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const pad = 28;
       const labelFont = isStory ? 20 : 16;
       const valueFont = isStory ? 44 : 34;
-      ctx.font = `800 ${valueFont}px ${sansFamily}`;
-      const lines = wrap(leftText, isStory ? 360 : 280, `800 ${valueFont}px ${sansFamily}`, 2);
+      ctx.font = `800 ${valueFont}px ${sans}`;
+      const lines = wrap(leftText, isStory ? 360 : 280, `800 ${valueFont}px ${sans}`, 2);
       const lineH = Math.round(valueFont * 1.05);
       const blockH = pad * 2 + (labelFont + 14) + lines.length * lineH;
-      ctx.font = `800 ${valueFont}px ${sansFamily}`;
+      ctx.font = `800 ${valueFont}px ${sans}`;
       const widest = Math.max(...lines.map((l) => ctx.measureText(l).width));
       const blockW = Math.min(isStory ? 480 : 360, widest + pad * 2);
       const lx = 0;
@@ -3014,7 +3016,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         drawMonoIcon(ctx, iconKey, rx + pad + iconBox / 2, iy + itemH / 2, iconBox * 0.6, primaryColor);
         // texto serif na cor secundária
         ctx.fillStyle = secondaryColor;
-        ctx.font = `700 ${itemFont}px ${serifFamily}`;
+        ctx.font = `700 ${itemFont}px ${serif}`;
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
         const tx = rx + pad + iconBox + 14;
@@ -3046,7 +3048,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.stroke();
       ctx.restore();
       const ctaFont = isStory ? 34 : 26;
-      ctx.font = `800 ${ctaFont}px ${sansFamily}`;
+      ctx.font = `800 ${ctaFont}px ${sans}`;
       ctx.fillStyle = primaryColor;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -3079,6 +3081,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx, width, height, logoDataUrl, 
       options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
       options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      undefined,
       effectiveTextColor
     );
     applyFilmGrain(ctx, width, height, 0.04);
@@ -3312,6 +3315,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
       options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
       cityFmt ? `${cityFmt} Viagens` : undefined,
+      undefined,
       effectiveTextColor
     );
     applyFilmGrain(ctx, width, height, 0.04);
@@ -3617,6 +3621,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       (options as any).footerContact1Icon ? { icon: (options as any).footerContact1Icon, value: (options as any).footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
       (options as any).footerContact2Icon ? { icon: (options as any).footerContact2Icon, value: (options as any).footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
       cityFmt ? `${cityFmt} Viagens` : undefined,
+      undefined,
       effectiveTextColor
     );
   return canvas.toDataURL("image/png");
