@@ -46,7 +46,6 @@ export const ComingSoonGate = ({ open, onOpenChange, onUnlock }: ComingSoonGateP
       setError(false);
       setPassword("");
       onUnlock?.();
-      onOpenChange(false);
     } else {
       setError(true);
     }
