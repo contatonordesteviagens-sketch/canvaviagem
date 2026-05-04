@@ -271,8 +271,9 @@ async function drawFinalBranding(
   fontFamily: string = "Inter"
 ) {
   const contactsToDraw: { icon: string; value: string }[] = [];
-  if (contact1 && contact1.icon !== "none" && contact1.value) contactsToDraw.push(contact1);
-  if (contact2 && contact2.icon !== "none" && contact2.value) contactsToDraw.push(contact2);
+  // Só adiciona contatos que tenham valor preenchido (evita ícones vazios)
+  if (contact1 && contact1.icon !== "none" && contact1.value && contact1.value.trim()) contactsToDraw.push(contact1);
+  if (contact2 && contact2.icon !== "none" && contact2.value && contact2.value.trim()) contactsToDraw.push(contact2);
 
   if (!logoUrl && contactsToDraw.length === 0) return;
 
@@ -3445,13 +3446,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   } else {
     // Fallback vitrine: foto no topo + painel de cor na base.
     // REGRA PRINCIPAL: o painel SEMPRE termina em panelBottom (= height - safeBottom).
-    // O banding footer começa ABAIXO de panelBottom, então nunca haverá sobreposição.
     const photoHeight = format === "story"
-      ? Math.round(height * 0.42)  // 42% de foto = 806px; dá 534px para o painel
-      : Math.round(height * 0.40);
+      ? Math.round(height * 0.42)  // Story: 42% foto = 806px; 534px painel
+      : Math.round(height * 0.38); // Square: 38% foto = 410px; ~550px painel
     const bottomY = photoHeight;
-    // painel exatamente da borda inferior da foto até panelBottom
-    const bottomHeight = panelBottom - bottomY;
+    const bottomHeight = panelBottom - bottomY; // painel exatamente até panelBottom
 
     const crop = fitCover(image.naturalWidth, image.naturalHeight, width, photoHeight, format === "story" ? 0.35 : 0.4);
     ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, photoHeight);
@@ -3465,22 +3464,28 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = primaryColor;
     ctx.fillRect(0, bottomY, width, bottomHeight);
 
-    let cursorY = bottomY + 32;
+    let cursorY = bottomY + 28;
     drawBadge(left, cursorY, contentWidth);
-    cursorY += 76;
+    cursorY += 70;
 
     ctx.fillStyle = "#ffffff";
-    const titleMaxH = format === "story" ? 70 : 80;
-    const titleBase = format === "story" ? 62 : 72;
-    drawTextBlock(ctx, titleText, left, cursorY + 48, contentWidth, titleMaxH, 2, { baseFontSize: titleBase, minFontSize: 36 });
-    cursorY += format === "story" ? 120 : 140;
+    const titleBase = format === "story" ? 60 : 68;
+    drawTextBlock(ctx, titleText, left, cursorY + 44, contentWidth, 68, 2, { baseFontSize: titleBase, minFontSize: 34 });
+    cursorY += format === "story" ? 110 : 120;
 
-    // Highlights compactos (máx 3 no Story para economizar espaço)
-    const maxPills = format === "story" ? 3 : 5;
-    const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, maxPills, false, format === "story");
-    cursorY += pillsH + 16;
+    // Highlights em 2 colunas no Square para economizar altura
+    if (format === "story") {
+      const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, 3, false, true);
+      cursorY += pillsH + 14;
+    } else {
+      // Square: 2 colunas de até 2 pills cada (4 items total, compacto)
+      const colW = Math.floor(contentWidth / 2) - 12;
+      const pillsH1 = drawHighlightsBlock(left, cursorY, colW, 2, false, true);
+      drawHighlightsBlock(left + colW + 24, cursorY, colW, 2, false, true);
+      cursorY += pillsH1 + 14;
+    }
 
-    // Price card: cap duro = panelBottom - 300 para garantir folga antes do branding
+    // Price card: cap duro = panelBottom - 300
     const priceCapY = panelBottom - 300;
     if (cursorY <= priceCapY) {
       drawPriceCard(left, Math.min(cursorY, priceCapY), contentWidth, 168, "right");
