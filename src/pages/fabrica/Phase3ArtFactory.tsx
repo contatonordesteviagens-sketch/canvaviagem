@@ -375,17 +375,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
-  const setCategoria = (c: CategoriaId) => {
-    const previousCategoria = categoria;
-    setCategoriaState(c);
-    update({ lastCategoria: c });
-    if (c === "experiencia_destino" && previousCategoria !== "experiencia_destino") {
-      setHighlights(DEFAULT_EXPERIENCE_HIGHLIGHTS);
-    } else if (c !== "experiencia_destino" && previousCategoria === "experiencia_destino") {
-      setHighlights(DEFAULT_HIGHLIGHTS);
-    }
-  };
-
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
