@@ -133,8 +133,8 @@ const FabricaInner = () => {
 
 const Fabrica = () => {
   const navigate = useNavigate();
-  const [unlocked, setUnlocked] = useState(false);
-  const [gateOpen, setGateOpen] = useState(true);
+  const [unlocked, setUnlocked] = useState(() => isFabricaUnlocked());
+  const [gateOpen, setGateOpen] = useState(() => !isFabricaUnlocked());
 
   return (
     <>
@@ -150,7 +150,7 @@ const Fabrica = () => {
         open={gateOpen && !unlocked}
         onOpenChange={(open) => {
           setGateOpen(open);
-          if (!open && !unlocked) navigate("/");
+          if (!open && !unlocked && !isFabricaUnlocked()) navigate("/");
         }}
         onUnlock={() => {
           setUnlocked(true);
