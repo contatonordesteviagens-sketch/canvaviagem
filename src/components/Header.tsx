@@ -155,6 +155,13 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
 
   // Intercept navigation to gated routes (Fábrica / Painel de Marketing)
   const handleNavClick = (to: string) => {
+    if (to === "/fabrica") {
+      setPendingRoute(to);
+      setGateOpen(true);
+      setIsOpen(false);
+      return;
+    }
+
     if (GATED_ROUTES.includes(to) && !isFabricaUnlocked()) {
       setPendingRoute(to);
       setGateOpen(true);
@@ -391,6 +398,11 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
         open={gateOpen}
         onOpenChange={setGateOpen}
         onUnlock={() => {
+          if (pendingRoute === "/fabrica") {
+            navigate("/fabrica", { state: { fabricaUnlocked: true } });
+            return;
+          }
+
           if (pendingRoute) window.location.href = pendingRoute;
         }}
       />
