@@ -210,7 +210,7 @@ const defaultState: FabricaState = {
   lastPaymentSuffix: "por pessoa",
   lastCurrency: "BRL",
   lastAdTitle: "Pacote {destino}",
-  lastTravelPeriod: "5 dias",
+  lastTravelPeriod: "",
   hideCents: false,
   showTotal: true,
   totalOverride: "",

@@ -604,7 +604,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setAdTitleTemplate = (t: string) => { setAdTitleTemplateState(t); update({ lastAdTitle: t }); };
   const [adTitleMenuOpen, setAdTitleMenuOpen] = useState(false);
   const [promoMenuOpen, setPromoMenuOpen] = useState(false);
-  const [travelPeriod, setTravelPeriodState] = useState(state.lastTravelPeriod || "5 dias");
+  const [travelPeriod, setTravelPeriodState] = useState(state.lastTravelPeriod || "");
   const setTravelPeriod = (v: string) => { setTravelPeriodState(v); update({ lastTravelPeriod: v }); };
   const [travelPeriodMenuOpen, setTravelPeriodMenuOpen] = useState(false);
   const [destMenuOpen, setDestMenuOpen] = useState(false);
@@ -1053,7 +1053,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               canvasOnly: mustComposeWithCanvas,
               variation: forcedVariant !== null ? forcedVariant : nextVariantAi,
               packageType: "Voo + Hotel",
-              duration: categoria === "experiencia_destino" ? (travelPeriod || "5 dias") : "5 NOITES",
+              duration: categoria === "experiencia_destino" ? (travelPeriod || "") : (travelPeriod || "5 NOITES"),
               forbiddenHeadlines: guard.headlines,
               forbiddenLayouts: guard.layouts,
               ...(isAiExperienceStory

@@ -796,26 +796,25 @@ function drawPixLogo(
   ctx.restore();
 }
 
-function fitCover(
-  sourceW: number,
-  sourceH: number,
-  targetW: number,
-  targetH: number,
-  focusY = 0.45,
-) {
-  const sourceRatio = sourceW / sourceH;
-  const targetRatio = targetW / targetH;
+function fitCover(iw: number, ih: number, tw: number, th: number, fy = 0.5) {
+  const ratio = Math.max(tw / iw, th / ih);
+  const sw = tw / ratio;
+  const sh = th / ratio;
+  const sx = (iw - sw) / 2;
+  const sy = (ih - sh) * fy;
+  return { sx, sy, sw, sh };
+}
 
-  if (sourceRatio > targetRatio) {
-    const sw = sourceH * targetRatio;
-    const sx = (sourceW - sw) / 2;
-    return { sx, sy: 0, sw, sh: sourceH };
+function applyFilmGrain(ctx: CanvasRenderingContext2D, width: number, height: number, amount = 0.05) {
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const data = imageData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    const noise = (Math.random() - 0.5) * amount * 255;
+    data[i] = Math.min(255, Math.max(0, data[i] + noise));
+    data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+    data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
   }
-
-  const sh = sourceW / targetRatio;
-  const free = Math.max(0, sourceH - sh);
-  const sy = free * focusY;
-  return { sx: 0, sy: Math.min(free, sy), sw: sourceW, sh };
+  ctx.putImageData(imageData, 0, 0);
 }
 
 function drawTextBlock(
@@ -1345,7 +1344,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // ── Dados dinâmicos ────────────────────────────────────────────────────
       const destinoUp = (destination || "DESTINO").toUpperCase();
       const daysItem = highlights.find((h) => /\d+\s*dia/i.test(h?.text || ""));
-      const daysText = (travelPeriod && travelPeriod.trim()) || (daysItem?.text || "5 dias").trim();
+      const daysText = (travelPeriod && travelPeriod.trim()) || (daysItem?.text || "").trim();
       // Ícones: usa APENAS os selecionados pelo usuário (sem merge com defaults).
       // Se nenhum highlight tiver ícone, usa um conjunto padrão mínimo.
       const iconList: IconKey[] = (() => {
@@ -1998,7 +1997,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         cityFmt ? `${cityFmt} Viagens` : undefined,
         effectiveTextColor
       );
-      applyFilmGrain(0.04);
+      applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
     }
 
@@ -2039,7 +2038,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       })();
 
       const daysItemV4 = highlights.find((h) => /\d+\s*dia|\d+\s*noite|janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro/i.test(h?.text || ""));
-      const daysTextV4 = (travelPeriod?.trim() || daysItemV4?.text || "5 dias").trim();
+      const daysTextV4 = (travelPeriod?.trim() || daysItemV4?.text || "").trim();
       const iconListV4: IconKey[] = (() => {
         const fromHl = highlights
           .map((h) => h?.icon as IconKey | undefined)
@@ -2304,12 +2303,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         cityFmt ? `${cityFmt} Viagens` : undefined,
         effectiveTextColor
       );
-      applyFilmGrain(0.04);
+      applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
     }
 
 
-    applyFilmGrain(0.04);
+    applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   };
 
@@ -2495,7 +2494,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       cityFmt ? `${cityFmt} Viagens` : undefined,
       effectiveTextColor
     );
-    applyFilmGrain(0.04);
+    applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   }
 
@@ -2572,10 +2571,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
     // 4) PÍLULA (bg branco translúcido, rounded-full)
     // V0_Experiencia NÃO usa highlights/ícones — apenas período da viagem se existir.
-    const pillText = (() => {
-      if (travelPeriod && travelPeriod.trim()) return travelPeriod.trim();
-      return "";
-    })();
+    const pillText = (travelPeriod && travelPeriod.trim()) || "";
     const pillY = subY + (isStory ? 50 : 38);
     if (pillText) {
       const pillFontSize = isStory ? 24 : 20;
@@ -2693,7 +2689,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       cityFmt ? `${cityFmt} Viagens` : undefined,
       effectiveTextColor
     );
-    applyFilmGrain(0.04);
+    applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   };
 
@@ -2769,7 +2765,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
       effectiveTextColor
     );
-    applyFilmGrain(0.04);
+    applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   };
 
@@ -3085,7 +3081,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
       effectiveTextColor
     );
-    applyFilmGrain(0.04);
+    applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   };
 
@@ -3318,7 +3314,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       cityFmt ? `${cityFmt} Viagens` : undefined,
       effectiveTextColor
     );
-    applyFilmGrain(0.04);
+    applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   };
 
