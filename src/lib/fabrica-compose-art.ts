@@ -1087,7 +1087,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillText(promoTrunc, x, y + (hasOfferKeyword ? 0 : 48));
   };
 
-  const renderSafeSquareOffer = () => {
+  const renderSafeSquareOffer = async () => {
     // Variantes ATIVAS: V0, V1, V2, V3, V4 (todas implementadas).
     const TOTAL_VARIANTS = 5;
     let variant = typeof forceVariant === "number"
@@ -2099,7 +2099,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   ctx.fillRect(0, 0, width, height);
 
   if (!isExperience) {
-    return renderSafeSquareOffer();
+    return await renderSafeSquareOffer();
   }
 
   // ============================================================
@@ -2114,7 +2114,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   // ⚠️ Layout/CSS NÃO implementados ainda — placeholder mínimo.
   //    As variações da categoria "Oferta de Pacote" permanecem intactas.
   // ============================================================
-  const renderV0Experiencia = (): string => {
+  const renderV0Experiencia = async (): Promise<string> => {
     // ===== V0_Experiencia · LUXO & DESEJO (canvas) =====
     // Desenha: BG (cover) + overlay degradê + topo (promoName serif + adTitle)
     // + pílula (1º benefício/período) + headline (linha clara + linha black)
@@ -2294,7 +2294,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   //    o canvas de V0_Experiencia para não quebrar o fluxo até o design
   //    da V1 ser definido. NÃO altera a renderização da V0.
   // ============================================================
-  const renderV1Experiencia = (): string => {
+  const renderV1Experiencia = async (): Promise<string> => {
     // ===== V1_Experiencia · LUXO CINEMATOGRÁFICO (canvas) =====
     // 3 blocos centralizados (topo · centro · slogan), todos em branco,
     // overlay sutil bg-black/30. Tipografia: Serif (Playfair) + Cursive
@@ -2433,10 +2433,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   if (isExperience && typeof forceVariant === "number" && forceVariant === 0) {
-    return renderV0Experiencia();
+    return await renderV0Experiencia();
   }
   if (isExperience && typeof forceVariant === "number" && forceVariant === 1) {
-    return renderV1Experiencia();
+    return await renderV1Experiencia();
   }
   // ============================================================
   // V2_Experiencia · LUXO MATERIAL (canvas)
@@ -2445,7 +2445,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   // + banner inferior (CTA estático). Funciona nos 3 modos:
   // Foto Real, Sua Imagem e IA Pura — sempre sobre `image` recebida.
   // ============================================================
-  const renderV2Experiencia = (): string => {
+  const renderV2Experiencia = async (): Promise<string> => {
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
     ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
@@ -2743,7 +2743,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   if (isExperience && typeof forceVariant === "number" && forceVariant === 2) {
-    return renderV2Experiencia();
+    return await renderV2Experiencia();
   }
 
   // ============================================================
@@ -2752,7 +2752,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   // título maciço serif (drop-shadow) + botão sólido (Primária)
   // + botão outline (borda Primária). Funciona nos 3 modos.
   // ============================================================
-  const renderV3Experiencia = (): string => {
+  const renderV3Experiencia = async (): Promise<string> => {
     // 1) BG cover
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
     ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
@@ -2972,7 +2972,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   if (isExperience && typeof forceVariant === "number" && forceVariant === 3) {
-    return renderV3Experiencia();
+    return await renderV3Experiencia();
   }
 
   if (strategy === "ancora") {
