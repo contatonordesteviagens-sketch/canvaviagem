@@ -1033,7 +1033,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     : [...ofertaBase, ...ofertaWithDest];
 
   const safeTop = format === "story" ? 280 : 60;
-  const safeBottom = format === "story" ? 540 : 120; // Aumentado de 440 para 540 para acompanhar o novo offset do branding
+  const safeBottom = format === "story" ? 480 : 120; // Reduzido de 540 para 480 para melhor equilíbrio visual, mantendo segurança
   const panelBottom = height - safeBottom;
   const left = 80;
   const right = width - 80;
@@ -1187,7 +1187,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const firstHL = highlights[0];
     const firstHLText = typeof firstHL === "string" ? firstHL : (firstHL?.text || "");
     const daysFromHl = firstHLText.match(/(\d+)\s*dias?/i)?.[0];
-    const days = (travelPeriod && travelPeriod.trim()) || daysFromHl || "5 dias";
+    const days = (travelPeriod && travelPeriod.trim()) || daysFromHl || "Consulte";
     ctx.font = `700 17px Inter, Arial, sans-serif`;
     ctx.fillText(`${days}   ✈   🚌   🏨   ☕`, cx, y + 92);
 
@@ -2333,8 +2333,100 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   ctx.fillStyle = "#0a0a0a"; // Fundo neutro escuro sempre
   ctx.fillRect(0, 0, width, height);
 
-  if (!isExperience) {
-    return await renderSafeSquareOffer();
+  // ============================================================
+  // ROTEAMENTO PRINCIPAL: CATEGORIA (Experiência vs Oferta)
+  // ============================================================
+  if (isExperience) {
+    // Modo Experiência: Foco em LUXO, DESEJO e BRANDING. Preços OCULTOS.
+    const v = typeof forceVariant === "number" ? forceVariant : variation;
+    const variant = ((v % 5) + 5) % 5; // Suporta V0-V4
+
+    if (variant === 0) return await renderV0Experiencia();
+    if (variant === 1) return await renderV1Experiencia();
+    if (variant === 2) return await renderV2Experiencia();
+    if (variant === 3) return await renderV3Experiencia();
+    
+    if (variant === 4) return await renderV4Experiencia();
+    
+    // Fallback de segurança
+    return await renderV0Experiencia();
+  }
+
+  // Modo Oferta: Foco em PREÇO, CONDIÇÃO e CONVERSÃO.
+  return await renderSafeSquareOffer();
+
+  // ============================================================
+  // V4_Experiencia · CLEAN EDITORIAL (canvas)
+  // ------------------------------------------------------------
+  // Layout minimalista: Imagem total + Overlay lateral sutil
+  // + Título Serif grande + Detalhes em Sans Thin.
+  // ============================================================
+  async function renderV4Experiencia(): Promise<string> {
+    const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.42);
+    ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+
+    // Overlay lateral esquerdo (gradiente)
+    const grad = ctx.createLinearGradient(0, 0, width * 0.7, 0);
+    grad.addColorStop(0, "rgba(0,0,0,0.75)");
+    grad.addColorStop(0.5, "rgba(0,0,0,0.2)");
+    grad.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+
+    const isStory = format === "story";
+    const serif = `'Playfair Display', Georgia, serif`;
+    const sans = `Inter, Arial, sans-serif`;
+
+    const padLeft = isStory ? 100 : 70;
+    const topY = isStory ? 380 : 180;
+    
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+
+    // Tagline (promoName)
+    if (promoName) {
+      ctx.fillStyle = secondaryColor;
+      ctx.font = `800 ${isStory ? 28 : 22}px ${sans}`;
+      ctx.fillText(promoName.toUpperCase(), padLeft, topY);
+    }
+
+    // Título ( Serif )
+    ctx.fillStyle = "#ffffff";
+    let titSize = isStory ? 110 : 80;
+    ctx.font = `900 ${titSize}px ${serif}`;
+    const maxW = width - padLeft - 60;
+    const words = (titleText || destination || "Experiência").toUpperCase().split(/\s+/);
+    let lines: string[] = [];
+    let cur = "";
+    for (const w of words) {
+      const test = cur ? `${cur} ${w}` : w;
+      if (ctx.measureText(test).width > maxW) { lines.push(cur); cur = w; }
+      else cur = test;
+    }
+    if (cur) lines.push(cur);
+    lines = lines.slice(0, 3);
+
+    let currentY = topY + titSize + 20;
+    lines.forEach((ln, i) => {
+      ctx.fillText(ln, padLeft, currentY + i * titSize * 0.95);
+    });
+    currentY += (lines.length) * titSize * 0.95 + 40;
+
+    // Período / Data
+    if (travelPeriod) {
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.font = `500 ${isStory ? 32 : 26}px ${sans}`;
+      ctx.fillText(`—  ${travelPeriod}`, padLeft, currentY);
+    }
+
+    await drawFinalBranding(
+      ctx, width, height, logoDataUrl, 
+      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+      cityFmt ? `${cityFmt} Viagens` : undefined,
+      effectiveTextColor
+    );
+    return canvas.toDataURL("image/png");
   }
 
   // ============================================================
@@ -2999,9 +3091,6 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     return canvas.toDataURL("image/png");
   };
 
-  if (isExperience && typeof forceVariant === "number" && forceVariant === 2) {
-    return await renderV2Experiencia();
-  }
 
   // ============================================================
   // V3_Experiencia · NOTURNA / DARK PREMIUM (canvas)
@@ -3234,9 +3323,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     return canvas.toDataURL("image/png");
   };
 
-  if (isExperience && typeof forceVariant === "number" && forceVariant === 3) {
-    return await renderV3Experiencia();
-  }
+  // O roteamento agora é feito no bloco principal acima.
+  // Estes ifs redundantes são removidos para evitar confusão.
 
   if (strategy === "ancora") {
     if (format === "story") {
