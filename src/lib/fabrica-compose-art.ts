@@ -3205,43 +3205,86 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   }
 
   if (strategy === "ancora") {
-    ctx.fillStyle = primaryColor;
-    ctx.fillRect(0, 0, width, height);
+    if (format === "story") {
+      // Story: foto de fundo total + gradiente + conteúdo vertical
+      const crop = fitCover(image.naturalWidth, image.naturalHeight, width, panelBottom, 0.38);
+      ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, panelBottom);
+      const overlay = ctx.createLinearGradient(0, 0, 0, panelBottom);
+      overlay.addColorStop(0, "rgba(0,0,0,0.10)");
+      overlay.addColorStop(0.38, "rgba(0,0,0,0.30)");
+      overlay.addColorStop(1, "rgba(0,0,0,0.82)");
+      ctx.fillStyle = overlay;
+      ctx.fillRect(0, 0, width, panelBottom);
 
-    const panelW = Math.round(width * 0.44);
-    const photoX = panelW + 24;
-    const photoY = safeTop - 30;
-    const photoW = width - photoX - 42;
-    const photoH = panelBottom - photoY;
-    drawRoundedPhoto(photoX, photoY, photoW, photoH, 44, format === "story" ? 0.34 : 0.4);
+      // Painel de conteúdo na base (sobre o gradiente)
+      const panelH = Math.round(panelBottom * 0.62);
+      const panelY = panelBottom - panelH;
+      fillRoundRect(ctx, left - 20, panelY, contentWidth + 40, panelH, 0, `rgba(${parseInt(primaryColor.slice(1,3),16)},${parseInt(primaryColor.slice(3,5),16)},${parseInt(primaryColor.slice(5,7),16)},0.82)`);
 
-    const topY = safeTop + 28;
-    drawBadge(left, topY, panelW - left - 28);
-    ctx.fillStyle = "#ffffff";
-    drawTextBlock(ctx, titleText, left, topY + 150, panelW - left - 36, 70, 2, { baseFontSize: 66, minFontSize: 38 });
-    const pillsH = drawHighlightsBlock(left, topY + 396, panelW - left - 36, 5, false, format !== "story");
-    const priceY = Math.min(panelBottom - 300, topY + 420 + pillsH);
-    drawPriceCard(left, priceY, panelW - left - 36, 146, "left");
+      const topY = panelY + 36;
+      drawBadge(left, topY, contentWidth);
+      ctx.fillStyle = "#ffffff";
+      drawTextBlock(ctx, titleText, left, topY + 112, contentWidth, 80, 2, { baseFontSize: 76, minFontSize: 44 });
+      const pillsH = drawHighlightsBlock(left, topY + 228, contentWidth, 4, false, true);
+      const priceY = Math.min(panelBottom - 320, topY + 260 + pillsH);
+      drawPriceCard(left, priceY, contentWidth, 146, "right");
+    } else {
+      // Square: layout original com painel lateral
+      ctx.fillStyle = primaryColor;
+      ctx.fillRect(0, 0, width, height);
+      const panelW = Math.round(width * 0.44);
+      const photoX = panelW + 24;
+      const photoY = safeTop - 30;
+      const photoW = width - photoX - 42;
+      const photoH = panelBottom - photoY;
+      drawRoundedPhoto(photoX, photoY, photoW, photoH, 44, 0.4);
+      const topY = safeTop + 28;
+      drawBadge(left, topY, panelW - left - 28);
+      ctx.fillStyle = "#ffffff";
+      drawTextBlock(ctx, titleText, left, topY + 150, panelW - left - 36, 70, 2, { baseFontSize: 66, minFontSize: 38 });
+      const pillsH = drawHighlightsBlock(left, topY + 396, panelW - left - 36, 5, false, false);
+      const priceY = Math.min(panelBottom - 300, topY + 420 + pillsH);
+      drawPriceCard(left, priceY, panelW - left - 36, 146, "left");
+    }
   } else if (strategy === "matriz") {
-    ctx.fillStyle = primaryColor;
-    ctx.fillRect(0, 0, width, height);
+    if (format === "story") {
+      // Story: foto de fundo com gradiente + layout vertical clean
+      const crop = fitCover(image.naturalWidth, image.naturalHeight, width, panelBottom, 0.36);
+      ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, panelBottom);
+      const overlay = ctx.createLinearGradient(0, 0, 0, panelBottom);
+      overlay.addColorStop(0, "rgba(0,0,0,0.05)");
+      overlay.addColorStop(0.45, "rgba(0,0,0,0.22)");
+      overlay.addColorStop(1, "rgba(0,0,0,0.88)");
+      ctx.fillStyle = overlay;
+      ctx.fillRect(0, 0, width, panelBottom);
 
-    const photoY = safeTop + 12;
-    const photoH = format === "story" ? 500 : 360;
-    drawRoundedPhoto(left, photoY, contentWidth, photoH, 44, 0.36);
-
-    const lowerY = photoY + photoH + 34;
-    const leftColW = Math.round(contentWidth * 0.5);
-    drawBadge(left, lowerY, leftColW);
-    ctx.fillStyle = "#ffffff";
-    drawTextBlock(ctx, titleText, left, lowerY + 136, leftColW, 72, 4, { baseFontSize: 68, minFontSize: 34 });
-    drawPromoKicker(left, lowerY + 294);
-
-    const rightColX = left + leftColW + 24;
-    const rightColW = contentWidth - leftColW - 24;
-    const pillsH = drawHighlightsBlock(rightColX, lowerY + 8, rightColW, 5, true, format !== "story");
-    const priceY = Math.min(panelBottom - 300, lowerY + pillsH + 40);
-    drawPriceCard(rightColX, priceY, rightColW, 154, "right");
+      const topY = safeTop + 60;
+      drawBadge(left, topY, contentWidth);
+      ctx.fillStyle = "#ffffff";
+      drawTextBlock(ctx, titleText, left, topY + 110, contentWidth, 80, 2, { baseFontSize: 76, minFontSize: 44 });
+      drawPromoKicker(left, topY + 230);
+      const pillsH = drawHighlightsBlock(left, topY + 310, contentWidth, 4, true, true);
+      const priceY = Math.min(panelBottom - 320, topY + 340 + pillsH);
+      drawPriceCard(left, priceY, contentWidth, 154, "right");
+    } else {
+      // Square: layout original
+      ctx.fillStyle = primaryColor;
+      ctx.fillRect(0, 0, width, height);
+      const photoY = safeTop + 12;
+      const photoH = 360;
+      drawRoundedPhoto(left, photoY, contentWidth, photoH, 44, 0.36);
+      const lowerY = photoY + photoH + 34;
+      const leftColW = Math.round(contentWidth * 0.5);
+      drawBadge(left, lowerY, leftColW);
+      ctx.fillStyle = "#ffffff";
+      drawTextBlock(ctx, titleText, left, lowerY + 136, leftColW, 72, 4, { baseFontSize: 68, minFontSize: 34 });
+      drawPromoKicker(left, lowerY + 294);
+      const rightColX = left + leftColW + 24;
+      const rightColW = contentWidth - leftColW - 24;
+      const pillsH = drawHighlightsBlock(rightColX, lowerY + 8, rightColW, 5, true, false);
+      const priceY = Math.min(panelBottom - 300, lowerY + pillsH + 40);
+      drawPriceCard(rightColX, priceY, rightColW, 154, "right");
+    }
   } else if (strategy === "gancho") {
     // Foto de fundo cobre toda a tela com gradiente escurecido na base
     const heroH = panelBottom;
