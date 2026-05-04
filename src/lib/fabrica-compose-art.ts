@@ -223,26 +223,42 @@ async function drawFinalBranding(
   const padX = isStory ? 65 : 50;
   const centerY = footerY + footerHeight / 2;
 
-  // 2. Logo (Esquerda)
+  // 2. Logo (Esquerda) - Medição e Desenho
+  let lw = 0;
+  let lh = 0;
+  const bgPad = 16;
+
   if (logoUrl) {
     try {
       const logo = await loadImage(logoUrl);
       const maxLogoH = footerHeight * 0.75;
       const maxLogoW = cw * 0.35;
       const ratio = logo.naturalWidth / logo.naturalHeight;
-      let lh = maxLogoH;
-      let lw = lh * ratio;
+      lh = maxLogoH;
+      lw = lh * ratio;
       if (lw > maxLogoW) {
         lw = maxLogoW;
         lh = lw / ratio;
       }
       
-      const bgPad = 16;
       ctx.save();
-      ctx.fillStyle = "#ffffff";
-      ctx.shadowColor = "rgba(0,0,0,0.4)";
-      ctx.shadowBlur = 15;
-      fillRoundRect(ctx, padX, centerY - lh / 2 - bgPad, lw + bgPad * 2, lh + bgPad * 2, 16, "#ffffff");
+      // Moldura Premium (Sombra suave e borda sutil)
+      ctx.shadowColor = "rgba(0,0,0,0.3)";
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 4;
+      
+      // Desenha fundo branco com cantos arredondados ou circular se for quase quadrado
+      const isSquareLogo = Math.abs(ratio - 1) < 0.2;
+      const radius = isSquareLogo ? (lw + bgPad * 2) / 2 : 16;
+      
+      fillRoundRect(ctx, padX, centerY - lh / 2 - bgPad, lw + bgPad * 2, lh + bgPad * 2, radius, "#ffffff");
+      
+      // Borda fina para definição
+      ctx.strokeStyle = "rgba(255,255,255,0.2)";
+      ctx.lineWidth = 2;
+      roundRect(ctx, padX, centerY - lh / 2 - bgPad, lw + bgPad * 2, lh + bgPad * 2, radius);
+      ctx.stroke();
+
       ctx.drawImage(logo, padX + bgPad, centerY - lh / 2, lw, lh);
       ctx.restore();
     } catch (e) {
@@ -263,8 +279,9 @@ async function drawFinalBranding(
   ctx.shadowBlur = 5;
 
   let textRightX = cw - (isStory ? 65 : 60);
-  const iconSize = fontSize * 1.1;
   const itemGap = 15;
+  const logoEdge = logoUrl ? (padX + lw + bgPad * 2 + 30) : padX;
+  const maxAvailableWidth = textRightX - logoEdge;
 
   let yPos = contactsToDraw.length === 2 ? centerY + (footerHeight * 0.18) : centerY;
 
@@ -273,15 +290,27 @@ async function drawFinalBranding(
     if (c.icon.startsWith("whatsapp")) displayValue = formatAdPhone(c.value);
     if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
 
+    // Auto-shrink para o texto do contato
+    let currentFontSize = fontSize;
+    const iconSizeFactor = 1.1;
+    let currentIconSize = currentFontSize * iconSizeFactor;
+    
+    ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
+    while (ctx.measureText(displayValue).width + currentIconSize + itemGap > maxAvailableWidth && currentFontSize > 22) {
+      currentFontSize -= 2;
+      currentIconSize = currentFontSize * iconSizeFactor;
+      ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
+    }
+
     ctx.fillText(displayValue, textRightX, yPos);
     const textWidth = ctx.measureText(displayValue).width;
-    const iconX = textRightX - textWidth - itemGap - iconSize/2;
+    const iconX = textRightX - textWidth - itemGap - currentIconSize/2;
 
-    if (c.icon === "whatsapp_green") drawAdWhatsAppIcon(ctx, iconX, yPos, iconSize, "green");
-    else if (c.icon === "whatsapp_custom") drawAdWhatsAppIcon(ctx, iconX, yPos, iconSize, "custom", ctx.fillStyle);
-    else if (c.icon === "instagram_gradient") drawAdInstagramIcon(ctx, iconX, yPos, iconSize, "gradient");
-    else if (c.icon === "instagram_custom") drawAdInstagramIcon(ctx, iconX, yPos, iconSize, "custom", ctx.fillStyle);
-    else if (c.icon === "website") drawAdWebsiteIcon(ctx, iconX, yPos, iconSize, ctx.fillStyle);
+    if (c.icon === "whatsapp_green") drawAdWhatsAppIcon(ctx, iconX, yPos, currentIconSize, "green");
+    else if (c.icon === "whatsapp_custom") drawAdWhatsAppIcon(ctx, iconX, yPos, currentIconSize, "custom", ctx.fillStyle);
+    else if (c.icon === "instagram_gradient") drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "gradient");
+    else if (c.icon === "instagram_custom") drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "custom", ctx.fillStyle);
+    else if (c.icon === "website") drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle);
 
     yPos -= (footerHeight * 0.36);
   }
@@ -1035,14 +1064,29 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     // 2. Etiqueta "PACOTE" + DESTINO no topo
     ctx.font = `800 18px Inter, Arial, sans-serif`;
     ctx.fillText("PACOTE", cx, y + 30);
-    let destSize = 28;
-    ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
+    
+    let destSize = 32; // Aumentado o tamanho inicial para ser mais "premium"
     const destUpper = (destination || "DESTINO").toUpperCase();
-    while (ctx.measureText(destUpper).width > innerW && destSize > 22) {
-      destSize -= 2;
+    ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
+    
+    const words = destUpper.split(/\s+/);
+    if (ctx.measureText(destUpper).width > innerW && words.length > 1) {
+      // Tenta em 2 linhas se for longo
+      const mid = Math.ceil(words.length / 2);
+      const line1 = words.slice(0, mid).join(" ");
+      const line2 = words.slice(mid).join(" ");
+      destSize = 24;
       ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
+      ctx.fillText(line1, cx, y + 56);
+      ctx.fillText(line2, cx, y + 56 + destSize * 1.1);
+    } else {
+      // Linha única com shrink moderado
+      while (ctx.measureText(destUpper).width > innerW && destSize > 20) {
+        destSize -= 1;
+        ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
+      }
+      ctx.fillText(destUpper, cx, y + 60);
     }
-    ctx.fillText(destUpper, cx, y + 60);
 
     // 3. Linha de info: "X dias ✈ 🚌 🏨 ☕"
     const firstHL = highlights[0];
@@ -1083,13 +1127,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillText("sem juros", groupX + badgeW / 2, priceY + 14);
 
     // Preço gigante
-    ctx.fillStyle = "#0d0d0d";
+    ctx.fillStyle = cardTextColor;
     ctx.textAlign = "left";
     ctx.font = `900 ${priceFontSize}px Inter, Arial, sans-serif`;
     ctx.fillText(priceText, groupX + badgeW + gap, priceY + priceFontSize / 3);
 
     // 5. Total por pessoa
-    ctx.fillStyle = "#1a1a1a";
+    ctx.fillStyle = cardTextColor;
     ctx.font = `600 14px Inter, Arial, sans-serif`;
     ctx.textAlign = "center";
     if (bottomSuffix) {
