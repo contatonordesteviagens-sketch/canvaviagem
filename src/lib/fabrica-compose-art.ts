@@ -302,7 +302,6 @@ async function drawFinalBranding(
   // 2. Logo (Esquerda) - Medição e Desenho
   let lw = 0;
   let lh = 0;
-  const bgPad = 16;
 
   if (logoUrl) {
     try {
