@@ -147,13 +147,14 @@ serve(async (req) => {
     if (forcePhotoOnly) {
       const dest = body.destination || "destino paradisíaco";
       const scene = nicheToScene(body.niche, dest);
-      const rawPrompt = body.customPrompt || `Fotografia de viagem ultra-realista e hiper-detalhada de ${dest}.
+      const rawPrompt = body.customPrompt || `A high-end, professional commercial travel photograph of ${dest}.
 Cena: ${scene}.
 ${safeZoneRules(format)}
-Estilo: fotografia editorial de viagem profissional, qualidade cinematográfica, iluminação natural perfeita, cores vivas e saturadas.`;
+Estilo: Fotografia editorial de viagens de luxo (estilo Condé Nast Traveler), qualidade 8k, iluminação cinematográfica, foco nítido e cores vibrantes.
+Space Management: Mantenha a parte inferior e as laterais limpas (espaço negativo) para sobreposição de tipografia profissional. Sem poluição visual. Sem rostos ou pessoas em primeiro plano.`;
       prompt = `${rawPrompt}
 
-REGRA ABSOLUTA DE SAÍDA: gere SOMENTE uma fotografia/fundo limpo. É PROIBIDO desenhar qualquer texto, letra, número, preço, moeda, logo, marca, ícone, botão, card, faixa, selo, etiqueta, watermark, assinatura, QR code, interface social ou elemento gráfico. Nenhuma tipografia pode aparecer na imagem. O Canvas do aplicativo desenhará toda a interface depois.`;
+REGRA ABSOLUTA DE SAÍDA: gere SOMENTE uma fotografia/fundo limpo de alta qualidade. É TERMINANTEMENTE PROIBIDO desenhar qualquer texto, letra, número, preço, moeda, logo, marca, ícone, botão, card, faixa, selo, etiqueta, watermark, assinatura, QR code, interface social ou qualquer elemento gráfico. A imagem deve ser puramente fotográfica. Toda a interface será renderizada por software separadamente.`;
       usedTemplateId = body.templateId || "custom";
     } else if (body.customPrompt) {
       prompt = body.customPrompt;

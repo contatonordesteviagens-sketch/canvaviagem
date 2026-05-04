@@ -51,15 +51,17 @@ type MasterTemplate = {
 
 const cleanPhotoPrompt = (v: MasterPromptVars, camera: string, mood: string): string => {
   const aspect = v.format === "story"
-    ? "vertical 9:16 travel photograph, smartphone-story framing"
-    : "square 1:1 travel photograph, balanced feed framing";
+    ? "vertical 9:16 high-end travel photograph, premium smartphone-story framing"
+    : "square 1:1 commercial travel photograph, balanced editorial feed framing";
 
   return `${CRITICAL_CONTRAST_HEADER}
 
 Create an ${aspect} of ${v.destination}.
-Scene: ${v.destinationDescription || `recognizable travel scenery in ${v.destination}`}.
-Camera direction: ${camera}.
-Mood and light: ${mood}.
+Scene: ${v.destinationDescription || `recognizable and iconic travel scenery in ${v.destination}`}.
+Aesthetic: Luxury tourism photography, 8k resolution, cinematic lighting, sharp professional focus.
+Space Management: Ensure significant NEGATIVE SPACE (clean, uncluttered areas) at the bottom 25% and sides for future text overlays.
+Camera: ${camera}.
+Lighting/Mood: ${mood}. Style: Premium travel magazine (Condé Nast Traveler / National Geographic style). No people in foreground.
 
 The result must be a realistic, high-resolution travel photograph only: natural light, authentic colors, strong destination atmosphere, clean open areas suitable for later overlay by software.
 

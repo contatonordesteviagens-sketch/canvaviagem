@@ -182,9 +182,18 @@ const stripCurrencyFromPrice = (raw: string, currency: Currency): string => {
 const formatPriceWhileTyping = (raw: string, currency: Currency): string => {
   const value = stripCurrencyFromPrice(raw, currency);
   if (!value.trim()) return "";
+  // Se contiver letras, não tenta formatar como número
   if (/[A-Za-zÀ-ÿ]/.test(value)) return value;
+  
   const digits = value.replace(/\D/g, "");
-  if (digits.length >= 3 || /[.,]/.test(value)) return formatPriceValue(value, currency, digits.length >= 3);
+  // Apenas assume centavos se houver mais de 3 dígitos (ex: 149 -> 149, 1499 -> 14,99)
+  // E se o usuário NÃO digitou um separador manual
+  const hasManualSeparator = /[.,]/.test(value);
+  const shouldAssumeCents = digits.length >= 4 && !hasManualSeparator;
+  
+  if (digits.length >= 3 || hasManualSeparator) {
+    return formatPriceValue(value, currency, shouldAssumeCents);
+  }
   return value;
 };
 
@@ -759,7 +768,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     reader.readAsDataURL(file);
   };
 
-  // Termos de turismo para garantir que o Unsplash retorne fotos de destinos reais
   const TRAVEL_TERMS_CYCLE = [
     "beach", "tropical beach", "ocean", "coastline", "sea", "paradise",
     "landscape", "nature", "tourism", "travel", "resort", "scenic",
@@ -1073,6 +1081,14 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
           // TRAVA DE CÓDIGO: a IA entrega apenas o fundo. A arte final SEMPRE passa pelo Canvas.
           // Não existe fallback para imagem crua: se o Canvas falhar, a geração falha.
+          // Define estratégia para o motor Canvas:
+          // 1. Se for Experiência Story, usa a estratégia específica
+          // 2. Senão, tenta mapear o templateId para uma estratégia do Canvas
+          // 3. Fallback para rotação baseada no index do resultado
+          const canvasStrategy: StrategyId = isAiExperienceStory 
+            ? aiExperienceStrategy 
+            : (cat.legacyStrategy || "matriz");
+
           img = await composeTravelAd({
             imageUrl: img,
             format,
@@ -1096,8 +1112,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             paymentMode,
             paymentLabel: paymentLabel || undefined,
             paymentSuffix,
-            strategy: isAiExperienceStory ? aiExperienceStrategy : "ancora",
-            variation: freshSeedAi,
+            strategy: canvasStrategy,
+            variation: freshSeedAi + images.length,
             forceVariant: nextVariantAi,
             titleOverride: resolvedAdTitle,
             titleVariations: adTitleVariations,
@@ -1398,7 +1414,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               </div>
               <div className="w-[55%]">
                 <input
-                  value={state.footerContact1Value !== undefined ? state.footerContact1Value : (state.whatsapp || "")}
+                  value={state.footerContact1Value ?? formatAdPhone(state.whatsapp || "")}
                   onChange={(e) => {
                     const isPhone = state.footerContact1Icon?.startsWith("whatsapp");
                     const val = isPhone ? formatAdPhone(e.target.value) : e.target.value;
@@ -1431,7 +1447,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               </div>
               <div className="w-[55%]">
                 <input
-                  value={state.footerContact2Value !== undefined ? state.footerContact2Value : (state.instagram || "")}
+                  value={state.footerContact2Value ?? (state.instagram || "")}
                   onChange={(e) => {
                     const isPhone = state.footerContact2Icon?.startsWith("whatsapp");
                     const isInsta = state.footerContact2Icon?.startsWith("instagram");
@@ -1776,7 +1792,15 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                         <button
                           key={d}
                           type="button"
-                          onClick={() => { setDestination(d); setDestMenuOpen(false); }}
+                          onMouseDown={(e) => {
+                            // Previne que o onBlur do input feche o menu antes do click ser processado
+                            e.preventDefault();
+                          }}
+                          onClick={() => { 
+                            setDestination(d); 
+                            setDestMenuOpen(false); 
+                            toast.success(`Destino: ${d}`);
+                          }}
                           className={`w-full text-left px-3 py-2 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
                         >
                           {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}

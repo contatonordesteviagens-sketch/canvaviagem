@@ -135,49 +135,59 @@ function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number,
   ctx.shadowBlur = 4;
 
   if (colorMode === "green") {
-    // Fundo Verde
+    // Fundo Verde Oficial
     ctx.fillStyle = "#25D366";
     ctx.beginPath(); 
     ctx.arc(0, 0, size * 0.48, 0, Math.PI * 2); 
     ctx.fill();
+    
     // Balão Branco
     ctx.fillStyle = "white";
-  } else {
-    // Sólido Custom
-    ctx.fillStyle = customColor;
-  }
+    ctx.beginPath();
+    ctx.arc(0, -size * 0.02, size * 0.4, 0.7, 5.5);
+    ctx.lineTo(-size * 0.35, size * 0.45);
+    ctx.closePath();
+    ctx.fill();
 
-  // Desenha o corpo do balão
-  ctx.beginPath();
-  ctx.arc(0, -size * 0.02, size * 0.4, 0.7, 5.5);
-  ctx.lineTo(-size * 0.35, size * 0.45);
-  ctx.closePath();
-  ctx.fill();
-
-  // Recorte do Telefone (sempre "fura" o balão se for custom, ou desenha verde se for fundo branco)
-  if (colorMode === "green") {
+    // Fone Verde
     ctx.fillStyle = "#25D366";
+    ctx.lineWidth = size * 0.08; // Reduzido de 0.12 para 0.08 (fininho)
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.22, 0.8, 2.3);
+    ctx.stroke();
+    // Pontas do fone
+    ctx.save(); ctx.rotate(0.8); ctx.fillRect(size * 0.16, -size * 0.08, size * 0.10, size * 0.14); ctx.restore();
+    ctx.save(); ctx.rotate(2.3); ctx.fillRect(size * 0.16, -size * 0.08, size * 0.10, size * 0.14); ctx.restore();
   } else {
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.fillStyle = "black"; // Valor não importa com destination-out
-  }
+    // MODO MONOCROMÁTICO (Recorte real usando buffer para não furar o fundo do anúncio)
+    const buffer = document.createElement("canvas");
+    buffer.width = size;
+    buffer.height = size;
+    const bctx = buffer.getContext("2d");
+    if (bctx) {
+      bctx.translate(size/2, size/2);
+      bctx.fillStyle = customColor;
+      // Balão
+      bctx.beginPath();
+      bctx.arc(0, -size * 0.02, size * 0.4, 0.7, 5.5);
+      bctx.lineTo(-size * 0.35, size * 0.45);
+      bctx.closePath();
+      bctx.fill();
 
-  // Desenha fone (silhueta)
-  ctx.beginPath();
-  ctx.arc(0, 0, size * 0.22, 0.8, 2.3); // curva do fone
-  ctx.lineWidth = size * 0.12;
-  ctx.lineCap = "round";
-  ctx.stroke();
-  
-  // Pontas do fone
-  ctx.save();
-  ctx.rotate(0.8);
-  ctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16);
-  ctx.restore();
-  ctx.save();
-  ctx.rotate(2.3);
-  ctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16);
-  ctx.restore();
+      // Fura o fone (fininho)
+      bctx.globalCompositeOperation = "destination-out";
+      bctx.lineWidth = size * 0.07; // Reduzido para 0.07 (fininho)
+      bctx.lineCap = "round";
+      bctx.beginPath();
+      bctx.arc(0, 0, size * 0.22, 0.8, 2.3);
+      bctx.stroke();
+      bctx.save(); bctx.rotate(0.8); bctx.fillRect(size * 0.16, -size * 0.08, size * 0.10, size * 0.14); bctx.restore();
+      bctx.save(); bctx.rotate(2.3); bctx.fillRect(size * 0.16, -size * 0.08, size * 0.10, size * 0.14); bctx.restore();
+      
+      ctx.drawImage(buffer, -size/2, -size/2);
+    }
+  }
 
   ctx.restore();
 }
@@ -201,29 +211,35 @@ function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number
     ctx.roundRect(-size / 2, -size / 2, size, size, size * 0.25); 
     ctx.fill();
     
-    // Elementos internos brancos
     ctx.strokeStyle = "white";
     ctx.fillStyle = "white";
+    // Câmera (fininha)
+    ctx.lineWidth = size * 0.06; // Reduzido de 0.08 para 0.06
+    ctx.strokeRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6);
+    ctx.beginPath(); ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); ctx.fill();
   } else {
-    ctx.fillStyle = customColor;
-    ctx.beginPath(); 
-    ctx.roundRect(-size / 2, -size / 2, size, size, size * 0.25); 
-    ctx.fill();
-    
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.strokeStyle = "black";
-    ctx.fillStyle = "black";
+    // MODO MONOCROMÁTICO (Usa buffer para recorte real)
+    const buffer = document.createElement("canvas");
+    buffer.width = size;
+    buffer.height = size;
+    const bctx = buffer.getContext("2d");
+    if (bctx) {
+      bctx.translate(size/2, size/2);
+      bctx.fillStyle = customColor;
+      bctx.beginPath(); 
+      bctx.roundRect(-size / 2, -size / 2, size, size, size * 0.25); 
+      bctx.fill();
+      
+      bctx.globalCompositeOperation = "destination-out";
+      bctx.lineWidth = size * 0.05; // Reduzido para 0.05 (fininho)
+      bctx.strokeRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6);
+      bctx.beginPath(); bctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); bctx.stroke();
+      bctx.beginPath(); bctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); bctx.fill();
+      
+      ctx.drawImage(buffer, -size/2, -size/2);
+    }
   }
-
-  // Câmera
-  ctx.lineWidth = size * 0.08;
-  ctx.strokeRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6);
-  ctx.beginPath(); 
-  ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); 
-  ctx.stroke();
-  ctx.beginPath(); 
-  ctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); 
-  ctx.fill();
 
   ctx.restore();
 }
@@ -266,11 +282,20 @@ async function drawFinalBranding(
   const footerY = ch - footerHeight - safeBottomMargin;
 
   // 1. Fundo do Rodapé (VÉU GRADIENTE)
+  // Inteligência de Contraste: se o texto for escuro, o véu deve ser claro.
+  const isDarkText = textColorOverride && ["#000000", "#0d0d0d", "#0a0a0a", "#1a1a1a"].includes(textColorOverride.toLowerCase());
+  
   const veilStartY = footerY - 50;
   const grad = ctx.createLinearGradient(0, veilStartY, 0, ch);
-  grad.addColorStop(0, "rgba(0,0,0,0.0)");
-  grad.addColorStop(0.3, "rgba(0,0,0,0.45)");
-  grad.addColorStop(1, "rgba(0,0,0,0.85)");
+  if (isDarkText) {
+    grad.addColorStop(0, "rgba(255,255,255,0.0)");
+    grad.addColorStop(0.3, "rgba(255,255,255,0.3)");
+    grad.addColorStop(1, "rgba(255,255,255,0.65)");
+  } else {
+    grad.addColorStop(0, "rgba(0,0,0,0.0)");
+    grad.addColorStop(0.3, "rgba(0,0,0,0.45)");
+    grad.addColorStop(1, "rgba(0,0,0,0.85)");
+  }
   ctx.save();
   ctx.fillStyle = grad;
   ctx.fillRect(0, veilStartY, cw, ch - veilStartY);
@@ -326,13 +351,16 @@ async function drawFinalBranding(
   ctx.save();
   ctx.textAlign = "right";
   ctx.textBaseline = "middle";
-  const fontSize = isStory ? 38 : 32;
+  // Reduzido o tamanho base da fonte para ser mais elegante (suave)
+  const fontSize = isStory ? 32 : 26; 
   const safeFont = fontFamily || "Inter";
-  ctx.font = `700 ${fontSize}px ${safeFont}, sans-serif`;
-  // O rodapé (branding) deve ser SEMPRE branco pois está sobre o véu escuro
-  ctx.fillStyle = "#ffffff";
-  ctx.shadowColor = "rgba(0,0,0,0.5)";
-  ctx.shadowBlur = 5;
+  // Alterado de 700 (Bold) para 500 (Medium) para ser mais fino e suave
+  ctx.font = `500 ${fontSize}px ${safeFont}, sans-serif`;
+  
+  // Cor do texto com sombra suave
+  ctx.fillStyle = textColorOverride || "#ffffff";
+  ctx.shadowColor = isDarkText ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)";
+  ctx.shadowBlur = 4;
 
   let textRightX = cw - (isStory ? 65 : 60);
   const itemGap = 15;
@@ -346,16 +374,18 @@ async function drawFinalBranding(
     if (c.icon.startsWith("whatsapp")) displayValue = formatAdPhone(c.value);
     if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
 
-    // Auto-shrink para o texto do contato
+    // Auto-shrink mais agressivo para o texto do contato para evitar colisão com logo
     let currentFontSize = fontSize;
     const iconSizeFactor = 1.1;
     let currentIconSize = currentFontSize * iconSizeFactor;
     
-    ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
-    while (ctx.measureText(displayValue).width + currentIconSize + itemGap > maxAvailableWidth && currentFontSize > 22) {
-      currentFontSize -= 2;
+    ctx.font = `500 ${currentFontSize}px ${safeFont}, sans-serif`;
+    // Se o texto for muito longo, reduz até 16px
+    const safetyMargin = 40;
+    while (ctx.measureText(displayValue).width + currentIconSize + itemGap + safetyMargin > maxAvailableWidth && currentFontSize > 16) {
+      currentFontSize -= 1;
       currentIconSize = currentFontSize * iconSizeFactor;
-      ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
+      ctx.font = `500 ${currentFontSize}px ${safeFont}, sans-serif`;
     }
 
     ctx.fillText(displayValue, textRightX, yPos);
@@ -1156,7 +1186,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillText("a partir de", cx, y + 118);
 
     // Calcula tamanhos do selo de parcelas e do preço lado a lado
-    const installmentsText = (installments || "12X").toUpperCase().replace(/\s+/g, "");
+    // Padroniza installments: ex "10x" -> "10x de"
+    let installmentsText = (installments || "12X").toUpperCase().replace(/\s+/g, "").replace(/\$/g, "");
+    if (/^\d+X$/.test(installmentsText)) installmentsText = `${installmentsText.slice(0, -1)}x de`;
+    
     const priceText = mainPrice || `${curSym} ${price}`;
     let priceFontSize = 56;
     ctx.font = `900 ${priceFontSize}px Inter, Arial, sans-serif`;
@@ -1167,16 +1200,16 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const priceW = ctx.measureText(priceText).width;
 
     // Selo arredondado de parcelas (cor primária com texto secundário)
-    const badgeW = 78;
+    const badgeW = 90; // Aumentado para caber "10x de"
     const badgeH = 56;
-    const gap = 14;
+    const gap = 12;
     const groupW = badgeW + gap + priceW;
     const groupX = cx - groupW / 2;
     const priceY = y + 168;
 
     fillRoundRect(ctx, groupX, priceY - badgeH / 2 - 4, badgeW, badgeH, 12, primaryColor);
     ctx.fillStyle = contrastOn(primaryColor);
-    ctx.font = `900 22px Inter, Arial, sans-serif`;
+    ctx.font = `900 19px Inter, Arial, sans-serif`; // Fonte levemente menor para caber "de"
     ctx.textAlign = "center";
     ctx.fillText(installmentsText, groupX + badgeW / 2, priceY - 8);
     ctx.font = `700 10px Inter, Arial, sans-serif`;
