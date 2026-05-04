@@ -519,6 +519,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     catch { return []; }
   });
 
+  const [lastProvider, setLastProvider] = useState<string | null>(null);
   const [genMode, setGenMode] = useState<GenMode>("photo");
   const [searchEngine, setSearchEngine] = useState<"pexels" | "google">("pexels");
   const [photoQuery, setPhotoQuery] = useState("");
