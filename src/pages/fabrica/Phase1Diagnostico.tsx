@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useFabricaContext, type Niche, type AgencyType } from "@/hooks/useFabricaContext";
 import { calculateScore, getChecklistByLevel } from "@/lib/fabrica-scoring";
 import { generateDiagnosticoPDF, openWhatsappWithResumo } from "@/lib/fabrica-pdf";
-import { useSaveDiagnostico } from "@/hooks/useFabricaDiagnosticos";
+import { useSaveDiagnostico, useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Download, MessageCircle, ArrowRight, Upload, Check, Save, Plus, X } from "lucide-react";
@@ -139,6 +139,8 @@ interface Props {
 
 export const Phase1Diagnostico = ({ onComplete }: Props) => {
   const { state, update } = useFabricaContext();
+  const { user } = useAuth();
+  const { data: savedProjects } = useDiagnosticos();
   const [step, setStep] = useState(state.diagnosticoCompleto ? 4 : 1);
   const totalSteps = 3;
 
@@ -234,6 +236,32 @@ export const Phase1Diagnostico = ({ onComplete }: Props) => {
                 <span className="inline-block px-2 py-1 rounded mr-2" style={{ background: `${state.primaryColor}33`, color: state.primaryColor }}>1</span>
                 Dados da Agência
               </h3>
+
+              {user && savedProjects && savedProjects.length > 0 && (
+                <div className="mb-6 p-5 bg-white/[0.04] border border-white/10 rounded-2xl relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full" style={{ background: state.primaryColor }}></div>
+                  <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">📂 Carregar Cliente / Projeto Salvo</label>
+                  <select
+                    onChange={(e) => {
+                      const p = savedProjects.find(x => x.id === e.target.value);
+                      if (p && p.state_snapshot) {
+                         // Mantém apenas a aba no passo 1, mas puxa todos os dados do BD
+                         update({ ...p.state_snapshot, diagnosticoCompleto: false });
+                         toast.success(`Cliente "${p.agency_name}" carregado! Todas as configs (logo, cor, etc) foram restauradas.`);
+                      }
+                      e.target.value = "";
+                    }}
+                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors"
+                  >
+                    <option value="" className="bg-zinc-900">Selecione um cliente salvo...</option>
+                    {savedProjects.map((p) => (
+                      <option key={p.id} value={p.id} className="bg-zinc-900">{p.agency_name || "Sem Nome"} (Salvo em {new Date(p.updated_at).toLocaleDateString()})</option>
+                    ))}
+                  </select>
+                  <p className="text-[11px] text-white/50 mt-2">Dica: Selecione um projeto antigo para recuperar a logo e configurações dele. Quando terminar as edições, basta Salvar no final!</p>
+                </div>
+              )}
+
               <div className="space-y-4">
                 <FabField label="Nome da agência *" value={state.agencyName} onChange={(v) => update({ agencyName: v })} placeholder="Ex: Lua Cheia Viagens" />
                 <div>
