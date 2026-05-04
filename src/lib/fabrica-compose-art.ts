@@ -118,11 +118,13 @@ interface ComposeTravelAdOptions {
 }
 
 /** Formata telefone no padrão (XX) 9 XXXX-XXXX */
-function formatAdPhone(val: string): string {
+export function formatAdPhone(val: string): string {
   const d = (val || "").replace(/\D/g, "");
+  if (d.length > 11) return val;
   if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3, 7)}-${d.slice(7)}`;
   if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
-  return val;
+  if (d.length > 2) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  return d;
 }
 
 /** Desenha ícone do WhatsApp colorido */
@@ -255,7 +257,8 @@ async function drawFinalBranding(
   const fontSize = isStory ? 38 : 32;
   const safeFont = fontFamily || "Inter";
   ctx.font = `700 ${fontSize}px ${safeFont}, sans-serif`;
-  ctx.fillStyle = textColorOverride || "#ffffff";
+  // O rodapé (branding) deve ser SEMPRE branco pois está sobre o véu escuro
+  ctx.fillStyle = "#ffffff";
   ctx.shadowColor = "rgba(0,0,0,0.5)";
   ctx.shadowBlur = 5;
 
@@ -1019,8 +1022,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const radius = 22;
     // 1. Fundo amarelo (cor secundária)
     fillRoundRect(ctx, x, y, w, cardH, radius, secondaryColor);
-
-    ctx.fillStyle = "#0d0d0d";
+    
+    const cardTextColor = contrastOn(secondaryColor);
+    ctx.fillStyle = cardTextColor;
     ctx.textAlign = "center";
     ctx.textBaseline = "alphabetic";
 
@@ -1034,7 +1038,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     let destSize = 28;
     ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
     const destUpper = (destination || "DESTINO").toUpperCase();
-    while (ctx.measureText(destUpper).width > innerW && destSize > 16) {
+    while (ctx.measureText(destUpper).width > innerW && destSize > 22) {
       destSize -= 2;
       ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
     }
@@ -1056,7 +1060,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const priceText = mainPrice || `${curSym} ${price}`;
     let priceFontSize = 56;
     ctx.font = `900 ${priceFontSize}px Inter, Arial, sans-serif`;
-    while (ctx.measureText(priceText).width > innerW * 0.65 && priceFontSize > 32) {
+    while (ctx.measureText(priceText).width > innerW * 0.65 && priceFontSize > 42) {
       priceFontSize -= 2;
       ctx.font = `900 ${priceFontSize}px Inter, Arial, sans-serif`;
     }
@@ -1071,7 +1075,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const priceY = y + 168;
 
     fillRoundRect(ctx, groupX, priceY - badgeH / 2 - 4, badgeW, badgeH, 12, primaryColor);
-    ctx.fillStyle = secondaryColor;
+    ctx.fillStyle = contrastOn(primaryColor);
     ctx.font = `900 22px Inter, Arial, sans-serif`;
     ctx.textAlign = "center";
     ctx.fillText(installmentsText, groupX + badgeW / 2, priceY - 8);

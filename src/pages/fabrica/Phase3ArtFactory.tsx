@@ -6,7 +6,7 @@ import { type StrategyId } from "@/data/fabrica-prompts";
 import { CATEGORIAS, getCategoria, pickPromptsForCategoria, type CategoriaId } from "@/data/fabrica-categories";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { composeTravelAd, type PaymentMode } from "@/lib/fabrica-compose-art";
+import { composeTravelAd, formatAdPhone, type PaymentMode } from "@/lib/fabrica-compose-art";
 import { getForbiddenSets, registerGeneration, freshSeed } from "@/lib/fabrica-generation-guard";
 import {
   Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown, RotateCcw,
@@ -1340,46 +1340,55 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>Logo da Empresa *</label>
-            <label className="flex items-center gap-3 p-3 bg-white/[0.04] border border-dashed border-white/10 rounded-xl cursor-pointer hover:border-white/30 transition-colors">
-              <Upload className="w-4 h-4 text-white/50" />
-              <span className="text-sm text-white/70">{state.logoBase64 ? "Trocar logo" : "Clique para enviar"}</span>
-              <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-            </label>
-            {state.logoBase64 && (
-              <div className="mt-3 flex items-center gap-3">
-                <img src={state.logoBase64} alt="Logo" className="max-h-16 rounded-lg bg-white/5 p-1" />
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
+          {/* Coluna Logo: mais estreita e profissional */}
+          <div className="sm:col-span-4">
+            <label className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-2 block">Logo da Marca</label>
+            {!state.logoBase64 ? (
+              <label className="flex flex-col items-center justify-center gap-2 p-4 bg-white/[0.03] border border-dashed border-white/10 rounded-xl cursor-pointer hover:border-white/30 hover:bg-white/[0.06] transition-all group">
+                <Upload className="w-5 h-5 text-white/30 group-hover:text-white/60" />
+                <span className="text-xs text-white/50 group-hover:text-white/80">Enviar Logo</span>
+                <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+              </label>
+            ) : (
+              <div className="relative group rounded-xl overflow-hidden bg-white/5 p-2 border border-white/10">
+                <img src={state.logoBase64} alt="Logo" className="w-full h-20 object-contain" />
+                <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
+                  <span className="text-[10px] font-bold text-white uppercase tracking-tighter">Trocar</span>
+                  <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                </label>
                 <button
                   type="button"
                   onClick={() => { update({ logoBase64: "" }); toast.success("Logo removida"); }}
-                  className="text-[11px] font-semibold text-red-300 hover:text-red-200 underline underline-offset-2"
+                  className="absolute top-1 right-1 w-5 h-5 bg-red-500/80 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  Remover
+                  <X className="w-3 h-3" />
                 </button>
               </div>
             )}
           </div>
-          <div className="space-y-4">
+
+          {/* Coluna Contatos: mais larga e organizada */}
+          <div className="sm:col-span-8 space-y-4">
+            <label className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-2 block">Canais de Contato (Rodapé)</label>
+            
+            {/* Contato 1 */}
             <div className="flex gap-2">
-              <div className="w-1/3">
-                <label className={labelCls}>Ícone 1</label>
+              <div className="w-2/5">
                 <select
                   value={state.footerContact1Icon || "whatsapp_green"}
                   onChange={(e) => update({ footerContact1Icon: e.target.value as any })}
-                  className="w-full bg-zinc-900/90 border border-white/10 rounded-xl px-3 py-3 text-white outline-none focus:border-white/40"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-white/30 appearance-none"
                 >
-                  <option value="whatsapp_green" className="bg-zinc-900 text-white">WhatsApp Verde</option>
-                  <option value="whatsapp_custom" className="bg-zinc-900 text-white">WhatsApp Sólido</option>
-                  <option value="instagram_gradient" className="bg-zinc-900 text-white">Insta Colorido</option>
-                  <option value="instagram_custom" className="bg-zinc-900 text-white">Insta Sólido</option>
-                  <option value="website" className="bg-zinc-900 text-white">Site / Link</option>
-                  <option value="none" className="bg-zinc-900 text-white">Nenhum</option>
+                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Verde</option>
+                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
+                  <option value="instagram_gradient" className="bg-zinc-900">Insta Colorido</option>
+                  <option value="instagram_custom" className="bg-zinc-900">Insta Sólido</option>
+                  <option value="website" className="bg-zinc-900">Site / Link</option>
+                  <option value="none" className="bg-zinc-900">Nenhum</option>
                 </select>
               </div>
-              <div className="w-2/3">
-                <label className={labelCls}>Contato 1 (rodapé)</label>
+              <div className="w-3/5">
                 <input
                   value={state.footerContact1Value !== undefined ? state.footerContact1Value : (state.whatsapp || "")}
                   onChange={(e) => {
@@ -1387,29 +1396,29 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                     const val = isPhone ? formatAdPhone(e.target.value) : e.target.value;
                     update({ footerContact1Value: val });
                   }}
-                  placeholder="(11) 99999-9999"
-                  className={inputCls}
+                  placeholder={state.footerContact1Icon?.startsWith("whatsapp") ? "(00) 9 0000-0000" : "Link ou Valor"}
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-white/30 placeholder:text-white/20"
                 />
               </div>
             </div>
+
+            {/* Contato 2 */}
             <div className="flex gap-2">
-              <div className="w-1/3">
-                <label className={labelCls}>Ícone 2</label>
+              <div className="w-2/5">
                 <select
                   value={state.footerContact2Icon || "instagram_gradient"}
                   onChange={(e) => update({ footerContact2Icon: e.target.value as any })}
-                  className="w-full bg-zinc-900/90 border border-white/10 rounded-xl px-3 py-3 text-white outline-none focus:border-white/40"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-white/30 appearance-none"
                 >
-                  <option value="whatsapp_green" className="bg-zinc-900 text-white">WhatsApp Verde</option>
-                  <option value="whatsapp_custom" className="bg-zinc-900 text-white">WhatsApp Sólido</option>
-                  <option value="instagram_gradient" className="bg-zinc-900 text-white">Insta Colorido</option>
-                  <option value="instagram_custom" className="bg-zinc-900 text-white">Insta Sólido</option>
-                  <option value="website" className="bg-zinc-900 text-white">Site / Link</option>
-                  <option value="none" className="bg-zinc-900 text-white">Nenhum</option>
+                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Verde</option>
+                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
+                  <option value="instagram_gradient" className="bg-zinc-900">Insta Colorido</option>
+                  <option value="instagram_custom" className="bg-zinc-900">Insta Sólido</option>
+                  <option value="website" className="bg-zinc-900">Site / Link</option>
+                  <option value="none" className="bg-zinc-900">Nenhum</option>
                 </select>
               </div>
-              <div className="w-2/3">
-                <label className={labelCls}>Contato 2 (rodapé)</label>
+              <div className="w-3/5">
                 <input
                   value={state.footerContact2Value !== undefined ? state.footerContact2Value : (state.instagram || "")}
                   onChange={(e) => {
@@ -1420,8 +1429,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                     else if (isInsta) val = val.replace(/^@/, "");
                     update({ footerContact2Value: val });
                   }}
-                  placeholder="@suaagencia"
-                  className={inputCls}
+                  placeholder={state.footerContact2Icon?.startsWith("instagram") ? "@usuario" : "Link ou Valor"}
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-white/30 placeholder:text-white/20"
                 />
               </div>
             </div>
