@@ -2408,15 +2408,19 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     }
 
     // 5) HEADLINE PRINCIPAL (centro/baixo)
-    // Linha 1: highlightLine (preço/desconto) em sans light
-    // Linha 2: destino em sans black
+    // blockBottom reserva espaço para o rodapé (branding) + CTA + linha legal.
+    // REGRA: branding ocupa de (height - 480) para baixo em Stories.
+    //         CTA fica acima disso. Margem de seguraça total de 520px do fundo no Story.
+    const brandingSafeY = isStory ? height - 520 : height - 260; // acima do branding
+    const ctaHeight = isStory ? 90 : 70; // altura estimada do botão CTA
+    const legalHeight = isStory ? 50 : 30;
+    const blockBottom = brandingSafeY - legalHeight - ctaHeight - (isStory ? 30 : 20);
     const highlightLine = (() => {
       if (priceWithSymbol && priceValueText) return priceWithSymbol;
       return "";
     })();
     const headlineLine2 = destFmt ? destFmt.toUpperCase() : "NESSA VIAGEM.";
 
-    const blockBottom = height - (isStory ? 380 : 260); // espaço p/ CTA + legal
     const line2Size = isStory ? 110 : 78;
     const line1Size = isStory ? 56 : 42;
     const gap = isStory ? 14 : 10;
@@ -2453,7 +2457,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const ctaW = ctaTw + ctaPadX * 2;
     const ctaH = ctaFontSize + ctaPadY * 2;
     const ctaX = cx - ctaW / 2;
-    const ctaY = line2Y + (isStory ? 60 : 40);
+    // CTA posicionado logo abaixo da linha 2, com espaço para não invadir o branding
+    const ctaY = Math.min(line2Y + (isStory ? 60 : 40), brandingSafeY - ctaHeight - 10);
     const ctaR = isStory ? 10 : 8;
 
     // bg = cor secundária
@@ -2522,8 +2527,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const script = `'Dancing Script', 'Great Vibes', cursive`;
 
     // Reservas de margem (px)
+    // REGRA: branding começa em (height - 480) em Stories. O conteúdo inferior deve terminar acima disso.
     const padTop = isStory ? (hasLogo ? 280 : 250) : (hasLogo ? 140 : 80);
-    const padBottom = isStory ? 280 : 70;
+    const padBottom = isStory ? 520 : 120; // aumentado de 280 para 520 no Story — garante que o slogan nunca toque o branding
 
     // Helper: shadow sutil (sempre ativa no V1 para garantir leitura sobre céu/fundo claro)
     const withShadow = (cb: () => void) => {
