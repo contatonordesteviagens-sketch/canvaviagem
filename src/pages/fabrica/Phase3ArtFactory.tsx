@@ -374,7 +374,24 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const { state, update } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
+  
+  // Estados Básicos
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
+  const [identityOpen, setIdentityOpen] = useState(false);
+  const [formatState, setFormatState] = useState<"square" | "story">(state.lastFormat || "story");
+  const [destinationState, setDestinationState] = useState(state.destinos?.[0] || "");
+  const [priceState, setPriceState] = useState(state.lastPrice || "149,90");
+  const [currencyState, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
+  const [promoNameState, setPromoNameState] = useState(state.lastPromoName || "OFERTA ESPECIAL");
+  const [adTitleTemplateState, setAdTitleTemplateState] = useState(state.lastAdTitle || "Pacote {destino}");
+  const [travelPeriodState, setTravelPeriodState] = useState(state.lastTravelPeriod || "5 dias");
+  const [paymentModeState, setPaymentModeState] = useState<PaymentMode>(state.lastPaymentMode || "installments");
+  const [paymentLabelState, setPaymentLabelState] = useState(state.lastPaymentLabel || "");
+  const [paymentSuffixState, setPaymentSuffixState] = useState(state.lastPaymentSuffix || "por pessoa");
+  const [primaryColorState, setPrimaryColorState] = useState(state.primaryColor || DEFAULT_COLORS_OFERTA.primary);
+  const [secondaryColorState, setSecondaryColorState] = useState(state.secondaryColor || DEFAULT_COLORS_OFERTA.secondary);
+  const [highlightsState, setHighlightsState] = useState<Highlight[]>(state.lastHighlights || DEFAULT_HIGHLIGHTS);
+
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -475,7 +492,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     // Padronização de CORES por categoria — só sobrescreve se o usuário ainda
     // estiver com os defaults da OUTRA categoria (preserva customização manual).
     setPrimaryColorState((prevP) => {
-      const prevS = secondaryColor;
+      const prevS = secondaryColorState;
       if (c === "experiencia_destino" && isDefaultColorsOferta(prevP, prevS)) {
         setSecondaryColorState(DEFAULT_COLORS_EXPERIENCIA.secondary);
         update({ primaryColor: DEFAULT_COLORS_EXPERIENCIA.primary, secondaryColor: DEFAULT_COLORS_EXPERIENCIA.secondary });
@@ -501,211 +518,23 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     try { return JSON.parse(localStorage.getItem("fabrica_recent_template_ids") || "[]"); }
     catch { return []; }
   });
-  const [format, setFormatState] = useState<"square" | "story">(state.lastFormat || "story");
-  const setFormat = (f: "square" | "story") => { setFormatState(f); update({ lastFormat: f }); };
 
-  const [destinationState, setDestinationState] = useState(state.destinos?.[0] || "");
-  const destination = destinationState;
-  // Persiste destino no contexto/localStorage para sobreviver à navegação F1↔F3↔F4.
-  const setDestination = (v: string) => {
-    setDestinationState(v);
-    const rest = (state.destinos || []).slice(1);
-    update({ destinos: v.trim() ? [v, ...rest] : rest });
-  };
-  const [price, setPriceState] = useState(state.lastPrice || "149,90");
-  const setPrice = (p: string) => { setPriceState(p); update({ lastPrice: p }); };
-  const [currency, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
-  const setCurrency = (c: Currency) => { setCurrencyState(c); update({ lastCurrency: c }); };
-  // V3: opções extras
-  const [hideCents, setHideCentsState] = useState<boolean>(!!state.hideCents);
-  const setHideCents = (v: boolean) => {
-    setHideCentsState(v);
-    update({ hideCents: v });
-    // Reformata o preço atual respeitando a nova flag
-    const reformatted = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, v);
-    if (reformatted) setPriceState(reformatted);
-  };
-  const [showTotal, setShowTotalState] = useState<boolean>(state.showTotal !== false);
-  const setShowTotal = (v: boolean) => { setShowTotalState(v); update({ showTotal: v }); };
-  const [totalOverride, setTotalOverrideState] = useState<string>(state.totalOverride || "");
-  const setTotalOverride = (v: string) => { setTotalOverrideState(v); update({ totalOverride: v }); };
-  // V3: faixa azul do Pix (editável e ocultável)
-  const [showPixBanner, setShowPixBannerState] = useState<boolean>((state as any).showPixBanner !== false);
-  const setShowPixBanner = (v: boolean) => { setShowPixBannerState(v); update({ showPixBanner: v } as any); };
-  const [pixBannerText, setPixBannerTextState] = useState<string>((state as any).pixBannerText || "");
-  const setPixBannerText = (v: string) => { setPixBannerTextState(v); update({ pixBannerText: v } as any); };
-
-  // Tipografia global (família + escala título/descrição + cor de override)
-  const [fontFamily, setFontFamilyState] = useState<string>((state as any).fontFamily || "Inter");
-  const setFontFamily = (v: string) => { setFontFamilyState(v); update({ fontFamily: v } as any); };
-  const [titleScale, setTitleScaleState] = useState<number>(((state as any).titleScale as number) || 1);
-  const setTitleScale = (v: number) => { setTitleScaleState(v); update({ titleScale: v } as any); };
-  const [descScale, setDescScaleState] = useState<number>(((state as any).descScale as number) || 1);
-  const setDescScale = (v: number) => { setDescScaleState(v); update({ descScale: v } as any); };
-  const [textColorOverride, setTextColorOverrideState] = useState<string>((state as any).textColorOverride || "");
-  const [autoTextColor, setAutoTextColor] = useState<string>("#ffffff");
-  // Cor efetiva: se o usuário escolheu manualmente, respeita; senão usa auto-contraste.
-  const effectiveTextColor = textColorOverride || autoTextColor;
-  const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
-  const [fontOptionsOpen, setFontOptionsOpen] = useState(false);
-  const [advancedSizeOpen, setAdvancedSizeOpen] = useState(false);
-  const [colorsOpen, setColorsOpen] = useState(false);
-  // "Cor dos textos base": força textos claros ou escuros nas artes
-  const [baseTextMode, setBaseTextModeState] = useState<"light" | "dark">(
-    (((state as any).baseTextMode as "light" | "dark") || "light")
-  );
-  const setBaseTextMode = (m: "light" | "dark") => {
-    setBaseTextModeState(m);
-    update({ baseTextMode: m } as any);
-    // sincroniza com o override de cor de texto já existente
-    setTextColorOverride(m === "light" ? "#FFFFFF" : "#0A0A0A");
-  };
-  const FONT_PRESETS = ["Inter", "Poppins", "Montserrat", "Roboto", "Oswald", "Bebas Neue", "Playfair Display", "Lora", "Raleway", "Nunito", "Work Sans", "DM Sans"];
-
-  // Carrega Google Font dinamicamente quando o usuário escolhe uma família custom
-  useEffect(() => {
-    if (!fontFamily || fontFamily === "Inter") return;
-    const id = `gf-${fontFamily.replace(/\s+/g, "-").toLowerCase()}`;
-    if (document.getElementById(id)) return;
-    const link = document.createElement("link");
-    link.id = id;
-    link.rel = "stylesheet";
-    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;500;600;700;800;900&display=swap`;
-    document.head.appendChild(link);
-    // Garante que o canvas use a fonte já carregada antes de renderizar
-    if ((document as any).fonts?.load) {
-      (document as any).fonts.load(`900 32px "${fontFamily}"`).catch(() => {});
-      (document as any).fonts.load(`400 16px "${fontFamily}"`).catch(() => {});
-    }
-  }, [fontFamily]);
-
-  // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
-  const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
-  const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
-
-  const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
-  const setInstallments = (i: string) => { setInstallmentsState(i); update({ lastInstallments: i }); };
-
-  const initialPromoDefault = ((state.lastCategoria as CategoriaId) === "experiencia_destino")
-    ? PROMO_NAME_PRESETS_EXPERIENCIA[0]
-    : "OFERTA ESPECIAL";
-  const initialAdTitleDefault = ((state.lastCategoria as CategoriaId) === "experiencia_destino")
-    ? AD_TITLE_PRESETS_EXPERIENCIA[0]
-    : "Pacote {destino}";
-  const [promoName, setPromoNameState] = useState(state.lastPromoName || initialPromoDefault);
-  const setPromoName = (n: string) => { setPromoNameState(n); update({ lastPromoName: n }); };
-
-  // Título do anúncio (com presets editáveis usando {destino})
-  const [adTitleTemplate, setAdTitleTemplateState] = useState(state.lastAdTitle || initialAdTitleDefault);
-  const setAdTitleTemplate = (t: string) => { setAdTitleTemplateState(t); update({ lastAdTitle: t }); };
-  const [adTitleMenuOpen, setAdTitleMenuOpen] = useState(false);
-  const [promoMenuOpen, setPromoMenuOpen] = useState(false);
-  const [travelPeriod, setTravelPeriodState] = useState(state.lastTravelPeriod || "5 dias");
-  const setTravelPeriod = (v: string) => { setTravelPeriodState(v); update({ lastTravelPeriod: v }); };
-  const [travelPeriodMenuOpen, setTravelPeriodMenuOpen] = useState(false);
-  const [destMenuOpen, setDestMenuOpen] = useState(false);
-  const [suffixMenuOpen, setSuffixMenuOpen] = useState(false);
-  const [priceOptionsOpen, setPriceOptionsOpen] = useState(false);
-  const [priceOptionsEnabled, setPriceOptionsEnabled] = useState(false);
-  const resolvedAdTitle = (adTitleTemplate || "").replace(/\{destino\}/gi, destination?.trim() || "Destino");
-  const adTitleVariations = buildTitleVariations(adTitleTemplate || "Pacote {destino}", destination);
-  const SUFFIX_PRESETS = ["por pessoa", "por casal", "por pacote", "por grupo", "total do pacote"];
-  const DESTINATION_SUGGESTIONS = Array.from(new Set([
-    ...(state.destinos || []),
-    "Maragogi", "Jericoacoara", "Fernando de Noronha", "Gramado", "Bonito",
-    "Porto de Galinhas", "Búzios", "Cancún", "Punta Cana", "Paris",
-    "Orlando", "Lisboa", "Santiago", "Bariloche", "Maldivas",
-  ]));
-
-  const [paymentMode, setPaymentModeState] = useState<PaymentMode>(state.lastPaymentMode || "installments");
-  const setPaymentMode = (m: PaymentMode) => { setPaymentModeState(m); update({ lastPaymentMode: m }); };
-
-  const [paymentLabelState, setPaymentLabelState] = useState(state.lastPaymentLabel || "");
-  const setPaymentLabel = (label: string) => { setPaymentLabelState(label); update({ lastPaymentLabel: label }); };
-  const [paymentSuffixState, setPaymentSuffixState] = useState(() => {
-    const savedSuffix = state.lastPaymentSuffix || "por pessoa";
-    return (state.lastCategoria as CategoriaId) === "experiencia_destino" && DEFAULT_SUFFIXES_OFERTA.has(savedSuffix)
-      ? DEFAULT_SUFFIX_EXPERIENCIA
-      : savedSuffix;
-  });
-  const setPaymentSuffix = (suffix: string) => { setPaymentSuffixState(suffix); update({ lastPaymentSuffix: suffix }); };
-  const paymentLabel = paymentMode === "installments" || paymentMode === "down_plus" ? installments : paymentLabelState;
-  const paymentSuffix = paymentSuffixState;
-  const initialCategoryColors = ((state.lastCategoria as CategoriaId) === "experiencia_destino")
-    ? DEFAULT_COLORS_EXPERIENCIA
-    : DEFAULT_COLORS_OFERTA;
-  const [primaryColor, setPrimaryColorState] = useState(state.primaryColor || initialCategoryColors.primary);
-  const [secondaryColor, setSecondaryColorState] = useState(state.secondaryColor || initialCategoryColors.secondary);
-  
-  const setPrimaryColor = (c: string) => { setPrimaryColorState(c); update({ primaryColor: c }); };
-  const setSecondaryColor = (c: string) => { setSecondaryColorState(c); update({ secondaryColor: c }); };
-
-  const [highlights, setHighlightsState] = useState<Highlight[]>(() => {
-    const savedHighlights = state.lastHighlights || DEFAULT_HIGHLIGHTS;
-    if ((state.lastCategoria as CategoriaId) === "experiencia_destino" && sameHighlightTexts(savedHighlights, DEFAULT_HIGHLIGHTS)) {
-      return DEFAULT_EXPERIENCE_HIGHLIGHTS;
-    }
-    return savedHighlights;
-  });
-  const setHighlights = (h: Highlight[]) => { setHighlightsState(h); update({ lastHighlights: h }); };
-  const [editingIconIdx, setEditingIconIdx] = useState<number | null>(null);
-  const [newHl, setNewHl] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [generatedImage, setGeneratedImage] = useState<string>("");
-  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
-  const [variationCounter, setVariationCounter] = useState(0);
-  // Histórico das últimas variantes do compositor canvas (modo Sua Imagem) para forçar rotação
-  const variantHistoryRef = useRef<number[]>([]);
-  // Versão forçada (null = automático/rotação). 0..4 fixa a variante exata para correções cirúrgicas.
-  const [forcedVariant, setForcedVariant] = useState<number | null>(null);
-  const [lastProvider, setLastProvider] = useState<"user_gemini" | "lovable_ai" | null>(null);
-  const [generationCount, setGenerationCount] = useState<number>(() => {
-    const saved = localStorage.getItem("fabrica_gen_count");
-    return saved ? parseInt(saved, 10) : 0;
-  });
-
-  useEffect(() => {
-    const key = "fabrica-render-engine-version";
-    if (localStorage.getItem(key) === FABRICA_RENDER_ENGINE_VERSION) return;
-    localStorage.removeItem("fabrica-heavy-v1:generatedAdImage");
-    localStorage.removeItem("fabrica_last_template_id");
-    localStorage.removeItem("fabrica_recent_template_ids");
-    Object.keys(localStorage)
-      .filter((k) => k.startsWith("fabrica_generation_cycle_") || k.startsWith("fabrica_strategy_history_") || k.startsWith("fabrica_last_template_ids_") || k.startsWith("fabrica_recent_template_ids_"))
-      .forEach((k) => localStorage.removeItem(k));
-    setGeneratedImage("");
-    setGeneratedImages([]);
-    update({ generatedAdImage: "" });
-    localStorage.setItem(key, FABRICA_RENDER_ENGINE_VERSION);
-  }, [update]);
-
-  // ===== Modo de geração =====
   const [genMode, setGenMode] = useState<GenMode>("photo");
   const [searchEngine, setSearchEngine] = useState<"pexels" | "google">("pexels");
-  // Foto Real (Pexels/Google)
   const [photoQuery, setPhotoQuery] = useState("");
   const [photos, setPhotos] = useState<Array<{ id: number; url: string; thumb: string; alt: string }>>([]);
   const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string>("");
   const [searchingPhotos, setSearchingPhotos] = useState(false);
   const [visiblePhotoCount, setVisiblePhotoCount] = useState(3);
-  // Sua imagem
   const [customSource, setCustomSource] = useState<CustomSource>("upload");
-  const [customImageData, setCustomImageData] = useState<string>(""); // base64 (upload) ou URL (link) — só em memória
+  const [customImageData, setCustomImageData] = useState<string>("");
   const [customLink, setCustomLink] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ====== Auto-contraste: detecta luminância média da imagem ativa e
-  // define cor de texto padrão (branca em fundos escuros, preta em fundos claros).
-  // Garante nitidez/legibilidade automaticamente; o usuário ainda pode sobrescrever.
+  // Auto-contraste inteligente
   useEffect(() => {
-    const activeUrl =
-      genMode === "photo" ? selectedPhotoUrl :
-      genMode === "custom" ? (customSource === "upload" ? customImageData : customLink.trim()) :
-      "";
-    if (!activeUrl) {
-      setAutoTextColor("#ffffff");
-      return;
-    }
+    const activeUrl = genMode === "photo" ? selectedPhotoUrl : genMode === "custom" ? (customSource === "upload" ? customImageData : customLink.trim()) : "";
+    if (!activeUrl) { setAutoTextColor("#ffffff"); return; }
     let cancelled = false;
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -727,77 +556,37 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         }
         const lum = n ? sum / n : 0.5;
         setAutoTextColor(lum > 0.55 ? "#0d0d0d" : "#ffffff");
-      } catch {
-        // tainted canvas → fallback seguro (branco com sombra cobre a maioria dos casos)
-        setAutoTextColor("#ffffff");
-      }
+      } catch { setAutoTextColor("#ffffff"); }
     };
     img.onerror = () => setAutoTextColor("#ffffff");
     img.src = activeUrl;
     return () => { cancelled = true; };
   }, [genMode, selectedPhotoUrl, customImageData, customLink, customSource]);
 
-
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("Selecione uma imagem válida");
-      return;
-    }
-    if (file.size > 8 * 1024 * 1024) {
-      toast.error("Imagem muito grande (máx 8MB)");
-      return;
-    }
     const reader = new FileReader();
-    reader.onload = () => {
-      // base64 vive APENAS em memória do browser → nunca toca o banco
-      setCustomImageData(String(reader.result || ""));
-      toast.success("Imagem carregada (apenas em memória)");
-    };
-    reader.onerror = () => toast.error("Erro ao ler imagem");
+    reader.onload = () => setCustomImageData(String(reader.result || ""));
     reader.readAsDataURL(file);
   };
 
-  // Termos de turismo para garantir que o Unsplash retorne fotos de destinos reais
-  const TRAVEL_TERMS_CYCLE = [
-    "beach", "tropical beach", "ocean", "coastline", "sea", "paradise",
-    "landscape", "nature", "tourism", "travel", "resort", "scenic",
-    "aerial view", "sunset beach", "vacation", "holiday destination",
-    "travel photography", "adventure", "waterfall", "mountain",
-    "city tourism", "skyline", "cultural travel", "sightseeing",
-  ];
-
   const searchPhotos = async (overrideQuery?: string) => {
-    const q = (overrideQuery ?? photoQuery ?? destination).trim();
-    if (!q) {
-      toast.error("Digite o destino para buscar fotos");
-      return;
-    }
+    const q = (overrideQuery ?? photoQuery ?? destinationState).trim();
+    if (!q) { toast.error("Digite o destino"); return; }
     setPhotoQuery(q);
     setSearchingPhotos(true);
-    setPhotos([]);
-    setSelectedPhotoUrl("");
-
-    setPhotoQuery(q);
-
-
     try {
-      const { data, error } = await supabase.functions.invoke("fabrica-search-photos", {
-        body: { 
-          query: q, 
-          perPage: 12, 
-          engine: searchEngine 
+        const { data, error } = await supabase.functions.invoke("fabrica-search-photos", {
+          body: { query: q, perPage: 12, engine: searchEngine }
+        });
+        if (error) throw error;
+        if (data?.photos) {
+          setPhotos(data.photos);
+          setVisiblePhotoCount(3);
+          setSelectedPhotoUrl("");
+          toast.success(`Fotos de ${q} carregadas com sucesso!`);
         }
-      });
-
-      if (error) throw error;
-      if (data?.photos) {
-        setPhotos(data.photos);
-        setVisiblePhotoCount(3);
-        setSelectedPhotoUrl("");
-        toast.success(`Fotos de ${q} carregadas com sucesso!`);
-      }
     } catch (err) {
       console.error("Erro ao buscar fotos:", err);
       toast.error("Erro na busca de fotos.");
@@ -921,19 +710,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               fontFamily,
               titleScale,
               descScale,
-              textColorOverride: effectiveTextColor,
-            });
-            if (state.logoBase64) {
-              try {
-                const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
-                img = await composeLogoOnImage(img, state.logoBase64, state.whatsapp, state.instagram);
-              } catch (e) {
-                console.warn("Falha ao compor logo:", e);
-              }
-            }
-            return img;
-          })
-        );
+              logoDataUrl: state.logoBase64 || undefined,
+            whatsapp: state.whatsapp || undefined,
+            instagram: state.instagram || undefined,
+          });
+          return img;
+        })
+      );
 
         // Registra no GenerationGuard (a "headline" no modo foto = promoName, pois é o que aparece)
         registerGeneration(categoria, "photo", format, {
@@ -1090,7 +873,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             paymentMode,
             paymentLabel: paymentLabel || undefined,
             paymentSuffix,
-            strategy: isAiExperienceStory ? aiExperienceStrategy : "ancora",
+            strategy: isAiExperienceStory ? aiExperienceStrategy : (results[0]?.data?.templateId || "ancora"),
             variation: freshSeedAi,
             forceVariant: nextVariantAi,
             titleOverride: resolvedAdTitle,
@@ -1104,11 +887,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             titleScale,
             descScale,
             textColorOverride: effectiveTextColor,
+            logoDataUrl: state.logoBase64 || undefined,
+            whatsapp: state.whatsapp || undefined,
+            instagram: state.instagram || undefined,
           });
-          if (state.logoBase64) {
-            const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
-            img = await composeLogoOnImage(img, state.logoBase64, state.whatsapp, state.instagram);
-          }
 
           images.push(img);
           if (result.data.provider) providerSeen = result.data.provider;
@@ -1208,15 +990,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             titleScale,
             descScale,
             textColorOverride: effectiveTextColor,
+            logoDataUrl: state.logoBase64 || undefined,
+            whatsapp: state.whatsapp || undefined,
+            instagram: state.instagram || undefined,
           });
-          if (state.logoBase64) {
-            try {
-              const { composeLogoOnImage } = await import("@/lib/fabrica-logo-overlay");
-              img = await composeLogoOnImage(img, state.logoBase64, state.whatsapp, state.instagram);
-            } catch (e) {
-              console.warn("Falha ao compor logo:", e);
-            }
-          }
           return img;
         })
       );
@@ -1534,13 +1311,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             </div>
           </div>
 
-          {/* Sugestões de destinos populares + os destinos da agência */}
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {[...new Set([...(state.destinos || []), ...POPULAR_PHOTO_DESTINATIONS])].slice(0, 14).map((d) => (
+          {/* Sugestões de destinos populares — Carrossel Horizontal Compacto */}
+          <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+            {[...new Set([...(state.destinos || []), ...POPULAR_PHOTO_DESTINATIONS])].slice(0, 16).map((d) => (
               <button
                 key={d}
                 onClick={() => { setDestination(d); searchPhotos(d); }}
-                className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
+                className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all active:scale-95 ${
                   photoQuery === d ? "text-black" : "bg-white/[0.05] border-white/10 text-white/70 hover:border-white/30"
                 }`}
                 style={photoQuery === d ? { background: secondaryColor, borderColor: secondaryColor } : undefined}
@@ -2060,198 +1837,114 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         </div>
         )}
 
-        {/* Tipografia — colapsável (mesmo padrão dos outros blocos) */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
+        {/* NOVO: Ajustes de Identidade Visual (Accordion Unificado) */}
+        <div className="bg-white/[0.02] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
           <button
             type="button"
-            onClick={() => setFontOptionsOpen((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
+            onClick={() => setIdentityOpen((v) => !v)}
+            className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/[0.04] transition-all group"
           >
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-sm font-bold text-white">Tipografia</span>
-              <span className="text-[10px] text-white/40 truncate" style={{ fontFamily: `${fontFamily}, Inter, sans-serif` }}>
-                {fontFamily} · T {Math.round(titleScale * 100)}% · D {Math.round(descScale * 100)}%
-              </span>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${fontOptionsOpen ? "rotate-180" : ""}`} />
-          </button>
-          {fontOptionsOpen && (
-            <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
-              {/* Fonte: select + chips */}
-              <div>
-                <label className={labelCls}>Fonte</label>
-                <select
-                  value={FONT_PRESETS.includes(fontFamily) ? fontFamily : "Inter"}
-                  onChange={(e) => setFontFamily(e.target.value)}
-                  className={inputCls}
-                >
-                  {FONT_PRESETS.map((f) => (
-                    <option key={f} value={f}>{f}</option>
-                  ))}
-                </select>
-                <p className="text-[10px] text-white/40 mt-1.5">A fonte escolhida é aplicada a todas as artes geradas.</p>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                <Sparkles className="w-4 h-4 text-white/60" />
               </div>
+              <div className="text-left">
+                <span className="text-sm font-bold text-white block">Identidade Visual & Design</span>
+                <span className="text-[10px] text-white/40 uppercase tracking-widest">Cores · Fontes · Tamanhos</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex -space-x-1.5">
+                <div className="w-4 h-4 rounded-full border border-black" style={{ background: primaryColor }} />
+                <div className="w-4 h-4 rounded-full border border-black" style={{ background: secondaryColor }} />
+              </div>
+              <ChevronDown className={`w-5 h-5 text-white/30 transition-transform duration-300 ${identityOpen ? "rotate-180" : ""}`} />
+            </div>
+          </button>
 
-              {/* Ajustes Avançados de Tamanho — accordion interno */}
-              <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setAdvancedSizeOpen((v) => !v)}
-                  className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/[0.04] transition-colors"
-                >
-                  <span className="text-[12px] font-semibold text-white/85">⚙️ Ajustes Avançados de Tamanho</span>
-                  <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${advancedSizeOpen ? "rotate-180" : ""}`} />
-                </button>
-                {advancedSizeOpen && (
-                  <div className="px-3 pb-3 pt-2 grid grid-cols-2 gap-3 border-t border-white/10">
+          {identityOpen && (
+            <div className="px-5 pb-5 pt-2 space-y-6 border-t border-white/10 bg-black/20">
+              {/* Tipografia */}
+              <div className="space-y-4">
+                <div className="flex items-baseline justify-between">
+                  <label className={labelCls}>Fonte & Tipografia</label>
+                  <span className="text-[10px] text-white/40">{fontFamily}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <select
+                    value={FONT_PRESETS.includes(fontFamily) ? fontFamily : "Inter"}
+                    onChange={(e) => setFontFamily(e.target.value)}
+                    className={inputCls}
+                  >
+                    {FONT_PRESETS.map((f) => (
+                      <option key={f} value={f}>{f}</option>
+                    ))}
+                  </select>
+                  <div className="grid grid-cols-2 gap-3 bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2">
                     <div>
-                      <label className={labelCls}>Título <span className="text-white/40">({Math.round(titleScale * 100)}%)</span></label>
+                      <label className="text-[9px] text-white/40 uppercase font-bold block mb-1">Títulos</label>
                       <input type="range" min={0.6} max={1.6} step={0.05} value={titleScale}
-                        onChange={(e) => setTitleScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
+                        onChange={(e) => setTitleScale(parseFloat(e.target.value))} className="w-full h-1.5 accent-yellow-400" />
                     </div>
                     <div>
-                      <label className={labelCls}>Descrição <span className="text-white/40">({Math.round(descScale * 100)}%)</span></label>
+                      <label className="text-[9px] text-white/40 uppercase font-bold block mb-1">Textos</label>
                       <input type="range" min={0.6} max={1.6} step={0.05} value={descScale}
-                        onChange={(e) => setDescScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
+                        onChange={(e) => setDescScale(parseFloat(e.target.value))} className="w-full h-1.5 accent-yellow-400" />
                     </div>
                   </div>
-                )}
+                </div>
               </div>
 
-              {/* Cor do texto: mesmo padrão das cores Primária/Secundária */}
-              <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
-                <div className="flex items-baseline justify-between mb-2">
-                  <label className={labelCls}>Cor do texto</label>
-                  <span className="text-[10px] text-white/40">aplica em todos os textos</span>
+              <div className="h-px bg-white/5" />
+
+              {/* Cores */}
+              <div className="space-y-4">
+                <label className={labelCls}>Esquema de Cores</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <span className="text-[10px] text-white/40 uppercase block">Primária</span>
+                    <div className="flex items-center gap-3">
+                      <label className="relative w-10 h-10 rounded-xl cursor-pointer overflow-hidden border-2 border-white/10" style={{ background: primaryColor }}>
+                        <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="absolute inset-0 opacity-0" />
+                      </label>
+                      <span className="text-[10px] font-mono text-white/60">{primaryColor}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-[10px] text-white/40 uppercase block">Secundária</span>
+                    <div className="flex items-center gap-3">
+                      <label className="relative w-10 h-10 rounded-xl cursor-pointer overflow-hidden border-2 border-white/10" style={{ background: secondaryColor }}>
+                        <input type="color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="absolute inset-0 opacity-0" />
+                      </label>
+                      <span className="text-[10px] font-mono text-white/60">{secondaryColor}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-[10px] text-white/40 uppercase block">Modo Texto</span>
+                    <div className="flex p-1 bg-white/5 rounded-xl border border-white/10 h-10">
+                      <button onClick={() => setBaseTextMode("light")} className={`flex-1 rounded-lg text-[9px] font-bold uppercase ${baseTextMode === "light" ? "bg-white text-black" : "text-white/40"}`}>Claro</button>
+                      <button onClick={() => setBaseTextMode("dark")} className={`flex-1 rounded-lg text-[9px] font-bold uppercase ${baseTextMode === "dark" ? "bg-white text-black" : "text-white/40"}`}>Escuro</button>
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-10 gap-1 mb-3">
-                  {PRESET_COLORS.map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => setTextColorOverride(c)}
-                      className={`w-5 h-5 rounded-full border transition-all ${(textColorOverride || "").toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-md" : "border-white/20 hover:border-white/60"}`}
-                      style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
-                      aria-label={c}
-                      title={c}
-                    />
-                  ))}
-                </div>
-                <div className="flex gap-2 items-center">
-                  <label className="relative w-10 h-10 rounded-full cursor-pointer flex-shrink-0 overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
-                    style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}>
-                    <input type="color" value={textColorOverride || "#ffffff"}
-                      onChange={(e) => setTextColorOverride(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
-                    <span className="absolute inset-1.5 rounded-full border border-white/40" style={{ background: textColorOverride || "#ffffff" }} />
-                  </label>
-                  <input value={textColorOverride} onChange={(e) => setTextColorOverride(e.target.value)}
-                    placeholder="Padrão (branco)"
-                    className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase" />
+              </div>
+
+              <div className="h-px bg-white/5" />
+
+              {/* Cor Customizada do Texto */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className={labelCls}>Cor Customizada do Texto</label>
                   {textColorOverride && (
-                    <button onClick={() => setTextColorOverride("")}
-                      className="text-[11px] text-white/60 hover:text-white px-2 py-1 rounded border border-white/10">
-                      Limpar
-                    </button>
+                    <button onClick={() => setTextColorOverride("")} className="text-[10px] text-yellow-400 hover:underline">Restaurar Padrão</button>
                   )}
                 </div>
-              </div>
-
-              <button
-                onClick={() => { setFontFamily("Inter"); setTitleScale(1); setDescScale(1); setTextColorOverride(""); }}
-                className="text-[11px] text-white/60 hover:text-white underline"
-              >
-                Restaurar padrão
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Cores — colapsável (mesmo padrão de Tipografia) */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setColorsOpen((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <span className="text-sm font-bold text-white">Cores</span>
-              <div className="flex items-center gap-1.5">
-                <span
-                  className="w-4 h-4 rounded-full border border-white/30 shadow-sm"
-                  style={{ background: primaryColor }}
-                  title={`Primária ${primaryColor}`}
-                />
-                <span
-                  className="w-4 h-4 rounded-full border border-white/30 shadow-sm"
-                  style={{ background: secondaryColor }}
-                  title={`Secundária ${secondaryColor}`}
-                />
-                <span className="text-[10px] text-white/40 ml-1">
-                  · {baseTextMode === "light" ? "Textos claros" : "Textos escuros"}
-                </span>
-              </div>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${colorsOpen ? "rotate-180" : ""}`} />
-          </button>
-          {colorsOpen && (
-            <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
-              {/* Bolinhas de cor — clicar abre o color picker nativo */}
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { label: "Cor primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo principal" },
-                  { label: "Cor secundária", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
-                ].map(({ label, value, setter, hint }) => (
-                  <div key={label} className="flex flex-col items-start gap-2">
-                    <div className="flex items-baseline justify-between w-full">
-                      <label className={labelCls}>{label}</label>
-                      <span className="text-[10px] text-white/40">{hint}</span>
-                    </div>
-                    <label
-                      className="relative w-12 h-12 rounded-full cursor-pointer overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
-                      style={{ background: value }}
-                      title="Clique para escolher uma cor"
-                    >
-                      <input
-                        type="color"
-                        value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#000000"}
-                        onChange={(e) => setter(e.target.value)}
-                        className="absolute inset-0 opacity-0 cursor-pointer"
-                      />
-                    </label>
-                    <span className="text-[10px] text-white/50 font-mono uppercase">{value}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Cor dos Textos Base */}
-              <div>
-                <label className={labelCls}>Cor dos textos base</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setBaseTextMode("light")}
-                    className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all ${
-                      baseTextMode === "light"
-                        ? "bg-white text-black border-white"
-                        : "bg-white/[0.04] text-white/70 border-white/10 hover:border-white/30"
-                    }`}
-                  >
-                    <span className="w-3 h-3 rounded-full bg-white border border-black/20" />
-                    Textos claros
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setBaseTextMode("dark")}
-                    className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all ${
-                      baseTextMode === "dark"
-                        ? "bg-neutral-900 text-white border-white"
-                        : "bg-white/[0.04] text-white/70 border-white/10 hover:border-white/30"
-                    }`}
-                  >
-                    <span className="w-3 h-3 rounded-full bg-neutral-900 border border-white/40" />
-                    Textos escuros
-                  </button>
+                <div className="flex items-center gap-3 bg-white/[0.04] border border-white/10 rounded-xl p-3">
+                   <label className="relative w-8 h-8 rounded-lg cursor-pointer overflow-hidden border border-white/20" style={{ background: textColorOverride || "#ffffff" }}>
+                      <input type="color" value={textColorOverride || "#ffffff"} onChange={(e) => setTextColorOverride(e.target.value)} className="absolute inset-0 opacity-0" />
+                   </label>
+                   <input value={textColorOverride} onChange={(e) => setTextColorOverride(e.target.value)} placeholder="Cor automática" className="bg-transparent flex-1 text-xs text-white outline-none" />
                 </div>
-                <p className="text-[10px] text-white/40 mt-1.5">Define a cor dos textos sobre a arte para garantir legibilidade.</p>
               </div>
             </div>
           )}

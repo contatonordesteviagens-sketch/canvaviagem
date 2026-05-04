@@ -107,6 +107,140 @@ interface ComposeTravelAdOptions {
   descScale?: number;
   /** Cor que substitui o texto branco padrão (#fff/#ffffff). Útil para alinhar texto à identidade da marca. */
   textColorOverride?: string;
+  /** Opções de Branding (Logo e Contatos) unificadas no motor principal */
+  logoDataUrl?: string;
+  whatsapp?: string;
+  instagram?: string;
+}
+
+/** Formata telefone no padrão (XX) 9 XXXX-XXXX */
+function formatAdPhone(val: string): string {
+  const d = (val || "").replace(/\D/g, "");
+  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3, 7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return val;
+}
+
+/** Desenha ícone do WhatsApp colorido */
+function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.shadowColor = "rgba(0,0,0,0.4)";
+  ctx.shadowBlur = 5;
+  ctx.fillStyle = "#25D366";
+  ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "white";
+  ctx.beginPath(); ctx.arc(0, 0, size / 3, 0.4, 5.8); ctx.lineTo(-size / 5, size / 3); ctx.fill();
+  ctx.restore();
+}
+
+/** Desenha ícone do Instagram com gradiente oficial */
+function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.shadowColor = "rgba(0,0,0,0.4)";
+  ctx.shadowBlur = 5;
+  const g = ctx.createRadialGradient(0, 0, 0, 0, 0, size / 2);
+  g.addColorStop(0, "#f09433"); g.addColorStop(0.25, "#e6683c"); g.addColorStop(0.5, "#dc2743");
+  g.addColorStop(0.75, "#cc2366"); g.addColorStop(1, "#bc1888");
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.roundRect(-size / 2, -size / 2, size, size, size * 0.2); ctx.fill();
+  ctx.strokeStyle = "white"; ctx.lineWidth = size * 0.08;
+  ctx.strokeRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6);
+  ctx.beginPath(); ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); ctx.stroke();
+  ctx.fillStyle = "white";
+  ctx.beginPath(); ctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+/** 
+ * DESENHA O BRANDING FINAL (Rodapé, Logo, WhatsApp, Instagram)
+ * Unificado para evitar cache e garantir consistência.
+ */
+async function drawFinalBranding(
+  ctx: CanvasRenderingContext2D,
+  cw: number,
+  ch: number,
+  logoUrl?: string,
+  whatsapp?: string,
+  instagram?: string
+) {
+  if (!logoUrl && !whatsapp && !instagram) return;
+
+  const isStory = ch > cw;
+  const footerHeight = isStory ? 160 : 110;
+  const footerY = ch - footerHeight;
+
+  // 1. Fundo do Rodapé (VÉU GRADIENTE)
+  const grad = ctx.createLinearGradient(0, footerY, 0, ch);
+  grad.addColorStop(0, "rgba(0,0,0,0.0)");
+  grad.addColorStop(0.5, "rgba(0,0,0,0.45)");
+  grad.addColorStop(1, "rgba(0,0,0,0.75)");
+  ctx.save();
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, footerY, cw, footerHeight);
+  ctx.restore();
+
+  const padX = 50;
+  const centerY = footerY + footerHeight / 2;
+
+  // 2. Logo (Esquerda)
+  if (logoUrl) {
+    try {
+      const logo = await loadImage(logoUrl);
+      const maxLogoH = footerHeight * 0.75;
+      const maxLogoW = cw * 0.35;
+      const ratio = logo.naturalWidth / logo.naturalHeight;
+      let lh = maxLogoH;
+      let lw = lh * ratio;
+      if (lw > maxLogoW) {
+        lw = maxLogoW;
+        lh = lw / ratio;
+      }
+      
+      const bgPad = 16;
+      ctx.save();
+      ctx.fillStyle = "#ffffff";
+      ctx.shadowColor = "rgba(0,0,0,0.4)";
+      ctx.shadowBlur = 15;
+      fillRoundRect(ctx, padX, centerY - lh / 2 - bgPad, lw + bgPad * 2, lh + bgPad * 2, 16, "#ffffff");
+      ctx.drawImage(logo, padX + bgPad, centerY - lh / 2, lw, lh);
+      ctx.restore();
+    } catch (e) {
+      console.warn("Falha ao carregar logo para branding", e);
+    }
+  }
+
+  // 3. Contatos (Direita)
+  ctx.save();
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  const fontSize = isStory ? 38 : 32;
+  ctx.font = `700 ${fontSize}px Inter, sans-serif`;
+  ctx.fillStyle = "#ffffff";
+  ctx.shadowColor = "rgba(0,0,0,0.5)";
+  ctx.shadowBlur = 5;
+
+  let textRightX = cw - 60;
+  const iconSize = fontSize * 1.1;
+  const itemGap = 15;
+
+  if (instagram) {
+    const handle = instagram.startsWith("@") ? instagram : `@${instagram}`;
+    const yPos = whatsapp ? centerY + (footerHeight * 0.18) : centerY;
+    ctx.fillText(handle, textRightX, yPos);
+    const textWidth = ctx.measureText(handle).width;
+    drawAdInstagramIcon(ctx, textRightX - textWidth - itemGap - iconSize/2, yPos, iconSize);
+  }
+
+  if (whatsapp) {
+    const num = formatAdPhone(whatsapp);
+    const yPos = instagram ? centerY - (footerHeight * 0.18) : centerY;
+    ctx.fillText(num, textRightX, yPos);
+    const textWidth = ctx.measureText(num).width;
+    drawAdWhatsAppIcon(ctx, textRightX - textWidth - itemGap - iconSize/2, yPos, iconSize);
+  }
+  ctx.restore();
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
@@ -596,6 +730,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     titleScale = 1,
     descScale = 1,
     textColorOverride,
+    logoDataUrl,
+    whatsapp,
+    instagram,
   } = options;
   const curSym = (currencySymbol || "R$").trim();
   const priceValueText = (price || "").trim();
@@ -651,26 +788,14 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     }
   }
 
-  // Override de cor: aplica a TODOS os textos (fillText/strokeText), preservando
-  // backgrounds e elementos gráficos (fillRect, etc).
-  if (wantsColorOverride) {
-    const origFillText = ctx.fillText.bind(ctx);
-    const origStrokeText = ctx.strokeText.bind(ctx);
-    ctx.fillText = ((text: string, x: number, y: number, maxWidth?: number) => {
-      const prev = ctx.fillStyle;
-      ctx.fillStyle = overrideColorHex;
-      if (maxWidth !== undefined) origFillText(text, x, y, maxWidth);
-      else origFillText(text, x, y);
-      ctx.fillStyle = prev;
-    }) as any;
-    ctx.strokeText = ((text: string, x: number, y: number, maxWidth?: number) => {
-      const prev = ctx.strokeStyle;
-      ctx.strokeStyle = overrideColorHex;
-      if (maxWidth !== undefined) origStrokeText(text, x, y, maxWidth);
-      else origStrokeText(text, x, y);
-      ctx.strokeStyle = prev;
-    }) as any;
-  }
+  // ── Inteligência de Contraste ──
+  // Se o usuário escolheu uma cor de texto específica (textColorOverride), 
+  // tentamos usá-la. Mas se ela não tiver contraste com o fundo (bg),
+  // usamos contrastOn(bg) para garantir que o cliente consiga ler.
+  const getSafeColor = (bg: string, preferred?: string) => {
+    const target = preferred || overrideColorHex || "#ffffff";
+    return ensureContrast(target, bg, 0.35);
+  };
 
   // Garante que a fonte custom esteja carregada ANTES de qualquer fillText.
   if (wantsCustomFont && (document as any).fonts?.load) {
@@ -1252,6 +1377,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.textBaseline = "alphabetic";
       }
 
+      await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
       return canvas.toDataURL("image/png");
     }
 
@@ -1266,7 +1392,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // Painel = secondaryColor → texto principal = primaryColor com contraste garantido.
       // Badge  = primaryColor   → texto da badge = secondaryColor com contraste garantido.
       const v0PanelBg = secondaryColor;
-      const v0OnPanel = ensureContrast(primaryColor, v0PanelBg, 0.35);
+      const v0OnPanel = getSafeColor(v0PanelBg, primaryColor);
       const v0BadgeBg = primaryColor;
       const v0OnBadge = ensureContrast(secondaryColor, v0BadgeBg, 0.35);
       // 1) Calcula tamanho do título para saber a altura real
@@ -1377,6 +1503,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const photoH0 = height - topH;
       const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
       ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
+      await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
       return canvas.toDataURL("image/png");
     }
 
@@ -1388,8 +1515,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const photoX = panelW;
       const photoW = width - panelW;
       const v1PanelBg = primaryColor;
-      const v1OnPanel = contrastOn(v1PanelBg);
-      const v1Accent  = ensureContrast(secondaryColor, v1PanelBg, 0.45);
+      const v1OnPanel = getSafeColor(v1PanelBg);
+      const v1Accent  = getSafeColor(v1PanelBg, secondaryColor);
 
       // 1) PAINEL ESQUERDO sólido
       ctx.fillStyle = v1PanelBg;
@@ -1507,6 +1634,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, priceBlockY + priceBlockH - 28);
       ctx.textAlign = "left";
 
+      await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
       return canvas.toDataURL("image/png");
     }
 
@@ -1523,10 +1651,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // - Discount badge: bg = user_secondary_color, texto branco fixo
       // ensureContrast só atua como fallback de segurança quando primária ≈ secundária.
       const v2CardBg = primaryColor;
-      const v2OnCard = contrastOn(v2CardBg); // fallback de segurança
-      const v2CardLabel = ensureContrast(secondaryColor, v2CardBg, 0.35);
+      const v2OnCard = getSafeColor(v2CardBg);
+      const v2CardLabel = getSafeColor(v2CardBg, secondaryColor);
       // Benefits ficam sobre fundo creme #f7f4ef → secundária com fallback contra creme.
-      const v2BenefitColor = ensureContrast(secondaryColor, "#f7f4ef", 0.35);
+      const v2BenefitColor = getSafeColor("#f7f4ef", secondaryColor);
       // Texto da faixa headline (sobre primária) = secundária com contraste garantido.
       const v2HeadlineColor = v2CardLabel;
 
@@ -1619,6 +1747,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.fillText(label, tx, ty);
       });
 
+      await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
       return canvas.toDataURL("image/png");
     }
 
@@ -1916,6 +2045,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.textBaseline = "alphabetic";
       }
 
+      await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
       return canvas.toDataURL("image/png");
     }
 
@@ -1955,6 +2085,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = "rgba(255,255,255,0.6)"; ctx.font = "600 24px Inter, Arial, sans-serif";
     ctx.fillText([bottomSuffix, installments ? `${installments} sem juros` : ""].filter(Boolean).join(" · "), width / 2, cardY3 + 356);
     ctx.textAlign = "left";
+    await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
     return canvas.toDataURL("image/png");
   };
 
@@ -2146,6 +2277,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     // 7) Rodapé legal removido a pedido — fotos são reais, não há IA aqui.
 
     ctx.textAlign = "left";
+    await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
     return canvas.toDataURL("image/png");
   };
 
@@ -2296,6 +2428,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     withShadow(() => ctx.fillText(slogan, cx, height - padBottom));
 
     ctx.textAlign = "left";
+    await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
     return canvas.toDataURL("image/png");
   };
 
@@ -2605,6 +2738,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     }
 
     ctx.textAlign = "left";
+    await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
     return canvas.toDataURL("image/png");
   };
 
@@ -2833,6 +2967,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     }
 
     ctx.textAlign = "left";
+    await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
     return canvas.toDataURL("image/png");
   };
 
@@ -3068,7 +3203,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
-
+  await drawFinalBranding(ctx, width, height, logoDataUrl, whatsapp, instagram);
   return canvas.toDataURL("image/png");
 }
 

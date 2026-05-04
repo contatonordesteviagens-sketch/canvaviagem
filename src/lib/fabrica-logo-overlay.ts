@@ -18,21 +18,35 @@ export async function composeLogoOnImage(
         if (!ctx) return reject(new Error("Canvas 2D não suportado"));
         ctx.drawImage(base, 0, 0);
 
-        // Somente desenha o rodapé se tiver alguma informação pra mostrar
         if (logoDataUrl || whatsapp || instagram) {
           const isStory = ch > cw;
-          const footerHeight = isStory ? 180 : 120;
+          const footerHeight = isStory ? 160 : 110;
           const footerY = ch - footerHeight;
 
-          // Fundo escuro semitransparente para o rodapé inteiro
-          ctx.fillStyle = "rgba(0,0,0,0.65)";
+          // 1. Fundo do Rodapé (VÉU SEMITRANSPARENTE)
+          const grad = ctx.createLinearGradient(0, footerY, 0, ch);
+          grad.addColorStop(0, "rgba(0,0,0,0.0)"); // Começa totalmente transparente
+          grad.addColorStop(0.5, "rgba(0,0,0,0.4)"); // Véu sutil no meio
+          grad.addColorStop(1, "rgba(0,0,0,0.7)");   // Um pouco mais escuro na base para legibilidade
+          ctx.fillStyle = grad;
           ctx.fillRect(0, footerY, cw, footerHeight);
 
-          // Margens
-          const padX = 60;
-          let currentX = padX;
+          const padX = 50;
+          const centerY = footerY + footerHeight / 2;
 
-          // 1. Logo (Esquerda)
+          // Função para formatar telefone: (XX) 9 XXXX-XXXX
+          const formatPhone = (val: string) => {
+            const d = val.replace(/\D/g, "");
+            if (d.length === 11) {
+              return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3, 7)}-${d.slice(7)}`;
+            }
+            if (d.length === 10) {
+              return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+            }
+            return val; // fallback
+          };
+
+          // 2. Logo (Esquerda)
           if (logoDataUrl) {
             const logo = new Image();
             logo.crossOrigin = "anonymous";
@@ -41,8 +55,8 @@ export async function composeLogoOnImage(
               logo.onerror = rej;
               logo.src = logoDataUrl;
             });
-            const maxLogoH = footerHeight * 0.7;
-            const maxLogoW = cw * 0.3;
+            const maxLogoH = footerHeight * 0.75;
+            const maxLogoW = cw * 0.35;
             const ratio = logo.naturalWidth / logo.naturalHeight;
             let lh = maxLogoH;
             let lw = lh * ratio;
@@ -50,34 +64,91 @@ export async function composeLogoOnImage(
               lw = maxLogoW;
               lh = lw / ratio;
             }
-            const ly = footerY + (footerHeight - lh) / 2;
             
-            // Fundo branco arredondado para a logo se destacar
-            ctx.fillStyle = "rgba(255,255,255,0.95)";
-            const bgPad = 12;
+            // Box da Logo
+            const bgPad = 16;
+            ctx.fillStyle = "rgba(255,255,255,1)";
+            ctx.shadowColor = "rgba(0,0,0,0.4)";
+            ctx.shadowBlur = 15;
             ctx.beginPath();
-            ctx.roundRect(currentX - bgPad, ly - bgPad, lw + bgPad*2, lh + bgPad*2, 12);
+            ctx.roundRect(padX, centerY - lh / 2 - bgPad, lw + bgPad * 2, lh + bgPad * 2, 16);
             ctx.fill();
+            ctx.shadowBlur = 0; 
 
-            ctx.drawImage(logo, currentX, ly, lw, lh);
-            currentX += lw + bgPad*2 + 40; // espaço após a logo
+            ctx.drawImage(logo, padX + bgPad, centerY - lh / 2, lw, lh);
           }
 
-          // Textos à direita (ou ao lado)
-          ctx.fillStyle = "#ffffff";
-          ctx.font = `600 ${isStory ? 38 : 32}px Inter, sans-serif`;
+          // 3. Info de Contato (Direita)
           ctx.textAlign = "right";
           ctx.textBaseline = "middle";
+          const fontSize = isStory ? 38 : 32;
+          ctx.font = `700 ${fontSize}px Inter, sans-serif`;
+          ctx.fillStyle = "#ffffff";
 
-          let textRightX = cw - padX;
+          let textRightX = cw - 60;
+
+          const drawWhatsAppIcon = (x: number, y: number, size: number) => {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.shadowColor = "rgba(0,0,0,0.4)";
+            ctx.shadowBlur = 5;
+            ctx.fillStyle = "#25D366";
+            ctx.beginPath();
+            ctx.arc(0, 0, size/2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(0, 0, size/3, 0.4, 5.8);
+            ctx.lineTo(-size/5, size/3);
+            ctx.fill();
+            ctx.restore();
+          };
+
+          const drawInstagramIcon = (x: number, y: number, size: number) => {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.shadowColor = "rgba(0,0,0,0.4)";
+            ctx.shadowBlur = 5;
+            const g = ctx.createRadialGradient(0, 0, 0, 0, 0, size/2);
+            g.addColorStop(0, "#f09433");
+            g.addColorStop(0.25, "#e6683c");
+            g.addColorStop(0.5, "#dc2743");
+            g.addColorStop(0.75, "#cc2366");
+            g.addColorStop(1, "#bc1888");
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.roundRect(-size/2, -size/2, size, size, size*0.2);
+            ctx.fill();
+            ctx.strokeStyle = "white";
+            ctx.lineWidth = size * 0.08;
+            ctx.strokeRect(-size*0.3, -size*0.3, size*0.6, size*0.6);
+            ctx.beginPath();
+            ctx.arc(0, 0, size*0.15, 0, Math.PI*2);
+            ctx.stroke();
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(size*0.18, -size*0.18, size*0.04, 0, Math.PI*2);
+            ctx.fill();
+            ctx.restore();
+          };
+
+          const iconSize = fontSize * 1.1;
+          const itemGap = 15;
+
+          if (instagram) {
+            const handle = instagram.startsWith("@") ? instagram : `@${instagram}`;
+            const yPos = whatsapp ? centerY + (footerHeight * 0.18) : centerY;
+            ctx.fillText(handle, textRightX, yPos);
+            const textWidth = ctx.measureText(handle).width;
+            drawInstagramIcon(textRightX - textWidth - itemGap - iconSize/2, yPos, iconSize);
+          }
 
           if (whatsapp) {
-            const text = `WhatsApp: ${whatsapp}`;
-            ctx.fillText(text, textRightX, footerY + footerHeight * 0.35);
-          }
-          if (instagram) {
-            const text = `Instagram: @${instagram}`;
-            ctx.fillText(text, textRightX, footerY + footerHeight * 0.7);
+            const num = formatPhone(whatsapp);
+            const yPos = instagram ? centerY - (footerHeight * 0.18) : centerY;
+            ctx.fillText(num, textRightX, yPos);
+            const textWidth = ctx.measureText(num).width;
+            drawWhatsAppIcon(textRightX - textWidth - itemGap - iconSize/2, yPos, iconSize);
           }
         }
 

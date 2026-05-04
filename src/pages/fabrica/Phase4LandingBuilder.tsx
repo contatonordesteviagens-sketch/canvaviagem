@@ -26,7 +26,7 @@ import type { SectionVisibility } from "@/hooks/useFabricaContext";
 const LOVABLE_INVITE_URL = "https://lovable.dev/invite/2ZD6VL6";
 const PRESET_COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#000000"];
 
-export const Phase4LandingBuilder = ({ onBack }: { onBack: () => void }) => {
+export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
   const { state, update } = useFabricaContext();
   const [previewing, setPreviewing] = useState(true);
   const [downloadCount, setDownloadCount] = useState(0);
@@ -778,6 +778,22 @@ const PublishOnLovableCard = ({ primaryColor, html }: { primaryColor: string; ht
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.06] border border-white/15 text-white/80 hover:text-white hover:bg-white/[0.10] transition-all text-sm font-semibold"
           >
             <ArrowLeft className="w-4 h-4" /> Voltar ao topo
+          </button>
+        </div>
+
+        <div className="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row gap-4">
+          <button
+            onClick={onBack}
+            className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white/70 font-bold hover:bg-white/[0.08] transition-all"
+          >
+            Voltar
+          </button>
+          <button
+            onClick={onNext}
+            className="flex-[2] py-4 rounded-xl font-black text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+            style={{ background: state.primaryColor }}
+          >
+            Próximo Passo: Diagnóstico <Rocket className="w-5 h-5" />
           </button>
         </div>
       </div>

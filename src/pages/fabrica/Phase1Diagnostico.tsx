@@ -135,54 +135,32 @@ const DESTINOS_BY_AGENCY: Partial<Record<AgencyType, string[]>> = {
 
 interface Props {
   onComplete: () => void;
+  onBack: () => void;
 }
 
-export const Phase1Diagnostico = ({ onComplete }: Props) => {
+export const Phase1Diagnostico = ({ onComplete, onBack }: Props) => {
   const { state, update } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
-  const [step, setStep] = useState(state.diagnosticoCompleto ? 4 : 1);
-  const totalSteps = 3;
-
-  const editForm = () => {
-    // mantém TODOS os dados, apenas reabre o formulário a partir do step 1
-    // para o usuário complementar/corrigir informações.
-    update({ diagnosticoCompleto: false });
-    setStep(1);
-  };
+  const [loading, setLoading] = useState(false);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const MAX_WIDTH = 800;
-        const scale = Math.min(1, MAX_WIDTH / img.width);
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-
-        const ctx = canvas.getContext("2d");
-        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        // Exporta como webp/jpeg comprimido para economizar muito espaço
+        const MAX = 400;
+        let w = img.width, h = img.height;
+        if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } }
+        else { if (h > MAX) { w *= MAX / h; h = MAX; } }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d")?.drawImage(img, 0, 0, w, h);
         const base64 = canvas.toDataURL("image/webp", 0.8);
-
-        // Extrai paleta dominante (cor primária + secundária) dos pixels
-        const palette = extractPaletteFromCanvas(ctx, canvas.width, canvas.height);
-        const updates: Record<string, string> = { logoBase64: base64 };
-        if (palette.primary) updates.primaryColor = palette.primary;
-        if (palette.secondary) updates.secondaryColor = palette.secondary;
-        update(updates);
-
-        if (palette.primary) {
-          toast.success("Logo carregada! Paleta de cores extraída automaticamente.");
-        } else {
-          toast.success("Logo carregada e otimizada!");
-        }
+        update({ logoBase64: base64 });
+        toast.success("Logo atualizada!");
       };
       img.src = event.target?.result as string;
     };
@@ -198,281 +176,92 @@ export const Phase1Diagnostico = ({ onComplete }: Props) => {
       gargalos: result.gargalos,
       diagnosticoCompleto: true,
     });
-    setStep(4);
   };
 
-  if (step === 4) {
-    return <DiagnosticoResult onNext={onComplete} onEdit={editForm} />;
+  if (state.diagnosticoCompleto) {
+    return <DiagnosticoResult onNext={onComplete} onBack={onBack} onEdit={() => update({ diagnosticoCompleto: false })} />;
   }
 
+  const nicheOptions = (state.agencyType && NICHES_BY_AGENCY[state.agencyType as AgencyType]) || NICHES_DEFAULT;
+
   return (
-    <div className="max-w-2xl mx-auto">
-      {/* Progress */}
-      <div className="mb-8">
-        <div className="flex justify-between text-xs text-white/50 uppercase tracking-widest mb-2 font-semibold">
-          <span>Etapa {step} de {totalSteps}</span>
-          <span>{Math.round((step / totalSteps) * 100)}%</span>
-        </div>
-        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-          <motion.div
-            className="h-full rounded-full"
-            style={{ background: `linear-gradient(90deg, ${state.primaryColor}, #FCD34D)` }}
-            animate={{ width: `${(step / totalSteps) * 100}%` }}
-          />
+    <div className="max-w-2xl mx-auto space-y-6">
+      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 backdrop-blur-xl">
+        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-6 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+          Perfil Estratégico da Agência
+        </h3>
+
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FabField label="Nome da agência *" value={state.agencyName} onChange={(v) => update({ agencyName: v })} placeholder="Ex: Lua Cheia Viagens" />
+            <div>
+              <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Tipo de agência *</label>
+              <select
+                value={state.agencyType}
+                onChange={(e) => update({ agencyType: e.target.value as AgencyType })}
+                className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors"
+              >
+                <option value="" className="bg-zinc-900">Selecione...</option>
+                {AGENCY_TYPES.map((t) => (
+                  <option key={t.v} value={t.v} className="bg-zinc-900">{t.l}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FabField label="@ do Instagram" value={state.instagram} onChange={(v) => update({ instagram: v.replace(/^@/, "") })} placeholder="suaagencia" />
+            <FabPhoneField label="WhatsApp (com DDD)" value={state.whatsapp} onChange={(v) => update({ whatsapp: v })} />
+          </div>
+
+          <div>
+            <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">Nicho / Carro-chefe *</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {nicheOptions.map((n) => (
+                <button
+                  key={n.id}
+                  onClick={() => update({ niche: n.id })}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    state.niche === n.id ? "border-2" : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04]"
+                  }`}
+                  style={state.niche === n.id ? { borderColor: state.primaryColor, background: `${state.primaryColor}1a` } : undefined}
+                >
+                  <div className="text-xl mb-1">{n.emoji}</div>
+                  <div className="text-[11px] font-bold text-white leading-tight">{n.label}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Seus principais destinos *</label>
+            <DestinosInput destinos={state.destinos} onChange={(d) => update({ destinos: d })} primaryColor={state.primaryColor || "#F59E0B"} />
+          </div>
         </div>
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 backdrop-blur-xl"
-        >
-          {step === 1 && (
-            <>
-              <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-5">
-                <span className="inline-block px-2 py-1 rounded mr-2" style={{ background: `${state.primaryColor}33`, color: state.primaryColor }}>1</span>
-                Dados da Agência
-              </h3>
-
-              {user && savedProjects && savedProjects.length > 0 && (
-                <div className="mb-6 p-5 bg-white/[0.04] border border-white/10 rounded-2xl relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-1 h-full" style={{ background: state.primaryColor }}></div>
-                  <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">📂 Carregar Cliente / Projeto Salvo</label>
-                  <select
-                    onChange={(e) => {
-                      const p = savedProjects.find(x => x.id === e.target.value);
-                      if (p && p.state_snapshot) {
-                         // Mantém apenas a aba no passo 1, mas puxa todos os dados do BD
-                         update({ ...p.state_snapshot, diagnosticoCompleto: false });
-                         toast.success(`Cliente "${p.agency_name}" carregado! Todas as configs (logo, cor, etc) foram restauradas.`);
-                      }
-                      e.target.value = "";
-                    }}
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors"
-                  >
-                    <option value="" className="bg-zinc-900">Selecione um cliente salvo...</option>
-                    {savedProjects.map((p) => (
-                      <option key={p.id} value={p.id} className="bg-zinc-900">{p.agency_name || "Sem Nome"} (Salvo em {new Date(p.updated_at).toLocaleDateString()})</option>
-                    ))}
-                  </select>
-                  <p className="text-[11px] text-white/50 mt-2">Dica: Selecione um projeto antigo para recuperar a logo e configurações dele. Quando terminar as edições, basta Salvar no final!</p>
-                </div>
-              )}
-
-              <div className="space-y-4">
-                <FabField label="Nome da agência *" value={state.agencyName} onChange={(v) => update({ agencyName: v })} placeholder="Ex: Lua Cheia Viagens" />
-                <div>
-                  <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Tipo de agência *</label>
-                  <select
-                    value={state.agencyType}
-                    onChange={(e) => update({ agencyType: e.target.value as AgencyType })}
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors"
-                  >
-                    <option value="" className="bg-zinc-900">Selecione...</option>
-                    {AGENCY_TYPES.map((t) => (
-                      <option key={t.v} value={t.v} className="bg-zinc-900">{t.l}</option>
-                    ))}
-                  </select>
-                  {state.agencyType === "outro" && (
-                    <input
-                      value={state.agencyTypeOther}
-                      onChange={(e) => update({ agencyTypeOther: e.target.value })}
-                      placeholder="Descreva o tipo de agência"
-                      className="mt-2 w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-white/40 transition-colors"
-                    />
-                  )}
-                </div>
-                <FabField label="Cidade" value={state.city} onChange={(v) => update({ city: v })} placeholder="Ex: São Paulo - SP" />
-                <FabField label="@ do Instagram" value={state.instagram} onChange={(v) => update({ instagram: v.replace(/^@/, "") })} placeholder="suaagencia" />
-                <FabPhoneField label="WhatsApp (com DDD)" value={state.whatsapp} onChange={(v) => update({ whatsapp: v })} />
-                <div>
-                  <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Logo (opcional)</label>
-                  <label className="flex items-center gap-3 p-3 bg-white/[0.04] border border-dashed border-white/10 rounded-xl cursor-pointer hover:border-white/30 transition-colors">
-                    <Upload className="w-4 h-4 text-white/50" />
-                    <span className="text-sm text-white/70">{state.logoBase64 ? "Trocar logo (substitui a atual)" : "Clique para enviar"}</span>
-                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                  </label>
-                  {state.logoBase64 && (
-                    <div className="mt-3 flex items-center gap-3">
-                      <img src={state.logoBase64} alt="Logo" className="max-h-16 rounded-lg bg-white/5 p-1" />
-                      <button
-                        type="button"
-                        onClick={() => { update({ logoBase64: "" }); toast.success("Logo removida"); }}
-                        className="text-[11px] font-semibold text-red-300 hover:text-red-200 underline underline-offset-2"
-                      >
-                        Remover logo
-                      </button>
-                    </div>
-                  )}
-                  <p className="text-[10px] text-white/40 mt-1.5">Apenas uma logo fica salva. Ao enviar uma nova, a anterior é substituída automaticamente.</p>
-                </div>
-              </div>
-            </>
-          )}
-
-          {step === 2 && (
-            <>
-              <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-5">
-                <span className="inline-block px-2 py-1 rounded mr-2" style={{ background: `${state.primaryColor}33`, color: state.primaryColor }}>2</span>
-                Marketing & Vendas
-              </h3>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <FabSelect label="Frequência de posts" value={state.postFrequency} onChange={(v) => update({ postFrequency: v })} options={[
-                  { v: "diario", l: "Todo dia" },
-                  { v: "semanal", l: "Algumas vezes por semana" },
-                  { v: "mensal", l: "Algumas vezes no mês" },
-                  { v: "raro", l: "Quase nunca" },
-                ]} />
-                <FabSelect label="Seguidores no Insta" value={state.followers} onChange={(v) => update({ followers: v })} options={[
-                  { v: "0-500", l: "Até 500" },
-                  { v: "500-2k", l: "500 a 2 mil" },
-                  { v: "2k-10k", l: "2 mil a 10 mil" },
-                  { v: "10k+", l: "Mais de 10 mil" },
-                ]} />
-                <FabField label="Ticket médio (R$)" value={state.ticketMedio} onChange={(v) => update({ ticketMedio: v.replace(/\D/g, "") })} placeholder="Ex: 2500" />
-                <FabField label="Vendas por mês" value={state.fechamentosMes} onChange={(v) => update({ fechamentosMes: v.replace(/\D/g, "") })} placeholder="Ex: 5" />
-              </div>
-
-              <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Presença & Autoridade</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <FabToggle label="Posta Reels sempre?" value={state.usesReels} onChange={(v) => update({ usesReels: v })} />
-                <FabToggle label="Destaques arrumados?" value={state.hasHighlights} onChange={(v) => update({ hasHighlights: v })} />
-                <FabToggle label="Tem depoimentos?" value={state.hasDepoimentos} onChange={(v) => update({ hasDepoimentos: v })} />
-                <FabToggle label="Roda Meta Ads?" value={state.investeAds} onChange={(v) => update({ investeAds: v })} />
-              </div>
-            </>
-          )}
-
-          {step === 3 && (() => {
-            const nicheOptions =
-              (state.agencyType && NICHES_BY_AGENCY[state.agencyType as AgencyType]) || NICHES_DEFAULT;
-            const isReceptiva = state.agencyType === "receptiva";
-            const isCorporativa = state.agencyType === "corporativa";
-            const isReligioso = state.agencyType === "religioso";
-            const isMilhas = state.agencyType === "milhas";
-            const isConsolidadora = state.agencyType === "consolidadora";
-
-            const headerLabel = isReceptiva
-              ? "Roteiro Principal (Receptivo)"
-              : isCorporativa
-              ? "Serviço Principal (Corporativo)"
-              : isReligioso
-              ? "Roteiro Religioso Principal"
-              : isMilhas
-              ? "Tipo de Emissão Principal"
-              : isConsolidadora
-              ? "Produto Principal (B2B)"
-              : "Carro-chefe (Nicho)";
-
-            const questionLabel = isReceptiva
-              ? "Qual roteiro receptivo você mais opera?"
-              : isCorporativa
-              ? "Qual tipo de serviço corporativo você mais vende?"
-              : isReligioso
-              ? "Qual roteiro religioso você mais vende?"
-              : isMilhas
-              ? "Qual tipo de emissão você mais faz?"
-              : isConsolidadora
-              ? "Qual produto B2B você mais distribui?"
-              : "Qual estilo / serviço você mais vende?";
-
-            const destinosLabel = isReceptiva
-              ? "Passeios e serviços que você opera *"
-              : isCorporativa
-              ? "Serviços corporativos que você atende *"
-              : isReligioso
-              ? "Roteiros religiosos que você opera *"
-              : isMilhas
-              ? "Programas / serviços que você emite *"
-              : isConsolidadora
-              ? "Produtos / parceiros que você distribui *"
-              : "Destinos que você mais vende *";
-
-            const destinosHelp = isReceptiva
-              ? "Estes serviços serão usados para personalizar seus vídeos, legendas e anúncios."
-              : isCorporativa
-              ? "Estes serviços serão usados para personalizar seus materiais B2B."
-              : "Serão usados para personalizar seus vídeos, legendas e anúncios.";
-
-            return (
-              <>
-                <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-5">
-                  <span className="inline-block px-2 py-1 rounded mr-2" style={{ background: `${state.primaryColor}33`, color: state.primaryColor }}>3</span>
-                  {headerLabel}
-                </h3>
-                <p className="text-sm text-white/60 mb-3">{questionLabel}</p>
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  {nicheOptions.map((n) => (
-                    <button
-                      key={n.id + n.label}
-                      onClick={() => update({ niche: n.id })}
-                      className={`relative p-4 rounded-xl border text-left transition-all overflow-hidden group ${
-                        state.niche === n.id
-                          ? "border-2 shadow-lg"
-                          : "border-white/[0.08] hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.04]"
-                      }`}
-                      style={state.niche === n.id ? { borderColor: state.primaryColor, background: `${state.primaryColor}1a` } : undefined}
-                    >
-                      {state.niche === n.id && (
-                        <div className="absolute top-3 right-3 text-white">
-                          <Check className="w-4 h-4" />
-                        </div>
-                      )}
-                      <div className="text-2xl mb-1.5 transform group-hover:scale-110 transition-transform origin-left">{n.emoji}</div>
-                      <div className="text-sm font-semibold text-white leading-tight">{n.label}</div>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Destinos / serviços específicos */}
-                <div>
-                  <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">
-                    {destinosLabel}
-                  </label>
-                  <p className="text-[11px] text-white/40 mb-3">{destinosHelp}</p>
-                  <DestinosInput
-                    destinos={state.destinos}
-                    onChange={(d) => update({ destinos: d })}
-                    primaryColor={state.primaryColor}
-                  />
-                </div>
-              </>
-            );
-          })()}
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Nav */}
-      <div className="flex gap-3 mt-6">
-        {step > 1 && (
-          <button
-            onClick={() => setStep(step - 1)}
-            className="flex-1 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white/70 font-semibold hover:bg-white/[0.08] transition-colors"
-          >
-            Voltar
-          </button>
-        )}
+      <div className="flex flex-col sm:flex-row gap-4 mt-6 pt-6 border-t border-white/10">
         <button
-          onClick={() => (step < totalSteps ? setStep(step + 1) : finalize())}
-          disabled={
-            (step === 1 && (!state.agencyName || !state.whatsapp || !state.agencyType || (state.agencyType === "outro" && !state.agencyTypeOther))) ||
-            (step === 3 && (!state.niche || state.destinos.length === 0))
-          }
-          className="flex-[2] py-3 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110"
-          style={{ background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)`, boxShadow: `0 8px 24px ${state.primaryColor}55` }}
+          onClick={onBack}
+          className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white/70 font-bold hover:bg-white/[0.08] transition-all"
         >
-          {step < totalSteps ? "Continuar" : "Gerar Diagnóstico"} <ChevronRight className="w-4 h-4" />
+          Voltar
+        </button>
+        <button
+          onClick={finalize}
+          disabled={!state.agencyName || !state.whatsapp || !state.niche || state.destinos.length === 0}
+          className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110 shadow-lg"
+          style={{ background: `linear-gradient(135deg, ${state.primaryColor || "#F59E0B"}, #FCD34D)` }}
+        >
+          Gerar Diagnóstico & Plano <ChevronRight className="w-4 h-4" />
         </button>
       </div>
     </div>
   );
 };
 
-const DiagnosticoResult = ({ onNext, onEdit }: { onNext: () => void; onEdit: () => void }) => {
+const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onBack: () => void; onEdit: () => void }) => {
   const { state } = useFabricaContext();
   const { user } = useAuth();
   const result = calculateScore(state);
@@ -605,10 +394,16 @@ const DiagnosticoResult = ({ onNext, onEdit }: { onNext: () => void; onEdit: () 
         Seus dados são preservados. Adicione novos destinos, pacotes e ajustes a qualquer momento — tudo fica salvo na sua conta.
       </p>
 
-      <div className="mt-3 flex justify-end">
+      <div className="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row gap-4">
+        <button
+          onClick={onBack}
+          className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white/70 font-bold hover:bg-white/[0.08] transition-all"
+        >
+          Voltar
+        </button>
         <button
           onClick={onNext}
-          className="px-6 py-3 rounded-xl font-bold text-black flex items-center gap-2 transition-all hover:brightness-110"
+          className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all hover:brightness-110"
           style={{ background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)` }}
         >
           Avançar para Plano <ArrowRight className="w-4 h-4" />

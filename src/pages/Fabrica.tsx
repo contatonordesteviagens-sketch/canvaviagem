@@ -122,9 +122,9 @@ const FabricaInner = () => {
         </div>
 
         {/* Phase content */}
-        {state.currentPhase === 1 && <Phase3ArtFactory onNext={() => setPhase(2)} onBack={() => setPhase(3)} />}
-        {state.currentPhase === 2 && <Phase4LandingBuilder onBack={() => setPhase(1)} />}
-        {state.currentPhase === 3 && <Phase1Diagnostico onComplete={() => setPhase(4)} />}
+        {state.currentPhase === 1 && <Phase3ArtFactory onNext={() => setPhase(2)} onBack={() => {}} />}
+        {state.currentPhase === 2 && <Phase4LandingBuilder onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
+        {state.currentPhase === 3 && <Phase1Diagnostico onComplete={() => setPhase(4)} onBack={() => setPhase(2)} />}
         {state.currentPhase === 4 && <Phase2Ativos onNext={() => setPhase(1)} onBack={() => setPhase(3)} />}
       </div>
     </div>
