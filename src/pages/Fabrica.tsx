@@ -150,7 +150,7 @@ const Fabrica = () => {
         open={gateOpen && !unlocked}
         onOpenChange={(open) => {
           setGateOpen(open);
-          if (!open && !unlocked) navigate("/");
+          if (!open && !unlocked && !isFabricaUnlocked()) navigate("/");
         }}
         onUnlock={() => {
           setUnlocked(true);
