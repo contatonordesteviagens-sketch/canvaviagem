@@ -543,6 +543,35 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [customLink, setCustomLink] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // === Aliases para compatibilidade com referências antigas no JSX/handlers ===
+  const format = formatState;
+  const destination = destinationState;
+  const price = priceState;
+  const currency = currencyState;
+  const promoName = promoNameState;
+  const adTitleTemplate = adTitleTemplateState;
+  const travelPeriod = travelPeriodState;
+  const paymentMode = paymentModeState;
+  const paymentLabel = paymentLabelState;
+  const paymentSuffix = paymentSuffixState;
+  const primaryColor = primaryColorState;
+  const secondaryColor = secondaryColorState;
+  const highlights = highlightsState;
+  const setHighlights = (h: Highlight[]) => { setHighlightsState(h); update({ lastHighlights: h }); };
+  const fontFamily = state.fontFamily || "Inter";
+  const titleScale = state.titleScale ?? 1;
+  const descScale = state.descScale ?? 1;
+  const showPixBanner = state.showPixBanner ?? true;
+  const pixBannerText = state.pixBannerText || "";
+  const showTotal = state.showTotal ?? true;
+  const totalOverride = state.totalOverride || "";
+  const currencySymbol = currency === "BRL" ? "R$" : currency === "USD" ? "$" : "€";
+  const installments = state.lastInstallments || "10x";
+  const formattedPriceForAd = price;
+  const resolvedAdTitle = (adTitleTemplate || "").replace(/\{destino\}/g, destination || "");
+  const adTitleVariations: string[] = [resolvedAdTitle];
+
+
   // Auto-contraste inteligente
   useEffect(() => {
     const activeUrl = genMode === "photo" ? selectedPhotoUrl : genMode === "custom" ? (customSource === "upload" ? customImageData : customLink.trim()) : "";
