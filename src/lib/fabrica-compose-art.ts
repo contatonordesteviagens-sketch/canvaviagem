@@ -2210,7 +2210,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const cx = width / 2;
     const isStory = format === "story";
     // Reserva de topo p/ logo (composto depois)
-    const topReserve = hasLogo ? (isStory ? 220 : 150) : (isStory ? 120 : 90);
+    const topReserve = hasLogo ? (isStory ? 250 : 150) : (isStory ? 180 : 90);
 
     // Famílias
     const serif = `'Playfair Display', 'Cormorant Garamond', Georgia, serif`;
@@ -2392,8 +2392,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const script = `'Dancing Script', 'Great Vibes', cursive`;
 
     // Reservas de margem (px)
-    const padTop = isStory ? (hasLogo ? 200 : 110) : (hasLogo ? 140 : 80);
-    const padBottom = isStory ? 90 : 70;
+    const padTop = isStory ? (hasLogo ? 280 : 250) : (hasLogo ? 140 : 80);
+    const padBottom = isStory ? 280 : 70;
 
     // Helper: shadow sutil (sempre ativa no V1 para garantir leitura sobre céu/fundo claro)
     const withShadow = (cb: () => void) => {
@@ -2558,7 +2558,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     };
 
     // ───── TOPO ─────
-    const padTopBase = isStory ? (hasLogo ? 240 : 120) : (hasLogo ? 170 : 80);
+    const padTopBase = isStory ? (hasLogo ? 300 : 250) : (hasLogo ? 170 : 80);
     let topY = padTopBase;
 
     // Botão Topo · Polímero Fosco (cor primária com transparência)
@@ -2895,7 +2895,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.textAlign = "center";
 
     // 3) TOPO · promoName (sans branco pequeno, pt-8)
-    const topPad = isStory ? 110 : 70;
+    const topPad = isStory ? 250 : 70;
     if (promoName && promoName.trim()) {
       const sz = isStory ? 30 : 24;
       ctx.font = `500 ${sz}px ${sans}`;
@@ -2907,7 +2907,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     }
 
     // 4) CLUSTER INFERIOR
-    const padBottom = isStory ? 90 : 64;
+    const padBottom = isStory ? 280 : 64;
 
     // 4c) Botão outline (1º highlight) — desenhado primeiro p/ medir alturas
     const firstHL = (highlights && highlights.length > 0)
