@@ -1208,7 +1208,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const priceW = ctx.measureText(priceText).width;
 
     // Selo arredondado de parcelas (cor primária com texto secundário)
-    const badgeW = 90; // Aumentado para caber "10x de"
+    ctx.font = `900 19px Inter, Arial, sans-serif`;
+    const badgeW = Math.max(90, ctx.measureText(installmentsText).width + 24);
     const badgeH = 56;
     const gap = 12;
     const groupW = badgeW + gap + priceW;
@@ -1250,7 +1251,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const pixText = (pixBannerText || "").trim() || "5% OFF À VISTA NO PIX  💠";
     ctx.font = `900 18px Inter, Arial, sans-serif`;
     ctx.textAlign = "center";
-    ctx.fillText(pixText, cx, stripeY + 26);
+    ctx.textBaseline = "middle";
+    ctx.fillText(pixText, cx, stripeY + stripeH / 2 + 2);
+    ctx.textBaseline = "alphabetic";
 
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
@@ -1434,10 +1437,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       cursorY += destGap + 36;
 
       // [INFO] dias | ícones (TODOS monocromáticos, mesma cor navy)
-      ctx.font = "700 30px Inter, Arial, sans-serif";
+      let benefitsFontSize = 30;
+      ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(daysText).width > boxW * 0.4 && benefitsFontSize > 20) {
+        benefitsFontSize -= 2;
+        ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
+      }
       const daysW = ctx.measureText(daysText).width;
       const sepGap = 18;
-      const iconSize = 40;
+      const iconSize = Math.round(benefitsFontSize * 1.33);
       const iconGap = 18;
       const iconsTotal = iconList.length * iconSize + Math.max(0, iconList.length - 1) * iconGap;
       const sepW = 4;
@@ -2235,7 +2243,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         const pixTotalW = pixLabelW + pixGap + pixIconSize + 6 + pixWordW + pixPadX * 2;
         const pixHbadge = 60;
         const pixXbadge = cxV4 - pixTotalW / 2;
-        const pixYbadge = cardY + cardH - pixHbadge / 2; // metade vazando para fora
+        const pixYbadge = Math.min(cardY + cardH - pixHbadge / 2, panelBottom - pixHbadge - 10);
 
         // sombra
         ctx.save();
@@ -3363,6 +3371,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
 
   } else if (strategy === "experiencia_hero") {
+    const padBottom = format === "story" ? safeBottom : 140;
     const heroH = format === "story" ? panelBottom : height;
     const crop = fitCover(image.naturalWidth, image.naturalHeight, width, heroH, format === "story" ? 0.34 : 0.38);
     ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, heroH);
