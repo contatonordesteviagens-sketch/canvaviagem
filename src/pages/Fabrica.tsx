@@ -98,7 +98,7 @@ const FabricaInner = () => {
             >
               profissional
             </span>
-            <br className="hidden sm:block" /> em minutos! BANANA 🍌
+            <br className="hidden sm:block" /> em minutos!
           </h1>
           <p className="text-sm text-white/60 max-w-lg mx-auto">
             Diagnóstico, anúncios prontos com IA e site no ar — tudo em 4 passos guiados, sem precisar de designer ou agência.
