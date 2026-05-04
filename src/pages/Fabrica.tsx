@@ -132,12 +132,31 @@ const FabricaInner = () => {
 };
 
 const Fabrica = () => {
+  const navigate = useNavigate();
+  const [unlocked, setUnlocked] = useState(false);
+  const [gateOpen, setGateOpen] = useState(true);
+
   return (
     <>
       <SeoMetadata title="Fábrica de Destinos | Canva Viagem" description="Sistema completo de marketing e geração de anúncios com IA para agências de viagens." />
-      <FabricaProvider>
-        <FabricaInner />
-      </FabricaProvider>
+      {unlocked ? (
+        <FabricaProvider>
+          <FabricaInner />
+        </FabricaProvider>
+      ) : (
+        <div className="min-h-screen bg-background" />
+      )}
+      <ComingSoonGate
+        open={gateOpen && !unlocked}
+        onOpenChange={(open) => {
+          setGateOpen(open);
+          if (!open && !unlocked) navigate("/");
+        }}
+        onUnlock={() => {
+          setUnlocked(true);
+          setGateOpen(false);
+        }}
+      />
     </>
   );
 };
