@@ -1371,11 +1371,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   onChange={(e) => update({ footerContact1Icon: e.target.value as any })}
                   className={inputCls}
                 >
-                  <option value="whatsapp_green">WhatsApp Verde</option>
-                  <option value="whatsapp_custom">WhatsApp Sólido</option>
-                  <option value="instagram_gradient">Insta Colorido</option>
-                  <option value="instagram_custom">Insta Sólido</option>
-                  <option value="none">Nenhum</option>
+                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Verde</option>
+                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
+                  <option value="instagram_gradient" className="bg-zinc-900">Insta Colorido</option>
+                  <option value="instagram_custom" className="bg-zinc-900">Insta Sólido</option>
+                  <option value="none" className="bg-zinc-900">Nenhum</option>
                 </select>
               </div>
               <div className="w-2/3">
@@ -1396,11 +1396,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   onChange={(e) => update({ footerContact2Icon: e.target.value as any })}
                   className={inputCls}
                 >
-                  <option value="whatsapp_green">WhatsApp Verde</option>
-                  <option value="whatsapp_custom">WhatsApp Sólido</option>
-                  <option value="instagram_gradient">Insta Colorido</option>
-                  <option value="instagram_custom">Insta Sólido</option>
-                  <option value="none">Nenhum</option>
+                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Verde</option>
+                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
+                  <option value="instagram_gradient" className="bg-zinc-900">Insta Colorido</option>
+                  <option value="instagram_custom" className="bg-zinc-900">Insta Sólido</option>
+                  <option value="none" className="bg-zinc-900">Nenhum</option>
                 </select>
               </div>
               <div className="w-2/3">
