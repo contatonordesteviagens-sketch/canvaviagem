@@ -3298,7 +3298,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = overlay;
     ctx.fillRect(0, 0, width, heroH);
 
-    const panelH = format === "story" ? 920 : 500;
+    const panelH = format === "story" ? 780 : 500;
     const panelY = panelBottom - panelH;
     fillRoundRect(ctx, left, panelY, contentWidth, panelH, 42, "rgba(7,10,18,0.78)");
 
@@ -3326,10 +3326,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     // Exibe até 6 destaques no formato compacto
     drawHighlightsBlock(left + 28, pillsY, contentWidth - 56, 6, true, true);
 
-    // Price card — SEMPRE abaixo dos pills, sem Math.min que causava sobreposição
-    // Cada pill compact = 70px.
+    // Price card — cap duro em panelBottom - 310 para nunca invadir o branding
     const pillsCount = highlights.slice(0, 6).length;
-    const priceCardY = pillsY + pillsCount * 70 + 20;
+    const priceCardYRaw = pillsY + pillsCount * 70 + 20;
+    const priceCardY = Math.min(priceCardYRaw, panelBottom - 310);
     drawPriceCard(left + 28, priceCardY, contentWidth - 56, 290, "right");
 
 
@@ -3484,11 +3484,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       cursorY += pillsH1 + 14;
     }
 
-    // Price card: cap duro = panelBottom - 300
-    const priceCapY = panelBottom - 300;
-    if (cursorY <= priceCapY) {
-      drawPriceCard(left, Math.min(cursorY, priceCapY), contentWidth, 168, "right");
-    }
+    // Price card: sempre desenhado — posição = min(após highlights, panelBottom-160)
+    // panelBottom-160 garante que o card (290px) não invade o branding
+    const priceCardAnchor = format === "story" ? panelBottom - 310 : panelBottom - 160;
+    drawPriceCard(left, Math.min(cursorY, priceCardAnchor), contentWidth, 168, "right");
   }
 
   ctx.textAlign = "left";
