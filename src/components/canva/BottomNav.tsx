@@ -4,7 +4,7 @@ import { CategoryType } from "./CategoryNav";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Dock } from "@/components/ui/Dock";
 import { useNavigate } from "react-router-dom";
-import { ComingSoonGate, isFabricaUnlocked } from "@/components/fabrica/ComingSoonGate";
+import { ComingSoonGate } from "@/components/fabrica/ComingSoonGate";
 
 interface BottomNavProps {
   activeCategory: CategoryType;

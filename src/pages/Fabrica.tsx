@@ -5,7 +5,7 @@ import { Phase1Diagnostico } from "@/pages/fabrica/Phase1Diagnostico";
 import { Phase2Ativos } from "@/pages/fabrica/Phase2Ativos";
 import { Phase3ArtFactory } from "@/pages/fabrica/Phase3ArtFactory";
 import { Phase4LandingBuilder } from "@/pages/fabrica/Phase4LandingBuilder";
-import { ArrowLeft, Factory } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
 import { ComingSoonGate } from "@/components/fabrica/ComingSoonGate";
