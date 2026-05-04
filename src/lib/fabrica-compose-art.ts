@@ -2296,16 +2296,96 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.textBaseline = "alphabetic";
       }
 
-      await drawFinalBranding(
-        ctx, width, height, logoDataUrl, 
-        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        effectiveTextColor,
-        cityFmt ? `${cityFmt} Viagens` : undefined
-      );
-      applyFilmGrain(ctx, width, height, 0.04);
-    return canvas.toDataURL("image/png");
+  // ============================================================
+  // V0_Experiencia · LUXO & DESEJO (canvas)
+  // ============================================================
+  const renderV0Experiencia = async (): Promise<string> => {
+    const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
+    ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+
+    const grad = ctx.createLinearGradient(0, 0, 0, height);
+    grad.addColorStop(0, "rgba(0,0,0,0.60)");
+    grad.addColorStop(0.5, "rgba(0,0,0,0.30)");
+    grad.addColorStop(1, "rgba(0,0,0,0.80)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+
+    const cx = width / 2;
+    const isStory = format === "story";
+    const sans = `Inter, Arial, sans-serif`;
+    const serif = `'Playfair Display', Georgia, serif`;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#ffffff";
+
+    const promo = (promoName || "EXPERIÊNCIA EXCLUSIVA").toUpperCase();
+    ctx.font = `800 ${isStory ? 44 : 36}px ${serif}`;
+    ctx.fillText(promo.split("").join("\u2009"), cx, isStory ? 300 : 150);
+
+    if (titleText) {
+      ctx.font = `300 ${isStory ? 28 : 22}px ${sans}`;
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      ctx.fillText(titleText.trim(), cx, isStory ? 370 : 200);
     }
+
+    const brandingSafeY = panelBottom;
+    const line2Y = brandingSafeY - (isStory ? 180 : 120);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `800 ${isStory ? 110 : 78}px ${sans}`;
+    ctx.fillText((destFmt || destination || "DESTINO").toUpperCase(), cx, line2Y);
+
+    await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor);
+    applyFilmGrain(ctx, width, height, 0.04);
+    return canvas.toDataURL("image/png");
+  };
+
+  // ============================================================
+  // V1_Experiencia · LUXO CINEMATOGRÁFICO (canvas)
+  // ============================================================
+  const renderV1Experiencia = async (): Promise<string> => {
+    const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
+    ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+
+    const grad = ctx.createLinearGradient(0, 0, 0, height);
+    grad.addColorStop(0, "rgba(0,0,0,0.4)");
+    grad.addColorStop(0.5, "rgba(0,0,0,0.1)");
+    grad.addColorStop(1, "rgba(0,0,0,0.6)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+
+    const cx = width / 2;
+    const isStory = format === "story";
+    const serif = `'Playfair Display', Georgia, serif`;
+    const sans = `Inter, Arial, sans-serif`;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#ffffff";
+
+    const promo = (promoName || "Experiência Única").toUpperCase();
+    ctx.font = `800 ${isStory ? 32 : 24}px ${sans}`;
+    ctx.fillStyle = secondaryColor;
+    ctx.fillText(promo.split("").join(" "), cx, isStory ? 320 : 150);
+
+    ctx.fillStyle = "#ffffff";
+    const titSize = isStory ? 120 : 90;
+    ctx.font = `900 ${titSize}px ${serif}`;
+    const titLines = (titleText || destination).toUpperCase().split(/\s+/);
+    let line1 = titLines.slice(0, Math.ceil(titLines.length / 2)).join(" ");
+    let line2 = titLines.slice(Math.ceil(titLines.length / 2)).join(" ");
+    
+    const midY = height / 2;
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.shadowBlur = 15;
+    ctx.fillText(line1, cx, midY - (line2 ? titSize * 0.4 : 0));
+    if (line2) ctx.fillText(line2, cx, midY + titSize * 0.7);
+    ctx.shadowBlur = 0;
+
+    await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor);
+    applyFilmGrain(ctx, width, height, 0.04);
+    return canvas.toDataURL("image/png");
+  };
 
   // ============================================================
   // V2_Experiencia · LUXO MATERIAL (canvas)
@@ -2350,8 +2430,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.lineTo(cx + 100, curY + lines.length * titSize * 0.95 + 40);
     ctx.stroke();
 
-    applyFilmGrain(ctx, width, height, 0.04);
     await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor);
+    applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   };
 
@@ -2362,7 +2442,6 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
     ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
-    // Overlay Noturno Forte
     const grad = ctx.createLinearGradient(0, 0, 0, height);
     grad.addColorStop(0, "rgba(0,0,0,0.7)");
     grad.addColorStop(0.5, "rgba(0,0,0,0.3)");
@@ -2378,63 +2457,26 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.textAlign = "center";
     ctx.fillStyle = "#ffffff";
 
-    // Title Maciço
     const titSize = isStory ? 140 : 100;
     ctx.font = `900 ${titSize}px ${sans}`;
     ctx.fillText((titleText || destination).toUpperCase(), cx, height / 2);
 
-    // Subtitle Gold
     ctx.font = `italic 600 ${isStory ? 32 : 24}px ${serif}`;
     ctx.fillStyle = secondaryColor;
     ctx.fillText(travelPeriod || "Uma jornada inesquecível", cx, height / 2 + (isStory ? 80 : 60));
 
-    applyFilmGrain(ctx, width, height, 0.05);
     await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor);
+    applyFilmGrain(ctx, width, height, 0.05);
     return canvas.toDataURL("image/png");
   };
 
-
-
-
-
-  // Fundo inteligente: usa a cor primária como base, mas garante que a foto 
-  // ocupe o máximo de espaço sem deixar "blocos" vazios nas margens de segurança.
-  ctx.fillStyle = "#0a0a0a"; // Fundo neutro escuro sempre
-  ctx.fillRect(0, 0, width, height);
-
-  // ============================================================
-  // ROTEAMENTO PRINCIPAL: CATEGORIA (Experiência vs Oferta)
-  // ============================================================
-  if (isExperience) {
-    // Modo Experiência: Foco em LUXO, DESEJO e BRANDING. Preços OCULTOS.
-    const v = typeof forceVariant === "number" ? forceVariant : variation;
-    const variant = ((v % 5) + 5) % 5; // Suporta V0-V4
-
-    if (variant === 0) return await renderV0Experiencia();
-    if (variant === 1) return await renderV1Experiencia();
-    if (variant === 2) return await renderV2Experiencia();
-    if (variant === 3) return await renderV3Experiencia();
-    
-    if (variant === 4) return await renderV4Experiencia();
-    
-    // Fallback de segurança
-    return await renderV0Experiencia();
-  }
-
-  // Modo Oferta: Foco em PREÇO, CONDIÇÃO e CONVERSÃO.
-  return await renderSafeSquareOffer();
-
   // ============================================================
   // V4_Experiencia · CLEAN EDITORIAL (canvas)
-  // ------------------------------------------------------------
-  // Layout minimalista: Imagem total + Overlay lateral sutil
-  // + Título Serif grande + Detalhes em Sans Thin.
   // ============================================================
-  async function renderV4Experiencia(): Promise<string> {
+  const renderV4Experiencia = async (): Promise<string> => {
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.42);
     ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
-    // Overlay lateral esquerdo (gradiente)
     const grad = ctx.createLinearGradient(0, 0, width * 0.7, 0);
     grad.addColorStop(0, "rgba(0,0,0,0.75)");
     grad.addColorStop(0.5, "rgba(0,0,0,0.2)");
@@ -2452,24 +2494,21 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
 
-    // Tagline (promoName)
     if (promoName) {
       ctx.fillStyle = secondaryColor;
       ctx.font = `800 ${isStory ? 28 : 22}px ${sans}`;
       ctx.fillText(promoName.toUpperCase(), padLeft, topY);
     }
 
-    // Título ( Serif )
     ctx.fillStyle = "#ffffff";
     let titSize = isStory ? 110 : 80;
     ctx.font = `900 ${titSize}px ${serif}`;
-    const maxW = width - padLeft - 60;
     const words = (titleText || destination || "Experiência").toUpperCase().split(/\s+/);
     let lines: string[] = [];
     let cur = "";
     for (const w of words) {
       const test = cur ? `${cur} ${w}` : w;
-      if (ctx.measureText(test).width > maxW) { lines.push(cur); cur = w; }
+      if (ctx.measureText(test).width > width - padLeft - 60) { lines.push(cur); cur = w; }
       else cur = test;
     }
     if (cur) lines.push(cur);
@@ -2479,1152 +2518,30 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     lines.forEach((ln, i) => {
       ctx.fillText(ln, padLeft, currentY + i * titSize * 0.95);
     });
-    currentY += (lines.length) * titSize * 0.95 + 40;
 
-    // Período / Data
-    if (travelPeriod) {
-      ctx.fillStyle = "rgba(255,255,255,0.85)";
-      ctx.font = `500 ${isStory ? 32 : 26}px ${sans}`;
-      ctx.fillText(`—  ${travelPeriod}`, padLeft, currentY);
-    }
-
-    await drawFinalBranding(
-      ctx, width, height, logoDataUrl, 
-      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-      cityFmt ? `${cityFmt} Viagens` : undefined,
-      effectiveTextColor
-    );
-    applyFilmGrain(ctx, width, height, 0.04);
-    return canvas.toDataURL("image/png");
-  }
-
-  // ============================================================
-  // V0_Experiencia · ROTEAMENTO (estrutura lógica — sem layout ainda)
-  // ------------------------------------------------------------
-  // Renderiza SOMENTE quando a categoria "Experiência de Destino"
-  // estiver selecionada (isExperience === true) e a variante forçada
-  // for 0 (V0). Herda todos os dados do formulário lateral via
-  // o escopo de composeTravelAd (destination, promoName, primaryColor,
-  // secondaryColor, highlights, currencySymbol, fontFamily, etc.).
-  //
-  // ⚠️ Layout/CSS NÃO implementados ainda — placeholder mínimo.
-  //    As variações da categoria "Oferta de Pacote" permanecem intactas.
-  // ============================================================
-  const renderV0Experiencia = async (): Promise<string> => {
-    // ===== V0_Experiencia · LUXO & DESEJO (canvas) =====
-    // Desenha: BG (cover) + overlay degradê + topo (promoName serif + adTitle)
-    // + pílula (1º benefício/período) + headline (linha clara + linha black)
-    // + CTA "RESERVE AGORA" (cor secundária) + rodapé legal.
-    // O LOGO é composto depois pelo composeLogoOnImage (overlay automático).
-
-    // 1) BG cover
-    const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
-    ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
-
-    // 2) Overlay degradê (from-black/60 via-black/30 to-black/80)
-    const grad = ctx.createLinearGradient(0, 0, 0, height);
-    grad.addColorStop(0, "rgba(0,0,0,0.60)");
-    grad.addColorStop(0.5, "rgba(0,0,0,0.30)");
-    grad.addColorStop(1, "rgba(0,0,0,0.80)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, width, height);
-
-    // Helpers
-    const cx = width / 2;
-    const isStory = format === "story";
-    // Reserva de topo p/ logo (composto depois)
-    const topReserve = hasLogo ? (isStory ? 250 : 150) : (isStory ? 180 : 90);
-
-    // Famílias
-    const serif = `'Playfair Display', 'Cormorant Garamond', Georgia, serif`;
-    const sans = `Inter, Arial, sans-serif`;
-
-    ctx.textAlign = "center";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = "#ffffff";
-
-    // 3) TOPO · promoName (serif bold uppercase tracking-wider)
-    const promoUpper = (promoName || "EXPERIÊNCIA EXCLUSIVA").toUpperCase();
-    const promoSize = isStory ? 44 : 36;
-    ctx.font = `800 ${promoSize}px ${serif}`;
-    ctx.shadowColor = "rgba(0,0,0,0.45)";
-    ctx.shadowBlur = 8;
-    // tracking simulado: insere espaços finos
-    const tracked = promoUpper.split("").join("\u2009");
-    ctx.fillText(tracked, cx, topReserve + promoSize);
-    ctx.shadowBlur = 0;
-
-    // adTitle (sans light)
-    const subY = topReserve + promoSize + (isStory ? 56 : 44);
-    if (titleText && titleText.trim()) {
-      ctx.font = `300 ${isStory ? 28 : 22}px ${sans}`;
-      ctx.fillStyle = "rgba(255,255,255,0.92)";
-      ctx.fillText(titleText.trim(), cx, subY);
-    }
-
-    // EFEITO GLASS: Adiciona um brilho sutil no centro
-    const radialGrad = ctx.createRadialGradient(cx, height/2, 0, cx, height/2, width);
-    radialGrad.addColorStop(0, "rgba(255,255,255,0.05)");
-    radialGrad.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = radialGrad;
-    ctx.fillRect(0, 0, width, height);
-
-    // 4) PÍLULA (bg branco translúcido, rounded-full)
-    // V0_Experiencia NÃO usa highlights/ícones — apenas período da viagem se existir.
-    const pillText = (travelPeriod && travelPeriod.trim()) || "";
-    const pillY = subY + (isStory ? 50 : 38);
-    if (pillText) {
-      const pillFontSize = isStory ? 24 : 20;
-      ctx.font = `500 ${pillFontSize}px ${sans}`;
-      const padX = isStory ? 32 : 26;
-      const padY = isStory ? 14 : 11;
-      const tw = ctx.measureText(pillText).width;
-      const pw = tw + padX * 2;
-      const ph = pillFontSize + padY * 2;
-      const px = cx - pw / 2;
-      const py = pillY;
-      // bg-white/20
-      ctx.fillStyle = "rgba(255,255,255,0.20)";
-      const r = ph / 2;
-      ctx.beginPath();
-      ctx.moveTo(px + r, py);
-      ctx.lineTo(px + pw - r, py);
-      ctx.arcTo(px + pw, py, px + pw, py + r, r);
-      ctx.lineTo(px + pw, py + ph - r);
-      ctx.arcTo(px + pw, py + ph, px + pw - r, py + ph, r);
-      ctx.lineTo(px + r, py + ph);
-      ctx.arcTo(px, py + ph, px, py + ph - r, r);
-      ctx.lineTo(px, py + r);
-      ctx.arcTo(px, py, px + r, py, r);
-      ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = "#ffffff";
-      ctx.textBaseline = "middle";
-      ctx.fillText(pillText, cx, py + ph / 2 + 1);
-      ctx.textBaseline = "alphabetic";
-    }
-
-    // 5) HEADLINE PRINCIPAL (centro/baixo)
-    // blockBottom reserva espaço para o rodapé (branding) + CTA + linha legal.
-    // REGRA: branding ocupa de (height - 480) para baixo em Stories.
-    //         CTA fica acima disso. Margem de seguraça total de 520px do fundo no Story.
-    const brandingSafeY = panelBottom; // acima do branding
-    const ctaHeight = isStory ? 90 : 70; // altura estimada do botão CTA
-    const legalHeight = isStory ? 50 : 30;
-    const blockBottom = brandingSafeY - legalHeight - ctaHeight - (isStory ? 30 : 20);
-    const highlightLine = (() => {
-      if (priceWithSymbol && priceValueText) return priceWithSymbol;
-      return "";
-    })();
-    const headlineLine2 = destFmt ? destFmt.toUpperCase() : "NESSA VIAGEM.";
-
-    const line2Size = isStory ? 110 : 78;
-    const line1Size = isStory ? 56 : 42;
-    const gap = isStory ? 14 : 10;
-
-    ctx.shadowColor = "rgba(0,0,0,0.55)";
-    ctx.shadowBlur = 10;
-
-    // posiciona linha 2 acima do CTA
-    const line2Y = blockBottom;
-    ctx.fillStyle = "#ffffff";
-    ctx.font = `800 ${line2Size}px ${sans}`;
-    // truncamento simples se passar
-    let l2 = headlineLine2;
-    while (ctx.measureText(l2).width > width - 80 && l2.length > 4) {
-      l2 = l2.slice(0, -2);
-    }
-    if (l2 !== headlineLine2) l2 = l2.slice(0, -1) + "…";
-    ctx.fillText(l2, cx, line2Y);
-
-    if (highlightLine) {
-      ctx.font = `300 ${line1Size}px ${sans}`;
-      ctx.fillText(highlightLine, cx, line2Y - line2Size - gap + 8);
-    }
-    ctx.shadowBlur = 0;
-
-    // 6) CTA "RESERVE AGORA" (cor secundária, rounded-md, tracking-wider)
-    const ctaLabel = "RESERVE AGORA";
-    const ctaFontSize = isStory ? 30 : 24;
-    ctx.font = `800 ${ctaFontSize}px ${sans}`;
-    const ctaTracked = ctaLabel.split("").join("\u2009");
-    const ctaTw = ctx.measureText(ctaTracked).width;
-    const ctaPadX = isStory ? 56 : 44;
-    const ctaPadY = isStory ? 24 : 18;
-    const ctaW = ctaTw + ctaPadX * 2;
-    const ctaH = ctaFontSize + ctaPadY * 2;
-    const ctaX = cx - ctaW / 2;
-    // CTA posicionado logo abaixo da linha 2, com espaço para não invadir o branding
-    const ctaY = Math.min(line2Y + (isStory ? 60 : 40), brandingSafeY - ctaHeight - 10);
-    const ctaR = isStory ? 10 : 8;
-
-    // bg = cor secundária
-    ctx.fillStyle = secondaryColor || "#FCD34D";
-    ctx.beginPath();
-    ctx.moveTo(ctaX + ctaR, ctaY);
-    ctx.lineTo(ctaX + ctaW - ctaR, ctaY);
-    ctx.arcTo(ctaX + ctaW, ctaY, ctaX + ctaW, ctaY + ctaR, ctaR);
-    ctx.lineTo(ctaX + ctaW, ctaY + ctaH - ctaR);
-    ctx.arcTo(ctaX + ctaW, ctaY + ctaH, ctaX + ctaW - ctaR, ctaY + ctaH, ctaR);
-    ctx.lineTo(ctaX + ctaR, ctaY + ctaH);
-    ctx.arcTo(ctaX, ctaY + ctaH, ctaX, ctaY + ctaH - ctaR, ctaR);
-    ctx.lineTo(ctaX, ctaY + ctaR);
-    ctx.arcTo(ctaX, ctaY, ctaX + ctaR, ctaY, ctaR);
-    ctx.closePath();
-    ctx.fill();
-
-    // texto branco
-    ctx.fillStyle = "#ffffff";
-    ctx.textBaseline = "middle";
-    ctx.fillText(ctaTracked, cx, ctaY + ctaH / 2 + 1);
-    ctx.textBaseline = "alphabetic";
-
-    // 7) Rodapé legal removido a pedido — fotos são reais, não há IA aqui.
-
-    ctx.textAlign = "left";
-    await drawFinalBranding(
-      ctx, width, height, logoDataUrl, 
-      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-      cityFmt ? `${cityFmt} Viagens` : undefined,
-      effectiveTextColor
-    );
+    await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor);
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   };
 
 
-  // ============================================================
-  // V1_Experiencia · ROTEAMENTO (estrutura lógica — sem layout ainda)
-  // ------------------------------------------------------------
-  // Renderiza SOMENTE quando a categoria "Experiência de Destino"
-  // estiver selecionada (isExperience === true) e a variante forçada
-  // for 1 (V1). Herda os mesmos dados do formulário lateral via o
-  // escopo de composeTravelAd.
-  //
-  // ⚠️ Layout/CSS NÃO implementados ainda — placeholder que reaproveita
-  //    o canvas de V0_Experiencia para não quebrar o fluxo até o design
-  //    da V1 ser definido. NÃO altera a renderização da V0.
-  // ============================================================
-  const renderV1Experiencia = async (): Promise<string> => {
-    // ===== V1_Experiencia · LUXO CINEMATOGRÁFICO (canvas) =====
-    // Layout minimalista com foco em tipografia elegante.
+  // ── ROTEAMENTO FINAL ──────────────────────────────────────────────────────
+  if (isExperience) {
+    const v = typeof forceVariant === "number" ? forceVariant : variation;
+    const variant = ((v % 5) + 5) % 5; 
+
+    if (variant === 0) return await renderV0Experiencia();
+    if (variant === 1) return await renderV1Experiencia();
+    if (variant === 2) return await renderV2Experiencia();
+    if (variant === 3) return await renderV3Experiencia();
+    if (variant === 4) return await renderV4Experiencia();
     
-    const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
-    ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
-
-    // Overlay Premium: Vignette + Glass
-    const grad = ctx.createLinearGradient(0, 0, 0, height);
-    grad.addColorStop(0, "rgba(0,0,0,0.4)");
-    grad.addColorStop(0.5, "rgba(0,0,0,0.1)");
-    grad.addColorStop(1, "rgba(0,0,0,0.6)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, width, height);
-
-    const cx = width / 2;
-    const isStory = format === "story";
-    const serif = `'Playfair Display', Georgia, serif`;
-    const sans = `Inter, Arial, sans-serif`;
-
-    ctx.textAlign = "center";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = "#ffffff";
-
-    // 1) Topo: PromoName (Destaque sutil)
-    const promo = (promoName || "Experiência Única").toUpperCase();
-    ctx.font = `800 ${isStory ? 32 : 24}px ${sans}`;
-    ctx.fillStyle = secondaryColor;
-    ctx.fillText(promo.split("").join(" "), cx, isStory ? 320 : 150);
-
-    // 2) Centro: Título em Serif Gigante
-    ctx.fillStyle = "#ffffff";
-    const titSize = isStory ? 120 : 90;
-    ctx.font = `900 ${titSize}px ${serif}`;
-    const titLines = (titleText || destination).toUpperCase().split(/\s+/);
-    let line1 = titLines.slice(0, Math.ceil(titLines.length / 2)).join(" ");
-    let line2 = titLines.slice(Math.ceil(titLines.length / 2)).join(" ");
-    
-    const midY = height / 2;
-    ctx.shadowColor = "rgba(0,0,0,0.5)";
-    ctx.shadowBlur = 15;
-    ctx.fillText(line1, cx, midY - (line2 ? titSize * 0.4 : 0));
-    if (line2) ctx.fillText(line2, cx, midY + titSize * 0.7);
-    ctx.shadowBlur = 0;
-
-    // 3) Baixo: Travel Period (Italic)
-    if (travelPeriod) {
-      ctx.font = `italic 400 ${isStory ? 36 : 28}px ${serif}`;
-      ctx.fillStyle = "rgba(255,255,255,0.8)";
-      ctx.fillText(travelPeriod, cx, midY + (line2 ? titSize * 1.6 : titSize * 0.9));
-    }
-
-    ctx.textAlign = "left";
-    await drawFinalBranding(
-      ctx, width, height, logoDataUrl, 
-      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-      undefined,
-      effectiveTextColor
-    );
-    applyFilmGrain(ctx, width, height, 0.04);
-    return canvas.toDataURL("image/png");
-  };
-
-  if (isExperience && typeof forceVariant === "number" && forceVariant === 0) {
     return await renderV0Experiencia();
   }
-  if (isExperience && typeof forceVariant === "number" && forceVariant === 1) {
-    return await renderV1Experiencia();
-  }
-  // ============================================================
-  // V2_Experiencia · LUXO MATERIAL (canvas)
-  // Botão fosco + título maciço + botão dourado + painel esquerdo
-  // (selo premium) + painel direito (estuque listrado com ícones)
-  // + banner inferior (CTA estático). Funciona nos 3 modos:
-  // Foto Real, Sua Imagem e IA Pura — sempre sobre `image` recebida.
-  // ============================================================
-  const renderV2Experiencia = async (): Promise<string> => {
-    const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
-    ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
-
-    // Overlay gradiente (top + bottom mais escuros para contraste)
-    const grad = ctx.createLinearGradient(0, 0, 0, height);
-    grad.addColorStop(0, "rgba(0,0,0,0.32)");
-    grad.addColorStop(0.45, "rgba(0,0,0,0.05)");
-    grad.addColorStop(1, "rgba(0,0,0,0.55)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, width, height);
-
-    const cx = width / 2;
-    const isStory = format === "story";
-    const sansFamily = (fontFamily && fontFamily.trim() && fontFamily.trim().toLowerCase() !== "inter")
-      ? `'${fontFamily}', Inter, Arial, sans-serif`
-      : `Inter, Arial, sans-serif`;
-    const serifFamily = (fontFamily && fontFamily.trim() && fontFamily.trim().toLowerCase() !== "inter")
-      ? `'${fontFamily}', 'Playfair Display', Georgia, serif`
-      : `'Playfair Display', 'Bodoni Moda', Georgia, serif`;
-
-    const withShadow = (cb: () => void, blur = 14, alpha = 0.55) => {
-      ctx.save();
-      ctx.shadowColor = `rgba(0,0,0,${alpha})`;
-      ctx.shadowBlur = blur;
-      cb();
-      ctx.restore();
-    };
-
-    // ───── TOPO ─────
-    const padTopBase = isStory ? (hasLogo ? 300 : 250) : (hasLogo ? 170 : 80);
-    let topY = padTopBase;
-
-    // Botão Topo · Polímero Fosco (cor primária com transparência)
-    const promoTxt = (promoName || "").trim().toUpperCase();
-    if (promoTxt) {
-      const btnFontSize = isStory ? 28 : 22;
-      ctx.font = `700 ${btnFontSize}px ${sansFamily}`;
-      const txtMetrics = ctx.measureText(`✓  ${promoTxt}`);
-      const btnPadX = isStory ? 36 : 28;
-      const btnH = isStory ? 70 : 56;
-      const btnW = Math.min(width - 80, txtMetrics.width + btnPadX * 2);
-      const btnX = cx - btnW / 2;
-      const btnY = topY;
-      // fundo fosco
-      ctx.save();
-      ctx.fillStyle = primaryColor;
-      ctx.globalAlpha = 0.78;
-      roundRect(ctx, btnX, btnY, btnW, btnH, btnH / 2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-      // ring branco sutil
-      ctx.strokeStyle = "rgba(255,255,255,0.22)";
-      ctx.lineWidth = 2;
-      roundRect(ctx, btnX, btnY, btnW, btnH, btnH / 2);
-      ctx.stroke();
-      ctx.restore();
-      // texto branco com check
-      ctx.fillStyle = "#ffffff";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.font = `700 ${btnFontSize}px ${sansFamily}`;
-      ctx.fillText(`✓  ${promoTxt}`, cx, btnY + btnH / 2 + 1);
-      topY += btnH + (isStory ? 28 : 20);
-    }
-
-    // Título Maciço · branco com sombra forte
-    const adRaw = (titleText || (destination || "").toUpperCase() || "EXPERIÊNCIA ÚNICA").trim();
-    const titleText2 = adRaw.toUpperCase();
-    const maxTitleW = width - (isStory ? 100 : 120);
-
-    const wrap = (text: string, maxWidth: number, font: string, maxLines = 3): string[] => {
-      ctx.font = font;
-      const words = text.split(/\s+/);
-      const lines: string[] = [];
-      let cur = "";
-      for (const w of words) {
-        const next = cur ? `${cur} ${w}` : w;
-        if (ctx.measureText(next).width <= maxWidth) cur = next;
-        else { if (cur) lines.push(cur); cur = w; }
-      }
-      if (cur) lines.push(cur);
-      return lines.slice(0, maxLines);
-    };
-
-    let titleSize = isStory ? 132 : 96;
-    let titleFont = `900 ${titleSize}px ${sansFamily}`;
-    let titleLines = wrap(titleText2, maxTitleW, titleFont);
-    while (
-      (titleLines.length > 3 || titleLines.some((l) => ctx.measureText(l).width > maxTitleW)) &&
-      titleSize > 48
-    ) {
-      titleSize -= 6;
-      titleFont = `900 ${titleSize}px ${sansFamily}`;
-      titleLines = wrap(titleText2, maxTitleW, titleFont);
-    }
-    ctx.font = titleFont;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = "#ffffff";
-    const titleLineH = Math.round(titleSize * 0.95);
-    let lineY = topY + titleSize * 0.88;
-    withShadow(() => {
-      titleLines.forEach((line, i) => ctx.fillText(line, cx, lineY + i * titleLineH));
-    }, 24, 0.6);
-    let afterTitleY = lineY + (titleLines.length - 1) * titleLineH + (isStory ? 32 : 24);
-
-    // Botão Dourado · período/data
-    const period = (travelPeriod && travelPeriod.trim()) ? travelPeriod.trim() : "DATAS EXCLUSIVAS";
-    {
-      const goldFont = isStory ? 26 : 20;
-      ctx.font = `700 ${goldFont}px ${sansFamily}`;
-      const tw = ctx.measureText(period.toUpperCase()).width;
-      const padX = isStory ? 32 : 24;
-      const goldH = isStory ? 60 : 48;
-      const goldW = Math.min(width - 100, tw + padX * 2);
-      const goldX = cx - goldW / 2;
-      const goldY = afterTitleY;
-      // gradiente dourado horizontal
-      const gg = ctx.createLinearGradient(goldX, goldY, goldX + goldW, goldY);
-      gg.addColorStop(0, "#CA8A04"); // yellow-600
-      gg.addColorStop(0.5, "#FACC15"); // yellow-400
-      gg.addColorStop(1, "#A16207"); // yellow-700
-      ctx.save();
-      ctx.fillStyle = gg;
-      roundRect(ctx, goldX, goldY, goldW, goldH, goldH / 2);
-      ctx.fill();
-      // ring claro
-      ctx.strokeStyle = "rgba(255, 240, 180, 0.7)";
-      ctx.lineWidth = 1.5;
-      roundRect(ctx, goldX, goldY, goldW, goldH, goldH / 2);
-      ctx.stroke();
-      ctx.restore();
-      ctx.fillStyle = "#ffffff";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.font = `700 ${goldFont}px ${sans}`;
-      ctx.fillText(period.toUpperCase(), cx, goldY + goldH / 2 + 1);
-    }
-
-    // ───── PAINÉIS LATERAIS ─────
-    const panelMidY = Math.round(height * 0.55);
-
-    // Painel ESQUERDO · selo premium (cor secundária fosca)
-    const leftHl = (highlights && highlights[0]) ? (highlights[0] as any) : null;
-    const leftText = ((leftHl && (typeof leftHl === "string" ? leftHl : leftHl.text)) || "EXCLUSIVO").toString().toUpperCase();
-    {
-      const pad = 28;
-      const labelFont = isStory ? 20 : 16;
-      const valueFont = isStory ? 44 : 34;
-      ctx.font = `800 ${valueFont}px ${sans}`;
-      const lines = wrap(leftText, isStory ? 360 : 280, `800 ${valueFont}px ${sans}`, 2);
-      const lineH = Math.round(valueFont * 1.05);
-      const blockH = pad * 2 + (labelFont + 14) + lines.length * lineH;
-      ctx.font = `800 ${valueFont}px ${sans}`;
-      const widest = Math.max(...lines.map((l) => ctx.measureText(l).width));
-      const blockW = Math.min(isStory ? 480 : 360, widest + pad * 2);
-      const lx = 0;
-      const ly = panelMidY - blockH / 2;
-      ctx.save();
-      ctx.fillStyle = secondaryColor;
-      ctx.globalAlpha = 0.9;
-      roundRect(ctx, lx, ly, blockW, blockH, 16);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-      ctx.strokeStyle = "rgba(255,255,255,0.18)";
-      ctx.lineWidth = 1.2;
-      roundRect(ctx, lx, ly, blockW, blockH, 16);
-      ctx.stroke();
-      ctx.restore();
-      // label "DESTAQUE"
-      ctx.fillStyle = "rgba(255,255,255,0.92)";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "alphabetic";
-      ctx.font = `700 ${labelFont}px ${sansFamily}`;
-      ctx.fillText("◆ DESTAQUE", lx + pad, ly + pad + labelFont * 0.9);
-      // valor (serif do formulário)
-      ctx.font = `800 ${valueFont}px ${serifFamily}`;
-      ctx.fillStyle = "#ffffff";
-      lines.forEach((l, i) => {
-        ctx.fillText(l, lx + pad, ly + pad + labelFont + 14 + (i + 1) * lineH - lineH * 0.15);
-      });
-    }
-
-    // Painel DIREITO · highlights restantes (estuque listrado branco translúcido)
-    const rightHls = (highlights || []).slice(1, 4)
-      .map((h: any) => typeof h === "string" ? { text: h, icon: undefined } : { text: h?.text || "", icon: h?.icon })
-      .filter((h: any) => h.text);
-    if (rightHls.length > 0) {
-      const pad = 22;
-      const itemFont = isStory ? 24 : 19;
-      const iconBox = isStory ? 48 : 38;
-      const gap = isStory ? 22 : 16;
-      const itemH = Math.max(iconBox, itemFont + 10);
-      const blockW = isStory ? 520 : 380;
-      const blockH = pad * 2 + rightHls.length * itemH + (rightHls.length - 1) * gap;
-      const rx = width - blockW;
-      const ry = panelMidY - blockH / 2;
-      // fundo branco translúcido
-      ctx.save();
-      ctx.fillStyle = "rgba(255,255,255,0.12)";
-      roundRect(ctx, rx, ry, blockW, blockH, 16);
-      ctx.fill();
-      // border-l grossa
-      ctx.fillStyle = "rgba(255,255,255,0.30)";
-      ctx.fillRect(rx, ry, 3, blockH);
-      // listras verticais sutis (estuque)
-      ctx.globalAlpha = 0.18;
-      ctx.strokeStyle = "rgba(255,255,255,0.6)";
-      ctx.lineWidth = 1;
-      for (let xx = rx + 14; xx < rx + blockW - 4; xx += 10) {
-        ctx.beginPath();
-        ctx.moveTo(xx, ry + 6);
-        ctx.lineTo(xx, ry + blockH - 6);
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
-      ctx.restore();
-      // itens
-      rightHls.forEach((h: any, i: number) => {
-        const iy = ry + pad + i * (itemH + gap);
-        // disco branco com ícone na cor primária
-        ctx.save();
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.arc(rx + pad + iconBox / 2, iy + itemH / 2, iconBox / 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-        const iconKey = (h.icon || (["star", "heart", "check"] as IconKey[])[i % 3]) as IconKey;
-        drawMonoIcon(ctx, iconKey, rx + pad + iconBox / 2, iy + itemH / 2, iconBox * 0.6, primaryColor);
-        // texto serif na cor secundária
-        ctx.fillStyle = secondaryColor;
-        ctx.font = `700 ${itemFont}px ${serif}`;
-        ctx.textAlign = "left";
-        ctx.textBaseline = "middle";
-        const tx = rx + pad + iconBox + 14;
-        const maxW = blockW - (iconBox + pad * 2 + 14);
-        let label = h.text;
-        // trunca elegante
-        while (ctx.measureText(label).width > maxW && label.length > 6) {
-          label = label.slice(0, -2);
-        }
-        if (label !== h.text) label = label.replace(/\s+\S*$/, "") + "…";
-        ctx.fillText(label, tx, iy + itemH / 2 + 1);
-      });
-    }
-
-    // ───── BANNER INFERIOR · CTA estático ─────
-    {
-      const bannerH = isStory ? 110 : 84;
-      const margin = isStory ? 24 : 18;
-      const bx = margin;
-      const by = height - bannerH - margin;
-      const bw = width - margin * 2;
-      ctx.save();
-      ctx.fillStyle = secondaryColor;
-      roundRect(ctx, bx, by, bw, bannerH, 18);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.14)";
-      ctx.lineWidth = 1.5;
-      roundRect(ctx, bx, by, bw, bannerH, 18);
-      ctx.stroke();
-      ctx.restore();
-      const ctaFont = isStory ? 34 : 26;
-      ctx.font = `800 ${ctaFont}px ${sans}`;
-      ctx.fillStyle = primaryColor;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      const ctaLabel = "DESCUBRA ESSA EXPERIÊNCIA";
-      const labelW = ctx.measureText(ctaLabel).width;
-      const arrowSize = ctaFont * 1.1;
-      const totalW = labelW + arrowSize + 18;
-      const startX = bx + bw / 2 - totalW / 2;
-      ctx.textAlign = "left";
-      ctx.fillText(ctaLabel, startX, by + bannerH / 2 + 1);
-      // seta dourada
-      const ax = startX + labelW + 18;
-      const ay = by + bannerH / 2;
-      ctx.strokeStyle = "#EAB308";
-      ctx.fillStyle = "#EAB308";
-      ctx.lineWidth = arrowSize * 0.18;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.beginPath();
-      ctx.moveTo(ax, ay);
-      ctx.lineTo(ax + arrowSize, ay);
-      ctx.moveTo(ax + arrowSize - arrowSize * 0.32, ay - arrowSize * 0.32);
-      ctx.lineTo(ax + arrowSize, ay);
-      ctx.lineTo(ax + arrowSize - arrowSize * 0.32, ay + arrowSize * 0.32);
-      ctx.stroke();
-    }
-
-    ctx.textAlign = "left";
-    await drawFinalBranding(
-      ctx, width, height, logoDataUrl, 
-      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-      undefined,
-      effectiveTextColor
-    );
-    applyFilmGrain(ctx, width, height, 0.04);
-    return canvas.toDataURL("image/png");
-  };
 
 
-  // ============================================================
-  // V3_Experiencia · NOTURNA / DARK PREMIUM (canvas)
-  // Background universal + overlay forte + topo (sans branco) +
-  // título maciço serif (drop-shadow) + botão sólido (Primária)
-  // + botão outline (borda Primária). Funciona nos 3 modos.
-  // ============================================================
-  const renderV3Experiencia = async (): Promise<string> => {
-    // 1) BG cover
-    const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
-    ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
-
-    // 2) Overlay OBRIGATÓRIO Dark Premium (gradiente + vinheta radial)
-    const grad = ctx.createLinearGradient(0, 0, 0, height);
-    grad.addColorStop(0, "rgba(0,0,0,0.65)");
-    grad.addColorStop(0.5, "rgba(0,0,0,0.25)");
-    grad.addColorStop(1, "rgba(0,0,0,0.85)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, width, height);
-    const rg = ctx.createRadialGradient(width / 2, height / 2, Math.min(width, height) * 0.35, width / 2, height / 2, Math.max(width, height) * 0.7);
-    rg.addColorStop(0, "rgba(0,0,0,0)");
-    rg.addColorStop(1, "rgba(0,0,0,0.55)");
-    ctx.fillStyle = rg;
-    ctx.fillRect(0, 0, width, height);
-
-    const cx = width / 2;
-    const isStory = format === "story";
-    const serif = `'Playfair Display', 'Cormorant Garamond', Georgia, serif`;
-    const sans = `Inter, Arial, sans-serif`;
-
-    // Helpers de cor / contraste (consistente com o componente React)
-    const hexToRgbLocal = (hex: string) => {
-      const c = hex.replace("#", "");
-      if (c.length !== 6) return null;
-      const r = parseInt(c.slice(0, 2), 16);
-      const g = parseInt(c.slice(2, 4), 16);
-      const b = parseInt(c.slice(4, 6), 16);
-      return [r, g, b].some(Number.isNaN) ? null : { r, g, b };
-    };
-    const lum = (hex: string): number => {
-      const rgb = hexToRgbLocal(hex);
-      if (!rgb) return 0.5;
-      const s = [rgb.r, rgb.g, rgb.b].map((v) => {
-        const x = v / 255;
-        return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
-      });
-      return 0.2126 * s[0] + 0.7152 * s[1] + 0.0722 * s[2];
-    };
-    const cr = (a: string, b: string) => {
-      const L1 = lum(a);
-      const L2 = lum(b);
-      const [hi, lo] = L1 > L2 ? [L1, L2] : [L2, L1];
-      return (hi + 0.05) / (lo + 0.05);
-    };
-    const onPrimary = cr(primaryColor, secondaryColor) >= 4.5
-      ? secondaryColor
-      : (cr(primaryColor, "#FFFFFF") >= cr(primaryColor, "#000000") ? "#FFFFFF" : "#000000");
-
-    ctx.textBaseline = "alphabetic";
-    ctx.textAlign = "center";
-
-    // 3) TOPO · promoName (sans branco pequeno, pt-8)
-    const topPad = isStory ? 250 : 70;
-    if (promoName && promoName.trim()) {
-      const sz = isStory ? 30 : 24;
-      ctx.font = `500 ${sz}px ${sans}`;
-      ctx.fillStyle = "#ffffff";
-      ctx.shadowColor = "rgba(0,0,0,0.7)";
-      ctx.shadowBlur = 10;
-      ctx.fillText(promoName.trim(), cx, topPad);
-      ctx.shadowBlur = 0;
-    }
-
-    // 4) CLUSTER INFERIOR
-    const padBottom = isStory ? 280 : 64;
-
-    // 4c) Botão outline (1º highlight) — desenhado primeiro p/ medir alturas
-    const firstHL = (highlights && highlights.length > 0)
-      ? (typeof (highlights as any)[0] === "string" ? (highlights as any)[0] : (highlights as any)[0]?.text || "")
-      : "";
-
-    const drawPillSolid = (text: string, yBase: number) => {
-      const fs = isStory ? 28 : 22;
-      ctx.font = `700 ${fs}px ${sans}`;
-      const tw = ctx.measureText(text).width;
-      const padX = isStory ? 44 : 32;
-      const padY = isStory ? 18 : 14;
-      const w = tw + padX * 2;
-      const h = fs + padY * 2;
-      const x = cx - w / 2;
-      const y = yBase - h;
-      const r = h / 2;
-      ctx.fillStyle = primaryColor;
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y);
-      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-      ctx.lineTo(x + w, y + h - r);
-      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-      ctx.lineTo(x + r, y + h);
-      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-      ctx.lineTo(x, y + r);
-      ctx.quadraticCurveTo(x, y, x + r, y);
-      ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = onPrimary;
-      ctx.textBaseline = "middle";
-      ctx.fillText(text, cx, y + h / 2 + 1);
-      ctx.textBaseline = "alphabetic";
-      return h;
-    };
-
-    const drawPillOutline = (text: string, yBase: number) => {
-      const fs = isStory ? 28 : 22;
-      ctx.font = `700 ${fs}px ${sans}`;
-      const tw = ctx.measureText(text).width;
-      const padX = isStory ? 44 : 32;
-      const padY = isStory ? 18 : 14;
-      const w = tw + padX * 2;
-      const h = fs + padY * 2;
-      const x = cx - w / 2;
-      const y = yBase - h;
-      const r = h / 2;
-      ctx.lineWidth = isStory ? 4 : 3;
-      ctx.strokeStyle = primaryColor;
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y);
-      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-      ctx.lineTo(x + w, y + h - r);
-      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-      ctx.lineTo(x + r, y + h);
-      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-      ctx.lineTo(x, y + r);
-      ctx.quadraticCurveTo(x, y, x + r, y);
-      ctx.closePath();
-      ctx.stroke();
-      ctx.fillStyle = primaryColor;
-      ctx.textBaseline = "middle";
-      ctx.fillText(text, cx, y + h / 2 + 1);
-      ctx.textBaseline = "alphabetic";
-      return h;
-    };
-
-    const gap = isStory ? 18 : 14;
-    let cursorY = height - padBottom;
-
-    if (firstHL) {
-      const hOut = drawPillOutline(firstHL, cursorY);
-      cursorY -= hOut + gap;
-    }
-    if (travelPeriod && travelPeriod.trim()) {
-      const hSol = drawPillSolid(travelPeriod.trim(), cursorY);
-      cursorY -= hSol + gap;
-    }
-
-    // 4a) Título maciço (serif uppercase) — AUTO-FIT acima dos botões
-    // Texto curto = GIGANTE; texto longo = reduz tamanho até caber em largura
-    // e respeita altura disponível (limita nº de linhas).
-    const title = (titleText || "").trim();
-    if (title) {
-      const userFamilyLocal = (fontFamily || "").trim();
-      const fam = userFamilyLocal && userFamilyLocal.toLowerCase() !== "inter"
-        ? `'${userFamilyLocal}', ${serif}`
-        : serif;
-      const maxW = width - (isStory ? 120 : 100);
-      const topReserve = topPad + (isStory ? 48 : 36);
-      const availableH = Math.max(120, cursorY - topReserve);
-
-      const maxSize = isStory ? 150 : 110;
-      const minSize = isStory ? 56 : 44;
-      const words = title.toUpperCase().split(/\s+/);
-
-      const wrapAt = (size: number): string[] => {
-        ctx.font = `900 ${size}px ${fam}`;
-        const ls: string[] = [];
-        let cur = "";
-        for (const w of words) {
-          const test = cur ? `${cur} ${w}` : w;
-          if (ctx.measureText(test).width > maxW && cur) {
-            ls.push(cur);
-            cur = w;
-          } else {
-            cur = test;
-          }
-        }
-        if (cur) ls.push(cur);
-        return ls;
-      };
-
-      // Busca o maior tamanho onde TODAS as linhas cabem na largura
-      // E o bloco total cabe na altura disponível (máx 4 linhas).
-      let chosenSize = minSize;
-      let chosenLines: string[] = wrapAt(minSize);
-      for (let s = maxSize; s >= minSize; s -= 4) {
-        const ls = wrapAt(s);
-        ctx.font = `900 ${s}px ${fam}`;
-        const widestOk = ls.every((ln) => ctx.measureText(ln).width <= maxW);
-        const totalH = ls.length * (s * 0.95);
-        if (widestOk && ls.length <= 4 && totalH <= availableH) {
-          chosenSize = s;
-          chosenLines = ls;
-          break;
-        }
-      }
-
-      ctx.font = `900 ${chosenSize}px ${fam}`;
-      ctx.fillStyle = "#ffffff";
-      ctx.shadowColor = "rgba(0,0,0,0.95)";
-      ctx.shadowBlur = 24;
-      ctx.shadowOffsetY = 4;
-      const lineH = chosenSize * 0.95;
-      let ty = cursorY - (chosenLines.length - 1) * lineH - lineH * 0.15;
-      for (const ln of chosenLines) {
-        ctx.fillText(ln, cx, ty);
-        ty += lineH;
-      }
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetY = 0;
-    }
-
-    ctx.textAlign = "left";
-    await drawFinalBranding(
-      ctx, width, height, logoDataUrl, 
-      options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-      options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-      cityFmt ? `${cityFmt} Viagens` : undefined,
-      undefined,
-      effectiveTextColor
-    );
-    applyFilmGrain(ctx, width, height, 0.04);
-    return canvas.toDataURL("image/png");
-  };
-
-  // O roteamento agora é feito no bloco principal acima.
-  // Estes ifs redundantes são removidos para evitar confusão.
-
-  if (strategy === "ancora") {
-    if (format === "story") {
-      // Story: foto de fundo total + gradiente + conteúdo vertical
-      const crop = fitCover(image.naturalWidth, image.naturalHeight, width, panelBottom, 0.38);
-      ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, panelBottom);
-      const overlay = ctx.createLinearGradient(0, 0, 0, panelBottom);
-      overlay.addColorStop(0, "rgba(0,0,0,0.10)");
-      overlay.addColorStop(0.38, "rgba(0,0,0,0.30)");
-      overlay.addColorStop(1, "rgba(0,0,0,0.82)");
-      ctx.fillStyle = overlay;
-      ctx.fillRect(0, 0, width, panelBottom);
-
-      // Painel de conteúdo na base (sobre o gradiente)
-      // 48% de panelBottom = painel menor, foto tem mais espaço visível
-      const panelH = Math.round(panelBottom * 0.48);
-      const panelY = panelBottom - panelH;
-      fillRoundRect(ctx, left - 20, panelY, contentWidth + 40, panelH, 0, `rgba(${parseInt(primaryColor.slice(1,3),16)},${parseInt(primaryColor.slice(3,5),16)},${parseInt(primaryColor.slice(5,7),16)},0.92)`);
-
-      const topY = panelY + 32;
-      drawBadge(left, topY, contentWidth);
-      ctx.fillStyle = "#ffffff";
-      drawTextBlock(ctx, titleText, left, topY + 104, contentWidth, 74, 2, { baseFontSize: 70, minFontSize: 40 });
-      const pillsH = drawHighlightsBlock(left, topY + 212, contentWidth, 3, false, true);
-      // price card: nunca ultrapassa panelBottom - 300
-      const priceCapY = panelBottom - 310;
-      const priceY = Math.min(priceCapY, topY + 242 + pillsH);
-      if (priceY < priceCapY + 10) drawPriceCard(left, priceY, contentWidth, 146, "right");
-    } else {
-      // Square: layout original com painel lateral
-      ctx.fillStyle = primaryColor;
-      ctx.fillRect(0, 0, width, height);
-      const panelW = Math.round(width * 0.44);
-      const photoX = panelW + 24;
-      const photoY = safeTop - 30;
-      const photoW = width - photoX - 42;
-      const photoH = panelBottom - photoY;
-      drawRoundedPhoto(photoX, photoY, photoW, photoH, 44, 0.4);
-      const topY = safeTop + 28;
-      drawBadge(left, topY, panelW - left - 28);
-      ctx.fillStyle = "#ffffff";
-      drawTextBlock(ctx, titleText, left, topY + 150, panelW - left - 36, 70, 2, { baseFontSize: 66, minFontSize: 38 });
-      const pillsH = drawHighlightsBlock(left, topY + 396, panelW - left - 36, 5, false, false);
-      const priceY = Math.min(panelBottom - 300, topY + 420 + pillsH);
-      drawPriceCard(left, priceY, panelW - left - 36, 146, "left");
-    }
-  } else if (strategy === "matriz") {
-    if (format === "story") {
-      // Story: foto de fundo com gradiente + layout vertical clean
-      const crop = fitCover(image.naturalWidth, image.naturalHeight, width, panelBottom, 0.36);
-      ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, panelBottom);
-      const overlay = ctx.createLinearGradient(0, 0, 0, panelBottom);
-      overlay.addColorStop(0, "rgba(0,0,0,0.05)");
-      overlay.addColorStop(0.45, "rgba(0,0,0,0.22)");
-      overlay.addColorStop(1, "rgba(0,0,0,0.88)");
-      ctx.fillStyle = overlay;
-      ctx.fillRect(0, 0, width, panelBottom);
-
-      const topY = safeTop + 60;
-      drawBadge(left, topY, contentWidth);
-      ctx.fillStyle = "#ffffff";
-      drawTextBlock(ctx, titleText, left, topY + 110, contentWidth, 80, 2, { baseFontSize: 76, minFontSize: 44 });
-      drawPromoKicker(left, topY + 230);
-      const pillsH = drawHighlightsBlock(left, topY + 310, contentWidth, 4, true, true);
-      const priceY = Math.min(panelBottom - 320, topY + 340 + pillsH);
-      drawPriceCard(left, priceY, contentWidth, 154, "right");
-    } else {
-      // Square: layout original
-      ctx.fillStyle = primaryColor;
-      ctx.fillRect(0, 0, width, height);
-      const photoY = safeTop + 12;
-      const photoH = 360;
-      drawRoundedPhoto(left, photoY, contentWidth, photoH, 44, 0.36);
-      const lowerY = photoY + photoH + 34;
-      const leftColW = Math.round(contentWidth * 0.5);
-      drawBadge(left, lowerY, leftColW);
-      ctx.fillStyle = "#ffffff";
-      drawTextBlock(ctx, titleText, left, lowerY + 136, leftColW, 72, 4, { baseFontSize: 68, minFontSize: 34 });
-      drawPromoKicker(left, lowerY + 294);
-      const rightColX = left + leftColW + 24;
-      const rightColW = contentWidth - leftColW - 24;
-      const pillsH = drawHighlightsBlock(rightColX, lowerY + 8, rightColW, 5, true, false);
-      const priceY = Math.min(panelBottom - 300, lowerY + pillsH + 40);
-      drawPriceCard(rightColX, priceY, rightColW, 154, "right");
-    }
-  } else if (strategy === "gancho") {
-    // Foto de fundo cobre toda a tela com gradiente escurecido na base
-    const heroH = panelBottom;
-    const crop = fitCover(image.naturalWidth, image.naturalHeight, width, heroH, format === "story" ? 0.38 : 0.42);
-    ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, heroH);
-    const overlay = ctx.createLinearGradient(0, 0, 0, heroH);
-    overlay.addColorStop(0, "rgba(0,0,0,0.08)");
-    overlay.addColorStop(0.5, "rgba(0,0,0,0.25)");
-    overlay.addColorStop(1, "rgba(0,0,0,0.88)");
-    ctx.fillStyle = overlay;
-    ctx.fillRect(0, 0, width, heroH);
-
-    const panelH = format === "story" ? 780 : 500;
-    const panelY = panelBottom - panelH;
-    fillRoundRect(ctx, left, panelY, contentWidth, panelH, 42, "rgba(7,10,18,0.78)");
-
-    const badgeY = panelY + 28;
-    drawBadge(left + 28, badgeY, 380);
-
-    ctx.fillStyle = "#ffffff";
-    const titleY = badgeY + 96;
-    drawTextBlock(ctx, titleText, left + 28, titleY, contentWidth - 56, format === "story" ? 72 : 60, 2, { baseFontSize: format === "story" ? 68 : 58, minFontSize: 32 });
-
-    // Destino em destaque (grande, abaixo do título)
-    const destY = titleY + (format === "story" ? 164 : 136);
-    let destFontSize = format === "story" ? 68 : 54;
-    ctx.font = `900 ${destFontSize}px Inter, Arial, sans-serif`;
-    const destStr = (destination || "").toUpperCase();
-    while (ctx.measureText(destStr).width > contentWidth - 80 && destFontSize > 32) {
-      destFontSize -= 4;
-      ctx.font = `900 ${destFontSize}px Inter, Arial, sans-serif`;
-    }
-    ctx.fillStyle = secondaryColor;
-    ctx.fillText(destStr, left + 28, destY);
-
-    // 3 Pills compactos — abaixo do destino
-    const pillsY = destY + (format === "story" ? 40 : 34);
-    // Exibe até 6 destaques no formato compacto
-    drawHighlightsBlock(left + 28, pillsY, contentWidth - 56, 6, true, true);
-
-    // Price card — cap duro em panelBottom - 310 para nunca invadir o branding
-    const pillsCount = highlights.slice(0, 6).length;
-    const priceCardYRaw = pillsY + pillsCount * 70 + 20;
-    const priceCardY = Math.min(priceCardYRaw, panelBottom - 310);
-    drawPriceCard(left + 28, priceCardY, contentWidth - 56, 290, "right");
-
-
-  } else if (strategy === "experiencia_hero") {
-    const padBottom = format === "story" ? safeBottom : 140;
-    const heroH = format === "story" ? panelBottom : height;
-    const crop = fitCover(image.naturalWidth, image.naturalHeight, width, heroH, format === "story" ? 0.34 : 0.38);
-    ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, heroH);
-
-    const veil = ctx.createLinearGradient(0, 0, 0, heroH);
-    veil.addColorStop(0, "rgba(0,0,0,0.08)");
-    veil.addColorStop(0.52, "rgba(0,0,0,0.10)");
-    veil.addColorStop(1, "rgba(0,0,0,0.62)");
-    ctx.fillStyle = veil;
-    ctx.fillRect(0, 0, width, heroH);
-
-    const textY = format === "story" ? panelBottom - 520 : height - 380;
-    const titleY = format === "story" ? textY + 96 : textY + 92;
-    const benefitsY = format === "story" ? textY + 332 : textY + 248;
-    const footerY = format === "story" ? textY + 245 : textY + 318;
-    ctx.fillStyle = "#ffffff";
-    ctx.textAlign = "left";
-    ctx.font = "700 30px Inter, Arial, sans-serif";
-    ctx.fillText(cityFmt ? `Saindo de ${cityFmt}` : "Experiência completa", left, textY);
-    drawTextBlock(ctx, titleText, left, titleY, contentWidth, format === "story" ? 92 : 72, 2, { fontWeight: "800", baseFontSize: format === "story" ? 88 : 66, minFontSize: 42 });
-
-    const smallItems = shownHighlights.slice(0, 3).map((h) => h.text).join("   •   ");
-    ctx.font = `700 ${format === "story" ? 25 : 24}px Inter, Arial, sans-serif`;
-    drawTextBlock(ctx, `•   ${smallItems}`, left, benefitsY, contentWidth, format === "story" ? 34 : 32, 2, { fontWeight: "700", baseFontSize: format === "story" ? 25 : 24, minFontSize: 18 });
-
-    ctx.font = "500 30px Inter, Arial, sans-serif";
-    ctx.fillText(subtitleText, left, footerY);
-  } else if (strategy === "experiencia_editorial") {
-    ctx.fillStyle = "#f7f2ea";
-    ctx.fillRect(0, 0, width, height);
-    const photoX = Math.round(width * 0.42);
-    const photoY = safeTop - 40;
-    const photoW = width - photoX - 48;
-    const photoH = panelBottom - photoY - 44;
-    drawRoundedPhoto(photoX, photoY, photoW, photoH, 34, 0.36);
-
-    const columnW = photoX - left - 42;
-    ctx.fillStyle = primaryColor;
-    ctx.textAlign = "left";
-    ctx.font = "700 28px Inter, Arial, sans-serif";
-    ctx.fillText(cityFmt ? `Saindo de ${cityFmt}` : "Roteiro especial", left, safeTop + 54);
-    drawTextBlock(ctx, titleText, left, safeTop + 170, columnW, 78, 3, { fontWeight: "800", baseFontSize: 74, minFontSize: 42 });
-    ctx.fillStyle = "#2b2118";
-    ctx.font = "500 38px Inter, Arial, sans-serif";
-    drawTextBlock(ctx, "Uma experiência pensada para viver o destino com calma, beleza e curadoria.", left, safeTop + 420, columnW, 50, 4, { fontWeight: "500", baseFontSize: 38, minFontSize: 28 });
-    ctx.font = "700 32px Inter, Arial, sans-serif";
-    shownHighlights.slice(0, 4).forEach((item, idx) => {
-      ctx.fillStyle = primaryColor;
-      ctx.fillText("•", left, safeTop + 640 + idx * 70);
-      ctx.fillStyle = "#2b2118";
-      ctx.fillText(item.text, left + 38, safeTop + 640 + idx * 70);
-    });
-    ctx.font = "700 28px Inter, Arial, sans-serif";
-    ctx.fillStyle = primaryColor;
-    ctx.fillText("Consulte disponibilidade", left, Math.min(panelBottom - 90, safeTop + 930));
-  } else if (strategy === "experiencia_postcard") {
-    const heroH = panelBottom;
-    const crop = fitCover(image.naturalWidth, image.naturalHeight, width, heroH, format === "story" ? 0.28 : 0.34);
-    ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, heroH);
-
-    const shade = ctx.createLinearGradient(0, 0, 0, heroH);
-    shade.addColorStop(0, "rgba(0,0,0,0.18)");
-    shade.addColorStop(0.48, "rgba(0,0,0,0.02)");
-    shade.addColorStop(1, "rgba(0,0,0,0.55)");
-    ctx.fillStyle = shade;
-    ctx.fillRect(0, 0, width, heroH);
-
-    ctx.strokeStyle = "rgba(255,255,255,0.82)";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(left, safeTop + 20, contentWidth, panelBottom - safeTop - 80);
-    ctx.fillStyle = "#ffffff";
-    ctx.textAlign = "center";
-    ctx.font = "700 28px Inter, Arial, sans-serif";
-    ctx.fillText(cityFmt ? `Saindo de ${cityFmt}` : "Roteiro especial", width / 2, safeTop + 96);
-    ctx.textAlign = "left";
-    drawTextBlock(ctx, destFmt, left + 42, panelBottom - 360, contentWidth - 84, 86, 2, { fontWeight: "800", baseFontSize: format === "story" ? 92 : 70, minFontSize: 44 });
-    ctx.font = "500 30px Inter, Arial, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(subtitleText, width / 2, panelBottom - 165);
-    ctx.textAlign = "left";
-  } else if (strategy === "experiencia_lifestyle") {
-    const photoH = Math.round(panelBottom * 0.76);
-    const crop = fitCover(image.naturalWidth, image.naturalHeight, width, photoH, format === "story" ? 0.42 : 0.46);
-    ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, photoH);
-    const grad = ctx.createLinearGradient(0, photoH - 240, 0, photoH);
-    grad.addColorStop(0, "rgba(0,0,0,0)");
-    grad.addColorStop(1, "rgba(0,0,0,0.42)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, photoH - 240, width, 240);
-    ctx.fillStyle = "#ffffff";
-    drawTextBlock(ctx, titleText, left, photoH - 210, contentWidth, 78, 2, { fontWeight: "800", baseFontSize: format === "story" ? 78 : 62, minFontSize: 40 });
-
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, photoH, width, height - photoH);
-    ctx.fillStyle = primaryColor;
-    ctx.font = "700 30px Inter, Arial, sans-serif";
-    ctx.fillText(subtitleText, left, photoH + 92);
-    ctx.fillStyle = "#1f2937";
-    ctx.font = "500 30px Inter, Arial, sans-serif";
-    drawTextBlock(ctx, "Um roteiro com beleza, conforto e momentos autênticos no destino.", left, photoH + 160, contentWidth, 42, 3, { fontWeight: "500", baseFontSize: 30, minFontSize: 22 });
-    shownHighlights.slice(0, 3).forEach((item, idx) => {
-      ctx.fillStyle = primaryColor;
-      ctx.font = "800 28px Inter, Arial, sans-serif";
-      ctx.fillText("—", left, photoH + 340 + idx * 58);
-      ctx.fillStyle = "#1f2937";
-      ctx.font = "700 27px Inter, Arial, sans-serif";
-      ctx.fillText(item.text, left + 46, photoH + 340 + idx * 58);
-    });
-  } else {
-    // Fallback vitrine: foto no topo + painel de cor na base.
-    // REGRA PRINCIPAL: o painel SEMPRE termina em panelBottom (= height - safeBottom).
-    const photoHeight = format === "story"
-      ? Math.round(height * 0.42)  // Story: 42% foto = 806px; 534px painel
-      : Math.round(height * 0.38); // Square: 38% foto = 410px; ~550px painel
-    const bottomY = photoHeight;
-    const bottomHeight = panelBottom - bottomY; // painel exatamente até panelBottom
-
-    const crop = fitCover(image.naturalWidth, image.naturalHeight, width, photoHeight, format === "story" ? 0.35 : 0.4);
-    ctx.drawImage(image, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, photoHeight);
-
-    const photoGradient = ctx.createLinearGradient(0, photoHeight - 120, 0, photoHeight);
-    photoGradient.addColorStop(0, "rgba(0,0,0,0)");
-    photoGradient.addColorStop(1, "rgba(0,0,0,0.28)");
-    ctx.fillStyle = photoGradient;
-    ctx.fillRect(0, photoHeight - 120, width, 120);
-
-    ctx.fillStyle = primaryColor;
-    ctx.fillRect(0, bottomY, width, bottomHeight);
-
-    let cursorY = bottomY + 28;
-    drawBadge(left, cursorY, contentWidth);
-    cursorY += 70;
-
-    ctx.fillStyle = "#ffffff";
-    const titleBase = format === "story" ? 60 : 68;
-    drawTextBlock(ctx, titleText, left, cursorY + 44, contentWidth, 68, 2, { baseFontSize: titleBase, minFontSize: 34 });
-    cursorY += format === "story" ? 110 : 120;
-
-    // Highlights em 2 colunas no Square para economizar altura
-    if (format === "story") {
-      const pillsH = drawHighlightsBlock(left, cursorY, contentWidth, 3, false, true);
-      cursorY += pillsH + 14;
-    } else {
-      // Square: 2 colunas de até 2 pills cada (4 items total, compacto)
-      const colW = Math.floor(contentWidth / 2) - 12;
-      const pillsH1 = drawHighlightsBlock(left, cursorY, colW, 2, false, true);
-      drawHighlightsBlock(left + colW + 24, cursorY, colW, 2, false, true);
-      cursorY += pillsH1 + 14;
-    }
-
-    // Price card: sempre desenhado — posição = min(após highlights, panelBottom-160)
-    // panelBottom-160 garante que o card (290px) não invade o branding
-    const priceCardAnchor = format === "story" ? panelBottom - 310 : panelBottom - 160;
-    drawPriceCard(left, Math.min(cursorY, priceCardAnchor), contentWidth, 168, "right");
-  }
-
-  ctx.textAlign = "left";
-  ctx.textBaseline = "alphabetic";
-  await drawFinalBranding(
-      ctx, width, height, logoDataUrl, 
-      (options as any).footerContact1Icon ? { icon: (options as any).footerContact1Icon, value: (options as any).footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-      (options as any).footerContact2Icon ? { icon: (options as any).footerContact2Icon, value: (options as any).footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-      cityFmt ? `${cityFmt} Viagens` : undefined,
-      undefined,
-      effectiveTextColor
-    );
-  return canvas.toDataURL("image/png");
+  // Fallback para Ofertas (Matriz, Gancho, etc.)
+  return await renderSafeSquareOffer();
 }
 
 /**
