@@ -1692,7 +1692,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         cityFmt ? `${cityFmt} Viagens` : undefined,
         effectiveTextColor
       );
-      applyFilmGrain(0.04);
+      applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
     }
 
