@@ -522,6 +522,22 @@ const ICON_SYMBOL: Record<IconKey, string> = {
   wifi: "wifi",
 };
 
+
+/**
+ * 🛡️ BLINDAGEM CANVA VIAGEM: Remove caracteres corrompidos de encoding (lixo visual)
+ * e garante que o texto seja seguro para renderização em qualquer navegador.
+ */
+function sanitizeAdText(text: string): string {
+  if (!text) return "";
+  // Remove padrões comuns de corrupção de encoding (lixo visual como Ô£, ├á, etc)
+  return text
+    .replace(/[\u0080-\u00FF]/g, (char) => {
+      // Mapeamento de emergência para caracteres acentuados comuns que podem ter sido corrompidos
+      const map: Record<string, string> = { 'á':'a', 'é':'e', 'í':'i', 'ó':'o', 'ú':'u', 'ã':'a', 'õ':'o', 'ç':'c' };
+      return map[char] || "";
+    })
+    .trim();
+}
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -1426,6 +1442,12 @@ function drawTextBlock(
 }
 
 export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<string> {
+  // 🛡️ Camada de Higienização de Dados (Blindagem Anti-Corrupção)
+  const safeDest = sanitizeAdText(destination || "");
+  const safeCity = sanitizeAdText(city || "");
+  const safePromo = sanitizeAdText(promoName || "");
+  const safeTitle = sanitizeAdText(titleText || "");
+
   const {
     imageUrl,
     format,
