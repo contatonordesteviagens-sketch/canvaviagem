@@ -67,42 +67,42 @@ const TESTIMONIALS = [
   {
     name: "Renata Vasconcelos",
     agency: "Dream Travel · São Paulo, SP",
-    metric: "🚀 Engajamento +340%",
+    metric: "🚀 Engajamento +340% em 15 dias",
     text: "Minha agência era invisível no Instagram. Em 15 dias fechei 3 pacotes para o Nordeste só pelos Reels. O design premium faz toda a diferença.",
     photo: "/assets/renata.png"
   },
   {
     name: "Carlos Eduardo",
     agency: "Cadu Viagens · Recife, PE",
-    metric: "🚀 ROI: 12x invest",
+    metric: "🚀 ROI 12x em 30 dias",
     text: "O que me economiza de tempo não está escrito. Antes eu perdia 3h num post, agora posto em 2 minutos. Os vídeos são cinematográficos.",
     photo: "/assets/carlos.png"
   },
   {
     name: "Ana Paula Silva",
     agency: "Viaje Mais · Curitiba, PR",
-    metric: "🚀 84 novos leads/mês",
+    metric: "🚀 84 leads em 45 dias",
     text: "Assinei com medo por ser barato, mas a qualidade entregue é de agência de publicidade. Nunca mais fico sem postar.",
     photo: "/assets/ana.png"
   },
   {
     name: "Marcos Oliveira",
     agency: "Prime Agência · Florianópolis, SC",
-    metric: "🚀 Ticket: +R$1.2k",
+    metric: "🚀 Ticket +R$1.2k em 60 dias",
     text: "Os vídeos passam uma credibilidade gigante. Atrai cliente de alto padrão que antes ignorava minha agência.",
     photo: "/assets/marcos.png"
   },
   {
     name: "Julia Lima",
     agency: "Agente Conectada · Belo Horizonte, MG",
-    metric: "🚀 Engajamento: +280%",
+    metric: "🚀 Engajamento +280% em 21 dias",
     text: "Nunca tive tantos salvamentos em um post. O conteúdo cinematográfico realmente para o scroll do cliente.",
     photo: "/assets/julia.png"
   },
   {
     name: "Fabio Rocha",
     agency: "Rocha Excursões · Rio de Janeiro, RJ",
-    metric: "🚀 15 leads por dia",
+    metric: "🚀 15 leads/dia em 30 dias",
     text: "O roteiro de WhatsApp junto com os vídeos mudou meu jogo. O conteúdo atrai e o script fecha a venda. Sem falha.",
     photo: "/assets/fabio.png"
   }
