@@ -1103,6 +1103,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const installments = isExperience ? "" : (rawInstallments || "");
   const showTotal = isExperience ? false : (rawShowTotal !== false);
   const showPixBanner = isExperience ? false : (rawShowPixBanner !== false);
+  const priceValueText = (price || "").trim();
+  const priceWithSymbol = /^(R\$|US\$|AR\$|€|£|[A-Z]{1,3}\$)/i.test(priceValueText)
+    ? priceValueText
+    : `${curSym} ${priceValueText}`.trim();
 
   const RULES = {
     SAFE_BOTTOM: isStory ? 480 : 120, // Zona de exclus├úo absoluta para conte├║do din├ómico
