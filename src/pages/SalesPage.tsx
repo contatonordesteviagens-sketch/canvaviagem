@@ -946,8 +946,7 @@ export default function SalesPage() {
             <div style={{ 
               background: 'rgba(255,255,255,0.02)', 
               border: THEME.border, 
-              borderRadius: '32px', padding: '48px 40px',
-              opacity: 0.8
+              borderRadius: '32px', padding: '48px 40px'
             }}>
               <p style={{ fontSize: '14px', fontWeight: 800, color: 'rgba(255,255,255,0.4)', letterSpacing: '1px', marginBottom: '24px' }}>PLANO MENSAL</p>
               <div style={{ marginBottom: '32px' }}>
