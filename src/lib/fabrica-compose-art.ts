@@ -1384,7 +1384,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       promoTrunc = promoTrunc.slice(0, -2);
     }
     if (promoTrunc !== promoUpper) promoTrunc = promoTrunc.slice(0, -1) + "ÔÇª";
-    safeFillText(ctx, promoTrunc, x, y + (hasOfferKeyword ? 0 : 48), innerW - 40, 16);
+    safeFillText(ctx, promoTrunc, x, y + (hasOfferKeyword ? 0 : 48), contentWidth - 40, 16);
   };
 
   const renderSafeSquareOffer = async () => {
