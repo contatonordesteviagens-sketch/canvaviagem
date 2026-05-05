@@ -647,7 +647,9 @@ function drawMonoIcon(
       ctx.arc(cx, cy, s * 0.3, 0, Math.PI * 2); ctx.fill();
   }
   ctx.restore();
-}square" | "story";
+}
+
+type Format = "square" | "story";
 type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | "camera" | "map" | "food" | "ship" | "palm" | "coffee" | "guide" | "wifi";
 
 // Escurece (percent < 0) ou clareia (percent > 0) uma cor hex (#rgb / #rrggbb).
