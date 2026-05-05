@@ -2385,6 +2385,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       applyFilmGrain(ctx, width, height, 0.04);
       return canvas.toDataURL("image/png");
     }
+    return canvas.toDataURL("image/png");
+  };
+
 
   // ============================================================
   // V0_Experiencia ┬À LUXO & DESEJO (canvas)
