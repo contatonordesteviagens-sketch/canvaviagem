@@ -959,7 +959,9 @@ export default function SalesPage() {
           <div style={{ textAlign: 'center', marginBottom: '64px' }}>
             <p style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '3px', color: THEME.accent, marginBottom: '16px' }}>ACESSO DE PRÓXIMO NÍVEL</p>
             <h2 style={{ fontSize: 'clamp(28px, 5vw, 42px)', fontWeight: 900, color: '#fff', marginBottom: '16px' }}>Escolha seu plano</h2>
-            <p style={{ fontSize: '17px', color: THEME.textSecondary }}>Acesso imediato a todo o ecossistema assim que confirmar.</p>
+            <p style={{ fontSize: '17px', color: THEME.textSecondary, marginBottom: '32px' }}>Acesso imediato a todo o ecossistema assim que confirmar.</p>
+            <p style={{ fontSize: '11px', color: THEME.accent, letterSpacing: '2px', marginBottom: '14px', fontWeight: 700 }}>OFERTA EXPIRA EM</p>
+            <CountdownTimer variant="block" />
           </div>
 
           <div style={{ 
