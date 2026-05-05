@@ -1098,6 +1098,7 @@ export default function SalesPage() {
       </section>
 
       {/* FOOTER */}
+      <div style={{ height: '80px' }} />
       <footer style={{ 
         background: '#030508', 
         borderTop: '1px solid rgba(255,255,255,0.05)', 
