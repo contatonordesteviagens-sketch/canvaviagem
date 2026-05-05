@@ -354,9 +354,9 @@ async function drawFinalBranding(
   logoUrl?: string,
   contact1?: { icon: string; value: string },
   contact2?: { icon: string; value: string },
-  agencyName?: string,
   textColorOverride?: string,
-  fontFamily: string = "Inter"
+  fontFamily: string = "Inter",
+  skipLogo: boolean = false
 ) {
   const contactsToDraw: { icon: string; value: string }[] = [];
   // So adiciona contatos que tenham valor preenchido (evita ícones vazios)
@@ -392,7 +392,7 @@ async function drawFinalBranding(
   let lw = 0;
   let lh = 0;
 
-  if (logoUrl) {
+  if (logoUrl && !skipLogo) {
     try {
       const logo = await loadImage(logoUrl);
       const maxLogoH = footerHeight * 0.85;
@@ -457,7 +457,7 @@ async function drawFinalBranding(
 
     // Auto-shrink para evitar colisão
     let currentFontSize = fontSize;
-    const iconSizeFactor = 1.1;
+    const iconSizeFactor = 1.35;
     let currentIconSize = currentFontSize * iconSizeFactor;
     
     ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
@@ -822,6 +822,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     logoDataUrl,
     whatsapp,
     instagram,
+    footerContact1Icon,
+    footerContact1Value,
+    footerContact2Icon,
+    footerContact2Value,
     isExperience,
   } = options;
 
@@ -1384,7 +1388,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         benefitsFontSize -= 2; ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
       }
       const daysW = ctx.measureText(daysText).width;
-      const sepGap = 18; const iconSize = Math.round(benefitsFontSize * 1.33); const iconGap = 18;
+      const sepGap = 18; const iconSize = Math.round(benefitsFontSize * 1.8); const iconGap = 18;
       const iconsTotal = iconList.length * iconSize + Math.max(0, iconList.length - 1) * iconGap;
       const sepW = 4; const infoTotalW = daysW + sepGap + sepW + sepGap + iconsTotal;
       let infoX = cx - infoTotalW / 2;
@@ -1513,8 +1517,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
         undefined,
-        effectiveTextColor
-      , undefined, true);
+        effectiveTextColor,
+        userFamily,
+        true
+      );
       applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
     }
@@ -1636,8 +1642,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
         undefined,
-        effectiveTextColor
-      , undefined, true);
+        effectiveTextColor,
+        userFamily,
+        true
+      );
       applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
     }
@@ -1775,8 +1783,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
         undefined,
-        effectiveTextColor
-      , undefined, true);
+        effectiveTextColor,
+        userFamily,
+        true
+      );
       applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
     }
@@ -1901,8 +1911,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
         undefined,
-        effectiveTextColor
-      , undefined, true);
+        effectiveTextColor,
+        userFamily,
+        true
+      );
       applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
     }
@@ -2073,7 +2085,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillText("|", infoStartX + daysWv4 + 14, infoYv4);
       const sepWv4 = ctx.measureText("|").width;
       // ícones na mesma linha
-      const iconSizeV4 = 36;
+      const iconSizeV4 = 44;
       const iconGapV4 = 14;
       let iconCursor = infoStartX + daysWv4 + 14 + sepWv4 + 18;
       iconListV4.forEach((k) => {
@@ -2203,7 +2215,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.textBaseline = "alphabetic";
       }
 
-      await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, undefined, effectiveTextColor, undefined, true);
+      await drawFinalBranding(
+        ctx, width, height, logoDataUrl, 
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        undefined,
+        effectiveTextColor,
+        userFamily,
+        true
+      );
       applyFilmGrain(ctx, width, height, 0.04);
       return canvas.toDataURL("image/png");
     }
@@ -2215,6 +2235,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
   // V0_Experiencia · LUXO & DESEJO (canvas)
   // ============================================================
   const renderV0Experiencia = async (): Promise<string> => {
+    await drawProminentLogo(ctx, 40, 40, 120);
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
     ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
@@ -2254,7 +2275,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
     await drawFinalBranding(ctx, width, height, logoDataUrl, 
       { icon: footerContact1Icon || "whatsapp_green", value: footerContact1Value || whatsapp || "" },
       { icon: footerContact2Icon || "instagram_gradient", value: footerContact2Value || instagram || "" },
-      cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor, userFamily);
+      undefined,
+      effectiveTextColor,
+      userFamily,
+      true
+    );
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   };
@@ -2263,6 +2288,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
   // V1_Experiencia · LUXO CINEMATOGRÁFICO (canvas)
   // ============================================================
   const renderV1Experiencia = async (): Promise<string> => {
+    await drawProminentLogo(ctx, 40, 40, 120);
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
     ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
@@ -2305,7 +2331,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
     await drawFinalBranding(ctx, width, height, logoDataUrl, 
       { icon: footerContact1Icon || "whatsapp_green", value: footerContact1Value || whatsapp || "" },
       { icon: footerContact2Icon || "instagram_gradient", value: footerContact2Value || instagram || "" },
-      cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor, userFamily);
+      undefined,
+      effectiveTextColor,
+      userFamily,
+      true
+    );
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   };
@@ -2314,6 +2344,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
   // V2_Experiencia · LUXO MATERIAL (canvas)
   // ============================================================
   const renderV2Experiencia = async (): Promise<string> => {
+    await drawProminentLogo(ctx, 40, 40, 120);
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
     ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
@@ -2357,7 +2388,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
     await drawFinalBranding(ctx, width, height, logoDataUrl, 
       { icon: footerContact1Icon || "whatsapp_green", value: footerContact1Value || whatsapp || "" },
       { icon: footerContact2Icon || "instagram_gradient", value: footerContact2Value || instagram || "" },
-      cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor, userFamily);
+      undefined,
+      effectiveTextColor,
+      userFamily,
+      true
+    );
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   };
@@ -2366,6 +2401,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
   // V3_Experiencia · DARK PREMIUM (canvas)
   // ============================================================
   const renderV3Experiencia = async (): Promise<string> => {
+    await drawProminentLogo(ctx, 40, 40, 120);
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
     ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
@@ -2396,7 +2432,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
     await drawFinalBranding(ctx, width, height, logoDataUrl, 
       { icon: footerContact1Icon || "whatsapp_green", value: footerContact1Value || whatsapp || "" },
       { icon: footerContact2Icon || "instagram_gradient", value: footerContact2Value || instagram || "" },
-      cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor, userFamily);
+      undefined,
+      effectiveTextColor,
+      userFamily,
+      true
+    );
     applyFilmGrain(ctx, width, height, 0.05);
     return canvas.toDataURL("image/png");
   };
@@ -2405,6 +2445,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
   // V4_Experiencia · CLEAN EDITORIAL (canvas)
   // ============================================================
   const renderV4Experiencia = async (): Promise<string> => {
+    await drawProminentLogo(ctx, 40, 40, 120);
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.42);
     ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
@@ -2454,7 +2495,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
     await drawFinalBranding(ctx, width, height, logoDataUrl, 
       { icon: footerContact1Icon || "whatsapp_green", value: footerContact1Value || whatsapp || "" },
       { icon: footerContact2Icon || "instagram_gradient", value: footerContact2Value || instagram || "" },
-      cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor, userFamily);
+      undefined,
+      effectiveTextColor,
+      userFamily,
+      true
+    );
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   };
