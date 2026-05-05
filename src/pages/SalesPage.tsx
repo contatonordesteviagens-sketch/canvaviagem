@@ -388,13 +388,14 @@ export default function SalesPage() {
 
           {/* Headline */}
           <h1 style={{
-            fontSize: 'clamp(32px, 8vw, 56px)',
+            fontSize: 'clamp(28px, 6vw, 56px)',
             fontWeight: 900, lineHeight: 1.1,
-            color: '#fff', marginBottom: '20px',
+            color: '#fff',
             maxWidth: '900px', margin: '0 auto 20px',
-            letterSpacing: '-1px'
+            letterSpacing: '-1px',
+            wordBreak: 'break-word', overflowWrap: 'break-word', hyphens: 'auto'
           }}>
-            Seu feed parece amador enquanto <br/> seu concorrente parece ter uma{' '}
+            Seu feed parece amador enquanto seu concorrente parece ter uma{' '}
             <span style={{ 
               background: `linear-gradient(135deg, ${THEME.accent}, #fff)`,
               WebkitBackgroundClip: 'text',
