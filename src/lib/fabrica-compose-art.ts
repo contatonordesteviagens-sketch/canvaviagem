@@ -989,10 +989,6 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     instagram,
   } = options;
   const curSym = (currencySymbol || "R$").trim();
-  const priceValueText = (price || "").trim();
-  const priceWithSymbol = /^(R\$|US\$|AR\$|Ôé¼|┬ú|[A-Z]{1,3}\$)/i.test(priceValueText)
-    ? priceValueText
-    : `${curSym} ${priceValueText}`.trim();
 
   const width = 1080;
   const height = format === "story" ? 1920 : 1080;
