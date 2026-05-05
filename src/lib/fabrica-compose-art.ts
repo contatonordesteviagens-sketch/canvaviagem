@@ -785,11 +785,11 @@ function drawTextBlock(
  */
 function sanitizeAdText(text: string): string {
   if (!text) return "";
+  // 🛡️ Blindagem Cirúrgica: remove lixo de IA sem quebrar o texto do usuário
   return text
-    .replace(/return\s*\(/gi, "") // Remove 'return ('
+    .replace(/return\s*\(/gi, "")     // Remove 'return ('
     .replace(/const\s+\w+\s*=/gi, "") // Remove 'const var ='
-    .replace(/[<>{}()]/g, "") // Remove brackets e braces suspeitos
-    .replace(/\s+/g, " ") // Normaliza espaços
+    .replace(/[<>]/g, "")             // Remove apenas tags < > suspeitas
     .trim();
 }
 
@@ -801,7 +801,6 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     secondaryColor,
     price: rawPrice,
     installments: rawInstallments,
-    highlights,
     hasLogo,
     paymentMode = "installments",
     paymentLabel,
@@ -823,14 +822,23 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     logoDataUrl,
     whatsapp,
     instagram,
+    isExperience,
   } = options;
 
-  // 🛡️ Camada de Higienização de Dados (Blindagem Anti-Corrupção)
-  // Sanitizamos as entradas brutas para evitar artefatos de código nas artes
   const destination = sanitizeAdText(options.destination || "");
   const city = sanitizeAdText(options.city || "");
   const promoName = sanitizeAdText(options.promoName || "");
   const titleOverride = sanitizeAdText(options.titleOverride || "");
+  const highlights = (options.highlights || []).map(h => ({
+    ...h,
+    text: sanitizeAdText(h.text || "")
+  }));
+
+  // 🛡️ Blindagem de Experiência: garante que dados de preço nunca vazem para ads de luxo
+  const price = isExperience ? "" : sanitizeAdText(rawPrice || "");
+  const installments = isExperience ? "" : sanitizeAdText(rawInstallments || "");
+  const showTotal = isExperience ? false : (rawShowTotal !== false);
+  const showPixBanner = isExperience ? false : (rawShowPixBanner !== false);
 
   const curSym = (currencySymbol || "R$").trim();
 
@@ -939,14 +947,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   // REGRA 2: SEPARAÇÃO CATEGÓRICA (Experiencia != Oferta).
   // REGRA 3: HIGIENIZAÇÃO DE ESTADO (Nenhum dado de preco vaza para ads de luxo).
   // ===========================================================================
-  const isExperience = !!options.isExperience; 
   const isStory = format === "story";
-
-  // Higienizacão Imutavel (Garante que nunca havera preco em Experience)
-  const price = isExperience ? "" : (rawPrice || "");
-  const installments = isExperience ? "" : (rawInstallments || "");
-  const showTotal = isExperience ? false : (rawShowTotal !== false);
-  const showPixBanner = isExperience ? false : (rawShowPixBanner !== false);
   const priceValueText = (price || "").trim();
   // 🛡️ BLINDAGEM DE PREÇO: Garante que o preço nunca chega ao canvas já formatado
   // com separadores duplicados (ex: "1.499,00" vindo de Intl.NumberFormat, que ao
