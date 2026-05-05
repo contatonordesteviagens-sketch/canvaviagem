@@ -1797,7 +1797,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const priceCenterX = priceX + priceBlockW / 2;
       ctx.textAlign = "center";
       ctx.fillStyle = v0OnPanel; ctx.font = "600 22px Inter, Arial, sans-serif";
-      safeFillText(ctx, (topLabel || "por apenas").toString(), priceCenterX, rowTopY + 28, priceCardW - 20, 14);
+      safeFillText(ctx, (topLabel || "por apenas").toString(), priceCenterX, rowTopY + 28, priceBlockW - 20, 14);
       const priceStr = mainPrice || `${curSym} ${price}`;
       // Auto-shrink do pre├ºo pra n├úo vazar do bloco direito
       let priceFs = 64;
@@ -1807,7 +1807,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
       }
       ctx.fillStyle = v0OnPanel;
-      safeFillText(ctx, priceStr, priceCenterX, rowTopY + 92, priceCardW - 20, 24);
+      safeFillText(ctx, priceStr, priceCenterX, rowTopY + 92, priceBlockW - 20, 24);
       ctx.font = "600 20px Inter, Arial, sans-serif"; ctx.fillStyle = v0OnPanel;
       ctx.globalAlpha = 0.7;
       ctx.fillText(bottomSuffix, priceCenterX, rowTopY + 120);
@@ -1825,7 +1825,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         cityFmt ? `${cityFmt} Viagens` : undefined,
         effectiveTextColor
       );
-      applyFilmGrain(0.04);
+      applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
     }
 
@@ -1963,7 +1963,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         cityFmt ? `${cityFmt} Viagens` : undefined,
         effectiveTextColor
       );
-      applyFilmGrain(0.04);
+      applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
     }
 
@@ -1992,27 +1992,27 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const benefitsCountV2 = Math.max(1, benefitsListV2.length);
 
       // 1) Card de pre├ºo ÔÇö ancorado ├á base e centralizado para n├úo pesar s├│ ├á esquerda
-      const priceCardW = Math.round(width * 0.66);
+      const priceBlockW = Math.round(width * 0.66);
       const priceCardH = 168;
-      const priceCardX = Math.round((width - priceCardW) / 2);
+      const priceCardX = Math.round((width - priceBlockW) / 2);
       const priceCardY = panelBottom - priceCardH;
-      fillRoundRect(ctx, priceCardX, priceCardY, priceCardW, priceCardH, 16, v2CardBg);
+      fillRoundRect(ctx, priceCardX, priceCardY, priceBlockW, priceCardH, 16, v2CardBg);
       ctx.fillStyle = v2CardLabel; ctx.font = "700 24px Inter, Arial, sans-serif";
       ctx.textAlign = "center";
-      safeFillText(ctx, (topLabel || "por apenas").toString(), priceCardX + priceCardW / 2, priceCardY + 40, priceCardW - 20, 14);
+      safeFillText(ctx, (topLabel || "por apenas").toString(), priceCardX + priceBlockW / 2, priceCardY + 40, priceBlockW - 20, 14);
       ctx.fillStyle = v2CardLabel;
       // Auto-shrink pre├ºo V2
       const priceStrV2 = mainPrice || `${curSym} ${price}`;
       let pfsV2 = 64;
       ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(priceStrV2).width > priceCardW - 40 && pfsV2 > 28) {
+      while (ctx.measureText(priceStrV2).width > priceBlockW - 40 && pfsV2 > 28) {
         pfsV2 -= 4;
         ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
       }
-      safeFillText(ctx, priceStrV2, priceCardX + priceCardW / 2, priceCardY + 108, priceCardW - 40, 24);
+      safeFillText(ctx, priceStrV2, priceCardX + priceBlockW / 2, priceCardY + 108, priceBlockW - 40, 24);
       ctx.fillStyle = v2CardLabel;
       ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText(bottomSuffix, priceCardX + priceCardW / 2, priceCardY + 144);
+      ctx.fillText(bottomSuffix, priceCardX + priceBlockW / 2, priceCardY + 144);
       ctx.textAlign = "left";
 
       // 3) C├ílculo de altura dos benefits ÔÇö TODOS devem caber.
