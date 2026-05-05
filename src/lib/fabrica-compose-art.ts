@@ -19,7 +19,7 @@ function shadeColor(hex: string, percent: number): string {
   return "#" + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
 }
 
-// Luminância relativa (0..1) de uma cor hex.
+// Lumin├óncia relativa (0..1) de uma cor hex.
 function luminance(hex: string): number {
   let h = (hex || "").trim().replace("#", "");
   if (h.length === 3) h = h.split("").map((c) => c + c).join("");
@@ -39,8 +39,8 @@ function contrastOn(bg: string): string {
 }
 
 /**
- * Garante contraste mínimo entre `fg` (cor preferida do usuário) e `bg`.
- * Se a diferença de luminância for baixa, devolve preto/branco em vez de `fg`.
+ * Garante contraste m├¡nimo entre `fg` (cor preferida do usu├írio) e `bg`.
+ * Se a diferen├ºa de lumin├óncia for baixa, devolve preto/branco em vez de `fg`.
  */
 function ensureContrast(fg: string, bg: string, minDelta = 0.35): string {
   const dl = Math.abs(luminance(fg) - luminance(bg));
@@ -61,7 +61,7 @@ export type PaymentMode =
 
 /**
  * Aplica um efeito de vinheta (bordas escurecidas) para dar profundidade
- * e focar a atenção no centro da imagem/conteúdo.
+ * e focar a aten├º├úo no centro da imagem/conte├║do.
  */
 function applyVignette(ctx: CanvasRenderingContext2D, width: number, height: number, intensity = 0.5) {
   const grad = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.sqrt((width / 2) ** 2 + (height / 2) ** 2));
@@ -94,33 +94,33 @@ interface ComposeTravelAdOptions {
   paymentSuffix?: string;
   strategy?: "ancora" | "vitrine" | "matriz" | "gancho" | "experiencia_hero" | "experiencia_editorial" | "experiencia_postcard" | "experiencia_lifestyle";
   variation?: number;
-  /** Força uma variante específica (0..2 para Sua Imagem + Oferta + 1:1). Quando definido, ignora variation%N. */
+  /** For├ºa uma variante espec├¡fica (0..2 para Sua Imagem + Oferta + 1:1). Quando definido, ignora variation%N. */
   forceVariant?: number;
-  /** Quando definido, sobrescreve o pool aleatório de headlines e usa este texto como título principal em todas as variantes. */
+  /** Quando definido, sobrescreve o pool aleat├│rio de headlines e usa este texto como t├¡tulo principal em todas as variantes. */
   titleOverride?: string;
-  /** Pool de variações de título (uma por variante). Se fornecido, tem prioridade sobre titleOverride: usa-se titleVariations[variantIndex % len]. */
+  /** Pool de varia├º├Áes de t├¡tulo (uma por variante). Se fornecido, tem prioridade sobre titleOverride: usa-se titleVariations[variantIndex % len]. */
   titleVariations?: string[];
-  /** Símbolo de moeda exibido antes do preço (R$, US$, €, £, AR$). Default "R$". */
+  /** S├¡mbolo de moeda exibido antes do pre├ºo (R$, US$, Ôé¼, ┬ú, AR$). Default "R$". */
   currencySymbol?: string;
-  /** V4: período exibido na linha de informações (ex.: "5 dias", "Janeiro", "12 a 18/01"). */
+  /** V4: per├¡odo exibido na linha de informa├º├Áes (ex.: "5 dias", "Janeiro", "12 a 18/01"). */
   travelPeriod?: string;
-  /** V3: texto livre do "Total" (ex.: "R$ 1.999 por casal"). Se vazio, calcula automático. */
+  /** V3: texto livre do "Total" (ex.: "R$ 1.999 por casal"). Se vazio, calcula autom├ítico. */
   totalOverride?: string;
   /** V3: controla se a linha de total aparece no box. Default true. */
   showTotal?: boolean;
-  /** V3: texto da faixa azul do Pix. Default "{N}% OFF À VISTA NO pix". */
+  /** V3: texto da faixa azul do Pix. Default "{N}% OFF ├Ç VISTA NO pix". */
   pixBannerText?: string;
   /** V3: mostra/esconde a faixa azul do Pix. Default true. */
   showPixBanner?: boolean;
-  /** Família de fonte global a aplicar em TODOS os textos do anúncio. Default: Inter. */
+  /** Fam├¡lia de fonte global a aplicar em TODOS os textos do an├║ncio. Default: Inter. */
   fontFamily?: string;
-  /** Multiplicador de escala global para títulos/preços/textos grandes (>=22px). Default 1. */
+  /** Multiplicador de escala global para t├¡tulos/pre├ºos/textos grandes (>=22px). Default 1. */
   titleScale?: number;
-  /** Multiplicador de escala global para descrição/labels/textos pequenos (<22px). Default 1. */
+  /** Multiplicador de escala global para descri├º├úo/labels/textos pequenos (<22px). Default 1. */
   descScale?: number;
-  /** Cor que substitui o texto branco padrão (#fff/#ffffff). Útil para alinhar texto à identidade da marca. */
+  /** Cor que substitui o texto branco padr├úo (#fff/#ffffff). ├Ütil para alinhar texto ├á identidade da marca. */
   textColorOverride?: string;
-  /** Opções de Branding (Logo e Contatos) unificadas no motor principal */
+  /** Op├º├Áes de Branding (Logo e Contatos) unificadas no motor principal */
   logoDataUrl?: string;
   whatsapp?: string;
   instagram?: string;
@@ -130,7 +130,7 @@ interface ComposeTravelAdOptions {
   footerContact2Value?: string;
 }
 
-/** Formata telefone no padrão (XX) 9 XXXX-XXXX */
+/** Formata telefone no padr├úo (XX) 9 XXXX-XXXX */
 export function formatAdPhone(val: string): string {
   const d = (val || "").replace(/\D/g, "");
   if (d.length > 11) return val;
@@ -140,7 +140,7 @@ export function formatAdPhone(val: string): string {
   return d;
 }
 
-/** Desenha ícone do WhatsApp colorido */
+/** Desenha ├¡cone do WhatsApp colorido */
 function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, colorMode: "green" | "custom" = "green", customColor: string = "#ffffff") {
   ctx.save();
   ctx.translate(x, y);
@@ -154,7 +154,7 @@ function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number,
     ctx.arc(0, 0, size * 0.48, 0, Math.PI * 2); 
     ctx.fill();
     
-    // Balão Branco
+    // Bal├úo Branco
     ctx.fillStyle = "white";
     ctx.beginPath();
     ctx.arc(0, -size * 0.02, size * 0.4, 0.7, 5.5);
@@ -164,7 +164,7 @@ function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number,
 
     // Fone Verde
     ctx.fillStyle = "#25D366";
-    ctx.lineWidth = size * 0.10; // Aumentado para 0.10 (mais visível)
+    ctx.lineWidth = size * 0.10; // Aumentado para 0.10 (mais vis├¡vel)
     ctx.lineCap = "round";
     ctx.beginPath();
     ctx.arc(0, 0, size * 0.22, 0.8, 2.3);
@@ -173,7 +173,7 @@ function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number,
     ctx.save(); ctx.rotate(0.8); ctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); ctx.restore();
     ctx.save(); ctx.rotate(2.3); ctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); ctx.restore();
   } else {
-    // MODO MONOCROMÁTICO (Recorte real usando buffer)
+    // MODO MONOCROM├üTICO (Recorte real usando buffer)
     const buffer = document.createElement("canvas");
     buffer.width = size;
     buffer.height = size;
@@ -181,7 +181,7 @@ function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number,
     if (bctx) {
       bctx.translate(size/2, size/2);
       bctx.fillStyle = customColor;
-      // Balão
+      // Bal├úo
       bctx.beginPath();
       bctx.arc(0, -size * 0.02, size * 0.4, 0.7, 5.5);
       bctx.lineTo(-size * 0.35, size * 0.45);
@@ -205,7 +205,7 @@ function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number,
   ctx.restore();
 }
 
-/** Desenha ícone do Instagram com gradiente oficial */
+/** Desenha ├¡cone do Instagram com gradiente oficial */
 function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, colorMode: "gradient" | "custom" = "gradient", customColor: string = "#ffffff") {
   ctx.save();
   ctx.translate(x, y);
@@ -226,13 +226,13 @@ function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number
     
     ctx.strokeStyle = "white";
     ctx.fillStyle = "white";
-    // Câmera
+    // C├ómera
     ctx.lineWidth = size * 0.08; 
     ctx.strokeRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6);
     ctx.beginPath(); ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); ctx.stroke();
     ctx.beginPath(); ctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); ctx.fill();
   } else {
-    // MODO MONOCROMÁTICO
+    // MODO MONOCROM├üTICO
     const buffer = document.createElement("canvas");
     buffer.width = size;
     buffer.height = size;
@@ -257,7 +257,7 @@ function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number
   ctx.restore();
 }
 
-/** Desenha ícone de Site / Globo */
+/** Desenha ├¡cone de Site / Globo */
 function drawAdWebsiteIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string = "#ffffff") {
   ctx.save();
   ctx.translate(x, y);
@@ -270,8 +270,8 @@ function drawAdWebsiteIcon(ctx: CanvasRenderingContext2D, x: number, y: number, 
 }
 
 /** 
- * DESENHA O BRANDING FINAL (Rodapé, Logo, WhatsApp, Instagram)
- * Unificado para evitar cache e garantir consistência.
+ * DESENHA O BRANDING FINAL (Rodap├®, Logo, WhatsApp, Instagram)
+ * Unificado para evitar cache e garantir consist├¬ncia.
  */
 async function drawFinalBranding(
   ctx: CanvasRenderingContext2D,
@@ -285,7 +285,7 @@ async function drawFinalBranding(
   fontFamily: string = "Inter"
 ) {
   const contactsToDraw: { icon: string; value: string }[] = [];
-  // Só adiciona contatos que tenham valor preenchido (evita ícones vazios)
+  // S├│ adiciona contatos que tenham valor preenchido (evita ├¡cones vazios)
   if (contact1 && contact1.icon !== "none" && contact1.value && contact1.value.trim()) contactsToDraw.push(contact1);
   if (contact2 && contact2.icon !== "none" && contact2.value && contact2.value.trim()) contactsToDraw.push(contact2);
 
@@ -293,12 +293,12 @@ async function drawFinalBranding(
 
   const isStory = ch > cw;
   const footerHeight = isStory ? 120 : 100;
-  // Move o rodapé para cima da barra de mensagens do Instagram (aprox 280px do fundo)
+  // Move o rodap├® para cima da barra de mensagens do Instagram (aprox 280px do fundo)
   const safeBottomMargin = isStory ? 340 : 20; // Subido de 280 para 340 para limpar a reply bar do Instagram
   const footerY = ch - footerHeight - safeBottomMargin;
 
-  // 1. Fundo do Rodapé (VÉU GRADIENTE ESCURO)
-  // O usuário prefere SEMPRE o véu escuro com letras brancas para garantir o look "Premium".
+  // 1. Fundo do Rodap├® (V├ëU GRADIENTE ESCURO)
+  // O usu├írio prefere SEMPRE o v├®u escuro com letras brancas para garantir o look "Premium".
   const veilStartY = footerY - 50;
   const grad = ctx.createLinearGradient(0, veilStartY, 0, ch);
   grad.addColorStop(0, "rgba(0,0,0,0.0)");
@@ -349,7 +349,7 @@ async function drawFinalBranding(
     }
   } else {
     // WORDMARK FALLBACK
-    const name = (agencyName || "Sua Agência").toUpperCase();
+    const name = (agencyName || "Sua Ag├¬ncia").toUpperCase();
     ctx.save();
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
@@ -375,18 +375,18 @@ async function drawFinalBranding(
   ctx.save();
   ctx.textAlign = "right";
   ctx.textBaseline = "middle";
-  // Revertido para Bold (700) e tamanhos mais impactantes conforme desejo do usuário
+  // Revertido para Bold (700) e tamanhos mais impactantes conforme desejo do usu├írio
   const fontSize = isStory ? 36 : 30; 
   const safeFont = fontFamily || "Inter";
   ctx.font = `700 ${fontSize}px ${safeFont}, sans-serif`;
   
-  // Rodapé sempre BRANCO com sombra escura (look clássico Canva Viagem)
+  // Rodap├® sempre BRANCO com sombra escura (look cl├íssico Canva Viagem)
   ctx.fillStyle = "#ffffff";
   ctx.shadowColor = "rgba(0,0,0,0.8)";
   ctx.shadowBlur = 6;
 
   let textRightX = cw - (isStory ? 80 : 60); // Sincronizado com a margem do logo
-  const itemGap = 20; // Aumentado o gap entre ícone e texto
+  const itemGap = 20; // Aumentado o gap entre ├¡cone e texto
   const logoEdge = logoUrl ? (padX + lw + bgPad * 2 + 30) : padX;
   const maxAvailableWidth = textRightX - logoEdge;
 
@@ -397,7 +397,7 @@ async function drawFinalBranding(
     if (c.icon.startsWith("whatsapp")) displayValue = formatAdPhone(c.value);
     if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
 
-    // Auto-shrink para evitar colisão
+    // Auto-shrink para evitar colis├úo
     let currentFontSize = fontSize;
     const iconSizeFactor = 1.1;
     let currentIconSize = currentFontSize * iconSizeFactor;
@@ -426,21 +426,21 @@ async function drawFinalBranding(
 }
 
 const ICON_SYMBOL: Record<IconKey, string> = {
-  bus: "🚌",
-  hotel: "🛏",
-  plane: "✈",
-  check: "✓",
-  star: "★",
-  heart: "♥",
-  sun: "☀",
-  camera: "📷",
-  map: "⌖",
-  food: "🍽",
-  ship: "⛴",
-  palm: "🌴",
-  coffee: "☕",
-  guide: "◎",
-  wifi: "◉",
+  bus: "­ƒÜî",
+  hotel: "­ƒøÅ",
+  plane: "Ô£ê",
+  check: "Ô£ô",
+  star: "Ôÿà",
+  heart: "ÔÖÑ",
+  sun: "ÔÿÇ",
+  camera: "­ƒôÀ",
+  map: "Ôîû",
+  food: "­ƒì¢",
+  ship: "Ôø┤",
+  palm: "­ƒî┤",
+  coffee: "Ôÿò",
+  guide: "ÔùÄ",
+  wifi: "Ôùë",
 };
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -477,9 +477,9 @@ function fillRoundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: n
 }
 
 /**
- * Desenha um ícone vetorial monocromático sólido para a V3 (sem emojis coloridos).
- * Tudo é desenhado como silhueta preenchida na cor `color` (geralmente navy).
- * Caixa de tamanho `size` × `size` centralizada em (cx, cy).
+ * Desenha um ├¡cone vetorial monocrom├ítico s├│lido para a V3 (sem emojis coloridos).
+ * Tudo ├® desenhado como silhueta preenchida na cor `color` (geralmente navy).
+ * Caixa de tamanho `size` ├ù `size` centralizada em (cx, cy).
  */
 function drawMonoIcon(
   ctx: CanvasRenderingContext2D,
@@ -498,7 +498,7 @@ function drawMonoIcon(
 
   switch (kind) {
     case "plane": {
-      // Avião visto de cima — corpo + asas largas + cauda
+      // Avi├úo visto de cima ÔÇö corpo + asas largas + cauda
       ctx.translate(cx, cy);
       ctx.rotate(-Math.PI / 6);
       ctx.beginPath();
@@ -530,16 +530,16 @@ function drawMonoIcon(
       break;
     }
     case "bus": {
-      // Van/ônibus — corpo arredondado largo + 2 rodas grandes
+      // Van/├┤nibus ÔÇö corpo arredondado largo + 2 rodas grandes
       const bx = x + s * 0.05, by = y + s * 0.22, bw = s * 0.9, bh = s * 0.46;
       roundRect(ctx, bx, by, bw, bh, s * 0.14);
       ctx.fill();
-      // rodas (silhueta sólida, levemente encostadas no corpo)
+      // rodas (silhueta s├│lida, levemente encostadas no corpo)
       ctx.beginPath();
       ctx.arc(bx + bw * 0.22, by + bh + s * 0.04, s * 0.13, 0, Math.PI * 2);
       ctx.arc(bx + bw * 0.78, by + bh + s * 0.04, s * 0.13, 0, Math.PI * 2);
       ctx.fill();
-      // pequena saliência indicando para-brisa (recorte branco)
+      // pequena sali├¬ncia indicando para-brisa (recorte branco)
       ctx.save();
       ctx.globalCompositeOperation = "destination-out";
       roundRect(ctx, bx + s * 0.1, by + s * 0.08, bw - s * 0.2, s * 0.16, s * 0.05);
@@ -548,7 +548,7 @@ function drawMonoIcon(
       break;
     }
     case "hotel": {
-      // Prédio: base + cobertura inclinada + janelas
+      // Pr├®dio: base + cobertura inclinada + janelas
       const hx = x + s * 0.1, hy = y + s * 0.28, hw = s * 0.8, hh = s * 0.6;
       ctx.fillRect(hx, hy, hw, hh);
       // telhado
@@ -575,7 +575,7 @@ function drawMonoIcon(
       break;
     }
     case "coffee": {
-      // Xícara cheia + alça + pires + vapor
+      // X├¡cara cheia + al├ºa + pires + vapor
       const cw = s * 0.62, ch = s * 0.42;
       const cxL = cx - cw / 2, cyT = cy - ch / 2 + s * 0.04;
       // corpo
@@ -586,7 +586,7 @@ function drawMonoIcon(
       ctx.lineTo(cxL + s * 0.06, cyT + ch);
       ctx.closePath();
       ctx.fill();
-      // alça
+      // al├ºa
       ctx.lineWidth = s * 0.07;
       ctx.beginPath();
       ctx.arc(cxL + cw + s * 0.04, cyT + ch * 0.45, s * 0.13, -Math.PI / 2.2, Math.PI / 2.2);
@@ -607,11 +607,11 @@ function drawMonoIcon(
       break;
     }
     case "camera": {
-      // Câmera: corpo + saliência do flash + lente com anel
+      // C├ómera: corpo + sali├¬ncia do flash + lente com anel
       const bx = x + s * 0.05, by = y + s * 0.3, bw = s * 0.9, bh = s * 0.5;
       roundRect(ctx, bx, by, bw, bh, s * 0.1);
       ctx.fill();
-      // saliência superior (visor)
+      // sali├¬ncia superior (visor)
       roundRect(ctx, x + s * 0.3, y + s * 0.18, s * 0.4, s * 0.16, s * 0.04);
       ctx.fill();
       // flash
@@ -742,7 +742,7 @@ function drawMonoIcon(
       break;
     }
     case "guide": {
-      // pessoa: cabeça + tronco
+      // pessoa: cabe├ºa + tronco
       ctx.beginPath();
       ctx.arc(cx, y + s * 0.26, s * 0.16, 0, Math.PI * 2);
       ctx.fill();
@@ -777,7 +777,7 @@ function drawMonoIcon(
 }
 
 /**
- * Desenha o glifo do Pix (4 losangos formando um padrão de "X"/diamante).
+ * Desenha o glifo do Pix (4 losangos formando um padr├úo de "X"/diamante).
  * Centralizado em (cx, cy), tamanho total `size`.
  */
 function drawPixLogo(
@@ -792,7 +792,7 @@ function drawPixLogo(
   ctx.translate(cx, cy);
   // 4 losangos pequenos posicionados em N/S/L/O formando o glifo do Pix
   const r = size * 0.18; // metade do lado do losango
-  const off = size * 0.28; // distância do centro
+  const off = size * 0.28; // dist├óncia do centro
   const drawDiamond = (px: number, py: number) => {
     ctx.beginPath();
     ctx.moveTo(px, py - r);
@@ -917,7 +917,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   } = options;
   const curSym = (currencySymbol || "R$").trim();
   const priceValueText = (price || "").trim();
-  const priceWithSymbol = /^(R\$|US\$|AR\$|€|£|[A-Z]{1,3}\$)/i.test(priceValueText)
+  const priceWithSymbol = /^(R\$|US\$|AR\$|Ôé¼|┬ú|[A-Z]{1,3}\$)/i.test(priceValueText)
     ? priceValueText
     : `${curSym} ${priceValueText}`.trim();
 
@@ -927,11 +927,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas 2D não suportado");
+  if (!ctx) throw new Error("Canvas 2D n├úo suportado");
 
-  // ====== Font customization global (família + escala título/descrição) ======
+  // ====== Font customization global (fam├¡lia + escala t├¡tulo/descri├º├úo) ======
   // Intercepta o setter de `font` e o `fillStyle` para que TODAS as variantes/categorias
-  // respeitem as escolhas do usuário sem precisar reescrever cada ctx.font do arquivo.
+  // respeitem as escolhas do usu├írio sem precisar reescrever cada ctx.font do arquivo.
   const userFamily = (fontFamily || "").trim();
   const wantsCustomFont = !!userFamily && userFamily.toLowerCase() !== "inter";
   const wantsScale = (titleScale !== 1) || (descScale !== 1);
@@ -970,9 +970,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     }
   }
 
-  // ── Inteligência de Contraste ──
-  // Se o usuário escolheu uma cor de texto específica (textColorOverride), 
-  // tentamos usá-la. Mas se ela não tiver contraste com o fundo (bg),
+  // ÔöÇÔöÇ Intelig├¬ncia de Contraste ÔöÇÔöÇ
+  // Se o usu├írio escolheu uma cor de texto espec├¡fica (textColorOverride), 
+  // tentamos us├í-la. Mas se ela n├úo tiver contraste com o fundo (bg),
   // usamos contrastOn(bg) para garantir que o cliente consiga ler.
   const getSafeColor = (bg: string, preferred?: string) => {
     const target = preferred || overrideColorHex || "#ffffff";
@@ -990,7 +990,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ]);
     } catch {}
   }
-  // V0/V1_Experiencia usam Playfair Display + Dancing Script — pré-carrega.
+  // V0/V1_Experiencia usam Playfair Display + Dancing Script ÔÇö pr├®-carrega.
   if (strategy.startsWith("experiencia_") && (document as any).fonts?.load) {
     try {
       await Promise.all([
@@ -1017,27 +1017,26 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const destFmt = toTitle(destination);
   const hasDest = destFmt.length > 0;
 
-  // Pools de headlines — variantes que dependem do destino só entram se houver destino preenchido.
-  // Frases banidas globalmente (alinhado com edge function): "O melhor de", "Seu próximo destino é esse".
+  // Pools de headlines ÔÇö variantes que dependem do destino s├│ entram se houver destino preenchido.
+  // Frases banidas globalmente (alinhado com edge function): "O melhor de", "Seu pr├│ximo destino ├® esse".
   // ===========================================================================
-  // 🛡️ SISTEMA DE BLINDAGEM CANVA VIAGEM (NÍVEL 3) 🛡️
+  // ­ƒøí´©Å SISTEMA DE BLINDAGEM CANVA VIAGEM (N├ìVEL 3) ­ƒøí´©Å
   // ---------------------------------------------------------------------------
-  // REGRA 1: SEGURANÇA TOTAL INSTAGRAM (340px bottom offset em Stories).
-  // REGRA 2: SEPARAÇÃO CATEGÓRICA (Experiência != Oferta).
-  // REGRA 3: HIGIENIZAÇÃO DE ESTADO (Nenhum dado de preço vaza para ads de luxo).
+  // REGRA 1: SEGURAN├çA TOTAL INSTAGRAM (340px bottom offset em Stories).
+  // REGRA 2: SEPARA├ç├âO CATEG├ôRICA (Experi├¬ncia != Oferta).
+  // REGRA 3: HIGIENIZA├ç├âO DE ESTADO (Nenhum dado de pre├ºo vaza para ads de luxo).
   // ===========================================================================
   const isExperience = !!options.isExperience; 
   const isStory = format === "story";
-  const curSym = currencySymbol || "R$";
 
-  // Higienização Imutável (Garante que nunca haverá preço em Experience)
+  // Higieniza├º├úo Imut├ível (Garante que nunca haver├í pre├ºo em Experience)
   const price = isExperience ? "" : (rawPrice || "");
   const installments = isExperience ? "" : (rawInstallments || "");
   const showTotal = isExperience ? false : (rawShowTotal !== false);
   const showPixBanner = isExperience ? false : (rawShowPixBanner !== false);
 
   const RULES = {
-    SAFE_BOTTOM: isStory ? 480 : 120, // Zona de exclusão absoluta para conteúdo dinâmico
+    SAFE_BOTTOM: isStory ? 480 : 120, // Zona de exclus├úo absoluta para conte├║do din├ómico
     SAFE_TOP: isStory ? 280 : 60,
     LEFT: 80,
     RIGHT: width - 80,
@@ -1054,17 +1053,17 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const experienceBase = [
     "Momentos que ficam para sempre",
     "Partiu viajar?",
-    "Uma experiência diferente de tudo",
-    "Dias que você não esquece",
-    "Histórias começam aqui",
-    "Memórias que você leva pra vida",
+    "Uma experi├¬ncia diferente de tudo",
+    "Dias que voc├¬ n├úo esquece",
+    "Hist├│rias come├ºam aqui",
+    "Mem├│rias que voc├¬ leva pra vida",
   ];
   const experienceWithDest = hasDest
-    ? [`${destFmt} como você nunca viu`, `Viva ${destFmt} de verdade`]
+    ? [`${destFmt} como voc├¬ nunca viu`, `Viva ${destFmt} de verdade`]
     : [];
   const ofertaBase = [
     "Partiu viajar?",
-    "Preço especial para viajar",
+    "Pre├ºo especial para viajar",
     "Vagas limitadas, garanta a sua",
   ];
   const ofertaWithDest = hasDest
@@ -1075,7 +1074,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ? [...experienceBase, ...experienceWithDest]
     : [...ofertaBase, ...ofertaWithDest];
 
-  // Sempre mostra até 5 benefícios (story OU quadrado) — o usuário escolheu 5/5 e os 5 devem aparecer.
+  // Sempre mostra at├® 5 benef├¡cios (story OU quadrado) ÔÇö o usu├írio escolheu 5/5 e os 5 devem aparecer.
   const shownHighlights = highlights.slice(0, 6);
   const badgeText = cityFmt ? `Saindo de ${cityFmt}` : "Pacote completo";
   const variantIdx = typeof forceVariant === "number" ? Math.abs(forceVariant) : Math.abs(variation);
@@ -1089,10 +1088,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       : headlinePool[Math.abs(variation) % headlinePool.length];
   const subtitlePool = [
     "Roteiro pensado para viver melhor",
-    "Beleza, conforto e boas memórias",
+    "Beleza, conforto e boas mem├│rias",
     "Uma viagem com outro ritmo",
-    "Paisagens, sabores e histórias",
-    "Seu descanso começa aqui",
+    "Paisagens, sabores e hist├│rias",
+    "Seu descanso come├ºa aqui",
   ];
   const subtitleText = subtitlePool[(Math.abs(variation) + 2) % subtitlePool.length];
 
@@ -1100,15 +1099,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const suffix = (fallback: string) => (typeof paymentSuffix === "string" ? paymentSuffix : fallback);
     switch (paymentMode) {
       case "cash":
-        return { topLabel: paymentLabel || "À VISTA", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
+        return { topLabel: paymentLabel || "├Ç VISTA", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "cash_discount":
-        return { topLabel: paymentLabel || "À VISTA · 5% OFF", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
+        return { topLabel: paymentLabel || "├Ç VISTA ┬À 5% OFF", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "from":
         return { topLabel: paymentLabel || "A PARTIR DE", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "daily":
-        return { topLabel: paymentLabel || "DIÁRIA POR", mainPrice: priceWithSymbol, bottomSuffix: suffix("por diária") };
+        return { topLabel: paymentLabel || "DI├üRIA POR", mainPrice: priceWithSymbol, bottomSuffix: suffix("por di├íria") };
       case "monthly":
-        return { topLabel: paymentLabel || "MENSAL POR", mainPrice: priceWithSymbol, bottomSuffix: suffix("por mês") };
+        return { topLabel: paymentLabel || "MENSAL POR", mainPrice: priceWithSymbol, bottomSuffix: suffix("por m├¬s") };
       case "down_plus":
         return { topLabel: paymentLabel || `ENTRADA + ${installments}`, mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "free_quote":
@@ -1159,7 +1158,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.font = `800 ${iconFont}px Inter, Arial, sans-serif`;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText(ICON_SYMBOL[item.icon || "check"] || "✓", x + iconX, y + idx * (pillH + gap) + pillH / 2 + 1);
+      ctx.fillText(ICON_SYMBOL[item.icon || "check"] || "Ô£ô", x + iconX, y + idx * (pillH + gap) + pillH / 2 + 1);
       ctx.fillStyle = inverted ? "#ffffff" : "#111111";
 
       // Auto-shrink pill text so it never extends beyond pill width.
@@ -1175,13 +1174,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     return items.length * pillH + Math.max(0, items.length - 1) * gap;
   };
 
-  // Estilo CVC: caixa amarela densa com PACOTE/DESTINO no topo, linha de ícones,
-  // "a partir de" + selo de parcelas + R$ gigante, total por pessoa, e faixa azul escura "5% OFF À VISTA NO PIX".
+  // Estilo CVC: caixa amarela densa com PACOTE/DESTINO no topo, linha de ├¡cones,
+  // "a partir de" + selo de parcelas + R$ gigante, total por pessoa, e faixa azul escura "5% OFF ├Ç VISTA NO PIX".
   const drawPriceCard = (x: number, y: number, w: number, _h: number, _align: "left" | "right" = "right") => {
-    // Altura do card (CVC é mais alto que o original): cresce conforme o conteúdo.
+    // Altura do card (CVC ├® mais alto que o original): cresce conforme o conte├║do.
     const cardH = 290;
     const radius = 22;
-    // 1. Fundo amarelo (cor secundária)
+    // 1. Fundo amarelo (cor secund├íria)
     fillRoundRect(ctx, x, y, w, cardH, radius, secondaryColor);
     
     const cardTextColor = contrastOn(secondaryColor);
@@ -1212,7 +1211,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(line1, cx, y + 56);
       ctx.fillText(line2, cx, y + 56 + destSize * 1.1);
     } else {
-      // Linha única com shrink moderado
+      // Linha ├║nica com shrink moderado
       while (ctx.measureText(destUpper).width > innerW && destSize > 20) {
         destSize -= 1;
         ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
@@ -1220,19 +1219,19 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(destUpper, cx, y + 60);
     }
 
-    // 3. Linha de info: "X dias ✈ 🚌 🏨 ☕"
+    // 3. Linha de info: "X dias Ô£ê ­ƒÜî ­ƒÅ¿ Ôÿò"
     const firstHL = highlights[0];
     const firstHLText = typeof firstHL === "string" ? firstHL : (firstHL?.text || "");
     const daysFromHl = firstHLText.match(/(\d+)\s*dias?/i)?.[0];
     const days = (travelPeriod && travelPeriod.trim()) || daysFromHl || "Consulte";
     ctx.font = `700 17px Inter, Arial, sans-serif`;
-    ctx.fillText(`${days}   ✈   🚌   🏨   ☕`, cx, y + 92);
+    ctx.fillText(`${days}   Ô£ê   ­ƒÜî   ­ƒÅ¿   Ôÿò`, cx, y + 92);
 
     // 4. "a partir de" pequeno + selo "12X sem juros" colado ao R$ gigante
     ctx.font = `600 13px Inter, Arial, sans-serif`;
     ctx.fillText("a partir de", cx, y + 118);
 
-    // Calcula tamanhos do selo de parcelas e do preço lado a lado
+    // Calcula tamanhos do selo de parcelas e do pre├ºo lado a lado
     // Padroniza installments: ex "10x" -> "10x de"
     let installmentsText = (installments || "12X").toUpperCase().replace(/\s+/g, "").replace(/\$/g, "");
     if (/^\d+X$/.test(installmentsText)) installmentsText = `${installmentsText.slice(0, -1)}x de`;
@@ -1244,7 +1243,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.font = `900 ${priceFontSize}px Inter, Arial, sans-serif`;
     const priceW = ctx.measureText(priceText).width;
 
-    // Selo arredondado de parcelas (cor primária com texto secundário)
+    // Selo arredondado de parcelas (cor prim├íria com texto secund├írio)
     ctx.font = `900 19px Inter, Arial, sans-serif`;
     const badgeW = Math.max(90, ctx.measureText(installmentsText).width + 24);
     const badgeH = 56;
@@ -1261,7 +1260,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.font = `700 10px Inter, Arial, sans-serif`;
     ctx.fillText("sem juros", groupX + badgeW / 2, priceY + 14);
 
-    // Preço gigante
+    // Pre├ºo gigante
     ctx.fillStyle = cardTextColor;
     ctx.textAlign = "left";
     ctx.font = `900 ${priceFontSize}px Inter, Arial, sans-serif`;
@@ -1275,17 +1274,17 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(bottomSuffix, cx, y + 220);
     }
 
-    // 6. Faixa PIX azul escura na base (cor primária)
+    // 6. Faixa PIX azul escura na base (cor prim├íria)
     const stripeH = 40;
     const stripeY = y + cardH - stripeH;
     fillRoundRect(ctx, x, stripeY, w, stripeH, radius, primaryColor);
     // re-quadra os cantos superiores da faixa (corta arredondamento topo)
     ctx.fillStyle = primaryColor;
     ctx.fillRect(x, stripeY, w, stripeH / 2);
-    // re-arredonda só os cantos inferiores
+    // re-arredonda s├│ os cantos inferiores
     fillRoundRect(ctx, x, stripeY, w, stripeH, radius, primaryColor);
     ctx.fillRect(x, stripeY, w, 6);
-    const pixText = (pixBannerText || "").trim() || "5% OFF À VISTA NO PIX  💠";
+    const pixText = (pixBannerText || "").trim() || "5% OFF ├Ç VISTA NO PIX  ­ƒÆá";
     ctx.font = `900 18px Inter, Arial, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -1298,7 +1297,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
   const drawPromoKicker = (x: number, y: number, color = "#ffffff") => {
     const promoUpper = promoName.toUpperCase().trim();
-    // Evita duplicar quando o promoName já é "OFERTA ESPECIAL" (ou contém).
+    // Evita duplicar quando o promoName j├í ├® "OFERTA ESPECIAL" (ou cont├®m).
     const hasOfferKeyword = /OFERTA\s*ESPECIAL/.test(promoUpper);
     ctx.fillStyle = color;
     ctx.textAlign = "left";
@@ -1311,7 +1310,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     while (ctx.measureText(promoTrunc).width > contentWidth * 0.6 && promoTrunc.length > 3) {
       promoTrunc = promoTrunc.slice(0, -2);
     }
-    if (promoTrunc !== promoUpper) promoTrunc = promoTrunc.slice(0, -1) + "…";
+    if (promoTrunc !== promoUpper) promoTrunc = promoTrunc.slice(0, -1) + "ÔÇª";
     ctx.fillText(promoTrunc, x, y + (hasOfferKeyword ? 0 : 48));
   };
 
@@ -1322,44 +1321,44 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ? ((forceVariant % TOTAL_VARIANTS) + TOTAL_VARIANTS) % TOTAL_VARIANTS
       : Math.abs(variation) % TOTAL_VARIANTS;
 
-    // ── V3 · ESTRUTURA (oferta com box destacado) ───────────────────────────
-    // Spec estrutural — layout/visual ainda NÃO implementado.
-    // Padrão idêntico a V0/V1/V2: early-branch por variante, lendo dos mesmos
-    // dados dinâmicos já existentes no escopo de composeTravelAd().
+    // ÔöÇÔöÇ V3 ┬À ESTRUTURA (oferta com box destacado) ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // Spec estrutural ÔÇö layout/visual ainda N├âO implementado.
+    // Padr├úo id├¬ntico a V0/V1/V2: early-branch por variante, lendo dos mesmos
+    // dados din├ómicos j├í existentes no escopo de composeTravelAd().
     //
-    // ÁREAS (de fundo → frente):
-    //   [BG]      Fundo com imagem turística do destino  → image (drawImage cover)
+    // ├üREAS (de fundo ÔåÆ frente):
+    //   [BG]      Fundo com imagem tur├¡stica do destino  ÔåÆ image (drawImage cover)
     //   [BOX]     Bloco principal central (card destacado sobre o BG)
-    //     ├─ [TITLE]      Área de título            → titleText
-    //     ├─ [INFO]       Dias + ícones (highlights)→ highlights[] (ICON_SYMBOL)
-    //     ├─ [INSTALL]    Preço parcelado           → installments / paymentLabel
-    //     ├─ [TOTAL]      Valor total               → mainPrice / price / curSym
-    //     └─ [PROMO]      Destaque promocional      → promoName (desconto/badge)
+    //     Ôö£ÔöÇ [TITLE]      ├ürea de t├¡tulo            ÔåÆ titleText
+    //     Ôö£ÔöÇ [INFO]       Dias + ├¡cones (highlights)ÔåÆ highlights[] (ICON_SYMBOL)
+    //     Ôö£ÔöÇ [INSTALL]    Pre├ºo parcelado           ÔåÆ installments / paymentLabel
+    //     Ôö£ÔöÇ [TOTAL]      Valor total               ÔåÆ mainPrice / price / curSym
+    //     ÔööÔöÇ [PROMO]      Destaque promocional      ÔåÆ promoName (desconto/badge)
     //
-    // DADOS DINÂMICOS REUTILIZADOS (já disponíveis no escopo):
-    //   destination, destUp     → nome do destino
-    //   highlights[]            → dias + ícones (text + icon)
-    //   installments            → parcelas
-    //   mainPrice / price       → total
-    //   curSym                  → moeda
-    //   promoName               → destaque/desconto
-    //   primaryColor / secondaryColor → cores do box
-    //   hasLogo, logoH          → reserva de topo p/ logo
-    // ── V3 · REF "CVC" — foto cheia + BOX AMARELO destacado ─────────────────
-    // Estrutura: BG (foto destino) → BOX amarelo arredondado no topo-esquerda
-    // contendo: PACOTE / destino / dias+ícones / "a partir de" + 12x sem juros
-    // + R$ preço gigante / total por pessoa / faixa Pix com desconto.
+    // DADOS DIN├éMICOS REUTILIZADOS (j├í dispon├¡veis no escopo):
+    //   destination, destUp     ÔåÆ nome do destino
+    //   highlights[]            ÔåÆ dias + ├¡cones (text + icon)
+    //   installments            ÔåÆ parcelas
+    //   mainPrice / price       ÔåÆ total
+    //   curSym                  ÔåÆ moeda
+    //   promoName               ÔåÆ destaque/desconto
+    //   primaryColor / secondaryColor ÔåÆ cores do box
+    //   hasLogo, logoH          ÔåÆ reserva de topo p/ logo
+    // ÔöÇÔöÇ V3 ┬À REF "CVC" ÔÇö foto cheia + BOX AMARELO destacado ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // Estrutura: BG (foto destino) ÔåÆ BOX amarelo arredondado no topo-esquerda
+    // contendo: PACOTE / destino / dias+├¡cones / "a partir de" + 12x sem juros
+    // + R$ pre├ºo gigante / total por pessoa / faixa Pix com desconto.
     if (variant === 3) {
       // [BG] Foto do destino cobrindo todo o canvas
       const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.45);
       ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
-      // ── Dados dinâmicos ────────────────────────────────────────────────────
+      // ÔöÇÔöÇ Dados din├ómicos ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
       const destinoUp = (destination || "DESTINO").toUpperCase();
       const daysItem = highlights.find((h) => /\d+\s*dia/i.test(h?.text || ""));
       const daysText = (travelPeriod && travelPeriod.trim()) || (daysItem?.text || "").trim();
-      // Ícones: usa APENAS os selecionados pelo usuário (sem merge com defaults).
-      // Se nenhum highlight tiver ícone, usa um conjunto padrão mínimo.
+      // ├ìcones: usa APENAS os selecionados pelo usu├írio (sem merge com defaults).
+      // Se nenhum highlight tiver ├¡cone, usa um conjunto padr├úo m├¡nimo.
       const iconList: IconKey[] = (() => {
         const fromHl = highlights
           .map((h) => h?.icon as IconKey | undefined)
@@ -1367,7 +1366,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         if (fromHl.length === 0) {
           return ["plane", "hotel", "coffee", "camera"] as IconKey[];
         }
-        // dedup preservando ordem do usuário, máximo 5
+        // dedup preservando ordem do usu├írio, m├íximo 5
         const seen = new Set<IconKey>();
         const out: IconKey[] = [];
         for (const k of fromHl) {
@@ -1380,14 +1379,14 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         return out;
       })();
 
-      // Parcelas: extrai número de "12x", "12 x", "12X sem juros" etc.
+      // Parcelas: extrai n├║mero de "12x", "12 x", "12X sem juros" etc.
       const instMatch = (installments || "12x").match(/(\d{1,2})\s*x/i);
       const parcN = instMatch ? instMatch[1] : "12";
       const priceStr = mainPrice || `${curSym} ${price}`;
-      // Calcula total = preço × parcelas, formatando milhares com "." e centavos com ","
+      // Calcula total = pre├ºo ├ù parcelas, formatando milhares com "." e centavos com ","
       const priceNumeric = parseFloat(((price || "").trim()).replace(/\./g, "").replace(",", "."));
       const totalNum = !isNaN(priceNumeric) ? priceNumeric * parseInt(parcN, 10) : NaN;
-      // Se preço não tem centavos (inteiro), o total também não terá.
+      // Se pre├ºo n├úo tem centavos (inteiro), o total tamb├®m n├úo ter├í.
       const priceHasDecimals = /[.,]\d{1,2}\s*$/.test((price || "").trim());
       const fmtBR = (n: number) => {
         const showDec = priceHasDecimals && n % 1 !== 0;
@@ -1396,40 +1395,40 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
           maximumFractionDigits: showDec ? 2 : 0,
         });
       };
-      // Total: prioriza override do usuário; senão calcula automático com sufixo
+      // Total: prioriza override do usu├írio; sen├úo calcula autom├ítico com sufixo
       const computedTotal = !isNaN(totalNum)
         ? `Total ${(paymentSuffix || "por pessoa").trim()}: ${curSym} ${fmtBR(totalNum)}`
         : "";
       const totalStr = (totalOverride && totalOverride.trim()) || computedTotal;
-      // Desconto: extrai número do promoName (ex.: "5% OFF") ou usa 5 como default
+      // Desconto: extrai n├║mero do promoName (ex.: "5% OFF") ou usa 5 como default
       const descMatch = (promoName || "").match(/(\d{1,2})\s*%/);
       const descN = descMatch ? descMatch[1] : "5";
 
-      // ── [BOX] amarelo arredondado — altura DINÂMICA conforme conteúdo ─────
+      // ÔöÇÔöÇ [BOX] amarelo arredondado ÔÇö altura DIN├éMICA conforme conte├║do ÔöÇÔöÇÔöÇÔöÇÔöÇ
       const boxX = 60;
       const boxY = 70;
       const boxW = Math.round(width * 0.64);
       const boxR = 36;
-      // V3 respeita as cores selecionadas pelo usuário:
+      // V3 respeita as cores selecionadas pelo usu├írio:
       // - "yellow" = secondaryColor (fundo do box)
-      // - "navy"   = primaryColor   (textos, ícones e faixa Pix)
+      // - "navy"   = primaryColor   (textos, ├¡cones e faixa Pix)
       const yellow = secondaryColor || "#FFD400";
       const navyRaw = primaryColor || "#0B2B7A";
-      // Garante contraste mínimo dos textos/ícones contra o fundo do box.
-      // Se o usuário escolher duas cores claras (ou duas escuras), o navy vira
+      // Garante contraste m├¡nimo dos textos/├¡cones contra o fundo do box.
+      // Se o usu├írio escolher duas cores claras (ou duas escuras), o navy vira
       // preto/branco automaticamente para manter legibilidade.
       const navy = ensureContrast(navyRaw, yellow, 0.35);
       const yellowDark = shadeColor(yellow, luminance(yellow) > 0.5 ? -12 : 18); // anel: escurece se claro, clareia se escuro
 
-      // Pré-cálculos de altura por seção
+      // Pr├®-c├ílculos de altura por se├º├úo
       const padTop = 36;
       const titleH = 50; // "PACOTE"
       const titleGap = 12;
       const destH = 60;  // destino
       const destGap = 18;
-      const infoH = 42;  // dias | ícones
+      const infoH = 42;  // dias | ├¡cones
       const infoGap = 22;
-      const priceBlockH = 150; // bloco grande do preço com ring
+      const priceBlockH = 150; // bloco grande do pre├ºo com ring
       const totalH = (showTotal && (totalOverride || !isNaN(totalNum))) ? 36 : 0;
       const totalGap = totalH ? 14 : 0;
       const stripeH = 64;
@@ -1442,7 +1441,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         (showPixBanner ? stripeGap + stripeH : 0) +
         padBottom;
 
-      // Safety: Se o box for grande demais (muitos benefícios/texto), escala o topo
+      // Safety: Se o box for grande demais (muitos benef├¡cios/texto), escala o topo
       const safeBoxY = Math.min(boxY, panelBottom - boxH - 20);
 
       // sombra suave
@@ -1454,7 +1453,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.restore();
 
       const cx = boxX + boxW / 2;
-      let cursorY = safeBoxY + padTop + 32; // baseline aproximada do título
+      let cursorY = safeBoxY + padTop + 32; // baseline aproximada do t├¡tulo
 
       // [TITLE] PACOTE
       ctx.fillStyle = navy;
@@ -1463,7 +1462,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText("PACOTE", cx, cursorY);
       cursorY += titleGap + 40;
 
-      // destino (maior, peso médio)
+      // destino (maior, peso m├®dio)
       ctx.font = "500 56px Inter, Arial, sans-serif";
       let destSize = 56;
       while (ctx.measureText(destinoUp).width > boxW - 80 && destSize > 32) {
@@ -1473,7 +1472,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(destinoUp, cx, cursorY);
       cursorY += destGap + 36;
 
-      // [INFO] dias | ícones (TODOS monocromáticos, mesma cor navy)
+      // [INFO] dias | ├¡cones (TODOS monocrom├íticos, mesma cor navy)
       let benefitsFontSize = 30;
       ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
       while (ctx.measureText(daysText).width > boxW * 0.4 && benefitsFontSize > 20) {
@@ -1503,7 +1502,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.textBaseline = "alphabetic";
       cursorY += infoGap + 28;
 
-      // [PRICE BLOCK] anel amarelo escuro ao redor do preço
+      // [PRICE BLOCK] anel amarelo escuro ao redor do pre├ºo
       const ringX = boxX + 30;
       const ringY = cursorY - 8;
       const ringW = boxW - 60;
@@ -1521,7 +1520,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const rightEdgeX = priceGroupX + priceGroupW;
       const minGap = 18;
 
-      // Quebra "R$ 229" em símbolo pequeno + valor gigante
+      // Quebra "R$ 229" em s├¡mbolo pequeno + valor gigante
       const priceParts = priceStr.match(/^(\D+)\s*([\d.,]+)$/);
       const sym = priceParts ? priceParts[1].trim() : curSym;
       const valNum = priceParts ? priceParts[2].trim() : priceStr;
@@ -1547,7 +1546,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.font = "600 20px Inter, Arial, sans-serif";
       ctx.fillText("sem juros", leftColX, priceBlockY + 88);
 
-      // Lado direito (preço gigante)
+      // Lado direito (pre├ºo gigante)
       ctx.textAlign = "right";
       ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
       ctx.fillText(valNum, rightEdgeX, priceBlockY + 84);
@@ -1556,7 +1555,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
       cursorY = ringY + ringH + totalGap;
 
-      // [TOTAL] rodapé do box (apenas se showTotal)
+      // [TOTAL] rodap├® do box (apenas se showTotal)
       if (totalH > 0) {
         ctx.textAlign = "center";
         ctx.font = "600 22px Inter, Arial, sans-serif";
@@ -1566,13 +1565,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       }
 
       // [PROMO] faixa horizontal com texto Pix (opcional)
-      // Fundo da faixa = primaryColor (navy padrão). Texto sempre com contraste.
+      // Fundo da faixa = primaryColor (navy padr├úo). Texto sempre com contraste.
       if (showPixBanner) {
         const stripeY = boxY + boxH - stripeH - 24;
         const stripeX = boxX + 40;
         const stripeW = boxW - 80;
-        const stripeBg = navyRaw; // mantém a cor escolhida pelo usuário p/ a faixa
-        const stripeFg = contrastOn(stripeBg); // texto preto/branco automático
+        const stripeBg = navyRaw; // mant├®m a cor escolhida pelo usu├írio p/ a faixa
+        const stripeFg = contrastOn(stripeBg); // texto preto/branco autom├ítico
         fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 16, stripeBg);
         ctx.fillStyle = stripeFg;
         ctx.textAlign = "center";
@@ -1583,15 +1582,15 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         if (customBanner) {
           ctx.fillText(customBanner, stripeX + stripeW / 2, stripeY + stripeH / 2 + 1);
         } else {
-          // "{N}% OFF À VISTA NO  [●pix]"
-          const pixText = `${descN}% OFF À VISTA NO`;
+          // "{N}% OFF ├Ç VISTA NO  [ÔùÅpix]"
+          const pixText = `${descN}% OFF ├Ç VISTA NO`;
           const pixTextW = ctx.measureText(pixText).width;
           const pixIconSize = 36;
           const pixGap = 12;
           ctx.font = "800 28px Inter, Arial, sans-serif";
           const pixLabelW = ctx.measureText("pix").width;
           ctx.font = "900 26px Inter, Arial, sans-serif";
-          // pílula branca atrás do logo+pix p/ garantir visibilidade da marca Pix
+          // p├¡lula branca atr├ís do logo+pix p/ garantir visibilidade da marca Pix
           const pillPad = 10;
           const pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
           const pillH = stripeH - 16;
@@ -1627,18 +1626,18 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     const logoH = hasLogo ? 130 : 0;
     const destUp = (destination || "DESTINO").toUpperCase();
 
-    // ── V0 · REF "Enseada" — painel cor TOPO + foto EMBAIXO ─────────────────
-    // Painel superior (cor secundária) com altura ADAPTATIVA: encolhe quando há
-    // pouco texto, expande quando o usuário adiciona mais benefits.
+    // ÔöÇÔöÇ V0 ┬À REF "Enseada" ÔÇö painel cor TOPO + foto EMBAIXO ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // Painel superior (cor secund├íria) com altura ADAPTATIVA: encolhe quando h├í
+    // pouco texto, expande quando o usu├írio adiciona mais benefits.
     if (variant === 0) {
       // REGRA GLOBAL DE LEGIBILIDADE: texto sempre tem que destacar do fundo.
-      // Painel = secondaryColor → texto principal = primaryColor com contraste garantido.
-      // Badge  = primaryColor   → texto da badge = secondaryColor com contraste garantido.
+      // Painel = secondaryColor ÔåÆ texto principal = primaryColor com contraste garantido.
+      // Badge  = primaryColor   ÔåÆ texto da badge = secondaryColor com contraste garantido.
       const v0PanelBg = secondaryColor;
       const v0OnPanel = getSafeColor(v0PanelBg, primaryColor);
       const v0BadgeBg = primaryColor;
       const v0OnBadge = ensureContrast(secondaryColor, v0BadgeBg, 0.35);
-      // 1) Calcula tamanho do título para saber a altura real
+      // 1) Calcula tamanho do t├¡tulo para saber a altura real
       ctx.textAlign = "left";
       let titleSize = 78;
       ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
@@ -1647,18 +1646,18 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
       }
 
-      // 2) Quantidade de benefits que serão exibidos (até 6) — TODOS aparecem
+      // 2) Quantidade de benefits que ser├úo exibidos (at├® 6) ÔÇö TODOS aparecem
       const benefitsList = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
       const benefitsCount = Math.max(1, benefitsList.length);
       const benefitLineH = benefitsCount <= 4 ? 44 : benefitsCount === 5 ? 38 : 34;
       const benefitsBlockH = benefitsCount * benefitLineH;
 
-      // 3) Altura do bloco preço (fixa, ~120px)
+      // 3) Altura do bloco pre├ºo (fixa, ~120px)
       const priceBlockH = 120;
       const contentRowH = Math.max(benefitsBlockH, priceBlockH);
 
       // 4) Altura ADAPTATIVA do painel:
-      //    logo + badge(60) + gap(40) + título + gap(50) + content + padding(50)
+      //    logo + badge(60) + gap(40) + t├¡tulo + gap(50) + content + padding(50)
       const badgeH = 60;
       const topPaddingBeforeTitle = 40;
       const titleToContent = 50;
@@ -1690,11 +1689,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const titleY = Math.max(badgeY + badgeH + topPaddingBeforeTitle + titleSize, logoH + 40 + titleSize);
       ctx.fillText(titleText, left, titleY);
 
-      // 8) Benefits + Preço lado a lado — preço ALINHADO À DIREITA pra eliminar
-      //    o espaço em branco que sobrava no canto direito.
+      // 8) Benefits + Pre├ºo lado a lado ÔÇö pre├ºo ALINHADO ├Ç DIREITA pra eliminar
+      //    o espa├ºo em branco que sobrava no canto direito.
       const rowTopY = titleY + titleToContent;
       const benefitsX = left;
-      // Largura do bloco de preço: ~46% da contentWidth, mínimo 380px
+      // Largura do bloco de pre├ºo: ~46% da contentWidth, m├¡nimo 380px
       const priceBlockW = Math.max(380, Math.round(contentWidth * 0.46));
       const priceX = width - 60 - priceBlockW; // encosta no padding direito
       const benefitsMaxW = priceX - 24 - benefitsX;
@@ -1721,13 +1720,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillRect(priceX - 24, rowTopY, 2, contentRowH);
       ctx.globalAlpha = 1;
 
-      // Preço — agora CENTRALIZADO dentro do bloco direito
+      // Pre├ºo ÔÇö agora CENTRALIZADO dentro do bloco direito
       const priceCenterX = priceX + priceBlockW / 2;
       ctx.textAlign = "center";
       ctx.fillStyle = v0OnPanel; ctx.font = "600 22px Inter, Arial, sans-serif";
       ctx.fillText((topLabel || "por apenas").toString(), priceCenterX, rowTopY + 28);
       const priceStr = mainPrice || `${curSym} ${price}`;
-      // Auto-shrink do preço pra não vazar do bloco direito
+      // Auto-shrink do pre├ºo pra n├úo vazar do bloco direito
       let priceFs = 64;
       ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
       while (ctx.measureText(priceStr).width > priceBlockW - 20 && priceFs > 30) {
@@ -1757,10 +1756,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     return canvas.toDataURL("image/png");
     }
 
-    // ── V1 · REF "Black Friday" — painel escuro ESQUERDA + coluna fotos DIREITA ──
-    // Painel primário na esquerda com texto/preço; coluna direita com foto empilhada
+    // ÔöÇÔöÇ V1 ┬À REF "Black Friday" ÔÇö painel escuro ESQUERDA + coluna fotos DIREITA ÔöÇÔöÇ
+    // Painel prim├írio na esquerda com texto/pre├ºo; coluna direita com foto empilhada
     if (variant === 1) {
-      // ── V1 STORIES 9:16 — REFATORADO: painel esquerdo SÓLIDO + foto sangrada à direita ─
+      // ÔöÇÔöÇ V1 STORIES 9:16 ÔÇö REFATORADO: painel esquerdo S├ôLIDO + foto sangrada ├á direita ÔöÇ
       const panelW = Math.round(width * 0.44);
       const photoX = panelW;
       const photoW = width - panelW;
@@ -1768,11 +1767,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const v1OnPanel = getSafeColor(v1PanelBg);
       const v1Accent  = getSafeColor(v1PanelBg, secondaryColor);
 
-      // 1) PAINEL ESQUERDO sólido
+      // 1) PAINEL ESQUERDO s├│lido
       ctx.fillStyle = v1PanelBg;
       ctx.fillRect(0, 0, panelW, height);
 
-      // 2) FOTO sangrada à direita (sem moldura)
+      // 2) FOTO sangrada ├á direita (sem moldura)
       const c1 = fitCover(image.naturalWidth, image.naturalHeight, photoW, height, 0.40);
       ctx.drawImage(image, c1.sx, c1.sy, c1.sw, c1.sh, photoX, 0, photoW, height);
 
@@ -1781,7 +1780,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const pw = panelW - px * 2;
       const logoReserve = hasLogo ? 230 : 80;
 
-      // 4) BADGE pílula
+      // 4) BADGE p├¡lula
       const badgeText = (promoName || "OFERTA ESPECIAL").toUpperCase();
       const badgeBg   = v1Accent;
       const badgeFg   = contrastOn(badgeBg);
@@ -1829,11 +1828,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       subLines.forEach((ln, i) => ctx.fillText(ln, px, subY + i * (subSize + 6)));
       const subBlockH = subLines.length * (subSize + 6);
 
-      // 7) PRICE CARD ancorado no rodapé
+      // 7) PRICE CARD ancorado no rodap├®
       const priceBlockH = 200;
       const priceBlockY = panelBottom - priceBlockH;
 
-      // 8) BENEFITS — pílulas adaptativas no espaço restante
+      // 8) BENEFITS ÔÇö p├¡lulas adaptativas no espa├ºo restante
       const benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
       const hlStart = subY + subBlockH + 32;
       const hlAvailH = priceBlockY - 28 - hlStart;
@@ -1850,7 +1849,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.fillStyle = v1Accent;
         ctx.font = `400 ${iconFont}px Inter, Arial, sans-serif`;
         ctx.textBaseline = "middle";
-        ctx.fillText(ICON_SYMBOL[h.icon || "check"] || "✓", px + 22, py + pillH / 2);
+        ctx.fillText(ICON_SYMBOL[h.icon || "check"] || "Ô£ô", px + 22, py + pillH / 2);
         ctx.fillStyle = v1OnPanel;
         let tf = pillFont;
         ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
@@ -1869,7 +1868,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.textAlign = "center";
       ctx.fillStyle = v1Accent;
       ctx.font = "800 22px Inter, Arial, sans-serif";
-      ctx.fillText((topLabel || "À VISTA").toString().toUpperCase(), px + pw / 2, priceBlockY + 42);
+      ctx.fillText((topLabel || "├Ç VISTA").toString().toUpperCase(), px + pw / 2, priceBlockY + 42);
       ctx.fillStyle = v1OnPanel;
       const priceStrV1 = mainPrice || `${curSym} ${price}`;
       let pfsV1 = 76;
@@ -1895,31 +1894,31 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     return canvas.toDataURL("image/png");
     }
 
-    // ── V2 · REF "Santa Teresa" — foto topo + faixa headline + benefits + preço ──
-    // Layout ADAPTATIVO: a foto cresce/encolhe conforme a quantidade de benefícios,
-    // garantindo que TODOS os benefícios apareçam (até 5) e que não sobre espaço branco.
+    // ÔöÇÔöÇ V2 ┬À REF "Santa Teresa" ÔÇö foto topo + faixa headline + benefits + pre├ºo ÔöÇÔöÇ
+    // Layout ADAPTATIVO: a foto cresce/encolhe conforme a quantidade de benef├¡cios,
+    // garantindo que TODOS os benef├¡cios apare├ºam (at├® 5) e que n├úo sobre espa├ºo branco.
     if (variant === 2) {
       ctx.fillStyle = "#f7f4ef"; ctx.fillRect(0, 0, width, height);
 
       // REGRA DE CORES V2 (mapeamento estrito):
       // - card_background / faixa headline = user_primary_color
-      // - TODOS os textos (tagline, título, duração, total, preço, parcelas) = user_secondary_color
-      // - Ícones de amenities = user_secondary_color
+      // - TODOS os textos (tagline, t├¡tulo, dura├º├úo, total, pre├ºo, parcelas) = user_secondary_color
+      // - ├ìcones de amenities = user_secondary_color
       // - Discount badge: bg = user_secondary_color, texto branco fixo
-      // ensureContrast só atua como fallback de segurança quando primária ≈ secundária.
+      // ensureContrast s├│ atua como fallback de seguran├ºa quando prim├íria Ôëê secund├íria.
       const v2CardBg = primaryColor;
       const v2OnCard = getSafeColor(v2CardBg);
       const v2CardLabel = getSafeColor(v2CardBg, secondaryColor);
-      // Benefits ficam sobre fundo creme #f7f4ef → secundária com fallback contra creme.
+      // Benefits ficam sobre fundo creme #f7f4ef ÔåÆ secund├íria com fallback contra creme.
       const v2BenefitColor = getSafeColor("#f7f4ef", secondaryColor);
-      // Texto da faixa headline (sobre primária) = secundária com contraste garantido.
+      // Texto da faixa headline (sobre prim├íria) = secund├íria com contraste garantido.
       const v2HeadlineColor = v2CardLabel;
 
-      // Lista completa de benefits (até 6) — TODOS devem aparecer
+      // Lista completa de benefits (at├® 6) ÔÇö TODOS devem aparecer
       const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
       const benefitsCountV2 = Math.max(1, benefitsListV2.length);
 
-      // 1) Card de preço — ancorado à base e centralizado para não pesar só à esquerda
+      // 1) Card de pre├ºo ÔÇö ancorado ├á base e centralizado para n├úo pesar s├│ ├á esquerda
       const priceCardW = Math.round(width * 0.66);
       const priceCardH = 168;
       const priceCardX = Math.round((width - priceCardW) / 2);
@@ -1929,7 +1928,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.textAlign = "center";
       ctx.fillText((topLabel || "por apenas").toString(), priceCardX + priceCardW / 2, priceCardY + 40);
       ctx.fillStyle = v2CardLabel;
-      // Auto-shrink preço V2
+      // Auto-shrink pre├ºo V2
       const priceStrV2 = mainPrice || `${curSym} ${price}`;
       let pfsV2 = 64;
       ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
@@ -1943,7 +1942,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(bottomSuffix, priceCardX + priceCardW / 2, priceCardY + 144);
       ctx.textAlign = "left";
 
-      // 3) Cálculo de altura dos benefits — TODOS devem caber.
+      // 3) C├ílculo de altura dos benefits ÔÇö TODOS devem caber.
       const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
       const benefitFontSize = benefitRowsV2 <= 2 ? 30 : 25;
       const benefitGap = benefitRowsV2 <= 2 ? 58 : 46;
@@ -1956,7 +1955,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const faixaH = 110;
       const faixaY = priceCardY - benefitsAreaH - faixaH;
 
-      // 4) Foto superior — calcula altura dinâmica para preencher tudo que sobra acima
+      // 4) Foto superior ÔÇö calcula altura din├ómica para preencher tudo que sobra acima
       const photoTop = safeTop - 20; // Sobe um pouco mais a foto no V2
       const photoBottom = faixaY - 16;
       const fW2 = width - 32;
@@ -1983,7 +1982,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(titleText, left, faixaY + faixaH / 2);
       ctx.textBaseline = "alphabetic";
 
-      // 6) Benefits — duas colunas
+      // 6) Benefits ÔÇö duas colunas
       const benefitsTop = faixaY + faixaH + benefitsTopPad;
       const colGapV2 = 28;
       const colWV2 = (contentWidth - colGapV2) / 2;
@@ -2014,43 +2013,43 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     return canvas.toDataURL("image/png");
     }
 
-    // ── V4 · CIRCUITO BR — card azul flutuante centralizado + pílula Pix vazada ─
-    // Estrutura ref. anúncio "Circuito Portugal": foto cinematográfica do destino
-    // ocupando 100% do canvas; card primário arredondado centralizado mais abaixo
-    // do meio (deixa céu/paisagem visível em cima); pílula Pix em formato pílula
+    // ÔöÇÔöÇ V4 ┬À CIRCUITO BR ÔÇö card azul flutuante centralizado + p├¡lula Pix vazada ÔöÇ
+    // Estrutura ref. an├║ncio "Circuito Portugal": foto cinematogr├ífica do destino
+    // ocupando 100% do canvas; card prim├írio arredondado centralizado mais abaixo
+    // do meio (deixa c├®u/paisagem vis├¡vel em cima); p├¡lula Pix em formato p├¡lula
     // "vazando" metade para fora da borda inferior do card.
     //
-    // Mapeamento estrito form → render:
-    //   BG          → image (Foto Real / Sua Imagem / IA Pura por Destino)
-    //   card.bg     → primaryColor
-    //   tagline     → promoName               cor: secondaryColor
-    //   título      → titleText (resolvido)   cor: branco
-    //   info        → daysText | ícones       cor: secondaryColor (mono)
-    //   12X pill bg → secondaryColor          texto: primaryColor
-    //   "a partir de"/"sem juros"/"Total ..." → branco
-    //   R$ + valor  → branco (valor SEM vírgula/centavos — absoluto)
-    //   pix pill    → bg secondaryColor, texto branco, vazando bottom: -28
+    // Mapeamento estrito form ÔåÆ render:
+    //   BG          ÔåÆ image (Foto Real / Sua Imagem / IA Pura por Destino)
+    //   card.bg     ÔåÆ primaryColor
+    //   tagline     ÔåÆ promoName               cor: secondaryColor
+    //   t├¡tulo      ÔåÆ titleText (resolvido)   cor: branco
+    //   info        ÔåÆ daysText | ├¡cones       cor: secondaryColor (mono)
+    //   12X pill bg ÔåÆ secondaryColor          texto: primaryColor
+    //   "a partir de"/"sem juros"/"Total ..." ÔåÆ branco
+    //   R$ + valor  ÔåÆ branco (valor SEM v├¡rgula/centavos ÔÇö absoluto)
+    //   pix pill    ÔåÆ bg secondaryColor, texto branco, vazando bottom: -28
     if (variant === 4) {
       // [BG] foto cobre 100%
       const cBgV4 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.42);
       ctx.drawImage(image, cBgV4.sx, cBgV4.sy, cBgV4.sw, cBgV4.sh, 0, 0, width, height);
 
-      // ── Dados ────────────────────────────────────────────────────────────
+      // ÔöÇÔöÇ Dados ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
       const v4Primary = primaryColor || "#0B2B7A";
       const v4Secondary = secondaryColor || "#FFE600";
       const v4OnSecondary = ensureContrast(v4Primary, v4Secondary, 0.4); // contraste do texto sobre amarelo
       const destinoV4 = (destination || "DESTINO").toUpperCase();
       // Tagline do topo = promoName (se vazio, usa "PACOTE" como neutro)
       const taglineV4 = ((promoName || "PACOTE").trim()).toUpperCase();
-      // Título = primeira linha do titleText OU destino (sem repetir tagline)
+      // T├¡tulo = primeira linha do titleText OU destino (sem repetir tagline)
       const titleLineV4 = (() => {
         const t = (titleText || destinoV4).trim();
         const firstLine = t.split(/\r?\n/)[0] || t;
-        // remove tagline duplicada se titleText começar com ela
+        // remove tagline duplicada se titleText come├ºar com ela
         return firstLine.replace(new RegExp(`^${taglineV4}\\s*`, "i"), "").trim() || destinoV4;
       })();
 
-      const daysItemV4 = highlights.find((h) => /\d+\s*dia|\d+\s*noite|janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro/i.test(h?.text || ""));
+      const daysItemV4 = highlights.find((h) => /\d+\s*dia|\d+\s*noite|janeiro|fevereiro|mar├ºo|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro/i.test(h?.text || ""));
       const daysTextV4 = (travelPeriod?.trim() || daysItemV4?.text || "").trim();
       const iconListV4: IconKey[] = (() => {
         const fromHl = highlights
@@ -2062,7 +2061,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         return out;
       })();
 
-      // Chamada do pagamento sincronizada com o modo escolhido no formulário.
+      // Chamada do pagamento sincronizada com o modo escolhido no formul├írio.
       const instMatchV4 = (installments || "10x").match(/(\d{1,2})\s*x/i);
       const parcNV4 = instMatchV4 ? instMatchV4[1] : "1";
       const leftTopV4 = (() => {
@@ -2071,7 +2070,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         return "a partir de";
       })();
       const pillTxt = (() => {
-        if (paymentMode === "cash" || paymentMode === "cash_discount") return "À VISTA";
+        if (paymentMode === "cash" || paymentMode === "cash_discount") return "├Ç VISTA";
         if (paymentMode === "down_plus") {
           const clean = (installments || paymentLabel || "Entrada + 10x").replace(/entrada\s*\+?/i, "").trim();
           return clean || `${parcNV4}X`;
@@ -2084,9 +2083,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         return "sem juros";
       })();
 
-      // Preço V4 — respeita o toggle "Mostrar centavos" do formulário.
-      // Se o `price` recebido já vem com vírgula/centavos (ex: "423,00"), preserva.
-      // Caso contrário, exibe absoluto (sem decimais).
+      // Pre├ºo V4 ÔÇö respeita o toggle "Mostrar centavos" do formul├írio.
+      // Se o `price` recebido j├í vem com v├¡rgula/centavos (ex: "423,00"), preserva.
+      // Caso contr├írio, exibe absoluto (sem decimais).
       const priceRawV4 = (price || "").trim();
       const priceNumV4 = parseFloat(priceRawV4.replace(/\./g, "").replace(",", "."));
       const hasCentsV4 = /[.,]\d{1,2}\s*$/.test(priceRawV4);
@@ -2105,12 +2104,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const totalStrV4 = (totalOverride && totalOverride.trim())
         || (!isNaN(totalNumV4) ? `Total ${(paymentSuffix || "por pessoa").trim()}: ${curSym} ${fmtBRv4(totalNumV4, hasCentsV4)}` : "");
 
-      // Desconto p/ pílula Pix
+      // Desconto p/ p├¡lula Pix
       const descMatchV4 = (promoName || "").match(/(\d{1,2})\s*%/);
       const descNV4 = descMatchV4 ? descMatchV4[1] : "5";
 
-      // ── [CARD] dimensões e posição (centralizado, mais abaixo do centro) ─
-      // V4 precisa ser compacto: evita o “mar” de fundo primário entre a pílula 10X e o preço.
+      // ÔöÇÔöÇ [CARD] dimens├Áes e posi├º├úo (centralizado, mais abaixo do centro) ÔöÇ
+      // V4 precisa ser compacto: evita o ÔÇ£marÔÇØ de fundo prim├írio entre a p├¡lula 10X e o pre├ºo.
       const cardW = Math.round(width * (format === "story" ? 0.82 : 0.74));
       const cardMarginX = Math.round((width - cardW) / 2);
       // Altura adaptativa
@@ -2127,7 +2126,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const cardPadBottom = 36;
       const cardH = cardPadTop + tagH + tagGap + titleH + titleGap + infoH + infoGap + priceBlockH + totalGap + totalHv4 + cardPadBottom;
 
-      // Posição vertical: card começa em ~32% para deixar céu visível em cima.
+      // Posi├º├úo vertical: card come├ºa em ~32% para deixar c├®u vis├¡vel em cima.
       const cardX = cardMarginX;
       const idealCardY = format === "story" ? Math.round(height * 0.24) : Math.round(height * 0.16);
       const cardY = Math.min(idealCardY, panelBottom - cardH - 20);
@@ -2144,7 +2143,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const cxV4 = cardX + cardW / 2;
       let cyV4 = cardY + cardPadTop + 44; // baseline aproximada da tagline
 
-      // [TAGLINE] cor secundária, peso black
+      // [TAGLINE] cor secund├íria, peso black
       ctx.textAlign = "left";
       ctx.fillStyle = v4Secondary;
       let tagSize = 56;
@@ -2156,7 +2155,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(taglineV4, cardX + 36, cyV4);
       cyV4 += tagGap + 56;
 
-      // [TÍTULO/DESTINO] branco, regular (mais leve), maior
+      // [T├ìTULO/DESTINO] branco, regular (mais leve), maior
       ctx.fillStyle = "#ffffff";
       let titSize = 72;
       ctx.font = `400 ${titSize}px Inter, Arial, sans-serif`;
@@ -2167,7 +2166,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillText(titleLineV4, cardX + 36, cyV4);
       cyV4 += titleGap + 26;
 
-      // [INFO] dias | ícones — todos secondaryColor
+      // [INFO] dias | ├¡cones ÔÇö todos secondaryColor
       const infoYv4 = cyV4 + 8;
       ctx.fillStyle = v4Secondary;
       ctx.font = "700 32px Inter, Arial, sans-serif";
@@ -2178,7 +2177,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       // separador "|"
       ctx.fillText("|", infoStartX + daysWv4 + 14, infoYv4);
       const sepWv4 = ctx.measureText("|").width;
-      // ícones na mesma linha
+      // ├¡cones na mesma linha
       const iconSizeV4 = 36;
       const iconGapV4 = 14;
       let iconCursor = infoStartX + daysWv4 + 14 + sepWv4 + 18;
@@ -2189,7 +2188,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.textBaseline = "alphabetic";
       cyV4 += infoGap + 38;
 
-      // [PRICE BLOCK] — esquerda: "a partir de" + pílula 12X + "sem juros"
+      // [PRICE BLOCK] ÔÇö esquerda: "a partir de" + p├¡lula 12X + "sem juros"
       //                 direita: R$ pequeno + valor GIGANTE branco
       const priceY = cyV4;
       const priceGroupW = Math.min(cardW - 72, Math.round(width * (format === "story" ? 0.68 : 0.58)));
@@ -2203,7 +2202,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.font = "600 22px Inter, Arial, sans-serif";
       ctx.fillText(leftTopV4, leftX, priceY + 24);
 
-      // Pílula sincronizada com o modo de pagamento (10X / À VISTA / Entrada + parcelas)
+      // P├¡lula sincronizada com o modo de pagamento (10X / ├Ç VISTA / Entrada + parcelas)
       ctx.font = "900 38px Inter, Arial, sans-serif";
       const pillTxtW = ctx.measureText(pillTxt).width;
       const pillPadX = 18;
@@ -2220,7 +2219,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.textBaseline = "alphabetic";
       ctx.textAlign = "left";
 
-      // "sem juros" abaixo da pílula
+      // "sem juros" abaixo da p├¡lula
       ctx.fillStyle = "#ffffff";
       ctx.font = "600 22px Inter, Arial, sans-serif";
       ctx.fillText(leftBottomV4, leftX, pillY + pillH + 28);
@@ -2230,7 +2229,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillStyle = "#ffffff";
       // Auto-shrink valor
       const reservedLeftPrice = pillX + pillW + 20;
-      const maxValW = rightEdge - reservedLeftPrice - 70; // reserva menor p/ aproximar R$ + valor da pílula
+      const maxValW = rightEdge - reservedLeftPrice - 70; // reserva menor p/ aproximar R$ + valor da p├¡lula
       const centsMatchV4 = valNumV4.match(/^(.+?)([,.]\d{1,2})$/);
       const mainValV4 = centsMatchV4 ? centsMatchV4[1] : valNumV4;
       const centsValV4 = centsMatchV4 ? centsMatchV4[2] : "";
@@ -2269,10 +2268,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.fillText(totalStrV4, cxV4, cyV4 + 18);
       }
 
-      // [BADGE PIX] pílula vazada na borda inferior — bottom: -20
+      // [BADGE PIX] p├¡lula vazada na borda inferior ÔÇö bottom: -20
       if (showPixBanner) {
         const pixLabel = (pixBannerText && pixBannerText.trim())
-          || `${descNV4}% OFF À VISTA NO`;
+          || `${descNV4}% OFF ├Ç VISTA NO`;
         ctx.font = "900 26px Inter, Arial, sans-serif";
         const pixLabelW = ctx.measureText(pixLabel).width;
         const pixIconSize = 32;
@@ -2309,8 +2308,13 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.textBaseline = "alphabetic";
       }
 
+      await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, undefined, effectiveTextColor);
+      applyFilmGrain(ctx, width, height, 0.04);
+      return canvas.toDataURL("image/png");
+    }
+
   // ============================================================
-  // V0_Experiencia · LUXO & DESEJO (canvas)
+  // V0_Experiencia ┬À LUXO & DESEJO (canvas)
   // ============================================================
   const renderV0Experiencia = async (): Promise<string> => {
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
@@ -2333,7 +2337,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = "#ffffff";
 
-    const promo = (promoName || "EXPERIÊNCIA EXCLUSIVA").toUpperCase();
+    const promo = (promoName || "EXPERI├èNCIA EXCLUSIVA").toUpperCase();
     ctx.font = `800 ${isStory ? 44 : 36}px ${serif}`;
     ctx.fillText(promo.split("").join("\u2009"), cx, isStory ? 300 : 150);
 
@@ -2355,7 +2359,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   // ============================================================
-  // V1_Experiencia · LUXO CINEMATOGRÁFICO (canvas)
+  // V1_Experiencia ┬À LUXO CINEMATOGR├üFICO (canvas)
   // ============================================================
   const renderV1Experiencia = async (): Promise<string> => {
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
@@ -2378,7 +2382,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = "#ffffff";
 
-    const promo = (promoName || "Experiência Única").toUpperCase();
+    const promo = (promoName || "Experi├¬ncia ├Ünica").toUpperCase();
     ctx.font = `800 ${isStory ? 32 : 24}px ${sans}`;
     ctx.fillStyle = secondaryColor;
     ctx.fillText(promo.split("").join(" "), cx, isStory ? 320 : 150);
@@ -2403,7 +2407,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   // ============================================================
-  // V2_Experiencia · LUXO MATERIAL (canvas)
+  // V2_Experiencia ┬À LUXO MATERIAL (canvas)
   // ============================================================
   const renderV2Experiencia = async (): Promise<string> => {
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
@@ -2452,7 +2456,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   // ============================================================
-  // V3_Experiencia · DARK PREMIUM (canvas)
+  // V3_Experiencia ┬À DARK PREMIUM (canvas)
   // ============================================================
   const renderV3Experiencia = async (): Promise<string> => {
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
@@ -2480,7 +2484,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
     ctx.font = `italic 600 ${isStory ? 32 : 24}px ${serif}`;
     ctx.fillStyle = secondaryColor;
-    ctx.fillText(travelPeriod || "Uma jornada inesquecível", cx, height / 2 + (isStory ? 80 : 60));
+    ctx.fillText(travelPeriod || "Uma jornada inesquec├¡vel", cx, height / 2 + (isStory ? 80 : 60));
 
     await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor);
     applyFilmGrain(ctx, width, height, 0.05);
@@ -2488,7 +2492,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
   // ============================================================
-  // V4_Experiencia · CLEAN EDITORIAL (canvas)
+  // V4_Experiencia ┬À CLEAN EDITORIAL (canvas)
   // ============================================================
   const renderV4Experiencia = async (): Promise<string> => {
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.42);
@@ -2521,7 +2525,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = "#ffffff";
     let titSize = isStory ? 110 : 80;
     ctx.font = `900 ${titSize}px ${serif}`;
-    const words = (titleText || destination || "Experiência").toUpperCase().split(/\s+/);
+    const words = (titleText || destination || "Experi├¬ncia").toUpperCase().split(/\s+/);
     let lines: string[] = [];
     let cur = "";
     for (const w of words) {
@@ -2543,7 +2547,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   };
 
 
-  // ── ROTEAMENTO FINAL ──────────────────────────────────────────────────────
+  // ÔöÇÔöÇ ROTEAMENTO FINAL ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   try {
     if (isExperience) {
       const v = typeof forceVariant === "number" ? forceVariant : variation;
@@ -2564,9 +2568,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     console.error("Ad Engine Error:", error);
     // Fallback absoluto: tenta renderizar o modo mais simples (V0) antes de desistir
     try { return await renderV0Experiencia(); } catch {
-       return canvas.toDataURL("image/png"); // Último recurso: retorna o canvas como está
+       return canvas.toDataURL("image/png"); // ├Ültimo recurso: retorna o canvas como est├í
     }
   }
+}
 }
 
 /**
@@ -2584,7 +2589,7 @@ export async function reframeImageToAspect(
       try {
         const targetW = 1080;
         const targetH = format === "story" ? 1920 : 1080;
-        // Se já está no aspecto desejado (tolerância de 2%), retorna como veio.
+        // Se j├í est├í no aspecto desejado (toler├óncia de 2%), retorna como veio.
         const currentRatio = img.naturalWidth / img.naturalHeight;
         const targetRatio = targetW / targetH;
         if (Math.abs(currentRatio - targetRatio) < 0.02) {
@@ -2595,12 +2600,12 @@ export async function reframeImageToAspect(
         canvas.width = targetW;
         canvas.height = targetH;
         const ctx = canvas.getContext("2d");
-        if (!ctx) return reject(new Error("Canvas 2D não suportado"));
+        if (!ctx) return reject(new Error("Canvas 2D n├úo suportado"));
 
-        // COVER CROP — preenche toda a tela 9:16 ou 1:1 sem barras laterais brancas.
-        // O prompt da IA já instrui a concentrar o conteúdo importante no miolo central
+        // COVER CROP ÔÇö preenche toda a tela 9:16 ou 1:1 sem barras laterais brancas.
+        // O prompt da IA j├í instrui a concentrar o conte├║do importante no miolo central
         // (entre 18% e 82% da altura, com ~10% de margem lateral), de modo que o recorte
-        // lateral não corta texto, preço nem CTA. Isso elimina o efeito "moldura branca".
+        // lateral n├úo corta texto, pre├ºo nem CTA. Isso elimina o efeito "moldura branca".
         const scale = Math.max(targetW / img.naturalWidth, targetH / img.naturalHeight);
         const drawW = Math.round(img.naturalWidth * scale);
         const drawH = Math.round(img.naturalHeight * scale);
