@@ -554,6 +554,7 @@ function drawMonoIcon(
 
   ctx.beginPath();
   switch (kind) {
+    case "bus": {
       const cw = s * 0.62, ch = s * 0.42; const cxL = cx - cw / 2, cyT = cy - ch / 2 + s * 0.04;
       ctx.beginPath(); ctx.moveTo(cxL, cyT); ctx.lineTo(cxL + cw, cyT); ctx.lineTo(cxL + cw - s * 0.06, cyT + ch);
       ctx.lineTo(cxL + s * 0.06, cyT + ch); ctx.closePath(); ctx.fill();
