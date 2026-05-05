@@ -878,9 +878,14 @@ export default function SalesPage() {
           <p style={{ fontSize: '17px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.8, marginBottom: '32px' }}>
             Se em 7 dias você olhar para o seu feed e não sentir orgulho da sua nova agência, basta um e-mail. Devolvemos cada centavo. <strong style={{ color: '#fff' }}>O risco é 100% nosso.</strong>
           </p>
-          <div className="flex justify-center gap-6 opacity-60 grayscale hover:grayscale-0 transition-all">
-            <img src="https://rochadigitalmidia.com.br/wp-content/uploads/2024/10/stripe-logo.webp" style={{ height: '24px' }} alt="Stripe" />
-            <img src="https://rochadigitalmidia.com.br/wp-content/uploads/2024/10/hotmart-logo.webp" style={{ height: '24px' }} alt="Hotmart" />
+          <div className="flex justify-center gap-3 flex-wrap">
+            {['STRIPE', 'HOTMART'].map(label => (
+              <span key={label} style={{
+                fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.6)',
+                border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px',
+                padding: '4px 10px', letterSpacing: '0.5px'
+              }}>{label}</span>
+            ))}
           </div>
         </div>
       </section>
