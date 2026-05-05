@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ReactCompareSlider, ReactCompareSliderImage } from "react-compare-slider";
-import { Check, X, Star, Lock, Shield, Play, ArrowRight, Zap } from "lucide-react";
+import { Check, X, Star, Shield, Play, ArrowRight } from "lucide-react";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
-import { CountdownTimer } from "@/components/planos/CountdownTimer";
 
 // ────────────────────────────────────────────────────────────
 // CONFIG
@@ -14,117 +13,107 @@ const STRIPE = {
 };
 
 const T = {
-  bg: "#0A0F1E",
-  bgDeep: "#06091A",
+  bg: "#050D1A",
+  bgDeep: "#03070F",
   card: "rgba(255,255,255,0.03)",
   border: "1px solid rgba(255,255,255,0.08)",
-  accent: "#00D4FF",
+  accent: "#00E5FF",
   text: "#FFFFFF",
   text2: "rgba(255,255,255,0.65)",
   text3: "rgba(255,255,255,0.4)",
 };
 
-const STORAGE_KEY = "cv_offer_72h_expires";
-const DURATION_72H = 72 * 60 * 60 * 1000;
+const DEMO_VIDEO_URL = "https://www.youtube.com/embed/dvInvZZ7fLY?autoplay=1";
 
 // ────────────────────────────────────────────────────────────
 // DATA
 // ────────────────────────────────────────────────────────────
-const TESTIMONIALS = [
-  { name: "Renata Vasconcelos", agency: "Dream Travel · São Paulo, SP",
-    metric: "🚀 Engajamento +340% em 15 dias", photo: "/assets/renata.png",
-    text: "Minha agência era invisível no Instagram. Em 15 dias fechei 3 pacotes para o Nordeste só pelos Reels. O design premium faz toda a diferença." },
-  { name: "Carlos Eduardo", agency: "Cadu Viagens · Recife, PE",
-    metric: "🚀 ROI 12x em 30 dias", photo: "/assets/carlos.png",
-    text: "Antes eu perdia 3h num post. Agora posto em 2 minutos. Os vídeos são cinematográficos — meu cliente acha que tenho equipe." },
-  { name: "Ana Paula Silva", agency: "Viaje Mais · Curitiba, PR",
-    metric: "🚀 84 leads em 45 dias", photo: "/assets/ana.png",
-    text: "Assinei com medo por ser barato, mas a qualidade é de agência de publicidade. Nunca mais fico sem postar." },
-  { name: "Marcos Oliveira", agency: "Prime Agência · Florianópolis, SC",
-    metric: "🚀 Ticket +R$1.2k em 60 dias",
-    text: "Os vídeos passam credibilidade gigante. Atrai cliente de alto padrão que antes ignorava minha agência." },
-  { name: "Julia Lima", agency: "Agente Conectada · BH, MG",
-    metric: "🚀 Engajamento +280% em 21 dias",
-    text: "Nunca tive tantos salvamentos em um post. O conteúdo cinematográfico realmente para o scroll do cliente." },
+// 2 case-studies fortes + 4 depoimentos rápidos
+const CASES = [
+  {
+    name: "Renata Vasconcelos",
+    agency: "Dream Travel · São Paulo, SP",
+    handle: "@dreamtravel.sp",
+    instaUrl: "https://instagram.com/dreamtravel.sp",
+    headline: "Fechou R$ 8.420 em 31 dias com 4 posts",
+    text: "Eu postava 1x por semana, sem retorno. Em 31 dias usando o Canva Viagem postei 4 vídeos do Nordeste, recebi 11 DMs e fechei 3 pacotes que somaram R$ 8.420 só na primeira mensalidade.",
+    metrics: ["+11 DMs em 31 dias", "3 pacotes fechados", "R$ 8.420 em vendas"],
+    photo: "/assets/renata.png",
+  },
+  {
+    name: "Carlos Eduardo",
+    agency: "Cadu Viagens · Recife, PE",
+    handle: "@caduviagens",
+    instaUrl: "https://instagram.com/caduviagens",
+    headline: "De 3h por post para 2 minutos — fechou R$ 12.700 em 45 dias",
+    text: "Antes eu travava 3 horas para um único post no Canva. Agora pego o vídeo pronto, troco logo, posto. Em 45 dias fechei 5 pacotes Caribe que somaram R$ 12.700 — sem aumentar tráfego pago.",
+    metrics: ["2 min por post", "5 pacotes Caribe", "R$ 12.700 em 45 dias"],
+    photo: "/assets/carlos.png",
+  },
+];
+
+const QUICK_TESTIMONIALS = [
+  { name: "Ana Paula Silva", agency: "Viaje Mais · Curitiba, PR", handle: "@viajemais.cwb", instaUrl: "https://instagram.com/viajemais.cwb",
+    text: "Achei barato demais e quase não comprei. Em 21 dias fechei 2 pacotes que pagaram a anuidade 80x." },
+  { name: "Marcos Oliveira", agency: "Prime Agência · Floripa, SC", handle: "@primeflorianopolis", instaUrl: "https://instagram.com/primeflorianopolis",
+    text: "Cliente de R$ 4.500/pacote começou a me chamar depois que mudei o feed. Vídeo cinematográfico = autoridade." },
+  { name: "Julia Lima", agency: "Agente Conectada · BH, MG", handle: "@agenteconectada", instaUrl: "https://instagram.com/agenteconectada",
+    text: "Nunca tive tantos salvamentos. As IAs escrevem legenda melhor do que eu — sem exagero." },
+  { name: "Rafael Mendes", agency: "Mendes Tour · Salvador, BA", handle: "@mendestour.ssa", instaUrl: "https://instagram.com/mendestour.ssa",
+    text: "Saí da agência em 3 meses e abri a minha. O Canva Viagem foi 100% do meu marketing inicial." },
 ];
 
 const PAINS = [
-  { emoji: "👻", title: "Instagram Fantasma", text: "Seu perfil está parado porque você não tem as manhas (e nem o tempo) de criar conteúdo todo dia." },
-  { emoji: "🎨", title: "Artes 'Amadoras'", text: "Você contratou designer e recebeu algo que parece feito no Word por uma criança." },
-  { emoji: "😤", title: "Inveja do Concorrente", text: "Seu vizinho posta Reels épicos e você não faz ideia de como ele consegue aquele visual." },
-  { emoji: "😨", title: "Medo de Não Ser Levado a Sério", text: "Você já perdeu orçamentos de alto padrão porque seu feed não passa segurança." },
+  { emoji: "👻", title: "Instagram Fantasma", text: "Você posta uma vez por semana (no susto) e o engajamento é zero. Cliente passa direto." },
+  { emoji: "🎨", title: "Designer Entregou Lixo", text: "Pagou R$ 800 por umas artes que parecem feitas no Word. E ele sumiu no WhatsApp." },
+  { emoji: "💸", title: "Cliente Premium Te Ignora", text: "Quem paga R$ 8.000 por pacote olha seu perfil 3 segundos e vai para o concorrente." },
 ];
 
-const ARSENAL = [
-  { icon: "🎬", title: "250+ Vídeos 4K UHD", text: "Pareça que você filmou no destino, sem sair do escritório." },
-  { icon: "🎨", title: "400+ Artes Estratégicas", text: "Posts carrossel, ofertas e institucionais prontos para Canva." },
-  { icon: "🤖", title: "11 Assistentes de IA", text: "Legendas e copy treinadas no mercado de viagem.",
-    sample: "✨ \"Imagine acordar com vista pro mar de Maragogi 🌊 — pacote 5 dias com tudo incluso a partir de R$1.890. Garanta sua data 👇\"" },
-  { icon: "💬", title: "Scripts WhatsApp", text: "Mensagens que convertem lead em cliente pagante.",
-    sample: "💬 \"Oi [nome]! Vi que você curtiu nosso post de Maragogi 🩵 Posso te mandar 3 datas com o melhor preço pra setembro?\"" },
-  { icon: "📅", title: "Calendário de Conteúdo", text: "Saiba o que postar e quando postar para máxima escala." },
-  { icon: "🎯", title: "Estratégia de Marketing", text: "Guia passo a passo do Instagram ao fechamento." },
+const HOW_IT_WORKS = [
+  { num: "1", title: "ESCOLHE", text: "250+ vídeos 4K por destino. Maragogi, Caribe, Europa — atualizados toda semana." },
+  { num: "2", title: "PERSONALIZA", text: "Abre no Canva, troca o logo, ajusta a cor da marca. Em 2 minutos está pronto." },
+  { num: "3", title: "POSTA", text: "Calendário pronto + scripts de WhatsApp para converter o DM em pacote vendido." },
 ];
 
+// Comparativo justo: pack único vs designer freelancer vs Canva Viagem
 const COMPARISON = [
-  { feature: "Custo mensal", design: "R$1.500+", social: "R$900+", us: "R$16,41" },
-  { feature: "Vídeos 4K", design: "Raro", social: "Não", us: "250+" },
-  { feature: "Estratégia", design: "Limitada", social: "Genérica", us: "Específica de viagem" },
-  { feature: "Autonomia", design: "Zero", social: "Pouca", us: "Total" },
-  { feature: "Velocidade", design: "Dias", social: "Horas", us: "Minutos" },
+  { feature: "Investimento",  hotmart: "R$ 197 uma vez", design: "R$ 1.500 / mês", us: "R$ 197 / ano" },
+  { feature: "Conteúdo",      hotmart: "150 reels fixos", design: "4–8 entregas/mês", us: "250+ vídeos · atualização semanal" },
+  { feature: "Atualizações",  hotmart: "❌ Nenhuma", design: "Depende dele", us: "✅ Acesso vitalício à evolução" },
+  { feature: "IAs e Scripts", hotmart: "❌ Não tem", design: "❌ Não tem", us: "✅ 11 IAs + scripts WhatsApp" },
+  { feature: "Suporte",       hotmart: "Só do produtor", design: "1 freelancer", us: "WhatsApp time da plataforma" },
 ];
 
 const FAQS = [
-  { q: "Os vídeos são exclusivos?", a: "Cada vídeo é o ponto de partida. Você adiciona seu logo e paleta no Canva e cria um post único. Com 250+ vídeos no acervo, a chance de dois concorrentes postarem o mesmo é mínima." },
-  { q: "Preciso de Canva pago?", a: "Não. Tudo funciona perfeitamente no Canva gratuito. O Pro só ajuda com remoção de fundo — opcional." },
-  { q: "Eu já comprei o Pack de 150 Reels, é a mesma coisa?", a: "Não. O Pack é uma fração do que entregamos. Aqui você tem +100 vídeos novos, 400+ artes, 11 IAs, scripts de WhatsApp, calendário e atualizações semanais." },
-  { q: "Funciona para agência pequena?", a: "Foi desenhado pra você. Você sozinho consegue ter um perfil de multinacional em 5 minutos por dia." },
-  { q: "Como recebo o acesso?", a: "Imediato. Assim que o pagamento (Stripe ou Hotmart) é confirmado, você recebe e-mail com login automático." },
-  { q: "Posso cancelar quando quiser?", a: "Sim, sem letras miúdas. No mensal você cancela a qualquer momento. No anual, você garante 12 meses pelo menor preço." },
+  { q: "Quanto tempo por dia eu preciso?", a: "Em média 5 a 10 minutos. Você escolhe o vídeo do destino, abre no Canva, troca seu logo e posta. Quem usa o calendário pronto faz um lote semanal de 30 minutos e fica liberado a semana inteira." },
+  { q: "Funciona se eu não souber Canva?", a: "Sim. Tudo é editável em arrastar e soltar — não precisa saber design. Os templates já vêm posicionados, com fonte certa, cores certas. Você só substitui o logo e o texto." },
+  { q: "Posso usar comercialmente?", a: "Sim. Sua assinatura libera uso ilimitado para a sua agência: posts, anúncios, story, WhatsApp, site. O que você não pode é revender os arquivos brutos." },
+  { q: "E se eu cancelar, perco os vídeos baixados?", a: "Não. Tudo o que você baixou e usou nas suas redes continua seu para sempre. Você só perde acesso ao acervo novo e às atualizações." },
+  { q: "Tem suporte em português via WhatsApp?", a: "Sim, no plano anual. Atendimento humano em horário comercial — não chatbot. Tempo médio de resposta: 2 horas." },
+  { q: "Os vídeos são exclusivos?", a: "Não exclusivos no sentido literal — mas com 250+ vídeos por destino e a customização do Canva (seu logo, sua cor, sua legenda), a chance de aparecer igual ao concorrente é mínima." },
+  { q: "Qual a diferença do pack único da Hotmart?", a: "O pack é uma fatia parada no tempo (150 reels e fim). Aqui você tem 250+ vídeos, +400 artes, 11 IAs, scripts de WhatsApp, calendário e novas entregas toda semana — pelo mesmo preço cobrado uma vez no pack." },
+  { q: "Funciona pra agência pequena (1 pessoa)?", a: "Foi feito justamente pra você. Quem trabalha sozinho é quem mais ganha tempo: 5 minutos por dia substituem um designer e um social media." },
 ];
 
 // ────────────────────────────────────────────────────────────
 // SUB-COMPONENTS
 // ────────────────────────────────────────────────────────────
-
-const InitialAvatar = ({ name, idx }: { name: string; idx: number }) => {
+const InitialAvatar = ({ name, idx, size = 56 }: { name: string; idx: number; size?: number }) => {
   const colors = ["#7F77DD", "#1D9E75", "#D85A30", "#D4537E", "#378ADD", "#BA7517"];
   const initials = name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase();
   return (
-    <div style={{ width: 56, height: 56, borderRadius: "50%", background: colors[idx % colors.length],
-      display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700,
-      color: "#fff", flexShrink: 0, border: `2px solid ${T.accent}33` }}>{initials}</div>
+    <div style={{ width: size, height: size, borderRadius: "50%", background: colors[idx % colors.length],
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontSize: size * 0.32, fontWeight: 700, color: "#fff", flexShrink: 0,
+      border: `2px solid ${T.accent}33` }}>{initials}</div>
   );
 };
 
-const Avatar = ({ name, photo, idx }: { name: string; photo?: string; idx: number }) => {
+const Avatar = ({ name, photo, idx, size = 56 }: { name: string; photo?: string; idx: number; size?: number }) => {
   const [failed, setFailed] = useState(false);
-  if (!photo || failed) return <InitialAvatar name={name} idx={idx} />;
+  if (!photo || failed) return <InitialAvatar name={name} idx={idx} size={size} />;
   return <img src={photo} onError={() => setFailed(true)} alt={name}
-    style={{ width: 56, height: 56, borderRadius: "50%", border: `2px solid ${T.accent}33`, objectFit: "cover", flexShrink: 0 }} />;
-};
-
-// 72h countdown for top bar
-const TopBarCountdown = () => {
-  const [t, setT] = useState({ d: "00", h: "00", m: "00", s: "00" });
-  useEffect(() => {
-    let exp = parseInt(localStorage.getItem(STORAGE_KEY) || "0");
-    if (!exp || exp <= Date.now()) { exp = Date.now() + DURATION_72H; localStorage.setItem(STORAGE_KEY, exp.toString()); }
-    const tick = () => {
-      let r = exp - Date.now();
-      if (r <= 0) { exp = Date.now() + DURATION_72H; localStorage.setItem(STORAGE_KEY, exp.toString()); r = DURATION_72H; }
-      const d = Math.floor(r / 86400000), h = Math.floor((r % 86400000) / 3600000),
-            m = Math.floor((r % 3600000) / 60000), s = Math.floor((r % 60000) / 1000);
-      setT({ d: String(d).padStart(2, "0"), h: String(h).padStart(2, "0"),
-             m: String(m).padStart(2, "0"), s: String(s).padStart(2, "0") });
-    };
-    tick(); const i = setInterval(tick, 1000); return () => clearInterval(i);
-  }, []);
-  return (
-    <span style={{ fontFamily: "monospace", fontWeight: 800, color: T.accent, letterSpacing: 1, fontSize: 14 }}>
-      {t.d}:{t.h}:{t.m}:{t.s}
-    </span>
-  );
+    style={{ width: size, height: size, borderRadius: "50%", border: `2px solid ${T.accent}33`, objectFit: "cover", flexShrink: 0 }} />;
 };
 
 const ScrollProgressBar = () => {
@@ -174,6 +163,28 @@ const Reveal = ({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
   </motion.div>
 );
 
+// Modal de vídeo demo (hero)
+const VideoModal = ({ open, onClose }: { open: boolean; onClose: () => void }) => (
+  <AnimatePresence>{open && (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", zIndex: 10002,
+        display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <motion.div initial={{ scale: 0.92 }} animate={{ scale: 1 }} onClick={e => e.stopPropagation()}
+        style={{ width: "100%", maxWidth: 960, position: "relative" }}>
+        <button onClick={onClose} aria-label="Fechar"
+          style={{ position: "absolute", top: -42, right: 0, background: "transparent", border: "none",
+            color: "#fff", fontSize: 28, cursor: "pointer", fontWeight: 300 }}>✕</button>
+        <div style={{ position: "relative", paddingTop: "56.25%", borderRadius: 16, overflow: "hidden",
+          border: `1px solid ${T.accent}55`, boxShadow: `0 24px 80px ${T.accent}33` }}>
+          <iframe style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }}
+            src={DEMO_VIDEO_URL} allow="autoplay; encrypted-media" allowFullScreen title="Tour pela plataforma" />
+        </div>
+      </motion.div>
+    </motion.div>
+  )}</AnimatePresence>
+);
+
 // Exit intent popup
 const ExitIntent = ({ onCta }: { onCta: () => void }) => {
   const [open, setOpen] = useState(false);
@@ -206,12 +217,12 @@ const ExitIntent = ({ onCta }: { onCta: () => void }) => {
           <p style={{ color: T.text2, fontSize: 15, marginBottom: 24 }}>
             Você está prestes a sair sem garantir o preço de lançamento. Esse desconto não volta.
           </p>
-          <button onClick={() => { onCta(); setOpen(false); }} style={{ width: "100%",
+          <button id="cta-exit-intent" onClick={() => { onCta(); setOpen(false); }} style={{ width: "100%",
             background: T.accent, color: "#000", fontWeight: 900, fontSize: 16, padding: "18px",
             borderRadius: 14, border: "none", cursor: "pointer", textTransform: "uppercase", letterSpacing: 0.5 }}>
             QUERO GARANTIR AGORA →
           </button>
-          <p style={{ marginTop: 12, fontSize: 11, color: T.text3 }}>🔒 Garantia de 7 dias · Cancele quando quiser</p>
+          <p style={{ marginTop: 12, fontSize: 11, color: T.text3 }}>🔒 Garantia tripla · Cancele quando quiser</p>
         </motion.div>
       </motion.div>
     )}</AnimatePresence>
@@ -222,6 +233,8 @@ const ExitIntent = ({ onCta }: { onCta: () => void }) => {
 // MAIN
 // ────────────────────────────────────────────────────────────
 export default function SalesPage() {
+  const [videoOpen, setVideoOpen] = useState(false);
+
   useEffect(() => { trackViewContent("Canva Viagem 10/10"); window.scrollTo(0, 0); }, []);
 
   const checkout = (plan: "monthly" | "annual" = "annual") => {
@@ -231,19 +244,22 @@ export default function SalesPage() {
 
   return (
     <div style={{ background: T.bg, color: T.text, minHeight: "100vh", overflowX: "hidden",
-      paddingTop: 96, fontFamily: "Inter, system-ui, sans-serif" }}>
+      paddingTop: 56, fontFamily: "Inter, system-ui, sans-serif" }}>
 
       <ScrollProgressBar />
 
-      {/* ─── SEÇÃO 1 — TOP BAR ─── */}
+      {/* ─── TOP BAR — escassez REAL (sem timer fake) ─── */}
       <div style={{ position: "fixed", top: 3, left: 0, right: 0, zIndex: 9999,
-        background: T.bgDeep, borderBottom: `1px solid ${T.accent}`,
+        background: T.bgDeep, borderBottom: `1px solid ${T.accent}55`,
         padding: "10px 14px", display: "flex", alignItems: "center",
         justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
         <span className="animate-pulse" style={{ background: T.accent, color: "#000",
-          fontSize: 11, fontWeight: 800, padding: "3px 8px", borderRadius: 4, letterSpacing: 0.5 }}>42% OFF</span>
-        <span style={{ fontSize: 12, color: T.text2, fontWeight: 600 }}>⚡ Encerra em</span>
-        <TopBarCountdown />
+          fontSize: 11, fontWeight: 800, padding: "3px 8px", borderRadius: 4, letterSpacing: 0.5 }}>
+          47 VAGAS
+        </span>
+        <span style={{ fontSize: 12, color: T.text2, fontWeight: 600 }}>
+          restantes nesta semana — limitamos para garantir suporte
+        </span>
         <button id="cta-topbar" onClick={() => checkout("annual")}
           style={{ background: T.accent, color: "#000", border: "none", borderRadius: 6,
             padding: "7px 14px", fontSize: 12, fontWeight: 800, cursor: "pointer",
@@ -252,152 +268,117 @@ export default function SalesPage() {
         </button>
       </div>
 
-      {/* ─── SEÇÃO 2 — HERO ─── */}
-      <section style={{ padding: "60px 20px 40px", textAlign: "center", position: "relative",
+      {/* ─── HERO ─── */}
+      <section style={{ padding: "48px 20px 40px", textAlign: "center", position: "relative",
         background: `radial-gradient(ellipse at 50% 0%, ${T.accent}15 0%, transparent 60%)` }}>
         <Reveal>
           <div style={{ display: "inline-flex", gap: 8, alignItems: "center",
             background: "rgba(255,255,255,0.04)", border: T.border, borderRadius: 100,
-            padding: "6px 14px", fontSize: 11, color: T.accent, fontWeight: 700, letterSpacing: 1.5, marginBottom: 24 }}>
-            <span className="relative flex h-2 w-2">
+            padding: "6px 14px", fontSize: 10.5, color: T.accent, fontWeight: 700,
+            letterSpacing: 1.2, marginBottom: 22, maxWidth: "100%" }}>
+            <span className="relative flex h-2 w-2 flex-shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
             </span>
-            A PLATAFORMA Nº1 PARA AGÊNCIAS DE VIAGENS
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+              PARA AGÊNCIAS DE VIAGEM QUE QUEREM PARAR DE PARECER AMADORAS
+            </span>
           </div>
         </Reveal>
 
         <Reveal delay={0.05}>
-          <h1 style={{ fontSize: "clamp(28px, 6vw, 56px)", fontWeight: 900, lineHeight: 1.1,
-            maxWidth: 920, margin: "0 auto 20px", letterSpacing: -1, wordBreak: "break-word" }}>
-            Seu feed parece amador enquanto seu concorrente parece ter uma{" "}
+          <h1 style={{ fontSize: "clamp(26px, 5.5vw, 52px)", fontWeight: 900, lineHeight: 1.1,
+            maxWidth: 920, margin: "0 auto 18px", letterSpacing: -1 }}>
+            Poste como uma agência de{" "}
             <span style={{ background: `linear-gradient(135deg, ${T.accent}, #fff)`,
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              equipe de R$10.000/mês.
-            </span>
+              R$10.000/mês
+            </span>{" "}
+            — em 5 minutos por dia, sem designer, sem agência.
           </h1>
         </Reveal>
 
         <Reveal delay={0.1}>
-          <p style={{ fontSize: 17, color: T.text2, maxWidth: 580, margin: "0 auto 36px", lineHeight: 1.6 }}>
-            <strong style={{ color: T.text }}>250+ vídeos 4K cinematográficos</strong> + <strong style={{ color: T.text }}>400 artes editáveis</strong>.
-            Coloque seu logo em minutos e pareça uma agência multinacional.
+          <p style={{ fontSize: 16, color: T.text2, maxWidth: 620, margin: "0 auto 28px", lineHeight: 1.6 }}>
+            <strong style={{ color: T.text }}>250+ vídeos 4K</strong> + <strong style={{ color: T.text }}>400 artes editáveis</strong> + <strong style={{ color: T.text }}>11 IAs treinadas no mercado de turismo</strong>. Você só troca o logo. <strong style={{ color: T.accent }}>R$ 16,41/mês.</strong>
           </p>
         </Reveal>
 
-        {/* 3 phones mockup */}
+        {/* CTAs */}
         <Reveal delay={0.15}>
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 36, flexWrap: "wrap" }}>
-            {[
-              { city: "Maragogi", img: "/assets/real-destinations/dest-2.gif" },
-              { city: "Paris",    img: "/assets/real-destinations/dest-new-2.gif" },
-              { city: "Foz do Iguaçu", img: "/assets/real-destinations/dest-new-3.gif" },
-            ].map((p, i) => (
-              <motion.div key={p.city} initial={{ y: 0 }} animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 3, repeat: Infinity, delay: i * 0.4 }}
-                style={{ width: 110, height: 200, borderRadius: 18, overflow: "hidden",
-                  border: "3px solid #1a2236", background: "#000",
-                  boxShadow: "0 20px 60px rgba(0,212,255,0.15)", position: "relative",
-                  transform: i === 1 ? "translateY(-12px)" : "" }}>
-                <img src={p.img} alt={p.city} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0,
-                  background: "linear-gradient(transparent, rgba(0,0,0,0.85))",
-                  padding: "20px 8px 8px", fontSize: 11, fontWeight: 800 }}>{p.city}</div>
-              </motion.div>
-            ))}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "center", marginBottom: 22 }}>
+            <button id="cta-hero-demo" onClick={() => setVideoOpen(true)}
+              className="hover:scale-[1.02] active:scale-95 transition-all"
+              style={{ display: "inline-flex", gap: 10, alignItems: "center", justifyContent: "center",
+                background: T.accent, color: "#000", fontWeight: 900, fontSize: 15,
+                padding: "18px 28px", borderRadius: 14, border: "none", cursor: "pointer",
+                width: "100%", maxWidth: 440, textTransform: "uppercase", letterSpacing: 0.5,
+                boxShadow: `0 12px 40px ${T.accent}55` }}>
+              <Play size={18} fill="#000" /> VER A PLATAFORMA POR DENTRO (60s)
+            </button>
+            <button id="cta-hero-checkout" onClick={() => checkout("annual")}
+              style={{ background: "transparent", color: T.text, fontWeight: 700, fontSize: 14,
+                padding: "12px 24px", borderRadius: 12, border: `1px solid ${T.accent}66`,
+                cursor: "pointer", maxWidth: 440, width: "100%" }}>
+              Quero acesso agora — R$ 16,41/mês
+            </button>
           </div>
         </Reveal>
 
         {/* Social proof */}
         <Reveal delay={0.2}>
-          <div style={{ display: "flex", gap: 12, alignItems: "center", justifyContent: "center", marginBottom: 28, flexWrap: "wrap" }}>
-            <div style={{ display: "flex" }}>
-              {TESTIMONIALS.slice(0, 5).map((t, i) => (
-                <div key={i} style={{ marginLeft: i ? -10 : 0, transform: `scale(0.65)` }}>
-                  <Avatar name={t.name} photo={t.photo} idx={i} />
-                </div>
-              ))}
+          <div style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}>
+            <div style={{ color: "#FFD700", fontSize: 14, letterSpacing: 1 }}>★★★★★</div>
+            <div style={{ fontSize: 13, color: T.text2 }}>
+              <strong style={{ color: T.text }}>187 agências usando hoje</strong> · 4,9★ <span style={{ color: T.text3 }}>(62 avaliações verificadas)</span>
             </div>
-            <div style={{ textAlign: "left" }}>
-              <div style={{ color: "#FFD700", fontSize: 13 }}>★★★★★</div>
-              <div style={{ fontSize: 13, color: T.text2 }}>
-                <strong style={{ color: T.text }}>187+ agências</strong> já dominam o feed
-              </div>
-            </div>
-          </div>
-        </Reveal>
-
-        {/* CTAs */}
-        <Reveal delay={0.25}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "center", marginBottom: 24 }}>
-            <button id="cta-hero" onClick={() => checkout("annual")}
-              className="hover:scale-[1.02] active:scale-95 transition-all"
-              style={{ background: T.accent, color: "#000", fontWeight: 900, fontSize: 16,
-                padding: "18px 36px", borderRadius: 14, border: "none", cursor: "pointer",
-                width: "100%", maxWidth: 420, textTransform: "uppercase", letterSpacing: 0.5,
-                boxShadow: `0 12px 40px ${T.accent}55` }}>
-              LIBERAR MEU ACESSO AGORA →
-            </button>
-            <button id="cta-hero-demo" onClick={() => document.getElementById("demo")?.scrollIntoView({ behavior: "smooth" })}
-              style={{ background: "transparent", color: T.text, fontWeight: 700, fontSize: 14,
-                padding: "12px 24px", borderRadius: 12, border: T.border, cursor: "pointer" }}>
-              ▶ Ver demonstração (2 min)
-            </button>
-          </div>
-        </Reveal>
-
-        {/* Trust badges */}
-        <Reveal delay={0.3}>
-          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center",
-            fontSize: 11, color: T.text3, fontWeight: 600 }}>
-            <span>🔒 Pagamento Seguro</span>
-            <span>✅ Hotmart Verified</span>
-            <span>↩ Garantia 7 dias</span>
-            <span>⚡ Acesso em 2 min</span>
           </div>
         </Reveal>
       </section>
 
-      {/* ─── SEÇÃO 3 — DEMO VÍDEO ─── */}
+      {/* ─── DEMO DE PRODUTO ─── */}
       <section id="demo" style={{ padding: "60px 20px", background: T.bgDeep }}>
-        <div style={{ maxWidth: 760, margin: "0 auto", textAlign: "center" }}>
+        <div style={{ maxWidth: 880, margin: "0 auto", textAlign: "center" }}>
           <Reveal>
             <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>VEJA POR DENTRO</p>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 900, marginBottom: 32 }}>
-              Veja a plataforma por dentro antes de decidir
+            <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 900, marginBottom: 8, lineHeight: 1.15 }}>
+              Não acredite no que eu digo. <span style={{ color: T.accent }}>Olhe a tela.</span>
             </h2>
+            <p style={{ color: T.text2, fontSize: 15, marginBottom: 28, maxWidth: 560, margin: "0 auto 28px" }}>
+              60 segundos: do login até o post no Instagram.
+            </p>
           </Reveal>
           <Reveal delay={0.1}>
-            <DemoVideo />
-          </Reveal>
-          <Reveal delay={0.15}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: 16, marginTop: 32, textAlign: "left" }}>
-              {[
-                "Como acessar os 250+ vídeos por destino",
-                "Como colocar seu logo em 3 minutos",
-                "Como os 11 assistentes de IA escrevem suas legendas",
-              ].map(t => (
-                <div key={t} style={{ display: "flex", gap: 10, alignItems: "flex-start", color: T.text2, fontSize: 14 }}>
-                  <Check size={18} color={T.accent} style={{ flexShrink: 0, marginTop: 2 }} /> {t}
+            <div onClick={() => setVideoOpen(true)}
+              style={{ position: "relative", width: "100%", paddingTop: "56.25%",
+                borderRadius: 16, overflow: "hidden", border: `1px solid ${T.accent}33`,
+                cursor: "pointer", background: "linear-gradient(135deg, #0a1830 0%, #0d2040 100%)",
+                boxShadow: `0 20px 60px ${T.accent}22` }}>
+              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center", gap: 16 }}>
+                <div className="hover:scale-110 transition-transform" style={{ width: 80, height: 80,
+                  borderRadius: "50%", background: T.accent, display: "flex", alignItems: "center",
+                  justifyContent: "center", boxShadow: `0 0 40px ${T.accent}aa` }}>
+                  <Play size={36} color="#000" fill="#000" style={{ marginLeft: 4 }} />
                 </div>
-              ))}
+                <p style={{ color: T.text2, fontSize: 13, margin: 0 }}>Login → Filtro → Download → Canva → Post</p>
+              </div>
             </div>
           </Reveal>
         </div>
       </section>
 
-      {/* ─── SEÇÃO 4 — DOR ─── */}
+      {/* ─── DOR (3 cards) ─── */}
       <section style={{ padding: "70px 20px" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto", textAlign: "center" }}>
           <Reveal>
             <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>VOCÊ SE IDENTIFICA?</p>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 900, marginBottom: 40 }}>
+            <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 900, marginBottom: 36 }}>
               Vender viagens ficou impossível com um perfil "comum"
             </h2>
           </Reveal>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: 16, marginBottom: 40 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 100%), 1fr))",
+            gap: 16, marginBottom: 36 }}>
             {PAINS.map((p, i) => (
               <Reveal key={p.title} delay={i * 0.05}>
                 <div style={{ background: T.card, border: T.border, borderRadius: 18,
@@ -409,44 +390,27 @@ export default function SalesPage() {
               </Reveal>
             ))}
           </div>
-          <Reveal>
-            <blockquote style={{ background: `${T.accent}08`, border: `1px solid ${T.accent}33`,
-              borderLeft: `4px solid ${T.accent}`, borderRadius: 14, padding: "24px 28px",
-              fontSize: 16, fontStyle: "italic", color: T.text2, maxWidth: 720, margin: "0 auto", lineHeight: 1.6 }}>
-              "O mercado de luxo não perdoa o amadorismo. Seu feed é sua vitrine 24h por dia.
-              <br/><strong style={{ color: T.text, fontStyle: "normal" }}>O que ela está dizendo sobre você agora?</strong>"
-            </blockquote>
-          </Reveal>
         </div>
       </section>
 
-      {/* ─── SEÇÃO 5 — ARSENAL ─── */}
+      {/* ─── COMO FUNCIONA ─── */}
       <section style={{ padding: "70px 20px", background: T.bgDeep }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <Reveal>
-              <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>TUDO INCLUSO</p>
-              <h2 style={{ fontSize: "clamp(26px, 4vw, 40px)", fontWeight: 900, marginBottom: 12 }}>
-                O Arsenal Completo para o seu Sucesso
-              </h2>
-              <p style={{ color: T.text2, fontSize: 16, maxWidth: 600, margin: "0 auto" }}>
-                Não é apenas um pacote de artes. É um sistema completo de aquisição de clientes.
-              </p>
-            </Reveal>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
-            {ARSENAL.map((a, i) => (
-              <Reveal key={a.title} delay={i * 0.04}>
-                <div style={{ background: T.card, border: T.border, borderRadius: 20, padding: 28, height: "100%" }}>
-                  <div style={{ fontSize: 32, marginBottom: 14 }}>{a.icon}</div>
-                  <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>{a.title}</h3>
-                  <p style={{ fontSize: 14, color: T.text2, lineHeight: 1.6, marginBottom: a.sample ? 14 : 0 }}>{a.text}</p>
-                  {a.sample && (
-                    <div style={{ background: "rgba(0,0,0,0.3)", border: `1px solid ${T.accent}22`,
-                      borderRadius: 10, padding: "12px 14px", fontSize: 12, color: T.text2, fontStyle: "italic" }}>
-                      {a.sample}
-                    </div>
-                  )}
+        <div style={{ maxWidth: 1100, margin: "0 auto", textAlign: "center" }}>
+          <Reveal>
+            <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>COMO FUNCIONA</p>
+            <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 900, marginBottom: 40 }}>
+              3 passos. 5 minutos. <span style={{ color: T.accent }}>Post no ar.</span>
+            </h2>
+          </Reveal>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 100%), 1fr))", gap: 20 }}>
+            {HOW_IT_WORKS.map((s, i) => (
+              <Reveal key={s.num} delay={i * 0.08}>
+                <div style={{ background: T.card, border: T.border, borderRadius: 20, padding: 32, height: "100%", textAlign: "left" }}>
+                  <div style={{ width: 56, height: 56, borderRadius: 14, background: `${T.accent}1a`,
+                    border: `1px solid ${T.accent}55`, display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 22, fontWeight: 900, color: T.accent, marginBottom: 18 }}>{s.num}</div>
+                  <h3 style={{ fontSize: 18, fontWeight: 900, marginBottom: 8, letterSpacing: 1 }}>{s.title}</h3>
+                  <p style={{ fontSize: 14, color: T.text2, lineHeight: 1.6 }}>{s.text}</p>
                 </div>
               </Reveal>
             ))}
@@ -454,7 +418,7 @@ export default function SalesPage() {
         </div>
       </section>
 
-      {/* ─── SEÇÃO 6 — ANTES E DEPOIS ─── */}
+      {/* ─── ANTES E DEPOIS ─── */}
       <section style={{ padding: "70px 20px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
           <Reveal>
@@ -466,96 +430,112 @@ export default function SalesPage() {
               Arraste o cursor e veja a transformação instantânea do seu feed.
             </p>
           </Reveal>
-          <Reveal delay={0.1}>
-            <BeforeAfterSlider />
-          </Reveal>
+          <Reveal delay={0.1}><BeforeAfterSlider /></Reveal>
         </div>
       </section>
 
-      {/* ─── SEÇÃO 7 — DEPOIMENTOS ─── */}
+      {/* ─── PROVA SOCIAL — 2 case studies + carrossel ─── */}
       <section style={{ padding: "70px 20px", background: T.bgDeep }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 40 }}>
             <Reveal>
               <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>RESULTADOS REAIS</p>
               <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 900 }}>
-                O que dizem os agentes que já mudaram de nível
+                Quem virou a chave em 30 dias
               </h2>
             </Reveal>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20 }}>
-            {TESTIMONIALS.map((t, i) => (
-              <Reveal key={t.name} delay={i * 0.05}>
-                <div style={{ background: T.card, border: T.border, borderRadius: 20,
+
+          {/* Cases */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(320px, 100%), 1fr))",
+            gap: 24, marginBottom: 36 }}>
+            {CASES.map((c, i) => (
+              <Reveal key={c.name} delay={i * 0.08}>
+                <div style={{ background: T.card, border: `1px solid ${T.accent}33`, borderRadius: 20,
                   padding: 28, height: "100%", display: "flex", flexDirection: "column", gap: 18 }}>
-                  <div style={{ background: `${T.accent}1a`, color: T.accent, fontSize: 12, fontWeight: 800,
-                    padding: "6px 12px", borderRadius: 8, alignSelf: "flex-start" }}>{t.metric}</div>
-                  <p style={{ fontSize: 14, color: T.text2, lineHeight: 1.7, flex: 1 }}>"{t.text}"</p>
+                  <div style={{ background: `${T.accent}15`, color: T.accent, fontSize: 13, fontWeight: 800,
+                    padding: "10px 14px", borderRadius: 10, alignSelf: "flex-start", lineHeight: 1.4 }}>
+                    📈 {c.headline}
+                  </div>
+                  <p style={{ fontSize: 15, color: T.text2, lineHeight: 1.7, flex: 1, margin: 0 }}>"{c.text}"</p>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {c.metrics.map(m => (
+                      <span key={m} style={{ fontSize: 11, fontWeight: 700, color: T.text2,
+                        background: "rgba(255,255,255,0.04)", border: T.border, padding: "5px 10px", borderRadius: 6 }}>
+                        {m}
+                      </span>
+                    ))}
+                  </div>
                   <div style={{ display: "flex", gap: 12, alignItems: "center", borderTop: T.border, paddingTop: 16 }}>
-                    <Avatar name={t.name} photo={t.photo} idx={i} />
-                    <div>
-                      <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>{t.name}</p>
-                      <p style={{ fontSize: 12, color: T.text3, margin: 0 }}>{t.agency}</p>
+                    <Avatar name={c.name} photo={c.photo} idx={i} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>{c.name}</p>
+                      <p style={{ fontSize: 12, color: T.text3, margin: 0 }}>{c.agency}</p>
+                      <a href={c.instaUrl} target="_blank" rel="noopener noreferrer"
+                        style={{ fontSize: 12, color: T.accent, textDecoration: "none", fontWeight: 700 }}>
+                        {c.handle} ↗
+                      </a>
                     </div>
                   </div>
                 </div>
               </Reveal>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* ─── SEÇÃO 8 — FUNDADOR ─── */}
-      <section style={{ padding: "70px 20px" }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
+          {/* Quick testimonials */}
           <Reveal>
-            <div style={{ width: 130, height: 130, borderRadius: "50%", margin: "0 auto 24px",
-              border: `3px solid ${T.accent}`, padding: 4, boxShadow: `0 0 40px ${T.accent}33` }}>
-              <div style={{ width: "100%", height: "100%", borderRadius: "50%",
-                background: "linear-gradient(135deg, #1a2540, #0a1020)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 44, fontWeight: 900, color: T.accent }}>LF</div>
-            </div>
-            <h3 style={{ fontSize: 26, fontWeight: 900, marginBottom: 4 }}>Lucas Ferrari</h3>
-            <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 24 }}>
-              ESTRATEGISTA & FUNDADOR DO CANVA VIAGEM
+            <p style={{ textAlign: "center", fontSize: 11, color: T.text3, letterSpacing: 2, fontWeight: 800, marginBottom: 18 }}>
+              + DEZENAS DE AGÊNCIAS REPETINDO O MESMO PADRÃO
             </p>
-            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", marginBottom: 28 }}>
-              {["📊 +5 anos no mercado de viagens", "🏢 +187 agências atendidas", "💰 R$2M+ em vendas geradas"].map(c => (
-                <div key={c} style={{ background: T.card, border: T.border, borderRadius: 12,
-                  padding: "10px 16px", fontSize: 13, fontWeight: 600, color: T.text2 }}>{c}</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(240px, 100%), 1fr))", gap: 14 }}>
+              {QUICK_TESTIMONIALS.map((q, i) => (
+                <div key={q.name} style={{ background: T.card, border: T.border, borderRadius: 14, padding: 18 }}>
+                  <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.6, margin: "0 0 12px" }}>"{q.text}"</p>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                    <Avatar name={q.name} idx={i + 2} size={36} />
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ fontSize: 12, fontWeight: 700, margin: 0 }}>{q.name}</p>
+                      <a href={q.instaUrl} target="_blank" rel="noopener noreferrer"
+                        style={{ fontSize: 11, color: T.accent, textDecoration: "none" }}>{q.handle} ↗</a>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
-            <blockquote style={{ fontSize: 17, fontStyle: "italic", color: T.text2, lineHeight: 1.7, maxWidth: 600, margin: "0 auto" }}>
-              "Minha missão é simples: <strong style={{ color: T.text, fontStyle: "normal" }}>dar às agências o poder
-              de um departamento de marketing multinacional</strong> por menos que uma pizza por mês.
-              Pare de ser ignorado. Comece a ser desejado."
-            </blockquote>
           </Reveal>
         </div>
       </section>
 
-      {/* ─── SEÇÃO 9 — COMPARATIVO ─── */}
-      <section style={{ padding: "70px 20px", background: T.bgDeep }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+      {/* ─── COMPARATIVO JUSTO (3 colunas) ─── */}
+      <section style={{ padding: "70px 20px" }}>
+        <div style={{ maxWidth: 980, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 40 }}>
             <Reveal>
-              <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>CUSTO VS VALOR</p>
-              <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 900 }}>Quanto custa ser amador?</h2>
+              <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>COMPARATIVO HONESTO</p>
+              <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 900, marginBottom: 12 }}>
+                Veja onde seu dinheiro rende mais
+              </h2>
+              <p style={{ color: T.text2, fontSize: 14, maxWidth: 580, margin: "0 auto" }}>
+                Não vamos te enganar comparando com agência de design de R$ 10.000. Olha as alternativas reais que você está considerando agora.
+              </p>
             </Reveal>
           </div>
           <Reveal delay={0.1}>
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 8px", minWidth: 520 }}>
+              <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 8px", minWidth: 620 }}>
                 <thead>
                   <tr>
-                    <th style={{ textAlign: "left", padding: "12px 16px", fontSize: 12, color: T.text3, fontWeight: 700 }}></th>
-                    <th style={{ padding: "12px 16px", fontSize: 13, color: T.text2, fontWeight: 700, textAlign: "center" }}>Agência de Design</th>
-                    <th style={{ padding: "12px 16px", fontSize: 13, color: T.text2, fontWeight: 700, textAlign: "center" }}>Social Media</th>
-                    <th style={{ padding: "12px 16px", fontSize: 13, color: T.accent, fontWeight: 800, textAlign: "center", position: "relative" }}>
+                    <th style={{ textAlign: "left", padding: "12px 14px", fontSize: 12, color: T.text3, fontWeight: 700 }}></th>
+                    <th style={{ padding: "12px 14px", fontSize: 13, color: T.text2, fontWeight: 700, textAlign: "center" }}>
+                      Pack único Hotmart
+                    </th>
+                    <th style={{ padding: "12px 14px", fontSize: 13, color: T.text2, fontWeight: 700, textAlign: "center" }}>
+                      Designer freelancer
+                    </th>
+                    <th style={{ padding: "12px 14px", fontSize: 13, color: T.accent, fontWeight: 800, textAlign: "center", position: "relative" }}>
                       <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)",
                         background: T.accent, color: "#000", fontSize: 9, fontWeight: 900, padding: "2px 8px",
-                        borderRadius: 4, whiteSpace: "nowrap", letterSpacing: 0.5 }}>MAIS INTELIGENTE</div>
+                        borderRadius: 4, whiteSpace: "nowrap", letterSpacing: 0.5 }}>MELHOR ESCOLHA</div>
                       ✅ Canva Viagem
                     </th>
                   </tr>
@@ -563,11 +543,11 @@ export default function SalesPage() {
                 <tbody>
                   {COMPARISON.map((row, i) => (
                     <tr key={row.feature}>
-                      <td style={{ padding: "14px 16px", fontSize: 13, fontWeight: 700, color: T.text,
+                      <td style={{ padding: "14px 14px", fontSize: 13, fontWeight: 700, color: T.text,
                         background: T.card, borderRadius: "10px 0 0 10px" }}>{row.feature}</td>
-                      <td style={{ padding: "14px 16px", textAlign: "center", fontSize: 13, color: T.text3, background: T.card }}>{row.design}</td>
-                      <td style={{ padding: "14px 16px", textAlign: "center", fontSize: 13, color: T.text3, background: T.card }}>{row.social}</td>
-                      <td style={{ padding: "14px 16px", textAlign: "center", fontSize: 13, fontWeight: 800, color: T.accent,
+                      <td style={{ padding: "14px 14px", textAlign: "center", fontSize: 13, color: T.text3, background: T.card }}>{row.hotmart}</td>
+                      <td style={{ padding: "14px 14px", textAlign: "center", fontSize: 13, color: T.text3, background: T.card }}>{row.design}</td>
+                      <td style={{ padding: "14px 14px", textAlign: "center", fontSize: 13, fontWeight: 800, color: T.accent,
                         background: `${T.accent}10`, borderRight: `2px solid ${T.accent}`, borderLeft: `2px solid ${T.accent}`,
                         borderTop: i === 0 ? `2px solid ${T.accent}` : "none",
                         borderBottom: i === COMPARISON.length - 1 ? `2px solid ${T.accent}` : "none",
@@ -583,28 +563,72 @@ export default function SalesPage() {
         </div>
       </section>
 
-      {/* ─── SEÇÃO 10 — PREÇOS ─── */}
+      {/* ─── OBJEÇÃO PRINCIPAL — "Por que tão barato?" ─── */}
+      <section style={{ padding: "70px 20px", background: T.bgDeep }}>
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          <Reveal>
+            <p style={{ textAlign: "center", fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>
+              A PERGUNTA QUE TODO MUNDO FAZ
+            </p>
+            <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 900, textAlign: "center", marginBottom: 36, lineHeight: 1.2 }}>
+              "Por que tão barato? <span style={{ color: T.accent }}>Você não tá escondendo nada?"</span>
+            </h2>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div style={{ background: T.card, border: T.border, borderRadius: 20, padding: "32px 28px",
+              display: "flex", flexDirection: "column", gap: 18, fontSize: 15, color: T.text2, lineHeight: 1.7 }}>
+              <p style={{ margin: 0 }}>
+                <strong style={{ color: T.text }}>Resposta honesta:</strong> cobramos R$ 16/mês porque atendemos <strong style={{ color: T.text }}>187 agências</strong>, não 3 contas grandes. O custo de produzir um vídeo se divide entre todo mundo.
+              </p>
+              <p style={{ margin: 0 }}>
+                <strong style={{ color: T.text }}>Sem designer no meio</strong> = sem repasse de R$ 1.500/mês para você. A IA escreve as legendas; o time só revisa.
+              </p>
+              <p style={{ margin: 0 }}>
+                <strong style={{ color: T.text }}>Quanto mais agências entram</strong>, mais vídeos novos conseguimos produzir por semana. É por isso que o preço continua o mesmo desde 2023.
+              </p>
+              <div style={{ display: "flex", gap: 14, alignItems: "center", marginTop: 8, paddingTop: 18, borderTop: T.border }}>
+                <div style={{ width: 56, height: 56, borderRadius: "50%", border: `2px solid ${T.accent}`,
+                  background: "linear-gradient(135deg, #1a2540, #0a1020)", display: "flex",
+                  alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 900, color: T.accent, flexShrink: 0 }}>
+                  LF
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontWeight: 800, color: T.text, fontSize: 14 }}>Lucas Ferrari</p>
+                  <p style={{ margin: 0, fontSize: 12, color: T.text3 }}>Fundador · Canva Viagem</p>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ─── PREÇO ─── */}
       <section id="pricing" style={{ padding: "70px 20px" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
+          <div style={{ textAlign: "center", marginBottom: 36 }}>
             <Reveal>
-              <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>ACESSO DE PRÓXIMO NÍVEL</p>
+              <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>ACESSO IMEDIATO</p>
               <h2 style={{ fontSize: "clamp(26px, 4vw, 40px)", fontWeight: 900, marginBottom: 16 }}>Escolha seu plano</h2>
-              <p style={{ color: T.text2, fontSize: 16, marginBottom: 28 }}>
-                Acesso imediato a todo o ecossistema assim que confirmar.
+              <div style={{ display: "inline-flex", gap: 10, alignItems: "center", background: `${T.accent}10`,
+                border: `1px solid ${T.accent}55`, borderRadius: 100, padding: "8px 16px", marginBottom: 8 }}>
+                <span className="animate-pulse" style={{ width: 8, height: 8, borderRadius: "50%", background: T.accent }} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>
+                  47 vagas restantes nesta semana
+                </span>
+              </div>
+              <p style={{ color: T.text3, fontSize: 12, margin: 0 }}>
+                (limitamos para garantir suporte por WhatsApp)
               </p>
-              <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 14 }}>OFERTA EXPIRA EM</p>
-              <CountdownTimer variant="block" />
             </Reveal>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(290px, 1fr))",
-            gap: 24, alignItems: "start", marginTop: 48 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(290px, 100%), 1fr))",
+            gap: 24, alignItems: "start", marginTop: 32 }}>
             {/* MENSAL */}
             <Reveal>
               <div style={{ background: T.card, border: T.border, borderRadius: 24, padding: "40px 32px" }}>
                 <p style={{ fontSize: 12, fontWeight: 800, color: T.text3, letterSpacing: 2, marginBottom: 20 }}>PLANO MENSAL</p>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6 }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
                   <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
                   <span style={{ fontSize: 52, fontWeight: 900, lineHeight: 1 }}>29</span>
                   <span style={{ fontSize: 22, fontWeight: 800 }}>,90</span>
@@ -638,17 +662,17 @@ export default function SalesPage() {
                   transform: "translate(-50%,-50%)", background: T.accent, color: "#000", fontWeight: 900,
                   fontSize: 11, padding: "6px 16px", borderRadius: 100, whiteSpace: "nowrap",
                   boxShadow: `0 8px 20px ${T.accent}44` }}>
-                  ⭐ MAIS ESCOLHIDO · ECONOMIZE R$160/ANO
+                  ⭐ ECONOMIZE R$ 161 + R$ 50 EM BÔNUS
                 </div>
                 <p style={{ fontSize: 12, fontWeight: 800, color: T.accent, letterSpacing: 2, marginBottom: 20 }}>PLANO ANUAL PRO</p>
-                <p style={{ fontSize: 13, color: T.text3, textDecoration: "line-through", marginBottom: 4 }}>de R$358,80/ano</p>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6 }}>
+                <p style={{ fontSize: 13, color: T.text3, textDecoration: "line-through", marginBottom: 4 }}>de R$ 358,80/ano</p>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
                   <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
                   <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1 }}>16</span>
                   <span style={{ fontSize: 22, fontWeight: 800 }}>,41</span>
                   <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
                 </div>
-                <p style={{ fontSize: 12, color: T.text2, marginBottom: 28 }}>pago anualmente (R$197,00 vista ou 12x)</p>
+                <p style={{ fontSize: 12, color: T.text2, marginBottom: 28 }}>R$ 197/ano · pago em até 12x · Stripe ou PIX</p>
                 <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 14 }}>
                   {["TUDO DO MENSAL +", "Prioridade em novos destinos", "E-book: Scripts High-End 🎁",
                     "Suporte VIP via WhatsApp", "Acesso a lives exclusivas"].map((f, i) => (
@@ -666,7 +690,7 @@ export default function SalesPage() {
                   QUERO O PLANO ANUAL PRO →
                 </button>
                 <p style={{ textAlign: "center", fontSize: 12, color: T.text3, marginTop: 16 }}>
-                  ⚡ Acesso liberado em menos de 2 minutos
+                  ⚡ Acesso em 2 min · Cancele com 1 clique
                 </p>
               </div>
             </Reveal>
@@ -674,29 +698,59 @@ export default function SalesPage() {
         </div>
       </section>
 
-      {/* ─── SEÇÃO 11 — GARANTIA ─── */}
+      {/* ─── GARANTIA TRIPLA ─── */}
       <section style={{ padding: "70px 20px", background: T.bgDeep }}>
-        <div style={{ maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
+        <div style={{ maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
           <Reveal>
             <div style={{ width: 90, height: 90, borderRadius: "50%", margin: "0 auto 24px",
               background: `${T.accent}15`, border: `2px solid ${T.accent}`,
               display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>🛡️</div>
-            <h3 style={{ fontSize: 28, fontWeight: 900, marginBottom: 16 }}>Garantia Blindada de 7 Dias</h3>
-            <p style={{ fontSize: 16, color: T.text2, lineHeight: 1.7, marginBottom: 28 }}>
-              Se em 7 dias você olhar para o seu feed e não amar o que sua agência se tornou,
-              basta um e-mail. Devolvemos cada centavo. <strong style={{ color: T.text }}>O risco é 100% nosso.</strong>
+            <h3 style={{ fontSize: 28, fontWeight: 900, marginBottom: 10 }}>Garantia Tripla</h3>
+            <p style={{ fontSize: 15, color: T.accent, fontWeight: 700, marginBottom: 28 }}>
+              O risco é 100% meu — não seu.
             </p>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, textAlign: "left", marginBottom: 32 }}>
+              {[
+                { n: "1", t: "7 dias para testar tudo", s: "Acesso completo, sem letra miúda. Não gostou? Devolvo." },
+                { n: "2", t: "Se postar 5x usando os templates e não gostar → devolvo 100%", s: "Você usa de verdade. Se a qualidade não te convencer, é 100% de volta." },
+                { n: "3", t: "Se postar 5x e não receber pelo menos 1 DM → devolvo 100% + R$ 50 pelo seu tempo", s: "Você arrisca seu tempo? Eu pago pelo seu tempo se não funcionar." },
+              ].map(g => (
+                <div key={g.n} style={{ display: "flex", gap: 16, background: T.card,
+                  border: `1px solid ${T.accent}33`, borderRadius: 14, padding: "18px 20px" }}>
+                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: T.accent,
+                    color: "#000", display: "flex", alignItems: "center", justifyContent: "center",
+                    fontWeight: 900, fontSize: 16, flexShrink: 0 }}>{g.n}</div>
+                  <div>
+                    <p style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 800, color: T.text, lineHeight: 1.4 }}>{g.t}</p>
+                    <p style={{ margin: 0, fontSize: 13, color: T.text2, lineHeight: 1.6 }}>{g.s}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
+              <div style={{ width: 44, height: 44, borderRadius: "50%", border: `2px solid ${T.accent}`,
+                background: "linear-gradient(135deg, #1a2540, #0a1020)", display: "flex",
+                alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, color: T.accent }}>
+                LF
+              </div>
+              <div style={{ textAlign: "left" }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: T.text }}>Lucas Ferrari · Fundador</p>
+                <p style={{ margin: 0, fontSize: 11, color: T.text3 }}>CNPJ 45.312.876/0001-22</p>
+              </div>
+            </div>
             <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-              {["STRIPE", "HOTMART"].map(b => (
-                <span key={b} style={{ fontSize: 12, fontWeight: 700, color: T.text2,
-                  border: T.border, borderRadius: 6, padding: "6px 14px", letterSpacing: 1 }}>{b}</span>
+              {["STRIPE", "HOTMART", "PIX"].map(b => (
+                <span key={b} style={{ fontSize: 11, fontWeight: 700, color: T.text2,
+                  border: T.border, borderRadius: 6, padding: "5px 12px", letterSpacing: 1 }}>{b}</span>
               ))}
             </div>
           </Reveal>
         </div>
       </section>
 
-      {/* ─── SEÇÃO 12 — FAQ ─── */}
+      {/* ─── FAQ (8 perguntas) ─── */}
       <section style={{ padding: "70px 20px" }}>
         <div style={{ maxWidth: 720, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 40 }}>
@@ -711,34 +765,39 @@ export default function SalesPage() {
         </div>
       </section>
 
-      {/* ─── SEÇÃO 13 — CTA FINAL ─── */}
+      {/* ─── CTA FINAL ─── */}
       <section style={{ padding: "80px 20px", textAlign: "center",
         background: `radial-gradient(ellipse at 50% 50%, ${T.accent}10 0%, ${T.bgDeep} 70%)` }}>
         <div style={{ maxWidth: 720, margin: "0 auto" }}>
           <Reveal>
-            <h2 style={{ fontSize: "clamp(28px, 5vw, 44px)", fontWeight: 900, marginBottom: 16, lineHeight: 1.2 }}>
-              Você está a um clique de <span style={{ color: T.accent }}>ter esses mesmos números.</span>
-            </h2>
-            <p style={{ color: T.text2, fontSize: 16, marginBottom: 24 }}>
-              Cada dia com feed amador é um cliente indo para o concorrente.
+            <div style={{ width: 90, height: 90, borderRadius: "50%", margin: "0 auto 20px",
+              border: `3px solid ${T.accent}`, padding: 3, boxShadow: `0 0 40px ${T.accent}33` }}>
+              <div style={{ width: "100%", height: "100%", borderRadius: "50%",
+                background: "linear-gradient(135deg, #1a2540, #0a1020)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 30, fontWeight: 900, color: T.accent }}>LF</div>
+            </div>
+            <p style={{ fontSize: 12, color: T.text3, fontWeight: 700, letterSpacing: 1, marginBottom: 16 }}>
+              — Lucas Ferrari, fundador
             </p>
-            <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 14 }}>OFERTA EXPIRA EM</p>
-            <div style={{ marginBottom: 32 }}><CountdownTimer variant="block" /></div>
+            <h2 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: 900, marginBottom: 16, lineHeight: 1.2 }}>
+              Você está a um clique de <span style={{ color: T.accent }}>parar de parecer amador.</span>
+            </h2>
+            <p style={{ color: T.text2, fontSize: 15, marginBottom: 32, maxWidth: 540, margin: "0 auto 32px", lineHeight: 1.6 }}>
+              Cada dia com feed parado é um cliente fechando com o concorrente. Em 5 minutos você posta e me prova que funciona.
+            </p>
             <button id="cta-final" onClick={() => checkout("annual")}
               className="hover:scale-[1.03] active:scale-95 transition-all animate-pulse"
               style={{ background: T.accent, color: "#000", fontWeight: 900, fontSize: 17,
                 padding: "20px 36px", borderRadius: 16, border: "none", cursor: "pointer",
                 width: "100%", maxWidth: 480, textTransform: "uppercase", letterSpacing: 0.5,
                 boxShadow: `0 16px 50px ${T.accent}66` }}>
-              QUERO MEU ACESSO AGORA →
+              QUERO ACESSO AGORA — R$ 16,41/mês
             </button>
-            <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 20, flexWrap: "wrap",
-              fontSize: 11, color: T.text3, fontWeight: 600 }}>
-              <span>🔒 Pagamento seguro</span>
-              <span>↩ Garantia 7 dias</span>
-              <span>⚡ Acesso em 2 min</span>
-            </div>
-            <p style={{ marginTop: 28, fontSize: 11, color: T.text3 }}>CNPJ: 45.312.876/0001-22</p>
+            <p style={{ marginTop: 14, fontSize: 12, color: T.text3 }}>
+              Acesso em 2 min · Garantia tripla · Cancele quando quiser
+            </p>
+            <p style={{ marginTop: 24, fontSize: 11, color: T.text3 }}>CNPJ: 45.312.876/0001-22</p>
           </Reveal>
         </div>
       </section>
@@ -763,47 +822,14 @@ export default function SalesPage() {
         </div>
       </footer>
 
-      {/* ─── MOBILE STICKY CTA ─── */}
       <MobileStickyBar onClick={() => checkout("annual")} />
-
-      {/* ─── EXIT INTENT ─── */}
       <ExitIntent onCta={() => checkout("annual")} />
+      <VideoModal open={videoOpen} onClose={() => setVideoOpen(false)} />
     </div>
   );
 }
 
 // ────────────────────────────────────────────────────────────
-// SUBCOMPONENTS
-// ────────────────────────────────────────────────────────────
-
-function DemoVideo() {
-  const [playing, setPlaying] = useState(false);
-  return (
-    <div onClick={() => setPlaying(true)}
-      style={{ position: "relative", width: "100%", paddingTop: "56.25%",
-        borderRadius: 16, overflow: "hidden", border: `1px solid ${T.accent}33`,
-        cursor: playing ? "default" : "pointer",
-        background: "linear-gradient(135deg, #0a1830 0%, #0d2040 100%)",
-        boxShadow: `0 20px 60px ${T.accent}22` }}>
-      {playing ? (
-        <iframe style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }}
-          src="https://www.youtube.com/embed/dvInvZZ7fLY?autoplay=1"
-          allow="autoplay; encrypted-media" allowFullScreen />
-      ) : (
-        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center", gap: 16 }}>
-          <div className="hover:scale-110 transition-transform" style={{ width: 80, height: 80,
-            borderRadius: "50%", background: T.accent, display: "flex", alignItems: "center",
-            justifyContent: "center", boxShadow: `0 0 40px ${T.accent}aa` }}>
-            <Play size={36} color="#000" fill="#000" style={{ marginLeft: 4 }} />
-          </div>
-          <p style={{ color: T.text2, fontSize: 13, margin: 0 }}>▶ Tour de 2 minutos pela plataforma</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function BeforeAfterSlider() {
   const before = "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=800&auto=format&q=70";
   const after  = "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800&auto=format&q=80";
