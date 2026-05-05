@@ -420,7 +420,8 @@ async function drawFinalBranding(
       console.warn("Falha ao carregar logo para branding", e);
     }
   } else if (agencyName && agencyName.trim() && agencyName.trim().toUpperCase() !== "SUA AGÊNCIA") {
-    // WORDMARK FALLBACK — 🛡️ BLINDAGEM: so exibe se usuario configurou nome real    const name = agencyName.trim().toUpperCase();
+    // WORDMARK FALLBACK — 🛡️ BLINDAGEM: so exibe se usuario configurou nome real
+    const name = agencyName.trim().toUpperCase();
     ctx.save();
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
