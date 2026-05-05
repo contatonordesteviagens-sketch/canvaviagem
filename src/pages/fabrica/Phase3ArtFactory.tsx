@@ -20,7 +20,7 @@ type CustomSource = "upload" | "link";
 
 interface Props { onNext: () => void; onBack: () => void; }
 
-const FABRICA_RENDER_ENGINE_VERSION = "canvas-hybrid-photo-only-v2";
+const FABRICA_RENDER_ENGINE_VERSION = "canvas-hybrid-v3-nowordmark";
 
 const BADGE_BG: Record<string, string> = {
   blue: "bg-blue-500/15 text-blue-400 border-blue-500/30",
@@ -751,9 +751,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   useEffect(() => {
     const key = "fabrica-render-engine-version";
     if (localStorage.getItem(key) === FABRICA_RENDER_ENGINE_VERSION) return;
+    // 🛡️ CACHE BUST: Limpa imagens geradas E o cache da logo antiga
     localStorage.removeItem("fabrica-heavy-v1:generatedAdImage");
     localStorage.removeItem("fabrica_last_template_id");
     localStorage.removeItem("fabrica_recent_template_ids");
+    // Reseta o auto-sync da Fase 4 para que os novos dados sejam re-sincronizados
+    localStorage.removeItem("fabrica-phase4-autosync-v1");
     Object.keys(localStorage)
       .filter((k) => k.startsWith("fabrica_generation_cycle_") || k.startsWith("fabrica_strategy_history_") || k.startsWith("fabrica_last_template_ids_") || k.startsWith("fabrica_recent_template_ids_"))
       .forEach((k) => localStorage.removeItem(k));

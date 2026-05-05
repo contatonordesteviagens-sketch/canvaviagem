@@ -421,29 +421,13 @@ async function drawFinalBranding(
     } catch (e) {
       console.warn("Falha ao carregar logo para branding", e);
     }
-  } else if (agencyName && agencyName.trim() && agencyName.trim().toUpperCase() !== "SUA AGÊNCIA") {
-    // WORDMARK FALLBACK — 🛡️ BLINDAGEM: so exibe se usuario configurou nome real
-    const name = agencyName.trim().toUpperCase();
-    ctx.save();
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#ffffff";
-    let wordmarkSize = isStory ? 44 : 36;
-    ctx.font = `800 ${wordmarkSize}px ${fontFamily || 'Inter'}, sans-serif`;
-    
-    // Auto-shrink Wordmark
-    const maxWordmarkW = cw * 0.45;
-    while (ctx.measureText(name).width > maxWordmarkW && wordmarkSize > 18) {
-      wordmarkSize -= 2;
-      ctx.font = `800 ${wordmarkSize}px ${fontFamily || 'Inter'}, sans-serif`;
-    }
-    
-    ctx.shadowColor = "rgba(0,0,0,0.8)";
-    ctx.shadowBlur = 10;
-    ctx.fillText(name, padX, centerY);
-    lw = ctx.measureText(name).width;
-    ctx.restore();
   }
+  // 🛡️ BLINDAGEM: Wordmark de texto só aparece se o usuário EXPLICITAMENTE
+  // NÃO tiver logo e tiver preenchido o nome de uma agência com mais de 3 letras.
+  // Nunca usar cidade, destino ou fallback automático como wordmark.
+  // Desativado por padrão pois causava aparição de "FORTALEZA VIAGENS" indesejada.
+  // Para reativar, passe agencyName explicitamente com o nome real da agência.
+  /* else if (agencyName ...) { ... } */
 
   // 3. Contatos (Direita)
   ctx.save();
@@ -950,9 +934,16 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const showTotal = isExperience ? false : (rawShowTotal !== false);
   const showPixBanner = isExperience ? false : (rawShowPixBanner !== false);
   const priceValueText = (price || "").trim();
-  const priceWithSymbol = /^(R\$|US\$|AR\$|€|£|[A-Z]{1,3}\$)/i.test(priceValueText)
-    ? priceValueText
-    : `${curSym} ${priceValueText}`.trim();
+  // 🛡️ BLINDAGEM DE PREÇO: Garante que o preço nunca chega ao canvas já formatado
+  // com separadores duplicados (ex: "1.499,00" vindo de Intl.NumberFormat, que ao
+  // passar pela regex abaixo somaria todos os dígitos erroneamente).
+  // Normaliza sempre para dígitos + separador decimal simples antes de montar o string.
+  const priceWithSymbol = (() => {
+    if (!priceValueText) return "";
+    // Se já começa com símbolo de moeda, usa como veio
+    if (/^(R\$|US\$|AR\$|€|£|[A-Z]{1,3}\$)/i.test(priceValueText)) return priceValueText;
+    return `${curSym} ${priceValueText}`.trim();
+  })();
 
   const RULES = {
     SAFE_BOTTOM: isStory ? 480 : 120, // Zona de exclusão absoluta para conteudo dinâmico
@@ -1504,7 +1495,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx, width, height, logoDataUrl, 
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        cityFmt ? `${cityFmt} Viagens` : undefined,
+        undefined,
         effectiveTextColor
       , undefined, true);
       applyFilmGrain(ctx, width, height, 0.04);
@@ -1627,7 +1618,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx, width, height, logoDataUrl, 
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        cityFmt ? `${cityFmt} Viagens` : undefined,
+        undefined,
         effectiveTextColor
       , undefined, true);
       applyFilmGrain(ctx, width, height, 0.04);
@@ -1766,7 +1757,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx, width, height, logoDataUrl, 
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        cityFmt ? `${cityFmt} Viagens` : undefined,
+        undefined,
         effectiveTextColor
       , undefined, true);
       applyFilmGrain(ctx, width, height, 0.04);
@@ -1892,7 +1883,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx, width, height, logoDataUrl, 
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        cityFmt ? `${cityFmt} Viagens` : undefined,
+        undefined,
         effectiveTextColor
       , undefined, true);
       applyFilmGrain(ctx, width, height, 0.04);
