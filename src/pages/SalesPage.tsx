@@ -688,7 +688,7 @@ export default function SalesPage() {
                   <p style={{ fontSize: '13px', color: THEME.accent, fontWeight: 800, margin: 0 }}>{t.metric}</p>
                 </div>
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '24px' }}>
-                  <img src={t.photo} style={{ width: '56px', height: '56px', borderRadius: '50%', border: `2px solid ${THEME.accent}33`, objectFit: 'cover' }} />
+                  <TestimonialAvatar name={t.name} photo={t.photo} index={i} />
                   <div>
                     <p style={{ fontWeight: 800, color: '#fff', fontSize: '16px', margin: 0 }}>{t.name}</p>
                     <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{t.agency}</p>
