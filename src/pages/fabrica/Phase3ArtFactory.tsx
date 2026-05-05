@@ -1477,23 +1477,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         {/* Modo de Geração - Segmented Control */}
         <div>
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">0 · Modo de Criação</h3>
-  const downloadPNG = () => {
-    if (!generatedImage) return;
-    try {
-      const a = document.createElement("a");
-      a.href = generatedImage;
-      a.download = `anuncio-${(destination || "destino").toLowerCase().replace(/\s+/g, "-")}-${format}.png`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      toast.success("Imagem baixada!");
-    } catch { toast.error("Erro ao baixar imagem"); }
-  };
-
-  const sectionCls = "bg-white/[0.05] border border-white/[0.08] rounded-2xl p-6";
-  const labelCls = "text-[11px] text-white/60 uppercase tracking-wider font-semibold block mb-1.5";
-  const inputCls = "w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-white/40";
-
+        </div>
+      </div>
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Banner de provedor de IA */}
