@@ -2648,7 +2648,6 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     }
   }
 }
-}
 
 /**
  * Reenquadra (cover crop) uma imagem qualquer para o aspecto pedido (story 9:16 ou square 1:1).
