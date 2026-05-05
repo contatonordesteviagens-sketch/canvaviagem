@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useFabricaContext, type Pacote, type Depoimento } from "@/hooks/useFabricaContext";
 import { downloadLandingHTML, buildLandingHTML } from "@/lib/fabrica-html-export";
 import {
@@ -30,6 +30,147 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   const { state, update } = useFabricaContext();
   const [previewing, setPreviewing] = useState(true);
   const [downloadCount, setDownloadCount] = useState(0);
+  const [autoSyncDone, setAutoSyncDone] = useState(false);
+  const [autoSyncFields, setAutoSyncFields] = useState<string[]>([]);
+
+  // ── AUTO-SYNC: Injeta dados da Fase 3 na Fase 4 na primeira montagem ──
+  // Só atua se o usuário ainda não personalizou o site (campos padrão).
+  // Garante que todas as informações preenchidas nas fases anteriores
+  // apareçam pré-populadas no construtor do site.
+  useEffect(() => {
+    const SYNC_KEY = "fabrica-phase4-autosync-v1";
+    const lastSyncHash = localStorage.getItem(SYNC_KEY);
+    const dest = (state.destinos?.[0] || "").trim();
+    const currentHash = [dest, state.lastPrice, state.lastPaymentMode, state.agencyName].join("|");
+
+    // Se já sincronizou com esses mesmos dados, não re-sincroniza
+    if (lastSyncHash === currentHash) return;
+    if (!dest && !state.lastPrice) return; // nada para sincronizar
+
+    const synced: string[] = [];
+    const patches: Record<string, any> = {};
+
+    // 1. Hero Headline — usa nome da agência + destino
+    const heroDefault = state.siteContent.heroHeadline;
+    if (!heroDefault || heroDefault === "" || heroDefault === `${state.agencyName} — Sua próxima viagem começa aqui`) {
+      const agency = state.agencyName?.trim();
+      const headline = agency
+        ? `${agency} — ${dest ? `Pacotes para ${dest} e muito mais!` : "Sua próxima viagem começa aqui!"}`
+        : dest ? `Sua próxima viagem é ${dest}` : "";
+      if (headline) {
+        patches["siteContent.heroHeadline"] = headline;
+        synced.push("Título principal do site");
+      }
+    }
+
+    // 2. Hero Subheadline — usa destinos cadastrados
+    if (!state.siteContent.heroSubheadline) {
+      const ds = (state.destinos || []).filter(Boolean).slice(0, 4);
+      if (ds.length > 0) {
+        patches["siteContent.heroSubheadline"] = `Roteiros para ${ds.join(", ")} e outros destinos incríveis. Atendimento personalizado e suporte 24h.`;
+        synced.push("Subtítulo do site");
+      }
+    }
+
+    // 3. Pacote automático a partir dos dados da Fase 3
+    const hasDefaultPackages = state.selectedPackages.length === 0 ||
+      (state.selectedPackages.length === 1 && state.selectedPackages[0].title === "Novo pacote");
+
+    if (hasDefaultPackages && dest && state.lastPrice) {
+      const sym = state.lastCurrency === "USD" ? "US$" : state.lastCurrency === "EUR" ? "€" : state.lastCurrency === "ARS" ? "AR$" : "R$";
+      const priceLabel = (() => {
+        const mode = state.lastPaymentMode;
+        const suffix = state.lastPaymentSuffix || "por pessoa";
+        const price = `${sym} ${state.lastPrice}`;
+        if (mode === "installments") return `${state.lastInstallments || "10x"} de ${price} ${suffix}`;
+        if (mode === "cash") return `À vista ${price} ${suffix}`;
+        return `${price} ${suffix}`;
+      })();
+
+      const highlights = (state.lastHighlights || []) as Array<{ text: string; icon: string }>;
+      const descLines = highlights.slice(0, 4).map((h) => `✅ ${h.text}`).join("\n");
+      const period = state.lastTravelPeriod ? `\n📅 ${state.lastTravelPeriod}` : "";
+
+      const novoPacote: Pacote = {
+        id: `autosync-${Date.now()}`,
+        title: `${dest}${state.lastTravelPeriod ? " — " + state.lastTravelPeriod : ""}`,
+        description: descLines + period,
+        price: priceLabel,
+        imageUrl: state.generatedAdImage || "",
+        ctaLabel: "Quero saber mais",
+      };
+
+      patches["selectedPackages"] = [novoPacote];
+      synced.push("Pacote de oferta");
+
+      // Adiciona a imagem gerada ao banco da galeria
+      if (state.generatedAdImage && !state.siteContent.galleryImages.includes(state.generatedAdImage)) {
+        patches["galleryImages"] = [state.generatedAdImage, ...state.siteContent.galleryImages];
+        synced.push("Imagem do anúncio");
+      }
+    }
+
+    // 4. CTA final — usa WhatsApp/Instagram se disponíveis
+    if (!state.siteContent.finalCtaTitle || state.siteContent.finalCtaTitle === "Pronto para sua próxima viagem?") {
+      if (dest) {
+        patches["siteContent.finalCtaTitle"] = `Vai para ${dest}? Fala comigo agora!`;
+        synced.push("CTA final");
+      }
+    }
+
+    if (synced.length === 0) return;
+
+    // Aplica todos os patches de uma vez ao contexto compartilhado
+    const sitePatches: Partial<typeof state.siteContent> = {};
+    const rootPatches: any = {};
+
+    for (const [k, v] of Object.entries(patches)) {
+      if (k.startsWith("siteContent.")) {
+        const field = k.replace("siteContent.", "") as any;
+        sitePatches[field] = v;
+      } else {
+        rootPatches[k] = v;
+      }
+    }
+
+    if (Object.keys(sitePatches).length > 0) {
+      rootPatches.siteContent = { ...state.siteContent, ...sitePatches };
+    }
+
+    // Handle gallery separately
+    if (patches["galleryImages"]) {
+      rootPatches.siteContent = {
+        ...(rootPatches.siteContent || state.siteContent),
+        galleryImages: patches["galleryImages"],
+      };
+    }
+
+    update(rootPatches);
+    setAutoSyncFields(synced);
+    setAutoSyncDone(true);
+    localStorage.setItem(SYNC_KEY, currentHash);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const resetSiteToBlank = () => {
+    const SYNC_KEY = "fabrica-phase4-autosync-v1";
+    localStorage.removeItem(SYNC_KEY);
+    update({
+      selectedPackages: [],
+      siteContent: {
+        ...state.siteContent,
+        heroHeadline: "",
+        heroSubheadline: "",
+        heroCtaLabel: "Falar no WhatsApp",
+        finalCtaTitle: "Pronto para sua próxima viagem?",
+        finalCtaLabel: "Chamar no WhatsApp",
+        galleryImages: [],
+      },
+    });
+    setAutoSyncDone(false);
+    setAutoSyncFields([]);
+    toast.success("Site resetado para o modelo em branco.");
+  };
 
   // Pacotes
   const addPacote = () => {
@@ -104,6 +245,48 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      {/* ── Banner de Auto-Sync da Fase 3 ── */}
+      {autoSyncDone && autoSyncFields.length > 0 && (
+        <div className="rounded-2xl p-4 border bg-emerald-500/10 border-emerald-500/25 flex items-start gap-3">
+          <div className="text-2xl flex-shrink-0">✅</div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-bold text-white mb-1">
+              Site pré-preenchido com seus dados da Fábrica!
+            </div>
+            <p className="text-[11px] text-white/60 leading-snug">
+              Importamos automaticamente: <strong className="text-emerald-300">{autoSyncFields.join(" · ")}</strong>.
+              Você pode editar qualquer campo abaixo.
+            </p>
+          </div>
+          <button
+            onClick={resetSiteToBlank}
+            className="flex-shrink-0 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
+            title="Limpar tudo e começar do zero"
+          >
+            Limpar site
+          </button>
+        </div>
+      )}
+
+      {/* Banner para o caso de o site já estar sincronizado (não é a primeira vez) */}
+      {!autoSyncDone && (state.destinos?.[0] || state.lastPrice) && (
+        <div className="rounded-2xl p-4 border bg-white/[0.04] border-white/10 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="text-lg flex-shrink-0">🔄</span>
+            <p className="text-[11px] text-white/50 leading-snug">
+              Dados da Fábrica já sincronizados com este site.
+              <span className="ml-1 text-white/30">Edite os campos abaixo ou</span>
+            </p>
+          </div>
+          <button
+            onClick={resetSiteToBlank}
+            className="flex-shrink-0 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
+          >
+            Começar do zero
+          </button>
+        </div>
+      )}
+
       <FabricaCard title="🎨 Cor primária do site">
         <div className="flex flex-wrap gap-3 items-center">
           {PRESET_COLORS.map((c) => (
