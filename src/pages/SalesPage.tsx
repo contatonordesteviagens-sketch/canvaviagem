@@ -108,6 +108,42 @@ const TESTIMONIALS = [
   }
 ];
 
+const AVATAR_COLORS = [
+  { bg: '#7F77DD', text: '#FFFFFF' },
+  { bg: '#1D9E75', text: '#FFFFFF' },
+  { bg: '#D85A30', text: '#FFFFFF' },
+  { bg: '#D4537E', text: '#FFFFFF' },
+  { bg: '#378ADD', text: '#FFFFFF' },
+  { bg: '#BA7517', text: '#FFFFFF' },
+];
+
+function InitialAvatar({ name, index }: { name: string; index: number }) {
+  const initials = name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+  const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
+  return (
+    <div style={{
+      width: 56, height: 56, borderRadius: '50%',
+      background: color.bg, display: 'flex', alignItems: 'center',
+      justifyContent: 'center', fontSize: '18px', fontWeight: 700,
+      color: color.text, flexShrink: 0,
+      border: '2px solid rgba(0,212,255,0.2)'
+    }}>{initials}</div>
+  );
+}
+
+function TestimonialAvatar({ name, photo, index }: { name: string; photo?: string; index: number }) {
+  const [failed, setFailed] = React.useState(false);
+  if (!photo || failed) return <InitialAvatar name={name} index={index} />;
+  return (
+    <img
+      src={photo}
+      onError={() => setFailed(true)}
+      style={{ width: '56px', height: '56px', borderRadius: '50%', border: '2px solid rgba(0,212,255,0.2)', objectFit: 'cover', flexShrink: 0 }}
+      alt={name}
+    />
+  );
+}
+
 // --- SUB-COMPONENTS ---
 
 
