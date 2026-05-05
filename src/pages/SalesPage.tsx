@@ -108,6 +108,42 @@ const TESTIMONIALS = [
   }
 ];
 
+const AVATAR_COLORS = [
+  { bg: '#7F77DD', text: '#FFFFFF' },
+  { bg: '#1D9E75', text: '#FFFFFF' },
+  { bg: '#D85A30', text: '#FFFFFF' },
+  { bg: '#D4537E', text: '#FFFFFF' },
+  { bg: '#378ADD', text: '#FFFFFF' },
+  { bg: '#BA7517', text: '#FFFFFF' },
+];
+
+function InitialAvatar({ name, index }: { name: string; index: number }) {
+  const initials = name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+  const color = AVATAR_COLORS[index % AVATAR_COLORS.length];
+  return (
+    <div style={{
+      width: 56, height: 56, borderRadius: '50%',
+      background: color.bg, display: 'flex', alignItems: 'center',
+      justifyContent: 'center', fontSize: '18px', fontWeight: 700,
+      color: color.text, flexShrink: 0,
+      border: '2px solid rgba(0,212,255,0.2)'
+    }}>{initials}</div>
+  );
+}
+
+function TestimonialAvatar({ name, photo, index }: { name: string; photo?: string; index: number }) {
+  const [failed, setFailed] = React.useState(false);
+  if (!photo || failed) return <InitialAvatar name={name} index={index} />;
+  return (
+    <img
+      src={photo}
+      onError={() => setFailed(true)}
+      style={{ width: '56px', height: '56px', borderRadius: '50%', border: '2px solid rgba(0,212,255,0.2)', objectFit: 'cover', flexShrink: 0 }}
+      alt={name}
+    />
+  );
+}
+
 // --- SUB-COMPONENTS ---
 
 
@@ -688,7 +724,7 @@ export default function SalesPage() {
                   <p style={{ fontSize: '13px', color: THEME.accent, fontWeight: 800, margin: 0 }}>{t.metric}</p>
                 </div>
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '24px' }}>
-                  <img src={t.photo} style={{ width: '56px', height: '56px', borderRadius: '50%', border: `2px solid ${THEME.accent}33`, objectFit: 'cover' }} />
+                  <TestimonialAvatar name={t.name} photo={t.photo} index={i} />
                   <div>
                     <p style={{ fontWeight: 800, color: '#fff', fontSize: '16px', margin: 0 }}>{t.name}</p>
                     <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{t.agency}</p>
@@ -878,9 +914,14 @@ export default function SalesPage() {
           <p style={{ fontSize: '17px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.8, marginBottom: '32px' }}>
             Se em 7 dias você olhar para o seu feed e não sentir orgulho da sua nova agência, basta um e-mail. Devolvemos cada centavo. <strong style={{ color: '#fff' }}>O risco é 100% nosso.</strong>
           </p>
-          <div className="flex justify-center gap-6 opacity-60 grayscale hover:grayscale-0 transition-all">
-            <img src="https://rochadigitalmidia.com.br/wp-content/uploads/2024/10/stripe-logo.webp" style={{ height: '24px' }} alt="Stripe" />
-            <img src="https://rochadigitalmidia.com.br/wp-content/uploads/2024/10/hotmart-logo.webp" style={{ height: '24px' }} alt="Hotmart" />
+          <div className="flex justify-center gap-3 flex-wrap">
+            {['STRIPE', 'HOTMART'].map(label => (
+              <span key={label} style={{
+                fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.6)',
+                border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px',
+                padding: '4px 10px', letterSpacing: '0.5px'
+              }}>{label}</span>
+            ))}
           </div>
         </div>
       </section>
