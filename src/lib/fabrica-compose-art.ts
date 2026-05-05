@@ -1241,7 +1241,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         pillFont -= 2;
         ctx.font = `800 ${pillFont}px Inter, Arial, sans-serif`;
       }
-      safeFillText(ctx, item.text, x + textStartX, y + idx * (pillH + gap) + pillH / 2 + 1, innerW - textStartX - 20, 14);
+      safeFillText(ctx, item.text, x + textStartX, y + idx * (pillH + gap) + pillH / 2 + 1, w - textStartX - 20, 14);
     });
     ctx.textBaseline = "alphabetic";
     return items.length * pillH + Math.max(0, items.length - 1) * gap;
