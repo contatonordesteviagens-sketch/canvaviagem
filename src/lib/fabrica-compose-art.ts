@@ -419,9 +419,8 @@ async function drawFinalBranding(
     } catch (e) {
       console.warn("Falha ao carregar logo para branding", e);
     }
-  } else if (agencyName && agencyName.trim()) {
-    // WORDMARK FALLBACK — 🛡️ BLINDAGEM: so exibe se usuario configurou nome
-    const name = agencyName.trim().toUpperCase();
+  } else if (agencyName && agencyName.trim() && agencyName.trim().toUpperCase() !== "SUA AGÊNCIA") {
+    // WORDMARK FALLBACK — 🛡️ BLINDAGEM: so exibe se usuario configurou nome real    const name = agencyName.trim().toUpperCase();
     ctx.save();
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
@@ -1328,7 +1327,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = contrastOn(primaryColor);
     ctx.font = `900 19px Inter, Arial, sans-serif`; // Fonte levemente menor para caber "de"
     ctx.textAlign = "center";
-    ctx.fillText(installmentsText, groupX + badgeW / 2, priceY - 8);
+    safeFillText(ctx, installmentsText, groupX + badgeW / 2, priceY - 8, badgeW - 10, 10);
     ctx.font = `700 10px Inter, Arial, sans-serif`;
     ctx.fillText("sem juros", groupX + badgeW / 2, priceY + 14);
 
@@ -1563,7 +1562,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
       ctx.fillStyle = navy;
-      ctx.fillText(daysText, infoX, infoY);
+      safeFillText(ctx, daysText, infoX, infoY, width - infoX - 40, 14);
       infoX += daysW + sepGap;
       ctx.fillRect(infoX, infoY - 18, sepW, 36);
       infoX += sepW + sepGap;
@@ -2224,7 +2223,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         tagSize -= 2;
         ctx.font = `900 ${tagSize}px Inter, Arial, sans-serif`;
       }
-      ctx.fillText(taglineV4, cardX + 36, cyV4);
+      safeFillText(ctx, taglineV4, cardX + 36, cyV4, cardW - 80, 12);
       cyV4 += tagGap + 56;
 
       // [T├ìTULO/DESTINO] branco, regular (mais leve), maior
@@ -2235,7 +2234,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         titSize -= 2;
         ctx.font = `400 ${titSize}px Inter, Arial, sans-serif`;
       }
-      ctx.fillText(titleLineV4, cardX + 36, cyV4);
+      safeFillText(ctx, titleLineV4, cardX + 36, cyV4, cardW - 80, 18);
       cyV4 += titleGap + 26;
 
       // [INFO] dias | ├¡cones ÔÇö todos secondaryColor

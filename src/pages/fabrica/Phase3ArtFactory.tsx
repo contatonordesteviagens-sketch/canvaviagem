@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+﻿import { useState, useRef, useEffect } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
@@ -379,6 +379,102 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
+  
+
+  
+
+  const strategy: StrategyId = getCategoria(categoria).legacyStrategy;
+  const [lastTemplateId, setLastTemplateId] = useState<string | null>(() => localStorage.getItem("fabrica_last_template_id"));
+  const [recentTemplateIds, setRecentTemplateIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("fabrica_recent_template_ids") || "[]"); }
+    catch { return []; }
+  });
+  const [format, setFormatState] = useState<"square" | "story">(state.lastFormat || "story");
+  const setFormat = (f: "square" | "story") => { setFormatState(f); update({ lastFormat: f }); };
+
+  const [destinationState, setDestinationState] = useState(state.destinos?.[0] || "");
+  const destination = destinationState;
+  // Persiste destino no contexto/localStorage para sobreviver à navegação F1↔F3↔F4.
+  const setDestination = (v: string) => {
+    setDestinationState(v);
+    const rest = (state.destinos || []).slice(1);
+    update({ destinos: v.trim() ? [v, ...rest] : rest });
+  };
+  const [price, setPriceState] = useState(state.lastPrice || "149,90");
+  const setPrice = (p: string) => { setPriceState(p); update({ lastPrice: p }); };
+  const [currency, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
+  const setCurrency = (c: Currency) => { setCurrencyState(c); update({ lastCurrency: c }); };
+  // V3: opções extras
+  const [hideCents, setHideCentsState] = useState<boolean>(!!state.hideCents);
+  const setHideCents = (v: boolean) => {
+    setHideCentsState(v);
+    update({ hideCents: v });
+    // Reformata o preço atual respeitando a nova flag
+    const reformatted = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, v);
+    if (reformatted) setPriceState(reformatted);
+  };
+  const [showTotal, setShowTotalState] = useState<boolean>(state.showTotal !== false);
+  const setShowTotal = (v: boolean) => { setShowTotalState(v); update({ showTotal: v }); };
+  const [totalOverride, setTotalOverrideState] = useState<string>(state.totalOverride || "");
+  const setTotalOverride = (v: string) => { setTotalOverrideState(v); update({ totalOverride: v }); };
+  // V3: faixa azul do Pix (editável e ocultável)
+  const [showPixBanner, setShowPixBannerState] = useState<boolean>((state as any).showPixBanner !== false);
+  const setShowPixBanner = (v: boolean) => { setShowPixBannerState(v); update({ showPixBanner: v } as any); };
+  const [pixBannerText, setPixBannerTextState] = useState<string>((state as any).pixBannerText || "");
+  const setPixBannerText = (v: string) => { setPixBannerTextState(v); update({ pixBannerText: v } as any); };
+
+  // Tipografia global (família + escala título/descrição + cor de override)
+  const [fontFamily, setFontFamilyState] = useState<string>((state as any).fontFamily || "Inter");
+  const setFontFamily = (v: string) => { setFontFamilyState(v); update({ fontFamily: v } as any); };
+  const [titleScale, setTitleScaleState] = useState<number>(((state as any).titleScale as number) || 1);
+  const setTitleScale = (v: number) => { setTitleScaleState(v); update({ titleScale: v } as any); };
+  const [descScale, setDescScaleState] = useState<number>(((state as any).descScale as number) || 1);
+  const setDescScale = (v: number) => { setDescScaleState(v); update({ descScale: v } as any); };
+  const [textColorOverride, setTextColorOverrideState] = useState<string>((state as any).textColorOverride || "");
+  const [autoTextColor, setAutoTextColor] = useState<string>("#ffffff");
+  // Cor efetiva: se o usuário escolheu manualmente, respeita; senão usa auto-contraste.
+  const effectiveTextColor = textColorOverride || autoTextColor;
+  const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
+  const [fontOptionsOpen, setFontOptionsOpen] = useState(false);
+  const [advancedSizeOpen, setAdvancedSizeOpen] = useState(false);
+  const [colorsOpen, setColorsOpen] = useState(false);
+  // "Cor dos textos base": força textos claros ou escuros nas artes
+  const [baseTextMode, setBaseTextModeState] = useState<"light" | "dark">(
+    (((state as any).baseTextMode as "light" | "dark") || "light")
+  );
+  const setBaseTextMode = (m: "light" | "dark") => {
+    setBaseTextModeState(m);
+    update({ baseTextMode: m } as any);
+    // sincroniza com o override de cor de texto já existente
+    setTextColorOverride(m === "light" ? "#FFFFFF" : "#0A0A0A");
+  };
+  const FONT_PRESETS = ["Inter", "Poppins", "Montserrat", "Roboto", "Oswald", "Bebas Neue", "Playfair Display", "Lora", "Raleway", "Nunito", "Work Sans", "DM Sans"];
+
+  // Carrega Google Font dinamicamente quando o usuário escolhe uma família custom
+  useEffect(() => {
+    if (!fontFamily || fontFamily === "Inter") return;
+    const id = `gf-${fontFamily.replace(/\s+/g, "-").toLowerCase()}`;
+    if (document.getElementById(id)) return;
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;500;600;700;800;900&display=swap`;
+    document.head.appendChild(link);
+    // Garante que o canvas use a fonte já carregada antes de renderizar
+    if ((document as any).fonts?.load) {
+      (document as any).fonts.load(`900 32px "${fontFamily}"`).catch(() => {});
+      (document as any).fonts.load(`400 16px "${fontFamily}"`).catch(() => {});
+    }
+  }, [fontFamily]);
+
+  // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
+  const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
+  const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
+
+  const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
+  const setInstallments = (i: string) => { setInstallmentsState(i); update({ lastInstallments: i }); };
+
+  
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -498,97 +594,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     setTextColorOverrideState("");
     update({ textColorOverride: "" } as any);
   };
-
-  const strategy: StrategyId = getCategoria(categoria).legacyStrategy;
-  const [lastTemplateId, setLastTemplateId] = useState<string | null>(() => localStorage.getItem("fabrica_last_template_id"));
-  const [recentTemplateIds, setRecentTemplateIds] = useState<string[]>(() => {
-    try { return JSON.parse(localStorage.getItem("fabrica_recent_template_ids") || "[]"); }
-    catch { return []; }
-  });
-  const [format, setFormatState] = useState<"square" | "story">(state.lastFormat || "story");
-  const setFormat = (f: "square" | "story") => { setFormatState(f); update({ lastFormat: f }); };
-
-  const [destinationState, setDestinationState] = useState(state.destinos?.[0] || "");
-  const destination = destinationState;
-  // Persiste destino no contexto/localStorage para sobreviver à navegação F1↔F3↔F4.
-  const setDestination = (v: string) => {
-    setDestinationState(v);
-    const rest = (state.destinos || []).slice(1);
-    update({ destinos: v.trim() ? [v, ...rest] : rest });
-  };
-  const [price, setPriceState] = useState(state.lastPrice || "149,90");
-  const setPrice = (p: string) => { setPriceState(p); update({ lastPrice: p }); };
-  const [currency, setCurrencyState] = useState<Currency>((state.lastCurrency as Currency) || "BRL");
-  const setCurrency = (c: Currency) => { setCurrencyState(c); update({ lastCurrency: c }); };
-  // V3: opções extras
-  const [hideCents, setHideCentsState] = useState<boolean>(!!state.hideCents);
-  const setHideCents = (v: boolean) => {
-    setHideCentsState(v);
-    update({ hideCents: v });
-    // Reformata o preço atual respeitando a nova flag
-    const reformatted = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, v);
-    if (reformatted) setPriceState(reformatted);
-  };
-  const [showTotal, setShowTotalState] = useState<boolean>(state.showTotal !== false);
-  const setShowTotal = (v: boolean) => { setShowTotalState(v); update({ showTotal: v }); };
-  const [totalOverride, setTotalOverrideState] = useState<string>(state.totalOverride || "");
-  const setTotalOverride = (v: string) => { setTotalOverrideState(v); update({ totalOverride: v }); };
-  // V3: faixa azul do Pix (editável e ocultável)
-  const [showPixBanner, setShowPixBannerState] = useState<boolean>((state as any).showPixBanner !== false);
-  const setShowPixBanner = (v: boolean) => { setShowPixBannerState(v); update({ showPixBanner: v } as any); };
-  const [pixBannerText, setPixBannerTextState] = useState<string>((state as any).pixBannerText || "");
-  const setPixBannerText = (v: string) => { setPixBannerTextState(v); update({ pixBannerText: v } as any); };
-
-  // Tipografia global (família + escala título/descrição + cor de override)
-  const [fontFamily, setFontFamilyState] = useState<string>((state as any).fontFamily || "Inter");
-  const setFontFamily = (v: string) => { setFontFamilyState(v); update({ fontFamily: v } as any); };
-  const [titleScale, setTitleScaleState] = useState<number>(((state as any).titleScale as number) || 1);
-  const setTitleScale = (v: number) => { setTitleScaleState(v); update({ titleScale: v } as any); };
-  const [descScale, setDescScaleState] = useState<number>(((state as any).descScale as number) || 1);
-  const setDescScale = (v: number) => { setDescScaleState(v); update({ descScale: v } as any); };
-  const [textColorOverride, setTextColorOverrideState] = useState<string>((state as any).textColorOverride || "");
-  const [autoTextColor, setAutoTextColor] = useState<string>("#ffffff");
-  // Cor efetiva: se o usuário escolheu manualmente, respeita; senão usa auto-contraste.
-  const effectiveTextColor = textColorOverride || autoTextColor;
-  const setTextColorOverride = (v: string) => { setTextColorOverrideState(v); update({ textColorOverride: v } as any); };
-  const [fontOptionsOpen, setFontOptionsOpen] = useState(false);
-  const [advancedSizeOpen, setAdvancedSizeOpen] = useState(false);
-  const [colorsOpen, setColorsOpen] = useState(false);
-  // "Cor dos textos base": força textos claros ou escuros nas artes
-  const [baseTextMode, setBaseTextModeState] = useState<"light" | "dark">(
-    (((state as any).baseTextMode as "light" | "dark") || "light")
-  );
-  const setBaseTextMode = (m: "light" | "dark") => {
-    setBaseTextModeState(m);
-    update({ baseTextMode: m } as any);
-    // sincroniza com o override de cor de texto já existente
-    setTextColorOverride(m === "light" ? "#FFFFFF" : "#0A0A0A");
-  };
-  const FONT_PRESETS = ["Inter", "Poppins", "Montserrat", "Roboto", "Oswald", "Bebas Neue", "Playfair Display", "Lora", "Raleway", "Nunito", "Work Sans", "DM Sans"];
-
-  // Carrega Google Font dinamicamente quando o usuário escolhe uma família custom
-  useEffect(() => {
-    if (!fontFamily || fontFamily === "Inter") return;
-    const id = `gf-${fontFamily.replace(/\s+/g, "-").toLowerCase()}`;
-    if (document.getElementById(id)) return;
-    const link = document.createElement("link");
-    link.id = id;
-    link.rel = "stylesheet";
-    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;500;600;700;800;900&display=swap`;
-    document.head.appendChild(link);
-    // Garante que o canvas use a fonte já carregada antes de renderizar
-    if ((document as any).fonts?.load) {
-      (document as any).fonts.load(`900 32px "${fontFamily}"`).catch(() => {});
-      (document as any).fonts.load(`400 16px "${fontFamily}"`).catch(() => {});
-    }
-  }, [fontFamily]);
-
-  // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
-  const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
-  const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
-
-  const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
-  const setInstallments = (i: string) => { setInstallmentsState(i); update({ lastInstallments: i }); };
 
   const initialPromoDefault = ((state.lastCategoria as CategoriaId) === "experiencia_destino")
     ? PROMO_NAME_PRESETS_EXPERIENCIA[0]

@@ -1,4 +1,4 @@
-// Edge function: fabrica-generate-ad
+﻿// Edge function: fabrica-generate-ad
 // Gera anúncios de turismo com Lovable AI (Google Gemini Flash Image Preview)
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
@@ -53,11 +53,11 @@ function nicheToScene(niche?: string, destination?: string): string {
   const dest = destination || "destino brasileiro";
   switch ((niche || "").toLowerCase()) {
     case "nordeste":
-      return `praia tropical paradisíaca de ${dest}, mar turquesa cristalino, falésias coloridas, areia clara, céu azul ensolarado`;
+      return `A breathtaking, high-end tropical beach scene in ${dest}. Crystal clear turquoise water, pristine white sand, dramatic cliffs, swaying palm trees, vibrant blue sky. Ultra-luxury resort vibe, travel photography style.`;
     case "sul":
-      return `paisagem de ${dest}, arquitetura colonial europeia, vinícolas, montanhas verdes, clima ameno`;
+      return `A sophisticated landscape of ${dest} featuring European-style colonial architecture, rolling green vineyards, lush mountains, and a serene atmosphere. Elegant, high-resolution travel photography.`;
     case "internacional":
-      return `cartão-postal icônico de ${dest}, marcos arquitetônicos famosos, cenário cosmopolita`;
+      return `An iconic, world-class landmark of ${dest}. A stunning cosmopolitan scene with famous architecture, dramatic city lights, and a vibrant urban energy. National Geographic style.`;
     case "cruzeiro":
       return `navio de cruzeiro luxuoso ancorado em baía de ${dest}, deck panorâmico, mar profundo`;
     case "aventura":
@@ -147,7 +147,7 @@ serve(async (req) => {
     if (forcePhotoOnly) {
       const dest = body.destination || "destino paradisíaco";
       const scene = nicheToScene(body.niche, dest);
-      const rawPrompt = body.customPrompt || `A high-end, professional commercial travel photograph of ${dest}.
+      const rawPrompt = body.customPrompt || `A world-class, award-winning professional commercial travel photograph of ${dest}. STRICT NEGATIVE CONSTRAINTS: NO people, NO faces, NO human figures. ABSOLUTELY NO text, letters, logos, UI elements, or graphic overlays. Pure, untouched landscape/architectural photography only. 
 Cena: ${scene}.
 ${safeZoneRules(format)}
 Estilo: Fotografia editorial de viagens de luxo (estilo Condé Nast Traveler), qualidade 8k, iluminação cinematográfica, foco nítido e cores vibrantes.

@@ -1,4 +1,4 @@
-import type { FabricaState } from "@/hooks/useFabricaContext";
+﻿import type { FabricaState } from "@/hooks/useFabricaContext";
 
 const esc = (s: string) =>
   String(s ?? "")
@@ -29,7 +29,7 @@ export function buildLandingHTML(state: FabricaState): string {
   const rawWpp = (state.whatsapp || "").replace(/\D/g, "");
   const wpp = rawWpp.startsWith("55") ? rawWpp : `55${rawWpp}`;
   const sc = state.siteContent;
-  const agencia = state.agencyName || "Sua Agência de Viagem";
+  const agencia = state.agencyName || "Agência de Viagens";
   const cidade = state.city || "Brasil";
 
   const headline =
