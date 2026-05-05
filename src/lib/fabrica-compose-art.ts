@@ -778,17 +778,29 @@ function drawTextBlock(
   });
 }
 
+/**
+ * 🛡️ SISTEMA DE BLINDAGEM DE TEXTO (NÍVEL 1)
+ * Limpa artefatos de código, retornos de função e caracteres corrompidos
+ * que podem vir de respostas da IA ou erros de estado.
+ */
+function sanitizeAdText(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/return\s*\(/gi, "") // Remove 'return ('
+    .replace(/const\s+\w+\s*=/gi, "") // Remove 'const var ='
+    .replace(/[<>{}()]/g, "") // Remove brackets e braces suspeitos
+    .replace(/\s+/g, " ") // Normaliza espaços
+    .trim();
+}
+
 export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<string> {
   const {
     imageUrl,
     format,
-    destination,
-    city,
     primaryColor,
     secondaryColor,
     price: rawPrice,
     installments: rawInstallments,
-    promoName,
     highlights,
     hasLogo,
     paymentMode = "installments",
@@ -797,7 +809,6 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     strategy = "vitrine",
     variation = 0,
     forceVariant,
-    titleOverride,
     titleVariations,
     currencySymbol,
     travelPeriod,
@@ -815,10 +826,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   } = options;
 
   // 🛡️ Camada de Higienização de Dados (Blindagem Anti-Corrupção)
-  const safeDest = sanitizeAdText(destination || "");
-  const safeCity = sanitizeAdText(city || "");
-  const safePromo = sanitizeAdText(promoName || "");
-  const safeTitle = sanitizeAdText(titleText || "");
+  // Sanitizamos as entradas brutas para evitar artefatos de código nas artes
+  const destination = sanitizeAdText(options.destination || "");
+  const city = sanitizeAdText(options.city || "");
+  const promoName = sanitizeAdText(options.promoName || "");
+  const titleOverride = sanitizeAdText(options.titleOverride || "");
+
   const curSym = (currencySymbol || "R$").trim();
 
   const width = 1080;
@@ -1006,11 +1019,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
   const pickedFromVariations = (titleVariations && titleVariations.length > 0)
     ? (titleVariations[variantIdx % titleVariations.length] || "").trim()
     : "";
-  const titleText = pickedFromVariations
-    ? pickedFromVariations
-    : (titleOverride && titleOverride.trim())
-      ? titleOverride.trim()
-      : headlinePool[Math.abs(variation) % headlinePool.length];
+  const titleText = sanitizeAdText(
+    pickedFromVariations
+      ? pickedFromVariations
+      : (titleOverride && titleOverride.trim())
+        ? titleOverride.trim()
+        : headlinePool[Math.abs(variation) % headlinePool.length]
+  );
   const subtitlePool = [
     "Roteiro pensado para viver melhor",
     "Beleza, conforto e boas memorias",
