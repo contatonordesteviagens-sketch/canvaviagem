@@ -267,12 +267,12 @@ const TRAVEL_PERIOD_PRESETS: string[] = [
   "Data flexível", "Saídas semanais",
 ];
 
-/**
- * Gera um pool de 3 variações de título a partir do template escolhido pelo usuário.
- * A primeira posição é SEMPRE o título exato escolhido (respeitando a edição do usuário).
- * As próximas duas posições vêm de presets "vizinhos" do mesmo grupo semântico, evitando
- * que as 3 imagens geradas mostrem exatamente o mesmo headline.
- */
+const TITLE_NEIGHBORS: Record<string, string[]> = {
+  "Conheça o melhor de {destino}": ["Descubra {destino}", "Pacote {destino}"],
+  "Descubra {destino}": ["Conheça o melhor de {destino}", "Explore {destino}"],
+  "Pacote {destino}": ["Viagem Completa {destino}", "Pacote Promocional {destino}"],
+  "Explore {destino}": ["Descubra {destino}", "{destino} vai te surpreender"],
+  "Partiu {destino}": ["Vamos para {destino}?", "{destino} te espera"],
   "Vamos para {destino}?": ["Partiu {destino}", "{destino} te espera"],
   // Vizinhos de Experiência
   "Sua próxima viagem é {destino}": ["Viva o melhor de {destino}", "Momentos inesquecíveis em {destino}"],
@@ -281,7 +281,7 @@ const TRAVEL_PERIOD_PRESETS: string[] = [
   "Desperte os sentidos em {destino}": ["Momentos inesquecíveis em {destino}", "Refúgio dos sonhos em {destino}"],
   "Experiência exclusiva em {destino}": ["Viva o melhor de {destino}", "{destino} como você nunca viveu"],
   "Prazer em cada detalhe · {destino}": ["All Inclusive · {destino}", "Experiência exclusiva em {destino}"],
-  "{destino} como você nunca viveu}": ["Descubra o lado secreto de {destino}", "Viva o melhor de {destino}"],
+  "{destino} como você nunca viveu": ["Descubra o lado secreto de {destino}", "Viva o melhor de {destino}"],
 };
 
 const buildTitleVariations = (template: string, destination: string): string[] => {
@@ -997,8 +997,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
         // PROMPT DE FUNDO LIMPO — A IA é instruída a gerar APENAS a fotografia,
         // sem nenhum elemento gráfico/tipográfico. Toda a UI (logo, textos, preço,
-        // ícones, botões) é desenhada depois pelo motor Canvas (composeTravelAd).
-        const NEGATIVE_UI = `STRICT NEGATIVE CONSTRAINTS — the output MUST be a pure photograph only. ABSOLUTELY FORBIDDEN: any text, letters, numbers, words, captions, headlines, prices, currency symbols, dates, typography, fonts, watermarks, signatures, logos, brand marks, badges, stamps, stickers, labels, banners, ribbons, callouts, speech bubbles, icons, pictograms, emojis, arrows, frames, borders, overlays, color blocks, gradients painted on top, UI elements, buttons, cards, panels, mockup chrome, phone frames, social media UI, Instagram/Facebook/TikTok interface, hashtags, @mentions, QR codes, barcodes. The image must look like an untouched RAW photograph straight from a professional camera — nothing rendered, nothing added, no graphic design whatsoever.`;
+        // ── PROMPTS PARA EXPERIÊNCIA DE DESTINO (BLINDADOS) ────────────────
+        // REGRA DE OURO: a imagem da IA deve ser APENAS fotografia.
+        // O motor de renderização (Canvas) é desenhado depois pelo motor Canvas (composeTravelAd).
+        const NEGATIVE_UI = `STRICT NEGATIVE CONSTRAINTS — the output MUST be a pure photograph only. ABSOLUTELY FORBIDDEN: any text, letters, numbers, words, captions, headlines, prices, currency symbols, dates, typography, fonts, watermarks, signatures, logos, brand marks, badges, stamps, stickers, labels, banners, ribbons, callouts, speech bubbles, icons, pictograms, emojis, arrows, frames, borders, overlays, color blocks, gradients painted on top, UI elements, buttons, cards, panels, mockup chrome, phone frames, social media UI, Instagram/Facebook/TikTok interface, hashtags, @mentions, QR codes, barcodes. The image must look like an untouched RAW photograph straight from a professional camera — nothing rendered, nothing added, no graphic design whatsoever. No people, no faces, no crowds.`;
         const experienceBackgroundPrompt = (variant: number) => {
           const base = `Ultra-high-end editorial travel photography, cinematic 8K, Shot on RED. Magnificent landscape of ${destination || "paradise destination"}.`;
           const variants = [
@@ -1187,7 +1189,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       const palette = selectedPalette(primaryColor, secondaryColor);
 
       // Rotação determinística entre as 5 variantes do compositor (V0/V1/V2/V3/V4)
-      // evitando as 2 últimas usadas — garante imagem nova a cada clique e cobre V4.
+      // Mapeamento de categorias solicitado: 
+      // 2/1/1 -> V0 (Square Oferta)
+      // 2/2/2 -> V2 (Story Experiência)
+      // 2/1/2 -> V3 (Story Oferta)
+      // 2/2/1 -> V4 (Square Experiência)
       const TOTAL_VARIANTS = 5;
       const recent = variantHistoryRef.current.slice(-2);
       let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => !recent.includes(v));

@@ -59,6 +59,19 @@ export type PaymentMode =
   | "free_quote"
   | "custom_label";
 
+/**
+ * Aplica um efeito de vinheta (bordas escurecidas) para dar profundidade
+ * e focar a atenção no centro da imagem/conteúdo.
+ */
+function applyVignette(ctx: CanvasRenderingContext2D, width: number, height: number, intensity = 0.5) {
+  const grad = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.sqrt((width / 2) ** 2 + (height / 2) ** 2));
+  grad.addColorStop(0, "rgba(0,0,0,0)");
+  grad.addColorStop(0.6, `rgba(0,0,0,${intensity * 0.1})`);
+  grad.addColorStop(1, `rgba(0,0,0,${intensity * 0.4})`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, width, height);
+}
+
 interface Highlight {
   text: string;
   icon?: IconKey;
@@ -2309,6 +2322,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     grad.addColorStop(1, "rgba(0,0,0,0.80)");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
+    applyVignette(ctx, width, height, 0.4);
 
     const cx = width / 2;
     const isStory = format === "story";
@@ -2353,6 +2367,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     grad.addColorStop(1, "rgba(0,0,0,0.6)");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
+    applyVignette(ctx, width, height, 0.35);
 
     const cx = width / 2;
     const isStory = format === "story";
@@ -2400,6 +2415,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     grad.addColorStop(1, "rgba(0,0,0,0.7)");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
+    applyVignette(ctx, width, height, 0.3);
 
     const cx = width / 2;
     const isStory = format === "story";
@@ -2448,6 +2464,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     grad.addColorStop(1, "rgba(0,0,0,0.85)");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
+    applyVignette(ctx, width, height, 0.45);
 
     const cx = width / 2;
     const isStory = format === "story";
@@ -2483,6 +2500,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     grad.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
+    applyVignette(ctx, width, height, 0.3);
 
     const isStory = format === "story";
     const serif = `'Playfair Display', Georgia, serif`;
@@ -2526,22 +2544,29 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
 
   // ── ROTEAMENTO FINAL ──────────────────────────────────────────────────────
-  if (isExperience) {
-    const v = typeof forceVariant === "number" ? forceVariant : variation;
-    const variant = ((v % 5) + 5) % 5; 
+  try {
+    if (isExperience) {
+      const v = typeof forceVariant === "number" ? forceVariant : variation;
+      const variant = ((v % 5) + 5) % 5; 
 
-    if (variant === 0) return await renderV0Experiencia();
-    if (variant === 1) return await renderV1Experiencia();
-    if (variant === 2) return await renderV2Experiencia();
-    if (variant === 3) return await renderV3Experiencia();
-    if (variant === 4) return await renderV4Experiencia();
-    
-    return await renderV0Experiencia();
+      if (variant === 0) return await renderV0Experiencia();
+      if (variant === 1) return await renderV1Experiencia();
+      if (variant === 2) return await renderV2Experiencia();
+      if (variant === 3) return await renderV3Experiencia();
+      if (variant === 4) return await renderV4Experiencia();
+      
+      return await renderV0Experiencia();
+    }
+
+    // Fallback para Ofertas (Matriz, Gancho, etc.)
+    return await renderSafeSquareOffer();
+  } catch (error) {
+    console.error("Ad Engine Error:", error);
+    // Fallback absoluto: tenta renderizar o modo mais simples (V0) antes de desistir
+    try { return await renderV0Experiencia(); } catch {
+       return canvas.toDataURL("image/png"); // Último recurso: retorna o canvas como está
+    }
   }
-
-
-  // Fallback para Ofertas (Matriz, Gancho, etc.)
-  return await renderSafeSquareOffer();
 }
 
 /**
