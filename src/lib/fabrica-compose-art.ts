@@ -200,6 +200,7 @@ interface ComposeTravelAdOptions {
   footerContact1Value?: string;
   footerContact2Icon?: string;
   footerContact2Value?: string;
+  isExperience?: boolean;
 }
 
 /** Formata telefone no padr├úo (XX) 9 XXXX-XXXX */
