@@ -888,8 +888,8 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     city,
     primaryColor,
     secondaryColor,
-    price,
-    installments,
+    price: rawPrice,
+    installments: rawInstallments,
     promoName,
     highlights,
     hasLogo,
@@ -904,9 +904,9 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     currencySymbol,
     travelPeriod,
     totalOverride,
-    showTotal = true,
+    showTotal: rawShowTotal = true,
     pixBannerText,
-    showPixBanner = true,
+    showPixBanner: rawShowPixBanner = true,
     fontFamily,
     titleScale = 1,
     descScale = 1,
@@ -1031,10 +1031,10 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   const curSym = currencySymbol || "R$";
 
   // Higienização Imutável (Garante que nunca haverá preço em Experience)
-  const price = isExperience ? "" : (options.price || "");
-  const installments = isExperience ? "" : (options.installments || "");
-  const showTotal = isExperience ? false : (options.showTotal !== false);
-  const showPixBanner = isExperience ? false : (options.showPixBanner !== false);
+  const price = isExperience ? "" : (rawPrice || "");
+  const installments = isExperience ? "" : (rawInstallments || "");
+  const showTotal = isExperience ? false : (rawShowTotal !== false);
+  const showPixBanner = isExperience ? false : (rawShowPixBanner !== false);
 
   const RULES = {
     SAFE_BOTTOM: isStory ? 480 : 120, // Zona de exclusão absoluta para conteúdo dinâmico
