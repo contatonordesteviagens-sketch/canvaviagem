@@ -72,6 +72,78 @@ function applyVignette(ctx: CanvasRenderingContext2D, width: number, height: num
   ctx.fillRect(0, 0, width, height);
 }
 
+/**
+ * 🛡️ safeFillText — desenha texto garantindo que caiba em maxWidth.
+ * Reduz o tamanho da fonte automaticamente até caber, nunca trunca com "...".
+ * @param ctx  Canvas context (deve ter ctx.font já configurado com tamanho-base)
+ * @param text Texto a renderizar
+ * @param x, y  Posição
+ * @param maxWidth  Largura máxima em pixels
+ * @param minSize  Tamanho mínimo de fonte (default 12px) — abaixo disso para de reduzir
+ */
+function safeFillText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  minSize = 12
+): void {
+  if (!text) return;
+  // Parse current font to get size and family
+  const fontStr = ctx.font;
+  const sizeMatch = fontStr.match(/(\d+(?:\.\d+)?)px/);
+  if (!sizeMatch) { ctx.fillText(text, x, y, maxWidth); return; }
+  let size = parseFloat(sizeMatch[1]);
+  const fontWithoutSize = fontStr.replace(/(\d+(?:\.\d+)?)px/, "SIZE_PX");
+  while (ctx.measureText(text).width > maxWidth && size > minSize) {
+    size = Math.max(minSize, size - 1);
+    ctx.font = fontWithoutSize.replace("SIZE_PX", `${size}px`);
+  }
+  ctx.fillText(text, x, y);
+}
+
+/**
+ * 🛡️ wrapTextSafe — quebra texto em linhas que cabem em maxWidth.
+ * Também reduz a fonte se uma única palavra não couber.
+ * Retorna array de linhas prontas para renderizar.
+ */
+function wrapTextSafe(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+  maxLines: number,
+  minSize = 12
+): string[] {
+  if (!text) return [];
+  const words = text.trim().split(/\s+/);
+  const lines: string[] = [];
+  let cur = "";
+  for (const w of words) {
+    const test = cur ? `${cur} ${w}` : w;
+    if (ctx.measureText(test).width <= maxWidth) {
+      cur = test;
+    } else {
+      if (cur) lines.push(cur);
+      // Single word wider than maxWidth — shrink font
+      const fontStr = ctx.font;
+      const sizeMatch = fontStr.match(/(\d+(?:\.\d+)?)px/);
+      if (sizeMatch) {
+        let size = parseFloat(sizeMatch[1]);
+        const fontWithoutSize = fontStr.replace(/(\d+(?:\.\d+)?)px/, "SIZE_PX");
+        while (ctx.measureText(w).width > maxWidth && size > minSize) {
+          size = Math.max(minSize, size - 1);
+          ctx.font = fontWithoutSize.replace("SIZE_PX", `${size}px`);
+        }
+      }
+      cur = w;
+    }
+    if (lines.length >= maxLines) break;
+  }
+  if (cur && lines.length < maxLines) lines.push(cur);
+  return lines.slice(0, maxLines);
+}
+
 interface Highlight {
   text: string;
   icon?: IconKey;
@@ -876,7 +948,7 @@ function drawTextBlock(
   if (current && lines.length < maxLines) lines.push(current);
 
   lines.forEach((line, index) => {
-    ctx.fillText(line, x, y + index * lineHeight);
+    safeFillText(ctx, line, x, y + index * lineHeight, maxWidth, minSize > 0 ? minSize : 12);
   });
 }
 
@@ -1168,7 +1240,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         pillFont -= 2;
         ctx.font = `800 ${pillFont}px Inter, Arial, sans-serif`;
       }
-      ctx.fillText(item.text, x + textStartX, y + idx * (pillH + gap) + pillH / 2 + 1);
+      safeFillText(ctx, item.text, x + textStartX, y + idx * (pillH + gap) + pillH / 2 + 1, innerW - textStartX - 20, 14);
     });
     ctx.textBaseline = "alphabetic";
     return items.length * pillH + Math.max(0, items.length - 1) * gap;
@@ -1216,7 +1288,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         destSize -= 1;
         ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
       }
-      ctx.fillText(destUpper, cx, y + 60);
+      safeFillText(ctx, destUpper, cx, y + 60, innerW, 16);
     }
 
     // 3. Linha de info: "X dias Ô£ê ­ƒÜî ­ƒÅ¿ Ôÿò"
@@ -1264,14 +1336,14 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     ctx.fillStyle = cardTextColor;
     ctx.textAlign = "left";
     ctx.font = `900 ${priceFontSize}px Inter, Arial, sans-serif`;
-    ctx.fillText(priceText, groupX + badgeW + gap, priceY + priceFontSize / 3);
+    safeFillText(ctx, priceText, groupX + badgeW + gap, priceY + priceFontSize / 3, innerW - badgeW - gap, 24);
 
     // 5. Total por pessoa
     ctx.fillStyle = cardTextColor;
     ctx.font = `600 14px Inter, Arial, sans-serif`;
     ctx.textAlign = "center";
     if (bottomSuffix) {
-      ctx.fillText(bottomSuffix, cx, y + 220);
+      safeFillText(ctx, bottomSuffix, cx, y + 220, innerW, 14);
     }
 
     // 6. Faixa PIX azul escura na base (cor prim├íria)
@@ -1311,7 +1383,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       promoTrunc = promoTrunc.slice(0, -2);
     }
     if (promoTrunc !== promoUpper) promoTrunc = promoTrunc.slice(0, -1) + "ÔÇª";
-    ctx.fillText(promoTrunc, x, y + (hasOfferKeyword ? 0 : 48));
+    safeFillText(ctx, promoTrunc, x, y + (hasOfferKeyword ? 0 : 48), innerW - 40, 16);
   };
 
   const renderSafeSquareOffer = async () => {
@@ -1469,7 +1541,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         destSize -= 2;
         ctx.font = `500 ${destSize}px Inter, Arial, sans-serif`;
       }
-      ctx.fillText(destinoUp, cx, cursorY);
+      safeFillText(ctx, destinoUp, cx, cursorY, width - 80, 24);
       cursorY += destGap + 36;
 
       // [INFO] dias | ├¡cones (TODOS monocrom├íticos, mesma cor navy)
@@ -1687,7 +1759,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillStyle = v0OnPanel;
       ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
       const titleY = Math.max(badgeY + badgeH + topPaddingBeforeTitle + titleSize, logoH + 40 + titleSize);
-      ctx.fillText(titleText, left, titleY);
+      safeFillText(ctx, titleText, left, titleY, width - left - 40, 22);
 
       // 8) Benefits + Pre├ºo lado a lado ÔÇö pre├ºo ALINHADO ├Ç DIREITA pra eliminar
       //    o espa├ºo em branco que sobrava no canto direito.
@@ -1724,7 +1796,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const priceCenterX = priceX + priceBlockW / 2;
       ctx.textAlign = "center";
       ctx.fillStyle = v0OnPanel; ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText((topLabel || "por apenas").toString(), priceCenterX, rowTopY + 28);
+      safeFillText(ctx, (topLabel || "por apenas").toString(), priceCenterX, rowTopY + 28, priceCardW - 20, 14);
       const priceStr = mainPrice || `${curSym} ${price}`;
       // Auto-shrink do pre├ºo pra n├úo vazar do bloco direito
       let priceFs = 64;
@@ -1734,7 +1806,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
       }
       ctx.fillStyle = v0OnPanel;
-      ctx.fillText(priceStr, priceCenterX, rowTopY + 92);
+      safeFillText(ctx, priceStr, priceCenterX, rowTopY + 92, priceCardW - 20, 24);
       ctx.font = "600 20px Inter, Arial, sans-serif"; ctx.fillStyle = v0OnPanel;
       ctx.globalAlpha = 0.7;
       ctx.fillText(bottomSuffix, priceCenterX, rowTopY + 120);
@@ -1792,7 +1864,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       fillRoundRect(ctx, px, badgeY, badgeW, badgeH, badgeH / 2, badgeBg);
       ctx.fillStyle = badgeFg;
       ctx.textAlign = "left"; ctx.textBaseline = "middle";
-      ctx.fillText(badgeText, px + 20, badgeY + badgeH / 2);
+      safeFillText(ctx, badgeText, px + 20, badgeY + badgeH / 2, badgeW - 40, 14);
       ctx.textBaseline = "alphabetic";
 
       // 5) DESTINO
@@ -1804,7 +1876,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         destSize -= 4;
         ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
       }
-      ctx.fillText(destUp, px, destY + destSize * 0.85);
+      safeFillText(ctx, destUp, px, destY + destSize * 0.85, width - px * 2, 24);
 
       // 6) Headline
       const subY = destY + destSize + 20;
@@ -1858,7 +1930,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
           tf -= 2;
           ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
         }
-        ctx.fillText(h.text, px + 64, py + pillH / 2);
+        safeFillText(ctx, h.text, px + 64, py + pillH / 2, pw - 80, 14);
         ctx.textBaseline = "alphabetic";
       });
 
@@ -1877,7 +1949,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         pfsV1 -= 4;
         ctx.font = `900 ${pfsV1}px Inter, Arial, sans-serif`;
       }
-      ctx.fillText(priceStrV1, px + pw / 2, priceBlockY + 42 + pfsV1 + 8);
+      safeFillText(ctx, priceStrV1, px + pw / 2, priceBlockY + 42 + pfsV1 + 8, pw - 40, 24);
       ctx.fillStyle = v1Accent;
       ctx.font = "600 22px Inter, Arial, sans-serif";
       ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, priceBlockY + priceBlockH - 28);
@@ -1926,7 +1998,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       fillRoundRect(ctx, priceCardX, priceCardY, priceCardW, priceCardH, 16, v2CardBg);
       ctx.fillStyle = v2CardLabel; ctx.font = "700 24px Inter, Arial, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText((topLabel || "por apenas").toString(), priceCardX + priceCardW / 2, priceCardY + 40);
+      safeFillText(ctx, (topLabel || "por apenas").toString(), priceCardX + priceCardW / 2, priceCardY + 40, priceCardW - 20, 14);
       ctx.fillStyle = v2CardLabel;
       // Auto-shrink pre├ºo V2
       const priceStrV2 = mainPrice || `${curSym} ${price}`;
@@ -1936,7 +2008,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         pfsV2 -= 4;
         ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
       }
-      ctx.fillText(priceStrV2, priceCardX + priceCardW / 2, priceCardY + 108);
+      safeFillText(ctx, priceStrV2, priceCardX + priceCardW / 2, priceCardY + 108, priceCardW - 40, 24);
       ctx.fillStyle = v2CardLabel;
       ctx.font = "600 22px Inter, Arial, sans-serif";
       ctx.fillText(bottomSuffix, priceCardX + priceCardW / 2, priceCardY + 144);
@@ -1979,7 +2051,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
         ctx.font = `900 ${v2Size}px Inter, Arial, sans-serif`;
       }
       ctx.textBaseline = "middle";
-      ctx.fillText(titleText, left, faixaY + faixaH / 2);
+      safeFillText(ctx, titleText, left, faixaY + faixaH / 2, width - left - 40, 20);
       ctx.textBaseline = "alphabetic";
 
       // 6) Benefits ÔÇö duas colunas
@@ -2250,7 +2322,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       const priceBaseY = priceY + 130;
       const mainRightX = rightEdge - centsWv4;
       ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
-      ctx.fillText(mainValV4, mainRightX, priceBaseY);
+      safeFillText(ctx, mainValV4, mainRightX, priceBaseY, mainRightX - leftX - 40, 48);
       if (centsValV4) {
         ctx.font = `700 ${smallPriceSize}px Inter, Arial, sans-serif`;
         ctx.fillText(centsValV4, rightEdge, priceBaseY - valSize * 0.08);
@@ -2344,14 +2416,14 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     if (titleText) {
       ctx.font = `300 ${isStory ? 28 : 22}px ${sans}`;
       ctx.fillStyle = "rgba(255,255,255,0.92)";
-      ctx.fillText(titleText.trim(), cx, isStory ? 370 : 200);
+      safeFillText(ctx, titleText.trim(), cx, isStory ? 370 : 200, width - 120, 16);
     }
 
     const brandingSafeY = panelBottom;
     const line2Y = brandingSafeY - (isStory ? 180 : 120);
     ctx.fillStyle = "#ffffff";
     ctx.font = `800 ${isStory ? 110 : 78}px ${sans}`;
-    ctx.fillText((destFmt || destination || "DESTINO").toUpperCase(), cx, line2Y);
+    safeFillText(ctx, (destFmt || destination || "DESTINO").toUpperCase(), cx, line2Y, width - 80, 24);
 
     await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor);
     applyFilmGrain(ctx, width, height, 0.04);
@@ -2480,7 +2552,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
     const titSize = isStory ? 140 : 100;
     ctx.font = `900 ${titSize}px ${sans}`;
-    ctx.fillText((titleText || destination).toUpperCase(), cx, height / 2);
+    safeFillText(ctx, (titleText || destination).toUpperCase(), cx, height / 2, width - 80, 28);
 
     ctx.font = `italic 600 ${isStory ? 32 : 24}px ${serif}`;
     ctx.fillStyle = secondaryColor;
@@ -2519,7 +2591,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     if (promoName) {
       ctx.fillStyle = secondaryColor;
       ctx.font = `800 ${isStory ? 28 : 22}px ${sans}`;
-      ctx.fillText(promoName.toUpperCase(), padLeft, topY);
+      safeFillText(ctx, promoName.toUpperCase(), padLeft, topY, width - padLeft - 60, 14);
     }
 
     ctx.fillStyle = "#ffffff";
