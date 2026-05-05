@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
@@ -115,49 +115,40 @@ const CURRENCY_PRESETS: { id: Currency; symbol: string; label: string; locale: s
  * conforme a moeda selecionada. Aceita strings com vírgula ou ponto como decimal.
  * Ex: "4124312"  → BRL: "4.124.312,00"  USD: "4,124,312.00"
  *     "1499,90"  → BRL: "1.499,90"
- *     "1499.9"   → BRL: "1.499,90"
  */
 const formatPriceValue = (raw: string, currency: Currency, assumeCents = false, noCents = false): string => {
   const value = (raw || "").trim();
   if (!value) return "";
+  
+  // Limpa tudo exceto números e separadores existentes
   const cleaned = value.replace(/[^\d.,]/g, "");
   const digits = cleaned.replace(/\D/g, "");
   if (!digits) return "";
 
-  const lastComma = cleaned.lastIndexOf(",");
-  const lastDot = cleaned.lastIndexOf(".");
-  const lastSep = Math.max(lastComma, lastDot);
-  let centsMode = false;
-  let intPart = digits;
-  let decPart = "";
-
-  if (lastSep !== -1) {
-    const afterSep = cleaned.slice(lastSep + 1).replace(/\D/g, "");
-    const beforeSep = cleaned.slice(0, lastSep).replace(/\D/g, "");
-    const sepCount = (cleaned.match(/[.,]/g) || []).length;
-    centsMode = afterSep.length > 0 && afterSep.length <= 2 && (sepCount === 1 || afterSep.length !== 3);
-    if (centsMode) {
-      intPart = beforeSep || "0";
-      decPart = afterSep.padEnd(2, "0").slice(0, 2);
+  let num = 0;
+  if (noCents) {
+    num = parseInt(digits, 10);
+  } else if (assumeCents) {
+    // Se assumeCents for true (vindo de digitação sem separador), trata os últimos 2 como decimais
+    num = parseInt(digits, 10) / 100;
+  } else {
+    // Se já tem separador, tenta extrair a parte inteira e decimal
+    const lastComma = cleaned.lastIndexOf(",");
+    const lastDot = cleaned.lastIndexOf(".");
+    const lastSep = Math.max(lastComma, lastDot);
+    
+    if (lastSep !== -1) {
+      const intPart = cleaned.slice(0, lastSep).replace(/\D/g, "");
+      const decPart = cleaned.slice(lastSep + 1).replace(/\D/g, "").slice(0, 2);
+      num = parseInt(intPart || "0", 10) + parseInt(decPart.padEnd(2, "0"), 10) / 100;
+    } else {
+      // Se não tem separador mas também não deve assumir centavos (ex: digitou apenas "149")
+      num = parseInt(digits, 10);
     }
   }
 
-  if (!centsMode && assumeCents && digits.length > 2) {
-    intPart = digits.slice(0, -2);
-    decPart = digits.slice(-2);
-  } else if (!centsMode) {
-    intPart = digits;
-    decPart = "";
-  }
-
-  // Se "Sem centavos" estiver marcado, descarta a parte decimal
-  if (noCents) decPart = "";
-
-  const num = Number(intPart || "0") + (decPart ? Number(decPart) / 100 : 0);
   const preset = CURRENCY_PRESETS.find((c) => c.id === currency)!;
   try {
-    // Quando "Mostrar centavos" está ligado (noCents=false), SEMPRE força 2 casas decimais
-    // para que ao re-ativar o toggle os centavos sejam restaurados (ex: "423" → "423,00").
     return new Intl.NumberFormat(preset.locale, {
       minimumFractionDigits: noCents ? 0 : 2,
       maximumFractionDigits: noCents ? 0 : 2,
@@ -182,13 +173,14 @@ const stripCurrencyFromPrice = (raw: string, currency: Currency): string => {
 const formatPriceWhileTyping = (raw: string, currency: Currency): string => {
   const value = stripCurrencyFromPrice(raw, currency);
   if (!value.trim()) return "";
-  // Se contiver letras, não tenta formatar como número
+  
+  // Se contiver letras, não tenta formatar como número (permite "Grátis", "Sob consulta")
   if (/[A-Za-zÀ-ÿ]/.test(value)) return value;
   
   const digits = value.replace(/\D/g, "");
-  // Apenas assume centavos se houver mais de 3 dígitos (ex: 149 -> 149, 1499 -> 14,99)
-  // E se o usuário NÃO digitou um separador manual
   const hasManualSeparator = /[.,]/.test(value);
+  
+  // Assume centavos se houver muitos dígitos e nenhum separador foi digitado ainda
   const shouldAssumeCents = digits.length >= 4 && !hasManualSeparator;
   
   if (digits.length >= 3 || hasManualSeparator) {
@@ -1485,6 +1477,200 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         {/* Modo de Geração - Segmented Control */}
         <div>
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">0 · Modo de Criação</h3>
+  const downloadPNG = () => {
+    if (!generatedImage) return;
+    try {
+      const a = document.createElement("a");
+      a.href = generatedImage;
+      a.download = `anuncio-${(destination || "destino").toLowerCase().replace(/\s+/g, "-")}-${format}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      toast.success("Imagem baixada!");
+    } catch { toast.error("Erro ao baixar imagem"); }
+  };
+
+  const sectionCls = "bg-white/[0.05] border border-white/[0.08] rounded-2xl p-6";
+  const labelCls = "text-[11px] text-white/60 uppercase tracking-wider font-semibold block mb-1.5";
+  const inputCls = "w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-white/40";
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Banner de provedor de IA */}
+      <div className={`rounded-2xl p-4 border ${
+        lastProvider === "user_gemini"
+          ? "bg-emerald-500/15 border-emerald-500/30"
+          : lastProvider === "lovable_ai"
+            ? "bg-blue-500/15 border-blue-500/30"
+            : "bg-white/[0.05] border-white/10"
+      }`}>
+        <div className="flex items-start gap-3">
+          <div className="text-2xl">
+            {lastProvider === "user_gemini" ? "🟢" : lastProvider === "lovable_ai" ? "🔵" : "⚡"}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-bold text-white">
+              {lastProvider === "user_gemini" && "Usando sua chave Gemini (grátis)"}
+              {lastProvider === "lovable_ai" && "Usando créditos da plataforma"}
+              {!lastProvider && "Provedor de IA configurado"}
+            </div>
+            <p className="text-[11px] text-white/60 leading-snug mt-0.5">
+              {lastProvider === "user_gemini" && (
+                <>Cota gratuita do Google: ~1.500 imagens/dia. Cheque seu uso em <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline text-emerald-300">aistudio.google.com</a>.</>
+              )}
+              {lastProvider === "lovable_ai" && (
+                <>Cada imagem consome créditos. Se acabar, sua chave Gemini gratuita será usada automaticamente.</>
+              )}
+              {!lastProvider && (
+                <>Tentaremos primeiro sua chave Gemini gratuita. Se falhar, cai pra créditos da plataforma. Imagens geradas nesta sessão: <strong className="text-white">{generationCount}</strong></>
+              )}
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <div className="text-[10px] text-white/40 uppercase tracking-wider">Geradas</div>
+            <div className="text-lg font-bold text-white">{generationCount}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* NOVO TOPO: Perfil e Logo */}
+      <div className={`${sectionCls} space-y-5 mb-8`}>
+        {user && savedProjects && savedProjects.length > 0 && (
+          <div className="p-5 bg-white/[0.04] border border-white/10 rounded-2xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full" style={{ background: primaryColor }}></div>
+            <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">📂 Carregar Cliente / Projeto Salvo</label>
+            <select
+              onChange={(e) => {
+                const p = savedProjects.find(x => x.id === e.target.value);
+                if (p && p.state_snapshot) {
+                   update({ ...p.state_snapshot, diagnosticoCompleto: false });
+                   toast.success(`Cliente "${p.agency_name}" carregado! Todas as configs (logo, cor, etc) foram restauradas.`);
+                }
+                e.target.value = "";
+              }}
+              className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors"
+            >
+              <option value="" className="bg-zinc-900">Selecione um cliente salvo...</option>
+              {savedProjects.map((p) => (
+                <option key={p.id} value={p.id} className="bg-zinc-900">{p.agency_name || "Sem Nome"} (Salvo em {new Date(p.updated_at).toLocaleDateString()})</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
+          {/* Coluna Logo: mais estreita e profissional */}
+          <div className="sm:col-span-4">
+            <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Identidade Visual</label>
+            {!state.logoBase64 ? (
+              <label className="flex flex-col items-center justify-center gap-2.5 p-6 bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-white/20 hover:bg-white/[0.04] transition-all group h-[110px]">
+                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Upload className="w-5 h-5 text-white/40 group-hover:text-white/70" />
+                </div>
+                <span className="text-[10px] font-bold text-white/40 uppercase tracking-tighter group-hover:text-white/60">Subir Logo</span>
+                <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+              </label>
+            ) : (
+              <div className="relative group rounded-2xl overflow-hidden bg-white/[0.03] p-3 border border-white/10 h-[110px] flex items-center justify-center">
+                <img src={state.logoBase64} alt="Logo" className="max-w-full max-h-full object-contain" />
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 cursor-pointer transition-all backdrop-blur-sm">
+                  <label className="p-2 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-colors" title="Trocar Logo">
+                    <RotateCcw className="w-4 h-4 text-white" />
+                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => { update({ logoBase64: "" }); toast.success("Logo removida"); }}
+                    className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full transition-colors"
+                    title="Remover"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Coluna Contatos: mais larga e organizada */}
+          <div className="sm:col-span-8 space-y-3">
+            <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Canais de Atendimento</label>
+            
+            {/* Contato 1 */}
+            <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
+              <div className="w-[45%] relative">
+                <select
+                  value={state.footerContact1Icon || "whatsapp_green"}
+                  onChange={(e) => update({ footerContact1Icon: e.target.value as any })}
+                  className="w-full bg-white/5 border-none rounded-lg pl-3 pr-8 py-2 text-[11px] font-medium text-white outline-none appearance-none cursor-pointer"
+                >
+                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Oficial</option>
+                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
+                  <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
+                  <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
+                  <option value="website" className="bg-zinc-900">Website / Link</option>
+                  <option value="none" className="bg-zinc-900">Ocultar</option>
+                </select>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
+                  <ChevronDown className="w-3.5 h-3.5 text-white" />
+                </div>
+              </div>
+              <div className="w-[55%]">
+                <input
+                  value={state.footerContact1Value ?? formatAdPhone(state.whatsapp || "")}
+                  onChange={(e) => {
+                    const isPhone = state.footerContact1Icon?.startsWith("whatsapp");
+                    const val = isPhone ? formatAdPhone(e.target.value) : e.target.value;
+                    update({ footerContact1Value: val });
+                  }}
+                  placeholder={state.footerContact1Icon?.startsWith("whatsapp") ? "(00) 9 0000-0000" : "Link ou Telefone"}
+                  className="w-full bg-transparent border-none px-3 py-2 text-[11px] text-white outline-none placeholder:text-white/10"
+                />
+              </div>
+            </div>
+
+            {/* Contato 2 */}
+            <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
+              <div className="w-[45%] relative">
+                <select
+                  value={state.footerContact2Icon || "instagram_gradient"}
+                  onChange={(e) => update({ footerContact2Icon: e.target.value as any })}
+                  className="w-full bg-white/5 border-none rounded-lg pl-3 pr-8 py-2 text-[11px] font-medium text-white outline-none appearance-none cursor-pointer"
+                >
+                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Oficial</option>
+                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
+                  <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
+                  <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
+                  <option value="website" className="bg-zinc-900">Website / Link</option>
+                  <option value="none" className="bg-zinc-900">Ocultar</option>
+                </select>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
+                  <ChevronDown className="w-3.5 h-3.5 text-white" />
+                </div>
+              </div>
+              <div className="w-[55%]">
+                <input
+                  value={state.footerContact2Value ?? (state.instagram || "")}
+                  onChange={(e) => {
+                    const isPhone = state.footerContact2Icon?.startsWith("whatsapp");
+                    const isInsta = state.footerContact2Icon?.startsWith("instagram");
+                    let val = e.target.value;
+                    if (isPhone) val = formatAdPhone(val);
+                    else if (isInsta) val = val.replace(/^@/, "");
+                    update({ footerContact2Value: val });
+                  }}
+                  placeholder={state.footerContact2Icon?.startsWith("instagram") ? "@usuario" : "Perfil ou Link"}
+                  className="w-full bg-transparent border-none px-3 py-2 text-[11px] text-white outline-none placeholder:text-white/10"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* 0 e 1 · Modo e Categoria */}
+      <div className={`${sectionCls} space-y-5`}>
+        {/* Modo de Geração - Segmented Control */}
+        <div>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">0 · Modo de Criação</h3>
           <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full">
             <button
               onClick={() => setGenMode("photo")}
@@ -1542,7 +1728,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             </p>
           </div>
         </div>
-
 
         {/* Categoria - Compacta */}
         <div>
@@ -1652,6 +1837,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               value={photoQuery}
               onChange={(e) => setPhotoQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && searchPhotos()}
+              onFocus={(e) => e.target.select()}
               placeholder={destination ? `Buscar "${destination}"...` : "Ex: Maragogi, Paris, Cancún..."}
               className={inputCls}
             />
@@ -1698,15 +1884,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                     Ver mais fotos ({photos.length - visiblePhotoCount} restantes)
                   </button>
                 )}
-                {!hasMore && photos.length > 3 && (
-                  <p className="text-[10px] text-white/30 text-center mt-2">Todas as {photos.length} fotos exibidas.</p>
-                )}
               </>
             );
           })()}
-          {photos.length === 0 && !searchingPhotos && (
-            <p className="text-xs text-white/40 text-center py-6">Digite o destino e clique em buscar.</p>
-          )}
         </div>
       )}
 
@@ -1763,15 +1943,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <input
                 value={customLink}
                 onChange={(e) => setCustomLink(e.target.value)}
+                onFocus={(e) => e.target.select()}
                 placeholder="https://exemplo.com/foto.jpg"
                 className={inputCls}
               />
-              {customLink && (
-                <div className="mt-3 rounded-lg overflow-hidden bg-black/40 max-w-[180px]">
-                  <img src={customLink} alt="preview" className="w-full h-auto" onError={() => toast.error("Link inválido ou imagem não carregou")} />
-                </div>
-              )}
-              <p className="text-[10px] text-white/40 mt-2">A IA vai adaptar a imagem ao formato escolhido (vertical/quadrado).</p>
+              <p className="text-[10px] text-white/40 mt-2">A IA vai adaptar a imagem ao formato escolhido.</p>
             </div>
           )}
         </div>
@@ -1788,7 +1964,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <input
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
-                onFocus={() => setDestMenuOpen(true)}
+                onFocus={(e) => { e.target.select(); setDestMenuOpen(true); }}
                 onClick={() => setDestMenuOpen(true)}
                 placeholder="Clique para escolher ou digite..."
                 className={`${inputCls} pr-10 cursor-pointer`}
@@ -1798,24 +1974,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setDestMenuOpen(false)} />
                   <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
-                    <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
-                      Sugestões · {DESTINATION_SUGGESTIONS.length}
-                    </div>
                     {DESTINATION_SUGGESTIONS.map((d) => {
                       const active = destination === d;
                       return (
                         <button
                           key={d}
                           type="button"
-                          onMouseDown={(e) => {
-                            // Previne que o onBlur do input feche o menu antes do click ser processado
-                            e.preventDefault();
-                          }}
-                          onClick={() => { 
-                            setDestination(d); 
-                            setDestMenuOpen(false); 
-                            toast.success(`Destino: ${d}`);
-                          }}
+                          onClick={() => { setDestination(d); setDestMenuOpen(false); }}
                           className={`w-full text-left px-3 py-2 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
                         >
                           {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
@@ -1833,45 +1998,37 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             <label className={labelCls}>
               {categoria === "experiencia_destino" ? "Nome da experiência" : "Nome da promoção"}
             </label>
-            {categoria === "experiencia_destino" ? (
-              <div className="relative">
-                <input
-                  value={promoName}
-                  onChange={(e) => setPromoName(e.target.value)}
-                  onFocus={() => setPromoMenuOpen(true)}
-                  onClick={() => setPromoMenuOpen(true)}
-                  placeholder="Ex: EXPERIÊNCIA EXCLUSIVA"
-                  className={`${inputCls} pr-10 cursor-pointer`}
-                />
-                <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${promoMenuOpen ? "rotate-180" : ""}`} />
-                {promoMenuOpen && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setPromoMenuOpen(false)} />
-                    <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
-                      <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
-                        Sugestões luxo · {PROMO_NAME_PRESETS_EXPERIENCIA.length}
-                      </div>
-                      {PROMO_NAME_PRESETS_EXPERIENCIA.map((p) => {
-                        const active = promoName === p;
-                        return (
-                          <button
-                            key={p}
-                            type="button"
-                            onClick={() => { setPromoName(p); setPromoMenuOpen(false); }}
-                            className={`w-full text-left px-3 py-2 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
-                          >
-                            {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
-                            <span className={active ? "" : "ml-5"}>{p}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
-              </div>
-            ) : (
-              <input value={promoName} onChange={(e) => setPromoName(e.target.value)} placeholder="Ex: BLACK FRIDAY" className={inputCls} />
-            )}
+            <div className="relative">
+              <input
+                value={promoName}
+                onChange={(e) => setPromoName(e.target.value)}
+                onFocus={(e) => { e.target.select(); setPromoMenuOpen(true); }}
+                onClick={() => setPromoMenuOpen(true)}
+                className={`${inputCls} pr-10 cursor-pointer`}
+              />
+              <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${promoMenuOpen ? "rotate-180" : ""}`} />
+              {promoMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setPromoMenuOpen(false)} />
+                  <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
+                    {(categoria === "experiencia_destino" ? PROMO_NAME_PRESETS_EXPERIENCIA : PROMO_NAME_PRESETS).map((p) => {
+                      const active = promoName === p;
+                      return (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => { setPromoName(p); setPromoMenuOpen(false); }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
+                        >
+                          {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                          <span className={active ? "" : "ml-5"}>{p}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="sm:col-span-2">
@@ -1880,56 +2037,35 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <input
                 value={adTitleTemplate}
                 onChange={(e) => setAdTitleTemplate(e.target.value)}
-                onFocus={() => setAdTitleMenuOpen(true)}
+                onFocus={(e) => { e.target.select(); setAdTitleMenuOpen(true); }}
                 onClick={() => setAdTitleMenuOpen(true)}
                 placeholder="Ex: Pacote {destino}"
                 className={`${inputCls} pr-10 cursor-pointer`}
               />
-              <ChevronDown
-                className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${adTitleMenuOpen ? "rotate-180" : ""}`}
-              />
+              <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${adTitleMenuOpen ? "rotate-180" : ""}`} />
               {adTitleMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setAdTitleMenuOpen(false)} />
-                  <div
-                    className="absolute left-0 right-0 mt-2 max-h-80 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1"
-                    style={{ borderColor: `${secondaryColor}66` }}
-                  >
-                    {(() => {
-                      const presets = categoria === "experiencia_destino" ? AD_TITLE_PRESETS_EXPERIENCIA : AD_TITLE_PRESETS;
+                  <div className="absolute left-0 right-0 mt-2 max-h-80 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
+                    {(categoria === "experiencia_destino" ? AD_TITLE_PRESETS_EXPERIENCIA : AD_TITLE_PRESETS).map((tpl) => {
+                      const preview = tpl.replace(/\{destino\}/gi, destination?.trim() || "Destino");
+                      const active = tpl === adTitleTemplate;
                       return (
-                        <>
-                          <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
-                            Escolha um modelo · {presets.length} opções
-                          </div>
-                          {presets.map((tpl) => {
-                            const preview = tpl.replace(/\{destino\}/gi, destination?.trim() || "Destino");
-                            const active = tpl === adTitleTemplate;
-                            return (
-                              <button
-                                key={tpl}
-                                type="button"
-                                onClick={() => { setAdTitleTemplate(tpl); setAdTitleMenuOpen(false); }}
-                                className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
-                              >
-                                {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
-                                <span className={active ? "" : "ml-5"}>{preview}</span>
-                              </button>
-                            );
-                          })}
-                        </>
+                        <button
+                          key={tpl}
+                          type="button"
+                          onClick={() => { setAdTitleTemplate(tpl); setAdTitleMenuOpen(false); }}
+                          className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
+                        >
+                          {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
+                          <span className={active ? "" : "ml-5"}>{preview}</span>
+                        </button>
                       );
-                    })()}
+                    })}
                   </div>
                 </>
               )}
             </div>
-            <p className="text-[10px] text-white/40 mt-1.5">
-              Use <code className="text-white/60">{"{destino}"}</code> e ele será trocado pelo destino atual.
-              {destination && (
-                <> Pré-visualização: <span className="font-semibold" style={{ color: secondaryColor }}>"{resolvedAdTitle}"</span></>
-              )}
-            </p>
           </div>
         </div>
 
@@ -1939,9 +2075,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             <input
               value={travelPeriod}
               onChange={(e) => setTravelPeriod(e.target.value)}
-              onFocus={() => setTravelPeriodMenuOpen(true)}
+              onFocus={(e) => { e.target.select(); setTravelPeriodMenuOpen(true); }}
               onClick={() => setTravelPeriodMenuOpen(true)}
-              placeholder="Ex: 5 dias, Janeiro, 12 a 18/01"
+              placeholder="Ex: 5 dias, Janeiro"
               className={`${inputCls} pr-10 cursor-pointer`}
             />
             <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${travelPeriodMenuOpen ? "rotate-180" : ""}`} />
@@ -1949,9 +2085,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setTravelPeriodMenuOpen(false)} />
                 <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
-                  <div className="px-3 py-2 text-[10px] uppercase tracking-widest font-bold border-b border-white/10" style={{ color: secondaryColor }}>
-                    Escolha um período · editável
-                  </div>
                   {TRAVEL_PERIOD_PRESETS.map((opt) => {
                     const active = travelPeriod === opt;
                     return (
@@ -1972,199 +2105,107 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
         </div>
 
-        {/* Modo de pagamento — só existe em "Oferta de Pacote". Em "Experiência" o bloco inteiro some. */}
+        {/* Modo de pagamento */}
         {categoria !== "experiencia_destino" && (
-        <div>
-          <label className={labelCls}>Modo de exibição do preço</label>
-          <div className="grid grid-cols-3 gap-1.5 mb-3">
-            {PAYMENT_PRESETS.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => {
-                  const isChangingMode = paymentMode !== p.id;
-                  setPaymentMode(p.id);
-                  if (p.id === "installments" && (isChangingMode || !installments.trim())) setInstallments("10x");
-                  if (p.id === "cash" && (isChangingMode || !paymentLabelState.trim())) setPaymentLabel("À VISTA");
-                  if (p.id === "down_plus" && (isChangingMode || !installments.trim())) setInstallments("Entrada + 10x");
-                  if (!paymentSuffix.trim()) setPaymentSuffix("por pessoa");
-                }}
-                className={`px-2 py-1.5 rounded-lg border-2 text-center transition-all ${
-                  paymentMode === p.id ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
-                }`}
-                style={paymentMode === p.id ? { borderColor: secondaryColor, background: `${secondaryColor}1a` } : undefined}
-                title={p.description}
-              >
-                <span className="text-sm mr-1">{p.emoji}</span>
-                <span className="text-[11px] font-bold text-white">{p.name}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className={`grid grid-cols-1 ${paymentMode === "cash" ? "sm:grid-cols-2" : "sm:grid-cols-3"} gap-3`}>
-            {paymentMode !== "cash" && (
-              <div>
-                <label className={labelCls}>
-                  {paymentMode === "installments" ? "Parcela" : "Entrada + parcela"}
-                </label>
-                <input
-                  value={paymentLabel}
-                  onChange={(e) => setInstallments(e.target.value)}
-                  placeholder={paymentMode === "installments" ? "10x" : "ENTRADA R$ 200 + 10x"}
-                  className={inputCls}
-                />
-              </div>
-            )}
-            <div>
-              <label className={labelCls}>Valor ({currencySymbol})</label>
-              <div className="flex gap-1.5">
-                <select
-                  value={currency}
-                  onChange={(e) => {
-                    const nextCurrency = e.target.value as Currency;
-                    const normalized = formatPriceValue(stripCurrencyFromPrice(price, currency), nextCurrency);
-                    setCurrency(nextCurrency);
-                    if (normalized) setPrice(normalized);
+          <div className="space-y-3">
+            <label className={labelCls}>Modo de exibição do preço</label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {PAYMENT_PRESETS.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    setPaymentMode(p.id);
+                    if (p.id === "installments" && !installments.trim()) setInstallments("10x");
                   }}
-                  className="bg-white/[0.06] border border-white/10 rounded-xl px-2 py-3 text-white text-xs outline-none focus:border-white/40 cursor-pointer"
-                  title="Moeda"
+                  className={`px-2 py-1.5 rounded-lg border-2 text-center transition-all ${
+                    paymentMode === p.id ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
+                  }`}
+                  style={paymentMode === p.id ? { borderColor: secondaryColor, background: `${secondaryColor}1a` } : undefined}
                 >
-                  {CURRENCY_PRESETS.map((c) => (
-                    <option key={c.id} value={c.id} className="bg-neutral-900">
-                      {c.symbol}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  value={price}
-                  onChange={(e) => setPrice(formatPriceWhileTyping(e.target.value, currency))}
-                  onBlur={() => {
-                    const f = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
-                    if (f) setPrice(f);
-                  }}
-                  placeholder={currency === "BRL" ? "1.499,90" : "1,499.90"}
-                  inputMode="decimal"
-                  className={`${inputCls} flex-1`}
-                />
-              </div>
+                  <span className="text-[11px] font-bold text-white">{p.name}</span>
+                </button>
+              ))}
             </div>
-            <div>
-              <label className={labelCls}>Complemento</label>
-              <div className="relative">
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {paymentMode !== "cash" && (
+                <div>
+                  <label className={labelCls}>Parcelas</label>
+                  <input
+                    value={paymentLabel}
+                    onChange={(e) => setInstallments(e.target.value)}
+                    onFocus={(e) => e.target.select()}
+                    placeholder="10x"
+                    className={inputCls}
+                  />
+                </div>
+              )}
+              <div>
+                <label className={labelCls}>Valor ({currencySymbol})</label>
+                <div className="flex gap-1.5">
+                  <select
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value as Currency)}
+                    className="bg-white/[0.06] border border-white/10 rounded-xl px-2 py-3 text-white text-xs outline-none focus:border-white/40 cursor-pointer"
+                  >
+                    {CURRENCY_PRESETS.map((c) => (
+                      <option key={c.id} value={c.id} className="bg-neutral-900">{c.symbol}</option>
+                    ))}
+                  </select>
+                  <input
+                    value={price}
+                    onChange={(e) => setPrice(formatPriceWhileTyping(e.target.value, currency))}
+                    onFocus={(e) => e.target.select()}
+                    onBlur={() => {
+                      const f = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
+                      if (f) setPrice(f);
+                    }}
+                    placeholder="1.499,00"
+                    className={`${inputCls} flex-1`}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className={labelCls}>Complemento</label>
                 <input
                   value={paymentSuffix}
                   onChange={(e) => setPaymentSuffix(e.target.value)}
-                  onFocus={() => setSuffixMenuOpen(true)}
-                  onClick={() => setSuffixMenuOpen(true)}
-                  placeholder="por pessoa, casal..."
-                  className={`${inputCls} pr-9 cursor-pointer`}
+                  onFocus={(e) => e.target.select()}
+                  placeholder="por pessoa"
+                  className={inputCls}
                 />
-                <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${suffixMenuOpen ? "rotate-180" : ""}`} />
-                {suffixMenuOpen && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setSuffixMenuOpen(false)} />
-                    <div className="absolute left-0 right-0 mt-2 bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
-                      {SUFFIX_PRESETS.map((opt) => {
-                        const active = paymentSuffix === opt;
-                        return (
-                          <button
-                            key={opt}
-                            type="button"
-                            onClick={() => { setPaymentSuffix(opt); setSuffixMenuOpen(false); }}
-                            className={`w-full text-left px-3 py-2 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
-                          >
-                            {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
-                            <span className={active ? "" : "ml-5"}>{opt}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
               </div>
             </div>
-          </div>
 
-          {/* Opções de preço — colapsável, desativada por padrão, aplica a TODAS variações */}
-          <div className="mt-4 bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
-            <button
-              type="button"
-              onClick={() => {
-                if (!priceOptionsEnabled) {
-                  setPriceOptionsEnabled(true);
-                  setPriceOptionsOpen(true);
-                } else {
-                  setPriceOptionsOpen((v) => !v);
-                }
-              }}
-              className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
-            >
-              <div className="flex items-center gap-2">
+            <div className="mt-4 bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setPriceOptionsOpen((v) => !v)}
+                className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
+              >
                 <span className="text-sm font-bold text-white">Opções de preço</span>
-                <span className="text-[10px] text-white/40">{priceOptionsEnabled ? "(ativado)" : "(opcional)"}</span>
-              </div>
-              <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${priceOptionsOpen ? "rotate-180" : ""}`} />
-            </button>
-            {priceOptionsOpen && (
-              <div className="px-4 pb-4 pt-1 space-y-3 border-t border-white/10">
-                <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
-                  <input
-                    type="checkbox"
-                    checked={!hideCents}
-                    onChange={(e) => setHideCents(!e.target.checked)}
-                    className="accent-yellow-400 w-4 h-4"
-                  />
-                  Mostrar centavos <span className="text-white/40 ml-1">(ex.: R$ 423,43)</span>
-                </label>
-
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
-                    <input
-                      type="checkbox"
-                      checked={showTotal}
-                      onChange={(e) => setShowTotal(e.target.checked)}
-                      className="accent-yellow-400 w-4 h-4"
-                    />
-                    Mostrar valor total <span className="text-white/40 ml-1">(ex.: Total por casal: R$ 3.998)</span>
+                <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${priceOptionsOpen ? "rotate-180" : ""}`} />
+              </button>
+              {priceOptionsOpen && (
+                <div className="px-4 pb-4 pt-1 space-y-3 border-t border-white/10">
+                  <label className="flex items-center gap-2 text-[12px] text-white/80 cursor-pointer">
+                    <input type="checkbox" checked={!hideCents} onChange={(e) => setHideCents(!e.target.checked)} className="accent-yellow-400" />
+                    Mostrar centavos
                   </label>
-                  <input
-                    value={totalOverride}
-                    onChange={(e) => setTotalOverride(e.target.value)}
-                    placeholder='Texto personalizado (auto se vazio)'
-                    disabled={!showTotal}
-                    className={`${inputCls} ${!showTotal ? "opacity-50" : ""}`}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-[12px] text-white/80 select-none cursor-pointer bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5">
-                    <input
-                      type="checkbox"
-                      checked={showPixBanner}
-                      onChange={(e) => setShowPixBanner(e.target.checked)}
-                      className="accent-yellow-400 w-4 h-4"
-                    />
+                  <label className="flex items-center gap-2 text-[12px] text-white/80 cursor-pointer">
+                    <input type="checkbox" checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} className="accent-yellow-400" />
+                    Mostrar valor total
+                  </label>
+                  <label className="flex items-center gap-2 text-[12px] text-white/80 cursor-pointer">
+                    <input type="checkbox" checked={showPixBanner} onChange={(e) => setShowPixBanner(e.target.checked)} className="accent-yellow-400" />
                     Mostrar faixa de desconto
                   </label>
-                  <input
-                    value={pixBannerText}
-                    onChange={(e) => setPixBannerText(e.target.value)}
-                    placeholder='Ex.: "5% OFF À VISTA NO PIX"'
-                    disabled={!showPixBanner}
-                    className={`${inputCls} ${!showPixBanner ? "opacity-50" : ""}`}
-                  />
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-
-          {formattedPriceForAd && (
-            <p className="text-[11px] text-emerald-300/90 font-mono mt-2">
-              Prévia: {paymentLabel ? `${paymentLabel} · ` : ""}{currencySymbol} {formattedPriceForAd}{paymentSuffix ? ` · ${paymentSuffix}` : ""}
-            </p>
-          )}
-        </div>
         )}
-
+      </div>
         {/* Tipografia — colapsável (mesmo padrão dos outros blocos) */}
         <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
           <button
