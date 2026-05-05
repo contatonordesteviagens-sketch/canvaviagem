@@ -1,4 +1,4 @@
-type Format = "square" | "story";
+﻿type Format = "square" | "story";
 type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | "camera" | "map" | "food" | "ship" | "palm" | "coffee" | "guide" | "wifi";
 
 // Escurece (percent < 0) ou clareia (percent > 0) uma cor hex (#rgb / #rrggbb).
@@ -347,9 +347,9 @@ async function drawFinalBranding(
     } catch (e) {
       console.warn("Falha ao carregar logo para branding", e);
     }
-  } else {
-    // WORDMARK FALLBACK
-    const name = (agencyName || "Sua Ag├¬ncia").toUpperCase();
+  } else if (agencyName && agencyName.trim()) {
+    // WORDMARK FALLBACK — 🛡️ BLINDAGEM: so exibe se usuario configurou nome
+    const name = agencyName.trim().toUpperCase();
     ctx.save();
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
