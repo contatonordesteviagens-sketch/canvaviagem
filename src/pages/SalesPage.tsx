@@ -345,7 +345,32 @@ export default function SalesPage() {
   };
 
   return (
-    <div className="dark min-h-screen bg-[#050810] text-[#ffffff] selection:bg-[#00D4FF] selection:text-[#050810] overflow-x-hidden antialiased">
+    <div className="dark min-h-screen bg-[#050810] text-[#ffffff] selection:bg-[#00D4FF] selection:text-[#050810] overflow-x-hidden antialiased" style={{ paddingTop: '44px' }}>
+      {/* STICKY TOP BAR — countdown + CTA */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
+        background: '#0A1628', borderBottom: `1px solid ${THEME.accent}`,
+        padding: '8px 12px', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', gap: '10px', flexWrap: 'wrap'
+      }}>
+        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', whiteSpace: 'nowrap', fontWeight: 600 }}>
+          🔥 42% OFF expira em
+        </span>
+        <CountdownTimer variant="bar" />
+        <button
+          id="cta-sticky"
+          onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+          style={{
+            background: THEME.accent, color: '#000', border: 'none',
+            borderRadius: '6px', padding: '6px 12px', fontSize: '11px',
+            fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap',
+            textTransform: 'uppercase', letterSpacing: '0.5px'
+          }}
+        >
+          Garantir →
+        </button>
+      </div>
+
       <Navbar />
 
       {/* SEÇÃO 2 — HERO */}
