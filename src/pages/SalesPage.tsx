@@ -969,12 +969,16 @@ export default function SalesPage() {
               </ul>
 
               <button 
+                id="cta-pricing-monthly"
                 onClick={() => handleCheckout("monthly")}
                 style={{ 
-                  width: '100%', padding: '20px', borderRadius: '16px', 
-                  border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)',
-                  color: '#fff', fontWeight: 800, fontSize: '16px', cursor: 'pointer'
+                  width: '100%', padding: '18px', borderRadius: '12px', 
+                  border: `2px solid ${THEME.accent}`, background: 'transparent',
+                  color: THEME.accent, fontWeight: 800, fontSize: '15px', cursor: 'pointer',
+                  letterSpacing: '0.5px', transition: 'background 0.2s ease'
                 }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,212,255,0.1)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
               >
                 ASSINAR MENSAL
               </button>
