@@ -11,7 +11,7 @@ import { getForbiddenSets, registerGeneration, freshSeed } from "@/lib/fabrica-g
 import {
   Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown, RotateCcw,
   Bus, Hotel, Plane, Check, Star, Heart, Sun, Camera, MapPin, Utensils, Ship, Palmtree, Coffee, Wifi, User,
-  Square, Smartphone, Image as ImageIcon, Upload, Link2, Search, Wand2,
+  Square, Smartphone, Image as ImageIcon, Upload, Link2, Search, Wand2, Copy, ClipboardCheck, FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -366,6 +366,85 @@ const pickPhotoRefs = (
   return Array.from({ length: count }, () => primary);
 };
 
+// ============================================================
+// GERADOR DE LEGENDAS / COPY para Instagram
+// Gera 3 variações de texto adaptadas aos dados do anúncio,
+// sem chamadas à IA — 100% local, instantâneo.
+// ============================================================
+interface CaptionVars {
+  destination: string;
+  price: string;
+  installments: string;
+  paymentMode: string;
+  paymentSuffix: string;
+  highlights: Highlight[];
+  promoName: string;
+  travelPeriod: string;
+  agencyName: string;
+  whatsapp: string;
+  instagram: string;
+  isExperience: boolean;
+}
+
+const buildAdCaptions = (v: CaptionVars): string[] => {
+  const dest = v.destination.trim() || "o destino";
+  const destUp = dest.toUpperCase();
+  const priceStr = v.price.trim();
+  const hasPrice = !!priceStr && v.paymentMode !== "free_quote";
+  const hasInstall = !!v.installments.trim() && v.paymentMode === "installments";
+  const period = v.travelPeriod.trim();
+  const agency = v.agencyName.trim() || "nossa agência";
+  const ig = v.instagram.trim() ? `@${v.instagram.replace(/^@/, "").trim()}` : "";
+  const wa = v.whatsapp.trim();
+  const contactLine = wa
+    ? `📲 Fale comigo agora: *${wa}* ${ig ? `| ${ig}` : ""}`
+    : ig
+    ? `📲 Nos siga: ${ig}`
+    : "📲 Entre em contato para reservar!";
+
+  // Benefícios: pega os 3 primeiros highlights como bullet points
+  const benefitLines = v.highlights
+    .slice(0, 4)
+    .map((h) => `✅ ${h.text}`)
+    .join("\n");
+
+  const priceBlock = hasPrice
+    ? hasInstall
+      ? `💳 Apenas ${v.installments} de *${priceStr}* ${v.paymentSuffix}`
+      : `💰 Por apenas *${priceStr}* ${v.paymentSuffix}`
+    : "💬 Solicite seu orçamento personalizado!";
+
+  const periodLine = period ? `🗓️ ${period}` : "";
+
+  if (v.isExperience) {
+    // Variante Experiência: estilo editorial/luxo
+    const caps: string[] = [
+      // Variação 1 — Cinematográfica
+      `✨ ${destUp} vai te surpreender.\n\nExperiências como essa não se esquecem — e você merece vivê-las.\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}${contactLine}`,
+
+      // Variação 2 — Direta com CTA
+      `🌟 Já imaginou ${v.isExperience ? "viver" : "conhecer"} ${dest}?\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}Cada detalhe foi pensado para você. Vamos planejar juntos?\n\n${contactLine}`,
+
+      // Variação 3 — Curiosidade/teaser
+      `Tem destino que transforma. ${dest} é um deles. 🧳\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}💌 Reserve com a ${agency}. Parceria que entende o que você quer de uma viagem.\n\n${contactLine}`,
+    ];
+    return caps;
+  }
+
+  // Variante Oferta: direto e comercial
+  const caps: string[] = [
+    // Variação 1 — Urgência + preço em destaque
+    `🚨 *${v.promoName || "OFERTA ESPECIAL"}* — ${destUp}!\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n⚠️ Vagas limitadas! Não perca essa oportunidade.\n\n${contactLine}`,
+
+    // Variação 2 — Storytelling + preço
+    `Partiu ${dest}? ✈️\n\nMontamos um pacote COMPLETO pra você não se preocupar com nada:\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n👉 Me chama agora e garanta sua vaga!\n\n${contactLine}`,
+
+    // Variação 3 — Benefícios + prova social
+    `📍 ${dest} — Um pacote que você vai amar!\n\nIncluso na sua viagem:\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n✅ Agência especializada. Atendimento humanizado. Suporte 24h.\n\n${contactLine}`,
+  ];
+  return caps;
+};
+
 export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const { state, update } = useFabricaContext();
   const { user } = useAuth();
@@ -655,6 +734,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [generatedImage, setGeneratedImage] = useState<string>("");
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [variationCounter, setVariationCounter] = useState(0);
+  // Legendas/Copy geradas automaticamente junto com as imagens
+  const [adCaptions, setAdCaptions] = useState<string[]>([]);
+  const [selectedCaption, setSelectedCaption] = useState<string | null>(null);
+  const [captionCopied, setCaptionCopied] = useState(false);
   // Histórico das últimas variantes do compositor canvas (modo Sua Imagem) para forçar rotação
   const variantHistoryRef = useRef<number[]>([]);
   // Versão forçada (null = automático/rotação). 0..4 fixa a variante exata para correções cirúrgicas.
@@ -1282,6 +1365,28 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     generate(next, true);
   };
 
+  // Gera as legendas de copy sempre que as imagens ou os dados do anúncio mudarem
+  useEffect(() => {
+    if (generatedImages.length === 0) return;
+    const caps = buildAdCaptions({
+      destination,
+      price: formattedPriceForAd || price,
+      installments: paymentLabel || installments,
+      paymentMode,
+      paymentSuffix,
+      highlights,
+      promoName,
+      travelPeriod,
+      agencyName: state.agencyName,
+      whatsapp: state.footerContact1Value || state.whatsapp,
+      instagram: state.footerContact2Value || state.instagram,
+      isExperience: categoria === "experiencia_destino",
+    });
+    setAdCaptions(caps);
+    setSelectedCaption(null);
+    setCaptionCopied(false);
+  }, [generatedImages.length, destination, formattedPriceForAd, price, paymentLabel, installments, paymentMode, paymentSuffix, highlights, promoName, travelPeriod, categoria, state.agencyName, state.footerContact1Value, state.whatsapp, state.footerContact2Value, state.instagram]);
+
   const downloadPNG = () => {
     if (!generatedImage) return;
     try {
@@ -1299,186 +1404,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const labelCls = "text-[11px] text-white/60 uppercase tracking-wider font-semibold block mb-1.5";
   const inputCls = "w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-white/40";
 
-  return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      {/* Banner de provedor de IA */}
-      <div className={`rounded-2xl p-4 border ${
-        lastProvider === "user_gemini"
-          ? "bg-emerald-500/15 border-emerald-500/30"
-          : lastProvider === "lovable_ai"
-            ? "bg-blue-500/15 border-blue-500/30"
-            : "bg-white/[0.05] border-white/10"
-      }`}>
-        <div className="flex items-start gap-3">
-          <div className="text-2xl">
-            {lastProvider === "user_gemini" ? "🟢" : lastProvider === "lovable_ai" ? "🔵" : "⚡"}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold text-white">
-              {lastProvider === "user_gemini" && "Usando sua chave Gemini (grátis)"}
-              {lastProvider === "lovable_ai" && "Usando créditos da plataforma"}
-              {!lastProvider && "Provedor de IA configurado"}
-            </div>
-            <p className="text-[11px] text-white/60 leading-snug mt-0.5">
-              {lastProvider === "user_gemini" && (
-                <>Cota gratuita do Google: ~1.500 imagens/dia. Cheque seu uso em <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline text-emerald-300">aistudio.google.com</a>.</>
-              )}
-              {lastProvider === "lovable_ai" && (
-                <>Cada imagem consome créditos. Se acabar, sua chave Gemini gratuita será usada automaticamente.</>
-              )}
-              {!lastProvider && (
-                <>Tentaremos primeiro sua chave Gemini gratuita. Se falhar, cai pra créditos da plataforma. Imagens geradas nesta sessão: <strong className="text-white">{generationCount}</strong></>
-              )}
-            </p>
-          </div>
-          <div className="text-right shrink-0">
-            <div className="text-[10px] text-white/40 uppercase tracking-wider">Geradas</div>
-            <div className="text-lg font-bold text-white">{generationCount}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* NOVO TOPO: Perfil e Logo */}
-      <div className={`${sectionCls} space-y-5 mb-8`}>
-        {user && savedProjects && savedProjects.length > 0 && (
-          <div className="p-5 bg-white/[0.04] border border-white/10 rounded-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full" style={{ background: primaryColor }}></div>
-            <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">📂 Carregar Cliente / Projeto Salvo</label>
-            <select
-              onChange={(e) => {
-                const p = savedProjects.find(x => x.id === e.target.value);
-                if (p && p.state_snapshot) {
-                   update({ ...p.state_snapshot, diagnosticoCompleto: false });
-                   toast.success(`Cliente "${p.agency_name}" carregado! Todas as configs (logo, cor, etc) foram restauradas.`);
-                }
-                e.target.value = "";
-              }}
-              className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors"
-            >
-              <option value="" className="bg-zinc-900">Selecione um cliente salvo...</option>
-              {savedProjects.map((p) => (
-                <option key={p.id} value={p.id} className="bg-zinc-900">{p.agency_name || "Sem Nome"} (Salvo em {new Date(p.updated_at).toLocaleDateString()})</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
-          {/* Coluna Logo: mais estreita e profissional */}
-          <div className="sm:col-span-4">
-            <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Identidade Visual</label>
-            {!state.logoBase64 ? (
-              <label className="flex flex-col items-center justify-center gap-2.5 p-6 bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-white/20 hover:bg-white/[0.04] transition-all group h-[110px]">
-                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Upload className="w-5 h-5 text-white/40 group-hover:text-white/70" />
-                </div>
-                <span className="text-[10px] font-bold text-white/40 uppercase tracking-tighter group-hover:text-white/60">Subir Logo</span>
-                <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-              </label>
-            ) : (
-              <div className="relative group rounded-2xl overflow-hidden bg-white/[0.03] p-3 border border-white/10 h-[110px] flex items-center justify-center">
-                <img src={state.logoBase64} alt="Logo" className="max-w-full max-h-full object-contain" />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 cursor-pointer transition-all backdrop-blur-sm">
-                  <label className="p-2 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-colors" title="Trocar Logo">
-                    <RotateCcw className="w-4 h-4 text-white" />
-                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => { update({ logoBase64: "" }); toast.success("Logo removida"); }}
-                    className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full transition-colors"
-                    title="Remover"
-                  >
-                    <X className="w-4 h-4 text-white" />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Coluna Contatos: mais larga e organizada */}
-          <div className="sm:col-span-8 space-y-3">
-            <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Canais de Atendimento</label>
-            
-            {/* Contato 1 */}
-            <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
-              <div className="w-[45%] relative">
-                <select
-                  value={state.footerContact1Icon || "whatsapp_green"}
-                  onChange={(e) => update({ footerContact1Icon: e.target.value as any })}
-                  className="w-full bg-white/5 border-none rounded-lg pl-3 pr-8 py-2 text-[11px] font-medium text-white outline-none appearance-none cursor-pointer"
-                >
-                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Oficial</option>
-                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
-                  <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
-                  <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
-                  <option value="website" className="bg-zinc-900">Website / Link</option>
-                  <option value="none" className="bg-zinc-900">Ocultar</option>
-                </select>
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
-                  <ChevronDown className="w-3.5 h-3.5 text-white" />
-                </div>
-              </div>
-              <div className="w-[55%]">
-                <input
-                  value={state.footerContact1Value ?? formatAdPhone(state.whatsapp || "")}
-                  onChange={(e) => {
-                    const isPhone = state.footerContact1Icon?.startsWith("whatsapp");
-                    const val = isPhone ? formatAdPhone(e.target.value) : e.target.value;
-                    update({ footerContact1Value: val });
-                  }}
-                  placeholder={state.footerContact1Icon?.startsWith("whatsapp") ? "(00) 9 0000-0000" : "Link ou Telefone"}
-                  className="w-full bg-transparent border-none px-3 py-2 text-[11px] text-white outline-none placeholder:text-white/10"
-                />
-              </div>
-            </div>
-
-            {/* Contato 2 */}
-            <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
-              <div className="w-[45%] relative">
-                <select
-                  value={state.footerContact2Icon || "instagram_gradient"}
-                  onChange={(e) => update({ footerContact2Icon: e.target.value as any })}
-                  className="w-full bg-white/5 border-none rounded-lg pl-3 pr-8 py-2 text-[11px] font-medium text-white outline-none appearance-none cursor-pointer"
-                >
-                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Oficial</option>
-                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
-                  <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
-                  <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
-                  <option value="website" className="bg-zinc-900">Website / Link</option>
-                  <option value="none" className="bg-zinc-900">Ocultar</option>
-                </select>
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
-                  <ChevronDown className="w-3.5 h-3.5 text-white" />
-                </div>
-              </div>
-              <div className="w-[55%]">
-                <input
-                  value={state.footerContact2Value ?? (state.instagram || "")}
-                  onChange={(e) => {
-                    const isPhone = state.footerContact2Icon?.startsWith("whatsapp");
-                    const isInsta = state.footerContact2Icon?.startsWith("instagram");
-                    let val = e.target.value;
-                    if (isPhone) val = formatAdPhone(val);
-                    else if (isInsta) val = val.replace(/^@/, "");
-                    update({ footerContact2Value: val });
-                  }}
-                  placeholder={state.footerContact2Icon?.startsWith("instagram") ? "@usuario" : "Perfil ou Link"}
-                  className="w-full bg-transparent border-none px-3 py-2 text-[11px] text-white outline-none placeholder:text-white/10"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 0 e 1 · Modo e Categoria */}
-      <div className={`${sectionCls} space-y-5`}>
-        {/* Modo de Geração - Segmented Control */}
-        <div>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">0 · Modo de Criação</h3>
-        </div>
-      </div>
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Banner de provedor de IA */}
@@ -2585,6 +2510,62 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             <p className="text-[10px] text-white/50 text-center mt-2">
               Ao clicar em "Baixar todas", apenas as variações visíveis acima serão baixadas. Imagens excluídas não entram no download.
             </p>
+          )}
+          {/* ── LEGENDAS / COPY ── */}
+          {adCaptions.length > 0 && (
+            <div className="mt-6 pt-6 border-t border-white/[0.08]">
+              <div className="flex items-center gap-2 mb-3">
+                <FileText className="w-4 h-4" style={{ color: secondaryColor }} />
+                <h4 className="text-xs font-bold text-white/70 uppercase tracking-widest">Legenda pronta para usar</h4>
+              </div>
+              <p className="text-[11px] text-white/40 mb-4 leading-snug">
+                Escolha uma das 3 variações abaixo, já adaptadas com os dados do seu anúncio. Depois clique em <strong className="text-white/60">Copiar</strong>.
+              </p>
+              <div className="space-y-3">
+                {adCaptions.map((cap, idx) => {
+                  const isSelected = selectedCaption === cap;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => { setSelectedCaption(cap); setCaptionCopied(false); }}
+                      className={`w-full text-left rounded-xl border-2 px-4 py-3 transition-all text-[11px] leading-relaxed whitespace-pre-line ${
+                        isSelected
+                          ? "bg-white/[0.08] border-current shadow-lg"
+                          : "bg-white/[0.03] border-white/10 hover:border-white/25 hover:bg-white/[0.05]"
+                      }`}
+                      style={isSelected ? { borderColor: secondaryColor, color: "#ffffff" } : { color: "rgba(255,255,255,0.75)" }}
+                    >
+                      <span className="block text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: isSelected ? secondaryColor : "rgba(255,255,255,0.4)" }}>
+                        Variação {idx + 1}
+                      </span>
+                      {cap}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {selectedCaption && (
+                <button
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(selectedCaption);
+                      setCaptionCopied(true);
+                      toast.success("Legenda copiada! Cole no Instagram ou WhatsApp. 🚀");
+                      setTimeout(() => setCaptionCopied(false), 3000);
+                    } catch {
+                      toast.error("Não foi possível copiar. Selecione o texto manualmente.");
+                    }
+                  }}
+                  className="mt-4 w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all hover:brightness-110"
+                  style={{ background: captionCopied ? "#16a34a" : `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, color: "#000" }}
+                >
+                  {captionCopied
+                    ? <><ClipboardCheck className="w-4 h-4" /> Copiado com sucesso!</>
+                    : <><Copy className="w-4 h-4" /> Copiar legenda selecionada</>}
+                </button>
+              )}
+            </div>
           )}
         </motion.div>
       )}

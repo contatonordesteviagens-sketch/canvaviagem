@@ -1,653 +1,3 @@
-type Format = "square" | "story";
-type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | "camera" | "map" | "food" | "ship" | "palm" | "coffee" | "guide" | "wifi";
-
-// Escurece (percent < 0) ou clareia (percent > 0) uma cor hex (#rgb / #rrggbb).
-// Usado para derivar tons (ex.: anel mais escuro do box V3 a partir do secondaryColor).
-function shadeColor(hex: string, percent: number): string {
-  let h = (hex || "").trim().replace("#", "");
-  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
-  if (h.length !== 6) return hex;
-  const num = parseInt(h, 16);
-  let r = (num >> 16) & 0xff;
-  let g = (num >> 8) & 0xff;
-  let b = num & 0xff;
-  const t = percent < 0 ? 0 : 255;
-  const p = Math.abs(percent) / 100;
-  r = Math.round((t - r) * p) + r;
-  g = Math.round((t - g) * p) + g;
-  b = Math.round((t - b) * p) + b;
-  return "#" + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
-}
-
-// Luminância relativa (0..1) de uma cor hex.
-function luminance(hex: string): number {
-  let h = (hex || "").trim().replace("#", "");
-  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
-  if (h.length !== 6) return 0.5;
-  const num = parseInt(h, 16);
-  const r = ((num >> 16) & 0xff) / 255;
-  const g = ((num >> 8) & 0xff) / 255;
-  const b = (num & 0xff) / 255;
-  return 0.299 * r + 0.587 * g + 0.114 * b;
-}
-
-// Retorna preto ou branco com melhor contraste sobre `bg`.
-function contrastOn(bg: string): string {
-  const normalized = (bg || "").trim().toLowerCase();
-  if (normalized === "#0c2340") return "#ffffff";
-  return luminance(bg) > 0.6 ? "#0d0d0d" : "#ffffff";
-}
-
-/**
- * Garante contraste mínimo entre `fg` (cor preferida do usuario) e `bg`.
- * Se a diferenca de luminância for baixa, devolve preto/branco em vez de `fg`.
- */
-function ensureContrast(fg: string, bg: string, minDelta = 0.35): string {
-  const dl = Math.abs(luminance(fg) - luminance(bg));
-  if (dl >= minDelta) return fg;
-  return contrastOn(bg);
-}
-
-export type PaymentMode =
-  | "installments"
-  | "cash"
-  | "cash_discount"
-  | "from"
-  | "daily"
-  | "monthly"
-  | "down_plus"
-  | "free_quote"
-  | "custom_label";
-
-/**
- * Aplica um efeito de vinheta (bordas escurecidas) para dar profundidade
- * e focar a atencão no centro da imagem/conteudo.
- */
-function applyVignette(ctx: CanvasRenderingContext2D, width: number, height: number, intensity = 0.5) {
-  const grad = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.sqrt((width / 2) ** 2 + (height / 2) ** 2));
-  grad.addColorStop(0, "rgba(0,0,0,0)");
-  grad.addColorStop(0.6, `rgba(0,0,0,${intensity * 0.1})`);
-  grad.addColorStop(1, `rgba(0,0,0,${intensity * 0.4})`);
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, width, height);
-}
-
-/**
- * 🛡️ safeFillText — desenha texto garantindo que caiba em maxWidth.
- * Reduz o tamanho da fonte automaticamente até caber, nunca trunca com "...".
- * @param ctx  Canvas context (deve ter ctx.font já configurado com tamanho-base)
- * @param text Texto a renderizar
- * @param x, y  Posição
- * @param maxWidth  Largura máxima em pixels
- * @param minSize  Tamanho mínimo de fonte (default 12px) — abaixo disso para de reduzir
- */
-function safeFillText(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  minSize = 12
-): void {
-  if (!text) return;
-  // Parse current font to get size and family
-  const fontStr = ctx.font;
-  const sizeMatch = fontStr.match(/(\d+(?:\.\d+)?)px/);
-  if (!sizeMatch) { ctx.fillText(text, x, y, maxWidth); return; }
-  let size = parseFloat(sizeMatch[1]);
-  const fontWithoutSize = fontStr.replace(/(\d+(?:\.\d+)?)px/, "SIZE_PX");
-  while (ctx.measureText(text).width > maxWidth && size > minSize) {
-    size = Math.max(minSize, size - 1);
-    ctx.font = fontWithoutSize.replace("SIZE_PX", `${size}px`);
-  }
-  ctx.fillText(text, x, y);
-}
-
-/**
- * 🛡️ wrapTextSafe — quebra texto em linhas que cabem em maxWidth.
- * Também reduz a fonte se uma única palavra não couber.
- * Retorna array de linhas prontas para renderizar.
- */
-function wrapTextSafe(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  maxWidth: number,
-  maxLines: number,
-  minSize = 12
-): string[] {
-  if (!text) return [];
-  const words = text.trim().split(/\s+/);
-  const lines: string[] = [];
-  let cur = "";
-  for (const w of words) {
-    const test = cur ? `${cur} ${w}` : w;
-    if (ctx.measureText(test).width <= maxWidth) {
-      cur = test;
-    } else {
-      if (cur) lines.push(cur);
-      // Single word wider than maxWidth — shrink font
-      const fontStr = ctx.font;
-      const sizeMatch = fontStr.match(/(\d+(?:\.\d+)?)px/);
-      if (sizeMatch) {
-        let size = parseFloat(sizeMatch[1]);
-        const fontWithoutSize = fontStr.replace(/(\d+(?:\.\d+)?)px/, "SIZE_PX");
-        while (ctx.measureText(w).width > maxWidth && size > minSize) {
-          size = Math.max(minSize, size - 1);
-          ctx.font = fontWithoutSize.replace("SIZE_PX", `${size}px`);
-        }
-      }
-      cur = w;
-    }
-    if (lines.length >= maxLines) break;
-  }
-  if (cur && lines.length < maxLines) lines.push(cur);
-  return lines.slice(0, maxLines);
-}
-
-interface Highlight {
-  text: string;
-  icon?: IconKey;
-}
-
-interface ComposeTravelAdOptions {
-  imageUrl: string;
-  format: Format;
-  destination: string;
-  city?: string;
-  primaryColor: string;
-  secondaryColor: string;
-  price: string;
-  installments: string;
-  promoName: string;
-  highlights: Highlight[];
-  hasLogo?: boolean;
-  paymentMode?: PaymentMode;
-  paymentLabel?: string;
-  paymentSuffix?: string;
-  strategy?: "ancora" | "vitrine" | "matriz" | "gancho" | "experiencia_hero" | "experiencia_editorial" | "experiencia_postcard" | "experiencia_lifestyle";
-  variation?: number;
-  /** Forca uma variante específica (0..2 para Sua Imagem + Oferta + 1:1). Quando definido, ignora variation%N. */
-  forceVariant?: number;
-  /** Quando definido, sobrescreve o pool aleatorio de headlines e usa este texto como título principal em todas as variantes. */
-  titleOverride?: string;
-  /** Pool de variacÁes de título (uma por variante). Se fornecido, tem prioridade sobre titleOverride: usa-se titleVariations[variantIndex % len]. */
-  titleVariations?: string[];
-  /** Símbolo de moeda exibido antes do preco (R$, US$, Ôé¼, ┬ú, AR$). Default "R$". */
-  currencySymbol?: string;
-  /** V4: período exibido na linha de informacÁes (ex.: "5 dias", "Janeiro", "12 a 18/01"). */
-  travelPeriod?: string;
-  /** V3: texto livre do "Total" (ex.: "R$ 1.999 por casal"). Se vazio, calcula automatico. */
-  totalOverride?: string;
-  /** V3: controla se a linha de total aparece no box. Default true. */
-  showTotal?: boolean;
-  /** V3: texto da faixa azul do Pix. Default "{N}% OFF A VISTA NO pix". */
-  pixBannerText?: string;
-  /** V3: mostra/esconde a faixa azul do Pix. Default true. */
-  showPixBanner?: boolean;
-  /** Família de fonte global a aplicar em TODOS os textos do anuncio. Default: Inter. */
-  fontFamily?: string;
-  /** Multiplicador de escala global para títulos/precos/textos grandes (>=22px). Default 1. */
-  titleScale?: number;
-  /** Multiplicador de escala global para descricão/labels/textos pequenos (<22px). Default 1. */
-  descScale?: number;
-  /** Cor que substitui o texto branco padrão (#fff/#ffffff). ├Ütil para alinhar texto á identidade da marca. */
-  textColorOverride?: string;
-  /** OpcÁes de Branding (Logo e Contatos) unificadas no motor principal */
-  logoDataUrl?: string;
-  whatsapp?: string;
-  instagram?: string;
-  footerContact1Icon?: string;
-  footerContact1Value?: string;
-  footerContact2Icon?: string;
-  footerContact2Value?: string;
-  isExperience?: boolean;
-}
-
-/** Formata telefone no padrão (XX) 9 XXXX-XXXX */
-export function formatAdPhone(val: string): string {
-  const d = (val || "").replace(/\D/g, "");
-  if (d.length > 11) return val;
-  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3, 7)}-${d.slice(7)}`;
-  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
-  if (d.length > 2) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
-  return d;
-}
-
-/** Desenha ícone do WhatsApp colorido */
-function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, colorMode: "green" | "custom" = "green", customColor: string = "#ffffff") {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.shadowColor = "rgba(0,0,0,0.3)";
-  ctx.shadowBlur = 4;
-
-  if (colorMode === "green") {
-    // Fundo Verde Oficial
-    ctx.fillStyle = "#25D366";
-    ctx.beginPath(); 
-    ctx.arc(0, 0, size * 0.48, 0, Math.PI * 2); 
-    ctx.fill();
-    
-    // Balão Branco
-    ctx.fillStyle = "white";
-    ctx.beginPath();
-    ctx.arc(0, -size * 0.02, size * 0.4, 0.7, 5.5);
-    ctx.lineTo(-size * 0.35, size * 0.45);
-    ctx.closePath();
-    ctx.fill();
-
-    // Fone Verde
-    ctx.fillStyle = "#25D366";
-    ctx.lineWidth = size * 0.10; // Aumentado para 0.10 (mais visível)
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.arc(0, 0, size * 0.22, 0.8, 2.3);
-    ctx.stroke();
-    // Pontas do fone
-    ctx.save(); ctx.rotate(0.8); ctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); ctx.restore();
-    ctx.save(); ctx.rotate(2.3); ctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); ctx.restore();
-  } else {
-    // MODO MONOCROM├üTICO (Recorte real usando buffer)
-    const buffer = document.createElement("canvas");
-    buffer.width = size;
-    buffer.height = size;
-    const bctx = buffer.getContext("2d");
-    if (bctx) {
-      bctx.translate(size/2, size/2);
-      bctx.fillStyle = customColor;
-      // Balão
-      bctx.beginPath();
-      bctx.arc(0, -size * 0.02, size * 0.4, 0.7, 5.5);
-      bctx.lineTo(-size * 0.35, size * 0.45);
-      bctx.closePath();
-      bctx.fill();
-
-      // Fura o fone
-      bctx.globalCompositeOperation = "destination-out";
-      bctx.lineWidth = size * 0.10; // Aumentado para 0.10
-      bctx.lineCap = "round";
-      bctx.beginPath();
-      bctx.arc(0, 0, size * 0.22, 0.8, 2.3);
-      bctx.stroke();
-      bctx.save(); bctx.rotate(0.8); bctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); bctx.restore();
-      bctx.save(); bctx.rotate(2.3); bctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); bctx.restore();
-      
-      ctx.drawImage(buffer, -size/2, -size/2);
-    }
-  }
-
-  ctx.restore();
-}
-
-/** Desenha ícone do Instagram com gradiente oficial */
-function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, colorMode: "gradient" | "custom" = "gradient", customColor: string = "#ffffff") {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.shadowColor = "rgba(0,0,0,0.3)";
-  ctx.shadowBlur = 4;
-
-  if (colorMode === "gradient") {
-    const g = ctx.createRadialGradient(size * 0.1, size * 0.1, 0, 0, 0, size * 0.7);
-    g.addColorStop(0, "#f09433"); 
-    g.addColorStop(0.25, "#e6683c"); 
-    g.addColorStop(0.5, "#dc2743");
-    g.addColorStop(0.75, "#cc2366"); 
-    g.addColorStop(1, "#bc1888");
-    ctx.fillStyle = g;
-    ctx.beginPath(); 
-    ctx.roundRect(-size / 2, -size / 2, size, size, size * 0.25); 
-    ctx.fill();
-    
-    ctx.strokeStyle = "white";
-    ctx.fillStyle = "white";
-    // Câmera
-    ctx.lineWidth = size * 0.08; 
-    ctx.strokeRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6);
-    ctx.beginPath(); ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); ctx.stroke();
-    ctx.beginPath(); ctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); ctx.fill();
-  } else {
-    // MODO MONOCROM├üTICO
-    const buffer = document.createElement("canvas");
-    buffer.width = size;
-    buffer.height = size;
-    const bctx = buffer.getContext("2d");
-    if (bctx) {
-      bctx.translate(size/2, size/2);
-      bctx.fillStyle = customColor;
-      bctx.beginPath(); 
-      bctx.roundRect(-size / 2, -size / 2, size, size, size * 0.25); 
-      bctx.fill();
-      
-      bctx.globalCompositeOperation = "destination-out";
-      bctx.lineWidth = size * 0.08;
-      bctx.strokeRect(-size * 0.3, -size * 0.3, size * 0.6, size * 0.6);
-      bctx.beginPath(); bctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); bctx.stroke();
-      bctx.beginPath(); bctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); bctx.fill();
-      
-      ctx.drawImage(buffer, -size/2, -size/2);
-    }
-  }
-
-  ctx.restore();
-}
-
-/** Desenha ícone de Site / Globo */
-function drawAdWebsiteIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string = "#ffffff") {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.strokeStyle = color;
-  ctx.lineWidth = size * 0.08;
-  ctx.beginPath(); ctx.arc(0, 0, size * 0.45, 0, Math.PI * 2); ctx.stroke();
-  ctx.beginPath(); ctx.ellipse(0, 0, size * 0.18, size * 0.45, 0, 0, Math.PI * 2); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(-size * 0.45, 0); ctx.lineTo(size * 0.45, 0); ctx.stroke();
-  ctx.restore();
-}
-
-/** 
- * DESENHA O BRANDING FINAL (Rodape, Logo, WhatsApp, Instagram)
- * Unificado para evitar cache e garantir consistencia.
- */
-async function drawFinalBranding(
-  ctx: CanvasRenderingContext2D,
-  cw: number,
-  ch: number,
-  logoUrl?: string,
-  contact1?: { icon: string; value: string },
-  contact2?: { icon: string; value: string },
-  agencyName?: string,
-  textColorOverride?: string,
-  fontFamily: string = "Inter"
-) {
-  const contactsToDraw: { icon: string; value: string }[] = [];
-  // So adiciona contatos que tenham valor preenchido (evita ícones vazios)
-  if (contact1 && contact1.icon !== "none" && contact1.value && contact1.value.trim()) contactsToDraw.push(contact1);
-  if (contact2 && contact2.icon !== "none" && contact2.value && contact2.value.trim()) contactsToDraw.push(contact2);
-
-  if (!logoUrl && contactsToDraw.length === 0) return;
-
-  const isStory = ch > cw;
-  const footerHeight = isStory ? 120 : 100;
-  // Move o rodape para cima da barra de mensagens do Instagram (aprox 280px do fundo)
-  const safeBottomMargin = isStory ? 340 : 20; // Subido de 280 para 340 para limpar a reply bar do Instagram
-  const footerY = ch - footerHeight - safeBottomMargin;
-
-  // 1. Fundo do Rodapé (VÉU GRADIENTE ESCURO)
-  // O usuário prefere SEMPRE o véu escuro com letras brancas para garantir o look "Premium".
-  const veilStartY = footerY - 80; // Aumentado de 50 para 80 para garantir que o texto não fique no "limbo"
-  const grad = ctx.createLinearGradient(0, veilStartY, 0, ch);
-  grad.addColorStop(0, "rgba(0,0,0,0.0)");
-  grad.addColorStop(0.2, "rgba(0,0,0,0.7)"); // Escurece mais rápido
-  grad.addColorStop(1, "rgba(0,0,0,0.96)"); // Quase preto na base
-  
-  ctx.save();
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, veilStartY, cw, ch - veilStartY);
-  ctx.restore();
-
-  const padX = isStory ? 80 : 60; // Mais margem lateral
-  const bgPad = isStory ? 10 : 8;
-  const centerY = footerY + footerHeight / 2;
-
-  // 2. Logo (Esquerda)
-  let lw = 0;
-  let lh = 0;
-
-  if (logoUrl && !skipLogo) {
-    try {
-      const logo = await loadImage(logoUrl);
-      const maxLogoH = footerHeight * 0.85;
-      const maxLogoW = cw * 0.35;
-      const ratio = logo.naturalWidth / logo.naturalHeight;
-      lh = maxLogoH;
-      lw = lh * ratio;
-      if (lw > maxLogoW) {
-        lw = maxLogoW;
-        lh = lw / ratio;
-      }
-      
-      ctx.save();
-      // Moldura Premium (Sombra suave e borda sutil)
-      ctx.shadowColor = "rgba(0,0,0,0.4)";
-      ctx.shadowBlur = 15;
-      ctx.shadowOffsetY = 5;
-      
-      const isSquareLogo = Math.abs(ratio - 1) < 0.2;
-      const radius = isSquareLogo ? (lw + bgPad * 2) / 2 : 12;
-      
-      fillRoundRect(ctx, padX, centerY - lh / 2 - bgPad, lw + bgPad * 2, lh + bgPad * 2, radius, "#ffffff");
-      
-      ctx.drawImage(logo, padX + bgPad, centerY - lh / 2, lw, lh);
-      ctx.restore();
-    } catch (e) {
-      console.warn("Falha ao carregar logo para branding", e);
-    }
-  } else if (agencyName && agencyName.trim() && agencyName.trim().toUpperCase() !== "SUA AGÊNCIA") {
-    // WORDMARK FALLBACK — 🛡️ BLINDAGEM: so exibe se usuario configurou nome real
-    const name = agencyName.trim().toUpperCase();
-    ctx.save();
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#ffffff";
-    let wordmarkSize = isStory ? 44 : 36;
-    ctx.font = `800 ${wordmarkSize}px ${fontFamily || 'Inter'}, sans-serif`;
-    
-    // Auto-shrink Wordmark
-    const maxWordmarkW = cw * 0.45;
-    while (ctx.measureText(name).width > maxWordmarkW && wordmarkSize > 18) {
-      wordmarkSize -= 2;
-      ctx.font = `800 ${wordmarkSize}px ${fontFamily || 'Inter'}, sans-serif`;
-    }
-    
-    ctx.shadowColor = "rgba(0,0,0,0.8)";
-    ctx.shadowBlur = 10;
-    ctx.fillText(name, padX, centerY);
-    lw = ctx.measureText(name).width;
-    ctx.restore();
-  }
-
-  // 3. Contatos (Direita)
-  ctx.save();
-  ctx.textAlign = "right";
-  ctx.textBaseline = "middle";
-  // Revertido para Bold (700) e tamanhos mais impactantes conforme desejo do usuario
-  const fontSize = isStory ? 36 : 30; 
-  const safeFont = fontFamily || "Inter";
-  ctx.font = `700 ${fontSize}px ${safeFont}, sans-serif`;
-  
-  // Rodape sempre BRANCO com sombra escura (look classico Canva Viagem)
-  ctx.fillStyle = "#ffffff";
-  ctx.shadowColor = "rgba(0,0,0,0.8)";
-  ctx.shadowBlur = 6;
-
-  let textRightX = cw - (isStory ? 80 : 60); // Sincronizado com a margem do logo
-  const itemGap = 20; // Aumentado o gap entre ícone e texto
-  const logoEdge = logoUrl ? (padX + lw + bgPad * 2 + 30) : padX;
-  const maxAvailableWidth = textRightX - logoEdge;
-
-  let yPos = contactsToDraw.length === 2 ? centerY + (footerHeight * 0.18) : centerY;
-
-  for (const c of contactsToDraw) {
-    let displayValue = c.value;
-    if (c.icon.startsWith("whatsapp")) displayValue = formatAdPhone(c.value);
-    if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
-
-    // Auto-shrink para evitar colisão
-    let currentFontSize = fontSize;
-    const iconSizeFactor = 1.1;
-    let currentIconSize = currentFontSize * iconSizeFactor;
-    
-    ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
-    const safetyMargin = 40;
-    while (ctx.measureText(displayValue).width + currentIconSize + itemGap + safetyMargin > maxAvailableWidth && currentFontSize > 16) {
-      currentFontSize -= 1;
-      currentIconSize = currentFontSize * iconSizeFactor;
-      ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
-    }
-
-    ctx.fillText(displayValue, textRightX, yPos);
-    const textWidth = ctx.measureText(displayValue).width;
-    const iconX = textRightX - textWidth - itemGap - currentIconSize/2;
-
-    // 🛡️ BLINDAGEM DE ICONES: Usa desenho matemático (Canvas Path) em vez de emojis
-    if (c.icon === "whatsapp_green" || c.icon === "whatsapp_custom") {
-      drawAdWhatsAppIcon(ctx, iconX, yPos, currentIconSize, c.icon === "whatsapp_green" ? "green" : "custom", ctx.fillStyle);
-    } else if (c.icon === "instagram_gradient" || c.icon === "instagram_custom") {
-      drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, c.icon === "instagram_gradient" ? "gradient" : "custom", ctx.fillStyle);
-    } else if (c.icon === "website" || c.icon === "phone" || c.icon === "link") {
-      drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle);
-    } else {
-      // Fallback robusto
-      drawMonoIcon(ctx, "check", iconX, yPos, currentIconSize, ctx.fillStyle);
-    }
-
-    yPos -= (footerHeight * 0.36);
-  }
-  ctx.restore();
-}
-
-const ICON_SYMBOL: Record<IconKey, string> = {
-  bus: "bus",
-  hotel: "hotel",
-  plane: "plane",
-  check: "check",
-  star: "star",
-  heart: "heart",
-  sun: "sun",
-  camera: "camera",
-  map: "map",
-  food: "food",
-  ship: "ship",
-  palm: "palm",
-  coffee: "coffee",
-  guide: "guide",
-  wifi: "wifi",
-};
-
-
-/**
- * 🛡️ BLINDAGEM CANVA VIAGEM: Remove caracteres corrompidos de encoding (lixo visual)
- * e garante que o texto seja seguro para renderização em qualquer navegador.
- */
-function sanitizeAdText(text: string): string {
-  if (!text) return "";
-  // Remove padrões comuns de corrupção de encoding (lixo visual como Ô£, ├á, etc)
-  return text
-    .replace(/[\u0080-\u00FF]/g, (char) => {
-      // Mapeamento de emergência para caracteres acentuados comuns que podem ter sido corrompidos
-      const map: Record<string, string> = { 'á':'a', 'é':'e', 'í':'i', 'ó':'o', 'ú':'u', 'ã':'a', 'õ':'o', 'ç':'c' };
-      return map[char] || "";
-    })
-    .trim();
-}
-function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("Falha ao carregar imagem base"));
-    img.src = src;
-  });
-}
-
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  const radius = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + w - radius, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
-  ctx.lineTo(x + w, y + h - radius);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
-  ctx.lineTo(x + radius, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
-  ctx.closePath();
-}
-
-function fillRoundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, color: string) {
-  ctx.save();
-  ctx.fillStyle = color;
-  roundRect(ctx, x, y, w, h, r);
-  ctx.fill();
-  ctx.restore();
-}
-
-function drawMonoIcon(
-  ctx: CanvasRenderingContext2D,
-  kind: IconKey,
-  cx: number,
-  cy: number,
-  size: number,
-  color: string,
-) {
-  ctx.save();
-  ctx.fillStyle = color;
-  ctx.strokeStyle = color;
-  ctx.lineWidth = size * 0.08;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  const s = size;
-  const x = cx - s / 2;
-  const y = cy - s / 2;
-
-  ctx.beginPath();
-  switch (kind) {
-    case "plane":
-      ctx.translate(cx, cy); ctx.rotate(-Math.PI / 4);
-      ctx.moveTo(0, -s * 0.4); ctx.lineTo(s * 0.05, -s * 0.3); ctx.lineTo(s * 0.05, 0);
-      ctx.lineTo(s * 0.4, s * 0.2); ctx.lineTo(s * 0.4, s * 0.3); ctx.lineTo(s * 0.05, s * 0.2);
-      ctx.lineTo(s * 0.05, s * 0.4); ctx.lineTo(s * 0.15, s * 0.5); ctx.lineTo(0, s * 0.45);
-      ctx.lineTo(-s * 0.15, s * 0.5); ctx.lineTo(-s * 0.05, s * 0.4); ctx.lineTo(-s * 0.05, s * 0.2);
-      ctx.lineTo(-s * 0.4, s * 0.3); ctx.lineTo(-s * 0.4, s * 0.2); ctx.lineTo(-s * 0.05, 0);
-      ctx.lineTo(-s * 0.05, -s * 0.3); ctx.closePath(); ctx.fill();
-      break;
-    case "bus":
-      roundRect(ctx, x + s * 0.1, y + s * 0.25, s * 0.8, s * 0.5, s * 0.1); ctx.fill();
-      ctx.beginPath(); ctx.arc(x + s * 0.3, y + s * 0.75, s * 0.1, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(x + s * 0.7, y + s * 0.75, s * 0.1, 0, Math.PI * 2); ctx.fill();
-      ctx.save(); ctx.globalCompositeOperation = "destination-out";
-      ctx.fillRect(x + s * 0.15, y + s * 0.3, s * 0.7, s * 0.2); ctx.restore();
-      break;
-    case "hotel":
-      ctx.fillRect(x + s * 0.1, y + s * 0.75, s * 0.8, s * 0.2);
-      ctx.fillRect(x + s * 0.2, y + s * 0.4, s * 0.6, s * 0.35);
-      ctx.fillRect(x + s * 0.45, y + s * 0.15, s * 0.1, s * 0.25);
-      break;
-    case "check":
-      ctx.moveTo(x + s * 0.2, y + s * 0.5); ctx.lineTo(x + s * 0.45, y + s * 0.75);
-      ctx.lineTo(x + s * 0.85, y + s * 0.25); ctx.stroke();
-      break;
-    case "star":
-      for (let i = 0; i < 5; i++) {
-        const a1 = (i * 72 - 90) * Math.PI / 180;
-        ctx.lineTo(cx + Math.cos(a1) * s * 0.45, cy + Math.sin(a1) * s * 0.45);
-        const a2 = (i * 72 - 54) * Math.PI / 180;
-        ctx.lineTo(cx + Math.cos(a2) * s * 0.2, cy + Math.sin(a2) * s * 0.2);
-      }
-      ctx.closePath(); ctx.fill();
-      break;
-    case "food":
-      ctx.moveTo(x + s * 0.3, y + s * 0.1); ctx.lineTo(x + s * 0.3, y + s * 0.5);
-      ctx.moveTo(x + s * 0.2, y + s * 0.1); ctx.lineTo(x + s * 0.2, y + s * 0.4);
-      ctx.moveTo(x + s * 0.4, y + s * 0.1); ctx.lineTo(x + s * 0.4, y + s * 0.4);
-      ctx.stroke();
-      ctx.fillRect(x + s * 0.6, y + s * 0.1, s * 0.15, s * 0.8);
-      break;
-    case "wifi":
-      for (let i = 0; i < 3; i++) {
-        ctx.beginPath(); ctx.arc(cx, cy + s * 0.3, s * (0.2 + i * 0.2), -Math.PI * 0.8, -Math.PI * 0.2);
-        ctx.stroke();
-      }
-      break;
-    case "camera":
-      roundRect(ctx, x + s * 0.1, y + s * 0.3, s * 0.8, s * 0.5, s * 0.1); ctx.fill();
-      ctx.beginPath(); ctx.arc(cx, cy + s * 0.55, s * 0.15, 0, Math.PI * 2);
-      ctx.save(); ctx.globalCompositeOperation = "destination-out"; ctx.fill(); ctx.restore();
-      break;
-    default:
-      ctx.arc(cx, cy, s * 0.3, 0, Math.PI * 2); ctx.fill();
-  }
-  ctx.restore();
-}
 
 type Format = "square" | "story";
 type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | "camera" | "map" | "food" | "ship" | "palm" | "coffee" | "guide" | "wifi";
@@ -841,7 +191,7 @@ interface ComposeTravelAdOptions {
   titleScale?: number;
   /** Multiplicador de escala global para descricão/labels/textos pequenos (<22px). Default 1. */
   descScale?: number;
-  /** Cor que substitui o texto branco padrão (#fff/#ffffff). ├Ütil para alinhar texto á identidade da marca. */
+  /** Cor que substitui o texto branco padrão (#fff/#ffffff). Útil para alinhar texto á identidade da marca. */
   textColorOverride?: string;
   /** OpcÁes de Branding (Logo e Contatos) unificadas no motor principal */
   logoDataUrl?: string;
@@ -897,7 +247,7 @@ function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number,
     ctx.save(); ctx.rotate(0.8); ctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); ctx.restore();
     ctx.save(); ctx.rotate(2.3); ctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); ctx.restore();
   } else {
-    // MODO MONOCROM├üTICO (Recorte real usando buffer)
+    // MODO MONOCROMÁTICO (Recorte real usando buffer)
     const buffer = document.createElement("canvas");
     buffer.width = size;
     buffer.height = size;
@@ -956,7 +306,7 @@ function drawAdInstagramIcon(ctx: CanvasRenderingContext2D, x: number, y: number
     ctx.beginPath(); ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2); ctx.stroke();
     ctx.beginPath(); ctx.arc(size * 0.18, -size * 0.18, size * 0.04, 0, Math.PI * 2); ctx.fill();
   } else {
-    // MODO MONOCROM├üTICO
+    // MODO MONOCROMÁTICO
     const buffer = document.createElement("canvas");
     buffer.width = size;
     buffer.height = size;
@@ -1444,12 +794,6 @@ function drawTextBlock(
 }
 
 export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<string> {
-  // 🛡️ Camada de Higienização de Dados (Blindagem Anti-Corrupção)
-  const safeDest = sanitizeAdText(destination || "");
-  const safeCity = sanitizeAdText(city || "");
-  const safePromo = sanitizeAdText(promoName || "");
-  const safeTitle = sanitizeAdText(titleText || "");
-
   const {
     imageUrl,
     format,
@@ -1484,6 +828,12 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     whatsapp,
     instagram,
   } = options;
+
+  // 🛡️ Camada de Higienização de Dados (Blindagem Anti-Corrupção)
+  const safeDest = sanitizeAdText(destination || "");
+  const safeCity = sanitizeAdText(city || "");
+  const safePromo = sanitizeAdText(promoName || "");
+  const safeTitle = sanitizeAdText(titleText || "");
   const curSym = (currencySymbol || "R$").trim();
 
   const width = 1080;
@@ -1585,11 +935,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   // Pools de headlines — variantes que dependem do destino so entram se houver destino preenchido.
   // Frases banidas globalmente (alinhado com edge function): "O melhor de", "Seu proximo destino e esse".
   // ===========================================================================
-  // ­ƒøí´©Å SISTEMA DE BLINDAGEM CANVA VIAGEM (NÍVEL 3) ­ƒøí´©Å
+  // 🛡️ SISTEMA DE BLINDAGEM CANVA VIAGEM (NÍVEL 3) 🛡️
   // ---------------------------------------------------------------------------
-  // REGRA 1: SEGURAN├çA TOTAL INSTAGRAM (340px bottom offset em Stories).
-  // REGRA 2: SEPARA├çÃO CATEGÓRICA (Experiencia != Oferta).
-  // REGRA 3: HIGIENIZA├çÃO DE ESTADO (Nenhum dado de preco vaza para ads de luxo).
+  // REGRA 1: SEGURANÇA TOTAL INSTAGRAM (340px bottom offset em Stories).
+  // REGRA 2: SEPARAÇÃO CATEGÓRICA (Experiencia != Oferta).
+  // REGRA 3: HIGIENIZAÇÃO DE ESTADO (Nenhum dado de preco vaza para ads de luxo).
   // ===========================================================================
   const isExperience = !!options.isExperience; 
   const isStory = format === "story";
@@ -1688,7 +1038,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       case "from":
         return { topLabel: paymentLabel || "A PARTIR DE", mainPrice: priceWithSymbol, bottomSuffix: suffix("por pessoa") };
       case "daily":
-        return { topLabel: paymentLabel || "DI├üRIA POR", mainPrice: priceWithSymbol, bottomSuffix: suffix("por diaria") };
+        return { topLabel: paymentLabel || "DIÁRIA POR", mainPrice: priceWithSymbol, bottomSuffix: suffix("por diaria") };
       case "monthly":
         return { topLabel: paymentLabel || "MENSAL POR", mainPrice: priceWithSymbol, bottomSuffix: suffix("por mes") };
       case "down_plus":
@@ -1798,13 +1148,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       safeFillText(ctx, destUpper, cx, y + 60, innerW, 16);
     }
 
-    // 3. Linha de info: "X dias Ô£ê ­ƒÜî ­ƒÅ¿ Ôÿò"
+    // 3. Linha de info: "X dias • ✈️ 🏨 ☕"
     const firstHL = highlights[0];
     const firstHLText = typeof firstHL === "string" ? firstHL : (firstHL?.text || "");
     const daysFromHl = firstHLText.match(/(\d+)\s*dias?/i)?.[0];
     const days = (travelPeriod && travelPeriod.trim()) || daysFromHl || "Consulte";
     ctx.font = `700 17px Inter, Arial, sans-serif`;
-    ctx.fillText(`${days}   Ô£ê   ­ƒÜî   ­ƒÅ¿   Ôÿò`, cx, y + 92);
+    ctx.fillText(`${days}   •   ✈️   🏨   ☕`, cx, y + 92);
 
     // 4. "a partir de" pequeno + selo "12X sem juros" colado ao R$ gigante
     ctx.font = `600 13px Inter, Arial, sans-serif`;
@@ -1905,26 +1255,26 @@ const panelBottom = RULES.PANEL_BOTTOM;
     // Padrão identico a V0/V1/V2: early-branch por variante, lendo dos mesmos
     // dados dinâmicos ja existentes no escopo de composeTravelAd().
     //
-    // ├üREAS (de fundo ÔåÆ frente):
-    //   [BG]      Fundo com imagem turística do destino  ÔåÆ image (drawImage cover)
+    // ÁREAS (de fundo → frente):
+    //   [BG]      Fundo com imagem turística do destino  → image (drawImage cover)
     //   [BOX]     Bloco principal central (card destacado sobre o BG)
-    //     Ôö£─ [TITLE]      ├ürea de título            ÔåÆ titleText
-    //     Ôö£─ [INFO]       Dias + ícones (highlights)ÔåÆ highlights[] (ICON_SYMBOL)
-    //     Ôö£─ [INSTALL]    Preco parcelado           ÔåÆ installments / paymentLabel
-    //     Ôö£─ [TOTAL]      Valor total               ÔåÆ mainPrice / price / curSym
-    //     Ôöö─ [PROMO]      Destaque promocional      ÔåÆ promoName (desconto/badge)
+    //     Ôö£─ [TITLE]      Área de título            → titleText
+    //     Ôö£─ [INFO]       Dias + ícones (highlights)→ highlights[] (ICON_SYMBOL)
+    //     Ôö£─ [INSTALL]    Preco parcelado           → installments / paymentLabel
+    //     Ôö£─ [TOTAL]      Valor total               → mainPrice / price / curSym
+    //     Ôöö─ [PROMO]      Destaque promocional      → promoName (desconto/badge)
     //
     // DADOS DINÂMICOS REUTILIZADOS (ja disponíveis no escopo):
-    //   destination, destUp     ÔåÆ nome do destino
-    //   highlights[]            ÔåÆ dias + ícones (text + icon)
-    //   installments            ÔåÆ parcelas
-    //   mainPrice / price       ÔåÆ total
-    //   curSym                  ÔåÆ moeda
-    //   promoName               ÔåÆ destaque/desconto
-    //   primaryColor / secondaryColor ÔåÆ cores do box
-    //   hasLogo, logoH          ÔåÆ reserva de topo p/ logo
+    //   destination, destUp     → nome do destino
+    //   highlights[]            → dias + ícones (text + icon)
+    //   installments            → parcelas
+    //   mainPrice / price       → total
+    //   curSym                  → moeda
+    //   promoName               → destaque/desconto
+    //   primaryColor / secondaryColor → cores do box
+    //   hasLogo, logoH          → reserva de topo p/ logo
     // ── V3 · REF "CVC" — foto cheia + BOX AMARELO destacado ─────────────────
-    // Estrutura: BG (foto destino) ÔåÆ BOX amarelo arredondado no topo-esquerda
+    // Estrutura: BG (foto destino) → BOX amarelo arredondado no topo-esquerda
     // contendo: PACOTE / destino / dias+ícones / "a partir de" + 12x sem juros
     // + R$ preco gigante / total por pessoa / faixa Pix com desconto.
     if (variant === 3) {
@@ -2169,8 +1519,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
     // pouco texto, expande quando o usuario adiciona mais benefits.
     if (variant === 0) {
       // REGRA GLOBAL DE LEGIBILIDADE: texto sempre tem que destacar do fundo.
-      // Painel = secondaryColor ÔåÆ texto principal = primaryColor com contraste garantido.
-      // Badge  = primaryColor   ÔåÆ texto da badge = secondaryColor com contraste garantido.
+      // Painel = secondaryColor → texto principal = primaryColor com contraste garantido.
+      // Badge  = primaryColor   → texto da badge = secondaryColor com contraste garantido.
       const v0PanelBg = secondaryColor;
       const v0OnPanel = getSafeColor(v0PanelBg, primaryColor);
       const priceBlockH = 120;
@@ -2439,7 +1789,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const v2CardBg = primaryColor;
       const v2OnCard = getSafeColor(v2CardBg);
       const v2CardLabel = getSafeColor(v2CardBg, secondaryColor);
-      // Benefits ficam sobre fundo creme #f7f4ef ÔåÆ secundaria com fallback contra creme.
+      // Benefits ficam sobre fundo creme #f7f4ef → secundaria com fallback contra creme.
       const v2BenefitColor = getSafeColor("#f7f4ef", secondaryColor);
       // Texto da faixa headline (sobre primaria) = secundaria com contraste garantido.
       const v2HeadlineColor = v2CardLabel;
@@ -2555,16 +1905,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
     // do meio (deixa ceu/paisagem visível em cima); pílula Pix em formato pílula
     // "vazando" metade para fora da borda inferior do card.
     //
-    // Mapeamento estrito form ÔåÆ render:
-    //   BG          ÔåÆ image (Foto Real / Sua Imagem / IA Pura por Destino)
-    //   card.bg     ÔåÆ primaryColor
-    //   tagline     ÔåÆ promoName               cor: secondaryColor
-    //   título      ÔåÆ titleText (resolvido)   cor: branco
-    //   info        ÔåÆ daysText | ícones       cor: secondaryColor (mono)
-    //   12X pill bg ÔåÆ secondaryColor          texto: primaryColor
-    //   "a partir de"/"sem juros"/"Total ..." ÔåÆ branco
-    //   R$ + valor  ÔåÆ branco (valor SEM vírgula/centavos — absoluto)
-    //   pix pill    ÔåÆ bg secondaryColor, texto branco, vazando bottom: -28
+    // Mapeamento estrito form → render:
+    //   BG          → image (Foto Real / Sua Imagem / IA Pura por Destino)
+    //   card.bg     → primaryColor
+    //   tagline     → promoName               cor: secondaryColor
+    //   título      → titleText (resolvido)   cor: branco
+    //   info        → daysText | ícones       cor: secondaryColor (mono)
+    //   12X pill bg → secondaryColor          texto: primaryColor
+    //   "a partir de"/"sem juros"/"Total ..." → branco
+    //   R$ + valor  → branco (valor SEM vírgula/centavos — absoluto)
+    //   pix pill    → bg secondaryColor, texto branco, vazando bottom: -28
     if (variant === 4) {
       await drawProminentLogo(ctx, 40, 40, 120);
       // [BG] foto cobre 100%
@@ -2893,13 +2243,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
     ctx.font = `800 ${isStory ? 110 : 78}px ${sans}`;
     safeFillText(ctx, (destFmt || destination || "DESTINO").toUpperCase(), cx, line2Y, width - 80, 24);
 
-    await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor);
+    await drawFinalBranding(ctx, width, height, logoDataUrl, 
+      { icon: footerContact1Icon || "whatsapp_green", value: footerContact1Value || whatsapp || "" },
+      { icon: footerContact2Icon || "instagram_gradient", value: footerContact2Value || instagram || "" },
+      cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor, userFamily);
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   };
 
   // ============================================================
-  // V1_Experiencia · LUXO CINEMATOGR├üFICO (canvas)
+  // V1_Experiencia · LUXO CINEMATOGRÁFICO (canvas)
   // ============================================================
   const renderV1Experiencia = async (): Promise<string> => {
     const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.5);
@@ -2922,7 +2275,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = "#ffffff";
 
-    const promo = (promoName || "Experiencia ├Ünica").toUpperCase();
+    const promo = (promoName || "Experiencia Única").toUpperCase();
     ctx.font = `800 ${isStory ? 32 : 24}px ${sans}`;
     ctx.fillStyle = secondaryColor;
     ctx.fillText(promo.split("").join(" "), cx, isStory ? 320 : 150);
@@ -2941,7 +2294,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
     if (line2) ctx.fillText(line2, cx, midY + titSize * 0.7);
     ctx.shadowBlur = 0;
 
-    await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor);
+    await drawFinalBranding(ctx, width, height, logoDataUrl, 
+      { icon: footerContact1Icon || "whatsapp_green", value: footerContact1Value || whatsapp || "" },
+      { icon: footerContact2Icon || "instagram_gradient", value: footerContact2Value || instagram || "" },
+      cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor, userFamily);
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   };
@@ -2990,7 +2346,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
     ctx.lineTo(cx + 100, curY + lines.length * titSize * 0.95 + 40);
     ctx.stroke();
 
-    await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor);
+    await drawFinalBranding(ctx, width, height, logoDataUrl, 
+      { icon: footerContact1Icon || "whatsapp_green", value: footerContact1Value || whatsapp || "" },
+      { icon: footerContact2Icon || "instagram_gradient", value: footerContact2Value || instagram || "" },
+      cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor, userFamily);
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   };
@@ -3026,7 +2385,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
     ctx.fillStyle = secondaryColor;
     ctx.fillText(travelPeriod || "Uma jornada inesquecível", cx, height / 2 + (isStory ? 80 : 60));
 
-    await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor);
+    await drawFinalBranding(ctx, width, height, logoDataUrl, 
+      { icon: footerContact1Icon || "whatsapp_green", value: footerContact1Value || whatsapp || "" },
+      { icon: footerContact2Icon || "instagram_gradient", value: footerContact2Value || instagram || "" },
+      cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor, userFamily);
     applyFilmGrain(ctx, width, height, 0.05);
     return canvas.toDataURL("image/png");
   };
@@ -3081,7 +2443,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillText(ln, padLeft, currentY + i * titSize * 0.95);
     });
 
-    await drawFinalBranding(ctx, width, height, logoDataUrl, undefined, undefined, cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor);
+    await drawFinalBranding(ctx, width, height, logoDataUrl, 
+      { icon: footerContact1Icon || "whatsapp_green", value: footerContact1Value || whatsapp || "" },
+      { icon: footerContact2Icon || "instagram_gradient", value: footerContact2Value || instagram || "" },
+      cityFmt ? `${cityFmt} Viagens` : undefined, effectiveTextColor, userFamily);
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
   };
@@ -3108,7 +2473,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
     console.error("Ad Engine Error:", error);
     // Fallback absoluto: tenta renderizar o modo mais simples (V0) antes de desistir
     try { return await renderV0Experiencia(); } catch {
-       return canvas.toDataURL("image/png"); // ├Ültimo recurso: retorna o canvas como esta
+       return canvas.toDataURL("image/png"); // Último recurso: retorna o canvas como esta
     }
   }
 }
