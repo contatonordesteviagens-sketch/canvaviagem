@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { CountdownTimer } from "@/components/planos/CountdownTimer";
 import { motion, AnimatePresence } from "framer-motion";
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider';
 import { 
@@ -67,42 +68,42 @@ const TESTIMONIALS = [
   {
     name: "Renata Vasconcelos",
     agency: "Dream Travel · São Paulo, SP",
-    metric: "🚀 Engajamento +340%",
+    metric: "🚀 Engajamento +340% em 15 dias",
     text: "Minha agência era invisível no Instagram. Em 15 dias fechei 3 pacotes para o Nordeste só pelos Reels. O design premium faz toda a diferença.",
     photo: "/assets/renata.png"
   },
   {
     name: "Carlos Eduardo",
     agency: "Cadu Viagens · Recife, PE",
-    metric: "🚀 ROI: 12x invest",
+    metric: "🚀 ROI 12x em 30 dias",
     text: "O que me economiza de tempo não está escrito. Antes eu perdia 3h num post, agora posto em 2 minutos. Os vídeos são cinematográficos.",
     photo: "/assets/carlos.png"
   },
   {
     name: "Ana Paula Silva",
     agency: "Viaje Mais · Curitiba, PR",
-    metric: "🚀 84 novos leads/mês",
+    metric: "🚀 84 leads em 45 dias",
     text: "Assinei com medo por ser barato, mas a qualidade entregue é de agência de publicidade. Nunca mais fico sem postar.",
     photo: "/assets/ana.png"
   },
   {
     name: "Marcos Oliveira",
     agency: "Prime Agência · Florianópolis, SC",
-    metric: "🚀 Ticket: +R$1.2k",
+    metric: "🚀 Ticket +R$1.2k em 60 dias",
     text: "Os vídeos passam uma credibilidade gigante. Atrai cliente de alto padrão que antes ignorava minha agência.",
     photo: "/assets/marcos.png"
   },
   {
     name: "Julia Lima",
     agency: "Agente Conectada · Belo Horizonte, MG",
-    metric: "🚀 Engajamento: +280%",
+    metric: "🚀 Engajamento +280% em 21 dias",
     text: "Nunca tive tantos salvamentos em um post. O conteúdo cinematográfico realmente para o scroll do cliente.",
     photo: "/assets/julia.png"
   },
   {
     name: "Fabio Rocha",
     agency: "Rocha Excursões · Rio de Janeiro, RJ",
-    metric: "🚀 15 leads por dia",
+    metric: "🚀 15 leads/dia em 30 dias",
     text: "O roteiro de WhatsApp junto com os vídeos mudou meu jogo. O conteúdo atrai e o script fecha a venda. Sem falha.",
     photo: "/assets/fabio.png"
   }
@@ -344,7 +345,32 @@ export default function SalesPage() {
   };
 
   return (
-    <div className="dark min-h-screen bg-[#050810] text-[#ffffff] selection:bg-[#00D4FF] selection:text-[#050810] overflow-x-hidden antialiased">
+    <div className="dark min-h-screen bg-[#050810] text-[#ffffff] selection:bg-[#00D4FF] selection:text-[#050810] overflow-x-hidden antialiased" style={{ paddingTop: '44px' }}>
+      {/* STICKY TOP BAR — countdown + CTA */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
+        background: '#0A1628', borderBottom: `1px solid ${THEME.accent}`,
+        padding: '8px 12px', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', gap: '10px', flexWrap: 'wrap'
+      }}>
+        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', whiteSpace: 'nowrap', fontWeight: 600 }}>
+          🔥 42% OFF expira em
+        </span>
+        <CountdownTimer variant="bar" />
+        <button
+          id="cta-sticky"
+          onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+          style={{
+            background: THEME.accent, color: '#000', border: 'none',
+            borderRadius: '6px', padding: '6px 12px', fontSize: '11px',
+            fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap',
+            textTransform: 'uppercase', letterSpacing: '0.5px'
+          }}
+        >
+          Garantir →
+        </button>
+      </div>
+
       <Navbar />
 
       {/* SEÇÃO 2 — HERO */}
@@ -521,7 +547,7 @@ export default function SalesPage() {
               <p style={{
                 fontSize: '13px', color: 'rgba(255,255,255,0.5)', margin: 0
               }}>
-                <strong style={{ color: '#fff' }}>150+ agências</strong> já dominam o feed
+                <strong style={{ color: '#fff' }}>187+ agências</strong> já dominam o feed
               </p>
             </div>
           </div>
@@ -933,7 +959,9 @@ export default function SalesPage() {
           <div style={{ textAlign: 'center', marginBottom: '64px' }}>
             <p style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '3px', color: THEME.accent, marginBottom: '16px' }}>ACESSO DE PRÓXIMO NÍVEL</p>
             <h2 style={{ fontSize: 'clamp(28px, 5vw, 42px)', fontWeight: 900, color: '#fff', marginBottom: '16px' }}>Escolha seu plano</h2>
-            <p style={{ fontSize: '17px', color: THEME.textSecondary }}>Acesso imediato a todo o ecossistema assim que confirmar.</p>
+            <p style={{ fontSize: '17px', color: THEME.textSecondary, marginBottom: '32px' }}>Acesso imediato a todo o ecossistema assim que confirmar.</p>
+            <p style={{ fontSize: '11px', color: THEME.accent, letterSpacing: '2px', marginBottom: '14px', fontWeight: 700 }}>OFERTA EXPIRA EM</p>
+            <CountdownTimer variant="block" />
           </div>
 
           <div style={{ 
@@ -946,8 +974,7 @@ export default function SalesPage() {
             <div style={{ 
               background: 'rgba(255,255,255,0.02)', 
               border: THEME.border, 
-              borderRadius: '32px', padding: '48px 40px',
-              opacity: 0.8
+              borderRadius: '32px', padding: '48px 40px'
             }}>
               <p style={{ fontSize: '14px', fontWeight: 800, color: 'rgba(255,255,255,0.4)', letterSpacing: '1px', marginBottom: '24px' }}>PLANO MENSAL</p>
               <div style={{ marginBottom: '32px' }}>
@@ -969,12 +996,16 @@ export default function SalesPage() {
               </ul>
 
               <button 
+                id="cta-pricing-monthly"
                 onClick={() => handleCheckout("monthly")}
                 style={{ 
-                  width: '100%', padding: '20px', borderRadius: '16px', 
-                  border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)',
-                  color: '#fff', fontWeight: 800, fontSize: '16px', cursor: 'pointer'
+                  width: '100%', padding: '18px', borderRadius: '12px', 
+                  border: `2px solid ${THEME.accent}`, background: 'transparent',
+                  color: THEME.accent, fontWeight: 800, fontSize: '15px', cursor: 'pointer',
+                  letterSpacing: '0.5px', transition: 'background 0.2s ease'
                 }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,212,255,0.1)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
               >
                 ASSINAR MENSAL
               </button>
@@ -1067,6 +1098,7 @@ export default function SalesPage() {
       </section>
 
       {/* FOOTER */}
+      <div style={{ height: '80px' }} />
       <footer style={{ 
         background: '#030508', 
         borderTop: '1px solid rgba(255,255,255,0.05)', 
