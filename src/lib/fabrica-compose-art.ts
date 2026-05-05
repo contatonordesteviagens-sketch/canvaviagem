@@ -487,11 +487,17 @@ async function drawFinalBranding(
     const textWidth = ctx.measureText(displayValue).width;
     const iconX = textRightX - textWidth - itemGap - currentIconSize/2;
 
-    if (c.icon === "whatsapp_green") drawAdWhatsAppIcon(ctx, iconX, yPos, currentIconSize, "green");
-    else if (c.icon === "whatsapp_custom") drawAdWhatsAppIcon(ctx, iconX, yPos, currentIconSize, "custom", ctx.fillStyle);
-    else if (c.icon === "instagram_gradient") drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "gradient");
-    else if (c.icon === "instagram_custom") drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "custom", ctx.fillStyle);
-    else if (c.icon === "website") drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle);
+    // 🛡️ BLINDAGEM DE ICONES: Usa desenho matemático (Canvas Path) em vez de emojis
+    if (c.icon === "whatsapp_green" || c.icon === "whatsapp_custom") {
+      drawAdWhatsAppIcon(ctx, iconX, yPos, currentIconSize, c.icon === "whatsapp_green" ? "green" : "custom", ctx.fillStyle);
+    } else if (c.icon === "instagram_gradient" || c.icon === "instagram_custom") {
+      drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, c.icon === "instagram_gradient" ? "gradient" : "custom", ctx.fillStyle);
+    } else if (c.icon === "website" || c.icon === "phone" || c.icon === "link") {
+      drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle);
+    } else {
+      // Fallback robusto
+      drawMonoIcon(ctx, "check", iconX, yPos, currentIconSize, ctx.fillStyle);
+    }
 
     yPos -= (footerHeight * 0.36);
   }
@@ -2148,8 +2154,24 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
       ctx.fillStyle = v0PanelBg;
       ctx.fillRect(0, 0, width, topH);
 
+      // 5.1) Branding Superior (Logo) - Tornando a marca do agente PROEMINENTE
+      if (hasLogo && logoDataUrl) {
+        try {
+          const logoImg = await loadImage(logoDataUrl);
+          const r = logoImg.naturalWidth / logoImg.naturalHeight;
+          const lh = 110; 
+          const lw = lh * r;
+          const bgP = 12;
+          fillRoundRect(ctx, left, 40, lw + bgP*2, lh + bgP*2, 14, "#ffffff");
+          ctx.drawImage(logoImg, left + bgP, 40 + bgP, lw, lh);
+        } catch(e) {}
+      }
+
       // 6) Badge "Saindo de"
-      const badgeY = logoH + 28;
+      const badgeY = logoH + 36;
+
+      // 6) Badge "Saindo de"
+
       fillRoundRect(ctx, left, badgeY, 500, badgeH, 8, v0BadgeBg);
       ctx.fillStyle = v0OnBadge;
       ctx.font = "800 26px Inter, Arial, sans-serif";
