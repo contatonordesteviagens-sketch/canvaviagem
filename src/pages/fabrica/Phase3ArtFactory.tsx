@@ -1928,7 +1928,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <input
                 value={customLink}
                 onChange={(e) => setCustomLink(e.target.value)}
-                onFocus={(e) => e.target.select()}
+                onFocus={(e) => setTimeout(() => e.target.select(), 50)}
                 placeholder="https://exemplo.com/foto.jpg"
                 className={inputCls}
               />
@@ -1949,7 +1949,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <input
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
-                onFocus={(e) => { e.target.select(); setDestMenuOpen(true); }}
+                onFocus={(e) => { setTimeout(() => e.target.select(), 50); setDestMenuOpen(true); }}
                 onClick={() => setDestMenuOpen(true)}
                 placeholder="Clique para escolher ou digite..."
                 className={`${inputCls} pr-10 cursor-pointer`}
@@ -1987,7 +1987,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <input
                 value={promoName}
                 onChange={(e) => setPromoName(e.target.value)}
-                onFocus={(e) => { e.target.select(); setPromoMenuOpen(true); }}
+                onFocus={(e) => { setTimeout(() => e.target.select(), 50); setPromoMenuOpen(true); }}
                 onClick={() => setPromoMenuOpen(true)}
                 className={`${inputCls} pr-10 cursor-pointer`}
               />
@@ -2022,7 +2022,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <input
                 value={adTitleTemplate}
                 onChange={(e) => setAdTitleTemplate(e.target.value)}
-                onFocus={(e) => { e.target.select(); setAdTitleMenuOpen(true); }}
+                onFocus={(e) => { setTimeout(() => e.target.select(), 50); setAdTitleMenuOpen(true); }}
                 onClick={() => setAdTitleMenuOpen(true)}
                 placeholder="Ex: Pacote {destino}"
                 className={`${inputCls} pr-10 cursor-pointer`}
@@ -2060,7 +2060,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             <input
               value={travelPeriod}
               onChange={(e) => setTravelPeriod(e.target.value)}
-              onFocus={(e) => { e.target.select(); setTravelPeriodMenuOpen(true); }}
+              onFocus={(e) => { setTimeout(() => e.target.select(), 50); setTravelPeriodMenuOpen(true); }}
               onClick={() => setTravelPeriodMenuOpen(true)}
               placeholder="Ex: 5 dias, Janeiro"
               className={`${inputCls} pr-10 cursor-pointer`}
