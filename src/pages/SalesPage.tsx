@@ -521,7 +521,7 @@ export default function SalesPage() {
               <p style={{
                 fontSize: '13px', color: 'rgba(255,255,255,0.5)', margin: 0
               }}>
-                <strong style={{ color: '#fff' }}>150+ agências</strong> já dominam o feed
+                <strong style={{ color: '#fff' }}>187+ agências</strong> já dominam o feed
               </p>
             </div>
           </div>
