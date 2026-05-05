@@ -1,29 +1,38 @@
-# 🛡️ Blindagem do Motor de Renderização (Ad Factory)
+# Skill: Engine Protection & Layout Stability
 
-Este documento descreve as técnicas de "blindagem" implementadas no arquivo `src/lib/fabrica-compose-art.ts` para garantir estabilidade visual e profissionalismo nas artes geradas.
+## Overview
+The "Fábrica de Anúncios" rendering engine (`fabrica-compose-art.ts`) is protected against text overflow and layout collisions. This skill ensures that generated ads always maintain a premium look, even with long titles or prices.
 
-## 1. Proteção de Transbordo de Texto (Overflow Protection)
+## Core Utility: `safeFillText`
+All text rendering MUST use the `safeFillText` utility instead of the native `ctx.fillText`.
 
-Foram implementadas duas funções críticas para garantir que o texto do usuário nunca saia do quadro:
-
-### `safeFillText`
-Diferente do `ctx.fillText` padrão, esta função verifica se o texto cabe na largura máxima (`maxWidth`). Caso não caiba, ela **reduz o tamanho da fonte dinamicamente** pixel a pixel até que o texto se ajuste perfeitamente ao container, respeitando um tamanho mínimo de segurança.
-
-**Uso:**
+### Implementation
 ```typescript
-safeFillText(ctx, "Texto Longo de Destino", x, y, maxWidth, minSize);
+function safeFillText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  baseFontSize: number
+) {
+  let fontSize = baseFontSize;
+  ctx.font = `${fontSize}px Inter, sans-serif`;
+  
+  // Dynamic scaling
+  while (ctx.measureText(text).width > maxWidth && fontSize > 8) {
+    fontSize -= 0.5;
+    ctx.font = `${fontSize}px Inter, sans-serif`;
+  }
+  
+  ctx.fillText(text, x, y);
+}
 ```
 
-### `wrapTextSafe`
-Utilizada para blocos de texto multi-linha (como os benefícios/highlights). Ela quebra o texto em linhas e, se uma palavra individual for mais larga que o container, também aplica o encolhimento de fonte.
+## Critical Rules
+1. **Never use `ctx.fillText` directly** for user-generated content.
+2. **Safe Zones**: Always respect Instagram Story safe zones (Top 15%, Bottom 20%).
+3. **Variant Diversity**: The engine rotates through 5 variants (V0-V4). Any new variant must be added to the `composeTravelAd` switch and protected by `safeFillText`.
 
-## 2. Higienização de Branding (Branding Hygiene)
-
-O sistema foi blindado para nunca exibir placeholders genéricos como "Sua Agência".
-
-- **Regra de Ouro**: Se o usuário não forneceu uma `logoUrl` E não configurou contatos, a função `drawFinalBranding` retorna imediatamente, não renderizando nenhum rodapé.
-- **Wordmark Fallback**: Se houver contatos mas não houver logo, o sistema tenta renderizar o nome da agência (`agencyName`). Se este também estiver vazio, o espaço da logo fica limpo, sem textos genéricos.
-
-## 3. Zonas de Segurança (Safe Zones)
-
-- **Instagram Stories**: O rodapé foi subido para `340px` do fundo em layouts de Story para evitar que a barra de resposta e o nome do usuário do Instagram cubram as informações de contato da agência.
+## Maintenance
+If a layout starts breaking due to text length, check the `maxWidth` parameter passed to `safeFillText` in the corresponding variant function.

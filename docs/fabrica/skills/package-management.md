@@ -1,21 +1,22 @@
-# 📦 Gestão de Pacotes e Ativos (Fase 2)
+# Skill: Package Management (CRUD)
 
-A Fase 2 foi modernizada para permitir total flexibilidade na gestão das ofertas que alimentam o funil de vendas.
+## Overview
+Phase 2 of the Fábrica allows for dynamic management of travel packages. These packages are used to populate the Landing Page and generate specific Offer Ads.
 
-## 1. Gerenciador de Pacotes (CRUD)
+## CRUD Operations
+- **Create**: Add custom packages via the "Adicionar Pacote" button.
+- **Read**: View 8-10 pre-configured packages per niche.
+- **Update**: Edit title, price, description, and images in real-time.
+- **Delete**: Remove irrelevant packages to keep the landing page focused.
+- **Duplicate**: Cloners existing packages to quickly create variations.
 
-O componente `Phase2Ativos.tsx` agora possui um estado local robusto que permite:
-- **Adicionar**: Criar novos pacotes do zero.
-- **Editar**: Modificar títulos, preços, parcelas e benefícios de pacotes existentes.
-- **Duplicar**: Clonar um pacote para criar variações rápidas.
-- **Remover**: Excluir ofertas que não fazem mais sentido para o período.
+## Data Persistence
+Current package state is managed via `useFabricaContext` and persisted in `localStorage`. 
 
-## 2. Base de Dados Expandida
+### Future Enhancement
+If long-term persistence is needed across multiple devices, implement a Supabase Table `fabrica_user_packages` and sync the context state with the DB.
 
-O arquivo `src/data/fabrica-ofertas.ts` foi expandido para incluir 8 a 10 pacotes por nicho (Nordeste, Sul, Internacional, etc.). 
-- Ao trocar o nicho na Fase 1, a Fase 2 recarrega automaticamente as sugestões desse nicho.
-- Se o usuário editar um pacote, essa edição é mantida enquanto ele permanecer na sessão.
-
-## 3. Sincronização com o Motor
-
-Todos os dados editados na Fase 2 são passados para o `useFabricaContext`. Quando o usuário chega na Fase 3 (Arte), o motor de renderização consome esses dados atualizados para gerar as artes finais.
+## Integration
+Selected packages are automatically injected into:
+1. **Phase 3**: For "Oferta de Pacote" ad generation.
+2. **Phase 4**: As editable blocks in the Landing Page Builder.
