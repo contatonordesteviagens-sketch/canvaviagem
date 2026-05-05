@@ -1003,7 +1003,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               paymentSuffix,
               strategy: localStrategy,
               variation: freshSeedPhoto + idx,
-              forceVariant: nextVariantPhoto,
+              forceVariant: typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % 5 : undefined,
               titleOverride: resolvedAdTitle,
               titleVariations: adTitleVariations,
               travelPeriod,
@@ -1136,13 +1136,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               templateId: mustComposeWithCanvas ? undefined : pick.templateId,
               photoOnly: true,
               canvasOnly: mustComposeWithCanvas,
-              variation: forcedVariant !== null ? forcedVariant : nextVariantAi,
+              variation: (forcedVariant !== null ? forcedVariant : nextVariantAi) + idx,
               packageType: "Voo + Hotel",
               duration: categoria === "experiencia_destino" ? (travelPeriod || "") : (travelPeriod || "5 NOITES"),
               forbiddenHeadlines: guard.headlines,
               forbiddenLayouts: guard.layouts,
               ...(isAiExperienceStory
-                ? { customPrompt: experienceBackgroundPrompt(nextVariantAi) }
+                ? { customPrompt: experienceBackgroundPrompt(nextVariantAi + idx) }
                 : {}),
             },
           }))
@@ -1201,7 +1201,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             paymentSuffix,
             strategy: canvasStrategy,
             variation: freshSeedAi + images.length,
-            forceVariant: nextVariantAi,
+            forceVariant: typeof nextVariantAi === "number" ? (nextVariantAi + images.length) % 5 : undefined,
             isExperience: categoria === "experiencia_destino",
             titleOverride: resolvedAdTitle,
             titleVariations: adTitleVariations,
