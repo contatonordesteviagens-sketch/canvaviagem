@@ -189,36 +189,28 @@ const FEATURES = [
 // ─── FAQ ──────────────────────────────────────────────────────────────────────
 const FAQS = [
   {
-    q: "Qual a diferença entre o plano Pro e o Elite?",
-    a: "O Pro te dá 250+ vídeos, IA e scripts de venda — tudo que você precisa para postar profissionalmente. O Elite vai além: inclui a Fábrica de Viagens, criação de ofertas prontas para Meta Ads e site, além de acesso antecipado a todas as novidades.",
+    q: "Os vídeos são exclusivos para mim?",
+    a: "Cada vídeo é o ponto de partida. Você adiciona seu logo, sua paleta e sua copy no Canva — e o post se torna único da sua agência. Com mais de 250 vídeos no acervo, a chance de dois concorrentes postarem a mesma coisa é mínima.",
   },
   {
-    q: "Posso usar com o CANVA GRÁTIS?",
-    a: "Não! será necessário ter o CANVA PRO com planos a partir de R$ 4 o dia para realizar as edições e downloads dos vídeos. Isso ocorre pois os vídeos sem direitos autorais possuem licença especial para utilização com o CANVA PRO.",
+    q: "Onde acesso o conteúdo depois de comprar?",
+    a: "Imediatamente após o pagamento, você recebe um e-mail com acesso à plataforma Canva Viagem — uma área de membros web, acessível pelo computador ou celular, sem precisar instalar nada. O acesso é liberado em menos de 2 minutos.",
   },
   {
-    q: "O que é um Reels para Agências?",
-    a: "São vídeos no formato Reels que você pode personalizar com as informações da sua Agência adicionando o logotipo ou publicar da forma que está.",
+    q: "Eu já comprei o Pack de 150 Reels na Hotmart/Kiwifi. É a mesma coisa?",
+    a: "Não. O pack antigo era um produto pontual, sem atualizações. O Canva Viagem é uma assinatura com acervo crescente (novos vídeos toda semana), IAs especializadas, scripts de WhatsApp e estratégia de marketing — um sistema completo, não apenas um pacote de vídeos.",
   },
   {
-    q: "É fácil de utilizar?",
-    a: "Sim! Todos os modelos são editáveis no CANVA PRO e estão prontos para garantir que você aproveite ao máximo e comece a usar hoje mesmo!",
+    q: "Funciona para agência pequena ou solo?",
+    a: "É exatamente para você. A plataforma foi construída para agentes que não têm equipe de marketing — o objetivo é que você consiga criar conteúdo profissional sozinho, em minutos.",
   },
   {
-    q: "Preciso de conhecimento em Design?",
-    a: "Não! Todos os Reels estão 100% prontos com vídeos, escrita e transições, caso queira você ainda pode personalizar tudo facilmente com o CANVA PRO.",
+    q: "Posso cancelar quando quiser?",
+    a: "Sim. No plano mensal, cancele a qualquer momento sem multa. No plano anual, você tem a garantia de 7 dias para pedir reembolso total se não ficar satisfeito.",
   },
   {
-    q: "Os Reels possuem mensalidade?",
-    a: "Não! Você só paga uma vez e tem acesso por quanto tempo quiser aos conteúdos!",
-  },
-  {
-    q: "E se eu precisar de suporte?",
-    a: "Nossa equipe está disponível para tirar todas as suas dúvidas e garantir que você utilize os Reels da melhor forma possível.",
-  },
-  {
-    q: "Como eu vou acessar os Reels para Agência?",
-    a: "Nós vamos te enviar o login de acesso via plataforma Hotmart para que você possa ter acesso aos links com todos os entregáveis.",
+    q: "As IAs funcionam como?",
+    a: "São 11 assistentes treinados especificamente para o mercado de viagens, disponíveis dentro da plataforma. Você digita o destino ou tipo de post e recebe legenda pronta, roteiro de Reel, copy de oferta e script de WhatsApp — tudo com linguagem de agência de turismo.",
   },
 ];
 
@@ -862,6 +854,115 @@ const Planos = () => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── DEPOIMENTOS ──────────────────────────────────────────────────── */}
+      <section className="py-16 px-4 md:px-6 bg-zinc-950 relative overflow-hidden">
+        {/* Decorative blobs */}
+        <div className="absolute top-0 left-1/4 w-72 h-72 rounded-full bg-yellow-500/5 blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-72 h-72 rounded-full bg-orange-500/5 blur-[100px] pointer-events-none" />
+
+        <div className="max-w-5xl mx-auto relative z-10">
+          <div className="text-center mb-12">
+            <p className="text-[10px] font-black tracking-[0.3em] text-yellow-500 uppercase mb-3 opacity-70">
+              CASOS REAIS · RESULTADOS COMPROVADOS
+            </p>
+            <h2 className="text-3xl md:text-5xl font-black italic uppercase tracking-tighter leading-none text-white">
+              AGENTES QUE <span className="text-zinc-600 underline decoration-yellow-500/30">TRANSFORMARAM</span>
+              <br />SUA PRESENÇA
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              {
+                name: "Renata Vasconcelos",
+                agency: "Dream Travel · São Paulo, SP",
+                text: "Minha agência era invisível no Instagram. Em 15 dias fechei 3 pacotes para o Nordeste só pelos Reels. O design premium faz toda a diferença.",
+                badge: "Engajamento +340% em 15 dias",
+                initials: "RV",
+                avatarColor: "#7F77DD",
+              },
+              {
+                name: "Carlos Eduardo",
+                agency: "Cadu Viagens · Recife, PE",
+                text: "Antes eu perdia 3h num post, agora posto em 2 minutos. Os vídeos são cinematográficos e o ROI foi absurdo já no primeiro mês.",
+                badge: "ROI 12x em 30 dias",
+                initials: "CE",
+                avatarColor: "#1D9E75",
+              },
+              {
+                name: "Ana Paula Silva",
+                agency: "Viaje Mais · Curitiba, PR",
+                text: "Assinei com medo por ser barato, mas a qualidade é de agência de publicidade. Nunca mais fico sem postar.",
+                badge: "84 novos leads em 45 dias",
+                initials: "AS",
+                avatarColor: "#D85A30",
+              },
+              {
+                name: "Marcos Oliveira",
+                agency: "Prime Agência · Florianópolis, SC",
+                text: "Os vídeos passam uma credibilidade gigante. Atrai cliente de alto padrão que antes ignorava minha agência.",
+                badge: "Ticket médio +R$1.200 em 60 dias",
+                initials: "MO",
+                avatarColor: "#D4537E",
+              },
+              {
+                name: "Julia Lima",
+                agency: "Agente Conectada · Belo Horizonte, MG",
+                text: "Nunca tive tantos salvamentos em um post. O conteúdo cinematográfico realmente para o scroll do cliente.",
+                badge: "Engajamento +280% em 21 dias",
+                initials: "JL",
+                avatarColor: "#378ADD",
+              },
+              {
+                name: "Fabio Rocha",
+                agency: "Rocha Excursões · Rio de Janeiro, RJ",
+                text: "O roteiro de WhatsApp junto com os vídeos mudou meu jogo. O conteúdo atrai e o script fecha a venda. Sem falha.",
+                badge: "15 leads por dia em 30 dias",
+                initials: "FR",
+                avatarColor: "#BA7517",
+              },
+            ].map((t, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: 0.45, delay: i * 0.07 }}
+                className="relative flex flex-col gap-4 p-6 rounded-[24px] bg-white/5 border border-white/8 hover:border-white/20 hover:bg-white/8 transition-all duration-300 group"
+              >
+                {/* Badge resultado */}
+                <div
+                  className="self-start inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest"
+                  style={{ background: `${t.avatarColor}22`, color: t.avatarColor }}
+                >
+                  <Star className="w-2.5 h-2.5 fill-current" />
+                  {t.badge}
+                </div>
+
+                {/* Texto do depoimento */}
+                <p className="text-zinc-300 text-sm leading-relaxed font-medium flex-1">
+                  &ldquo;{t.text}&rdquo;
+                </p>
+
+                {/* Autor */}
+                <div className="flex items-center gap-3 pt-2 border-t border-white/5">
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-black shrink-0 shadow-lg"
+                    style={{ background: t.avatarColor }}
+                  >
+                    {t.initials}
+                  </div>
+                  <div>
+                    <p className="text-white text-xs font-black leading-none mb-0.5">{t.name}</p>
+                    <p className="text-zinc-500 text-[10px] font-medium">{t.agency}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
