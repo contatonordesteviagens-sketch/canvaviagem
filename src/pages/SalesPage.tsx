@@ -723,7 +723,7 @@ export default function SalesPage() {
                   Sou Lucas Ferrari, empresário do turismo e especialista em marketing digital para agências de viagens.
                 </p>
                 <a 
-                  href="https://instagram.com/lucasferrari" 
+                  href="https://www.instagram.com/lucasferrari.pro/" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="hover:scale-[1.02] active:scale-95 transition-all inline-flex items-center gap-2"
@@ -738,7 +738,7 @@ export default function SalesPage() {
                     textDecoration: "none"
                   }}
                 >
-                  📸 Me segue no Instagram: @lucasferrari
+                  📸 Me segue no Instagram: @lucasferrari.pro
                 </a>
               </div>
             </div>
