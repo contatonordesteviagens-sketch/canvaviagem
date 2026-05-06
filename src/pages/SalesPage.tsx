@@ -287,9 +287,9 @@ export default function SalesPage() {
             Poste como uma agência de{" "}
             <span style={{ background: `linear-gradient(135deg, ${T.accent}, #fff)`,
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              R$10.000/mês
+              R$10.000/mês?
             </span>{" "}
-            — em 5 minutos por dia, sem designer, sem agência.
+            — em 5 minutos por dia, sem designer, sem agência!
           </h1>
         </Reveal>
 
