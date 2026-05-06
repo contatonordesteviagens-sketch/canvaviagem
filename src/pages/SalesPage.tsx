@@ -259,8 +259,6 @@ export default function SalesPage() {
 
       <main style={{ paddingTop: "48px" }}>
 
-      <ProductDemo />
-
       {/* ─── HERO ─── */}
       <section style={{ padding: "48px 20px 40px", textAlign: "center", position: "relative",
         background: `radial-gradient(ellipse at 50% 0%, ${T.accent}15 0%, transparent 60%)` }}>
@@ -326,6 +324,8 @@ export default function SalesPage() {
         </Reveal>
         </div>
       </section>
+
+      <ProductDemo />
 
 
       {/* ─── DOR (3 cards) ─── */}
