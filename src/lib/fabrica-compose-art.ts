@@ -1526,7 +1526,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx, width, height, logoDataUrl, 
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        undefined,
         effectiveTextColor,
         userFamily,
         true
@@ -1547,6 +1546,23 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // Badge  = primaryColor   → texto da badge = secondaryColor com contraste garantido.
       const v0PanelBg = secondaryColor;
       const v0OnPanel = getSafeColor(v0PanelBg, primaryColor);
+
+      const benefitsList = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 4);
+      const benefitsCount = Math.max(1, benefitsList.length);
+      const benefitLineH = 44;
+      const benefitsBlockH = benefitsCount * benefitLineH;
+
+      ctx.textAlign = "left";
+      let titleSize = 78;
+      ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(titleText).width > contentWidth && titleSize > 38) {
+        titleSize -= 4;
+        ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
+      }
+
+      const v0BadgeBg = primaryColor;
+      const v0OnBadge = getSafeColor(v0BadgeBg, secondaryColor);
+
       const priceBlockH = 120;
       const contentRowH = Math.max(benefitsBlockH, priceBlockH);
 
@@ -1651,7 +1667,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx, width, height, logoDataUrl, 
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        undefined,
         effectiveTextColor,
         userFamily,
         true
@@ -1792,7 +1807,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx, width, height, logoDataUrl, 
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        undefined,
         effectiveTextColor,
         userFamily,
         true
@@ -1895,6 +1909,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const colGapV2 = 28;
       const colWV2 = (contentWidth - colGapV2) / 2;
       benefitsListV2.forEach((h, i) => {
+        let fs = benefitFontSize;
         const col = i % 2;
         const row = Math.floor(i / 2);
         const tx = left + col * (colWV2 + colGapV2);
@@ -1920,7 +1935,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx, width, height, logoDataUrl, 
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        undefined,
         effectiveTextColor,
         userFamily,
         true
@@ -2229,7 +2243,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx, width, height, logoDataUrl, 
         options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        undefined,
         effectiveTextColor,
         userFamily,
         true

@@ -246,6 +246,15 @@ const PROMO_NAME_PRESETS_EXPERIENCIA: string[] = [
   "REFÚGIO DOS SONHOS",
 ];
 
+const PROMO_NAME_PRESETS: string[] = [
+  "OFERTA ESPECIAL",
+  "SUPER OFERTA",
+  "ÚLTIMAS VAGAS",
+  "PROMOÇÃO DO DIA",
+  "BLACK FRIDAY",
+  "QUEIMA DE ESTOQUE"
+];
+
 // Defaults reconhecidos como "padrão da Oferta" — autorizados a serem sobrescritos
 // quando o usuário troca de categoria sem ter customizado.
 const DEFAULT_PROMO_NAMES_OFERTA = new Set(["OFERTA ESPECIAL", "Oferta Especial", "BLACK FRIDAY"]);
