@@ -21,6 +21,7 @@ import garantia7dias from "@/assets/garantia-7-dias.png";
 import { createAbacateCheckout } from "@/lib/abacatePay";
 import { VerticalCutReveal } from "@/components/ui/vertical-cut-reveal";
 import { ImageTrail } from "@/components/ui/image-trail";
+import { CountdownTimer } from "@/components/planos/CountdownTimer";
 
 const STRIPE = {
   monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
@@ -34,6 +35,21 @@ const ABACATE_PIX_LINKS = {
   monthly: "https://app.abacatepay.com/pay/bill_yUw05raaAtRTPQQafx4peM4s",
   annual: "https://app.abacatepay.com/pay/bill_w2ma2BcnfRfyWmr3Ly3quhB2"
 };
+
+// ─── Trust logos ─────────────────────────────────────────────────────────────
+const StripeLogoSVG = () => (
+  <svg width="51" height="21" viewBox="0 0 51 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12.956 6.888c0-.692.57-1.025 1.52-1.025 1.356 0 3.077.41 4.433 1.14V3.21C17.554 2.61 16.136 2.4 14.476 2.4c-3.64 0-6.063 1.9-6.063 5.054 0 4.936 6.801 4.142 6.801 6.27 0 .82-.712 1.089-1.71 1.089-1.481 0-3.38-.615-4.879-1.44v3.845c1.661.718 3.33 1.024 4.88 1.024 3.713 0 6.265-1.832 6.265-5.017-.013-5.328-6.814-4.38-6.814-6.337zM26.88 0l-3.754.795-.013 12.26c0 2.265 1.7 3.934 3.966 3.934 1.254 0 2.172-.23 2.679-.5v-3.023c-.49.2-2.911.905-2.911-1.36V6.657h2.91V3.375h-2.91L26.88 0zm7.3 4.399l-.243-1.024h-3.458v13.387h3.997V8.14c.943-1.23 2.54-1.006 3.035-.84V3.375c-.508-.192-2.36-.538-3.33 1.024zm4.584-1.024h4.01v13.387h-4.01V3.375zm2.005-4.62C39.412 1.165 38 2.577 38 4.426c0 1.85 1.412 3.261 3.37 3.261 1.957 0 3.37-1.412 3.37-3.261C44.74 2.577 43.327 1.165 41.37 1.165zm7.3 15.59l-4.01-13.38h4.24l2.35 8.822 2.35-8.822H50l-4.02 13.38h-.31z" fill="rgba(255,255,255,0.7)"/>
+  </svg>
+);
+
+const HotmartLogoSVG = () => (
+  <span style={{
+    fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.6)',
+    border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px',
+    padding: '2px 8px', letterSpacing: '0.5px'
+  }}>HOTMART</span>
+);
 
 const TRAIL_IMAGES = [
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&q=80",
@@ -164,6 +180,11 @@ const PixCheckoutModal = ({
             <p className="text-[9px] text-zinc-400 text-center uppercase tracking-widest font-bold">
                Criptografia de ponta a ponta
             </p>
+            <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-zinc-100">
+              <span className="text-[9px] text-zinc-300 uppercase tracking-widest font-bold">Pagamento via</span>
+              <StripeLogoSVG />
+              <HotmartLogoSVG />
+            </div>
           </div>
         </div>
       </motion.div>
@@ -682,6 +703,14 @@ const Planos = () => {
             </div>
           </div>
 
+          {/* Urgência — Countdown */}
+          <div className="mb-8 flex flex-col items-center gap-2">
+            <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-zinc-950 border border-[#00E5FF]/30">
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/50">Oferta expira em</span>
+              <CountdownTimer variant="bar" />
+            </div>
+          </div>
+
           {/* Toggle Mensal / Anual */}
           <div className="flex justify-center mb-12">
             <div className="bg-zinc-100 p-1.5 rounded-full flex gap-1 border border-zinc-200">
@@ -749,10 +778,22 @@ const Planos = () => {
                   ))}
                 </ul>
                 <button
+                  id="cta-pricing-pro"
                   onClick={handleCheckout}
-                  className="w-full bg-black text-white font-black uppercase text-xs tracking-widest py-5 rounded-2xl hover:opacity-90 transition-all shadow-xl"
+                  style={isAnnual ? {
+                    width: '100%', padding: '20px 24px', borderRadius: '16px',
+                    border: 'none', background: '#00E5FF',
+                    color: '#050D1A', fontSize: '12px', fontWeight: 900,
+                    cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase',
+                    boxShadow: '0 8px 32px rgba(0,229,255,0.3)'
+                  } : {
+                    width: '100%', padding: '20px 24px', borderRadius: '16px',
+                    border: '2px solid #00E5FF', background: 'transparent',
+                    color: '#00E5FF', fontSize: '12px', fontWeight: 900,
+                    cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase'
+                  }}
                 >
-                  {isAnnual ? "Assinar Pro — R$ 197/ano" : "Assinar Pro — R$ 29/mês"}
+                  {isAnnual ? "QUERO O PLANO ANUAL PRO →" : "ASSINAR MENSAL"}
                 </button>
               </div>
             </motion.div>

@@ -13,16 +13,17 @@ export const CountdownTimer = ({ variant }: CountdownTimerProps) => {
   useEffect(() => {
     let expiresAt = parseInt(localStorage.getItem(STORAGE_KEY) || '0');
     const now = Date.now();
+
     if (!expiresAt || expiresAt <= now) {
       expiresAt = now + DURATION_MS;
       localStorage.setItem(STORAGE_KEY, expiresAt.toString());
     }
+
     const update = () => {
-      let remaining = expiresAt - Date.now();
-      if (remaining <= 0) {
+      const remaining = Math.max(0, expiresAt - Date.now());
+      if (remaining === 0) {
         expiresAt = Date.now() + DURATION_MS;
         localStorage.setItem(STORAGE_KEY, expiresAt.toString());
-        remaining = DURATION_MS;
       }
       const h = Math.floor(remaining / 3600000);
       const m = Math.floor((remaining % 3600000) / 60000);
@@ -33,6 +34,7 @@ export const CountdownTimer = ({ variant }: CountdownTimerProps) => {
         s: s.toString().padStart(2, '0'),
       });
     };
+
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
@@ -40,7 +42,7 @@ export const CountdownTimer = ({ variant }: CountdownTimerProps) => {
 
   if (variant === 'bar') {
     return (
-      <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#00E5FF', fontSize: '15px', letterSpacing: '1px' }}>
+      <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#00E5FF', fontSize: '15px' }}>
         {timeLeft.h}:{timeLeft.m}:{timeLeft.s}
       </span>
     );
@@ -48,15 +50,15 @@ export const CountdownTimer = ({ variant }: CountdownTimerProps) => {
 
   return (
     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-      {([['HORAS', timeLeft.h], ['MIN', timeLeft.m], ['SEG', timeLeft.s]] as const).map(([label, val]) => (
+      {([['h', timeLeft.h], ['m', timeLeft.m], ['s', timeLeft.s]] as [string, string][]).map(([label, val]) => (
         <div key={label} style={{ textAlign: 'center' }}>
           <div style={{
             background: 'rgba(0,229,255,0.1)', border: '1px solid #00E5FF',
-            borderRadius: '8px', padding: '10px 14px',
-            fontSize: '32px', fontWeight: 800, color: '#00E5FF',
-            fontFamily: 'monospace', minWidth: '64px'
+            borderRadius: '6px', padding: '8px 14px',
+            fontSize: '28px', fontWeight: 700, color: '#00E5FF',
+            fontFamily: 'monospace', minWidth: '56px'
           }}>{val}</div>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '6px', letterSpacing: '1px' }}>{label}</div>
+          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '4px', textTransform: 'uppercase' }}>{label}</div>
         </div>
       ))}
     </div>
