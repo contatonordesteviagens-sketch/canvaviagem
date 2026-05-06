@@ -22,6 +22,9 @@ import { createAbacateCheckout } from "@/lib/abacatePay";
 import { VerticalCutReveal } from "@/components/ui/vertical-cut-reveal";
 import { ImageTrail } from "@/components/ui/image-trail";
 import { CountdownTimer } from "@/components/planos/CountdownTimer";
+import { SocialProofToast } from "@/components/planos/SocialProofToast";
+import { MobileFloatingCTA } from "@/components/planos/MobileFloatingCTA";
+import { ProductDemo } from "@/components/planos/ProductDemo";
 
 const STRIPE = {
   monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
@@ -253,6 +256,7 @@ const Planos = () => {
   const [isGeneratingPix, setIsGeneratingPix] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
+  const [ctaClicked, setCtaClicked] = useState(false);
   const plugin = React.useRef(
     Autoplay({ delay: 3000, stopOnInteraction: true })
   );
@@ -284,12 +288,14 @@ const Planos = () => {
   }, [searchParams, refreshSubscription]);
 
   const handleCheckout = async () => {
+    setCtaClicked(true);
     setIsPixModalOpen(true);
     const amount = billingCycle === "annual" ? 197 : 29;
     trackInitiateCheckout(amount);
   };
 
   const handleEliteCheckout = () => {
+    setCtaClicked(true);
     const amount = billingCycle === "annual" ? 697 : 97;
     trackInitiateCheckout(amount);
     const url = billingCycle === "annual" ? STRIPE.elite_annual : STRIPE.elite_monthly;
@@ -902,6 +908,11 @@ const Planos = () => {
         </div>
       </section>
 
+      {/* ─── PRODUCT DEMO ────────────────────────────────────────────────── */}
+      <section className="bg-zinc-950">
+        <ProductDemo />
+      </section>
+
       {/* ─── DEPOIMENTOS ──────────────────────────────────────────────────── */}
       <section className="py-16 px-4 md:px-6 bg-zinc-950 relative overflow-hidden">
         {/* Decorative blobs */}
@@ -1041,52 +1052,74 @@ const Planos = () => {
       </section>
 
       {/* ─── CTA FINAL ─────────────────────────────────────────────────────── */}
-      <section className="bg-black text-white pt-14 pb-8 px-4 md:px-6 text-center relative">
+      <section className="bg-black text-white pt-14 pb-12 px-4 md:px-6 text-center relative">
         <div className="max-w-3xl mx-auto relative z-10">
-          <h2 className="text-4xl md:text-7xl font-black italic uppercase tracking-tighter leading-none mb-8">
-            CHEGA DE <span className="text-yellow-400 underline decoration-white/10">DESCULPAS</span>
+          <p style={{ fontSize: '12px', color: '#00E5FF', letterSpacing: '.1em', marginBottom: '16px' }}>
+            OFERTA EXPIRA EM
+          </p>
+          <CountdownTimer variant="block" />
+          <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter leading-none mb-4 mt-10">
+            Seu feed. Sua autoridade. <span className="text-yellow-400 underline decoration-white/10">Sua decisão.</span>
           </h2>
-          <p className="text-zinc-500 text-base font-bold italic mb-12 uppercase tracking-widest opacity-50">Domine o marketing da sua agência hoje.</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <p className="text-zinc-500 text-base font-bold italic mb-10 uppercase tracking-widest opacity-50">
+            Acesso imediato. Garantia de 7 dias. Sem risco.
+          </p>
+          <div className="flex flex-col items-center gap-4">
             <button
+              id="cta-final"
               onClick={handleCheckout}
-              className="bg-yellow-400 text-black font-black uppercase text-[11px] tracking-widest px-10 py-5 rounded-2xl hover:bg-yellow-300 transition-all shadow-2xl"
+              style={{
+                background: '#00E5FF', color: '#050D1A', border: 'none',
+                borderRadius: '12px', padding: '16px 40px', fontSize: '14px',
+                fontWeight: 900, cursor: 'pointer', letterSpacing: '0.1em',
+                textTransform: 'uppercase', maxWidth: '400px', width: '100%',
+                boxShadow: '0 8px 32px rgba(0,229,255,0.3)'
+              }}
             >
-              {isAnnual ? "Pro — R$ 197/ano" : "Pro — R$ 29/mês"}
+              LIBERAR MEU ACESSO AGORA →
             </button>
-            <button
-              onClick={handleEliteCheckout}
-              className="bg-white text-black font-black uppercase text-[11px] tracking-widest px-10 py-5 rounded-2xl hover:bg-zinc-100 transition-all shadow-2xl"
-            >
-              {isAnnual ? "Elite — R$ 697/ano" : "Elite — R$ 97/mês"}
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>🔒 Pagamento seguro</span>
+              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>✓ Garantia 7 dias</span>
+              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>⚡ Acesso em 2 min</span>
+            </div>
           </div>
         </div>
       </section>
 
       <Footer />
 
-      {/* ─── STICKY MOBILE BAR ──────────────────────────────────────────────── */}
-      <div className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 md:hidden bg-black/95 backdrop-blur border-t border-zinc-800 px-4 py-3 transition-all duration-300",
-        showStickyBar ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
-      )}>
-        <div className="flex gap-2 max-w-sm mx-auto">
-          <button
-            onClick={handleCheckout}
-            className="flex-1 bg-yellow-400 text-black font-black text-[11px] uppercase tracking-widest py-3.5 rounded-xl hover:bg-yellow-300 transition-all"
-          >
-            {isAnnual ? "Pro · R$ 197/ano" : "Pro · R$ 29/mês"}
-          </button>
-          <button
-            onClick={handleEliteCheckout}
-            className="flex-1 bg-white text-black font-black text-[11px] uppercase tracking-widest py-3.5 rounded-xl hover:bg-zinc-100 transition-all"
-          >
-            {isAnnual ? "Elite · R$ 697/ano" : "Elite · R$ 97/mês"}
-          </button>
-        </div>
-        <p className="text-center text-[10px] text-zinc-600 mt-1.5 uppercase tracking-widest">Garantia 7 dias · Acesso imediato</p>
+      {/* ─── MOBILE FLOATING CTA ─────────────────────────────────────────────── */}
+      <MobileFloatingCTA onCheckout={handleCheckout} />
+
+      {/* ─── STICKY TOP BAR ──────────────────────────────────────────────────── */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
+        background: '#0A1628', borderBottom: '1px solid #00E5FF',
+        padding: '8px 16px', display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between', gap: '12px',
+        transform: showStickyBar ? 'translateY(0)' : 'translateY(-100%)',
+        transition: 'transform 0.3s ease'
+      }}>
+        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', whiteSpace: 'nowrap' }}>
+          🔥 42% OFF expira em
+        </span>
+        <CountdownTimer variant="bar" />
+        <button
+          id="cta-sticky"
+          onClick={handleCheckout}
+          style={{
+            background: '#00E5FF', color: '#050D1A', border: 'none',
+            borderRadius: '6px', padding: '7px 14px', fontSize: '12px',
+            fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap'
+          }}
+        >
+          Garantir acesso →
+        </button>
       </div>
+
+      {/* ─── SOCIAL PROOF TOAST ──────────────────────────────────────────────── */}
+      <SocialProofToast onCtaClicked={ctaClicked} />
 
       <AnimatePresence>
         {isPixModalOpen && (
