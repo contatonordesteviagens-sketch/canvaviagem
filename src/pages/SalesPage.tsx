@@ -302,19 +302,14 @@ export default function SalesPage() {
         {/* CTAs */}
         <Reveal delay={0.15}>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "center", marginBottom: 22 }}>
-            <button id="cta-hero-demo" onClick={() => setVideoOpen(true)}
+            <button id="cta-hero-checkout" 
+              onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
               className="hover:scale-[1.02] active:scale-95 transition-all"
               style={{ display: "inline-flex", gap: 10, alignItems: "center", justifyContent: "center",
                 background: T.accent, color: "#000", fontWeight: 900, fontSize: 15,
                 padding: "18px 28px", borderRadius: 14, border: "none", cursor: "pointer",
                 width: "100%", maxWidth: 440, textTransform: "uppercase", letterSpacing: 0.5,
                 boxShadow: `0 12px 40px ${T.accent}55` }}>
-              <Play size={18} fill="#000" /> VER A PLATAFORMA POR DENTRO (60s)
-            </button>
-            <button id="cta-hero-checkout" onClick={() => checkout("annual")}
-              style={{ background: "transparent", color: T.text, fontWeight: 700, fontSize: 14,
-                padding: "12px 24px", borderRadius: 12, border: `1px solid ${T.accent}66`,
-                cursor: "pointer", maxWidth: 440, width: "100%" }}>
               Quero acesso agora — R$ 16,41/mês
             </button>
           </div>
@@ -331,37 +326,6 @@ export default function SalesPage() {
         </Reveal>
       </section>
 
-      {/* ─── DEMO DE PRODUTO ─── */}
-      <section id="demo" style={{ padding: "60px 20px", background: T.bgDeep }}>
-        <div style={{ maxWidth: 880, margin: "0 auto", textAlign: "center" }}>
-          <Reveal>
-            <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>VEJA POR DENTRO</p>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 900, marginBottom: 8, lineHeight: 1.15 }}>
-              Não acredite no que eu digo. <span style={{ color: T.accent }}>Olhe a tela.</span>
-            </h2>
-            <p style={{ color: T.text2, fontSize: 15, marginBottom: 28, maxWidth: 560, margin: "0 auto 28px" }}>
-              60 segundos: do login até o post no Instagram.
-            </p>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div onClick={() => setVideoOpen(true)}
-              style={{ position: "relative", width: "100%", paddingTop: "56.25%",
-                borderRadius: 16, overflow: "hidden", border: `1px solid ${T.accent}33`,
-                cursor: "pointer", background: "linear-gradient(135deg, #0a1830 0%, #0d2040 100%)",
-                boxShadow: `0 20px 60px ${T.accent}22` }}>
-              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column",
-                alignItems: "center", justifyContent: "center", gap: 16 }}>
-                <div className="hover:scale-110 transition-transform" style={{ width: 80, height: 80,
-                  borderRadius: "50%", background: T.accent, display: "flex", alignItems: "center",
-                  justifyContent: "center", boxShadow: `0 0 40px ${T.accent}aa` }}>
-                  <Play size={36} color="#000" fill="#000" style={{ marginLeft: 4 }} />
-                </div>
-                <p style={{ color: T.text2, fontSize: 13, margin: 0 }}>Login → Filtro → Download → Canva → Post</p>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
 
       {/* ─── DOR (3 cards) ─── */}
       <section style={{ padding: "70px 20px" }}>

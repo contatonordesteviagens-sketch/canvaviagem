@@ -10,7 +10,7 @@ export const ProductDemo = () => {
       padding: '60px 24px', maxWidth: '100%', background: '#050D1A',
       color: '#FFFFFF'
     }}>
-      <div style={{ maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
+      <div style={{ maxWidth: '880px', margin: '0 auto', textAlign: 'center' }}>
         <p style={{ fontSize: '11px', color: '#00E5FF', letterSpacing: '.1em', marginBottom: '12px', margin: 0, fontWeight: 800 }}>
           VEJA POR DENTRO
         </p>
@@ -31,7 +31,7 @@ export const ProductDemo = () => {
         <div style={{
           position: 'relative', 
           width: '100%', 
-          paddingTop: '177.77%', // Vertical 9:16
+          paddingTop: '56.25%', // Horizontal 16:9
           borderRadius: '24px', 
           overflow: 'hidden', 
           marginBottom: '24px',
