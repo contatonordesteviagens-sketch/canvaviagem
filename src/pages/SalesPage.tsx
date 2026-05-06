@@ -699,24 +699,6 @@ export default function SalesPage() {
         background: `radial-gradient(ellipse at 50% 50%, ${T.accent}10 0%, ${T.bgDeep} 70%)` }}>
         <div style={{ maxWidth: 720, margin: "0 auto" }}>
           <Reveal>
-            <div style={{ width: 90, height: 90, borderRadius: "50%", margin: "0 auto 20px",
-              border: `3px solid ${T.accent}`, padding: 3, boxShadow: `0 0 40px ${T.accent}33` }}>
-              <div style={{ width: "100%", height: "100%", borderRadius: "50%",
-                background: "linear-gradient(135deg, #1a2540, #0a1020)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 30, fontWeight: 900, color: T.accent }}>LF</div>
-            </div>
-            <p style={{ fontSize: 12, color: T.text3, fontWeight: 700, letterSpacing: 1, marginBottom: 16 }}>
-              — Lucas Ferrari, fundador
-            </p>
-            <p style={{ fontSize: '12px', color: '#00E5FF', letterSpacing: '.1em', margin: '0 0 16px', fontWeight: 800 }}>
-              🔥 47 VAGAS RESTANTES ESTA SEMANA
-            </p>
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '.1em', marginBottom: '16px' }}>
-              (limitamos para garantir suporte por WhatsApp)
-            </p>
-            
-            <CountdownTimer variant="block" />
 
             <h2 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: 900, margin: "32px 0 16px", lineHeight: 1.2 }}>
               Seu feed. Sua autoridade. <span style={{ color: T.accent }}>Sua decisão.</span>

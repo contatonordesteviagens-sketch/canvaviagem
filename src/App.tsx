@@ -18,6 +18,8 @@ const IndexES = lazy(() => import("./pages/IndexES"));
 const Calendar = lazy(() => import("./pages/Calendar"));
 const CalendarES = lazy(() => import("./pages/CalendarES"));
 const Auth = lazy(() => import("./pages/Auth"));
+
+
 const PlanosES = lazy(() => import("./pages/PlanosES"));
 const Sucesso = lazy(() => import("./pages/Sucesso"));
 const Obrigado = lazy(() => import("./pages/Obrigado"));
