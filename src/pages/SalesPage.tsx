@@ -253,6 +253,13 @@ export default function SalesPage() {
         background: T.bgDeep, borderBottom: `1px solid ${T.accent}55`,
         padding: "10px 14px", display: "flex", alignItems: "center",
         justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
+        <motion.span 
+          animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.2, 1] }} 
+          transition={{ repeat: Infinity, duration: 2 }}
+          style={{ fontSize: 24, cursor: 'default' }}
+        >
+          🍌
+        </motion.span>
         <span className="animate-pulse" style={{ background: T.accent, color: "#000",
           fontSize: 11, fontWeight: 800, padding: "3px 8px", borderRadius: 4, letterSpacing: 0.5 }}>
           47 VAGAS
