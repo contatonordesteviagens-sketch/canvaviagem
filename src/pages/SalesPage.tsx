@@ -675,22 +675,6 @@ export default function SalesPage() {
                 </div>
               ))}
             </div>
-            <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
-              <div style={{ width: 44, height: 44, borderRadius: "50%", border: `2px solid ${T.accent}`,
-                background: "linear-gradient(135deg, #1a2540, #0a1020)", display: "flex",
-                alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, color: T.accent }}>
-                LF
-              </div>
-              <div style={{ textAlign: "left" }}>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: T.text }}>Lucas Ferrari · Fundador</p>
-                <p style={{ margin: 0, fontSize: 11, color: T.text3 }}>CNPJ 45.312.876/0001-22</p>
-              </div>
-            </div>
-            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 24 }}>
-              <img src="https://logodownload.org/wp-content/uploads/2019/06/stripe-logo.png" alt="Stripe" style={{ height: 18, opacity: 0.6, filter: 'grayscale(1) brightness(2)' }} />
-              <img src="https://logodownload.org/wp-content/uploads/2021/04/pix-logo.png" alt="PIX" style={{ height: 18, opacity: 0.6, filter: 'grayscale(1) brightness(2)' }} />
-              <img src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Hotmart_Logo.png" alt="Hotmart" style={{ height: 18, opacity: 0.6, filter: 'grayscale(1) brightness(2)' }} />
-            </div>
           </Reveal>
         </div>
       </section>
