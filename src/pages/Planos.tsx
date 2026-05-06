@@ -867,7 +867,7 @@ const Planos = () => {
         <div className="max-w-5xl mx-auto relative z-10">
           <div className="text-center mb-12">
             <p className="text-[10px] font-black tracking-[0.3em] text-yellow-500 uppercase mb-3 opacity-70">
-              CASOS REAIS · RESULTADOS COMPROVADOS
+              ⭐ CASOS REAIS · RESULTADOS COMPROVADOS
             </p>
             <h2 className="text-3xl md:text-5xl font-black italic uppercase tracking-tighter leading-none text-white">
               AGENTES QUE <span className="text-zinc-600 underline decoration-yellow-500/30">TRANSFORMARAM</span>
