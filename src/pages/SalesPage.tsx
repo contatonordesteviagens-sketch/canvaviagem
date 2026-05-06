@@ -260,9 +260,13 @@ export default function SalesPage() {
 
       <main style={{ paddingTop: "48px" }}>
 
+      <ProductDemo />
+
       {/* ─── HERO ─── */}
       <section style={{ padding: "48px 20px 40px", textAlign: "center", position: "relative",
         background: `radial-gradient(ellipse at 50% 0%, ${T.accent}15 0%, transparent 60%)` }}>
+
+        <div style={{ position: "relative", zIndex: 1 }}>
         <Reveal>
           <div style={{ display: "inline-flex", gap: 8, alignItems: "center",
             background: "rgba(255,255,255,0.04)", border: T.border, borderRadius: 100,
@@ -410,7 +414,6 @@ export default function SalesPage() {
         </div>
       </section>
 
-      <ProductDemo />
 
       {/* ─── ANTES E DEPOIS ─── */}
       <section style={{ padding: "70px 20px" }}>
