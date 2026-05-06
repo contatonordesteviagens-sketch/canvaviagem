@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ReactCompareSlider, ReactCompareSliderImage } from "react-compare-slider";
 import { Check, X, Star, Shield, Play, ArrowRight } from "lucide-react";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
-import { ProductDemo } from "./components/planos/ProductDemo";
-import { CountdownTimer } from "./components/planos/CountdownTimer";
-import { StickyTopBar } from "./components/planos/StickyTopBar";
-import { SocialProofToast } from "./components/planos/SocialProofToast";
-import { MobileFloatingCTA } from "./components/planos/MobileFloatingCTA";
+import { ProductDemo } from "../components/planos/ProductDemo";
+import { CountdownTimer } from "../components/planos/CountdownTimer";
+import { StickyTopBar } from "../components/planos/StickyTopBar";
+import { SocialProofToast } from "../components/planos/SocialProofToast";
+import { MobileFloatingCTA } from "../components/planos/MobileFloatingCTA";
 
 // ────────────────────────────────────────────────────────────
 // CONFIG
