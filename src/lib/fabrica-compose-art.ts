@@ -1293,6 +1293,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
       await drawProminentLogo(ctx, 40, 40, 120);
       // [BG] Foto do destino cobrindo todo o canvas
       const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.45);
+
+      // ── Cores do V3 (box CVC) ──────────────────────────────────────────────
+      // yellow  = cor secundária do usuário (fundo do box)
+      // navy    = cor primária do usuário   (texto/anel dentro do box)
+      // navyRaw = primaryColor normalizado  (para a faixa Pix)
+      const yellow = secondaryColor || "#FCD34D";
+      const yellowDark = shadeColor(yellow, -12);
+      const navy = getSafeColor(yellow, primaryColor);
+      const navyRaw = primaryColor || "#0c2340";
+
       ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
       // ── Dados dinâmicos ────────────────────────────────────────────────────
@@ -1467,7 +1477,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // [PROMO] faixa horizontal com texto Pix (opcional)
       // Fundo da faixa = primaryColor (navy padrão). Texto sempre com contraste.
       if (showPixBanner) {
-        const stripeY = boxY + boxH - stripeH - 24;
+        const stripeY = safeBoxY + boxH - stripeH - 24;
         const stripeX = boxX + 40;
         const stripeW = boxW - 80;
         const stripeBg = navyRaw; // mantem a cor escolhida pelo usuario p/ a faixa

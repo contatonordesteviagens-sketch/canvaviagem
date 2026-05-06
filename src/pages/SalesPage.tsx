@@ -324,6 +324,7 @@ export default function SalesPage() {
             </div>
           </div>
         </Reveal>
+        </div>
       </section>
 
 
