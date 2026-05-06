@@ -3,6 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ReactCompareSlider, ReactCompareSliderImage } from "react-compare-slider";
 import { Check, X, Star, Shield, Play, ArrowRight } from "lucide-react";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
+import { ProductDemo } from "./components/planos/ProductDemo";
+import { CountdownTimer } from "./components/planos/CountdownTimer";
+import { StickyTopBar } from "./components/planos/StickyTopBar";
+import { SocialProofToast } from "./components/planos/SocialProofToast";
+import { MobileFloatingCTA } from "./components/planos/MobileFloatingCTA";
 
 // ────────────────────────────────────────────────────────────
 // CONFIG
@@ -234,46 +239,26 @@ const ExitIntent = ({ onCta }: { onCta: () => void }) => {
 // ────────────────────────────────────────────────────────────
 export default function SalesPage() {
   const [videoOpen, setVideoOpen] = useState(false);
+  const [ctaClicked, setCtaClicked] = useState(false);
 
   useEffect(() => { trackViewContent("Canva Viagem 10/10"); window.scrollTo(0, 0); }, []);
 
   const checkout = (plan: "monthly" | "annual" = "annual") => {
+    setCtaClicked(true);
     trackInitiateCheckout(plan === "annual" ? 197 : 29.9);
     window.open(STRIPE[plan], "_blank");
   };
 
   return (
     <div style={{ background: T.bg, color: T.text, minHeight: "100vh", overflowX: "hidden",
-      paddingTop: 56, fontFamily: "Inter, system-ui, sans-serif" }}>
+      fontFamily: "Inter, system-ui, sans-serif" }}>
 
       <ScrollProgressBar />
+      <StickyTopBar onCheckout={() => checkout("annual")} />
+      <SocialProofToast ctaClicked={ctaClicked} />
+      <MobileFloatingCTA onCheckout={() => checkout("annual")} />
 
-      {/* ─── TOP BAR — escassez REAL (sem timer fake) ─── */}
-      <div style={{ position: "fixed", top: 3, left: 0, right: 0, zIndex: 9999,
-        background: T.bgDeep, borderBottom: `1px solid ${T.accent}55`,
-        padding: "10px 14px", display: "flex", alignItems: "center",
-        justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
-        <motion.span 
-          animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.2, 1] }} 
-          transition={{ repeat: Infinity, duration: 2 }}
-          style={{ fontSize: 24, cursor: 'default' }}
-        >
-          🍌
-        </motion.span>
-        <span className="animate-pulse" style={{ background: T.accent, color: "#000",
-          fontSize: 11, fontWeight: 800, padding: "3px 8px", borderRadius: 4, letterSpacing: 0.5 }}>
-          47 VAGAS
-        </span>
-        <span style={{ fontSize: 12, color: T.text2, fontWeight: 600 }}>
-          restantes nesta semana — limitamos para garantir suporte
-        </span>
-        <button id="cta-topbar" onClick={() => checkout("annual")}
-          style={{ background: T.accent, color: "#000", border: "none", borderRadius: 6,
-            padding: "7px 14px", fontSize: 12, fontWeight: 800, cursor: "pointer",
-            textTransform: "uppercase", letterSpacing: 0.5 }}>
-          Garantir →
-        </button>
-      </div>
+      <main style={{ paddingTop: "48px" }}>
 
       {/* ─── HERO ─── */}
       <section style={{ padding: "48px 20px 40px", textAlign: "center", position: "relative",
@@ -424,6 +409,8 @@ export default function SalesPage() {
           </div>
         </div>
       </section>
+
+      <ProductDemo />
 
       {/* ─── ANTES E DEPOIS ─── */}
       <section style={{ padding: "70px 20px" }}>
@@ -747,11 +734,10 @@ export default function SalesPage() {
                 <p style={{ margin: 0, fontSize: 11, color: T.text3 }}>CNPJ 45.312.876/0001-22</p>
               </div>
             </div>
-            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-              {["STRIPE", "HOTMART", "PIX"].map(b => (
-                <span key={b} style={{ fontSize: 11, fontWeight: 700, color: T.text2,
-                  border: T.border, borderRadius: 6, padding: "5px 12px", letterSpacing: 1 }}>{b}</span>
-              ))}
+            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 24 }}>
+              <img src="https://logodownload.org/wp-content/uploads/2019/06/stripe-logo.png" alt="Stripe" style={{ height: 18, opacity: 0.6, filter: 'grayscale(1) brightness(2)' }} />
+              <img src="https://logodownload.org/wp-content/uploads/2021/04/pix-logo.png" alt="PIX" style={{ height: 18, opacity: 0.6, filter: 'grayscale(1) brightness(2)' }} />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Hotmart_Logo.png" alt="Hotmart" style={{ height: 18, opacity: 0.6, filter: 'grayscale(1) brightness(2)' }} />
             </div>
           </Reveal>
         </div>
@@ -787,8 +773,17 @@ export default function SalesPage() {
             <p style={{ fontSize: 12, color: T.text3, fontWeight: 700, letterSpacing: 1, marginBottom: 16 }}>
               — Lucas Ferrari, fundador
             </p>
-            <h2 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: 900, marginBottom: 16, lineHeight: 1.2 }}>
-              Você está a um clique de <span style={{ color: T.accent }}>parar de parecer amador.</span>
+            <p style={{ fontSize: '12px', color: '#00E5FF', letterSpacing: '.1em', margin: '0 0 16px', fontWeight: 800 }}>
+              🔥 47 VAGAS RESTANTES ESTA SEMANA
+            </p>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '.1em', marginBottom: '16px' }}>
+              (limitamos para garantir suporte por WhatsApp)
+            </p>
+            
+            <CountdownTimer variant="block" />
+
+            <h2 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: 900, margin: "32px 0 16px", lineHeight: 1.2 }}>
+              Seu feed. Sua autoridade. <span style={{ color: T.accent }}>Sua decisão.</span>
             </h2>
             <p style={{ color: T.text2, fontSize: 15, marginBottom: 32, maxWidth: 540, margin: "0 auto 32px", lineHeight: 1.6 }}>
               Cada dia com feed parado é um cliente fechando com o concorrente. Em 5 minutos você posta e me prova que funciona.
@@ -808,6 +803,8 @@ export default function SalesPage() {
           </Reveal>
         </div>
       </section>
+
+      </main>
 
       {/* ─── FOOTER ─── */}
       <div style={{ height: 80 }} />
@@ -829,7 +826,6 @@ export default function SalesPage() {
         </div>
       </footer>
 
-      <MobileStickyBar onClick={() => checkout("annual")} />
       <ExitIntent onCta={() => checkout("annual")} />
       <VideoModal open={videoOpen} onClose={() => setVideoOpen(false)} />
     </div>
@@ -860,32 +856,3 @@ function BeforeAfterSlider() {
   );
 }
 
-function MobileStickyBar({ onClick }: { onClick: () => void }) {
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    const fn = () => {
-      const pricing = document.getElementById("pricing");
-      const top = pricing?.getBoundingClientRect().top ?? 9999;
-      setShow(window.scrollY > 500 && top > 0);
-    };
-    window.addEventListener("scroll", fn, { passive: true });
-    return () => window.removeEventListener("scroll", fn);
-  }, []);
-  return (
-    <div className="md:hidden" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9997,
-      background: T.bgDeep, borderTop: `1px solid ${T.accent}`, padding: "10px 14px",
-      transform: show ? "translateY(0)" : "translateY(110%)", transition: "transform 0.3s ease",
-      display: "flex", alignItems: "center", gap: 12 }}>
-      <div style={{ flex: 1 }}>
-        <p style={{ margin: 0, fontSize: 10, color: T.text3 }}>Plano Anual Pro</p>
-        <p style={{ margin: 0, fontSize: 15, fontWeight: 800 }}>R$16,41<span style={{ fontSize: 11, fontWeight: 500, color: T.text3 }}>/mês</span></p>
-      </div>
-      <button id="cta-mobile-float" onClick={onClick}
-        style={{ background: T.accent, color: "#000", border: "none", borderRadius: 10,
-          padding: "12px 18px", fontSize: 12, fontWeight: 800, cursor: "pointer",
-          whiteSpace: "nowrap", textTransform: "uppercase", letterSpacing: 0.5 }}>
-        Garantir →
-      </button>
-    </div>
-  );
-}

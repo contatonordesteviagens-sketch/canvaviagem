@@ -1,22 +1,20 @@
 import { useState, useEffect } from 'react';
 
 const EVENTS = [
-  { city: 'Recife, PE', plan: 'Plano Anual Pro', time: '2 minutos' },
-  { city: 'São Paulo, SP', plan: 'Plano Anual Pro', time: '5 minutos' },
-  { city: 'Fortaleza, CE', plan: 'Plano Mensal', time: '8 minutos' },
-  { city: 'Belo Horizonte, MG', plan: 'Plano Anual Pro', time: '12 minutos' },
-  { city: 'Curitiba, PR', plan: 'Plano Anual Pro', time: '3 minutos' },
-  { city: 'Salvador, BA', plan: 'Plano Mensal', time: '7 minutos' },
-  { city: 'Manaus, AM', plan: 'Plano Anual Pro', time: '15 minutos' },
-  { city: 'Porto Alegre, RS', plan: 'Plano Anual Pro', time: '1 minuto' },
+  { city: 'Recife, PE', plan: 'Plano Pro', mins: '2' },
+  { city: 'São Paulo, SP', plan: 'Plano Pro', mins: '5' },
+  { city: 'Fortaleza, CE', plan: 'Mensal', mins: '8' },
+  { city: 'Belo Horizonte, MG', plan: 'Plano Pro', mins: '11' },
+  { city: 'Curitiba, PR', plan: 'Plano Pro', mins: '3' },
+  { city: 'Salvador, BA', plan: 'Mensal', mins: '7' },
 ];
 
-export const SocialProofToast = ({ onCtaClicked }: { onCtaClicked: boolean }) => {
+export const SocialProofToast = ({ ctaClicked }: { ctaClicked: boolean }) => {
   const [visible, setVisible] = useState(false);
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
-    if (onCtaClicked) return;
+    if (ctaClicked) return;
 
     const show = () => {
       setCurrent(prev => (prev + 1) % EVENTS.length);
@@ -24,36 +22,36 @@ export const SocialProofToast = ({ onCtaClicked }: { onCtaClicked: boolean }) =>
       setTimeout(() => setVisible(false), 5000);
     };
 
-    const timeout = setTimeout(show, 8000);
-    const interval = setInterval(show, 55000 + Math.random() * 30000);
-    return () => { clearTimeout(timeout); clearInterval(interval); };
-  }, [onCtaClicked]);
+    const firstTimeout = setTimeout(show, 8000);
+    const interval = setInterval(show, 45000 + Math.random() * 20000);
+
+    return () => { clearTimeout(firstTimeout); clearInterval(interval); };
+  }, [ctaClicked]);
 
   const ev = EVENTS[current];
 
   return (
     <div style={{
-      position: 'fixed', bottom: '80px', left: '16px', zIndex: 9998,
-      background: '#0A1628', border: '1px solid #00E5FF',
-      borderRadius: '10px', padding: '12px 16px', maxWidth: '280px',
-      transform: visible ? 'translateX(0)' : 'translateX(-320px)',
-      transition: 'transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275)',
-      boxShadow: '0 4px 20px rgba(0,229,255,0.15)'
+      position: 'fixed', bottom: '100px', left: '16px', zIndex: 9998,
+      background: '#0A1628', border: '1px solid rgba(0, 229, 255, 0.3)',
+      borderRadius: '12px', padding: '12px 16px', maxWidth: '280px',
+      transform: visible ? 'translateX(0)' : 'translateX(-340px)',
+      transition: 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+      boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
+      display: 'flex', alignItems: 'center', gap: '12px'
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: '50%',
-          background: 'rgba(0,229,255,0.15)', display: 'flex',
-          alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0
-        }}>🚀</div>
-        <div>
-          <p style={{ margin: 0, fontSize: '12px', fontWeight: 600, color: '#FFFFFF' }}>
-            Alguém de {ev.city}
-          </p>
-          <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>
-            assinou o {ev.plan} há {ev.time}
-          </p>
-        </div>
+      <div style={{
+        width: 40, height: 40, borderRadius: '50%',
+        background: 'rgba(0,229,255,0.15)', display: 'flex',
+        alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0
+      }}>🚀</div>
+      <div style={{ minWidth: 0 }}>
+        <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {ev.city}
+        </p>
+        <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>
+          assinou o <span style={{ color: '#00E5FF', fontWeight: 600 }}>{ev.plan}</span> há {ev.mins}min
+        </p>
       </div>
     </div>
   );

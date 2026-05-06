@@ -5,7 +5,7 @@ interface CountdownTimerProps {
 }
 
 const STORAGE_KEY = 'cv_offer_expires_at';
-const DURATION_MS = 24 * 60 * 60 * 1000; // 24h
+const DURATION_MS = 24 * 60 * 60 * 1000;
 
 export const CountdownTimer = ({ variant }: CountdownTimerProps) => {
   const [timeLeft, setTimeLeft] = useState({ h: '23', m: '59', s: '59' });
@@ -42,7 +42,10 @@ export const CountdownTimer = ({ variant }: CountdownTimerProps) => {
 
   if (variant === 'bar') {
     return (
-      <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#00E5FF', fontSize: '15px' }}>
+      <span style={{
+        fontFamily: 'monospace', fontWeight: 700, color: '#00E5FF',
+        fontSize: '14px', letterSpacing: '1px'
+      }}>
         {timeLeft.h}:{timeLeft.m}:{timeLeft.s}
       </span>
     );
@@ -50,15 +53,15 @@ export const CountdownTimer = ({ variant }: CountdownTimerProps) => {
 
   return (
     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-      {([['h', timeLeft.h], ['m', timeLeft.m], ['s', timeLeft.s]] as [string, string][]).map(([label, val]) => (
+      {[['h', timeLeft.h], ['m', timeLeft.m], ['s', timeLeft.s]].map(([label, val]: any[]) => (
         <div key={label} style={{ textAlign: 'center' }}>
           <div style={{
             background: 'rgba(0,229,255,0.1)', border: '1px solid #00E5FF',
-            borderRadius: '6px', padding: '8px 14px',
-            fontSize: '28px', fontWeight: 700, color: '#00E5FF',
-            fontFamily: 'monospace', minWidth: '56px'
+            borderRadius: '6px', padding: '10px 12px',
+            fontSize: '22px', fontWeight: 700, color: '#00E5FF',
+            fontFamily: 'monospace', minWidth: '52px'
           }}>{val}</div>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '4px', textTransform: 'uppercase' }}>{label}</div>
+          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginTop: '4px', textTransform: 'uppercase' }}>{label}</div>
         </div>
       ))}
     </div>
