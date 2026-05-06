@@ -7,6 +7,7 @@ import { CountdownTimer } from "../components/planos/CountdownTimer";
 import { StickyTopBar } from "../components/planos/StickyTopBar";
 import { SocialProofToast } from "../components/planos/SocialProofToast";
 import { MobileFloatingCTA } from "../components/planos/MobileFloatingCTA";
+import lucasPortrait from "@/assets/lucas-site-webp.webp";
 
 // ────────────────────────────────────────────────────────────
 // CONFIG
@@ -674,6 +675,72 @@ export default function SalesPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ─── SOBRE O AUTOR ─── */}
+      <section style={{ padding: "80px 20px", background: T.bgDeep, borderTop: T.border }}>
+        <div style={{ maxWidth: 880, margin: "0 auto" }}>
+          <Reveal>
+            <div style={{ 
+              background: "linear-gradient(145deg, #071a2e 0%, #0d2640 100%)",
+              border: `2px solid rgba(0, 229, 255, 0.15)`, 
+              borderRadius: 24, 
+              padding: "48px 40px",
+              display: "flex", 
+              flexDirection: "row", 
+              alignItems: "center", 
+              gap: "40px",
+              boxShadow: `0 20px 80px rgba(0, 229, 255, 0.1)`,
+              flexWrap: "wrap"
+            }}>
+              <div style={{ flex: "1 1 240px", display: "flex", justifyContent: "center" }}>
+                <div style={{ 
+                  width: 200, 
+                  height: 200, 
+                  borderRadius: "50%", 
+                  overflow: "hidden", 
+                  border: `3px solid ${T.accent}`,
+                  boxShadow: `0 0 30px ${T.accent}33`
+                }}>
+                  <img 
+                    src={lucasPortrait} 
+                    alt="Lucas Ferrari" 
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                  />
+                </div>
+              </div>
+              <div style={{ flex: "2 1 400px", textAlign: "left" }}>
+                <p style={{ fontSize: '11px', color: T.accent, letterSpacing: '.1em', marginBottom: '12px', margin: 0, fontWeight: 800, textTransform: "uppercase" }}>
+                  Quem Criou a Plataforma
+                </p>
+                <h3 style={{ fontSize: "28px", fontWeight: 900, marginBottom: "16px", lineHeight: 1.2 }}>
+                  Criado por quem vive o turismo há mais de 10 anos
+                </h3>
+                <p style={{ fontSize: "16px", color: T.text2, lineHeight: 1.6, marginBottom: "24px" }}>
+                  Sou Lucas Ferrari, empresário do turismo e especialista em marketing digital para agências de viagens.
+                </p>
+                <a 
+                  href="https://instagram.com/lucasferrari" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:scale-[1.02] active:scale-95 transition-all inline-flex items-center gap-2"
+                  style={{ 
+                    background: "rgba(255, 255, 255, 0.08)", 
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                    color: "#FFFFFF", 
+                    fontWeight: 700, 
+                    fontSize: "14px", 
+                    padding: "12px 24px", 
+                    borderRadius: "100px",
+                    textDecoration: "none"
+                  }}
+                >
+                  📸 Me segue no Instagram: @lucasferrari
+                </a>
+              </div>
             </div>
           </Reveal>
         </div>
