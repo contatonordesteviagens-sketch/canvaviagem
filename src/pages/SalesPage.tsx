@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, X, Star, Shield, Play, ArrowRight } from "lucide-react";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
 import { ProductDemo } from "../components/planos/ProductDemo";
+import lucasFerrariPortrait from "@/assets/lucas-ferrari-portrait.webp";
 import { CountdownTimer } from "../components/planos/CountdownTimer";
 import { StickyTopBar } from "../components/planos/StickyTopBar";
 import { SocialProofToast } from "../components/planos/SocialProofToast";
@@ -699,12 +700,10 @@ export default function SalesPage() {
         background: `radial-gradient(ellipse at 50% 50%, ${T.accent}10 0%, ${T.bgDeep} 70%)` }}>
         <div style={{ maxWidth: 720, margin: "0 auto" }}>
           <Reveal>
-            <div style={{ width: 90, height: 90, borderRadius: "50%", margin: "0 auto 20px",
+            <div style={{ width: 110, height: 110, borderRadius: "50%", margin: "0 auto 20px",
               border: `3px solid ${T.accent}`, padding: 3, boxShadow: `0 0 40px ${T.accent}33` }}>
-              <div style={{ width: "100%", height: "100%", borderRadius: "50%",
-                background: "linear-gradient(135deg, #1a2540, #0a1020)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 30, fontWeight: 900, color: T.accent }}>LF</div>
+              <img src={lucasFerrariPortrait} alt="Lucas Ferrari, fundador da Canva Viagem"
+                style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", display: "block" }} />
             </div>
             <p style={{ fontSize: 12, color: T.text3, fontWeight: 700, letterSpacing: 1, marginBottom: 16 }}>
               — Lucas Ferrari, fundador
@@ -715,8 +714,6 @@ export default function SalesPage() {
             <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '.1em', marginBottom: '16px' }}>
               (limitamos para garantir suporte por WhatsApp)
             </p>
-            
-            <CountdownTimer variant="block" />
 
             <h2 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: 900, margin: "32px 0 16px", lineHeight: 1.2 }}>
               Seu feed. Sua autoridade. <span style={{ color: T.accent }}>Sua decisão.</span>
