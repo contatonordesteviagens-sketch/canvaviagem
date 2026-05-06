@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ReactCompareSlider, ReactCompareSliderImage } from "react-compare-slider";
 import { Check, X, Star, Shield, Play, ArrowRight } from "lucide-react";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
 import { ProductDemo } from "../components/planos/ProductDemo";
@@ -415,21 +414,6 @@ export default function SalesPage() {
       </section>
 
 
-      {/* ─── ANTES E DEPOIS ─── */}
-      <section style={{ padding: "70px 20px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
-          <Reveal>
-            <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>O IMPACTO VISUAL</p>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 900, marginBottom: 12 }}>
-              Sua agência merece esse salto de autoridade
-            </h2>
-            <p style={{ color: T.text2, fontSize: 14, marginBottom: 32 }}>
-              Arraste o cursor e veja a transformação instantânea do seu feed.
-            </p>
-          </Reveal>
-          <Reveal delay={0.1}><BeforeAfterSlider /></Reveal>
-        </div>
-      </section>
 
       {/* ─── PROVA SOCIAL — 2 case studies + carrossel ─── */}
       <section style={{ padding: "70px 20px", background: T.bgDeep }}>
@@ -836,26 +820,4 @@ export default function SalesPage() {
 }
 
 // ────────────────────────────────────────────────────────────
-function BeforeAfterSlider() {
-  const before = "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=800&auto=format&q=70";
-  const after  = "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800&auto=format&q=80";
-  return (
-    <div style={{ position: "relative", borderRadius: 20, overflow: "hidden",
-      border: T.border, boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }}>
-      <ReactCompareSlider
-        itemOne={<ReactCompareSliderImage src={before} alt="Feed amador" />}
-        itemTwo={<ReactCompareSliderImage src={after} alt="Feed premium" />}
-        style={{ height: 480 }}
-      />
-      <span style={{ position: "absolute", top: 14, left: 14, background: "rgba(220,38,38,0.95)",
-        color: "#fff", fontSize: 11, fontWeight: 800, padding: "5px 10px", borderRadius: 6, letterSpacing: 0.5 }}>
-        ✗ FEED AMADOR
-      </span>
-      <span style={{ position: "absolute", top: 14, right: 14, background: T.accent,
-        color: "#000", fontSize: 11, fontWeight: 800, padding: "5px 10px", borderRadius: 6, letterSpacing: 0.5 }}>
-        ✓ FEED DE LUXO
-      </span>
-    </div>
-  );
-}
 
