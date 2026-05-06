@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, X, Star, Shield, Play, ArrowRight } from "lucide-react";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
 import { ProductDemo } from "../components/planos/ProductDemo";
-import lucasFerrariPortrait from "@/assets/lucas-ferrari-portrait.webp";
 import { CountdownTimer } from "../components/planos/CountdownTimer";
 import { StickyTopBar } from "../components/planos/StickyTopBar";
 import { SocialProofToast } from "../components/planos/SocialProofToast";
