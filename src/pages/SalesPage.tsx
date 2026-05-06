@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, X, Star, Shield, Play, ArrowRight } from "lucide-react";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
 import { ProductDemo } from "../components/planos/ProductDemo";
-import lucasFerrariPortrait from "@/assets/lucas-ferrari-portrait.webp";
 import { CountdownTimer } from "../components/planos/CountdownTimer";
 import { StickyTopBar } from "../components/planos/StickyTopBar";
 import { SocialProofToast } from "../components/planos/SocialProofToast";
@@ -700,20 +699,6 @@ export default function SalesPage() {
         background: `radial-gradient(ellipse at 50% 50%, ${T.accent}10 0%, ${T.bgDeep} 70%)` }}>
         <div style={{ maxWidth: 720, margin: "0 auto" }}>
           <Reveal>
-            <div style={{ width: 110, height: 110, borderRadius: "50%", margin: "0 auto 20px",
-              border: `3px solid ${T.accent}`, padding: 3, boxShadow: `0 0 40px ${T.accent}33` }}>
-              <img src={lucasFerrariPortrait} alt="Lucas Ferrari, fundador da Canva Viagem"
-                style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", display: "block" }} />
-            </div>
-            <p style={{ fontSize: 12, color: T.text3, fontWeight: 700, letterSpacing: 1, marginBottom: 16 }}>
-              — Lucas Ferrari, fundador
-            </p>
-            <p style={{ fontSize: '12px', color: '#00E5FF', letterSpacing: '.1em', margin: '0 0 16px', fontWeight: 800 }}>
-              🔥 47 VAGAS RESTANTES ESTA SEMANA
-            </p>
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '.1em', marginBottom: '16px' }}>
-              (limitamos para garantir suporte por WhatsApp)
-            </p>
 
             <h2 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: 900, margin: "32px 0 16px", lineHeight: 1.2 }}>
               Seu feed. Sua autoridade. <span style={{ color: T.accent }}>Sua decisão.</span>
