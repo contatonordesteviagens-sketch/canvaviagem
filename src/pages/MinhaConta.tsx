@@ -114,55 +114,87 @@ export default function MinhaConta() {
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span className="text-sm">Verificando plano...</span>
               </div>
-            ) : (
-              <>
-                <div className="flex items-center gap-3">
-                  {subscription.subscribed ? (
-                    <Badge className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1">
-                      PRO
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="text-sm px-3 py-1">
-                      Gratuito
-                    </Badge>
-                  )}
-                  {subscription.subscribed && (
-                    <span className="text-sm text-muted-foreground">Acesso ilimitado</span>
-                  )}
-                </div>
+            ) : (() => {
+              const isStart = subscription.subscribed && 
+                (subscription.productId?.includes("smart") || subscription.productId?.includes("start") || subscription.productId?.includes("basic"));
+              const isElite = subscription.subscribed && !isStart;
 
-                {subscription.subscribed && subscription.subscriptionEnd && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>Acesso até: {formatDate(subscription.subscriptionEnd)}</span>
-                  </div>
-                )}
-
-                {subscription.subscribed ? (
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleManageSubscription}
-                    disabled={loadingPortal}
-                  >
-                    {loadingPortal ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              return (
+                <>
+                  <div className="flex items-center gap-3">
+                    {subscription.subscribed ? (
+                      <Badge className={isElite ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs px-3 py-1 font-extrabold" : "bg-blue-600 text-white hover:bg-blue-700 text-xs px-3 py-1 font-extrabold"}>
+                        {isElite ? "ELITE PRO" : "START PRO"}
+                      </Badge>
                     ) : (
-                      <ExternalLink className="h-4 w-4 mr-2" />
+                      <Badge variant="secondary" className="text-sm px-3 py-1">
+                        Gratuito
+                      </Badge>
                     )}
-                    Gerenciar Assinatura
-                  </Button>
-                ) : (
-                  <Button
-                    className="w-full"
-                    onClick={() => navigate("/planos")}
-                  >
-                    <Crown className="h-4 w-4 mr-2" />
-                    Ver Planos PRO
-                  </Button>
-                )}
-              </>
-            )}
+                    {subscription.subscribed && (
+                      <span className="text-sm text-muted-foreground">
+                        {isElite ? "Acesso total e ilimitado à Fábrica" : "Acesso completo ao acervo"}
+                      </span>
+                    )}
+                  </div>
+
+                  {subscription.subscribed && subscription.subscriptionEnd && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>Acesso até: {formatDate(subscription.subscriptionEnd)}</span>
+                    </div>
+                  )}
+
+                  {subscription.subscribed ? (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={handleManageSubscription}
+                      disabled={loadingPortal}
+                    >
+                      {loadingPortal ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                      )}
+                      Gerenciar Assinatura
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full"
+                      onClick={() => navigate("/planos")}
+                    >
+                      <Crown className="h-4 w-4 mr-2" />
+                      Ver Planos PRO
+                    </Button>
+                  )}
+
+                  {(isStart || !subscription.subscribed) && (
+                    <div style={{
+                      marginTop: 20,
+                      padding: 16,
+                      borderRadius: 14,
+                      background: "linear-gradient(135deg, #071a2e 0%, #0d2640 100%)",
+                      border: "1px solid rgba(0, 229, 255, 0.2)"
+                    }}>
+                      <p style={{ margin: "0 0 6px", fontSize: 13, fontWeight: 800, color: "#00E5FF", display: "flex", alignItems: "center", gap: 6 }}>
+                        <Crown size={14} /> DESTAQUE-SE COM O PLANO ELITE
+                      </p>
+                      <p style={{ margin: "0 0 12px", fontSize: 11.5, color: "rgba(255, 255, 255, 0.7)", lineHeight: 1.5 }}>
+                        Desbloqueie a <strong>Fábrica de Anúncios ILIMITADA</strong> e o <strong>Criador de Sites de Viagem em 1 Clique</strong> para parar de parecer amador e vender pacotes no automático!
+                      </p>
+                      <Button 
+                        size="sm"
+                        className="w-full bg-[#00E5FF] text-[#050D1A] hover:bg-[#00c2db] font-extrabold text-[11px] uppercase tracking-wider h-9 border-none"
+                        onClick={() => navigate("/planos")}
+                      >
+                        Fazer Upgrade para Elite →
+                      </Button>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </CardContent>
         </Card>
 
