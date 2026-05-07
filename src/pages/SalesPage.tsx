@@ -926,7 +926,7 @@ export default function SalesPage() {
                 padding: "20px 36px", borderRadius: 16, border: "none", cursor: "pointer",
                 width: "100%", maxWidth: 480, textTransform: "uppercase", letterSpacing: 0.5,
                 boxShadow: `0 16px 50px ${T.accent}66` }}>
-              QUERO ACESSO ELITE PRO — R$ 41,41/mês
+              QUERO ACESSO ELITE PRO — R$ 28,91/mês
             </button>
             <p style={{ marginTop: 14, fontSize: 12, color: T.text3 }}>
               Acesso em 2 min · Garantia tripla · Cancele quando quiser
