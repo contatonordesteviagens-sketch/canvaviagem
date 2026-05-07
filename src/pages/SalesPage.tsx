@@ -71,9 +71,10 @@ const QUICK_TESTIMONIALS = [
 ];
 
 const PAINS = [
-  { emoji: "👻", title: "Instagram Fantasma", text: "Você posta uma vez por semana (no susto) e o engajamento é zero. Cliente passa direto." },
-  { emoji: "🎨", title: "Designer Entregou Lixo", text: "Pagou R$ 800 por umas artes que parecem feitas no Word. E ele sumiu no WhatsApp." },
-  { emoji: "💸", title: "Cliente Premium Te Ignora", text: "Quem paga R$ 8.000 por pacote olha seu perfil 3 segundos e vai para o concorrente." },
+  { emoji: "👻", title: "Instagram Fantasma", text: "Você posta uma vez por semana (com medo) e o engajamento é zero. Cliente passa direto para o concorrente." },
+  { emoji: "🎨", title: "Designer Entregou Lixo", text: "Pagou R$ 500 nas artes bonitas mas não vende." },
+  { emoji: "💸", title: "Viajante de alta renda Te Ignora", text: "Quem paga R$ 8.000 por pacote olha seu perfil 3 segundos e vai para o concorrente com perfil e site top." },
+  { emoji: "⏳", title: "Não Fazer Nada Custa Mais", text: "Cada dia com perfil e site parado são viagens que seu concorrente fecha no lugar de você. O custo real de não agir é muito mais que 8k/mês em vendas que você não faz." },
 ];
 
 const HOW_IT_WORKS = [
@@ -496,9 +497,12 @@ export default function SalesPage() {
         <div style={{ maxWidth: 1000, margin: "0 auto", textAlign: "center" }}>
           <Reveal>
             <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>VOCÊ SE IDENTIFICA?</p>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 900, marginBottom: 36 }}>
-              Vender viagens ficou impossível com um perfil "comum"
+            <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 900, marginBottom: 12 }}>
+              Vender viagens ficou impossível com um perfil comum
             </h2>
+            <p style={{ color: T.text2, fontSize: 15, marginBottom: 36, maxWidth: 600, margin: "0 auto 36px" }}>
+              Se você se identifica com algum desses, continue lendo.
+            </p>
           </Reveal>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 100%), 1fr))",
             gap: 16, marginBottom: 36 }}>
