@@ -41,14 +41,7 @@ const DEMO_VIDEO_URL = "https://www.youtube.com/embed/dvInvZZ7fLY?autoplay=1";
 // DATA
 // ────────────────────────────────────────────────────────────
 
-const QUICK_TESTIMONIALS = [
-  { name: "Camila Santos", agency: "Santos Viagens · Curitiba, PR", handle: "@santosviagens", instaUrl: "https://instagram.com/santosviagens",
-    text: "Lucas, menos de 24 horas e tive a primeira venda pra Disney, com mais de R$ 1.000 de comissão, usando os anúncios que você ensina! Antes só aparecia curiosos, mas não fechava nada. Usei a I.A pra montar o roteiro rapidinho, subi o anúncio e já veio uma galera chamando no WhatsApp!" },
-  { name: "Rodrigo Costa", agency: "Costa & Roteiros · Floripa, SC", handle: "@costaroteiros", instaUrl: "https://instagram.com/costaroteiros",
-    text: "Usei aquele modelo de anúncio que você mostrou pra promoção de férias e rodou super bem na minha cidade! Gastando pouco já apareceu muita gente interessada. Fiz 23 orçamentos só ontem e fechei 5 pacotes. Resultado incrível que nunca tive antes!" },
-  { name: "Fernanda Lima", agency: "Lima Destinos · BH, MG", handle: "@limadestinos", instaUrl: "https://instagram.com/limadestinos",
-    text: "Esse mês já saíram várias vendas usando as mídias e os sites da Fábrica, até aumentei a minha meta do mês! Tô feliz demais cara, obrigado por facilitar tanto nosso trabalho." },
-];
+
 
 const PAINS = [
   { emoji: "👻", title: "Instagram Fantasma", text: "Você posta uma vez por semana (com medo) e o engajamento é zero. Cliente passa direto para o concorrente." },
@@ -576,27 +569,7 @@ export default function SalesPage() {
             </div>
           </Reveal>
 
-          {/* Quick testimonials */}
-          <Reveal>
-            <p style={{ textAlign: "center", fontSize: 11, color: T.text3, letterSpacing: 2, fontWeight: 800, marginBottom: 18 }}>
-              + DEZENAS DE AGÊNCIAS REPETINDO O MESMO PADRÃO
-            </p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(240px, 100%), 1fr))", gap: 14 }}>
-              {QUICK_TESTIMONIALS.map((q, i) => (
-                <div key={q.name} style={{ background: T.card, border: T.border, borderRadius: 14, padding: 18 }}>
-                  <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.6, margin: "0 0 12px" }}>"{q.text}"</p>
-                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                    <Avatar name={q.name} idx={i + 2} size={36} />
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 12, fontWeight: 700, margin: 0 }}>{q.name}</p>
-                      <a href={q.instaUrl} target="_blank" rel="noopener noreferrer"
-                        style={{ fontSize: 11, color: T.accent, textDecoration: "none" }}>{q.handle} ↗</a>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Reveal>
+
         </div>
       </section>
 
