@@ -40,29 +40,6 @@ const DEMO_VIDEO_URL = "https://www.youtube.com/embed/dvInvZZ7fLY?autoplay=1";
 // ────────────────────────────────────────────────────────────
 // DATA
 // ────────────────────────────────────────────────────────────
-// 2 case-studies fortes + 4 depoimentos rápidos
-const CASES = [
-  {
-    name: "Renata Vasconcelos",
-    agency: "Dream Travel · São Paulo, SP",
-    handle: "@dreamtravel.sp",
-    instaUrl: "https://instagram.com/dreamtravel.sp",
-    headline: "Fechou R$ 8.420 em 31 dias com 4 posts",
-    text: "Eu postava 1x por semana, sem retorno. Em 31 dias usando o Canva Viagem postei 4 vídeos do Nordeste, recebi 11 DMs e fechei 3 pacotes que somaram R$ 8.420 só na primeira mensalidade.",
-    metrics: ["+11 DMs em 31 dias", "3 pacotes fechados", "R$ 8.420 em vendas"],
-    photo: "/assets/renata.png",
-  },
-  {
-    name: "Carlos Eduardo",
-    agency: "Cadu Viagens · Recife, PE",
-    handle: "@caduviagens",
-    instaUrl: "https://instagram.com/caduviagens",
-    headline: "De 3h por post para 2 minutos — fechou R$ 12.700 em 45 dias",
-    text: "Antes eu travava 3 horas para um único post no Canva. Agora pego o vídeo pronto, troco logo, posto. Em 45 dias fechei 5 pacotes Caribe que somaram R$ 12.700 — sem aumentar tráfego pago.",
-    metrics: ["2 min por post", "5 pacotes Caribe", "R$ 12.700 em 45 dias"],
-    photo: "/assets/carlos.png",
-  },
-];
 
 const QUICK_TESTIMONIALS = [
   { name: "Camila Santos", agency: "Santos Viagens · Curitiba, PR", handle: "@santosviagens", instaUrl: "https://instagram.com/santosviagens",
@@ -553,49 +530,13 @@ export default function SalesPage() {
       {/* ─── PROVA SOCIAL — 2 case studies + carrossel ─── */}
       <section style={{ padding: "70px 20px", background: T.bgDeep }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
+          <div style={{ textAlign: "center", marginBottom: 10 }}>
             <Reveal>
               <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>RESULTADOS REAIS</p>
               <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 900 }}>
                 Quem virou a chave em 30 dias
               </h2>
             </Reveal>
-          </div>
-
-          {/* Cases */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(320px, 100%), 1fr))",
-            gap: 24, marginBottom: 36 }}>
-            {CASES.map((c, i) => (
-              <Reveal key={c.name} delay={i * 0.08}>
-                <div style={{ background: T.card, border: `1px solid ${T.accent}33`, borderRadius: 20,
-                  padding: 28, height: "100%", display: "flex", flexDirection: "column", gap: 18 }}>
-                  <div style={{ background: `${T.accent}15`, color: T.accent, fontSize: 13, fontWeight: 800,
-                    padding: "10px 14px", borderRadius: 10, alignSelf: "flex-start", lineHeight: 1.4 }}>
-                    📈 {c.headline}
-                  </div>
-                  <p style={{ fontSize: 15, color: T.text2, lineHeight: 1.7, flex: 1, margin: 0 }}>"{c.text}"</p>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {c.metrics.map(m => (
-                      <span key={m} style={{ fontSize: 11, fontWeight: 700, color: T.text2,
-                        background: "rgba(255,255,255,0.04)", border: T.border, padding: "5px 10px", borderRadius: 6 }}>
-                        {m}
-                      </span>
-                    ))}
-                  </div>
-                  <div style={{ display: "flex", gap: 12, alignItems: "center", borderTop: T.border, paddingTop: 16 }}>
-                    <Avatar name={c.name} photo={c.photo} idx={i} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>{c.name}</p>
-                      <p style={{ fontSize: 12, color: T.text3, margin: 0 }}>{c.agency}</p>
-                      <a href={c.instaUrl} target="_blank" rel="noopener noreferrer"
-                        style={{ fontSize: 12, color: T.accent, textDecoration: "none", fontWeight: 700 }}>
-                        {c.handle} ↗
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
           </div>
 
           {/* WhatsApp Print Testimonials Gallery */}
