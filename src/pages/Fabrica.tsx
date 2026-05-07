@@ -135,6 +135,24 @@ const Fabrica = () => {
   const navigate = useNavigate();
   const { subscription, isAdmin, loading: authLoading } = useAuth();
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl + Alt + F (F for Fábrica)
+      if (e.ctrlKey && e.altKey && e.key.toLowerCase() === "f") {
+        const pass = window.prompt("Acesso Mestre - Digite a senha administrativa:");
+        if (pass === "lucas2026") {
+          localStorage.setItem("cv_bypass", "true");
+          alert("Acesso mestre ativado com sucesso!");
+          window.location.reload();
+        } else if (pass !== null) {
+          alert("Senha incorreta.");
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const isStart = subscription.subscribed && 
     (subscription.productId?.includes("smart") || subscription.productId?.includes("start") || subscription.productId?.includes("basic")) &&
     !(subscription.productId === "prod_UTFlCWzNqvqSNx" || subscription.productId === "prod_UTFsXcKq8m0mol" || subscription.productId === "prod_UTSmPe3GPt8iHt");
@@ -159,16 +177,8 @@ const Fabrica = () => {
         }}
       >
         <div className="max-w-md w-full bg-[#121214] border border-white/10 rounded-2xl p-6 shadow-2xl relative z-10 text-center">
-          {/* Header Badge (Hidden bypass on click for internal testing) */}
-          <div 
-            onClick={() => {
-              if (window.confirm("Deseja liberar o acesso ilimitado de teste à Fábrica? (Bypass de Desenvolvedor)")) {
-                localStorage.setItem("cv_bypass", "true");
-                window.location.reload();
-              }
-            }}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-amber-500/20 bg-amber-500/10 mb-6 cursor-pointer hover:border-amber-500/50 transition-colors"
-          >
+          {/* Header Badge */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-amber-500/20 bg-amber-500/10 mb-6">
             <Crown className="w-4 h-4 text-amber-500 animate-bounce" />
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-500">Upgrade Necessário</span>
           </div>
