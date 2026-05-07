@@ -15,8 +15,8 @@ import lucasPortrait from "@/assets/lucas-site-webp.webp";
 const STRIPE = {
   smart_monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
   smart_annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
-  elite_monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
-  elite_annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
+  elite_monthly: "https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c",
+  elite_annual: "https://buy.stripe.com/6oU7sM2PEcaY42vcJ68so0b",
 };
 
 const T = {
