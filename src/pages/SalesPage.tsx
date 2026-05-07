@@ -620,12 +620,91 @@ export default function SalesPage() {
                   <span style={{ fontSize: "20px" }}>⚠️</span>
                   <div>
                     <h4 style={{ margin: "0 0 4px 0", fontSize: "14px", fontWeight: "900", color: "#FFAA00", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                      Aviso Importante: Virada de Lote Próxima
+                      Aviso de Liberação: Fábrica de Elite
                     </h4>
                     <p style={{ margin: 0, fontSize: "13px", color: "rgba(255,255,255,0.8)", lineHeight: "1.5" }}>
-                      O preço do <strong>1º Lote (R$ 347/ano)</strong> vai subir. Assim que as vagas remanescentes forem preenchidas, a ferramenta passará para o <strong>2º Lote por R$ 497/ano</strong> no plano anual. Garanta seu acesso hoje com desconto máximo.
+                      O preço promocional do <strong>1º Lote ({billingPeriod === "monthly" ? "R$ 49/mês" : "R$ 347/ano"})</strong> para liberação total da <strong>Fábrica de Elite (Gerador de Anúncios e Artes de Viagem + Criador de Sites de Vendas)</strong> vai subir. Assim que as vagas restantes forem preenchidas, o acesso à Fábrica passará para o <strong>2º Lote por {billingPeriod === "monthly" ? "R$ 97/mês" : "R$ 497/ano"}</strong>. Garanta sua vaga hoje com desconto máximo.
                     </p>
                   </div>
+                </div>
+              </div>
+
+              {/* VISUALIZADOR DE LOTES ANIMADO */}
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+                gap: "16px",
+                maxWidth: "600px",
+                margin: "0 auto 32px",
+                padding: "0 10px"
+              }}>
+                {/* 1º Lote */}
+                <div style={{
+                  background: "rgba(255, 0, 50, 0.03)",
+                  border: "2px solid #FF3366",
+                  boxShadow: "0 0 20px rgba(255, 51, 102, 0.25)",
+                  borderRadius: "16px",
+                  padding: "20px 16px",
+                  position: "relative",
+                  textAlign: "center"
+                }}>
+                  {/* Floating Flame Animation */}
+                  <motion.div
+                    animate={{ 
+                      y: [0, -6, 0],
+                      rotate: [-3, 3, -3],
+                      scale: [1, 1.08, 1]
+                    }}
+                    transition={{ 
+                      duration: 2.2, 
+                      repeat: Infinity, 
+                      ease: "easeInOut" 
+                    }}
+                    style={{
+                      position: "absolute",
+                      top: "-16px",
+                      right: "-12px",
+                      fontSize: "26px",
+                      filter: "drop-shadow(0 0 10px #FF6600)",
+                      cursor: "default"
+                    }}
+                  >
+                    🔥
+                  </motion.div>
+                  <p style={{ margin: "0 0 6px 0", fontSize: "11px", fontWeight: "900", color: "#FF3366", letterSpacing: "1.5px", textTransform: "uppercase" }}>1º LOTE</p>
+                  <p style={{ margin: 0, fontSize: "24px", fontWeight: "900", color: "#FFFFFF" }}>
+                    R$ <span style={{ color: "#FF3366" }}>{billingPeriod === "monthly" ? "49" : "347"}</span>
+                  </p>
+                </div>
+
+                {/* 2º Lote */}
+                <div style={{
+                  background: "rgba(255, 255, 255, 0.02)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  borderRadius: "16px",
+                  padding: "20px 16px",
+                  textAlign: "center",
+                  opacity: 0.4
+                }}>
+                  <p style={{ margin: "0 0 6px 0", fontSize: "11px", fontWeight: "800", color: "rgba(255,255,255,0.6)", letterSpacing: "1.5px", textTransform: "uppercase" }}>2º LOTE</p>
+                  <p style={{ margin: 0, fontSize: "24px", fontWeight: "800", color: "rgba(255,255,255,0.4)", textDecoration: "line-through" }}>
+                    R$ {billingPeriod === "monthly" ? "97" : "497"}
+                  </p>
+                </div>
+
+                {/* 3º Lote */}
+                <div style={{
+                  background: "rgba(255, 255, 255, 0.02)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  borderRadius: "16px",
+                  padding: "20px 16px",
+                  textAlign: "center",
+                  opacity: 0.4
+                }}>
+                  <p style={{ margin: "0 0 6px 0", fontSize: "11px", fontWeight: "800", color: "rgba(255,255,255,0.6)", letterSpacing: "1.5px", textTransform: "uppercase" }}>3º LOTE</p>
+                  <p style={{ margin: 0, fontSize: "24px", fontWeight: "800", color: "rgba(255,255,255,0.4)", textDecoration: "line-through" }}>
+                    R$ {billingPeriod === "monthly" ? "147" : "597"}
+                  </p>
                 </div>
               </div>
 
@@ -633,7 +712,7 @@ export default function SalesPage() {
                 border: `1px solid ${T.accent}55`, borderRadius: 100, padding: "8px 16px", marginBottom: 8 }}>
                 <span className="animate-pulse" style={{ width: 8, height: 8, borderRadius: "50%", background: T.accent }} />
                 <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>
-                  Apenas 14 vagas restantes no 1º Lote
+                  Apenas 14 vagas restantes no 1º Lote da Fábrica
                 </span>
               </div>
               <p style={{ color: T.text3, fontSize: 12, margin: "0 0 16px 0" }}>
