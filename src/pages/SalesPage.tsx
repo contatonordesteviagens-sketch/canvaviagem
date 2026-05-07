@@ -887,15 +887,15 @@ export default function SalesPage() {
       </section>
 
       {/* ─── CTA FINAL ─── */}
-      <section style={{ padding: "80px 20px", textAlign: "center",
+      <section style={{ padding: "40px 20px 20px", textAlign: "center",
         background: `radial-gradient(ellipse at 50% 50%, ${T.accent}10 0%, ${T.bgDeep} 70%)` }}>
         <div style={{ maxWidth: 720, margin: "0 auto" }}>
           <Reveal>
 
-            <h2 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: 900, margin: "32px 0 16px", lineHeight: 1.2 }}>
+            <h2 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: 900, margin: "24px 0 16px", lineHeight: 1.2 }}>
               Seu feed. Sua autoridade. <span style={{ color: T.accent }}>Sua decisão.</span>
             </h2>
-            <p style={{ color: T.text2, fontSize: 15, marginBottom: 32, maxWidth: 540, margin: "0 auto 32px", lineHeight: 1.6 }}>
+            <p style={{ color: T.text2, fontSize: 15, marginBottom: 24, maxWidth: 540, margin: "0 auto 24px", lineHeight: 1.6 }}>
               Cada dia com feed parado é um cliente fechando com o concorrente. Em 5 minutos você posta e me prova que funciona.
             </p>
             <button id="cta-final" onClick={() => checkout("elite_annual")}
@@ -917,8 +917,7 @@ export default function SalesPage() {
       </main>
 
       {/* ─── FOOTER ─── */}
-      <div style={{ height: 80 }} />
-      <footer style={{ background: T.bgDeep, borderTop: T.border, padding: "60px 20px 40px", textAlign: "center" }}>
+      <footer style={{ background: T.bgDeep, borderTop: T.border, padding: "30px 20px 30px", textAlign: "center" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 8, letterSpacing: 1 }}>CANVA VIAGEM</div>
           <p style={{ fontSize: 13, color: T.text3, marginBottom: 28, maxWidth: 380, margin: "0 auto 28px" }}>
