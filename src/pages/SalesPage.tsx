@@ -898,7 +898,7 @@ export default function SalesPage() {
             <p style={{ color: T.text2, fontSize: 15, marginBottom: 32, maxWidth: 540, margin: "0 auto 32px", lineHeight: 1.6 }}>
               Cada dia com feed parado é um cliente fechando com o concorrente. Em 5 minutos você posta e me prova que funciona.
             </p>
-            <button id="cta-final" onClick={() => checkout("annual")}
+            <button id="cta-final" onClick={() => checkout("smart_annual")}
               className="hover:scale-[1.03] active:scale-95 transition-all animate-pulse"
               style={{ background: T.accent, color: "#000", fontWeight: 900, fontSize: 17,
                 padding: "20px 36px", borderRadius: 16, border: "none", cursor: "pointer",
@@ -936,7 +936,7 @@ export default function SalesPage() {
         </div>
       </footer>
 
-      <ExitIntent onCta={() => checkout("annual")} />
+      <ExitIntent onCta={() => checkout("smart_annual")} />
       <VideoModal open={videoOpen} onClose={() => setVideoOpen(false)} />
     </div>
   );
