@@ -181,75 +181,77 @@ const Fabrica = () => {
   if (!hasAccess) {
     return (
       <div 
-        className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center p-4 relative overflow-hidden"
+        className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center p-4 relative overflow-hidden"
         style={{
-          backgroundImage: "radial-gradient(circle at 50% 30%, rgba(245,158,11,0.15) 0%, transparent 60%)"
+          backgroundImage: "radial-gradient(circle at 50% 30%, rgba(0,229,255,0.08) 0%, transparent 60%)"
         }}
       >
-        <div className="max-w-md w-full bg-[#121214] border border-white/10 rounded-2xl p-6 shadow-2xl relative z-10 text-center">
+        <div className="max-w-md w-full bg-[#050D1A] border border-cyan-500/20 rounded-3xl p-6 md:p-8 shadow-2xl shadow-cyan-500/5 relative z-10 text-center">
           {/* Header Badge */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-amber-500/20 bg-amber-500/10 mb-6">
-            <Crown className="w-4 h-4 text-amber-500 animate-bounce" />
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-500">Upgrade Necessário</span>
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 mb-6">
+            <Crown className="w-4 h-4 text-cyan-400 animate-bounce" />
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-cyan-400">Upgrade Recomendado</span>
           </div>
 
-          <h2 className="text-2xl font-black text-white mb-2 tracking-tight">
-            Desbloqueie a Fábrica de Destinos 👑
+          <h2 className="text-2xl md:text-3xl font-black text-white mb-2 tracking-tight">
+            Desbloqueie a Fábrica 👑
           </h2>
           <p className="text-xs text-white/60 mb-6 leading-relaxed">
-            Esta ferramenta é exclusiva para membros do <strong className="text-amber-500">Plano Elite</strong>. Faça o upgrade agora para ter acesso ilimitado à Fábrica de Anúncios e Criador de Sites de Viagem!
+            Esta ferramenta é exclusiva para membros do <strong className="text-cyan-400">Plano Elite</strong>. Faça o upgrade agora para ter acesso ilimitado à Fábrica de Anúncios e Criador de Sites de Viagem!
           </p>
 
           {/* Cards de Opções */}
           <div className="grid gap-4 mb-6">
-            {/* Opção Mensal */}
-            <div className="border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] p-4 rounded-xl text-left transition-all">
+            {/* Opção Anual (Recomendada - AGORA NO TOPO) */}
+            <div className="border border-orange-500/30 bg-orange-500/[0.02] hover:bg-orange-500/[0.04] p-5 rounded-2xl text-left relative overflow-hidden transition-all shadow-[0_0_15px_rgba(249,115,22,0.05)]">
+              <div className="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-red-600 text-[9px] font-black uppercase text-white px-2.5 py-1 rounded-bl-xl tracking-wider">
+                MAIOR ECONOMIA (Poupa R$ 241/ano)
+              </div>
+              
+              <div className="flex justify-between items-start mb-2 mt-1">
+                <div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm font-black text-orange-400">Plano Elite Anual</span>
+                    <Sparkles className="w-3.5 h-3.5 text-orange-400 animate-pulse" />
+                  </div>
+                  <p className="text-[10px] text-white/40 mt-0.5">Acesso completo por 12 meses</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xl font-black text-white">R$ 28,91</span>
+                  <span className="text-[11px] text-white/50">/mês</span>
+                  <p className="text-[9px] text-orange-400 font-bold mt-0.5">R$ 347 cobrado anualmente</p>
+                </div>
+              </div>
+              
+              <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-2.5 mb-4 text-[10px] text-orange-200 leading-normal">
+                💡 <strong>Análise de Economia:</strong> Comprar mensalmente por 1 ano custa R$ 1.164. No plano anual, você paga apenas R$ 347 — uma economia garantida de <strong>R$ 817,00/ano</strong>!
+              </div>
+
+              <button 
+                onClick={() => window.open("https://buy.stripe.com/fZu14ogGugreeH9bF28so0d", "_blank")}
+                className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs transition-all shadow-lg shadow-orange-500/20 uppercase tracking-wider border-0 cursor-pointer text-center"
+              >
+                Garantir Anual com Desconto →
+              </button>
+            </div>
+
+            {/* Opção Mensal (AGORA EMBAIXO) */}
+            <div className="border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] p-4 rounded-2xl text-left transition-all">
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <span className="text-xs font-bold text-white/80">Plano Elite Mensal</span>
-                  <p className="text-[10px] text-white/40">Acesso recorrente, cancele quando quiser</p>
+                  <p className="text-[10px] text-white/40 mt-0.5">Acesso recorrente, cancele quando quiser</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-lg font-black text-white">R$ 49</span>
+                  <span className="text-lg font-black text-white">R$ 97</span>
                   <span className="text-[10px] text-white/50">/mês</span>
                 </div>
               </div>
               <button 
                 onClick={() => window.open("https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c", "_blank")}
-                className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-lg text-xs mt-2 transition-colors"
+                className="w-full bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-bold py-2 px-3 rounded-xl text-xs mt-1 transition-colors border-0 cursor-pointer text-center"
               >
-                Assinar Mensal por R$ 49 →
-              </button>
-            </div>
-
-            {/* Opção Anual (Recomendada) */}
-            <div className="border border-amber-500/40 bg-amber-500/[0.03] hover:bg-amber-500/[0.06] p-4 rounded-xl text-left relative overflow-hidden transition-all shadow-[0_0_15px_rgba(245,158,11,0.05)]">
-              <div className="absolute top-0 right-0 bg-gradient-to-r from-amber-500 to-orange-600 text-[9px] font-black uppercase text-white px-2 py-0.5 rounded-bl-lg tracking-wider">
-                MAIOR ECONOMIA
-              </div>
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs font-black text-amber-400">Plano Elite Anual</span>
-                    <Sparkles className="w-3 h-3 text-amber-400 animate-pulse" />
-                  </div>
-                  <p className="text-[10px] text-amber-200/60 font-semibold">Equivale a apenas R$ 28,91/mês</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-lg font-black text-white">R$ 347</span>
-                  <span className="text-[10px] text-white/50">/ano</span>
-                </div>
-              </div>
-              
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-2 mb-3 text-[10px] text-amber-200 leading-normal">
-                💡 <strong>Análise de Economia:</strong> Comprar mensalmente por 1 ano custa R$ 588. No plano anual, você paga apenas R$ 347 — uma economia garantida de <strong>R$ 241,00/ano</strong>!
-              </div>
-
-              <button 
-                onClick={() => window.open("https://buy.stripe.com/fZu14ogGugreeH9bF28so0d", "_blank")}
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold py-2.5 px-3 rounded-lg text-xs transition-all shadow-md uppercase tracking-wider"
-              >
-                Garantir Anual com Desconto →
+                Assinar Mensal por R$ 97 →
               </button>
             </div>
           </div>
@@ -257,9 +259,9 @@ const Fabrica = () => {
           {/* Botão de Voltar */}
           <button 
             onClick={() => navigate("/")}
-            className="text-xs text-white/40 hover:text-white flex items-center justify-center gap-1.5 mx-auto transition-colors"
+            className="text-xs text-white/40 hover:text-white flex items-center justify-center gap-1.5 mx-auto transition-colors border-0 bg-transparent cursor-pointer"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> Voltar para o Painel
+            ← Voltar para o Painel
           </button>
         </div>
       </div>
