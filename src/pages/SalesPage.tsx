@@ -13,8 +13,10 @@ import lucasPortrait from "@/assets/lucas-site-webp.webp";
 // CONFIG
 // ────────────────────────────────────────────────────────────
 const STRIPE = {
-  monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
-  annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
+  smart_monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
+  smart_annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
+  elite_monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
+  elite_annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
 };
 
 const T = {
@@ -240,12 +242,17 @@ const ExitIntent = ({ onCta }: { onCta: () => void }) => {
 export default function SalesPage() {
   const [videoOpen, setVideoOpen] = useState(false);
   const [ctaClicked, setCtaClicked] = useState(false);
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("annual");
 
   useEffect(() => { trackViewContent("Canva Viagem 10/10"); window.scrollTo(0, 0); }, []);
 
-  const checkout = (plan: "monthly" | "annual" = "annual") => {
+  const checkout = (plan: "smart_monthly" | "smart_annual" | "elite_monthly" | "elite_annual" = "elite_annual") => {
     setCtaClicked(true);
-    trackInitiateCheckout(plan === "annual" ? 197 : 29.9);
+    let priceVal = 497;
+    if (plan === "smart_monthly") priceVal = 29.9;
+    else if (plan === "smart_annual") priceVal = 197;
+    else if (plan === "elite_monthly") priceVal = 97;
+    trackInitiateCheckout(priceVal);
     window.open(STRIPE[plan], "_blank");
   };
 
@@ -254,9 +261,9 @@ export default function SalesPage() {
       fontFamily: "Inter, system-ui, sans-serif" }}>
 
       <ScrollProgressBar />
-      <StickyTopBar onCheckout={() => checkout("annual")} />
+      <StickyTopBar onCheckout={() => checkout("elite_annual")} />
       <SocialProofToast ctaClicked={ctaClicked} />
-      <MobileFloatingCTA onCheckout={() => checkout("annual")} />
+      <MobileFloatingCTA onCheckout={() => checkout("elite_annual")} />
 
       <main style={{ paddingTop: "48px" }}>
 
@@ -550,12 +557,56 @@ export default function SalesPage() {
       </section>
 
       {/* ─── PREÇO ─── */}
-      <section id="pricing" style={{ padding: "70px 20px" }}>
+      <section id="pricing" style={{ padding: "80px 20px" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 36 }}>
             <Reveal>
               <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>ACESSO IMEDIATO</p>
-              <h2 style={{ fontSize: "clamp(26px, 4vw, 40px)", fontWeight: 900, marginBottom: 16 }}>Escolha seu plano</h2>
+              <h2 style={{ fontSize: "clamp(26px, 4vw, 40px)", fontWeight: 900, marginBottom: 24 }}>Escolha o seu plano</h2>
+
+              {/* TOGGLE MENSAL / ANUAL */}
+              <div style={{ 
+                display: "inline-flex", 
+                background: "rgba(255, 255, 255, 0.04)", 
+                border: "1px solid rgba(255, 255, 255, 0.1)", 
+                borderRadius: "100px", 
+                padding: "4px", 
+                marginBottom: "32px" 
+              }}>
+                <button 
+                  onClick={() => setBillingPeriod("monthly")}
+                  style={{ 
+                    background: billingPeriod === "monthly" ? T.accent : "transparent",
+                    color: billingPeriod === "monthly" ? "#000000" : T.text2,
+                    border: "none",
+                    borderRadius: "100px",
+                    padding: "10px 24px",
+                    fontSize: "13px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  PAGAR MENSAL
+                </button>
+                <button 
+                  onClick={() => setBillingPeriod("annual")}
+                  style={{ 
+                    background: billingPeriod === "annual" ? T.accent : "transparent",
+                    color: billingPeriod === "annual" ? "#000000" : T.text2,
+                    border: "none",
+                    borderRadius: "100px",
+                    padding: "10px 24px",
+                    fontSize: "13px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  PAGAR ANUAL
+                </button>
+              </div>
+
               <div style={{ display: "inline-flex", gap: 10, alignItems: "center", background: `${T.accent}10`,
                 border: `1px solid ${T.accent}55`, borderRadius: 100, padding: "8px 16px", marginBottom: 8 }}>
                 <span className="animate-pulse" style={{ width: 8, height: 8, borderRadius: "50%", background: T.accent }} />
@@ -570,75 +621,136 @@ export default function SalesPage() {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(290px, 100%), 1fr))",
-            gap: 24, alignItems: "start", marginTop: 32 }}>
-            {/* MENSAL */}
+            gap: 32, alignItems: "stretch", marginTop: 32 }}>
+            
+            {/* PLANO START */}
             <Reveal>
-              <div style={{ background: T.card, border: T.border, borderRadius: 24, padding: "40px 32px" }}>
-                <p style={{ fontSize: 12, fontWeight: 800, color: T.text3, letterSpacing: 2, marginBottom: 20 }}>PLANO MENSAL</p>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
-                  <span style={{ fontSize: 52, fontWeight: 900, lineHeight: 1 }}>29</span>
-                  <span style={{ fontSize: 22, fontWeight: 800 }}>,90</span>
-                  <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
-                </div>
-                <p style={{ fontSize: 12, color: T.text3, marginBottom: 28 }}>Cancele a qualquer momento</p>
-                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 12 }}>
-                  {["Acesso ilimitado ao acervo", "400+ artes editáveis", "11 IAs especialistas", "Suporte via E-mail"].map(f => (
-                    <li key={f} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 14, color: T.text2 }}>
-                      <Check size={16} color={T.text3} /> {f}
+              <div style={{ 
+                background: T.card, 
+                border: T.border, 
+                borderRadius: 24, 
+                padding: "48px 32px",
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+                justifyContent: "space-between"
+              }}>
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 800, color: T.text3, letterSpacing: 2, marginBottom: 20 }}>PLANO START</p>
+                  
+                  {billingPeriod === "monthly" ? (
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
+                      <span style={{ fontSize: 52, fontWeight: 900, lineHeight: 1 }}>29</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>,90</span>
+                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
+                      <span style={{ fontSize: 52, fontWeight: 900, lineHeight: 1 }}>16</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>,41</span>
+                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
+                    </div>
+                  )}
+
+                  <p style={{ fontSize: 12, color: T.text3, marginBottom: 28 }}>
+                    {billingPeriod === "monthly" ? "Assinatura mensal recorrente" : "Equivalente a R$ 197,00 cobrados anualmente"}
+                  </p>
+
+                  <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 12 }}>
+                    {["Acesso ilimitado ao acervo", "400+ artes editáveis no Canva", "11 IAs especialistas", "Suporte via E-mail"].map(f => (
+                      <li key={f} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 14, color: T.text2 }}>
+                        <Check size={16} color={T.text3} /> {f}
+                      </li>
+                    ))}
+                    <li style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 14, color: "rgba(255,255,255,0.25)" }}>
+                      <span style={{ textDecoration: "line-through" }}>Fábrica de Anúncios Inteligente</span>
                     </li>
-                  ))}
-                </ul>
-                <button id="cta-pricing-monthly" onClick={() => checkout("monthly")}
+                  </ul>
+                </div>
+
+                <button 
+                  onClick={() => checkout(billingPeriod === "monthly" ? "smart_monthly" : "smart_annual")}
                   onMouseEnter={e => (e.currentTarget.style.background = `${T.accent}1a`)}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                   style={{ width: "100%", padding: 16, borderRadius: 12, border: `2px solid ${T.accent}`,
                     background: "transparent", color: T.accent, fontWeight: 800, fontSize: 14,
-                    cursor: "pointer", letterSpacing: 0.5, transition: "background 0.2s" }}>
-                  ASSINAR MENSAL
+                    cursor: "pointer", letterSpacing: 0.5, transition: "background 0.2s" }}
+                >
+                  ASSINAR START {billingPeriod === "monthly" ? "MENSAL" : "ANUAL"}
                 </button>
               </div>
             </Reveal>
 
-            {/* ANUAL */}
+            {/* PLANO ELITE */}
             <Reveal delay={0.1}>
-              <div style={{ background: "linear-gradient(145deg, #071a2e 0%, #0d2640 100%)",
-                border: `2px solid ${T.accent}`, borderRadius: 24, padding: "48px 32px 40px",
-                position: "relative", boxShadow: `0 20px 60px ${T.accent}33` }}>
-                <div className="animate-pulse" style={{ position: "absolute", top: 0, left: "50%",
-                  transform: "translate(-50%,-50%)", background: T.accent, color: "#000", fontWeight: 900,
-                  fontSize: 11, padding: "6px 16px", borderRadius: 100, whiteSpace: "nowrap",
-                  boxShadow: `0 8px 20px ${T.accent}44` }}>
-                  ⭐ ECONOMIZE R$ 161 + R$ 50 EM BÔNUS
+              <div style={{ 
+                background: "linear-gradient(145deg, #071a2e 0%, #0d2640 100%)",
+                border: `2px solid ${T.accent}`, 
+                borderRadius: 24, 
+                padding: "48px 32px 40px",
+                position: "relative", 
+                boxShadow: `0 20px 60px ${T.accent}33`,
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+                justifyContent: "space-between"
+              }}>
+                <div>
+                  <div style={{ position: "absolute", top: 0, left: "50%",
+                    transform: "translate(-50%,-50%)", background: T.accent, color: "#000", fontWeight: 900,
+                    fontSize: 11, padding: "6px 16px", borderRadius: 100, whiteSpace: "nowrap",
+                    boxShadow: `0 8px 20px ${T.accent}44` }}>
+                    ⭐ RECOMENDADO PARA ALTA CONVERSÃO
+                  </div>
+                  
+                  <p style={{ fontSize: 12, fontWeight: 800, color: T.accent, letterSpacing: 2, marginBottom: 20 }}>PLANO ELITE PRO</p>
+                  
+                  {billingPeriod === "monthly" ? (
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
+                      <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1 }}>97</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>,00</span>
+                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
+                      <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1 }}>41</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>,41</span>
+                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
+                    </div>
+                  )}
+
+                  <p style={{ fontSize: 12, color: T.text2, marginBottom: 28 }}>
+                    {billingPeriod === "monthly" ? "Assinatura mensal sem fidelidade" : "Equivalente a R$ 497,00 cobrados anualmente (Economia massiva)"}
+                  </p>
+
+                  <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 14 }}>
+                    {["TUDO DO PLANO START +", "Acesso Ilimitado à Fábrica de Anúncios", "Até 10 criações com IA por dia", "E-book: Scripts High-End 🎁", "Suporte VIP WhatsApp com Lucas"].map((f, i) => (
+                      <li key={f} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 14,
+                        fontWeight: i === 0 ? 800 : 500, color: i === 0 ? T.accent : T.text }}>
+                        <Check size={16} color={T.accent} /> {f}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <p style={{ fontSize: 12, fontWeight: 800, color: T.accent, letterSpacing: 2, marginBottom: 20 }}>PLANO ANUAL PRO</p>
-                <p style={{ fontSize: 13, color: T.text3, textDecoration: "line-through", marginBottom: 4 }}>de R$ 358,80/ano</p>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
-                  <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1 }}>16</span>
-                  <span style={{ fontSize: 22, fontWeight: 800 }}>,41</span>
-                  <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
+
+                <div>
+                  <button 
+                    onClick={() => checkout(billingPeriod === "monthly" ? "elite_monthly" : "elite_annual")}
+                    className="hover:scale-[1.02] active:scale-95 transition-all"
+                    style={{ width: "100%", padding: 18, borderRadius: 14, background: T.accent, color: "#000",
+                      fontWeight: 900, fontSize: 15, cursor: "pointer", border: "none",
+                      boxShadow: `0 12px 40px ${T.accent}55`, textTransform: "uppercase", letterSpacing: 0.5 }}
+                  >
+                    QUERO O PLANO ELITE {billingPeriod === "monthly" ? "MENSAL" : "ANUAL"} →
+                  </button>
+                  <p style={{ textAlign: "center", fontSize: 12, color: T.text3, marginTop: 16, marginBottom: 0 }}>
+                    ⚡ Acesso imediato · Suporte garantido
+                  </p>
                 </div>
-                <p style={{ fontSize: 12, color: T.text2, marginBottom: 28 }}>R$ 197/ano · pago em até 12x · Stripe ou PIX</p>
-                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 14 }}>
-                  {["TUDO DO MENSAL +", "Prioridade em novos destinos", "E-book: Scripts High-End 🎁",
-                    "Suporte VIP via WhatsApp", "Acesso a lives exclusivas"].map((f, i) => (
-                    <li key={f} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 14,
-                      fontWeight: i === 0 ? 800 : 500, color: i === 0 ? T.accent : T.text }}>
-                      <Check size={16} color={T.accent} /> {f}
-                    </li>
-                  ))}
-                </ul>
-                <button id="cta-pricing-pro" onClick={() => checkout("annual")}
-                  className="hover:scale-[1.02] active:scale-95 transition-all"
-                  style={{ width: "100%", padding: 18, borderRadius: 14, background: T.accent, color: "#000",
-                    fontWeight: 900, fontSize: 15, cursor: "pointer", border: "none",
-                    boxShadow: `0 12px 40px ${T.accent}55`, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                  QUERO O PLANO ANUAL PRO →
-                </button>
-                <p style={{ textAlign: "center", fontSize: 12, color: T.text3, marginTop: 16 }}>
-                  ⚡ Acesso em 2 min · Cancele com 1 clique
-                </p>
               </div>
             </Reveal>
           </div>
