@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Dock } from "@/components/ui/Dock";
 import { useNavigate } from "react-router-dom";
 import { ComingSoonGate } from "@/components/fabrica/ComingSoonGate";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface BottomNavProps {
   activeCategory: CategoryType;
@@ -15,6 +16,7 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [gateOpen, setGateOpen] = useState(false);
+  const { user, subscription } = useAuth();
 
   const handleTabClick = (category: CategoryType | "home" | "calendar" | "fabrica") => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -25,7 +27,18 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
     } else if (category === "calendar") {
       navigate("/calendar");
     } else if (category === "fabrica") {
-      setGateOpen(true);
+      const isEliteUser = user && subscription && (
+        subscription.productId === "prod_UTFlCWzNqvqSNx" || // Elite Anual
+        subscription.productId === "prod_UTFsXcKq8m0mol" || // Elite Mensal
+        subscription.productId === "prod_UTSmPe3GPt8iHt"    // Elite Mensal Variação
+      );
+      const isUnlocked = isEliteUser || localStorage.getItem("fabrica-unlocked") === "true";
+
+      if (isUnlocked) {
+        navigate("/fabrica");
+      } else {
+        setGateOpen(true);
+      }
     } else {
       onCategoryChange(category as CategoryType);
       navigate("/"); // Ensure we are on home to see content
