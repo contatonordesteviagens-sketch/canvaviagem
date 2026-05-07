@@ -8,6 +8,9 @@ import { StickyTopBar } from "../components/planos/StickyTopBar";
 import { SocialProofToast } from "../components/planos/SocialProofToast";
 import { MobileFloatingCTA } from "../components/planos/MobileFloatingCTA";
 import lucasPortrait from "@/assets/lucas-site-webp.webp";
+import depoimento1 from "@/assets/depoimento1.jpg";
+import depoimento2 from "@/assets/depoimento2.png";
+import depoimento3 from "@/assets/depoimento3.jpg";
 import { TimelineContent } from "@/components/ui/timeline-animation";
 import { VerticalCutReveal } from "@/components/ui/vertical-cut-reveal";
 
@@ -594,6 +597,43 @@ export default function SalesPage() {
               </Reveal>
             ))}
           </div>
+
+          {/* WhatsApp Print Testimonials Gallery */}
+          <Reveal>
+            <div style={{ textAlign: "center", marginBottom: 32, marginTop: 40 }}>
+              <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>PROVA REAL INDISCUTÍVEL</p>
+              <h3 style={{ fontSize: "clamp(20px, 3.5vw, 28px)", fontWeight: 900, marginBottom: 16 }}>
+                Resultados diretos no WhatsApp de quem usa
+              </h3>
+            </div>
+            <div style={{ 
+              display: "grid", 
+              gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 100%), 1fr))", 
+              gap: 20, 
+              marginBottom: 48 
+            }}>
+              {[depoimento1, depoimento2, depoimento3].map((img, index) => (
+                <div key={index} style={{ 
+                  background: T.card, 
+                  border: `1px solid rgba(0, 229, 255, 0.15)`, 
+                  borderRadius: 20, 
+                  overflow: "hidden",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.3)"
+                }} className="hover:scale-[1.03] hover:border-cyan-400 transition-all">
+                  <img 
+                    src={img} 
+                    alt={`Resultado real ${index + 1}`} 
+                    style={{ 
+                      width: "100%", 
+                      height: "auto", 
+                      maxHeight: 480, 
+                      objectFit: "contain" 
+                    }} 
+                  />
+                </div>
+              ))}
+            </div>
+          </Reveal>
 
           {/* Quick testimonials */}
           <Reveal>
