@@ -385,17 +385,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           </h1>
         </Reveal>
 
+        {/* Video Demonstration directly under Headline */}
         <Reveal delay={0.1}>
-          <p style={{ fontSize: 16, color: T.text2, maxWidth: 820, margin: "0 auto 28px", lineHeight: 1.6 }}>
-            A única plataforma do mercado de turismo que combina <strong style={{ color: T.text }}>250+ vídeos 4K</strong> e <strong style={{ color: T.text }}>artes editáveis no Canva</strong> com a revolucionária <strong style={{ color: T.accent }}>Fábrica de Anúncios com I.A</strong> — onde você digita a oferta e recebe o anúncio pronto, com preços, parcelas e o seu logo em 5 segundos. <strong style={{ color: T.accent }}>A partir de R$ 16,41/mês.</strong>
-          </p>
-        </Reveal>
-
-        {/* Video Demonstration at the TOP */}
-        <Reveal delay={0.12}>
           <div style={{ margin: "32px auto", maxWidth: 800 }}>
             <ProductDemo />
           </div>
+        </Reveal>
+
+        {/* Subheadline directly below Video */}
+        <Reveal delay={0.15}>
+          <p style={{ fontSize: 16, color: T.text2, maxWidth: 820, margin: "0 auto 28px", lineHeight: 1.6 }}>
+            A única plataforma do mercado de turismo que combina <strong style={{ color: T.text }}>250+ vídeos 4K</strong> e <strong style={{ color: T.text }}>artes editáveis no Canva</strong> com a revolucionária <strong style={{ color: T.accent }}>Fábrica de Anúncios com I.A</strong> — onde você digita a oferta e recebe o anúncio pronto, com preços, parcelas e o seu logo em 5 segundos. <strong style={{ color: T.accent }}>A partir de R$ 16,41/mês.</strong>
+          </p>
         </Reveal>
 
         {/* CTAs */}
