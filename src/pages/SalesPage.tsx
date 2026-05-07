@@ -659,13 +659,18 @@ export default function SalesPage() {
                   </p>
 
                   <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 12 }}>
-                    {["Acesso ilimitado ao acervo", "400+ artes editáveis no Canva", "11 IAs especialistas", "Suporte via E-mail"].map(f => (
+                    {[
+                      "Acesso ilimitado a 400+ fotos e artes prontas no Canva",
+                      "Modelos prontos de postagens que mais trazem clientes",
+                      "Robôs de Inteligência Artificial para tirar dúvidas",
+                      "Suporte completo por e-mail"
+                    ].map(f => (
                       <li key={f} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 14, color: T.text2 }}>
                         <Check size={16} color={T.text3} /> {f}
                       </li>
                     ))}
                     <li style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 14, color: "rgba(255,255,255,0.25)" }}>
-                      <span style={{ textDecoration: "line-through" }}>Fábrica de Anúncios Inteligente</span>
+                      <span style={{ textDecoration: "line-through" }}>Gerador Automático de Anúncios e Sites</span>
                     </li>
                   </ul>
                 </div>
@@ -728,10 +733,18 @@ export default function SalesPage() {
                   </p>
 
                   <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 14 }}>
-                    {["TUDO DO PLANO START +", "Acesso Ilimitado à Fábrica de Anúncios", "Até 10 criações com IA por dia", "E-book: Scripts High-End 🎁", "Suporte VIP WhatsApp com Lucas"].map((f, i) => (
-                      <li key={f} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 14,
+                    {[
+                      "TUDO DO PLANO START +",
+                      "Gerador de Anúncios e Artes de Viagem ILIMITADO (fotos reais prontas em 5 segundos)",
+                      "Criador Automático de Sites de Venda para cada roteiro de viagem",
+                      "Gerador de Legendas magnéticas prontas para copiar e colar",
+                      "Plano de Ação e Checklist diário de postagens para lotar seu WhatsApp",
+                      "Suporte VIP no WhatsApp diretamente com Lucas Ferrari"
+                    ].map((f, i) => (
+                      <li key={f} style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 14,
                         fontWeight: i === 0 ? 800 : 500, color: i === 0 ? T.accent : T.text }}>
-                        <Check size={16} color={T.accent} /> {f}
+                        <span style={{ marginTop: 2, flexShrink: 0 }}><Check size={16} color={T.accent} /></span>
+                        <span>{f}</span>
                       </li>
                     ))}
                   </ul>
