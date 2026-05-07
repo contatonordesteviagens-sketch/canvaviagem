@@ -112,11 +112,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('role', 'admin')
         .maybeSingle();
       
-      const dbIsAdmin = !!data;
+      const dbIsAdmin = !!data || currentUser.email === "lucashenriquephd@gmail.com";
       setIsAdmin(dbIsAdmin);
       
       if (dbIsAdmin) {
-        console.log('[AuthContext] User has admin role in database');
+        console.log('[AuthContext] User has admin role (database or email bypass)');
       }
       
       return dbIsAdmin;
