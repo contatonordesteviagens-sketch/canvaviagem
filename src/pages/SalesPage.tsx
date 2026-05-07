@@ -193,7 +193,7 @@ const VideoModal = ({ open, onClose }: { open: boolean; onClose: () => void }) =
 );
 
 // Exit intent popup
-const ExitIntent = ({ onCta }: { onCta: () => void }) => {
+const ExitIntent = ({ onCheckout }: { onCheckout: (plan: "smart_annual" | "elite_annual") => void }) => {
   const [open, setOpen] = useState(false);
   const fired = useRef(false);
   useEffect(() => {
@@ -214,22 +214,64 @@ const ExitIntent = ({ onCta }: { onCta: () => void }) => {
           display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
         <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} onClick={e => e.stopPropagation()}
           style={{ background: T.bgDeep, border: `2px solid ${T.accent}`, borderRadius: 24,
-            padding: "40px 32px", maxWidth: 460, textAlign: "center", position: "relative" }}>
+            padding: "40px 32px", maxWidth: 480, textAlign: "center", position: "relative" }}>
           <button onClick={() => setOpen(false)} style={{ position: "absolute", top: 12, right: 16,
             background: "transparent", border: "none", color: T.text3, fontSize: 24, cursor: "pointer" }}>✕</button>
-          <p style={{ fontSize: 12, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>ESPERA!</p>
-          <h2 style={{ fontSize: 28, fontWeight: 900, color: T.text, marginBottom: 12 }}>
-            Última chance de garantir <span style={{ color: T.accent }}>42% OFF</span>
+          <p style={{ fontSize: 12, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>OPORTUNIDADE ÚNICA</p>
+          <h2 style={{ fontSize: 24, fontWeight: 900, color: T.text, marginBottom: 12, lineHeight: 1.2 }}>
+            Não saia sem garantir o seu <span style={{ color: T.accent }}>Lote Promocional</span>
           </h2>
-          <p style={{ color: T.text2, fontSize: 15, marginBottom: 24 }}>
-            Você está prestes a sair sem garantir o preço de lançamento. Esse desconto não volta.
+          <p style={{ color: T.text2, fontSize: 14, marginBottom: 28, lineHeight: 1.5 }}>
+            Escolha abaixo a melhor opção de acesso para a sua agência antes que o preço suba na próxima virada de lote:
           </p>
-          <button id="cta-exit-intent" onClick={() => { onCta(); setOpen(false); }} style={{ width: "100%",
-            background: T.accent, color: "#000", fontWeight: 900, fontSize: 16, padding: "18px",
-            borderRadius: 14, border: "none", cursor: "pointer", textTransform: "uppercase", letterSpacing: 0.5 }}>
-            QUERO GARANTIR AGORA →
-          </button>
-          <p style={{ marginTop: 12, fontSize: 11, color: T.text3 }}>🔒 Garantia tripla · Cancele quando quiser</p>
+          
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {/* Botão Plano Elite (Recomendado) */}
+            <button 
+              onClick={() => { onCheckout("elite_annual"); setOpen(false); }} 
+              style={{ 
+                width: "100%",
+                background: "linear-gradient(135deg, #FF3366, #FF6600)",
+                color: "#FFFFFF", 
+                fontWeight: 900, 
+                fontSize: 15, 
+                padding: "16px 20px",
+                borderRadius: 14, 
+                border: "none", 
+                cursor: "pointer", 
+                textTransform: "uppercase", 
+                letterSpacing: 0.5,
+                boxShadow: "0 8px 24px rgba(255, 51, 102, 0.4)"
+              }}
+            >
+              Garantir Plano Elite (R$ 347/ano) ⭐
+            </button>
+
+            {/* Botão Plano Start */}
+            <button 
+              onClick={() => { onCheckout("smart_annual"); setOpen(false); }} 
+              style={{ 
+                width: "100%",
+                background: "transparent",
+                color: T.text2, 
+                fontWeight: 800, 
+                fontSize: 14, 
+                padding: "14px 20px",
+                borderRadius: 14, 
+                border: `1px solid rgba(255, 255, 255, 0.2)`, 
+                cursor: "pointer", 
+                textTransform: "uppercase", 
+                letterSpacing: 0.5,
+                transition: "all 0.2s"
+              }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = T.accent}
+              onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)"}
+            >
+              Garantir Plano Start (R$ 197/ano)
+            </button>
+          </div>
+          
+          <p style={{ marginTop: 18, fontSize: 11, color: T.text3 }}>🔒 Acesso em 2 min · Garantia tripla · Cancelamento simples</p>
         </motion.div>
       </motion.div>
     )}</AnimatePresence>
@@ -1036,7 +1078,7 @@ export default function SalesPage() {
         </div>
       </footer>
 
-      <ExitIntent onCta={() => checkout("smart_annual")} />
+      <ExitIntent onCheckout={checkout} />
       <VideoModal open={videoOpen} onClose={() => setVideoOpen(false)} />
     </div>
   );
