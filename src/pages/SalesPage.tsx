@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, Star, Shield, Play, ArrowRight } from "lucide-react";
+import { Check, X, Star, Shield, Play, ArrowRight, Briefcase, Users } from "lucide-react";
 import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
 import { ProductDemo } from "../components/planos/ProductDemo";
 import { CountdownTimer } from "../components/planos/CountdownTimer";
@@ -393,6 +393,102 @@ export default function SalesPage() {
       </section>
 
       <ProductDemo />
+
+      {/* ─── SEÇÃO FUNDADOR ─── */}
+      <section style={{ padding: "70px 20px", background: T.bgDeep, borderBottom: T.border }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
+          <Reveal>
+            <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>QUEM ESTÁ POR TRÁS DISSO</p>
+            <h2 style={{ fontSize: "clamp(26px, 4.5vw, 40px)", fontWeight: 900, marginBottom: 36 }}>
+              Quem está por trás disso
+            </h2>
+          </Reveal>
+
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 32, marginBottom: 40 }}>
+            <Reveal>
+              <div style={{ position: "relative" }}>
+                <img 
+                  src={lucasPortrait} 
+                  alt="Lucas Ferrari" 
+                  style={{ 
+                    width: 140, 
+                    height: 140, 
+                    borderRadius: "50%", 
+                    border: `3px solid ${T.accent}`,
+                    boxShadow: `0 0 24px ${T.accent}33`,
+                    objectFit: "cover" 
+                  }} 
+                />
+              </div>
+            </Reveal>
+
+            <Reveal delay={0.1}>
+              <p style={{ fontSize: 16, color: T.text2, lineHeight: 1.7, maxWidth: 680, margin: "0 auto" }}>
+                Sou <strong style={{ color: T.text }}>Lucas Ferrari</strong>. Operei agência de viagens e fazendo marketing para outras agências de viagens por 10 anos, fechei mais de <strong style={{ color: T.accent }}>R$ 4 milhões em pacotes vendidos online</strong> para minha agência e meus clientes, e construí o Canva Viagem porque eu mesmo precisava disso e não encontrava.
+              </p>
+            </Reveal>
+
+            <Reveal delay={0.15}>
+              <a 
+                href="https://www.instagram.com/lucasferrari.pro/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ 
+                  display: "inline-flex", 
+                  alignItems: "center", 
+                  gap: 8, 
+                  color: T.accent, 
+                  fontWeight: 800, 
+                  fontSize: 15, 
+                  textDecoration: "none",
+                  background: `${T.accent}15`,
+                  padding: "10px 20px",
+                  borderRadius: 100,
+                  border: `1px solid ${T.accent}44`,
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = `${T.accent}33`}
+                onMouseLeave={e => e.currentTarget.style.background = `${T.accent}15`}
+              >
+                Me seguir no Instagram →
+              </a>
+            </Reveal>
+          </div>
+
+          {/* 3 cards de credencial */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
+            <Reveal delay={0.2}>
+              <div style={{ background: T.card, border: T.border, borderRadius: 18, padding: 24, textAlign: "left", height: "100%", display: "flex", gap: 16, alignItems: "start" }}>
+                <div style={{ color: T.accent, background: `${T.accent}10`, padding: 10, borderRadius: 12, flexShrink: 0 }}><Briefcase size={20} /></div>
+                <div>
+                  <h4 style={{ margin: "0 0 6px 0", fontSize: 14, fontWeight: 800, color: T.text }}>Experiência</h4>
+                  <p style={{ margin: 0, fontSize: 13, color: T.text2, lineHeight: 1.5 }}>10 anos operando com agências de viagens emissivas e receptivas</p>
+                </div>
+              </div>
+            </Reveal>
+
+            <Reveal delay={0.25}>
+              <div style={{ background: T.card, border: T.border, borderRadius: 18, padding: 24, textAlign: "left", height: "100%", display: "flex", gap: 16, alignItems: "start" }}>
+                <div style={{ color: T.accent, background: `${T.accent}10`, padding: 10, borderRadius: 12, flexShrink: 0 }}><Users size={20} /></div>
+                <div>
+                  <h4 style={{ margin: "0 0 6px 0", fontSize: 14, fontWeight: 800, color: T.text }}>Comunidade</h4>
+                  <p style={{ margin: 0, fontSize: 13, color: T.text2, lineHeight: 1.5 }}>64 mil seguidores no Instagram @lucasferrari.pro</p>
+                </div>
+              </div>
+            </Reveal>
+
+            <Reveal delay={0.3}>
+              <div style={{ background: T.card, border: T.border, borderRadius: 18, padding: 24, textAlign: "left", height: "100%", display: "flex", gap: 16, alignItems: "start" }}>
+                <div style={{ color: T.accent, background: `${T.accent}10`, padding: 10, borderRadius: 12, flexShrink: 0 }}><Star size={20} /></div>
+                <div>
+                  <h4 style={{ margin: "0 0 6px 0", fontSize: 14, fontWeight: 800, color: T.text }}>Pioneirismo</h4>
+                  <p style={{ margin: 0, fontSize: 13, color: T.text2, lineHeight: 1.5 }}>1ª plataforma de marketing completa para viagens e turismo do mundo!</p>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
 
 
       {/* ─── DOR (3 cards) ─── */}
@@ -1002,71 +1098,7 @@ export default function SalesPage() {
         </div>
       </section>
 
-      {/* ─── SOBRE O AUTOR ─── */}
-      <section style={{ padding: "80px 20px", background: T.bgDeep, borderTop: T.border }}>
-        <div style={{ maxWidth: 880, margin: "0 auto" }}>
-          <Reveal>
-            <div style={{ 
-              background: "linear-gradient(145deg, #071a2e 0%, #0d2640 100%)",
-              border: `2px solid rgba(0, 229, 255, 0.15)`, 
-              borderRadius: 24, 
-              padding: "48px 40px",
-              display: "flex", 
-              flexDirection: "row", 
-              alignItems: "center", 
-              gap: "40px",
-              boxShadow: `0 20px 80px rgba(0, 229, 255, 0.1)`,
-              flexWrap: "wrap"
-            }}>
-              <div style={{ flex: "1 1 240px", display: "flex", justifyContent: "center" }}>
-                <div style={{ 
-                  width: 200, 
-                  height: 200, 
-                  borderRadius: "50%", 
-                  overflow: "hidden", 
-                  border: `3px solid ${T.accent}`,
-                  boxShadow: `0 0 30px ${T.accent}33`
-                }}>
-                  <img 
-                    src={lucasPortrait} 
-                    alt="Lucas Ferrari" 
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }} 
-                  />
-                </div>
-              </div>
-              <div style={{ flex: "2 1 400px", textAlign: "left" }}>
-                <p style={{ fontSize: '11px', color: T.accent, letterSpacing: '.1em', marginBottom: '12px', margin: 0, fontWeight: 800, textTransform: "uppercase" }}>
-                  Quem Criou a Plataforma
-                </p>
-                <h3 style={{ fontSize: "28px", fontWeight: 900, marginBottom: "16px", lineHeight: 1.2 }}>
-                  Criado por quem vive o turismo há mais de 10 anos
-                </h3>
-                <p style={{ fontSize: "16px", color: T.text2, lineHeight: 1.6, marginBottom: "24px" }}>
-                  Sou Lucas Ferrari, empresário do turismo e especialista em marketing digital para agências de viagens.
-                </p>
-                <a 
-                  href="https://www.instagram.com/lucasferrari.pro/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:scale-[1.02] active:scale-95 transition-all inline-flex items-center gap-2"
-                  style={{ 
-                    background: "rgba(255, 255, 255, 0.08)", 
-                    border: "1px solid rgba(255, 255, 255, 0.15)",
-                    color: "#FFFFFF", 
-                    fontWeight: 700, 
-                    fontSize: "14px", 
-                    padding: "12px 24px", 
-                    borderRadius: "100px",
-                    textDecoration: "none"
-                  }}
-                >
-                  📸 Me segue no Instagram: @lucasferrari.pro
-                </a>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+
 
       {/* ─── FAQ (8 perguntas) ─── */}
       <section style={{ padding: "70px 20px" }}>
