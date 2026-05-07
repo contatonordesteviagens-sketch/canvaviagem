@@ -169,7 +169,7 @@ const Fabrica = () => {
             Desbloqueie a Fábrica de Destinos 👑
           </h2>
           <p className="text-xs text-white/60 mb-6 leading-relaxed">
-            Esta ferramenta é exclusiva para membros do <strong className="text-amber-500">Plano Elite Pro</strong>. Faça o upgrade agora para ter acesso ilimitado à Fábrica de Anúncios e Criador de Sites de Viagem!
+            Esta ferramenta é exclusiva para membros do <strong className="text-amber-500">Plano Elite</strong>. Faça o upgrade agora para ter acesso ilimitado à Fábrica de Anúncios e Criador de Sites de Viagem!
           </p>
 
           {/* Cards de Opções */}

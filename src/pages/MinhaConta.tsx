@@ -124,7 +124,7 @@ export default function MinhaConta() {
                   <div className="flex items-center gap-3">
                     {subscription.subscribed ? (
                       <Badge className={isElite ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs px-3 py-1 font-extrabold" : "bg-blue-600 text-white hover:bg-blue-700 text-xs px-3 py-1 font-extrabold"}>
-                        {isElite ? "ELITE PRO" : "START PRO"}
+                        {isElite ? "ELITE" : "START"}
                       </Badge>
                     ) : (
                       <Badge variant="secondary" className="text-sm px-3 py-1">

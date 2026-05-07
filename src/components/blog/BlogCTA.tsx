@@ -27,9 +27,9 @@ export const BlogCTA = ({ type, className }: BlogCTAProps) => {
             colors: "bg-zinc-950 text-white border-zinc-800 hover:bg-zinc-900",
         },
         decision: {
-            title: "💎 Garanta seu acesso Elite Pro",
+            title: "💎 Garanta seu acesso Elite",
             description: "Acesso completo à plataforma, 11 agentes de IA, Fábrica de Anúncios e atualizações semanais por apenas R$ 28,91/mês.",
-            buttonText: "Assinar Elite Pro - R$ 347/ano",
+            buttonText: "Assinar Elite - R$ 347/ano",
             link: "/planos",
             icon: <CreditCard className="w-5 h-5" />,
             colors: "bg-gradient-to-r from-blue-600 to-purple-600 text-white border-transparent hover:opacity-90 shadow-lg",

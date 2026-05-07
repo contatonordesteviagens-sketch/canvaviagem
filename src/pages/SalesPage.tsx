@@ -623,7 +623,7 @@ export default function SalesPage() {
                       Acesso à Fábrica: Liberação de Vagas
                     </h4>
                     <p style={{ margin: 0, fontSize: "13px", color: "rgba(255,255,255,0.8)", lineHeight: "1.5" }}>
-                      O acesso à <strong>Fábrica (Gerador Automático de Anúncios e Sites de Vendas)</strong> é exclusivo dos assinantes do <strong>Plano Elite Pro</strong>. O valor do 1º Lote deste plano ({billingPeriod === "monthly" ? "R$ 49/mês" : "R$ 347/ano"}) vai subir. Assim que as vagas restantes forem preenchidas, o Plano Elite Pro passará para o 2º Lote ({billingPeriod === "monthly" ? "R$ 97/mês" : "R$ 497/ano"}), encarecendo o acesso à Fábrica. Garanta seu acesso hoje com desconto máximo.
+                      O acesso à <strong>Fábrica (Gerador Automático de Anúncios e Sites de Vendas)</strong> é exclusivo dos assinantes do <strong>Plano Elite</strong>. O valor do 1º Lote deste plano ({billingPeriod === "monthly" ? "R$ 49/mês" : "R$ 347/ano"}) vai subir. Assim que as vagas restantes forem preenchidas, o Plano Elite passará para o 2º Lote ({billingPeriod === "monthly" ? "R$ 97/mês" : "R$ 497/ano"}), encarecendo o acesso à Fábrica. Garanta seu acesso hoje com desconto máximo.
                     </p>
                   </div>
                 </div>
@@ -811,7 +811,7 @@ export default function SalesPage() {
                     ⭐ RECOMENDADO PARA ALTA CONVERSÃO
                   </div>
                   
-                  <p style={{ fontSize: 12, fontWeight: 800, color: T.accent, letterSpacing: 2, marginBottom: 20 }}>PLANO ELITE PRO</p>
+                  <p style={{ fontSize: 12, fontWeight: 800, color: T.accent, letterSpacing: 2, marginBottom: 20 }}>PLANO ELITE</p>
                   
                   {billingPeriod === "monthly" ? (
                     <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
@@ -1005,7 +1005,7 @@ export default function SalesPage() {
                 padding: "20px 36px", borderRadius: 16, border: "none", cursor: "pointer",
                 width: "100%", maxWidth: 480, textTransform: "uppercase", letterSpacing: 0.5,
                 boxShadow: `0 16px 50px ${T.accent}66` }}>
-              QUERO ACESSO ELITE PRO — R$ 28,91/mês
+              QUERO ACESSO ELITE — R$ 28,91/mês
             </button>
             <p style={{ marginTop: 14, fontSize: 12, color: T.text3 }}>
               Acesso em 2 min · Garantia tripla · Cancele quando quiser
