@@ -375,19 +375,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <Reveal delay={0.05}>
           <h1 style={{ fontSize: "clamp(26px, 5.5vw, 52px)", fontWeight: 900, lineHeight: 1.1,
-            maxWidth: 920, margin: "0 auto 18px", letterSpacing: -1 }}>
-            Poste como uma agência de{" "}
+            maxWidth: 960, margin: "0 auto 18px", letterSpacing: -1 }}>
+            Tenha um feed profissional de{" "}
             <span style={{ background: `linear-gradient(135deg, ${T.accent}, #fff)`,
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              R$10.000/mês
+              R$ 10k/mês
             </span>{" "}
-            — em 5 minutos por dia, sem designer, sem agência!
+            e crie anúncios de viagens automáticos com Inteligência Artificial!
           </h1>
         </Reveal>
 
         <Reveal delay={0.1}>
-          <p style={{ fontSize: 16, color: T.text2, maxWidth: 620, margin: "0 auto 28px", lineHeight: 1.6 }}>
-            <strong style={{ color: T.text }}>250+ vídeos 4K</strong> + <strong style={{ color: T.text }}>400 artes editáveis</strong> + <strong style={{ color: T.text }}>11 IAs treinadas no mercado de turismo</strong>. Você só troca o logo. <strong style={{ color: T.accent }}>A partir de R$ 16,41/mês.</strong>
+          <p style={{ fontSize: 16, color: T.text2, maxWidth: 820, margin: "0 auto 28px", lineHeight: 1.6 }}>
+            A única plataforma do mercado de turismo que combina <strong style={{ color: T.text }}>250+ vídeos 4K</strong> e <strong style={{ color: T.text }}>artes editáveis no Canva</strong> com a revolucionária <strong style={{ color: T.accent }}>Fábrica de Anúncios com I.A</strong> — onde você digita a oferta e recebe o anúncio pronto, com preços, parcelas e o seu logo em 5 segundos. <strong style={{ color: T.accent }}>A partir de R$ 16,41/mês.</strong>
           </p>
         </Reveal>
 
