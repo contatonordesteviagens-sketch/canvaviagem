@@ -937,6 +937,7 @@ export default function SalesPage() {
                       "Criador Automático de Sites de Venda para cada roteiro de viagem",
                       "Gerador de Legendas magnéticas prontas para copiar e colar",
                       "Plano de Ação e Checklist diário de postagens diárias",
+                      "Diagnóstico e Plano de ação individualizado para escala",
                       "Suporte VIP no WhatsApp diretamente com Lucas Ferrari"
                     ].map(f => (
                       <li key={f} style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 13, color: T.text }}>
@@ -944,10 +945,6 @@ export default function SalesPage() {
                         <span>{f}</span>
                       </li>
                     ))}
-                    <li style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 13, color: "rgba(255,255,255,0.25)", textDecoration: "line-through" }}>
-                      <span style={{ marginTop: 2, flexShrink: 0 }}><X size={14} color="rgba(255,255,255,0.2)" /></span>
-                      <span>Diagnóstico e Plano de ação para escala</span>
-                    </li>
                   </ul>
                 </div>
 
