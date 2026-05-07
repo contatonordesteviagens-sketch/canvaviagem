@@ -1066,11 +1066,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span style={{ fontSize: 13, color: T.text2, display: "flex", alignItems: "center", gap: 6 }}>
                   🔒 Processado com segurança via
                 </span>
-                <span style={{ color: "#635BFF", display: "inline-flex", alignItems: "center" }}>
-                  <svg viewBox="0 0 60 25" fill="currentColor" style={{ height: 20 }}>
-                    <path d="M51.9 10.1c-1.3 0-2.1.7-2.1 1.8 0 1.6 2.2 1.3 2.2 3.6 0 1-.9 1.6-2.1 1.6-1.5 0-2.4-.7-2.4-.7l-.4 1.5s.9.6 2.7.6c2.4 0 3.9-1.2 3.9-3.2 0-2.5-3.8-2-3.8-3.7 0-1 .9-1.4 1.9-1.4 1.3 0 2 .5 2 .5l.4-1.4s-.7-.5-2.3-.5zm-8.8.1c-.8 0-1.4.3-1.7.7V3.5l-1.8.4v14.4l1.8-.4v-4.9c0-1.7 1.1-2.4 2.1-2.4.3 0 .6.1.6.1l.3-1.7c-.4-.1-.8-.1-1.3-.1zm-5.8-.1c-.9 0-1.5.4-1.8.8v-.6h-1.8v10.5h1.8v-4.9c0-1.6 1.1-2.4 2-2.4s1.4.6 1.4 1.7v5.6h1.8v-6.3c0-2.6-1.4-4.4-3.4-4.4zm-7.6 2.4l1.8-.3V10.3h-1.8v2.2zm0 5.8l1.8-.3v-4.2h-1.8v4.5zM21 7.1c0-.5.4-.9.9-.9.6 0 .9.4.9.9s-.4.9-.9.9c-.5 0-.9-.4-.9-.9zm-.9 3.2h1.8V18.3H20.1V10.3zm-3.2-.2c-1.3 0-2.1.7-2.1 1.8 0 1.6 2.2 1.3 2.2 3.6 0 1-.9 1.6-2.1 1.6-1.5 0-2.4-.7-2.4-.7l-.4 1.5s.9.6 2.7.6c2.4 0 3.9-1.2 3.9-3.2 0-2.5-3.8-2-3.8-3.7 0-1 .9-1.4 1.9-1.4 1.3 0 2 .5 2 .5l.4-1.4s-.7-.5-2.3-.5zm-6.2 3.8c-.1-.8-.6-1.2-1.3-1.2-.6 0-1.1.4-1.2 1.2h2.5zm1.5 1c0-2.3-1.6-4-4-4-2.5 0-4.1 1.8-4.1 4.1 0 2.5 1.7 4.1 4.3 4.1 1.6 0 2.8-.6 2.8-.6l-.4-1.4s-1 .5-2.3.5c-1.6 0-2.4-1-2.4-1.9h6.1v-.8z"/>
-                  </svg>
-                </span>
+                <img 
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/960px-Stripe_Logo%2C_revised_2016.svg.png" 
+                  alt="Stripe" 
+                  style={{ height: 16, objectFit: "contain", verticalAlign: "middle" }} 
+                />
               </div>
               <p style={{ fontSize: 12, color: T.text3, margin: 0 }}>
                 CNPJ: 45.312.876/0001-22 · Conexão Criptografada SSL 256-bits
