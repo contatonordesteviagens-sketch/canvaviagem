@@ -948,11 +948,11 @@ export default function SalesPage() {
                 </li>
                 <li style={{ display: "flex", gap: 10, fontSize: 14, color: T.accent, fontWeight: 800 }}>
                   <span style={{ color: T.accent }}>⭐</span>
-                  <span><strong>ROI do plano Elite em 1 venda:</strong> 2.300% de retorno</span>
+                  <span><strong>Retorno do plano Elite em 1 venda:</strong> 2.300%</span>
                 </li>
               </ul>
               <p style={{ fontSize: 12, color: T.text3, margin: 0 }}>
-                1 pacote fechado pelo feed paga 23 anos de assinatura.
+                1 pacote de viagem fechado paga 23 anos de assinatura.
               </p>
             </div>
           </Reveal>
