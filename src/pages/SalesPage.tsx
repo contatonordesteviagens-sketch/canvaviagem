@@ -277,10 +277,63 @@ export default function SalesPage() {
     },
   };
 
-  useEffect(() => { trackViewContent("Canva Viagem 10/10"); window.scrollTo(0, 0); }, []);
+  const trackCtaClick = (ctaName: string) => {
+    (window as any).dataLayer = (window as any).dataLayer || [];
+    (window as any).dataLayer.push({
+      event: 'cta_click',
+      cta_name: ctaName
+    });
+    console.log(`[Analytics] Tracked click on CTA: ${ctaName}`);
+  };
+
+  useEffect(() => {
+    trackViewContent("Canva Viagem 10/10");
+    window.scrollTo(0, 0);
+
+    // Dynamic SEO Title & Description
+    document.title = "Canva Viagem — Poste como agência de R$10k/mês em 5 minutos";
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute('content', 'A plataforma de marketing definitiva para agências de viagens e turismo que buscam atrair viajantes de alta renda e fechar pacotes premium de forma consistente.');
+
+    // Dynamic Open Graph tags
+    const setOGTag = (property: string, content: string) => {
+      let tag = document.querySelector(`meta[property="${property}"]`);
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('property', property);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('content', content);
+    };
+    setOGTag("og:title", "Canva Viagem — Poste como agência de R$10k/mês em 5 minutos");
+    setOGTag("og:description", "Crie posts de alta conversão no Canva em minutos.");
+    setOGTag("og:image", window.location.origin + lucasPortrait);
+    setOGTag("og:type", "website");
+
+    // Dynamic GTM script injection
+    const gtmId = "GTM-XXXXXX";
+    const gtmScript = document.createElement('script');
+    gtmScript.innerHTML = `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','${gtmId}');`;
+    document.head.appendChild(gtmScript);
+
+    // Smooth scroll injection
+    const style = document.createElement('style');
+    style.innerHTML = 'html { scroll-behavior: smooth; }';
+    document.head.appendChild(style);
+  }, []);
 
   const checkout = (plan: "smart_monthly" | "smart_annual" | "elite_monthly" | "elite_annual" = "elite_annual") => {
     setCtaClicked(true);
+    trackCtaClick(plan);
     let priceVal = 347;
     if (plan === "smart_monthly") priceVal = 29.9;
     else if (plan === "smart_annual") priceVal = 197;
@@ -366,7 +419,7 @@ export default function SalesPage() {
         </div>
       </section>
 
-      <ProductDemo />
+
 
       {/* ─── SEÇÃO FUNDADOR ─── */}
       <section style={{ padding: "70px 20px", background: T.bgDeep, borderBottom: T.border }}>
@@ -384,6 +437,7 @@ export default function SalesPage() {
                 <img 
                   src={lucasPortrait} 
                   alt="Lucas Ferrari" 
+                  loading="lazy"
                   style={{ 
                     width: 140, 
                     height: 140, 
@@ -518,7 +572,7 @@ export default function SalesPage() {
         </div>
       </section>
 
-
+      <ProductDemo />
 
       {/* ─── PROVA SOCIAL — 2 case studies + carrossel ─── */}
       <section style={{ padding: "70px 20px", background: T.bgDeep }}>
@@ -557,6 +611,7 @@ export default function SalesPage() {
                   <img 
                     src={img} 
                     alt={`Resultado real ${index + 1}`} 
+                    loading="lazy"
                     style={{ 
                       width: "100%", 
                       height: "auto", 
@@ -959,14 +1014,14 @@ export default function SalesPage() {
         </div>
       </section>
 
-      {/* ─── GARANTIA TRIPLA ─── */}
+      {/* ─── GARANTIA DUPLA ─── */}
       <section style={{ padding: "70px 20px", background: T.bgDeep }}>
         <div style={{ maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
           <Reveal>
             <div style={{ width: 90, height: 90, borderRadius: "50%", margin: "0 auto 24px",
               background: `${T.accent}15`, border: `2px solid ${T.accent}`,
               display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>🛡️</div>
-            <h3 style={{ fontSize: 28, fontWeight: 900, marginBottom: 10 }}>Garantia Tripla</h3>
+            <h3 style={{ fontSize: 28, fontWeight: 900, marginBottom: 10 }}>Garantia Dupla</h3>
             <p style={{ fontSize: 15, color: T.accent, fontWeight: 700, marginBottom: 28 }}>
               O risco é 100% meu — não seu.
             </p>
@@ -974,9 +1029,8 @@ export default function SalesPage() {
           <Reveal delay={0.1}>
             <div style={{ display: "flex", flexDirection: "column", gap: 14, textAlign: "left", marginBottom: 32 }}>
               {[
-                { n: "1", t: "7 dias para testar tudo", s: "Acesso completo, sem letra miúda. Não gostou? Devolvo." },
-                { n: "2", t: "Se postar 5x usando os templates e não gostar → devolvo 100%", s: "Você usa de verdade. Se a qualidade não te convencer, é 100% de volta." },
-                { n: "3", t: "Se postar 5x e não receber pelo menos 1 DM → devolvo 100% + R$ 50 pelo seu tempo", s: "Você arrisca seu tempo? Eu pago pelo seu tempo se não funcionar." },
+                { n: "1", t: "7 dias para testar tudo", s: "Acesso completo. Não gostou? Devolvo." },
+                { n: "2", t: "Qualidade não convenceu?", s: "100% de volta." },
               ].map(g => (
                 <div key={g.n} style={{ display: "flex", gap: 16, background: T.card,
                   border: `1px solid ${T.accent}33`, borderRadius: 14, padding: "18px 20px" }}>
@@ -990,11 +1044,65 @@ export default function SalesPage() {
                 </div>
               ))}
             </div>
+
+            {/* SECURE STRIPE BANNER */}
+            <div style={{ 
+              display: "flex", 
+              flexDirection: "column", 
+              alignItems: "center", 
+              gap: 12, 
+              background: "rgba(255, 255, 255, 0.02)", 
+              border: T.border, 
+              borderRadius: 16, 
+              padding: "20px",
+              marginTop: 24
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+                <span style={{ fontSize: 13, color: T.text2, display: "flex", alignItems: "center", gap: 6 }}>
+                  🔒 Processado com segurança via
+                </span>
+                <span style={{ color: "#635BFF", display: "inline-flex", alignItems: "center" }}>
+                  <svg viewBox="0 0 60 25" fill="currentColor" style={{ height: 20 }}>
+                    <path d="M51.9 10.1c-1.3 0-2.1.7-2.1 1.8 0 1.6 2.2 1.3 2.2 3.6 0 1-.9 1.6-2.1 1.6-1.5 0-2.4-.7-2.4-.7l-.4 1.5s.9.6 2.7.6c2.4 0 3.9-1.2 3.9-3.2 0-2.5-3.8-2-3.8-3.7 0-1 .9-1.4 1.9-1.4 1.3 0 2 .5 2 .5l.4-1.4s-.7-.5-2.3-.5zm-8.8.1c-.8 0-1.4.3-1.7.7V3.5l-1.8.4v14.4l1.8-.4v-4.9c0-1.7 1.1-2.4 2.1-2.4.3 0 .6.1.6.1l.3-1.7c-.4-.1-.8-.1-1.3-.1zm-5.8-.1c-.9 0-1.5.4-1.8.8v-.6h-1.8v10.5h1.8v-4.9c0-1.6 1.1-2.4 2-2.4s1.4.6 1.4 1.7v5.6h1.8v-6.3c0-2.6-1.4-4.4-3.4-4.4zm-7.6 2.4l1.8-.3V10.3h-1.8v2.2zm0 5.8l1.8-.3v-4.2h-1.8v4.5zM21 7.1c0-.5.4-.9.9-.9.6 0 .9.4.9.9s-.4.9-.9.9c-.5 0-.9-.4-.9-.9zm-.9 3.2h1.8V18.3H20.1V10.3zm-3.2-.2c-1.3 0-2.1.7-2.1 1.8 0 1.6 2.2 1.3 2.2 3.6 0 1-.9 1.6-2.1 1.6-1.5 0-2.4-.7-2.4-.7l-.4 1.5s.9.6 2.7.6c2.4 0 3.9-1.2 3.9-3.2 0-2.5-3.8-2-3.8-3.7 0-1 .9-1.4 1.9-1.4 1.3 0 2 .5 2 .5l.4-1.4s-.7-.5-2.3-.5zm-6.2 3.8c-.1-.8-.6-1.2-1.3-1.2-.6 0-1.1.4-1.2 1.2h2.5zm1.5 1c0-2.3-1.6-4-4-4-2.5 0-4.1 1.8-4.1 4.1 0 2.5 1.7 4.1 4.3 4.1 1.6 0 2.8-.6 2.8-.6l-.4-1.4s-1 .5-2.3.5c-1.6 0-2.4-1-2.4-1.9h6.1v-.8z"/>
+                  </svg>
+                </span>
+              </div>
+              <p style={{ fontSize: 12, color: T.text3, margin: 0 }}>
+                CNPJ: 45.312.876/0001-22 · Conexão Criptografada SSL 256-bits
+              </p>
+            </div>
           </Reveal>
         </div>
       </section>
 
 
+
+      {/* ─── CTA FINAL ─── */}
+      <section style={{ padding: "70px 20px", textAlign: "center",
+        background: `radial-gradient(ellipse at 50% 50%, ${T.accent}10 0%, ${T.bgDeep} 70%)` }}>
+        <div style={{ maxWidth: 720, margin: "0 auto" }}>
+          <Reveal>
+            <h2 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: 900, margin: "24px 0 16px", lineHeight: 1.2 }}>
+              Seu feed. Sua autoridade. <span style={{ color: T.accent }}>Sua decisão.</span>
+            </h2>
+            <p style={{ color: T.text2, fontSize: 15, marginBottom: 24, maxWidth: 540, margin: "0 auto 24px", lineHeight: 1.6 }}>
+              Cada dia com feed parado é um pacote fechando com o concorrente. Em 5 minutos você prova que funciona.
+            </p>
+            <button id="cta-final" onClick={() => checkout("elite_annual")}
+              aria-label="Quero acesso Elite"
+              className="hover:scale-[1.03] active:scale-95 transition-all animate-pulse"
+              style={{ background: T.accent, color: "#000", fontWeight: 900, fontSize: 17,
+                padding: "20px 36px", borderRadius: 16, border: "none", cursor: "pointer",
+                width: "100%", maxWidth: 480, textTransform: "uppercase", letterSpacing: 0.5,
+                boxShadow: `0 16px 50px ${T.accent}66` }}>
+              QUERO ACESSO ELITE — R$ 28,91/MÊS →
+            </button>
+            <p style={{ marginTop: 14, fontSize: 12, color: T.text3 }}>
+              Acesso em 2 min · Garantia dupla · Cancele quando quiser
+            </p>
+          </Reveal>
+        </div>
+      </section>
 
       {/* ─── FAQ (8 perguntas) ─── */}
       <section style={{ padding: "70px 20px" }}>
@@ -1011,56 +1119,37 @@ export default function SalesPage() {
         </div>
       </section>
 
-      {/* ─── CTA FINAL ─── */}
-      <section style={{ padding: "40px 20px 20px", textAlign: "center",
-        background: `radial-gradient(ellipse at 50% 50%, ${T.accent}10 0%, ${T.bgDeep} 70%)` }}>
-        <div style={{ maxWidth: 720, margin: "0 auto" }}>
-          <Reveal>
-
-            <h2 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: 900, margin: "24px 0 16px", lineHeight: 1.2 }}>
-              Seu feed. Sua autoridade. <span style={{ color: T.accent }}>Sua decisão.</span>
-            </h2>
-            <p style={{ color: T.text2, fontSize: 15, marginBottom: 24, maxWidth: 540, margin: "0 auto 24px", lineHeight: 1.6 }}>
-              Cada dia com feed parado é um cliente fechando com o concorrente. Em 5 minutos você posta e me prova que funciona.
-            </p>
-            <button id="cta-final" onClick={() => checkout("elite_annual")}
-              className="hover:scale-[1.03] active:scale-95 transition-all animate-pulse"
-              style={{ background: T.accent, color: "#000", fontWeight: 900, fontSize: 17,
-                padding: "20px 36px", borderRadius: 16, border: "none", cursor: "pointer",
-                width: "100%", maxWidth: 480, textTransform: "uppercase", letterSpacing: 0.5,
-                boxShadow: `0 16px 50px ${T.accent}66` }}>
-              QUERO ACESSO ELITE — R$ 28,91/mês
-            </button>
-            <p style={{ marginTop: 14, fontSize: 12, color: T.text3 }}>
-              Acesso em 2 min · Garantia tripla · Cancele quando quiser
-            </p>
-            <p style={{ marginTop: 24, fontSize: 11, color: T.text3 }}>CNPJ: 45.312.876/0001-22</p>
-          </Reveal>
-        </div>
-      </section>
-
       </main>
 
       {/* ─── FOOTER ─── */}
-      <footer style={{ background: T.bgDeep, borderTop: T.border, padding: "30px 20px 30px", textAlign: "center" }}>
+      <footer style={{ background: T.bgDeep, borderTop: T.border, padding: "40px 20px", textAlign: "center" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 8, letterSpacing: 1 }}>CANVA VIAGEM</div>
-          <p style={{ fontSize: 13, color: T.text3, marginBottom: 28, maxWidth: 380, margin: "0 auto 28px" }}>
+          <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 8, letterSpacing: 1, color: T.accent }}>CANVA VIAGEM</div>
+          <p style={{ fontSize: 13, color: T.text3, marginBottom: 24, maxWidth: 380, margin: "0 auto 24px" }}>
             A plataforma definitiva para agências de turismo que buscam o próximo nível de autoridade e lucro.
           </p>
           <div style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap", marginBottom: 28 }}>
             {["Início", "Planos", "Termos", "Privacidade", "Suporte"].map(l => (
-              <a key={l} href="#" style={{ fontSize: 13, color: T.text2, textDecoration: "none", fontWeight: 600 }}>{l}</a>
+              <a key={l} href="#" style={{ fontSize: 13, color: T.text2, textDecoration: "none", fontWeight: 600 }} className="hover:text-cyan-400 transition-colors">{l}</a>
             ))}
           </div>
-          <p style={{ fontSize: 11, color: T.text3 }}>
-            © {new Date().getFullYear()} Canva Viagem · Todos os direitos reservados.<br/>
+          
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, marginBottom: 24, opacity: 0.8 }}>
+            <span style={{ fontSize: 11, color: T.text3 }}>Parceiro de pagamento oficial:</span>
+            <span style={{ color: "#635BFF", display: "inline-flex", alignItems: "center" }}>
+              <svg viewBox="0 0 60 25" fill="currentColor" style={{ height: 16 }}>
+                <path d="M51.9 10.1c-1.3 0-2.1.7-2.1 1.8 0 1.6 2.2 1.3 2.2 3.6 0 1-.9 1.6-2.1 1.6-1.5 0-2.4-.7-2.4-.7l-.4 1.5s.9.6 2.7.6c2.4 0 3.9-1.2 3.9-3.2 0-2.5-3.8-2-3.8-3.7 0-1 .9-1.4 1.9-1.4 1.3 0 2 .5 2 .5l.4-1.4s-.7-.5-2.3-.5zm-8.8.1c-.8 0-1.4.3-1.7.7V3.5l-1.8.4v14.4l1.8-.4v-4.9c0-1.7 1.1-2.4 2.1-2.4.3 0 .6.1.6.1l.3-1.7c-.4-.1-.8-.1-1.3-.1zm-5.8-.1c-.9 0-1.5.4-1.8.8v-.6h-1.8v10.5h1.8v-4.9c0-1.6 1.1-2.4 2-2.4s1.4.6 1.4 1.7v5.6h1.8v-6.3c0-2.6-1.4-4.4-3.4-4.4zm-7.6 2.4l1.8-.3V10.3h-1.8v2.2zm0 5.8l1.8-.3v-4.2h-1.8v4.5zM21 7.1c0-.5.4-.9.9-.9.6 0 .9.4.9.9s-.4.9-.9.9c-.5 0-.9-.4-.9-.9zm-.9 3.2h1.8V18.3H20.1V10.3zm-3.2-.2c-1.3 0-2.1.7-2.1 1.8 0 1.6 2.2 1.3 2.2 3.6 0 1-.9 1.6-2.1 1.6-1.5 0-2.4-.7-2.4-.7l-.4 1.5s.9.6 2.7.6c2.4 0 3.9-1.2 3.9-3.2 0-2.5-3.8-2-3.8-3.7 0-1 .9-1.4 1.9-1.4 1.3 0 2 .5 2 .5l.4-1.4s-.7-.5-2.3-.5zm-6.2 3.8c-.1-.8-.6-1.2-1.3-1.2-.6 0-1.1.4-1.2 1.2h2.5zm1.5 1c0-2.3-1.6-4-4-4-2.5 0-4.1 1.8-4.1 4.1 0 2.5 1.7 4.1 4.3 4.1 1.6 0 2.8-.6 2.8-.6l-.4-1.4s-1 .5-2.3.5c-1.6 0-2.4-1-2.4-1.9h6.1v-.8z"/>
+              </svg>
+            </span>
+          </div>
+
+          <p style={{ fontSize: 11, color: T.text3, lineHeight: 1.6 }}>
+            © 2026 Canva Viagem · Todos os direitos reservados. CNPJ: 45.312.876/0001-22<br/>
             <span style={{ fontSize: 10, opacity: 0.6 }}>Esta plataforma não possui vínculo oficial com a empresa Canva Pty Ltd.</span>
           </p>
         </div>
       </footer>
 
-      <ExitIntent onCheckout={checkout} />
       <VideoModal open={videoOpen} onClose={() => setVideoOpen(false)} />
     </div>
   );
