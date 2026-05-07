@@ -8,6 +8,8 @@ import { StickyTopBar } from "../components/planos/StickyTopBar";
 import { SocialProofToast } from "../components/planos/SocialProofToast";
 import { MobileFloatingCTA } from "../components/planos/MobileFloatingCTA";
 import lucasPortrait from "@/assets/lucas-site-webp.webp";
+import { TimelineContent } from "@/components/ui/timeline-animation";
+import { VerticalCutReveal } from "@/components/ui/vertical-cut-reveal";
 
 // ────────────────────────────────────────────────────────────
 // CONFIG
@@ -285,6 +287,23 @@ export default function SalesPage() {
   const [videoOpen, setVideoOpen] = useState(false);
   const [ctaClicked, setCtaClicked] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("annual");
+  const pricingRef = useRef<HTMLDivElement>(null);
+  const revealVariants = {
+    visible: (i: number) => ({
+      y: 0,
+      opacity: 1,
+      filter: "blur(0px)",
+      transition: {
+        delay: i * 0.3,
+        duration: 0.5,
+      },
+    }),
+    hidden: {
+      filter: "blur(10px)",
+      y: -20,
+      opacity: 0,
+    },
+  };
 
   useEffect(() => { trackViewContent("Canva Viagem 10/10"); window.scrollTo(0, 0); }, []);
 
@@ -599,12 +618,28 @@ export default function SalesPage() {
       </section>
 
       {/* ─── PREÇO ─── */}
-      <section id="pricing" style={{ padding: "80px 20px" }}>
+      <section id="pricing" ref={pricingRef} style={{ padding: "80px 20px", position: "relative" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 36 }}>
             <Reveal>
               <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>ACESSO IMEDIATO</p>
-              <h2 style={{ fontSize: "clamp(26px, 4vw, 40px)", fontWeight: 900, marginBottom: 24 }}>Escolha o seu plano</h2>
+              <h2 style={{ fontSize: "clamp(26px, 4vw, 40px)", fontWeight: 900, marginBottom: 24, display: "flex", justifyContent: "center" }}>
+                <VerticalCutReveal
+                  splitBy="words"
+                  staggerDuration={0.12}
+                  staggerFrom="first"
+                  reverse={true}
+                  containerClassName="justify-center"
+                  transition={{
+                    type: "spring",
+                    stiffness: 250,
+                    damping: 40,
+                    delay: 0,
+                  }}
+                >
+                  Escolha o seu plano
+                </VerticalCutReveal>
+              </h2>
 
               {/* TOGGLE MENSAL / ANUAL */}
               <div style={{ 
@@ -763,20 +798,26 @@ export default function SalesPage() {
             </Reveal>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(290px, 100%), 1fr))",
-            gap: 32, alignItems: "stretch", marginTop: 32 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(320px, 100%), 1fr))",
+            gap: 32, alignItems: "stretch", marginTop: 40, maxWidth: 860, margin: "40px auto 0" }}>
             
             {/* PLANO START */}
-            <Reveal>
+            <TimelineContent
+              as="div"
+              animationNum={1}
+              timelineRef={pricingRef}
+              customVariants={revealVariants}
+            >
               <div style={{ 
-                background: T.card, 
-                border: T.border, 
+                background: "rgba(255, 255, 255, 0.02)", 
+                border: "1px solid rgba(255, 255, 255, 0.08)", 
                 borderRadius: 24, 
                 padding: "48px 32px",
                 display: "flex",
                 flexDirection: "column",
                 height: "100%",
-                justifyContent: "space-between"
+                justifyContent: "space-between",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.2)"
               }}>
                 <div>
                   <p style={{ fontSize: 12, fontWeight: 800, color: T.text3, letterSpacing: 2, marginBottom: 20 }}>PLANO START</p>
@@ -829,10 +870,15 @@ export default function SalesPage() {
                   ASSINAR START {billingPeriod === "monthly" ? "MENSAL" : "ANUAL"}
                 </button>
               </div>
-            </Reveal>
+            </TimelineContent>
 
             {/* PLANO ELITE */}
-            <Reveal delay={0.1}>
+            <TimelineContent
+              as="div"
+              animationNum={2}
+              timelineRef={pricingRef}
+              customVariants={revealVariants}
+            >
               <div style={{ 
                 background: "linear-gradient(145deg, #071a2e 0%, #0d2640 100%)",
                 border: `2px solid ${T.accent}`, 
@@ -908,7 +954,8 @@ export default function SalesPage() {
                   </p>
                 </div>
               </div>
-            </Reveal>
+            </TimelineContent>
+
           </div>
         </div>
       </section>
