@@ -84,11 +84,11 @@ const HOW_IT_WORKS = [
 
 // Comparativo justo: pack único vs designer freelancer vs Canva Viagem
 const COMPARISON = [
-  { feature: "Investimento",  hotmart: "R$ 197 uma vez", design: "R$ 1.500 / mês", us: "R$ 197 / ano" },
-  { feature: "Conteúdo",      hotmart: "150 reels fixos", design: "4–8 entregas/mês", us: "250+ vídeos · atualização semanal" },
+  { feature: "Investimento",  hotmart: "R$ 197 uma vez", design: "R$ 1.500 / mês", us: "A partir de R$ 197 / ano" },
+  { feature: "Conteúdo",      hotmart: "150 reels fixos", design: "4–8 entregas/mês", us: "250+ vídeos 4K + Sites de Vendas" },
   { feature: "Atualizações",  hotmart: "❌ Nenhuma", design: "Depende dele", us: "✅ Acesso vitalício à evolução" },
-  { feature: "IAs e Scripts", hotmart: "❌ Não tem", design: "❌ Não tem", us: "✅ 11 IAs + scripts WhatsApp" },
-  { feature: "Suporte",       hotmart: "Só do produtor", design: "1 freelancer", us: "WhatsApp time da plataforma" },
+  { feature: "IAs e Scripts", hotmart: "❌ Não tem", design: "❌ Não tem", us: "✅ 11 IAs + Fábrica de Anúncios" },
+  { feature: "Suporte",       hotmart: "Só do produtor", design: "1 freelancer", us: "WhatsApp VIP direto com o Lucas" },
 ];
 
 const FAQS = [
