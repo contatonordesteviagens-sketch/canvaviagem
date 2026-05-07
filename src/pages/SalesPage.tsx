@@ -62,14 +62,12 @@ const CASES = [
 ];
 
 const QUICK_TESTIMONIALS = [
-  { name: "Ana Paula Silva", agency: "Viaje Mais · Curitiba, PR", handle: "@viajemais.cwb", instaUrl: "https://instagram.com/viajemais.cwb",
-    text: "Achei barato demais e quase não comprei. Em 21 dias fechei 2 pacotes que pagaram a anuidade 80x." },
-  { name: "Marcos Oliveira", agency: "Prime Agência · Floripa, SC", handle: "@primeflorianopolis", instaUrl: "https://instagram.com/primeflorianopolis",
-    text: "Cliente de R$ 4.500/pacote começou a me chamar depois que mudei o feed. Vídeo cinematográfico = autoridade." },
-  { name: "Julia Lima", agency: "Agente Conectada · BH, MG", handle: "@agenteconectada", instaUrl: "https://instagram.com/agenteconectada",
-    text: "Nunca tive tantos salvamentos. As IAs escrevem legenda melhor do que eu — sem exagero." },
-  { name: "Rafael Mendes", agency: "Mendes Tour · Salvador, BA", handle: "@mendestour.ssa", instaUrl: "https://instagram.com/mendestour.ssa",
-    text: "Saí da agência em 3 meses e abri a minha. O Canva Viagem foi 100% do meu marketing inicial." },
+  { name: "Camila Santos", agency: "Santos Viagens · Curitiba, PR", handle: "@santosviagens", instaUrl: "https://instagram.com/santosviagens",
+    text: "Lucas, menos de 24 horas e tive a primeira venda pra Disney, com mais de R$ 1.000 de comissão, usando os anúncios que você ensina! Antes só aparecia curiosos, mas não fechava nada. Usei a I.A pra montar o roteiro rapidinho, subi o anúncio e já veio uma galera chamando no WhatsApp!" },
+  { name: "Rodrigo Costa", agency: "Costa & Roteiros · Floripa, SC", handle: "@costaroteiros", instaUrl: "https://instagram.com/costaroteiros",
+    text: "Usei aquele modelo de anúncio que você mostrou pra promoção de férias e rodou super bem na minha cidade! Gastando pouco já apareceu muita gente interessada. Fiz 23 orçamentos só ontem e fechei 5 pacotes. Resultado incrível que nunca tive antes!" },
+  { name: "Fernanda Lima", agency: "Lima Destinos · BH, MG", handle: "@limadestinos", instaUrl: "https://instagram.com/limadestinos",
+    text: "Esse mês já saíram várias vendas usando as mídias e os sites da Fábrica, até aumentei a minha meta do mês! Tô feliz demais cara, obrigado por facilitar tanto nosso trabalho." },
 ];
 
 const PAINS = [
