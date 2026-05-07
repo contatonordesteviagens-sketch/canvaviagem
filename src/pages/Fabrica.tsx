@@ -5,7 +5,7 @@ import { Phase1Diagnostico } from "@/pages/fabrica/Phase1Diagnostico";
 import { Phase2Ativos } from "@/pages/fabrica/Phase2Ativos";
 import { Phase3ArtFactory } from "@/pages/fabrica/Phase3ArtFactory";
 import { Phase4LandingBuilder } from "@/pages/fabrica/Phase4LandingBuilder";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Crown, Sparkles, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
 import { ComingSoonGate } from "@/components/fabrica/ComingSoonGate";
@@ -133,34 +133,116 @@ const FabricaInner = () => {
 
 const Fabrica = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const arrivedUnlocked = (location.state as { fabricaUnlocked?: boolean } | null)?.fabricaUnlocked === true;
-  const [unlocked, setUnlocked] = useState(() => arrivedUnlocked);
-  const [gateOpen, setGateOpen] = useState(() => !arrivedUnlocked);
-  const unlockedRef = useRef(arrivedUnlocked);
+  const { subscription, isAdmin, loading: authLoading } = useAuth();
+
+  const isStart = subscription.subscribed && 
+    (subscription.productId?.includes("smart") || subscription.productId?.includes("start") || subscription.productId?.includes("basic"));
+  const isElite = subscription.subscribed && !isStart;
+  const hasAccess = isAdmin || isElite;
+
+  if (authLoading || subscription.loading) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center text-white">
+        <Loader2 className="w-8 h-8 animate-spin text-amber-500 mb-2" />
+        <span className="text-sm text-white/60">Verificando suas credenciais...</span>
+      </div>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <div 
+        className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center p-4 relative overflow-hidden"
+        style={{
+          backgroundImage: "radial-gradient(circle at 50% 30%, rgba(245,158,11,0.15) 0%, transparent 60%)"
+        }}
+      >
+        <div className="max-w-md w-full bg-[#121214] border border-white/10 rounded-2xl p-6 shadow-2xl relative z-10 text-center">
+          {/* Header Badge */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-amber-500/20 bg-amber-500/10 mb-6">
+            <Crown className="w-4 h-4 text-amber-500 animate-bounce" />
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-500">Upgrade Necessário</span>
+          </div>
+
+          <h2 className="text-2xl font-black text-white mb-2 tracking-tight">
+            Desbloqueie a Fábrica de Destinos 👑
+          </h2>
+          <p className="text-xs text-white/60 mb-6 leading-relaxed">
+            Esta ferramenta é exclusiva para membros do <strong className="text-amber-500">Plano Elite Pro</strong>. Faça o upgrade agora para ter acesso ilimitado à Fábrica de Anúncios e Criador de Sites de Viagem!
+          </p>
+
+          {/* Cards de Opções */}
+          <div className="grid gap-4 mb-6">
+            {/* Opção Mensal */}
+            <div className="border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] p-4 rounded-xl text-left transition-all">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <span className="text-xs font-bold text-white/80">Plano Elite Mensal</span>
+                  <p className="text-[10px] text-white/40">Acesso recorrente, cancele quando quiser</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-lg font-black text-white">R$ 97</span>
+                  <span className="text-[10px] text-white/50">/mês</span>
+                </div>
+              </div>
+              <button 
+                onClick={() => window.open("https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c", "_blank")}
+                className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-lg text-xs mt-2 transition-colors"
+              >
+                Assinar Mensal por R$ 97 →
+              </button>
+            </div>
+
+            {/* Opção Anual (Recomendada) */}
+            <div className="border border-amber-500/40 bg-amber-500/[0.03] hover:bg-amber-500/[0.06] p-4 rounded-xl text-left relative overflow-hidden transition-all shadow-[0_0_15px_rgba(245,158,11,0.05)]">
+              <div className="absolute top-0 right-0 bg-gradient-to-r from-amber-500 to-orange-600 text-[9px] font-black uppercase text-white px-2 py-0.5 rounded-bl-lg tracking-wider">
+                57% DE DESCONTO
+              </div>
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs font-black text-amber-400">Plano Elite Anual</span>
+                    <Sparkles className="w-3 h-3 text-amber-400 animate-pulse" />
+                  </div>
+                  <p className="text-[10px] text-amber-200/60 font-semibold">Equivale a apenas R$ 41,41/mês</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-lg font-black text-white">R$ 497</span>
+                  <span className="text-[10px] text-white/50">/ano</span>
+                </div>
+              </div>
+              
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-2 mb-3 text-[10px] text-amber-200 leading-normal">
+                💡 <strong>Análise de Economia:</strong> Comprar mensalmente por 1 ano custa R$ 1.164. No plano anual, você paga apenas R$ 497 — uma economia imediata de <strong>R$ 667,00/ano (57% OFF)</strong>!
+              </div>
+
+              <button 
+                onClick={() => window.open("https://buy.stripe.com/6oU7sM2PEcaY42vcJ68so0b", "_blank")}
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold py-2.5 px-3 rounded-lg text-xs transition-all shadow-md uppercase tracking-wider"
+              >
+                Garantir Anual com 57% OFF →
+              </button>
+            </div>
+          </div>
+
+          {/* Botão de Voltar */}
+          <button 
+            onClick={() => navigate("/")}
+            className="text-xs text-white/40 hover:text-white flex items-center justify-center gap-1.5 mx-auto transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Voltar para o Painel
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
       <SeoMetadata title="Fábrica de Destinos | Canva Viagem" description="Sistema completo de marketing e geração de anúncios com IA para agências de viagens." />
-      {unlocked ? (
-        <FabricaProvider>
-          <FabricaInner />
-        </FabricaProvider>
-      ) : (
-        <div className="min-h-screen bg-background" />
-      )}
-      <ComingSoonGate
-        open={gateOpen && !unlocked}
-        onOpenChange={(open) => {
-          setGateOpen(open);
-          if (!open && !unlockedRef.current) navigate("/");
-        }}
-        onUnlock={() => {
-          unlockedRef.current = true;
-          setUnlocked(true);
-          setGateOpen(false);
-        }}
-      />
+      <FabricaProvider>
+        <FabricaInner />
+      </FabricaProvider>
     </>
   );
 };
