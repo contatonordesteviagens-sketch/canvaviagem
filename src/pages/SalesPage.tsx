@@ -301,7 +301,7 @@ export default function SalesPage() {
 
         <Reveal delay={0.1}>
           <p style={{ fontSize: 16, color: T.text2, maxWidth: 620, margin: "0 auto 28px", lineHeight: 1.6 }}>
-            <strong style={{ color: T.text }}>250+ vídeos 4K</strong> + <strong style={{ color: T.text }}>400 artes editáveis</strong> + <strong style={{ color: T.text }}>11 IAs treinadas no mercado de turismo</strong>. Você só troca o logo. <strong style={{ color: T.accent }}>R$ 16,41/mês.</strong>
+            <strong style={{ color: T.text }}>250+ vídeos 4K</strong> + <strong style={{ color: T.text }}>400 artes editáveis</strong> + <strong style={{ color: T.text }}>11 IAs treinadas no mercado de turismo</strong>. Você só troca o logo. <strong style={{ color: T.accent }}>A partir de R$ 16,41/mês.</strong>
           </p>
         </Reveal>
 
