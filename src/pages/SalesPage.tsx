@@ -293,7 +293,7 @@ export default function SalesPage() {
             Poste como uma agência de{" "}
             <span style={{ background: `linear-gradient(135deg, ${T.accent}, #fff)`,
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              R$10.000/mês?
+              R$10.000/mês
             </span>{" "}
             — em 5 minutos por dia, sem designer, sem agência!
           </h1>
@@ -316,7 +316,7 @@ export default function SalesPage() {
                 padding: "18px 28px", borderRadius: 14, border: "none", cursor: "pointer",
                 width: "100%", maxWidth: 440, textTransform: "uppercase", letterSpacing: 0.5,
                 boxShadow: `0 12px 40px ${T.accent}55` }}>
-              Quero acesso agora — R$ 16,41/mês
+              Quero começar agora — a partir de R$ 16,41/mês
             </button>
           </div>
         </Reveal>
@@ -904,7 +904,7 @@ export default function SalesPage() {
                 padding: "20px 36px", borderRadius: 16, border: "none", cursor: "pointer",
                 width: "100%", maxWidth: 480, textTransform: "uppercase", letterSpacing: 0.5,
                 boxShadow: `0 16px 50px ${T.accent}66` }}>
-              QUERO ACESSO AGORA — R$ 16,41/mês
+              QUERO ACESSO IMEDIATO — A PARTIR DE R$ 16,41/mês
             </button>
             <p style={{ marginTop: 14, fontSize: 12, color: T.text3 }}>
               Acesso em 2 min · Garantia tripla · Cancele quando quiser
