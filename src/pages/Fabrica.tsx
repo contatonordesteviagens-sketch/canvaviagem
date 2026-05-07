@@ -205,7 +205,7 @@ const Fabrica = () => {
             {/* Opção Anual (Recomendada - AGORA NO TOPO) */}
             <div className="border border-orange-500/30 bg-orange-500/[0.02] hover:bg-orange-500/[0.04] p-5 rounded-2xl text-left relative overflow-hidden transition-all shadow-[0_0_15px_rgba(249,115,22,0.05)]">
               <div className="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-red-600 text-[9px] font-black uppercase text-white px-2.5 py-1 rounded-bl-xl tracking-wider">
-                MAIOR ECONOMIA (Poupa R$ 241/ano)
+                MAIOR ECONOMIA (70% DE DESCONTO)
               </div>
               
               <div className="flex justify-between items-start mb-2 mt-1">
@@ -224,7 +224,7 @@ const Fabrica = () => {
               </div>
               
               <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-2.5 mb-4 text-[10px] text-orange-200 leading-normal">
-                💡 <strong>Análise de Economia:</strong> Comprar mensalmente por 1 ano custa R$ 1.164. No plano anual, você paga apenas R$ 347 — uma economia garantida de <strong>R$ 817,00/ano</strong>!
+                💡 <strong>Análise de Economia:</strong> Comprar mensalmente por 1 ano custa R$ 1.164. No plano anual, você paga apenas R$ 347 — uma economia garantida de <strong>70% de desconto real (R$ 817,00/ano poupados)</strong>!
               </div>
 
               <button 
