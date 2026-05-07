@@ -651,22 +651,6 @@ export default function SalesPage() {
                 marginBottom: "32px" 
               }}>
                 <button 
-                  onClick={() => setBillingPeriod("monthly")}
-                  style={{ 
-                    background: billingPeriod === "monthly" ? T.accent : "transparent",
-                    color: billingPeriod === "monthly" ? "#000000" : T.text2,
-                    border: "none",
-                    borderRadius: "100px",
-                    padding: "10px 24px",
-                    fontSize: "13px",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                    transition: "all 0.2s"
-                  }}
-                >
-                  PAGAR MENSAL
-                </button>
-                <button 
                   onClick={() => setBillingPeriod("annual")}
                   style={{ 
                     background: billingPeriod === "annual" ? T.accent : "transparent",
@@ -681,6 +665,22 @@ export default function SalesPage() {
                   }}
                 >
                   PAGAR ANUAL
+                </button>
+                <button 
+                  onClick={() => setBillingPeriod("monthly")}
+                  style={{ 
+                    background: billingPeriod === "monthly" ? T.accent : "transparent",
+                    color: billingPeriod === "monthly" ? "#000000" : T.text2,
+                    border: "none",
+                    borderRadius: "100px",
+                    padding: "10px 24px",
+                    fontSize: "13px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  PAGAR MENSAL
                 </button>
               </div>
 
