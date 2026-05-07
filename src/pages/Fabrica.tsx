@@ -136,8 +136,9 @@ const Fabrica = () => {
   const { subscription, isAdmin, loading: authLoading } = useAuth();
 
   const isStart = subscription.subscribed && 
-    (subscription.productId?.includes("smart") || subscription.productId?.includes("start") || subscription.productId?.includes("basic"));
-  const isElite = subscription.subscribed && !isStart;
+    (subscription.productId?.includes("smart") || subscription.productId?.includes("start") || subscription.productId?.includes("basic")) &&
+    !(subscription.productId === "prod_UTFlCWzNqvqSNx" || subscription.productId === "prod_UTFsXcKq8m0mol");
+  const isElite = subscription.subscribed && (!isStart || subscription.productId === "prod_UTFlCWzNqvqSNx" || subscription.productId === "prod_UTFsXcKq8m0mol");
   const hasAccess = isAdmin || isElite;
 
   if (authLoading || subscription.loading) {
