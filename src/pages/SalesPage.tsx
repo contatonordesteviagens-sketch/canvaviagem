@@ -391,6 +391,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           </p>
         </Reveal>
 
+        {/* Video Demonstration at the TOP */}
+        <Reveal delay={0.12}>
+          <div style={{ margin: "32px auto", maxWidth: 800 }}>
+            <ProductDemo />
+          </div>
+        </Reveal>
+
         {/* CTAs */}
         <Reveal delay={0.15}>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "center", marginBottom: 22 }}>
@@ -571,8 +578,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           </div>
         </div>
       </section>
-
-      <ProductDemo />
 
       {/* ─── PROVA SOCIAL — 2 case studies + carrossel ─── */}
       <section style={{ padding: "70px 20px", background: T.bgDeep }}>
