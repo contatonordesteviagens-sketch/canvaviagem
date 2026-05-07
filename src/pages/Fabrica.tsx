@@ -182,7 +182,7 @@ const Fabrica = () => {
                   <p className="text-[10px] text-white/40">Acesso recorrente, cancele quando quiser</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-lg font-black text-white">R$ 97</span>
+                  <span className="text-lg font-black text-white">R$ 49</span>
                   <span className="text-[10px] text-white/50">/mês</span>
                 </div>
               </div>
@@ -190,14 +190,14 @@ const Fabrica = () => {
                 onClick={() => window.open("https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c", "_blank")}
                 className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-lg text-xs mt-2 transition-colors"
               >
-                Assinar Mensal por R$ 97 →
+                Assinar Mensal por R$ 49 →
               </button>
             </div>
 
             {/* Opção Anual (Recomendada) */}
             <div className="border border-amber-500/40 bg-amber-500/[0.03] hover:bg-amber-500/[0.06] p-4 rounded-xl text-left relative overflow-hidden transition-all shadow-[0_0_15px_rgba(245,158,11,0.05)]">
               <div className="absolute top-0 right-0 bg-gradient-to-r from-amber-500 to-orange-600 text-[9px] font-black uppercase text-white px-2 py-0.5 rounded-bl-lg tracking-wider">
-                57% DE DESCONTO
+                MAIOR ECONOMIA
               </div>
               <div className="flex justify-between items-start mb-2">
                 <div>
@@ -214,14 +214,14 @@ const Fabrica = () => {
               </div>
               
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-2 mb-3 text-[10px] text-amber-200 leading-normal">
-                💡 <strong>Análise de Economia:</strong> Comprar mensalmente por 1 ano custa R$ 1.164. No plano anual, você paga apenas R$ 497 — uma economia imediata de <strong>R$ 667,00/ano (57% OFF)</strong>!
+                💡 <strong>Análise de Economia:</strong> Comprar mensalmente por 1 ano custa R$ 588. No plano anual, você paga apenas R$ 497 — uma economia garantida de <strong>R$ 91,00/ano</strong>!
               </div>
 
               <button 
                 onClick={() => window.open("https://buy.stripe.com/6oU7sM2PEcaY42vcJ68so0b", "_blank")}
                 className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold py-2.5 px-3 rounded-lg text-xs transition-all shadow-md uppercase tracking-wider"
               >
-                Garantir Anual com 57% OFF →
+                Garantir Anual com Desconto →
               </button>
             </div>
           </div>

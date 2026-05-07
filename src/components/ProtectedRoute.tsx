@@ -15,8 +15,14 @@ export const ProtectedRoute = ({
     requireAdmin = false,
     allowExternalBlog = false
 }: ProtectedRouteProps) => {
-    const { user, loading, subscription, isAdmin } = useAuth();
     const location = useLocation();
+
+    // Liberar acesso público irrestrito ao Blog (/blog) e postagens para indexação e SEO do Google
+    if (location.pathname.startsWith("/blog")) {
+        return <>{children}</>;
+    }
+
+    const { user, loading, subscription, isAdmin } = useAuth();
     const isFromInternal = (location.state as any)?.fromInternal === true;
 
     if (loading || (requireSubscription && subscription.loading)) {

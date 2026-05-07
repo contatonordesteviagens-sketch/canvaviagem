@@ -715,7 +715,7 @@ export default function SalesPage() {
                   {billingPeriod === "monthly" ? (
                     <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
                       <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
-                      <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1 }}>97</span>
+                      <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1 }}>49</span>
                       <span style={{ fontSize: 22, fontWeight: 800 }}>,00</span>
                       <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
                     </div>
