@@ -620,10 +620,10 @@ export default function SalesPage() {
                   <span style={{ fontSize: "20px" }}>⚠️</span>
                   <div>
                     <h4 style={{ margin: "0 0 4px 0", fontSize: "14px", fontWeight: "900", color: "#FFAA00", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                      Aviso de Liberação: Fábrica de Elite
+                      Acesso à Fábrica: Liberação de Vagas
                     </h4>
                     <p style={{ margin: 0, fontSize: "13px", color: "rgba(255,255,255,0.8)", lineHeight: "1.5" }}>
-                      O preço promocional do <strong>1º Lote ({billingPeriod === "monthly" ? "R$ 49/mês" : "R$ 347/ano"})</strong> para liberação total da <strong>Fábrica de Elite (Gerador de Anúncios e Artes de Viagem + Criador de Sites de Vendas)</strong> vai subir. Assim que as vagas restantes forem preenchidas, o acesso à Fábrica passará para o <strong>2º Lote por {billingPeriod === "monthly" ? "R$ 97/mês" : "R$ 497/ano"}</strong>. Garanta sua vaga hoje com desconto máximo.
+                      O acesso à <strong>Fábrica (Gerador Automático de Anúncios e Sites de Vendas)</strong> é exclusivo dos assinantes do <strong>Plano Elite Pro</strong>. O valor do 1º Lote deste plano ({billingPeriod === "monthly" ? "R$ 49/mês" : "R$ 347/ano"}) vai subir. Assim que as vagas restantes forem preenchidas, o Plano Elite Pro passará para o 2º Lote ({billingPeriod === "monthly" ? "R$ 97/mês" : "R$ 497/ano"}), encarecendo o acesso à Fábrica. Garanta seu acesso hoje com desconto máximo.
                     </p>
                   </div>
                 </div>
