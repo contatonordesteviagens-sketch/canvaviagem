@@ -133,25 +133,36 @@ const FabricaInner = () => {
 
 const Fabrica = () => {
   const navigate = useNavigate();
-  const { subscription, isAdmin, loading: authLoading } = useAuth();
+  const { subscription, isAdmin, user, loading: authLoading } = useAuth();
 
   useEffect(() => {
+    // Only register keyboard listener if the user is logged in as lucashenriquephd@gmail.com
+    if (user?.email !== "lucashenriquephd@gmail.com") return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ctrl + Alt + F (F for Fábrica)
       if (e.ctrlKey && e.altKey && e.key.toLowerCase() === "f") {
         const pass = window.prompt("Acesso Mestre - Digite a senha administrativa:");
-        if (pass === "lucas2026") {
-          localStorage.setItem("cv_bypass", "true");
-          alert("Acesso mestre ativado com sucesso!");
-          window.location.reload();
-        } else if (pass !== null) {
-          alert("Senha incorreta.");
+        if (pass) {
+          const msgBuffer = new TextEncoder().encode(pass);
+          crypto.subtle.digest("SHA-256", msgBuffer).then((hashBuffer) => {
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+            
+            if (hashHex === "8995c0a802ed9e5a1631f0e084a1b14265776573c36a94db673397fe699e2e55") {
+              localStorage.setItem("cv_bypass", "true");
+              alert("Acesso mestre ativado com sucesso!");
+              window.location.reload();
+            } else {
+              alert("Senha incorreta.");
+            }
+          });
         }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [user]);
 
   const isStart = subscription.subscribed && 
     (subscription.productId?.includes("smart") || subscription.productId?.includes("start") || subscription.productId?.includes("basic")) &&
