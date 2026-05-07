@@ -137,8 +137,8 @@ const Fabrica = () => {
 
   const isStart = subscription.subscribed && 
     (subscription.productId?.includes("smart") || subscription.productId?.includes("start") || subscription.productId?.includes("basic")) &&
-    !(subscription.productId === "prod_UTFlCWzNqvqSNx" || subscription.productId === "prod_UTFsXcKq8m0mol");
-  const isElite = subscription.subscribed && (!isStart || subscription.productId === "prod_UTFlCWzNqvqSNx" || subscription.productId === "prod_UTFsXcKq8m0mol");
+    !(subscription.productId === "prod_UTFlCWzNqvqSNx" || subscription.productId === "prod_UTFsXcKq8m0mol" || subscription.productId === "prod_UTSmPe3GPt8iHt");
+  const isElite = subscription.subscribed && (!isStart || subscription.productId === "prod_UTFlCWzNqvqSNx" || subscription.productId === "prod_UTFsXcKq8m0mol" || subscription.productId === "prod_UTSmPe3GPt8iHt");
   const hasAccess = isAdmin || isElite;
 
   if (authLoading || subscription.loading) {
@@ -205,20 +205,20 @@ const Fabrica = () => {
                     <span className="text-xs font-black text-amber-400">Plano Elite Anual</span>
                     <Sparkles className="w-3 h-3 text-amber-400 animate-pulse" />
                   </div>
-                  <p className="text-[10px] text-amber-200/60 font-semibold">Equivale a apenas R$ 41,41/mês</p>
+                  <p className="text-[10px] text-amber-200/60 font-semibold">Equivale a apenas R$ 28,91/mês</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-lg font-black text-white">R$ 497</span>
+                  <span className="text-lg font-black text-white">R$ 347</span>
                   <span className="text-[10px] text-white/50">/ano</span>
                 </div>
               </div>
               
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-2 mb-3 text-[10px] text-amber-200 leading-normal">
-                💡 <strong>Análise de Economia:</strong> Comprar mensalmente por 1 ano custa R$ 588. No plano anual, você paga apenas R$ 497 — uma economia garantida de <strong>R$ 91,00/ano</strong>!
+                💡 <strong>Análise de Economia:</strong> Comprar mensalmente por 1 ano custa R$ 588. No plano anual, você paga apenas R$ 347 — uma economia garantida de <strong>R$ 241,00/ano</strong>!
               </div>
 
               <button 
-                onClick={() => window.open("https://buy.stripe.com/6oU7sM2PEcaY42vcJ68so0b", "_blank")}
+                onClick={() => window.open("https://buy.stripe.com/fZu14ogGugreeH9bF28so0d", "_blank")}
                 className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold py-2.5 px-3 rounded-lg text-xs transition-all shadow-md uppercase tracking-wider"
               >
                 Garantir Anual com Desconto →

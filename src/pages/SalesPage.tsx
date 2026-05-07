@@ -16,7 +16,7 @@ const STRIPE = {
   smart_monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
   smart_annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
   elite_monthly: "https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c",
-  elite_annual: "https://buy.stripe.com/6oU7sM2PEcaY42vcJ68so0b",
+  elite_annual: "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d",
 };
 
 const T = {
@@ -248,7 +248,7 @@ export default function SalesPage() {
 
   const checkout = (plan: "smart_monthly" | "smart_annual" | "elite_monthly" | "elite_annual" = "elite_annual") => {
     setCtaClicked(true);
-    let priceVal = 497;
+    let priceVal = 347;
     if (plan === "smart_monthly") priceVal = 29.9;
     else if (plan === "smart_annual") priceVal = 197;
     else if (plan === "elite_monthly") priceVal = 97;
@@ -607,15 +607,37 @@ export default function SalesPage() {
                 </button>
               </div>
 
+              <div style={{ 
+                maxWidth: "600px", 
+                margin: "0 auto 24px", 
+                background: "rgba(255, 170, 0, 0.05)", 
+                border: "1px dashed rgba(255, 170, 0, 0.3)", 
+                borderRadius: "16px", 
+                padding: "16px 20px", 
+                textAlign: "left" 
+              }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "start" }}>
+                  <span style={{ fontSize: "20px" }}>⚠️</span>
+                  <div>
+                    <h4 style={{ margin: "0 0 4px 0", fontSize: "14px", fontWeight: "900", color: "#FFAA00", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                      Aviso Importante: Virada de Lote Próxima
+                    </h4>
+                    <p style={{ margin: 0, fontSize: "13px", color: "rgba(255,255,255,0.8)", lineHeight: "1.5" }}>
+                      O preço do <strong>1º Lote (R$ 347/ano)</strong> vai subir. Assim que as vagas remanescentes forem preenchidas, a ferramenta passará para o <strong>2º Lote por R$ 497/ano</strong> no plano anual. Garanta seu acesso hoje com desconto máximo.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div style={{ display: "inline-flex", gap: 10, alignItems: "center", background: `${T.accent}10`,
                 border: `1px solid ${T.accent}55`, borderRadius: 100, padding: "8px 16px", marginBottom: 8 }}>
                 <span className="animate-pulse" style={{ width: 8, height: 8, borderRadius: "50%", background: T.accent }} />
                 <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>
-                  47 vagas restantes nesta semana
+                  Apenas 14 vagas restantes no 1º Lote
                 </span>
               </div>
-              <p style={{ color: T.text3, fontSize: 12, margin: 0 }}>
-                (limitamos para garantir suporte por WhatsApp)
+              <p style={{ color: T.text3, fontSize: 12, margin: "0 0 16px 0" }}>
+                (as inscrições encerram automaticamente ao atingir o limite de suporte)
               </p>
             </Reveal>
           </div>
@@ -722,14 +744,14 @@ export default function SalesPage() {
                   ) : (
                     <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
                       <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
-                      <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1 }}>41</span>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>,41</span>
+                      <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1 }}>28</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>,91</span>
                       <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
                     </div>
                   )}
 
                   <p style={{ fontSize: 12, color: T.text2, marginBottom: 28 }}>
-                    {billingPeriod === "monthly" ? "Assinatura mensal sem fidelidade" : "Equivalente a R$ 497,00 cobrados anualmente (Economia massiva)"}
+                    {billingPeriod === "monthly" ? "Assinatura mensal sem fidelidade" : "Equivalente a R$ 347,00 cobrados anualmente (Economia massiva)"}
                   </p>
 
                   <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 14 }}>
