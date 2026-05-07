@@ -9,6 +9,7 @@ interface DockProps {
         icon: LucideIcon
         label: string
         onClick?: () => void
+        showBadge?: boolean
     }[]
 }
 
@@ -17,6 +18,7 @@ interface DockIconButtonProps {
     label: string
     onClick?: () => void
     className?: string
+    showBadge?: boolean
 }
 
 const floatingAnimation = {
@@ -32,7 +34,7 @@ const floatingAnimation = {
 }
 
 const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
-    ({ icon: Icon, label, onClick, className }, ref) => {
+    ({ icon: Icon, label, onClick, className, showBadge }, ref) => {
         return (
             <motion.button
                 ref={ref}
@@ -45,7 +47,15 @@ const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
                     className
                 )}
             >
-                <Icon className="w-5 h-5 text-foreground" />
+                <div className="relative">
+                    <Icon className="w-5 h-5 text-foreground" />
+                    {showBadge && (
+                        <span className="absolute -top-1 -right-1 flex h-2 w-2 z-10">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        </span>
+                    )}
+                </div>
                 <span className="text-[10px] font-medium hidden sm:block">{label}</span>
                 <span className={cn(
                     "absolute -top-8 left-1/2 -translate-x-1/2",

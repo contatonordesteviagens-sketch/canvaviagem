@@ -35,7 +35,7 @@ function isValidEmail(email: string | null | undefined): email is string {
 }
 
 // ZAIA WEBHOOK HELPER
-async function triggerZaiaWebhook(webhookEnvVar: string, data: { email: string; name?: string; phone?: string }) {
+async function triggerZaiaWebhook(webhookEnvVar: string, data: { email: string; name?: string; phone?: string; magic_link?: string }) {
   const webhookUrl = Deno.env.get(webhookEnvVar);
   if (!webhookUrl) {
     logStep(`ZAIA webhook not configured: ${webhookEnvVar}`);
@@ -48,6 +48,7 @@ async function triggerZaiaWebhook(webhookEnvVar: string, data: { email: string; 
       timestamp: new Date().toISOString(),
     };
     if (data.phone) payload.phone = data.phone;
+    if (data.magic_link) payload.magic_link = data.magic_link;
 
     await fetch(webhookUrl, {
       method: "POST",
@@ -68,9 +69,10 @@ async function ensureUserAndOnboarding(
   name: string | undefined,
   stripeCustomerId: string,
   stripeSubscriptionId: string,
-  phone: string | null
+  phone: string | null,
+  productId?: string
 ) {
-  logStep("Starting onboarding for", { email: redactEmail(email) });
+  logStep("Starting onboarding for", { email: redactEmail(email), productId });
 
   // 1. Check/Create User de forma escalável
   const { data: userData } = await supabase.auth.admin.getUserByEmail(email);
@@ -112,42 +114,45 @@ async function ensureUserAndOnboarding(
     stripe_customer_id: stripeCustomerId,
     stripe_subscription_id: stripeSubscriptionId,
     status: "active",
-    product_id: "prod_TkvaozfpkAcbpM",
+    product_id: productId || "prod_TkvaozfpkAcbpM",
     updated_at: new Date().toISOString(),
   }, { onConflict: "user_id" });
 
   if (subError) logStep("ERROR: Failed to upsert subscription", { error: subError.message });
 
-  // 4. Send Magic Link & Welcome Email
-  if (resend) {
-    const siteUrl = Deno.env.get("SITE_URL") || "https://canvaviagem.lovable.app";
-    const token = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+  // 4. Generate Magic Link Token
+  const siteUrl = Deno.env.get("SITE_URL") || "https://canvaviagem.lovable.app";
+  const token = crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  let magicLink: string | undefined = undefined;
 
-    const { error: tokenError } = await supabase.from("magic_link_tokens").insert({
-      email: email.toLowerCase().trim(),
-      token,
-      expires_at: expiresAt.toISOString(),
-      name: name,
-      phone: phone,
-    });
+  const { error: tokenError } = await supabase.from("magic_link_tokens").insert({
+    email: email.toLowerCase().trim(),
+    token,
+    expires_at: expiresAt.toISOString(),
+    name: name,
+    phone: phone,
+  });
 
-    if (tokenError) {
-      logStep("ERROR: Failed to create magic link token", { error: tokenError.message });
-    } else {
-      const magicLink = `${siteUrl}/auth/verify?token=${token}`;
-      await sendAutoMagicLinkEmail(resend, email, magicLink, name || "Visitante");
-      logStep("Magic link sent automatically", { email: redactEmail(email) });
-    }
+  if (tokenError) {
+    logStep("ERROR: Failed to create magic link token", { error: tokenError.message });
+  } else {
+    magicLink = `${siteUrl}/auth/verify?token=${token}`;
+    logStep("Magic link token created successfully", { email: redactEmail(email) });
+  }
 
+  // 5. Send emails via Resend if available
+  if (resend && magicLink) {
+    await sendAutoMagicLinkEmail(resend, email, magicLink, name || "Visitante");
     await sendWelcomeEmail(resend, email);
   }
 
-  // 5. Trigger Zaia Welcome
+  // 6. Trigger Zaia Welcome (with the generated magic link for WhatsApp delivery!)
   await triggerZaiaWebhook("ZAIA_WEBHOOK_WELCOME", {
     email,
     name: name,
-    phone: phone || undefined
+    phone: phone || undefined,
+    magic_link: magicLink,
   });
 }
 
@@ -178,7 +183,7 @@ serve(async (req) => {
 
     switch (event.type) {
       case "checkout.session.completed":
-        await handleCheckoutCompleted(event.data.object, supabaseAdmin, resend);
+        await handleCheckoutCompleted(event.data.object, supabaseAdmin, resend, stripe);
         break;
       case "customer.subscription.created":
         await handleSubscriptionCreated(event.data.object, supabaseAdmin);
@@ -190,7 +195,7 @@ serve(async (req) => {
         await handleSubscriptionDeleted(event.data.object, supabaseAdmin, resend);
         break;
       case "invoice.payment_succeeded":
-        await handlePaymentSucceeded(event.data.object, supabaseAdmin, resend);
+        await handlePaymentSucceeded(event.data.object, supabaseAdmin, resend, stripe);
         break;
       case "invoice.payment_failed":
         await handlePaymentFailed(event.data.object, supabaseAdmin, resend);
@@ -209,7 +214,7 @@ serve(async (req) => {
   }
 });
 
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabase: any, resend: any) {
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabase: any, resend: any, stripe: Stripe) {
   logStep("Processing checkout.session.completed", { sessionId: session.id });
   const email = session.customer_email || session.customer_details?.email;
   if (!isValidEmail(email)) return;
@@ -219,7 +224,21 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
   const stripeCustomerId = session.customer as string;
   const stripeSubscriptionId = session.subscription as string;
 
-  await ensureUserAndOnboarding(supabase, resend, email, customerName, stripeCustomerId, stripeSubscriptionId, customerPhone);
+  let productId = "prod_TkvaozfpkAcbpM"; // default fallback
+  if (stripeSubscriptionId) {
+    try {
+      const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+      const retrievedProductId = subscription.items.data[0]?.price?.product as string;
+      if (retrievedProductId) {
+        productId = retrievedProductId;
+        logStep("Retrieved product ID from subscription", { productId });
+      }
+    } catch (e: any) {
+      logStep("ERROR retrieving subscription for product ID", { error: e.message });
+    }
+  }
+
+  await ensureUserAndOnboarding(supabase, resend, email, customerName, stripeCustomerId, stripeSubscriptionId, customerPhone, productId);
 }
 
 async function handleSubscriptionCreated(subscription: Stripe.Subscription, supabase: any) {
@@ -246,7 +265,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription, supa
   if (profile?.email) await triggerZaiaWebhook("ZAIA_WEBHOOK_CANCELLATION", { email: profile.email, name: profile.name });
 }
 
-async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, resend: any) {
+async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, resend: any, stripe: Stripe) {
   logStep("Processing invoice.payment_succeeded", { invoiceId: invoice.id });
   const stripeCustomerId = invoice.customer as string;
 
@@ -256,10 +275,23 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
     if (isValidEmail(email)) {
       const customerName = invoice.customer_name || email.split("@")[0];
       const subscriptionId = invoice.subscription as string;
-      // NOTE: Invoice doesn't have phone. 
-      await ensureUserAndOnboarding(supabase, resend, email, customerName, stripeCustomerId, subscriptionId, null);
+      
+      let productId = "prod_TkvaozfpkAcbpM"; // default fallback
+      if (subscriptionId) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const retrievedProductId = subscription.items.data[0]?.price?.product as string;
+          if (retrievedProductId) {
+            productId = retrievedProductId;
+            logStep("Retrieved product ID from subscription (invoice)", { productId });
+          }
+        } catch (e: any) {
+          logStep("ERROR retrieving subscription for product ID (invoice)", { error: e.message });
+        }
+      }
+
+      await ensureUserAndOnboarding(supabase, resend, email, customerName, stripeCustomerId, subscriptionId, null, productId);
       return; // ensureUserAndOnboarding also upserts subscription, so we can return or continue. 
-      // But standard logic below updates status too. It's fine to duplicate update.
     } else {
       logStep("No email in invoice for subscription_create", { invoiceId: invoice.id });
     }

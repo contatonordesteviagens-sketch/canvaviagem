@@ -46,7 +46,8 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
     {
       icon: Sparkles,
       label: "Fábrica",
-      onClick: () => handleTabClick("fabrica")
+      onClick: () => handleTabClick("fabrica"),
+      showBadge: true
     },
     {
       icon: Calendar,

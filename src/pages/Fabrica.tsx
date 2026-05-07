@@ -164,10 +164,9 @@ const Fabrica = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [user]);
 
-  const isStart = subscription.subscribed && 
-    (subscription.productId?.includes("smart") || subscription.productId?.includes("start") || subscription.productId?.includes("basic")) &&
-    !(subscription.productId === "prod_UTFlCWzNqvqSNx" || subscription.productId === "prod_UTFsXcKq8m0mol" || subscription.productId === "prod_UTSmPe3GPt8iHt");
-  const isElite = subscription.subscribed && (!isStart || subscription.productId === "prod_UTFlCWzNqvqSNx" || subscription.productId === "prod_UTFsXcKq8m0mol" || subscription.productId === "prod_UTSmPe3GPt8iHt");
+  const ELITE_PRODUCT_IDS = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
+  const isElite = subscription.subscribed && ELITE_PRODUCT_IDS.includes(subscription.productId || "");
+  const isStart = subscription.subscribed && !isElite;
   const hasAccess = isAdmin || isElite || localStorage.getItem("cv_bypass") === "true";
 
   if (authLoading || subscription.loading) {

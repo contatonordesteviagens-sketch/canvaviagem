@@ -135,6 +135,16 @@ const Index = () => {
   const [showAllOffers, setShowAllOffers] = useState(false);
   const [showPremiumGate, setShowPremiumGate] = useState(false);
   const [redirectionTool, setRedirectionTool] = useState<string | null>(null);
+  const [showFestaPopup, setShowFestaPopup] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      const hasSeenPopup = localStorage.getItem("cv_festa_popup_seen_v3");
+      if (!hasSeenPopup) {
+        setShowFestaPopup(true);
+      }
+    }
+  }, [user]);
 
   // Database hooks
   const { data: videoTemplates, isLoading: videosLoading } = useContentItems(['video', 'seasonal']);
@@ -1506,6 +1516,94 @@ const Index = () => {
                 </button>
               </div>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Startup Announcement Popup for subscribers */}
+      <AnimatePresence>
+        {showFestaPopup && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/90 backdrop-blur-md z-[9999] flex items-center justify-center p-4 md:p-6"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-slate-900 border border-cyan-500/30 rounded-3xl p-6 md:p-8 max-w-2xl w-full relative shadow-2xl shadow-cyan-500/10 text-center"
+            >
+              <button 
+                onClick={() => {
+                  localStorage.setItem("cv_festa_popup_seen_v3", "true");
+                  setShowFestaPopup(false);
+                }}
+                className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+
+              <div className="inline-flex gap-2 items-center bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider mb-4">
+                🚀 NOVIDADE EXCLUSIVA
+              </div>
+
+              <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight mb-2">
+                A Fábrica de Anúncios Liberou! 🎉
+              </h2>
+              <p className="text-gray-300 text-sm md:text-base leading-relaxed mb-6">
+                Descubra como criar anúncios profissionais para sua agência de turismo em segundos com a nossa nova Inteligência Artificial. Assista ao vídeo explicativo de 1 minuto abaixo:
+              </p>
+
+              {/* YouTube Video Player Embed */}
+              <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl mb-6 bg-black">
+                <iframe 
+                  className="absolute inset-0 w-full h-full"
+                  src="https://www.youtube.com/embed/Xqcw-NpPz08?autoplay=1"
+                  title="Fábrica de Anúncios Canva Viagem"
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                />
+              </div>
+
+              {/* CTA Buttons based on plan */}
+              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                {isSubscribed && (subscription.productId === "prod_UTFlCWzNqvqSNx" || subscription.productId === "prod_UTFsXcKq8m0mol" || subscription.productId === "prod_UTSmPe3GPt8iHt") ? (
+                  <Button 
+                    onClick={() => {
+                      localStorage.setItem("cv_festa_popup_seen_v3", "true");
+                      setShowFestaPopup(false);
+                      navigate("/fabrica");
+                    }}
+                    className="w-full sm:w-auto px-8 py-6 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-base uppercase tracking-wider shadow-lg shadow-cyan-500/20"
+                  >
+                    Ir para a Fábrica de Anúncios →
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={() => {
+                      localStorage.setItem("cv_festa_popup_seen_v3", "true");
+                      setShowFestaPopup(false);
+                      navigate("/planos");
+                    }}
+                    className="w-full sm:w-auto px-8 py-6 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-black text-base uppercase tracking-wider shadow-lg shadow-cyan-500/25 border-0"
+                  >
+                    Quero o Acesso Elite ⚡
+                  </Button>
+                )}
+
+                <button 
+                  onClick={() => {
+                    localStorage.setItem("cv_festa_popup_seen_v3", "true");
+                    setShowFestaPopup(false);
+                  }}
+                  className="text-gray-400 hover:text-white font-bold text-sm underline sm:no-underline"
+                >
+                  Fechar e Explorar
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
