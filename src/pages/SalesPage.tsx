@@ -782,111 +782,15 @@ export default function SalesPage() {
                 </button>
               </div>
 
-              <div style={{ 
-                maxWidth: "600px", 
-                margin: "0 auto 16px", 
-                background: "rgba(255, 170, 0, 0.04)", 
-                border: "1px dashed rgba(255, 170, 0, 0.25)", 
-                borderRadius: "12px", 
-                padding: "12px 16px", 
-                textAlign: "left" 
-              }}>
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                  <span style={{ fontSize: "16px" }}>⚠️</span>
-                  <p style={{ margin: 0, fontSize: "12px", color: "rgba(255,255,255,0.9)", lineHeight: "1.4" }}>
-                    <strong style={{ color: "#FFAA00" }}>Acesso à Fábrica (Elite):</strong> As vagas do 1º Lote ({billingPeriod === "monthly" ? "R$ 49/mês" : "R$ 347/ano"}) estão se esgotando. No 2º Lote, o valor subirá para {billingPeriod === "monthly" ? "R$ 97/mês" : "R$ 497/ano"}. Garanta o menor preço hoje.
-                  </p>
-                </div>
-              </div>
-
-              {/* VISUALIZADOR DE LOTES ANIMADO */}
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: "8px",
-                maxWidth: "600px",
-                margin: "0 auto 20px",
-                padding: "0"
-              }}>
-                {/* 1º Lote */}
-                <div style={{
-                  background: "rgba(255, 0, 50, 0.03)",
-                  border: "1px solid #FF3366",
-                  boxShadow: "0 0 15px rgba(255, 51, 102, 0.15)",
-                  borderRadius: "12px",
-                  padding: "12px 6px",
-                  position: "relative",
-                  textAlign: "center"
-                }}>
-                  {/* Floating Flame Animation */}
-                  <motion.div
-                    animate={{ 
-                      y: [0, -4, 0],
-                      rotate: [-3, 3, -3],
-                      scale: [1, 1.05, 1]
-                    }}
-                    transition={{ 
-                      duration: 2.2, 
-                      repeat: Infinity, 
-                      ease: "easeInOut" 
-                    }}
-                    style={{
-                      position: "absolute",
-                      top: "-12px",
-                      right: "-6px",
-                      fontSize: "clamp(16px, 4vw, 22px)",
-                      filter: "drop-shadow(0 0 6px #FF6600)",
-                      cursor: "default"
-                    }}
-                  >
-                    🔥
-                  </motion.div>
-                  <p style={{ margin: "0 0 4px 0", fontSize: "clamp(9px, 2vw, 11px)", fontWeight: "900", color: "#FF3366", letterSpacing: "1px", textTransform: "uppercase" }}>1º LOTE</p>
-                  <p style={{ margin: 0, fontSize: "clamp(16px, 4.5vw, 24px)", fontWeight: "900", color: "#FFFFFF" }}>
-                    R$ <span style={{ color: "#FF3366" }}>{billingPeriod === "monthly" ? "49" : "347"}</span>
-                  </p>
-                </div>
-
-                {/* 2º Lote */}
-                <div style={{
-                  background: "rgba(255, 255, 255, 0.01)",
-                  border: "1px solid rgba(255, 255, 255, 0.06)",
-                  borderRadius: "12px",
-                  padding: "12px 6px",
-                  textAlign: "center",
-                  opacity: 0.35
-                }}>
-                  <p style={{ margin: "0 0 4px 0", fontSize: "clamp(9px, 2vw, 11px)", fontWeight: "800", color: "rgba(255,255,255,0.6)", letterSpacing: "1px", textTransform: "uppercase" }}>2º LOTE</p>
-                  <p style={{ margin: 0, fontSize: "clamp(16px, 4.5vw, 24px)", fontWeight: "800", color: "rgba(255,255,255,0.4)", textDecoration: "line-through" }}>
-                    R$ {billingPeriod === "monthly" ? "97" : "497"}
-                  </p>
-                </div>
-
-                {/* 3º Lote */}
-                <div style={{
-                  background: "rgba(255, 255, 255, 0.01)",
-                  border: "1px solid rgba(255, 255, 255, 0.06)",
-                  borderRadius: "12px",
-                  padding: "12px 6px",
-                  textAlign: "center",
-                  opacity: 0.35
-                }}>
-                  <p style={{ margin: "0 0 4px 0", fontSize: "clamp(9px, 2vw, 11px)", fontWeight: "800", color: "rgba(255,255,255,0.6)", letterSpacing: "1px", textTransform: "uppercase" }}>3º LOTE</p>
-                  <p style={{ margin: 0, fontSize: "clamp(16px, 4.5vw, 24px)", fontWeight: "800", color: "rgba(255,255,255,0.4)", textDecoration: "line-through" }}>
-                    R$ {billingPeriod === "monthly" ? "147" : "597"}
-                  </p>
-                </div>
-              </div>
-
-              <div style={{ display: "inline-flex", gap: 8, alignItems: "center", background: `${T.accent}10`,
-                border: `1px solid ${T.accent}44`, borderRadius: 100, padding: "6px 12px", marginBottom: 4 }}>
+              <div style={{ display: "inline-flex", gap: 8, alignItems: "center", background: `${T.accent}15`,
+                border: `1px solid ${T.accent}44`, borderRadius: 100, padding: "8px 18px", marginBottom: 12 }}>
                 <span className="animate-pulse" style={{ width: 6, height: 6, borderRadius: "50%", background: T.accent }} />
-                <span style={{ fontSize: 12, fontWeight: 700, color: T.text }}>
-                  Apenas 14 vagas restantes no 1º Lote
+                <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>
+                  Apenas 14 vagas restantes com acesso completo
                 </span>
               </div>
-              <p style={{ color: T.text3, fontSize: 11, margin: 0 }}>
-                (as inscrições encerram automaticamente)
+              <p style={{ color: T.text3, fontSize: 12, margin: "0 auto 16px" }}>
+                (as inscrições encerram automaticamente assim que as vagas forem preenchidas)
               </p>
             </Reveal>
           </div>
@@ -971,7 +875,7 @@ export default function SalesPage() {
                     background: "transparent", color: T.accent, fontWeight: 800, fontSize: 14,
                     cursor: "pointer", letterSpacing: 0.5, transition: "background 0.2s" }}
                 >
-                  ASSINAR START {billingPeriod === "monthly" ? "MENSAL" : "ANUAL"}
+                  Começar com o Start
                 </button>
               </div>
             </TimelineContent>
@@ -1054,7 +958,7 @@ export default function SalesPage() {
                       fontWeight: 900, fontSize: 15, cursor: "pointer", border: "none",
                       boxShadow: `0 12px 40px ${T.accent}55`, textTransform: "uppercase", letterSpacing: 0.5 }}
                   >
-                    QUERO O PLANO ELITE {billingPeriod === "monthly" ? "MENSAL" : "ANUAL"} →
+                    Quero o Elite →
                   </button>
                   <p style={{ textAlign: "center", fontSize: 12, color: T.text3, marginTop: 16, marginBottom: 0 }}>
                     ⚡ Acesso imediato · Suporte garantido
@@ -1064,6 +968,40 @@ export default function SalesPage() {
             </TimelineContent>
 
           </div>
+
+          {/* ANCORAGEM DE PREÇO */}
+          <Reveal delay={0.25}>
+            <div style={{ 
+              maxWidth: 600, 
+              margin: "48px auto 0", 
+              background: "rgba(255,255,255,0.02)", 
+              border: `1px solid rgba(0, 229, 255, 0.15)`, 
+              borderRadius: 20, 
+              padding: "28px",
+              textAlign: "center"
+            }}>
+              <h4 style={{ fontSize: 16, fontWeight: 900, color: T.accent, marginBottom: 18, textTransform: "uppercase", letterSpacing: 1 }}>
+                O que você deixa de ganhar sem isso:
+              </h4>
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px", display: "flex", flexDirection: "column", gap: 12, textAlign: "left" }}>
+                <li style={{ display: "flex", gap: 10, fontSize: 14, color: T.text2 }}>
+                  <span style={{ color: "#FF3366" }}>✕</span>
+                  <span><strong>Sem o Canva Viagem:</strong> feed parado = 0 DMs orgânicos por mês</span>
+                </li>
+                <li style={{ display: "flex", gap: 10, fontSize: 14, color: T.text }}>
+                  <span style={{ color: T.accent }}>✓</span>
+                  <span><strong>1 pacote vendido pelo feed:</strong> R$ 3.500 a R$ 8.000 de lucro</span>
+                </li>
+                <li style={{ display: "flex", gap: 10, fontSize: 14, color: T.accent, fontWeight: 800 }}>
+                  <span style={{ color: T.accent }}>⭐</span>
+                  <span><strong>ROI do plano Elite em 1 venda:</strong> 2.300% de retorno</span>
+                </li>
+              </ul>
+              <p style={{ fontSize: 12, color: T.text3, margin: 0 }}>
+                1 pacote fechado pelo feed paga 23 anos de assinatura.
+              </p>
+            </div>
+          </Reveal>
         </div>
       </section>
 
