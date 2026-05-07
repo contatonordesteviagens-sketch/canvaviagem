@@ -839,18 +839,29 @@ export default function SalesPage() {
 
                   <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 12 }}>
                     {[
-                      "Acesso ilimitado a 400+ fotos e artes prontas no Canva",
-                      "Modelos prontos de postagens que mais trazem clientes",
-                      "Robôs de Inteligência Artificial para tirar dúvidas",
-                      "Suporte completo por e-mail"
+                      "Acesso ilimitado a 400+ mídias de viagens",
+                      "Reels, Stories, Artes feed de alta conversão",
+                      "Modelos prontos e 100% editáveis no Canva",
+                      "Texto e Copys de Ofertas de pacotes magnéticos",
+                      "Influencers de I.A prontos para divulgar",
+                      "Robôs de Inteligência Artificial tira-dúvidas",
+                      "Suporte completo por WhatsApp"
                     ].map(f => (
-                      <li key={f} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 14, color: T.text2 }}>
-                        <Check size={16} color={T.text3} /> {f}
+                      <li key={f} style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 13, color: T.text2 }}>
+                        <span style={{ marginTop: 2, flexShrink: 0 }}><Check size={14} color={T.accent} /></span>
+                        <span>{f}</span>
                       </li>
                     ))}
-                    <li style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 14, color: "rgba(255,255,255,0.25)" }}>
-                      <span style={{ textDecoration: "line-through" }}>Gerador Automático de Anúncios e Sites</span>
-                    </li>
+                    {[
+                      "Fábrica: Gerador de Anúncios e Ofertas de viagens",
+                      "Fábrica: Gerador de Sites de viagens de conversão",
+                      "Diagnóstico e Plano de ação individual para escala"
+                    ].map(f => (
+                      <li key={f} style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 13, color: "rgba(255,255,255,0.25)", textDecoration: "line-through" }}>
+                        <span style={{ marginTop: 2, flexShrink: 0 }}><X size={14} color="rgba(255,255,255,0.2)" /></span>
+                        <span>{f}</span>
+                      </li>
+                    ))}
                   </ul>
                 </div>
 
@@ -891,7 +902,7 @@ export default function SalesPage() {
                     transform: "translate(-50%,-50%)", background: T.accent, color: "#000", fontWeight: 900,
                     fontSize: 11, padding: "6px 16px", borderRadius: 100, whiteSpace: "nowrap",
                     boxShadow: `0 8px 20px ${T.accent}44` }}>
-                    ⭐ RECOMENDADO PARA ALTA CONVERSÃO
+                    ⭐ RECOMENDADO PARA ESCALA
                   </div>
                   
                   <p style={{ fontSize: 12, fontWeight: 800, color: T.accent, letterSpacing: 2, marginBottom: 20 }}>PLANO ELITE</p>
@@ -916,21 +927,27 @@ export default function SalesPage() {
                     {billingPeriod === "monthly" ? "Assinatura mensal sem fidelidade" : "Equivalente a R$ 347,00 cobrados anualmente (Economia massiva)"}
                   </p>
 
-                  <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 14 }}>
+                  <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 12 }}>
+                    <li style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 13, fontWeight: 800, color: T.accent }}>
+                      <span style={{ marginTop: 2, flexShrink: 0 }}><Check size={14} color={T.accent} /></span>
+                      <span>TUDO DO PLANO START +</span>
+                    </li>
                     {[
-                      "TUDO DO PLANO START +",
-                      "Gerador de Anúncios e Artes de Viagem ILIMITADO (fotos reais prontas em 5 segundos)",
+                      "Gerador de Anúncios e Artes de Viagem ILIMITADO (fotos reais em 5 segundos)",
                       "Criador Automático de Sites de Venda para cada roteiro de viagem",
                       "Gerador de Legendas magnéticas prontas para copiar e colar",
-                      "Plano de Ação e Checklist diário de postagens para lotar seu WhatsApp",
+                      "Plano de Ação e Checklist diário de postagens diárias",
                       "Suporte VIP no WhatsApp diretamente com Lucas Ferrari"
-                    ].map((f, i) => (
-                      <li key={f} style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 14,
-                        fontWeight: i === 0 ? 800 : 500, color: i === 0 ? T.accent : T.text }}>
-                        <span style={{ marginTop: 2, flexShrink: 0 }}><Check size={16} color={T.accent} /></span>
+                    ].map(f => (
+                      <li key={f} style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 13, color: T.text }}>
+                        <span style={{ marginTop: 2, flexShrink: 0 }}><Check size={14} color={T.accent} /></span>
                         <span>{f}</span>
                       </li>
                     ))}
+                    <li style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 13, color: "rgba(255,255,255,0.25)", textDecoration: "line-through" }}>
+                      <span style={{ marginTop: 2, flexShrink: 0 }}><X size={14} color="rgba(255,255,255,0.2)" /></span>
+                      <span>Diagnóstico e Plano de ação para escala</span>
+                    </li>
                   </ul>
                 </div>
 
