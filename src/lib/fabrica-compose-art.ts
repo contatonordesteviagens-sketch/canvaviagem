@@ -1625,14 +1625,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // 7) Headline (Centralizada no Stories / 1 linha adaptativa no Quadrado)
       if (format === "story") {
         ctx.textAlign = "center";
-        let titleFsStory = 96; // Aumentado em 20% para preencher o espaço com total robustez
+        let titleFsStory = 115; // Elevado para garantir que, mesmo com encolhimento, fique 20% maior
         ctx.font = `900 ${titleFsStory}px Inter, Arial, sans-serif`;
-        while (ctx.measureText(titleText).width > width - 120 && titleFsStory > 40) {
+        while (ctx.measureText(titleText).width > width - 60 && titleFsStory > 40) { // Limite ampliado para permitir fonte maior
           titleFsStory -= 4;
           ctx.font = `900 ${titleFsStory}px Inter, Arial, sans-serif`;
         }
         ctx.fillStyle = v0OnPanel;
-        safeFillText(ctx, titleText, width / 2, titleY, width - 120, 22);
+        safeFillText(ctx, titleText, width / 2, titleY, width - 60, 22);
         ctx.textAlign = "left";
       } else {
         ctx.fillStyle = v0OnPanel;
@@ -1647,24 +1647,24 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const priceX = width - 60 - priceBlockW;
       
       // No Stories, os benefícios ocupam toda a largura útil sem precisar de espaço para o preço ao lado
-      const benefitsMaxW = format === "story" ? (width - left * 2) : (priceX - 24 - benefitsX);
+      const benefitsMaxW = format === "story" ? (width - left) : (priceX - 24 - benefitsX);
 
       ctx.fillStyle = v0OnPanel;
       benefitsList.forEach((b, i) => {
         const iconKey = (benefitsList[i]?.icon as IconKey) || (["bus", "map", "guide", "star"][i] as IconKey) || "check";
         
-        // Coordenada Y com espaçamento vertical estendido e centralizado no Stories (aumentado proporcionalmente em 20%)
-        const storyGap = 76;
+        // Coordenada Y com espaçamento vertical estendido e centralizado no Stories (aumentado para 92px para total respiro)
+        const storyGap = 92;
         const py = format === "story"
-          ? titleY + 100 + i * storyGap
+          ? titleY + 110 + i * storyGap
           : rowTopY + 28 + i * benefitLineH;
 
-        // Ícone aumentado em exatamente 20% no Stories (50px) ou original (32px)
-        const iconSize0 = format === "story" ? 50 : 32;
-        drawMonoIcon(ctx, iconKey, benefitsX + iconSize0/2, py - (format === "story" ? 14 : 8), iconSize0, v0OnPanel);
+        // Ícone aumentado em exatamente 20% no Stories (60px) ou original (32px)
+        const iconSize0 = format === "story" ? 60 : 32;
+        drawMonoIcon(ctx, iconKey, benefitsX + iconSize0/2, py - (format === "story" ? 18 : 8), iconSize0, v0OnPanel);
 
-        // Texto aumentado em exatamente 20% no Stories (41px) ou original (26px)
-        let bfs = format === "story" ? 41 : 26;
+        // Texto aumentado em exatamente 20% no Stories (50px inicial) ou original (26px)
+        let bfs = format === "story" ? 50 : 26;
         ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
         const textX = benefitsX + iconSize0 + (format === "story" ? 24 : 12);
         const textMaxW = benefitsMaxW - (iconSize0 + (format === "story" ? 24 : 12));
@@ -1754,120 +1754,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const photoH0 = height - topH;
       const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
       ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
-
-      // EXCLUSIVE STORIES (9:16) RENDER PIPELINE TO ENFORCE PIXEL-PERFECT Z-INDEX ORDER
-      if (format === "story") {
-        // 2º: Desenha o Véu Gradiente Escuro do rodapé para garantir legibilidade dos contatos
-        const footerHeight = 100;
-        const footerY = height - footerHeight - 60;
-        const veilStartY = footerY - 140;
-        const grad = ctx.createLinearGradient(0, veilStartY, 0, height);
-        grad.addColorStop(0, "rgba(0,0,0,0.0)");
-        grad.addColorStop(0.3, "rgba(0,0,0,0.65)");
-        grad.addColorStop(1, "rgba(0,0,0,0.92)");
-        ctx.save();
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, veilStartY, width, height - veilStartY);
-        ctx.restore();
-
-        // 3º: Desenha o Bloco de Fundo do Preço com Alto Relevo e Destaque
-        const boxW = 440;
-        const boxH = 220;
-        const boxX = width - boxW - 56;
-        const boxY = height - 350; // Posicionado perfeitamente na tela
-
-        ctx.save();
-        // Sombra projetada (Drop-shadow) forte e difusa para criar alto relevo
-        ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
-        ctx.shadowBlur = 24;
-        ctx.shadowOffsetY = 10;
-        
-        // Fundo azul-marinho sólido de alto luxo
-        fillRoundRect(ctx, boxX, boxY, boxW, boxH, 20, "#0f172a");
-        ctx.restore();
-
-        // Borda interna brilhante para efeito chanfrado de alto relevo
-        ctx.save();
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        fillRoundRect(ctx, boxX + 1.5, boxY + 1.5, boxW - 3, boxH - 3, 18, "transparent");
-        ctx.stroke();
-        ctx.restore();
-
-        // Renderização Centralizada dos Textos Claros para contraste máximo
-        ctx.textAlign = "center";
-        ctx.fillStyle = "#fbbf24"; // Amarelo brilhante radiante
-        ctx.font = "800 22px Inter, Arial, sans-serif";
-        ctx.fillText((topLabel || "por apenas").toString().toUpperCase(), boxX + boxW / 2, boxY + 46);
-
-        ctx.fillStyle = "#ffffff"; // Branco puro brilhante
-        let storyPriceFs = 64;
-        ctx.font = `900 ${storyPriceFs}px Inter, Arial, sans-serif`;
-        while (ctx.measureText(priceStr).width > boxW - 40 && storyPriceFs > 28) {
-          storyPriceFs -= 4;
-          ctx.font = `900 ${storyPriceFs}px Inter, Arial, sans-serif`;
-        }
-        safeFillText(ctx, priceStr, boxX + boxW / 2, boxY + 116, boxW - 40, 24);
-
-        ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-        ctx.font = "800 22px Inter, Arial, sans-serif";
-        ctx.fillText(bottomSuffix || "por pessoa", boxX + boxW / 2, boxY + 172);
-        ctx.textAlign = "left";
-
-        // 4º: Desenha a Logo (Canto inferior esquerdo), Site e Telefone na frente de tudo
-        const logoY = boxY + (boxH - 100) / 2;
-        ctx.save();
-        ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-        ctx.shadowBlur = 20;
-        ctx.shadowOffsetX = 3;
-        ctx.shadowOffsetY = 6;
-        await drawProminentLogo(ctx, 56, logoY, 100);
-        ctx.restore();
-
-        const contact1 = options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined);
-        const contact2 = options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined);
-
-        const contactsToDraw: { icon: string; value: string }[] = [];
-        if (contact1 && contact1.icon !== "none" && contact1.value && contact1.value.trim()) contactsToDraw.push(contact1);
-        if (contact2 && contact2.icon !== "none" && contact2.value && contact2.value.trim()) contactsToDraw.push(contact2);
-
-        if (contactsToDraw.length > 0) {
-          ctx.save();
-          ctx.textAlign = "left";
-          ctx.textBaseline = "middle";
-          ctx.fillStyle = "#ffffff";
-          ctx.shadowColor = "rgba(0,0,0,0.9)";
-          ctx.shadowBlur = 10;
-
-          const textLeftX = 176;
-          const wsImg = await loadImage("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11' fill='%2325D366'/><path fill='%23FFF' d='M12.004 3.53c-4.67 0-8.47 3.8-8.47 8.47 0 1.6.42 3.12 1.15 4.47l-.73 2.66 2.73-.72c1.3.71 2.77 1.09 4.31 1.09 4.67 0 8.47-3.8 8.47-8.47 0-4.67-3.8-8.47-8.47-8.47zm4.88 11.5c-.2.56-1.17 1.07-1.62 1.11-.41.04-.82.16-2.61-.55-2.29-.9-3.76-3.23-3.88-3.38-.11-.15-.93-1.24-.93-2.36 0-1.13.59-1.69.8-1.91.21-.22.46-.27.61-.27.15 0 .3 0 .43.01.14 0 .32-.05.5.38.19.45.64 1.56.7 1.68.06.12.1.26.02.42-.08.16-.12.26-.24.4-.12.14-.25.32-.36.43-.12.13-.25.27-.11.51.14.24.62 1.02 1.33 1.65.91.81 1.68 1.06 1.92 1.18.24.12.38.1.52-.06.14-.16.61-.71.77-.96.16-.24.32-.2.54-.12.22.08 1.41.67 1.65.79.24.12.4.18.46.28.06.1.06.58-.14 1.14z'/></svg>");
-
-          contactsToDraw.forEach((c, index) => {
-            let displayValue = c.value;
-            const isWhatsapp = c.icon.startsWith("whatsapp");
-            if (isWhatsapp) displayValue = formatAdPhone(c.value);
-            if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
-
-            const cy = logoY + 25 + index * 42;
-
-            ctx.font = "800 24px Inter, Arial, sans-serif";
-            ctx.fillText(displayValue, textLeftX + 38, cy);
-
-            if (isWhatsapp) {
-              ctx.drawImage(wsImg, textLeftX, cy - 14, 28, 28);
-            } else if (c.icon.startsWith("instagram")) {
-              drawAdInstagramIcon(ctx, textLeftX + 14, cy, 28, "gradient");
-            } else {
-              drawAdWebsiteIcon(ctx, textLeftX + 14, cy, 28, "#ffffff");
-            }
-          });
-          ctx.restore();
-        }
-
-        applyFilmGrain(ctx, width, height, 0.04);
-        return canvas.toDataURL("image/png");
-      }
 
       if (format !== "story") {
         // ==========================================
