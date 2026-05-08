@@ -1303,248 +1303,486 @@ const panelBottom = RULES.PANEL_BOTTOM;
     // contendo: PACOTE / destino / dias+ícones / "a partir de" + 12x sem juros
     // + R$ preco gigante / total por pessoa / faixa Pix com desconto.
     if (variant === 3) {
-      await drawProminentLogo(ctx, 40, 40, 120);
-      // [BG] Foto do destino cobrindo todo o canvas
-      const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.45);
+      if (format === "story") {
+        await drawProminentLogo(ctx, 40, 40, 120);
+        // [BG] Foto do destino cobrindo todo o canvas
+        const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.45);
+        ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
-      // ── Cores do V3 (box CVC) ──────────────────────────────────────────────
-      // yellow  = cor secundária do usuário (fundo do box)
-      // navy    = cor primária do usuário   (texto/anel dentro do box)
-      // navyRaw = primaryColor normalizado  (para a faixa Pix)
-      const yellow = secondaryColor || "#FCD34D";
-      const yellowDark = shadeColor(yellow, -12);
-      const navy = getSafeColor(yellow, primaryColor);
-      const navyRaw = primaryColor || "#0c2340";
+        // ── Cores do V3 (box CVC) ──────────────────────────────────────────────
+        const yellow = secondaryColor || "#FCD34D";
+        const yellowDark = shadeColor(yellow, -12);
+        const navy = getSafeColor(yellow, primaryColor);
+        const navyRaw = primaryColor || "#0c2340";
 
-      ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+        // Desconto: extrai número do promoName (ex.: "5% OFF") ou usa 5 como default
+        const descMatch = (promoName || "").match(/(d{1,2})s*%/);
+        const descN = descMatch ? descMatch[1] : "5";
 
-      // ── Dados dinâmicos ────────────────────────────────────────────────────
-      const destinoUp = (destination || "DESTINO").toUpperCase();
-      const daysItem = highlights.find((h) => /\d+\s*dia/i.test(h?.text || ""));
-      const daysText = (travelPeriod && travelPeriod.trim()) || (daysItem?.text || "").trim();
-      // Ícones: usa APENAS os selecionados pelo usuario (sem merge com defaults).
-      // Se nenhum highlight tiver ícone, usa um conjunto padrão mínimo.
-      const iconList: IconKey[] = (() => {
-        const fromHl = highlights
-          .map((h) => h?.icon as IconKey | undefined)
-          .filter((k): k is IconKey => !!k && k !== "check");
-        if (fromHl.length === 0) {
-          return ["plane", "hotel", "coffee", "camera"] as IconKey[];
-        }
-        // dedup preservando ordem do usuario, maximo 5
-        const seen = new Set<IconKey>();
-        const out: IconKey[] = [];
-        for (const k of fromHl) {
-          if (!seen.has(k)) {
-            seen.add(k);
-            out.push(k);
-            if (out.length >= 5) break;
-          }
-        }
-        return out;
-      })();
+        // ── [BOX] amarelo arredondado ─ ─────
+        const boxX = 40;
+        const boxW = width - 80; // 1000px
+        const boxY = 60;
+        const boxH = 860;
 
-      // Parcelas: extrai número de "12x", "12 x", "12" etc.
-      const instMatch = (installments || "12x").match(/(\d{1,2})\s*x?/i);
-      const parcN = instMatch ? instMatch[1] : "12";
-      const priceStr = mainPrice || `${curSym} ${price}`;
-      // Calcula total = preco ├ù parcelas, formatando milhares com "." e centavos com ","
-      const priceNumeric = parseFloat(((price || "").trim()).replace(/\./g, "").replace(",", "."));
-      const totalNum = !isNaN(priceNumeric) ? priceNumeric * parseInt(parcN, 10) : NaN;
-      // Se preco não tem centavos (inteiro), o total tambem não tera.
-      const priceHasDecimals = /[.,]\d{1,2}\s*$/.test((price || "").trim());
-      const fmtBR = (n: number) => {
-        const showDec = priceHasDecimals && n % 1 !== 0;
-        return n.toLocaleString("pt-BR", {
-          minimumFractionDigits: showDec ? 2 : 0,
-          maximumFractionDigits: showDec ? 2 : 0,
-        });
-      };
-      // Total: prioriza override do usuario; senão calcula automatico com sufixo
-      const computedTotal = !isNaN(totalNum)
-        ? `Total ${(paymentSuffix || "por pessoa").trim()}: ${curSym} ${fmtBR(totalNum)}`
-        : "";
-      const totalStr = (totalOverride && totalOverride.trim()) || computedTotal;
-      // Desconto: extrai número do promoName (ex.: "5% OFF") ou usa 5 como default
-      const descMatch = (promoName || "").match(/(\d{1,2})\s*%/);
-      const descN = descMatch ? descMatch[1] : "5";
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.3)";
+        ctx.shadowBlur = 24;
+        ctx.shadowOffsetY = 8;
+        fillRoundRect(ctx, boxX, boxY, boxW, boxH, 36, yellow);
+        ctx.restore();
 
-      // ── [BOX] amarelo arredondado ─ ─────
-      const boxX = (width - Math.round(width * 0.68)) / 2;
-      const boxW = Math.round(width * 0.68); // Ajustado de 0.72 para 0.68 para ser menos "largo"
-      const boxR = 36;
-      const padTop = 36;
-      const titleH = 50; const titleGap = 12;
-      const destH = 60; const destGap = 18;
-      const infoH = 42; const infoGap = 22;
-      const priceBlockH = 160; 
-      const totalH = (showTotal && totalStr) ? 36 : 0;
-      const totalGap = totalH ? 14 : 0;
-      const stripeH = 64;
-      const stripeGap = showPixBanner ? 22 : 0;
-      const padBottom = 36;
+        const cx = boxX + boxW / 2;
 
-      const boxH = padTop + titleH + titleGap + destH + destGap + infoH + infoGap + priceBlockH + totalGap + totalH + (showPixBanner ? stripeGap + stripeH : 0) + padBottom;
-      const safeBoxY = Math.min(180, panelBottom - boxH - 20); // Aumentado de 100 para 180 para baixar o box no amarelo/topo
-
-      ctx.save();
-      ctx.shadowColor = "rgba(0,0,0,0.25)"; ctx.shadowBlur = 28; ctx.shadowOffsetY = 8;
-      fillRoundRect(ctx, boxX, safeBoxY, boxW, boxH, boxR, yellow);
-      ctx.restore();
-
-      const cx = boxX + boxW / 2;
-      let cursorY = safeBoxY + padTop + 32;
-      ctx.fillStyle = navy; ctx.textAlign = "center"; ctx.font = "900 44px Inter, Arial, sans-serif";
-      ctx.fillText("PACOTE", cx, cursorY);
-      cursorY += titleGap + 48;
-
-      ctx.font = "500 56px Inter, Arial, sans-serif";
-      let destSize = 56;
-      while (ctx.measureText(destinoUp).width > boxW - 80 && destSize > 32) {
-        destSize -= 2; ctx.font = `500 ${destSize}px Inter, Arial, sans-serif`;
-      }
-      safeFillText(ctx, destinoUp, cx, cursorY, boxW - 80, 24);
-      cursorY += destGap + 36;
-
-      let benefitsFontSize = 30; ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(daysText).width > boxW * 0.45 && benefitsFontSize > 20) {
-        benefitsFontSize -= 2; ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
-      }
-      const daysW = ctx.measureText(daysText).width;
-      const sepGap = 18; const iconSize = Math.round(benefitsFontSize * 1.8); const iconGap = 18;
-      const iconsTotal = iconList.length * iconSize + Math.max(0, iconList.length - 1) * iconGap;
-      const sepW = 4; const infoTotalW = daysW + sepGap + sepW + sepGap + iconsTotal;
-      let infoX = cx - infoTotalW / 2;
-      ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillStyle = navy;
-      safeFillText(ctx, daysText, infoX, cursorY, boxW * 0.5, 14);
-      infoX += daysW + sepGap;
-      ctx.fillRect(infoX, cursorY - 18, sepW, 36);
-      infoX += sepW + sepGap;
-      iconList.forEach((k, i) => {
-        drawMonoIcon(ctx, k, infoX + i * (iconSize + iconGap) + iconSize / 2, cursorY, iconSize, navy);
-      });
-      ctx.textBaseline = "alphabetic";
-      const ringX = boxX + 30;
-      const ringY = cursorY - 8;
-      const ringW = boxW - 60;
-      const ringH = priceBlockH - 8;
-      ctx.save();
-      ctx.fillStyle = yellowDark;
-      roundRect(ctx, ringX, ringY, ringW, ringH, 24);
-      ctx.fill();
-      ctx.restore();
-
-      const priceBlockY = ringY + 30;
-      const priceGroupW = Math.min(ringW - 48, Math.round(width * 0.46));
-      const priceGroupX = ringX + (ringW - priceGroupW) / 2;
-      const leftColX = priceGroupX;
-      const rightEdgeX = priceGroupX + priceGroupW;
-      const minGap = 18;
-
-      // Quebra "R$ 229" em símbolo pequeno + valor gigante
-            // Quebra "R$ 229" em simbolo pequeno + valor gigante
-      const priceParts = priceStr.match(/^(\D+)\s*([\d.,]+)$/);
-      const sym = priceParts ? priceParts[1].trim() : curSym;
-      const valNum = priceParts ? priceParts[2].trim() : priceStr;
-
-      // DEFENSIVE: Ajusta tamanho da fonte se o preco for MUITO longo (evita colisao com 10X)
-      const leftReservedW = 120;
-      const maxPriceW = priceGroupW - leftReservedW - minGap;
-      let priceSize = 120;
-      ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(valNum).width > maxPriceW && priceSize > 44) {
-        priceSize -= 4;
-        ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
-      }
-      const valW = ctx.measureText(valNum).width;
-      const symSize = Math.round(priceSize * 0.36);
-
-      // Lado esquerdo (informações de parcelamento)
-      ctx.textAlign = "left";
-      ctx.fillStyle = navy;
-      ctx.font = "600 20px Inter, Arial, sans-serif";
-      ctx.fillText("a partir de", leftColX, priceBlockY - 10);
-      ctx.font = "900 64px Inter, Arial, sans-serif";
-      ctx.fillText(`${parcN}X`, leftColX, priceBlockY + 45);
-      ctx.font = "600 20px Inter, Arial, sans-serif";
-      ctx.fillText("sem juros", leftColX, priceBlockY + 75);
-
-      // Lado direito (preço gigante) - Ajustado baseline para não bater no 10X
-      ctx.textAlign = "right";
-      ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
-      ctx.fillText(valNum, rightEdgeX, priceBlockY + 80);
-      ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
-      ctx.fillText(sym, rightEdgeX - valW - 12, priceBlockY + 80 - priceSize * 0.45);
-
-      cursorY = ringY + ringH + totalGap;
-
-      // [TOTAL] rodape do box (apenas se showTotal)
-      if (totalH > 0) {
-        ctx.textAlign = "center";
-        ctx.font = "600 22px Inter, Arial, sans-serif";
+        // Título "PACOTE"
         ctx.fillStyle = navy;
-        ctx.fillText(totalStr, cx, cursorY + 22);
-        cursorY += totalH;
-      }
-
-      // [PROMO] faixa horizontal com texto Pix (opcional)
-      // Fundo da faixa = primaryColor (navy padrão). Texto sempre com contraste.
-      if (showPixBanner) {
-        const stripeY = safeBoxY + boxH - stripeH - 24;
-        const stripeX = boxX + 40;
-        const stripeW = boxW - 80;
-        const stripeBg = navyRaw; // mantem a cor escolhida pelo usuario p/ a faixa
-        const stripeFg = contrastOn(stripeBg); // texto preto/branco automatico
-        fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 16, stripeBg);
-        ctx.fillStyle = stripeFg;
         ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.font = "900 26px Inter, Arial, sans-serif";
+        ctx.font = "900 38px Inter, Arial, sans-serif";
+        ctx.fillText("PACOTE", cx, boxY + 70);
 
-        const customBanner = (pixBannerText || "").trim();
-        if (customBanner) {
-          ctx.fillText(customBanner, stripeX + stripeW / 2, stripeY + stripeH / 2 + 1);
-        } else {
-          // "{N}% OFF A VISTA NO  [pix]"
+        // Destino (multiplicado por 1.2x)
+        let destSize = 68;
+        ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(destinoUp).width > boxW - 80 && destSize > 32) {
+          destSize -= 2;
+          ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
+        }
+        safeFillText(ctx, destinoUp, cx, boxY + 140, boxW - 80, 24);
+
+        // Grade de 4 Benefícios (2 colunas) - Aumentados em 20%
+        const benefitsList = [
+          { text: "Transporte incluso", icon: "bus" },
+          { text: "Hospedagem", icon: "hotel" },
+          { text: "Café da manhã", icon: "coffee" },
+          { text: "Guia local", icon: "guide" }
+        ];
+
+        const colW = (boxW - 100) / 2; // 450px cada coluna
+        const colGap = 40;
+        const rowGap = 64; // espaçamento vertical
+        const startY = boxY + 230;
+        const startX = boxX + 50;
+        
+        benefitsList.forEach((b, i) => {
+          const col = i % 2;
+          const row = Math.floor(i / 2);
+          const tx = startX + col * (colW + colGap);
+          const ty = startY + row * rowGap;
+          
+          // Ícone aumentado em 20% (44px)
+          const iconSize = 44;
+          drawMonoIcon(ctx, b.icon as IconKey, tx + iconSize/2, ty, iconSize, navy);
+          
+          // Texto aumentado em 20% (31px) com gap de 14px (+2px)
+          let bfs = 31;
+          ctx.fillStyle = navy;
+          ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
+          ctx.textAlign = "left";
+          const textX = tx + iconSize + 14;
+          const textMaxW = colW - (iconSize + 14);
+          while (ctx.measureText(b.text).width > textMaxW && bfs > 16) {
+            bfs -= 1;
+            ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
+          }
+          ctx.fillText(b.text, textX, ty + 10);
+        });
+
+        // Bloco de Preço - Reposicionado e com Destaque 3D
+        const priceBlockY = startY + 160;
+        const ringX = boxX + 40;
+        const ringY = priceBlockY;
+        const ringW = boxW - 80;
+        const ringH = 210;
+
+        ctx.save();
+        ctx.fillStyle = yellowDark;
+        roundRect(ctx, ringX, ringY, ringW, ringH, 24);
+        ctx.fill();
+        ctx.restore();
+
+        const priceCenterX = ringX + ringW / 2;
+        ctx.textAlign = "center";
+        ctx.fillStyle = navy;
+        ctx.font = "600 22px Inter, Arial, sans-serif";
+        ctx.fillText((topLabel || "À VISTA").toString().toUpperCase(), priceCenterX, ringY + 45);
+        
+        ctx.save();
+        ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetY = 4;
+        
+        let priceFs = 86; // proeminente
+        ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(priceStr).width > ringW - 40 && priceFs > 30) {
+          priceFs -= 4;
+          ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+        }
+        ctx.fillStyle = navy;
+        safeFillText(ctx, priceStr, priceCenterX, ringY + 118, ringW - 40, 24);
+        ctx.restore();
+        
+        ctx.fillStyle = navy;
+        ctx.globalAlpha = 0.7;
+        ctx.font = "800 22px Inter, Arial, sans-serif";
+        ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 165);
+        ctx.globalAlpha = 1;
+
+        // Faixa de Desconto Pix no rodapé do cartão amarelo
+        if (showPixBanner) {
+          const stripeY = boxY + boxH - 100;
+          const stripeX = boxX + 40;
+          const stripeW = boxW - 80;
+          const stripeH = 64;
+          fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 16, navyRaw);
+          ctx.fillStyle = contrastOn(navyRaw);
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = "900 24px Inter, Arial, sans-serif";
+          
           const pixText = `${descN}% OFF A VISTA NO`;
           const pixTextW = ctx.measureText(pixText).width;
-          const pixIconSize = 36;
-          const pixGap = 12;
-          ctx.font = "800 28px Inter, Arial, sans-serif";
+          const pixIconSize = 32;
+          const pixGap = 10;
+          ctx.font = "800 24px Inter, Arial, sans-serif";
           const pixLabelW = ctx.measureText("pix").width;
-          ctx.font = "900 26px Inter, Arial, sans-serif";
-          // pílula branca atras do logo+pix p/ garantir visibilidade da marca Pix
-          const pillPad = 10;
+          
+          const pillPad = 8;
           const pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
           const pillH = stripeH - 16;
           const totalPixW = pixTextW + pixGap + pillW;
           const pixStartX = stripeX + (stripeW - totalPixW) / 2;
+          
           ctx.textAlign = "left";
-          ctx.fillStyle = stripeFg;
-          ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2 + 1);
+          ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2);
           const pillX = pixStartX + pixTextW + pixGap;
           const pillY = stripeY + (stripeH - pillH) / 2;
           fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, "#ffffff");
+          
           const pxCx = pillX + pillPad + pixIconSize / 2;
           const pxCy = stripeY + stripeH / 2;
           drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
+          
           ctx.fillStyle = "#32BCAD";
-          ctx.font = "900 28px Inter, Arial, sans-serif";
-          ctx.fillText("pix", pillX + pillPad + pixIconSize + pixGap, stripeY + stripeH / 2 + 1);
+          ctx.font = "900 24px Inter, Arial, sans-serif";
+          ctx.fillText("pix", pillX + pillPad + pixIconSize + pixGap, stripeY + stripeH / 2);
+          ctx.textBaseline = "alphabetic";
         }
-        ctx.textBaseline = "alphabetic";
-      }
 
-      await drawFinalBranding(
-        ctx, width, height, logoDataUrl, 
-        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        effectiveTextColor,
-        userFamily,
-        true
-      );
-      applyFilmGrain(ctx, width, height, 0.04);
-    return canvas.toDataURL("image/png");
+        // Véu Gradiente Escuro do rodapé
+        const footerHeight = 100;
+        const footerY = height - footerHeight - 60;
+        const veilStartY = footerY - 140;
+        const grad = ctx.createLinearGradient(0, veilStartY, 0, height);
+        grad.addColorStop(0, "rgba(0,0,0,0.0)");
+        grad.addColorStop(0.3, "rgba(0,0,0,0.65)");
+        grad.addColorStop(1, "rgba(0,0,0,0.92)");
+        ctx.save();
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, veilStartY, width, height - veilStartY);
+        ctx.restore();
+
+        // Logo oficial subido 10% no rodapé
+        const logoY = height - 230;
+        ctx.save();
+        ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+        ctx.shadowBlur = 20;
+        ctx.shadowOffsetX = 3;
+        ctx.shadowOffsetY = 6;
+        await drawProminentLogo(ctx, 56, logoY, 100);
+        ctx.restore();
+
+        // Contatos (WhatsApp e Site) aumentados em 20%
+        const contact1 = options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined);
+        const contact2 = options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined);
+
+        const contactsToDraw = [];
+        if (contact1 && contact1.icon !== "none" && contact1.value && contact1.value.trim()) contactsToDraw.push(contact1);
+        if (contact2 && contact2.icon !== "none" && contact2.value && contact2.value.trim()) contactsToDraw.push(contact2);
+
+        if (contactsToDraw.length > 0) {
+          ctx.save();
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          ctx.fillStyle = "#ffffff";
+          ctx.shadowColor = "rgba(0,0,0,0.9)";
+          ctx.shadowBlur = 10;
+
+          const textLeftX = 176;
+          const wsImg = await loadImage("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11' fill='%2325D366'/><path fill='%23FFF' d='M12.004 3.53c-4.67 0-8.47 3.8-8.47 8.47 0 1.6.42 3.12 1.15 4.47l-.73 2.66 2.73-.72c1.3.71 2.77 1.09 4.31 1.09 4.67 0 8.47-3.8 8.47-8.47 0-4.67-3.8-8.47-8.47-8.47zm4.88 11.5c-.2.56-1.17 1.07-1.62 1.11-.41.04-.82.16-2.61-.55-2.29-.9-3.76-3.23-3.88-3.38-.11-.15-.93-1.24-.93-2.36 0-1.13.59-1.69.8-1.91.21-.22.46-.27.61-.27.15 0 .3 0 .43.01.14 0 .32-.05.5.38.19.45.64 1.56.7 1.68.06.12.1.26.02.42-.08.16-.12.26-.24.4-.12.14-.25.32-.36.43-.12.13-.25.27-.11.51.14.24.62 1.02 1.33 1.65.91.81 1.68 1.06 1.92 1.18.24.12.38.1.52-.06.14-.16.61-.71.77-.96.16-.24.32-.2.54-.12.22.08 1.41.67 1.65.79.24.12.4.18.46.28.06.1.06.58-.14 1.14z'/></svg>");
+
+          contactsToDraw.forEach((c, index) => {
+            let displayValue = c.value;
+            const isWhatsapp = c.icon.startsWith("whatsapp");
+            if (isWhatsapp) displayValue = formatAdPhone(c.value);
+            if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
+
+            // Sem Fortaleza: Filtra qualquer menção a Fortaleza (Defensive Sanitization)
+            if (typeof displayValue === "string") {
+              displayValue = displayValue.replace(/fortaleza/gi, "");
+            }
+
+            const cy = logoY + 25 + index * 48;
+
+            // Aumento de 20% (font 29px)
+            ctx.font = "800 29px Inter, Arial, sans-serif";
+            ctx.fillText(displayValue, textLeftX + 38, cy);
+
+            if (isWhatsapp) {
+              ctx.drawImage(wsImg, textLeftX, cy - 16, 32, 32);
+            } else if (c.icon.startsWith("instagram")) {
+              drawAdInstagramIcon(ctx, textLeftX + 16, cy, 32, "gradient");
+            } else {
+              drawAdWebsiteIcon(ctx, textLeftX + 16, cy, 32, "#ffffff");
+            }
+          });
+          ctx.restore();
+        }
+
+        applyFilmGrain(ctx, width, height, 0.04);
+        return canvas.toDataURL("image/png");
+      } else {
+        await drawProminentLogo(ctx, 40, 40, 120);
+        // [BG] Foto do destino cobrindo todo o canvas
+        const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.45);
+
+        // ── Cores do V3 (box CVC) ──────────────────────────────────────────────
+        // yellow  = cor secundária do usuário (fundo do box)
+        // navy    = cor primária do usuário   (texto/anel dentro do box)
+        // navyRaw = primaryColor normalizado  (para a faixa Pix)
+        const yellow = secondaryColor || "#FCD34D";
+        const yellowDark = shadeColor(yellow, -12);
+        const navy = getSafeColor(yellow, primaryColor);
+        const navyRaw = primaryColor || "#0c2340";
+
+        ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+
+        // ── Dados dinâmicos ────────────────────────────────────────────────────
+        const destinoUp = (destination || "DESTINO").toUpperCase();
+        const daysItem = highlights.find((h) => /\d+\s*dia/i.test(h?.text || ""));
+        const daysText = (travelPeriod && travelPeriod.trim()) || (daysItem?.text || "").trim();
+        // Ícones: usa APENAS os selecionados pelo usuario (sem merge com defaults).
+        // Se nenhum highlight tiver ícone, usa um conjunto padrão mínimo.
+        const iconList = (() => {
+          const fromHl = highlights
+            .map((h) => h?.icon)
+            .filter((k) => !!k && k !== "check");
+          if (fromHl.length === 0) {
+            return ["plane", "hotel", "coffee", "camera"];
+          }
+          // dedup preservando ordem do usuario, maximo 5
+          const seen = new Set();
+          const out = [];
+          for (const k of fromHl) {
+            if (!seen.has(k)) {
+              seen.add(k);
+              out.push(k);
+              if (out.length >= 5) break;
+            }
+          }
+          return out;
+        })();
+
+        // Parcelas: extrai número de "12x", "12 x", "12" etc.
+        const instMatch = (installments || "12x").match(/(\d{1,2})\s*x?/i);
+        const parcN = instMatch ? instMatch[1] : "12";
+        const priceStr = mainPrice || `${curSym} ${price}`;
+        // Calcula total = preco × parcelas, formatando milhares com "." e centavos com ","
+        const priceNumeric = parseFloat(((price || "").trim()).replace(/\./g, "").replace(",", "."));
+        const totalNum = !isNaN(priceNumeric) ? priceNumeric * parseInt(parcN, 10) : NaN;
+        // Se preco não tem centavos (inteiro), o total tambem não tera.
+        const priceHasDecimals = /[.,]\d{1,2}\s*$/.test((price || "").trim());
+        const fmtBR = (n) => {
+          const showDec = priceHasDecimals && n % 1 !== 0;
+          return n.toLocaleString("pt-BR", {
+            minimumFractionDigits: showDec ? 2 : 0,
+            maximumFractionDigits: showDec ? 2 : 0,
+          });
+        };
+        // Total: prioriza override do usuario; senão calcula automatico com sufixo
+        const computedTotal = !isNaN(totalNum)
+          ? `Total ${(paymentSuffix || "por pessoa").trim()}: ${curSym} ${fmtBR(totalNum)}`
+          : "";
+        const totalStr = (totalOverride && totalOverride.trim()) || computedTotal;
+        // Desconto: extrai número do promoName (ex.: "5% OFF") ou usa 5 como default
+        const descMatch = (promoName || "").match(/(\d{1,2})\s*%/);
+        const descN = descMatch ? descMatch[1] : "5";
+
+        // ── [BOX] amarelo arredondado ─ ─────
+        const boxX = (width - Math.round(width * 0.68)) / 2;
+        const boxW = Math.round(width * 0.68); // Ajustado de 0.72 para 0.68 para ser menos "largo"
+        const boxR = 36;
+        const padTop = 36;
+        const titleH = 50; const titleGap = 12;
+        const destH = 60; const destGap = 18;
+        const infoH = 42; const infoGap = 22;
+        const priceBlockH = 160; 
+        const totalH = (showTotal && totalStr) ? 36 : 0;
+        const totalGap = totalH ? 14 : 0;
+        const stripeH = 64;
+        const stripeGap = showPixBanner ? 22 : 0;
+        const padBottom = 36;
+
+        const boxH = padTop + titleH + titleGap + destH + destGap + infoH + infoGap + priceBlockH + totalGap + totalH + (showPixBanner ? stripeGap + stripeH : 0) + padBottom;
+        const safeBoxY = Math.min(180, panelBottom - boxH - 20); // Aumentado de 100 para 180 para baixar o box no amarelo/topo
+
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.25)"; ctx.shadowBlur = 28; ctx.shadowOffsetY = 8;
+        fillRoundRect(ctx, boxX, safeBoxY, boxW, boxH, boxR, yellow);
+        ctx.restore();
+
+        const cx = boxX + boxW / 2;
+        let cursorY = safeBoxY + padTop + 32;
+        ctx.fillStyle = navy; ctx.textAlign = "center"; ctx.font = "900 44px Inter, Arial, sans-serif";
+        ctx.fillText("PACOTE", cx, cursorY);
+        cursorY += titleGap + 48;
+
+        ctx.font = "500 56px Inter, Arial, sans-serif";
+        let destSize = 56;
+        while (ctx.measureText(destinoUp).width > boxW - 80 && destSize > 32) {
+          destSize -= 2; ctx.font = `500 ${destSize}px Inter, Arial, sans-serif`;
+        }
+        safeFillText(ctx, destinoUp, cx, cursorY, boxW - 80, 24);
+        cursorY += destGap + 36;
+
+        let benefitsFontSize = 30; ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(daysText).width > boxW * 0.45 && benefitsFontSize > 20) {
+          benefitsFontSize -= 2; ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
+        }
+        const daysW = ctx.measureText(daysText).width;
+        const sepGap = 18; const iconSize = Math.round(benefitsFontSize * 1.8); const iconGap = 18;
+        const iconsTotal = iconList.length * iconSize + Math.max(0, iconList.length - 1) * iconGap;
+        const sepW = 4; const infoTotalW = daysW + sepGap + sepW + sepGap + iconsTotal;
+        let infoX = cx - infoTotalW / 2;
+        ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillStyle = navy;
+        safeFillText(ctx, daysText, infoX, cursorY, boxW * 0.5, 14);
+        infoX += daysW + sepGap;
+        ctx.fillRect(infoX, cursorY - 18, sepW, 36);
+        infoX += sepW + sepGap;
+        iconList.forEach((k, i) => {
+          drawMonoIcon(ctx, k, infoX + i * (iconSize + iconGap) + iconSize / 2, cursorY, iconSize, navy);
+        });
+        ctx.textBaseline = "alphabetic";
+        const ringX = boxX + 30;
+        const ringY = cursorY - 8;
+        const ringW = boxW - 60;
+        const ringH = priceBlockH - 8;
+        ctx.save();
+        ctx.fillStyle = yellowDark;
+        roundRect(ctx, ringX, ringY, ringW, ringH, 24);
+        ctx.fill();
+        ctx.restore();
+
+        const priceBlockY = ringY + 30;
+        const priceGroupW = Math.min(ringW - 48, Math.round(width * 0.46));
+        const priceGroupX = ringX + (ringW - priceGroupW) / 2;
+        const leftColX = priceGroupX;
+        const rightEdgeX = priceGroupX + priceGroupW;
+        const minGap = 18;
+
+        // Quebra "R$ 229" em simbolo pequeno + valor gigante
+        const priceParts = priceStr.match(/^(\D+)\s*([\d.,]+)$/);
+        const sym = priceParts ? priceParts[1].trim() : curSym;
+        const valNum = priceParts ? priceParts[2].trim() : priceStr;
+
+        // DEFENSIVE: Ajusta tamanho da fonte se o preco for MUITO longo (evita colisao com 10X)
+        const leftReservedW = 120;
+        const maxPriceW = priceGroupW - leftReservedW - minGap;
+        let priceSize = 120;
+        ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(valNum).width > maxPriceW && priceSize > 44) {
+          priceSize -= 4;
+          ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+        }
+        const valW = ctx.measureText(valNum).width;
+        const symSize = Math.round(priceSize * 0.36);
+
+        // Lado esquerdo (informações de parcelamento)
+        ctx.textAlign = "left";
+        ctx.fillStyle = navy;
+        ctx.font = "600 20px Inter, Arial, sans-serif";
+        ctx.fillText("a partir de", leftColX, priceBlockY - 10);
+        ctx.font = "900 64px Inter, Arial, sans-serif";
+        ctx.fillText(`${parcN}X`, leftColX, priceBlockY + 45);
+        ctx.font = "600 20px Inter, Arial, sans-serif";
+        ctx.fillText("sem juros", leftColX, priceBlockY + 75);
+
+        // Lado direito (preço gigante) - Ajustado baseline para não bater no 10X
+        ctx.textAlign = "right";
+        ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(valNum, rightEdgeX, priceBlockY + 80);
+        ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(sym, rightEdgeX - valW - 12, priceBlockY + 80 - priceSize * 0.45);
+
+        cursorY = ringY + ringH + totalGap;
+
+        // [TOTAL] rodape do box (apenas se showTotal)
+        if (totalH > 0) {
+          ctx.textAlign = "center";
+          ctx.font = "600 22px Inter, Arial, sans-serif";
+          ctx.fillStyle = navy;
+          ctx.fillText(totalStr, cx, cursorY + 22);
+          cursorY += totalH;
+        }
+
+        // [PROMO] faixa horizontal com texto Pix (opcional)
+        // Fundo da faixa = primaryColor (navy padrão). Texto sempre com contraste.
+        if (showPixBanner) {
+          const stripeY = safeBoxY + boxH - stripeH - 24;
+          const stripeX = boxX + 40;
+          const stripeW = boxW - 80;
+          const stripeBg = navyRaw; // mantem a cor escolhida pelo usuario p/ a faixa
+          const stripeFg = contrastOn(stripeBg); // texto preto/branco automatico
+          fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 16, stripeBg);
+          ctx.fillStyle = stripeFg;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = "900 26px Inter, Arial, sans-serif";
+
+          const customBanner = (pixBannerText || "").trim();
+          if (customBanner) {
+            ctx.fillText(customBanner, stripeX + stripeW / 2, stripeY + stripeH / 2 + 1);
+          } else {
+            // "{N}% OFF A VISTA NO  [pix]"
+            const pixText = `${descN}% OFF A VISTA NO`;
+            const pixTextW = ctx.measureText(pixText).width;
+            const pixIconSize = 36;
+            const pixGap = 12;
+            ctx.font = "800 28px Inter, Arial, sans-serif";
+            const pixLabelW = ctx.measureText("pix").width;
+            ctx.font = "900 26px Inter, Arial, sans-serif";
+            // pílula branca atras do logo+pix p/ garantir visibilidade da marca Pix
+            const pillPad = 10;
+            const pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
+            const pillH = stripeH - 16;
+            const totalPixW = pixTextW + pixGap + pillW;
+            const pixStartX = stripeX + (stripeW - totalPixW) / 2;
+            ctx.textAlign = "left";
+            ctx.fillStyle = stripeFg;
+            ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2 + 1);
+            const pillX = pixStartX + pixTextW + pixGap;
+            const pillY = stripeY + (stripeH - pillH) / 2;
+            fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, "#ffffff");
+            const pxCx = pillX + pillPad + pixIconSize / 2;
+            const pxCy = stripeY + stripeH / 2;
+            drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
+            ctx.fillStyle = "#32BCAD";
+            ctx.font = "900 28px Inter, Arial, sans-serif";
+            ctx.fillText("pix", pillX + pillPad + pixIconSize + pixGap, stripeY + stripeH / 2 + 1);
+          }
+          ctx.textBaseline = "alphabetic";
+        }
+
+        await drawFinalBranding(
+          ctx, width, height, logoDataUrl, 
+          options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+          options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+          effectiveTextColor,
+          userFamily,
+          true
+        );
+        applyFilmGrain(ctx, width, height, 0.04);
+        return canvas.toDataURL("image/png");
+      }
     }
 
     const logoH = hasLogo ? 130 : 0;
