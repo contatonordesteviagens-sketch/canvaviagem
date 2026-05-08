@@ -424,10 +424,10 @@ async function drawFinalBranding(
   let lw = 0;
   let lh = 0;
 
-  if (logoUrl && !skipLogo) {
+  if (logoUrl) {
     try {
       const logo = await loadImage(logoUrl);
-      const maxLogoH = footerHeight * 0.85;
+      const maxLogoH = footerHeight * 0.85 * 0.85; // Reduzido em 15% para um aspecto premium e minimalista
       const maxLogoW = cw * 0.35;
       const ratio = logo.naturalWidth / logo.naturalHeight;
       lh = maxLogoH;
@@ -1006,17 +1006,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
 
   
   const drawProminentLogo = async (ctx: CanvasRenderingContext2D, x: number, y: number, maxHeight: number = 140) => {
-    if (!hasLogo || !logoDataUrl) return 0;
-    try {
-      const logoImg = await loadImage(logoDataUrl);
-      const r = logoImg.naturalWidth / logoImg.naturalHeight;
-      const lh = maxHeight;
-      const lw = lh * r;
-      const bgP = 15;
-      fillRoundRect(ctx, x, y, lw + bgP*2, lh + bgP*2, 16, "#ffffff");
-      ctx.drawImage(logoImg, x + bgP, y + bgP, lw, lh);
-      return y + lh + bgP * 2;
-    } catch(e) { return 0; }
+    return 0; // Bypassed: Logo is now exclusive to the bottom-left slot in drawFinalBranding
   };
 const panelBottom = RULES.PANEL_BOTTOM;
   const left = RULES.LEFT;
