@@ -1802,6 +1802,246 @@ const panelBottom = RULES.PANEL_BOTTOM;
         applyFilmGrain(ctx, width, height, 0.04);
         return canvas.toDataURL("image/png");
       }
+    } else {
+      await drawProminentLogo(ctx, 40, 40, 120);
+      // [BG] Foto do destino cobrindo todo o canvas
+      const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.45);
+
+      // ── Cores do V3 (box CVC) ──────────────────────────────────────────────
+      // yellow  = cor secundária do usuário (fundo do box)
+      // navy    = cor primária do usuário   (texto/anel dentro do box)
+      // navyRaw = primaryColor normalizado  (para a faixa Pix)
+      const yellow = secondaryColor || "#FCD34D";
+      const yellowDark = shadeColor(yellow, -12);
+      const navy = getSafeColor(yellow, primaryColor);
+      const navyRaw = primaryColor || "#0c2340";
+
+      ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+
+      // ── Dados dinâmicos ────────────────────────────────────────────────────
+      const destinoUp = (destination || "DESTINO").toUpperCase();
+      const daysItem = highlights.find((h) => /\d+\s*dia/i.test(h?.text || ""));
+      const daysText = (travelPeriod && travelPeriod.trim()) || (daysItem?.text || "").trim();
+      // Ícones: usa APENAS os selecionados pelo usuario (sem merge com defaults).
+      // Se nenhum highlight tiver ícone, usa um conjunto padrão mínimo.
+      const iconList = (() => {
+        const fromHl = highlights
+          .map((h) => h?.icon)
+          .filter((k) => !!k && k !== "check");
+        if (fromHl.length === 0) {
+          return ["plane", "hotel", "coffee", "camera"];
+        }
+        // dedup preservando ordem do usuario, maximo 5
+        const seen = new Set();
+        const out = [];
+        for (const k of fromHl) {
+          if (!seen.has(k)) {
+            seen.add(k);
+            out.push(k);
+            if (out.length >= 5) break;
+          }
+        }
+        return out;
+      })();
+
+      // Parcelas: extrai número de "12x", "12 x", "12" etc.
+      const instMatch = (installments || "12x").match(/(\d{1,2})\s*x?/i);
+      const parcN = instMatch ? instMatch[1] : "12";
+      const priceStr = mainPrice || `${curSym} ${price}`;
+      // Computes total = price × installments
+      const priceNumeric = parseFloat(((price || "").trim()).replace(/\./g, "").replace(",", "."));
+      const totalNum = !isNaN(priceNumeric) ? priceNumeric * parseInt(parcN, 10) : NaN;
+      const priceHasDecimals = /[.,]\d{1,2}\s*$/.test((price || "").trim());
+      const fmtBR = (n: number) => {
+        const showDec = priceHasDecimals && n % 1 !== 0;
+        return n.toLocaleString("pt-BR", {
+          minimumFractionDigits: showDec ? 2 : 0,
+          maximumFractionDigits: showDec ? 2 : 0,
+        });
+      };
+      const computedTotal = !isNaN(totalNum)
+        ? `Total ${(paymentSuffix || "por pessoa").trim()}: ${curSym} ${fmtBR(totalNum)}`
+        : "";
+      const totalStr = (totalOverride && totalOverride.trim()) || computedTotal;
+      const descMatch = (promoName || "").match(/(\d{1,2})\s*%/);
+      const descN = descMatch ? descMatch[1] : "5";
+
+      // ── [BOX] amarelo arredondado ─ ─────
+      const boxX = (width - Math.round(width * 0.68)) / 2;
+      const boxW = Math.round(width * 0.68); // Ajustado de 0.72 para 0.68 para ser menos "largo"
+      const boxR = 36;
+      const padTop = 36;
+      const titleH = 50; const titleGap = 12;
+      const destH = 60; const destGap = 18;
+      const infoH = 42; const infoGap = 22;
+      const priceBlockH = 160; 
+      const totalH = (showTotal && totalStr) ? 36 : 0;
+      const totalGap = totalH ? 14 : 0;
+      const stripeH = 64;
+      const stripeGap = showPixBanner ? 22 : 0;
+      const padBottom = 36;
+
+      const boxH = padTop + titleH + titleGap + destH + destGap + infoH + infoGap + priceBlockH + totalGap + totalH + (showPixBanner ? stripeGap + stripeH : 0) + padBottom;
+      const safeBoxY = Math.min(180, panelBottom - boxH - 20); // Aumentado de 100 para 180 para baixar o box no amarelo/topo
+
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.25)"; ctx.shadowBlur = 28; ctx.shadowOffsetY = 8;
+      fillRoundRect(ctx, boxX, safeBoxY, boxW, boxH, boxR, yellow);
+      ctx.restore();
+
+      const cx = boxX + boxW / 2;
+      let cursorY = safeBoxY + padTop + 32;
+      ctx.fillStyle = navy; ctx.textAlign = "center"; ctx.font = "900 44px Inter, Arial, sans-serif";
+      ctx.fillText("PACOTE", cx, cursorY);
+      cursorY += titleGap + 48;
+
+      ctx.font = "500 56px Inter, Arial, sans-serif";
+      let destSize = 56;
+      while (ctx.measureText(destinoUp).width > boxW - 80 && destSize > 32) {
+        destSize -= 2; ctx.font = `500 ${destSize}px Inter, Arial, sans-serif`;
+      }
+      safeFillText(ctx, destinoUp, cx, cursorY, boxW - 80, 24);
+      cursorY += destGap + 36;
+
+      let benefitsFontSize = 30; ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(daysText).width > boxW * 0.45 && benefitsFontSize > 20) {
+        benefitsFontSize -= 2; ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
+      }
+      const daysW = ctx.measureText(daysText).width;
+      const sepGap = 18; const iconSize = Math.round(benefitsFontSize * 1.8); const iconGap = 18;
+      const iconsTotal = iconList.length * iconSize + Math.max(0, iconList.length - 1) * iconGap;
+      const sepW = 4; const infoTotalW = daysW + sepGap + sepW + sepGap + iconsTotal;
+      let infoX = cx - infoTotalW / 2;
+      ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillStyle = navy;
+      safeFillText(ctx, daysText, infoX, cursorY, boxW * 0.5, 14);
+      infoX += daysW + sepGap;
+      ctx.fillRect(infoX, cursorY - 18, sepW, 36);
+      infoX += sepW + sepGap;
+      iconList.forEach((k, i) => {
+        drawMonoIcon(ctx, k as IconKey, infoX + i * (iconSize + iconGap) + iconSize / 2, cursorY, iconSize, navy);
+      });
+      ctx.textBaseline = "alphabetic";
+
+      const ringX = boxX + 30;
+      const ringY = cursorY - 8;
+      const ringW = boxW - 60;
+      const ringH = priceBlockH - 8;
+      ctx.save();
+      ctx.fillStyle = yellowDark;
+      roundRect(ctx, ringX, ringY, ringW, ringH, 24);
+      ctx.fill();
+      ctx.restore();
+
+      const priceBlockY = ringY + 30;
+      const priceGroupW = Math.min(ringW - 48, Math.round(width * 0.46));
+      const priceGroupX = ringX + (ringW - priceGroupW) / 2;
+      const leftColX = priceGroupX;
+      const rightEdgeX = priceGroupX + priceGroupW;
+      const minGap = 18;
+
+      // Quebra "R$ 229" em simbolo pequeno + valor gigante
+      const priceParts = priceStr.match(/^(\D+)\s*([\d.,]+)$/);
+      const sym = priceParts ? priceParts[1].trim() : curSym;
+      const valNum = priceParts ? priceParts[2].trim() : priceStr;
+
+      // DEFENSIVE: Ajusta tamanho da fonte se o preco for MUITO longo (evita colisao com 10X)
+      const leftReservedW = 120;
+      const maxPriceW = priceGroupW - leftReservedW - minGap;
+      let priceSize = 120;
+      ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(valNum).width > maxPriceW && priceSize > 44) {
+        priceSize -= 4;
+        ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+      }
+      const valW = ctx.measureText(valNum).width;
+      const symSize = Math.round(priceSize * 0.36);
+
+      // Lado esquerdo (informações de parcelamento)
+      ctx.textAlign = "left";
+      ctx.fillStyle = navy;
+      ctx.font = "600 20px Inter, Arial, sans-serif";
+      ctx.fillText("a partir de", leftColX, priceBlockY - 10);
+      ctx.font = "900 64px Inter, Arial, sans-serif";
+      ctx.fillText(`${parcN}X`, leftColX, priceBlockY + 45);
+      ctx.font = "600 20px Inter, Arial, sans-serif";
+      ctx.fillText("sem juros", leftColX, priceBlockY + 75);
+
+      // Lado direito (preço gigante) - Ajustado baseline para não bater no 10X
+      ctx.textAlign = "right";
+      ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+      ctx.fillText(valNum, rightEdgeX, priceBlockY + 80);
+      ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
+      ctx.fillText(sym, rightEdgeX - valW - 12, priceBlockY + 80 - priceSize * 0.45);
+
+      cursorY = ringY + ringH + totalGap;
+
+      // [TOTAL] rodape do box (apenas se showTotal)
+      if (totalH > 0) {
+        ctx.textAlign = "center";
+        ctx.font = "600 22px Inter, Arial, sans-serif";
+        ctx.fillStyle = navy;
+        ctx.fillText(totalStr, cx, cursorY + 22);
+        cursorY += totalH;
+      }
+
+      // [PROMO] faixa horizontal com texto Pix (opcional)
+      // Fundo da faixa = primaryColor (navy padrão). Texto sempre com contraste.
+      if (showPixBanner) {
+        const stripeY = safeBoxY + boxH - stripeH - 24;
+        const stripeX = boxX + 40;
+        const stripeW = boxW - 80;
+        const stripeBg = navyRaw; // mantem a cor escolhida pelo usuario p/ a faixa
+        const stripeFg = contrastOn(stripeBg); // texto preto/branco automatico
+        fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 16, stripeBg);
+        ctx.fillStyle = stripeFg;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "900 26px Inter, Arial, sans-serif";
+
+        const customBanner = (pixBannerText || "").trim();
+        if (customBanner) {
+          ctx.fillText(customBanner, stripeX + stripeW / 2, stripeY + stripeH / 2 + 1);
+        } else {
+          // "{N}% OFF A VISTA NO  [pix]"
+          const pixText = `${descN}% OFF A VISTA NO`;
+          const pixTextW = ctx.measureText(pixText).width;
+          const pixIconSize = 36;
+          const pixGap = 12;
+          ctx.font = "800 28px Inter, Arial, sans-serif";
+          const pixLabelW = ctx.measureText("pix").width;
+          ctx.font = "900 26px Inter, Arial, sans-serif";
+          // pílula branca atras do logo+pix p/ garantir visibilidade da marca Pix
+          const pillPad = 10;
+          const pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
+          const pillH = stripeH - 16;
+          const totalPixW = pixTextW + pixGap + pillW;
+          const pixStartX = stripeX + (stripeW - totalPixW) / 2;
+          ctx.textAlign = "left";
+          ctx.fillStyle = stripeFg;
+          ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2 + 1);
+          const pillX = pixStartX + pixTextW + pixGap;
+          const pillY = stripeY + (stripeH - pillH) / 2;
+          fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, "#ffffff");
+          const pxCx = pillX + pillPad + pixIconSize / 2;
+          const pxCy = stripeY + stripeH / 2;
+          drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
+          ctx.fillStyle = "#32BCAD";
+          ctx.font = "900 28px Inter, Arial, sans-serif";
+          ctx.fillText("pix", pillX + pillPad + pixIconSize + pixGap, stripeY + stripeH / 2 + 1);
+        }
+        ctx.textBaseline = "alphabetic";
+      }
+
+      await drawFinalBranding(
+        ctx, width, height, logoDataUrl, 
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        effectiveTextColor,
+        userFamily,
+        true
+      );
+      applyFilmGrain(ctx, width, height, 0.04);
+      return canvas.toDataURL("image/png");
     }
 
     const logoH = hasLogo ? 130 : 0;
@@ -2937,10 +3177,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
     ctx.font = `800 ${isStory ? 110 : 78}px ${sans}`;
     safeFillText(ctx, (destFmt || destination || "DESTINO").toUpperCase(), cx, line2Y, width - 80, 24);
 
-    await drawFinalBranding(ctx, width, height, logoDataUrl, 
-      { icon: footerContact1Icon || "whatsapp_green", value: footerContact1Value || whatsapp || "" },
-      { icon: footerContact2Icon || "instagram_gradient", value: footerContact2Value || instagram || "" },
-      undefined,
+    await drawFinalBranding(
+      ctx,
+      width,
+      height,
+      logoDataUrl,
+      footerContact1Icon ? { icon: footerContact1Icon, value: footerContact1Value || "" } : (whatsapp ? { icon: "whatsapp_green", value: whatsapp } : undefined),
+      footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
       effectiveTextColor,
       userFamily,
       true
@@ -2993,10 +3236,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
     if (line2) ctx.fillText(line2, cx, midY + titSize * 0.7);
     ctx.shadowBlur = 0;
 
-    await drawFinalBranding(ctx, width, height, logoDataUrl, 
-      { icon: footerContact1Icon || "whatsapp_green", value: footerContact1Value || whatsapp || "" },
-      { icon: footerContact2Icon || "instagram_gradient", value: footerContact2Value || instagram || "" },
-      undefined,
+    await drawFinalBranding(
+      ctx,
+      width,
+      height,
+      logoDataUrl,
+      footerContact1Icon ? { icon: footerContact1Icon, value: footerContact1Value || "" } : (whatsapp ? { icon: "whatsapp_green", value: whatsapp } : undefined),
+      footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
       effectiveTextColor,
       userFamily,
       true
@@ -3050,10 +3296,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
     ctx.lineTo(cx + 100, curY + lines.length * titSize * 0.95 + 40);
     ctx.stroke();
 
-    await drawFinalBranding(ctx, width, height, logoDataUrl, 
-      { icon: footerContact1Icon || "whatsapp_green", value: footerContact1Value || whatsapp || "" },
-      { icon: footerContact2Icon || "instagram_gradient", value: footerContact2Value || instagram || "" },
-      undefined,
+    await drawFinalBranding(
+      ctx,
+      width,
+      height,
+      logoDataUrl,
+      footerContact1Icon ? { icon: footerContact1Icon, value: footerContact1Value || "" } : (whatsapp ? { icon: "whatsapp_green", value: whatsapp } : undefined),
+      footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
       effectiveTextColor,
       userFamily,
       true
@@ -3094,10 +3343,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
     ctx.fillStyle = secondaryColor;
     ctx.fillText(travelPeriod || "Uma jornada inesquecível", cx, height / 2 + (isStory ? 80 : 60));
 
-    await drawFinalBranding(ctx, width, height, logoDataUrl, 
-      { icon: footerContact1Icon || "whatsapp_green", value: footerContact1Value || whatsapp || "" },
-      { icon: footerContact2Icon || "instagram_gradient", value: footerContact2Value || instagram || "" },
-      undefined,
+    await drawFinalBranding(
+      ctx,
+      width,
+      height,
+      logoDataUrl,
+      footerContact1Icon ? { icon: footerContact1Icon, value: footerContact1Value || "" } : (whatsapp ? { icon: "whatsapp_green", value: whatsapp } : undefined),
+      footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
       effectiveTextColor,
       userFamily,
       true
@@ -3157,10 +3409,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillText(ln, padLeft, currentY + i * titSize * 0.95);
     });
 
-    await drawFinalBranding(ctx, width, height, logoDataUrl, 
-      { icon: footerContact1Icon || "whatsapp_green", value: footerContact1Value || whatsapp || "" },
-      { icon: footerContact2Icon || "instagram_gradient", value: footerContact2Value || instagram || "" },
-      undefined,
+    await drawFinalBranding(
+      ctx,
+      width,
+      height,
+      logoDataUrl,
+      footerContact1Icon ? { icon: footerContact1Icon, value: footerContact1Value || "" } : (whatsapp ? { icon: "whatsapp_green", value: whatsapp } : undefined),
+      footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
       effectiveTextColor,
       userFamily,
       true
