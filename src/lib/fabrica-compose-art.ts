@@ -1555,11 +1555,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       // 4) Altura ADAPTATIVA do painel:
       const badgeH = 60;
-      const topPaddingBeforeTitle = 60; // Aumentado de 40 para 60 para baixar o texto
+      const topPaddingBeforeTitle = 95; // Aumentado para 95 para criar uma Safe Zone de pelo menos 10% de respiro
       const titleToContent = 50;
       const bottomPadding = 60; // Aumentado de 50 para 60
       const topH = Math.min(
-        Math.round(height * 0.58), // Reduzido de 0.62 para 0.58 para menos amarelo
+        Math.round(height * 0.61), // Ajustado de 0.58 para 0.61 para dar espaço de respiro de forma harmônica
         Math.max(
           Math.round(height * 0.44), // Reduzido de 0.46 para 0.44
           logoH + 40 + badgeH + topPaddingBeforeTitle + titleSize + titleToContent + contentRowH + bottomPadding
