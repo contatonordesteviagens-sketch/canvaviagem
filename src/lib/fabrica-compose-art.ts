@@ -1842,7 +1842,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const titleToContent = 50;
       const bottomPadding = 60; // Aumentado de 50 para 60
       const topH = format === "story"
-        ? Math.round(height * 0.44) // Reduzido para remover o espaço amarelo vazio excessivo no Stories!
+        ? Math.round(height * 0.28) // Otimizado de 0.44 para 0.28 para focar exclusivamente no Título e Badge, abrindo espaço para os benefícios no topo do painel azul
         : Math.min(
             Math.round(height * 0.61), // Ajustado de 0.58 para 0.61 para dar espaço de respiro de forma harmônica
             Math.max(
@@ -1855,41 +1855,54 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = v0PanelBg;
       ctx.fillRect(0, 0, width, topH);
 
+      // 5.0) Foto de destino na base (desenhada antes dos elementos para correta ordem de camadas/z-index)
+      const photoH0 = height - topH;
+      const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
+      ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
+
       // 5.1) Branding Superior (Logo) - Ocultada no Stories para reposicionamento inferior
       const logoBottomY = format === "story" ? 0 : await drawProminentLogo(ctx, left, 40, 140);
-      const badgeY = Math.max(logoBottomY + 30, 170);
+      const badgeY = format === "story" ? 310 : Math.max(logoBottomY + 30, 170);
 
       // 6) Badge "Saindo de" - Condicional estrito (sem fantasma hardcoded - Fortaleza banida)
-      let titleY = Math.max(badgeY + badgeH + topPaddingBeforeTitle + titleSize, logoH + 40 + titleSize) - 45;
+      let titleY = format === "story" ? 160 : Math.max(badgeY + badgeH + topPaddingBeforeTitle + titleSize, logoH + 40 + titleSize) - 45;
 
       if (city && city.trim() !== '' && city.trim().toLowerCase() !== 'fortaleza') {
         const v0BadgeText = `Saindo de ${cityFmt}`;
-        fillRoundRect(ctx, left, badgeY, 500, badgeH, 8, v0BadgeBg);
-        ctx.fillStyle = v0OnBadge;
-        ctx.font = "800 26px Inter, Arial, sans-serif";
-        ctx.textAlign = "left"; ctx.textBaseline = "middle";
-        ctx.fillText(v0BadgeText, left + 20, badgeY + badgeH / 2);
-        ctx.textBaseline = "alphabetic";
+        if (format === "story") {
+          const bx = width / 2 - 250;
+          fillRoundRect(ctx, bx, badgeY, 500, badgeH, 8, v0BadgeBg);
+          ctx.fillStyle = v0OnBadge;
+          ctx.font = "800 26px Inter, Arial, sans-serif";
+          ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(v0BadgeText, width / 2, badgeY + badgeH / 2);
+          ctx.textBaseline = "alphabetic";
+        } else {
+          fillRoundRect(ctx, left, badgeY, 500, badgeH, 8, v0BadgeBg);
+          ctx.fillStyle = v0OnBadge;
+          ctx.font = "800 26px Inter, Arial, sans-serif";
+          ctx.textAlign = "left"; ctx.textBaseline = "middle";
+          ctx.fillText(v0BadgeText, left + 20, badgeY + badgeH / 2);
+          ctx.textBaseline = "alphabetic";
+        }
       } else {
         // Se não houver local de saída, o título sobe ocupando o espaço com total elegância
-        titleY = Math.max(logoBottomY + 40 + titleSize, logoH + 40 + titleSize) - 45;
-      }
-
-      if (format === "story") {
-        titleY = badgeY + badgeH + 60;
+        if (format !== "story") {
+          titleY = Math.max(logoBottomY + 40 + titleSize, logoH + 40 + titleSize) - 45;
+        }
       }
 
       // 7) Headline (Centralizada no Stories / 1 linha adaptativa no Quadrado)
       if (format === "story") {
         ctx.textAlign = "center";
-        let titleFsStory = 115; // Elevado para garantir que, mesmo com encolhimento, fique 20% maior
+        let titleFsStory = 74; // Ajustado para 74px para caber perfeitamente no topo sem estourar e ficar harmônico
         ctx.font = `900 ${titleFsStory}px Inter, Arial, sans-serif`;
-        while (ctx.measureText(titleText).width > width - 60 && titleFsStory > 40) { // Limite ampliado para permitir fonte maior
+        while (ctx.measureText(titleText).width > width - 120 && titleFsStory > 36) {
           titleFsStory -= 4;
           ctx.font = `900 ${titleFsStory}px Inter, Arial, sans-serif`;
         }
         ctx.fillStyle = v0OnPanel;
-        safeFillText(ctx, titleText, width / 2, titleY, width - 60, 22);
+        safeFillText(ctx, titleText, width / 2, titleY, width - 120, 22);
         ctx.textAlign = "left";
       } else {
         ctx.fillStyle = v0OnPanel;
@@ -1906,19 +1919,29 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // No Stories, os benefícios ocupam toda a largura útil sem precisar de espaço para o preço ao lado
       const benefitsMaxW = format === "story" ? (width - left) : (priceX - 24 - benefitsX);
 
-      ctx.fillStyle = v0OnPanel;
       benefitsList.forEach((b, i) => {
         const iconKey = (benefitsList[i]?.icon as IconKey) || (["bus", "map", "guide", "star"][i] as IconKey) || "check";
         
-        // Coordenada Y com espaçamento vertical estendido e centralizado no Stories (aumentado para 92px para total respiro)
-        const storyGap = 92;
+        // Coordenada Y com espaçamento vertical estendido e posicionado no topo do painel azul (photo area Y >= topH)
+        const storyGap = 88;
         const py = format === "story"
-          ? titleY + 110 + i * storyGap
+          ? topH + 80 + i * storyGap
           : rowTopY + 28 + i * benefitLineH;
 
         // Ícone aumentado em exatamente 20% no Stories (60px) ou original (32px)
         const iconSize0 = format === "story" ? 60 : 32;
-        drawMonoIcon(ctx, iconKey, benefitsX + iconSize0/2, py - (format === "story" ? 18 : 8), iconSize0, v0OnPanel);
+        const bColor = format === "story" ? "#ffffff" : v0OnPanel;
+
+        if (format === "story") {
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,0.85)";
+          ctx.shadowBlur = 8;
+          ctx.shadowOffsetY = 2;
+          drawMonoIcon(ctx, iconKey, benefitsX + iconSize0/2, py - 18, iconSize0, bColor);
+          ctx.restore();
+        } else {
+          drawMonoIcon(ctx, iconKey, benefitsX + iconSize0/2, py - 8, iconSize0, bColor);
+        }
 
         // Texto aumentado em exatamente 20% no Stories (50px inicial) ou original (26px)
         let bfs = format === "story" ? 50 : 26;
@@ -1929,7 +1952,19 @@ const panelBottom = RULES.PANEL_BOTTOM;
           bfs -= 2;
           ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
         }
-        ctx.fillText(b.text, textX, py);
+
+        if (format === "story") {
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,0.85)";
+          ctx.shadowBlur = 8;
+          ctx.shadowOffsetY = 2;
+          ctx.fillStyle = bColor;
+          ctx.fillText(b.text, textX, py);
+          ctx.restore();
+        } else {
+          ctx.fillStyle = bColor;
+          ctx.fillText(b.text, textX, py);
+        }
       });
 
       // Divisor vertical
@@ -1943,8 +1978,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         // 3) CARD DE PREÇO COM ALTO RELEVO E PROFUNDIDADE NO STORIES V0
         const boxW = 440;
         const boxH = 220;
-        const boxX = width - boxW - 56;
-        const boxY = height - boxH - 280; // Posicionado 10% mais para cima na parte azul clara da água
+        const boxX = width - boxW - 60;
+        const boxY = height - boxH - 120; // Alinhado perfeitamente no rodapé de Stories
 
         ctx.save();
         // Sombra projetada (drop-shadow) forte e difusa
@@ -2007,10 +2042,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.textAlign = "left";
       }
 
-      // 9) Foto MAIOR na base (porque o painel encolheu)
-      const photoH0 = height - topH;
-      const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
-      ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
+
 
       if (format !== "story") {
         // ==========================================
@@ -2092,14 +2124,95 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ctx.restore();
         }
       } else {
-        await drawFinalBranding(
-          ctx, width, height, logoDataUrl, 
-          options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-          options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-          effectiveTextColor,
-          userFamily,
-          true
-        );
+        // ==========================================
+        // DEDICATED SIDE-BY-SIDE BRANDING FOR V0 STORIES
+        // ==========================================
+        const boxW = 440;
+        const boxH = 220;
+        const boxY = height - boxH - 120; // Alinhado perfeitamente no rodapé de Stories
+
+        // 1. Véu Gradiente Escuro na base do painel azul
+        const veilStartY = boxY - 100;
+        const grad = ctx.createLinearGradient(0, veilStartY, 0, height);
+        grad.addColorStop(0, "rgba(0,0,0,0.0)");
+        grad.addColorStop(0.3, "rgba(0,0,0,0.7)");
+        grad.addColorStop(1, "rgba(0,0,0,0.96)");
+        ctx.save();
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, veilStartY, width, height - veilStartY);
+        ctx.restore();
+
+        // 2. Carregar e Desenhar Logo na Esquerda
+        const contactX = 80; // Margem padrão
+        if (logoDataUrl) {
+          try {
+            const logo = await loadImage(logoDataUrl);
+            const maxLogoH = 80;
+            const maxLogoW = 340;
+            const ratio = logo.naturalWidth / logo.naturalHeight;
+            let lh = maxLogoH;
+            let lw = lh * ratio;
+            if (lw > maxLogoW) {
+              lw = maxLogoW;
+              lh = lw / ratio;
+            }
+            
+            ctx.save();
+            ctx.shadowColor = "rgba(0,0,0,0.4)";
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetY = 5;
+            
+            const bgPad = 8;
+            fillRoundRect(ctx, contactX, boxY, lw + bgPad * 2, lh + bgPad * 2, 12, "#ffffff");
+            ctx.drawImage(logo, contactX + bgPad, boxY + bgPad, lw, lh);
+            ctx.restore();
+          } catch (e) {
+            console.warn("Failed to draw logo inside V0 Story", e);
+          }
+        }
+
+        // 3. Resolver e Desenhar Contatos abaixo do Logo
+        const contact1 = options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined);
+        const contact2 = options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined);
+
+        const contactsToDraw: { icon: string; value: string }[] = [];
+        if (contact1 && contact1.icon !== "none" && contact1.value && contact1.value.trim()) contactsToDraw.push(contact1);
+        if (contact2 && contact2.icon !== "none" && contact2.value && contact2.value.trim()) contactsToDraw.push(contact2);
+
+        if (contactsToDraw.length > 0) {
+          ctx.save();
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          ctx.fillStyle = "#ffffff";
+          ctx.shadowColor = "rgba(0,0,0,0.8)";
+          ctx.shadowBlur = 6;
+
+          const safeFont = userFamily || "Inter";
+          const cy = boxY + 120;
+
+          for (let index = 0; index < contactsToDraw.length; index++) {
+            const c = contactsToDraw[index];
+            let displayValue = c.value;
+            const isWhatsapp = c.icon.startsWith("whatsapp");
+            if (isWhatsapp) displayValue = formatAdPhone(c.value);
+            if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
+
+            const curY = cy + index * 48;
+            ctx.font = `700 26px ${safeFont}, sans-serif`;
+            
+            if (isWhatsapp) {
+              await drawWhatsAppContact(ctx, contactX + 18, curY, 32);
+              ctx.fillText(displayValue, contactX + 48, curY);
+            } else if (c.icon.startsWith("instagram")) {
+              drawAdInstagramIcon(ctx, contactX + 18, curY, 32, "gradient");
+              ctx.fillText(displayValue, contactX + 48, curY);
+            } else {
+              drawAdWebsiteIcon(ctx, contactX + 18, curY, 32, "#ffffff");
+              ctx.fillText(displayValue, contactX + 48, curY);
+            }
+          }
+          ctx.restore();
+        }
       }
       applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
