@@ -1598,19 +1598,25 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const logoBottomY = await drawProminentLogo(ctx, left, 40, 140);
       const badgeY = Math.max(logoBottomY + 30, 170);
 
-      // 6) Badge "Saindo de"
+      // 6) Badge "Saindo de" - Condicional estrito (sem fantasma hardcoded)
+      let titleY = Math.max(badgeY + badgeH + topPaddingBeforeTitle + titleSize, logoH + 40 + titleSize) - 45;
 
-      fillRoundRect(ctx, left, badgeY, 500, badgeH, 8, v0BadgeBg);
-      ctx.fillStyle = v0OnBadge;
-      ctx.font = "800 26px Inter, Arial, sans-serif";
-      ctx.textAlign = "left"; ctx.textBaseline = "middle";
-      ctx.fillText(badgeText, left + 20, badgeY + badgeH / 2);
-      ctx.textBaseline = "alphabetic";
+      if (city && city.trim() !== '') {
+        const v0BadgeText = `Saindo de ${cityFmt}`;
+        fillRoundRect(ctx, left, badgeY, 500, badgeH, 8, v0BadgeBg);
+        ctx.fillStyle = v0OnBadge;
+        ctx.font = "800 26px Inter, Arial, sans-serif";
+        ctx.textAlign = "left"; ctx.textBaseline = "middle";
+        ctx.fillText(v0BadgeText, left + 20, badgeY + badgeH / 2);
+        ctx.textBaseline = "alphabetic";
+      } else {
+        // Se não houver local de saída, o título sobe ocupando o espaço com total elegância
+        titleY = Math.max(logoBottomY + 40 + titleSize, logoH + 40 + titleSize) - 45;
+      }
 
-      // 7) Headline (1 linha, fonte adaptativa)
+      // 7) Headline (1 linha, fonte adaptativa - Subido proporcionalmente por 45px)
       ctx.fillStyle = v0OnPanel;
       ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
-      const titleY = Math.max(badgeY + badgeH + topPaddingBeforeTitle + titleSize, logoH + 40 + titleSize);
       safeFillText(ctx, titleText, left, titleY, width - left - 40, 22);
 
       // 8) Benefits + Preco lado a lado — preco ALINHADO A DIREITA pra eliminar
@@ -1709,7 +1715,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ctx.shadowColor = "rgba(0,0,0,0.8)";
           ctx.shadowBlur = 6;
 
-          const textRightX = width - 60;
+          const textRightX = width - 100;
           const itemGap = 20;
           const safeFont = userFamily || "Inter";
           
