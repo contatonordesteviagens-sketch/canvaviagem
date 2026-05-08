@@ -2053,8 +2053,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
           
           let yPos = contactsToDraw.length === 2 ? centerY + (footerHeight * 0.18) : centerY;
 
-          const wsImg = await loadImage("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11' fill='%2325D366'/><path fill='%23FFF' d='M12.004 3.53c-4.67 0-8.47 3.8-8.47 8.47 0 1.6.42 3.12 1.15 4.47l-.73 2.66 2.73-.72c1.3.71 2.77 1.09 4.31 1.09 4.67 0 8.47-3.8 8.47-8.47 0-4.67-3.8-8.47-8.47-8.47zm4.88 11.5c-.2.56-1.17 1.07-1.62 1.11-.41.04-.82.16-2.61-.55-2.29-.9-3.76-3.23-3.88-3.38-.11-.15-.93-1.24-.93-2.36 0-1.13.59-1.69.8-1.91.21-.22.46-.27.61-.27.15 0 .3 0 .43.01.14 0 .32-.05.5.38.19.45.64 1.56.7 1.68.06.12.1.26.02.42-.08.16-.12.26-.24.4-.12.14-.25.32-.36.43-.12.13-.25.27-.11.51.14.24.62 1.02 1.33 1.65.91.81 1.68 1.06 1.92 1.18.24.12.38.1.52-.06.14-.16.61-.71.77-.96.16-.24.32-.2.54-.12.22.08 1.41.67 1.65.79.24.12.4.18.46.28.06.1.06.58-.14 1.14z'/></svg>");
-
           for (const c of contactsToDraw) {
             let displayValue = c.value;
             const isWhatsapp = c.icon.startsWith("whatsapp");
@@ -2082,7 +2080,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
             const iconX = textRightX - textWidth - itemGap - currentIconSize / 2;
 
             if (isWhatsapp) {
-              ctx.drawImage(wsImg, iconX - currentIconSize / 2, yPos - currentIconSize / 2, currentIconSize, currentIconSize);
+              await drawWhatsAppContact(ctx, iconX, yPos, currentIconSize);
             } else if (c.icon.startsWith("instagram")) {
               drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "gradient");
             } else if (isWebsite) {
@@ -2293,8 +2291,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
           
           let yPos = contactsToDraw.length === 2 ? centerY + (footerHeight * 0.18) : centerY;
 
-          const wsImg = await loadImage("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11' fill='%2325D366'/><path fill='%23FFF' d='M12.004 3.53c-4.67 0-8.47 3.8-8.47 8.47 0 1.6.42 3.12 1.15 4.47l-.73 2.66 2.73-.72c1.3.71 2.77 1.09 4.31 1.09 4.67 0 8.47-3.8 8.47-8.47 0-4.67-3.8-8.47-8.47-8.47zm4.88 11.5c-.2.56-1.17 1.07-1.62 1.11-.41.04-.82.16-2.61-.55-2.29-.9-3.76-3.23-3.88-3.38-.11-.15-.93-1.24-.93-2.36 0-1.13.59-1.69.8-1.91.21-.22.46-.27.61-.27.15 0 .3 0 .43.01.14 0 .32-.05.5.38.19.45.64 1.56.7 1.68.06.12.1.26.02.42-.08.16-.12.26-.24.4-.12.14-.25.32-.36.43-.12.13-.25.27-.11.51.14.24.62 1.02 1.33 1.65.91.81 1.68 1.06 1.92 1.18.24.12.38.1.52-.06.14-.16.61-.71.77-.96.16-.24.32-.2.54-.12.22.08 1.41.67 1.65.79.24.12.4.18.46.28.06.1.06.58-.14 1.14z'/></svg>");
-
           for (const c of contactsToDraw) {
             let displayValue = c.value;
             const isWhatsapp = c.icon.startsWith("whatsapp");
@@ -2322,7 +2318,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
             const iconX = textRightX - textWidth - itemGap - currentIconSize / 2;
 
             if (isWhatsapp) {
-              ctx.drawImage(wsImg, iconX - currentIconSize / 2, yPos - currentIconSize / 2, currentIconSize, currentIconSize);
+              await drawWhatsAppContact(ctx, iconX, yPos, currentIconSize);
             } else if (c.icon.startsWith("instagram")) {
               drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "gradient");
             } else if (isWebsite) {
