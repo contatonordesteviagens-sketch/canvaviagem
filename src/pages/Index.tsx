@@ -1527,13 +1527,13 @@ const Index = () => {
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/90 backdrop-blur-md z-[9999] flex items-center justify-center p-4 md:p-6"
+            className="fixed inset-0 bg-black/95 backdrop-blur-md z-[9999] flex items-center justify-center p-4 md:p-6"
           >
             <motion.div 
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-slate-950 border border-cyan-500/30 rounded-3xl overflow-hidden max-w-2xl w-full relative shadow-2xl shadow-cyan-500/10 flex flex-col"
+              className="bg-[#050D1A] border border-cyan-500/20 rounded-3xl overflow-hidden max-w-2xl w-full relative shadow-2xl shadow-cyan-500/10 flex flex-col"
             >
               {/* Close Button floating over video */}
               <button 
@@ -1558,13 +1558,37 @@ const Index = () => {
               </div>
 
               {/* Clean, minimal title and closing instruction at bottom */}
-              <div className="p-4 text-center bg-slate-900 border-t border-white/5">
-                <h2 className="text-lg md:text-xl font-bold text-white tracking-tight">
-                  A Fábrica de Anúncios Liberou! 🎉
-                </h2>
-                <p className="text-gray-400 text-xs mt-1">
-                  Assista ao tutorial acima. Clique no ✕ para fechar e acessar a plataforma.
-                </p>
+              <div className="p-6 text-center bg-[#03070F] border-t border-white/5 space-y-4">
+                <div>
+                  <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">
+                    A Fábrica de Anúncios Liberou! 🚀🤖
+                  </h2>
+                  <p className="text-gray-400 text-xs mt-1.5 max-w-lg mx-auto leading-relaxed">
+                    A ferramenta mais poderosa do mercado de turismo agora está disponível. Digite a sua oferta e receba seu anúncio pronto com fotos profissionais, preços e o seu logotipo em 5 segundos!
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pt-2">
+                  <Button
+                    onClick={() => {
+                      localStorage.setItem("cv_festa_popup_seen_v3", "true");
+                      setShowFestaPopup(false);
+                      navigate("/planos");
+                    }}
+                    className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-extrabold px-8 py-6 rounded-xl text-xs transition-all uppercase tracking-wider border-0"
+                  >
+                    Conhecer os Planos (Ativar Fábrica) →
+                  </Button>
+                  <button 
+                    onClick={() => {
+                      localStorage.setItem("cv_festa_popup_seen_v3", "true");
+                      setShowFestaPopup(false);
+                    }}
+                    className="text-xs text-white/40 hover:text-white font-bold transition-colors bg-transparent border-0 cursor-pointer"
+                  >
+                    Permanecer na Página Atual
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
