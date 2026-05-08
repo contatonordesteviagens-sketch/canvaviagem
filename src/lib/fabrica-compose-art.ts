@@ -1897,14 +1897,97 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, priceBlockY + priceBlockH - 28);
       ctx.textAlign = "left";
 
-      await drawFinalBranding(
-        ctx, width, height, logoDataUrl, 
-        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        effectiveTextColor,
-        userFamily,
-        true
-      );
+      if (format !== "story") {
+        // ==========================================
+        // DEDICATED RENDERER FOR V1 SQUARE 1:1 FOOTER
+        // ==========================================
+        const footerHeight = 100;
+        const footerY = height - footerHeight - 20;
+        const centerY = footerY + footerHeight / 2;
+
+        // 1. Véu Gradiente Escuro
+        const veilStartY = footerY - 80;
+        const grad = ctx.createLinearGradient(0, veilStartY, 0, height);
+        grad.addColorStop(0, "rgba(0,0,0,0.0)");
+        grad.addColorStop(0.2, "rgba(0,0,0,0.7)");
+        grad.addColorStop(1, "rgba(0,0,0,0.96)");
+        ctx.save();
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, veilStartY, width, height - veilStartY);
+        ctx.restore();
+
+        // 2. Resolver Contatos
+        const contact1 = options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined);
+        const contact2 = options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined);
+
+        const contactsToDraw: { icon: string; value: string }[] = [];
+        if (contact1 && contact1.icon !== "none" && contact1.value && contact1.value.trim()) contactsToDraw.push(contact1);
+        if (contact2 && contact2.icon !== "none" && contact2.value && contact2.value.trim()) contactsToDraw.push(contact2);
+
+        if (contactsToDraw.length > 0) {
+          ctx.save();
+          ctx.textAlign = "right";
+          ctx.textBaseline = "middle";
+          ctx.fillStyle = "#ffffff";
+          ctx.shadowColor = "rgba(0,0,0,0.8)";
+          ctx.shadowBlur = 6;
+
+          const textRightX = width - 60;
+          const itemGap = 20;
+          const safeFont = userFamily || "Inter";
+          
+          let yPos = contactsToDraw.length === 2 ? centerY + (footerHeight * 0.18) : centerY;
+
+          const wsImg = await loadImage("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11' fill='%2325D366'/><path fill='%23FFF' d='M12.004 3.53c-4.67 0-8.47 3.8-8.47 8.47 0 1.6.42 3.12 1.15 4.47l-.73 2.66 2.73-.72c1.3.71 2.77 1.09 4.31 1.09 4.67 0 8.47-3.8 8.47-8.47 0-4.67-3.8-8.47-8.47-8.47zm4.88 11.5c-.2.56-1.17 1.07-1.62 1.11-.41.04-.82.16-2.61-.55-2.29-.9-3.76-3.23-3.88-3.38-.11-.15-.93-1.24-.93-2.36 0-1.13.59-1.69.8-1.91.21-.22.46-.27.61-.27.15 0 .3 0 .43.01.14 0 .32-.05.5.38.19.45.64 1.56.7 1.68.06.12.1.26.02.42-.08.16-.12.26-.24.4-.12.14-.25.32-.36.43-.12.13-.25.27-.11.51.14.24.62 1.02 1.33 1.65.91.81 1.68 1.06 1.92 1.18.24.12.38.1.52-.06.14-.16.61-.71.77-.96.16-.24.32-.2.54-.12.22.08 1.41.67 1.65.79.24.12.4.18.46.28.06.1.06.58-.14 1.14z'/></svg>");
+
+          for (const c of contactsToDraw) {
+            let displayValue = c.value;
+            const isWhatsapp = c.icon.startsWith("whatsapp");
+            const isWebsite = c.icon === "website" || c.icon === "website_custom";
+            
+            if (isWhatsapp) displayValue = formatAdPhone(c.value);
+            if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
+
+            let currentFontSize = 22;
+            const iconSizeFactor = 1.35;
+            let currentIconSize = currentFontSize * iconSizeFactor;
+
+            // REGRA MATEMÁTICA RIGOROSA DE LIMITE PARA ESTE TEXTO NA V1 QUADRADO
+            const maxUrlWidth = width * 0.40;
+
+            ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
+            while (ctx.measureText(displayValue).width > maxUrlWidth && currentFontSize > 12) {
+              currentFontSize -= 1;
+              currentIconSize = currentFontSize * iconSizeFactor;
+              ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
+            }
+
+            ctx.fillText(displayValue, textRightX, yPos);
+            const textWidth = ctx.measureText(displayValue).width;
+            const iconX = textRightX - textWidth - itemGap - currentIconSize / 2;
+
+            if (isWhatsapp) {
+              ctx.drawImage(wsImg, iconX - currentIconSize / 2, yPos - currentIconSize / 2, currentIconSize, currentIconSize);
+            } else if (c.icon.startsWith("instagram")) {
+              drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "gradient");
+            } else if (isWebsite) {
+              drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle);
+            }
+
+            yPos -= (footerHeight * 0.36);
+          }
+          ctx.restore();
+        }
+      } else {
+        await drawFinalBranding(
+          ctx, width, height, logoDataUrl, 
+          options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+          options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+          effectiveTextColor,
+          userFamily,
+          true
+        );
+      }
       applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
     }
