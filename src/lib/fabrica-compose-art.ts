@@ -1815,73 +1815,55 @@ const panelBottom = RULES.PANEL_BOTTOM;
       safeFillText(ctx, badgeText, px + 20, badgeY + badgeH / 2, badgeW - 40, 14);
       ctx.textBaseline = "alphabetic";
 
-      // 5) DESTINO
-      const destY = badgeY + badgeH + 36;
-      ctx.fillStyle = v1OnPanel;
-      let destSize = 86;
-      ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(destUp).width > pw && destSize > 44) {
-        destSize -= 4;
-        ctx.font = `900 ${destSize}px Inter, Arial, sans-serif`;
-      }
-      safeFillText(ctx, destUp, px, destY + destSize * 0.85, width - px * 2, 24);
+      // 5) TÍTULO PRINCIPAL (MANCHETE GIGANTE DA V1 - SEM DUPLICAÇÕES)
+      const titleY = badgeY + badgeH + 40;
+      ctx.fillStyle = v1OnPanel; // Cor contrastante sobre o fundo azul
+      
+      let mainTitleSize = 56;
+      ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
 
-      // 6) Headline - Com prevenção estrita de vazamento do painel azul esquerdo e limpeza de duplicações do destino
-      const subY = destY + destSize + 36;
-      ctx.fillStyle = v1Accent;
-      const subSize = 26;
+      const titleWords = (titleText || destination || "").split(/\s+/).filter(Boolean);
+      let titleLines: string[] = [];
+      let currentLine = "";
 
-      // Limpeza de duplicação do destino se o título do anúncio for redundante com o destino
-      const cleanTitleText = (titleText.toLowerCase().trim() === destination.toLowerCase().trim() || titleText.toLowerCase().trim() === `pacote ${destination.toLowerCase().trim()}`) ? "" : titleText;
-
-      const subWords = (cleanTitleText || "").split(/\s+/).filter(Boolean);
-      const subLines: string[] = [];
-      let curLine = "";
-      for (const w of subWords) {
-        const tryLine = curLine ? `${curLine} ${w}` : w;
-        ctx.font = `700 ${subSize}px Inter, Arial, sans-serif`;
-        if (ctx.measureText(tryLine).width > pw && curLine) {
-          subLines.push(curLine);
-          curLine = w;
+      for (const w of titleWords) {
+        const tryLine = currentLine ? `${currentLine} ${w}` : w;
+        ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
+        if (ctx.measureText(tryLine).width > pw && currentLine) {
+          titleLines.push(currentLine);
+          currentLine = w;
         } else {
-          curLine = tryLine;
+          currentLine = tryLine;
         }
-        if (subLines.length >= 2) break;
+        if (titleLines.length >= 3) break;
       }
-      if (curLine && subLines.length < 2) subLines.push(curLine);
+      if (currentLine && titleLines.length < 3) titleLines.push(currentLine);
 
-      // Encolhimento dinâmico de segurança de fonte para que as linhas caibam 100% no pw
-      let currentSubSize = subSize;
-      ctx.font = `700 ${currentSubSize}px Inter, Arial, sans-serif`;
-      while (subLines.some(ln => ctx.measureText(ln).width > pw) && currentSubSize > 16) {
-        currentSubSize -= 1;
-        ctx.font = `700 ${currentSubSize}px Inter, Arial, sans-serif`;
+      // Encolhimento dinâmico de segurança do font-size para que caiba perfeitamente no pw
+      while (titleLines.some(ln => ctx.measureText(ln).width > pw) && mainTitleSize > 32) {
+        mainTitleSize -= 2;
+        ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
       }
 
-      subLines.forEach((ln, i) => {
-        let fs = currentSubSize;
-        ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
-        while (ctx.measureText(ln).width > pw && fs > 14) {
-          fs -= 1;
-          ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
-        }
-        ctx.fillText(ln, px, subY + i * (fs + 6));
+      titleLines.forEach((ln, i) => {
+        ctx.fillText(ln, px, titleY + i * (mainTitleSize + 8));
       });
-      const subBlockH = subLines.length * (currentSubSize + 6);
 
-      // 7) PRICE CARD ancorado no rodape - Elevado em 100px para sair da sombra e manter legibilidade
+      const titleBlockH = titleLines.length * (mainTitleSize + 8);
+
+      // 7) PRICE CARD ancorado no rodape - Travado em Safe Zone segura no fundo sem colisão
       const priceBlockH = 200;
-      const priceBlockY = (panelBottom - priceBlockH) - 100;
+      const priceBlockY = height - 380;
 
       // 8) BENEFITS — pílulas adaptativas no espaco restante
       const benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
-      const hlStart = subY + subBlockH + 32;
+      const hlStart = titleY + titleBlockH + 32;
       const hlAvailH = priceBlockY - 28 - hlStart;
       const count = Math.max(1, benefitsListV1.length);
-      const pillGap = 14;
-      const pillH = Math.max(44, Math.min(72, Math.floor((hlAvailH - pillGap * (count - 1)) / count)));
-      const pillFont = pillH >= 60 ? 26 : pillH >= 50 ? 22 : 20;
-      const iconFont = pillH >= 60 ? 30 : 26;
+      const pillGap = 12;
+      const pillH = Math.max(40, Math.min(64, Math.floor((hlAvailH - pillGap * (count - 1)) / count)));
+      const pillFont = pillH >= 56 ? 24 : pillH >= 46 ? 20 : 18;
+      const iconFont = pillH >= 56 ? 28 : 24;
       const pillBg = v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.14)";
 
       benefitsListV1.forEach((h, i) => {
