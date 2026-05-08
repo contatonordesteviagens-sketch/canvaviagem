@@ -136,6 +136,12 @@ const Fabrica = () => {
   const { subscription, isAdmin, user, loading: authLoading } = useAuth();
 
   useEffect(() => {
+    if (!authLoading && !subscription.loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, subscription.loading, navigate]);
+
+  useEffect(() => {
     // Only register keyboard listener if the user is logged in as lucashenriquephd@gmail.com
     if (user?.email !== "lucashenriquephd@gmail.com") return;
 
@@ -174,6 +180,15 @@ const Fabrica = () => {
       <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center text-white">
         <Loader2 className="w-8 h-8 animate-spin text-amber-500 mb-2" />
         <span className="text-sm text-white/60">Verificando suas credenciais...</span>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center text-white">
+        <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mb-2" />
+        <span className="text-sm text-white/60">Redirecionando para o login...</span>
       </div>
     );
   }

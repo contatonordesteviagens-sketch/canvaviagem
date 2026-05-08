@@ -27,6 +27,10 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
     } else if (category === "calendar") {
       navigate("/calendar");
     } else if (category === "fabrica") {
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
       const isEliteUser = user && subscription && (
         subscription.productId === "prod_UTFlCWzNqvqSNx" || // Elite Anual
         subscription.productId === "prod_UTFsXcKq8m0mol" || // Elite Mensal
