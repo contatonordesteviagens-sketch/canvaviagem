@@ -1852,9 +1852,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       const titleBlockH = titleLines.length * (mainTitleSize + 8);
 
-      // 7) PRICE CARD ancorado no rodape - Elevado em +40px para total segurança e respiro fora da sombra
+      // 7) PRICE CARD ancorado no rodape - Elevado em +40px (Quadrado) ou +350px (Stories) para total segurança e respiro fora da sombra
       const priceBlockH = 200;
-      const priceBlockY = height - 370;
+      const priceBlockY = format === "story" ? height - 680 : height - 370;
 
       // 8) BENEFITS — pílulas adaptativas no espaco restante (Aumentadas em 20%)
       const benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
