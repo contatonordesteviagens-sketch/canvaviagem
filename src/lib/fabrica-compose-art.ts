@@ -1798,7 +1798,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // 3) Layout do painel
       const px = 56;
       const pw = panelW - px * 2;
-      const logoReserve = hasLogo ? 230 : 80;
+      const logoReserve = hasLogo ? 150 : 50;
 
       // 4) BADGE pílula
       const badgeText = (promoName || "OFERTA ESPECIAL").toUpperCase();
@@ -1816,10 +1816,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textBaseline = "alphabetic";
 
       // 5) TÍTULO PRINCIPAL (MANCHETE GIGANTE DA V1 - SEM DUPLICAÇÕES)
-      const titleY = badgeY + badgeH + 40;
+      const titleY = badgeY + badgeH + 24;
       ctx.fillStyle = v1OnPanel; // Cor contrastante sobre o fundo azul
       
-      let mainTitleSize = 56;
+      let mainTitleSize = 48; // Reduzido de 56 para 48 para garantir que palavras longas caibam com folga sem truncar
       ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
 
       const titleWords = (titleText || destination || "").split(/\s+/).filter(Boolean);
@@ -1840,7 +1840,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       if (currentLine && titleLines.length < 3) titleLines.push(currentLine);
 
       // Encolhimento dinâmico de segurança do font-size para que caiba perfeitamente no pw
-      while (titleLines.some(ln => ctx.measureText(ln).width > pw) && mainTitleSize > 32) {
+      while (titleLines.some(ln => ctx.measureText(ln).width > pw) && mainTitleSize > 28) {
         mainTitleSize -= 2;
         ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
       }
@@ -1853,17 +1853,19 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       // 7) PRICE CARD ancorado no rodape - Travado em Safe Zone segura no fundo sem colisão
       const priceBlockH = 200;
-      const priceBlockY = height - 380;
+      const priceBlockY = height - 330;
 
-      // 8) BENEFITS — pílulas adaptativas no espaco restante
+      // 8) BENEFITS — pílulas adaptativas no espaco restante (Aumentadas em 20%)
       const benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
-      const hlStart = titleY + titleBlockH + 32;
-      const hlAvailH = priceBlockY - 28 - hlStart;
+      const hlStart = titleY + titleBlockH + 24;
+      const hlAvailH = priceBlockY - 24 - hlStart;
       const count = Math.max(1, benefitsListV1.length);
       const pillGap = 12;
-      const pillH = Math.max(40, Math.min(64, Math.floor((hlAvailH - pillGap * (count - 1)) / count)));
-      const pillFont = pillH >= 56 ? 24 : pillH >= 46 ? 20 : 18;
-      const iconFont = pillH >= 56 ? 28 : 24;
+      const pillH = Math.max(42, Math.min(68, Math.floor((hlAvailH - pillGap * (count - 1)) / count)));
+      
+      // Fontes e ícones aumentados em 20% para legibilidade impecável
+      const pillFont = pillH >= 56 ? 28 : pillH >= 46 ? 24 : 20;
+      const iconFont = pillH >= 56 ? 34 : 30;
       const pillBg = v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.14)";
 
       benefitsListV1.forEach((h, i) => {
@@ -1872,16 +1874,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillStyle = v1Accent;
         ctx.font = `400 ${iconFont}px Inter, Arial, sans-serif`;
         ctx.textBaseline = "middle";
-        drawMonoIcon(ctx, h.icon || "check", px + 22 + 26/2, py + pillH / 2, 26, v1Accent);
+        drawMonoIcon(ctx, h.icon || "check", px + 22 + 32/2, py + pillH / 2, 32, v1Accent); // Ícone aumentado para 32px (20% maior)
         ctx.fillStyle = v1OnPanel;
         let tf = pillFont;
         ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
-        const maxTw = pw - 78;
+        const maxTw = pw - 90; // Respiro ampliado
         while (ctx.measureText(h.text).width > maxTw && tf > 14) {
           tf -= 2;
           ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
         }
-        safeFillText(ctx, h.text, px + 64, py + pillH / 2, pw - 80, 14);
+        safeFillText(ctx, h.text, px + 76, py + pillH / 2, pw - 90, 14); // Afastamento aumentado para 76px para o ícone maior
         ctx.textBaseline = "alphabetic";
       });
 
