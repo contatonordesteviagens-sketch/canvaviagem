@@ -218,63 +218,50 @@ export function formatAdPhone(val: string): string {
 function drawAdWhatsAppIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, colorMode: "green" | "custom" = "green", customColor: string = "#ffffff") {
   ctx.save();
   ctx.translate(x, y);
-  ctx.shadowColor = "rgba(0,0,0,0.3)";
+  ctx.shadowColor = "rgba(0,0,0,0.25)";
   ctx.shadowBlur = 4;
 
-  if (colorMode === "green") {
-    // Fundo Verde Oficial
-    ctx.fillStyle = "#25D366";
-    ctx.beginPath(); 
-    ctx.arc(0, 0, size * 0.48, 0, Math.PI * 2); 
-    ctx.fill();
-    
-    // Balão Branco
-    ctx.fillStyle = "white";
-    ctx.beginPath();
-    ctx.arc(0, -size * 0.02, size * 0.4, 0.7, 5.5);
-    ctx.lineTo(-size * 0.35, size * 0.45);
-    ctx.closePath();
-    ctx.fill();
+  // Fundo Verde Oficial do WhatsApp (Sempre Verde Oficial para consistência e blindagem)
+  ctx.fillStyle = "#25D366";
+  ctx.beginPath(); 
+  ctx.arc(0, 0, size * 0.48, 0, Math.PI * 2); 
+  ctx.fill();
+  
+  // Balão Branco
+  ctx.fillStyle = "white";
+  ctx.beginPath();
+  ctx.arc(0, -size * 0.02, size * 0.4, 0.7, 5.5);
+  ctx.lineTo(-size * 0.35, size * 0.45);
+  ctx.closePath();
+  ctx.fill();
 
-    // Fone Verde
-    ctx.fillStyle = "#25D366";
-    ctx.lineWidth = size * 0.10; // Aumentado para 0.10 (mais visível)
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.arc(0, 0, size * 0.22, 0.8, 2.3);
-    ctx.stroke();
-    // Pontas do fone
-    ctx.save(); ctx.rotate(0.8); ctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); ctx.restore();
-    ctx.save(); ctx.rotate(2.3); ctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); ctx.restore();
-  } else {
-    // MODO MONOCROMÁTICO (Recorte real usando buffer)
-    const buffer = document.createElement("canvas");
-    buffer.width = size;
-    buffer.height = size;
-    const bctx = buffer.getContext("2d");
-    if (bctx) {
-      bctx.translate(size/2, size/2);
-      bctx.fillStyle = customColor;
-      // Balão
-      bctx.beginPath();
-      bctx.arc(0, -size * 0.02, size * 0.4, 0.7, 5.5);
-      bctx.lineTo(-size * 0.35, size * 0.45);
-      bctx.closePath();
-      bctx.fill();
-
-      // Fura o fone
-      bctx.globalCompositeOperation = "destination-out";
-      bctx.lineWidth = size * 0.10; // Aumentado para 0.10
-      bctx.lineCap = "round";
-      bctx.beginPath();
-      bctx.arc(0, 0, size * 0.22, 0.8, 2.3);
-      bctx.stroke();
-      bctx.save(); bctx.rotate(0.8); bctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); bctx.restore();
-      bctx.save(); bctx.rotate(2.3); bctx.fillRect(size * 0.16, -size * 0.08, size * 0.12, size * 0.16); bctx.restore();
-      
-      ctx.drawImage(buffer, -size/2, -size/2);
-    }
-  }
+  // Fone Verde - Desenho em Vetor de Alta Fidelidade (Curvado Oficial do WhatsApp)
+  ctx.fillStyle = "#25D366";
+  ctx.strokeStyle = "#25D366";
+  ctx.lineWidth = size * 0.10;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  
+  ctx.beginPath();
+  ctx.arc(0, -size * 0.02, size * 0.20, 0.7, 2.4);
+  ctx.stroke();
+  
+  // Almofadas curvas do fone (microfone e fone de ouvido do logo do WhatsApp)
+  ctx.save();
+  ctx.translate(0, -size * 0.02);
+  ctx.rotate(0.65);
+  ctx.beginPath();
+  ctx.ellipse(size * 0.20, 0, size * 0.07, size * 0.11, -0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  
+  ctx.save();
+  ctx.translate(0, -size * 0.02);
+  ctx.rotate(2.45);
+  ctx.beginPath();
+  ctx.ellipse(size * 0.20, 0, size * 0.07, size * 0.11, 0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 
   ctx.restore();
 }

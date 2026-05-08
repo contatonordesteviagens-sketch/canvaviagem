@@ -92,17 +92,51 @@ export async function composeLogoOnImage(
           const drawWhatsAppIcon = (x: number, y: number, size: number) => {
             ctx.save();
             ctx.translate(x, y);
-            ctx.shadowColor = "rgba(0,0,0,0.4)";
-            ctx.shadowBlur = 5;
+            ctx.shadowColor = "rgba(0,0,0,0.25)";
+            ctx.shadowBlur = 4;
+
+            // Fundo Verde Oficial do WhatsApp
             ctx.fillStyle = "#25D366";
-            ctx.beginPath();
-            ctx.arc(0, 0, size/2, 0, Math.PI * 2);
+            ctx.beginPath(); 
+            ctx.arc(0, 0, size * 0.48, 0, Math.PI * 2); 
             ctx.fill();
+            
+            // Balão Branco
             ctx.fillStyle = "white";
             ctx.beginPath();
-            ctx.arc(0, 0, size/3, 0.4, 5.8);
-            ctx.lineTo(-size/5, size/3);
+            ctx.arc(0, -size * 0.02, size * 0.4, 0.7, 5.5);
+            ctx.lineTo(-size * 0.35, size * 0.45);
+            ctx.closePath();
             ctx.fill();
+
+            // Fone Verde - Desenho em Vetor de Alta Fidelidade (Curvado Oficial do WhatsApp)
+            ctx.fillStyle = "#25D366";
+            ctx.strokeStyle = "#25D366";
+            ctx.lineWidth = size * 0.10;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            
+            ctx.beginPath();
+            ctx.arc(0, -size * 0.02, size * 0.20, 0.7, 2.4);
+            ctx.stroke();
+            
+            // Almofadas curvas do fone (microfone e fone de ouvido do logo do WhatsApp)
+            ctx.save();
+            ctx.translate(0, -size * 0.02);
+            ctx.rotate(0.65);
+            ctx.beginPath();
+            ctx.ellipse(size * 0.20, 0, size * 0.07, size * 0.11, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            ctx.save();
+            ctx.translate(0, -size * 0.02);
+            ctx.rotate(2.45);
+            ctx.beginPath();
+            ctx.ellipse(size * 0.20, 0, size * 0.07, size * 0.11, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
             ctx.restore();
           };
 
