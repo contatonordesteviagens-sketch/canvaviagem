@@ -1640,30 +1640,34 @@ const panelBottom = RULES.PANEL_BOTTOM;
         safeFillText(ctx, titleText, left, titleY, width - left - 40, 22);
       }
 
-      // 8) Benefits + Preco lado a lado — preco ALINHADO A DIREITA pra eliminar
-      //    o espaco em branco que sobrava no canto direito.
+      // 8) Benefits + Preco lado a lado (Quadrado) / Bloco Centralizado e Robusto (Stories)
       const rowTopY = titleY + titleToContent;
       const benefitsX = left;
-      // Largura do bloco de preco: ~46% da contentWidth, mínimo 380px
       const priceBlockW = Math.max(380, Math.round(contentWidth * 0.46));
-      const priceX = width - 60 - priceBlockW; // encosta no padding direito
-      const benefitsMaxW = priceX - 24 - benefitsX;
+      const priceX = width - 60 - priceBlockW;
+      
+      // No Stories, os benefícios ocupam toda a largura útil sem precisar de espaço para o preço ao lado
+      const benefitsMaxW = format === "story" ? (width - left * 2) : (priceX - 24 - benefitsX);
 
       ctx.fillStyle = v0OnPanel;
-      ctx.font = "700 26px Inter, Arial, sans-serif";
       benefitsList.forEach((b, i) => {
         const iconKey = (benefitsList[i]?.icon as IconKey) || (["bus", "map", "guide", "star"][i] as IconKey) || "check";
-        const py = rowTopY + 28 + i * benefitLineH;
         
-        // Ícone
-        const iconSize0 = 32;
-        drawMonoIcon(ctx, iconKey, benefitsX + iconSize0/2, py - 8, iconSize0, v0OnPanel);
+        // Coordenada Y com espaçamento vertical estendido e centralizado no Stories
+        const storyGap = 64;
+        const py = format === "story"
+          ? titleY + 90 + i * storyGap
+          : rowTopY + 28 + i * benefitLineH;
 
-        // Texto
-        let bfs = 26;
+        // Ícone aumentado em 30% no Stories (42px) ou original (32px)
+        const iconSize0 = format === "story" ? 42 : 32;
+        drawMonoIcon(ctx, iconKey, benefitsX + iconSize0/2, py - (format === "story" ? 12 : 8), iconSize0, v0OnPanel);
+
+        // Texto aumentado em 30% no Stories (34px) ou original (26px)
+        let bfs = format === "story" ? 34 : 26;
         ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
-        const textX = benefitsX + iconSize0 + 12;
-        const textMaxW = benefitsMaxW - (iconSize0 + 12);
+        const textX = benefitsX + iconSize0 + (format === "story" ? 20 : 12);
+        const textMaxW = benefitsMaxW - (iconSize0 + (format === "story" ? 20 : 12));
         while (ctx.measureText(b.text).width > textMaxW && bfs > 16) {
           bfs -= 2;
           ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
@@ -1679,33 +1683,39 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const priceStr = mainPrice || `${curSym} ${price}`;
 
       if (format === "story") {
-        // 3) CARD DE PREÇO COM PROFUNDIDADE NO STORIES V0
+        // 3) CARD DE PREÇO COM ALTO RELEVO E PROFUNDIDADE NO STORIES V0
         const boxW = 440;
         const boxH = 220;
         const boxX = width - boxW - 56;
-        const boxY = height - boxH - 240; // Posicionado sobre a foto na parte azul clara da água e alinhado com a logo
+        const boxY = height - boxH - 280; // Posicionado 10% mais para cima na parte azul clara da água
 
         ctx.save();
-        ctx.shadowColor = "rgba(0,0,0,0.65)";
-        ctx.shadowBlur = 16;
-        ctx.shadowOffsetY = 6;
+        // Sombra projetada (drop-shadow) forte e difusa
+        ctx.shadowColor = "rgba(0,0,0,0.72)";
+        ctx.shadowBlur = 20;
+        ctx.shadowOffsetY = 8;
         
-        // Novo bloco de fundo coeso e semi-transparente
-        fillRoundRect(ctx, boxX, boxY, boxW, boxH, 20, "rgba(247, 244, 239, 0.92)");
-        
-        // Borda interna suave
-        ctx.strokeStyle = "rgba(255,255,255,0.4)";
-        ctx.lineWidth = 2;
+        // Novo bloco de fundo coeso e semi-transparente (tom azul claro neutro com 70% opacidade)
+        fillRoundRect(ctx, boxX, boxY, boxW, boxH, 20, "rgba(240, 246, 252, 0.75)");
+        ctx.restore();
+
+        // Efeito de Alto Relevo Nítido: Borda interna chanfrada de alto contraste
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,0.65)";
+        ctx.lineWidth = 3.5;
+        // Desenha o contorno interno do alto relevo
+        ctx.beginPath();
+        fillRoundRect(ctx, boxX + 1.5, boxY + 1.5, boxW - 3, boxH - 3, 18, "transparent");
         ctx.stroke();
         ctx.restore();
 
         // Renderização Centralizada do Preço no Stories
         ctx.textAlign = "center";
-        ctx.fillStyle = "#64748b"; // Cinza slate elegante
+        ctx.fillStyle = "#475569"; // Slate elegante e super visível
         ctx.font = "800 22px Inter, Arial, sans-serif";
         ctx.fillText((topLabel || "por apenas").toString().toUpperCase(), boxX + boxW / 2, boxY + 46);
 
-        ctx.fillStyle = "#1e293b"; // Escuro elegante para contraste impecável sobre creme
+        ctx.fillStyle = "#0f172a"; // Tom marinho escuro de alto luxo para contraste supremo
         let storyPriceFs = 64;
         ctx.font = `900 ${storyPriceFs}px Inter, Arial, sans-serif`;
         while (ctx.measureText(priceStr).width > boxW - 40 && storyPriceFs > 28) {
@@ -1714,7 +1724,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         safeFillText(ctx, priceStr, boxX + boxW / 2, boxY + 116, boxW - 40, 24);
 
-        ctx.fillStyle = "#64748b";
+        ctx.fillStyle = "#475569";
         ctx.font = "800 22px Inter, Arial, sans-serif";
         ctx.fillText(bottomSuffix || "por pessoa", boxX + boxW / 2, boxY + 172);
         ctx.textAlign = "left";
@@ -1745,9 +1755,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
       ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
 
-      // Renderiza a logo no Stories sobre a foto no canto inferior esquerdo, alinhada com o bloco de preço
+      // Renderiza a logo no Stories sobre a foto no canto inferior esquerdo, com sombra projetada e perfeitamente alinhada com o bloco de preço
       if (format === "story") {
-        await drawProminentLogo(ctx, 56, height - 220 - 240 + (220 - 100) / 2, 100);
+        ctx.save();
+        ctx.shadowColor = "rgba(0, 0, 0, 0.78)";
+        ctx.shadowBlur = 18;
+        ctx.shadowOffsetX = 3;
+        ctx.shadowOffsetY = 5;
+        await drawProminentLogo(ctx, 56, height - 220 - 280 + (220 - 100) / 2, 100);
+        ctx.restore();
       }
       if (format !== "story") {
         // ==========================================
