@@ -1598,10 +1598,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const logoBottomY = await drawProminentLogo(ctx, left, 40, 140);
       const badgeY = Math.max(logoBottomY + 30, 170);
 
-      // 6) Badge "Saindo de" - Condicional estrito (sem fantasma hardcoded)
+      // 6) Badge "Saindo de" - Condicional estrito (sem fantasma hardcoded - Fortaleza banida)
       let titleY = Math.max(badgeY + badgeH + topPaddingBeforeTitle + titleSize, logoH + 40 + titleSize) - 45;
 
-      if (city && city.trim() !== '') {
+      if (city && city.trim() !== '' && city.trim().toLowerCase() !== 'fortaleza') {
         const v0BadgeText = `Saindo de ${cityFmt}`;
         fillRoundRect(ctx, left, badgeY, 500, badgeH, 8, v0BadgeBg);
         ctx.fillStyle = v0OnBadge;
@@ -1826,16 +1826,20 @@ const panelBottom = RULES.PANEL_BOTTOM;
       }
       safeFillText(ctx, destUp, px, destY + destSize * 0.85, width - px * 2, 24);
 
-      // 6) Headline
+      // 6) Headline - Com prevenção estrita de vazamento do painel azul esquerdo e limpeza de duplicações do destino
       const subY = destY + destSize + 36;
       ctx.fillStyle = v1Accent;
       const subSize = 26;
-      ctx.font = `700 ${subSize}px Inter, Arial, sans-serif`;
-      const subWords = (titleText || "").split(/\s+/);
+
+      // Limpeza de duplicação do destino se o título do anúncio for redundante com o destino
+      const cleanTitleText = (titleText.toLowerCase().trim() === destination.toLowerCase().trim() || titleText.toLowerCase().trim() === `pacote ${destination.toLowerCase().trim()}`) ? "" : titleText;
+
+      const subWords = (cleanTitleText || "").split(/\s+/).filter(Boolean);
       const subLines: string[] = [];
       let curLine = "";
       for (const w of subWords) {
         const tryLine = curLine ? `${curLine} ${w}` : w;
+        ctx.font = `700 ${subSize}px Inter, Arial, sans-serif`;
         if (ctx.measureText(tryLine).width > pw && curLine) {
           subLines.push(curLine);
           curLine = w;
@@ -1845,12 +1849,29 @@ const panelBottom = RULES.PANEL_BOTTOM;
         if (subLines.length >= 2) break;
       }
       if (curLine && subLines.length < 2) subLines.push(curLine);
-      subLines.forEach((ln, i) => ctx.fillText(ln, px, subY + i * (subSize + 6)));
-      const subBlockH = subLines.length * (subSize + 6);
 
-      // 7) PRICE CARD ancorado no rodape
+      // Encolhimento dinâmico de segurança de fonte para que as linhas caibam 100% no pw
+      let currentSubSize = subSize;
+      ctx.font = `700 ${currentSubSize}px Inter, Arial, sans-serif`;
+      while (subLines.some(ln => ctx.measureText(ln).width > pw) && currentSubSize > 16) {
+        currentSubSize -= 1;
+        ctx.font = `700 ${currentSubSize}px Inter, Arial, sans-serif`;
+      }
+
+      subLines.forEach((ln, i) => {
+        let fs = currentSubSize;
+        ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(ln).width > pw && fs > 14) {
+          fs -= 1;
+          ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
+        }
+        ctx.fillText(ln, px, subY + i * (fs + 6));
+      });
+      const subBlockH = subLines.length * (currentSubSize + 6);
+
+      // 7) PRICE CARD ancorado no rodape - Elevado em 100px para sair da sombra e manter legibilidade
       const priceBlockH = 200;
-      const priceBlockY = panelBottom - priceBlockH;
+      const priceBlockY = (panelBottom - priceBlockH) - 100;
 
       // 8) BENEFITS — pílulas adaptativas no espaco restante
       const benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
@@ -1888,7 +1909,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textAlign = "center";
       ctx.fillStyle = v1Accent;
       ctx.font = "800 22px Inter, Arial, sans-serif";
-      ctx.fillText((topLabel || "A VISTA").toString().toUpperCase(), px + pw / 2, priceBlockY + 42);
+      ctx.fillText((topLabel || "A VISTA").toString().toUpperCase(), px + pw / 2, priceBlockY + 36);
       ctx.fillStyle = v1OnPanel;
       const priceStrV1 = mainPrice || `${curSym} ${price}`;
       let pfsV1 = 76;
@@ -1897,10 +1918,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         pfsV1 -= 4;
         ctx.font = `900 ${pfsV1}px Inter, Arial, sans-serif`;
       }
-      safeFillText(ctx, priceStrV1, px + pw / 2, priceBlockY + 42 + pfsV1 + 8, pw - 40, 24);
+      safeFillText(ctx, priceStrV1, px + pw / 2, priceBlockY + 36 + pfsV1 + 4, pw - 40, 24);
       ctx.fillStyle = v1Accent;
-      ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, priceBlockY + priceBlockH - 28);
+      ctx.font = "800 22px Inter, Arial, sans-serif"; // Negrito forte para legibilidade máxima
+      ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, priceBlockY + priceBlockH - 18); // Ajustado Y para mais espaçamento vertical
       ctx.textAlign = "left";
 
       if (format !== "story") {
