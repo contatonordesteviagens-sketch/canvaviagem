@@ -1668,17 +1668,23 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">1 · Tipo de Anúncio</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {CATEGORIAS.map((c) => {
+              const isExperiencia = c.id === "experiencia_destino";
               const selected = categoria === c.id;
               return (
                 <button
                   key={c.id}
+                  disabled={isExperiencia}
                   onClick={() => {
-                    setCategoria(c.id);
+                    if (!isExperiencia) setCategoria(c.id);
                   }}
                   className={`p-3 rounded-xl border-2 text-left transition-all flex flex-col justify-between min-h-[85px] ${
-                    selected ? "shadow-lg scale-[1.02]" : "border-white/5 bg-black/20 hover:bg-white/[0.04]"
+                    isExperiencia
+                      ? "border-white/5 bg-black/10 opacity-35 cursor-not-allowed pointer-events-none"
+                      : selected
+                      ? "shadow-lg scale-[1.02]"
+                      : "border-white/5 bg-black/20 hover:bg-white/[0.04]"
                   }`}
-                  style={selected ? { borderColor: c.accent, background: `${c.accent}33` } : undefined}
+                  style={selected && !isExperiencia ? { borderColor: c.accent, background: `${c.accent}33` } : undefined}
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xl leading-none">{c.emoji}</span>
@@ -1688,6 +1694,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                     >
                       {c.badge}
                     </span>
+                    {isExperiencia && (
+                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded border tracking-wider bg-amber-500/20 border-amber-500/40 text-amber-400 animate-pulse">
+                        EM BREVE
+                      </span>
+                    )}
                   </div>
                   <div className="text-sm font-bold text-white leading-tight">{c.name}</div>
                 </button>
