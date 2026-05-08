@@ -1749,7 +1749,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
           options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
           effectiveTextColor,
           userFamily,
-          true
+          false
         );
         applyFilmGrain(ctx, width, height, 0.04);
         return canvas.toDataURL("image/png");
@@ -1996,7 +1996,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
 
 
-      if (format !== "story") {
+      await drawFinalBranding(
+        ctx, width, height, logoDataUrl, 
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        effectiveTextColor,
+        userFamily,
+        false
+      );
+      if (false) {
         // ==========================================
         // DEDICATED RENDERER FOR V0 SQUARE 1:1 FOOTER
         // ==========================================
@@ -2315,7 +2323,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, priceBaseY + 30); // Ajustado Y para ser exatamente 30px abaixo da linha de base do valor principal
       ctx.textAlign = "left";
 
-      if (format !== "story") {
+      await drawFinalBranding(
+        ctx, width, height, logoDataUrl, 
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        effectiveTextColor,
+        userFamily,
+        false
+      );
+      if (false) {
         // ==========================================
         // DEDICATED RENDERER FOR V1 SQUARE 1:1 FOOTER
         // ==========================================
@@ -2531,7 +2547,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
         effectiveTextColor,
         userFamily,
-        true
+        false
       );
       applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
@@ -2839,7 +2855,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
         effectiveTextColor,
         userFamily,
-        true
+        false
       );
       applyFilmGrain(ctx, width, height, 0.04);
       return canvas.toDataURL("image/png");
@@ -2898,7 +2914,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
       effectiveTextColor,
       userFamily,
-      true
+      false
     );
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
@@ -2957,7 +2973,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
       effectiveTextColor,
       userFamily,
-      true
+      false
     );
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
@@ -3017,7 +3033,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
       effectiveTextColor,
       userFamily,
-      true
+      false
     );
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
@@ -3064,7 +3080,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
       effectiveTextColor,
       userFamily,
-      true
+      false
     );
     applyFilmGrain(ctx, width, height, 0.05);
     return canvas.toDataURL("image/png");
@@ -3130,7 +3146,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
       effectiveTextColor,
       userFamily,
-      true
+      false
     );
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
