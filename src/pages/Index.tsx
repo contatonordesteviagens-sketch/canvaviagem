@@ -9,7 +9,7 @@ const Footer = lazy(() => import("@/components/Footer").then(module => ({ defaul
 import { Button } from "@/components/ui/button";
 import { contentLibrary } from "@/data/content-library";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User, ArrowRight } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Heart, Sparkles, LogOut, User, ArrowRight, Play } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
@@ -136,6 +136,7 @@ const Index = () => {
   const [showPremiumGate, setShowPremiumGate] = useState(false);
   const [redirectionTool, setRedirectionTool] = useState<string | null>(null);
   const [showFestaPopup, setShowFestaPopup] = useState(false);
+  const [popupMutedActive, setPopupMutedActive] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -1548,13 +1549,40 @@ const Index = () => {
 
               {/* YouTube Video Player Embed at the VERY TOP */}
               <div className="relative w-full aspect-video bg-black">
-                <iframe 
-                  className="absolute inset-0 w-full h-full border-0"
-                  src="https://www.youtube.com/embed/Xqcw-NpPz08?autoplay=1"
-                  title="Fábrica de Anúncios Canva Viagem"
-                  allow="autoplay; encrypted-media"
-                  allowFullScreen
-                />
+                {popupMutedActive ? (
+                  <>
+                    <iframe 
+                      className="absolute inset-0 w-full h-full border-0 pointer-events-none"
+                      src="https://www.youtube.com/embed/Xqcw-NpPz08?autoplay=1&mute=1&controls=0&loop=1&playlist=Xqcw-NpPz08&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0"
+                      title="Fábrica de Anúncios Canva Viagem"
+                      allow="autoplay; encrypted-media"
+                    />
+                    
+                    {/* Silent Overlay */}
+                    <div 
+                      onClick={() => setPopupMutedActive(false)}
+                      className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-black/30 transition-all"
+                    >
+                      <div className="absolute top-4 bg-black/85 border border-cyan-500/25 rounded-full px-4 py-1.5 text-[10px] font-black text-cyan-400 flex items-center gap-2">
+                        <span className="inline-block w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse" />
+                        ASSISTIR COM SOM (CLIQUE PARA ATIVAR)
+                      </div>
+
+                      <div className="hover:scale-105 active:scale-95 transition-all animate-bounce flex items-center gap-2 bg-cyan-400 text-slate-950 font-black text-xs px-6 py-3.5 rounded-full shadow-lg shadow-cyan-400/40">
+                        <Play size={12} fill="#050D1A" />
+                        ATIVAR ÁUDIO DO VÍDEO
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <iframe 
+                    className="absolute inset-0 w-full h-full border-0"
+                    src="https://www.youtube.com/embed/Xqcw-NpPz08?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0"
+                    title="Fábrica de Anúncios Canva Viagem"
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                  />
+                )}
               </div>
 
               {/* Clean, minimal title and closing instruction at bottom */}
