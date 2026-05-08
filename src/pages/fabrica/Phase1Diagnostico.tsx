@@ -152,12 +152,24 @@ export const Phase1Diagnostico = ({ onComplete, onBack }: Props) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const MAX = 400;
+        const MAX = 250;
         let w = img.width, h = img.height;
         if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } }
         else { if (h > MAX) { w *= MAX / h; h = MAX; } }
         canvas.width = w; canvas.height = h;
         canvas.getContext("2d")?.drawImage(img, 0, 0, w, h);
+        
+        // Limpa chaves pesadas legadas para liberar espaço no localStorage
+        try {
+          Object.keys(localStorage).forEach((key) => {
+            if (key.startsWith("fabrica-heavy-v1:") && key !== "fabrica-heavy-v1:logoBase64") {
+              localStorage.removeItem(key);
+            }
+          });
+        } catch (e) {
+          console.warn("Clean storage failed", e);
+        }
+
         const base64 = canvas.toDataURL("image/webp", 0.8);
         update({ logoBase64: base64 });
         toast.success("Logo atualizada!");

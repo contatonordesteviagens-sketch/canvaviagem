@@ -564,8 +564,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const MAX_WIDTH = 400;
-        const MAX_HEIGHT = 400;
+        const MAX_WIDTH = 250;
+        const MAX_HEIGHT = 250;
         let width = img.width;
         let height = img.height;
 
@@ -584,6 +584,18 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         canvas.height = height;
         const ctx = canvas.getContext("2d");
         ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Limpa chaves pesadas legadas para liberar espaço no localStorage antes de salvar a nova logo
+        try {
+          Object.keys(localStorage).forEach((key) => {
+            if (key.startsWith("fabrica-heavy-v1:") && key !== "fabrica-heavy-v1:logoBase64") {
+              localStorage.removeItem(key);
+            }
+          });
+        } catch (e) {
+          console.warn("Clean storage failed", e);
+        }
+
         update({ logoBase64: canvas.toDataURL("image/png") });
         toast.success("Logo adicionada com sucesso!");
       };
