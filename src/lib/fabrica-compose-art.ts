@@ -1818,7 +1818,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textBaseline = "alphabetic";
 
       // 5) TÍTULO PRINCIPAL (MANCHETE GIGANTE DA V1 - SEM DUPLICAÇÕES)
-      const titleY = badgeY + badgeH + 24;
+      const titleY = badgeY + badgeH + 40;
       ctx.fillStyle = v1OnPanel; // Cor contrastante sobre o fundo azul
       
       let mainTitleSize = 48;
@@ -1909,10 +1909,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
         pfsV1 -= 4;
         ctx.font = `900 ${pfsV1}px Inter, Arial, sans-serif`;
       }
-      safeFillText(ctx, priceStrV1, px + pw / 2, priceBlockY + 36 + pfsV1 + 4, pw - 40, 24);
+      const priceBaseY = priceBlockY + 36 + pfsV1 + 4;
+      safeFillText(ctx, priceStrV1, px + pw / 2, priceBaseY, pw - 40, 24);
       ctx.fillStyle = v1Accent;
       ctx.font = "800 22px Inter, Arial, sans-serif"; // Negrito forte para legibilidade máxima
-      ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, priceBlockY + priceBlockH - 18); // Ajustado Y para mais espaçamento vertical
+      ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, priceBaseY + 30); // Ajustado Y para ser exatamente 30px abaixo da linha de base do valor principal
       ctx.textAlign = "left";
 
       if (format !== "story") {
