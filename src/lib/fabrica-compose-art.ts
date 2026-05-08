@@ -1584,13 +1584,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const topPaddingBeforeTitle = 95; // Aumentado para 95 para criar uma Safe Zone de pelo menos 10% de respiro
       const titleToContent = 50;
       const bottomPadding = 60; // Aumentado de 50 para 60
-      const topH = Math.min(
-        Math.round(height * 0.61), // Ajustado de 0.58 para 0.61 para dar espaço de respiro de forma harmônica
-        Math.max(
-          Math.round(height * 0.44), // Reduzido de 0.46 para 0.44
-          logoH + 40 + badgeH + topPaddingBeforeTitle + titleSize + titleToContent + contentRowH + bottomPadding
-        )
-      );
+      const topH = format === "story"
+        ? Math.round(height * 0.44) // Reduzido para remover o espaço amarelo vazio excessivo no Stories!
+        : Math.min(
+            Math.round(height * 0.61), // Ajustado de 0.58 para 0.61 para dar espaço de respiro de forma harmônica
+            Math.max(
+              Math.round(height * 0.44), // Reduzido de 0.46 para 0.44
+              logoH + 40 + badgeH + topPaddingBeforeTitle + titleSize + titleToContent + contentRowH + bottomPadding
+            )
+          );
 
       // 5) Pinta painel
       ctx.fillStyle = v0PanelBg;
@@ -1616,20 +1618,22 @@ const panelBottom = RULES.PANEL_BOTTOM;
         titleY = Math.max(logoBottomY + 40 + titleSize, logoH + 40 + titleSize) - 45;
       }
 
+      if (format === "story") {
+        titleY = badgeY + badgeH + 60;
+      }
+
       // 7) Headline (Centralizada no Stories / 1 linha adaptativa no Quadrado)
       if (format === "story") {
         ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        let titleFsStory = 90; // Aumentado para preencher o espaço vazio e dar robustez
+        let titleFsStory = 80; // Aumentado para preencher o espaço vazio e dar robustez
         ctx.font = `900 ${titleFsStory}px Inter, Arial, sans-serif`;
         while (ctx.measureText(titleText).width > width - 120 && titleFsStory > 40) {
           titleFsStory -= 4;
           ctx.font = `900 ${titleFsStory}px Inter, Arial, sans-serif`;
         }
         ctx.fillStyle = v0OnPanel;
-        safeFillText(ctx, titleText, width / 2, topH / 2, width - 120, 30);
+        safeFillText(ctx, titleText, width / 2, titleY, width - 120, 22);
         ctx.textAlign = "left";
-        ctx.textBaseline = "alphabetic";
       } else {
         ctx.fillStyle = v0OnPanel;
         ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
@@ -1679,7 +1683,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const boxW = 440;
         const boxH = 220;
         const boxX = width - boxW - 56;
-        const boxY = height - boxH - 120; // Posicionado sobre a foto na parte azul clara da água
+        const boxY = height - boxH - 240; // Posicionado sobre a foto na parte azul clara da água e alinhado com a logo
 
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.65)";
@@ -1741,9 +1745,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
       ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
 
-      // Renderiza a logo no Stories sobre a foto no canto inferior esquerdo (Tarefa 1)
+      // Renderiza a logo no Stories sobre a foto no canto inferior esquerdo, alinhada com o bloco de preço
       if (format === "story") {
-        await drawProminentLogo(ctx, 56, height - 180, 100);
+        await drawProminentLogo(ctx, 56, height - 220 - 240 + (220 - 100) / 2, 100);
       }
       if (format !== "story") {
         // ==========================================
