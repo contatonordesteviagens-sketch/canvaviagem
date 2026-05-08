@@ -202,6 +202,7 @@ interface ComposeTravelAdOptions {
   footerContact2Icon?: string;
   footerContact2Value?: string;
   isExperience?: boolean;
+  hideCents?: boolean;
 }
 
 /** Formata telefone no padrão (XX) 9 XXXX-XXXX */
@@ -838,6 +839,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     footerContact2Icon,
     footerContact2Value,
     isExperience,
+    hideCents,
   } = options;
 
   const destination = sanitizeAdText(options.destination || "");
@@ -1819,7 +1821,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const titleY = badgeY + badgeH + 24;
       ctx.fillStyle = v1OnPanel; // Cor contrastante sobre o fundo azul
       
-      let mainTitleSize = 48; // Reduzido de 56 para 48 para garantir que palavras longas caibam com folga sem truncar
+      let mainTitleSize = 48;
       ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
 
       const titleWords = (titleText || destination || "").split(/\s+/).filter(Boolean);
@@ -1835,12 +1837,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
         } else {
           currentLine = tryLine;
         }
-        if (titleLines.length >= 3) break;
       }
-      if (currentLine && titleLines.length < 3) titleLines.push(currentLine);
+      if (currentLine) titleLines.push(currentLine);
 
       // Encolhimento dinâmico de segurança do font-size para que caiba perfeitamente no pw
-      while (titleLines.some(ln => ctx.measureText(ln).width > pw) && mainTitleSize > 28) {
+      while (titleLines.some(ln => ctx.measureText(ln).width > pw) && mainTitleSize > 24) {
         mainTitleSize -= 2;
         ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
       }
@@ -1851,9 +1852,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       const titleBlockH = titleLines.length * (mainTitleSize + 8);
 
-      // 7) PRICE CARD ancorado no rodape - Travado em Safe Zone segura no fundo sem colisão
+      // 7) PRICE CARD ancorado no rodape - Elevado em +40px para total segurança e respiro fora da sombra
       const priceBlockH = 200;
-      const priceBlockY = height - 330;
+      const priceBlockY = height - 370;
 
       // 8) BENEFITS — pílulas adaptativas no espaco restante (Aumentadas em 20%)
       const benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
@@ -1895,7 +1896,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.font = "800 22px Inter, Arial, sans-serif";
       ctx.fillText((topLabel || "A VISTA").toString().toUpperCase(), px + pw / 2, priceBlockY + 36);
       ctx.fillStyle = v1OnPanel;
-      const priceStrV1 = mainPrice || `${curSym} ${price}`;
+      
+      let priceStrV1 = mainPrice || `${curSym} ${price}`;
+      if (hideCents) {
+        // Remove os decimais/centavos do final da string de preço caso desativado
+        priceStrV1 = priceStrV1.replace(/[.,]\d{2}\s*$/, "");
+      }
+
       let pfsV1 = 76;
       ctx.font = `900 ${pfsV1}px Inter, Arial, sans-serif`;
       while (ctx.measureText(priceStrV1).width > pw - 32 && pfsV1 > 30) {

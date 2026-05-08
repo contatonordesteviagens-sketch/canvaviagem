@@ -2088,12 +2088,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   </select>
                   <input
                     value={price}
-                    onChange={(e) => setPrice(formatPriceWhileTyping(e.target.value, currency))}
+                    onChange={(e) => setPrice(e.target.value)}
                     onFocus={(e) => e.target.select()}
-                    onBlur={() => {
-                      const f = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
-                      if (f) setPrice(f);
-                    }}
                     placeholder="1.499,00"
                     className={`${inputCls} flex-1`}
                   />
