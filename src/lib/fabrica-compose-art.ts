@@ -1358,8 +1358,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         safeFillText(ctx, destinoUp, cx, boxY + 140, boxW - 80, 24);
 
-        // Grade de 4 Benefícios (2 colunas) - Aumentados em 20%
-        const benefitsList = [
+        // Grade de 4 Benefícios (2 colunas) - Dinâmicos e com escala perfeita
+        const shownItems = highlights.filter(h => h && h.text && h.text.trim()).slice(0, 4);
+        const benefitsList = shownItems.length > 0 ? shownItems.map(h => ({
+          text: h.text,
+          icon: h.icon || "check"
+        })) : [
           { text: "Transporte incluso", icon: "bus" },
           { text: "Hospedagem", icon: "hotel" },
           { text: "Café da manhã", icon: "coffee" },
@@ -1368,7 +1372,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
         const colW = (boxW - 100) / 2; // 450px cada coluna
         const colGap = 40;
-        const rowGap = 64; // espaçamento vertical
+        const rowGap = 80; // Aumentado para respiro visual (Task 1)
         const startY = boxY + 230;
         const startX = boxX + 50;
         
@@ -1378,12 +1382,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
           const tx = startX + col * (colW + colGap);
           const ty = startY + row * rowGap;
           
-          // Ícone aumentado em 20% (44px)
+          // Ícones oficiais de alta fidelidade
           const iconSize = 44;
           drawMonoIcon(ctx, b.icon as IconKey, tx + iconSize/2, ty, iconSize, navy);
           
-          // Texto aumentado em 20% (31px) com gap de 14px (+2px)
-          let bfs = 31;
+          // Escala: se for "6 dias / 5 noites" (ou contiver "dia"), reduz em 15% (31 * 0.85 = 26px)
+          // Caso contrário, aumenta em 10% (31 * 1.1 = 34px)
+          const isDuration = /\d+\s*dia/i.test(b.text) || /noite/i.test(b.text);
+          let bfs = isDuration ? 26 : 34;
           ctx.fillStyle = navy;
           ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
           ctx.textAlign = "left";
@@ -1396,31 +1402,43 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ctx.fillText(b.text, textX, ty + 10);
         });
 
-        // Bloco de Preço - Reposicionado e com Destaque 3D
-        const priceBlockY = startY + 160;
+        // Bloco de Preço - Dinâmico, Responsivo e com Destaque 3D (Task 3)
+        const benefitsEnd = startY + (Math.ceil(benefitsList.length / 2) * rowGap);
+        const priceBlockY = benefitsEnd + 45; // Subida proporcional baseada no fim dos benefícios
         const ringX = boxX + 40;
         const ringY = priceBlockY;
         const ringW = boxW - 80;
         const ringH = 210;
 
+        // Alto Relevo Nítido: Drop-shadow forte + borda interna chanfrada de alto contraste
         ctx.save();
-        ctx.fillStyle = yellowDark;
-        roundRect(ctx, ringX, ringY, ringW, ringH, 24);
-        ctx.fill();
+        ctx.shadowColor = "rgba(0,0,0,0.38)";
+        ctx.shadowBlur = 20;
+        ctx.shadowOffsetY = 8;
+        fillRoundRect(ctx, ringX, ringY, ringW, ringH, 24, yellowDark);
+        ctx.restore();
+
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,0.45)";
+        ctx.lineWidth = 3;
+        roundRect(ctx, ringX + 1.5, ringY + 1.5, ringW - 3, ringH - 3, 22);
+        ctx.stroke();
         ctx.restore();
 
         const priceCenterX = ringX + ringW / 2;
         ctx.textAlign = "center";
         ctx.fillStyle = navy;
-        ctx.font = "600 22px Inter, Arial, sans-serif";
+        
+        // Linha acima: Parcelas/Destaque separado com respiro visual
+        ctx.font = "800 24px Inter, Arial, sans-serif";
         ctx.fillText((topLabel || "À VISTA").toString().toUpperCase(), priceCenterX, ringY + 45);
         
         ctx.save();
-        ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
-        ctx.shadowBlur = 10;
+        ctx.shadowColor = "rgba(0, 0, 0, 0.18)";
+        ctx.shadowBlur = 12;
         ctx.shadowOffsetY = 4;
         
-        let priceFs = 86; // proeminente
+        let priceFs = 86; // Proeminente e descongestionado
         ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
         while (ctx.measureText(priceStr).width > ringW - 40 && priceFs > 30) {
           priceFs -= 4;
@@ -1430,10 +1448,11 @@ const panelBottom = RULES.PANEL_BOTTOM;
         safeFillText(ctx, priceStr, priceCenterX, ringY + 118, ringW - 40, 24);
         ctx.restore();
         
+        // Linha abaixo: coesa
         ctx.fillStyle = navy;
-        ctx.globalAlpha = 0.7;
+        ctx.globalAlpha = 0.75;
         ctx.font = "800 22px Inter, Arial, sans-serif";
-        ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 165);
+        ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 168);
         ctx.globalAlpha = 1;
 
         // Faixa de Desconto Pix no rodapé do cartão amarelo
@@ -1478,74 +1497,17 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
 
         // Véu Gradiente Escuro do rodapé
-        const footerHeight = 100;
-        const footerY = height - footerHeight - 60;
-        const veilStartY = footerY - 140;
-        const grad = ctx.createLinearGradient(0, veilStartY, 0, height);
-        grad.addColorStop(0, "rgba(0,0,0,0.0)");
-        grad.addColorStop(0.3, "rgba(0,0,0,0.65)");
-        grad.addColorStop(1, "rgba(0,0,0,0.92)");
-        ctx.save();
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, veilStartY, width, height - veilStartY);
-        ctx.restore();
-
-        // Logo oficial subido 10% no rodapé
-        const logoY = height - 230;
-        ctx.save();
-        ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-        ctx.shadowBlur = 20;
-        ctx.shadowOffsetX = 3;
-        ctx.shadowOffsetY = 6;
-        await drawProminentLogo(ctx, 56, logoY, 100);
-        ctx.restore();
-
-        // Contatos (WhatsApp e Site) aumentados em 20%
-        const contact1 = options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined);
-        const contact2 = options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined);
-
-        const contactsToDraw = [];
-        if (contact1 && contact1.icon !== "none" && contact1.value && contact1.value.trim()) contactsToDraw.push(contact1);
-        if (contact2 && contact2.icon !== "none" && contact2.value && contact2.value.trim()) contactsToDraw.push(contact2);
-
-        if (contactsToDraw.length > 0) {
-          ctx.save();
-          ctx.textAlign = "left";
-          ctx.textBaseline = "middle";
-          ctx.fillStyle = "#ffffff";
-          ctx.shadowColor = "rgba(0,0,0,0.9)";
-          ctx.shadowBlur = 10;
-
-          const textLeftX = 176;
-          const wsImg = await loadImage("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11' fill='%2325D366'/><path fill='%23FFF' d='M12.004 3.53c-4.67 0-8.47 3.8-8.47 8.47 0 1.6.42 3.12 1.15 4.47l-.73 2.66 2.73-.72c1.3.71 2.77 1.09 4.31 1.09 4.67 0 8.47-3.8 8.47-8.47 0-4.67-3.8-8.47-8.47-8.47zm4.88 11.5c-.2.56-1.17 1.07-1.62 1.11-.41.04-.82.16-2.61-.55-2.29-.9-3.76-3.23-3.88-3.38-.11-.15-.93-1.24-.93-2.36 0-1.13.59-1.69.8-1.91.21-.22.46-.27.61-.27.15 0 .3 0 .43.01.14 0 .32-.05.5.38.19.45.64 1.56.7 1.68.06.12.1.26.02.42-.08.16-.12.26-.24.4-.12.14-.25.32-.36.43-.12.13-.25.27-.11.51.14.24.62 1.02 1.33 1.65.91.81 1.68 1.06 1.92 1.18.24.12.38.1.52-.06.14-.16.61-.71.77-.96.16-.24.32-.2.54-.12.22.08 1.41.67 1.65.79.24.12.4.18.46.28.06.1.06.58-.14 1.14z'/></svg>");
-
-          contactsToDraw.forEach((c, index) => {
-            let displayValue = c.value;
-            const isWhatsapp = c.icon.startsWith("whatsapp");
-            if (isWhatsapp) displayValue = formatAdPhone(c.value);
-            if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
-
-            // Sem Fortaleza: Filtra qualquer menção a Fortaleza (Defensive Sanitization)
-            if (typeof displayValue === "string") {
-              displayValue = displayValue.replace(/fortaleza/gi, "");
-            }
-
-            const cy = logoY + 25 + index * 48;
-
-            // Aumento de 20% (font 29px)
-            ctx.font = "800 29px Inter, Arial, sans-serif";
-            ctx.fillText(displayValue, textLeftX + 38, cy);
-
-            if (isWhatsapp) {
-              ctx.drawImage(wsImg, textLeftX, cy - 16, 32, 32);
-            } else if (c.icon.startsWith("instagram")) {
-              drawAdInstagramIcon(ctx, textLeftX + 16, cy, 32, "gradient");
-            } else {
-              drawAdWebsiteIcon(ctx, textLeftX + 16, cy, 32, "#ffffff");
-            }
-          });
-          ctx.restore();
-        }
+        await drawFinalBranding(
+          ctx,
+          width,
+          height,
+          logoDataUrl,
+          options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || "" } : (whatsapp ? { icon: "whatsapp_green", value: whatsapp } : undefined),
+          options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
+          effectiveTextColor,
+          userFamily,
+          false
+        );
 
         applyFilmGrain(ctx, width, height, 0.04);
         return canvas.toDataURL("image/png");
