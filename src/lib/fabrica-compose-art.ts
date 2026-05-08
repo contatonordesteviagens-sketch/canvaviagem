@@ -2429,117 +2429,231 @@ const panelBottom = RULES.PANEL_BOTTOM;
     // garantindo que TODOS os benefícios aparecam (ate 5) e que não sobre espaco branco.
     if (variant === 2) {
       await drawProminentLogo(ctx, 40, 40, 120);
-      ctx.fillStyle = "#f7f4ef"; ctx.fillRect(0, 0, width, height);
 
-      // REGRA DE CORES V2 (mapeamento estrito):
-      // - card_background / faixa headline = user_primary_color
-      // - TODOS os textos (tagline, título, duracão, total, preco, parcelas) = user_secondary_color
-      // - Ícones de amenities = user_secondary_color
-      // - Discount badge: bg = user_secondary_color, texto branco fixo
-      // ensureContrast so atua como fallback de seguranca quando primaria Ôëê secundaria.
-      const v2CardBg = primaryColor;
-      const v2OnCard = getSafeColor(v2CardBg);
-      const v2CardLabel = getSafeColor(v2CardBg, secondaryColor);
-      // Benefits ficam sobre fundo creme #f7f4ef → secundaria com fallback contra creme.
-      const v2BenefitColor = getSafeColor("#f7f4ef", secondaryColor);
-      // Texto da faixa headline (sobre primaria) = secundaria com contraste garantido.
-      const v2HeadlineColor = v2CardLabel;
+      if (format === "story") {
+        // ============================================================
+        // DEDICATED REENGINEERING FOR V2 STORIES (9:16)
+        // ============================================================
+        ctx.fillStyle = "#f7f4ef"; 
+        ctx.fillRect(0, 0, width, height);
 
-      // Lista completa de benefits (ate 6) — TODOS devem aparecer
-      const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
-      const benefitsCountV2 = Math.max(1, benefitsListV2.length);
+        const v2CardBg = primaryColor;
+        const v2CardLabel = getSafeColor(v2CardBg, secondaryColor);
+        const v2BenefitColor = getSafeColor("#f7f4ef", secondaryColor);
+        const v2HeadlineColor = v2CardLabel;
 
-      // 1) Card de preco — ancorado á base e centralizado para não pesar so á esquerda
-      const priceBlockW = Math.round(width * 0.66);
-      const priceCardH = 168;
-      const priceCardX = Math.round((width - priceBlockW) / 2);
-      const priceCardY = panelBottom - priceCardH;
-      fillRoundRect(ctx, priceCardX, priceCardY, priceBlockW, priceCardH, 16, v2CardBg);
-      ctx.fillStyle = v2CardLabel; ctx.font = "700 24px Inter, Arial, sans-serif";
-      ctx.textAlign = "center";
-      safeFillText(ctx, (topLabel || "por apenas").toString(), priceCardX + priceBlockW / 2, priceCardY + 40, priceBlockW - 20, 14);
-      ctx.fillStyle = v2CardLabel;
-      // Auto-shrink preco V2
-      const priceStrV2 = mainPrice || `${curSym} ${price}`;
-      let pfsV2 = 64;
-      ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(priceStrV2).width > priceBlockW - 40 && pfsV2 > 28) {
-        pfsV2 -= 4;
+        const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
+        const benefitsCountV2 = Math.max(1, benefitsListV2.length);
+
+        // 1) Card de preço — Subido em exatos 15% para sair da sombra (Y = 1120) e com design robusto
+        const priceBlockW = Math.round(width * 0.72); // Mais largo para respiro
+        const priceCardH = 190; // Mais alto para composição robusta
+        const priceCardX = Math.round((width - priceBlockW) / 2);
+        const priceCardY = 1120; // Posição calculada para ficar visível sobre a área clara
+        
+        fillRoundRect(ctx, priceCardX, priceCardY, priceBlockW, priceCardH, 24, v2CardBg);
+        
+        // Efeito de relevo no card do preço
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,0.3)";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        fillRoundRect(ctx, priceCardX + 1.5, priceCardY + 1.5, priceBlockW - 3, priceCardH - 3, 22, "transparent");
+        ctx.stroke();
+        ctx.restore();
+
+        const cardCenterX = priceCardX + priceBlockW / 2;
+
+        // Composição do preço profissional
+        ctx.textAlign = "center";
+        ctx.fillStyle = v2CardLabel;
+        
+        // Selo / Parcelamento esquerdo/superior (ex: "10X SEM JUROS" ou "A PARTIR DE")
+        ctx.font = "800 24px Inter, Arial, sans-serif";
+        const labelText = installments ? `${installments.toUpperCase()} SEM JUROS` : (topLabel || "OFERTA ESPECIAL").toUpperCase();
+        ctx.fillText(labelText, cardCenterX, priceCardY + 45);
+
+        // Valor do pacote
+        const priceStrV2 = mainPrice || `${curSym} ${price}`;
+        let pfsV2 = 74; // Letras maiores e mais pesadas
         ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
-      }
-      safeFillText(ctx, priceStrV2, priceCardX + priceBlockW / 2, priceCardY + 108, priceBlockW - 40, 24);
-      ctx.fillStyle = v2CardLabel;
-      ctx.font = "600 22px Inter, Arial, sans-serif";
-      ctx.fillText(bottomSuffix, priceCardX + priceBlockW / 2, priceCardY + 144);
-      ctx.textAlign = "left";
-
-      // 3) Calculo de altura dos benefits — TODOS devem caber.
-      const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
-      const benefitFontSize = benefitRowsV2 <= 2 ? 30 : 25;
-      const benefitGap = benefitRowsV2 <= 2 ? 58 : 46;
-      const benefitsBlockH = benefitRowsV2 * benefitGap;
-      const benefitsTopPad = 32;
-      const benefitsBottomPad = 28;
-      const benefitsAreaH = benefitsTopPad + benefitsBlockH + benefitsBottomPad;
-
-      // 2) Faixa headline - Subida substancial de 100px para eliminar congestionamento e garantir respiro
-      const faixaH = 125;
-      const faixaY = priceCardY - benefitsAreaH - faixaH - 100;
-
-      // 4) Foto superior — calcula altura dinâmica para preencher tudo que sobra acima
-      const photoTop = safeTop - 20; // Sobe um pouco mais a foto no V2
-      const photoBottom = faixaY - 16;
-      const fW2 = width - 32;
-      const minPhotoH = Math.round(height * 0.28);
-      const fH2 = Math.max(minPhotoH, photoBottom - photoTop);
-      const c2 = fitCover(image.naturalWidth, image.naturalHeight, fW2, fH2, 0.36);
-      ctx.save();
-      fillRoundRect(ctx, 16, photoTop, fW2, fH2, 22, "#ccc");
-      ctx.clip();
-      ctx.drawImage(image, c2.sx, c2.sy, c2.sw, c2.sh, 16, photoTop, fW2, fH2);
-      ctx.restore();
-
-      // 5) Faixa horizontal com headline (Mapeamento Inteligente: usa apenas Destino sem redundâncias)
-      fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, v2CardBg);
-      ctx.fillStyle = v2HeadlineColor;
-      ctx.textAlign = "left";
-      let v2Size = 52;
-      ctx.font = `900 ${v2Size}px Inter, Arial, sans-serif`;
-      const destUpper = destination.toUpperCase();
-      while (ctx.measureText(destUpper).width > contentWidth && v2Size > 28) {
-        v2Size -= 4;
-        ctx.font = `900 ${v2Size}px Inter, Arial, sans-serif`;
-      }
-      ctx.textBaseline = "middle";
-      safeFillText(ctx, destUpper, left, faixaY + faixaH / 2, width - left - 40, 20);
-      ctx.textBaseline = "alphabetic";
-
-      // 6) Benefits — duas colunas
-      const benefitsTop = faixaY + faixaH + benefitsTopPad;
-      const colGapV2 = 28;
-      const colWV2 = (contentWidth - colGapV2) / 2;
-      benefitsListV2.forEach((h, i) => {
-        let fs = benefitFontSize;
-        const col = i % 2;
-        const row = Math.floor(i / 2);
-        const tx = left + col * (colWV2 + colGapV2);
-        const ty = benefitsTop + row * benefitGap;
-        
-        // Desenha Ícone
-        const iconSizeV2 = Math.round(fs * 1.2);
-        drawMonoIcon(ctx, h.icon || "check", tx + iconSizeV2/2, ty, iconSizeV2, v2BenefitColor);
-        
-        // Desenha Texto
-        ctx.fillStyle = v2BenefitColor;
-        ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
-        const textX = tx + iconSizeV2 + 12;
-        const textMaxW = colWV2 - (iconSizeV2 + 12);
-        while (ctx.measureText(h.text).width > textMaxW && fs > 14) {
-          fs -= 1;
-          ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(priceStrV2).width > priceBlockW - 50 && pfsV2 > 28) {
+          pfsV2 -= 4;
+          ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
         }
-        ctx.fillText(h.text, textX, ty);
-      });
+        safeFillText(ctx, priceStrV2, cardCenterX, priceCardY + 118, priceBlockW - 50, 24);
+
+        // Sufixo "por pessoa" com contraste máximo
+        ctx.fillStyle = v2CardLabel;
+        ctx.globalAlpha = 0.9;
+        ctx.font = "800 22px Inter, Arial, sans-serif";
+        ctx.fillText((bottomSuffix || "por pessoa").toUpperCase(), cardCenterX, priceCardY + 162);
+        ctx.globalAlpha = 1.0;
+        ctx.textAlign = "left";
+
+        // 2) Faixa headline (Destino)
+        const faixaH = 135;
+        // Posicionado estrategicamente acima dos benefícios expandidos
+        const faixaY = 660;
+        fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, v2CardBg);
+        ctx.fillStyle = v2HeadlineColor;
+        ctx.textAlign = "left";
+        let v2Size = 56;
+        ctx.font = `900 ${v2Size}px Inter, Arial, sans-serif`;
+        const destUpper = destination.toUpperCase();
+        while (ctx.measureText(destUpper).width > contentWidth && v2Size > 28) {
+          v2Size -= 4;
+          ctx.font = `900 ${v2Size}px Inter, Arial, sans-serif`;
+        }
+        ctx.textBaseline = "middle";
+        safeFillText(ctx, destUpper, left, faixaY + faixaH / 2, width - left - 40, 20);
+        ctx.textBaseline = "alphabetic";
+
+        // 3) Foto superior - Preenche perfeitamente o topo
+        const photoTop = safeTop - 20; // 260
+        const photoBottom = faixaY - 16; // 644
+        const fW2 = width - 32;
+        const fH2 = photoBottom - photoTop; // ~384px de altura
+        const c2 = fitCover(image.naturalWidth, image.naturalHeight, fW2, fH2, 0.36);
+        ctx.save();
+        fillRoundRect(ctx, 16, photoTop, fW2, fH2, 22, "#ccc");
+        ctx.clip();
+        ctx.drawImage(image, c2.sx, c2.sy, c2.sw, c2.sh, 16, photoTop, fW2, fH2);
+        ctx.restore();
+
+        // 4) Benefits - Ampliados em 25% para preencher o vazio central (Fim do Vazio)
+        const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
+        const bfs = benefitRowsV2 <= 2 ? 38 : 31; // Font-size ampliado em exatos 25%
+        const benefitGap = benefitRowsV2 <= 2 ? 82 : 70; // Espaçamento esticado para preencher o vazio
+        const benefitsTop = faixaY + faixaH + 42;
+        const colGapV2 = 28;
+        const colWV2 = (contentWidth - colGapV2) / 2;
+
+        benefitsListV2.forEach((h, i) => {
+          let fs = bfs;
+          const col = i % 2;
+          const row = Math.floor(i / 2);
+          const tx = left + col * (colWV2 + colGapV2);
+          const ty = benefitsTop + row * benefitGap;
+          
+          // Desenha Ícone ampliado
+          const iconSizeV2 = Math.round(fs * 1.5); // Ícone maior em 25%
+          drawMonoIcon(ctx, h.icon || "check", tx + iconSizeV2 / 2, ty, iconSizeV2, v2BenefitColor);
+          
+          // Desenha Texto ampliado
+          ctx.fillStyle = v2BenefitColor;
+          ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
+          const textX = tx + iconSizeV2 + 15;
+          const textMaxW = colWV2 - (iconSizeV2 + 15);
+          while (ctx.measureText(h.text).width > textMaxW && fs > 14) {
+            fs -= 1;
+            ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
+          }
+          ctx.fillText(h.text, textX, ty);
+        });
+
+      } else {
+        // ============================================================
+        // PRESERVED ORIGINAL SQUARE 1:1 LAYOUT (UNTOUCHED)
+        // ============================================================
+        ctx.fillStyle = "#f7f4ef"; 
+        ctx.fillRect(0, 0, width, height);
+
+        const v2CardBg = primaryColor;
+        const v2CardLabel = getSafeColor(v2CardBg, secondaryColor);
+        const v2BenefitColor = getSafeColor("#f7f4ef", secondaryColor);
+        const v2HeadlineColor = v2CardLabel;
+
+        const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
+        const benefitsCountV2 = Math.max(1, benefitsListV2.length);
+
+        const priceBlockW = Math.round(width * 0.66);
+        const priceCardH = 168;
+        const priceCardX = Math.round((width - priceBlockW) / 2);
+        const priceCardY = panelBottom - priceCardH;
+        fillRoundRect(ctx, priceCardX, priceCardY, priceBlockW, priceCardH, 16, v2CardBg);
+        
+        ctx.fillStyle = v2CardLabel; 
+        ctx.font = "700 24px Inter, Arial, sans-serif";
+        ctx.textAlign = "center";
+        safeFillText(ctx, (topLabel || "por apenas").toString(), priceCardX + priceBlockW / 2, priceCardY + 40, priceBlockW - 20, 14);
+        
+        ctx.fillStyle = v2CardLabel;
+        const priceStrV2 = mainPrice || `${curSym} ${price}`;
+        let pfsV2 = 64;
+        ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(priceStrV2).width > priceBlockW - 40 && pfsV2 > 28) {
+          pfsV2 -= 4;
+          ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
+        }
+        safeFillText(ctx, priceStrV2, priceCardX + priceBlockW / 2, priceCardY + 108, priceBlockW - 40, 24);
+        
+        ctx.fillStyle = v2CardLabel;
+        ctx.font = "600 22px Inter, Arial, sans-serif";
+        ctx.fillText(bottomSuffix, priceCardX + priceBlockW / 2, priceCardY + 144);
+        ctx.textAlign = "left";
+
+        const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
+        const benefitFontSize = benefitRowsV2 <= 2 ? 30 : 25;
+        const benefitGap = benefitRowsV2 <= 2 ? 58 : 46;
+        const benefitsBlockH = benefitRowsV2 * benefitGap;
+        const benefitsTopPad = 32;
+        const benefitsBottomPad = 28;
+        const benefitsAreaH = benefitsTopPad + benefitsBlockH + benefitsBottomPad;
+
+        const faixaH = 125;
+        const faixaY = priceCardY - benefitsAreaH - faixaH - 100;
+
+        const photoTop = safeTop - 20;
+        const photoBottom = faixaY - 16;
+        const fW2 = width - 32;
+        const minPhotoH = Math.round(height * 0.28);
+        const fH2 = Math.max(minPhotoH, photoBottom - photoTop);
+        const c2 = fitCover(image.naturalWidth, image.naturalHeight, fW2, fH2, 0.36);
+        ctx.save();
+        fillRoundRect(ctx, 16, photoTop, fW2, fH2, 22, "#ccc");
+        ctx.clip();
+        ctx.drawImage(image, c2.sx, c2.sy, c2.sw, c2.sh, 16, photoTop, fW2, fH2);
+        ctx.restore();
+
+        fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, v2CardBg);
+        ctx.fillStyle = v2HeadlineColor;
+        ctx.textAlign = "left";
+        let v2Size = 52;
+        ctx.font = `900 ${v2Size}px Inter, Arial, sans-serif`;
+        const destUpper = destination.toUpperCase();
+        while (ctx.measureText(destUpper).width > contentWidth && v2Size > 28) {
+          v2Size -= 4;
+          ctx.font = `900 ${v2Size}px Inter, Arial, sans-serif`;
+        }
+        ctx.textBaseline = "middle";
+        safeFillText(ctx, destUpper, left, faixaY + faixaH / 2, width - left - 40, 20);
+        ctx.textBaseline = "alphabetic";
+
+        const benefitsTop = faixaY + faixaH + benefitsTopPad;
+        const colGapV2 = 28;
+        const colWV2 = (contentWidth - colGapV2) / 2;
+        benefitsListV2.forEach((h, i) => {
+          let fs = benefitFontSize;
+          const col = i % 2;
+          const row = Math.floor(i / 2);
+          const tx = left + col * (colWV2 + colGapV2);
+          const ty = benefitsTop + row * benefitGap;
+          
+          const iconSizeV2 = Math.round(fs * 1.2);
+          drawMonoIcon(ctx, h.icon || "check", tx + iconSizeV2/2, ty, iconSizeV2, v2BenefitColor);
+          
+          ctx.fillStyle = v2BenefitColor;
+          ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
+          const textX = tx + iconSizeV2 + 12;
+          const textMaxW = colWV2 - (iconSizeV2 + 12);
+          while (ctx.measureText(h.text).width > textMaxW && fs > 14) {
+            fs -= 1;
+            ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
+          }
+          ctx.fillText(h.text, textX, ty);
+        });
+      }
 
       await drawFinalBranding(
         ctx, width, height, logoDataUrl, 
