@@ -168,54 +168,7 @@ serve(async (req) => {
       }
     }
 
-    // --- ABACATEPAY DIRECT API CHECK (Fallback) ---
-    const abacateApiKey = Deno.env.get("ABACATEPAY_API_KEY");
-    if (abacateApiKey) {
-      try {
-        logStep("Checking AbacatePay API fallback");
-        const response = await fetch("https://api.abacatepay.com/v1/billing/list", {
-          headers: { "Authorization": `Bearer ${abacateApiKey}` }
-        });
-        
-        if (response.ok) {
-          const result = await response.json();
-          // Find paid billing for this email
-          const paidBilling = result.data?.find((b: any) => 
-            (b.customer?.email === email.toLowerCase() || b.metadata?.email === email.toLowerCase()) && 
-            b.status === "paid"
-          );
 
-          if (paidBilling) {
-            logStep("Found paid billing in AbacatePay directly");
-            const durationDays = paidBilling.amount >= 18000 ? 365 : 30;
-            const creationDate = new Date(paidBilling.createdAt || Date.now());
-            const endDate = new Date(creationDate.getTime() + (durationDays * 24 * 60 * 60 * 1000));
-
-            if (endDate > new Date()) {
-              if (dbClient) {
-                await dbClient.from("subscriptions").upsert({
-                  user_id: userId,
-                  status: "active",
-                  product_id: durationDays === 365 ? "annual_access_pix" : "monthly_access_pix",
-                  current_period_end: endDate.toISOString(),
-                }, { onConflict: "user_id" });
-              }
-
-              return new Response(JSON.stringify({ 
-                subscribed: true, 
-                product_id: durationDays === 365 ? "annual_access_pix" : "monthly_access_pix", 
-                subscription_end: endDate.toISOString() 
-              }), {
-                headers: { ...corsHeaders, "Content-Type": "application/json" },
-                status: 200,
-              });
-            }
-          }
-        }
-      } catch (err) {
-        logStep("Error checking AbacatePay API", { error: String(err) });
-      }
-    }
 
     logStep("No active subscription found anywhere");
     return new Response(JSON.stringify({ subscribed: false, product_id: null, subscription_end: null }), {
