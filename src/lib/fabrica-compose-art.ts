@@ -2061,9 +2061,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const benefitsBottomPad = 28;
       const benefitsAreaH = benefitsTopPad + benefitsBlockH + benefitsBottomPad;
 
-      // 2) Faixa headline
+      // 2) Faixa headline - Subida substancial de 100px para eliminar congestionamento e garantir respiro
       const faixaH = 125;
-      const faixaY = priceCardY - benefitsAreaH - faixaH;
+      const faixaY = priceCardY - benefitsAreaH - faixaH - 100;
 
       // 4) Foto superior — calcula altura dinâmica para preencher tudo que sobra acima
       const photoTop = safeTop - 20; // Sobe um pouco mais a foto no V2
@@ -2078,18 +2078,19 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.drawImage(image, c2.sx, c2.sy, c2.sw, c2.sh, 16, photoTop, fW2, fH2);
       ctx.restore();
 
-      // 5) Faixa horizontal com headline
+      // 5) Faixa horizontal com headline (Mapeamento Inteligente: usa apenas Destino sem redundâncias)
       fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, v2CardBg);
       ctx.fillStyle = v2HeadlineColor;
       ctx.textAlign = "left";
       let v2Size = 52;
       ctx.font = `900 ${v2Size}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(titleText).width > contentWidth && v2Size > 28) {
+      const destUpper = destination.toUpperCase();
+      while (ctx.measureText(destUpper).width > contentWidth && v2Size > 28) {
         v2Size -= 4;
         ctx.font = `900 ${v2Size}px Inter, Arial, sans-serif`;
       }
       ctx.textBaseline = "middle";
-      safeFillText(ctx, titleText, left, faixaY + faixaH / 2, width - left - 40, 20);
+      safeFillText(ctx, destUpper, left, faixaY + faixaH / 2, width - left - 40, 20);
       ctx.textBaseline = "alphabetic";
 
       // 6) Benefits — duas colunas
