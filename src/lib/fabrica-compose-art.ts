@@ -1596,8 +1596,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = v0PanelBg;
       ctx.fillRect(0, 0, width, topH);
 
-      // 5.1) Branding Superior (Logo) - Tornando a marca do agente PROEMINENTE
-      const logoBottomY = await drawProminentLogo(ctx, left, 40, 140);
+      // 5.1) Branding Superior (Logo) - Ocultada no Stories para reposicionamento inferior
+      const logoBottomY = format === "story" ? 0 : await drawProminentLogo(ctx, left, 40, 140);
       const badgeY = Math.max(logoBottomY + 30, 170);
 
       // 6) Badge "Saindo de" - Condicional estrito (sem fantasma hardcoded - Fortaleza banida)
@@ -1616,10 +1616,25 @@ const panelBottom = RULES.PANEL_BOTTOM;
         titleY = Math.max(logoBottomY + 40 + titleSize, logoH + 40 + titleSize) - 45;
       }
 
-      // 7) Headline (1 linha, fonte adaptativa - Subido proporcionalmente por 45px)
-      ctx.fillStyle = v0OnPanel;
-      ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
-      safeFillText(ctx, titleText, left, titleY, width - left - 40, 22);
+      // 7) Headline (Centralizada no Stories / 1 linha adaptativa no Quadrado)
+      if (format === "story") {
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        let titleFsStory = 90; // Aumentado para preencher o espaço vazio e dar robustez
+        ctx.font = `900 ${titleFsStory}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(titleText).width > width - 120 && titleFsStory > 40) {
+          titleFsStory -= 4;
+          ctx.font = `900 ${titleFsStory}px Inter, Arial, sans-serif`;
+        }
+        ctx.fillStyle = v0OnPanel;
+        safeFillText(ctx, titleText, width / 2, topH / 2, width - 120, 30);
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+      } else {
+        ctx.fillStyle = v0OnPanel;
+        ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
+        safeFillText(ctx, titleText, left, titleY, width - left - 40, 22);
+      }
 
       // 8) Benefits + Preco lado a lado — preco ALINHADO A DIREITA pra eliminar
       //    o espaco em branco que sobrava no canto direito.
@@ -1657,31 +1672,79 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillRect(priceX - 24, rowTopY, 2, contentRowH);
       ctx.globalAlpha = 1;
 
-      // Preco — agora CENTRALIZADO dentro do bloco direito
-      const priceCenterX = priceX + priceBlockW / 2;
-      ctx.textAlign = "center";
-      ctx.fillStyle = v0OnPanel; ctx.font = "600 22px Inter, Arial, sans-serif";
-      safeFillText(ctx, (topLabel || "por apenas").toString(), priceCenterX, rowTopY + 28, priceBlockW - 20, 14);
       const priceStr = mainPrice || `${curSym} ${price}`;
-      // Auto-shrink do preco pra não vazar do bloco direito
-      let priceFs = 64;
-      ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
-      while (ctx.measureText(priceStr).width > priceBlockW - 20 && priceFs > 30) {
-        priceFs -= 4;
+
+      if (format === "story") {
+        // 3) CARD DE PREÇO COM PROFUNDIDADE NO STORIES V0
+        const boxW = 440;
+        const boxH = 220;
+        const boxX = width - boxW - 56;
+        const boxY = height - boxH - 120; // Posicionado sobre a foto na parte azul clara da água
+
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.65)";
+        ctx.shadowBlur = 16;
+        ctx.shadowOffsetY = 6;
+        
+        // Novo bloco de fundo coeso e semi-transparente
+        fillRoundRect(ctx, boxX, boxY, boxW, boxH, 20, "rgba(247, 244, 239, 0.92)");
+        
+        // Borda interna suave
+        ctx.strokeStyle = "rgba(255,255,255,0.4)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+
+        // Renderização Centralizada do Preço no Stories
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#64748b"; // Cinza slate elegante
+        ctx.font = "800 22px Inter, Arial, sans-serif";
+        ctx.fillText((topLabel || "por apenas").toString().toUpperCase(), boxX + boxW / 2, boxY + 46);
+
+        ctx.fillStyle = "#1e293b"; // Escuro elegante para contraste impecável sobre creme
+        let storyPriceFs = 64;
+        ctx.font = `900 ${storyPriceFs}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(priceStr).width > boxW - 40 && storyPriceFs > 28) {
+          storyPriceFs -= 4;
+          ctx.font = `900 ${storyPriceFs}px Inter, Arial, sans-serif`;
+        }
+        safeFillText(ctx, priceStr, boxX + boxW / 2, boxY + 116, boxW - 40, 24);
+
+        ctx.fillStyle = "#64748b";
+        ctx.font = "800 22px Inter, Arial, sans-serif";
+        ctx.fillText(bottomSuffix || "por pessoa", boxX + boxW / 2, boxY + 172);
+        ctx.textAlign = "left";
+      } else {
+        // Preco — original CENTRALIZADO dentro do bloco direito
+        const priceCenterX = priceX + priceBlockW / 2;
+        ctx.textAlign = "center";
+        ctx.fillStyle = v0OnPanel; ctx.font = "600 22px Inter, Arial, sans-serif";
+        safeFillText(ctx, (topLabel || "por apenas").toString(), priceCenterX, rowTopY + 28, priceBlockW - 20, 14);
+        // Auto-shrink do preco pra não vazar do bloco direito
+        let priceFs = 64;
         ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(priceStr).width > priceBlockW - 20 && priceFs > 30) {
+          priceFs -= 4;
+          ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+        }
+        ctx.fillStyle = v0OnPanel;
+        safeFillText(ctx, priceStr, priceCenterX, rowTopY + 92, priceBlockW - 20, 24);
+        ctx.font = "600 20px Inter, Arial, sans-serif"; ctx.fillStyle = v0OnPanel;
+        ctx.globalAlpha = 0.7;
+        ctx.fillText(bottomSuffix, priceCenterX, rowTopY + 120);
+        ctx.globalAlpha = 1;
+        ctx.textAlign = "left";
       }
-      ctx.fillStyle = v0OnPanel;
-      safeFillText(ctx, priceStr, priceCenterX, rowTopY + 92, priceBlockW - 20, 24);
-      ctx.font = "600 20px Inter, Arial, sans-serif"; ctx.fillStyle = v0OnPanel;
-      ctx.globalAlpha = 0.7;
-      ctx.fillText(bottomSuffix, priceCenterX, rowTopY + 120);
-      ctx.globalAlpha = 1;
-      ctx.textAlign = "left";
 
       // 9) Foto MAIOR na base (porque o painel encolheu)
       const photoH0 = height - topH;
       const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
       ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
+
+      // Renderiza a logo no Stories sobre a foto no canto inferior esquerdo (Tarefa 1)
+      if (format === "story") {
+        await drawProminentLogo(ctx, 56, height - 180, 100);
+      }
       if (format !== "story") {
         // ==========================================
         // DEDICATED RENDERER FOR V0 SQUARE 1:1 FOOTER
