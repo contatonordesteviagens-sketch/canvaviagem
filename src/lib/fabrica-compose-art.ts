@@ -1852,17 +1852,23 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       const titleBlockH = titleLines.length * (mainTitleSize + 8);
 
-      // 7) PRICE CARD ancorado no rodape - Elevado em +40px (Quadrado) ou +350px (Stories) para total segurança e respiro fora da sombra
+      // 7) PRICE CARD - Elevado em +40px (Quadrado) ou +350px (Stories) para total segurança e respiro fora da sombra
       const priceBlockH = 200;
-      const priceBlockY = format === "story" ? height - 680 : height - 370;
+      let priceBlockY = format === "story" ? height - 680 : height - 370;
 
       // 8) BENEFITS — pílulas adaptativas no espaco restante (Aumentadas em 20%)
       const benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
       const hlStart = titleY + titleBlockH + 24;
-      const hlAvailH = priceBlockY - 24 - hlStart;
+      const hlAvailH = (format === "story" ? height - 680 : height - 370) - 24 - hlStart;
       const count = Math.max(1, benefitsListV1.length);
       const pillGap = 12;
       const pillH = Math.max(42, Math.min(68, Math.floor((hlAvailH - pillGap * (count - 1)) / count)));
+
+      // No Stories 9:16, a coordenada Y do bloco de preço DEVE SER renderizada com base no fim dos Benefícios para fluidez responsiva
+      const lastBenefitY = hlStart + (count - 1) * (pillH + pillGap) + pillH;
+      if (format === "story") {
+        priceBlockY = lastBenefitY + height * 0.08;
+      }
       
       // Fontes e ícones aumentados em 20% para legibilidade impecável
       const pillFont = pillH >= 56 ? 28 : pillH >= 46 ? 24 : 20;
