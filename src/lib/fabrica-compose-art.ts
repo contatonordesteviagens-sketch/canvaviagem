@@ -330,6 +330,31 @@ function drawAdWebsiteIcon(ctx: CanvasRenderingContext2D, x: number, y: number, 
   ctx.restore();
 }
 
+/**
+ * Desenha o contato do WhatsApp Oficial com o logo SVG/PNG pintado no verde oficial #25D366.
+ */
+export async function drawWhatsAppContact(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+  try {
+    const wsImg = await loadImage("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11' fill='%2325D366'/><path fill='%23FFF' d='M12.004 3.53c-4.67 0-8.47 3.8-8.47 8.47 0 1.6.42 3.12 1.15 4.47l-.73 2.66 2.73-.72c1.3.71 2.77 1.09 4.31 1.09 4.67 0 8.47-3.8 8.47-8.47 0-4.67-3.8-8.47-8.47-8.47zm4.88 11.5c-.2.56-1.17 1.07-1.62 1.11-.41.04-.82.16-2.61-.55-2.29-.9-3.76-3.23-3.88-3.38-.11-.15-.93-1.24-.93-2.36 0-1.13.59-1.69.8-1.91.21-.22.46-.27.61-.27.15 0 .3 0 .43.01.14 0 .32-.05.5.38.19.45.64 1.56.7 1.68.06.12.1.26.02.42-.08.16-.12.26-.24.4-.12.14-.25.32-.36.43-.12.13-.25.27-.11.51.14.24.62 1.02 1.33 1.65.91.81 1.68 1.06 1.92 1.18.24.12.38.1.52-.06.14-.16.61-.71.77-.96.16-.24.32-.2.54-.12.22.08 1.41.67 1.65.79.24.12.4.18.46.28.06.1.06.58-.14 1.14z'/></svg>");
+    ctx.drawImage(wsImg, x - size / 2, y - size / 2, size, size);
+  } catch {
+    drawAdWhatsAppIcon(ctx, x, y, size, "green");
+  }
+}
+
+/**
+ * Reduz progressivamente o font-size do ctx para que o texto caiba no maxWidth especificado.
+ */
+export function fitUrlText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, initialSize: number, fontFamily: string): number {
+  let size = initialSize;
+  ctx.font = `700 ${size}px ${fontFamily}, sans-serif`;
+  while (ctx.measureText(text).width > maxWidth && size > 14) {
+    size -= 1;
+    ctx.font = `700 ${size}px ${fontFamily}, sans-serif`;
+  }
+  return size;
+}
+
 /** 
  * DESENHA O BRANDING FINAL (Rodape, Logo, WhatsApp, Instagram)
  * Unificado para evitar cache e garantir consistencia.
@@ -442,28 +467,27 @@ async function drawFinalBranding(
     if (c.icon.startsWith("whatsapp")) displayValue = formatAdPhone(c.value);
     if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
 
-    // Auto-shrink para evitar colisão
-    let currentFontSize = fontSize;
+    // Auto-shrink para evitar colisão (Quadro Inteligente de URL Dinâmica unificado)
+    const isWebsite = c.icon === "website" || c.icon === "website_custom";
+    const maxWidth = isWebsite ? (maxAvailableWidth * 0.70) : (maxAvailableWidth - 40);
+
+    let currentFontSize = fitUrlText(ctx, displayValue, maxWidth, fontSize, safeFont);
     const iconSizeFactor = 1.35;
     let currentIconSize = currentFontSize * iconSizeFactor;
-    
-    ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
-    const safetyMargin = 40;
-    while (ctx.measureText(displayValue).width + currentIconSize + itemGap + safetyMargin > maxAvailableWidth && currentFontSize > 16) {
-      currentFontSize -= 1;
-      currentIconSize = currentFontSize * iconSizeFactor;
-      ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
-    }
 
     ctx.fillText(displayValue, textRightX, yPos);
     const textWidth = ctx.measureText(displayValue).width;
     const iconX = textRightX - textWidth - itemGap - currentIconSize/2;
 
-    if (c.icon === "whatsapp_green") drawAdWhatsAppIcon(ctx, iconX, yPos, currentIconSize, "green");
-    else if (c.icon === "whatsapp_custom") drawAdWhatsAppIcon(ctx, iconX, yPos, currentIconSize, "custom", ctx.fillStyle);
-    else if (c.icon === "instagram_gradient") drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "gradient");
-    else if (c.icon === "instagram_custom") drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "custom", ctx.fillStyle);
-    else if (c.icon === "website") drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle);
+    if (c.icon === "whatsapp_green" || c.icon === "whatsapp_custom") {
+      await drawWhatsAppContact(ctx, iconX, yPos, currentIconSize);
+    } else if (c.icon === "instagram_gradient") {
+      drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "gradient");
+    } else if (c.icon === "instagram_custom") {
+      drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "custom", ctx.fillStyle);
+    } else if (c.icon === "website") {
+      drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle);
+    }
 
     yPos -= (footerHeight * 0.36);
   }
@@ -1370,7 +1394,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       let cursorY = safeBoxY + padTop + 32;
       ctx.fillStyle = navy; ctx.textAlign = "center"; ctx.font = "900 44px Inter, Arial, sans-serif";
       ctx.fillText("PACOTE", cx, cursorY);
-      cursorY += titleGap + 40;
+      cursorY += titleGap + 48;
 
       ctx.font = "500 56px Inter, Arial, sans-serif";
       let destSize = 56;
@@ -1797,7 +1821,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       safeFillText(ctx, destUp, px, destY + destSize * 0.85, width - px * 2, 24);
 
       // 6) Headline
-      const subY = destY + destSize + 20;
+      const subY = destY + destSize + 36;
       ctx.fillStyle = v1Accent;
       const subSize = 26;
       ctx.font = `700 ${subSize}px Inter, Arial, sans-serif`;
@@ -1944,7 +1968,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const benefitsAreaH = benefitsTopPad + benefitsBlockH + benefitsBottomPad;
 
       // 2) Faixa headline
-      const faixaH = 110;
+      const faixaH = 125;
       const faixaY = priceCardY - benefitsAreaH - faixaH;
 
       // 4) Foto superior — calcula altura dinâmica para preencher tudo que sobra acima
