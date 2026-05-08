@@ -1625,7 +1625,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // 7) Headline (Centralizada no Stories / 1 linha adaptativa no Quadrado)
       if (format === "story") {
         ctx.textAlign = "center";
-        let titleFsStory = 80; // Aumentado para preencher o espaço vazio e dar robustez
+        let titleFsStory = 96; // Aumentado em 20% para preencher o espaço com total robustez
         ctx.font = `900 ${titleFsStory}px Inter, Arial, sans-serif`;
         while (ctx.measureText(titleText).width > width - 120 && titleFsStory > 40) {
           titleFsStory -= 4;
@@ -1653,21 +1653,21 @@ const panelBottom = RULES.PANEL_BOTTOM;
       benefitsList.forEach((b, i) => {
         const iconKey = (benefitsList[i]?.icon as IconKey) || (["bus", "map", "guide", "star"][i] as IconKey) || "check";
         
-        // Coordenada Y com espaçamento vertical estendido e centralizado no Stories
-        const storyGap = 64;
+        // Coordenada Y com espaçamento vertical estendido e centralizado no Stories (aumentado proporcionalmente em 20%)
+        const storyGap = 76;
         const py = format === "story"
-          ? titleY + 90 + i * storyGap
+          ? titleY + 100 + i * storyGap
           : rowTopY + 28 + i * benefitLineH;
 
-        // Ícone aumentado em 30% no Stories (42px) ou original (32px)
-        const iconSize0 = format === "story" ? 42 : 32;
-        drawMonoIcon(ctx, iconKey, benefitsX + iconSize0/2, py - (format === "story" ? 12 : 8), iconSize0, v0OnPanel);
+        // Ícone aumentado em exatamente 20% no Stories (50px) ou original (32px)
+        const iconSize0 = format === "story" ? 50 : 32;
+        drawMonoIcon(ctx, iconKey, benefitsX + iconSize0/2, py - (format === "story" ? 14 : 8), iconSize0, v0OnPanel);
 
-        // Texto aumentado em 30% no Stories (34px) ou original (26px)
-        let bfs = format === "story" ? 34 : 26;
+        // Texto aumentado em exatamente 20% no Stories (41px) ou original (26px)
+        let bfs = format === "story" ? 41 : 26;
         ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
-        const textX = benefitsX + iconSize0 + (format === "story" ? 20 : 12);
-        const textMaxW = benefitsMaxW - (iconSize0 + (format === "story" ? 20 : 12));
+        const textX = benefitsX + iconSize0 + (format === "story" ? 24 : 12);
+        const textMaxW = benefitsMaxW - (iconSize0 + (format === "story" ? 24 : 12));
         while (ctx.measureText(b.text).width > textMaxW && bfs > 16) {
           bfs -= 2;
           ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
