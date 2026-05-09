@@ -1996,93 +1996,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
 
 
-      await drawFinalBranding(
-        ctx, width, height, logoDataUrl, 
-        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
-        effectiveTextColor,
-        userFamily,
-        false
-      );
-      if (false) {
-        // ==========================================
-        // DEDICATED RENDERER FOR V0 SQUARE 1:1 FOOTER
-        // ==========================================
-        const footerHeight = 100;
-        const footerY = height - footerHeight - 20;
-        const centerY = footerY + footerHeight / 2;
-
-        // 1. Véu Gradiente Escuro
-        const veilStartY = footerY - 80;
-        const grad = ctx.createLinearGradient(0, veilStartY, 0, height);
-        grad.addColorStop(0, "rgba(0,0,0,0.0)");
-        grad.addColorStop(0.2, "rgba(0,0,0,0.7)");
-        grad.addColorStop(1, "rgba(0,0,0,0.96)");
-        ctx.save();
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, veilStartY, width, height - veilStartY);
-        ctx.restore();
-
-        // 2. Resolver Contatos
-        const contact1 = options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined);
-        const contact2 = options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined);
-
-        const contactsToDraw: { icon: string; value: string }[] = [];
-        if (contact1 && contact1.icon !== "none" && contact1.value && contact1.value.trim()) contactsToDraw.push(contact1);
-        if (contact2 && contact2.icon !== "none" && contact2.value && contact2.value.trim()) contactsToDraw.push(contact2);
-
-        if (contactsToDraw.length > 0) {
-          ctx.save();
-          ctx.textAlign = "right";
-          ctx.textBaseline = "middle";
-          ctx.fillStyle = "#ffffff";
-          ctx.shadowColor = "rgba(0,0,0,0.8)";
-          ctx.shadowBlur = 6;
-
-          const textRightX = width - 100;
-          const itemGap = 20;
-          const safeFont = userFamily || "Inter";
-          
-          let yPos = contactsToDraw.length === 2 ? centerY + (footerHeight * 0.18) : centerY;
-
-          for (const c of contactsToDraw) {
-            let displayValue = c.value;
-            const isWhatsapp = c.icon.startsWith("whatsapp");
-            const isWebsite = c.icon === "website" || c.icon === "website_custom";
-            
-            if (isWhatsapp) displayValue = formatAdPhone(c.value);
-            if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
-
-            let currentFontSize = 30;
-            const iconSizeFactor = 1.35;
-            let currentIconSize = currentFontSize * iconSizeFactor;
-
-            // QUADRO INTELIGENTE DA URL / SITE ou WHATSAPP
-            const maxWidth = isWebsite ? (width * 0.25) : (width * 0.40);
-
-            ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
-            while (ctx.measureText(displayValue).width > maxWidth && currentFontSize > 14) {
-              currentFontSize -= 1;
-              currentIconSize = currentFontSize * iconSizeFactor;
-              ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
-            }
-
-            ctx.fillText(displayValue, textRightX, yPos);
-            const textWidth = ctx.measureText(displayValue).width;
-            const iconX = textRightX - textWidth - itemGap - currentIconSize / 2;
-
-            if (isWhatsapp) {
-              await drawWhatsAppContact(ctx, iconX, yPos, currentIconSize);
-            } else if (c.icon.startsWith("instagram")) {
-              drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "gradient");
-            } else if (isWebsite) {
-              drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle);
-            }
-
-            yPos -= (footerHeight * 0.36);
-          }
-          ctx.restore();
-        }
+      if (format !== "story") {
+        await drawFinalBranding(
+          ctx, width, height, logoDataUrl, 
+          options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+          options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+          effectiveTextColor,
+          userFamily,
+          false
+        );
       } else {
         // ==========================================
         // DEDICATED SIDE-BY-SIDE BRANDING FOR V0 STORIES
