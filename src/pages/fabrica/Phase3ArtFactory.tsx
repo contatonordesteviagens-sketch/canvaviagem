@@ -1036,6 +1036,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               titleScale,
               descScale,
               textColorOverride: effectiveTextColor,
+              isExperience: categoria === "experiencia_destino",
             });
             return img;
           })

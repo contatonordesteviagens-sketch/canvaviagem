@@ -1324,14 +1324,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const navy = getSafeColor(yellow, primaryColor);
         const navyRaw = primaryColor || "#0c2340";
 
+        const destinoUp = (destination || "DESTINO").toUpperCase();
         // Desconto: extrai número do promoName (ex.: "5% OFF") ou usa 5 como default
-        const descMatch = (promoName || "").match(/(d{1,2})s*%/);
+        const descMatch = (promoName || "").match(/(\d{1,2})\s*%/);
         const descN = descMatch ? descMatch[1] : "5";
 
         // ── [BOX] amarelo arredondado ─ ─────
         const boxX = 40;
         const boxW = width - 80; // 1000px
-        const boxY = 60;
+        const boxY = 40;
         const boxH = 860;
 
         ctx.save();
@@ -1383,13 +1384,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
           const ty = startY + row * rowGap;
           
           // Ícones oficiais de alta fidelidade (aumentados em 20%)
-          const iconSize = 53;
+          const iconSize = 64;
           drawMonoIcon(ctx, b.icon as IconKey, tx + iconSize/2, ty, iconSize, navy);
           
           // Escala (aumentada em 20%): se for "6 dias / 5 noites" (ou contiver "dia"), fica 31px.
           // Caso contrário, fica 41px.
           const isDuration = /\d+\s*dia/i.test(b.text) || /noite/i.test(b.text);
-          let bfs = isDuration ? 31 : 41;
+          let bfs = isDuration ? 37 : 49;
           ctx.fillStyle = navy;
           ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
           ctx.textAlign = "left";
@@ -1404,7 +1405,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
         // Bloco de Preço - Dinâmico, Responsivo e com Destaque 3D (Task 3)
         const benefitsEnd = startY + (Math.ceil(benefitsList.length / 2) * rowGap);
-        const priceBlockY = benefitsEnd + 45; // Subida proporcional baseada no fim dos benefícios
+        const priceBlockY = benefitsEnd + 65; // Subida proporcional baseada no fim dos benefícios com mais respiro
         const ringX = boxX + 40;
         const ringY = priceBlockY;
         const ringW = boxW - 80;
@@ -1431,7 +1432,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         
         // Linha acima: Parcelas/Destaque separado com respiro visual
         ctx.font = "800 24px Inter, Arial, sans-serif";
-        ctx.fillText((topLabel || "À VISTA").toString().toUpperCase(), priceCenterX, ringY + 45);
+        ctx.fillText((topLabel || "À VISTA").toString().toUpperCase(), priceCenterX, ringY + 50);
         
         ctx.save();
         ctx.shadowColor = "rgba(0, 0, 0, 0.18)";
@@ -1445,14 +1446,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
         }
         ctx.fillStyle = navy;
-        safeFillText(ctx, priceStr, priceCenterX, ringY + 118, ringW - 40, 24);
+        safeFillText(ctx, priceStr, priceCenterX, ringY + 124, ringW - 40, 24);
         ctx.restore();
         
         // Linha abaixo: coesa
         ctx.fillStyle = navy;
         ctx.globalAlpha = 0.75;
         ctx.font = "800 22px Inter, Arial, sans-serif";
-        ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 168);
+        ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 172);
         ctx.globalAlpha = 1;
 
         // Faixa de Desconto Pix no rodapé do cartão amarelo
@@ -1502,8 +1503,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
           width,
           height,
           logoDataUrl,
-          options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || "" } : (whatsapp ? { icon: "whatsapp_green", value: whatsapp } : undefined),
-          options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
+          options.footerContact1Icon ? { icon: options.footerContact1Icon.startsWith("whatsapp") ? "whatsapp_green" : options.footerContact1Icon, value: options.footerContact1Value || "" } : (whatsapp ? { icon: "whatsapp_green", value: whatsapp } : undefined),
+          options.footerContact2Icon ? { icon: options.footerContact2Icon.startsWith("whatsapp") ? "whatsapp_green" : options.footerContact2Icon, value: options.footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
           effectiveTextColor,
           userFamily,
           false
@@ -1594,7 +1595,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const padBottom = 36;
 
         const boxH = padTop + titleH + titleGap + destH + destGap + infoH + infoGap + priceBlockH + totalGap + totalH + (showPixBanner ? stripeGap + stripeH : 0) + padBottom;
-        const safeBoxY = Math.min(180, panelBottom - boxH - 20); // Aumentado de 100 para 180 para baixar o box no amarelo/topo
+        const safeBoxY = 180;
 
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.25)"; ctx.shadowBlur = 28; ctx.shadowOffsetY = 8;
@@ -1615,7 +1616,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         safeFillText(ctx, destinoUp, cx, cursorY, boxW - 80, 24);
         cursorY += destGap + 36;
 
-        let benefitsFontSize = 30; ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
+        let benefitsFontSize = 36; ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
         while (ctx.measureText(daysText).width > boxW * 0.45 && benefitsFontSize > 20) {
           benefitsFontSize -= 2; ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
         }
@@ -1745,8 +1746,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
         await drawFinalBranding(
           ctx, width, height, logoDataUrl, 
-          options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
-          options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+          options.footerContact1Icon ? { icon: options.footerContact1Icon.startsWith("whatsapp") ? "whatsapp_green" : options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+          options.footerContact2Icon ? { icon: options.footerContact2Icon.startsWith("whatsapp") ? "whatsapp_green" : options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
           effectiveTextColor,
           userFamily,
           false
