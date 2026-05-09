@@ -21,6 +21,7 @@ git commit -m $message
 
 # 3. Push para o GitHub (Dispara Deploy no Lovable)
 Write-Host "Enviando para GitHub..."
-git push origin main --force
+git push origin HEAD:main --force
+git push origin HEAD:master --force
 
 Write-Host "Deploy Concluido! Verifique em canvaviagem.com/fabrica"
