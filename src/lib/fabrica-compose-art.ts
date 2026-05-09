@@ -591,17 +591,26 @@ function drawMonoIcon(
   ctx.beginPath();
   switch (kind) {
     case "bus": {
-      const cw = s * 0.62, ch = s * 0.42; const cxL = cx - cw / 2, cyT = cy - ch / 2 + s * 0.04;
-      ctx.beginPath(); ctx.moveTo(cxL, cyT); ctx.lineTo(cxL + cw, cyT); ctx.lineTo(cxL + cw - s * 0.06, cyT + ch);
-      ctx.lineTo(cxL + s * 0.06, cyT + ch); ctx.closePath(); ctx.fill();
-      ctx.lineWidth = s * 0.07; ctx.beginPath();
-      ctx.arc(cxL + cw + s * 0.04, cyT + ch * 0.45, s * 0.13, -Math.PI / 2.2, Math.PI / 2.2); ctx.stroke();
-      roundRect(ctx, cx - s * 0.42, cyT + ch + s * 0.02, s * 0.84, s * 0.08, s * 0.04); ctx.fill();
-      ctx.lineWidth = s * 0.06; ctx.lineCap = "round";
-      for (let i = -1; i <= 1; i++) {
-        const vx = cx + i * s * 0.16; ctx.beginPath(); ctx.moveTo(vx, cyT - s * 0.04);
-        ctx.quadraticCurveTo(vx + s * 0.08, cyT - s * 0.18, vx, cyT - s * 0.32); ctx.stroke();
-      } break;
+      // Corpo do ônibus (caixa arredondada)
+      roundRect(ctx, x + s * 0.1, y + s * 0.15, s * 0.8, s * 0.6, s * 0.12);
+      ctx.fill();
+      
+      ctx.save();
+      ctx.globalCompositeOperation = "destination-out";
+      // Pára-brisas (janela superior)
+      roundRect(ctx, x + s * 0.18, y + s * 0.22, s * 0.64, s * 0.24, s * 0.04);
+      ctx.fill();
+      // Faróis (dois círculos inferiores)
+      ctx.beginPath();
+      ctx.arc(x + s * 0.28, y + s * 0.62, s * 0.06, 0, Math.PI * 2);
+      ctx.arc(x + s * 0.72, y + s * 0.62, s * 0.06, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Rodas (dois retângulos embaixo)
+      ctx.fillRect(x + s * 0.2, y + s * 0.75, s * 0.14, s * 0.12);
+      ctx.fillRect(x + s * 0.66, y + s * 0.75, s * 0.14, s * 0.12);
+      break;
     }
     case "plane": {
       ctx.beginPath();
@@ -1598,7 +1607,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const iconList = (() => {
           const fromHl = highlights
             .map((h) => h?.icon)
-            .filter((k) => !!k && k !== "check");
+            .filter((k) => !!k);
           if (fromHl.length === 0) {
             return ["plane", "hotel", "coffee", "camera"];
           }
@@ -2485,7 +2494,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const iconListV4: IconKey[] = (() => {
         const fromHl = highlights
           .map((h) => h?.icon as IconKey | undefined)
-          .filter((k): k is IconKey => !!k && k !== "check");
+          .filter((k): k is IconKey => !!k);
         if (fromHl.length === 0) return ["coffee", "users", "bus", "camera"] as IconKey[];
         const seen = new Set<IconKey>(); const out: IconKey[] = [];
         for (const k of fromHl) { if (!seen.has(k)) { seen.add(k); out.push(k); if (out.length >= 5) break; } }
