@@ -603,6 +603,55 @@ function drawMonoIcon(
         ctx.quadraticCurveTo(vx + s * 0.08, cyT - s * 0.18, vx, cyT - s * 0.32); ctx.stroke();
       } break;
     }
+    case "plane": {
+      ctx.beginPath();
+      ctx.moveTo(cx, y + s * 0.1);
+      ctx.lineTo(cx + s * 0.1, y + s * 0.4);
+      ctx.lineTo(cx + s * 0.45, y + s * 0.6);
+      ctx.lineTo(cx + s * 0.08, y + s * 0.68);
+      ctx.lineTo(cx + s * 0.08, y + s * 0.88);
+      ctx.lineTo(cx, y + s * 0.8);
+      ctx.lineTo(cx - s * 0.08, y + s * 0.88);
+      ctx.lineTo(cx - s * 0.08, y + s * 0.68);
+      ctx.lineTo(cx - s * 0.45, y + s * 0.6);
+      ctx.lineTo(cx - s * 0.1, y + s * 0.4);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case "hotel": {
+      ctx.fillRect(x + s * 0.15, y + s * 0.15, s * 0.7, s * 0.75);
+      ctx.save();
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fillRect(x + s * 0.28, y + s * 0.28, s * 0.14, s * 0.14);
+      ctx.fillRect(x + s * 0.58, y + s * 0.28, s * 0.14, s * 0.14);
+      ctx.fillRect(x + s * 0.28, y + s * 0.5, s * 0.14, s * 0.14);
+      ctx.fillRect(x + s * 0.58, y + s * 0.5, s * 0.14, s * 0.14);
+      ctx.fillRect(x + s * 0.4, y + s * 0.72, s * 0.2, s * 0.18);
+      ctx.restore();
+      break;
+    }
+    case "coffee": {
+      ctx.beginPath();
+      ctx.arc(cx - s * 0.06, cy + s * 0.12, s * 0.3, 0, Math.PI, false);
+      ctx.lineTo(cx - s * 0.36, cy - s * 0.12);
+      ctx.lineTo(cx + s * 0.24, cy - s * 0.12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.lineWidth = s * 0.07;
+      ctx.beginPath();
+      ctx.arc(cx + s * 0.26, cy - s * 0.02, s * 0.12, -Math.PI / 2, Math.PI / 2);
+      ctx.stroke();
+      ctx.lineWidth = s * 0.05;
+      for (let i = -1; i <= 1; i++) {
+        const fx = cx - s * 0.06 + i * s * 0.14;
+        ctx.beginPath();
+        ctx.moveTo(fx, cy - s * 0.18);
+        ctx.quadraticCurveTo(fx + s * 0.04, cy - s * 0.26, fx, cy - s * 0.34);
+        ctx.stroke();
+      }
+      break;
+    }
     case "camera": {
       const bx = x + s * 0.05, by = y + s * 0.3, bw = s * 0.9, bh = s * 0.5;
       roundRect(ctx, bx, by, bw, bh, s * 0.1); ctx.fill();
@@ -1669,7 +1718,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const valNum = priceParts ? priceParts[2].trim() : priceStr;
 
         // DEFENSIVE: Ajusta tamanho da fonte se o preco for MUITO longo (evita colisao com 10X)
-        const leftReservedW = 120;
+        const leftReservedW = 210;
         const maxPriceW = priceGroupW - leftReservedW - minGap;
         let priceSize = 120;
         ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
