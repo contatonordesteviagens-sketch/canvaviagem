@@ -1645,9 +1645,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
         iconList.forEach((k, i) => {
           drawMonoIcon(ctx, k, infoX + i * (iconSize + iconGap) + iconSize / 2, cursorY, iconSize, navy);
         });
-        ctx.textBaseline = "alphabetic";
+        ctx.textBaseline = "alphabetic"; cursorY += 55;
         const ringX = boxX + 30;
-        const ringY = cursorY - 8;
+        const ringY = cursorY;
         const ringW = boxW - 60;
         const ringH = priceBlockH - 8;
         ctx.save();
