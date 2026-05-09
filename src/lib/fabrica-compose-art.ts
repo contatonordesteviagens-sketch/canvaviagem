@@ -478,7 +478,7 @@ async function drawFinalBranding(
   let textRightX = cw - (isStory ? 80 : 60); // Sincronizado com a margem do logo
   const itemGap = 20; // Aumentado o gap entre ícone e texto
   const logoEdge = logoUrl ? (padX + lw + bgPad * 2 + 30) : padX;
-  const maxAvailableWidth = textRightX - logoEdge;
+  const maxAllowedWidthForContacts = isStory ? (cw * 0.70) : (cw * 0.45);
 
   let yPos = contactsToDraw.length === 2 ? centerY + (footerHeight * 0.18) : centerY;
 
@@ -488,10 +488,15 @@ async function drawFinalBranding(
     if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
 
     // Auto-shrink para evitar colisão (Quadro Inteligente de URL Dinâmica unificado)
-    const isWebsite = c.icon === "website" || c.icon === "website_custom";
-    const maxWidth = isWebsite ? (maxAvailableWidth * 0.70) : (maxAvailableWidth - 40);
+    const isWebsite = c.icon.startsWith("website");
+    const maxAllowedWidthPerItem = maxAllowedWidthForContacts * (isWebsite ? 0.75 : 0.95);
 
-    let currentFontSize = fitUrlText(ctx, displayValue, maxWidth, fontSize, safeFont);
+    let currentFontSize = fontSize;
+    ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
+    while (ctx.measureText(displayValue).width > maxAllowedWidthPerItem && currentFontSize > 14) {
+      currentFontSize -= 1;
+      ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
+    }
     const iconSizeFactor = 1.35;
     let currentIconSize = currentFontSize * iconSizeFactor;
 
@@ -499,13 +504,13 @@ async function drawFinalBranding(
     const textWidth = ctx.measureText(displayValue).width;
     const iconX = textRightX - textWidth - itemGap - currentIconSize/2;
 
-    if (c.icon === "whatsapp_green" || c.icon === "whatsapp_custom") {
+    if (c.icon === "whatsapp_green" || c.icon === "whatsapp_custom" || c.icon.startsWith("whatsapp")) {
       await drawWhatsAppContact(ctx, iconX, yPos, currentIconSize);
-    } else if (c.icon === "instagram_gradient") {
+    } else if (c.icon === "instagram_gradient" || c.icon.startsWith("instagram")) {
       drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "gradient");
     } else if (c.icon === "instagram_custom") {
       drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "custom", ctx.fillStyle);
-    } else if (c.icon === "website") {
+    } else if (c.icon === "website" || c.icon.startsWith("website")) {
       drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle);
     }
 
