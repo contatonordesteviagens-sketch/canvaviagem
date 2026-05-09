@@ -1318,9 +1318,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
     // + R$ preco gigante / total por pessoa / faixa Pix com desconto.
     if (variant === 3) {
       if (format === "story") {
-        await drawProminentLogo(ctx, 40, 40, 120);
-        // [BG] Foto do destino cobrindo todo o canvas
+        // [BG] Foto do destino cobrindo todo o canvas (primeira coisa a desenhar)
         const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.45);
+        // Bypassed logo (drawProminentLogo called after drawImage is complete)
         ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
 
         // ── Cores do V3 (box CVC) ──────────────────────────────────────────────
@@ -1333,6 +1333,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
         // Desconto: extrai número do promoName (ex.: "5% OFF") ou usa 5 como default
         const descMatch = (promoName || "").match(/(\d{1,2})\s*%/);
         const descN = descMatch ? descMatch[1] : "5";
+
+        const instMatch = (installments || "12x").match(/(\d{1,2})\s*x?/i);
+        const parcN = instMatch ? instMatch[1] : "10";
+        const priceStr = mainPrice || `${curSym} ${price}`;
+        const topLabel = paymentLabel || (installments ? `${installments} de` : `${parcN}x de`);
+        const bottomSuffix = paymentSuffix || "por pessoa";
 
         // ── [BOX] amarelo arredondado ─ ─────
         const boxX = 40;
