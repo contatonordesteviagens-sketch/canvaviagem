@@ -1524,9 +1524,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
         applyFilmGrain(ctx, width, height, 0.04);
         return canvas.toDataURL("image/png");
       } else {
-        await drawProminentLogo(ctx, 40, 40, 120);
-        // [BG] Foto do destino cobrindo todo o canvas
+        // [BG] Foto do destino cobrindo todo o canvas (primeira coisa a desenhar)
         const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.45);
+        // Bypassed logo (drawProminentLogo called after drawImage is complete)
 
         // ── Cores do V3 (box CVC) ──────────────────────────────────────────────
         // yellow  = cor secundária do usuário (fundo do box)
@@ -1538,6 +1538,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const navyRaw = primaryColor || "#0c2340";
 
         ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+        await drawProminentLogo(ctx, 40, 40, 120);
 
         // ── Dados dinâmicos ────────────────────────────────────────────────────
         const destinoUp = (destination || "DESTINO").toUpperCase();
