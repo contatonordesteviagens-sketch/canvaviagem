@@ -591,25 +591,31 @@ function drawMonoIcon(
   ctx.beginPath();
   switch (kind) {
     case "bus": {
-      // Corpo do ônibus (caixa arredondada)
-      roundRect(ctx, x + s * 0.1, y + s * 0.15, s * 0.8, s * 0.6, s * 0.12);
-      ctx.fill();
-      
-      ctx.save();
-      ctx.globalCompositeOperation = "destination-out";
-      // Pára-brisas (janela superior)
-      roundRect(ctx, x + s * 0.18, y + s * 0.22, s * 0.64, s * 0.24, s * 0.04);
-      ctx.fill();
-      // Faróis (dois círculos inferiores)
+      ctx.lineWidth = s * 0.09;
+      // Corpo do ônibus (contorno)
+      roundRect(ctx, x + s * 0.15, y + s * 0.2, s * 0.7, s * 0.55, s * 0.08);
+      ctx.stroke();
+      // Pára-brisas (linha horizontal dividindo o ônibus)
       ctx.beginPath();
-      ctx.arc(x + s * 0.28, y + s * 0.62, s * 0.06, 0, Math.PI * 2);
-      ctx.arc(x + s * 0.72, y + s * 0.62, s * 0.06, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-
-      // Rodas (dois retângulos embaixo)
-      ctx.fillRect(x + s * 0.2, y + s * 0.75, s * 0.14, s * 0.12);
-      ctx.fillRect(x + s * 0.66, y + s * 0.75, s * 0.14, s * 0.12);
+      ctx.moveTo(x + s * 0.15, y + s * 0.48);
+      ctx.lineTo(x + s * 0.85, y + s * 0.48);
+      ctx.stroke();
+      // Grade central vertical no pára-brisas
+      ctx.beginPath();
+      ctx.moveTo(cx, y + s * 0.2);
+      ctx.lineTo(cx, y + s * 0.48);
+      ctx.stroke();
+      // Faróis (pequenos círculos contornados)
+      ctx.lineWidth = s * 0.06;
+      ctx.beginPath(); ctx.arc(x + s * 0.3, y + s * 0.62, s * 0.05, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x + s * 0.7, y + s * 0.62, s * 0.05, 0, Math.PI * 2); ctx.stroke();
+      // Rodas (dois pequenos blocos preenchidos)
+      ctx.fillRect(x + s * 0.22, y + s * 0.75, s * 0.12, s * 0.12);
+      ctx.fillRect(x + s * 0.66, y + s * 0.75, s * 0.12, s * 0.12);
+      // Espelhos retrovisores laterais
+      ctx.lineWidth = s * 0.06;
+      ctx.beginPath(); ctx.moveTo(x + s * 0.15, y + s * 0.3); ctx.lineTo(x + s * 0.08, y + s * 0.32); ctx.lineTo(x + s * 0.08, y + s * 0.4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + s * 0.85, y + s * 0.3); ctx.lineTo(x + s * 0.92, y + s * 0.32); ctx.lineTo(x + s * 0.92, y + s * 0.4); ctx.stroke();
       break;
     }
     case "plane": {
@@ -629,15 +635,23 @@ function drawMonoIcon(
       break;
     }
     case "hotel": {
-      ctx.fillRect(x + s * 0.15, y + s * 0.15, s * 0.7, s * 0.75);
-      ctx.save();
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.fillRect(x + s * 0.28, y + s * 0.28, s * 0.14, s * 0.14);
-      ctx.fillRect(x + s * 0.58, y + s * 0.28, s * 0.14, s * 0.14);
-      ctx.fillRect(x + s * 0.28, y + s * 0.5, s * 0.14, s * 0.14);
-      ctx.fillRect(x + s * 0.58, y + s * 0.5, s * 0.14, s * 0.14);
-      ctx.fillRect(x + s * 0.4, y + s * 0.72, s * 0.2, s * 0.18);
-      ctx.restore();
+      ctx.lineWidth = s * 0.09;
+      // Fachada externa do prédio (contorno)
+      roundRect(ctx, x + s * 0.2, y + s * 0.2, s * 0.6, s * 0.7, s * 0.06);
+      ctx.stroke();
+      // Porta arqueada na base do prédio
+      ctx.beginPath();
+      ctx.moveTo(cx - s * 0.12, y + s * 0.9);
+      ctx.lineTo(cx - s * 0.12, y + s * 0.7);
+      ctx.arc(cx, y + s * 0.7, s * 0.12, Math.PI, 0, false);
+      ctx.lineTo(cx + s * 0.12, y + s * 0.9);
+      ctx.stroke();
+      // Janelas quadradas com contorno (naturalmente vazadas!)
+      ctx.lineWidth = s * 0.06;
+      ctx.strokeRect(x + s * 0.32, y + s * 0.32, s * 0.12, s * 0.1);
+      ctx.strokeRect(x + s * 0.56, y + s * 0.32, s * 0.12, s * 0.1);
+      ctx.strokeRect(x + s * 0.32, y + s * 0.52, s * 0.12, s * 0.1);
+      ctx.strokeRect(x + s * 0.56, y + s * 0.52, s * 0.12, s * 0.1);
       break;
     }
     case "coffee": {
@@ -662,14 +676,23 @@ function drawMonoIcon(
       break;
     }
     case "camera": {
-      const bx = x + s * 0.05, by = y + s * 0.3, bw = s * 0.9, bh = s * 0.5;
-      roundRect(ctx, bx, by, bw, bh, s * 0.1); ctx.fill();
-      roundRect(ctx, x + s * 0.3, y + s * 0.18, s * 0.4, s * 0.16, s * 0.04); ctx.fill();
-      ctx.fillRect(x + s * 0.74, y + s * 0.2, s * 0.1, s * 0.1);
-      ctx.beginPath(); ctx.arc(cx, by + bh / 2, s * 0.2, 0, Math.PI * 2); ctx.fill();
-      ctx.save(); ctx.globalCompositeOperation = "destination-out";
-      ctx.beginPath(); ctx.arc(cx, by + bh / 2, s * 0.12, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-      ctx.beginPath(); ctx.arc(cx, by + bh / 2, s * 0.06, 0, Math.PI * 2); ctx.fill(); break;
+      ctx.lineWidth = s * 0.08;
+      // Corpo principal da câmera (contorno)
+      roundRect(ctx, x + s * 0.1, y + s * 0.3, s * 0.8, s * 0.5, s * 0.08);
+      ctx.stroke();
+      // Visor ou flash superior (preenchido)
+      ctx.fillRect(x + s * 0.28, y + s * 0.2, s * 0.25, s * 0.1);
+      // Botão de disparo do flash (preenchido)
+      ctx.fillRect(x + s * 0.68, y + s * 0.22, s * 0.12, s * 0.08);
+      // Anel da lente (contorno circular)
+      ctx.beginPath();
+      ctx.arc(cx, y + s * 0.55, s * 0.18, 0, Math.PI * 2);
+      ctx.stroke();
+      // Lente interna (bolinha cheia)
+      ctx.beginPath();
+      ctx.arc(cx, y + s * 0.55, s * 0.06, 0, Math.PI * 2);
+      ctx.fill();
+      break;
     }
     case "ship": {
       ctx.beginPath(); ctx.moveTo(x + s * 0.05, y + s * 0.62); ctx.lineTo(x + s * 0.95, y + s * 0.62);
@@ -691,9 +714,18 @@ function drawMonoIcon(
       } break;
     }
     case "map": {
-      ctx.beginPath(); ctx.arc(cx, cy - s * 0.05, s * 0.28, Math.PI, 0); ctx.lineTo(cx, cy + s * 0.42);
-      ctx.closePath(); ctx.fill(); ctx.save(); ctx.globalCompositeOperation = "destination-out";
-      ctx.beginPath(); ctx.arc(cx, cy - s * 0.06, s * 0.1, 0, Math.PI * 2); ctx.fill(); ctx.restore(); break;
+      ctx.lineWidth = s * 0.09;
+      // Formato gota/pin do mapa (contornado)
+      ctx.beginPath();
+      ctx.arc(cx, cy - s * 0.08, s * 0.26, Math.PI * 0.85, Math.PI * 0.15, false);
+      ctx.lineTo(cx, cy + s * 0.42);
+      ctx.closePath();
+      ctx.stroke();
+      // Pinhole interno (agora uma pequena esfera cheia)
+      ctx.beginPath();
+      ctx.arc(cx, cy - s * 0.08, s * 0.08, 0, Math.PI * 2);
+      ctx.fill();
+      break;
     }
     case "food": {
       ctx.lineWidth = s * 0.07; ctx.lineCap = "round"; ctx.beginPath();
@@ -1687,19 +1719,30 @@ const panelBottom = RULES.PANEL_BOTTOM;
         cursorY += destGap + 36;
 
         let benefitsFontSize = 36; ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
-        while (ctx.measureText(daysText).width > boxW * 0.45 && benefitsFontSize > 20) {
-          benefitsFontSize -= 2; ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
+        let daysW = 0;
+        if (daysText && daysText.trim()) {
+          while (ctx.measureText(daysText).width > boxW * 0.45 && benefitsFontSize > 20) {
+            benefitsFontSize -= 2; ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
+          }
+          daysW = ctx.measureText(daysText).width;
         }
-        const daysW = ctx.measureText(daysText).width;
         const sepGap = 18; const iconSize = Math.round(benefitsFontSize * 1.8); const iconGap = 18;
         const iconsTotal = iconList.length * iconSize + Math.max(0, iconList.length - 1) * iconGap;
-        const sepW = 4; const infoTotalW = daysW + sepGap + sepW + sepGap + iconsTotal;
+        
+        const hasDays = !!(daysText && daysText.trim());
+        const sepW = hasDays ? 4 : 0;
+        const actualGap = hasDays ? sepGap : 0;
+        const infoTotalW = (hasDays ? daysW + actualGap : 0) + sepW + (hasDays ? actualGap : 0) + iconsTotal;
+        
         let infoX = cx - infoTotalW / 2;
         ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillStyle = navy;
-        safeFillText(ctx, daysText, infoX, cursorY, boxW * 0.5, 14);
-        infoX += daysW + sepGap;
-        ctx.fillRect(infoX, cursorY - 18, sepW, 36);
-        infoX += sepW + sepGap;
+        
+        if (hasDays) {
+          safeFillText(ctx, daysText, infoX, cursorY, boxW * 0.5, 14);
+          infoX += daysW + actualGap;
+          ctx.fillRect(infoX, cursorY - 18, sepW, 36);
+          infoX += sepW + actualGap;
+        }
         iconList.forEach((k, i) => {
           drawMonoIcon(ctx, k, infoX + i * (iconSize + iconGap) + iconSize / 2, cursorY, iconSize, navy);
         });
@@ -2612,15 +2655,21 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.font = "700 32px Inter, Arial, sans-serif";
       ctx.textBaseline = "middle";
       const infoStartX = cardX + 36;
-      ctx.fillText(daysTextV4, infoStartX, infoYv4);
-      const daysWv4 = ctx.measureText(daysTextV4).width;
-      // separador "|"
-      ctx.fillText("|", infoStartX + daysWv4 + 14, infoYv4);
-      const sepWv4 = ctx.measureText("|").width;
+      const hasDaysV4 = !!(daysTextV4 && daysTextV4.trim());
+      let currentXv4 = infoStartX;
+      if (hasDaysV4) {
+        ctx.fillText(daysTextV4, currentXv4, infoYv4);
+        const daysWv4 = ctx.measureText(daysTextV4).width;
+        currentXv4 += daysWv4 + 14;
+        ctx.fillText("|", currentXv4, infoYv4);
+        const sepWv4 = ctx.measureText("|").width;
+        currentXv4 += sepWv4 + 18;
+      }
+      
       // ícones na mesma linha
       const iconSizeV4 = 44;
       const iconGapV4 = 14;
-      let iconCursor = infoStartX + daysWv4 + 14 + sepWv4 + 18;
+      let iconCursor = currentXv4;
       iconListV4.forEach((k) => {
         drawMonoIcon(ctx, k, iconCursor + iconSizeV4 / 2, infoYv4, iconSizeV4, v4Secondary);
         iconCursor += iconSizeV4 + iconGapV4;
