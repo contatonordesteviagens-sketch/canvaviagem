@@ -408,8 +408,8 @@ async function drawFinalBranding(
   const veilStartY = footerY - 80; // Aumentado de 50 para 80 para garantir que o texto não fique no "limbo"
   const grad = ctx.createLinearGradient(0, veilStartY, 0, ch);
   grad.addColorStop(0, "rgba(0,0,0,0.0)");
-  grad.addColorStop(0.2, "rgba(0,0,0,0.7)"); // Escurece mais rápido
-  grad.addColorStop(1, "rgba(0,0,0,0.96)"); // Quase preto na base
+  grad.addColorStop(0.2, "rgba(0,0,0,0.20)"); // Suavizado para ~20%
+  grad.addColorStop(1, "rgba(0,0,0,0.35)"); // Suavizado para ~35% na base máxima
   
   ctx.save();
   ctx.fillStyle = grad;
@@ -2041,7 +2041,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // 3) Layout do painel
       const px = 56;
       const pw = panelW - px * 2;
-      const logoReserve = hasLogo ? 150 : 50;
+      // Teto mais apertado no Feed para ganhar área útil vertical
+      const logoReserve = format === "story" ? (hasLogo ? 150 : 50) : (hasLogo ? 110 : 35);
 
       // 4) BADGE pílula
       const badgeText = (promoName || "OFERTA ESPECIAL").toUpperCase();
@@ -2058,11 +2059,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
       safeFillText(ctx, badgeText, px + 20, badgeY + badgeH / 2, badgeW - 40, 14);
       ctx.textBaseline = "alphabetic";
 
-      // 5) TÍTULO PRINCIPAL (MANCHETE GIGANTE DA V1 - SEM DUPLICAÇÕES)
-      const titleY = badgeY + badgeH + 40;
-      ctx.fillStyle = v1OnPanel; // Cor contrastante sobre o fundo azul
+      // 5) TÍTULO PRINCIPAL (Subindo um pouco no feed para respiro)
+      const titleY = badgeY + badgeH + (format === "story" ? 40 : 20); 
+      ctx.fillStyle = v1OnPanel; 
       
-      let mainTitleSize = 48;
+      // Começa um pouco menor no feed (42px) para não estourar no topo
+      let mainTitleSize = format === "story" ? 48 : 42; 
       ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
 
       const titleWords = (titleText || destination || "").split(/\s+/).filter(Boolean);
@@ -2093,23 +2095,25 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       const titleBlockH = titleLines.length * (mainTitleSize + 8);
 
-      // 7) PRICE CARD - Elevado em +40px (Quadrado) ou +350px (Stories) para total segurança e respiro fora da sombra
+      // 7) PRICE CARD & BENEFITS - Engenharia dinâmica inteligente
       const priceBlockH = 200;
-      let priceBlockY = format === "story" ? height - 680 : height - 370;
-
-      // 8) BENEFITS — pílulas adaptativas no espaco restante (Aumentadas em 20%)
+      
+      // Ponto limite calculado: no feed, deixamos mais alto (height - 460) para garantir respiro na base
+      const limitY = format === "story" ? height - 680 : height - 460;
+      
+      // 8) BENEFITS — pílulas adaptativas no espaco restante
       const benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
-      const hlStart = titleY + titleBlockH + 24;
-      const hlAvailH = (format === "story" ? height - 680 : height - 370) - 24 - hlStart;
+      const hlStart = titleY + titleBlockH + (format === "story" ? 24 : 16);
+      
+      // O espaço disponível força o encolhimento das pílulas, empurrando tudo para cima logicamente!
+      const hlAvailH = limitY - hlStart; 
       const count = Math.max(1, benefitsListV1.length);
       const pillGap = 12;
       const pillH = Math.max(42, Math.min(68, Math.floor((hlAvailH - pillGap * (count - 1)) / count)));
 
-      // No Stories 9:16, a coordenada Y do bloco de preço DEVE SER renderizada com base no fim dos Benefícios para fluidez responsiva
+      // O bloco de preço AGORA segue dinamicamente o fim dos benefícios TANTO no story QUANTO no feed!
       const lastBenefitY = hlStart + (count - 1) * (pillH + pillGap) + pillH;
-      if (format === "story") {
-        priceBlockY = lastBenefitY + height * 0.08;
-      }
+      let priceBlockY = lastBenefitY + (format === "story" ? height * 0.08 : 28);
       
       // Fontes e ícones aumentados em 20% para legibilidade impecável
       const pillFont = pillH >= 56 ? 28 : pillH >= 46 ? 24 : 20;
