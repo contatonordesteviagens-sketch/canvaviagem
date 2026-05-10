@@ -943,6 +943,70 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     setEditingIconIdx(null);
   };
 
+  // 🌐 Integração Inteligente de Pacotes com o Site F2 (Acumulativo)
+  // Pega o último anúncio gerado com sucesso e o transforma/atualiza como um Pacote no Site.
+  const syncGeneratedPackageToSite = (imgBase64: string) => {
+    if (!imgBase64 || !destination.trim()) return;
+
+    const currentPrice = formattedPriceForAd || price;
+    const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
+
+    const priceLabel = (() => {
+      const suffix = paymentSuffix || "por pessoa";
+      const pVal = `${sym} ${currentPrice}`;
+      if (paymentMode === "installments") return `${installments || "10x"} de ${pVal} ${suffix}`;
+      if (paymentMode === "cash") return `À vista ${pVal} ${suffix}`;
+      return `${pVal} ${suffix}`;
+    })();
+
+    const descLines = highlights.slice(0, 4).map((h) => `✅ ${h.text}`).join("\n");
+    const period = travelPeriod ? `\n📅 ${travelPeriod}` : "";
+    
+    const cleanDest = destination.trim();
+    const newPkg = {
+      id: `gen-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      title: cleanDest,
+      description: descLines + period,
+      price: priceLabel,
+      imageUrl: imgBase64,
+      ctaLabel: "Reservar", // Padrão solicitado: Botão Reservar que leva ao WhatsApp
+    };
+
+    const currentPackages = state.selectedPackages || [];
+    // Evita duplicados comparando o Destino (ignora case e espaços)
+    const existingIdx = currentPackages.findIndex(
+      (p: any) => (p.title || "").toLowerCase().trim() === cleanDest.toLowerCase()
+    );
+
+    let updatedPackages = [];
+    if (existingIdx > -1) {
+      // Atualiza o pacote existente com o novo preço e imagem mais recente
+      updatedPackages = [...currentPackages];
+      updatedPackages[existingIdx] = {
+        ...updatedPackages[existingIdx],
+        price: priceLabel,
+        imageUrl: imgBase64,
+        description: newPkg.description,
+      };
+    } else {
+      // Prende no TOPO do site e remove o item placeholder de fábrica
+      const base = currentPackages.filter((p: any) => p.title !== "Novo pacote");
+      updatedPackages = [newPkg, ...base];
+    }
+
+    // Também empurra imagem para a Galeria de reuso
+    const currentGallery = state.siteContent.galleryImages || [];
+    const updatedGallery = currentGallery.includes(imgBase64) ? currentGallery : [imgBase64, ...currentGallery];
+
+    update({
+      selectedPackages: updatedPackages,
+      siteContent: {
+        ...state.siteContent,
+        galleryImages: updatedGallery
+      }
+    } as any);
+  };
+
   const generate = async (forceVariation?: number, accumulate: boolean = false) => {
     if (!destination.trim()) {
       toast.error("Digite o destino do anúncio");
@@ -1063,6 +1127,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         setGeneratedImages((prev) => [...prev, ...composed].slice(-MAX_VARIATIONS_PHOTO));
         setGeneratedImage(composed[composed.length - 1]);
         update({ generatedAdImage: composed[composed.length - 1], primaryColor: palette.primary });
+        syncGeneratedPackageToSite(composed[composed.length - 1]);
 
         const newCount = generationCount + composed.length;
         setGenerationCount(newCount);
@@ -1255,6 +1320,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         setGeneratedImages((prev) => [...prev, ...images].slice(-MAX_VARIATIONS_AI));
         setGeneratedImage(images[images.length - 1]);
         update({ generatedAdImage: images[images.length - 1], primaryColor: palette.primary });
+        syncGeneratedPackageToSite(images[images.length - 1]);
         if (providerSeen) setLastProvider(providerSeen);
 
         // Registra no GenerationGuard
@@ -1377,6 +1443,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       });
       setGeneratedImage(imagesCustom[imagesCustom.length - 1]);
       update({ generatedAdImage: imagesCustom[imagesCustom.length - 1], primaryColor: palette.primary });
+      syncGeneratedPackageToSite(imagesCustom[imagesCustom.length - 1]);
 
       const newCount = generationCount + imagesCustom.length;
       setGenerationCount(newCount);

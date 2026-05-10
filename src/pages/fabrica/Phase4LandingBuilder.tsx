@@ -72,42 +72,12 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
       }
     }
 
-    // 3. Pacote automático a partir dos dados da Fase 3
-    const hasDefaultPackages = state.selectedPackages.length === 0 ||
-      (state.selectedPackages.length === 1 && state.selectedPackages[0].title === "Novo pacote");
-
-    if (hasDefaultPackages && dest && state.lastPrice) {
-      const sym = state.lastCurrency === "USD" ? "US$" : state.lastCurrency === "EUR" ? "€" : state.lastCurrency === "ARS" ? "AR$" : "R$";
-      const priceLabel = (() => {
-        const mode = state.lastPaymentMode;
-        const suffix = state.lastPaymentSuffix || "por pessoa";
-        const price = `${sym} ${state.lastPrice}`;
-        if (mode === "installments") return `${state.lastInstallments || "10x"} de ${price} ${suffix}`;
-        if (mode === "cash") return `À vista ${price} ${suffix}`;
-        return `${price} ${suffix}`;
-      })();
-
-      const highlights = (state.lastHighlights || []) as Array<{ text: string; icon: string }>;
-      const descLines = highlights.slice(0, 4).map((h) => `✅ ${h.text}`).join("\n");
-      const period = state.lastTravelPeriod ? `\n📅 ${state.lastTravelPeriod}` : "";
-
-      const novoPacote: Pacote = {
-        id: `autosync-${Date.now()}`,
-        title: `${dest}${state.lastTravelPeriod ? " — " + state.lastTravelPeriod : ""}`,
-        description: descLines + period,
-        price: priceLabel,
-        imageUrl: state.generatedAdImage || "",
-        ctaLabel: "Quero saber mais",
-      };
-
-      patches["selectedPackages"] = [novoPacote];
-      synced.push("Pacote de oferta");
-
-      // Adiciona a imagem gerada ao banco da galeria
-      if (state.generatedAdImage && !state.siteContent.galleryImages.includes(state.generatedAdImage)) {
-        patches["galleryImages"] = [state.generatedAdImage, ...state.siteContent.galleryImages];
-        synced.push("Imagem do anúncio");
-      }
+    // 3. Pacote automático desabilitado aqui:
+    // Agora o Phase3ArtFactory.tsx gerencia a inserção ACUMULATIVA em 'selectedPackages'
+    // em tempo real assim que a arte é gerada! Mantemos apenas o push seguro para a galeria:
+    if (state.generatedAdImage && !state.siteContent.galleryImages.includes(state.generatedAdImage)) {
+      patches["galleryImages"] = [state.generatedAdImage, ...state.siteContent.galleryImages];
+      synced.push("Imagem do anúncio");
     }
 
     // 4. CTA final — usa WhatsApp/Instagram se disponíveis
