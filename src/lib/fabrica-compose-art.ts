@@ -2348,22 +2348,38 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         ctx.textAlign = "left";
 
-        // 2) The Black Headline Bar - Supports safe wrapping for long titles
+        // 2) Intelligent Multi-line Headline Bar
         const resolvedTitle = (titleText || destination).toUpperCase();
-        const photoBottom = 900; // MUCH LARGER Photo allowance (Original was ~640, increased by 260px!)
-        const faixaY = photoBottom + 16;
-
         ctx.font = "900 56px Inter, Arial, sans-serif";
         const titleLines = wrapTextSafe(ctx, resolvedTitle, contentWidth - 40, 2, 34);
         const isMultiLine = titleLines.length > 1;
         const faixaH = isMultiLine ? 190 : 135;
+
+        // 🛡️ DYNAMIC COLLISION PROTECTION ENGINE 🛡️
+        // Calculates guaranteed minimum vertical space reservation to prevent component overlaps.
+        const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
+        const benefitGap = benefitRowsV2 <= 2 ? 82 : 68; 
+        const benefitsEffectiveH = (benefitRowsV2 - 1) * benefitGap;
+        
+        // We require at least the highlights stack, the price floor, and reasonable empty buffers (70px total)
+        const requiredBuff = 70; 
+        const contentFloorLimit = priceCardY - periodYOffset;
+        // Safe ceiling threshold for content based on strict stacking needs
+        const maxSafeCeiling = contentFloorLimit - (benefitsEffectiveH + requiredBuff);
+
+        // Re-evaluate optimal photo anchor to make it large, but fit inside constraints
+        let photoBottom = 800; 
+        // photoBottom + 16 (gap) + faixaH must not exceed maxSafeCeiling
+        const photoConstraint = maxSafeCeiling - 16 - faixaH;
+        photoBottom = Math.min(photoBottom, photoConstraint);
+        
+        const faixaY = photoBottom + 16;
 
         fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, v2CardBg);
         ctx.fillStyle = v2HeadlineColor;
         ctx.textBaseline = "middle";
         
         const lineSpacing = 62;
-        // Shift start up by half total block height for perfect center vertical alignment inside bar
         const textBlockH = isMultiLine ? lineSpacing : 0;
         const startTextY = (faixaY + faixaH / 2) - (textBlockH / 2);
         
@@ -2372,10 +2388,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         });
         ctx.textBaseline = "alphabetic";
 
-        // 3) Expanded Photo Mask - Preenche perfeitamente o topo
+        // 3) Expanded Photo Mask - Autonomously size-constrained to prevent content bleed
         const photoTop = safeTop - 20; 
         const fW2 = width - 32;
-        const fH2 = photoBottom - photoTop; // MASSIVE expand covering ~640px vertically
+        const fH2 = photoBottom - photoTop; 
         const c2 = fitCover(image.naturalWidth, image.naturalHeight, fW2, fH2, 0.36);
         ctx.save();
         fillRoundRect(ctx, 16, photoTop, fW2, fH2, 22, "#ccc");
@@ -2383,17 +2399,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.drawImage(image, c2.sx, c2.sy, c2.sw, c2.sh, 16, photoTop, fW2, fH2);
         ctx.restore();
 
-        // 4) Highlights Centering - Automatically centers visually between the two black panels
-        const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
+        // 4) Mathematical Vertical Balancing (Safe Centering)
         const bfs = benefitRowsV2 <= 2 ? 38 : 32; 
-        const benefitGap = benefitRowsV2 <= 2 ? 82 : 68; 
-        
-        const benefitsEffectiveH = (benefitRowsV2 - 1) * benefitGap;
-        const contentFloorLimit = priceCardY - periodYOffset;
         const contentCeilLimit = faixaY + faixaH;
         const verticalFreeSpace = contentFloorLimit - contentCeilLimit;
         
-        // Position top anchored precisely at half visual discrepancy
+        // Anchor top at the precise vertical half-point of the computed gap
         const benefitsTop = contentCeilLimit + (verticalFreeSpace - benefitsEffectiveH) / 2;
 
         const colGapV2 = 28;
@@ -2499,9 +2510,22 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const isMultiLine = titleLines.length > 1;
         const faixaH = isMultiLine ? 150 : 110;
 
-        // Layout Positioning: TOP-DOWN for the Photo to guarantee its massive footprint!
+        // 🛡️ DYNAMIC COLLISION PROTECTION ENGINE 🛡️
+        const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
+        const benefitGap = benefitRowsV2 <= 2 ? 74 : 58;
+        const benefitsEffectiveH = (benefitRowsV2 - 1) * benefitGap;
+        
+        // Fixed reservation buffer required for the mid-panel assets
+        const requiredBuff = 60; 
+        const contentFloorLimit = priceCardY - periodYOffset;
+        const maxSafeCeiling = contentFloorLimit - (benefitsEffectiveH + requiredBuff);
+
+        // Layout Positioning: TOP-DOWN with dynamic safety clamp
+        let photoBottom = 480; 
+        const photoConstraint = maxSafeCeiling - 16 - faixaH;
+        photoBottom = Math.min(photoBottom, photoConstraint);
+        
         const photoTop = safeTop - 20; // Typically 40 in square mode
-        const photoBottom = 480; // Expanded vertical photo footprint (roughly 440px)
         const faixaY = photoBottom + 16;
 
         fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, v2CardBg);
@@ -2528,12 +2552,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.restore();
 
         // 4) Highlights Centering Module (Aligns content between panels)
-        const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
         const bfs = benefitRowsV2 <= 2 ? 36 : 32;
-        const benefitGap = benefitRowsV2 <= 2 ? 74 : 58;
         
-        const benefitsEffectiveH = (benefitRowsV2 - 1) * benefitGap;
-        const contentFloorLimit = priceCardY - periodYOffset;
         const contentCeilLimit = faixaY + faixaH;
         const verticalFreeSpace = contentFloorLimit - contentCeilLimit;
         

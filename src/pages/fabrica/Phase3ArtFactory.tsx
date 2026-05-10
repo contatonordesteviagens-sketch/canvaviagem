@@ -126,23 +126,34 @@ const formatPriceValue = (raw: string, currency: Currency, assumeCents = false, 
   if (!digits) return "";
 
   let num = 0;
-  if (noCents) {
-    num = parseInt(digits, 10);
-  } else if (assumeCents) {
-    // Se assumeCents for true (vindo de digitação sem separador), trata os últimos 2 como decimais
+  
+  // 🛡️ REGRA DE OURO: O cálculo do valor escalar numérico NÃO PODE depender de `noCents`.
+  // Nós extraímos o valor REAL contido na string e apenas FORMATAMOS depois.
+  if (assumeCents) {
+    // Se assumeCents for true (vindo de digitação direta sem separador), trata os últimos 2 como decimais
     num = parseInt(digits, 10) / 100;
   } else {
-    // Se já tem separador, tenta extrair a parte inteira e decimal
+    // Tenta encontrar o último separador decimal para extrair a parte inteira e fracionária.
     const lastComma = cleaned.lastIndexOf(",");
     const lastDot = cleaned.lastIndexOf(".");
     const lastSep = Math.max(lastComma, lastDot);
     
     if (lastSep !== -1) {
-      const intPart = cleaned.slice(0, lastSep).replace(/\D/g, "");
-      const decPart = cleaned.slice(lastSep + 1).replace(/\D/g, "").slice(0, 2);
-      num = parseInt(intPart || "0", 10) + parseInt(decPart.padEnd(2, "0"), 10) / 100;
+      // Pega o texto após o separador e valida se são no máximo 2 dígitos
+      const afterSepText = cleaned.slice(lastSep + 1).replace(/\D/g, "");
+      
+      // Se tiver mais de 2 dígitos após o separador, provavelmente é separador de milhar em digitação errática
+      if (afterSepText.length > 2) {
+         // Trata tudo como dígitos contínuos, valor bruto
+         num = parseInt(digits, 10);
+      } else {
+         // Interpretamos como decimal legítimo
+         const intPart = cleaned.slice(0, lastSep).replace(/\D/g, "");
+         const decPart = afterSepText.slice(0, 2);
+         num = parseInt(intPart || "0", 10) + parseInt(decPart.padEnd(2, "0"), 10) / 100;
+      }
     } else {
-      // Se não tem separador mas também não deve assumir centavos (ex: digitou apenas "149")
+      // Sem nenhum separador, é um inteiro puro
       num = parseInt(digits, 10);
     }
   }
@@ -489,9 +500,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const setHideCents = (v: boolean) => {
     setHideCentsState(v);
     update({ hideCents: v });
-    // Reformata o preço atual respeitando a nova flag
-    const reformatted = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, v);
-    if (reformatted) setPriceState(reformatted);
+    // NUNCA sobrescreve o valor bruto 'price' no state, para não corromper a digitação original do usuário!
   };
   const [showTotal, setShowTotalState] = useState<boolean>(state.showTotal !== false);
   const setShowTotal = (v: boolean) => { setShowTotalState(v); update({ showTotal: v }); };
