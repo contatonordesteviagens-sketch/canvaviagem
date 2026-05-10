@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useFabricaContext, type Pacote, type Depoimento } from "@/hooks/useFabricaContext";
-import { downloadLandingHTML, buildLandingHTML } from "@/lib/fabrica-html-export";
+import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export";
 import {
   Plus,
   Trash2,
@@ -925,12 +925,24 @@ const PublishOnLovableCard = ({
   onBack: () => void;
   onNext: () => void;
 }) => {
+  const { state } = useFabricaContext(); // Captura estado para gerar prompt de atualização cirúrgico
+
   const copyHtml = async () => {
     try {
       await navigator.clipboard.writeText(html);
       toast.success("HTML copiado! Cole no Lovable para gerar o site.");
     } catch {
       toast.error("Não foi possível copiar. Use o botão Baixar HTML.");
+    }
+  };
+
+  const copyUpdatePrompt = async () => {
+    try {
+      const prompt = generateUpdatePackagesPrompt(state);
+      await navigator.clipboard.writeText(prompt);
+      toast.success("🚀 Prompt de atualização copiado! Agora cole no chat do seu Lovable.");
+    } catch {
+      toast.error("Erro ao copiar prompt.");
     }
   };
 
@@ -991,12 +1003,12 @@ const PublishOnLovableCard = ({
           ))}
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-2.5 mb-3">
+        <div className="grid sm:grid-cols-2 gap-2.5 mb-2">
           <button
             onClick={copyHtml}
             className="py-3 px-4 rounded-xl bg-white/[0.06] border border-white/15 text-white font-semibold hover:bg-white/[0.10] transition-all flex items-center justify-center gap-2 text-sm"
           >
-            <Copy className="w-4 h-4" /> Copiar HTML
+            <Copy className="w-4 h-4" /> Copiar HTML Completo
           </button>
           <a
             href={LOVABLE_INVITE_URL}
@@ -1008,9 +1020,26 @@ const PublishOnLovableCard = ({
               boxShadow: `0 8px 24px ${primaryColor}55`,
             }}
           >
-            <Sparkles className="w-4 h-4" /> Abrir Lovable e Publicar
+            <Sparkles className="w-4 h-4" /> Abrir Lovable
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
+        </div>
+
+        {/* NOVO BOTÃO DE ATUALIZAÇÃO CIRÚRGICA */}
+        <div className="mb-3">
+          <button
+            onClick={copyUpdatePrompt}
+            className="w-full py-3 px-4 rounded-xl border-2 border-dashed transition-all flex items-center justify-center gap-2 text-sm font-bold text-white hover:bg-amber-500/10"
+            style={{
+               borderColor: `${primaryColor}77`,
+               color: "#FCD34D"
+            }}
+          >
+            <Rocket className="w-4 h-4" /> Copiar Atualização (Só Pacotes Novos) ⚡
+          </button>
+          <p className="text-[10px] text-white/40 text-center mt-1.5 italic">
+            Use este botão caso seu site já esteja pronto e queira apenas adicionar novos pacotes sem reconstruir tudo.
+          </p>
         </div>
 
         <p className="text-[11px] text-white/50 text-center">

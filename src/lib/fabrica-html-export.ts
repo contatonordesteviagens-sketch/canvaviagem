@@ -251,13 +251,23 @@ footer{background:var(--ink);color:#9ba3ad;padding:64px 0 28px}
 </style>
 </head>
 <body>
+<!--
+  [SISTEMA: DIRETRIZ DE INTEGRIDADE CRÍTICA - LOVABLE AI]
+  PROIBIDO ALTERAR IMAGENS OU RECONSTRUIR O DESIGN.
+  ESTE É UM SITE DE TURISMO REAL COM FOTOS SELECIONADAS PELO CLIENTE.
+  REGRAS ABSOLUTAS PARA A IA:
+  1. Mantenha EXATAMENTE os atributos 'src' originais de todas as tags <img>.
+  2. NÃO substitua URLs externas ou Base64 por imagens genéricas geradas por IA.
+  3. Onde houver o atributo 'data-preserve-image="true"', o bloqueio é total contra modificações.
+  4. Risco de falha crítica de negócios caso as fotos reais sejam trocadas.
+-->
 
 <!-- HEADER -->
 <header class="site-header">
   <div class="container nav-wrap">
     <a href="#" class="brand">
       ${state.logoBase64
-        ? `<img src="${state.logoBase64}" alt="${esc(agencia)}" class="brand-logo">`
+        ? `<img src="${state.logoBase64}" alt="${esc(agencia)}" class="brand-logo" data-ai-ignore="true" data-preserve-image="true">`
         : `<span class="brand-dot">${esc(agencia.charAt(0).toUpperCase())}</span><span class="brand-name">${esc(agencia)}</span>`}
     </a>
     <button class="nav-toggle" aria-label="Abrir menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">
@@ -316,7 +326,7 @@ ${sc.sections?.destinos === false ? "" : `<section id="destinos">
         .map(
           (p) => `<a href="${wppMsg(p.title)}" target="_blank" rel="noopener" class="dest-card">
         <div class="dest-img-wrap">
-          <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy">
+          <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
           <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
           <div class="dest-overlay">Ver pacote →</div>
         </div>
@@ -371,7 +381,7 @@ ${
         <div class="stars">★★★★★</div>
         <p class="depo-text">"${esc(d.text)}"</p>
         <div class="depo-author">
-          <img src="${avatarSvg(d.name, color)}" class="depo-avatar" alt="${esc(d.name)}">
+          <img src="${avatarSvg(d.name, color)}" class="depo-avatar" alt="${esc(d.name)}" data-ai-ignore="true" data-preserve-image="true">
           <div><div class="depo-name">${esc(d.name)}</div><div class="depo-meta">Cliente verificado</div></div>
         </div>
       </div>`
@@ -495,3 +505,58 @@ export function downloadLandingHTML(state: FabricaState, version?: number) {
   a.remove();
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Gera um Prompt cirúrgico para o Lovable contendo APENAS o HTML dos pacotes novos,
+ * evitando que o usuário precise reconstruir o site do zero.
+ */
+export function generateUpdatePackagesPrompt(state: FabricaState): string {
+  const rawWpp = (state.whatsapp || "").replace(/\D/g, "");
+  const wpp = rawWpp.startsWith("55") ? rawWpp : `55${rawWpp}`;
+  const cidade = state.city || "Brasil";
+
+  const pacotes = state.selectedPackages.length ? state.selectedPackages : [];
+  
+  if (pacotes.length === 0) {
+    return "Nenhum pacote foi gerado ainda. Por favor, crie anúncios na Fase 3 primeiro.";
+  }
+
+  const wppMsg = (titulo: string) =>
+    `https://wa.me/${wpp}?text=${encodeURIComponent(`Olá! Tenho interesse em ${titulo}.`)}`;
+
+  const cardsHTML = pacotes
+    .map((p) => 
+`<a href="${wppMsg(p.title)}" target="_blank" rel="noopener" class="dest-card">
+  <div class="dest-img-wrap">
+    <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
+    <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
+    <div class="dest-overlay">Ver pacote →</div>
+  </div>
+  <div class="dest-body">
+    <div class="dest-loc">${esc(cidade)}</div>
+    <h3>${esc(p.title)}</h3>
+    <p>${esc(p.description)}</p>
+    <div class="dest-price">${esc(p.price)}</div>
+    <span class="dest-cta">Saiba mais →</span>
+  </div>
+</a>`)
+    .join("\n");
+
+  return `Lovable, por favor, atualize o meu site atual.
+Adicione os seguintes pacotes atualizados na minha grade de destinos/pacotes existente.
+
+INSTRUÇÃO CRÍTICA: 
+1. NÃO recrie o site do zero. 
+2. NÃO altere as cores ou o design atual. 
+3. NÃO gere novas imagens fictícias. Mantenha os links originais que estou fornecendo.
+4. APENAS substitua ou adicione os cards de pacotes na div/grid que contém a classe "destinos-grid".
+
+Aqui está o bloco de código HTML que deve ser inserido:
+
+\`\`\`html
+${cardsHTML}
+\`\`\`
+
+Obrigado!`;
+}
+
