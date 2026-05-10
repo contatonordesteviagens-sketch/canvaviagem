@@ -2041,8 +2041,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // 3) Layout do painel
       const px = 56;
       const pw = panelW - px * 2;
-      // Teto mais apertado no Feed para ganhar área útil vertical
-      const logoReserve = format === "story" ? (hasLogo ? 150 : 50) : (hasLogo ? 110 : 35);
+      // Teto EXTREMAMENTE apertado no Feed para ganhar máxima área útil vertical (subido para 24px)
+      const logoReserve = format === "story" ? (hasLogo ? 150 : 50) : (hasLogo ? 110 : 24);
 
       // 4) BADGE pílula
       const badgeText = (promoName || "OFERTA ESPECIAL").toUpperCase();
@@ -2059,8 +2059,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       safeFillText(ctx, badgeText, px + 20, badgeY + badgeH / 2, badgeW - 40, 14);
       ctx.textBaseline = "alphabetic";
 
-      // 5) TÍTULO PRINCIPAL (Subindo um pouco no feed para respiro)
-      const titleY = badgeY + badgeH + (format === "story" ? 40 : 20); 
+      // 5) TÍTULO PRINCIPAL (Gap ajustado para 65px no feed p/ compensar baseline e nunca sobrepor!)
+      const titleY = badgeY + badgeH + (format === "story" ? 40 : 65); 
       ctx.fillStyle = v1OnPanel; 
       
       // Começa um pouco menor no feed (42px) para não estourar no topo
