@@ -445,9 +445,21 @@ async function drawFinalBranding(
       
       const isSquareLogo = Math.abs(ratio - 1) < 0.2;
       const radius = isSquareLogo ? (lw + bgPad * 2) / 2 : 12;
+      const logoBoxX = padX;
+      const logoBoxY = centerY - lh / 2 - bgPad;
+      const logoBoxW = lw + bgPad * 2;
+      const logoBoxH = lh + bgPad * 2;
+
+      // 1. Desenha o fundo branco carregando a sombra do save() inicial
+      fillRoundRect(ctx, logoBoxX, logoBoxY, logoBoxW, logoBoxH, radius, "#ffffff");
       
-      fillRoundRect(ctx, padX, centerY - lh / 2 - bgPad, lw + bgPad * 2, lh + bgPad * 2, radius, "#ffffff");
+      // 2. Removemos a sombra restaurando o contexto AGORA, antes de desenhar a imagem
+      ctx.restore(); 
       
+      // 3. Aplica CLIPE (Máscara de Recorte) para garantir que a logo NÃO VAZA as bordas arredondadas
+      ctx.save();
+      roundRect(ctx, logoBoxX, logoBoxY, logoBoxW, logoBoxH, radius);
+      ctx.clip();
       ctx.drawImage(logo, padX + bgPad, centerY - lh / 2, lw, lh);
       ctx.restore();
     } catch (e) {
