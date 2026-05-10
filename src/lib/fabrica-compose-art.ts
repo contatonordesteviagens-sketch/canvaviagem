@@ -2411,7 +2411,20 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
         const benefitsCountV2 = Math.max(1, benefitsListV2.length);
 
-        const priceBlockW = Math.round(width * 0.66);
+        // Calculate dynamic width for the price box to minimize dead side spaces.
+        const priceStrV2 = mainPrice || `${curSym} ${price}`;
+        const topLabelTxt = (topLabel || "por apenas").toString();
+        
+        ctx.font = "700 24px Inter, Arial, sans-serif";
+        const w1 = ctx.measureText(topLabelTxt).width;
+        ctx.font = "900 64px Inter, Arial, sans-serif";
+        const w2 = ctx.measureText(priceStrV2).width;
+        ctx.font = "600 22px Inter, Arial, sans-serif";
+        const w3 = ctx.measureText(bottomSuffix).width;
+        
+        const maxContentW = Math.max(w1, w2, w3);
+        // Set block width to content + padding (80px total pad), clamped between 40% and 80% of canvas.
+        const priceBlockW = Math.min(width * 0.8, Math.max(width * 0.40, Math.round(maxContentW + 80)));
         const priceCardH = 168;
         const priceCardX = Math.round((width - priceBlockW) / 2);
         const priceCardY = panelBottom - priceCardH;
@@ -2420,10 +2433,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.fillStyle = v2CardLabel; 
         ctx.font = "700 24px Inter, Arial, sans-serif";
         ctx.textAlign = "center";
-        safeFillText(ctx, (topLabel || "por apenas").toString(), priceCardX + priceBlockW / 2, priceCardY + 40, priceBlockW - 20, 14);
+        safeFillText(ctx, topLabelTxt, priceCardX + priceBlockW / 2, priceCardY + 40, priceBlockW - 30, 14);
         
         ctx.fillStyle = v2CardLabel;
-        const priceStrV2 = mainPrice || `${curSym} ${price}`;
         let pfsV2 = 64;
         ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
         while (ctx.measureText(priceStrV2).width > priceBlockW - 40 && pfsV2 > 28) {
@@ -2438,8 +2450,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.textAlign = "left";
 
         const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
-        const benefitFontSize = benefitRowsV2 <= 2 ? 30 : 25;
-        const benefitGap = benefitRowsV2 <= 2 ? 58 : 46;
+        // Scaled font size and gap to make highlight text bigger and reduce bottom white space.
+        const benefitFontSize = benefitRowsV2 <= 2 ? 36 : 32;
+        const benefitGap = benefitRowsV2 <= 2 ? 72 : 58;
         const benefitsBlockH = benefitRowsV2 * benefitGap;
         const benefitsTopPad = 32;
         const benefitsBottomPad = 28;
