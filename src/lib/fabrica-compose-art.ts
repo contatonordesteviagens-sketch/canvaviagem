@@ -408,8 +408,8 @@ async function drawFinalBranding(
   const veilStartY = footerY - 80; // Aumentado de 50 para 80 para garantir que o texto não fique no "limbo"
   const grad = ctx.createLinearGradient(0, veilStartY, 0, ch);
   grad.addColorStop(0, "rgba(0,0,0,0.0)");
-  grad.addColorStop(0.2, "rgba(0,0,0,0.20)"); // Suavizado para ~20%
-  grad.addColorStop(1, "rgba(0,0,0,0.35)"); // Suavizado para ~35% na base máxima
+  grad.addColorStop(0.2, "rgba(0,0,0,0.30)"); // Aumentado de 0.20 para 0.30
+  grad.addColorStop(1, "rgba(0,0,0,0.55)"); // Aumentado de 0.35 para 0.55 conforme solicitação do usuário para contraste
   
   ctx.save();
   ctx.fillStyle = grad;
@@ -2454,7 +2454,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const benefitFontSize = benefitRowsV2 <= 2 ? 36 : 32;
         const benefitGap = benefitRowsV2 <= 2 ? 72 : 58;
         const benefitsBlockH = benefitRowsV2 * benefitGap;
-        const benefitsTopPad = 32;
+        const benefitsTopPad = 64; // Aumentado de 32 para 64 para 'descer' as informações em relação à faixa preta
         const benefitsBottomPad = 28;
         const benefitsAreaH = benefitsTopPad + benefitsBlockH + benefitsBottomPad;
 
