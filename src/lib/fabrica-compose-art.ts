@@ -2427,7 +2427,18 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const priceBlockW = Math.min(width * 0.8, Math.max(width * 0.40, Math.round(maxContentW + 80)));
         const priceCardH = 168;
         const priceCardX = Math.round((width - priceBlockW) / 2);
-        const priceCardY = panelBottom - priceCardH;
+        const priceCardY = panelBottom - priceCardH - 75; // Subido 75px para desgrudar da sombra e dar ar superior
+
+        // Adiciona o período da viagem centralizado logo acima do preço, como sugerido pelo Diretor de Arte
+        if (travelPeriod && travelPeriod.trim()) {
+          ctx.save();
+          ctx.fillStyle = v2BenefitColor;
+          ctx.textAlign = "center";
+          ctx.font = "800 32px Inter, Arial, sans-serif";
+          ctx.fillText(travelPeriod.trim().toUpperCase(), width / 2, priceCardY - 42);
+          ctx.restore();
+        }
+
         fillRoundRect(ctx, priceCardX, priceCardY, priceBlockW, priceCardH, 16, v2CardBg);
         
         ctx.fillStyle = v2CardLabel; 
@@ -2478,13 +2489,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.textAlign = "left";
         let v2Size = 52;
         ctx.font = `900 ${v2Size}px Inter, Arial, sans-serif`;
-        const destUpper = destination.toUpperCase();
-        while (ctx.measureText(destUpper).width > contentWidth && v2Size > 28) {
+        const resolvedTitle = (titleText || destination).toUpperCase();
+        while (ctx.measureText(resolvedTitle).width > contentWidth && v2Size > 28) {
           v2Size -= 4;
           ctx.font = `900 ${v2Size}px Inter, Arial, sans-serif`;
         }
         ctx.textBaseline = "middle";
-        safeFillText(ctx, destUpper, left, faixaY + faixaH / 2, width - left - 40, 20);
+        safeFillText(ctx, resolvedTitle, left, faixaY + faixaH / 2, width - left - 40, 20);
         ctx.textBaseline = "alphabetic";
 
         const benefitsTop = faixaY + faixaH + benefitsTopPad;
