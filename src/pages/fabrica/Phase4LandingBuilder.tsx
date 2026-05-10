@@ -12,6 +12,7 @@ import {
   Copy,
   ExternalLink,
   Sparkles,
+  Image as ImageIcon,
   ImagePlus,
   Pencil,
   Check,
@@ -32,6 +33,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   const [downloadCount, setDownloadCount] = useState(0);
   const [autoSyncDone, setAutoSyncDone] = useState(false);
   const [autoSyncFields, setAutoSyncFields] = useState<string[]>([]);
+  const [pickingHeroImage, setPickingHeroImage] = useState(false);
 
   // ── AUTO-SYNC: Injeta dados da Fase 3 na Fase 4 na primeira montagem ──
   // Só atua se o usuário ainda não personalizou o site (campos padrão).
@@ -340,6 +342,90 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             onChange={(v) => updSite({ heroCtaLabel: v })}
             placeholder="Falar no WhatsApp"
           />
+
+          {/* NOVO: Editor dinâmico de Imagem de Fundo / Capa do Site */}
+          <div className="pt-3 mt-3 border-t border-white/10">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[10px] font-bold text-white/60 uppercase tracking-wider flex items-center gap-1">
+                <ImageIcon className="w-3 h-3 text-amber-400/70" /> Fundo do Site (Banner)
+              </label>
+              <button
+                onClick={() => setPickingHeroImage(!pickingHeroImage)}
+                className={`text-[10px] px-2 py-1 rounded font-medium transition-colors flex items-center gap-1 ${
+                  pickingHeroImage ? "bg-red-500/20 text-red-300" : "bg-white/[0.06] hover:bg-white/[0.1] text-amber-300"
+                }`}
+              >
+                {pickingHeroImage ? "Fechar" : "Trocar Imagem"}
+              </button>
+            </div>
+            
+            {!pickingHeroImage && (
+              <div className="h-20 w-full bg-black/20 rounded-lg overflow-hidden relative group border border-white/5">
+                <img 
+                  src={state.siteContent.heroImageUrl || state.siteContent.galleryImages?.[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80"} 
+                  className="w-full h-full object-cover opacity-60 transition-opacity group-hover:opacity-80" 
+                  alt="Banner atual"
+                />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span className="text-[9px] font-bold tracking-wider uppercase text-white/70 bg-black/60 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
+                    Imagem de Fundo Ativa
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {pickingHeroImage && (
+              <div className="bg-black/40 border border-white/10 rounded-xl p-3 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+                 <p className="text-[10px] text-white/40">Selecione uma imagem do seu banco gerado automaticamente:</p>
+                 {state.siteContent.galleryImages.length > 0 ? (
+                   <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto p-1 custom-scrollbar">
+                      {state.siteContent.galleryImages.map((url, i) => (
+                        <button
+                          key={i}
+                          onClick={() => {
+                            updSite({ heroImageUrl: url });
+                            setPickingHeroImage(false);
+                            toast.success("Banner atualizado!");
+                          }}
+                          className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                            (state.siteContent.heroImageUrl === url || (!state.siteContent.heroImageUrl && i === 0)) ? "border-amber-400" : "border-white/10 hover:border-white/40"
+                          }`}
+                        >
+                          <img src={url} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                   </div>
+                 ) : (
+                   <div className="text-[10px] text-white/40 text-center italic py-4 border border-dashed border-white/10 rounded-lg">
+                      Ainda não há imagens geradas no seu banco.
+                   </div>
+                 )}
+                 
+                 <div className="flex gap-2 items-center pt-2 border-t border-white/10">
+                    <input
+                      placeholder="Cole link externo (https://...)"
+                      onChange={(e) => {
+                         if (e.target.value.startsWith("http")) {
+                            updSite({ heroImageUrl: e.target.value });
+                            toast.success("Link de fundo aplicado!");
+                         }
+                      }}
+                      className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-white/30 outline-none focus:border-white/30"
+                    />
+                    <button
+                      onClick={() => {
+                        updSite({ heroImageUrl: "" });
+                        setPickingHeroImage(false);
+                        toast.success("Fundo resetado ao padrão");
+                      }}
+                      className="px-2 py-1.5 rounded-lg bg-white/[0.06] text-white/60 text-[10px] hover:bg-red-500/20 hover:text-red-300 transition-colors"
+                    >
+                      Limpar
+                    </button>
+                 </div>
+              </div>
+            )}
+          </div>
         </div>
       </FabricaCard>
 

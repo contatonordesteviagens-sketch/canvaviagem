@@ -51,6 +51,7 @@ export interface SiteContent {
   finalCtaTitle: string;
   finalCtaLabel: string;
   faq: Array<{ q: string; a: string }>;
+  heroImageUrl?: string; // Imagem de fundo do banner principal do site
   galleryImages: string[]; // banco de imagens geradas pra reuso
   sections: SectionVisibility;
 }
@@ -187,6 +188,7 @@ const defaultState: FabricaState = {
       { q: "E se eu precisar cancelar?", a: "Cada pacote tem sua política. Você recebe o contrato com tudo claro antes de fechar." },
       { q: "Como tira dúvidas?", a: "Atendimento direto pelo WhatsApp, com resposta em até 1h em horário comercial." },
     ],
+    heroImageUrl: "",
     galleryImages: [],
     sections: {
       hero: true,

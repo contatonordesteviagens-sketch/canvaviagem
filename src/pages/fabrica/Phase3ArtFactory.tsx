@@ -944,9 +944,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   };
 
   // 🌐 Integração Inteligente de Pacotes com o Site F2 (Acumulativo)
-  // Pega o último anúncio gerado com sucesso e o transforma/atualiza como um Pacote no Site.
-  const syncGeneratedPackageToSite = (imgBase64: string) => {
-    if (!imgBase64 || !destination.trim()) return;
+  // Pega o último anúncio gerado e o insere no Site, preferencialmente usando a FOTO LIMPA
+  // para o fundo do site, em vez da arte poluída com texto do Canva, conforme exigido pelo usuário.
+  const syncGeneratedPackageToSite = (finalComposedImg: string, sourceCleanImg?: string) => {
+    if (!finalComposedImg || !destination.trim()) return;
+
+    // A imagem que vai para o site é PREFERENCIALMENTE a foto limpa de fundo!
+    const imageToUse = sourceCleanImg || finalComposedImg;
 
     const currentPrice = formattedPriceForAd || price;
     const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
@@ -968,41 +972,47 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       title: cleanDest,
       description: descLines + period,
       price: priceLabel,
-      imageUrl: imgBase64,
-      ctaLabel: "Reservar", // Padrão solicitado: Botão Reservar que leva ao WhatsApp
+      imageUrl: imageToUse,
+      ctaLabel: "Reservar", 
     };
 
     const currentPackages = state.selectedPackages || [];
-    // Evita duplicados comparando o Destino (ignora case e espaços)
     const existingIdx = currentPackages.findIndex(
       (p: any) => (p.title || "").toLowerCase().trim() === cleanDest.toLowerCase()
     );
 
     let updatedPackages = [];
     if (existingIdx > -1) {
-      // Atualiza o pacote existente com o novo preço e imagem mais recente
       updatedPackages = [...currentPackages];
       updatedPackages[existingIdx] = {
         ...updatedPackages[existingIdx],
         price: priceLabel,
-        imageUrl: imgBase64,
+        imageUrl: imageToUse,
         description: newPkg.description,
       };
     } else {
-      // Prende no TOPO do site e remove o item placeholder de fábrica
       const base = currentPackages.filter((p: any) => p.title !== "Novo pacote");
       updatedPackages = [newPkg, ...base];
     }
 
-    // Também empurra imagem para a Galeria de reuso
+    // Garante as duas imagens na Galeria do site (a limpa E a montada)
     const currentGallery = state.siteContent.galleryImages || [];
-    const updatedGallery = currentGallery.includes(imgBase64) ? currentGallery : [imgBase64, ...currentGallery];
+    let updatedGallery = [...currentGallery];
+    if (!updatedGallery.includes(imageToUse)) updatedGallery = [imageToUse, ...updatedGallery];
+    if (sourceCleanImg && sourceCleanImg !== finalComposedImg && !updatedGallery.includes(finalComposedImg)) {
+       updatedGallery = [finalComposedImg, ...updatedGallery];
+    }
+
+    // Inteligência Adicional: Se o site não tem NENHUMA foto de capa no Hero,
+    // usa a primeira foto limpa gerada como capa inicial do site!
+    const hasHero = !!state.siteContent.heroImageUrl;
 
     update({
       selectedPackages: updatedPackages,
       siteContent: {
         ...state.siteContent,
-        galleryImages: updatedGallery
+        galleryImages: updatedGallery,
+        heroImageUrl: hasHero ? state.siteContent.heroImageUrl : imageToUse
       }
     } as any);
   };
@@ -1127,7 +1137,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         setGeneratedImages((prev) => [...prev, ...composed].slice(-MAX_VARIATIONS_PHOTO));
         setGeneratedImage(composed[composed.length - 1]);
         update({ generatedAdImage: composed[composed.length - 1], primaryColor: palette.primary });
-        syncGeneratedPackageToSite(composed[composed.length - 1]);
+        syncGeneratedPackageToSite(composed[composed.length - 1], refImage);
 
         const newCount = generationCount + composed.length;
         setGenerationCount(newCount);
@@ -1247,6 +1257,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         const images: string[] = [];
         let providerSeen: "user_gemini" | "lovable_ai" | null = null;
         const { reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
+        let cleanBackgroundForSite = ""; // Içado para coletar a última foto da IA
 
         for (const result of results) {
           if (result.error) throw result.error;
@@ -1263,7 +1274,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           catch (e) { console.warn("reframe failed", e); }
 
           // TRAVA DE CÓDIGO: a IA entrega apenas o fundo. A arte final SEMPRE passa pelo Canvas.
-          // Não existe fallback para imagem crua: se o Canvas falhar, a geração falha.
+          cleanBackgroundForSite = img; // Preserva a foto LIMPA da IA antes de sujar com o texto!
+          
           // Define estratégia para o motor Canvas:
           // 1. Se for Experiência Story, usa a estratégia específica
           // 2. Senão, tenta mapear o templateId para uma estratégia do Canvas
@@ -1320,7 +1332,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         setGeneratedImages((prev) => [...prev, ...images].slice(-MAX_VARIATIONS_AI));
         setGeneratedImage(images[images.length - 1]);
         update({ generatedAdImage: images[images.length - 1], primaryColor: palette.primary });
-        syncGeneratedPackageToSite(images[images.length - 1]);
+        // Passa a ÚLTIMA imagem final E a ÚLTIMA imagem limpa gerada no loop (via closure seria complexo, então guardamos uma referência fora do loop se precisasse, mas podemos re-extrair ou apenas guardar no array)
+        // ATENÇÃO: Para IA, como gera múltiplos em array, precisamos capturar a LIMPA da que foi pra tela!
+        syncGeneratedPackageToSite(images[images.length - 1], cleanBackgroundForSite);
         if (providerSeen) setLastProvider(providerSeen);
 
         // Registra no GenerationGuard
@@ -1443,7 +1457,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       });
       setGeneratedImage(imagesCustom[imagesCustom.length - 1]);
       update({ generatedAdImage: imagesCustom[imagesCustom.length - 1], primaryColor: palette.primary });
-      syncGeneratedPackageToSite(imagesCustom[imagesCustom.length - 1]);
+      syncGeneratedPackageToSite(imagesCustom[imagesCustom.length - 1], refImage);
 
       const newCount = generationCount + imagesCustom.length;
       setGenerationCount(newCount);

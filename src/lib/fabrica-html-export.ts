@@ -1,4 +1,4 @@
-﻿import type { FabricaState } from "@/hooks/useFabricaContext";
+import type { FabricaState } from "@/hooks/useFabricaContext";
 
 const esc = (s: string) =>
   String(s ?? "")
@@ -62,7 +62,7 @@ export function buildLandingHTML(state: FabricaState): string {
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   };
 
-  const heroImg = sc.galleryImages?.[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80";
+  const heroImg = sc.heroImageUrl || sc.galleryImages?.[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80";
   
   return `<!DOCTYPE html>
 <html lang="pt-BR">
