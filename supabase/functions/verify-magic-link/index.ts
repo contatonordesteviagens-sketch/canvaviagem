@@ -70,8 +70,8 @@ serve(async (req) => {
     const userPhone = tokenData.phone;
 
     // Verificar se o usuário existe de forma escalável
-    const { data: listData, error: userError } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-    const existingUser = listData?.users?.find(u => u.email === email) ?? null;
+    const { data: userData } = await supabaseAdmin.auth.admin.getUserByEmail(email);
+    const existingUser = userData?.user;
 
     let userId: string;
 

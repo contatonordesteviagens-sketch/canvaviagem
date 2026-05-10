@@ -86,13 +86,12 @@ serve(async (req) => {
 
       // 1. Garantir que o usuário existe
       const normalizedEmail = email.toLowerCase().trim();
-      const { data: listData, error: listUsersError } = await supabaseAdmin.auth.admin.listUsers({
-        page: 1,
-        perPage: 1000,
-      });
-      if (listUsersError) throw listUsersError;
-
-      const existingUser = listData?.users?.find((user) => user.email?.toLowerCase() === normalizedEmail);
+      const { data: userData, error: getUserError } = await supabaseAdmin.auth.admin.getUserByEmail(normalizedEmail);
+      if (getUserError) {
+        // Se não encontrar (404 ou null user), não é erro fatal, prossiga
+        console.log("[ABACATEPAY] Informação da busca:", getUserError.message);
+      }
+      const existingUser = userData?.user;
       let userId: string;
 
       if (existingUser) {
@@ -112,7 +111,7 @@ serve(async (req) => {
       // 2. Atualizar Perfil
       const profileUpdate: any = {
         user_id: userId,
-        email,
+        email: normalizedEmail,
         name,
         updated_at: new Date().toISOString(),
       };
@@ -142,7 +141,7 @@ serve(async (req) => {
         const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
 
         await supabaseAdmin.from("magic_link_tokens").insert({
-          email: email.toLowerCase().trim(),
+          email: normalizedEmail,
           token,
           expires_at: expiresAt.toISOString(),
           name,
@@ -153,7 +152,7 @@ serve(async (req) => {
 
         await resend.emails.send({
           from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
-          to: [email],
+          to: [normalizedEmail],
           subject: "🔐 Seu Acesso Premium - Canva Viagem",
           html: `
             <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; background: #f9fafb; border-radius: 20px;">

@@ -72,11 +72,12 @@ async function ensureUserAndOnboarding(
   phone: string | null,
   productId?: string
 ) {
-  logStep("Starting onboarding for", { email: redactEmail(email), productId });
+  const normalizedEmail = email.toLowerCase().trim();
+  logStep("Starting onboarding for", { email: redactEmail(normalizedEmail), productId });
 
   // 1. Check/Create User de forma escalável
-  const { data: userData } = await supabase.auth.admin.getUserByEmail(email);
-  const existingUser = userData?.user;
+  const { data: userData } = await supabase.auth.admin.getUserByEmail(normalizedEmail);
+  let existingUser = userData?.user;
   let userId: string;
 
   if (existingUser) {
@@ -84,22 +85,36 @@ async function ensureUserAndOnboarding(
     userId = existingUser.id;
   } else {
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-      email,
+      email: normalizedEmail,
       email_confirm: true,
     });
+    
     if (createError) {
-      logStep("ERROR: Failed to create user", { error: createError.message });
-      return;
+      // Tratar possível corrida ou usuário já registrado de forma silenciosa que não quebre o fluxo
+      if (createError.message?.includes("registered") || createError.message?.includes("exists")) {
+        const { data: retryData } = await supabase.auth.admin.getUserByEmail(normalizedEmail);
+        if (retryData?.user) {
+          logStep("User found on retry after creation conflict", { userId: retryData.user.id });
+          userId = retryData.user.id;
+        } else {
+          logStep("ERROR: Conflict reported but user still not found on retry", { error: createError.message });
+          return;
+        }
+      } else {
+        logStep("ERROR: Failed to create user", { error: createError.message });
+        return;
+      }
+    } else {
+      userId = newUser.user.id;
+      logStep("New user created", { userId });
     }
-    userId = newUser.user.id;
-    logStep("New user created", { userId });
   }
 
   // 2. Upsert Profile
   const profileData: any = {
     user_id: userId,
-    email,
-    name: name || email.split('@')[0],
+    email: normalizedEmail,
+    name: name || normalizedEmail.split('@')[0],
     stripe_customer_id: stripeCustomerId,
     updated_at: new Date().toISOString(),
   };
@@ -127,7 +142,7 @@ async function ensureUserAndOnboarding(
   let magicLink: string | undefined = undefined;
 
   const { error: tokenError } = await supabase.from("magic_link_tokens").insert({
-    email: email.toLowerCase().trim(),
+    email: normalizedEmail,
     token,
     expires_at: expiresAt.toISOString(),
     name: name,
@@ -138,18 +153,18 @@ async function ensureUserAndOnboarding(
     logStep("ERROR: Failed to create magic link token", { error: tokenError.message });
   } else {
     magicLink = `${siteUrl}/auth/verify?token=${token}`;
-    logStep("Magic link token created successfully", { email: redactEmail(email) });
+    logStep("Magic link token created successfully", { email: redactEmail(normalizedEmail) });
   }
 
   // 5. Send emails via Resend if available
   if (resend && magicLink) {
-    await sendAutoMagicLinkEmail(resend, email, magicLink, name || "Visitante");
-    await sendWelcomeEmail(resend, email);
+    await sendAutoMagicLinkEmail(resend, normalizedEmail, magicLink, name || "Visitante");
+    await sendWelcomeEmail(resend, normalizedEmail);
   }
 
   // 6. Trigger Zaia Welcome (with the generated magic link for WhatsApp delivery!)
   await triggerZaiaWebhook("ZAIA_WEBHOOK_WELCOME", {
-    email,
+    email: normalizedEmail,
     name: name,
     phone: phone || undefined,
     magic_link: magicLink,
@@ -238,6 +253,21 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
     }
   }
 
+  // Backup: se ainda for o padrão ou falhou, buscar dos Line Items da Session
+  if (productId === "prod_TkvaozfpkAcbpM" || !productId) {
+    try {
+      logStep("Attempting fallback product ID fetch from session line items", { sessionId: session.id });
+      const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 1 });
+      const lineProductId = lineItems.data[0]?.price?.product as string;
+      if (lineProductId) {
+        productId = lineProductId;
+        logStep("Retrieved product ID from line items backup", { productId });
+      }
+    } catch (e: any) {
+      logStep("ERROR in line items fallback", { error: e.message });
+    }
+  }
+
   await ensureUserAndOnboarding(supabase, resend, email, customerName, stripeCustomerId, stripeSubscriptionId, customerPhone, productId);
 }
 
@@ -287,6 +317,15 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
           }
         } catch (e: any) {
           logStep("ERROR retrieving subscription for product ID (invoice)", { error: e.message });
+        }
+      }
+
+      // Backup: Extrair diretamente dos line items do invoice recebido (sem call extra)
+      if (productId === "prod_TkvaozfpkAcbpM" || !productId) {
+        const lineProductId = invoice.lines?.data?.[0]?.price?.product as string;
+        if (lineProductId) {
+          productId = lineProductId;
+          logStep("Retrieved product ID from invoice lines data", { productId });
         }
       }
 

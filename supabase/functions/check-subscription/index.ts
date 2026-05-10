@@ -99,7 +99,7 @@ serve(async (req) => {
         .eq("user_id", userId)
         .single();
       
-      if (!localSubError && localSub && localSub.status === "active") {
+      if (!localSubError && localSub && localSub.status === "active" && localSub.product_id && localSub.product_id !== "prod_TkvaozfpkAcbpM") {
         const endDate = localSub.current_period_end;
         if (!endDate || new Date(endDate) > new Date()) {
           logStep("Active subscription found in local database", { productId: localSub.product_id });
@@ -161,6 +161,53 @@ serve(async (req) => {
           }
 
           return new Response(JSON.stringify({ subscribed: true, product_id: productId, subscription_end: subscriptionEnd }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
+
+        // --- FALLBACK: Verificação de Pagamentos Únicos (One-time) Recentes ---
+        logStep("Checking fallback checkout sessions for one-time payments");
+        const checkoutSessions = await stripe.checkout.sessions.list({
+          customer: customerId,
+          status: 'complete',
+          limit: 5,
+        });
+
+        const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
+        const validSession = checkoutSessions.data.find((s: any) =>
+          s.payment_status === 'paid' &&
+          s.mode === 'payment' &&
+          s.created > thirtyDaysAgo
+        );
+
+        if (validSession) {
+          logStep("Found valid recent one-time session", { sessionId: validSession.id });
+          
+          let productId: string | null = null;
+          try {
+            const lineItems = await stripe.checkout.sessions.listLineItems(validSession.id, { limit: 1 });
+            productId = (lineItems.data[0]?.price?.product as string) || null;
+            logStep("Resolved product ID from session items", { productId });
+          } catch (lineErr: any) {
+            logStep("Warning: failed to fetch session items", { error: lineErr.message });
+          }
+
+          // Define fim de período arbitrário de 30 dias após a compra
+          const expiryDate = new Date((validSession.created + (30 * 24 * 60 * 60)) * 1000).toISOString();
+
+          if (dbClient) {
+            await dbClient.from("subscriptions").upsert({
+              user_id: userId,
+              status: "active",
+              stripe_customer_id: customerId,
+              stripe_subscription_id: null,
+              product_id: productId,
+              current_period_end: expiryDate,
+            }, { onConflict: "user_id" });
+          }
+
+          return new Response(JSON.stringify({ subscribed: true, product_id: productId, subscription_end: expiryDate }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 200,
           });
