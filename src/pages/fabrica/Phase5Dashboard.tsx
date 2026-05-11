@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,6 +29,48 @@ export const Phase5Dashboard = () => {
   const [showUrlHelp, setShowUrlHelp] = useState(false);
   const [showLivePreview, setShowLivePreview] = useState(false);
   const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
+
+  const [isPublishing, setIsPublishing] = useState(false);
+  
+  const handleDashboardPublish = async () => {
+    if (!user?.id) {
+      toast.error("Faça login para publicar.");
+      return;
+    }
+    
+    setIsPublishing(true);
+    const loadingToast = toast.loading("Publicando e ativando seu site...");
+    
+    try {
+      const html = buildLandingHTML(state, user.id);
+      const blob = new Blob([html], { type: 'text/html' });
+      const fileName = `sites/${user.id}.html`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from("thumbnails")
+        .upload(fileName, blob, {
+          contentType: 'text/html',
+          upsert: true
+        });
+        
+      if (uploadError) throw uploadError;
+      
+      toast.dismiss(loadingToast);
+      toast.success("🚀 SITE PUBLICADO E ATIVO COM SUCESSO!");
+      
+      if (typeof window !== "undefined" && window.confetti) {
+         window.confetti();
+      }
+      
+    } catch (err) {
+      console.error("Publish error:", err);
+      toast.dismiss(loadingToast);
+      toast.error("Erro ao publicar site.");
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
 
   // Gera a prévia ao vivo instantaneamente sem depender de DNS ou servidores
   useEffect(() => {
@@ -276,111 +319,49 @@ export const Phase5Dashboard = () => {
                   return (
                      <>
                         <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 group transition-all">
-                           <div className="text-[10px] font-bold text-emerald-300/80 uppercase tracking-wider mb-1">Link Oficial do Seu Site</div>
-                           <div className="font-mono text-[11px] text-white/70 truncate bg-black/30 p-2 rounded border border-white/5 mb-3">
-                              {siteUrl}
-                           </div>
-                           
-                           <div className="grid grid-cols-2 gap-2">
+                           <div className="flex items-center justify-between mb-2">
+                              <div className="text-[10px] font-bold text-emerald-300/80 uppercase tracking-wider">Link Oficial Reservado</div>
                               <button 
                                  onClick={() => {
                                     navigator.clipboard.writeText(siteUrl);
-                                    alert("Link copiado para a �rea de transfer�ncia!");
+                                    toast.success("Link copiado para a área de transferência!");
                                  }}
-                                 className="flex-1 py-2.5 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+                                 className="text-[10px] text-white/40 hover:text-white flex items-center gap-1"
+                                 title="Copiar Link"
                               >
-                                 <ExternalLink className="w-3.5 h-3.5" /> Copiar Link
+                                 <ExternalLink className="w-3 h-3" /> Copiar
+                              </button>
+                           </div>
+                           <div className="font-mono text-[11px] text-white/70 truncate bg-black/30 p-2 rounded border border-white/5 mb-3 select-all">
+                              {siteUrl}
+                           </div>
+                           
+                           <div className="flex flex-col gap-2.5">
+                              <button 
+                                 onClick={handleDashboardPublish}
+                                 disabled={isPublishing}
+                                 className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-110 disabled:opacity-50 text-black text-xs font-black flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-900/20"
+                              >
+                                 {isPublishing ? (
+                                    <><Loader2 className="w-4 h-4 animate-spin" /> PUBLICANDO...</>
+                                 ) : (
+                                    <><Sparkles className="w-4 h-4" /> ATIVAR / ATUALIZAR SITE AGORA</>
+                                 )}
                               </button>
                               
                               <a 
                                  href={siteUrl}
                                  target="_blank"
                                  rel="noreferrer"
-                                 className="flex-1 py-2.5 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black flex items-center justify-center gap-2 transition-all"
+                                 className="w-full py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all"
                               >
-                                 <Eye className="w-3.5 h-3.5" /> Acessar Site
+                                 <Eye className="w-3.5 h-3.5" /> Visualizar Site Online
                               </a>
                            </div>
+                           <p className="text-[9px] text-white/40 mt-2 text-center">
+                              ℹ️ Você precisa clicar em Ativar acima pelo menos uma vez para o link acima carregar e não dar erro 404.
+                           </p>
                         </div>
-
-                        <button 
-                           onClick={() => setShowLivePreview(true)}
-                           className="w-full py-3.5 px-4 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] text-white/60 font-bold flex items-center justify-center gap-2 text-xs transition-all cursor-pointer"
-                        >
-                           Visualizar Simulador Interno
-                        </button>
-                     </>
-                  );
-               })()}
-             </div>
-          </div>
-
-          {/* 🧠 PONTO 6: INTELIG�NCIA ARTIFICIAL (M�TRICAS COM INSIGHT) */}
-          <div className="bg-white/[0.03] border border-indigo-500/20 rounded-2xl p-5 relative overflow-hidden group">
-             <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 blur-[50px] rounded-full" />
-             <div className="flex items-center gap-2 mb-3">
-               <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">
-                  <Sparkles className="w-4 h-4 animate-pulse" />
-               </div>
-               <h3 className="text-xs font-black text-white uppercase tracking-wider">Insight da IA Inteligente</h3>
-             </div>
-             <div className="text-[11px] leading-relaxed text-white/80">
-                {stats.clicks > 0 ? (
-                   <p>Detectamos tr�fego no seu site. Para aumentar a convers�o de <strong>{((stats.leads / (stats.visits || 1)) * 100).toFixed(1)}%</strong>, sugerimos publicar o link da p�gina de <span className="text-indigo-300 font-bold">{state.destinos?.[0] || "Destinos"}</span> diretamente nos seus stories agora.</p>
-                ) : (
-                   <p>Seu site est� pronto, mas aguarda visitas. ?? <strong>Dica da IA:</strong> Gere um an�ncio de <span className="text-indigo-300 font-bold">{state.destinos?.[0] || "pacote promocional"}</span> na F�brica e impulsione por 3 dias para colher seus primeiros leads.</p>
-                )}
-             </div>
-          </div>
-
-          {/* 📅 PONTO 7: EFEITO CHICLETE (ROTEIRO DIN�MICO DI�RIO) */}
-          <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 overflow-hidden relative group">
-             <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 group-hover:bg-amber-500/20 transition-colors">
-                    <Calendar className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-black text-white text-sm">📱 Roteiro de Stories de Hoje</h3>
-                    <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">{formatString(currentDay)}</p>
-                  </div>
-                </div>
-                <span className="text-[9px] font-black bg-white/5 text-white/60 px-2 py-0.5 rounded border border-white/10">DICA DI�RIA</span>
-             </div>
-             
-             <div className="p-4 rounded-xl bg-gradient-to-br from-black/40 to-black/10 border border-white/5 relative">
-               {(() => {
-                  const dayNum = new Date().getDay(); 
-                  let script = { t: "Curiosidade de Destino", d: "Poste 1 foto de um destino ex�tico e fa�a uma enquete: 'Quem voc� levaria?'" };
-                  
-                  if (dayNum === 1) script = { t: "Dica de Planejamento", d: "Comece a semana dando uma dica de economia na mala de viagem. Isso gera autoridade!" };
-                  else if (dayNum === 3) script = { t: "Quebra de Obje��o", d: "Explique por que comprar com agente de viagem � mais seguro do que no buscador online." };
-                  else if (dayNum === 5) script = { t: "Chamada de Oferta", d: "Sexta � dia de sonhar! Publique seu pacote principal com link direto para o Whats." };
-                  else if (dayNum === 0 || dayNum === 6) script = { t: "Bastidores / Relax", d: "Mostre um pouco do seu dia ou de um cliente que viajou. Gera conex�o!" };
-                  
-                  return (
-                     <>
-                        <div className="text-[10px] font-black text-amber-400 uppercase mb-1 flex items-center gap-1">
-                           <Target className="w-3 h-3" /> {script.t}
-                        </div>
-                        <p className="text-xs font-medium text-white/80 leading-relaxed italic">
-                           "{script.d}"
-                        </p>
-                     </>
-                  );
-               })()}
-             </div>
-             
-             <div className="mt-3 flex justify-end">
-               <button 
-                 onClick={() => setPhase(1)}
-                 className="text-[9px] font-extrabold uppercase tracking-widest text-white/40 hover:text-amber-400 flex items-center gap-1.5 transition-all cursor-pointer"
-               >
-                 Gerar Arte para o Tema <ArrowRight className="w-2.5 h-2.5" />
-               </button>
-             </div>
-          </div>
-        </div>
 
         {/* COLUNA 2: NOVIDADES DA SEMANA (PONTO 10) */}
         <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-6 flex flex-col">
