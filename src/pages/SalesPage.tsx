@@ -539,7 +539,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               Se você se identifica com algum desses, continue lendo.
             </p>
           </Reveal>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 100%), 1fr))",
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)",
             gap: 16, marginBottom: 36 }}>
             {PAINS.map((p, i) => (
               <Reveal key={p.title} delay={i * 0.05}>
