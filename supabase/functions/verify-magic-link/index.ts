@@ -18,6 +18,16 @@ serve(async (req) => {
     return new Response(JSON.stringify({ buckets: data, error }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
+  if (req.method === "GET" && req.url.includes("/upload_test")) {
+    const sup = createClient(Deno.env.get("SUPABASE_URL"), Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
+    const { data, error } = await sup.storage.from("thumbnails").upload("sites/server_test.html", new TextEncoder().encode("<h1>Hello Server</h1>"), {
+      contentType: "text/html",
+      upsert: true
+    });
+    return new Response(JSON.stringify({ success: !!data, error }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+
+
 
   try {
     const { token } = await req.json();
