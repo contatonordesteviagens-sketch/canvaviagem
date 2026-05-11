@@ -1,7 +1,7 @@
 import { useFabricaContext } from "@/hooks/useFabricaContext";
-import { useContentItems, useCaptions } from "@/hooks/useContent";
+import { useContentItems, useCaptions, useMarketingTools } from "@/hooks/useContent";
 import { getOfertasByNiche, type OfertaTemplate } from "@/data/fabrica-ofertas";
-import { Copy, ExternalLink, ArrowRight, CheckCircle2, Plus, Trash2, Pencil, X, Check, Package } from "lucide-react";
+import { Copy, ExternalLink, ArrowRight, CheckCircle2, Plus, Trash2, Pencil, X, Check, Package, Sparkles, Layout } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 
@@ -55,8 +55,9 @@ const generateId = () => `pkg_${Date.now()}_${Math.random().toString(36).slice(2
 
 export const Phase2Ativos = ({ onNext, onBack }: Props) => {
   const { state, toggleChecklist } = useFabricaContext();
-  const { data: videos = [] } = useContentItems(["video", "feed"]);
-  const { data: captions = [] } = useCaptions();
+  const { data: allContent = [], isLoading: loadingContent } = useContentItems(["video", "feed", "story", "weekly-story", "seasonal", "resource"]);
+  const { data: captions = [], isLoading: loadingCaptions } = useCaptions();
+  const { data: tools = [], isLoading: loadingTools } = useMarketingTools();
 
   // ── Package Manager ────────────────────────────────────────────────────────
   // ── Smart Package Linker ──
@@ -147,24 +148,38 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
     toast.success("Pacote duplicado");
   };
 
-  // ── Content filters ────────────────────────────────────────────────────────
+  // ── Smart Dynamic Content Engine ─────────────────────────────────────────────
   const userDestinos = state.destinos || [];
   const normalize = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  
   const matchesDestinos = (text: string) => {
     if (userDestinos.length === 0) return true;
-    const t = normalize(text);
+    const t = normalize(text || "");
     return userDestinos.some((d) => {
       const nd = normalize(d);
-      const main = nd.split(/[\s\-,]/)[0];
+      const main = nd.split(/[\s\-,]/)[0]; // Extrai apenas a primeira palavra da busca
       return t.includes(main);
     });
   };
-  const filteredVideos = userDestinos.length > 0
-    ? videos.filter((v: any) => matchesDestinos(v.title || "")).slice(0, 12)
-    : videos.slice(0, 8);
-  const filteredCaptions = userDestinos.length > 0
-    ? captions.filter((c: any) => matchesDestinos(c.destination || "") || matchesDestinos(c.text || "")).slice(0, 12)
-    : captions.slice(0, 6);
+
+  // Categoriza Conteúdos (allContent é injetado dinamicamente)
+  const videos = allContent.filter(c => c.type === 'video' || c.type === 'feed');
+  const stories = allContent.filter(c => c.type === 'story' || c.type === 'weekly-story' || c.type === 'seasonal');
+
+  // Filtra Vídeos com Fallback Inteligente
+  let filteredVideos = videos.filter((v: any) => matchesDestinos(v.title || "")).slice(0, 8);
+  if (filteredVideos.length === 0) filteredVideos = videos.slice(0, 6); // Fallback de segurança
+
+  // Filtra Stories
+  let filteredStories = stories.filter((s: any) => matchesDestinos(s.title || "")).slice(0, 6);
+  if (filteredStories.length === 0) filteredStories = stories.slice(0, 4); // Fallback
+
+  // Filtra Ferramentas de IA & Scripts
+  const filteredTools = tools.slice(0, 6); // Ferramentas são globais de agência
+
+  // Filtra Legendas com Fallback
+  let filteredCaptions = captions.filter((c: any) => matchesDestinos(c.destination || "") || matchesDestinos(c.text || "")).slice(0, 10);
+  if (filteredCaptions.length === 0) filteredCaptions = captions.slice(0, 4);
 
   const copy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -290,8 +305,10 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
       </FabricaCard>
 
       <FabricaCard title="🎬 Vídeos recomendados para seus destinos">
-        {filteredVideos.length === 0 ? (
-          <p className="text-white/50 text-sm">Carregando vídeos...</p>
+        {loadingContent ? (
+           <p className="text-white/40 text-xs animate-pulse">Sincronizando mídia...</p>
+        ) : filteredVideos.length === 0 ? (
+          <p className="text-white/50 text-sm">Nenhum vídeo encontrado.</p>
         ) : (
           <div className="space-y-2">
             {filteredVideos.map((v: any, i: number) => (
@@ -299,9 +316,62 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-extrabold flex-shrink-0" style={{ background: `${state.primaryColor}33`, color: state.primaryColor }}>{i + 1}</div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold text-white truncate">{v.title}</div>
-                  <div className="text-[11px] text-white/50">{v.category || "Conteúdo"} • {v.type}</div>
+                  <div className="text-[11px] text-white/50">{v.category || "Conteúdo"}</div>
                 </div>
                 <ExternalLink className="w-4 h-4 text-white/30 group-hover:text-white/70 transition-colors flex-shrink-0" />
+              </a>
+            ))}
+          </div>
+        )}
+      </FabricaCard>
+
+      <FabricaCard title="🤖 Robôs de IA e Ferramentas Estratégicas">
+        {loadingTools ? (
+          <div className="h-24 bg-white/[0.03] animate-pulse rounded-xl" />
+        ) : filteredTools.length === 0 ? (
+          <p className="text-white/40 text-sm">Nenhuma ferramenta carregada.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {filteredTools.map((tool: any) => (
+              <a key={tool.id} href={tool.url} target="_blank" rel="noopener" className="flex items-center gap-3 bg-gradient-to-br from-purple-500/5 to-blue-500/5 border border-white/[0.08] hover:border-purple-500/30 rounded-xl p-3.5 transition-all hover:shadow-lg hover:shadow-purple-500/5 group relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="w-9 h-9 rounded-xl bg-white/[0.06] flex items-center justify-center text-xl shadow-inner">{tool.icon || "🤖"}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-bold text-white leading-tight mb-0.5">{tool.title}</div>
+                  <div className="text-[10px] text-purple-300/80 flex items-center gap-1">
+                    <Sparkles className="w-2.5 h-2.5" /> Inteligência Artificial
+                  </div>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-white/20 group-hover:text-purple-300 transition-colors relative z-10" />
+              </a>
+            ))}
+          </div>
+        )}
+      </FabricaCard>
+
+      <FabricaCard title="📱 Stories e Templates Canva para Seus Destinos">
+        {loadingContent ? (
+          <div className="h-24 bg-white/[0.03] animate-pulse rounded-xl" />
+        ) : filteredStories.length === 0 ? (
+          <p className="text-white/40 text-sm">Sem stories correspondentes.</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {filteredStories.map((s: any) => (
+              <a key={s.id} href={s.url} target="_blank" rel="noopener" className="block group bg-white/[0.03] border border-white/[0.08] hover:border-emerald-500/30 rounded-xl overflow-hidden transition-all relative">
+                {s.image_url ? (
+                  <div className="aspect-[9/16] bg-zinc-900 overflow-hidden relative">
+                     <img src={s.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="" />
+                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                  </div>
+                ) : (
+                  <div className="aspect-[9/16] bg-gradient-to-b from-zinc-800 to-zinc-900 flex items-center justify-center text-white/10">
+                     <Layout className="w-8 h-8 opacity-20" />
+                  </div>
+                )}
+                <div className="absolute bottom-0 inset-x-0 p-3">
+                   <div className="text-[11px] font-bold text-white leading-tight line-clamp-2 group-hover:text-emerald-400 transition-colors">{s.title}</div>
+                   <div className="text-[9px] text-white/50 mt-1 uppercase font-extrabold tracking-widest">{s.subcategory || "Stories"}</div>
+                </div>
               </a>
             ))}
           </div>
