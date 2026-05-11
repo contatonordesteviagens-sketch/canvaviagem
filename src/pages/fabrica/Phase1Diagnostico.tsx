@@ -179,6 +179,8 @@ export const Phase1Diagnostico = ({ onComplete, onBack }: Props) => {
     reader.readAsDataURL(file);
   };
 
+  const [formStep, setFormStep] = useState(1);
+
   const finalize = () => {
     const result = calculateScore(state);
     update({
@@ -191,83 +193,197 @@ export const Phase1Diagnostico = ({ onComplete, onBack }: Props) => {
   };
 
   if (state.diagnosticoCompleto) {
-    return <DiagnosticoResult onNext={onComplete} onBack={onBack} onEdit={() => update({ diagnosticoCompleto: false })} />;
+    return <DiagnosticoResult onNext={onComplete} onBack={onBack} onEdit={() => { update({ diagnosticoCompleto: false }); setFormStep(1); }} />;
   }
 
   const nicheOptions = (state.agencyType && NICHES_BY_AGENCY[state.agencyType as AgencyType]) || NICHES_DEFAULT;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 backdrop-blur-xl">
-        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-6 flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
-          Perfil Estratégico da Agência
-        </h3>
-
-        <div className="space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FabField label="Nome da agência *" value={state.agencyName} onChange={(v) => update({ agencyName: v })} placeholder="Ex: Lua Cheia Viagens" />
-            <div>
-              <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Tipo de agência *</label>
-              <select
-                value={state.agencyType}
-                onChange={(e) => update({ agencyType: e.target.value as AgencyType })}
-                className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors"
-              >
-                <option value="" className="bg-zinc-900">Selecione...</option>
-                {AGENCY_TYPES.map((t) => (
-                  <option key={t.v} value={t.v} className="bg-zinc-900">{t.l}</option>
-                ))}
-              </select>
+      <div className="bg-white/[0.03] border border-white/[0.06] rounded-3xl p-6 backdrop-blur-xl overflow-hidden relative">
+        
+        {/* Steps Indicator */}
+        <div className="flex items-center justify-center gap-4 mb-8">
+          {[
+            { s: 1, l: "Perfil Estratégico" },
+            { s: 2, l: "Maturidade Digital" }
+          ].map((x) => (
+            <div key={x.s} className="flex items-center gap-2">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${formStep >= x.s ? 'text-black' : 'bg-white/10 text-white/40'}`}
+                   style={formStep >= x.s ? { background: `linear-gradient(135deg, ${state.primaryColor || "#F59E0B"}, #FCD34D)` } : {}}>
+                {formStep > x.s ? <Check className="w-4 h-4" /> : x.s}
+              </div>
+              <span className={`text-[10px] uppercase font-bold tracking-widest ${formStep >= x.s ? 'text-white' : 'text-white/30'}`}>{x.l}</span>
+              {x.s === 1 && <div className={`w-12 h-[2px] ${formStep > 1 ? 'bg-green-400' : 'bg-white/10'}`} />}
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FabField label="@ do Instagram" value={state.instagram} onChange={(v) => update({ instagram: v.replace(/^@/, "") })} placeholder="suaagencia" />
-            <FabPhoneField label="WhatsApp (com DDD)" value={state.whatsapp} onChange={(v) => update({ whatsapp: v })} />
-          </div>
-
-          <div>
-            <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">Nicho / Carro-chefe *</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {nicheOptions.map((n) => (
-                <button
-                  key={n.id}
-                  onClick={() => update({ niche: n.id })}
-                  className={`p-3 rounded-xl border text-left transition-all ${
-                    state.niche === n.id ? "border-2" : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04]"
-                  }`}
-                  style={state.niche === n.id ? { borderColor: state.primaryColor, background: `${state.primaryColor}1a` } : undefined}
-                >
-                  <div className="text-xl mb-1">{n.emoji}</div>
-                  <div className="text-[11px] font-bold text-white leading-tight">{n.label}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Seus principais destinos *</label>
-            <DestinosInput destinos={state.destinos} onChange={(d) => update({ destinos: d })} primaryColor={state.primaryColor || "#F59E0B"} />
-          </div>
+          ))}
         </div>
+
+        <AnimatePresence mode="wait">
+          {formStep === 1 ? (
+            <motion.div
+              key="step1"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="space-y-5"
+            >
+              <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-6 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+                1. Perfil Estratégico da Agência
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FabField label="Nome da agência *" value={state.agencyName} onChange={(v) => update({ agencyName: v })} placeholder="Ex: Lua Cheia Viagens" />
+                <div>
+                  <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Tipo de agência *</label>
+                  <select
+                    value={state.agencyType}
+                    onChange={(e) => update({ agencyType: e.target.value as AgencyType })}
+                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors"
+                  >
+                    <option value="" className="bg-zinc-900">Selecione...</option>
+                    {AGENCY_TYPES.map((t) => (
+                      <option key={t.v} value={t.v} className="bg-zinc-900">{t.l}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FabField label="@ do Instagram" value={state.instagram} onChange={(v) => update({ instagram: v.replace(/^@/, "") })} placeholder="suaagencia" />
+                <FabPhoneField label="WhatsApp (com DDD) *" value={state.whatsapp} onChange={(v) => update({ whatsapp: v })} />
+              </div>
+              <div>
+                <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">Nicho / Carro-chefe *</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {nicheOptions.map((n) => (
+                    <button
+                      key={n.id}
+                      onClick={() => update({ niche: n.id })}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        state.niche === n.id ? "border-2" : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04]"
+                      }`}
+                      style={state.niche === n.id ? { borderColor: state.primaryColor, background: `${state.primaryColor}1a` } : undefined}
+                    >
+                      <div className="text-xl mb-1">{n.emoji}</div>
+                      <div className="text-[11px] font-bold text-white leading-tight">{n.label}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Seus principais destinos *</label>
+                <DestinosInput destinos={state.destinos} onChange={(d) => update({ destinos: d })} primaryColor={state.primaryColor || "#F59E0B"} />
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="step2"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-6"
+            >
+              <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-6 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                2. Raio-X de Maturidade Digital
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FabSelect
+                  label="Frequência de Postagem *"
+                  value={state.postFrequency}
+                  onChange={(v) => update({ postFrequency: v })}
+                  options={[
+                    { v: "diario", l: "Diário (Consistente)" },
+                    { v: "semanal", l: "Semanal (Algumas vezes)" },
+                    { v: "mensal", l: "Mensal (Muito esporádico)" },
+                    { v: "raro", l: "Raramente publico" }
+                  ]}
+                />
+                <FabSelect
+                  label="Tamanho da Audiência *"
+                  value={state.followers}
+                  onChange={(v) => update({ followers: v })}
+                  options={[
+                    { v: "0-500", l: "0 a 500 seguidores" },
+                    { v: "500-2k", l: "500 a 2.000 seguidores" },
+                    { v: "2k-10k", l: "2.000 a 10.000 seguidores" },
+                    { v: "10k+", l: "Acima de 10.000" }
+                  ]}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FabSelect
+                  label="Linha Editorial / Conteúdo *"
+                  value={state.contentStrategy || "promo"}
+                  onChange={(v) => update({ contentStrategy: v })}
+                  options={[
+                    { v: "promo", l: "Foco 100% em Promoções / Ofertas" },
+                    { v: "misto", l: "Misto (Dicas de valor + Promoções)" }
+                  ]}
+                />
+                <FabField 
+                  label="Vendas no mês (Média de Fechamentos) *" 
+                  value={state.fechamentosMes} 
+                  onChange={(v) => update({ fechamentosMes: v.replace(/\D/g, "") })} 
+                  placeholder="Ex: 15" 
+                />
+              </div>
+
+              <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                 <FabToggle label="Aparecem pessoas reais (donos/equipe)?" value={!!state.hasPeople} onChange={(v) => update({ hasPeople: v })} />
+                 <FabToggle label="Posta Reels com frequência?" value={!!state.usesReels} onChange={(v) => update({ usesReels: v })} />
+                 <FabToggle label="Investe em Anúncios Pagos (Tráfego)?" value={!!state.investeAds} onChange={(v) => update({ investeAds: v })} />
+                 <FabToggle label="Tem Depoimentos de Clientes em Destaque?" value={!!state.hasDepoimentos} onChange={(v) => update({ hasDepoimentos: v })} />
+              </div>
+
+              <div className="flex gap-3 bg-blue-500/10 border border-blue-500/20 p-3 rounded-xl items-start">
+                <div className="text-xl">💡</div>
+                <p className="text-[11px] text-blue-200 leading-relaxed">Seja 100% transparente! Esse diagnóstico é para VOCÊ descobrir exatamente onde está o gargalo que te impede de faturar mais.</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 mt-6 pt-6 border-t border-white/10">
-        <button
-          onClick={onBack}
-          className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white/70 font-bold hover:bg-white/[0.08] transition-all"
-        >
-          Voltar
-        </button>
-        <button
-          onClick={finalize}
-          disabled={!state.agencyName || !state.whatsapp || !state.niche || state.destinos.length === 0}
-          className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110 shadow-lg"
-          style={{ background: `linear-gradient(135deg, ${state.primaryColor || "#F59E0B"}, #FCD34D)` }}
-        >
-          Gerar Diagnóstico & Plano <ChevronRight className="w-4 h-4" />
-        </button>
+      {/* Ações do formulário */}
+      <div className="flex flex-col sm:flex-row gap-3 mt-6">
+        {formStep === 1 ? (
+          <>
+            <button
+              onClick={onBack}
+              className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white/70 font-bold hover:bg-white/[0.08] transition-all"
+            >
+              Voltar
+            </button>
+            <button
+              onClick={() => setFormStep(2)}
+              disabled={!state.agencyName || !state.whatsapp || !state.niche || state.destinos.length === 0}
+              className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110 shadow-lg"
+              style={{ background: `linear-gradient(135deg, ${state.primaryColor || "#F59E0B"}, #FCD34D)` }}
+            >
+              Próxima Etapa: Diagnóstico <ChevronRight className="w-4 h-4" />
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => setFormStep(1)}
+              className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white/70 font-bold hover:bg-white/[0.08] transition-all"
+            >
+              Voltar
+            </button>
+            <button
+              onClick={finalize}
+              disabled={!state.postFrequency || !state.followers || !state.fechamentosMes}
+              className="flex-[2] py-4 rounded-xl font-black text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110 shadow-lg shadow-yellow-500/20 uppercase tracking-wider text-sm"
+              style={{ background: `linear-gradient(135deg, #10B981, #FCD34D)` }}
+            >
+              🔥 Gerar Meu Dossiê Completo
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

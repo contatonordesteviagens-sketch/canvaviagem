@@ -59,74 +59,91 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
   const { data: captions = [] } = useCaptions();
 
   // ── Package Manager ────────────────────────────────────────────────────────
-  const baseOfertas = getOfertasByNiche(state.niche);
-  const [packages, setPackages] = useState<PackageItem[]>(() =>
-    baseOfertas.map((o) => ({ ...o, id: generateId() }))
-  );
+  // ── Smart Package Linker ──
+  // Inicializa pacotes templates no Contexto Global APENAS SE ESTIVER VAZIO, integrando nativamente com a Fase 2 (Site).
+  useEffect(() => {
+    if (state.selectedPackages.length === 0) {
+      const base = getOfertasByNiche(state.niche);
+      const initial = base.map((o) => {
+        // Smart Separator: Extrai o Preço do bloco de texto template
+        const lines = o.text.split('\n');
+        const priceLine = lines.find(l => l.includes("💸") || l.includes("R$")) || "Consulte valores";
+        const desc = lines.filter(l => !l.includes("💸") && !l.includes("R$")).join(" ").replace(/\s+/g, " ").trim();
+        
+        return {
+          id: generateId(),
+          title: o.title,
+          description: desc.slice(0, 120) || o.title,
+          price: priceLine.replace("💸", "").trim(),
+          imageUrl: "", 
+          ctaLabel: "Reservar agora"
+        };
+      });
+      update({ selectedPackages: initial });
+    }
+  }, [state.niche, state.selectedPackages.length]);
+
+  const packages = state.selectedPackages;
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
-  const [editText, setEditText] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
-  const [newText, setNewText] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  const [newPrice, setNewPrice] = useState("");
 
-  // Re-sync when niche changes
-  useEffect(() => {
-    const base = getOfertasByNiche(state.niche);
-    setPackages(base.map((o) => ({ ...o, id: generateId() })));
-    setEditingId(null);
-    setShowAddForm(false);
-  }, [state.niche]);
-
-  const startEdit = (pkg: PackageItem) => {
+  const startEdit = (pkg: any) => {
     setEditingId(pkg.id);
     setEditTitle(pkg.title);
-    setEditText(pkg.text);
+    setEditDesc(pkg.description);
+    setEditPrice(pkg.price);
     setShowAddForm(false);
   };
 
   const saveEdit = (id: string) => {
     if (!editTitle.trim()) return;
-    setPackages((prev) =>
-      prev.map((p) => p.id === id ? { ...p, title: editTitle.trim(), text: editText.trim() } : p)
+    const updated = packages.map((p) => 
+      p.id === id ? { ...p, title: editTitle.trim(), description: editDesc.trim(), price: editPrice.trim() } : p
     );
+    update({ selectedPackages: updated });
     setEditingId(null);
-    toast.success("Pacote atualizado!");
+    toast.success("Pacote atualizado e vinculado ao Site!");
   };
 
   const removePackage = (id: string) => {
-    setPackages((prev) => prev.filter((p) => p.id !== id));
+    const updated = packages.filter((p) => p.id !== id);
+    update({ selectedPackages: updated });
     toast.success("Pacote removido");
   };
 
   const addPackage = () => {
     if (!newTitle.trim()) { toast.error("Adicione um título ao pacote"); return; }
-    const pkg: PackageItem = {
+    const pkg = {
       id: generateId(),
       title: newTitle.trim(),
-      text: newText.trim(),
-      isCustom: true,
+      description: newDesc.trim() || "Nova oferta especial.",
+      price: newPrice.trim() || "Consulte",
+      imageUrl: "",
+      ctaLabel: "Reservar agora"
     };
-    setPackages((prev) => [pkg, ...prev]);
+    update({ selectedPackages: [pkg, ...packages] });
     setNewTitle("");
-    setNewText("");
+    setNewDesc("");
+    setNewPrice("");
     setShowAddForm(false);
-    toast.success("Pacote adicionado!");
+    toast.success("Novo pacote adicionado e já visível no Site!");
   };
 
-  const duplicatePackage = (pkg: PackageItem) => {
-    const copy: PackageItem = {
-      ...pkg,
+  const duplicatePackage = (original: any) => {
+    const pkg = {
+      ...original,
       id: generateId(),
-      title: `${pkg.title} (cópia)`,
-      isCustom: true,
+      title: `${original.title} (cópia)`,
     };
-    setPackages((prev) => {
-      const idx = prev.findIndex((p) => p.id === pkg.id);
-      const next = [...prev];
-      next.splice(idx + 1, 0, copy);
-      return next;
-    });
+    update({ selectedPackages: [pkg, ...packages] });
     toast.success("Pacote duplicado");
   };
 
@@ -184,30 +201,25 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
               <input
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                placeholder="Ex: Maceió 5 Dias com Tudo Incluído"
-                className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/30"
+                placeholder="Título (ex: Jericoacoara 5 Dias)"
+                className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
               />
               <textarea
-                value={newText}
-                onChange={(e) => setNewText(e.target.value)}
-                placeholder={"✈️ Aéreo + Hotel 4★\n💸 12x sem juros\n📲 Garanta sua vaga!"}
-                rows={4}
-                className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/30 resize-none"
+                value={newDesc}
+                onChange={(e) => setNewDesc(e.target.value)}
+                placeholder="Descrição curta das inclusões..."
+                rows={2}
+                className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none resize-none"
               />
-              <div className="flex gap-2">
-                <button
-                  onClick={addPackage}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold text-black"
-                  style={{ background: state.primaryColor }}
-                >
-                  <Check className="w-4 h-4" /> Salvar pacote
-                </button>
-                <button
-                  onClick={() => { setShowAddForm(false); setNewTitle(""); setNewText(""); }}
-                  className="px-4 py-2.5 rounded-lg bg-white/[0.06] border border-white/10 text-white/60 hover:text-white transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+              <input
+                value={newPrice}
+                onChange={(e) => setNewPrice(e.target.value)}
+                placeholder="Preço (ex: 10x de R$ 149,90)"
+                className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
+              />
+              <div className="flex gap-2 pt-1">
+                <button onClick={addPackage} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold text-black" style={{ background: state.primaryColor }}><Check className="w-4 h-4" /> Adicionar ao Site</button>
+                <button onClick={() => { setShowAddForm(false); setNewTitle(""); setNewDesc(""); setNewPrice(""); }} className="px-4 py-2.5 rounded-lg bg-white/[0.06] border border-white/10 text-white/60 hover:text-white"><X className="w-4 h-4" /></button>
               </div>
             </div>
           )}
@@ -216,84 +228,53 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
           {packages.length === 0 ? (
             <div className="text-center py-8 text-white/40 text-sm">
               <Package className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              Nenhum pacote. Adicione o primeiro!
+              Nenhum pacote ativo. Adicione clicando acima!
             </div>
           ) : (
             packages.map((pkg) => (
-              <div key={pkg.id} className="bg-white/[0.04] border border-white/[0.08] rounded-xl overflow-hidden">
+              <div key={pkg.id} className="bg-white/[0.04] border border-white/[0.08] rounded-xl overflow-hidden transition-all hover:border-white/20">
                 {editingId === pkg.id ? (
                   /* Edit mode */
                   <div className="p-4 space-y-3">
-                    <input
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                      className="w-full bg-white/[0.05] border border-white/20 rounded-lg px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-white/40"
-                    />
-                    <textarea
-                      value={editText}
-                      onChange={(e) => setEditText(e.target.value)}
-                      rows={5}
-                      className="w-full bg-white/[0.05] border border-white/20 rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-white/40 resize-none"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => saveEdit(pkg.id)}
-                        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold text-black"
-                        style={{ background: state.primaryColor }}
-                      >
-                        <Check className="w-4 h-4" /> Salvar
-                      </button>
-                      <button
-                        onClick={() => setEditingId(null)}
-                        className="px-4 py-2 rounded-lg bg-white/[0.06] border border-white/10 text-white/60 hover:text-white transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                    <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full bg-white/[0.05] border border-white/20 rounded-lg px-3 py-2 text-sm font-bold text-white focus:outline-none" />
+                    <textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={2} className="w-full bg-white/[0.05] border border-white/20 rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none resize-none" />
+                    <input value={editPrice} onChange={(e) => setEditPrice(e.target.value)} className="w-full bg-white/[0.05] border border-white/20 rounded-lg px-3 py-2 text-sm font-semibold text-emerald-400 focus:outline-none" />
+                    <div className="flex gap-2 pt-1">
+                      <button onClick={() => saveEdit(pkg.id)} className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold text-black" style={{ background: state.primaryColor }}><Check className="w-4 h-4" /> Salvar no Site</button>
+                      <button onClick={() => setEditingId(null)} className="px-4 py-2 rounded-lg bg-white/[0.06] border border-white/10 text-white/60"><X className="w-4 h-4" /></button>
                     </div>
                   </div>
                 ) : (
                   /* View mode */
                   <div className="p-4">
-                    <div className="flex items-start gap-3 mb-2">
+                    <div className="flex items-start gap-3 mb-3">
+                      {pkg.imageUrl && (
+                        <div className="w-14 h-14 rounded-lg overflow-hidden bg-white/10 flex-shrink-0 border border-white/10">
+                          <img src={pkg.imageUrl} className="w-full h-full object-cover" alt="" />
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-bold text-white leading-snug">{pkg.title}</div>
-                        {pkg.isCustom && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-black mt-1 inline-block" style={{ background: state.primaryColor }}>
-                            SEU PACOTE
-                          </span>
-                        )}
+                        <div className="text-sm font-bold text-white leading-snug mb-0.5">{pkg.title}</div>
+                        <div className="text-xs text-white/60 line-clamp-2 mb-1.5 leading-relaxed">{pkg.description}</div>
+                        <div className="inline-flex text-[11px] font-bold text-emerald-400 px-2 py-0.5 bg-emerald-500/10 rounded-full border border-emerald-500/20">
+                          {pkg.price}
+                        </div>
                       </div>
                       <div className="flex gap-1 flex-shrink-0">
-                        <button
-                          onClick={() => startEdit(pkg)}
-                          title="Editar"
-                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/50 hover:text-white transition-all"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => duplicatePackage(pkg)}
-                          title="Duplicar"
-                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/50 hover:text-white transition-all"
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => removePackage(pkg.id)}
-                          title="Remover"
-                          className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400/60 hover:text-red-400 transition-all"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <button onClick={() => startEdit(pkg)} title="Editar" className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/50 hover:text-white transition-all"><Pencil className="w-3 h-3" /></button>
+                        <button onClick={() => duplicatePackage(pkg)} title="Duplicar" className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/50 hover:text-white transition-all"><Copy className="w-3 h-3" /></button>
+                        <button onClick={() => removePackage(pkg.id)} title="Remover" className="w-7 h-7 flex items-center justify-center rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400/60 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
                       </div>
                     </div>
-                    <p className="text-sm text-white/70 whitespace-pre-wrap leading-relaxed mb-3">{pkg.text}</p>
-                    <button
-                      onClick={() => copy(`${pkg.title}\n\n${pkg.text}`)}
-                      className="text-xs px-3 py-1.5 rounded-md bg-white/[0.06] border border-white/10 hover:border-white/30 text-white/70 hover:text-white transition-colors flex items-center gap-1.5"
-                    >
-                      <Copy className="w-3 h-3" /> Copiar texto
-                    </button>
+                    {pkg.imageUrl ? (
+                       <div className="text-[10px] text-emerald-400/80 flex items-center gap-1 mt-2 bg-emerald-500/5 py-1 px-2 rounded-md border border-emerald-500/10">
+                          <Check className="w-3 h-3" /> Vinculado com Foto da Fase 3
+                       </div>
+                    ) : (
+                       <div className="text-[10px] text-amber-400/80 flex items-center gap-1 mt-2 bg-amber-500/5 py-1 px-2 rounded-md border border-amber-500/10">
+                          💡 Use a Fase 3 para criar o anúncio e imagem deste pacote
+                       </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -301,8 +282,8 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
           )}
 
           {packages.length > 0 && (
-            <div className="text-[11px] text-white/30 text-center pt-1">
-              {packages.length} pacote{packages.length !== 1 ? "s" : ""} disponível{packages.length !== 1 ? "is" : ""} • edite, duplique ou remova conforme precisar
+            <div className="text-[10px] text-white/30 text-center pt-1 uppercase tracking-widest font-bold">
+              ✅ {packages.length} pacote{packages.length !== 1 ? "s" : ""} sincronizado{packages.length !== 1 ? "s" : ""} com seu site
             </div>
           )}
         </div>

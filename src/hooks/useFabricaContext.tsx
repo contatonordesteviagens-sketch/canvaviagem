@@ -94,6 +94,8 @@ export interface FabricaState {
   fechamentosMes: string;
   hasDepoimentos: boolean;
   investeAds: boolean;
+  hasPeople: boolean; // "Aparecem pessoas reais nas redes?"
+  contentStrategy: string; // "promo" | "misto"
 
   // Resultado
   digitalScore: number;
@@ -161,6 +163,8 @@ const defaultState: FabricaState = {
   fechamentosMes: "",
   hasDepoimentos: false,
   investeAds: false,
+  hasPeople: false,
+  contentStrategy: "promo",
   digitalScore: 0,
   scoreBreakdown: { presenca: 0, conteudo: 0, vendas: 0, trafego: 0, conversao: 0 },
   level: 1,

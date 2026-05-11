@@ -9,11 +9,11 @@ const LEVEL_NAMES = [
 ];
 
 const LEVEL_DESC = [
-  "Sua agência ainda não construiu presença digital sólida. Hora de profissionalizar.",
-  "Você já começou, mas precisa consistência e estratégia para crescer.",
-  "Você está no caminho certo. Otimização e escala são os próximos passos.",
-  "Agência madura, com processos bem definidos. Foque em volume e autoridade.",
-  "Top do mercado. Mantenha a inovação e diversifique fontes de venda.",
+  "Sua agência ainda não construiu uma presença digital sólida. Você está deixando dinheiro na mesa e seus concorrentes estão dominando o mercado.",
+  "Você já começou, mas sua comunicação está frágil e inconstante. Falta posicionamento estratégico para atrair o cliente certo.",
+  "Você está no caminho certo, mas precisa escalar com inteligência. Hora de lapidar a oferta e injetar tráfego de forma agressiva.",
+  "Agência madura, com autoridade estabelecida. Otimize cada etapa do funil para extrair a máxima lucratividade por lead.",
+  "Nível Elite. Você é referência. O desafio agora é manter a inovação constante e diversificar canais para dominar totalmente o seu nicho.",
 ];
 
 export function calculateScore(state: FabricaState): {
@@ -34,13 +34,16 @@ export function calculateScore(state: FabricaState): {
   if (state.instagram) presenca += 15;
   presenca = Math.min(100, presenca);
 
-  // Conteúdo (25%)
+  // Conteúdo (25%) - Ajustado com Peso para Humanização e Estratégia
   let conteudo = 0;
-  if (state.postFrequency === "diario") conteudo += 50;
-  else if (state.postFrequency === "semanal") conteudo += 35;
-  else if (state.postFrequency === "mensal") conteudo += 15;
-  if (state.usesReels) conteudo += 35;
-  if (state.hasDepoimentos) conteudo += 15;
+  if (state.postFrequency === "diario") conteudo += 30;
+  else if (state.postFrequency === "semanal") conteudo += 20;
+  else if (state.postFrequency === "mensal") conteudo += 10;
+  
+  if (state.usesReels) conteudo += 25;
+  if (state.hasPeople) conteudo += 25; // PESSOAS REAIS GERAM CONEXÃO!
+  if (state.contentStrategy === "misto") conteudo += 20; // CONTEÚDO DE VALOR + PROMO
+  
   conteudo = Math.min(100, conteudo);
 
   // Vendas (20%)
@@ -82,29 +85,29 @@ export function calculateScore(state: FabricaState): {
   };
 
   evaluate("Presença Digital", presenca, {
-    red: "Sua presença é praticamente invisível. Sem destaques e poucos seguidores — clientes não te encontram.",
-    amber: "Você existe no Instagram mas precisa crescer audiência e estruturar destaques.",
-    green: "Boa presença digital! Mantenha consistência e explore novos formatos.",
+    red: "Sua agência é virtualmente invisível. O cliente entra no seu perfil e sente insegurança por falta de autoridade e profissionalismo.",
+    amber: "Presença morna. Você existe no Instagram, mas não tem magnetismo. Precisa de destaques estruturados e linha editorial clara.",
+    green: "Ótima autoridade! Sua marca transmite confiança à primeira vista. Continue refinando seu branding.",
   });
   evaluate("Conteúdo", conteudo, {
-    red: "Conteúdo escasso e sem Reels. O algoritmo do Instagram te está enterrando.",
-    amber: "Você posta, mas falta frequência diária e mais Reels — o formato que mais alcança.",
-    green: "Frequência ótima e usando Reels. Continue testando ganchos e CTAs.",
+    red: "Conteúdo fraco ou 'panfletário'. Sem rostos, sem reels e sem utilidade — o cliente te ignora e o algoritmo te enterra.",
+    amber: "Produz conteúdo mas falta estratégia de conexão. Apareça mais e misture entretenimento com vendas.",
+    green: "Mix de conteúdo impecável! Humanização e estratégia gerando alto engajamento natural.",
   });
   evaluate("Vendas", vendas, {
-    red: "Volume muito baixo de fechamentos. Falta script comercial e funil estruturado.",
-    amber: "Vendas acontecendo mas sem previsibilidade. Hora de processo de venda.",
-    green: "Volume saudável de fechamentos! Foque em escalar e fidelizar.",
+    red: "Vendas esporádicas e sem método. Seu negócio vive de indicações instáveis em vez de processos previsíveis.",
+    amber: "Vendas acontecendo mas falta cadência. Hora de profissionalizar o script e o acompanhamento comercial.",
+    green: "Máquina de vendas rodando! Continue tracionando e focando na retenção da carteira.",
   });
   evaluate("Tráfego Pago", trafego, {
-    red: "Sem investimento em ads, você depende 100% do orgânico — o crescimento é lento.",
-    amber: "Já investe, mas pode otimizar campanhas e segmentação.",
-    green: "Tráfego pago ativo. Acompanhe ROAS e escale o que funciona.",
+    red: "Você é 100% refém do algoritmo orgânico. Sem anúncios, seu crescimento está artificialmente travado.",
+    amber: "Investe timidamente. Dá pra escalar o orçamento e profissionalizar a segmentação para dobrar os leads.",
+    green: "Tráfego ativo bombardeando a audiência certa. Otimize o CPL (Custo por Lead) e escale.",
   });
   evaluate("Conversão", conversao, {
-    red: "Ticket baixo e sem prova social. Cliente pesquisa preço em vez de comprar de você.",
-    amber: "Ticket razoável mas falta fortalecer prova social e ofertas premium.",
-    green: "Conversão e ticket altos. Posicionamento premium funcionando.",
+    red: "Gargalo crítico na oferta. Você vende comodity e o cliente só briga por desconto. Falta gerar valor percebido.",
+    amber: "Conversão ok, mas pode subir o ticket médio vendendo agregados e serviços premium personalizados.",
+    green: "Posicionamento de valor máximo! O cliente paga pelo seu serviço, não só pelo aéreo.",
   });
 
   return {
