@@ -16,7 +16,6 @@ const PHASES = [
   { num: 2, label: "Seu Site" },
   { num: 3, label: "Diagnóstico" },
   { num: 4, label: "Plano" },
-  { num: 5, label: "🚀 Painel" },
 ];
 
 const FabricaInner = () => {
@@ -127,8 +126,7 @@ const FabricaInner = () => {
         {state.currentPhase === 1 && <Phase3ArtFactory onNext={() => setPhase(2)} onBack={() => {}} />}
         {state.currentPhase === 2 && <Phase4LandingBuilder onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
         {state.currentPhase === 3 && <Phase1Diagnostico onComplete={() => setPhase(4)} onBack={() => setPhase(2)} />}
-        {state.currentPhase === 4 && <Phase2Ativos onNext={() => setPhase(5)} onBack={() => setPhase(3)} />}
-        {state.currentPhase === 5 && <Phase5Dashboard />}
+        {state.currentPhase === 4 && <Phase2Ativos onNext={() => setPhase(1)} onBack={() => setPhase(3)} />}
       </div>
     </div>
   );

@@ -120,6 +120,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
 
   // Additional nav items for logged-in users
   const userNavItems = user ? [
+    { to: "/fabrica", label: "Fábrica", icon: Factory },
     { to: "/painel-marketing", label: "Painel de Marketing", icon: Factory },
     { to: isESRoute ? "/es/progresso" : "/progresso", label: "Progresso", icon: TrendingUp },
     { to: isESRoute ? "/es/sugestoes" : "/sugestoes", label: "Sugestões", icon: MessageSquare },

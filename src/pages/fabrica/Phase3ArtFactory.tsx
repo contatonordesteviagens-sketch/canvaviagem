@@ -2638,7 +2638,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         </button>
         {loading && <p className="text-xs text-white/50 text-center mt-1">A IA leva 8 a 25 segundos.</p>}
 
-        {/* ?? PONTO 10: GATILHO DE ESCASSEZ (GAMIFICA��O DE SALDO) */}
-        
+        {/* ?? PONTO 10: GATILHO DE ESCASSEZ (GAMIFICAÇAO DE SALDO) */}
+      </div>
+    </div>
   );
 };

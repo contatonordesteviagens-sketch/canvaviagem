@@ -1427,7 +1427,13 @@ const Index = () => {
 
       <CategoryNav
         activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
+        onCategoryChange={(cat) => {
+          if (cat === 'fabrica') {
+            navigate('/fabrica');
+          } else {
+            setActiveCategory(cat);
+          }
+        }}
         showFavorites={!!user}
       />
 

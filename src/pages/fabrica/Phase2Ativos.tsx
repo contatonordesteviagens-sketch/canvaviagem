@@ -162,9 +162,14 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
     });
   };
 
-  // Categoriza Conteúdos (allContent é injetado dinamicamente)
-  const videos = allContent.filter(c => c.type === 'video' || c.type === 'feed');
-  const stories = allContent.filter(c => c.type === 'story' || c.type === 'weekly-story' || c.type === 'seasonal');
+  // Categoriza Conteúdos (Exclui Influencers/Bia por solicitação do usuário)
+  const isExcludedContent = (title: string) => {
+    const t = (title || "").toLowerCase();
+    return t.includes("bia") || t.includes("influencer");
+  };
+
+  const videos = allContent.filter(c => (c.type === 'video' || c.type === 'feed') && !isExcludedContent(c.title));
+  const stories = allContent.filter(c => (c.type === 'story' || c.type === 'weekly-story' || c.type === 'seasonal') && !isExcludedContent(c.title));
 
   // Filtra Vídeos com Fallback Inteligente
   let filteredVideos = videos.filter((v: any) => matchesDestinos(v.title || "")).slice(0, 8);
