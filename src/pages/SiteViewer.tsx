@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
-export default function SiteViewer() {
-  const { id } = useParams();
+export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
+  const { id: paramId } = useParams();
+  const id = forcedId || paramId;
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [htmlContent, setHtmlContent] = useState<string | null>(null);

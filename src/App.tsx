@@ -115,7 +115,8 @@ const UtmTracker = () => {
   return null;
 };
 
-const App = () => (
+const App = () => {
+  return (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -280,6 +281,7 @@ const App = () => (
       </ThemeProvider>
     </QueryClientProvider>
   </HelmetProvider>
-);
+  );
+};
 
 export default App;

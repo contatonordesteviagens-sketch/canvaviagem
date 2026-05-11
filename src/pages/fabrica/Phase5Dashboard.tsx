@@ -46,12 +46,23 @@ export const Phase5Dashboard = () => {
       const blob = new Blob([html], { type: 'text/html' });
       const fileName = `sites/${user.id}.html`;
       
+      // 🚀 NOVO: Motor de Subdomínios Reais!
+      const rawName = state.agencyName || `agencia-${user.id.substring(0,4)}`;
+      const cleanSlug = rawName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      const slugName = `sites/${cleanSlug}.html`;
+      
+      // Faz o upload Oficial
       const { error: uploadError } = await supabase.storage
         .from("thumbnails")
         .upload(fileName, blob, {
-          contentType: 'image/webp',
+          contentType: 'text/html',
           upsert: true
         });
+      
+      // Faz o upload Secundário para Subdomínio (se for válido)
+      if (cleanSlug.length > 2) {
+         await supabase.storage.from("thumbnails").upload(slugName, blob, { contentType: 'text/html', upsert: true }).catch(() => {});
+      }
         
       if (uploadError) throw uploadError;
       
@@ -346,25 +357,41 @@ export const Phase5Dashboard = () => {
              <div className="space-y-4 relative">
                {(() => {
                   const siteUrl = user?.id ? `${window.location.origin}/view/${user.id}` : '#';
-                  return (
-                     <>
-                        <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 group transition-all">
-                           <div className="flex items-center justify-between mb-2">
-                              <div className="text-[10px] font-bold text-emerald-300/80 uppercase tracking-wider">Link Oficial Reservado</div>
-                              <button 
-                                 onClick={() => {
-                                    navigator.clipboard.writeText(siteUrl);
-                                    toast.success("Link copiado para a área de transferência!");
-                                 }}
-                                 className="text-[10px] text-white/40 hover:text-white flex items-center gap-1"
-                                 title="Copiar Link"
-                              >
-                                 <ExternalLink className="w-3 h-3" /> Copiar
-                              </button>
-                           </div>
-                           <div className="font-mono text-[11px] text-white/70 truncate bg-black/30 p-2 rounded border border-white/5 mb-3 select-all">
-                              {siteUrl}
-                           </div>
+                   
+                   // 🚀 NOVO: Cálculo de Link Profissional em Tempo Real!
+                   const rawName = state.agencyName || "minhaagencia";
+                   const cleanSlug = rawName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+                   
+                   // Detecta domínio real e substitui para exibir o subdomínio definitivo!
+                   const isLocal = window.location.hostname.includes('localhost');
+                   const isDev = window.location.hostname.includes('netlify.app') || window.location.hostname.includes('lovable.app');
+                   
+                   // Monta o link final bonitão! Ex: agencia.canvaviagem.com
+                   const displayDomain = (isLocal || isDev) ? window.location.origin : "https://canvaviagem.com";
+                   const subdomainUrl = (isLocal || isDev) ? siteUrl : `https://${cleanSlug}.canvaviagem.com`;
+
+                   return (
+                      <>
+                         <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 group transition-all">
+                            <div className="flex items-center justify-between mb-2">
+                               <div className="text-[10px] font-bold text-emerald-300/80 uppercase tracking-wider flex items-center gap-1.5">
+                                  <Sparkles className="w-3 h-3" /> Seu Subdomínio Profissional
+                               </div>
+                               <button 
+                                  onClick={() => {
+                                     navigator.clipboard.writeText(subdomainUrl);
+                                     toast.success("Link oficial copiado!");
+                                  }}
+                                  className="text-[10px] text-white/40 hover:text-white flex items-center gap-1"
+                                  title="Copiar Link"
+                               >
+                                  <ExternalLink className="w-3 h-3" /> Copiar
+                               </button>
+                            </div>
+                            <div className="font-mono text-[11px] text-white font-bold tracking-tight truncate bg-black/30 p-2.5 rounded-lg border border-emerald-500/10 mb-3 select-all flex items-center gap-2">
+                               <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                               {subdomainUrl}
+                            </div>
                            
                            <div className="flex flex-col gap-2.5">
                               <button 
@@ -380,7 +407,7 @@ export const Phase5Dashboard = () => {
                               </button>
                               
                               <a 
-                                 href={siteUrl}
+                                 href={subdomainUrl}
                                  target="_blank"
                                  rel="noreferrer"
                                  className="w-full py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all"

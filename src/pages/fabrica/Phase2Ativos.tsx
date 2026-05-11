@@ -1,7 +1,7 @@
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { useContentItems, useCaptions, useMarketingTools } from "@/hooks/useContent";
 import { getOfertasByNiche, type OfertaTemplate } from "@/data/fabrica-ofertas";
-import { Copy, ExternalLink, ArrowRight, CheckCircle2, Plus, Trash2, Pencil, X, Check, Package, Sparkles, Layout } from "lucide-react";
+import { Copy, ExternalLink, ArrowRight, CheckCircle2, Plus, Trash2, Pencil, X, Check, Package, Sparkles, Layout, Video, Film } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 
@@ -344,21 +344,40 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
         </div>
       </FabricaCard>
 
-      <FabricaCard title="🎬 Vídeos recomendados para seus destinos">
+      <FabricaCard title="🎬 Vídeos Reels e Templates para Seus Destinos">
         {loadingContent ? (
-           <p className="text-white/40 text-xs animate-pulse">Sincronizando mídia...</p>
-        ) : filteredVideos.length === 0 ? (
-          <p className="text-white/50 text-sm">Nenhum vídeo encontrado.</p>
+          <div className="h-24 bg-white/[0.03] animate-pulse rounded-xl" />
+        ) : (filteredVideos.length === 0 && filteredStories.length === 0) ? (
+          <p className="text-white/40 text-sm">Nenhum material de vídeo ou template encontrado.</p>
         ) : (
-          <div className="space-y-2">
-            {filteredVideos.map((v: any, i: number) => (
-              <a key={v.id} href={v.url} target="_blank" rel="noopener" className="flex items-start gap-3 bg-white/[0.04] border border-white/[0.06] rounded-xl p-3 hover:border-white/20 transition-colors group">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-extrabold flex-shrink-0" style={{ background: `${state.primaryColor}33`, color: state.primaryColor }}>{i + 1}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-white truncate">{v.title}</div>
-                  <div className="text-[11px] text-white/50">{v.category || "Conteúdo"}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[...filteredVideos, ...filteredStories].map((item: any, idx: number) => (
+              <a 
+                key={`${item.id}-${idx}`} 
+                href={item.url} 
+                target="_blank" 
+                rel="noopener" 
+                className="flex items-center gap-3 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border border-white/[0.08] hover:border-emerald-500/30 rounded-xl p-3 transition-all hover:shadow-lg hover:shadow-emerald-500/5 group relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                
+                <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center overflow-hidden flex-shrink-0 shadow-inner">
+                  {item.image_url ? (
+                     <img src={item.image_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
+                  ) : (
+                     <div className="w-full h-full flex items-center justify-center bg-emerald-500/10 text-emerald-400 text-lg">
+                        <Film className="w-5 h-5" />
+                     </div>
+                  )}
                 </div>
-                <ExternalLink className="w-4 h-4 text-white/30 group-hover:text-white/70 transition-colors flex-shrink-0" />
+
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-bold text-white leading-tight mb-0.5 truncate">{item.title}</div>
+                  <div className="text-[10px] text-emerald-300/80 flex items-center gap-1">
+                    <Video className="w-2.5 h-2.5" /> {item.subcategory || item.category || "Vídeos Reels"}
+                  </div>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-white/20 group-hover:text-emerald-300 transition-colors relative z-10" />
               </a>
             ))}
           </div>
@@ -389,34 +408,7 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
         )}
       </FabricaCard>
 
-      <FabricaCard title="📱 Stories e Templates Canva para Seus Destinos">
-        {loadingContent ? (
-          <div className="h-24 bg-white/[0.03] animate-pulse rounded-xl" />
-        ) : filteredStories.length === 0 ? (
-          <p className="text-white/40 text-sm">Sem stories correspondentes.</p>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {filteredStories.map((s: any) => (
-              <a key={s.id} href={s.url} target="_blank" rel="noopener" className="block group bg-white/[0.03] border border-white/[0.08] hover:border-emerald-500/30 rounded-xl overflow-hidden transition-all relative">
-                {s.image_url ? (
-                  <div className="aspect-[9/16] bg-zinc-900 overflow-hidden relative">
-                     <img src={s.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="" />
-                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                  </div>
-                ) : (
-                  <div className="aspect-[9/16] bg-gradient-to-b from-zinc-800 to-zinc-900 flex items-center justify-center text-white/10">
-                     <Layout className="w-8 h-8 opacity-20" />
-                  </div>
-                )}
-                <div className="absolute bottom-0 inset-x-0 p-3">
-                   <div className="text-[11px] font-bold text-white leading-tight line-clamp-2 group-hover:text-emerald-400 transition-colors">{s.title}</div>
-                   <div className="text-[9px] text-white/50 mt-1 uppercase font-extrabold tracking-widest">{s.subcategory || "Stories"}</div>
-                </div>
-              </a>
-            ))}
-          </div>
-        )}
-      </FabricaCard>
+
 
       <FabricaCard title="✍️ Legendas prontas">
         {filteredCaptions.length === 0 ? (
