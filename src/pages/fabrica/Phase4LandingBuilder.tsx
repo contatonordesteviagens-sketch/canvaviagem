@@ -971,7 +971,7 @@ const PublishOnLovableCard = ({
       const { error: uploadError } = await supabase.storage
         .from("thumbnails")
         .upload(fileName, blob, {
-          contentType: 'text/html',
+          contentType: 'image/webp',
           upsert: true
         });
 

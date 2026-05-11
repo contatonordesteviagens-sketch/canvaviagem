@@ -49,7 +49,7 @@ export const Phase5Dashboard = () => {
       const { error: uploadError } = await supabase.storage
         .from("thumbnails")
         .upload(fileName, blob, {
-          contentType: 'text/html',
+          contentType: 'image/webp',
           upsert: true
         });
         
@@ -77,7 +77,7 @@ export const Phase5Dashboard = () => {
     const checkStatus = async () => {
       if (!user?.id) return;
       try {
-        const siteUrl = supabase.storage.from("thumbnails").getPublicUrl(`sites/${user.id}.html`).data.publicUrl;
+        const siteUrl = `${window.location.origin}/view/${user.id}`;
         const res = await fetch(siteUrl, { method: 'HEAD', cache: 'no-cache' });
         setSiteExists(res.ok);
       } catch {
@@ -345,7 +345,7 @@ export const Phase5Dashboard = () => {
 
              <div className="space-y-4 relative">
                {(() => {
-                  const siteUrl = user?.id ? supabase.storage.from("thumbnails").getPublicUrl(`sites/${user?.id}.html`).data.publicUrl : "#";
+                  const siteUrl = user?.id ? `${window.location.origin}/view/${user.id}` : '#';
                   return (
                      <>
                         <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 group transition-all">

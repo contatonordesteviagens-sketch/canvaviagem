@@ -99,6 +99,7 @@ const Diferencas = lazy(() => import("./pages/Diferencas"));
 const MinhaConta = lazy(() => import("./pages/MinhaConta"));
 const Fabrica = lazy(() => import("./pages/Fabrica"));
 const PainelMarketing = lazy(() => import("./pages/PainelMarketing"));
+const SiteViewer = lazy(() => import("./pages/SiteViewer"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -268,6 +269,7 @@ const App = () => (
                     <Route path="/blog" element={<ProtectedRoute><Blog /></ProtectedRoute>} />
 
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="/view/:id" element={<SiteViewer />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
