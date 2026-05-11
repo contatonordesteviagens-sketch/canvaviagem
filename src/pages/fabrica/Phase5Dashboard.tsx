@@ -354,7 +354,7 @@ export const Phase5Dashboard = () => {
                               <button 
                                  onClick={() => {
                                     navigator.clipboard.writeText(siteUrl);
-                                    toast.success("Link copiado para a áárea de transferência!");
+                                    toast.success("Link copiado para a área de transferência!");
                                  }}
                                  className="text-[10px] text-white/40 hover:text-white flex items-center gap-1"
                                  title="Copiar Link"
