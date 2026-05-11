@@ -138,7 +138,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
     setAutoSyncFields(synced);
     setAutoSyncDone(true);
     localStorage.setItem(SYNC_KEY, currentHash);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const resetSiteToBlank = () => {
@@ -282,9 +282,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             <button
               key={c}
               onClick={() => update({ primaryColor: c })}
-              className={`w-10 h-10 rounded-xl border-2 transition-all ${
-                state.primaryColor === c ? "border-white scale-110" : "border-white/20"
-              }`}
+              className={`w-10 h-10 rounded-xl border-2 transition-all ${state.primaryColor === c ? "border-white scale-110" : "border-white/20"
+                }`}
               style={{ background: c }}
               aria-label={c}
             />
@@ -324,11 +323,10 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               <button
                 key={key}
                 onClick={() => toggleSection(key)}
-                className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                  on
+                className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${on
                     ? "bg-white/[0.06] border-white/20 text-white"
                     : "bg-white/[0.02] border-white/10 text-white/40 line-through"
-                }`}
+                  }`}
               >
                 <span className="truncate text-left">{label}</span>
                 {on ? <Eye className="w-4 h-4 flex-shrink-0" /> : <EyeOff className="w-4 h-4 flex-shrink-0" />}
@@ -368,19 +366,18 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </label>
               <button
                 onClick={() => setPickingHeroImage(!pickingHeroImage)}
-                className={`text-[10px] px-2 py-1 rounded font-medium transition-colors flex items-center gap-1 ${
-                  pickingHeroImage ? "bg-red-500/20 text-red-300" : "bg-white/[0.06] hover:bg-white/[0.1] text-amber-300"
-                }`}
+                className={`text-[10px] px-2 py-1 rounded font-medium transition-colors flex items-center gap-1 ${pickingHeroImage ? "bg-red-500/20 text-red-300" : "bg-white/[0.06] hover:bg-white/[0.1] text-amber-300"
+                  }`}
               >
                 {pickingHeroImage ? "Fechar" : "Trocar Imagem"}
               </button>
             </div>
-            
+
             {!pickingHeroImage && (
               <div className="h-20 w-full bg-black/20 rounded-lg overflow-hidden relative group border border-white/5">
-                <img 
-                  src={state.siteContent.heroImageUrl || state.siteContent.galleryImages?.[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80"} 
-                  className="w-full h-full object-cover opacity-60 transition-opacity group-hover:opacity-80" 
+                <img
+                  src={state.siteContent.heroImageUrl || state.siteContent.galleryImages?.[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80"}
+                  className="w-full h-full object-cover opacity-60 transition-opacity group-hover:opacity-80"
                   alt="Banner atual"
                 />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -393,53 +390,52 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
             {pickingHeroImage && (
               <div className="bg-black/40 border border-white/10 rounded-xl p-3 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
-                 <p className="text-[10px] text-white/40">Selecione uma imagem do seu banco gerado automaticamente:</p>
-                 {state.siteContent.galleryImages.length > 0 ? (
-                   <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto p-1 custom-scrollbar">
-                      {state.siteContent.galleryImages.map((url, i) => (
-                        <button
-                          key={i}
-                          onClick={() => {
-                            updSite({ heroImageUrl: url });
-                            setPickingHeroImage(false);
-                            toast.success("Banner atualizado!");
-                          }}
-                          className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                            (state.siteContent.heroImageUrl === url || (!state.siteContent.heroImageUrl && i === 0)) ? "border-amber-400" : "border-white/10 hover:border-white/40"
+                <p className="text-[10px] text-white/40">Selecione uma imagem do seu banco gerado automaticamente:</p>
+                {state.siteContent.galleryImages.length > 0 ? (
+                  <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto p-1 custom-scrollbar">
+                    {state.siteContent.galleryImages.map((url, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          updSite({ heroImageUrl: url });
+                          setPickingHeroImage(false);
+                          toast.success("Banner atualizado!");
+                        }}
+                        className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${(state.siteContent.heroImageUrl === url || (!state.siteContent.heroImageUrl && i === 0)) ? "border-amber-400" : "border-white/10 hover:border-white/40"
                           }`}
-                        >
-                          <img src={url} alt="" className="w-full h-full object-cover" />
-                        </button>
-                      ))}
-                   </div>
-                 ) : (
-                   <div className="text-[10px] text-white/40 text-center italic py-4 border border-dashed border-white/10 rounded-lg">
-                      Ainda não há imagens geradas no seu banco.
-                   </div>
-                 )}
-                 
-                 <div className="flex gap-2 items-center pt-2 border-t border-white/10">
-                    <input
-                      placeholder="Cole link externo (https://...)"
-                      onChange={(e) => {
-                         if (e.target.value.startsWith("http")) {
-                            updSite({ heroImageUrl: e.target.value });
-                            toast.success("Link de fundo aplicado!");
-                         }
-                      }}
-                      className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-white/30 outline-none focus:border-white/30"
-                    />
-                    <button
-                      onClick={() => {
-                        updSite({ heroImageUrl: "" });
-                        setPickingHeroImage(false);
-                        toast.success("Fundo resetado ao padrão");
-                      }}
-                      className="px-2 py-1.5 rounded-lg bg-white/[0.06] text-white/60 text-[10px] hover:bg-red-500/20 hover:text-red-300 transition-colors"
-                    >
-                      Limpar
-                    </button>
-                 </div>
+                      >
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-[10px] text-white/40 text-center italic py-4 border border-dashed border-white/10 rounded-lg">
+                    Ainda não há imagens geradas no seu banco.
+                  </div>
+                )}
+
+                <div className="flex gap-2 items-center pt-2 border-t border-white/10">
+                  <input
+                    placeholder="Cole link externo (https://...)"
+                    onChange={(e) => {
+                      if (e.target.value.startsWith("http")) {
+                        updSite({ heroImageUrl: e.target.value });
+                        toast.success("Link de fundo aplicado!");
+                      }
+                    }}
+                    className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-white/30 outline-none focus:border-white/30"
+                  />
+                  <button
+                    onClick={() => {
+                      updSite({ heroImageUrl: "" });
+                      setPickingHeroImage(false);
+                      toast.success("Fundo resetado ao padrão");
+                    }}
+                    className="px-2 py-1.5 rounded-lg bg-white/[0.06] text-white/60 text-[10px] hover:bg-red-500/20 hover:text-red-300 transition-colors"
+                  >
+                    Limpar
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -782,9 +778,8 @@ const PacoteEditor = ({
                       setPickingImage(false);
                       toast.success("Imagem aplicada!");
                     }}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                      pacote.imageUrl === url ? "border-amber-400" : "border-white/10 hover:border-white/40"
-                    }`}
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${pacote.imageUrl === url ? "border-amber-400" : "border-white/10 hover:border-white/40"
+                      }`}
                   >
                     <img src={url} alt="" className="w-full h-full object-cover" />
                   </button>
@@ -956,7 +951,7 @@ const PublishOnLovableCard = ({
 }) => {
   const { state } = useFabricaContext();
   const { user } = useAuth();
-  
+
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
 
@@ -965,7 +960,7 @@ const PublishOnLovableCard = ({
       toast.error("Faça login para publicar.");
       return;
     }
-    
+
     setIsPublishing(true);
     try {
       // 1. Converte HTML em Blob
@@ -975,9 +970,9 @@ const PublishOnLovableCard = ({
       // 2. Faz o upload para o bucket "thumbnails" que já existe e é público!
       const { error: uploadError } = await supabase.storage
         .from("thumbnails")
-        .upload(fileName, blob, { 
-           contentType: 'text/html',
-           upsert: true 
+        .upload(fileName, blob, {
+          contentType: 'text/html',
+          upsert: true
         });
 
       if (uploadError) throw uploadError;
@@ -989,10 +984,10 @@ const PublishOnLovableCard = ({
 
       setPublishedUrl(urlData.publicUrl);
       toast.success("🚀 SITE PUBLICADO COM SUCESSO!");
-      
+
       // Feedback visual de "Uau!"
       if (typeof window !== "undefined" && (window as any).confetti) {
-         (window as any).confetti();
+        (window as any).confetti();
       }
 
     } catch (err: any) {
@@ -1062,75 +1057,75 @@ const PublishOnLovableCard = ({
 
         {/* NOVO: MÉTODO 1 - PUBLICAÇÃO AUTOMÁTICA DIRETA (BARREIRA ZERO) */}
         <div className="mb-6 bg-white/[0.04] border-2 border-emerald-500/30 rounded-2xl p-5 shadow-2xl shadow-emerald-900/10 relative group overflow-hidden">
-           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none -mt-10 -mr-10 group-hover:bg-emerald-500/20 transition-all" />
-           
-           <div className="relative flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                 <div className="bg-emerald-500/20 text-emerald-400 p-1.5 rounded-lg border border-emerald-500/30">
-                    <Rocket className="w-4 h-4" />
-                 </div>
-                 <div>
-                    <h4 className="text-sm font-black text-white tracking-tight">MÉTODO 1: PUBLICAÇÃO EXPRESSA</h4>
-                    <p className="text-[10px] text-emerald-400/80 font-bold uppercase tracking-wider">Instante & Grátis</p>
-                 </div>
-              </div>
-              <span className="text-[9px] font-black text-emerald-300 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/20">RECOMENDADO</span>
-           </div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none -mt-10 -mr-10 group-hover:bg-emerald-500/20 transition-all" />
 
-           {!publishedUrl ? (
-              <button
-                onClick={handleDirectPublish}
-                disabled={isPublishing}
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-black text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-70"
-              >
-                {isPublishing ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Publicando seu site...
-                  </>
-                ) : (
-                  <>
-                    <ExternalLink className="w-5 h-5" />
-                    Publicar Agora com 1 Clique
-                  </>
-                )}
-              </button>
-           ) : (
-              <div className="space-y-3 animate-in zoom-in-95 duration-300">
-                 <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
-                    <Check className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                       <div className="text-xs font-bold text-emerald-300 uppercase mb-0.5">Link do Site Gerado!</div>
-                       <div className="text-[11px] text-white/60 truncate font-mono">{publishedUrl}</div>
-                    </div>
-                 </div>
-                 <div className="grid grid-cols-2 gap-2">
-                    <button 
-                       onClick={() => {
-                          navigator.clipboard.writeText(publishedUrl);
-                          toast.success("Link copiado!");
-                       }}
-                       className="py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all"
-                    >
-                       <Copy className="w-3.5 h-3.5" /> Copiar Link
-                    </button>
-                    <a 
-                       href={publishedUrl} 
-                       target="_blank" 
-                       rel="noreferrer"
-                       className="py-2.5 px-4 rounded-xl bg-emerald-500 text-black text-xs font-black flex items-center justify-center gap-2 hover:bg-emerald-400 transition-all"
-                    >
-                       <Eye className="w-3.5 h-3.5" /> Abrir Site
-                    </a>
-                 </div>
+          <div className="relative flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="bg-emerald-500/20 text-emerald-400 p-1.5 rounded-lg border border-emerald-500/30">
+                <Rocket className="w-4 h-4" />
               </div>
-           )}
+              <div>
+                <h4 className="text-sm font-black text-white tracking-tight">MÉTODO 1: PUBLICAÇÃO EXPRESSA</h4>
+                <p className="text-[10px] text-emerald-400/80 font-bold uppercase tracking-wider">Instante & Grátis</p>
+              </div>
+            </div>
+            <span className="text-[9px] font-black text-emerald-300 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/20">RECOMENDADO</span>
+          </div>
+
+          {!publishedUrl ? (
+            <button
+              onClick={handleDirectPublish}
+              disabled={isPublishing}
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-black text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-70"
+            >
+              {isPublishing ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Publicando seu site...
+                </>
+              ) : (
+                <>
+                  <ExternalLink className="w-5 h-5" />
+                  Publicar Agora com 1 Clique
+                </>
+              )}
+            </button>
+          ) : (
+            <div className="space-y-3 animate-in zoom-in-95 duration-300">
+              <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
+                <Check className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-emerald-300 uppercase mb-0.5">Link do Site Gerado!</div>
+                  <div className="text-[11px] text-white/60 truncate font-mono">{publishedUrl}</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(publishedUrl);
+                    toast.success("Link copiado!");
+                  }}
+                  className="py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all"
+                >
+                  <Copy className="w-3.5 h-3.5" /> Copiar Link
+                </button>
+                <a
+                  href={publishedUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="py-2.5 px-4 rounded-xl bg-emerald-500 text-black text-xs font-black flex items-center justify-center gap-2 hover:bg-emerald-400 transition-all"
+                >
+                  <Eye className="w-3.5 h-3.5" /> Abrir Site
+                </a>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4 mb-5 opacity-50">
-           <div className="h-px flex-1 bg-white/10" />
-           <span className="text-[10px] font-black text-white/40 uppercase">OU CUSTOMIZE NO LOVABLE</span>
-           <div className="h-px flex-1 bg-white/10" />
+          <div className="h-px flex-1 bg-white/10" />
+          <span className="text-[10px] font-black text-white/40 uppercase">OU CUSTOMIZE NO LOVABLE</span>
+          <div className="h-px flex-1 bg-white/10" />
         </div>
 
         <p className="text-xs text-white/60 mb-4 leading-relaxed bg-white/[0.02] p-3 rounded-xl border border-white/5">
@@ -1183,8 +1178,8 @@ const PublishOnLovableCard = ({
             onClick={copyUpdatePrompt}
             className="w-full py-3 px-4 rounded-xl border-2 border-dashed transition-all flex items-center justify-center gap-2 text-sm font-bold text-white hover:bg-amber-500/10"
             style={{
-               borderColor: `${primaryColor}77`,
-               color: "#FCD34D"
+              borderColor: `${primaryColor}77`,
+              color: "#FCD34D"
             }}
           >
             <Rocket className="w-4 h-4" /> Copiar Atualização (Só Pacotes Novos) ⚡

@@ -304,26 +304,68 @@ export const Phase5Dashboard = () => {
             </div>
           </div>
 
-          {/* PONTO 8: Link Checklist x Fase 3 / Fase 2 */}
-          <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-6 overflow-hidden relative">
-             <div className="flex items-center gap-3 mb-4">
-               <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
-                 <Calendar className="w-5 h-5" />
+          {/* ?? PONTO 6: INTELIGÊNCIA ARTIFICIAL (MÉTRICAS COM INSIGHT) */}
+          <div className="bg-white/[0.03] border border-indigo-500/20 rounded-2xl p-5 relative overflow-hidden group">
+             <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 blur-[50px] rounded-full" />
+             <div className="flex items-center gap-2 mb-3">
+               <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                  <Sparkles className="w-4 h-4 animate-pulse" />
                </div>
-               <div>
-                 <h3 className="font-black text-white text-sm">Plano Semanal</h3>
-                 <p className="text-[10px] text-white/50">O que postar hoje?</p>
-               </div>
+               <h3 className="text-xs font-black text-white uppercase tracking-wider">Insight da IA Inteligente</h3>
              </div>
-             <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5">
-               <p className="text-xs font-medium text-white/80 leading-relaxed mb-3">
-                 ðŸ“… <strong>Agenda Sugerida:</strong> Mantenha seus stories ativos e use a IA para criar variaÃ§Ãµes. Aproveite as novidades da semana!
-               </p>
+             <div className="text-[11px] leading-relaxed text-white/80">
+                {stats.clicks > 0 ? (
+                   <p>Detectamos tráfego no seu site. Para aumentar a conversão de <strong>{((stats.leads / (stats.visits || 1)) * 100).toFixed(1)}%</strong>, sugerimos publicar o link da página de <span className="text-indigo-300 font-bold">{state.destinos?.[0] || "Destinos"}</span> diretamente nos seus stories agora.</p>
+                ) : (
+                   <p>Seu site está pronto, mas aguarda visitas. ?? <strong>Dica da IA:</strong> Gere um anúncio de <span className="text-indigo-300 font-bold">{state.destinos?.[0] || "pacote promocional"}</span> na Fábrica e impulsione por 3 dias para colher seus primeiros leads.</p>
+                )}
+             </div>
+          </div>
+
+          {/* ?? PONTO 7: EFEITO CHICLETE (ROTEIRO DINÂMICO DIÁRIO) */}
+          <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 overflow-hidden relative group">
+             <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 group-hover:bg-amber-500/20 transition-colors">
+                    <Calendar className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-white text-sm">?? Roteiro de Stories de Hoje</h3>
+                    <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">{formatString(currentDay)}</p>
+                  </div>
+                </div>
+                <span className="text-[9px] font-black bg-white/5 text-white/60 px-2 py-0.5 rounded border border-white/10">DICA DIÁRIA</span>
+             </div>
+             
+             <div className="p-4 rounded-xl bg-gradient-to-br from-black/40 to-black/10 border border-white/5 relative">
+               {(() => {
+                  const dayNum = new Date().getDay(); 
+                  let script = { t: "Curiosidade de Destino", d: "Poste 1 foto de um destino exótico e faça uma enquete: 'Quem você levaria?'" };
+                  
+                  if (dayNum === 1) script = { t: "Dica de Planejamento", d: "Comece a semana dando uma dica de economia na mala de viagem. Isso gera autoridade!" };
+                  else if (dayNum === 3) script = { t: "Quebra de Objeção", d: "Explique por que comprar com agente de viagem é mais seguro do que no buscador online." };
+                  else if (dayNum === 5) script = { t: "Chamada de Oferta", d: "Sexta é dia de sonhar! Publique seu pacote principal com link direto para o Whats." };
+                  else if (dayNum === 0 || dayNum === 6) script = { t: "Bastidores / Relax", d: "Mostre um pouco do seu dia ou de um cliente que viajou. Gera conexão!" };
+                  
+                  return (
+                     <>
+                        <div className="text-[10px] font-black text-amber-400 uppercase mb-1 flex items-center gap-1">
+                           <Target className="w-3 h-3" /> {script.t}
+                        </div>
+                        <p className="text-xs font-medium text-white/80 leading-relaxed italic">
+                           "{script.d}"
+                        </p>
+                     </>
+                  );
+               })()}
+             </div>
+             
+             <div className="mt-3 flex justify-end">
                <button 
                  onClick={() => setPhase(1)}
-                 className="text-[10px] font-extrabold uppercase tracking-wider text-amber-400 flex items-center gap-1.5 hover:gap-2.5 transition-all cursor-pointer"
+                 className="text-[9px] font-extrabold uppercase tracking-widest text-white/40 hover:text-amber-400 flex items-center gap-1.5 transition-all cursor-pointer"
                >
-                 Ir para FÃ¡brica de AnÃºncios <ArrowRight className="w-3 h-3" />
+                 Gerar Arte para o Tema <ArrowRight className="w-2.5 h-2.5" />
                </button>
              </div>
           </div>

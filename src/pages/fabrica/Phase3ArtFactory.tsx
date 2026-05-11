@@ -2637,6 +2637,29 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando com IA...</> : <><Sparkles className="w-4 h-4" /> Gerar An√∫ncio</>}
         </button>
         {loading && <p className="text-xs text-white/50 text-center mt-1">A IA leva 8 a 25 segundos.</p>}
+
+        {/* ?? PONTO 10: GATILHO DE ESCASSEZ (GAMIFICA«√O DE SALDO) */}
+        <div className="mt-4 bg-indigo-500/5 border border-indigo-500/20 rounded-2xl p-3.5 relative overflow-hidden group hover:bg-indigo-500/10 transition-colors">
+           <div className="absolute -top-10 -right-10 w-24 h-24 bg-indigo-500/10 blur-2xl rounded-full pointer-events-none" />
+           <div className="flex items-center justify-between mb-2 relative">
+              <div className="flex items-center gap-1.5">
+                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                 <span className="text-[10px] font-black text-indigo-200/60 uppercase tracking-widest">Uso Premium IA</span>
+              </div>
+              <span className="text-[11px] font-black text-white bg-indigo-500/30 px-2 py-0.5 rounded-md border border-indigo-500/30">4 / 10 Mensal</span>
+           </div>
+           <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden relative">
+              <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-400 rounded-full w-[40%] transition-all duration-1000" />
+           </div>
+           <div className="mt-2.5 flex items-center justify-between relative">
+              <span className="text-[9px] font-bold text-white/40 flex items-center gap-1">
+                 Renova automaticamente dia 01
+              </span>
+              <a href="#" className="text-[9px] font-extrabold text-indigo-300 hover:text-white underline decoration-dotted underline-offset-2 flex items-center gap-0.5 uppercase tracking-wider">
+                 Upgrade p/ Ilimitado <ArrowRight className="w-2 h-2" />
+              </a>
+           </div>
+        </div>
       </div>
 
       {generatedImages.length > 0 && (
