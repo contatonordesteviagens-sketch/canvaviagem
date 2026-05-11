@@ -761,6 +761,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [editingIconIdx, setEditingIconIdx] = useState<number | null>(null);
   const [newHl, setNewHl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isBatchMode, setIsBatchMode] = useState(false); // Nova feature: Lote A/B (3 variações)
   const [generatedImage, setGeneratedImage] = useState<string>("");
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [variationCounter, setVariationCounter] = useState(0);
@@ -798,7 +799,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
   // ===== Modo de geração =====
   const [genMode, setGenMode] = useState<GenMode>("photo");
-  const [searchEngine, setSearchEngine] = useState<"pexels" | "google">("pexels");
+  const [searchEngine, setSearchEngine] = useState<"pexels" | "google" | "galeria">("pexels");
   // Foto Real (Pexels/Google)
   const [photoQuery, setPhotoQuery] = useState("");
   const [photos, setPhotos] = useState<Array<{ id: number; url: string; thumb: string; alt: string }>>([]);
@@ -1052,9 +1053,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         localStorage.setItem(cycleKey, String(nextSeed));
       };
 
-      // ===== MODO FOTO (composição local) — gera 1 imagem única =====
+      // ===== MODO FOTO (composição local) — gera 1 ou mais imagens =====
       if (genMode === "photo") {
-        toast.info("Gerando 1 imagem única com foto real");
+        toast.info(isBatchMode ? "Gerando lote de 3 variações com foto real" : "Gerando 1 imagem única com foto real");
         const guard = getForbiddenSets(categoria, "photo", format);
         const stratHistKey = scopedStrategyHistoryKey(categoria, "photo", format);
         let stratHistory: StrategyId[] = [];
@@ -1062,7 +1063,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         // Combina histórico local + histórico do guard (proíbe layouts recentes)
         const mergedHist = Array.from(new Set([...stratHistory, ...(guard.layouts as StrategyId[])]));
         const freshSeedPhoto = freshSeed(generationSeed);
-        const chosen = pickDistinctLocalStrategies(categoria, freshSeedPhoto, 1, mergedHist);
+        // Feature Lote A/B: Pede 3 estratégias distintas se isBatchMode estiver ativado
+        const numToGen = isBatchMode ? 3 : 1;
+        const chosen = pickDistinctLocalStrategies(categoria, freshSeedPhoto, numToGen, mergedHist);
         localStorage.setItem(stratHistKey, JSON.stringify(chosen));
         const photoRefs = pickPhotoRefs(photos, refImage, freshSeedPhoto, chosen.length);
 
@@ -1277,54 +1280,63 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           cleanBackgroundForSite = img; // Preserva a foto LIMPA da IA antes de sujar com o texto!
           
           // Define estratégia para o motor Canvas:
-          // 1. Se for Experiência Story, usa a estratégia específica
-          // 2. Senão, tenta mapear o templateId para uma estratégia do Canvas
-          // 3. Fallback para rotação baseada no index do resultado
           const canvasStrategy: StrategyId = isAiExperienceStory 
             ? aiExperienceStrategy 
             : (cat.legacyStrategy || "matriz");
+            
+          // 🧠 INTELIGÊNCIA LOTE A/B PARA IA:
+          // Em vez de fazer 3 chamadas pagas para a IA, usamos o MESMO fundo limpo gerado acima
+          // e mandamos o motor Canvas renderizar 3 variações visuais diferentes dele instantaneamente!
+          const numVersions = isBatchMode ? 3 : 1;
+          const renderVersions = Array.from({ length: numVersions }, (_, i) => i);
+          
+          const renderedSet = await Promise.all(
+            renderVersions.map(async (vIdx) => {
+              const finalImg = await composeTravelAd({
+                imageUrl: img,
+                format,
+                destination,
+                city: state.city,
+                primaryColor: palette.primary,
+                secondaryColor: palette.secondary,
+                price: formattedPriceForAd || price,
+                currencySymbol,
+                installments,
+                promoName,
+                highlights,
+                hasLogo: !!state.logoBase64,
+                logoDataUrl: state.logoBase64,
+                footerContact1Icon: state.footerContact1Icon,
+                footerContact1Value: state.footerContact1Value,
+                footerContact2Icon: state.footerContact2Icon,
+                footerContact2Value: state.footerContact2Value,
+                whatsapp: state.whatsapp,
+                instagram: state.instagram,
+                paymentMode,
+                paymentLabel: paymentLabel || undefined,
+                paymentSuffix,
+                strategy: canvasStrategy,
+                variation: freshSeedAi + images.length + vIdx,
+                // Força variação diferente para cada versão do loop garantindo A/B visual!
+                forceVariant: typeof nextVariantAi === "number" ? (nextVariantAi + images.length + vIdx) % 5 : undefined,
+                isExperience: categoria === "experiencia_destino",
+                titleOverride: resolvedAdTitle,
+                titleVariations: adTitleVariations,
+                travelPeriod,
+                totalOverride: totalOverride || undefined,
+                showPixBanner,
+                pixBannerText: pixBannerText || undefined,
+                showTotal,
+                fontFamily,
+                titleScale,
+                descScale,
+                textColorOverride: effectiveTextColor,
+              });
+              return finalImg;
+            })
+          );
 
-          img = await composeTravelAd({
-            imageUrl: img,
-            format,
-            destination,
-            city: state.city,
-            primaryColor: palette.primary,
-            secondaryColor: palette.secondary,
-            price: formattedPriceForAd || price,
-            currencySymbol,
-            installments,
-            promoName,
-            highlights,
-            hasLogo: !!state.logoBase64,
-            logoDataUrl: state.logoBase64,
-            footerContact1Icon: state.footerContact1Icon,
-            footerContact1Value: state.footerContact1Value,
-            footerContact2Icon: state.footerContact2Icon,
-            footerContact2Value: state.footerContact2Value,
-            whatsapp: state.whatsapp,
-            instagram: state.instagram,
-            paymentMode,
-            paymentLabel: paymentLabel || undefined,
-            paymentSuffix,
-            strategy: canvasStrategy,
-            variation: freshSeedAi + images.length,
-            forceVariant: typeof nextVariantAi === "number" ? (nextVariantAi + images.length) % 5 : undefined,
-            isExperience: categoria === "experiencia_destino",
-            titleOverride: resolvedAdTitle,
-            titleVariations: adTitleVariations,
-            travelPeriod,
-            totalOverride: totalOverride || undefined,
-            showPixBanner,
-            pixBannerText: pixBannerText || undefined,
-            showTotal,
-            fontFamily,
-            titleScale,
-            descScale,
-            textColorOverride: effectiveTextColor,
-          });
-
-          images.push(img);
+          images.push(...renderedSet);
           if (result.data.provider) providerSeen = result.data.provider;
         }
 
@@ -1370,24 +1382,21 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         return;
       }
 
-      // ===== MODO CUSTOM (link/upload do usuário) — gera 1 imagem local, sem gastar créditos de IA =====
-      toast.info("Gerando 1 imagem única com sua imagem");
+      // ===== MODO CUSTOM (link/upload do usuário) — gera 1 ou mais imagens locais =====
+      toast.info(isBatchMode ? "Gerando lote de 3 variações com sua imagem" : "Gerando 1 imagem única com sua imagem");
       const guardCustom = getForbiddenSets(categoria, "custom", format);
       const stratHistKeyCustom = scopedStrategyHistoryKey(categoria, "custom", format);
       let stratHistoryCustom: StrategyId[] = [];
       try { stratHistoryCustom = JSON.parse(localStorage.getItem(stratHistKeyCustom) || "[]"); } catch { stratHistoryCustom = []; }
       const mergedHistCustom = Array.from(new Set([...stratHistoryCustom, ...(guardCustom.layouts as StrategyId[])]));
       const freshSeedCustom = freshSeed(generationSeed);
-      const chosen = pickDistinctLocalStrategies(categoria, freshSeedCustom, 1, mergedHistCustom);
+      // Feature Lote A/B: Pede 3 estratégias distintas se isBatchMode estiver ativado
+      const numToGenCustom = isBatchMode ? 3 : 1;
+      const chosen = pickDistinctLocalStrategies(categoria, freshSeedCustom, numToGenCustom, mergedHistCustom);
       localStorage.setItem(stratHistKeyCustom, JSON.stringify(chosen));
       const palette = selectedPalette(primaryColor, secondaryColor);
 
       // Rotação determinística entre as 5 variantes do compositor (V0/V1/V2/V3/V4)
-      // Mapeamento de categorias solicitado: 
-      // 2/1/1 -> V0 (Square Oferta)
-      // 2/2/2 -> V2 (Story Experiência)
-      // 2/1/2 -> V3 (Story Oferta)
-      // 2/2/1 -> V4 (Square Experiência)
       const TOTAL_VARIANTS = 5;
       const recent = variantHistoryRef.current.slice(-2);
       let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => !recent.includes(v));
@@ -1398,7 +1407,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariant];
 
       const imagesCustom = await Promise.all(
-        chosen.map(async (localStrategy) => {
+        chosen.map(async (localStrategy, idx) => {
           let img = await composeTravelAd({
             imageUrl: refImage,
             format,
@@ -1423,8 +1432,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             paymentLabel: paymentLabel || undefined,
             paymentSuffix,
             strategy: localStrategy,
-            variation: freshSeedCustom,
-            forceVariant: nextVariant,
+            variation: freshSeedCustom + idx,
+            forceVariant: typeof nextVariant === "number" ? (nextVariant + idx) % 5 : undefined,
             isExperience: categoria === "experiencia_destino",
             titleOverride: resolvedAdTitle,
             titleVariations: adTitleVariations,
@@ -1836,74 +1845,125 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         <div className={sectionCls}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">1 · Escolha uma foto real</h3>
-            <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 scale-90 origin-right">
-              <button
-                onClick={() => setSearchEngine("pexels")}
-                className={`px-3 py-1.5 rounded-md text-[10px] font-bold transition-all ${searchEngine === "pexels" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}
-              >
-                Pexels (Top)
-              </button>
-              <button
-                onClick={() => setSearchEngine("google")}
-                className={`px-3 py-1.5 rounded-md text-[10px] font-bold transition-all ${searchEngine === "google" ? "bg-white/10 text-white" : "text-white/40 hover:text-white"}`}
-              >
-                Google/Web
-              </button>
+            <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 scale-90 origin-right flex-nowrap">
+              {[
+                { id: "pexels", label: "Pexels (Top)" },
+                { id: "google", label: "Google/Web" },
+                { id: "galeria", label: "⭐ Minha Galeria" }
+              ].map((eng) => (
+                <button
+                  key={eng.id}
+                  onClick={() => setSearchEngine(eng.id as any)}
+                  className={`px-2 py-1.5 rounded-md text-[9px] uppercase tracking-wider font-bold transition-all whitespace-nowrap ${
+                    searchEngine === eng.id 
+                      ? (eng.id === "galeria" ? "bg-indigo-500 text-white shadow-md" : "bg-white/10 text-white") 
+                      : "text-white/40 hover:text-white"
+                  }`}
+                >
+                  {eng.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Sugestões de destinos populares + os destinos da agência */}
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {[...new Set([...(state.destinos || []), ...POPULAR_PHOTO_DESTINATIONS])].slice(0, 14).map((d) => (
-              <button
-                key={d}
-                onClick={() => { setDestination(d); searchPhotos(d); }}
-                className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
-                  photoQuery === d ? "text-black" : "bg-white/[0.05] border-white/10 text-white/70 hover:border-white/30"
-                }`}
-                style={photoQuery === d ? { background: secondaryColor, borderColor: secondaryColor } : undefined}
-              >
-                {d}
-              </button>
-            ))}
-          </div>
+          {searchEngine !== "galeria" ? (
+            <>
+              {/* Sugestões de destinos populares + os destinos da agência */}
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {[...new Set([...(state.destinos || []), ...POPULAR_PHOTO_DESTINATIONS])].slice(0, 14).map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => { setDestination(d); searchPhotos(d); }}
+                    className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
+                      photoQuery === d ? "text-black" : "bg-white/[0.05] border-white/10 text-white/70 hover:border-white/30"
+                    }`}
+                    style={photoQuery === d ? { background: secondaryColor, borderColor: secondaryColor } : undefined}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
 
-          <div className="flex gap-2 mb-3">
-            <input
-              value={photoQuery}
-              onChange={(e) => setPhotoQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && searchPhotos()}
-              onFocus={(e) => e.target.select()}
-              placeholder={destination ? `Buscar "${destination}"...` : "Ex: Maragogi, Paris, Cancún..."}
-              className={inputCls}
-            />
-            <button
-              onClick={() => searchPhotos()}
-              disabled={searchingPhotos}
-              className="px-4 rounded-xl font-bold text-black flex items-center gap-1.5 text-sm disabled:opacity-40 hover:brightness-110"
-              style={{ background: secondaryColor }}
-            >
-              {searchingPhotos ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-              Buscar
-            </button>
-          </div>
-          {photos.length > 0 && (() => {
-            const visible = photos.slice(0, visiblePhotoCount);
-            const hasMore = visiblePhotoCount < photos.length;
-            return (
-              <>
-                <div className="grid grid-cols-3 gap-2">
-                  {visible.map((p) => (
+              <div className="flex gap-2 mb-3">
+                <input
+                  value={photoQuery}
+                  onChange={(e) => setPhotoQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && searchPhotos()}
+                  onFocus={(e) => e.target.select()}
+                  placeholder={destination ? `Buscar "${destination}"...` : "Ex: Maragogi, Paris, Cancún..."}
+                  className={inputCls}
+                />
+                <button
+                  onClick={() => searchPhotos()}
+                  disabled={searchingPhotos}
+                  className="px-4 rounded-xl font-bold text-black flex items-center gap-1.5 text-sm disabled:opacity-40 hover:brightness-110"
+                  style={{ background: secondaryColor }}
+                >
+                  {searchingPhotos ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                  Buscar
+                </button>
+              </div>
+              {photos.length > 0 ? (() => {
+                const visible = photos.slice(0, visiblePhotoCount);
+                const hasMore = visiblePhotoCount < photos.length;
+                return (
+                  <>
+                    <div className="grid grid-cols-3 gap-2">
+                      {visible.map((p) => (
+                        <button
+                          key={p.id}
+                          onClick={() => setSelectedPhotoUrl(p.url)}
+                          className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                            selectedPhotoUrl === p.url ? "scale-95" : "border-white/10 hover:border-white/30"
+                          }`}
+                          style={selectedPhotoUrl === p.url ? { borderColor: secondaryColor, borderWidth: 3 } : undefined}
+                        >
+                          <img src={p.thumb} alt={p.alt} className="w-full h-full object-cover" />
+                          {selectedPhotoUrl === p.url && (
+                            <div className="absolute inset-0 flex items-center justify-center" style={{ background: `${primaryColor}cc` }}>
+                              <Check className="w-8 h-8 text-white" />
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    {hasMore && (
+                      <button
+                        onClick={() => setVisiblePhotoCount((n) => n + 3)}
+                        className="w-full mt-3 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm font-semibold hover:bg-white/[0.06] transition-all flex items-center justify-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Ver mais fotos ({photos.length - visiblePhotoCount} restantes)
+                      </button>
+                    )}
+                  </>
+                );
+              })() : (
+                <div className="py-8 text-center text-[11px] text-white/40">
+                  {searchingPhotos ? "Buscando inspirações..." : "Digite um destino e clique em buscar."}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {/* NOVO RENDER DA GALERIA DA AGÊNCIA (PONTO 6) */}
+              <p className="text-[10px] text-indigo-300/80 mb-3 leading-relaxed font-medium">
+                📸 Fotos utilizadas recentemente no seu Site e anúncios gerados. 
+                Centralizadas e reutilizáveis instantaneamente.
+              </p>
+              {(state.siteContent.galleryImages || []).length > 0 ? (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-80 overflow-y-auto pr-1 custom-scrollbar">
+                  {(state.siteContent.galleryImages || []).map((imgUrl: string, idx: number) => (
                     <button
-                      key={p.id}
-                      onClick={() => setSelectedPhotoUrl(p.url)}
+                      key={idx}
+                      onClick={() => setSelectedPhotoUrl(imgUrl)}
                       className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                        selectedPhotoUrl === p.url ? "scale-95" : "border-white/10 hover:border-white/30"
+                        selectedPhotoUrl === imgUrl ? "scale-95" : "border-white/10 hover:border-white/30"
                       }`}
-                      style={selectedPhotoUrl === p.url ? { borderColor: secondaryColor, borderWidth: 3 } : undefined}
+                      style={selectedPhotoUrl === imgUrl ? { borderColor: secondaryColor, borderWidth: 3 } : undefined}
                     >
-                      <img src={p.thumb} alt={p.alt} className="w-full h-full object-cover" />
-                      {selectedPhotoUrl === p.url && (
+                      <img src={imgUrl} alt="Foto da Galeria" className="w-full h-full object-cover" />
+                      {selectedPhotoUrl === imgUrl && (
                         <div className="absolute inset-0 flex items-center justify-center" style={{ background: `${primaryColor}cc` }}>
                           <Check className="w-8 h-8 text-white" />
                         </div>
@@ -1911,18 +1971,17 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                     </button>
                   ))}
                 </div>
-                {hasMore && (
-                  <button
-                    onClick={() => setVisiblePhotoCount((n) => n + 3)}
-                    className="w-full mt-3 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm font-semibold hover:bg-white/[0.06] transition-all flex items-center justify-center gap-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Ver mais fotos ({photos.length - visiblePhotoCount} restantes)
-                  </button>
-                )}
-              </>
-            );
-          })()}
+              ) : (
+                <div className="p-8 border border-dashed border-white/10 rounded-xl text-center">
+                  <ImageIcon className="w-8 h-8 text-white/20 mx-auto mb-2" />
+                  <p className="text-sm font-bold text-white/70 mb-1">Galeria ainda vazia</p>
+                  <p className="text-[11px] text-white/40">
+                    Suas fotos aparecerão aqui automaticamente assim que você subir fotos no Site ou gerar anúncios.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
 
@@ -2540,6 +2599,27 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </p>
         </div>
 
+
+        {/* Feature: Lote A/B (3 variações) */}
+        <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 flex items-center justify-between gap-4 hover:bg-white/[0.05] transition-colors cursor-pointer group" onClick={() => setIsBatchMode(!isBatchMode)}>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                Gerar Lote de Teste A/B
+              </h4>
+              <span className="bg-indigo-500/20 text-indigo-300 text-[9px] px-1.5 py-0.5 rounded border border-indigo-500/30 font-bold uppercase">Premium</span>
+            </div>
+            <p className="text-[10px] text-white/50 mt-1 leading-relaxed">
+              Gera 3 variações diferentes desta arte de uma vez só. {genMode === "ai" ? "Usa apenas 1 crédito de IA!" : "Mais velocidade."}
+            </p>
+          </div>
+          
+          {/* Switch toggle visual */}
+          <div className={`w-12 h-6 rounded-full relative transition-colors ${isBatchMode ? 'bg-indigo-500' : 'bg-white/10'}`}>
+            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-300 ${isBatchMode ? 'left-7' : 'left-1'}`} />
+          </div>
+        </div>
 
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-[11px] text-amber-200/90">
           💡 Dados da Fase 1: <strong>{state.agencyName || "agência"}</strong>
