@@ -965,7 +965,7 @@ const PublishOnLovableCard = ({
     try {
       // 1. Converte HTML em Blob
       const blob = new Blob([html], { type: 'text/html' });
-      const fileName = `sites/${user.id}_${Math.random().toString(36).substr(2, 5)}.html`;
+      const fileName = `sites/${user.id}.html`;
 
       // 2. Faz o upload para o bucket "thumbnails" que já existe e é público!
       const { error: uploadError } = await supabase.storage

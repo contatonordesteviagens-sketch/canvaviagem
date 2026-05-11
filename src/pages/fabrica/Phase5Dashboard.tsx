@@ -258,50 +258,61 @@ export const Phase5Dashboard = () => {
         
         {/* COLUNA 1: Acesso R√°pido e Status */}
         <div className="space-y-6">
-          <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-sm font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
-                <Activity className="w-4 h-4 text-amber-400" /> Status Online
-              </h3>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 px-2 py-1 rounded-full bg-amber-400/10">
-                <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" />
-                AGUARDANDO DNS
-              </span>
-            </div>
+          <div className="bg-white/[0.02] border border-emerald-500/20 rounded-2xl p-6 relative overflow-hidden">
+             <div className="absolute -top-10 -right-10 w-24 h-24 bg-emerald-500/10 blur-2xl rounded-full pointer-events-none" />
+             <div className="flex items-center justify-between mb-6 relative">
+               <h3 className="text-sm font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
+                 <Activity className="w-4 h-4 text-emerald-400" /> Seu Site Est· No Ar!
+               </h3>
+               <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-400 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/20">
+                 <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                 ONLINE & ATIVO
+               </span>
+             </div>
 
-            <div className="space-y-4">
-              <button 
-                onClick={() => setShowUrlHelp(true)}
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/5 text-left hover:bg-white/[0.06] transition-all group/url"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-white/40 font-bold text-xs group-hover/url:text-amber-400 transition-colors">URL</div>
-                  <div>
-                    <div className="text-[10px] font-bold text-white/40 uppercase">Endere√ßo Reservado</div>
-                    <div className="text-xs font-semibold text-white/90">agencia-{state.instagram?.toLowerCase() || "nome"}.site.com.br</div>
-                    <div className="text-[9px] text-amber-300/70 mt-0.5 font-medium italic flex items-center gap-1">
-                      Requer ativa√ß√£o. Clique para saber mais.
-                    </div>
-                  </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-white/30 group-hover/url:text-white group-hover/url:translate-x-0.5 transition-all" />
-              </button>
+             <div className="space-y-4 relative">
+               {(() => {
+                  const siteUrl = user?.id ? supabase.storage.from("thumbnails").getPublicUrl(sites/.html).data.publicUrl : "#";
+                  return (
+                     <>
+                        <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 group transition-all">
+                           <div className="text-[10px] font-bold text-emerald-300/80 uppercase tracking-wider mb-1">Link Oficial do Seu Site</div>
+                           <div className="font-mono text-[11px] text-white/70 truncate bg-black/30 p-2 rounded border border-white/5 mb-3">
+                              {siteUrl}
+                           </div>
+                           
+                           <div className="grid grid-cols-2 gap-2">
+                              <button 
+                                 onClick={() => {
+                                    navigator.clipboard.writeText(siteUrl);
+                                    alert("Link copiado para a ·rea de transferÍncia!");
+                                 }}
+                                 className="flex-1 py-2.5 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+                              >
+                                 <ExternalLink className="w-3.5 h-3.5" /> Copiar Link
+                              </button>
+                              
+                              <a 
+                                 href={siteUrl}
+                                 target="_blank"
+                                 rel="noreferrer"
+                                 className="flex-1 py-2.5 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black flex items-center justify-center gap-2 transition-all"
+                              >
+                                 <Eye className="w-3.5 h-3.5" /> Acessar Site
+                              </a>
+                           </div>
+                        </div>
 
-              <button 
-                onClick={() => setShowLivePreview(true)}
-                className="w-full py-3 px-4 rounded-xl bg-white/10 border border-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center gap-2 text-sm transition-all"
-              >
-                <Eye className="w-4 h-4" /> Visualizar Site Agora
-              </button>
-
-              <button 
-                className="w-full py-3.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 text-xs transition-all hover:brightness-110 text-black"
-                style={{ background: `linear-gradient(135deg, ${primaryColor}, #FCD34D)` }}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                Turbinar Campanhas Agora
-              </button>
-            </div>
+                        <button 
+                           onClick={() => setShowLivePreview(true)}
+                           className="w-full py-3.5 px-4 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] text-white/60 font-bold flex items-center justify-center gap-2 text-xs transition-all cursor-pointer"
+                        >
+                           Visualizar Simulador Interno
+                        </button>
+                     </>
+                  );
+               })()}
+             </div>
           </div>
 
           {/* ?? PONTO 6: INTELIG NCIA ARTIFICIAL (M…TRICAS COM INSIGHT) */}
