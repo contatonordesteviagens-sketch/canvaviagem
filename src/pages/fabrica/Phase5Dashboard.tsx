@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 import { 
   TrendingUp, 
   Users, 
@@ -19,15 +21,51 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export const Phase5Dashboard = () => {
-  const { state } = useFabricaContext();
+  const { state, setPhase } = useFabricaContext();
   
-  // Simulando métricas de tráfego (serão ligadas à tabela analytics_events no futuro próximo)
-  // Para WOW Effect instantâneo no cliente!
-  const [stats] = useState({
-    visits: Math.floor(Math.random() * 45) + 12,
-    clicks: Math.floor(Math.random() * 12) + 4,
-    leads: Math.floor(Math.random() * 5) + 1,
-  });
+  const [stats, setStats] = useState({ visits: 0, clicks: 0, leads: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRealMetrics = async () => {
+      const agencyId = state.agencyName || "Agência";
+      
+      try {
+        // 1. Contagem REAL de visualizações
+        const { count: vCount } = await supabase
+          .from("analytics_events")
+          .select("*", { count: "exact", head: true })
+          .eq("event_type", "page_view")
+          .contains("event_data", { agency_id: agencyId });
+
+        // 2. Contagem REAL de Cliques WhatsApp
+        const { count: cCount } = await supabase
+          .from("analytics_events")
+          .select("*", { count: "exact", head: true })
+          .eq("event_type", "click_whatsapp")
+          .contains("event_data", { agency_id: agencyId });
+
+        // 3. Contagem REAL de Leads Capturados
+        const { count: lCount } = await supabase
+          .from("analytics_events")
+          .select("*", { count: "exact", head: true })
+          .eq("event_type", "lead_captured")
+          .contains("event_data", { agency_id: agencyId });
+
+        setStats({
+          visits: vCount || 0,
+          clicks: cCount || 0,
+          leads: lCount || 0
+        });
+      } catch (e) {
+        console.warn("Falha ao carregar métricas reais:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRealMetrics();
+  }, [state.agencyName]);
 
   const currentDay = format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR });
   const formatString = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -81,10 +119,12 @@ export const Phase5Dashboard = () => {
               <Users className="w-5 h-5" />
             </div>
             <div className="text-[10px] font-bold px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/20 flex items-center gap-0.5">
-              <TrendingUp className="w-3 h-3" /> +12%
+              AO VIVO
             </div>
           </div>
-          <div className="text-3xl font-black text-white mb-0.5">{stats.visits}</div>
+          <div className="text-3xl font-black text-white mb-0.5">
+            {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : stats.visits}
+          </div>
           <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Visitas Únicas</div>
           <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
             <div className="h-full bg-emerald-500 rounded-full w-[65%] animate-in slide-in-from-left duration-1000" />
@@ -98,10 +138,12 @@ export const Phase5Dashboard = () => {
               <MousePointerClick className="w-5 h-5" />
             </div>
             <div className="text-[10px] font-bold px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded-full border border-blue-500/20 flex items-center gap-0.5">
-              <TrendingUp className="w-3 h-3" /> +5%
+              CONVERSÃO
             </div>
           </div>
-          <div className="text-3xl font-black text-white mb-0.5">{stats.clicks}</div>
+          <div className="text-3xl font-black text-white mb-0.5">
+            {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : stats.clicks}
+          </div>
           <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Cliques WhatsApp</div>
           <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
             <div className="h-full bg-blue-500 rounded-full w-[40%] animate-in slide-in-from-left duration-1000 delay-100" />
@@ -115,10 +157,12 @@ export const Phase5Dashboard = () => {
               <MessageSquare className="w-5 h-5" />
             </div>
             <div className="text-[10px] font-bold px-2 py-0.5 bg-violet-500/20 text-violet-300 rounded-full border border-violet-500/20">
-              ATIVO
+              {stats.leads > 0 ? "RECEBIDOS" : "AGUARDANDO"}
             </div>
           </div>
-          <div className="text-3xl font-black text-white mb-0.5">{stats.leads}</div>
+          <div className="text-3xl font-black text-white mb-0.5">
+            {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : stats.leads}
+          </div>
           <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Formulários Preenchidos</div>
           <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
             <div className="h-full bg-violet-500 rounded-full w-[25%] animate-in slide-in-from-left duration-1000 delay-200" />
@@ -179,10 +223,13 @@ export const Phase5Dashboard = () => {
              </div>
              <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5">
                <p className="text-xs font-medium text-white/80 leading-relaxed mb-3">
-                 📅 <strong>Quarta-feira:</strong> "Story de Bastidores ou curiosidade do destino". Gere um vídeo ou story animado para humanizar.
+                 📅 <strong>Agenda Sugerida:</strong> Mantenha seus stories ativos e use a IA para criar variações. Aproveite as novidades da semana!
                </p>
-               <button className="text-[10px] font-extrabold uppercase tracking-wider text-amber-400 flex items-center gap-1.5 hover:gap-2.5 transition-all">
-                 Ir para Fábrica de Stories <ArrowRight className="w-3 h-3" />
+               <button 
+                 onClick={() => setPhase(1)}
+                 className="text-[10px] font-extrabold uppercase tracking-wider text-amber-400 flex items-center gap-1.5 hover:gap-2.5 transition-all cursor-pointer"
+               >
+                 Ir para Fábrica de Anúncios <ArrowRight className="w-3 h-3" />
                </button>
              </div>
           </div>

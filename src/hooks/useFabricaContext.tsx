@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export type Niche = "nordeste" | "sul" | "internacional" | "cruzeiro" | "aventura" | "luademel" | "";
 
@@ -318,6 +320,46 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       safeSetItem(GALLERY_KEY, JSON.stringify(galleryImages || []));
     } catch {}
   }, [state]);
+
+  const { user } = useAuth();
+
+  // ☁️ PERSISTÊNCIA NUVEM: Sincroniza estado debounced com Supabase
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    const syncState = async () => {
+      try {
+        const { error } = await supabase
+          .from("fabrica_diagnosticos")
+          .upsert({
+            user_id: user.id,
+            agency_name: state.agencyName || "Nova Agência",
+            digital_score: state.digitalScore || 0,
+            level: state.level || 1,
+            state_snapshot: state as any,
+            updated_at: new Date().toISOString()
+          }, { onConflict: "user_id" });
+
+        if (error) {
+          console.warn("[Supabase Sync] Falha silenciosa:", error.message);
+        }
+      } catch (err) {
+        // Falha silenciosa para não quebrar experiência se offline
+      }
+    };
+
+    // Debounce 2.5s para evitar flooding do banco em digitações rápidas
+    const timer = setTimeout(syncState, 2500);
+    return () => clearTimeout(timer);
+  }, [
+    state.agencyName, 
+    state.currentPhase, 
+    state.niche, 
+    state.digitalScore, 
+    state.selectedPackages.length, 
+    state.siteContent.heroHeadline,
+    user?.id
+  ]);
 
   const update = useCallback((patch: Partial<FabricaState>) => {
     setState((prev) => ({ ...prev, ...patch }));

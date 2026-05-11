@@ -617,7 +617,7 @@ ${
     document.getElementById("lead-modal").classList.remove("active");
   }
 
-  async function handleSubmitLead(e) {
+  function handleSubmitLead(e) {
     e.preventDefault();
     const name = document.getElementById("lead-name").value;
     const phone = document.getElementById("lead-phone").value;
@@ -625,8 +625,8 @@ ${
     // Salva localmente para não chatear o cliente nas próximas vezes
     localStorage.setItem("cv_lead_name", name);
 
-    // Envia silencioso pro banco de dados em segundo plano
-    await track("lead_captured", {
+    // Envia silencioso pro banco de dados em segundo plano (SEM AWAIT para não bloquear popup)
+    track("lead_captured", {
       name: name,
       phone: phone,
       interest: currentTarget
@@ -642,6 +642,7 @@ ${
       finalWppUrl += encodeURIComponent(" (Meu nome é " + name + ")");
     }
     
+    // Síncrono garante que o navegador não bloqueie o popup!
     window.open(finalWppUrl, "_blank");
   }
 </script>
