@@ -50,7 +50,7 @@ function parsePriceHTML(priceStr: string): string {
   </div>`;
 }
 
-export function buildLandingHTML(state: FabricaState): string {
+export function buildLandingHTML(state: FabricaState, trackingId?: string): string {
   const color = state.primaryColor || "#0F2742";
   const colorDark = darken(color, 0.45);
   const rawWpp = (state.whatsapp || "").replace(/\D/g, "");
@@ -563,7 +563,7 @@ ${
 <!-- SISTEMA DE TELEMETRIA E INTEGRAÇÃO SILENCIOSA -->
 <script>
   const CONFIG = {
-    agencyId: "${esc(agencia)}",
+    agencyId: "${esc(trackingId || state.agencyName || 'agencia_desconhecida')}",
     supabaseUrl: "${SB_URL}",
     supabaseKey: "${SB_KEY}"
   };
@@ -651,8 +651,8 @@ ${
 </html>`;
 }
 
-export function downloadLandingHTML(state: FabricaState, version?: number) {
-  const html = buildLandingHTML(state);
+export function downloadLandingHTML(state: FabricaState, version?: number, trackingId?: string) {
+  const html = buildLandingHTML(state, trackingId);
   const blob = new Blob([html], { type: "text/html" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

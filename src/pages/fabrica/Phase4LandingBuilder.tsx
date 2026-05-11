@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useFabricaContext, type Pacote, type Depoimento } from "@/hooks/useFabricaContext";
 import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export";
 import {
@@ -29,6 +30,7 @@ const PRESET_COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#EF4444", "#8B5CF6", "#
 
 export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
   const { state, update } = useFabricaContext();
+  const { user } = useAuth();
   const [previewing, setPreviewing] = useState(true);
   const [downloadCount, setDownloadCount] = useState(0);
   const [autoSyncDone, setAutoSyncDone] = useState(false);
@@ -207,11 +209,11 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
   const isVisible = (key: keyof SectionVisibility) => state.siteContent.sections[key] !== false;
 
-  const previewHTML = buildLandingHTML(state);
+  const previewHTML = buildLandingHTML(state, user?.id);
 
   const handleDownload = () => {
     setDownloadCount((c) => c + 1);
-    downloadLandingHTML(state, downloadCount + 1);
+    downloadLandingHTML(state, downloadCount + 1, user?.id);
     toast.success(`Versão ${downloadCount + 1} baixada! Suba pro Lovable, Vercel ou Netlify.`);
   };
 

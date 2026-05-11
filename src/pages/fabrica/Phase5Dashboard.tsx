@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { 
   TrendingUp, 
@@ -22,13 +23,15 @@ import { ptBR } from "date-fns/locale";
 
 export const Phase5Dashboard = () => {
   const { state, setPhase } = useFabricaContext();
+  const { user } = useAuth();
   
   const [stats, setStats] = useState({ visits: 0, clicks: 0, leads: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchRealMetrics = async () => {
-      const agencyId = state.agencyName || "Agência";
+      // USA O ID DO USUÁRIO (ÚNICO) PARA EVITAR COLISÃO DE DADOS ENTRE AGÊNCIAS DIFERENTES
+      const agencyTrackingId = user?.id || state.agencyName || "Agência";
       
       try {
         // 1. Contagem REAL de visualizações
@@ -36,21 +39,21 @@ export const Phase5Dashboard = () => {
           .from("analytics_events")
           .select("*", { count: "exact", head: true })
           .eq("event_type", "page_view")
-          .contains("event_data", { agency_id: agencyId });
+          .contains("event_data", { agency_id: agencyTrackingId });
 
         // 2. Contagem REAL de Cliques WhatsApp
         const { count: cCount } = await supabase
           .from("analytics_events")
           .select("*", { count: "exact", head: true })
           .eq("event_type", "click_whatsapp")
-          .contains("event_data", { agency_id: agencyId });
+          .contains("event_data", { agency_id: agencyTrackingId });
 
         // 3. Contagem REAL de Leads Capturados
         const { count: lCount } = await supabase
           .from("analytics_events")
           .select("*", { count: "exact", head: true })
           .eq("event_type", "lead_captured")
-          .contains("event_data", { agency_id: agencyId });
+          .contains("event_data", { agency_id: agencyTrackingId });
 
         setStats({
           visits: vCount || 0,

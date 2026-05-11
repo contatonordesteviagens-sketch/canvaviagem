@@ -328,7 +328,21 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     if (!user?.id) return;
     
     const syncState = async () => {
+      // 🛡️ SEGURANÇA DE HIDRATAÇÃO: Não sobe um estado VAZIO por cima do que já está na nuvem!
+      // Só sobe se tiver um Nome preenchido ou algum progresso detectado.
+      if (!state.agencyName && state.digitalScore === 0 && state.currentPhase <= 1) return;
+
       try {
+        // 🛑 SANITIZAÇÃO DE BLOAT: Remove base64 pesados (logo/artes) E a galeria para economizar espaço DB
+        // e garantir que ficamos SEMPRE no Plano Gratuito, sem limites de payload!
+        const { logoBase64, generatedAdImage, siteContent, ...rest } = state;
+        const { galleryImages, ...siteRest } = siteContent;
+        
+        const minimalSnapshot = {
+          ...rest,
+          siteContent: siteRest // Snapshot leve (apenas textos e configurações)
+        };
+
         const { error } = await supabase
           .from("fabrica_diagnosticos")
           .upsert({
@@ -336,7 +350,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
             agency_name: state.agencyName || "Nova Agência",
             digital_score: state.digitalScore || 0,
             level: state.level || 1,
-            state_snapshot: state as any,
+            state_snapshot: minimalSnapshot as any, // Salvando versão sanitizada super leve!
             updated_at: new Date().toISOString()
           }, { onConflict: "user_id" });
 
