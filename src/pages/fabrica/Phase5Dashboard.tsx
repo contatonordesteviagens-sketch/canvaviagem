@@ -392,6 +392,12 @@ export const Phase5Dashboard = () => {
                               ℹ️ Você precisa clicar em Ativar acima pelo menos uma vez para o link acima carregar e não dar erro 404.
                            </p>
                         </div>
+                      </>
+                   );
+                })()}
+             </div>
+          </div>
+        </div>
 
         {/* COLUNA 2: NOVIDADES DA SEMANA (PONTO 10) */}
         <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-6 flex flex-col">
