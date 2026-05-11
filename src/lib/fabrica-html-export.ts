@@ -1,5 +1,8 @@
 import type { FabricaState } from "@/hooks/useFabricaContext";
 
+const SB_URL = import.meta.env.VITE_SUPABASE_URL || "";
+const SB_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+
 const esc = (s: string) =>
   String(s ?? "")
     .replace(/&/g, "&amp;")
@@ -279,6 +282,22 @@ footer{background:var(--ink);color:#9ba3ad;padding:64px 0 28px}
 .wpp-float{position:fixed;bottom:20px;right:20px;background:#25D366;color:#fff;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 10px 30px rgba(37,211,102,.5);z-index:99;transition:transform .2s}
 .wpp-float:hover{transform:scale(1.08)}
 @media(max-width:640px){.wpp-float{width:54px;height:54px;font-size:24px;bottom:16px;right:16px}}
+
+/* LEAD CAPTURE MODAL (NOVO) */
+#lead-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .3s}
+#lead-modal.active{display:flex;opacity:1}
+.modal-box{background:#fff;width:100%;max-width:440px;border-radius:24px;padding:32px;position:relative;box-shadow:0 32px 64px rgba(0,0,0,.25);transform:translateY(20px);transition:transform .3s}
+#lead-modal.active .modal-box{transform:translateY(0)}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted);width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.modal-close:hover{background:var(--soft);color:var(--ink)}
+.modal-header{text-align:center;margin-bottom:24px}
+.modal-icon{width:64px;height:64px;background:var(--brand);color:#fff;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;box-shadow:0 12px 24px rgba(0,0,0,.1)}
+.modal-header h3{font-size:24px;margin-bottom:8px;font-family:'Playfair Display',serif}
+.modal-header p{font-size:14px;color:var(--muted)}
+.modal-form{display:grid;gap:16px}
+.modal-form .field label{margin-bottom:6px}
+.modal-form input{border-color:rgba(0,0,0,.12)}
+.modal-submit{width:100%;justify-content:center;gap:10px;margin-top:8px}
 </style>
 </head>
 <body>
@@ -309,7 +328,7 @@ footer{background:var(--ink);color:#9ba3ad;padding:64px 0 28px}
       <a href="#destinos">Destinos</a>
       <a href="#por-que">Por Que Nós</a>
       <a href="#orcamento">Orçamento</a>
-      <a href="https://wa.me/${wpp}" target="_blank" rel="noopener" class="nav-cta">WhatsApp</a>
+      <a href="#" onclick="openLeadForm('WhatsApp Geral', 'https://wa.me/${wpp}');return false;" class="nav-cta">WhatsApp</a>
     </nav>
   </div>
 </header>
@@ -355,7 +374,7 @@ ${sc.sections?.destinos === false ? "" : `<section id="destinos">
     <div class="destinos-grid">
       ${pacotes
         .map(
-          (p) => `<a href="${wppMsg(p.title)}" target="_blank" rel="noopener" class="dest-card">
+          (p) => `<a href="#" onclick="openLeadForm('${esc(p.title)}', '${wppMsg(p.title)}');return false;" class="dest-card">
         <div class="dest-img-wrap">
           <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
           <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
@@ -390,7 +409,7 @@ ${sc.sections?.porQue === false ? "" : `<section id="por-que" class="equipe">
           <div class="feat"><div class="feat-icon">✨</div><div><h4>Experiências Exclusivas</h4><p>Acesso a hotéis e experiências que não estão disponíveis para o público geral.</p></div></div>
           <div class="feat"><div class="feat-icon">💰</div><div><h4>Melhor Custo-Benefício</h4><p>Nossa rede de parceiros oferece condições especiais que você não encontra em outros lugares.</p></div></div>
         </div>
-        <a href="https://wa.me/55${wpp}" target="_blank" rel="noopener" class="btn">Falar com um especialista</a>
+        <a href="#" onclick="openLeadForm('Falar com Especialista', 'https://wa.me/55${wpp}');return false;" class="btn">Falar com um especialista</a>
       </div>
       <div class="equipe-img"></div>
     </div>
@@ -516,7 +535,116 @@ ${
   </div>
 </footer>
 
-<a href="https://wa.me/${wpp}" class="wpp-float" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
+<a href="#" onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;" class="wpp-float" aria-label="WhatsApp">💬</a>
+
+<!-- SMART LEAD CAPTURE MODAL -->
+<div id="lead-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div class="modal-header">
+      <div class="modal-icon">🌍</div>
+      <h3>Falta pouco para sua viagem!</h3>
+      <p id="modal-subtitle">Você tem interesse em: Geral</p>
+    </div>
+    <form class="modal-form" onsubmit="handleSubmitLead(event)">
+      <div class="field">
+        <label>Seu Nome</label>
+        <input type="text" id="lead-name" required placeholder="Ex: Maria Silva">
+      </div>
+      <div class="field">
+        <label>Seu WhatsApp / Celular</label>
+        <input type="tel" id="lead-phone" required placeholder="(00) 90000-0000">
+      </div>
+      <button type="submit" class="btn modal-submit">🚀 Falar no WhatsApp</button>
+    </form>
+  </div>
+</div>
+
+<!-- SISTEMA DE TELEMETRIA E INTEGRAÇÃO SILENCIOSA -->
+<script>
+  const CONFIG = {
+    agencyId: "${esc(agencia)}",
+    supabaseUrl: "${SB_URL}",
+    supabaseKey: "${SB_KEY}"
+  };
+
+  let pendingUrl = "";
+  let currentTarget = "";
+
+  function track(type, data) {
+    if (!CONFIG.supabaseUrl || !CONFIG.supabaseKey) return Promise.resolve();
+    return fetch(\`\${CONFIG.supabaseUrl}/rest/v1/analytics_events\`, {
+      method: "POST",
+      headers: {
+        "apikey": CONFIG.supabaseKey,
+        "Authorization": "Bearer " + CONFIG.supabaseKey,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify({
+        event_type: type,
+        event_data: { 
+          ...data, 
+          agency_id: CONFIG.agencyId,
+          userAgent: navigator.userAgent
+        },
+        created_at: new Date().toISOString()
+      })
+    }).catch(err => console.warn("Tracking off", err));
+  }
+
+  // Registra a visita inicial no carregamento da página
+  window.onload = () => track("page_view", { path: window.location.pathname });
+
+  function openLeadForm(targetName, finalUrl) {
+    currentTarget = targetName;
+    pendingUrl = finalUrl;
+    
+    // Se já preencheu antes, não pergunta de novo, pula direto (experiência do usuário!)
+    const savedName = localStorage.getItem("cv_lead_name");
+    if (savedName) {
+       track("click_whatsapp", { target: targetName, cached_user: savedName });
+       window.open(finalUrl, "_blank");
+       return;
+    }
+
+    document.getElementById("modal-subtitle").innerText = "Interesse: " + targetName;
+    document.getElementById("lead-modal").classList.add("active");
+    track("click_intent", { target: targetName });
+  }
+
+  function closeModal() {
+    document.getElementById("lead-modal").classList.remove("active");
+  }
+
+  async function handleSubmitLead(e) {
+    e.preventDefault();
+    const name = document.getElementById("lead-name").value;
+    const phone = document.getElementById("lead-phone").value;
+    
+    // Salva localmente para não chatear o cliente nas próximas vezes
+    localStorage.setItem("cv_lead_name", name);
+
+    // Envia silencioso pro banco de dados em segundo plano
+    await track("lead_captured", {
+      name: name,
+      phone: phone,
+      interest: currentTarget
+    });
+
+    closeModal();
+    
+    // Redireciona pro WhatsApp anexando o nome no texto pra ficar ainda mais TOP
+    let finalWppUrl = pendingUrl;
+    if(finalWppUrl.indexOf("?") === -1) {
+      finalWppUrl += "?text=" + encodeURIComponent("Olá, meu nome é " + name + "!");
+    } else {
+      finalWppUrl += encodeURIComponent(" (Meu nome é " + name + ")");
+    }
+    
+    window.open(finalWppUrl, "_blank");
+  }
+</script>
 
 </body>
 </html>`;

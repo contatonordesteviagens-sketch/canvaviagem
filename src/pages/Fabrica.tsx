@@ -5,6 +5,7 @@ import { Phase1Diagnostico } from "@/pages/fabrica/Phase1Diagnostico";
 import { Phase2Ativos } from "@/pages/fabrica/Phase2Ativos";
 import { Phase3ArtFactory } from "@/pages/fabrica/Phase3ArtFactory";
 import { Phase4LandingBuilder } from "@/pages/fabrica/Phase4LandingBuilder";
+import { Phase5Dashboard } from "@/pages/fabrica/Phase5Dashboard";
 import { ArrowLeft, Crown, Sparkles, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
@@ -15,6 +16,7 @@ const PHASES = [
   { num: 2, label: "Seu Site" },
   { num: 3, label: "Diagnóstico" },
   { num: 4, label: "Plano" },
+  { num: 5, label: "🚀 Painel" },
 ];
 
 const FabricaInner = () => {
@@ -125,7 +127,8 @@ const FabricaInner = () => {
         {state.currentPhase === 1 && <Phase3ArtFactory onNext={() => setPhase(2)} onBack={() => {}} />}
         {state.currentPhase === 2 && <Phase4LandingBuilder onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
         {state.currentPhase === 3 && <Phase1Diagnostico onComplete={() => setPhase(4)} onBack={() => setPhase(2)} />}
-        {state.currentPhase === 4 && <Phase2Ativos onNext={() => setPhase(1)} onBack={() => setPhase(3)} />}
+        {state.currentPhase === 4 && <Phase2Ativos onNext={() => setPhase(5)} onBack={() => setPhase(3)} />}
+        {state.currentPhase === 5 && <Phase5Dashboard />}
       </div>
     </div>
   );
