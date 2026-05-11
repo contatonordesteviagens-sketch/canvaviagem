@@ -473,7 +473,7 @@ export const Phase5Dashboard = () => {
                      {leadsList.map((l: any) => {
                         const data = l.event_data || {};
                         const rawDate = new Date(l.created_at);
-                        const cleanPhone = (data.phone || "").replace(/\D/g, "");
+                        const cleanPhone = String(data.phone || "").replace(/\D/g, "");
                         
                         return (
                            <tr key={l.id} className="hover:bg-white/[0.02] transition-colors group">
@@ -483,7 +483,7 @@ export const Phase5Dashboard = () => {
                               <td className="px-6 py-4">
                                  <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-black text-white shadow-lg group-hover:scale-110 transition-transform">
-                                       {(data.name || "L")[0].toUpperCase()}
+                                       {String(data.name || "L").charAt(0).toUpperCase() || "L"}
                                     </div>
                                     <div>
                                        <div className="font-bold text-white group-hover:text-violet-300 transition-colors">{data.name || "Não informado"}</div>
