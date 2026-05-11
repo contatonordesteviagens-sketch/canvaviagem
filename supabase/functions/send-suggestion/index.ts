@@ -115,7 +115,7 @@ serve(async (req) => {
 
     // Send email via Resend to admin
     const emailResponse = await resend.emails.send({
-      from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+      from: "Canva Viagem <contato@canvaviagem.com>",
       to: ["agenciarochadigitalmidia@gmail.com"],
       replyTo: email,
       subject: `💡 Nova Sugestão de ${name || email}`,

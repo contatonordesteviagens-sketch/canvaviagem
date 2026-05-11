@@ -172,7 +172,7 @@ async function sendWinbackEmail(resend: Resend, supabase: any, user: { id: strin
 
   const html = getEmailTemplate(content, ctaText, ctaLink);
   const result = await resend.emails.send({
-    from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+    from: "Canva Viagem <contato@canvaviagem.com>",
     to: [user.email],
     subject,
     html,

@@ -151,7 +151,7 @@ serve(async (req) => {
         const magicLink = `${siteUrl}/auth/verify?token=${token}`;
 
         await resend.emails.send({
-          from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+          from: "Canva Viagem <contato@canvaviagem.com>",
           to: [normalizedEmail],
           subject: "🔐 Seu Acesso Premium - Canva Viagem",
           html: `

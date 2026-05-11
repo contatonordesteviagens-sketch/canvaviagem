@@ -180,7 +180,7 @@ serve(async (req) => {
 
     // Enviar email via Resend
     const emailResponse = await resend.emails.send({
-      from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+      from: "Canva Viagem <contato@canvaviagem.com>",
       to: [email],
       subject: "🔐 Seu Link de Acesso - Canva Viagem",
       html: generateEmailTemplate(magicLink),

@@ -234,7 +234,7 @@ async function sendEmail1(resend: Resend, email: string, name: string, supabase:
   const html = getEmailTemplate(content, "🎥 Assistir Vídeo Aula", "https://youtu.be/1Or9QJPn6OA");
   
   const result = await resend.emails.send({
-    from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+    from: "Canva Viagem <contato@canvaviagem.com>",
     to: [email],
     subject: "Bem-vindo! Acesse seu Tutorial 🎥",
     html,
@@ -261,7 +261,7 @@ async function sendEmail2(resend: Resend, email: string, name: string, supabase:
   const html = getEmailTemplate(content, "📅 Assinar Plano Anual — R$197", "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09");
   
   const result = await resend.emails.send({
-    from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+    from: "Canva Viagem <contato@canvaviagem.com>",
     to: [email],
     subject: "Você já publicou seu primeiro post? 📱",
     html,
@@ -287,7 +287,7 @@ async function sendEmail3(resend: Resend, email: string, name: string, supabase:
   const html = getEmailTemplate(content, "🎁 Garantir Plano Anual — R$197", "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09");
   
   const result = await resend.emails.send({
-    from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+    from: "Canva Viagem <contato@canvaviagem.com>",
     to: [email],
     subject: "Oferta especial para assinante — 48 horas 🎁",
     html,
@@ -313,7 +313,7 @@ async function sendEmail4(resend: Resend, email: string, name: string, supabase:
   const html = getEmailTemplate(content, "🚀 Conhecer o Agente Lucrativo", "https://rochadigitalmidia.com.br/agente-lucrativo/");
 
   const result = await resend.emails.send({
-    from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+    from: "Canva Viagem <contato@canvaviagem.com>",
     to: [email],
     subject: "Seus posts estão trazendo clientes? 🚀",
     html,
@@ -339,7 +339,7 @@ async function sendEmail5(resend: Resend, email: string, name: string, supabase:
   const html = getEmailTemplate(content, "⚡ Quero Ser Um Agente Lucrativo — R$97", "https://rochadigitalmidia.com.br/agente-lucrativo/");
 
   const result = await resend.emails.send({
-    from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+    from: "Canva Viagem <contato@canvaviagem.com>",
     to: [email],
     subject: "Última chance: transforme posts em vendas ⚡",
     html,

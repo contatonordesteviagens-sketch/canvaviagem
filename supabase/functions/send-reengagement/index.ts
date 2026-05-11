@@ -172,7 +172,7 @@ serve(async (req) => {
         );
 
         const result = await resend.emails.send({
-          from: "Canva Viagem <lucas@rochadigitalmidia.com.br>",
+          from: "Canva Viagem <contato@canvaviagem.com>",
           to: [email],
           subject: `${name}, faz tempo que você não aparece 👋`,
           html,
