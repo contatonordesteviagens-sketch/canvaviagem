@@ -71,6 +71,23 @@ export const Phase5Dashboard = () => {
     }
   };
 
+  const [siteExists, setSiteExists] = useState<boolean | null>(null);
+  
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (!user?.id) return;
+      try {
+        const siteUrl = supabase.storage.from("thumbnails").getPublicUrl(`sites/${user.id}.html`).data.publicUrl;
+        const res = await fetch(siteUrl, { method: 'HEAD', cache: 'no-cache' });
+        setSiteExists(res.ok);
+      } catch {
+        setSiteExists(false);
+      }
+    };
+    checkStatus();
+  }, [user?.id, isPublishing]);
+
+
 
   // Gera a prévia ao vivo instantaneamente sem depender de DNS ou servidores
   useEffect(() => {
@@ -305,12 +322,25 @@ export const Phase5Dashboard = () => {
              <div className="absolute -top-10 -right-10 w-24 h-24 bg-emerald-500/10 blur-2xl rounded-full pointer-events-none" />
              <div className="flex items-center justify-between mb-6 relative">
                <h3 className="text-sm font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
-                 <Activity className="w-4 h-4 text-emerald-400" /> Seu Site Est� No Ar!
+                 <Activity className={`w-4 h-4 ${siteExists ? 'text-emerald-400' : siteExists === false ? 'text-amber-400' : 'text-white/40'}`} />
+                 {siteExists ? "Seu Site Está No Ar!" : siteExists === false ? "Site Aguardando Ativação" : "Verificando Status..."}
                </h3>
-               <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-400 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/20">
-                 <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                 ONLINE & ATIVO
-               </span>
+               {siteExists ? (
+                 <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-400 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/20">
+                   <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                   ONLINE & ATIVO
+                 </span>
+               ) : siteExists === false ? (
+                 <span className="inline-flex items-center gap-1 text-[10px] font-black text-amber-400 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+                   <span className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
+                   AGUARDANDO ATIVAÇÃO
+                 </span>
+               ) : (
+                 <span className="inline-flex items-center gap-1 text-[10px] font-black text-white/30 px-2.5 py-1 rounded-full bg-white/5 border border-white/10">
+                   <Loader2 className="w-3 h-3 animate-spin" />
+                   CHECANDO
+                 </span>
+               )}
              </div>
 
              <div className="space-y-4 relative">
@@ -324,7 +354,7 @@ export const Phase5Dashboard = () => {
                               <button 
                                  onClick={() => {
                                     navigator.clipboard.writeText(siteUrl);
-                                    toast.success("Link copiado para a área de transferência!");
+                                    toast.success("Link copiado para a áárea de transferência!");
                                  }}
                                  className="text-[10px] text-white/40 hover:text-white flex items-center gap-1"
                                  title="Copiar Link"

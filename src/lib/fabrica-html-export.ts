@@ -593,8 +593,14 @@ ${
     }).catch(err => console.warn("Tracking off", err));
   }
 
-  // Registra a visita inicial no carregamento da página
-  window.onload = () => track("page_view", { path: window.location.pathname });
+  // Registra a visita ÚNICA no carregamento da página para métricas reais
+  window.onload = () => {
+    const trackerKey = "cv_visit_" + CONFIG.agencyId;
+    if (!localStorage.getItem(trackerKey)) {
+      track("page_view", { path: window.location.pathname });
+      localStorage.setItem(trackerKey, "true"); // Marca como já visitou!
+    }
+  };
 
   function openLeadForm(targetName, finalUrl) {
     currentTarget = targetName;
