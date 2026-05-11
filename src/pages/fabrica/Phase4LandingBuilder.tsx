@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFabricaContext, type Pacote, type Depoimento } from "@/hooks/useFabricaContext";
+import { supabase } from "@/integrations/supabase/client";
 import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export";
 import {
   Plus,
@@ -89,6 +90,20 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
       if (dest) {
         patches["siteContent.finalCtaTitle"] = `Vai para ${dest}? Fala comigo agora!`;
         synced.push("CTA final");
+      }
+    }
+
+    // 🧠 5. CONTINUIDADE DO DIAGNÓSTICO (Ponto 3):
+    // Se o nível do usuário é baixo (menos que 3), o sistema INTUI que falta autoridade.
+    // Logo, ele OBRIGA e ATIVA automaticamente os depoimentos e a sessão 'Por que Nós'.
+    if (state.level && state.level < 3) {
+      if (!state.siteContent.sections?.testimonials) {
+        patches["siteContent.sections.testimonials"] = true;
+        synced.push("Blindagem de Autoridade (Depoimentos Ativados)");
+      }
+      if (!state.siteContent.sections?.whyUs) {
+        patches["siteContent.sections.whyUs"] = true;
+        synced.push("Blindagem de Autoridade (Diferenciais Ativados)");
       }
     }
 
@@ -939,7 +954,54 @@ const PublishOnLovableCard = ({
   onBack: () => void;
   onNext: () => void;
 }) => {
-  const { state } = useFabricaContext(); // Captura estado para gerar prompt de atualização cirúrgico
+  const { state } = useFabricaContext();
+  const { user } = useAuth();
+  
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+
+  const handleDirectPublish = async () => {
+    if (!user?.id) {
+      toast.error("Faça login para publicar.");
+      return;
+    }
+    
+    setIsPublishing(true);
+    try {
+      // 1. Converte HTML em Blob
+      const blob = new Blob([html], { type: 'text/html' });
+      const fileName = `sites/${user.id}_${Math.random().toString(36).substr(2, 5)}.html`;
+
+      // 2. Faz o upload para o bucket "thumbnails" que já existe e é público!
+      const { error: uploadError } = await supabase.storage
+        .from("thumbnails")
+        .upload(fileName, blob, { 
+           contentType: 'text/html',
+           upsert: true 
+        });
+
+      if (uploadError) throw uploadError;
+
+      // 3. Gera o Link Público Final!
+      const { data: urlData } = supabase.storage
+        .from("thumbnails")
+        .getPublicUrl(fileName);
+
+      setPublishedUrl(urlData.publicUrl);
+      toast.success("🚀 SITE PUBLICADO COM SUCESSO!");
+      
+      // Feedback visual de "Uau!"
+      if (typeof window !== "undefined" && (window as any).confetti) {
+         (window as any).confetti();
+      }
+
+    } catch (err: any) {
+      console.error("Publish error:", err);
+      toast.error(`Erro ao publicar: ${err.message || "Verifique sua conexão"}`);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
 
   const copyHtml = async () => {
     try {
@@ -995,8 +1057,84 @@ const PublishOnLovableCard = ({
         </div>
 
         <p className="text-sm text-white/70 mb-5 leading-relaxed">
-          Use o <strong className="text-white">Lovable</strong> (a mesma plataforma que gerou esta Fábrica) para colocar seu site no ar com domínio{" "}
-          <code className="text-[11px] bg-white/10 px-1.5 py-0.5 rounded">.lovable.app</code> de graça. Lá você consegue ajustar layout, cores e fontes com IA, e depois conectar seu domínio próprio.
+          Escolha abaixo o método mais fácil para você. A Recomendação Pro é a Publicação Automática Instantânea!
+        </p>
+
+        {/* NOVO: MÉTODO 1 - PUBLICAÇÃO AUTOMÁTICA DIRETA (BARREIRA ZERO) */}
+        <div className="mb-6 bg-white/[0.04] border-2 border-emerald-500/30 rounded-2xl p-5 shadow-2xl shadow-emerald-900/10 relative group overflow-hidden">
+           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none -mt-10 -mr-10 group-hover:bg-emerald-500/20 transition-all" />
+           
+           <div className="relative flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                 <div className="bg-emerald-500/20 text-emerald-400 p-1.5 rounded-lg border border-emerald-500/30">
+                    <Rocket className="w-4 h-4" />
+                 </div>
+                 <div>
+                    <h4 className="text-sm font-black text-white tracking-tight">MÉTODO 1: PUBLICAÇÃO EXPRESSA</h4>
+                    <p className="text-[10px] text-emerald-400/80 font-bold uppercase tracking-wider">Instante & Grátis</p>
+                 </div>
+              </div>
+              <span className="text-[9px] font-black text-emerald-300 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/20">RECOMENDADO</span>
+           </div>
+
+           {!publishedUrl ? (
+              <button
+                onClick={handleDirectPublish}
+                disabled={isPublishing}
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-black text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-70"
+              >
+                {isPublishing ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Publicando seu site...
+                  </>
+                ) : (
+                  <>
+                    <ExternalLink className="w-5 h-5" />
+                    Publicar Agora com 1 Clique
+                  </>
+                )}
+              </button>
+           ) : (
+              <div className="space-y-3 animate-in zoom-in-95 duration-300">
+                 <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
+                    <Check className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                       <div className="text-xs font-bold text-emerald-300 uppercase mb-0.5">Link do Site Gerado!</div>
+                       <div className="text-[11px] text-white/60 truncate font-mono">{publishedUrl}</div>
+                    </div>
+                 </div>
+                 <div className="grid grid-cols-2 gap-2">
+                    <button 
+                       onClick={() => {
+                          navigator.clipboard.writeText(publishedUrl);
+                          toast.success("Link copiado!");
+                       }}
+                       className="py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all"
+                    >
+                       <Copy className="w-3.5 h-3.5" /> Copiar Link
+                    </button>
+                    <a 
+                       href={publishedUrl} 
+                       target="_blank" 
+                       rel="noreferrer"
+                       className="py-2.5 px-4 rounded-xl bg-emerald-500 text-black text-xs font-black flex items-center justify-center gap-2 hover:bg-emerald-400 transition-all"
+                    >
+                       <Eye className="w-3.5 h-3.5" /> Abrir Site
+                    </a>
+                 </div>
+              </div>
+           )}
+        </div>
+
+        <div className="flex items-center gap-4 mb-5 opacity-50">
+           <div className="h-px flex-1 bg-white/10" />
+           <span className="text-[10px] font-black text-white/40 uppercase">OU CUSTOMIZE NO LOVABLE</span>
+           <div className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <p className="text-xs text-white/60 mb-4 leading-relaxed bg-white/[0.02] p-3 rounded-xl border border-white/5">
+          Para personalizar fontes, alterar o layout avançado ou conectar seu próprio domínio oficial, use o <strong className="text-white">Lovable</strong>:
         </p>
 
         <div className="space-y-2.5 mb-6">
