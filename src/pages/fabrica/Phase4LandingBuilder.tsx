@@ -324,8 +324,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                 key={key}
                 onClick={() => toggleSection(key)}
                 className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${on
-                    ? "bg-white/[0.06] border-white/20 text-white"
-                    : "bg-white/[0.02] border-white/10 text-white/40 line-through"
+                  ? "bg-white/[0.06] border-white/20 text-white"
+                  : "bg-white/[0.02] border-white/10 text-white/40 line-through"
                   }`}
               >
                 <span className="truncate text-left">{label}</span>
