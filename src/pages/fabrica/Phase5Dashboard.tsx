@@ -24,6 +24,7 @@ import { ptBR } from "date-fns/locale";
 export const Phase5Dashboard = () => {
   const { state, setPhase } = useFabricaContext();
   const { user } = useAuth();
+  const [showUrlHelp, setShowUrlHelp] = useState(false);
   
   const [stats, setStats] = useState({ visits: 0, clicks: 0, leads: 0 });
   const [loading, setLoading] = useState(true);
@@ -203,19 +204,22 @@ export const Phase5Dashboard = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/5">
+              <button 
+                onClick={() => setShowUrlHelp(true)}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/5 text-left hover:bg-white/[0.06] transition-all group/url"
+              >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-white/40 font-bold text-xs">URL</div>
+                  <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-white/40 font-bold text-xs group-hover/url:text-amber-400 transition-colors">URL</div>
                   <div>
                     <div className="text-[10px] font-bold text-white/40 uppercase">Endereço Reservado</div>
                     <div className="text-xs font-semibold text-white/90">agencia-{state.instagram?.toLowerCase() || "nome"}.site.com.br</div>
-                    <div className="text-[9px] text-amber-300/70 mt-0.5 font-medium italic">Requer ativação do Wildcard DNS no servidor</div>
+                    <div className="text-[9px] text-amber-300/70 mt-0.5 font-medium italic flex items-center gap-1">
+                      Requer ativação. Clique para saber mais.
+                    </div>
                   </div>
                 </div>
-                <button className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/60 hover:text-white">
-                  <ExternalLink className="w-4 h-4" />
-                </button>
-              </div>
+                <ArrowRight className="w-4 h-4 text-white/30 group-hover/url:text-white group-hover/url:translate-x-0.5 transition-all" />
+              </button>
 
               <button 
                 className="w-full py-3.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 text-xs transition-all hover:brightness-110 text-black"
@@ -287,6 +291,42 @@ export const Phase5Dashboard = () => {
         </div>
 
       </div>
+
+      {/* EXPLANATORY MODAL: COMO FUNCIONA O SUBDOMÍNIO */}
+      {showUrlHelp && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[#121214] border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+             <div className="p-6 border-b border-white/10 bg-gradient-to-br from-amber-500/10 to-transparent">
+                <h3 className="text-lg font-black text-white flex items-center gap-2">
+                  <ExternalLink className="w-5 h-5 text-amber-400" /> Entendendo o Subdomínio
+                </h3>
+                <p className="text-xs text-white/50 mt-1">Como este recurso de escala funciona.</p>
+             </div>
+             <div className="p-6 space-y-5">
+                <div className="space-y-3 text-sm text-white/70 leading-relaxed">
+                   <p>
+                     <strong className="text-white">1. É Automático?</strong><br/>
+                     Sim! O sistema apenas *reserva* o nome. Para ele funcionar na internet, você (o dono da plataforma) precisa apontar o seu domínio principal para o servidor (Vercel/Netlify) usando uma regra de DNS chamada "Wildcard" (*).
+                   </p>
+                   <p>
+                     <strong className="text-white">2. Tem custo ou limite de Tokens?</strong><br/>
+                     <span className="text-emerald-400 font-bold">ZERO CUSTO.</span> Não usa tokens de IA! O site gerado é estático (HTML/CSS), o que significa que 1.000 ou 10.000 pessoas acessando não custam absolutamente nada nos servidores gratuitos.
+                   </p>
+                   <p>
+                     <strong className="text-white">3. Onde ficam os dados?</strong><br/>
+                     Tudo no seu Supabase! Quando o site carrega, ele "pede" ao seu banco os textos e fotos da agência X e monta a tela instantaneamente. Sem gerar 1.000 contas separadas. Tudo centralizado na SUA conta mestra.
+                   </p>
+                </div>
+                <button 
+                  onClick={() => setShowUrlHelp(false)}
+                  className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-colors"
+                >
+                  Entendi, fechar
+                </button>
+             </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
