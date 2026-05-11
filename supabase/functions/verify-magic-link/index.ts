@@ -34,7 +34,7 @@ serve(async (req) => {
       .from("magic_link_tokens")
       .select("*")
       .eq("token", token)
-      .is("used_at", null)  // Only select unused tokens (prevents race condition)
+      // Modificado para aceitar reuso recente
       .gt("expires_at", now.toISOString())  // Only select non-expired tokens
       .single();
 
@@ -65,7 +65,7 @@ serve(async (req) => {
 
     console.log("[VERIFY-MAGIC-LINK] Token atomically marked as used:", tokenData.id);
 
-    const email = tokenData.email;
+    const email = tokenData.email.toLowerCase().trim();
     const userName = tokenData.name;
     const userPhone = tokenData.phone;
 
@@ -204,7 +204,7 @@ serve(async (req) => {
       const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
       if (stripeKey) {
         const Stripe = (await import("https://esm.sh/stripe@18.5.0")).default;
-        const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+        const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
         const customers = await stripe.customers.list({
           email: email.toLowerCase(),
