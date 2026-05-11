@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2 } from "lucide-react";
+import { buildLandingHTML } from "@/lib/fabrica-html-export";
+import { Loader2, Eye, X as CloseIcon } from "lucide-react";
 import { 
   TrendingUp, 
   Users, 
@@ -25,6 +26,21 @@ export const Phase5Dashboard = () => {
   const { state, setPhase } = useFabricaContext();
   const { user } = useAuth();
   const [showUrlHelp, setShowUrlHelp] = useState(false);
+  const [showLivePreview, setShowLivePreview] = useState(false);
+  const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
+
+  // Gera a prévia ao vivo instantaneamente sem depender de DNS ou servidores
+  useEffect(() => {
+    if (showLivePreview) {
+      const html = buildLandingHTML(state, user?.id);
+      const blob = new Blob([html], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      setPreviewBlobUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreviewBlobUrl(null);
+    }
+  }, [showLivePreview, state, user]);
   
   const [stats, setStats] = useState({ visits: 0, clicks: 0, leads: 0 });
   const [loading, setLoading] = useState(true);
@@ -222,6 +238,13 @@ export const Phase5Dashboard = () => {
               </button>
 
               <button 
+                onClick={() => setShowLivePreview(true)}
+                className="w-full py-3 px-4 rounded-xl bg-white/10 border border-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center gap-2 text-sm transition-all"
+              >
+                <Eye className="w-4 h-4" /> Visualizar Site Agora
+              </button>
+
+              <button 
                 className="w-full py-3.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 text-xs transition-all hover:brightness-110 text-black"
                 style={{ background: `linear-gradient(135deg, ${primaryColor}, #FCD34D)` }}
               >
@@ -325,6 +348,45 @@ export const Phase5Dashboard = () => {
                 </button>
              </div>
           </div>
+        </div>
+      )}
+
+      {/* 🆕 MODAL DE PRÉVIA AO VIVO (SIMULADOR) */}
+      {showLivePreview && (
+        <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex flex-col animate-in fade-in duration-300">
+           {/* Header da Prévia */}
+           <div className="bg-[#121214] border-b border-white/10 p-4 flex items-center justify-between shadow-xl">
+             <div className="flex items-center gap-3">
+               <div className="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg">
+                 <Eye className="w-5 h-5" />
+               </div>
+               <div>
+                 <h3 className="text-white font-black text-sm uppercase tracking-wider">Simulador de Site Ativo</h3>
+                 <p className="text-[10px] text-white/50">Visualizando sua agência localmente antes da publicação oficial.</p>
+               </div>
+             </div>
+             <button 
+               onClick={() => setShowLivePreview(false)}
+               className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 transition-all"
+             >
+               <CloseIcon className="w-6 h-6" />
+             </button>
+           </div>
+           
+           {/* Container do IFrame (Simulando o site rodando) */}
+           <div className="flex-1 bg-zinc-900 relative">
+             {previewBlobUrl ? (
+               <iframe 
+                 src={previewBlobUrl} 
+                 className="w-full h-full border-none"
+                 title="Preview Realtime do Site"
+               />
+             ) : (
+               <div className="absolute inset-0 flex items-center justify-center text-white/30 gap-2">
+                 <Loader2 className="w-6 h-6 animate-spin" /> Renderizando visualização...
+               </div>
+             )}
+           </div>
         </div>
       )}
 
