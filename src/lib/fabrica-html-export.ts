@@ -23,6 +23,30 @@ function darken(hex: string, amount = 0.7) {
   return `rgb(${Math.round(r * f)}, ${Math.round(g * f)}, ${Math.round(b * f)})`;
 }
 
+// Helper para estruturar o preço visualmente (como E-commerce)
+function parsePriceHTML(priceStr: string): string {
+  const s = esc(priceStr);
+  // Captura Moeda + Valor (ex: R$ 1.499,90)
+  const regex = /^(.*?)(R\$|US\$|€|£|AR\$)\s?([\d.,]+)(.*)$/i;
+  const m = s.match(regex);
+  
+  if (!m) return `<div class="price-main">${s}</div>`;
+
+  const prefix = m[1]?.trim() || "";
+  const symbol = m[2]?.trim() || "R$";
+  const value = m[3]?.trim() || "";
+  const suffix = m[4]?.trim() || "";
+
+  return `<div class="price-stack">
+    ${prefix ? `<div class="price-row-top">${prefix}</div>` : ""}
+    <div class="price-row-main">
+      <span class="price-symbol">${symbol}</span>
+      <span class="price-value">${value}</span>
+    </div>
+    ${suffix ? `<div class="price-row-bottom">${suffix}</div>` : ""}
+  </div>`;
+}
+
 export function buildLandingHTML(state: FabricaState): string {
   const color = state.primaryColor || "#0F2742";
   const colorDark = darken(color, 0.45);
@@ -71,7 +95,7 @@ export function buildLandingHTML(state: FabricaState): string {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${esc(agencia)} — Consultoria Premium de Viagens</title>
 <meta name="description" content="${esc(subheadline)}">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--brand:${color};--brand-dark:${colorDark};--ink:#0a0a0b;--muted:#5a6470;--soft:#f4f6f9}
@@ -168,7 +192,14 @@ section{padding:80px 0}
 .dest-loc{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px}
 .dest-body h3{font-size:22px;margin-bottom:8px}
 .dest-body p{color:var(--muted);font-size:14px;flex:1;margin-bottom:20px}
-.dest-price{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--brand);margin-bottom:18px}
+.dest-price{margin-bottom:18px;font-family:'Sora',sans-serif}
+.price-stack{display:flex;flex-direction:column;gap:1px}
+.price-row-top{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:-2px}
+.price-row-main{display:flex;align-items:baseline;gap:4px;line-height:1.1}
+.price-symbol{font-size:16px;font-weight:700;color:var(--ink);opacity:0.8}
+.price-value{font-size:32px;font-weight:800;color:var(--brand);letter-spacing:-0.03em}
+.price-row-bottom{font-size:12px;color:var(--muted);font-weight:500}
+.price-main{font-size:20px;font-weight:700;color:var(--brand)}
 .dest-cta{display:inline-flex;align-items:center;gap:6px;color:var(--brand);font-weight:600;font-size:14px;border-top:1px solid rgba(0,0,0,.06);padding-top:16px;margin-top:auto}
 @media(max-width:980px){.destinos-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:640px){.destinos-grid{grid-template-columns:1fr}}
@@ -334,7 +365,7 @@ ${sc.sections?.destinos === false ? "" : `<section id="destinos">
           <div class="dest-loc">${esc(cidade)}</div>
           <h3>${esc(p.title)}</h3>
           <p>${esc(p.description)}</p>
-          <div class="dest-price">${esc(p.price)}</div>
+          <div class="dest-price">${parsePriceHTML(p.price)}</div>
           <span class="dest-cta">Saiba mais →</span>
         </div>
       </a>`
@@ -536,7 +567,7 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
     <div class="dest-loc">${esc(cidade)}</div>
     <h3>${esc(p.title)}</h3>
     <p>${esc(p.description)}</p>
-    <div class="dest-price">${esc(p.price)}</div>
+    <div class="dest-price">${parsePriceHTML(p.price)}</div>
     <span class="dest-cta">Saiba mais →</span>
   </div>
 </a>`)

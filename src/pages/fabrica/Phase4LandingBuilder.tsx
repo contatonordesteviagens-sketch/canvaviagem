@@ -853,6 +853,18 @@ const ImageGallery = ({
             <div key={url} className="relative aspect-square rounded-lg overflow-hidden border border-white/10 group">
               <img src={url} alt="" className="w-full h-full object-cover" />
               <button
+                onClick={() => {
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `banco-imagem-${Date.now()}.png`;
+                  a.click();
+                }}
+                className="absolute top-1 left-1 p-1 rounded-md bg-black/70 text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                title="Baixar imagem original"
+              >
+                <Download className="w-3 h-3" />
+              </button>
+              <button
                 onClick={() => onRemove(url)}
                 className="absolute top-1 right-1 p-1 rounded-md bg-black/70 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
               >
