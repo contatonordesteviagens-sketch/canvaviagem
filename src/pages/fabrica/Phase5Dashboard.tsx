@@ -102,14 +102,27 @@ export const Phase5Dashboard = () => {
           className="absolute top-0 right-0 w-64 h-64 blur-[100px] rounded-full opacity-20 -mr-10 -mt-10 transition-all group-hover:opacity-30"
           style={{ background: primaryColor }}
         />
-        <div className="relative z-10">
-          <div className="text-xs font-bold text-white/40 uppercase tracking-widest mb-1">{formatString(currentDay)}</div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-2">
-            Olá, {state.agencyName || "Agência"}! 👋
-          </h2>
-          <p className="text-sm text-white/60 max-w-md leading-relaxed">
-            Seu ecossistema digital está ativo. Acompanhe o desempenho do seu mini-site e veja as novidades preparadas para você hoje.
-          </p>
+        <div className="relative z-10 flex flex-col sm:flex-row gap-5 items-center">
+          {state.logoBase64 && (
+            <div className="w-16 h-16 rounded-2xl bg-white/10 p-2 border border-white/20 flex items-center justify-center flex-shrink-0 shadow-2xl">
+              <img src={state.logoBase64} className="w-full h-full object-contain" alt="Logo" />
+            </div>
+          )}
+          <div className="text-center sm:text-left flex-1">
+            <div className="text-xs font-bold text-white/40 uppercase tracking-widest mb-1">{formatString(currentDay)}</div>
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-2">
+              Olá, {state.agencyName || "Agência"}! 👋
+            </h2>
+            <p className="text-sm text-white/60 max-w-md leading-relaxed">
+              Diagnóstico: <span className="font-bold text-emerald-400">Nível {state.level || 1}</span> • {state.selectedPackages.length} Pacotes Ativos no Site.
+            </p>
+          </div>
+          <button 
+            onClick={() => setPhase(3)}
+            className="text-[10px] font-bold bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-2 rounded-full text-white/60 transition-all hover:text-white"
+          >
+            ✏️ Editar Dados
+          </button>
         </div>
       </div>
 
@@ -183,9 +196,9 @@ export const Phase5Dashboard = () => {
               <h3 className="text-sm font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
                 <Activity className="w-4 h-4 text-amber-400" /> Status Online
               </h3>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 px-2 py-1 rounded-full bg-emerald-400/10">
-                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                NO AR
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 px-2 py-1 rounded-full bg-amber-400/10">
+                <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" />
+                AGUARDANDO DNS
               </span>
             </div>
 
@@ -194,8 +207,9 @@ export const Phase5Dashboard = () => {
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-white/40 font-bold text-xs">URL</div>
                   <div>
-                    <div className="text-[10px] font-bold text-white/40 uppercase">Seu Subdomínio Ativo</div>
-                    <div className="text-xs font-semibold text-white/90">agencia-{state.instagram || "viagem"}.canva.cc</div>
+                    <div className="text-[10px] font-bold text-white/40 uppercase">Endereço Reservado</div>
+                    <div className="text-xs font-semibold text-white/90">agencia-{state.instagram?.toLowerCase() || "nome"}.site.com.br</div>
+                    <div className="text-[9px] text-amber-300/70 mt-0.5 font-medium italic">Requer ativação do Wildcard DNS no servidor</div>
                   </div>
                 </div>
                 <button className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/60 hover:text-white">

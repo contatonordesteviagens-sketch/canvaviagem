@@ -228,29 +228,64 @@ export const Phase1Diagnostico = ({ onComplete, onBack }: Props) => {
               exit={{ opacity: 0, x: 20 }}
               className="space-y-5"
             >
-              <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-6 flex items-center gap-2">
+              <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
-                1. Perfil Estratégico da Agência
+                1. Identidade & Perfil da Agência
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FabField label="Nome da agência *" value={state.agencyName} onChange={(v) => update({ agencyName: v })} placeholder="Ex: Lua Cheia Viagens" />
-                <div>
-                  <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Tipo de agência *</label>
-                  <select
-                    value={state.agencyType}
-                    onChange={(e) => update({ agencyType: e.target.value as AgencyType })}
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors"
+
+              {/* 🆕 LOGO E NOME EM DESTAQUE */}
+              <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 flex flex-col sm:flex-row gap-6 items-center mb-6">
+                <div className="relative group flex-shrink-0">
+                  <div 
+                    className="w-24 h-24 rounded-2xl border-2 border-dashed border-white/20 bg-white/[0.02] flex flex-col items-center justify-center overflow-hidden transition-all group-hover:border-white/40 cursor-pointer relative"
                   >
-                    <option value="" className="bg-zinc-900">Selecione...</option>
-                    {AGENCY_TYPES.map((t) => (
-                      <option key={t.v} value={t.v} className="bg-zinc-900">{t.l}</option>
-                    ))}
-                  </select>
+                    {state.logoBase64 ? (
+                      <img src={state.logoBase64} className="w-full h-full object-contain p-2" alt="Logo" />
+                    ) : (
+                      <>
+                        <Upload className="w-6 h-6 text-white/30 mb-1" />
+                        <span className="text-[9px] font-bold text-white/40 uppercase">Sua Logo</span>
+                      </>
+                    )}
+                    <label className="absolute inset-0 cursor-pointer">
+                      <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                    </label>
+                  </div>
+                  {state.logoBase64 && (
+                    <button 
+                      onClick={() => update({ logoBase64: "" })}
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex-1 w-full space-y-4">
+                   <FabField label="Nome Fantasia da sua Agência *" value={state.agencyName} onChange={(v) => update({ agencyName: v })} placeholder="Ex: Lua Cheia Viagens" />
+                   
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                     <div>
+                       <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Tipo de agência *</label>
+                       <select
+                         value={state.agencyType}
+                         onChange={(e) => update({ agencyType: e.target.value as AgencyType })}
+                         className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors text-sm"
+                       >
+                         <option value="" className="bg-zinc-900">Selecione...</option>
+                         {AGENCY_TYPES.map((t) => (
+                           <option key={t.v} value={t.v} className="bg-zinc-900">{t.l}</option>
+                         ))}
+                       </select>
+                     </div>
+                     <div className="sm:hidden h-0" /> {/* spacer */}
+                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FabField label="@ do Instagram" value={state.instagram} onChange={(v) => update({ instagram: v.replace(/^@/, "") })} placeholder="suaagencia" />
-                <FabPhoneField label="WhatsApp (com DDD) *" value={state.whatsapp} onChange={(v) => update({ whatsapp: v })} />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/[0.02] border border-white/[0.05] rounded-xl p-4">
+                 <FabField label="@ do Instagram Profissional" value={state.instagram} onChange={(v) => update({ instagram: v.replace(/^@/, "") })} placeholder="suaagencia" />
+                 <FabPhoneField label="WhatsApp de Vendas (com DDD) *" value={state.whatsapp} onChange={(v) => update({ whatsapp: v })} />
               </div>
               <div>
                 <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">Nicho / Carro-chefe *</label>

@@ -355,7 +355,7 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
         ) : filteredStories.length === 0 ? (
           <p className="text-white/40 text-sm">Sem stories correspondentes.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {filteredStories.map((s: any) => (
               <a key={s.id} href={s.url} target="_blank" rel="noopener" className="block group bg-white/[0.03] border border-white/[0.08] hover:border-emerald-500/30 rounded-xl overflow-hidden transition-all relative">
                 {s.image_url ? (
@@ -423,7 +423,7 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
           Voltar
         </button>
         <button onClick={onNext} className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all hover:brightness-110" style={{ background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)`, boxShadow: `0 8px 24px ${state.primaryColor}55` }}>
-          Avançar para Destinos Ads <ArrowRight className="w-4 h-4" />
+          Avançar <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>
