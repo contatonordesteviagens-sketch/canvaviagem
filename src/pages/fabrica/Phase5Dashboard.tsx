@@ -262,7 +262,7 @@ export const Phase5Dashboard = () => {
              <div className="absolute -top-10 -right-10 w-24 h-24 bg-emerald-500/10 blur-2xl rounded-full pointer-events-none" />
              <div className="flex items-center justify-between mb-6 relative">
                <h3 className="text-sm font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
-                 <Activity className="w-4 h-4 text-emerald-400" /> Seu Site Está No Ar!
+                 <Activity className="w-4 h-4 text-emerald-400" /> Seu Site Estï¿½ No Ar!
                </h3>
                <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-400 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/20">
                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
@@ -272,7 +272,7 @@ export const Phase5Dashboard = () => {
 
              <div className="space-y-4 relative">
                {(() => {
-                  const siteUrl = user?.id ? supabase.storage.from("thumbnails").getPublicUrl(sites/.html).data.publicUrl : "#";
+                  const siteUrl = user?.id ? supabase.storage.from("thumbnails").getPublicUrl(`sites/${user?.id}.html`).data.publicUrl : "#";
                   return (
                      <>
                         <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 group transition-all">
@@ -285,7 +285,7 @@ export const Phase5Dashboard = () => {
                               <button 
                                  onClick={() => {
                                     navigator.clipboard.writeText(siteUrl);
-                                    alert("Link copiado para a área de transferência!");
+                                    alert("Link copiado para a ï¿½rea de transferï¿½ncia!");
                                  }}
                                  className="flex-1 py-2.5 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
                               >
@@ -315,7 +315,7 @@ export const Phase5Dashboard = () => {
              </div>
           </div>
 
-          {/* ?? PONTO 6: INTELIGÊNCIA ARTIFICIAL (MÉTRICAS COM INSIGHT) */}
+          {/* ðŸ§  PONTO 6: INTELIGï¿½NCIA ARTIFICIAL (Mï¿½TRICAS COM INSIGHT) */}
           <div className="bg-white/[0.03] border border-indigo-500/20 rounded-2xl p-5 relative overflow-hidden group">
              <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 blur-[50px] rounded-full" />
              <div className="flex items-center gap-2 mb-3">
@@ -326,14 +326,14 @@ export const Phase5Dashboard = () => {
              </div>
              <div className="text-[11px] leading-relaxed text-white/80">
                 {stats.clicks > 0 ? (
-                   <p>Detectamos tráfego no seu site. Para aumentar a conversão de <strong>{((stats.leads / (stats.visits || 1)) * 100).toFixed(1)}%</strong>, sugerimos publicar o link da página de <span className="text-indigo-300 font-bold">{state.destinos?.[0] || "Destinos"}</span> diretamente nos seus stories agora.</p>
+                   <p>Detectamos trï¿½fego no seu site. Para aumentar a conversï¿½o de <strong>{((stats.leads / (stats.visits || 1)) * 100).toFixed(1)}%</strong>, sugerimos publicar o link da pï¿½gina de <span className="text-indigo-300 font-bold">{state.destinos?.[0] || "Destinos"}</span> diretamente nos seus stories agora.</p>
                 ) : (
-                   <p>Seu site está pronto, mas aguarda visitas. ?? <strong>Dica da IA:</strong> Gere um anúncio de <span className="text-indigo-300 font-bold">{state.destinos?.[0] || "pacote promocional"}</span> na Fábrica e impulsione por 3 dias para colher seus primeiros leads.</p>
+                   <p>Seu site estï¿½ pronto, mas aguarda visitas. ?? <strong>Dica da IA:</strong> Gere um anï¿½ncio de <span className="text-indigo-300 font-bold">{state.destinos?.[0] || "pacote promocional"}</span> na Fï¿½brica e impulsione por 3 dias para colher seus primeiros leads.</p>
                 )}
              </div>
           </div>
 
-          {/* ?? PONTO 7: EFEITO CHICLETE (ROTEIRO DINÂMICO DIÁRIO) */}
+          {/* ðŸ“… PONTO 7: EFEITO CHICLETE (ROTEIRO DINï¿½MICO DIï¿½RIO) */}
           <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 overflow-hidden relative group">
              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -341,22 +341,22 @@ export const Phase5Dashboard = () => {
                     <Calendar className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-black text-white text-sm">?? Roteiro de Stories de Hoje</h3>
+                    <h3 className="font-black text-white text-sm">ðŸ“± Roteiro de Stories de Hoje</h3>
                     <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">{formatString(currentDay)}</p>
                   </div>
                 </div>
-                <span className="text-[9px] font-black bg-white/5 text-white/60 px-2 py-0.5 rounded border border-white/10">DICA DIÁRIA</span>
+                <span className="text-[9px] font-black bg-white/5 text-white/60 px-2 py-0.5 rounded border border-white/10">DICA DIï¿½RIA</span>
              </div>
              
              <div className="p-4 rounded-xl bg-gradient-to-br from-black/40 to-black/10 border border-white/5 relative">
                {(() => {
                   const dayNum = new Date().getDay(); 
-                  let script = { t: "Curiosidade de Destino", d: "Poste 1 foto de um destino exótico e faça uma enquete: 'Quem você levaria?'" };
+                  let script = { t: "Curiosidade de Destino", d: "Poste 1 foto de um destino exï¿½tico e faï¿½a uma enquete: 'Quem vocï¿½ levaria?'" };
                   
                   if (dayNum === 1) script = { t: "Dica de Planejamento", d: "Comece a semana dando uma dica de economia na mala de viagem. Isso gera autoridade!" };
-                  else if (dayNum === 3) script = { t: "Quebra de Objeção", d: "Explique por que comprar com agente de viagem é mais seguro do que no buscador online." };
-                  else if (dayNum === 5) script = { t: "Chamada de Oferta", d: "Sexta é dia de sonhar! Publique seu pacote principal com link direto para o Whats." };
-                  else if (dayNum === 0 || dayNum === 6) script = { t: "Bastidores / Relax", d: "Mostre um pouco do seu dia ou de um cliente que viajou. Gera conexão!" };
+                  else if (dayNum === 3) script = { t: "Quebra de Objeï¿½ï¿½o", d: "Explique por que comprar com agente de viagem ï¿½ mais seguro do que no buscador online." };
+                  else if (dayNum === 5) script = { t: "Chamada de Oferta", d: "Sexta ï¿½ dia de sonhar! Publique seu pacote principal com link direto para o Whats." };
+                  else if (dayNum === 0 || dayNum === 6) script = { t: "Bastidores / Relax", d: "Mostre um pouco do seu dia ou de um cliente que viajou. Gera conexï¿½o!" };
                   
                   return (
                      <>
