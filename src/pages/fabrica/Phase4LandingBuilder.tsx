@@ -982,7 +982,8 @@ const PublishOnLovableCard = ({
         .from("thumbnails")
         .getPublicUrl(fileName);
 
-      setPublishedUrl(urlData.publicUrl);
+      const internalUrl = `${window.location.origin}/view/${user.id}`;
+      setPublishedUrl(internalUrl);
       toast.success("🚀 SITE PUBLICADO COM SUCESSO!");
 
       // Feedback visual de "Uau!"

@@ -86,7 +86,7 @@ export default function SiteViewer() {
            title="Agency Site"
            className="w-full h-full border-0"
            style={{ width: '100%', height: '100%', border: 'none' }}
-           sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
          />
        )}
     </div>
