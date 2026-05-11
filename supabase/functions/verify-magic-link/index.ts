@@ -38,10 +38,15 @@ serve(async (req) => {
       .gt("expires_at", now.toISOString())  // Only select non-expired tokens
       .single();
 
-    if (fetchError || !tokenData) {
-      console.error("Token not found or already used:", fetchError);
+    // --- MECANISMO DE RESILIÊNCIA CONTRA SCANNER DE E-MAIL ---
+    const wasUsed = !!tokenData?.used_at;
+    // Tolerância de 5 minutos para reuso (evita falha se o antivírus abrir o link segundos antes)
+    const usedRecently = wasUsed && (now.getTime() - new Date(tokenData.used_at).getTime() < 5 * 60 * 1000);
+
+    if (fetchError || !tokenData || (wasUsed && !usedRecently)) {
+      console.error("[VERIFY] Token não encontrado, expirado ou realmente já usado:", fetchError || "Usado há mais de 5 min");
       return new Response(
-        JSON.stringify({ error: "Token inválido, já utilizado ou expirado" }),
+        JSON.stringify({ error: "Token inválido, já utilizado há mais de 5 min ou expirado" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -56,11 +61,16 @@ serve(async (req) => {
       .select("id");
 
     if (updateError || !updateResult || updateResult.length === 0) {
-      console.error("Token already used (race condition prevented):", updateError);
-      return new Response(
-        JSON.stringify({ error: "Este link já foi utilizado" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      // Se falhou o update mas foi usado recentemente, PERMITIMOS CONTINUAR
+      if (usedRecently) {
+        console.log("[VERIFY] Pulando trava de reuso: Token usado muito recentemente. Autorizando login.");
+      } else {
+        console.error("Token already used (race condition prevented):", updateError);
+        return new Response(
+          JSON.stringify({ error: "Este link já foi utilizado e expirou a janela de reuso." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     console.log("[VERIFY-MAGIC-LINK] Token atomically marked as used:", tokenData.id);
