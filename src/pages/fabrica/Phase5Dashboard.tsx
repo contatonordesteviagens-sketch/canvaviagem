@@ -43,6 +43,7 @@ export const Phase5Dashboard = () => {
   }, [showLivePreview, state, user]);
   
   const [stats, setStats] = useState({ visits: 0, clicks: 0, leads: 0 });
+  const [leadsList, setLeadsList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -72,11 +73,21 @@ export const Phase5Dashboard = () => {
           .eq("event_type", "lead_captured")
           .contains("event_data", { agency_id: agencyTrackingId });
 
+        // 4. NOVA COLEÇÃO: BUSCA OS DADOS REAIS DOS ÚLTIMOS 15 LEADS (CRM!)
+        const { data: lData } = await supabase
+          .from("analytics_events")
+          .select("id, created_at, event_data")
+          .eq("event_type", "lead_captured")
+          .contains("event_data", { agency_id: agencyTrackingId })
+          .order("created_at", { ascending: false })
+          .limit(15);
+
         setStats({
           visits: vCount || 0,
           clicks: cCount || 0,
           leads: lCount || 0
         });
+        setLeadsList(lData || []);
       } catch (e) {
         console.warn("Falha ao carregar métricas reais:", e);
       } finally {
@@ -110,6 +121,23 @@ export const Phase5Dashboard = () => {
 
   const primaryColor = state.primaryColor || "#F59E0B";
 
+  // CÁLCULO DE GAMIFICAÇÃO GLOBAL DA CONTA
+  const getAppProgress = () => {
+    let points = 0;
+    let count = 0;
+    if (state.logoBase64) { points += 25; count++; }
+    if (state.agencyName) { points += 25; count++; }
+    if (state.diagnosticoCompleto) { points += 25; count++; }
+    if (state.selectedPackages.length > 0) { points += 25; count++; }
+    
+    let badge = { n: "Novato", e: "🐣", c: "text-gray-400" };
+    if (points === 100) badge = { n: "Agência Pró", e: "🏆", c: "text-amber-400" };
+    else if (points >= 50) badge = { n: "Em Decolagem", e: "🚀", c: "text-blue-400" };
+    
+    return { points, badge, count };
+  };
+  const progress = getAppProgress();
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
@@ -140,6 +168,28 @@ export const Phase5Dashboard = () => {
           >
             ✏️ Editar Dados
           </button>
+        </div>
+      </div>
+
+      {/* BARRA DE GAMIFICAÇÃO GLOBAL */}
+      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 flex items-center justify-between gap-4 group hover:border-white/20 transition-all shadow-lg">
+        <div className="flex items-center gap-3 flex-1">
+           <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+             {progress.badge.e}
+           </div>
+           <div className="flex-1">
+             <div className="flex items-center justify-between mb-1.5">
+               <span className={`text-xs font-extrabold uppercase tracking-wider ${progress.badge.c}`}>{progress.badge.n}</span>
+               <span className="text-[10px] font-bold text-white/40">{progress.points}% Concluído</span>
+             </div>
+             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+               <div className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-1000" style={{ width: `${progress.points}%` }} />
+             </div>
+           </div>
+        </div>
+        <div className="text-right hidden sm:block pl-4 border-l border-white/10">
+           <div className="text-[10px] font-bold text-white/40 uppercase">Passos Ativos</div>
+           <div className="text-sm font-black text-white">{progress.count}/4</div>
         </div>
       </div>
 
@@ -313,6 +363,90 @@ export const Phase5Dashboard = () => {
           </div>
         </div>
 
+      </div>
+
+      {/* 🆕 NOVO MÓDULO: CENTRO DE LEADS / CRM INTEGRADO (ULTRA VALOR AGREGADO) */}
+      <div className="bg-white/[0.03] border border-white/10 rounded-3xl overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-6 duration-700 mt-6">
+         <div className="p-6 border-b border-white/10 flex items-center justify-between bg-gradient-to-br from-violet-500/5 to-transparent">
+            <div className="flex items-center gap-3">
+               <div className="p-2.5 rounded-xl bg-violet-500/20 text-violet-400 shadow-inner">
+                  <Users className="w-5 h-5" />
+               </div>
+               <div>
+                  <h3 className="font-black text-white text-base tracking-tight">Carteira de Clientes (Leads)</h3>
+                  <p className="text-[11px] text-white/50">Pessoas interessadas que preencheram o formulário no seu site.</p>
+               </div>
+            </div>
+            <div className="hidden sm:block text-[10px] font-extrabold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full animate-pulse">
+               DADOS AO VIVO
+            </div>
+         </div>
+
+         <div className="overflow-x-auto">
+            {leadsList.length === 0 ? (
+               <div className="p-12 text-center flex flex-col items-center justify-center space-y-3 text-white/30">
+                  <MousePointerClick className="w-8 h-8 opacity-40" />
+                  <div className="text-sm font-medium">Nenhum lead recebido ainda.</div>
+                  <p className="text-[10px] max-w-xs leading-relaxed">Assim que alguém clicar em comprar no seu site, os dados aparecerão aqui automaticamente em tempo real.</p>
+               </div>
+            ) : (
+               <table className="w-full text-left text-sm border-collapse">
+                  <thead>
+                     <tr className="bg-white/[0.02] border-b border-white/5">
+                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Data/Hora</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Nome do Cliente</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Interesse</th>
+                        <th className="px-6 py-4 text-right text-[10px] font-bold text-white/40 uppercase tracking-wider">Ação</th>
+                     </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                     {leadsList.map((l: any) => {
+                        const data = l.event_data || {};
+                        const rawDate = new Date(l.created_at);
+                        const cleanPhone = (data.phone || "").replace(/\D/g, "");
+                        
+                        return (
+                           <tr key={l.id} className="hover:bg-white/[0.02] transition-colors group">
+                              <td className="px-6 py-4 whitespace-nowrap text-xs text-white/50">
+                                 {rawDate.toLocaleDateString('pt-BR')} <span className="opacity-50 text-[10px] ml-1">{rawDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                              </td>
+                              <td className="px-6 py-4">
+                                 <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-black text-white shadow-lg group-hover:scale-110 transition-transform">
+                                       {(data.name || "L")[0].toUpperCase()}
+                                    </div>
+                                    <div>
+                                       <div className="font-bold text-white group-hover:text-violet-300 transition-colors">{data.name || "Não informado"}</div>
+                                       <div className="text-[10px] text-white/40">{data.phone || "Sem telefone"}</div>
+                                    </div>
+                                 </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                 <span className="inline-flex px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] font-medium text-white/70 max-w-[180px] truncate">
+                                    {data.interest || "Navegação Geral"}
+                                 </span>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                 {cleanPhone ? (
+                                    <a 
+                                       href={`https://wa.me/${cleanPhone.startsWith('55') ? '' : '55'}${cleanPhone}`} 
+                                       target="_blank" 
+                                       rel="noreferrer"
+                                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#25D366] hover:bg-[#22c35e] text-white text-[11px] font-black rounded-lg transition-all active:scale-95 shadow-lg shadow-green-900/20"
+                                    >
+                                       <MessageSquare className="w-3.5 h-3.5" /> Chamar Whats
+                                    </a>
+                                 ) : (
+                                    <span className="text-[10px] text-white/30">Sem contato</span>
+                                 )}
+                              </td>
+                           </tr>
+                        );
+                     })}
+                  </tbody>
+               </table>
+            )}
+         </div>
       </div>
 
       {/* EXPLANATORY MODAL: COMO FUNCIONA O SUBDOMÍNIO */}

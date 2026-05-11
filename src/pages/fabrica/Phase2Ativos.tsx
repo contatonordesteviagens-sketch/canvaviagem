@@ -186,8 +186,48 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
     toast.success("Copiado!");
   };
 
+  // Gamificação: Calcula Progresso do Plano 30 Dias
+  const totalTasks = CHECKLIST_30.reduce((acc, val) => acc + val.tasks.length, 0);
+  const doneCount = Object.values(state.checklist30days).filter(Boolean).length;
+  const pct = Math.round((doneCount / totalTasks) * 100);
+  
+  const getRank = (p: number) => {
+    if (p >= 100) return { n: "Mestre Digital", e: "👑", c: "text-amber-400" };
+    if (p >= 60) return { n: "Influenciador", e: "🔥", c: "text-purple-400" };
+    if (p >= 30) return { n: "Engajado", e: "🚀", c: "text-blue-400" };
+    return { n: "Iniciante", e: "🌱", c: "text-emerald-400" };
+  };
+  const rank = getRank(pct);
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      
+      {/* GAMIFICAÇÃO NO TOPO DA FASE 4 */}
+      <div className="bg-gradient-to-br from-zinc-900 to-black border border-white/10 rounded-2xl p-5 overflow-hidden relative shadow-2xl group">
+         <div className="absolute top-0 right-0 w-32 h-32 blur-[50px] bg-emerald-500/10 rounded-full -mr-10 -mt-10 group-hover:bg-emerald-500/20 transition-all" />
+         <div className="relative flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+               <div className="w-12 h-12 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-2xl shadow-inner">
+                  {rank.e}
+               </div>
+               <div>
+                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Seu Nível Operacional</div>
+                  <div className={`text-lg font-black tracking-tight ${rank.c}`}>{rank.n}</div>
+               </div>
+            </div>
+            <div className="text-right">
+               <div className="text-2xl font-black text-white">{pct}%</div>
+               <div className="text-[9px] font-bold text-white/50 uppercase">Concluído</div>
+            </div>
+         </div>
+         <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden relative">
+            <div 
+              className="h-full rounded-full transition-all duration-700 bg-gradient-to-r from-emerald-500 to-emerald-300"
+              style={{ width: `${pct}%` }}
+            />
+         </div>
+         <p className="text-[10px] text-white/40 mt-2 text-center italic">Conclua o checklist de 30 dias abaixo para subir de nível!</p>
+      </div>
       {userDestinos.length > 0 && (
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
           <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-2">Filtrando conteúdo para</div>
