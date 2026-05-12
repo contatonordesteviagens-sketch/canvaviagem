@@ -2645,7 +2645,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         {loading && <p className="text-xs text-white/50 text-center mt-1">A IA leva 8 a 25 segundos.</p>}
 
         {(generationError || generatedImages.length > 0) && (
-          <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-4">
+          <div ref={resultRef} className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-4 scroll-mt-24">
             {generationError && (
               <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-100">
                 <div className="font-bold">Não foi possível gerar a imagem</div>
