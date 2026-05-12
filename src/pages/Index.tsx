@@ -22,55 +22,45 @@ const ResourceSection = lazy(() => import("@/components/ResourceSection").then(m
 const BlogSection = () => {
   const posts = [
     {
-      title: "Manual do ChatGPT Para Agência de Viagem: Prompts Prontos",
-      image: "/assets/blog/webinar/chatgpt_agencia_viagem_1773093400001_1773103323481.png",
+      title: "Manual do ChatGPT Para Agência: Prompts",
       slug: "chatgpt-para-agencia-de-viagem-manual-completo"
     },
     {
-      title: "Google Gemini: O Guia Para Pesquisa de Destinos",
-      image: "/assets/blog/webinar/google_gemini_agencia_1773093400002_1773103338656.png",
-      slug: "google-gemini-para-agencia-de-viagem"
-    },
-    {
-      title: "Manus AI: O Primeiro Agente Autônomo No Turismo",
-      image: "/assets/blog/webinar/manus_ai_agencia_1773093400004_1773103364569.png",
-      slug: "manus-ai-para-agencia-de-viagem"
-    },
-    {
-      title: "Guia Definitivo IA No Turismo 2026: O Que Funciona",
-      image: "/assets/blog/webinar/mapa_agencia_5_estrelas_convite_1773093394115.png",
+      title: "Guia IA No Turismo 2026: O Que Funciona",
       slug: "guia-definitivo-ia-para-agencia-de-viagem-2026"
+    },
+    {
+      title: "Google Gemini: Guia De Pesquisa",
+      slug: "google-gemini-para-agencia-de-viagem"
     }
   ];
 
   return (
-    <section className="py-16 bg-muted/30">
+    <section className="py-6 border-t border-border/40 bg-background">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-end mb-8">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">Blog Canva Viagem</h2>
-            <p className="text-muted-foreground">Dicas estratégicas para agentes</p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Blog</h3>
+            <div className="h-4 w-px bg-border hidden md:block" />
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              {posts.map((post, i) => (
+                <Link 
+                  key={i} 
+                  to={`/blog/${post.slug}`} 
+                  state={{ fromInternal: true }} 
+                  className="text-sm font-medium text-foreground hover:text-primary transition-colors flex items-center gap-1.5"
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary/40" />
+                  {post.title}
+                </Link>
+              ))}
+            </div>
           </div>
-          <Button variant="ghost" asChild>
-            <Link to="/blog" state={{ fromInternal: true }} className="flex items-center gap-1 text-primary">
-              Ver tudo <ArrowRight className="h-4 w-4" />
+          <Button variant="link" size="sm" asChild className="h-auto p-0 text-muted-foreground font-normal text-xs">
+            <Link to="/blog" state={{ fromInternal: true }} className="flex items-center gap-1">
+              Acessar Blog completo <ArrowRight className="h-3 w-3" />
             </Link>
           </Button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {posts.map((post, i) => (
-            <Link key={i} to={`/blog/${post.slug}`} state={{ fromInternal: true }} className="group relative overflow-hidden rounded-xl border bg-background hover:shadow-lg transition-all">
-              <div className="flex flex-col sm:flex-row h-full">
-                <div className="w-full sm:w-1/3 aspect-video sm:aspect-square overflow-hidden">
-                  <img src={post.image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                </div>
-                <div className="p-4 flex flex-col justify-center w-full sm:w-2/3">
-                  <h3 className="font-bold text-lg leading-tight mb-2 group-hover:text-primary transition-colors">{post.title}</h3>
-                  <span className="text-primary text-sm font-medium flex items-center gap-1">Ler artigo <ArrowRight className="h-4 w-4" /></span>
-                </div>
-              </div>
-            </Link>
-          ))}
         </div>
       </div>
     </section>

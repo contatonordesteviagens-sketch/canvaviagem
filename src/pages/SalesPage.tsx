@@ -7,7 +7,7 @@ import { CountdownTimer } from "../components/planos/CountdownTimer";
 import { StickyTopBar } from "../components/planos/StickyTopBar";
 import { SocialProofToast } from "../components/planos/SocialProofToast";
 import { MobileFloatingCTA } from "../components/planos/MobileFloatingCTA";
-import lucasPortrait from "@/assets/lucas-site-webp.webp";
+import lucasPortrait from "@/assets/lucas-ferrari-portrait.webp";
 import depoimento1 from "@/assets/depoimento1.jpg";
 import depoimento2 from "@/assets/depoimento2.png";
 import depoimento3 from "@/assets/depoimento3.jpg";
@@ -94,7 +94,7 @@ const InitialAvatar = ({ name, idx, size = 56 }: { name: string; idx: number; si
 const Avatar = ({ name, photo, idx, size = 56 }: { name: string; photo?: string; idx: number; size?: number }) => {
   const [failed, setFailed] = useState(false);
   if (!photo || failed) return <InitialAvatar name={name} idx={idx} size={size} />;
-  return <img src={photo} onError={() => setFailed(true)} alt={name}
+  return <img src={photo} onError={() => setFailed(true)} alt={name} width={size} height={size} loading="lazy"
     style={{ width: size, height: size, borderRadius: "50%", border: `2px solid ${T.accent}33`, objectFit: "cover", flexShrink: 0 }} />;
 };
 
@@ -313,7 +313,8 @@ export default function SalesPage() {
     };
     setOGTag("og:title", "Canva Viagem — Poste como agência de R$10k/mês em 5 minutos");
     setOGTag("og:description", "Crie posts de alta conversão no Canva em minutos.");
-    setOGTag("og:image", window.location.origin + lucasPortrait);
+    // Prevenir carregar a foto gigante como OG Image
+    setOGTag("og:image", "https://canvaviagem.com/og-image.jpg");
     setOGTag("og:type", "website");
 
     // Dynamic GTM script injection
@@ -498,6 +499,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     boxShadow: `0 0 24px ${T.accent}33`,
                     objectFit: "cover" 
                   }} 
+                  width={140}
+                  height={140}
                 />
               </div>
             </Reveal>
@@ -668,6 +671,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                       maxHeight: 480, 
                       objectFit: "contain" 
                     }} 
+                    width={320}
+                    height={480}
                   />
                 </div>
               ))}
@@ -1115,6 +1120,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                   src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/960px-Stripe_Logo%2C_revised_2016.svg.png" 
                   alt="Stripe" 
                   style={{ height: 16, objectFit: "contain", verticalAlign: "middle" }} 
+                  width={70}
+                  height={16}
+                  loading="lazy"
                 />
               </div>
               <p style={{ fontSize: 12, color: T.text3, margin: 0 }}>
