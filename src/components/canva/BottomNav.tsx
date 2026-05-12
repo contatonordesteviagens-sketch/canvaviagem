@@ -1,10 +1,8 @@
-import { useState } from "react";
-import { Bot, Image, GraduationCap, Heart, Home, Calendar, Sparkles, Wand2 } from "lucide-react";
+import { Bot, Image, GraduationCap, Heart, Home, Calendar, Wand2 } from "lucide-react";
 import { CategoryType } from "./CategoryNav";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Dock } from "@/components/ui/Dock";
 import { useNavigate } from "react-router-dom";
-import { ComingSoonGate } from "@/components/fabrica/ComingSoonGate";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface BottomNavProps {
@@ -15,8 +13,7 @@ interface BottomNavProps {
 export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [gateOpen, setGateOpen] = useState(false);
-  const { user, subscription } = useAuth();
+  const { user } = useAuth();
 
   const handleTabClick = (category: CategoryType | "home" | "calendar" | "fabrica") => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -31,18 +28,7 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
         navigate("/auth");
         return;
       }
-      const isEliteUser = user && subscription && (
-        subscription.productId === "prod_UTFlCWzNqvqSNx" || // Elite Anual
-        subscription.productId === "prod_UTFsXcKq8m0mol" || // Elite Mensal
-        subscription.productId === "prod_UTSmPe3GPt8iHt"    // Elite Mensal Variação
-      );
-      const isUnlocked = isEliteUser || localStorage.getItem("fabrica-unlocked") === "true";
-
-      if (isUnlocked) {
-        navigate("/fabrica");
-      } else {
-        setGateOpen(true);
-      }
+      navigate("/fabrica");
     } else {
       onCategoryChange(category as CategoryType);
       navigate("/"); // Ensure we are on home to see content
@@ -89,17 +75,10 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
   ];
 
   return (
-    <>
-      <div className="fixed bottom-4 left-0 right-0 z-[60] flex justify-center pointer-events-none">
-        <div className="pointer-events-auto w-full max-w-lg px-4">
-          <Dock items={navItems} className="h-auto" />
-        </div>
+    <div className="fixed bottom-4 left-0 right-0 z-[60] flex justify-center pointer-events-none">
+      <div className="pointer-events-auto w-full max-w-lg px-4">
+        <Dock items={navItems} className="h-auto" />
       </div>
-      <ComingSoonGate
-        open={gateOpen}
-        onOpenChange={setGateOpen}
-        onUnlock={() => navigate("/fabrica", { state: { fabricaUnlocked: true } })}
-      />
-    </>
+    </div>
   );
 };

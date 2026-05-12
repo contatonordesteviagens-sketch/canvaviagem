@@ -25,12 +25,8 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 import { ProgressBar } from "@/components/ProgressBar";
 import { cn } from "@/lib/utils";
-import { ComingSoonGate, isFabricaUnlocked } from "@/components/fabrica/ComingSoonGate";
 
 type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
-
-// Routes that show "Em breve" gate (internal-only for now)
-const GATED_ROUTES = ["/painel-marketing", "/fabrica"];
 
 // Flag to show/hide "Próximo Nível" based on language
 
@@ -41,8 +37,6 @@ interface HeaderProps {
 const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
-  const [gateOpen, setGateOpen] = useState(false);
-  const [pendingRoute, setPendingRoute] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -157,20 +151,8 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
 
   // Intercept navigation to gated routes (Fábrica / Painel de Marketing)
   const handleNavClick = (to: string) => {
-    if (to === "/fabrica") {
-      setPendingRoute(to);
-      setGateOpen(true);
-      setIsOpen(false);
-      return;
-    }
-
-    if (GATED_ROUTES.includes(to) && !isFabricaUnlocked()) {
-      setPendingRoute(to);
-      setGateOpen(true);
-      setIsOpen(false);
-      return;
-    }
-    window.location.href = to;
+    navigate(to);
+    setIsOpen(false);
   };
 
   return (
@@ -422,18 +404,6 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
         </div>
       </header>
 
-      <ComingSoonGate
-        open={gateOpen}
-        onOpenChange={setGateOpen}
-        onUnlock={() => {
-          if (pendingRoute === "/fabrica") {
-            navigate("/fabrica", { state: { fabricaUnlocked: true } });
-            return;
-          }
-
-          if (pendingRoute) window.location.href = pendingRoute;
-        }}
-      />
     </>
   );
 };
