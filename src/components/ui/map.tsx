@@ -86,9 +86,9 @@ export function WorldMap({
         key={`bg-pt-${i}`} 
         cx={pt.x} 
         cy={pt.y} 
-        r={0.25} 
+        r={0.18} 
         fill="#FFFFFF" 
-        opacity={0.18}
+        opacity={0.13}
       />
     ));
   }, [mapData]);
@@ -121,7 +121,7 @@ export function WorldMap({
           </linearGradient>
           
           <filter id="glow">
-            <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="0.6" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
@@ -153,7 +153,7 @@ export function WorldMap({
                 d={createCurvedPath(startPoint, endPoint)}
                 fill="none"
                 stroke="url(#path-gradient)"
-                strokeWidth="0.8"
+                strokeWidth="0.4"
                 initial={{ pathLength: 0 }}
                 animate={loop ? {
                   pathLength: [0, 0, 1, 1, 0],
@@ -175,7 +175,7 @@ export function WorldMap({
               
               {loop && (
                 <motion.circle
-                  r="1.2"
+                  r="0.5"
                   fill={lineColor}
                   filter="url(#glow)"
                   initial={{ offsetDistance: "0%", opacity: 0 }}
@@ -211,9 +211,9 @@ export function WorldMap({
               {/* Start Point */}
               <g key={`start-${i}`}>
                 <motion.g className="cursor-pointer" whileHover={{ scale: 1.2 }}>
-                  <circle cx={startPoint.x} cy={startPoint.y} r="1.5" fill={lineColor} filter="url(#glow)" />
-                  <circle cx={startPoint.x} cy={startPoint.y} r="1.5" fill={lineColor} opacity="0.5">
-                    <animate attributeName="r" from="1.5" to="5" dur="2s" begin="0s" repeatCount="indefinite" />
+                  <circle cx={startPoint.x} cy={startPoint.y} r="0.7" fill={lineColor} filter="url(#glow)" />
+                  <circle cx={startPoint.x} cy={startPoint.y} r="0.7" fill={lineColor} opacity="0.5">
+                    <animate attributeName="r" from="0.7" to="2.5" dur="2s" begin="0s" repeatCount="indefinite" />
                     <animate attributeName="opacity" from="0.6" to="0" dur="2s" begin="0s" repeatCount="indefinite" />
                   </circle>
                 </motion.g>
@@ -222,10 +222,10 @@ export function WorldMap({
                   <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
                     <text
                       x={startPoint.x + (dot.start.labelOffset?.x ?? 0)}
-                      y={startPoint.y - 1.5 + (dot.start.labelOffset?.y ?? 0)}
+                      y={startPoint.y - 1.2 + (dot.start.labelOffset?.y ?? 0)}
                       textAnchor="middle"
                       fill="#FFFFFF"
-                      fontSize="1.8"
+                      fontSize="1.6"
                       fontWeight="800"
                       className="pointer-events-none select-none"
                       style={{ 
@@ -242,9 +242,9 @@ export function WorldMap({
               {/* End Point */}
               <g key={`end-${i}`}>
                 <motion.g className="cursor-pointer" whileHover={{ scale: 1.2 }}>
-                  <circle cx={endPoint.x} cy={endPoint.y} r="1.5" fill={lineColor} filter="url(#glow)" />
-                  <circle cx={endPoint.x} cy={endPoint.y} r="1.5" fill={lineColor} opacity="0.5">
-                    <animate attributeName="r" from="1.5" to="5" dur="2s" begin="0.5s" repeatCount="indefinite" />
+                  <circle cx={endPoint.x} cy={endPoint.y} r="0.7" fill={lineColor} filter="url(#glow)" />
+                  <circle cx={endPoint.x} cy={endPoint.y} r="0.7" fill={lineColor} opacity="0.5">
+                    <animate attributeName="r" from="0.7" to="2.5" dur="2s" begin="0.5s" repeatCount="indefinite" />
                     <animate attributeName="opacity" from="0.6" to="0" dur="2s" begin="0.5s" repeatCount="indefinite" />
                   </circle>
                 </motion.g>
@@ -253,10 +253,10 @@ export function WorldMap({
                   <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
                     <text
                       x={endPoint.x + (dot.end.labelOffset?.x ?? 0)}
-                      y={endPoint.y - 1.5 + (dot.end.labelOffset?.y ?? 0)}
+                      y={endPoint.y - 1.2 + (dot.end.labelOffset?.y ?? 0)}
                       textAnchor="middle"
                       fill="#00E5FF"
-                      fontSize="1.8"
+                      fontSize="1.6"
                       fontWeight="800"
                       className="pointer-events-none select-none"
                       style={{ 
