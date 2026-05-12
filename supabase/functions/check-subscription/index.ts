@@ -99,7 +99,7 @@ serve(async (req) => {
         .eq("user_id", userId)
         .single();
       
-      if (!localSubError && localSub && localSub.status === "active" && localSub.product_id && localSub.product_id !== "prod_TkvaozfpkAcbpM") {
+      if (!localSubError && localSub && localSub.status === "active" && localSub.product_id) {
         const endDate = localSub.current_period_end;
         if (!endDate || new Date(endDate) > new Date()) {
           logStep("Active subscription found in local database", { productId: localSub.product_id });
