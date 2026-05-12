@@ -1,6 +1,7 @@
 // Edge function: fabrica-search-photos
 // Busca fotos turísticas usando Pexels (principal) e Google Custom Search (alternativo).
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { verifyFabricaEliteAccess } from "../_shared/fabricaAccess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -78,6 +79,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    const access = await verifyFabricaEliteAccess(req, corsHeaders);
+    if (!access.ok) return access.response;
+
     const body = await req.json();
     const query = (body.query || "").trim();
     const engine = (body.engine || "pexels").toLowerCase();
