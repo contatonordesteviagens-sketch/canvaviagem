@@ -220,26 +220,21 @@ export function WorldMap({
                 
                 {showLabels && dot.start.label && (
                   <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-                    <foreignObject
-                      x={startPoint.x - 12.5 + (dot.start.labelOffset?.x ?? 0)}
-                      y={startPoint.y - 4.5 + (dot.start.labelOffset?.y ?? 0)}
-                      width="25"
-                      height="4"
-                      className="block overflow-visible"
+                    <text
+                      x={startPoint.x + (dot.start.labelOffset?.x ?? 0)}
+                      y={startPoint.y - 1.5 + (dot.start.labelOffset?.y ?? 0)}
+                      textAnchor="middle"
+                      fill="#FFFFFF"
+                      fontSize="1.8"
+                      fontWeight="800"
+                      className="pointer-events-none select-none"
+                      style={{ 
+                        textShadow: "0 0.5px 1px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.9)",
+                        letterSpacing: "-0.02em" 
+                      }}
                     >
-                      <div className="flex items-center justify-center h-full w-full">
-                        <span 
-                          className="font-extrabold px-1 py-0.5 rounded bg-black text-white border shadow-[0_1px_4px_rgba(0,0,0,0.9)] tracking-tight whitespace-nowrap leading-none"
-                          style={{ 
-                            fontSize: "2px", 
-                            borderWidth: "0.2px",
-                            borderColor: "rgba(255,255,255,0.4)"
-                          }}
-                        >
-                          {dot.start.label}
-                        </span>
-                      </div>
-                    </foreignObject>
+                      {dot.start.label}
+                    </text>
                   </motion.g>
                 )}
               </g>
@@ -256,26 +251,21 @@ export function WorldMap({
                 
                 {showLabels && dot.end.label && (
                   <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-                    <foreignObject
-                      x={endPoint.x - 12.5 + (dot.end.labelOffset?.x ?? 0)}
-                      y={endPoint.y - 4.5 + (dot.end.labelOffset?.y ?? 0)}
-                      width="25"
-                      height="4"
-                      className="block overflow-visible"
+                    <text
+                      x={endPoint.x + (dot.end.labelOffset?.x ?? 0)}
+                      y={endPoint.y - 1.5 + (dot.end.labelOffset?.y ?? 0)}
+                      textAnchor="middle"
+                      fill="#00E5FF"
+                      fontSize="1.8"
+                      fontWeight="800"
+                      className="pointer-events-none select-none"
+                      style={{ 
+                        textShadow: "0 0.5px 1px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.9)",
+                        letterSpacing: "-0.02em" 
+                      }}
                     >
-                      <div className="flex items-center justify-center h-full w-full">
-                        <span 
-                          className="font-extrabold px-1 py-0.5 rounded bg-black text-[#00E5FF] border shadow-[0_1px_4px_rgba(0,229,255,0.3)] tracking-tight whitespace-nowrap leading-none"
-                          style={{ 
-                            fontSize: "2px", 
-                            borderWidth: "0.2px",
-                            borderColor: "rgba(0, 229, 255, 0.5)"
-                          }}
-                        >
-                          {dot.end.label}
-                        </span>
-                      </div>
-                    </foreignObject>
+                      {dot.end.label}
+                    </text>
                   </motion.g>
                 )}
               </g>
