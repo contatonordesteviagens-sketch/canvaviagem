@@ -227,42 +227,42 @@ serve(async (req) => {
 
     console.log("[VERIFY-MAGIC-LINK] Session created successfully for:", email);
 
-    // --- STRIPE SUBSCRIPTION CHECK ---
+    // --- STRIPE SUBSCRIPTION CHECK + LOCAL SYNC ---
     let isSubscribed = false;
+    let stripeSync: {
+      customerId: string;
+      subscriptionId: string | null;
+      productId: string | null;
+      subscriptionEnd: string | null;
+    } | null = null;
     try {
       const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
       if (stripeKey) {
         const Stripe = (await import("https://esm.sh/stripe@18.5.0")).default;
         const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-        const customers = await stripe.customers.list({
-          email: email.toLowerCase(),
-          limit: 1
-        });
+        const customers = await stripe.customers.list({ email: email.toLowerCase(), limit: 10 });
 
         if (customers.data.length > 0) {
           for (const customer of customers.data) {
-          const customerId = customer.id;
+            const customerId = customer.id;
 
-          // Check for active or trialing subscriptions
-          const subscriptions = await stripe.subscriptions.list({
-            customer: customerId,
-            status: "active",
-            limit: 1,
-          });
+            const activeSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 10 });
+            const trialingSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: "trialing", limit: 10 });
+            const subscription = [...activeSubscriptions.data, ...trialingSubscriptions.data][0];
 
-          if (subscriptions.data.length > 0) {
-            isSubscribed = true;
-          } else {
-            const trialing = await stripe.subscriptions.list({
-              customer: customerId,
-              status: "trialing",
-              limit: 1,
-            });
-            isSubscribed = trialing.data.length > 0;
-          }
+            if (subscription) {
+              const productId = (subscription.items.data[0]?.price?.product as string | null) ?? null;
+              stripeSync = {
+                customerId,
+                subscriptionId: subscription.id,
+                productId,
+                subscriptionEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null,
+              };
+              isSubscribed = true;
+            }
 
-          if (isSubscribed) break;
+            if (isSubscribed) break;
 
           // Check for recent one-off payments if no subscription
           if (!isSubscribed) {
@@ -280,8 +280,30 @@ serve(async (req) => {
             );
           }
 
-          if (isSubscribed) break;
+            if (isSubscribed) {
+              stripeSync = { customerId, subscriptionId: null, productId: null, subscriptionEnd: null };
+              break;
+            }
           }
+        }
+
+        if (stripeSync) {
+          await supabaseAdmin.from("profiles").upsert({
+            user_id: userId,
+            email,
+            stripe_customer_id: stripeSync.customerId,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "user_id" });
+
+          await supabaseAdmin.from("subscriptions").upsert({
+            user_id: userId,
+            stripe_customer_id: stripeSync.customerId,
+            stripe_subscription_id: stripeSync.subscriptionId,
+            status: "active",
+            product_id: stripeSync.productId,
+            current_period_end: stripeSync.subscriptionEnd,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "user_id" });
         }
       }
     } catch (stripeErr) {
