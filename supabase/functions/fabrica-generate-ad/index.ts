@@ -3,6 +3,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { getTemplateById, pickContrastText, CRITICAL_CONTRAST_HEADER, type MasterPromptVars } from "./master-prompts.ts";
+import { verifyFabricaEliteAccess } from "../_shared/fabricaAccess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -102,6 +103,9 @@ serve(async (req) => {
   }
 
   try {
+    const access = await verifyFabricaEliteAccess(req, corsHeaders);
+    if (!access.ok) return access.response;
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const USER_GEMINI_API_KEY = Deno.env.get("USER_GEMINI_API_KEY");
 
