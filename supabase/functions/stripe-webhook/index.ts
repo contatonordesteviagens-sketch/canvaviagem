@@ -168,7 +168,7 @@ async function ensureUserAndOnboarding(
   // 5. Send emails via Resend if available
   if (resend && magicLink) {
     await sendAutoMagicLinkEmail(resend, normalizedEmail, magicLink, name || "Visitante");
-    await sendWelcomeEmail(resend, normalizedEmail);
+    await sendWelcomeEmail(resend, normalizedEmail, productId);
   }
 
   // 6. Trigger Zaia Welcome (with the generated magic link for WhatsApp delivery!)
@@ -396,25 +396,34 @@ async function sendAutoMagicLinkEmail(resend: any, email: string, magicLink: str
   }
 }
 
-async function sendWelcomeEmail(resend: any, email: string) {
-  const appUrl = Deno.env.get("APP_URL") || "https://canvatrip.lovable.app";
+const ELITE_PRODUCT_IDS = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
+
+async function sendWelcomeEmail(resend: any, email: string, productId?: string) {
+  const appUrl = Deno.env.get("APP_URL") || "https://canvaviagem.com";
+  const isElite = !!productId && ELITE_PRODUCT_IDS.includes(productId);
+  const planName = isElite ? "Plano Elite 👑" : "Plano Start";
+  const ctaUrl = isElite ? `${appUrl}/fabrica` : `${appUrl}/`;
+  const ctaLabel = isElite ? "🚀 Acessar a Fábrica" : "🌴 Acessar meu Painel";
+  const eliteExtras = isElite
+    ? `<li><strong>🏭 Fábrica de Anúncios IA</strong> (exclusivo Elite)</li>
+       <li><strong>🌐 Criador de Sites de Viagem</strong> (exclusivo Elite)</li>`
+    : `<li>Vídeos Reels Virais</li>
+       <li>Robôs de IA</li>
+       <li>Templates Editáveis</li>`;
   try {
     await resend.emails.send({
       from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
       to: [email],
-      subject: "🚀 Bem-vindo ao Canva Viagens!",
+      subject: `🚀 Bem-vindo ao Canva Viagem — ${planName}`,
       html: `
         <!DOCTYPE html>
         <html><body>
           <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px;">
-             <h1>Bem-vindo ao Canva Viagens! 🌴</h1>
+             <h1>Bem-vindo ao Canva Viagem! 🌴</h1>
+             <p>Sua assinatura do <strong>${planName}</strong> está ativa.</p>
              <p>Você agora tem acesso a:</p>
-             <ul>
-               <li>Vídeos Reels Virais</li>
-               <li>Robôs de IA</li>
-               <li>Templates Editáveis</li>
-             </ul>
-             <p>Acesse agora: <a href="${appUrl}/planos">${appUrl}</a></p>
+             <ul>${eliteExtras}</ul>
+             <p style="margin-top:24px"><a href="${ctaUrl}" style="background:#0ea5e9;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">${ctaLabel}</a></p>
           </div>
         </body></html>
       `,
