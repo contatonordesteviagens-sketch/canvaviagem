@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 interface ProtectedRouteProps {
     children: React.ReactNode;
     requireSubscription?: boolean;
+    requireElite?: boolean;
     requireAdmin?: boolean;
     allowExternalBlog?: boolean;
 }
@@ -12,6 +13,7 @@ interface ProtectedRouteProps {
 export const ProtectedRoute = ({
     children,
     requireSubscription = false,
+    requireElite = false,
     requireAdmin = false,
     allowExternalBlog = false
 }: ProtectedRouteProps) => {
@@ -25,7 +27,9 @@ export const ProtectedRoute = ({
     const { user, loading, subscription, isAdmin } = useAuth();
     const isFromInternal = (location.state as any)?.fromInternal === true;
 
-    if (loading || (requireSubscription && subscription.loading)) {
+    const needsSubscriptionState = requireSubscription || requireElite;
+
+    if (loading || (needsSubscriptionState && subscription.loading)) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -54,6 +58,13 @@ export const ProtectedRoute = ({
     // Note: Admins bypass subscription checks ensuring they can access everything
     if (requireSubscription && !subscription.subscribed && !isAdmin) {
         return <Navigate to="/planos" replace />;
+    }
+
+    const eliteProductIds = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
+    const isElite = subscription.subscribed && eliteProductIds.includes(subscription.productId || "");
+
+    if (requireElite && !isElite && !isAdmin) {
+        return <Navigate to="/fabrica" replace />;
     }
 
     return <>{children}</>;
