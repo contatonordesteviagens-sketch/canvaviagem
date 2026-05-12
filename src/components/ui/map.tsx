@@ -69,7 +69,8 @@ export function WorldMap({
     end: { x: number; y: number }
   ) => {
     const midX = (start.x + end.x) / 2;
-    const midY = Math.min(start.y, end.y) - (mapData ? mapData.height * 0.15 : 50); // dynamic curve
+    // Flatter curves by reducing coefficient from 0.15 to 0.08 for 'shorter' line look
+    const midY = Math.min(start.y, end.y) - (mapData ? mapData.height * 0.08 : 30); 
     return `M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`;
   };
 
@@ -110,7 +111,8 @@ export function WorldMap({
         viewBox={`0 0 ${width} ${height}`}
         className="w-full h-full absolute inset-0 pointer-events-auto select-none z-10"
         preserveAspectRatio="xMidYMid slice"
-        style={{ transform: "scale(1.15)" }} // Subtle zoom for mobile feel
+        // Nudge horizontally to bring cluster focus perfectly centered!
+        style={{ transform: "scale(1.35) translateX(8%)" }} 
       >
         <defs>
           <linearGradient id="path-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -121,7 +123,7 @@ export function WorldMap({
           </linearGradient>
           
           <filter id="glow">
-            <feGaussianBlur stdDeviation="0.6" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="0.4" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
@@ -153,7 +155,7 @@ export function WorldMap({
                 d={createCurvedPath(startPoint, endPoint)}
                 fill="none"
                 stroke="url(#path-gradient)"
-                strokeWidth="0.4"
+                strokeWidth="0.25"
                 initial={{ pathLength: 0 }}
                 animate={loop ? {
                   pathLength: [0, 0, 1, 1, 0],
