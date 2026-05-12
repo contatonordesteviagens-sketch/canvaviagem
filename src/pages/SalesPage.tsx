@@ -444,48 +444,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </div>
       </div>
 
-      {/* ─── PRODUTO REAL: FILEIRA DE CARDS ─── */}
-      <section className="py-12 px-4 md:px-6 bg-[#060E19] border-y border-white/5 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-cyan-500/5 blur-[120px]"></div>
-        <div className="max-w-4xl mx-auto relative z-10">
-          <div className="text-center mb-8">
-            <p className="text-[10px] font-black tracking-[0.3em] text-cyan-400 uppercase mb-2">VISUALIZE O RESULTADO</p>
-            <h2 className="text-2xl md:text-4xl font-black italic uppercase tracking-tighter leading-tight mb-3 text-white">
-              Seu feed vai ficar <span className="text-zinc-500 underline decoration-white/20">exatamente assim</span>
-            </h2>
-          </div>
-          
-          <div className="grid grid-cols-3 gap-2 md:gap-6 max-w-3xl mx-auto">
-            {[
-              { title: "Florianópolis - SC", img: "https://images.unsplash.com/photo-1583073171552-19c39d771d45?w=400&q=80", label: "5 Melhores Praias de Floripa" },
-              { title: "Paris", img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=80", label: "PARIS: A CIDADE DO AMOR" },
-              { title: "Jericoacoara - CE", img: "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=400&q=80", label: "VEM PRA JERICOACOARA!" }
-            ].map((card, i) => (
-              <div key={i} className="relative rounded-xl md:rounded-3xl overflow-hidden aspect-[9/16] shadow-lg md:shadow-2xl bg-zinc-900 border border-white/10 transition-transform duration-500 hover:-translate-y-2">
-                <img src={card.img} loading="lazy" alt={card.title} className="w-full h-full object-cover opacity-80" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-transparent p-1.5 md:p-6 flex flex-col justify-end">
-                   {/* Mock elements from requested screenshot */}
-                   <div className="absolute top-2 md:top-4 right-2 md:right-4 bg-black/60 backdrop-blur-md p-1 md:p-1.5 rounded-full border border-white/10">
-                     <Heart className="w-2 h-2 md:w-4 md:h-4 text-white fill-none" />
-                   </div>
-                   <div className="text-center absolute top-[35%] left-0 right-0 px-1 flex justify-center items-center">
-                      <div className="bg-black/40 backdrop-blur-md border border-white/20 px-1 md:px-3 py-0.5 md:py-1.5 rounded text-[5px] md:text-[10px] text-white font-black uppercase leading-tight tracking-wider text-center shadow-2xl">
-                        {card.label}
-                      </div>
-                   </div>
-                   <div className="flex justify-between items-center mb-1 md:mb-3">
-                     <p className="text-[5px] md:text-[10px] font-black text-white drop-shadow-md truncate pr-1">{card.title}</p>
-                     <Star className="w-1.5 h-1.5 md:w-3 md:h-3 text-yellow-400 fill-current shrink-0" />
-                   </div>
-                   <div className="bg-white text-black font-black text-[4.5px] md:text-[10px] tracking-widest py-0.5 md:py-2 rounded-sm md:rounded-xl flex items-center justify-center gap-0.5 md:gap-2 uppercase shadow-md">
-                      <Sparkles className="w-1.5 h-1.5 md:w-3 md:h-3 fill-current" /> Editar
-                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* ─── MECANISMO IA EXPLICAÇÃO ─── */}
       <section className="py-14 px-4 md:px-6 bg-[#03070F] border-b border-white/5 relative overflow-hidden">
