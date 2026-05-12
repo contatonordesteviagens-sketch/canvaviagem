@@ -100,7 +100,7 @@ const PremiumCardComponent = ({
     >
       <div
         className={cn(
-          "relative overflow-hidden rounded-2xl border-none transition-all duration-300",
+          "relative overflow-hidden rounded-lg border-none transition-all duration-300",
           "shadow-canva hover:shadow-canva-hover",
           "hover:scale-[1.02] active:scale-[0.98]",
         )}
@@ -176,7 +176,7 @@ const PremiumCardComponent = ({
           </h3>
 
           {/* CTA Button */}
-          <button className="w-full bg-white/95 backdrop-blur-sm text-foreground font-medium py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 text-sm transition-all duration-300 hover:bg-white active:scale-95 shadow-sm">
+          <button className="w-full bg-white/95 backdrop-blur-sm text-foreground font-medium py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 text-sm transition-all duration-300 hover:bg-white active:scale-95 shadow-sm">
             <ExternalLink className="w-3.5 h-3.5" />
             <span>Editar</span>
           </button>
