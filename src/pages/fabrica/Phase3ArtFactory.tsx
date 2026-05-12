@@ -1151,6 +1151,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         finishCycle(composed.length);
 
         toast.success(`${composed.length} ${composed.length === 1 ? "variação gerada" : "variações geradas"} com foto real!`);
+        requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
         return;
       }
 
