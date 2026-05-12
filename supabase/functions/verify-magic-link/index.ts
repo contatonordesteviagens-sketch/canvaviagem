@@ -6,6 +6,34 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const findExistingUserIdByEmail = async (supabaseAdmin: ReturnType<typeof createClient>, email: string) => {
+  const { data: profileUser, error: profileLookupError } = await supabaseAdmin
+    .from("profiles")
+    .select("user_id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (profileLookupError) {
+    console.warn("[VERIFY-MAGIC-LINK] Profile lookup failed, falling back to auth list:", profileLookupError);
+  }
+
+  if (profileUser?.user_id) return profileUser.user_id;
+
+  for (let page = 1; page <= 20; page++) {
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) {
+      console.warn("[VERIFY-MAGIC-LINK] Auth listUsers fallback failed:", error);
+      return null;
+    }
+
+    const matchedUser = data?.users?.find((user) => user.email?.toLowerCase().trim() === email);
+    if (matchedUser) return matchedUser.id;
+    if (!data?.users || data.users.length < 1000) break;
+  }
+
+  return null;
+};
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
