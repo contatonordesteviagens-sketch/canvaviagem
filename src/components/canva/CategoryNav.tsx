@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback, memo } from "react";
-import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart, ChevronLeft, ChevronRight, Megaphone } from "lucide-react";
+import { Video, Image, LayoutGrid, FileText, Download, Bot, GraduationCap, Heart, ChevronLeft, ChevronRight, Megaphone, Wand2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -20,7 +20,7 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
 
   const categories: { id: CategoryType; label: string; icon: React.ReactNode; isNew?: boolean }[] = [
     { id: 'all', label: 'Tudo', icon: <LayoutGrid className="w-6 h-6" /> },
-    { id: 'fabrica', label: 'Fábrica', icon: <Bot className="w-6 h-6" />, isNew: true },
+    { id: 'fabrica', label: 'Fábrica', icon: <Wand2 className="w-6 h-6" /> }, // Atualizado ícone e removido tag Novo
     // Recursos PRO
     { id: 'videos', label: t('category.videos'), icon: <Video className="w-6 h-6" /> },
     { id: 'feed', label: t('category.feed'), icon: <Image className="w-6 h-6" /> },
@@ -150,7 +150,7 @@ const CategoryNavComponent = ({ activeCategory, onCategoryChange, showFavorites 
           ref={scrollRef}
           className="overflow-x-auto scrollbar-hide -mx-4 px-4"
         >
-          <div className="flex gap-4 pb-2 snap-x-mandatory min-w-max">
+          <div className="flex gap-4 pt-3 pb-2 snap-x-mandatory min-w-max">
             {displayCategories.map((category) => {
               const isActive = activeCategory === category.id;
 

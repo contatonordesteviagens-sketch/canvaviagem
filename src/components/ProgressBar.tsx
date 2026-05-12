@@ -17,13 +17,13 @@ export const ProgressBar = ({ compact = false }: ProgressBarProps) => {
         return (
             <Link
                 to="/progresso"
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/50 backdrop-blur-md border border-input/20 shadow-sm active:scale-95 transition-all text-xs"
+                className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-background/50 backdrop-blur-md border border-input/10 shadow-sm active:scale-95 transition-all text-[10px]"
             >
-                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 text-primary">
-                    <span className="text-[10px] font-bold">{level}</span>
+                <div className="flex items-center justify-center w-4 h-4 rounded-full bg-primary/10 text-primary shrink-0">
+                    <span className="text-[9px] font-bold">{level}</span>
                 </div>
-                <div className="flex flex-col items-start leading-none">
-                    <span className="font-bold text-[10px] text-muted-foreground uppercase tracking-wider">Nível</span>
+                <div className="flex items-center gap-1 leading-none">
+                    <span className="font-medium text-muted-foreground">NÍVEL</span>
                     <span className="font-bold text-primary">{progress.total_points} pts</span>
                 </div>
             </Link>

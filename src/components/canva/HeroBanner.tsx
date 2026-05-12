@@ -13,43 +13,40 @@ const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) =
 
   return (
     <div 
-      className="relative w-full overflow-hidden mb-8 md:mb-12"
+      className="relative w-full overflow-hidden mb-6 md:mb-8"
       style={{
         background: "linear-gradient(98deg, rgb(0, 196, 204) -9%, rgb(90, 50, 250) 78%, rgb(118, 48, 215) 158%)",
-        padding: "64px 24px 80px",
-        borderRadius: "0 0 32px 32px", // Suaviza a transição para o conteúdo
+        padding: "24px 16px 32px", // Reduzido drasticamente para melhor visualização mobile
+        borderRadius: "0 0 24px 24px", 
       }}
     >
-      {/* Decorative glowing elements purely decorative like Canva UI */}
-      <div className="absolute top-0 right-0 w-96 h-96 opacity-20 pointer-events-none" style={{ background: "radial-gradient(circle, #fff 0%, transparent 70%)", filter: "blur(40px)", transform: "translate(30%, -30%)" }} />
-      <div className="absolute bottom-0 left-0 w-64 h-64 opacity-10 pointer-events-none" style={{ background: "radial-gradient(circle, #fff 0%, transparent 70%)", filter: "blur(30px)", transform: "translate(-30%, 30%)" }} />
+      {/* Decorative glowing elements */}
+      <div className="absolute top-0 right-0 w-64 h-64 opacity-20 pointer-events-none" style={{ background: "radial-gradient(circle, #fff 0%, transparent 70%)", filter: "blur(40px)", transform: "translate(30%, -30%)" }} />
 
       <div className="max-w-4xl mx-auto text-center relative z-10">
-        {/* Main Canva Display Headline adapted to context */}
+        {/* Headline - forçado em 1 linha no mobile para caber */}
         <h1 
-          className="text-white mb-3 tracking-tight font-bold leading-tight flex flex-col items-center gap-2"
+          className="text-white mb-2 tracking-tight font-bold leading-tight flex items-center justify-center gap-1.5 whitespace-nowrap flex-wrap sm:flex-nowrap"
           style={{ 
             fontFamily: "'Inter', 'Canva Sans', sans-serif",
-            fontSize: "clamp(32px, 5vw, 56px)",
+            fontSize: "clamp(22px, 4vw, 48px)", // Fonte reduzida para não quebrar layout
             letterSpacing: "-0.02em",
-            textShadow: "0 2px 10px rgba(0,0,0,0.1)"
+            textShadow: "0 1px 6px rgba(0,0,0,0.1)"
           }}
         >
-          <span className="flex items-center gap-2 opacity-90">
-             O que vamos <Sparkles className="h-8 w-8 md:h-12 md:w-12" />
-          </span>
-          <span className="text-white">divulgar hoje?</span>
+          <span>O que vamos divulgar hoje?</span>
+          <Sparkles className="h-5 w-5 md:h-8 md:w-8 inline-block opacity-90 shrink-0" />
         </h1>
 
         <p 
-          className="text-white/90 mb-8 md:mb-10 font-medium mx-auto max-w-lg"
+          className="text-white/90 mb-5 font-medium mx-auto max-w-md hidden sm:block" // Escondido no mobile para focar na busca e ganhar espaço
           style={{ 
-            fontSize: "clamp(16px, 2vw, 20px)",
+            fontSize: "clamp(14px, 1.8vw, 16px)",
             lineHeight: "1.4",
             opacity: 0.85
           }}
         >
-          Pesquise destinos nacionais e internacionais para baixar vídeos prontos ou editar no Canva em segundos.
+          Pesquise destinos para baixar vídeos prontos ou editar no Canva.
         </p>
 
         {/* The iconic Rounded Search Bar Container */}
