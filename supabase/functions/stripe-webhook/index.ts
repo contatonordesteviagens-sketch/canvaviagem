@@ -315,7 +315,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
       const customerName = invoice.customer_name || email.split("@")[0];
       const subscriptionId = invoice.subscription as string;
       
-      let productId = "prod_TkvaozfpkAcbpM"; // default fallback
+      let productId: string | undefined = undefined;
       if (subscriptionId) {
         try {
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
@@ -329,8 +329,8 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
         }
       }
 
-      // Backup: Extrair diretamente dos line items do invoice recebido (sem call extra)
-      if (productId === "prod_TkvaozfpkAcbpM" || !productId) {
+      // Backup: line items do invoice
+      if (!productId) {
         const lineProductId = invoice.lines?.data?.[0]?.price?.product as string;
         if (lineProductId) {
           productId = lineProductId;
