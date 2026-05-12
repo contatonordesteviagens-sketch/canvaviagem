@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Bot, Image, GraduationCap, Heart, Home, Calendar, Wand2 } from "lucide-react";
 import { CategoryType } from "./CategoryNav";
 import { useLanguage } from "@/contexts/LanguageContext";
