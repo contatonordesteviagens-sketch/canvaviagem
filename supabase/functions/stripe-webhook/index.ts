@@ -34,6 +34,34 @@ function isValidEmail(email: string | null | undefined): email is string {
   return emailRegex.test(email) && email.length <= 254;
 }
 
+async function findExistingUserIdByEmail(supabase: any, email: string): Promise<string | null> {
+  const { data: profileUser, error: profileError } = await supabase
+    .from("profiles")
+    .select("user_id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (profileError) {
+    logStep("WARN: profile lookup failed, falling back to auth list", { error: profileError.message });
+  }
+
+  if (profileUser?.user_id) return profileUser.user_id;
+
+  for (let page = 1; page <= 20; page++) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) {
+      logStep("WARN: auth listUsers fallback failed", { error: error.message });
+      return null;
+    }
+
+    const matchedUser = data?.users?.find((user: any) => user.email?.toLowerCase().trim() === email);
+    if (matchedUser?.id) return matchedUser.id;
+    if (!data?.users || data.users.length < 1000) break;
+  }
+
+  return null;
+}
+
 // ZAIA WEBHOOK HELPER
 async function triggerZaiaWebhook(webhookEnvVar: string, data: { email: string; name?: string; phone?: string; magic_link?: string }) {
   const webhookUrl = Deno.env.get(webhookEnvVar);
@@ -75,14 +103,13 @@ async function ensureUserAndOnboarding(
   const normalizedEmail = email.toLowerCase().trim();
   logStep("Starting onboarding for", { email: redactEmail(normalizedEmail), productId });
 
-  // 1. Check/Create User de forma escalável
-  const { data: userData } = await supabase.auth.admin.getUserByEmail(normalizedEmail);
-  let existingUser = userData?.user;
+  // 1. Check/Create User sem getUserByEmail (não é suportado no runtime Deno)
+  const existingUserId = await findExistingUserIdByEmail(supabase, normalizedEmail);
   let userId: string;
 
-  if (existingUser) {
-    logStep("Existing user found", { userId: existingUser.id });
-    userId = existingUser.id;
+  if (existingUserId) {
+    logStep("Existing user found", { userId: existingUserId });
+    userId = existingUserId;
   } else {
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
       email: normalizedEmail,
@@ -92,10 +119,10 @@ async function ensureUserAndOnboarding(
     if (createError) {
       // Tratar possível corrida ou usuário já registrado de forma silenciosa que não quebre o fluxo
       if (createError.message?.includes("registered") || createError.message?.includes("exists")) {
-        const { data: retryData } = await supabase.auth.admin.getUserByEmail(normalizedEmail);
-        if (retryData?.user) {
-          logStep("User found on retry after creation conflict", { userId: retryData.user.id });
-          userId = retryData.user.id;
+        const retryUserId = await findExistingUserIdByEmail(supabase, normalizedEmail);
+        if (retryUserId) {
+          logStep("User found on retry after creation conflict", { userId: retryUserId });
+          userId = retryUserId;
         } else {
           logStep("ERROR: Conflict reported but user still not found on retry", { error: createError.message });
           return;
