@@ -35,7 +35,6 @@ const HeroBannerComponent = ({ searchValue, onSearchChange }: HeroBannerProps) =
           }}
         >
           <span>O que vamos divulgar hoje?</span>
-          <Sparkles className="h-5 w-5 md:h-8 md:w-8 inline-block opacity-90 shrink-0" />
         </h1>
 
         <p 

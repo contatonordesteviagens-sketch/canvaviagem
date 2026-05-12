@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bot, Image, GraduationCap, Heart, Home, Calendar, Sparkles } from "lucide-react";
+import { Bot, Image, GraduationCap, Heart, Home, Calendar, Sparkles, Wand2 } from "lucide-react";
 import { CategoryType } from "./CategoryNav";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Dock } from "@/components/ui/Dock";
@@ -61,7 +61,7 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
       onClick: () => handleTabClick("tools")
     },
     {
-      icon: Sparkles,
+      icon: Wand2,
       label: "Fábrica",
       onClick: () => handleTabClick("fabrica"),
       showBadge: true

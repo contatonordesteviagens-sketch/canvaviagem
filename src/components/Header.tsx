@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu, X, LogOut, User, Home, Calendar, CreditCard,
   Video, Image, LayoutGrid, FileText, Download, Bot,
-  GraduationCap, Heart, ChevronDown, Sun, Moon, Star, TrendingUp, MessageSquare, MoreHorizontal, Factory
+  GraduationCap, Heart, ChevronDown, Sun, Moon, Star, TrendingUp, MessageSquare, MoreHorizontal, Wand2
 } from "lucide-react";
 import logoImage from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 import { ProgressBar } from "@/components/ProgressBar";
+import { cn } from "@/lib/utils";
 import { ComingSoonGate, isFabricaUnlocked } from "@/components/fabrica/ComingSoonGate";
 
 type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
@@ -120,8 +121,8 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
 
   // Additional nav items for logged-in users
   const userNavItems = user ? [
-    { to: "/fabrica", label: "Fábrica", icon: Factory },
-    { to: "/painel-marketing", label: "Painel de Marketing", icon: Factory },
+    { to: "/fabrica", label: "Fábrica", icon: Wand2, isNew: true },
+    { to: "/painel-marketing", label: "Painel de Marketing", icon: Bot },
     { to: isESRoute ? "/es/progresso" : "/progresso", label: "Progresso", icon: TrendingUp },
     { to: isESRoute ? "/es/sugestoes" : "/sugestoes", label: "Sugestões", icon: MessageSquare },
     { to: "/minha-conta", label: "Minha Conta", icon: User },
@@ -197,10 +198,27 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
             </div>
           )}
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-2">
+          {/* Desktop Navigation - Redesenhada para menor bagunça */}
+          <nav className="hidden md:flex items-center gap-1">
+            {/* Links Principais Inline para limpar o dropdown */}
+            <div className="flex items-center gap-1 mr-4 border-r pr-4 border-border/40">
+              {mainNavItems.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all hover:bg-accent/10 hover:text-primary",
+                    location.pathname === item.to ? "bg-primary/10 text-primary" : "text-muted-foreground"
+                  )}
+                >
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
             {/* Progress Bar - Desktop */}
-            {user && <ProgressBar />}
+            {user && <div className="mr-2"><ProgressBar /></div>}
 
             {/* Theme Toggle - Desktop */}
             <ThemeToggle />
@@ -208,55 +226,42 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
             {/* Language Switcher - Desktop */}
             <LanguageSwitcher variant="desktop" />
 
-            {/* Dropdown Mais - All Content */}
+            {/* Dropdown Mais - APENAS para recursos extras de usuário (Despoluído) */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="px-3 py-2">
+                <Button variant="ghost" size="sm" className="px-3 py-2 rounded-full ml-1 relative">
                   <MoreHorizontal className="w-4 h-4 mr-1.5" />
-                  <span className="text-sm font-medium">Mais</span>
+                  <span className="text-sm font-medium">Recursos</span>
+                  {/* Notificação de algo novo se houver */}
+                  <span className="absolute top-1 right-1 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                {/* Navigation Pages */}
-                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">PÁGINAS</div>
-                {mainNavItems.map((item) => (
+              <DropdownMenuContent align="end" className="w-60 p-1">
+                {userNavItems.map((item) => (
                   <DropdownMenuItem
                     key={item.to}
                     onClick={() => handleNavClick(item.to)}
-                    className="cursor-pointer"
+                    className="cursor-pointer flex items-center justify-between py-2"
                   >
-                    <item.icon className="w-4 h-4 mr-2" />
-                    {item.label}
+                    <div className="flex items-center">
+                      <item.icon className="w-4 h-4 mr-2 text-muted-foreground" />
+                      <span className="font-medium">{item.label}</span>
+                    </div>
+                    {item.isNew && (
+                      <span className="bg-destructive text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                        NOVO
+                      </span>
+                    )}
                   </DropdownMenuItem>
                 ))}
-
-                {/* User Items if logged in */}
-                {user && userNavItems.map((item) => (
-                  <DropdownMenuItem
-                    key={item.to}
-                    onClick={() => handleNavClick(item.to)}
-                    className="cursor-pointer"
-                  >
-                    <item.icon className="w-4 h-4 mr-2" />
-                    {item.label}
-                  </DropdownMenuItem>
-                ))}
-
-                {/* Separator before content categories */}
-                <div className="border-t my-1.5" />
-                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">CONTEÚDOS</div>
-
-                {/* Content Categories */}
-                {contentCategories.map((item) => (
-                  <DropdownMenuItem
-                    key={item.category}
-                    onClick={() => handleCategoryClick(item.category)}
-                    className="cursor-pointer"
-                  >
-                    <item.icon className="w-4 h-4 mr-2" />
-                    {item.label}
-                  </DropdownMenuItem>
-                ))}
+                <div className="border-t my-1" />
+                <DropdownMenuItem onClick={() => navigate("/minha-conta")} className="cursor-pointer">
+                   <User className="w-4 h-4 mr-2 text-muted-foreground" />
+                   Minha Conta
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -337,6 +342,28 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
                       {proximoNivelItem.label}
                     </NavLink>
                   )}
+
+                  {/* Recursos Adicionais de Usuário (Fábrica, etc) no Mobile */}
+                  {user && userNavItems.map((item) => (
+                    <button
+                      key={item.to}
+                      onClick={() => {
+                        handleNavClick(item.to);
+                        setIsOpen(false);
+                      }}
+                      className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-accent/10"
+                    >
+                      <div className="flex items-center gap-3">
+                        <item.icon className="h-5 w-5" />
+                        <span>{item.label}</span>
+                      </div>
+                      {item.isNew && (
+                        <span className="bg-destructive text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                          NOVO
+                        </span>
+                      )}
+                    </button>
+                  ))}
 
                   <DropdownMenuSeparator className="my-3" />
 
