@@ -25,7 +25,6 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 import { ProgressBar } from "@/components/ProgressBar";
 import { cn } from "@/lib/utils";
-import { cn } from "@/lib/utils";
 
 type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
 
@@ -405,18 +404,6 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
         </div>
       </header>
 
-      <ComingSoonGate
-        open={gateOpen}
-        onOpenChange={setGateOpen}
-        onUnlock={() => {
-          if (pendingRoute === "/fabrica") {
-            navigate("/fabrica", { state: { fabricaUnlocked: true } });
-            return;
-          }
-
-          if (pendingRoute) window.location.href = pendingRoute;
-        }}
-      />
     </>
   );
 };
