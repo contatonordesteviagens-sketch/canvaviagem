@@ -2247,7 +2247,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
             } else if (c.icon.startsWith("instagram")) {
               drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "gradient");
             } else if (isWebsite) {
-              drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle);
+              drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle as string);
             }
 
             yPos -= (footerHeight * 0.36);
