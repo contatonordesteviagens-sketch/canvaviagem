@@ -123,13 +123,22 @@ async function ensureUserAndOnboarding(
   const { error: profileError } = await supabase.from("profiles").upsert(profileData, { onConflict: "user_id" });
   if (profileError) logStep("ERROR: Failed to upsert profile", { error: profileError.message });
 
-  // 3. Upsert Subscription
+  // 3. Upsert Subscription — NUNCA forçar fallback de produto.
+  // Se productId vier nulo, salvamos null e logamos para investigação manual,
+  // em vez de rebaixar a compra (ex: Elite virando Start).
+  if (!productId) {
+    logStep("WARN: productId not resolved for subscription — saving as null", {
+      email: redactEmail(normalizedEmail),
+      stripeCustomerId,
+      stripeSubscriptionId,
+    });
+  }
   const { error: subError } = await supabase.from("subscriptions").upsert({
     user_id: userId,
     stripe_customer_id: stripeCustomerId,
     stripe_subscription_id: stripeSubscriptionId,
     status: "active",
-    product_id: productId || "prod_TkvaozfpkAcbpM",
+    product_id: productId || null,
     updated_at: new Date().toISOString(),
   }, { onConflict: "user_id" });
 
@@ -239,7 +248,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
   const stripeCustomerId = session.customer as string;
   const stripeSubscriptionId = session.subscription as string;
 
-  let productId = "prod_TkvaozfpkAcbpM"; // default fallback
+  let productId: string | undefined = undefined;
   if (stripeSubscriptionId) {
     try {
       const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
@@ -253,8 +262,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
     }
   }
 
-  // Backup: se ainda for o padrão ou falhou, buscar dos Line Items da Session
-  if (productId === "prod_TkvaozfpkAcbpM" || !productId) {
+  // Backup: line items do Checkout Session
+  if (!productId) {
     try {
       logStep("Attempting fallback product ID fetch from session line items", { sessionId: session.id });
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 1 });
@@ -306,7 +315,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
       const customerName = invoice.customer_name || email.split("@")[0];
       const subscriptionId = invoice.subscription as string;
       
-      let productId = "prod_TkvaozfpkAcbpM"; // default fallback
+      let productId: string | undefined = undefined;
       if (subscriptionId) {
         try {
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
@@ -320,8 +329,8 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
         }
       }
 
-      // Backup: Extrair diretamente dos line items do invoice recebido (sem call extra)
-      if (productId === "prod_TkvaozfpkAcbpM" || !productId) {
+      // Backup: line items do invoice
+      if (!productId) {
         const lineProductId = invoice.lines?.data?.[0]?.price?.product as string;
         if (lineProductId) {
           productId = lineProductId;
