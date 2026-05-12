@@ -30,9 +30,9 @@ export const MobileFloatingCTA = ({ onCheckout }: { onCheckout: () => void }) =>
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <div style={{ flex: 1 }}>
-          <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>Plano Anual Pro</p>
+          <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>Plano Elite Anual</p>
           <p style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#FFFFFF' }}>
-            R$ 16,41<span style={{ fontSize: '12px', fontWeight: 400, color: 'rgba(255,255,255,0.6)' }}>/mês</span>
+            R$ 28,91<span style={{ fontSize: '12px', fontWeight: 400, color: 'rgba(255,255,255,0.6)' }}>/mês</span>
           </p>
         </div>
         <button

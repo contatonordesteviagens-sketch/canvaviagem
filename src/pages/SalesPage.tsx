@@ -921,92 +921,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(320px, 100%), 1fr))",
             gap: 32, alignItems: "stretch", marginTop: 40, maxWidth: 860, margin: "40px auto 0" }}>
             
-            {/* PLANO START */}
+            {/* PLANO ELITE (MOVIDO PARA O TOPO / ESQUERDA COMO PRIORIDADE) */}
             <TimelineContent
               as="div"
               animationNum={1}
-              timelineRef={pricingRef}
-              customVariants={revealVariants}
-            >
-              <div style={{ 
-                background: "rgba(255, 255, 255, 0.02)", 
-                border: "1px solid rgba(255, 255, 255, 0.08)", 
-                borderRadius: 24, 
-                padding: "48px 32px",
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-                justifyContent: "space-between",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.2)"
-              }}>
-                <div>
-                  <p style={{ fontSize: 12, fontWeight: 800, color: T.text3, letterSpacing: 2, marginBottom: 20 }}>PLANO START</p>
-                  
-                  {billingPeriod === "monthly" ? (
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
-                      <span style={{ fontSize: 52, fontWeight: 900, lineHeight: 1 }}>29</span>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>,90</span>
-                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
-                    </div>
-                  ) : (
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
-                      <span style={{ fontSize: 52, fontWeight: 900, lineHeight: 1 }}>16</span>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>,41</span>
-                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
-                    </div>
-                  )}
-
-                  <p style={{ fontSize: 12, color: T.text3, marginBottom: 28 }}>
-                    {billingPeriod === "monthly" ? "Assinatura mensal recorrente" : "Equivalente a R$ 197,00 cobrados anualmente"}
-                  </p>
-
-                  <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 12 }}>
-                    {[
-                      "Acesso ilimitado a 400+ mídias de viagens",
-                      "Reels, Stories, Artes feed de alta conversão",
-                      "Modelos prontos e 100% editáveis no Canva",
-                      "Texto e Copys de Ofertas de pacotes magnéticos",
-                      "Influencers de I.A prontos para divulgar",
-                      "Robôs de Inteligência Artificial tira-dúvidas",
-                      "Suporte completo por WhatsApp"
-                    ].map(f => (
-                      <li key={f} style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 13, color: T.text2 }}>
-                        <span style={{ marginTop: 2, flexShrink: 0 }}><Check size={14} color={T.accent} /></span>
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                    {[
-                      "Fábrica: Gerador de Anúncios e Ofertas de viagens",
-                      "Fábrica: Gerador de Sites de viagens de conversão",
-                      "Diagnóstico e Plano de ação individual para escala"
-                    ].map(f => (
-                      <li key={f} style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 13, color: "rgba(255,255,255,0.25)", textDecoration: "line-through" }}>
-                        <span style={{ marginTop: 2, flexShrink: 0 }}><X size={14} color="rgba(255,255,255,0.2)" /></span>
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <button 
-                  onClick={() => checkout(billingPeriod === "monthly" ? "smart_monthly" : "smart_annual")}
-                  onMouseEnter={e => (e.currentTarget.style.background = `${T.accent}1a`)}
-                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                  style={{ width: "100%", padding: 16, borderRadius: 12, border: `2px solid ${T.accent}`,
-                    background: "transparent", color: T.accent, fontWeight: 800, fontSize: 14,
-                    cursor: "pointer", letterSpacing: 0.5, transition: "background 0.2s" }}
-                >
-                  Começar com o Start
-                </button>
-              </div>
-            </TimelineContent>
-
-            {/* PLANO ELITE */}
-            <TimelineContent
-              as="div"
-              animationNum={2}
               timelineRef={pricingRef}
               customVariants={revealVariants}
             >
@@ -1087,6 +1005,88 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     ⚡ Acesso imediato · Suporte garantido
                   </p>
                 </div>
+              </div>
+            </TimelineContent>
+
+            {/* PLANO START */}
+            <TimelineContent
+              as="div"
+              animationNum={2}
+              timelineRef={pricingRef}
+              customVariants={revealVariants}
+            >
+              <div style={{ 
+                background: "rgba(255, 255, 255, 0.02)", 
+                border: "1px solid rgba(255, 255, 255, 0.08)", 
+                borderRadius: 24, 
+                padding: "48px 32px",
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+                justifyContent: "space-between",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.2)"
+              }}>
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 800, color: T.text3, letterSpacing: 2, marginBottom: 20 }}>PLANO START</p>
+                  
+                  {billingPeriod === "monthly" ? (
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
+                      <span style={{ fontSize: 52, fontWeight: 900, lineHeight: 1 }}>29</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>,90</span>
+                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
+                      <span style={{ fontSize: 52, fontWeight: 900, lineHeight: 1 }}>16</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>,41</span>
+                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
+                    </div>
+                  )}
+
+                  <p style={{ fontSize: 12, color: T.text3, marginBottom: 28 }}>
+                    {billingPeriod === "monthly" ? "Assinatura mensal recorrente" : "Equivalente a R$ 197,00 cobrados anualmente"}
+                  </p>
+
+                  <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 12 }}>
+                    {[
+                      "Acesso ilimitado a 400+ mídias de viagens",
+                      "Reels, Stories, Artes feed de alta conversão",
+                      "Modelos prontos e 100% editáveis no Canva",
+                      "Texto e Copys de Ofertas de pacotes magnéticos",
+                      "Influencers de I.A prontos para divulgar",
+                      "Robôs de Inteligência Artificial tira-dúvidas",
+                      "Suporte completo por WhatsApp"
+                    ].map(f => (
+                      <li key={f} style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 13, color: T.text2 }}>
+                        <span style={{ marginTop: 2, flexShrink: 0 }}><Check size={14} color={T.accent} /></span>
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                    {[
+                      "Fábrica: Gerador de Anúncios e Ofertas de viagens",
+                      "Fábrica: Gerador de Sites de viagens de conversão",
+                      "Diagnóstico e Plano de ação individual para escala"
+                    ].map(f => (
+                      <li key={f} style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 13, color: "rgba(255,255,255,0.25)", textDecoration: "line-through" }}>
+                        <span style={{ marginTop: 2, flexShrink: 0 }}><X size={14} color="rgba(255,255,255,0.2)" /></span>
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <button 
+                  onClick={() => checkout(billingPeriod === "monthly" ? "smart_monthly" : "smart_annual")}
+                  onMouseEnter={e => (e.currentTarget.style.background = `${T.accent}1a`)}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                  style={{ width: "100%", padding: 16, borderRadius: 12, border: `2px solid ${T.accent}`,
+                    background: "transparent", color: T.accent, fontWeight: 800, fontSize: 14,
+                    cursor: "pointer", letterSpacing: 0.5, transition: "background 0.2s" }}
+                >
+                  Começar com o Start
+                </button>
               </div>
             </TimelineContent>
 
@@ -1280,9 +1280,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span style={{ fontSize: 10, color: T.text3 }}>Parceiro de pagamento oficial:</span>
             <div style={{ display: "inline-flex", alignItems: "center", background: "rgba(255,255,255,0.04)", padding: "4px 8px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.05)" }}>
               <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/2560px-Stripe_Logo%2C_revised_2016.svg.png" 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/3840px-Stripe_Logo%2C_revised_2016.svg.png" 
                 alt="Stripe" 
-                style={{ height: 14, objectFit: "contain", filter: "brightness(0.9) contrast(1.2)" }} 
+                style={{ height: 12, objectFit: "contain", filter: "brightness(1) contrast(1.1)" }} 
               />
             </div>
           </div>
@@ -1308,7 +1308,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             className="hover:scale-110 active:scale-95 transition-all duration-300"
             style={{
               position: "fixed",
-              bottom: 20,
+              bottom: 95,
               right: 20,
               width: 54,
               height: 54,
