@@ -1,71 +1,102 @@
-## Diagnóstico do que está acontecendo
 
-Encontrei 3 problemas reais no fluxo, e eles explicam melhor o erro do que “tempo de expiração”:
+# Auditoria de Planos, Stripe e Acesso à Fábrica
 
-1. **O envio do magic link por e-mail está falhando agora**
-   - Os logs mostram erro 403 no envio: o domínio `canvaviagem.com` não está verificado para envio via e-mail.
-   - Resultado: o token é criado no banco, mas o comprador não recebe o e-mail.
-   - Depois de algumas tentativas, o usuário ainda bate no rate limit de magic link.
+Investiguei TODOS os Payment Links ativos na sua Stripe, cruzei com o banco e com o código de gating. Abaixo está tudo organizado.
 
-2. **O plano Start está hardcoded como fallback em vários pontos**
-   - O backend usa `prod_TkvaozfpkAcbpM` como produto padrão.
-   - No banco, 46 assinaturas ativas estão gravadas como esse produto Start, enquanto só 2 aparecem como Elite.
-   - Isso confirma sua suspeita: quando a identificação do produto falha, o sistema cai no plano básico.
+## 1. Mapa real dos Payment Links (verificado direto na Stripe)
 
-3. **A tabela de perfis está vazia, mas assinaturas existem**
-   - Existem assinaturas na tabela `subscriptions`, mas `profiles` retornou vazio.
-   - Isso quebra consultas que dependem de perfil para achar e-mail/nome pelo cliente Stripe.
-   - Também vi que as assinaturas não retornam e-mail no join, então parte do fluxo está salvando assinatura sem perfil vinculado corretamente.
+| Link Stripe | Plano (real) | Produto (ID) | Preço | Recorrência |
+|---|---|---|---|---|
+| `buy.stripe.com/8x26oIgGuej656zaAY8so05` | **Start Mensal** | `prod_TkvaozfpkAcbpM` | R$ 29,00 | mensal |
+| `buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09` | **Start Anual** | `prod_TkvaozfpkAcbpM` | R$ 197,00 | anual |
+| `buy.stripe.com/28E7sMai6b6Ucz1eRe8so0a` | Start Anual (variação) | `prod_TkvaozfpkAcbpM` | R$ 197,00 | anual |
+| `buy.stripe.com/cNi28s2PEa2Q6aD9wU8so03` | Start Mensal (variação 9,90) | `prod_TkvaozfpkAcbpM` | R$ 9,90 | mensal |
+| `buy.stripe.com/9B69AUgGuej69mP24s8so02` | Start Mensal (variação 19,90) | `prod_TkvaozfpkAcbpM` | R$ 19,90 | mensal |
+| `buy.stripe.com/4gM5kE75Udf26aD5gE8so07` | Start Mensal (variação 29) | `prod_TkvaozfpkAcbpM` | R$ 29,00 | mensal |
+| `buy.stripe.com/5kQdRa1LA4Iw42v8sQ8so00` | Start Mensal (variação 37,90) | `prod_TkvaozfpkAcbpM` | R$ 37,90 | mensal |
+| `buy.stripe.com/bJe14o89Y6QE42veRe8so01` | Start (one-time R$2) | `prod_TkvaozfpkAcbpM` | R$ 2,00 | one-time |
+| `buy.stripe.com/fZucN6bma6QEeH96kI8so0c` | **Elite Mensal** | `prod_UTFsXcKq8m0mol` | R$ 97,00 | mensal |
+| `buy.stripe.com/fZu14ogGugreeH9bF28so0d` | **Elite Anual** (R$347) | `prod_UTSmPe3GPt8iHt` | R$ 347,00 | anual |
+| `buy.stripe.com/6oU7sM2PEcaY42vcJ68so0b` | Elite Anual (R$497, NÃO usado no app) | `prod_UTFlCWzNqvqSNx` | R$ 497,00 | anual |
+| `buy.stripe.com/14AfZigGu5MAfLd4cA8so08` | Outro (R$19) | `prod_U13kzXKP4ceeWe` | R$ 19,00 | mensal |
+| `buy.stripe.com/aFafZi2PE5MAgPh24s8so06` | Outro (R$10 one-time) | `prod_Tu5LTvo9GdWoXm` | R$ 10,00 | one-time |
+| `buy.stripe.com/bJedRa3TIej6cz15gE8so04` | ES — produto separado | `prod_TsnHjECj482iVM` | US$ 9,90 | one-time |
 
-## Como eu vou corrigir
+## 2. Onde cada link aparece no código
 
-### 1. Blindar o webhook de pagamento
-- Atualizar o fluxo do `stripe-webhook` para nunca depender do fallback Start quando a compra vier do link Elite.
-- Extrair o produto de forma mais robusta nesta ordem:
-  1. assinatura Stripe
-  2. line items do checkout
-  3. invoice lines
-  4. metadata do checkout, se existir
-- Se ainda não conseguir identificar o produto, registrar erro claro e não fingir que é Start.
+| Arquivo | Link usado | Comentário |
+|---|---|---|
+| `src/pages/Planos.tsx` (PT) | Start Mensal + Start Anual OK | **🔴 Elite Mensal/Anual estão como `#elite-checkout-mensal` e `#elite-checkout-anual` (placeholders mortos)** — quem clica em Elite não vai pra Stripe nenhuma |
+| `src/pages/PlanosES.tsx` (ES) | `prod_TsnHjECj482iVM` | Anual = Mensal (placeholder duplicado) |
+| `src/pages/SalesPage.tsx` | Start mensal/anual + Elite mensal/anual | Único lugar onde Elite tem link real |
+| `src/pages/Fabrica.tsx` (paywall) | Elite Mensal R$97 + Elite Anual R$347 | Correto |
+| `supabase/functions/send-drip-campaign` | Start Anual R$197 | OK |
+| `supabase/functions/send-winback` | Start Mensal R$29 | OK |
+| `supabase/functions/stripe-webhook` (e-mail onboarding) | **🔴 Sempre envia Start R$29** mesmo para quem comprou Elite |
+| `supabase/functions/create-checkout` | `price_1SvPypLXUoWoiE4T9zd9mbfR` (Start R$29) | Hardcoded Start |
+| `supabase/functions/create-subscription` | `prod_TkvaozfpkAcbpM` (Start) | Hardcoded Start |
 
-### 2. Corrigir criação de usuário, perfil e assinatura
-- Garantir que toda compra crie/atualize:
-  - usuário
-  - perfil com e-mail
-  - assinatura com `stripe_customer_id`, `stripe_subscription_id`, `product_id` real e status
-- Corrigir o caminho onde `profiles` não está sendo preenchido.
+## 3. Gating da Fábrica (verificado linha a linha)
 
-### 3. Corrigir o check de assinatura
-- Ajustar `check-subscription` para não tratar o produto Start como “não premium” de forma errada.
-- Devolver também o `product_id` real para o frontend diferenciar Start e Elite.
-- Garantir que Elite seja reconhecido pelos IDs existentes:
-  - `prod_UTFlCWzNqvqSNx`
-  - `prod_UTFsXcKq8m0mol`
-  - `prod_UTSmPe3GPt8iHt`
+- `src/pages/Fabrica.tsx` linha 174: `ELITE_PRODUCT_IDS = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"]` — cobre os 3 IDs Elite que existem na Stripe ✓
+- `isElite = subscription.subscribed && ELITE_PRODUCT_IDS.includes(productId)`
+- `hasAccess = isAdmin || isElite || localStorage.cv_bypass`
+- `src/components/canva/BottomNav.tsx` usa a mesma lista ✓
 
-### 4. Corrigir envio do magic link
-- Trocar o remetente do magic link para um domínio/remetente que realmente esteja autorizado no sistema atual, ou preparar o projeto para usar o e-mail gerenciado pelo Lovable Cloud.
-- Fazer o backend retornar erro real quando o e-mail não for enviado, para não parecer que “enviou com sucesso”.
-- Evitar rate limit injusto quando o erro foi causado por falha de envio.
+**Conclusão lógica:** o gating está correto. Quem tem Start (`prod_TkvaozfpkAcbpM`) NÃO entra na Fábrica. Quem tem qualquer um dos 3 Elite ENTRA.
 
-### 5. Recuperação dos usuários já afetados
-- Fazer uma leitura dos clientes/assinaturas recentes e identificar quem comprou Elite mas ficou salvo como Start ou sem perfil.
-- Atualizar os registros afetados no banco para o plano correto.
-- Gerar novos links válidos para esses usuários depois que o envio estiver corrigido.
+## 4. Estado real do banco (assinaturas ativas)
 
-### 6. Validação final
-- Verificar logs do envio de e-mail.
-- Verificar registros novos em `magic_link_tokens` e `email_events`.
-- Verificar que assinaturas Elite entram com produto Elite no banco.
-- Testar a verificação do magic link até criar sessão e retornar `subscribed: true` com o `product_id` correto.
+| product_id | Status | Quantidade |
+|---|---|---|
+| `prod_TkvaozfpkAcbpM` (Start) | active | **46** |
+| `prod_UTFsXcKq8m0mol` (Elite Mensal) | active | 1 |
+| `prod_UTSmPe3GPt8iHt` (Elite Anual R$347) | active | 1 |
+| `null` | inactive | 31 |
 
-## Arquivos que pretendo alterar
+## 5. Os 4 problemas reais que explicam os bugs
 
-- `supabase/functions/stripe-webhook/index.ts`
-- `supabase/functions/check-subscription/index.ts`
-- `supabase/functions/send-magic-link/index.ts`
-- possivelmente `supabase/functions/create-subscription/index.ts`, se esse checkout ainda estiver sendo usado em algum ponto do app
+### 🔴 Problema A — Botão Elite no /planos não leva pra Stripe
+`Planos.tsx` tem `elite_monthly: "#elite-checkout-mensal"` e `elite_annual: "#elite-checkout-anual"`. Cliente clica em Elite e abre uma âncora morta. Os únicos compradores de Elite no banco vieram pela **SalesPage**, não pelo /planos.
 
-## Observação importante
+### 🔴 Problema B — Trigger `on_auth_user_created` está faltando
+Existe `on_auth_user_created_email_automation`, mas **NÃO** existe trigger que chame `public.handle_new_user()`. Por isso a tabela `profiles` está vazia/sem email para usuários novos. Isso quebra qualquer join que busca email pelo `user_id`.
 
-A causa mais urgente agora é o envio de e-mail: o log mostra que o e-mail não está saindo por falha de domínio. Mas isso não é o único problema; também há uma falha estrutural de identificação de produto que pode rebaixar Elite para Start.
+### 🔴 Problema C — E-mail de onboarding sempre vende Start
+`stripe-webhook` linha 450: `checkoutUrl = "https://buy.stripe.com/8x26oIgGuej656zaAY8so05"` (Start R$29) é enviado para TODOS, inclusive quem acabou de comprar Elite. Confunde o cliente.
+
+### 🟡 Problema D — `create-checkout` e `create-subscription` só vendem Start
+Se algum botão antigo ainda chama essas funções, sempre cai em Start. Hoje os links principais são Payment Links Stripe diretos, então o impacto é menor — mas é uma armadilha.
+
+## 6. O que vou fazer (correções propostas)
+
+### A. Corrigir links Elite no /planos
+- Trocar `STRIPE.elite_monthly` por `https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c`
+- Trocar `STRIPE.elite_annual` por `https://buy.stripe.com/fZu14ogGugreeH9bF28so0d`
+
+### B. Recriar o trigger `handle_new_user`
+- Criar `CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();`
+- Backfill: popular `profiles.email` para todos os usuários existentes a partir de `auth.users.email`.
+
+### C. E-mail de onboarding consciente do plano
+- No `stripe-webhook`, escolher o link e o nome do plano com base no `productId` real:
+  - `prod_TkvaozfpkAcbpM` → "Start" (sem CTA de upgrade no e-mail boas-vindas, mas com CTA leve para Elite)
+  - `prod_UTF*` / `prod_UTSm*` → "Elite" (com CTA pra Fábrica)
+
+### D. Reauditoria dos 46 Start
+- Cruzar cada `stripe_subscription_id` Start no banco com a Stripe API para confirmar se o produto realmente é `prod_TkvaozfpkAcbpM` ou se algum Elite ficou rebaixado por algum bug antigo. Se aparecer algum Elite gravado errado, atualizar product_id no banco.
+
+### E. (Opcional) Marcar `create-checkout` / `create-subscription`
+- Adicionar log de aviso se forem chamadas, ou desativar se confirmarmos que ninguém mais usa.
+
+## 7. Validação final (depois das correções)
+
+1. Comprar pelo /planos botão Elite Anual → confirmar que abre `fZu14ogGugreeH9bF28so0d` na Stripe.
+2. Webhook recebe → grava `product_id = prod_UTSmPe3GPt8iHt` no banco.
+3. `profiles` recebe email automaticamente via trigger.
+4. Magic link chega no e-mail (já corrigido em sessão anterior).
+5. Login → `check-subscription` retorna `product_id: prod_UTSmPe3GPt8iHt`.
+6. `/fabrica` → `isElite = true` → entra na ferramenta.
+7. Comprar Start → mesmo fluxo, mas `/fabrica` mostra paywall correto.
+
+Quer que eu execute essas 5 correções (A–E) agora?
