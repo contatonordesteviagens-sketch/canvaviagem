@@ -266,8 +266,8 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
             </DropdownMenu>
 
             {user ? (
-              <div className="flex items-center gap-2 ml-2">
-                <span className="text-sm font-medium text-foreground">
+              <div className="flex items-center gap-2 ml-2 min-w-0">
+                <span className="hidden lg:inline text-sm font-medium text-foreground truncate max-w-[160px]">
                   Olá, {userName || user.email?.split("@")[0]}! 👋
                 </span>
                 <Button
