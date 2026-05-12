@@ -273,29 +273,42 @@ serve(async (req) => {
             });
 
             const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
-            isSubscribed = checkoutSessions.data.some((s: any) =>
+            const validSession = checkoutSessions.data.find((s: any) =>
               s.payment_status === 'paid' &&
               s.mode === 'payment' &&
               s.created > thirtyDaysAgo
             );
+
+            if (validSession) {
+              const lineItems = await stripe.checkout.sessions.listLineItems(validSession.id, { limit: 1 });
+              const productId = (lineItems.data[0]?.price?.product as string | null) ?? null;
+              isSubscribed = true;
+              stripeSync = {
+                customerId,
+                subscriptionId: null,
+                productId,
+                subscriptionEnd: new Date((validSession.created + (365 * 24 * 60 * 60)) * 1000).toISOString(),
+              };
+            }
           }
 
             if (isSubscribed) {
-              stripeSync = { customerId, subscriptionId: null, productId: null, subscriptionEnd: null };
               break;
             }
           }
         }
 
         if (stripeSync) {
-          await supabaseAdmin.from("profiles").upsert({
+          const { error: profileSyncError } = await supabaseAdmin.from("profiles").upsert({
             user_id: userId,
             email,
             stripe_customer_id: stripeSync.customerId,
             updated_at: new Date().toISOString(),
           }, { onConflict: "user_id" });
 
-          await supabaseAdmin.from("subscriptions").upsert({
+          if (profileSyncError) console.error("[VERIFY-MAGIC-LINK] Profile Stripe sync failed:", profileSyncError);
+
+          const { error: subscriptionSyncError } = await supabaseAdmin.from("subscriptions").upsert({
             user_id: userId,
             stripe_customer_id: stripeSync.customerId,
             stripe_subscription_id: stripeSync.subscriptionId,
@@ -304,6 +317,8 @@ serve(async (req) => {
             current_period_end: stripeSync.subscriptionEnd,
             updated_at: new Date().toISOString(),
           }, { onConflict: "user_id" });
+
+          if (subscriptionSyncError) console.error("[VERIFY-MAGIC-LINK] Subscription Stripe sync failed:", subscriptionSyncError);
         }
       }
     } catch (stripeErr) {
