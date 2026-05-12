@@ -775,6 +775,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [forcedVariant, setForcedVariant] = useState<number | null>(null);
   const [lastProvider, setLastProvider] = useState<"user_gemini" | "lovable_ai" | null>(null);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const resultRef = useRef<HTMLDivElement | null>(null);
   const [generationCount, setGenerationCount] = useState<number>(() => {
     const saved = localStorage.getItem("fabrica_gen_count");
     return saved ? parseInt(saved, 10) : 0;
@@ -1150,6 +1151,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         finishCycle(composed.length);
 
         toast.success(`${composed.length} ${composed.length === 1 ? "variação gerada" : "variações geradas"} com foto real!`);
+        requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
         return;
       }
 
@@ -2644,7 +2646,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         {loading && <p className="text-xs text-white/50 text-center mt-1">A IA leva 8 a 25 segundos.</p>}
 
         {(generationError || generatedImages.length > 0) && (
-          <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-4">
+          <div ref={resultRef} className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-4 scroll-mt-24">
             {generationError && (
               <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-100">
                 <div className="font-bold">Não foi possível gerar a imagem</div>

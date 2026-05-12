@@ -3223,9 +3223,17 @@ const panelBottom = RULES.PANEL_BOTTOM;
     return await renderSafeSquareOffer();
   } catch (error) {
     console.error("Ad Engine Error:", error);
-    // Fallback absoluto: tenta renderizar o modo mais simples (V0) antes de desistir
-    try { return await renderV0Experiencia(); } catch {
-       return canvas.toDataURL("image/png"); // Último recurso: retorna o canvas como esta
+    // Fallback: tenta V0 antes de desistir; se também falhar, propaga o erro real
+    try {
+      return await renderV0Experiencia();
+    } catch (innerErr) {
+      const baseMsg = (error as Error)?.message || String(error);
+      const innerMsg = (innerErr as Error)?.message || String(innerErr);
+      throw new Error(
+        baseMsg.includes("carregar imagem")
+          ? "Não foi possível carregar a foto selecionada (CORS / link bloqueado). Escolha outra foto da galeria ou cole um link de imagem direta (.jpg/.png)."
+          : `Falha ao compor anúncio: ${baseMsg} | ${innerMsg}`
+      );
     }
   }
 }
