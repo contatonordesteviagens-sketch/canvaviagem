@@ -432,47 +432,55 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 
       {/* ─── ANIMAÇÃO GLOBAL NETWORK (WORLD MAP) ─── */}
-      <section style={{ padding: "60px 20px 80px", background: T.bgDeep, overflow: "hidden", borderBottom: `1px solid rgba(255,255,255,0.04)` }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto", textAlign: "center" }}>
+      <section style={{ padding: "60px 0 0px", background: T.bgDeep, overflow: "hidden", position: "relative" }}>
+        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center", padding: "0 20px" }}>
           <Reveal>
-            <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12, textTransform: "uppercase" }}>ESCALE SUAS VENDAS GLOBALMENTE</p>
+            <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12, textTransform: "uppercase" }}>CONECTE-SE AO MUNDO</p>
             <h2 style={{ fontSize: "clamp(22px, 4vw, 36px)", fontWeight: 900, marginBottom: 16, lineHeight: 1.2 }}>
-              Conecte clientes aos melhores <br className="hidden md:block"/> destinos do mundo
+              Escale suas vendas globalmente
             </h2>
-            <p style={{ color: T.text2, fontSize: 15, maxWidth: 600, margin: "0 auto 48px", lineHeight: 1.6 }}>
-              Seja para roteiros nacionais ou internacionais, transforme sua agência em uma máquina de vendas com materiais que elevam seu ticket médio.
+            <p style={{ color: T.text2, fontSize: 15, maxWidth: 600, margin: "0 auto 24px", lineHeight: 1.6 }}>
+              Destaque-se com materiais profissionais para os destinos mais cobiçados do mercado nacional e internacional.
             </p>
           </Reveal>
-
-          <Reveal delay={0.2}>
-            <div style={{ borderRadius: 24, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", boxShadow: `0 20px 50px rgba(0,0,0,0.4)` }}>
-              <WorldMap 
-                dots={[
-                  {
-                    start: { lat: -23.5505, lng: -46.6333, label: "São Paulo" },
-                    end: { lat: 48.8566, lng: 2.3522, label: "Paris" }
-                  },
-                  {
-                    start: { lat: -22.9068, lng: -43.1729, label: "Rio" },
-                    end: { lat: 28.5383, lng: -81.3792, label: "Orlando" }
-                  },
-                  {
-                    start: { lat: -15.7975, lng: -47.8919, label: "Brasília" },
-                    end: { lat: 38.7223, lng: -9.1393, label: "Lisboa" }
-                  },
-                  {
-                    start: { lat: -8.0476, lng: -34.8770, label: "Recife" },
-                    end: { lat: 41.9028, lng: 12.4964, label: "Roma" }
-                  },
-                  {
-                    start: { lat: -12.9714, lng: -38.5014, label: "Salvador" },
-                    end: { lat: -34.6037, lng: -58.3816, label: "Buenos Aires" }
-                  }
-                ]}
-              />
-            </div>
-          </Reveal>
         </div>
+
+        <Reveal delay={0.2}>
+          <div style={{ width: "100%", position: "relative", marginTop: 20 }}>
+            <WorldMap 
+              dots={[
+                {
+                  start: { lat: -2.7996, lng: -40.5128, label: "Jeri" },
+                  end: { lat: 38.7223, lng: -9.1393, label: "Lisboa" }
+                },
+                {
+                  start: { lat: -3.8404, lng: -32.4108, label: "Noronha" },
+                  end: { lat: 25.2048, lng: 55.2708, label: "Dubai" }
+                },
+                {
+                  start: { lat: -22.9068, lng: -43.1729, label: "Rio" },
+                  end: { lat: 51.5074, lng: -0.1278, label: "London" }
+                },
+                {
+                  start: { lat: -23.5505, lng: -46.6333, label: "SP" },
+                  end: { lat: 34.0522, lng: -118.2437, label: "LA" }
+                },
+                {
+                  start: { lat: -12.9714, lng: -38.5014, label: "Salvador" },
+                  end: { lat: 52.3676, lng: 4.9041, label: "Amsterdã" }
+                },
+                {
+                  start: { lat: -8.0476, lng: -34.8770, label: "Recife" },
+                  end: { lat: -1.2921, lng: 36.8219, label: "África" }
+                },
+                {
+                  start: { lat: -23.5505, lng: -46.6333, label: "Brasil" },
+                  end: { lat: 48.8566, lng: 2.3522, label: "Paris" }
+                }
+              ]}
+            />
+          </div>
+        </Reveal>
       </section>
 
       {/* ─── SEÇÃO FUNDADOR ─── */}
