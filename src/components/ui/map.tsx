@@ -221,16 +221,20 @@ export function WorldMap({
                 {showLabels && dot.start.label && (
                   <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
                     <foreignObject
-                      x={startPoint.x - 25 + (dot.start.labelOffset?.x ?? 0)}
-                      y={startPoint.y - 15 + (dot.start.labelOffset?.y ?? 0)}
-                      width="50"
-                      height="15"
+                      x={startPoint.x - 12.5 + (dot.start.labelOffset?.x ?? 0)}
+                      y={startPoint.y - 4.5 + (dot.start.labelOffset?.y ?? 0)}
+                      width="25"
+                      height="4"
                       className="block overflow-visible"
                     >
                       <div className="flex items-center justify-center h-full w-full">
                         <span 
-                          className="font-extrabold px-1.5 py-0.5 rounded bg-black text-white border border-white/40 shadow-[0_4px_12px_rgba(0,0,0,0.9)] tracking-tight whitespace-nowrap leading-none"
-                          style={{ fontSize: "min(2.5vw, 8px)" }}
+                          className="font-extrabold px-1 py-0.5 rounded bg-black text-white border shadow-[0_1px_4px_rgba(0,0,0,0.9)] tracking-tight whitespace-nowrap leading-none"
+                          style={{ 
+                            fontSize: "2px", 
+                            borderWidth: "0.2px",
+                            borderColor: "rgba(255,255,255,0.4)"
+                          }}
                         >
                           {dot.start.label}
                         </span>
@@ -253,16 +257,20 @@ export function WorldMap({
                 {showLabels && dot.end.label && (
                   <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
                     <foreignObject
-                      x={endPoint.x - 25 + (dot.end.labelOffset?.x ?? 0)}
-                      y={endPoint.y - 15 + (dot.end.labelOffset?.y ?? 0)}
-                      width="50"
-                      height="15"
+                      x={endPoint.x - 12.5 + (dot.end.labelOffset?.x ?? 0)}
+                      y={endPoint.y - 4.5 + (dot.end.labelOffset?.y ?? 0)}
+                      width="25"
+                      height="4"
                       className="block overflow-visible"
                     >
                       <div className="flex items-center justify-center h-full w-full">
                         <span 
-                          className="font-extrabold px-1.5 py-0.5 rounded bg-black text-[#00E5FF] border border-[#00E5FF]/50 shadow-[0_4px_12px_rgba(0,229,255,0.3)] tracking-tight whitespace-nowrap leading-none"
-                          style={{ fontSize: "min(2.5vw, 8px)" }}
+                          className="font-extrabold px-1 py-0.5 rounded bg-black text-[#00E5FF] border shadow-[0_1px_4px_rgba(0,229,255,0.3)] tracking-tight whitespace-nowrap leading-none"
+                          style={{ 
+                            fontSize: "2px", 
+                            borderWidth: "0.2px",
+                            borderColor: "rgba(0, 229, 255, 0.5)"
+                          }}
                         >
                           {dot.end.label}
                         </span>
