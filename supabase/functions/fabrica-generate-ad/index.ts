@@ -302,16 +302,15 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
 
         if (!imageUrl) {
           console.warn("User Gemini failed:", lastStatus, lastErrText.slice(0, 300));
-          const userKeyActionableError = lastStatus === 401 || lastStatus === 403 || lastStatus === 429;
-          if (userKeyActionableError) {
-            const message = lastStatus === 429
-              ? "Sua cota do Gemini foi atingida. Aguarde ou verifique o faturamento da sua chave Gemini."
-              : "Sua chave Gemini é inválida ou foi revogada. Atualize-a em Configurações.";
-            return new Response(JSON.stringify({ error: message, provider: "user_gemini", action: "update_user_key", fallback: false }), {
-              status: 200,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            });
+          // 401/403 = chave inválida → erro acionável (somente se NÃO houver fallback Lovable)
+          const invalidKey = lastStatus === 401 || lastStatus === 403;
+          if (invalidKey && !LOVABLE_API_KEY) {
+            return new Response(JSON.stringify({
+              error: "Sua chave Gemini é inválida ou foi revogada. Atualize-a em Configurações.",
+              provider: "user_gemini", action: "update_user_key", fallback: false,
+            }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
           }
+          // 429 (cota) ou qualquer outro erro → fallback silencioso para Lovable AI Gateway
           if (LOVABLE_API_KEY) provider = "lovable_ai";
         }
       } catch (e) {
