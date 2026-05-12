@@ -241,7 +241,8 @@ serve(async (req) => {
         });
 
         if (customers.data.length > 0) {
-          const customerId = customers.data[0].id;
+          for (const customer of customers.data) {
+          const customerId = customer.id;
 
           // Check for active or trialing subscriptions
           const subscriptions = await stripe.subscriptions.list({
@@ -261,6 +262,8 @@ serve(async (req) => {
             isSubscribed = trialing.data.length > 0;
           }
 
+          if (isSubscribed) break;
+
           // Check for recent one-off payments if no subscription
           if (!isSubscribed) {
             const checkoutSessions = await stripe.checkout.sessions.list({
@@ -275,6 +278,9 @@ serve(async (req) => {
               s.mode === 'payment' &&
               s.created > thirtyDaysAgo
             );
+          }
+
+          if (isSubscribed) break;
           }
         }
       }
