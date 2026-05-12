@@ -131,7 +131,7 @@ const Obrigado = () => {
   }, [tracked]);
 
   useEffect(() => {
-    const t = setTimeout(() => setShowConfetti(false), 3000);
+    const t = setTimeout(() => setShowConfetti(false), 10500);
     return () => clearTimeout(t);
   }, []);
 
