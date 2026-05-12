@@ -167,8 +167,8 @@ async function ensureUserAndOnboarding(
 
   // 5. Send emails via Resend if available
   if (resend && magicLink) {
-    await sendAutoMagicLinkEmail(resend, normalizedEmail, magicLink, name || "Visitante");
-    await sendWelcomeEmail(resend, normalizedEmail, productId);
+    await sendAutoMagicLinkEmail(supabase, resend, normalizedEmail, magicLink, token, name || "Visitante");
+    await sendWelcomeEmail(supabase, resend, normalizedEmail, productId);
   }
 
   // 6. Trigger Zaia Welcome (with the generated magic link for WhatsApp delivery!)
@@ -369,9 +369,9 @@ async function handleCheckoutExpired(session: Stripe.Checkout.Session, supabase:
 }
 
 // EMAIL TEMPLATES (Restored)
-async function sendAutoMagicLinkEmail(resend: any, email: string, magicLink: string, customerName: string) {
+async function sendAutoMagicLinkEmail(supabase: any, resend: any, email: string, magicLink: string, token: string, customerName: string) {
   try {
-    await resend.emails.send({
+    const emailResponse = await resend.emails.send({
       from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
       to: [email],
       subject: "🔐 Seu Link de Acesso - Canva Viagem",
@@ -390,7 +390,25 @@ async function sendAutoMagicLinkEmail(resend: any, email: string, magicLink: str
         </html>
       `,
     });
-    logStep("Auto magic link email sent", { email: redactEmail(email) });
+    if (emailResponse?.error) {
+      logStep("ERROR: Resend rejected auto magic link email", { email: redactEmail(email), error: emailResponse.error });
+      await supabase.from("email_events").insert({
+        email_id: token,
+        type: "failed",
+        email_type: "magic_link_auto",
+        recipient_email: email,
+        metadata: { token_id: token, provider_error: emailResponse.error },
+      });
+      return;
+    }
+    await supabase.from("email_events").insert({
+      email_id: emailResponse?.data?.id || token,
+      type: "sent",
+      email_type: "magic_link_auto",
+      recipient_email: email,
+      metadata: { token_id: token },
+    });
+    logStep("Auto magic link email sent", { email: redactEmail(email), emailId: emailResponse?.data?.id });
   } catch (error: any) {
     logStep("ERROR: Failed to send auto magic link email", { error: error.message });
   }
@@ -398,7 +416,7 @@ async function sendAutoMagicLinkEmail(resend: any, email: string, magicLink: str
 
 const ELITE_PRODUCT_IDS = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
 
-async function sendWelcomeEmail(resend: any, email: string, productId?: string) {
+async function sendWelcomeEmail(supabase: any, resend: any, email: string, productId?: string) {
   const appUrl = Deno.env.get("APP_URL") || "https://canvaviagem.com";
   const isElite = !!productId && ELITE_PRODUCT_IDS.includes(productId);
   const planName = isElite ? "Plano Elite 👑" : "Plano Start";
@@ -411,7 +429,7 @@ async function sendWelcomeEmail(resend: any, email: string, productId?: string) 
        <li>Robôs de IA</li>
        <li>Templates Editáveis</li>`;
   try {
-    await resend.emails.send({
+    const emailResponse = await resend.emails.send({
       from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
       to: [email],
       subject: `🚀 Bem-vindo ao Canva Viagem — ${planName}`,
@@ -428,6 +446,25 @@ async function sendWelcomeEmail(resend: any, email: string, productId?: string) 
         </body></html>
       `,
     });
+    if (emailResponse?.error) {
+      logStep("ERROR welcome email", { email: redactEmail(email), error: emailResponse.error });
+      await supabase.from("email_events").insert({
+        email_id: `${email}-welcome-${Date.now()}`,
+        type: "failed",
+        email_type: isElite ? "welcome_elite" : "welcome_start",
+        recipient_email: email,
+        metadata: { product_id: productId, provider_error: emailResponse.error },
+      });
+      return;
+    }
+    await supabase.from("email_events").insert({
+      email_id: emailResponse?.data?.id || `${email}-welcome-${Date.now()}`,
+      type: "sent",
+      email_type: isElite ? "welcome_elite" : "welcome_start",
+      recipient_email: email,
+      metadata: { product_id: productId },
+    });
+    logStep("Welcome email sent", { email: redactEmail(email), productId, emailId: emailResponse?.data?.id });
   } catch (error: any) { logStep("ERROR welcome email", { error: error.message }); }
 }
 
