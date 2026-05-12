@@ -775,6 +775,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [forcedVariant, setForcedVariant] = useState<number | null>(null);
   const [lastProvider, setLastProvider] = useState<"user_gemini" | "lovable_ai" | null>(null);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const resultRef = useRef<HTMLDivElement | null>(null);
   const [generationCount, setGenerationCount] = useState<number>(() => {
     const saved = localStorage.getItem("fabrica_gen_count");
     return saved ? parseInt(saved, 10) : 0;
