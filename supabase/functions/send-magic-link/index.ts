@@ -179,8 +179,10 @@ serve(async (req) => {
     console.log("[MAGIC-LINK] Magic link generated successfully");
 
     // Enviar email via Resend
+    // IMPORTANT: usar remetente verificado. canvaviagem.com não está verificado no Resend.
+    const fromAddress = Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>";
     const emailResponse = await resend.emails.send({
-      from: "Canva Viagem <contato@canvaviagem.com>",
+      from: fromAddress,
       to: [email],
       subject: "🔐 Seu Link de Acesso - Canva Viagem",
       html: generateEmailTemplate(magicLink),
