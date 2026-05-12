@@ -4,6 +4,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Dock } from "@/components/ui/Dock";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import { FabricaUpgradeModal } from "@/components/fabrica/FabricaUpgradeModal";
 
 interface BottomNavProps {
   activeCategory: CategoryType;
@@ -13,7 +15,8 @@ interface BottomNavProps {
 export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, subscription, isAdmin } = useAuth();
+  const [fabricaUpgradeOpen, setFabricaUpgradeOpen] = useState(false);
 
   const handleTabClick = (category: CategoryType | "home" | "calendar" | "fabrica") => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -26,6 +29,13 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
     } else if (category === "fabrica") {
       if (!user) {
         navigate("/auth");
+        return;
+      }
+      const eliteProductIds = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
+      const isElite = subscription.subscribed && eliteProductIds.includes(subscription.productId || "");
+
+      if (!isAdmin && !isElite) {
+        setFabricaUpgradeOpen(true);
         return;
       }
       navigate("/fabrica");
@@ -75,10 +85,13 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
   ];
 
   return (
-    <div className="fixed bottom-4 left-0 right-0 z-[60] flex justify-center pointer-events-none">
-      <div className="pointer-events-auto w-full max-w-lg px-4">
-        <Dock items={navItems} className="h-auto" />
+    <>
+      <div className="fixed bottom-4 left-0 right-0 z-[60] flex justify-center pointer-events-none">
+        <div className="pointer-events-auto w-full max-w-lg px-4">
+          <Dock items={navItems} className="h-auto" />
+        </div>
       </div>
-    </div>
+      <FabricaUpgradeModal open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
+    </>
   );
 };
