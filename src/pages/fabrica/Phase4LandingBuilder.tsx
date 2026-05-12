@@ -97,12 +97,12 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
     // Se o nível do usuário é baixo (menos que 3), o sistema INTUI que falta autoridade.
     // Logo, ele OBRIGA e ATIVA automaticamente os depoimentos e a sessão 'Por que Nós'.
     if (state.level && state.level < 3) {
-      if (!state.siteContent.sections?.testimonials) {
-        patches["siteContent.sections.testimonials"] = true;
+      if (!state.siteContent.sections?.depoimentos) {
+        patches["siteContent.sections.depoimentos"] = true;
         synced.push("Blindagem de Autoridade (Depoimentos Ativados)");
       }
-      if (!state.siteContent.sections?.whyUs) {
-        patches["siteContent.sections.whyUs"] = true;
+      if (!state.siteContent.sections?.porQue) {
+        patches["siteContent.sections.porQue"] = true;
         synced.push("Blindagem de Autoridade (Diferenciais Ativados)");
       }
     }

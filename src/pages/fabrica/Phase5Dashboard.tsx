@@ -69,8 +69,8 @@ export const Phase5Dashboard = () => {
       toast.dismiss(loadingToast);
       toast.success("🚀 SITE PUBLICADO E ATIVO COM SUCESSO!");
       
-      if (typeof window !== "undefined" && window.confetti) {
-         window.confetti();
+      if (typeof window !== "undefined" && (window as any).confetti) {
+         (window as any).confetti();
       }
       
     } catch (err) {

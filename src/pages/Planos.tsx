@@ -1248,7 +1248,7 @@ const Planos = () => {
       </a>
 
       {/* ─── SOCIAL PROOF TOAST ─── */}
-      <SocialProofToast onCtaClicked={ctaClicked} />
+      <SocialProofToast ctaClicked={ctaClicked} />
 
       <AnimatePresence>
         {isPixModalOpen && (
