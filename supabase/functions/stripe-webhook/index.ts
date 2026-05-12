@@ -123,13 +123,22 @@ async function ensureUserAndOnboarding(
   const { error: profileError } = await supabase.from("profiles").upsert(profileData, { onConflict: "user_id" });
   if (profileError) logStep("ERROR: Failed to upsert profile", { error: profileError.message });
 
-  // 3. Upsert Subscription
+  // 3. Upsert Subscription — NUNCA forçar fallback de produto.
+  // Se productId vier nulo, salvamos null e logamos para investigação manual,
+  // em vez de rebaixar a compra (ex: Elite virando Start).
+  if (!productId) {
+    logStep("WARN: productId not resolved for subscription — saving as null", {
+      email: redactEmail(normalizedEmail),
+      stripeCustomerId,
+      stripeSubscriptionId,
+    });
+  }
   const { error: subError } = await supabase.from("subscriptions").upsert({
     user_id: userId,
     stripe_customer_id: stripeCustomerId,
     stripe_subscription_id: stripeSubscriptionId,
     status: "active",
-    product_id: productId || "prod_TkvaozfpkAcbpM",
+    product_id: productId || null,
     updated_at: new Date().toISOString(),
   }, { onConflict: "user_id" });
 
