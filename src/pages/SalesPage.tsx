@@ -900,13 +900,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 </button>
               </div>
 
-              <div style={{ display: "inline-flex", gap: 8, alignItems: "center", background: `${T.accent}15`,
-                border: `1px solid ${T.accent}44`, borderRadius: 100, padding: "8px 18px", marginBottom: 12 }}>
-                <span className="animate-pulse" style={{ width: 6, height: 6, borderRadius: "50%", background: T.accent }} />
-                <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>
-                  Apenas 14 vagas restantes com acesso completo
-                </span>
-              </div>
+
               <div style={{ maxWidth: 400, margin: "0 auto 20px", background: "rgba(255,255,255,0.02)", border: `1px solid rgba(0, 229, 255, 0.1)`, padding: "12px 16px", borderRadius: 12 }}>
                 <p style={{ color: T.accent, fontSize: 11, fontWeight: 900, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                   ⚠️ Preço 1° lote garantido hoje
