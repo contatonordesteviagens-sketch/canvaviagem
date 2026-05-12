@@ -375,7 +375,7 @@ async function sendAutoMagicLinkEmail(resend: any, email: string, magicLink: str
              <h1>Olá, ${customerName}!</h1>
              <p>Seu pagamento foi confirmado! Clique abaixo para acessar:</p>
              <a href="${magicLink}" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">Acessar Minha Conta</a>
-             <p style="margin-top: 20px; font-size: 12px; color: #888;">Link expira em 1 hora.</p>
+              <p style="margin-top: 20px; font-size: 12px; color: #888;">Link expira em 24 horas.</p>
           </div>
         </body>
         </html>
