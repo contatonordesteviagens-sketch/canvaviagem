@@ -47,13 +47,26 @@ const ConfettiCanvas = () => {
 
     let animId: number;
     let frame = 0;
+    const TOTAL_FRAMES = 600; // ~10 seconds @60fps
+    const FADE_FRAMES = 90;   // last 1.5s fade out
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const fadeAlpha = frame > TOTAL_FRAMES - FADE_FRAMES
+        ? Math.max(0, (TOTAL_FRAMES - frame) / FADE_FRAMES)
+        : 1;
+      ctx.globalAlpha = fadeAlpha;
       particles.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
         p.angle += p.spin;
         p.vy += 0.02; // Very low gravity for "floaty" effect
+        // Recycle particles to keep density high during the full 10s
+        if (p.y > canvas.height + 50 && frame < TOTAL_FRAMES - FADE_FRAMES) {
+          p.x = Math.random() * canvas.width;
+          p.y = -50 - Math.random() * 200;
+          p.vy = 0.5 + Math.random() * 2;
+          p.vx = (Math.random() - 0.5) * 2;
+        }
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate(p.angle);
@@ -61,8 +74,9 @@ const ConfettiCanvas = () => {
         ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
         ctx.restore();
       });
+      ctx.globalAlpha = 1;
       frame++;
-      if (frame < 180) { // Approx 3 seconds
+      if (frame < TOTAL_FRAMES) {
         animId = requestAnimationFrame(animate);
       } else {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -117,7 +131,7 @@ const Obrigado = () => {
   }, [tracked]);
 
   useEffect(() => {
-    const t = setTimeout(() => setShowConfetti(false), 3000);
+    const t = setTimeout(() => setShowConfetti(false), 10500);
     return () => clearTimeout(t);
   }, []);
 
