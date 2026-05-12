@@ -415,6 +415,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
         </div>
       </header>
 
+      <FabricaUpgradeModal open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
     </>
   );
 };
