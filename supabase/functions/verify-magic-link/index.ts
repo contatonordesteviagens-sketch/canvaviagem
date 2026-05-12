@@ -28,15 +28,15 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Atomic token fetch: Only select unused and non-expired tokens
+    // Token fetch: allow reuse while the purchase access link is still valid.
+    // Email/security scanners can pre-open links before the buyer clicks them.
     const now = new Date();
     const { data: tokenData, error: fetchError } = await supabaseAdmin
       .from("magic_link_tokens")
       .select("*")
       .eq("token", token)
-      // Modificado para aceitar reuso recente
       .gt("expires_at", now.toISOString())  // Only select non-expired tokens
-      .single();
+      .maybeSingle();
 
     // --- MECANISMO DE RESILIÊNCIA CONTRA SCANNER DE E-MAIL ---
     // Permitir reuso do token durante toda sua validade (1h).
@@ -50,28 +50,18 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    const usedRecently = !!tokenData.used_at;
 
-    // Atomically mark token as used with WHERE clause to prevent race condition
-    // This ensures only one request can successfully mark the token as used
-    const { data: updateResult, error: updateError } = await supabaseAdmin
+    // Best-effort audit only. Do not block login if another request/scanner
+    // already marked used_at, as long as expires_at is still valid.
+    const { error: updateError } = await supabaseAdmin
       .from("magic_link_tokens")
       .update({ used_at: now.toISOString() })
       .eq("id", tokenData.id)
       .is("used_at", null)  // Critical: Only update if still unused
       .select("id");
 
-    if (updateError || !updateResult || updateResult.length === 0) {
-      // Se falhou o update mas foi usado recentemente, PERMITIMOS CONTINUAR
-      if (usedRecently) {
-        console.log("[VERIFY] Pulando trava de reuso: Token usado muito recentemente. Autorizando login.");
-      } else {
-        console.error("Token already used (race condition prevented):", updateError);
-        return new Response(
-          JSON.stringify({ error: "Este link já foi utilizado e expirou a janela de reuso." }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+    if (updateError) {
+      console.warn("[VERIFY] Não foi possível registrar used_at, continuando login:", updateError);
     }
 
     console.log("[VERIFY-MAGIC-LINK] Token atomically marked as used:", tokenData.id);
