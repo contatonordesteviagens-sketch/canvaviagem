@@ -25,6 +25,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 import { ProgressBar } from "@/components/ProgressBar";
 import { cn } from "@/lib/utils";
+import { FabricaUpgradeModal } from "@/components/fabrica/FabricaUpgradeModal";
 
 type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
 
@@ -37,9 +38,10 @@ interface HeaderProps {
 const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
+  const [fabricaUpgradeOpen, setFabricaUpgradeOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, subscription, isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { t, language } = useLanguage();
 
@@ -151,6 +153,15 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
 
   // Intercept navigation to gated routes (Fábrica / Painel de Marketing)
   const handleNavClick = (to: string) => {
+    const eliteProductIds = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
+    const isElite = subscription.subscribed && eliteProductIds.includes(subscription.productId || "");
+
+    if ((to === "/fabrica" || to === "/painel-marketing") && !isAdmin && !isElite) {
+      setFabricaUpgradeOpen(true);
+      setIsOpen(false);
+      return;
+    }
+
     navigate(to);
     setIsOpen(false);
   };
