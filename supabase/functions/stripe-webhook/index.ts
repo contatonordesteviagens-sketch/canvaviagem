@@ -34,6 +34,34 @@ function isValidEmail(email: string | null | undefined): email is string {
   return emailRegex.test(email) && email.length <= 254;
 }
 
+async function findExistingUserIdByEmail(supabase: any, email: string): Promise<string | null> {
+  const { data: profileUser, error: profileError } = await supabase
+    .from("profiles")
+    .select("user_id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (profileError) {
+    logStep("WARN: profile lookup failed, falling back to auth list", { error: profileError.message });
+  }
+
+  if (profileUser?.user_id) return profileUser.user_id;
+
+  for (let page = 1; page <= 20; page++) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) {
+      logStep("WARN: auth listUsers fallback failed", { error: error.message });
+      return null;
+    }
+
+    const matchedUser = data?.users?.find((user: any) => user.email?.toLowerCase().trim() === email);
+    if (matchedUser?.id) return matchedUser.id;
+    if (!data?.users || data.users.length < 1000) break;
+  }
+
+  return null;
+}
+
 // ZAIA WEBHOOK HELPER
 async function triggerZaiaWebhook(webhookEnvVar: string, data: { email: string; name?: string; phone?: string; magic_link?: string }) {
   const webhookUrl = Deno.env.get(webhookEnvVar);
