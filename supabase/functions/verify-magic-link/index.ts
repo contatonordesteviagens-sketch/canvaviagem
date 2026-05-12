@@ -39,17 +39,18 @@ serve(async (req) => {
       .single();
 
     // --- MECANISMO DE RESILIÊNCIA CONTRA SCANNER DE E-MAIL ---
-    const wasUsed = !!tokenData?.used_at;
-    // Tolerância de 5 minutos para reuso (evita falha se o antivírus abrir o link segundos antes)
-    const usedRecently = wasUsed && (now.getTime() - new Date(tokenData.used_at).getTime() < 5 * 60 * 1000);
-
-    if (fetchError || !tokenData || (wasUsed && !usedRecently)) {
-      console.error("[VERIFY] Token não encontrado, expirado ou realmente já usado:", fetchError || "Usado há mais de 5 min");
+    // Permitir reuso do token durante toda sua validade (1h).
+    // O token já expira naturalmente via expires_at, então não precisamos
+    // travar por used_at — isso evita falha quando antivírus/prefetch abre
+    // o link antes do usuário clicar de fato.
+    if (fetchError || !tokenData) {
+      console.error("[VERIFY] Token não encontrado ou expirado:", fetchError);
       return new Response(
-        JSON.stringify({ error: "Token inválido, já utilizado há mais de 5 min ou expirado" }),
+        JSON.stringify({ error: "Link inválido ou expirado. Solicite um novo link de acesso." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    const usedRecently = !!tokenData.used_at;
 
     // Atomically mark token as used with WHERE clause to prevent race condition
     // This ensures only one request can successfully mark the token as used
