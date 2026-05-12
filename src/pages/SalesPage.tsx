@@ -436,11 +436,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center", padding: "0 20px" }}>
           <Reveal>
             <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12, textTransform: "uppercase" }}>CONECTE-SE AO MUNDO</p>
-            <h2 style={{ fontSize: "clamp(22px, 4vw, 36px)", fontWeight: 900, marginBottom: 16, lineHeight: 1.2 }}>
-              Escale suas vendas globalmente
+            <h2 style={{ fontSize: "clamp(22px, 4vw, 36px)", fontWeight: 900, marginBottom: 16, lineHeight: 1.2, textTransform: "uppercase" }}>
+              VENDA DESTINOS DE TODO O MUNDO
             </h2>
             <p style={{ color: T.text2, fontSize: 15, maxWidth: 600, margin: "0 auto 24px", lineHeight: 1.6 }}>
-              Destaque-se com materiais profissionais para os destinos mais cobiçados do mercado nacional e internacional.
+              Escale suas vendas com mídias de profissionais para os destinos mais cobiçados do mercado nacional e internacional.
             </p>
           </Reveal>
         </div>
@@ -450,32 +450,32 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <WorldMap 
               dots={[
                 {
-                  start: { lat: -2.7996, lng: -40.5128, label: "Jeri" },
-                  end: { lat: 38.7223, lng: -9.1393, label: "Lisboa" }
+                  start: { lat: -2.7996, lng: -40.5128, label: "Jericoacoara", labelOffset: { x: -20, y: -15 } },
+                  end: { lat: 51.5074, lng: -0.1278, label: "London", labelOffset: { x: -10, y: -18 } }
                 },
                 {
-                  start: { lat: -3.8404, lng: -32.4108, label: "Noronha" },
-                  end: { lat: 25.2048, lng: 55.2708, label: "Dubai" }
+                  start: { lat: -3.8404, lng: -32.4108, label: "Noronha", labelOffset: { x: 25, y: 0 } },
+                  end: { lat: 25.2048, lng: 55.2708, label: "Dubai", labelOffset: { x: 0, y: -15 } }
                 },
                 {
-                  start: { lat: -22.9068, lng: -43.1729, label: "Rio" },
-                  end: { lat: 51.5074, lng: -0.1278, label: "London" }
+                  start: { lat: -22.9068, lng: -43.1729, label: "Rio", labelOffset: { x: 15, y: 18 } },
+                  end: { lat: 38.7223, lng: -9.1393, label: "Lisboa", labelOffset: { x: -15, y: 15 } }
                 },
                 {
-                  start: { lat: -23.5505, lng: -46.6333, label: "SP" },
-                  end: { lat: 34.0522, lng: -118.2437, label: "LA" }
+                  start: { lat: -23.5505, lng: -46.6333, label: "São Paulo", labelOffset: { x: -25, y: 5 } },
+                  end: { lat: 34.0522, lng: -118.2437, label: "Los Angeles", labelOffset: { x: 0, y: -15 } }
                 },
                 {
-                  start: { lat: -12.9714, lng: -38.5014, label: "Salvador" },
-                  end: { lat: 52.3676, lng: 4.9041, label: "Amsterdã" }
+                  start: { lat: -12.9714, lng: -38.5014, label: "Bahia", labelOffset: { x: 25, y: 0 } },
+                  end: { lat: 52.3676, lng: 4.9041, label: "Amsterdã", labelOffset: { x: 25, y: -15 } }
                 },
                 {
-                  start: { lat: -8.0476, lng: -34.8770, label: "Recife" },
-                  end: { lat: -1.2921, lng: 36.8219, label: "África" }
+                  start: { lat: -8.0476, lng: -34.8770, label: "Recife", labelOffset: { x: 25, y: -15 } },
+                  end: { lat: -1.2921, lng: 36.8219, label: "África", labelOffset: { x: 0, y: 20 } }
                 },
                 {
-                  start: { lat: -23.5505, lng: -46.6333, label: "Brasil" },
-                  end: { lat: 48.8566, lng: 2.3522, label: "Paris" }
+                  start: { lat: -3.7172, lng: -38.5433, label: "Brasil", labelOffset: { x: -30, y: 5 } },
+                  end: { lat: 48.8566, lng: 2.3522, label: "Paris", labelOffset: { x: 25, y: 12 } }
                 }
               ]}
             />

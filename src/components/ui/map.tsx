@@ -4,8 +4,8 @@ import DottedMap from "dotted-map";
 
 interface MapProps {
   dots?: Array<{
-    start: { lat: number; lng: number; label?: string };
-    end: { lat: number; lng: number; label?: string };
+    start: { lat: number; lng: number; label?: string; labelOffset?: { x: number; y: number } };
+    end: { lat: number; lng: number; label?: string; labelOffset?: { x: number; y: number } };
   }>;
   lineColor?: string;
   showLabels?: boolean;
@@ -16,7 +16,7 @@ interface MapProps {
 
 export function WorldMap({ 
   dots = [], 
-  lineColor = "#00E5FF", // Customizado para o cyan do Canva Viagem
+  lineColor = "#00E5FF", 
   showLabels = true,
   labelClassName = "text-sm",
   animationDuration = 2,
@@ -225,14 +225,14 @@ export function WorldMap({
                     transition={{ delay: 0.2 }}
                   >
                     <foreignObject
-                      x={startPoint.x - 60}
-                      y={startPoint.y - 40}
-                      width="120"
-                      height="35"
+                      x={startPoint.x - 50 + (dot.start.labelOffset?.x ?? 0)}
+                      y={startPoint.y - 30 + (dot.start.labelOffset?.y ?? 0)}
+                      width="100"
+                      height="25"
                       className="block overflow-visible"
                     >
                       <div className="flex items-center justify-center h-full w-full">
-                        <span className="text-[11px] md:text-[13px] font-black uppercase px-3 py-1.5 rounded-lg bg-black text-white border-2 border-white/20 shadow-[0_4px_20px_rgba(0,0,0,0.8)] tracking-wide">
+                        <span className="text-[9px] md:text-[11px] font-extrabold px-2 py-1 rounded-md bg-black text-white border border-white/30 shadow-[0_4px_15px_rgba(0,0,0,0.8)] tracking-tight whitespace-nowrap">
                           {dot.start.label}
                         </span>
                       </div>
@@ -275,14 +275,14 @@ export function WorldMap({
                     transition={{ delay: 0.2 }}
                   >
                     <foreignObject
-                      x={endPoint.x - 60}
-                      y={endPoint.y - 40}
-                      width="120"
-                      height="35"
+                      x={endPoint.x - 50 + (dot.end.labelOffset?.x ?? 0)}
+                      y={endPoint.y - 30 + (dot.end.labelOffset?.y ?? 0)}
+                      width="100"
+                      height="25"
                       className="block overflow-visible"
                     >
                       <div className="flex items-center justify-center h-full w-full">
-                        <span className="text-[11px] md:text-[13px] font-black uppercase px-3 py-1.5 rounded-lg bg-black text-[#00E5FF] border-2 border-[#00E5FF]/30 shadow-[0_4px_20px_rgba(0,229,255,0.2)] tracking-wide">
+                        <span className="text-[9px] md:text-[11px] font-extrabold px-2 py-1 rounded-md bg-black text-[#00E5FF] border border-[#00E5FF]/40 shadow-[0_4px_15px_rgba(0,229,255,0.2)] tracking-tight whitespace-nowrap">
                           {dot.end.label}
                         </span>
                       </div>
