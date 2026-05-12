@@ -421,8 +421,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <Reveal delay={0.2}>
           <div style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}>
             <div style={{ color: "#FFD700", fontSize: 14, letterSpacing: 1 }}>★★★★★</div>
-            <div style={{ fontSize: 13, color: T.text2 }}>
-              <strong style={{ color: T.text }}>187 agências usando hoje</strong> · 4,9★ <span style={{ color: T.text3 }}>(62 avaliações verificadas)</span>
+            <div style={{ fontSize: 13, color: T.text }}>
+              <strong>4.98 / 5</strong> ★ <span style={{ color: T.text2 }}>(62 avaliações verificadas)</span>
             </div>
           </div>
         </Reveal>
