@@ -28,14 +28,17 @@ export const StickyTopBar = ({ onCheckout }: { onCheckout: () => void }) => {
   if (!visible) return null;
 
   return (
-    <div style={{
-      position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 9999,
-      background: 'rgba(5, 13, 26, 0.96)', border: '1px solid #00E5FF',
-      borderRadius: '100px', padding: '10px 24px', display: 'flex', alignItems: 'center',
-      justifyContent: 'space-between', gap: '16px', backdropFilter: 'blur(10px)',
-      boxShadow: '0 10px 30px rgba(0, 229, 255, 0.25)',
-      width: '90%', maxWidth: '420px', transition: 'all 0.3s ease'
-    }}>
+    <div 
+      className="hidden md:flex"
+      style={{
+        position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 9999,
+        background: 'rgba(5, 13, 26, 0.96)', border: '1px solid #00E5FF',
+        borderRadius: '100px', padding: '10px 24px', alignItems: 'center',
+        justifyContent: 'space-between', gap: '16px', backdropFilter: 'blur(10px)',
+        boxShadow: '0 10px 30px rgba(0, 229, 255, 0.25)',
+        width: '90%', maxWidth: '420px', transition: 'all 0.3s ease'
+      }}
+    >
       <span style={{ fontSize: '13px', fontWeight: 700, color: '#FFFFFF', whiteSpace: 'nowrap' }}>
         Canva Viagem — R$ 16,41/mês
       </span>
