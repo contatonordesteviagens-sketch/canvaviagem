@@ -33,7 +33,7 @@ export function WorldMap({
       try {
         // Handle various export types dynamically to prevent "not a constructor" error
         const DottedMapClass = (DottedMap as any).default || DottedMap;
-        return new DottedMapClass({ height: 100, grid: "diagonal" });
+        return new DottedMapClass({ height: 60, grid: "diagonal" });
       } catch (e) {
         console.error("Failed to initialize DottedMap:", e);
         return null;
@@ -42,28 +42,26 @@ export function WorldMap({
     []
   );
 
-  const svgMap = useMemo(
-    () => {
-      if (!map) return "";
-      try {
-        return map.getSVG({
-          radius: 0.22,
-          color: "#FFFFFF30",
-          shape: "circle",
-          backgroundColor: "#03070F",
-        });
-      } catch (e) {
-        console.error("Failed to generate SVG map:", e);
-        return "";
-      }
-    },
-    [map]
-  );
+  const mapData = useMemo(() => {
+    if (!map) return null;
+    try {
+      const points = map.getPoints();
+      const { width, height } = (map as any).image || { width: 800, height: 400 };
+      return { points, width, height };
+    } catch (e) {
+      return null;
+    }
+  }, [map]);
 
   const projectPoint = (lat: number, lng: number) => {
-    const x = (lng + 180) * (800 / 360);
-    const y = (90 - lat) * (400 / 180);
-    return { x, y };
+    if (!map) return { x: 0, y: 0 };
+    try {
+      // Call internal projected coordinate API for 100% perfect alignment with background points
+      const pin = map.getPin({ lat, lng });
+      return pin ? { x: pin.x, y: pin.y } : { x: 0, y: 0 };
+    } catch (e) {
+      return { x: 0, y: 0 };
+    }
   };
 
   const createCurvedPath = (
@@ -71,42 +69,48 @@ export function WorldMap({
     end: { x: number; y: number }
   ) => {
     const midX = (start.x + end.x) / 2;
-    const midY = Math.min(start.y, end.y) - 50;
+    const midY = Math.min(start.y, end.y) - (mapData ? mapData.height * 0.15 : 50); // dynamic curve
     return `M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`;
   };
 
-  // Calculate animation timing
   const staggerDelay = 0.3;
   const totalAnimationTime = dots.length * staggerDelay + animationDuration;
-  const pauseTime = 2; // Pause for 2 seconds when all paths are drawn
+  const pauseTime = 2;
   const fullCycleDuration = totalAnimationTime + pauseTime;
 
-  if (!svgMap) return null;
+  // Pre-rendered memoized dots background for supreme performance
+  const backgroundPoints = useMemo(() => {
+    if (!mapData) return null;
+    return mapData.points.map((pt: any, i: number) => (
+      <circle 
+        key={`bg-pt-${i}`} 
+        cx={pt.x} 
+        cy={pt.y} 
+        r={0.25} 
+        fill="#FFFFFF" 
+        opacity={0.18}
+      />
+    ));
+  }, [mapData]);
+
+  if (!mapData) return null;
+
+  const { width, height } = mapData;
 
   return (
-    <div className="w-full h-[360px] md:h-[480px] lg:h-[550px] relative font-sans overflow-hidden" style={{ background: "transparent" }}>
-      {/* Ambient background glow */}
+    <div className="w-full h-[320px] md:h-[450px] lg:h-[520px] relative font-sans overflow-hidden" style={{ background: "transparent" }}>
+      {/* Radial light effect */}
       <div className="absolute inset-0 pointer-events-none" style={{ 
-        background: "radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.05) 0%, transparent 70%)",
+        background: "radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.06) 0%, transparent 60%)",
         zIndex: 0
       }} />
 
-      <img
-        src={`data:image/svg+xml;utf8,${encodeURIComponent(svgMap)}`}
-        className="h-full w-full pointer-events-none select-none object-cover opacity-60"
-        style={{ 
-          maskImage: "radial-gradient(ellipse at center, black 40%, transparent 90%)", 
-          WebkitMaskImage: "radial-gradient(ellipse at center, black 40%, transparent 90%)",
-          transform: "scale(1.2)" // Ligeiro zoom para ficar maior no mobile
-        }}
-        alt="world map"
-        draggable={false}
-      />
       <svg
         ref={svgRef}
-        viewBox="0 0 800 400"
+        viewBox={`0 0 ${width} ${height}`}
         className="w-full h-full absolute inset-0 pointer-events-auto select-none z-10"
-        preserveAspectRatio="xMidYMid slice" // Alterado de meet para slice para cobrir melhor e ficar MAIOR no mobile
+        preserveAspectRatio="xMidYMid slice"
+        style={{ transform: "scale(1.15)" }} // Subtle zoom for mobile feel
       >
         <defs>
           <linearGradient id="path-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -117,7 +121,7 @@ export function WorldMap({
           </linearGradient>
           
           <filter id="glow">
-            <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
@@ -125,10 +129,20 @@ export function WorldMap({
           </filter>
         </defs>
 
+        {/* PERFECTLY ALIGNED BACKGROUND POINTS */}
+        <g id="map-background-points">
+          {backgroundPoints}
+        </g>
+
+        {/* ANIMATED PATHS */}
         {dots.map((dot, i) => {
           const startPoint = projectPoint(dot.start.lat, dot.start.lng);
           const endPoint = projectPoint(dot.end.lat, dot.end.lng);
           
+          // Skip zero projections
+          if (startPoint.x === 0 && startPoint.y === 0) return null;
+          if (endPoint.x === 0 && endPoint.y === 0) return null;
+
           const startTime = (i * staggerDelay) / fullCycleDuration;
           const endTime = (i * staggerDelay + animationDuration) / fullCycleDuration;
           const resetTime = totalAnimationTime / fullCycleDuration;
@@ -139,7 +153,7 @@ export function WorldMap({
                 d={createCurvedPath(startPoint, endPoint)}
                 fill="none"
                 stroke="url(#path-gradient)"
-                strokeWidth="2"
+                strokeWidth="0.8"
                 initial={{ pathLength: 0 }}
                 animate={loop ? {
                   pathLength: [0, 0, 1, 1, 0],
@@ -161,7 +175,7 @@ export function WorldMap({
               
               {loop && (
                 <motion.circle
-                  r="4"
+                  r="1.2"
                   fill={lineColor}
                   filter="url(#glow)"
                   initial={{ offsetDistance: "0%", opacity: 0 }}
@@ -185,54 +199,39 @@ export function WorldMap({
           );
         })}
 
+        {/* LABELS AND DESTINATION CIRCLES */}
         {dots.map((dot, i) => {
           const startPoint = projectPoint(dot.start.lat, dot.start.lng);
           const endPoint = projectPoint(dot.end.lat, dot.end.lng);
           
+          if (startPoint.x === 0) return null;
+
           return (
             <g key={`points-group-${i}`}>
               {/* Start Point */}
               <g key={`start-${i}`}>
-                <motion.g
-                  onHoverStart={() => setHoveredLocation(dot.start.label || `Location ${i}`)}
-                  onHoverEnd={() => setHoveredLocation(null)}
-                  className="cursor-pointer"
-                  whileHover={{ scale: 1.2 }}
-                >
-                  <circle
-                    cx={startPoint.x}
-                    cy={startPoint.y}
-                    r="4"
-                    fill={lineColor}
-                    filter="url(#glow)"
-                  />
-                  <circle
-                    cx={startPoint.x}
-                    cy={startPoint.y}
-                    r="4"
-                    fill={lineColor}
-                    opacity="0.5"
-                  >
-                    <animate attributeName="r" from="4" to="14" dur="2s" begin="0s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" from="0.7" to="0" dur="2s" begin="0s" repeatCount="indefinite" />
+                <motion.g className="cursor-pointer" whileHover={{ scale: 1.2 }}>
+                  <circle cx={startPoint.x} cy={startPoint.y} r="1.5" fill={lineColor} filter="url(#glow)" />
+                  <circle cx={startPoint.x} cy={startPoint.y} r="1.5" fill={lineColor} opacity="0.5">
+                    <animate attributeName="r" from="1.5" to="5" dur="2s" begin="0s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" from="0.6" to="0" dur="2s" begin="0s" repeatCount="indefinite" />
                   </circle>
                 </motion.g>
                 
                 {showLabels && dot.start.label && (
-                  <motion.g
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                  >
+                  <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
                     <foreignObject
-                      x={startPoint.x - 50 + (dot.start.labelOffset?.x ?? 0)}
-                      y={startPoint.y - 30 + (dot.start.labelOffset?.y ?? 0)}
-                      width="100"
-                      height="25"
+                      x={startPoint.x - 25 + (dot.start.labelOffset?.x ?? 0)}
+                      y={startPoint.y - 15 + (dot.start.labelOffset?.y ?? 0)}
+                      width="50"
+                      height="15"
                       className="block overflow-visible"
                     >
                       <div className="flex items-center justify-center h-full w-full">
-                        <span className="text-[9px] md:text-[11px] font-extrabold px-2 py-1 rounded-md bg-black text-white border border-white/30 shadow-[0_4px_15px_rgba(0,0,0,0.8)] tracking-tight whitespace-nowrap">
+                        <span 
+                          className="font-extrabold px-1.5 py-0.5 rounded bg-black text-white border border-white/40 shadow-[0_4px_12px_rgba(0,0,0,0.9)] tracking-tight whitespace-nowrap leading-none"
+                          style={{ fontSize: "min(2.5vw, 8px)" }}
+                        >
                           {dot.start.label}
                         </span>
                       </div>
@@ -243,46 +242,28 @@ export function WorldMap({
               
               {/* End Point */}
               <g key={`end-${i}`}>
-                <motion.g
-                  onHoverStart={() => setHoveredLocation(dot.end.label || `Destination ${i}`)}
-                  onHoverEnd={() => setHoveredLocation(null)}
-                  className="cursor-pointer"
-                  whileHover={{ scale: 1.2 }}
-                >
-                  <circle
-                    cx={endPoint.x}
-                    cy={endPoint.y}
-                    r="4"
-                    fill={lineColor}
-                    filter="url(#glow)"
-                  />
-                  <circle
-                    cx={endPoint.x}
-                    cy={endPoint.y}
-                    r="4"
-                    fill={lineColor}
-                    opacity="0.5"
-                  >
-                    <animate attributeName="r" from="4" to="14" dur="2s" begin="0.5s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" from="0.7" to="0" dur="2s" begin="0.5s" repeatCount="indefinite" />
+                <motion.g className="cursor-pointer" whileHover={{ scale: 1.2 }}>
+                  <circle cx={endPoint.x} cy={endPoint.y} r="1.5" fill={lineColor} filter="url(#glow)" />
+                  <circle cx={endPoint.x} cy={endPoint.y} r="1.5" fill={lineColor} opacity="0.5">
+                    <animate attributeName="r" from="1.5" to="5" dur="2s" begin="0.5s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" from="0.6" to="0" dur="2s" begin="0.5s" repeatCount="indefinite" />
                   </circle>
                 </motion.g>
                 
                 {showLabels && dot.end.label && (
-                  <motion.g
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                  >
+                  <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
                     <foreignObject
-                      x={endPoint.x - 50 + (dot.end.labelOffset?.x ?? 0)}
-                      y={endPoint.y - 30 + (dot.end.labelOffset?.y ?? 0)}
-                      width="100"
-                      height="25"
+                      x={endPoint.x - 25 + (dot.end.labelOffset?.x ?? 0)}
+                      y={endPoint.y - 15 + (dot.end.labelOffset?.y ?? 0)}
+                      width="50"
+                      height="15"
                       className="block overflow-visible"
                     >
                       <div className="flex items-center justify-center h-full w-full">
-                        <span className="text-[9px] md:text-[11px] font-extrabold px-2 py-1 rounded-md bg-black text-[#00E5FF] border border-[#00E5FF]/40 shadow-[0_4px_15px_rgba(0,229,255,0.2)] tracking-tight whitespace-nowrap">
+                        <span 
+                          className="font-extrabold px-1.5 py-0.5 rounded bg-black text-[#00E5FF] border border-[#00E5FF]/50 shadow-[0_4px_12px_rgba(0,229,255,0.3)] tracking-tight whitespace-nowrap leading-none"
+                          style={{ fontSize: "min(2.5vw, 8px)" }}
+                        >
                           {dot.end.label}
                         </span>
                       </div>
@@ -295,9 +276,8 @@ export function WorldMap({
         })}
       </svg>
       
-      {/* Fade superior e inferior para mesclar com a página */}
-      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#03070F] to-transparent z-20 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#03070F] to-transparent z-20 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-[#03070F] to-transparent z-20 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-[#03070F] to-transparent z-20 pointer-events-none" />
     </div>
   );
 }

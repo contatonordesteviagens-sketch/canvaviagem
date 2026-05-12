@@ -450,32 +450,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <WorldMap 
               dots={[
                 {
-                  start: { lat: -2.7996, lng: -40.5128, label: "Jericoacoara", labelOffset: { x: -20, y: -15 } },
-                  end: { lat: 51.5074, lng: -0.1278, label: "London", labelOffset: { x: -10, y: -18 } }
+                  start: { lat: -2.7996, lng: -40.5128, label: "Jericoacoara", labelOffset: { x: 0, y: -12 } },
+                  end: { lat: 51.5074, lng: -0.1278, label: "London", labelOffset: { x: 0, y: -12 } }
                 },
                 {
-                  start: { lat: -3.8404, lng: -32.4108, label: "Noronha", labelOffset: { x: 25, y: 0 } },
-                  end: { lat: 25.2048, lng: 55.2708, label: "Dubai", labelOffset: { x: 0, y: -15 } }
+                  start: { lat: -22.9068, lng: -43.1729, label: "Rio", labelOffset: { x: 0, y: 12 } },
+                  end: { lat: 25.2048, lng: 55.2708, label: "Dubai", labelOffset: { x: 10, y: 0 } }
                 },
                 {
-                  start: { lat: -22.9068, lng: -43.1729, label: "Rio", labelOffset: { x: 15, y: 18 } },
-                  end: { lat: 38.7223, lng: -9.1393, label: "Lisboa", labelOffset: { x: -15, y: 15 } }
+                  start: { lat: -23.5505, lng: -46.6333, label: "São Paulo", labelOffset: { x: -15, y: 0 } },
+                  end: { lat: 34.0522, lng: -118.2437, label: "Los Angeles", labelOffset: { x: -10, y: 0 } }
                 },
                 {
-                  start: { lat: -23.5505, lng: -46.6333, label: "São Paulo", labelOffset: { x: -25, y: 5 } },
-                  end: { lat: 34.0522, lng: -118.2437, label: "Los Angeles", labelOffset: { x: 0, y: -15 } }
-                },
-                {
-                  start: { lat: -12.9714, lng: -38.5014, label: "Bahia", labelOffset: { x: 25, y: 0 } },
-                  end: { lat: 52.3676, lng: 4.9041, label: "Amsterdã", labelOffset: { x: 25, y: -15 } }
-                },
-                {
-                  start: { lat: -8.0476, lng: -34.8770, label: "Recife", labelOffset: { x: 25, y: -15 } },
-                  end: { lat: -1.2921, lng: 36.8219, label: "África", labelOffset: { x: 0, y: 20 } }
-                },
-                {
-                  start: { lat: -3.7172, lng: -38.5433, label: "Brasil", labelOffset: { x: -30, y: 5 } },
-                  end: { lat: 48.8566, lng: 2.3522, label: "Paris", labelOffset: { x: 25, y: 12 } }
+                  start: { lat: -8.0476, lng: -34.8770, label: "Recife", labelOffset: { x: 15, y: 0 } },
+                  end: { lat: 48.8566, lng: 2.3522, label: "Paris", labelOffset: { x: 10, y: -10 } }
                 }
               ]}
             />
