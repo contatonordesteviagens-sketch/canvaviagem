@@ -29,18 +29,34 @@ export function WorldMap({
   const isDark = true;
 
   const map = useMemo(
-    // @ts-ignore - Handle possible types from dotted-map import variant
-    () => new DottedMap.default({ height: 100, grid: "diagonal" }),
+    () => {
+      try {
+        // Handle various export types dynamically to prevent "not a constructor" error
+        const DottedMapClass = (DottedMap as any).default || DottedMap;
+        return new DottedMapClass({ height: 100, grid: "diagonal" });
+      } catch (e) {
+        console.error("Failed to initialize DottedMap:", e);
+        return null;
+      }
+    },
     []
   );
 
   const svgMap = useMemo(
-    () => map.getSVG({
-      radius: 0.22,
-      color: "#FFFFFF30",
-      shape: "circle",
-      backgroundColor: "#03070F",
-    }),
+    () => {
+      if (!map) return "";
+      try {
+        return map.getSVG({
+          radius: 0.22,
+          color: "#FFFFFF30",
+          shape: "circle",
+          backgroundColor: "#03070F",
+        });
+      } catch (e) {
+        console.error("Failed to generate SVG map:", e);
+        return "";
+      }
+    },
     [map]
   );
 
@@ -64,6 +80,8 @@ export function WorldMap({
   const totalAnimationTime = dots.length * staggerDelay + animationDuration;
   const pauseTime = 2; // Pause for 2 seconds when all paths are drawn
   const fullCycleDuration = totalAnimationTime + pauseTime;
+
+  if (!svgMap) return null;
 
   return (
     <div className="w-full aspect-[2/1] md:aspect-[2.5/1] lg:aspect-[2/1] rounded-lg relative font-sans overflow-hidden" style={{ background: "#03070F" }}>
