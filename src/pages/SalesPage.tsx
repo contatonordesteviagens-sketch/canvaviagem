@@ -13,6 +13,7 @@ import depoimento2 from "@/assets/depoimento2.png";
 import depoimento3 from "@/assets/depoimento3.jpg";
 import { TimelineContent } from "@/components/ui/timeline-animation";
 import { VerticalCutReveal } from "@/components/ui/vertical-cut-reveal";
+import { WorldMap } from "@/components/ui/map";
 
 // ────────────────────────────────────────────────────────────
 // CONFIG
@@ -429,11 +430,54 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 
 
+      {/* ─── ANIMAÇÃO GLOBAL NETWORK (WORLD MAP) ─── */}
+      <section style={{ padding: "60px 20px 80px", background: T.bgDeep, overflow: "hidden", borderBottom: `1px solid rgba(255,255,255,0.04)` }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto", textAlign: "center" }}>
+          <Reveal>
+            <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12, textTransform: "uppercase" }}>ESCALE SUAS VENDAS GLOBALMENTE</p>
+            <h2 style={{ fontSize: "clamp(22px, 4vw, 36px)", fontWeight: 900, marginBottom: 16, lineHeight: 1.2 }}>
+              Conecte clientes aos melhores <br className="hidden md:block"/> destinos do mundo
+            </h2>
+            <p style={{ color: T.text2, fontSize: 15, maxWidth: 600, margin: "0 auto 48px", lineHeight: 1.6 }}>
+              Seja para roteiros nacionais ou internacionais, transforme sua agência em uma máquina de vendas com materiais que elevam seu ticket médio.
+            </p>
+          </Reveal>
+
+          <Reveal delay={0.2}>
+            <div style={{ borderRadius: 24, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", boxShadow: `0 20px 50px rgba(0,0,0,0.4)` }}>
+              <WorldMap 
+                dots={[
+                  {
+                    start: { lat: -23.5505, lng: -46.6333, label: "São Paulo" },
+                    end: { lat: 48.8566, lng: 2.3522, label: "Paris" }
+                  },
+                  {
+                    start: { lat: -22.9068, lng: -43.1729, label: "Rio" },
+                    end: { lat: 28.5383, lng: -81.3792, label: "Orlando" }
+                  },
+                  {
+                    start: { lat: -15.7975, lng: -47.8919, label: "Brasília" },
+                    end: { lat: 38.7223, lng: -9.1393, label: "Lisboa" }
+                  },
+                  {
+                    start: { lat: -8.0476, lng: -34.8770, label: "Recife" },
+                    end: { lat: 41.9028, lng: 12.4964, label: "Roma" }
+                  },
+                  {
+                    start: { lat: -12.9714, lng: -38.5014, label: "Salvador" },
+                    end: { lat: -34.6037, lng: -58.3816, label: "Buenos Aires" }
+                  }
+                ]}
+              />
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
       {/* ─── SEÇÃO FUNDADOR ─── */}
       <section style={{ padding: "70px 20px", background: T.bgDeep, borderBottom: T.border }}>
         <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
           <Reveal>
-            <p style={{ fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>QUEM ESTÁ POR TRÁS DISSO</p>
             <h2 style={{ fontSize: "clamp(26px, 4.5vw, 40px)", fontWeight: 900, marginBottom: 36 }}>
               Quem está por trás disso
             </h2>
