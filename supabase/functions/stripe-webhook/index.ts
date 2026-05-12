@@ -248,7 +248,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
   const stripeCustomerId = session.customer as string;
   const stripeSubscriptionId = session.subscription as string;
 
-  let productId = "prod_TkvaozfpkAcbpM"; // default fallback
+  let productId: string | undefined = undefined;
   if (stripeSubscriptionId) {
     try {
       const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
@@ -262,8 +262,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
     }
   }
 
-  // Backup: se ainda for o padrão ou falhou, buscar dos Line Items da Session
-  if (productId === "prod_TkvaozfpkAcbpM" || !productId) {
+  // Backup: line items do Checkout Session
+  if (!productId) {
     try {
       logStep("Attempting fallback product ID fetch from session line items", { sessionId: session.id });
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 1 });
