@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Play, ChevronDown, ChevronUp } from 'lucide-react';
 
+import { trackViewContent } from '@/lib/meta-pixel';
+
 export const ProductDemo = () => {
   const [mutedActive, setMutedActive] = useState(true);
   const [showStartVideo, setShowStartVideo] = useState(false);
@@ -10,6 +12,8 @@ export const ProductDemo = () => {
 
   const handleActivateSound = () => {
     setMutedActive(false);
+    // Firing specific ViewContent event requested for Video clicks
+    trackViewContent('Demonstrativo Plano Elite');
   };
 
   return (

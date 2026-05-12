@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, Star, Shield, Play, ArrowRight, Briefcase, Users } from "lucide-react";
-import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
+import { Check, X, Star, Shield, Play, ArrowRight, Briefcase, Users, Heart, Keyboard, Smartphone, MessageCircle, Sparkles } from "lucide-react";
+import { trackViewContent, trackInitiateCheckout, trackContact } from "@/lib/meta-pixel";
 import { ProductDemo } from "../components/planos/ProductDemo";
 import { CountdownTimer } from "../components/planos/CountdownTimer";
 import { StickyTopBar } from "../components/planos/StickyTopBar";
@@ -429,7 +429,95 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </div>
       </section>
 
+      {/* ─── OBJECTION BAR ─── */}
+      <div className="w-full bg-[#0A1628] border-b border-cyan-500/30 py-3 overflow-x-auto scrollbar-hide" style={{ zIndex: 50 }}>
+        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between gap-4 md:gap-0 text-xs text-[#8899AA] font-bold whitespace-nowrap">
+          <span className="flex items-center gap-1 text-cyan-400"><Check className="w-3 h-3"/> Cancele quando quiser</span>
+          <span className="text-cyan-500 opacity-50 hidden md:inline">·</span>
+          <span className="flex items-center gap-1 text-cyan-400"><Check className="w-3 h-3"/> Acesso em 2 min</span>
+          <span className="text-cyan-500 opacity-50 hidden md:inline">·</span>
+          <span className="flex items-center gap-1 text-cyan-400"><Check className="w-3 h-3"/> Garantia dupla</span>
+          <span className="text-cyan-500 opacity-50 hidden md:inline">·</span>
+          <span className="flex items-center gap-1 text-cyan-400"><Check className="w-3 h-3"/> Sem fidelidade</span>
+          <span className="text-cyan-500 opacity-50 hidden md:inline">·</span>
+          <span className="flex items-center gap-1 text-cyan-400"><Check className="w-3 h-3"/> Suporte em português</span>
+        </div>
+      </div>
 
+      {/* ─── PRODUTO REAL: FILEIRA DE CARDS ─── */}
+      <section className="py-12 px-4 md:px-6 bg-[#060E19] border-y border-white/5 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-cyan-500/5 blur-[120px]"></div>
+        <div className="max-w-4xl mx-auto relative z-10">
+          <div className="text-center mb-8">
+            <p className="text-[10px] font-black tracking-[0.3em] text-cyan-400 uppercase mb-2">VISUALIZE O RESULTADO</p>
+            <h2 className="text-2xl md:text-4xl font-black italic uppercase tracking-tighter leading-tight mb-3 text-white">
+              Seu feed vai ficar <span className="text-zinc-500 underline decoration-white/20">exatamente assim</span>
+            </h2>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-2 md:gap-6 max-w-3xl mx-auto">
+            {[
+              { title: "Florianópolis - SC", img: "https://images.unsplash.com/photo-1583073171552-19c39d771d45?w=400&q=80", label: "5 Melhores Praias de Floripa" },
+              { title: "Paris", img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=80", label: "PARIS: A CIDADE DO AMOR" },
+              { title: "Jericoacoara - CE", img: "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=400&q=80", label: "VEM PRA JERICOACOARA!" }
+            ].map((card, i) => (
+              <div key={i} className="relative rounded-xl md:rounded-3xl overflow-hidden aspect-[9/16] shadow-lg md:shadow-2xl bg-zinc-900 border border-white/10 transition-transform duration-500 hover:-translate-y-2">
+                <img src={card.img} loading="lazy" alt={card.title} className="w-full h-full object-cover opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-transparent to-transparent p-1.5 md:p-6 flex flex-col justify-end">
+                   {/* Mock elements from requested screenshot */}
+                   <div className="absolute top-2 md:top-4 right-2 md:right-4 bg-black/60 backdrop-blur-md p-1 md:p-1.5 rounded-full border border-white/10">
+                     <Heart className="w-2 h-2 md:w-4 md:h-4 text-white fill-none" />
+                   </div>
+                   <div className="text-center absolute top-[35%] left-0 right-0 px-1 flex justify-center items-center">
+                      <div className="bg-black/40 backdrop-blur-md border border-white/20 px-1 md:px-3 py-0.5 md:py-1.5 rounded text-[5px] md:text-[10px] text-white font-black uppercase leading-tight tracking-wider text-center shadow-2xl">
+                        {card.label}
+                      </div>
+                   </div>
+                   <div className="flex justify-between items-center mb-1 md:mb-3">
+                     <p className="text-[5px] md:text-[10px] font-black text-white drop-shadow-md truncate pr-1">{card.title}</p>
+                     <Star className="w-1.5 h-1.5 md:w-3 md:h-3 text-yellow-400 fill-current shrink-0" />
+                   </div>
+                   <div className="bg-white text-black font-black text-[4.5px] md:text-[10px] tracking-widest py-0.5 md:py-2 rounded-sm md:rounded-xl flex items-center justify-center gap-0.5 md:gap-2 uppercase shadow-md">
+                      <Sparkles className="w-1.5 h-1.5 md:w-3 md:h-3 fill-current" /> Editar
+                   </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── MECANISMO IA EXPLICAÇÃO ─── */}
+      <section className="py-14 px-4 md:px-6 bg-[#03070F] border-b border-white/5 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-cyan-500/5 blur-[100px] pointer-events-none" />
+
+        <div className="max-w-4xl mx-auto relative z-10">
+          <div className="text-center mb-12">
+            <p className="text-[10px] font-black tracking-[0.3em] text-cyan-400 uppercase mb-2">MÁQUINA DE ESCALA AUTOMÁTICA</p>
+            <h2 className="text-2xl md:text-4xl font-black italic uppercase tracking-tighter text-white mb-3 leading-tight">COMO A IA CRIA <br className="md:hidden" /><span className="text-zinc-600 underline decoration-white/10">SEU ANÚNCIO</span></h2>
+            <p className="text-zinc-400 text-[11px] font-bold italic bg-white/5 inline-block px-4 py-2 rounded-full border border-white/10">"Sem designer. Sem Canva nessa parte. Só você e o resultado."</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+            {[
+              { icon: Keyboard, title: "VOCÊ DIGITA", desc: "Destino, preço, parcelas.", color: "bg-blue-500/10 text-blue-400 border-blue-500/20", sub: "Ícone Teclado" },
+              { icon: Settings, title: "IA ESTRUTURA", desc: "A inteligência compõe a arte em segundos.", color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20", animate: true, sub: "Ícone Engrenagem" },
+              { icon: Smartphone, title: "PRONTO COM LOGO", desc: "Sua arte finalizada direto no seu celular.", color: "bg-green-500/10 text-green-400 border-green-500/20", sub: "Ícone Celular" },
+            ].map((step, i) => (
+              <div key={i} className="relative group bg-white/[0.02] p-8 rounded-[2rem] border border-white/10 shadow-sm hover:shadow-[0_0_30px_rgba(0,229,255,0.1)] hover:border-cyan-500/30 transition-all duration-300 text-center">
+                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-5 mx-auto shadow-lg border ${step.color} group-hover:scale-110 transition-transform`}>
+                  <step.icon className={`w-7 h-7 ${step.animate ? "animate-[spin_8s_linear_infinite]" : ""}`} />
+                </div>
+                <h3 className="font-black text-sm uppercase tracking-tighter mb-2 text-white flex items-center justify-center gap-2">
+                  <span className="text-[10px] bg-cyan-500 text-black w-5 h-5 rounded-full flex items-center justify-center shrink-0 italic font-black">{i+1}</span>
+                  {step.title}
+                </h3>
+                <p className="text-zinc-400 text-[10px] leading-relaxed font-bold uppercase tracking-tight opacity-70">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ─── ANIMAÇÃO GLOBAL NETWORK (WORLD MAP) ─── */}
       <section style={{ padding: "60px 0 0px", background: T.bgDeep, overflow: "hidden", position: "relative" }}>
@@ -849,9 +937,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                   Apenas 14 vagas restantes com acesso completo
                 </span>
               </div>
-              <p style={{ color: T.text3, fontSize: 12, margin: "0 auto 16px" }}>
-                (as inscrições encerram automaticamente assim que as vagas forem preenchidas)
-              </p>
+              <div style={{ maxWidth: 400, margin: "0 auto 20px", background: "rgba(255,255,255,0.02)", border: `1px solid rgba(0, 229, 255, 0.1)`, padding: "12px 16px", borderRadius: 12 }}>
+                <p style={{ color: T.accent, fontSize: 11, fontWeight: 900, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  ⚠️ Preço 1° lote garantido hoje
+                </p>
+                <p style={{ color: T.text3, fontSize: 10, lineHeight: 1.4, fontStyle: "italic", margin: 0 }}>
+                  Quanto mais agências entram, mais mídias produzimos. O valor promocional atual só pode ser garantido para novos acessos agora.
+                </p>
+              </div>
             </Reveal>
           </div>
 
@@ -1139,9 +1232,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <h2 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: 900, margin: "24px 0 16px", lineHeight: 1.2 }}>
               Seu feed. Sua autoridade. <span style={{ color: T.accent }}>Sua decisão.</span>
             </h2>
-            <p style={{ color: T.text2, fontSize: 15, marginBottom: 24, maxWidth: 540, margin: "0 auto 24px", lineHeight: 1.6 }}>
-              Cada dia com feed parado é um pacote fechando com o concorrente. Em 5 minutos você prova que funciona.
-            </p>
+
+            {/* ─── OBJEÇÃO KILLER FINAL ─── */}
+            <div style={{ maxWidth: 480, margin: "0 auto 24px", textAlign: "left", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: 20 }}>
+               <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.5, marginBottom: 12 }}>
+                  Você provavelmente está pensando: <strong style={{ color: "#fff", fontStyle: "italic" }}>"Parece bom, mas vou ver depois."</strong>
+               </p>
+               <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.5, marginBottom: 12 }}>
+                  Cada dia com feed parado é um pacote fechando com o concorrente. <strong style={{ color: T.accent }}>Não existe depois. Existe agora ou existe perda.</strong>
+               </p>
+               <p style={{ fontSize: 13, color: T.text2, lineHeight: 1.5 }}>
+                  A garantia dupla existe exatamente para você testar sem risco. Se não funcionar, devolvemos tudo. Simples assim.
+               </p>
+            </div>
+
             <button id="cta-final" onClick={() => checkout("elite_annual")}
               aria-label="Quero acesso Elite"
               className="hover:scale-[1.03] active:scale-95 transition-all animate-pulse"
@@ -1182,19 +1286,35 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <p style={{ fontSize: 13, color: T.text3, marginBottom: 24, maxWidth: 380, margin: "0 auto 24px" }}>
             A plataforma definitiva para agências de turismo que buscam o próximo nível de autoridade e lucro.
           </p>
-          <div style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap", marginBottom: 28 }}>
-            {["Início", "Planos", "Termos", "Privacidade", "Suporte"].map(l => (
-              <a key={l} href="#" style={{ fontSize: 13, color: T.text2, textDecoration: "none", fontWeight: 600 }} className="hover:text-cyan-400 transition-colors">{l}</a>
+          <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "nowrap", marginBottom: 24, overflowX: "auto", padding: "4px 0" }} className="scrollbar-hide">
+            {[
+              { name: "Início", url: "/" },
+              { name: "Planos", url: "#pricing" },
+              { name: "Termos", url: "/termos" },
+              { name: "Privacidade", url: "/privacidade" },
+              { name: "Suporte", url: "https://wa.me/558586411294?text=Preciso%20de%20ajuda", action: trackContact }
+            ].map(l => (
+              <a 
+                key={l.name} 
+                href={l.url} 
+                onClick={l.action ? () => l.action() : undefined}
+                style={{ fontSize: 11, color: T.text2, textDecoration: "none", fontWeight: 600, whiteSpace: "nowrap" }} 
+                className="hover:text-cyan-400 transition-colors"
+              >
+                {l.name}
+              </a>
             ))}
           </div>
           
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, marginBottom: 24, opacity: 0.8 }}>
-            <span style={{ fontSize: 11, color: T.text3 }}>Parceiro de pagamento oficial:</span>
-            <span style={{ color: "#635BFF", display: "inline-flex", alignItems: "center" }}>
-              <svg viewBox="0 0 60 25" fill="currentColor" style={{ height: 16 }}>
-                <path d="M51.9 10.1c-1.3 0-2.1.7-2.1 1.8 0 1.6 2.2 1.3 2.2 3.6 0 1-.9 1.6-2.1 1.6-1.5 0-2.4-.7-2.4-.7l-.4 1.5s.9.6 2.7.6c2.4 0 3.9-1.2 3.9-3.2 0-2.5-3.8-2-3.8-3.7 0-1 .9-1.4 1.9-1.4 1.3 0 2 .5 2 .5l.4-1.4s-.7-.5-2.3-.5zm-8.8.1c-.8 0-1.4.3-1.7.7V3.5l-1.8.4v14.4l1.8-.4v-4.9c0-1.7 1.1-2.4 2.1-2.4.3 0 .6.1.6.1l.3-1.7c-.4-.1-.8-.1-1.3-.1zm-5.8-.1c-.9 0-1.5.4-1.8.8v-.6h-1.8v10.5h1.8v-4.9c0-1.6 1.1-2.4 2-2.4s1.4.6 1.4 1.7v5.6h1.8v-6.3c0-2.6-1.4-4.4-3.4-4.4zm-7.6 2.4l1.8-.3V10.3h-1.8v2.2zm0 5.8l1.8-.3v-4.2h-1.8v4.5zM21 7.1c0-.5.4-.9.9-.9.6 0 .9.4.9.9s-.4.9-.9.9c-.5 0-.9-.4-.9-.9zm-.9 3.2h1.8V18.3H20.1V10.3zm-3.2-.2c-1.3 0-2.1.7-2.1 1.8 0 1.6 2.2 1.3 2.2 3.6 0 1-.9 1.6-2.1 1.6-1.5 0-2.4-.7-2.4-.7l-.4 1.5s.9.6 2.7.6c2.4 0 3.9-1.2 3.9-3.2 0-2.5-3.8-2-3.8-3.7 0-1 .9-1.4 1.9-1.4 1.3 0 2 .5 2 .5l.4-1.4s-.7-.5-2.3-.5zm-6.2 3.8c-.1-.8-.6-1.2-1.3-1.2-.6 0-1.1.4-1.2 1.2h2.5zm1.5 1c0-2.3-1.6-4-4-4-2.5 0-4.1 1.8-4.1 4.1 0 2.5 1.7 4.1 4.3 4.1 1.6 0 2.8-.6 2.8-.6l-.4-1.4s-1 .5-2.3.5c-1.6 0-2.4-1-2.4-1.9h6.1v-.8z"/>
-              </svg>
-            </span>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginBottom: 24 }}>
+            <span style={{ fontSize: 10, color: T.text3 }}>Parceiro de pagamento oficial:</span>
+            <div style={{ display: "inline-flex", alignItems: "center", background: "rgba(255,255,255,0.04)", padding: "4px 8px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.05)" }}>
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/2560px-Stripe_Logo%2C_revised_2016.svg.png" 
+                alt="Stripe" 
+                style={{ height: 14, objectFit: "contain", filter: "brightness(0.9) contrast(1.2)" }} 
+              />
+            </div>
           </div>
 
           <p style={{ fontSize: 11, color: T.text3, lineHeight: 1.6 }}>
@@ -1203,6 +1323,37 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           </p>
         </div>
       </footer>
+
+      {/* ─── FLOATING WHATSAPP ─── */}
+      <a
+        href="https://wa.me/558586411294?text=Quero%20adquirir%20o%20Canva%20Viagem"
+        target="_blank"
+        rel="noreferrer"
+        onClick={() => trackContact()}
+        className="hover:scale-110 active:scale-95 transition-all duration-300"
+        style={{
+          position: "fixed",
+          bottom: 24,
+          right: 24,
+          width: 60,
+          height: 60,
+          background: "#25D366",
+          borderRadius: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#FFF",
+          boxShadow: "0 10px 25px rgba(37, 211, 102, 0.4)",
+          zIndex: 9999,
+          cursor: "pointer",
+          border: "none",
+          textDecoration: "none"
+        }}
+        aria-label="Falar no WhatsApp"
+      >
+         <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "2px solid #25D366", animation: "ping 2s cubic-bezier(0, 0, 0.2, 1) infinite", opacity: 0.4 }}></div>
+         <MessageCircle size={32} fill="currentColor" />
+      </a>
 
       <VideoModal open={videoOpen} onClose={() => setVideoOpen(false)} />
     </div>
