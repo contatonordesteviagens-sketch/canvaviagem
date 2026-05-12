@@ -1,13 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { FabricaProvider, useFabricaContext } from "@/hooks/useFabricaContext";
 import { Phase1Diagnostico } from "@/pages/fabrica/Phase1Diagnostico";
 import { Phase2Ativos } from "@/pages/fabrica/Phase2Ativos";
 import { Phase3ArtFactory } from "@/pages/fabrica/Phase3ArtFactory";
 import { Phase4LandingBuilder } from "@/pages/fabrica/Phase4LandingBuilder";
-import { Phase5Dashboard } from "@/pages/fabrica/Phase5Dashboard";
 import { ArrowLeft, Crown, Sparkles, Loader2 } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
 
 const PHASES = [
@@ -143,7 +142,6 @@ const Fabrica = () => {
 
   const ELITE_PRODUCT_IDS = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
   const isElite = subscription.subscribed && ELITE_PRODUCT_IDS.includes(subscription.productId || "");
-  const isStart = subscription.subscribed && !isElite;
   const hasAccess = isAdmin || isElite;
 
   if (authLoading || subscription.loading) {
