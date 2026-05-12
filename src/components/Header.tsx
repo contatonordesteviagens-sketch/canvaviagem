@@ -177,17 +177,17 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
     <>
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
-          <Link to={isESRoute ? "/es" : "/"} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Link to={isESRoute ? "/es" : "/"} className="flex items-center gap-3 hover:opacity-80 transition-opacity shrink-0 min-w-0">
             <img
               src={logoImage}
               alt="TravelMarketing"
-              className="h-10 w-10 rounded-xl shadow-lg md:shadow-lg hover:shadow-xl transition-shadow object-cover"
+              className="h-10 w-10 rounded-xl shadow-lg md:shadow-lg hover:shadow-xl transition-shadow object-cover shrink-0"
             />
-            <div className="hidden sm:block">
-              <span className="text-xl font-bold text-slate-800 dark:text-white tracking-tight">
+            <div className="hidden sm:flex flex-col min-w-0">
+              <span className="text-lg lg:text-xl font-bold text-slate-800 dark:text-white tracking-tight whitespace-nowrap leading-tight">
                 Canva Viagem
               </span>
-              <p className="text-[10px] text-muted-foreground font-medium -mt-1 uppercase tracking-wider">Estratégias para Agentes</p>
+              <p className="hidden xl:block text-[10px] text-muted-foreground font-medium -mt-0.5 uppercase tracking-wider whitespace-nowrap">Estratégias para Agentes</p>
             </div>
           </Link>
 
@@ -266,8 +266,8 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
             </DropdownMenu>
 
             {user ? (
-              <div className="flex items-center gap-2 ml-2">
-                <span className="text-sm font-medium text-foreground">
+              <div className="flex items-center gap-2 ml-2 min-w-0">
+                <span className="hidden lg:inline text-sm font-medium text-foreground truncate max-w-[160px]">
                   Olá, {userName || user.email?.split("@")[0]}! 👋
                 </span>
                 <Button
