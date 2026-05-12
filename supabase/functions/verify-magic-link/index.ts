@@ -70,9 +70,18 @@ serve(async (req) => {
     const userName = tokenData.name;
     const userPhone = tokenData.phone;
 
-    // Verificar se o usuário existe de forma escalável
-    const { data: userData } = await supabaseAdmin.auth.admin.getUserByEmail(email);
-    const existingUser = userData?.user;
+    // Verificar se o usuário existe sem usar getUserByEmail (não disponível no runtime Deno)
+    const { data: profileUser, error: profileLookupError } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (profileLookupError) {
+      console.warn("[VERIFY-MAGIC-LINK] Profile lookup failed, continuing as new user flow:", profileLookupError);
+    }
+
+    const existingUser = profileUser?.user_id ? { id: profileUser.user_id } : null;
 
     let userId: string;
 
