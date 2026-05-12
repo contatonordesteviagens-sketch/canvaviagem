@@ -258,6 +258,15 @@ const ExitIntent = ({ onCheckout }: { onCheckout: (plan: "smart_annual" | "elite
 // ────────────────────────────────────────────────────────────
 export default function SalesPage() {
   const [videoOpen, setVideoOpen] = useState(false);
+  const [showWhatsapp, setShowWhatsapp] = useState(false);
+
+  useEffect(() => {
+    // Delay visibility for 3 minutes (180000ms) as requested
+    const timer = setTimeout(() => {
+      setShowWhatsapp(true);
+    }, 180000);
+    return () => clearTimeout(timer);
+  }, []);
   const [ctaClicked, setCtaClicked] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("annual");
   const pricingRef = useRef<HTMLDivElement>(null);
@@ -353,10 +362,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <SocialProofToast ctaClicked={ctaClicked} />
       <MobileFloatingCTA onCheckout={() => checkout("elite_annual")} />
 
-      <main style={{ paddingTop: "48px" }}>
+      <main style={{ paddingTop: "16px" }}>
 
       {/* ─── HERO ─── */}
-      <section style={{ padding: "48px 20px 40px", textAlign: "center", position: "relative",
+      <section style={{ padding: "16px 20px 40px", textAlign: "center", position: "relative",
         background: `radial-gradient(ellipse at 50% 0%, ${T.accent}15 0%, transparent 60%)` }}>
 
         <div style={{ position: "relative", zIndex: 1 }}>
@@ -447,31 +456,33 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 
       {/* ─── MECANISMO IA EXPLICAÇÃO ─── */}
-      <section className="py-14 px-4 md:px-6 bg-[#03070F] border-b border-white/5 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-cyan-500/5 blur-[100px] pointer-events-none" />
+      <section className="py-12 px-4 md:px-6 bg-[#03070F] border-b border-white/5 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-96 rounded-full bg-cyan-500/5 blur-[120px] pointer-events-none" />
 
         <div className="max-w-4xl mx-auto relative z-10">
-          <div className="text-center mb-12">
-            <p className="text-[10px] font-black tracking-[0.3em] text-cyan-400 uppercase mb-2">MÁQUINA DE ESCALA AUTOMÁTICA</p>
-            <h2 className="text-2xl md:text-4xl font-black italic uppercase tracking-tighter text-white mb-3 leading-tight">COMO A IA CRIA <br className="md:hidden" /><span className="text-zinc-600 underline decoration-white/10">SEU ANÚNCIO</span></h2>
-            <p className="text-zinc-400 text-[11px] font-bold italic bg-white/5 inline-block px-4 py-2 rounded-full border border-white/10">"Sem designer. Sem Canva nessa parte. Só você e o resultado."</p>
+          <div className="text-center mb-8">
+            <p className="text-[9px] font-black tracking-[0.3em] text-cyan-400 uppercase mb-2">VELOCIDADE MÁXIMA</p>
+            <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-white mb-2">COMO A IA CRIA <span className="text-zinc-500">SEU ANÚNCIO</span></h2>
+            <p className="text-zinc-400 text-[10px] font-bold opacity-70">Zero complexidade. Só 3 cliques entre a oferta e o vídeo.</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+          <div className="flex flex-col md:flex-row items-stretch gap-3 md:gap-4 relative">
             {[
-              { icon: Keyboard, title: "VOCÊ DIGITA", desc: "Destino, preço, parcelas.", color: "bg-blue-500/10 text-blue-400 border-blue-500/20", sub: "Ícone Teclado" },
-              { icon: Settings, title: "IA ESTRUTURA", desc: "A inteligência compõe a arte em segundos.", color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20", animate: true, sub: "Ícone Engrenagem" },
-              { icon: Smartphone, title: "PRONTO COM LOGO", desc: "Sua arte finalizada direto no seu celular.", color: "bg-green-500/10 text-green-400 border-green-500/20", sub: "Ícone Celular" },
+              { icon: Keyboard, title: "VOCÊ DIGITA", desc: "Preço, destino, parcelas.", color: "text-blue-400 bg-blue-400/10" },
+              { icon: Sparkles, title: "IA CONSTRÓI", desc: "Arte montada em 2 segundos.", color: "text-cyan-400 bg-cyan-400/10", animate: true },
+              { icon: Smartphone, title: "PRONTO", desc: "Direto no seu celular com sua logo.", color: "text-emerald-400 bg-emerald-400/10" },
             ].map((step, i) => (
-              <div key={i} className="relative group bg-white/[0.02] p-8 rounded-[2rem] border border-white/10 shadow-sm hover:shadow-[0_0_30px_rgba(0,229,255,0.1)] hover:border-cyan-500/30 transition-all duration-300 text-center">
-                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-5 mx-auto shadow-lg border ${step.color} group-hover:scale-110 transition-transform`}>
-                  <step.icon className={`w-7 h-7 ${step.animate ? "animate-[spin_8s_linear_infinite]" : ""}`} />
+              <div key={i} className="flex-1 flex items-center md:flex-col md:text-center gap-4 bg-white/[0.02] border border-white/5 p-4 md:p-6 rounded-2xl hover:bg-white/[0.04] transition-all group">
+                <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl flex-shrink-0 flex items-center justify-center ${step.color} border border-current/10 group-hover:scale-110 transition-transform duration-300`}>
+                  <step.icon className={`w-6 h-6 ${step.animate ? "animate-pulse" : ""}`} />
                 </div>
-                <h3 className="font-black text-sm uppercase tracking-tighter mb-2 text-white flex items-center justify-center gap-2">
-                  <span className="text-[10px] bg-cyan-500 text-black w-5 h-5 rounded-full flex items-center justify-center shrink-0 italic font-black">{i+1}</span>
-                  {step.title}
-                </h3>
-                <p className="text-zinc-400 text-[10px] leading-relaxed font-bold uppercase tracking-tight opacity-70">{step.desc}</p>
+                <div>
+                   <h3 className="font-black text-xs md:text-sm uppercase tracking-wider text-white mb-0.5 flex items-center gap-2 md:justify-center">
+                     <span className="w-4 h-4 bg-cyan-500 text-black text-[9px] font-black rounded-full flex items-center justify-center flex-shrink-0 italic">{i+1}</span>
+                     {step.title}
+                   </h3>
+                   <p className="text-zinc-500 text-[10px] md:text-[11px] font-medium leading-tight">{step.desc}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -1283,36 +1294,46 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </div>
       </footer>
 
-      {/* ─── FLOATING WHATSAPP ─── */}
-      <a
-        href="https://wa.me/558586411294?text=Quero%20adquirir%20o%20Canva%20Viagem"
-        target="_blank"
-        rel="noreferrer"
-        onClick={() => trackContact()}
-        className="hover:scale-110 active:scale-95 transition-all duration-300"
-        style={{
-          position: "fixed",
-          bottom: 24,
-          right: 24,
-          width: 60,
-          height: 60,
-          background: "#25D366",
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#FFF",
-          boxShadow: "0 10px 25px rgba(37, 211, 102, 0.4)",
-          zIndex: 9999,
-          cursor: "pointer",
-          border: "none",
-          textDecoration: "none"
-        }}
-        aria-label="Falar no WhatsApp"
-      >
-         <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "2px solid #25D366", animation: "ping 2s cubic-bezier(0, 0, 0.2, 1) infinite", opacity: 0.4 }}></div>
-         <MessageCircle size={32} fill="currentColor" />
-      </a>
+      {/* ─── FLOATING WHATSAPP (DELAYED & UPGRADED) ─── */}
+      <AnimatePresence>
+        {showWhatsapp && (
+          <motion.a
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            href="https://wa.me/558586411294?text=Quero%20adquirir%20o%20Canva%20Viagem"
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => trackContact()}
+            className="hover:scale-110 active:scale-95 transition-all duration-300"
+            style={{
+              position: "fixed",
+              bottom: 20,
+              right: 20,
+              width: 54,
+              height: 54,
+              background: "#25D366",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#FFF",
+              boxShadow: "0 8px 20px rgba(37, 211, 102, 0.35)",
+              zIndex: 9999,
+              cursor: "pointer",
+              border: "none",
+              textDecoration: "none"
+            }}
+            aria-label="Falar no WhatsApp"
+          >
+             <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "2px solid #25D366", animation: "ping 3s cubic-bezier(0, 0, 0.2, 1) infinite", opacity: 0.3 }}></div>
+             {/* Pure Official WhatsApp SVG */}
+             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
+               <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.06 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+             </svg>
+          </motion.a>
+        )}
+      </AnimatePresence>
 
       <VideoModal open={videoOpen} onClose={() => setVideoOpen(false)} />
     </div>
