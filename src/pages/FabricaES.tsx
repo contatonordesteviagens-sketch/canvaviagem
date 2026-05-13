@@ -9,7 +9,7 @@ import { Phase5Dashboard } from "@/pages/fabrica/Phase5Dashboard";
 import { ArrowLeft, Crown, Sparkles, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
-import { ComingSoonGate } from "@/components/fabrica/ComingSoonGate";
+
 
 const PHASES = [
   { num: 1, label: "ADS Destino" },
