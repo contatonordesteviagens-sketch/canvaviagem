@@ -774,6 +774,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   // VersÃ£o forÃ§ada (null = automÃ¡tico/rotaÃ§Ã£o). 0..4 fixa a variante exata para correÃ§Ãµes cirÃºrgicas.
   const [forcedVariant, setForcedVariant] = useState<number | null>(null);
   const [lastProvider, setLastProvider] = useState<"user_gemini" | "lovable_ai" | null>(null);
+  const [generationError, setGenerationError] = useState<string | null>(null);
+  const resultRef = useRef<HTMLDivElement | null>(null);
   const [generationCount, setGenerationCount] = useState<number>(() => {
     const saved = localStorage.getItem("fabrica_gen_count");
     return saved ? parseInt(saved, 10) : 0;
@@ -1025,6 +1027,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     }
     setLoading(true);
     setGeneratedImage("");
+    setGenerationError(null);
     if (!accumulate) setGeneratedImages([]);
     try {
       // Resolve imagem de referÃªncia conforme modo
@@ -1148,6 +1151,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         finishCycle(composed.length);
 
         toast.success(`${composed.length} ${composed.length === 1 ? "variaÃ§Ã£o gerada" : "variaÃ§Ãµes geradas"} com foto real!`);
+        requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
         return;
       }
 
@@ -1265,6 +1269,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         for (const result of results) {
           if (result.error) throw result.error;
           if (result.data?.error && result.data?.fallback === false) {
+            setGenerationError(result.data.error);
             toast.error(result.data.error);
             return;
           }
@@ -1477,7 +1482,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
     } catch (err: any) {
       console.error("generate error", err);
-      toast.error(err?.message || "Erro ao gerar anÃºncio");
+      const message = err?.message || "Erro ao gerar anÃºncio";
+      setGenerationError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -2637,6 +2644,76 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando com IA...</> : <><Sparkles className="w-4 h-4" /> Gerar AnÃºncio</>}
         </button>
         {loading && <p className="text-xs text-white/50 text-center mt-1">A IA leva 8 a 25 segundos.</p>}
+
+        {(generationError || generatedImages.length > 0) && (
+          <div ref={resultRef} className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-4 scroll-mt-24">
+            {generationError && (
+              <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-100">
+                <div className="font-bold">NÃ£o foi possÃ­vel gerar a imagem</div>
+                <p className="mt-1 text-xs text-red-100/80">{generationError}</p>
+              </div>
+            )}
+
+            {generatedImages.length > 0 && (
+              <>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Imagem gerada</h3>
+                    <p className="text-[11px] text-white/50">A Ãºltima arte aparece abaixo e jÃ¡ estÃ¡ pronta para baixar.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={downloadPNG}
+                    disabled={!generatedImage}
+                    className="shrink-0 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-bold text-white hover:bg-white/[0.12] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Baixar PNG
+                  </button>
+                </div>
+
+                <div className={`grid gap-3 ${generatedImages.length > 1 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1"}`}>
+                  {generatedImages.map((img, idx) => (
+                    <button
+                      key={`${img.slice(0, 48)}-${idx}`}
+                      type="button"
+                      onClick={() => setGeneratedImage(img)}
+                      className={`overflow-hidden rounded-xl border-2 bg-black/30 transition-all ${generatedImage === img ? "border-white shadow-lg" : "border-white/10 hover:border-white/30"}`}
+                      title={`Selecionar variaÃ§Ã£o ${idx + 1}`}
+                    >
+                      <img src={img} alt={`AnÃºncio gerado ${idx + 1}`} className="w-full h-auto object-contain" />
+                    </button>
+                  ))}
+                </div>
+
+                {adCaptions.length > 0 && (
+                  <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <div className="text-xs font-bold text-white flex items-center gap-2">
+                        <FileText className="w-4 h-4" /> Legenda sugerida
+                      </div>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const text = selectedCaption || adCaptions[0];
+                          await navigator.clipboard.writeText(text);
+                          setSelectedCaption(text);
+                          setCaptionCopied(true);
+                          toast.success("Legenda copiada!");
+                        }}
+                        className="flex items-center gap-1.5 rounded-lg border border-white/10 px-2 py-1 text-[11px] font-semibold text-white/80 hover:bg-white/[0.08] transition-colors"
+                      >
+                        {captionCopied ? <ClipboardCheck className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                        Copiar
+                      </button>
+                    </div>
+                    <p className="whitespace-pre-line text-xs leading-relaxed text-white/70">{selectedCaption || adCaptions[0]}</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
 
         {/* ?? PONTO 10: GATILHO DE ESCASSEZ (GAMIFICAÃ‡AO DE SALDO) */}
       </div>
