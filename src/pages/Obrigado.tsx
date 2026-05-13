@@ -163,17 +163,17 @@ const Obrigado = () => {
     // Delay to ensure Meta Pixel is fully initialized from index.html
     const timer = setTimeout(() => {
       if (!tracked) {
-        console.log('[Meta Pixel] Disparando Purchase e Subscribe...');
-        trackPurchase(29.0, "BRL");
-        trackSubscribe(29.0, "BRL", 29.0 * 12);
-        trackESPurchase(9.09, "USD");
-        trackESSubscribe(9.09, "USD", 9.09 * 12);
+        console.log('[Meta Pixel] Disparando Purchase e Subscribe em todos os pixels...');
+        trackPurchaseOnAllPixels(29.0, 'BRL');
+        trackSubscribeOnAllPixels(29.0, 'BRL', 29.0 * 12);
+        trackESPurchase(9.09, 'USD');
+        trackESSubscribe(9.09, 'USD', 9.09 * 12);
         // Google Ads conversion
-        if (typeof window !== "undefined" && (window as any).gtag) {
-          (window as any).gtag("event", "conversion", {
-            send_to: "AW-18034387036/QeQUCJ-g7Y0cENzQu5dD",
+        if (typeof window !== 'undefined' && (window as any).gtag) {
+          (window as any).gtag('event', 'conversion', {
+            send_to: 'AW-18034387036/QeQUCJ-g7Y0cENzQu5dD',
             value: 29.0,
-            currency: "BRL",
+            currency: 'BRL',
             transaction_id: Date.now().toString(),
           });
         }
