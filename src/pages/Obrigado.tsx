@@ -111,23 +111,28 @@ const Obrigado = () => {
   }, [emailFromUrl]);
 
   useEffect(() => {
-    // Removing source parameter dependency to guarantee the event fires absolutely upon component mount
-    if (!tracked) {
-      trackPurchase(29.0, "BRL");
-      trackSubscribe(29.0, "BRL", 29.0 * 12);
-      trackESPurchase(9.09, "USD");
-      trackESSubscribe(9.09, "USD", 9.09 * 12);
-      // Google Ads conversion
-      if (typeof window !== "undefined" && (window as any).gtag) {
-        (window as any).gtag("event", "conversion", {
-          send_to: "AW-18034387036/QeQUCJ-g7Y0cENzQu5dD",
-          value: 29.0,
-          currency: "BRL",
-          transaction_id: Date.now().toString(),
-        });
+    // Delay to ensure Meta Pixel is fully initialized from index.html
+    const timer = setTimeout(() => {
+      if (!tracked) {
+        console.log('[Meta Pixel] Disparando Purchase e Subscribe...');
+        trackPurchase(29.0, "BRL");
+        trackSubscribe(29.0, "BRL", 29.0 * 12);
+        trackESPurchase(9.09, "USD");
+        trackESSubscribe(9.09, "USD", 9.09 * 12);
+        // Google Ads conversion
+        if (typeof window !== "undefined" && (window as any).gtag) {
+          (window as any).gtag("event", "conversion", {
+            send_to: "AW-18034387036/QeQUCJ-g7Y0cENzQu5dD",
+            value: 29.0,
+            currency: "BRL",
+            transaction_id: Date.now().toString(),
+          });
+        }
+        setTracked(true);
       }
-      setTracked(true);
-    }
+    }, 2500); // 2.5s delay to ensure all pixels are initialized
+
+    return () => clearTimeout(timer);
   }, [tracked]);
 
   useEffect(() => {
