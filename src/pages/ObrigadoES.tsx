@@ -95,11 +95,17 @@ const ObrigadoES = () => {
     }, [emailFromUrl]);
 
     useEffect(() => {
-        if (!tracked && sourceFromUrl === 'checkout') {
-            trackESPurchase(9.09, 'USD');
-            trackESSubscribe(9.09, 'USD', 9.09 * 12);
-            setTracked(true);
-        }
+        // Delay to ensure Meta Pixel is fully initialized from index.html
+        const timer = setTimeout(() => {
+            if (!tracked && sourceFromUrl === 'checkout') {
+                console.log('[Meta Pixel ES] Disparando Purchase e Subscribe...');
+                trackESPurchase(9.09, 'USD');
+                trackESSubscribe(9.09, 'USD', 9.09 * 12);
+                setTracked(true);
+            }
+        }, 2500); // 2.5s delay to ensure all pixels are initialized
+
+        return () => clearTimeout(timer);
     }, [tracked, sourceFromUrl]);
 
     useEffect(() => {

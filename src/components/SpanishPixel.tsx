@@ -4,9 +4,8 @@ const ES_PIXEL_ID = "1560736461820497";
 
 export const SpanishPixel = () => {
   useEffect(() => {
-    // Initialize and track PageView for ES pixel only
+    // Pixel is already initialized in index.html — only track PageView here
     if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('init', ES_PIXEL_ID);
       window.fbq('trackSingle', ES_PIXEL_ID, 'PageView');
       console.log('[Meta ES Pixel] PageView tracked for pixel:', ES_PIXEL_ID);
     }
