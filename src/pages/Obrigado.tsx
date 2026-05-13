@@ -10,6 +10,55 @@ import { SpanishPixel } from "@/components/SpanishPixel";
 import { trackPurchase, trackSubscribe } from "@/lib/meta-pixel";
 import { trackESPurchase, trackESSubscribe } from "@/lib/meta-pixel-es";
 
+// Pixel IDs that should receive Purchase event on PT thank you page
+const PT_PIXEL_IDS = [
+  '1599242897762192',
+  '1152272353771099',
+  '4254631328136179',
+  '916689227676142',
+  '2120347238758199',
+];
+
+declare global {
+  interface Window {
+    fbq: (...args: unknown[]) => void;
+  }
+}
+
+const trackPurchaseOnAllPixels = (value: number, currency: string) => {
+  if (typeof window === 'undefined' || !window.fbq) {
+    console.warn('[Meta Pixel] fbq not available');
+    return;
+  }
+  PT_PIXEL_IDS.forEach((pixelId) => {
+    try {
+      window.fbq('trackSingle', pixelId, 'Purchase', { value, currency });
+      console.log(`[Meta Pixel] Purchase sent to pixel: ${pixelId}`);
+    } catch (e) {
+      console.warn(`[Meta Pixel] Failed to send Purchase to pixel ${pixelId}:`, e);
+    }
+  });
+};
+
+const trackSubscribeOnAllPixels = (value: number, currency: string, predictedLtv?: number) => {
+  if (typeof window === 'undefined' || !window.fbq) {
+    console.warn('[Meta Pixel] fbq not available');
+    return;
+  }
+  PT_PIXEL_IDS.forEach((pixelId) => {
+    try {
+      window.fbq('trackSingle', pixelId, 'Subscribe', {
+        value,
+        currency,
+        predicted_ltv: predictedLtv || value * 12,
+      });
+      console.log(`[Meta Pixel] Subscribe sent to pixel: ${pixelId}`);
+    } catch (e) {
+      console.warn(`[Meta Pixel] Failed to send Subscribe to pixel ${pixelId}:`, e);
+    }
+  });
+};
+
 /**
  * Slow & Abundant Confetti Component
  */
@@ -47,13 +96,26 @@ const ConfettiCanvas = () => {
 
     let animId: number;
     let frame = 0;
+    const TOTAL_FRAMES = 600; // ~10 seconds @60fps
+    const FADE_FRAMES = 90;   // last 1.5s fade out
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const fadeAlpha = frame > TOTAL_FRAMES - FADE_FRAMES
+        ? Math.max(0, (TOTAL_FRAMES - frame) / FADE_FRAMES)
+        : 1;
+      ctx.globalAlpha = fadeAlpha;
       particles.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
         p.angle += p.spin;
         p.vy += 0.02; // Very low gravity for "floaty" effect
+        // Recycle particles to keep density high during the full 10s
+        if (p.y > canvas.height + 50 && frame < TOTAL_FRAMES - FADE_FRAMES) {
+          p.x = Math.random() * canvas.width;
+          p.y = -50 - Math.random() * 200;
+          p.vy = 0.5 + Math.random() * 2;
+          p.vx = (Math.random() - 0.5) * 2;
+        }
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate(p.angle);
@@ -61,8 +123,9 @@ const ConfettiCanvas = () => {
         ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
         ctx.restore();
       });
+      ctx.globalAlpha = 1;
       frame++;
-      if (frame < 180) { // Approx 3 seconds
+      if (frame < TOTAL_FRAMES) {
         animId = requestAnimationFrame(animate);
       } else {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -97,27 +160,32 @@ const Obrigado = () => {
   }, [emailFromUrl]);
 
   useEffect(() => {
-    // Removing source parameter dependency to guarantee the event fires absolutely upon component mount
-    if (!tracked) {
-      trackPurchase(29.0, "BRL");
-      trackSubscribe(29.0, "BRL", 29.0 * 12);
-      trackESPurchase(9.09, "USD");
-      trackESSubscribe(9.09, "USD", 9.09 * 12);
-      // Google Ads conversion
-      if (typeof window !== "undefined" && (window as any).gtag) {
-        (window as any).gtag("event", "conversion", {
-          send_to: "AW-18034387036/QeQUCJ-g7Y0cENzQu5dD",
-          value: 29.0,
-          currency: "BRL",
-          transaction_id: Date.now().toString(),
-        });
+    // Delay to ensure Meta Pixel is fully initialized from index.html
+    const timer = setTimeout(() => {
+      if (!tracked) {
+        console.log('[Meta Pixel] Disparando Purchase e Subscribe em todos os pixels...');
+        trackPurchaseOnAllPixels(29.0, 'BRL');
+        trackSubscribeOnAllPixels(29.0, 'BRL', 29.0 * 12);
+        trackESPurchase(9.09, 'USD');
+        trackESSubscribe(9.09, 'USD', 9.09 * 12);
+        // Google Ads conversion
+        if (typeof window !== 'undefined' && (window as any).gtag) {
+          (window as any).gtag('event', 'conversion', {
+            send_to: 'AW-18034387036/QeQUCJ-g7Y0cENzQu5dD',
+            value: 29.0,
+            currency: 'BRL',
+            transaction_id: Date.now().toString(),
+          });
+        }
+        setTracked(true);
       }
-      setTracked(true);
-    }
+    }, 2500); // 2.5s delay to ensure all pixels are initialized
+
+    return () => clearTimeout(timer);
   }, [tracked]);
 
   useEffect(() => {
-    const t = setTimeout(() => setShowConfetti(false), 3000);
+    const t = setTimeout(() => setShowConfetti(false), 10500);
     return () => clearTimeout(t);
   }, []);
 

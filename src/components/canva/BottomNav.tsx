@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { Bot, Image, GraduationCap, Heart, Home, Calendar, Sparkles, Wand2 } from "lucide-react";
+import { Bot, Image, GraduationCap, Heart, Home, Calendar, Wand2 } from "lucide-react";
 import { CategoryType } from "./CategoryNav";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Dock } from "@/components/ui/Dock";
 import { useNavigate } from "react-router-dom";
-import { ComingSoonGate } from "@/components/fabrica/ComingSoonGate";
 import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import { FabricaUpgradeModal } from "@/components/fabrica/FabricaUpgradeModal";
 
 interface BottomNavProps {
   activeCategory: CategoryType;
@@ -15,8 +15,8 @@ interface BottomNavProps {
 export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
-  const [gateOpen, setGateOpen] = useState(false);
-  const { user, subscription } = useAuth();
+  const { user, subscription, isAdmin } = useAuth();
+  const [fabricaUpgradeOpen, setFabricaUpgradeOpen] = useState(false);
 
   const handleTabClick = (category: CategoryType | "home" | "calendar" | "fabrica") => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -31,17 +31,14 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
         navigate("/auth");
         return;
       }
-      const isEliteUser = user && subscription && (
-        subscription.productId === "prod_UTFlCWzNqvqSNx" || // Elite Anual
-        subscription.productId === "prod_UTFsXcKq8m0mol" || // Elite Mensal
-        subscription.productId === "prod_UTSmPe3GPt8iHt"    // Elite Mensal Variação
-      );
-      const isUnlocked = isEliteUser || localStorage.getItem("fabrica-unlocked") === "true";
+      const eliteProductIds = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
+      const isElite = subscription.subscribed && eliteProductIds.includes(subscription.productId || "");
+      const isUnlocked = isElite || isAdmin || localStorage.getItem("fabrica-unlocked") === "true";
 
       if (isUnlocked) {
         navigate(language === "es" ? "/es/fabrica" : "/fabrica");
       } else {
-        setGateOpen(true);
+        setFabricaUpgradeOpen(true);
       }
     } else {
       onCategoryChange(category as CategoryType);
@@ -95,11 +92,8 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
           <Dock items={navItems} className="h-auto" />
         </div>
       </div>
-      <ComingSoonGate
-        open={gateOpen}
-        onOpenChange={setGateOpen}
-        onUnlock={() => navigate(language === "es" ? "/es/fabrica" : "/fabrica", { state: { fabricaUnlocked: true } })}
-      />
+      <FabricaUpgradeModal open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
     </>
   );
 };
+

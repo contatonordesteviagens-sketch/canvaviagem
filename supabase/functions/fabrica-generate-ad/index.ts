@@ -3,6 +3,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { getTemplateById, pickContrastText, CRITICAL_CONTRAST_HEADER, type MasterPromptVars } from "./master-prompts.ts";
+import { verifyFabricaEliteAccess } from "../_shared/fabricaAccess.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -102,6 +103,9 @@ serve(async (req) => {
   }
 
   try {
+    const access = await verifyFabricaEliteAccess(req, corsHeaders);
+    if (!access.ok) return access.response;
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const USER_GEMINI_API_KEY = Deno.env.get("USER_GEMINI_API_KEY");
 
@@ -302,16 +306,15 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
 
         if (!imageUrl) {
           console.warn("User Gemini failed:", lastStatus, lastErrText.slice(0, 300));
-          const userKeyActionableError = lastStatus === 401 || lastStatus === 403 || lastStatus === 429;
-          if (userKeyActionableError) {
-            const message = lastStatus === 429
-              ? "Sua cota do Gemini foi atingida. Aguarde ou verifique o faturamento da sua chave Gemini."
-              : "Sua chave Gemini é inválida ou foi revogada. Atualize-a em Configurações.";
-            return new Response(JSON.stringify({ error: message, provider: "user_gemini", action: "update_user_key", fallback: false }), {
-              status: 200,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            });
+          // 401/403 = chave inválida → erro acionável (somente se NÃO houver fallback Lovable)
+          const invalidKey = lastStatus === 401 || lastStatus === 403;
+          if (invalidKey && !LOVABLE_API_KEY) {
+            return new Response(JSON.stringify({
+              error: "Sua chave Gemini é inválida ou foi revogada. Atualize-a em Configurações.",
+              provider: "user_gemini", action: "update_user_key", fallback: false,
+            }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
           }
+          // 429 (cota) ou qualquer outro erro → fallback silencioso para Lovable AI Gateway
           if (LOVABLE_API_KEY) provider = "lovable_ai";
         }
       } catch (e) {

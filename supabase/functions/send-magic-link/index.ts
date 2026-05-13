@@ -62,7 +62,7 @@ const generateEmailTemplate = (magicLink: string) => `
                 <tr>
                   <td style="padding: 20px;">
                     <p style="margin: 0; color: #667eea; font-size: 14px; text-align: center;">
-                      ⏱️ Este link expira em <strong>1 hora</strong>
+                      ⏱️ Este link expira em <strong>24 horas</strong>
                     </p>
                   </td>
                 </tr>
@@ -148,7 +148,7 @@ serve(async (req) => {
 
     // Gerar token único
     const token = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
 
     // Clean phone if provided
     const cleanPhone = phone ? phone.replace(/\D/g, '') : null;
@@ -179,8 +179,10 @@ serve(async (req) => {
     console.log("[MAGIC-LINK] Magic link generated successfully");
 
     // Enviar email via Resend
+    // IMPORTANT: usar remetente verificado. canvaviagem.com não está verificado no Resend.
+    const fromAddress = Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>";
     const emailResponse = await resend.emails.send({
-      from: "Canva Viagem <contato@canvaviagem.com>",
+      from: fromAddress,
       to: [email],
       subject: "🔐 Seu Link de Acesso - Canva Viagem",
       html: generateEmailTemplate(magicLink),

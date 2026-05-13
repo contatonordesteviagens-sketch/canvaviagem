@@ -34,6 +34,34 @@ function isValidEmail(email: string | null | undefined): email is string {
   return emailRegex.test(email) && email.length <= 254;
 }
 
+async function findExistingUserIdByEmail(supabase: any, email: string): Promise<string | null> {
+  const { data: profileUser, error: profileError } = await supabase
+    .from("profiles")
+    .select("user_id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (profileError) {
+    logStep("WARN: profile lookup failed, falling back to auth list", { error: profileError.message });
+  }
+
+  if (profileUser?.user_id) return profileUser.user_id;
+
+  for (let page = 1; page <= 20; page++) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) {
+      logStep("WARN: auth listUsers fallback failed", { error: error.message });
+      return null;
+    }
+
+    const matchedUser = data?.users?.find((user: any) => user.email?.toLowerCase().trim() === email);
+    if (matchedUser?.id) return matchedUser.id;
+    if (!data?.users || data.users.length < 1000) break;
+  }
+
+  return null;
+}
+
 // ZAIA WEBHOOK HELPER
 async function triggerZaiaWebhook(webhookEnvVar: string, data: { email: string; name?: string; phone?: string; magic_link?: string }) {
   const webhookUrl = Deno.env.get(webhookEnvVar);
@@ -75,14 +103,13 @@ async function ensureUserAndOnboarding(
   const normalizedEmail = email.toLowerCase().trim();
   logStep("Starting onboarding for", { email: redactEmail(normalizedEmail), productId });
 
-  // 1. Check/Create User de forma escalável
-  const { data: userData } = await supabase.auth.admin.getUserByEmail(normalizedEmail);
-  let existingUser = userData?.user;
+  // 1. Check/Create User sem getUserByEmail (não é suportado no runtime Deno)
+  const existingUserId = await findExistingUserIdByEmail(supabase, normalizedEmail);
   let userId: string;
 
-  if (existingUser) {
-    logStep("Existing user found", { userId: existingUser.id });
-    userId = existingUser.id;
+  if (existingUserId) {
+    logStep("Existing user found", { userId: existingUserId });
+    userId = existingUserId;
   } else {
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
       email: normalizedEmail,
@@ -92,10 +119,10 @@ async function ensureUserAndOnboarding(
     if (createError) {
       // Tratar possível corrida ou usuário já registrado de forma silenciosa que não quebre o fluxo
       if (createError.message?.includes("registered") || createError.message?.includes("exists")) {
-        const { data: retryData } = await supabase.auth.admin.getUserByEmail(normalizedEmail);
-        if (retryData?.user) {
-          logStep("User found on retry after creation conflict", { userId: retryData.user.id });
-          userId = retryData.user.id;
+        const retryUserId = await findExistingUserIdByEmail(supabase, normalizedEmail);
+        if (retryUserId) {
+          logStep("User found on retry after creation conflict", { userId: retryUserId });
+          userId = retryUserId;
         } else {
           logStep("ERROR: Conflict reported but user still not found on retry", { error: createError.message });
           return;
@@ -123,13 +150,22 @@ async function ensureUserAndOnboarding(
   const { error: profileError } = await supabase.from("profiles").upsert(profileData, { onConflict: "user_id" });
   if (profileError) logStep("ERROR: Failed to upsert profile", { error: profileError.message });
 
-  // 3. Upsert Subscription
+  // 3. Upsert Subscription — NUNCA forçar fallback de produto.
+  // Se productId vier nulo, salvamos null e logamos para investigação manual,
+  // em vez de rebaixar a compra (ex: Elite virando Start).
+  if (!productId) {
+    logStep("WARN: productId not resolved for subscription — saving as null", {
+      email: redactEmail(normalizedEmail),
+      stripeCustomerId,
+      stripeSubscriptionId,
+    });
+  }
   const { error: subError } = await supabase.from("subscriptions").upsert({
     user_id: userId,
     stripe_customer_id: stripeCustomerId,
     stripe_subscription_id: stripeSubscriptionId,
     status: "active",
-    product_id: productId || "prod_TkvaozfpkAcbpM",
+    product_id: productId || null,
     updated_at: new Date().toISOString(),
   }, { onConflict: "user_id" });
 
@@ -158,8 +194,8 @@ async function ensureUserAndOnboarding(
 
   // 5. Send emails via Resend if available
   if (resend && magicLink) {
-    await sendAutoMagicLinkEmail(resend, normalizedEmail, magicLink, name || "Visitante");
-    await sendWelcomeEmail(resend, normalizedEmail);
+    await sendAutoMagicLinkEmail(supabase, resend, normalizedEmail, magicLink, token, name || "Visitante");
+    await sendWelcomeEmail(supabase, resend, normalizedEmail, productId);
   }
 
   // 6. Trigger Zaia Welcome (with the generated magic link for WhatsApp delivery!)
@@ -239,7 +275,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
   const stripeCustomerId = session.customer as string;
   const stripeSubscriptionId = session.subscription as string;
 
-  let productId = "prod_TkvaozfpkAcbpM"; // default fallback
+  let productId: string | undefined = undefined;
   if (stripeSubscriptionId) {
     try {
       const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
@@ -253,8 +289,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, supabas
     }
   }
 
-  // Backup: se ainda for o padrão ou falhou, buscar dos Line Items da Session
-  if (productId === "prod_TkvaozfpkAcbpM" || !productId) {
+  // Backup: line items do Checkout Session
+  if (!productId) {
     try {
       logStep("Attempting fallback product ID fetch from session line items", { sessionId: session.id });
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 1 });
@@ -306,7 +342,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
       const customerName = invoice.customer_name || email.split("@")[0];
       const subscriptionId = invoice.subscription as string;
       
-      let productId = "prod_TkvaozfpkAcbpM"; // default fallback
+      let productId: string | undefined = undefined;
       if (subscriptionId) {
         try {
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
@@ -320,8 +356,8 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, supabase: any, re
         }
       }
 
-      // Backup: Extrair diretamente dos line items do invoice recebido (sem call extra)
-      if (productId === "prod_TkvaozfpkAcbpM" || !productId) {
+      // Backup: line items do invoice
+      if (!productId) {
         const lineProductId = invoice.lines?.data?.[0]?.price?.product as string;
         if (lineProductId) {
           productId = lineProductId;
@@ -360,9 +396,9 @@ async function handleCheckoutExpired(session: Stripe.Checkout.Session, supabase:
 }
 
 // EMAIL TEMPLATES (Restored)
-async function sendAutoMagicLinkEmail(resend: any, email: string, magicLink: string, customerName: string) {
+async function sendAutoMagicLinkEmail(supabase: any, resend: any, email: string, magicLink: string, token: string, customerName: string) {
   try {
-    await resend.emails.send({
+    const emailResponse = await resend.emails.send({
       from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
       to: [email],
       subject: "🔐 Seu Link de Acesso - Canva Viagem",
@@ -375,41 +411,87 @@ async function sendAutoMagicLinkEmail(resend: any, email: string, magicLink: str
              <h1>Olá, ${customerName}!</h1>
              <p>Seu pagamento foi confirmado! Clique abaixo para acessar:</p>
              <a href="${magicLink}" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">Acessar Minha Conta</a>
-             <p style="margin-top: 20px; font-size: 12px; color: #888;">Link expira em 1 hora.</p>
+              <p style="margin-top: 20px; font-size: 12px; color: #888;">Link expira em 24 horas.</p>
           </div>
         </body>
         </html>
       `,
     });
-    logStep("Auto magic link email sent", { email: redactEmail(email) });
+    if (emailResponse?.error) {
+      logStep("ERROR: Resend rejected auto magic link email", { email: redactEmail(email), error: emailResponse.error });
+      await supabase.from("email_events").insert({
+        email_id: token,
+        type: "failed",
+        email_type: "magic_link_auto",
+        recipient_email: email,
+        metadata: { token_id: token, provider_error: emailResponse.error },
+      });
+      return;
+    }
+    await supabase.from("email_events").insert({
+      email_id: emailResponse?.data?.id || token,
+      type: "sent",
+      email_type: "magic_link_auto",
+      recipient_email: email,
+      metadata: { token_id: token },
+    });
+    logStep("Auto magic link email sent", { email: redactEmail(email), emailId: emailResponse?.data?.id });
   } catch (error: any) {
     logStep("ERROR: Failed to send auto magic link email", { error: error.message });
   }
 }
 
-async function sendWelcomeEmail(resend: any, email: string) {
-  const appUrl = Deno.env.get("APP_URL") || "https://canvatrip.lovable.app";
+const ELITE_PRODUCT_IDS = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
+
+async function sendWelcomeEmail(supabase: any, resend: any, email: string, productId?: string) {
+  const appUrl = Deno.env.get("APP_URL") || "https://canvaviagem.com";
+  const isElite = !!productId && ELITE_PRODUCT_IDS.includes(productId);
+  const planName = isElite ? "Plano Elite 👑" : "Plano Start";
+  const ctaUrl = isElite ? `${appUrl}/fabrica` : `${appUrl}/`;
+  const ctaLabel = isElite ? "🚀 Acessar a Fábrica" : "🌴 Acessar meu Painel";
+  const eliteExtras = isElite
+    ? `<li><strong>🏭 Fábrica de Anúncios IA</strong> (exclusivo Elite)</li>
+       <li><strong>🌐 Criador de Sites de Viagem</strong> (exclusivo Elite)</li>`
+    : `<li>Vídeos Reels Virais</li>
+       <li>Robôs de IA</li>
+       <li>Templates Editáveis</li>`;
   try {
-    await resend.emails.send({
+    const emailResponse = await resend.emails.send({
       from: Deno.env.get("RESEND_FROM_EMAIL") || "Canva Viagem <lucas@rochadigitalmidia.com.br>",
       to: [email],
-      subject: "🚀 Bem-vindo ao Canva Viagens!",
+      subject: `🚀 Bem-vindo ao Canva Viagem — ${planName}`,
       html: `
         <!DOCTYPE html>
         <html><body>
           <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px;">
-             <h1>Bem-vindo ao Canva Viagens! 🌴</h1>
+             <h1>Bem-vindo ao Canva Viagem! 🌴</h1>
+             <p>Sua assinatura do <strong>${planName}</strong> está ativa.</p>
              <p>Você agora tem acesso a:</p>
-             <ul>
-               <li>Vídeos Reels Virais</li>
-               <li>Robôs de IA</li>
-               <li>Templates Editáveis</li>
-             </ul>
-             <p>Acesse agora: <a href="${appUrl}/planos">${appUrl}</a></p>
+             <ul>${eliteExtras}</ul>
+             <p style="margin-top:24px"><a href="${ctaUrl}" style="background:#0ea5e9;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">${ctaLabel}</a></p>
           </div>
         </body></html>
       `,
     });
+    if (emailResponse?.error) {
+      logStep("ERROR welcome email", { email: redactEmail(email), error: emailResponse.error });
+      await supabase.from("email_events").insert({
+        email_id: `${email}-welcome-${Date.now()}`,
+        type: "failed",
+        email_type: isElite ? "welcome_elite" : "welcome_start",
+        recipient_email: email,
+        metadata: { product_id: productId, provider_error: emailResponse.error },
+      });
+      return;
+    }
+    await supabase.from("email_events").insert({
+      email_id: emailResponse?.data?.id || `${email}-welcome-${Date.now()}`,
+      type: "sent",
+      email_type: isElite ? "welcome_elite" : "welcome_start",
+      recipient_email: email,
+      metadata: { product_id: productId },
+    });
+    logStep("Welcome email sent", { email: redactEmail(email), productId, emailId: emailResponse?.data?.id });
   } catch (error: any) { logStep("ERROR welcome email", { error: error.message }); }
 }
 

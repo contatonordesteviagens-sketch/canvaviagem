@@ -25,12 +25,9 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 import { ProgressBar } from "@/components/ProgressBar";
 import { cn } from "@/lib/utils";
-import { ComingSoonGate, isFabricaUnlocked } from "@/components/fabrica/ComingSoonGate";
+import { FabricaUpgradeModal } from "@/components/fabrica/FabricaUpgradeModal";
 
 type CategoryType = 'videos' | 'feed' | 'stories' | 'captions' | 'downloads' | 'tools' | 'videoaula' | 'favorites';
-
-// Routes that show "Em breve" gate (internal-only for now)
-const GATED_ROUTES = ["/painel-marketing", "/fabrica"];
 
 // Flag to show/hide "Próximo Nível" based on language
 
@@ -41,11 +38,10 @@ interface HeaderProps {
 const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
-  const [gateOpen, setGateOpen] = useState(false);
-  const [pendingRoute, setPendingRoute] = useState<string | null>(null);
+  const [fabricaUpgradeOpen, setFabricaUpgradeOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, subscription, isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { t, language } = useLanguage();
 
@@ -157,37 +153,34 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
 
   // Intercept navigation to gated routes (Fábrica / Painel de Marketing)
   const handleNavClick = (to: string) => {
-    if (to === "/fabrica") {
-      setPendingRoute(to);
-      setGateOpen(true);
+    const eliteProductIds = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
+    const isElite = subscription.subscribed && eliteProductIds.includes(subscription.productId || "");
+
+    if ((to === "/fabrica" || to === "/painel-marketing") && !isAdmin && !isElite) {
+      setFabricaUpgradeOpen(true);
       setIsOpen(false);
       return;
     }
 
-    if (GATED_ROUTES.includes(to) && !isFabricaUnlocked()) {
-      setPendingRoute(to);
-      setGateOpen(true);
-      setIsOpen(false);
-      return;
-    }
-    window.location.href = to;
+    navigate(to);
+    setIsOpen(false);
   };
 
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
-          <Link to={isESRoute ? "/es" : "/"} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Link to={isESRoute ? "/es" : "/"} className="flex items-center gap-3 hover:opacity-80 transition-opacity shrink-0 min-w-0">
             <img
               src={logoImage}
               alt="TravelMarketing"
-              className="h-10 w-10 rounded-xl shadow-lg md:shadow-lg hover:shadow-xl transition-shadow object-cover"
+              className="h-10 w-10 rounded-xl shadow-lg md:shadow-lg hover:shadow-xl transition-shadow object-cover shrink-0"
             />
-            <div className="hidden sm:block">
-              <span className="text-xl font-bold text-slate-800 dark:text-white tracking-tight">
+            <div className="hidden sm:flex flex-col min-w-0">
+              <span className="text-lg lg:text-xl font-bold text-slate-800 dark:text-white tracking-tight whitespace-nowrap leading-tight">
                 Canva Viagem
               </span>
-              <p className="text-[10px] text-muted-foreground font-medium -mt-1 uppercase tracking-wider">Estratégias para Agentes</p>
+              <p className="hidden xl:block text-[10px] text-muted-foreground font-medium -mt-0.5 uppercase tracking-wider whitespace-nowrap">Estratégias para Agentes</p>
             </div>
           </Link>
 
@@ -266,8 +259,8 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
             </DropdownMenu>
 
             {user ? (
-              <div className="flex items-center gap-2 ml-2">
-                <span className="text-sm font-medium text-foreground">
+              <div className="flex items-center gap-2 ml-2 min-w-0">
+                <span className="hidden lg:inline text-sm font-medium text-foreground truncate max-w-[160px]">
                   Olá, {userName || user.email?.split("@")[0]}! 👋
                 </span>
                 <Button
@@ -422,18 +415,7 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
         </div>
       </header>
 
-      <ComingSoonGate
-        open={gateOpen}
-        onOpenChange={setGateOpen}
-        onUnlock={() => {
-          if (pendingRoute === "/fabrica") {
-            navigate("/fabrica", { state: { fabricaUnlocked: true } });
-            return;
-          }
-
-          if (pendingRoute) window.location.href = pendingRoute;
-        }}
-      />
+      <FabricaUpgradeModal open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
     </>
   );
 };

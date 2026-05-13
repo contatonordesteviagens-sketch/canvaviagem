@@ -19,6 +19,8 @@ const GENERIC_ERRORS = {
   configError: "Service configuration error",
 };
 
+const ELITE_PRODUCT_IDS = new Set(["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"]);
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -92,6 +94,9 @@ serve(async (req) => {
     logStep("User authenticated", { userId, email });
 
     // --- CHECK LOCAL DATABASE FIRST (Updated by Webhooks) ---
+    // Elite can be trusted locally. Start/basic must still be verified against Stripe
+    // so upgrades Start → Elite are never blocked by stale local data.
+    let localActiveSub: any = null;
     if (dbClient) {
       const { data: localSub, error: localSubError } = await dbClient
         .from("subscriptions")
@@ -99,18 +104,22 @@ serve(async (req) => {
         .eq("user_id", userId)
         .single();
       
-      if (!localSubError && localSub && localSub.status === "active" && localSub.product_id && localSub.product_id !== "prod_TkvaozfpkAcbpM") {
+      if (!localSubError && localSub && localSub.status === "active" && localSub.product_id) {
         const endDate = localSub.current_period_end;
         if (!endDate || new Date(endDate) > new Date()) {
-          logStep("Active subscription found in local database", { productId: localSub.product_id });
-          return new Response(JSON.stringify({ 
-            subscribed: true, 
-            product_id: localSub.product_id, 
-            subscription_end: endDate 
-          }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-          });
+          localActiveSub = localSub;
+          if (ELITE_PRODUCT_IDS.has(localSub.product_id)) {
+            logStep("Elite subscription found in local database", { productId: localSub.product_id });
+            return new Response(JSON.stringify({ 
+              subscribed: true, 
+              product_id: localSub.product_id, 
+              subscription_end: endDate 
+            }), {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 200,
+            });
+          }
+          logStep("Local subscription is non-Elite; verifying Stripe for possible upgrade", { productId: localSub.product_id });
         }
       }
     }
@@ -118,36 +127,33 @@ serve(async (req) => {
     // --- STRIPE CHECK ---
     if (stripeKey) {
       const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-      const customers = await stripe.customers.list({ email: email.toLowerCase(), limit: 1 });
+      const customers = await stripe.customers.list({ email: email.toLowerCase(), limit: 10 });
 
       if (customers.data.length > 0) {
-        const customerId = customers.data[0].id;
-        logStep("Found Stripe customer", { customerId });
+        logStep("Found Stripe customers", { count: customers.data.length });
 
-        // Check for active/trialing subscriptions
-        const subscriptions = await stripe.subscriptions.list({
-          customer: customerId,
-          status: "active",
-          limit: 1,
-        });
+        let selected: { customerId: string; subscription: Stripe.Subscription; productId: string | null } | null = null;
 
-        let hasActiveSub = subscriptions.data.length > 0;
-        let subscription = subscriptions.data[0];
+        for (const customer of customers.data) {
+          const activeSubscriptions = await stripe.subscriptions.list({ customer: customer.id, status: "active", limit: 10 });
+          const trialingSubscriptions = await stripe.subscriptions.list({ customer: customer.id, status: "trialing", limit: 10 });
+          const allSubscriptions = [...activeSubscriptions.data, ...trialingSubscriptions.data];
 
-        if (!hasActiveSub) {
-          const trialingSubscriptions = await stripe.subscriptions.list({
-            customer: customerId,
-            status: "trialing",
-            limit: 1,
-          });
-          hasActiveSub = trialingSubscriptions.data.length > 0;
-          subscription = trialingSubscriptions.data[0];
+          for (const candidate of allSubscriptions) {
+            const productId = (candidate.items.data[0]?.price?.product as string | null) ?? null;
+            if (!selected || (productId && ELITE_PRODUCT_IDS.has(productId))) {
+              selected = { customerId: customer.id, subscription: candidate, productId };
+            }
+            if (productId && ELITE_PRODUCT_IDS.has(productId)) break;
+          }
+          if (selected?.productId && ELITE_PRODUCT_IDS.has(selected.productId)) break;
         }
 
-        if (hasActiveSub && subscription) {
-          const subscriptionId = subscription.id;
-          const subscriptionEnd = subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null;
-          const productId = (subscription.items.data[0]?.price?.product as string | null) ?? null;
+        if (selected) {
+          const customerId = selected.customerId;
+          const subscriptionId = selected.subscription.id;
+          const subscriptionEnd = selected.subscription.current_period_end ? new Date(selected.subscription.current_period_end * 1000).toISOString() : null;
+          const productId = selected.productId;
 
           if (dbClient) {
             await dbClient.from("subscriptions").upsert({
@@ -168,51 +174,61 @@ serve(async (req) => {
 
         // --- FALLBACK: Verificação de Pagamentos Únicos (One-time) Recentes ---
         logStep("Checking fallback checkout sessions for one-time payments");
-        const checkoutSessions = await stripe.checkout.sessions.list({
-          customer: customerId,
-          status: 'complete',
-          limit: 5,
-        });
-
-        const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
-        const validSession = checkoutSessions.data.find((s: any) =>
-          s.payment_status === 'paid' &&
-          s.mode === 'payment' &&
-          s.created > thirtyDaysAgo
-        );
-
-        if (validSession) {
-          logStep("Found valid recent one-time session", { sessionId: validSession.id });
-          
-          let productId: string | null = null;
-          try {
-            const lineItems = await stripe.checkout.sessions.listLineItems(validSession.id, { limit: 1 });
-            productId = (lineItems.data[0]?.price?.product as string) || null;
-            logStep("Resolved product ID from session items", { productId });
-          } catch (lineErr: any) {
-            logStep("Warning: failed to fetch session items", { error: lineErr.message });
-          }
-
-          // Define fim de período arbitrário de 30 dias após a compra
-          const expiryDate = new Date((validSession.created + (30 * 24 * 60 * 60)) * 1000).toISOString();
-
-          if (dbClient) {
-            await dbClient.from("subscriptions").upsert({
-              user_id: userId,
-              status: "active",
-              stripe_customer_id: customerId,
-              stripe_subscription_id: null,
-              product_id: productId,
-              current_period_end: expiryDate,
-            }, { onConflict: "user_id" });
-          }
-
-          return new Response(JSON.stringify({ subscribed: true, product_id: productId, subscription_end: expiryDate }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
+        for (const customer of customers.data) {
+          const checkoutSessions = await stripe.checkout.sessions.list({
+            customer: customer.id,
+            status: 'complete',
+            limit: 5,
           });
+
+          const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
+          const validSession = checkoutSessions.data.find((s: any) =>
+            s.payment_status === 'paid' &&
+            s.mode === 'payment' &&
+            s.created > thirtyDaysAgo
+          );
+
+          if (validSession) {
+            logStep("Found valid recent one-time session", { sessionId: validSession.id });
+            
+            let productId: string | null = null;
+            try {
+              const lineItems = await stripe.checkout.sessions.listLineItems(validSession.id, { limit: 1 });
+              productId = (lineItems.data[0]?.price?.product as string) || null;
+              logStep("Resolved product ID from session items", { productId });
+            } catch (lineErr: any) {
+              logStep("Warning: failed to fetch session items", { error: lineErr.message });
+            }
+
+            // Define fim de período arbitrário de 30 dias após a compra
+            const expiryDate = new Date((validSession.created + (30 * 24 * 60 * 60)) * 1000).toISOString();
+
+            if (dbClient) {
+              await dbClient.from("subscriptions").upsert({
+                user_id: userId,
+                status: "active",
+                stripe_customer_id: customer.id,
+                stripe_subscription_id: null,
+                product_id: productId,
+                current_period_end: expiryDate,
+              }, { onConflict: "user_id" });
+            }
+
+            return new Response(JSON.stringify({ subscribed: true, product_id: productId, subscription_end: expiryDate }), {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 200,
+            });
+          }
         }
       }
+    }
+
+    if (localActiveSub) {
+      logStep("Stripe did not show upgrade; returning local active subscription", { productId: localActiveSub.product_id });
+      return new Response(JSON.stringify({ subscribed: true, product_id: localActiveSub.product_id, subscription_end: localActiveSub.current_period_end }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
 

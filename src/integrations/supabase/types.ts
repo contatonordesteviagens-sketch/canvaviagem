@@ -460,21 +460,60 @@ export type Database = {
       }
       page_views: {
         Row: {
+          browser: string | null
+          city: string | null
+          country: string | null
+          device_type: string | null
           id: string
+          ip_hash: string | null
+          os: string | null
           page_path: string
+          referrer: string | null
+          region: string | null
+          session_id: string | null
+          user_agent: string | null
           user_id: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
           viewed_at: string | null
         }
         Insert: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          device_type?: string | null
           id?: string
+          ip_hash?: string | null
+          os?: string | null
           page_path: string
+          referrer?: string | null
+          region?: string | null
+          session_id?: string | null
+          user_agent?: string | null
           user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
           viewed_at?: string | null
         }
         Update: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          device_type?: string | null
           id?: string
+          ip_hash?: string | null
+          os?: string | null
           page_path?: string
+          referrer?: string | null
+          region?: string | null
+          session_id?: string | null
+          user_agent?: string | null
           user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
           viewed_at?: string | null
         }
         Relationships: []

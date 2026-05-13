@@ -150,7 +150,7 @@ const App = () => {
                     <Route path="/imersao-ao-vivo" element={<AulaSecreta />} />
                     <Route path="/fabrica" element={<Fabrica />} />
                     <Route path="/painel-marketing" element={
-                      <ProtectedRoute>
+                      <ProtectedRoute requireElite>
                         <PainelMarketing />
                       </ProtectedRoute>
                     } />

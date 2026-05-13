@@ -40,7 +40,7 @@ serve(async (req) => {
 
     // Generate unique token
     const token = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hour expiry
     const cleanPhone = phone ? phone.replace(/\D/g, '') : null;
 
     console.log("[GENERATE-MAGIC-LINK-URL] Inserting token into database");

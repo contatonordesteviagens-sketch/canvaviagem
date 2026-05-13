@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -8,34 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { useDiagnosticos, useDeleteDiagnostico } from "@/hooks/useFabricaDiagnosticos";
 import { generateDiagnosticoPDF } from "@/lib/fabrica-pdf";
 import { Factory, FileDown, Trash2, ExternalLink, Plus, Sparkles } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { ComingSoonGate, isFabricaUnlocked } from "@/components/fabrica/ComingSoonGate";
 
 export default function PainelMarketing() {
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
-  const [unlocked, setUnlocked] = useState(() => isFabricaUnlocked() || isAdmin);
-  const [gateOpen, setGateOpen] = useState(!unlocked);
-
-  useEffect(() => {
-    if (isAdmin) setUnlocked(true);
-  }, [isAdmin]);
 
   const { data: diagnosticos = [], isLoading } = useDiagnosticos();
   const deleteDiag = useDeleteDiagnostico();
-
-  if (!unlocked) {
-    return (
-      <ComingSoonGate
-        open={gateOpen}
-        onOpenChange={(open) => {
-          setGateOpen(open);
-          if (!open && !isFabricaUnlocked()) navigate("/");
-        }}
-        onUnlock={() => setUnlocked(true)}
-      />
-    );
-  }
 
   const continueWith = (snapshot: unknown) => {
     // Persiste no localStorage para a /fabrica carregar automaticamente

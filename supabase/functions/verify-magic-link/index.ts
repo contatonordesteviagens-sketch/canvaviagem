@@ -6,6 +6,34 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const findExistingUserIdByEmail = async (supabaseAdmin: ReturnType<typeof createClient>, email: string) => {
+  const { data: profileUser, error: profileLookupError } = await supabaseAdmin
+    .from("profiles")
+    .select("user_id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (profileLookupError) {
+    console.warn("[VERIFY-MAGIC-LINK] Profile lookup failed, falling back to auth list:", profileLookupError);
+  }
+
+  if (profileUser?.user_id) return profileUser.user_id;
+
+  for (let page = 1; page <= 20; page++) {
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) {
+      console.warn("[VERIFY-MAGIC-LINK] Auth listUsers fallback failed:", error);
+      return null;
+    }
+
+    const matchedUser = data?.users?.find((user) => user.email?.toLowerCase().trim() === email);
+    if (matchedUser) return matchedUser.id;
+    if (!data?.users || data.users.length < 1000) break;
+  }
+
+  return null;
+};
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -28,49 +56,40 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Atomic token fetch: Only select unused and non-expired tokens
+    // Token fetch: allow reuse while the purchase access link is still valid.
+    // Email/security scanners can pre-open links before the buyer clicks them.
     const now = new Date();
     const { data: tokenData, error: fetchError } = await supabaseAdmin
       .from("magic_link_tokens")
       .select("*")
       .eq("token", token)
-      // Modificado para aceitar reuso recente
       .gt("expires_at", now.toISOString())  // Only select non-expired tokens
-      .single();
+      .maybeSingle();
 
     // --- MECANISMO DE RESILIÊNCIA CONTRA SCANNER DE E-MAIL ---
-    const wasUsed = !!tokenData?.used_at;
-    // Tolerância de 5 minutos para reuso (evita falha se o antivírus abrir o link segundos antes)
-    const usedRecently = wasUsed && (now.getTime() - new Date(tokenData.used_at).getTime() < 5 * 60 * 1000);
-
-    if (fetchError || !tokenData || (wasUsed && !usedRecently)) {
-      console.error("[VERIFY] Token não encontrado, expirado ou realmente já usado:", fetchError || "Usado há mais de 5 min");
+    // Permitir reuso do token durante toda sua validade (1h).
+    // O token já expira naturalmente via expires_at, então não precisamos
+    // travar por used_at — isso evita falha quando antivírus/prefetch abre
+    // o link antes do usuário clicar de fato.
+    if (fetchError || !tokenData) {
+      console.error("[VERIFY] Token não encontrado ou expirado:", fetchError);
       return new Response(
-        JSON.stringify({ error: "Token inválido, já utilizado há mais de 5 min ou expirado" }),
+        JSON.stringify({ error: "Link inválido ou expirado. Solicite um novo link de acesso." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Atomically mark token as used with WHERE clause to prevent race condition
-    // This ensures only one request can successfully mark the token as used
-    const { data: updateResult, error: updateError } = await supabaseAdmin
+    // Best-effort audit only. Do not block login if another request/scanner
+    // already marked used_at, as long as expires_at is still valid.
+    const { error: updateError } = await supabaseAdmin
       .from("magic_link_tokens")
       .update({ used_at: now.toISOString() })
       .eq("id", tokenData.id)
       .is("used_at", null)  // Critical: Only update if still unused
       .select("id");
 
-    if (updateError || !updateResult || updateResult.length === 0) {
-      // Se falhou o update mas foi usado recentemente, PERMITIMOS CONTINUAR
-      if (usedRecently) {
-        console.log("[VERIFY] Pulando trava de reuso: Token usado muito recentemente. Autorizando login.");
-      } else {
-        console.error("Token already used (race condition prevented):", updateError);
-        return new Response(
-          JSON.stringify({ error: "Este link já foi utilizado e expirou a janela de reuso." }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+    if (updateError) {
+      console.warn("[VERIFY] Não foi possível registrar used_at, continuando login:", updateError);
     }
 
     console.log("[VERIFY-MAGIC-LINK] Token atomically marked as used:", tokenData.id);
@@ -79,9 +98,9 @@ serve(async (req) => {
     const userName = tokenData.name;
     const userPhone = tokenData.phone;
 
-    // Verificar se o usuário existe de forma escalável
-    const { data: userData } = await supabaseAdmin.auth.admin.getUserByEmail(email);
-    const existingUser = userData?.user;
+    // Verificar se o usuário existe sem usar getUserByEmail (não disponível no runtime Deno)
+    const existingUserId = await findExistingUserIdByEmail(supabaseAdmin, email);
+    const existingUser = existingUserId ? { id: existingUserId } : null;
 
     let userId: string;
 
@@ -208,39 +227,42 @@ serve(async (req) => {
 
     console.log("[VERIFY-MAGIC-LINK] Session created successfully for:", email);
 
-    // --- STRIPE SUBSCRIPTION CHECK ---
+    // --- STRIPE SUBSCRIPTION CHECK + LOCAL SYNC ---
     let isSubscribed = false;
+    let stripeSync: {
+      customerId: string;
+      subscriptionId: string | null;
+      productId: string | null;
+      subscriptionEnd: string | null;
+    } | null = null;
     try {
       const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
       if (stripeKey) {
         const Stripe = (await import("https://esm.sh/stripe@18.5.0")).default;
         const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-        const customers = await stripe.customers.list({
-          email: email.toLowerCase(),
-          limit: 1
-        });
+        const customers = await stripe.customers.list({ email: email.toLowerCase(), limit: 10 });
 
         if (customers.data.length > 0) {
-          const customerId = customers.data[0].id;
+          for (const customer of customers.data) {
+            const customerId = customer.id;
 
-          // Check for active or trialing subscriptions
-          const subscriptions = await stripe.subscriptions.list({
-            customer: customerId,
-            status: "active",
-            limit: 1,
-          });
+            const activeSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 10 });
+            const trialingSubscriptions = await stripe.subscriptions.list({ customer: customerId, status: "trialing", limit: 10 });
+            const subscription = [...activeSubscriptions.data, ...trialingSubscriptions.data][0];
 
-          if (subscriptions.data.length > 0) {
-            isSubscribed = true;
-          } else {
-            const trialing = await stripe.subscriptions.list({
-              customer: customerId,
-              status: "trialing",
-              limit: 1,
-            });
-            isSubscribed = trialing.data.length > 0;
-          }
+            if (subscription) {
+              const productId = (subscription.items.data[0]?.price?.product as string | null) ?? null;
+              stripeSync = {
+                customerId,
+                subscriptionId: subscription.id,
+                productId,
+                subscriptionEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null,
+              };
+              isSubscribed = true;
+            }
+
+            if (isSubscribed) break;
 
           // Check for recent one-off payments if no subscription
           if (!isSubscribed) {
@@ -251,12 +273,52 @@ serve(async (req) => {
             });
 
             const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
-            isSubscribed = checkoutSessions.data.some((s: any) =>
+            const validSession = checkoutSessions.data.find((s: any) =>
               s.payment_status === 'paid' &&
               s.mode === 'payment' &&
               s.created > thirtyDaysAgo
             );
+
+            if (validSession) {
+              const lineItems = await stripe.checkout.sessions.listLineItems(validSession.id, { limit: 1 });
+              const productId = (lineItems.data[0]?.price?.product as string | null) ?? null;
+              isSubscribed = true;
+              stripeSync = {
+                customerId,
+                subscriptionId: null,
+                productId,
+                subscriptionEnd: new Date((validSession.created + (365 * 24 * 60 * 60)) * 1000).toISOString(),
+              };
+            }
           }
+
+            if (isSubscribed) {
+              break;
+            }
+          }
+        }
+
+        if (stripeSync) {
+          const { error: profileSyncError } = await supabaseAdmin.from("profiles").upsert({
+            user_id: userId,
+            email,
+            stripe_customer_id: stripeSync.customerId,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "user_id" });
+
+          if (profileSyncError) console.error("[VERIFY-MAGIC-LINK] Profile Stripe sync failed:", profileSyncError);
+
+          const { error: subscriptionSyncError } = await supabaseAdmin.from("subscriptions").upsert({
+            user_id: userId,
+            stripe_customer_id: stripeSync.customerId,
+            stripe_subscription_id: stripeSync.subscriptionId,
+            status: "active",
+            product_id: stripeSync.productId,
+            current_period_end: stripeSync.subscriptionEnd,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "user_id" });
+
+          if (subscriptionSyncError) console.error("[VERIFY-MAGIC-LINK] Subscription Stripe sync failed:", subscriptionSyncError);
         }
       }
     } catch (stripeErr) {
