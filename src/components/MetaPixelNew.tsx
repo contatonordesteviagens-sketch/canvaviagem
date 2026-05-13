@@ -8,9 +8,8 @@ interface MetaPixelNewProps {
 
 export const MetaPixelNew = ({ isPurchasePage = false }: MetaPixelNewProps) => {
   useEffect(() => {
-    // Initialize and track PageView for the new pixel
+    // Pixel is already initialized in index.html — only track events here
     if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('init', NEW_PIXEL_ID);
       window.fbq('trackSingle', NEW_PIXEL_ID, 'PageView');
       
       if (isPurchasePage) {
