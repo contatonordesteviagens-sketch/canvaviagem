@@ -12,16 +12,16 @@ const BlogPost30 = () => {
     return (
         <>
             <Helmet>
-                <title>Primeiro Mês como Agente de Viagem: O Que Esperar | Canva Viagem</title>
+                <title>Primeiro Mês como Agente de Viagem: O Que Esperar</title>
                 <meta name="description" content="O que esperar no primeiro mês como agente de viagem autônomo. Primeiros clientes, resultados realistas e como não desistir." />
                 <meta name="keywords" content="primeiro mês agente de viagem, começar agência de viagem, agente de turismo iniciante" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/primeiro-mes-agente-de-viagem" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Primeiro Mês como Agente de Viagem: O Que Esperar" />
                 <meta property="og:description" content="Um guia honesto sobre os desafios e vitórias do seu primeiro mês no turismo." />
-                <meta property="og:image" content="/assets/blog/updated/invisibilidade_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/invisibilidade_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/invisibilidade_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/invisibilidade_updated.png" />
                 <script type="application/ld+json">{JSON.stringify({
                     "@context": "https://schema.org", "@type": "Article",
                     "headline": "Primeiro Mês como Agente de Viagem: O Que Esperar",

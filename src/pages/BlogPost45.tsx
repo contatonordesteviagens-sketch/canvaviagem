@@ -19,14 +19,14 @@ const BlogPost45 = () => {
     return (
         <>
             <Helmet>
-                <title>Perplexity AI Para Agência de Viagem: Pesquisa Rápida | Canva Viagem</title>
+                <title>Perplexity AI Para Agência de Viagem: Pesquisa Rápida</title>
                 <meta name="description" content="O Perplexity AI é o motor de busca com IA que substitui horas de Google. Aprenda a pesquisar destinos e tendências em segundos com fontes verificadas." />
                 <meta name="keywords" content="Perplexity AI para agência de viagem, ferramenta pesquisa IA turismo, Perplexity turismo como usar" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/perplexity-ai-para-agencia-de-viagem" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Perplexity AI: O Fim das Horas no Google" />
                 <meta property="og:description" content="Encontre informações precisas e verificadas em segundos." />
-                <meta property="og:image" content="/assets/blog/webinar/perplexity_ai_agencia_1773093400005_1773103377139.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/webinar/perplexity_ai_agencia_1773093400005_1773103377139.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

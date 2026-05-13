@@ -24,7 +24,7 @@ const BlogPost19 = () => {
     return (
         <>
             <Helmet>
-                <title>Melhores Destinos Nacionais para Família em 2026 | Canva Viagem</title>
+                <title>Melhores Destinos Nacionais para Família em 2026</title>
                 <meta name="description" content="Descubra os melhores destinos nacionais para viajar em família em 2026. Maragogi, Porto de Galinhas, Gramado, Bonito e mais. Guia completo de destinos com filhos." />
                 <meta name="keywords" content="destinos nacionais família 2026, melhores praias para família brasil, viagem nacional criança, onde viajar brasil com família, destino família agência de viagem" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/melhores-destinos-nacionais-familia-2026" />

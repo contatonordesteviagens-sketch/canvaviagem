@@ -12,7 +12,7 @@ const BlogPost29 = () => {
     return (
         <>
             <Helmet>
-                <title>Como Fidelizar Clientes de Viagem: O Guia do Pós-Venda | Canva Viagem</title>
+                <title>Como Fidelizar Clientes de Viagem: O Guia do Pós-Venda</title>
                 <meta name="description" content="Aprenda a fidelizar clientes da sua agência de viagem com estratégias de pós-venda eficazes. Como transformar cada viajante em um cliente recorrente que indica sua agência." />
                 <meta name="keywords" content="fidelizar clientes agência de viagem, pós venda turismo, reter clientes agência de turismo, cliente recorrente agência de viagem, programa fidelidade turismo" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/fidelizar-clientes-agencia-de-viagem" />

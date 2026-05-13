@@ -15,7 +15,7 @@ const BlogPost21 = () => {
     return (
         <>
             <Helmet>
-                <title>Como Montar um Calendário de Conteúdo para Agência de Viagem 2026 | Canva Viagem</title>
+                <title>Como Montar um Calendário de Conteúdo para Agência de Viagem 2026</title>
                 <meta name="description" content="Aprenda a criar um calendário de conteúdo eficiente para sua agência de viagem. Planejamento mensal, semanal e datas sazonais do turismo que geram mais vendas." />
                 <meta name="keywords" content="calendário de conteúdo agência de viagem, planejar posts instagram turismo, calendário editorial agente de viagem, datas importantes turismo 2026" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/mapa-agencia-5-estrelas-aula-secreta" />

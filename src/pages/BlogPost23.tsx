@@ -12,16 +12,16 @@ const BlogPost23 = () => {
     return (
         <>
             <Helmet>
-                <title>Como Criar um Grupo de Viagem Lucrativo pelo WhatsApp | Canva Viagem</title>
+                <title>Como Criar um Grupo de Viagem Lucrativo pelo WhatsApp</title>
                 <meta name="description" content="Aprenda a criar e gerenciar grupos de viagem pelo WhatsApp para escalar as vendas da sua agência. Estratégias para grupos rentáveis e excursões." />
                 <meta name="keywords" content="grupo de viagem whatsapp, como criar excursão, turismo de grupo agente de viagem, grupos viagem rentáveis" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/criar-grupo-viagem-lucrativo-whatsapp" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Como Criar um Grupo de Viagem Lucrativo pelo WhatsApp" />
                 <meta property="og:description" content="Os segredos para montar e vender grupos de viagem de forma lucrativa usando o WhatsApp." />
-                <meta property="og:image" content="/assets/blog/updated/vendas_grupos_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/vendas_grupos_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/vendas_grupos_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/vendas_grupos_updated.png" />
                 <script type="application/ld+json">{JSON.stringify({
                     "@context": "https://schema.org", "@type": "Article",
                     "headline": "Como Criar um Grupo de Viagem Lucrativo pelo WhatsApp",

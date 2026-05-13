@@ -19,16 +19,16 @@ const BlogPost49 = () => {
     return (
         <>
             <Helmet>
-                <title>Meta AI Para Agência de Viagem: WhatsApp e Instagram | Canva Viagem</title>
+                <title>Meta AI Para Agência de Viagem: WhatsApp e Instagram</title>
                 <meta name="description" content="A Meta AI chegou no WhatsApp, Instagram e Facebook. Aprenda a usar o botão da Meta para responder clientes, criar imagens e agilizar seu atendimento no turismo." />
                 <meta name="keywords" content="Meta AI agência de viagem, IA WhatsApp turismo, como usar Meta AI Instagram agente de viagem" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/meta-ai-para-agencia-de-viagem" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Meta AI: Sua Nova Parceira de Vendas no WhatsApp" />
                 <meta property="og:description" content="Use a IA integrada onde seus clientes estão: WhatsApp e Instagram." />
-                <meta property="og:image" content="/assets/blog/updated/meta_ai_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/meta_ai_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/meta_ai_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/meta_ai_updated.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

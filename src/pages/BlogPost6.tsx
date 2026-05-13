@@ -18,7 +18,7 @@ const BlogPost6 = () => {
     return (
         <>
             <Helmet>
-                <title>Como Fechar Vendas de Grupos e Faturar 5x Mais | Canva Viagem</title>
+                <title>Como Fechar Vendas de Grupos e Faturar 5x Mais</title>
                 <meta
                     name="description"
                     content="Vender para grupos é o caminho mais curto para escalar o faturamento da sua agência. Aprenda como organizar, divulgar e fechar grupos lucrativos."
@@ -31,9 +31,9 @@ const BlogPost6 = () => {
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Como Fechar Vendas de Grupos e Faturar 5x Mais" />
                 <meta property="og:description" content="O guia para transformar sua agência em uma máquina de vendas de grupos." />
-                <meta property="og:image" content="/assets/blog/updated/vendas_grupos_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/vendas_grupos_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/vendas_grupos_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/vendas_grupos_updated.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

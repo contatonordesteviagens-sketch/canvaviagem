@@ -18,7 +18,7 @@ const BlogPost8 = () => {
     return (
         <>
             <Helmet>
-                <title>O Poder do Nicho: Por que Agências Especialistas Ganham Mais | Canva Viagem</title>
+                <title>O Poder do Nicho: Por que Agências Especialistas Ganham Mais</title>
                 <meta
                     name="description"
                     content="Descubra por que focar em um nicho específico de viagens pode transformar sua agência em uma referência e aumentar sua lucratividade."
@@ -31,9 +31,9 @@ const BlogPost8 = () => {
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="O Poder do Nicho: Por que Agências Especialistas Ganham Mais" />
                 <meta property="og:description" content="Quem tenta vender para todo mundo acaba não vendendo para ninguém." />
-                <meta property="og:image" content="/assets/blog/updated/poder_nicho_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/poder_nicho_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/poder_nicho_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/poder_nicho_updated.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

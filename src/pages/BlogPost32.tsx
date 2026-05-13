@@ -19,16 +19,16 @@ const BlogPost32 = () => {
     return (
         <>
             <Helmet>
-                <title>O Custo Real de Postar Sem Estratégia no Instagram da Sua Agência | Canva Viagem</title>
+                <title>O Custo Real de Postar Sem Estratégia no Instagram da Sua Agência</title>
                 <meta name="description" content="Postar qualquer coisa no Instagram da sua agência pode custar caro em tempo e autoridade. Entenda como criar uma estratégia que gera orçamentos reais." />
                 <meta name="keywords" content="estratégia de conteúdo para agência de viagem, marketing para agência de viagem, como criar conteúdo para Instagram turismo, agente de viagem autônomo marketing" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/custo-de-postar-sem-estrategia-agencia-de-viagem" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="O Custo Real de Postar Sem Estratégia no Instagram da Sua Agência de Viagem" />
                 <meta property="og:description" content="Descubra por que postar por postar está matando o engajamento da sua agência e como mudar isso." />
-                <meta property="og:image" content="/assets/blog/updated/custo_estrategia_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/custo_estrategia_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/custo_estrategia_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/custo_estrategia_updated.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

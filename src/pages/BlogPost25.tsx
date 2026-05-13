@@ -12,7 +12,7 @@ const BlogPost25 = () => {
     return (
         <>
             <Helmet>
-                <title>Seguro Viagem: O Que Todo Agente Precisa Saber para Vender e Orientar | Canva Viagem</title>
+                <title>Seguro Viagem: O Que Todo Agente Precisa Saber para Vender e Orientar</title>
                 <meta name="description" content="Guia completo de seguro viagem para agentes de turismo. O que cobrir, como indicar ao cliente, erros a evitar e como aumentar sua receita com essa venda adicional." />
                 <meta name="keywords" content="seguro viagem agente de turismo, como vender seguro viagem, seguro viagem obrigatório, melhor seguro viagem 2026, seguro viagem comissão agente" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/seguro-viagem-guia-agente-turismo" />

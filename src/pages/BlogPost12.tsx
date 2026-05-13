@@ -15,7 +15,7 @@ const BlogPost12 = () => {
     return (
         <>
             <Helmet>
-                <title>Como se Tornar Agente de Viagens sem Experiência em 2026 | Canva Viagem</title>
+                <title>Como se Tornar Agente de Viagens sem Experiência em 2026</title>
                 <meta name="description" content="Aprenda o passo a passo para se tornar agente de viagens autônomo em 2026, mesmo sem experiência no setor. Descubra cursos, credenciamentos e como captar os primeiros clientes." />
                 <meta name="keywords" content="como ser agente de viagens, tornar se agente de viagem, agente de viagem autônomo, trabalhar com viagens, como começar agencia de viagem" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/como-se-tornar-agente-de-viagens" />

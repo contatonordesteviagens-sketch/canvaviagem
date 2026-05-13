@@ -23,7 +23,7 @@ const BlogPost15 = () => {
     return (
         <>
             <Helmet>
-                <title>Destinos Internacionais que Mais Vendem para Agentes Brasileiros 2026 | Canva Viagem</title>
+                <title>Destinos Internacionais que Mais Vendem para Agentes Brasileiros 2026</title>
                 <meta name="description" content="Descubra quais destinos internacionais têm maior ticket e comissão para agentes de viagem brasileiros em 2026. Dubai, Orlando, Maldivas e muito mais." />
                 <meta name="keywords" content="destinos internacionais agente de viagem, destinos que mais vendem agência de viagem, pacotes internacionais comissão agente, turismo internacional 2026" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/destinos-internacionais-mais-vendem-agentes" />

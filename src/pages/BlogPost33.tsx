@@ -19,16 +19,16 @@ const BlogPost33 = () => {
     return (
         <>
             <Helmet>
-                <title>Agente de Viagem vs Decolar: Como Ganhar do Menor Preço? | Canva Viagem</title>
+                <title>Agente de Viagem vs Decolar: Como Ganhar do Menor Preço?</title>
                 <meta name="description" content="A maioria dos agentes acha que o Decolar é o inimigo. Descubra por que isso é um equívoco e como posicionar sua agência acima da briga por preço." />
                 <meta name="keywords" content="agente de viagem vs Decolar, como competir com Decolar agência pequena, posicionamento agência de viagem, diferencial agente de viagem" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/decolar-booking-concorrentes-agencia-de-viagem" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Decolar e Booking São Seus Concorrentes? A Verdade Revelada" />
                 <meta property="og:description" content="Saia da guerra de preços e aprenda a vender valor real para o seu cliente." />
-                <meta property="og:image" content="/assets/blog/updated/decolar_vs_agencia_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/decolar_vs_agencia_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/decolar_vs_agencia_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/decolar_vs_agencia_updated.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

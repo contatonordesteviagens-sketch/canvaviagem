@@ -18,7 +18,7 @@ const BlogPost2 = () => {
     return (
         <>
             <Helmet>
-                <title>Como Criar Conteúdo para Agência de Viagem Sem Gravar Vídeo | Canva Viagem</title>
+                <title>Como Criar Conteúdo para Agência de Viagem Sem Gravar Vídeo</title>
                 <meta
                     name="description"
                     content="Aprenda como criar conteúdo profissional para sua agência de viagem no Instagram sem precisar aparecer, gravar ou editar vídeos. Método simples e que funciona."
@@ -31,9 +31,9 @@ const BlogPost2 = () => {
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Como Criar Conteúdo para Agência de Viagem Sem Gravar Vídeo" />
                 <meta property="og:description" content="O método que agentes de viagem usam para postar todo dia no Instagram sem aparecer na câmera." />
-                <meta property="og:image" content="/assets/blog/updated/conteudo_sem_video_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/conteudo_sem_video_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/conteudo_sem_video_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/conteudo_sem_video_updated.png" />
                 <script type="application/ld+json">{JSON.stringify({
                     "@context": "https://schema.org",
                     "@type": "Article",

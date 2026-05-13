@@ -19,16 +19,16 @@ const BlogPost35 = () => {
     return (
         <>
             <Helmet>
-                <title>Agência de Viagem: Negócio ou Hobby? O Papo Reto | Canva Viagem</title>
+                <title>Agência de Viagem: Negócio ou Hobby? O Papo Reto</title>
                 <meta name="description" content="Muitos agentes de viagem trabalham 12 horas por dia, mas não vêem lucro real. Descubra se você está tratando sua agência como um negócio ou apenas um hobby." />
                 <meta name="keywords" content="gestão agência de viagem, lucratividade turismo, agente de viagem autônomo dicas, negócio de viagens" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/agencia-de-viagem-negocio-ou-hobby-caro" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Agência de Viagem: Você Tem um Negócio ou um Hobby Caro?" />
                 <meta property="og:description" content="O teste definitivo emocional e financeiro para agentes de viagem autônomos." />
-                <meta property="og:image" content="/assets/blog/updated/negocio_ou_hobby_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/negocio_ou_hobby_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/negocio_ou_hobby_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/negocio_ou_hobby_updated.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

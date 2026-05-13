@@ -18,7 +18,7 @@ const BlogPost4 = () => {
     return (
         <>
             <Helmet>
-                <title>7 Destinos Nacionais para Vender Muito em 2026 | Canva Viagem</title>
+                <title>7 Destinos Nacionais para Vender Muito em 2026</title>
                 <meta
                     name="description"
                     content="Descubra os destinos tendência no Brasil para 2026. Saiba o que oferecer para seus clientes e como vender pacotes nacionais com alta conversão."
@@ -31,9 +31,9 @@ const BlogPost4 = () => {
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="7 Destinos Nacionais para Vender Muito em 2026" />
                 <meta property="og:description" content="Os destinos que vão bombar no Brasil em 2026 e como sua agência pode lucrar com eles." />
-                <meta property="og:image" content="/assets/blog/updated/destinos_nacionais_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/destinos_nacionais_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/destinos_nacionais_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/destinos_nacionais_updated.png" />
                 <script type="application/ld+json">{JSON.stringify({
                     "@context": "https://schema.org",
                     "@type": "Article",

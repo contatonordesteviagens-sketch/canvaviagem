@@ -25,7 +25,7 @@ const BlogPost14 = () => {
     return (
         <>
             <Helmet>
-                <title>Instagram para Agente de Viagens: Guia Definitivo 2026 | Canva Viagem</title>
+                <title>Instagram para Agente de Viagens: Guia Definitivo 2026</title>
                 <meta name="description" content="Guia completo de Instagram para agente de viagens em 2026. Como configurar o perfil, que conteúdo publicar, frequência ideal e como transformar seguidores em clientes." />
                 <meta name="keywords" content="instagram para agente de viagens, perfil agência de viagem instagram, como crescer no instagram viagens, conteúdo instagram turismo, bio instagram agência de viagem" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/instagram-para-agente-de-viagens" />

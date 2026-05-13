@@ -19,16 +19,16 @@ const BlogPost31 = () => {
     return (
         <>
             <Helmet>
-                <title>Por Que Sua Agência de Viagem Está Invisível no Instagram em 2026 | Canva Viagem</title>
+                <title>Por Que Sua Agência de Viagem Está Invisível no Instagram em 2026</title>
                 <meta name="description" content="Entenda por que sua agência de viagem não aparece para novos clientes no Instagram e descubra o sistema que agentes autônomos usam para gerar orçamentos orgânicos todos os dias." />
                 <meta name="keywords" content="agência de viagem Instagram, como vender viagens pelo Instagram, marketing para agência de viagem, agente de viagem autônomo, Instagram para turismo" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/agencia-de-viagem-invisivel-instagram-2026" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Por Que Sua Agência de Viagem Está Invisível no Instagram em 2026 (E Como Sair Dessa)" />
                 <meta property="og:description" content="Descubra o motivo real da sua agência não atrair clientes no Instagram e como reverter esse quadro." />
-                <meta property="og:image" content="/assets/blog/updated/invisibilidade_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/invisibilidade_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/invisibilidade_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/invisibilidade_updated.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

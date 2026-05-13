@@ -12,7 +12,7 @@ const BlogPost26 = () => {
     return (
         <>
             <Helmet>
-                <title>Roteiro de Europa para Brasileiros: Planejamento Completo 2026 | Canva Viagem</title>
+                <title>Roteiro de Europa para Brasileiros: Planejamento Completo 2026</title>
                 <meta name="description" content="Roteiro completo de Europa para brasileiros em 2026. Melhores países, cidades, dicas de visto Schengen, melhor época e como contratar um agente de viagem para garantir a perfeita experiência." />
                 <meta name="keywords" content="roteiro europa para brasileiros, como planejar viagem europa, visto schengen brasileiro, destinos europa 2026, viagem europa agência de viagem" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/roteiro-europa-brasileiros-2026" />

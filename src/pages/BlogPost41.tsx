@@ -19,14 +19,14 @@ const BlogPost41 = () => {
     return (
         <>
             <Helmet>
-                <title>ChatGPT Para Agência de Viagem: Manual Completo | Canva Viagem</title>
+                <title>ChatGPT Para Agência de Viagem: Manual Completo</title>
                 <meta name="description" content="Aprenda a usar o ChatGPT na sua agência de viagem com prompts prontos para criar legendas, roteiros, respostas a clientes e conteúdo para o Instagram." />
                 <meta name="keywords" content="ChatGPT para agência de viagem, prompts ChatGPT agente de viagem, como usar ChatGPT turismo, inteligência artificial para agência de viagem" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/chatgpt-para-agencia-de-viagem-manual-completo" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Manual do ChatGPT Para Agência de Viagem" />
                 <meta property="og:description" content="O guia definitivo para agentes de viagem autônomos criarem conteúdo em minutos." />
-                <meta property="og:image" content="/assets/blog/webinar/chatgpt_agencia_viagem_1773093400001_1773103323481.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/webinar/chatgpt_agencia_viagem_1773093400001_1773103323481.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

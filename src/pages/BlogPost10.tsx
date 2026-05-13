@@ -18,7 +18,7 @@ const BlogPost10 = () => {
     return (
         <>
             <Helmet>
-                <title>Atendimento que Fideliza: O Segredo do Pós-Venda no Turismo | Canva Viagem</title>
+                <title>Atendimento que Fideliza: O Segredo do Pós-Venda no Turismo</title>
                 <meta
                     name="description"
                     content="Aprenda como encantar seus clientes depois que a viagem termina e transformar viajantes ocasionais em fãs fiéis da sua agência."

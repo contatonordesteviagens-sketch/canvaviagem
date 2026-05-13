@@ -19,14 +19,14 @@ const BlogPost40 = () => {
     return (
         <>
             <Helmet>
-                <title>O Mapa da Agência 5 Estrelas: Guia de Crescimento | Canva Viagem</title>
+                <title>O Mapa da Agência 5 Estrelas: Guia de Crescimento</title>
                 <meta name="description" content="Descubra os 5 pilares para transformar uma agência amadora em um negócio de alto faturamento e autoridade no mercado de turismo." />
                 <meta name="keywords" content="crescimento agência de viagem, como escalar agência de turismo, marketing para agentes autônomos, gestão agência de viagem" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/mapa-agencia-viagem-5-estrelas" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="O Mapa da Agência 5 Estrelas: Você Está Pronto?" />
                 <meta property="og:description" content="O guia definitivo para sair do amadorismo e se tornar uma referência no turismo." />
-                <meta property="og:image" content="/assets/blog/webinar/mapa_agencia_5_estrelas_convite_1773093394115.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/webinar/mapa_agencia_5_estrelas_convite_1773093394115.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">
