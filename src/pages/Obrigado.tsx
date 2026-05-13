@@ -10,6 +10,55 @@ import { SpanishPixel } from "@/components/SpanishPixel";
 import { trackPurchase, trackSubscribe } from "@/lib/meta-pixel";
 import { trackESPurchase, trackESSubscribe } from "@/lib/meta-pixel-es";
 
+// Pixel IDs that should receive Purchase event on PT thank you page
+const PT_PIXEL_IDS = [
+  '1599242897762192',
+  '1152272353771099',
+  '4254631328136179',
+  '916689227676142',
+  '2120347238758199',
+];
+
+declare global {
+  interface Window {
+    fbq: (...args: unknown[]) => void;
+  }
+}
+
+const trackPurchaseOnAllPixels = (value: number, currency: string) => {
+  if (typeof window === 'undefined' || !window.fbq) {
+    console.warn('[Meta Pixel] fbq not available');
+    return;
+  }
+  PT_PIXEL_IDS.forEach((pixelId) => {
+    try {
+      window.fbq('trackSingle', pixelId, 'Purchase', { value, currency });
+      console.log(`[Meta Pixel] Purchase sent to pixel: ${pixelId}`);
+    } catch (e) {
+      console.warn(`[Meta Pixel] Failed to send Purchase to pixel ${pixelId}:`, e);
+    }
+  });
+};
+
+const trackSubscribeOnAllPixels = (value: number, currency: string, predictedLtv?: number) => {
+  if (typeof window === 'undefined' || !window.fbq) {
+    console.warn('[Meta Pixel] fbq not available');
+    return;
+  }
+  PT_PIXEL_IDS.forEach((pixelId) => {
+    try {
+      window.fbq('trackSingle', pixelId, 'Subscribe', {
+        value,
+        currency,
+        predicted_ltv: predictedLtv || value * 12,
+      });
+      console.log(`[Meta Pixel] Subscribe sent to pixel: ${pixelId}`);
+    } catch (e) {
+      console.warn(`[Meta Pixel] Failed to send Subscribe to pixel ${pixelId}:`, e);
+    }
+  });
+};
+
 /**
  * Slow & Abundant Confetti Component
  */
