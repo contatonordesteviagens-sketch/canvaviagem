@@ -98,6 +98,7 @@ const SalesPage = lazy(() => import("./pages/SalesPage"));
 const Diferencas = lazy(() => import("./pages/Diferencas"));
 const MinhaConta = lazy(() => import("./pages/MinhaConta"));
 const Fabrica = lazy(() => import("./pages/Fabrica"));
+const FabricaES = lazy(() => import("./pages/FabricaES"));
 const PainelMarketing = lazy(() => import("./pages/PainelMarketing"));
 const SiteViewer = lazy(() => import("./pages/SiteViewer"));
 
@@ -164,6 +165,7 @@ const App = () => {
                     } />
                     <Route path="/es/planos" element={<PlanosES />} />
                     <Route path="/es/obrigado" element={<ObrigadoES />} />
+                    <Route path="/es/fabrica" element={<FabricaES />} />
 
                     {/* Auth e outras rotas compartilhadas */}
                     <Route path="/auth" element={<Auth />} />

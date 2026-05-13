@@ -13,7 +13,7 @@ interface BottomNavProps {
 }
 
 export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [gateOpen, setGateOpen] = useState(false);
   const { user, subscription } = useAuth();
@@ -39,7 +39,7 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
       const isUnlocked = isEliteUser || localStorage.getItem("fabrica-unlocked") === "true";
 
       if (isUnlocked) {
-        navigate("/fabrica");
+        navigate(language === "es" ? "/es/fabrica" : "/fabrica");
       } else {
         setGateOpen(true);
       }
@@ -98,7 +98,7 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
       <ComingSoonGate
         open={gateOpen}
         onOpenChange={setGateOpen}
-        onUnlock={() => navigate("/fabrica", { state: { fabricaUnlocked: true } })}
+        onUnlock={() => navigate(language === "es" ? "/es/fabrica" : "/fabrica", { state: { fabricaUnlocked: true } })}
       />
     </>
   );

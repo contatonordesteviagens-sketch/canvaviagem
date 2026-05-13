@@ -1080,7 +1080,13 @@ const IndexES = () => {
       {/* Category Navigation - Horizontal scroll with icons */}
       <CategoryNav
         activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
+        onCategoryChange={(cat) => {
+          if (cat === 'fabrica') {
+            navigate('/es/fabrica');
+          } else {
+            setActiveCategory(cat);
+          }
+        }}
         showFavorites={!!user}
       />
 
