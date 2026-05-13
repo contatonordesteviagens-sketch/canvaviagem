@@ -18,7 +18,7 @@ const BlogPost9 = () => {
     return (
         <>
             <Helmet>
-                <title>Como usar o ChatGPT para Criar Roteiros Irresistíveis em Minutos | Canva Viagem</title>
+                <title>Como usar o ChatGPT para Criar Roteiros Irresistíveis em Minutos</title>
                 <meta
                     name="description"
                     content="Aprenda prompts exatos para usar a Inteligência Artificial na criação de roteiros personalizados que encantam seus clientes."

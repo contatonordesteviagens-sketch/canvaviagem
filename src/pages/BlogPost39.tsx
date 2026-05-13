@@ -19,14 +19,14 @@ const BlogPost39 = () => {
     return (
         <>
             <Helmet>
-                <title>8 Sinais de Alerta no Instagram da Agência de Viagem | Canva Viagem</title>
+                <title>8 Sinais de Alerta no Instagram da Agência de Viagem</title>
                 <meta name="description" content="Se você posta e ninguém te chama, algo está errado. Identifique os erros fatais que destroem a conversão do seu perfil de turismo." />
                 <meta name="keywords" content="erros instagram agência de viagem, como vender viagens no instagram, marketing digital para turismo 2026, conversão instagram agência" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/sinais-alerta-instagram-agencia-viagem" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="8 Sinais de Alerta: Seu Instagram Está Afastando Clientes?" />
                 <meta property="og:description" content="Descubra se o seu perfil está cometendo os erros que matam as vendas no turismo." />
-                <meta property="og:image" content="/assets/blog/updated/sinais_alerta_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/sinais_alerta_updated.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

@@ -19,14 +19,14 @@ const BlogPost44 = () => {
     return (
         <>
             <Helmet>
-                <title>Manus AI Para Agência de Viagem: Agente Autônomo | Canva Viagem</title>
+                <title>Manus AI Para Agência de Viagem: Agente Autônomo</title>
                 <meta name="description" content="Entenda o que é o Manus AI, o primeiro agente autônomo de IA, e como automatizar pesquisas e roteiros complexos na sua agência." />
                 <meta name="keywords" content="Manus AI para agência de viagem, agente autônomo IA turismo, automação agência de viagem" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/manus-ai-para-agencia-de-viagem" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Manus AI: A Revolução da IA Autônoma No Turismo" />
                 <meta property="og:description" content="Coloque sua agência no piloto automático com o Manus AI." />
-                <meta property="og:image" content="/assets/blog/webinar/manus_ai_agencia_1773093400004_1773103364569.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/webinar/manus_ai_agencia_1773093400004_1773103364569.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

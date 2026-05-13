@@ -22,7 +22,7 @@ const BlogPost22 = () => {
     return (
         <>
             <Helmet>
-                <title>IA para Agentes de Viagem: 7 Ferramentas que Economizam Horas por Semana | Canva Viagem</title>
+                <title>IA para Agentes de Viagem: 7 Ferramentas que Economizam Horas por Semana</title>
                 <meta name="description" content="Descubra as 7 melhores ferramentas de inteligência artificial para agentes de viagem em 2026. ChatGPT, Canva IA, ElevenLabs e mais. Economize horas e aumente as vendas." />
                 <meta name="keywords" content="inteligência artificial agente de viagem, IA para turismo, ChatGPT agência de viagem, ferramentas IA turismo 2026, automatizar agência de viagem" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/ia-para-agentes-de-viagem" />

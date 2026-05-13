@@ -1437,7 +1437,7 @@ const Index = () => {
         {lcpImage && <link rel="preload" as="image" href={lcpImage} />}
       </Helmet>
       <SeoMetadata
-        title="Início"
+        title="Vídeos prontos para Agência de Viagem"
         description="Acesse centenas de templates de vídeos Reels e artes para agências de viagens. Conteúdo premium pronto para editar no Canva."
         keywords="templates canva viagens, reels turismo, artes agência de viagens, marketing turístico"
       />
