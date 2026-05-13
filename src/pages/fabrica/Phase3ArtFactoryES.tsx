@@ -186,7 +186,7 @@ const formatPriceWhileTyping = (raw: string, currency: Currency): string => {
   if (!value.trim()) return "";
   
   // Se contiver letras, nÃ£o tenta formatar como nÃºmero (permite "GrÃ¡tis", "Sob consulta")
-  if (/[A-Za-zÃ€-Ã¿]/.test(value)) return value;
+  if (/[A-Za-zÀ-ÿ]/.test(value)) return value;
   
   const digits = value.replace(/\D/g, "");
   const hasManualSeparator = /[.,]/.test(value);

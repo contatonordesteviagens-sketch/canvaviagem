@@ -54,7 +54,7 @@ interface PackageItem extends OfertaTemplate {
 const generateId = () => `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
 export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
-  const { state, toggleChecklist } = useFabricaContext();
+  const { state, update, toggleChecklist } = useFabricaContext();
   const { data: allContent = [], isLoading: loadingContent } = useContentItems(["video", "feed", "story", "weekly-story", "seasonal", "resource"]);
   const { data: captions = [], isLoading: loadingCaptions } = useCaptions();
   const { data: tools = [], isLoading: loadingTools } = useMarketingTools();
