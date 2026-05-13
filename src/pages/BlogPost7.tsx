@@ -18,7 +18,7 @@ const BlogPost7 = () => {
     return (
         <>
             <Helmet>
-                <title>Guia de Tráfego Pago para Agentes de Viagem (Meta Ads 2026) | Canva Viagem</title>
+                <title>Guia de Tráfego Pago para Agentes de Viagem (Meta Ads 2026)</title>
                 <meta
                     name="description"
                     content="Saiba como investir em anúncios no Instagram e Facebook para atrair leads qualificados para sua agência de viagens gastando pouco."

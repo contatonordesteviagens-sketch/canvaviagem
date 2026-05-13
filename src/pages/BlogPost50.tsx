@@ -19,14 +19,14 @@ const BlogPost50 = () => {
     return (
         <>
             <Helmet>
-                <title>O Guia Definitivo de IA Para Agência de Viagem 2026 | Canva Viagem</title>
+                <title>O Guia Definitivo de IA Para Agência de Viagem 2026</title>
                 <meta name="description" content="O resumo de tudo: ChatGPT, Gemini, Claude, Manus AI e muito mais. Entenda o ecossistema de Inteligência Artificial e como ele vai triplicar o faturamento da sua agência." />
                 <meta name="keywords" content="futuro agência de viagem 2026, inteligência artificial turismo guia, IA para agentes de viagem lucrativa" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/guia-definitivo-ia-para-agencia-de-viagem-2026" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="O Futuro Chegou: Guia IA 2026 Para Turistólogos" />
                 <meta property="og:description" content="Não seja substituído pela IA. Use-a para se tornar insubstituível." />
-                <meta property="og:image" content="/assets/blog/webinar/mapa_agencia_5_estrelas_convite_1773093394115.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/webinar/mapa_agencia_5_estrelas_convite_1773093394115.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

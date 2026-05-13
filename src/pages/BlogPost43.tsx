@@ -19,16 +19,16 @@ const BlogPost43 = () => {
     return (
         <>
             <Helmet>
-                <title>Claude IA Para Agência de Viagem: Redação Premium | Canva Viagem</title>
+                <title>Claude IA Para Agência de Viagem: Redação Premium</title>
                 <meta name="description" content="Conheça o Claude, o assistente de IA da Anthropic, e veja como criar propostas e conteúdo que não parecem robóticos para seu público premium." />
                 <meta name="keywords" content="Claude IA para agência de viagem, Anthropic Claude turismo, assistente IA para agente de viagem" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/claude-ia-para-agencia-de-viagem" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Claude IA: Textos Premium Para Agências" />
                 <meta property="og:description" content="Fuja da escrita robótica com a IA mais sofisticada do mercado." />
-                <meta property="og:image" content="/assets/blog/updated/claude_ia_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/claude_ia_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/claude_ia_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/claude_ia_updated.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

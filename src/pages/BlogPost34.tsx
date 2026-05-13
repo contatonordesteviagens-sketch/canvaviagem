@@ -19,14 +19,14 @@ const BlogPost34 = () => {
     return (
         <>
             <Helmet>
-                <title>O Perfil Abandonado no Instagram: Por Que Sua Agência Perde Vendas? | Canva Viagem</title>
+                <title>O Perfil Abandonado no Instagram: Por Que Sua Agência Perde Vendas?</title>
                 <meta name="description" content="Um perfil sem postagens recentes é pior do que não ter perfil. Descubra como um feed desatualizado destrói a confiança do seu cliente de viagem." />
                 <meta name="keywords" content="perfil abandonado instagram agência, autoridade digital turismo, marketing para agentes de viagem, confiança do cliente viagem" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/perfil-abandonado-instagram-perigo-agencia-viagem" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="O Perigo Silencioso de um Perfil Abandonado no Instagram" />
                 <meta property="og:description" content="Descubra por que a falta de postagens regulares está afastando seus melhores clientes." />
-                <meta property="og:image" content="/assets/blog/webinar/perfil_abandonado_1773093299043.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/webinar/perfil_abandonado_1773093299043.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

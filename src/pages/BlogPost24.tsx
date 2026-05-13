@@ -20,7 +20,7 @@ const BlogPost24 = () => {
     return (
         <>
             <Helmet>
-                <title>Reels para Agência de Viagem: Como Criar Vídeos que Viralizam 2026 | Canva Viagem</title>
+                <title>Reels para Agência de Viagem: Como Criar Vídeos que Viralizam 2026</title>
                 <meta name="description" content="Aprenda a criar Reels de alta performance para agência de viagem. Hooks que prendem, formatos que viralizam e como usar o algoritmo a favor para atrair clientes organicamente." />
                 <meta name="keywords" content="reels agência de viagem, como fazer reels turismo, reels instagram viagem, vídeo para agente de viagem, conteudo video turismo instagram" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/agencia-vs-influenciador-viagem" />

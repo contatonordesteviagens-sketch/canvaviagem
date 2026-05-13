@@ -19,14 +19,14 @@ const BlogPost36 = () => {
     return (
         <>
             <Helmet>
-                <title>Como Parar de Travar no Canva e Criar Posts em Minutos | Canva Viagem</title>
+                <title>Como Parar de Travar no Canva e Criar Posts em Minutos</title>
                 <meta name="description" content="O guia definitivo para agentes de viagem que perdem horas no Canva. Aprenda o método para criar conteúdo profissional sem esforço e com estratégia." />
                 <meta name="keywords" content="como usar canva agência de viagem, templates canva turismo, design para agentes de viagem, produtividade marketing turismo" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/travamento-no-canva-agencia-de-viagem-solucao" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Travamento no Canva: Por Que Você Demora Horas?" />
                 <meta property="og:description" content="Descubra o sistema para produzir um mês de conteúdo em menos de 2 horas." />
-                <meta property="og:image" content="/assets/blog/webinar/trava_no_canva_1773093328349.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/webinar/trava_no_canva_1773093328349.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

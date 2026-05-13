@@ -19,16 +19,16 @@ const BlogPost42 = () => {
     return (
         <>
             <Helmet>
-                <title>Google Gemini Para Agência de Viagem: Guia Completo | Canva Viagem</title>
+                <title>Google Gemini Para Agência de Viagem: Guia Completo</title>
                 <meta name="description" content="Descubra como usar o Google Gemini para pesquisar destinos, planejar roteiros e atrair mais clientes para sua agência de viagem." />
                 <meta name="keywords" content="Google Gemini para agência de viagem, inteligência artificial Google turismo, Gemini prompts agente de viagem" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/google-gemini-para-agencia-de-viagem" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Google Gemini no Turismo: Guia Prático" />
                 <meta property="og:description" content="A potência do Google integrada ao seu atendimento de viagens." />
-                <meta property="og:image" content="/assets/blog/updated/google_gemini_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/google_gemini_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/google_gemini_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/google_gemini_updated.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

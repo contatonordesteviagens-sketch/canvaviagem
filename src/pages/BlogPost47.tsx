@@ -19,16 +19,16 @@ const BlogPost47 = () => {
     return (
         <>
             <Helmet>
-                <title>Google Veo 3 Para Agência de Viagem: Vídeos com IA | Canva Viagem</title>
+                <title>Google Veo 3 Para Agência de Viagem: Vídeos com IA</title>
                 <meta name="description" content="Conheça o Google Veo 3, a ferramenta de vídeo generativo que permite criar Reels e vídeos paradisíacos para sua agência de viagem usando apenas texto." />
                 <meta name="keywords" content="Google Veo 3 agência de viagem, vídeo IA turismo, criação vídeos viagem inteligência artificial" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/google-veo-3-para-agencia-de-viagem" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Google Veo 3: Vídeos de Viagem Gerados por IA" />
                 <meta property="og:description" content="Crie vídeos cinematográficos para sua agência em segundos." />
-                <meta property="og:image" content="/assets/blog/updated/google_veo3_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/google_veo3_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/google_veo3_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/google_veo3_updated.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

@@ -19,14 +19,14 @@ const BlogPost46 = () => {
     return (
         <>
             <Helmet>
-                <title>Grok IA Para Agência de Viagem: Tendências em Tempo Real | Canva Viagem</title>
+                <title>Grok IA Para Agência de Viagem: Tendências em Tempo Real</title>
                 <meta name="description" content="Descubra como o Grok, a IA do X (Elon Musk), pode ajudar sua agência de viagem a identificar tendências de destinos e comportamentos antes de todo mundo." />
                 <meta name="keywords" content="Grok IA para agência de viagem, Elon Musk IA turismo, tendências viagens X Twitter" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/grok-ia-para-agencia-de-viagem" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Grok IA: Antecipe as Tendências do Turismo" />
                 <meta property="og:description" content="A IA conectada ao pulso do mundo em tempo real." />
-                <meta property="og:image" content="/assets/blog/webinar/grok_ia_agencia_1773093400006_1773103397685.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/webinar/grok_ia_agencia_1773093400006_1773103397685.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

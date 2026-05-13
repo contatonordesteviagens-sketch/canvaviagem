@@ -15,7 +15,7 @@ const BlogPost11 = () => {
     return (
         <>
             <Helmet>
-                <title>Como Ganhar Dinheiro Extra com Viagens em 2026 | Canva Viagem</title>
+                <title>Como Ganhar Dinheiro Extra com Viagens em 2026</title>
                 <meta name="description" content="Descubra como ganhar dinheiro extra com viagens em 2026. Aprenda as formas mais acessíveis de monetizar seu amor por turismo sem precisar abandonar seu emprego atual." />
                 <meta name="keywords" content="como ganhar dinheiro extra com viagens, renda extra turismo, ganhar dinheiro com viagens, monetizar viagem, trabalhar com turismo" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/como-ganhar-dinheiro-extra-com-viagens" />

@@ -18,7 +18,7 @@ const BlogPost5 = () => {
     return (
         <>
             <Helmet>
-                <title>Como Converter Seguidores em Clientes no WhatsApp | Canva Viagem</title>
+                <title>Como Converter Seguidores em Clientes no WhatsApp</title>
                 <meta
                     name="description"
                     content="Aprenda o script exato e as estratégias de abordagem para transformar seguidores do Instagram em clientes pagantes no WhatsApp da sua agência."

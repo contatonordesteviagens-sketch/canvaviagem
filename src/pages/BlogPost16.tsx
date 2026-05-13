@@ -15,7 +15,7 @@ const BlogPost16 = () => {
     return (
         <>
             <Helmet>
-                <title>Script de Vendas para Agente de Viagens pelo WhatsApp 2026 | Canva Viagem</title>
+                <title>Script de Vendas para Agente de Viagens pelo WhatsApp 2026</title>
                 <meta name="description" content="Scripts prontos para agentes de viagem fecharem mais vendas pelo WhatsApp. Como responder um lead, quebrar objeções de preço e conduzir um cliente ao fechamento." />
                 <meta name="keywords" content="script de vendas agente de viagem, como vender pelo whatsapp viagens, fechar venda pelo whatsapp agência de viagem, atendimento whatsapp turismo" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/script-vendas-whatsapp-agente-viagens" />
