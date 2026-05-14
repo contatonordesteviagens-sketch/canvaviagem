@@ -367,9 +367,27 @@ const Blog = () => {
     return (
         <div className="min-h-screen bg-background">
             <SeoMetadata
-                title="Blog Canva Viagem | Estratégias de Marketing para Agentes de Viagem 2026"
-                description="Aprenda a escalar sua agência de viagem com as melhores dicas de marketing digital, conteúdo para Instagram, automação de WhatsApp e vendas de pacotes turísticos."
+                title="Blog: Marketing para Agências de Viagem"
+                description="Aprenda a escalar sua agência de viagem com dicas de marketing digital, conteúdo para Instagram, WhatsApp e vendas de pacotes turísticos."
+                url="https://canvaviagem.com/blog"
             />
+            <Helmet>
+                <script type="application/ld+json">{JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "Blog",
+                    "name": "Blog Canva Viagem",
+                    "url": "https://canvaviagem.com/blog",
+                    "description": "Estratégias de marketing digital para agências de viagem.",
+                    "blogPost": blogPosts.slice(0, 20).map(p => ({
+                        "@type": "BlogPosting",
+                        "headline": p.title,
+                        "url": `https://canvaviagem.com/blog/${p.slug}`,
+                        "image": `https://canvaviagem.com${p.image}`,
+                        "datePublished": p.date,
+                        "author": { "@type": "Person", "name": p.author }
+                    }))
+                })}</script>
+            </Helmet>
             <Header />
 
             <main className="container mx-auto px-4 py-12 md:py-20">
