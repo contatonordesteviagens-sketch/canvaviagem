@@ -222,7 +222,7 @@ const FAQS = [
   },
   {
     q: "Eu j├í comprei o Pack de 150 Reels na Hotmart/Kiwifi. ├ë a mesma coisa?",
-    a: "N├úo. O pack antigo era um produto pontual, sem atualiza├º├Áes. O Canva Viagem ├® uma assinatura com acervo crescente (novos v├¡deos toda semana), IAs especializadas, scripts de WhatsApp e estrat├®gia de marketing ÔÇö um sistema completo, n├úo apenas um pacote de v├¡deos.",
+    a: "N├úo. O pack antigo era um produto pontual, sem atualiza├º├Áes. O Canva Viagem ├® uma assinatura com acervo crescente (novos v├¡deos toda semana), IAs especializadas, scripts de WhatsApp e estratégia de marketing ÔÇö um sistema completo, n├úo apenas um pacote de v├¡deos.",
   },
   {
     q: "Funciona para ag├¬ncia pequena ou solo?",
@@ -324,7 +324,7 @@ const Planos = () => {
             rel="noopener noreferrer"
             className="text-xs underline bg-white/10 p-2 rounded"
           >
-            Clique Aqui para Pagar via Pix ÔåÆ
+            Clique Aqui para Pagar via Pix →
           </a>
         </div>,
         { duration: 10000 }
@@ -375,11 +375,11 @@ const Planos = () => {
             <div className="w-14 h-14 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
               <Check className="h-7 w-7 text-white" />
             </div>
-            <h2 className="text-2xl font-black mb-2">Voc├¬ ├® Premium Ô£ô</h2>
+            <h2 className="text-2xl font-black mb-2">Você é Premium ✔️</h2>
             <p className="text-zinc-500 mb-4">
               {subscription.subscriptionEnd
-                ? `Sua assinatura est├í ativa at├® ${new Date(subscription.subscriptionEnd).toLocaleDateString("pt-BR")}.`
-                : "Sua assinatura est├í ativa."}
+                ? `Sua assinatura está ativa até ${new Date(subscription.subscriptionEnd).toLocaleDateString("pt-BR")}.`
+                : "Sua assinatura está ativa."}
             </p>
             {/* Upsell Elite */}
             <div className="mb-6 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-left">
@@ -389,13 +389,13 @@ const Planos = () => {
                 <span className="bg-black text-white text-[10px] font-black px-2 py-0.5 rounded-full">NOVO</span>
               </div>
               <p className="text-sm text-zinc-600 mb-3">
-                Fa├ºa upgrade e ganhe acesso ├á F├íbrica de Viagens, ofertas prontas para Meta Ads e site, e muito mais.
+                Faça upgrade e ganhe acesso à Fábrica de Viagens, ofertas prontas para Meta Ads e site, e muito mais.
               </p>
               <button
                 onClick={() => { trackInitiateCheckout(697); window.open(STRIPE.elite_annual, "_blank"); }}
                 className="w-full bg-black text-white text-sm font-black py-3 rounded-xl hover:bg-zinc-800 transition-all"
               >
-                Fazer Upgrade para Elite ÔåÆ
+                Fazer Upgrade para Elite →
               </button>
             </div>
             <div className="flex flex-col gap-3">
@@ -562,7 +562,7 @@ const Planos = () => {
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Visualizar ÔåÆ</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Visualizar →</span>
                       </div>
                     </div>
                   </CarouselItem>
@@ -663,12 +663,12 @@ const Planos = () => {
                   </td>
                   <td className="py-4 px-4 text-center bg-yellow-400/5 border-l border-zinc-100">
                     <button onClick={handleCheckout} className="bg-yellow-400 text-black text-[10px] font-black px-4 py-2 rounded-full hover:bg-yellow-300 transition-all whitespace-nowrap uppercase tracking-widest">
-                      Assinar Pro ÔåÆ
+                      Assinar Pro →
                     </button>
                   </td>
                   <td className="py-4 px-4 text-center bg-zinc-950 border-l border-zinc-800">
                     <button onClick={handleEliteCheckout} className="bg-white text-black text-[10px] font-black px-4 py-2 rounded-full hover:bg-yellow-400 transition-all whitespace-nowrap uppercase tracking-widest">
-                      Assinar Elite ÔåÆ
+                      Assinar Elite →
                     </button>
                   </td>
                 </tr>
@@ -872,7 +872,7 @@ const Planos = () => {
                     cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase'
                   }}
                 >
-                  {isAnnual ? "QUERO O PLANO ANUAL PRO ÔåÆ" : "ASSINAR MENSAL"}
+                  {isAnnual ? "QUERO O PLANO ANUAL PRO →" : "ASSINAR MENSAL"}
                 </button>
               </div>
             </motion.div>
@@ -1163,7 +1163,7 @@ const Planos = () => {
                 boxShadow: '0 8px 32px rgba(0,229,255,0.3)'
               }}
             >
-              LIBERAR MEU ACESSO AGORA ÔåÆ
+              LIBERAR MEU ACESSO AGORA →
             </button>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
               <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>­ƒöÆ Pagamento seguro</span>
@@ -1228,7 +1228,7 @@ const Planos = () => {
             fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap'
           }}
         >
-          Garantir acesso ÔåÆ
+          Garantir acesso →
         </button>
       </div>
 
