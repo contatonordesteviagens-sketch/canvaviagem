@@ -723,9 +723,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const SUFFIX_PRESETS = ["por persona", "por pareja", "por paquete", "por grupo", "total del paquete"];
   const DESTINATION_SUGGESTIONS = Array.from(new Set([
     ...(state.destinos || []),
-    "Maragogi", "Jericoacoara", "Fernando de Noronha", "Gramado", "Bonito",
-    "Porto de Galinhas", "Búzios", "Cancún", "Punta Cana", "Paris",
-    "Orlando", "Lisboa", "Santiago", "Bariloche", "Maldivas",
+    "Cancún", "Punta Cana", "Buenos Aires", "Machu Picchu", "Cartagena",
+    "Riviera Maya", "San Andrés", "Ciudad de México", "Santiago", "Río de Janeiro",
+    "Cusco", "Punta del Este", "Orlando", "Miami", "Madrid",
   ]));
 
   const [paymentMode, setPaymentModeState] = useState<PaymentMode>(state.lastPaymentMode || "installments");
