@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { FabricaUpgradeModal } from "@/components/fabrica/FabricaUpgradeModal";
+import { FabricaUpgradeModalES } from "@/components/fabrica/FabricaUpgradeModalES";
 
 interface BottomNavProps {
   activeCategory: CategoryType;
@@ -92,7 +93,11 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
           <Dock items={navItems} className="h-auto" />
         </div>
       </div>
-      <FabricaUpgradeModal open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
+      language === "es" ? (
+        <FabricaUpgradeModalES open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
+      ) : (
+        <FabricaUpgradeModal open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
+      )
     </>
   );
 };

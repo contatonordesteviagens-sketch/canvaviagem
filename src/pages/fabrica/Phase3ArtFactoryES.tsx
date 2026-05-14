@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
@@ -417,36 +417,37 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
   const ig = v.instagram.trim() ? `@${v.instagram.replace(/^@/, "").trim()}` : "";
   const wa = v.whatsapp.trim();
   const contactLine = wa
-    ? `ðŸ“² Fale comigo agora: *${wa}* ${ig ? `| ${ig}` : ""}`
+    ? `ðŸ“² Habla conmigo ahora: *${wa}* ${ig ? `| ${ig}` : ""}`
     : ig
-    ? `ðŸ“² Nos siga: ${ig}`
-    : "ðŸ“² Entre em contato para reservar!";
+    ? `ðŸ“² Síguenos: ${ig}`
+    : "ðŸ“² ¡Contáctanos para reservar!";
 
   // BenefÃ­cios: pega os 3 primeiros highlights como bullet points
   const benefitLines = v.highlights
     .slice(0, 4)
     .map((h) => `âœ… ${h.text}`)
+    .map((h) => `✅ ${h.text}`)
     .join("\n");
 
   const priceBlock = hasPrice
     ? hasInstall
-      ? `ðŸ’³ Apenas ${v.installments} de *${priceStr}* ${v.paymentSuffix}`
-      : `ðŸ’° Por apenas *${priceStr}* ${v.paymentSuffix}`
-    : "ðŸ’¬ Solicite seu orÃ§amento personalizado!";
+      ? `💳 Solo ${v.installments} de *${priceStr}* ${v.paymentSuffix}`
+      : `💰 Por solo *${priceStr}* ${v.paymentSuffix}`
+    : "¡Solicita tu presupuesto personalizado!";
 
-  const periodLine = period ? `ðŸ—“ï¸ ${period}` : "";
+  const periodLine = period ? `📅 ${period}` : "";
 
   if (v.isExperience) {
-    // Variante ExperiÃªncia: estilo editorial/luxo
+    // Variante Experiência: estilo editorial/luxo
     const caps: string[] = [
       // VariaÃ§Ã£o 1 â€” CinematogrÃ¡fica
-      `âœ¨ ${destUp} vai te surpreender.\n\nExperiÃªncias como essa nÃ£o se esquecem â€” e vocÃª merece vivÃª-las.\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}${contactLine}`,
+      `âœ¨ ${destUp} te sorprenderá.\n\nExperiencias como esta no se olvidan — y tú mereces vivirlas.\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}${contactLine}`,
 
       // VariaÃ§Ã£o 2 â€” Direta com CTA
-      `ðŸŒŸ JÃ¡ imaginou ${v.isExperience ? "viver" : "conhecer"} ${dest}?\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}Cada detalhe foi pensado para vocÃª. Vamos planejar juntos?\n\n${contactLine}`,
+      `ðŸŒŸ JÃ¡ imaginou ${v.isExperience ? "viver" : "conhecer"} ${dest}?\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}Cada detalle ha sido pensado para ti. ¿Planeamos juntos?\n\n${contactLine}`,
 
       // VariaÃ§Ã£o 3 â€” Curiosidade/teaser
-      `Tem destino que transforma. ${dest} Ã© um deles. ðŸ§³\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}ðŸ’Œ Reserve com a ${agency}. Parceria que entende o que vocÃª quer de uma viagem.\n\n${contactLine}`,
+      `Hay destinos que transforman. ${dest} es uno de ellos. ðŸ§³\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}ðŸ’Œ Reserve com a ${agency}. Una agencia que entiende lo que buscas en un viaje.\n\n${contactLine}`,
     ];
     return caps;
   }
@@ -454,13 +455,13 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
   // Variante Oferta: direto e comercial
   const caps: string[] = [
     // VariaÃ§Ã£o 1 â€” UrgÃªncia + preÃ§o em destaque
-    `ðŸš¨ *${v.promoName || "OFERTA ESPECIAL"}* â€” ${destUp}!\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\nâš ï¸ Vagas limitadas! NÃ£o perca essa oportunidade.\n\n${contactLine}`,
+    `ðŸš¨ *${v.promoName || "OFERTA ESPECIAL"}* â€” ${destUp}!\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\nâš ï¸ ¡Cupos limitados! No pierdas esta oportunidad.\n\n${contactLine}`,
 
     // VariaÃ§Ã£o 2 â€” Storytelling + preÃ§o
-    `VÃ¡monos a ${dest}? âœˆï¸\n\nMontamos um pacote COMPLETO pra vocÃª nÃ£o se preocupar com nada:\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\nðŸ‘‰ Me chama agora e garanta sua vaga!\n\n${contactLine}`,
+    `VÃ¡monos a ${dest}? âœˆï¸\n\nArmamos un paquete COMPLETO para que no te preocupes por nada:\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\nðŸ‘‰ ¡Escríbeme ahora y asegura tu lugar!\n\n${contactLine}`,
 
     // VariaÃ§Ã£o 3 â€” BenefÃ­cios + prova social
-    `ðŸ“ ${dest} â€” Um pacote que vocÃª vai amar!\n\nIncluso na sua viagem:\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\nâœ… AgÃªncia especializada. Atendimento humanizado. Suporte 24h.\n\n${contactLine}`,
+    `ðŸ“ ${dest} â€” ¡Un paquete que te va a encantar!\n\nIncluido en tu viaje:\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\nâœ… Agencia especializada. Atención personalizada. Soporte 24h.\n\n${contactLine}`,
   ];
   return caps;
 };
@@ -1042,7 +1043,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         return;
       }
       if (genMode === "custom" && !refImage) {
-        toast.error(customSource === "upload" ? "Carregue uma imagem do seu dispositivo" : "Cole o link da imagem");
+        toast.error(customSource === "upload" ? "Sube una imagen desde tu dispositivo" : "Pega el enlace de la imagen");
         setLoading(false);
         return;
       }
@@ -1557,7 +1558,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             </div>
             <p className="text-[11px] text-white/60 leading-snug mt-0.5">
               {lastProvider === "user_gemini" && (
-                <>Cota gratuita do Google: ~1.500 imagens/dia. Cheque seu uso em <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline text-emerald-300">aistudio.google.com</a>.</>
+                <>Cuota gratuita de Google: ~1.500 imágenes/día. Revisa tu uso en <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline text-emerald-300">aistudio.google.com</a>.</>
               )}
               {lastProvider === "lovable_ai" && (
                 <>Cada imagem consome crÃ©ditos. Se acabar, sua chave Gemini gratuita serÃ¡ usada automaticamente.</>
@@ -1955,7 +1956,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             <>
               {/* NOVO RENDER DA GALERIA DA AGÃŠNCIA (PONTO 6) */}
               <p className="text-[10px] text-indigo-300/80 mb-3 leading-relaxed font-medium">
-                ðŸ“¸ Fotos utilizadas recentemente no seu Site e anÃºncios gerados. 
+                📸 Fotos utilizadas recientemente en tu Sitio y anuncios generados. 
                 Centralizadas e reutilizÃ¡veis instantaneamente.
               </p>
               {(state.siteContent.galleryImages || []).length > 0 ? (
