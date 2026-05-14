@@ -15,7 +15,7 @@ const BlogPost20 = () => {
     return (
         <>
             <Helmet>
-                <title>Trabalhar de Casa com Turismo: É Possível em 2026? | Canva Viagem</title>
+                <title>Trabalhar de Casa com Turismo: É Possível em 2026?</title>
                 <meta name="description" content="Descubra se é possível trabalhar de casa com turismo em 2026. Como agentes de viagem autônomos estão construindo negócios rentáveis só com celular e WhatsApp." />
                 <meta name="keywords" content="trabalhar de casa turismo, home office agência de viagem, agente de viagem home office, trabalho remoto turismo, trabalhar com viagem de casa" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/trabalhar-de-casa-com-turismo" />

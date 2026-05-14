@@ -425,8 +425,7 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
   // Benefícios: pega os 3 primeiros highlights como bullet points
   const benefitLines = v.highlights
     .slice(0, 4)
-    .map((h) => `🖼️œ… ${h.text}`)
-    .map((h) => `✅ ${h.text}`)
+    .map((h: any) => `✅ ${typeof h === "string" ? h : h.text}`)
     .join("\n");
 
   const priceBlock = hasPrice

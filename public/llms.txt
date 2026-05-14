@@ -1,0 +1,25 @@
+# Canva Viagem
+
+> Plataforma de conteúdo pronto para agências de viagem: 250+ vídeos, artes editáveis no Canva, calendário editorial e ferramentas de IA para vender mais no Instagram.
+
+Canva Viagem ajuda agentes e agências de viagem a publicarem conteúdo profissional todos os dias sem precisar gravar ou editar. Inclui vídeos prontos, legendas, ofertas, calendário de 365 dias, gerador de anúncios com IA (Fábrica) e painel de marketing.
+
+## Pages
+
+- [Home](/): Visão geral da plataforma e acesso ao acervo de conteúdo.
+- [Planos](/planos): Planos mensal e anual em BRL, com benefícios e FAQ.
+- [Diferenças](/diferencas): Comparativo entre os planos disponíveis.
+- [Blog](/blog): Artigos sobre marketing, vendas e IA para agências de viagem.
+- [Calendário Editorial](/calendar): Calendário de 365 dias para agências.
+- [Aula Secreta](/aula-secreta): Treinamento sobre IA aplicada ao turismo.
+
+## Espanhol
+
+- [Inicio (ES)](/es): Versão em espanhol da home.
+- [Planes (ES)](/es/planos): Planos em espanhol para o público LATAM.
+
+## Optional
+
+- [Privacidade](/privacidade): Política de privacidade.
+- [Termos](/termos): Termos de uso.
+- [Exclusão de Dados](/exclusao-dados): Procedimento de exclusão de dados.

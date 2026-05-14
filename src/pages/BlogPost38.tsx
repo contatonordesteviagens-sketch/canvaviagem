@@ -19,14 +19,14 @@ const BlogPost38 = () => {
     return (
         <>
             <Helmet>
-                <title>Perfil Premium Sem Designer: O Guia do Agente de Viagem | Canva Viagem</title>
+                <title>Perfil Premium Sem Designer: O Guia do Agente de Viagem</title>
                 <meta name="description" content="Você não precisa de uma agência de marketing para ter um Instagram de luxo. Descubra os pilares do design premium que você mesma pode aplicar." />
                 <meta name="keywords" content="design para agência de viagem, instagram premium turismo, como criar posts bonitos viagem, identidade visual agente de viagem" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/perfil-agencia-premium-sem-designer" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Perfil Premium Sem Designer: Como Fazer?" />
                 <meta property="og:description" content="Aprenda a criar impacto visual que gera autoridade imediata sem depender de ninguém." />
-                <meta property="og:image" content="/assets/blog/webinar/perfil_sem_designer_1773093380500.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/webinar/perfil_sem_designer_1773093380500.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

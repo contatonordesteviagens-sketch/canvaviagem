@@ -15,7 +15,7 @@ const BlogPost17 = () => {
     return (
         <>
             <Helmet>
-                <title>Canva para Agência de Viagem: Como Criar Artes Profissionais 2026 | Canva Viagem</title>
+                <title>Canva para Agência de Viagem: Como Criar Artes Profissionais 2026</title>
                 <meta name="description" content="Aprenda a usar o Canva para criar artes profissionais para sua agência de viagem. Templates gratuitos, dicas de design e como criar conteúdo de viagem que vende." />
                 <meta name="keywords" content="canva para agência de viagem, templates canva agência de viagem, como usar canva turismo, artes profissionais agência, design agência de viagem canva grátis" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/canva-para-agencia-de-viagem" />

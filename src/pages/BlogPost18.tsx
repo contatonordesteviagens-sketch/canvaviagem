@@ -15,7 +15,7 @@ const BlogPost18 = () => {
     return (
         <>
             <Helmet>
-                <title>Viagem de Lua de Mel: Como Vender Pacotes Premium como Agente | Canva Viagem</title>
+                <title>Viagem de Lua de Mel: Como Vender Pacotes Premium como Agente</title>
                 <meta name="description" content="Aprenda como agentes de viagem podem vender pacotes de lua de mel premium com tickets altos. Roteiros de Maldivas, Paris, Bali e Grécia com comissões de R$1.000 a R$5.000." />
                 <meta name="keywords" content="lua de mel destinos agente de viagem, como vender lua de mel turismo, pacotes lua de mel agência, viagem de noivos agente de viagem, destinos românticos 2026" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/vender-pacotes-lua-de-mel-agente-viagem" />

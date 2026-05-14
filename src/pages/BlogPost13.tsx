@@ -15,7 +15,7 @@ const BlogPost13 = () => {
     return (
         <>
             <Helmet>
-                <title>Quanto Ganha um Agente de Viagens no Brasil em 2026 | Canva Viagem</title>
+                <title>Quanto Ganha um Agente de Viagens no Brasil em 2026</title>
                 <meta name="description" content="Descubra quanto ganha um agente de viagens no Brasil em 2026 — salários, comissões e o potencial real de renda para autônomos. Dados reais e estratégias para maximizar ganhos." />
                 <meta name="keywords" content="quanto ganha agente de viagens, salário agente de viagem, comissão agente de viagem, renda agente de turismo, agente de viagem autônomo ganhos" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/quanto-ganha-agente-de-viagens" />

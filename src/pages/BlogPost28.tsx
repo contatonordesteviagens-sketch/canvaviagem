@@ -12,7 +12,7 @@ const BlogPost28 = () => {
     return (
         <>
             <Helmet>
-                <title>Como Criar uma Identidade Visual para Agência de Viagem do Zero | Canva Viagem</title>
+                <title>Como Criar uma Identidade Visual para Agência de Viagem do Zero</title>
                 <meta name="description" content="Aprenda a criar uma identidade visual profissional para sua agência de viagem do zero. Cores, fontes, logo e estratégia de marca para se destacar no Instagram." />
                 <meta name="keywords" content="identidade visual agência de viagem, criar logo agência de viagem, marca agência de turismo, branding agência de viagem, visual agência de viagem instagram" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/identidade-visual-agencia-de-viagem" />

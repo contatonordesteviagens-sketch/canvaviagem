@@ -12,7 +12,7 @@ const BlogPost27 = () => {
     return (
         <>
             <Helmet>
-                <title>Cruzeiros para Brasileiros: Vale a Pena? Guia Completo 2026 | Canva Viagem</title>
+                <title>Cruzeiros para Brasileiros: Vale a Pena? Guia Completo 2026</title>
                 <meta name="description" content="Cruzeiros valem a pena para brasileiros em 2026? Descubra os melhores itinerários, companhias e como agentes de viagem vendem pacotes de cruzeiro com boas comissões." />
                 <meta name="keywords" content="cruzeiro para brasileiros 2026, vale a pena fazer cruzeiro, cruzeiro agente de viagem comissão, pacotes cruzeiro brasil, melhor companhia cruzeiro brasil" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/cruzeiros-para-brasileiros-2026" />

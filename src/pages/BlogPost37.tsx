@@ -19,16 +19,16 @@ const BlogPost37 = () => {
     return (
         <>
             <Helmet>
-                <title>Agência vs Influenciador: O Segredo do Engajamento no Turismo | Canva Viagem</title>
+                <title>Agência vs Influenciador: O Segredo do Engajamento no Turismo</title>
                 <meta name="description" content="Por que as pessoas comentam nos posts de influenciadores mas apenas ignoram as agências? Descubra como aplicar táticas de retenção no seu perfil." />
                 <meta name="keywords" content="engajamento instagram turismo, marketing de influência para agência de viagem, como criar conteúdo de viagem engajador, agência de viagem instagram dicas" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/agencia-vs-influenciador-engajamento-viagem" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Agência vs Influenciador: Por Que Eles Ganham no Engajamento?" />
                 <meta property="og:description" content="Aprenda a estratégia de conexão que transforma seguidores em admiradores e clientes." />
-                <meta property="og:image" content="/assets/blog/updated/agencia_vs_influenciador_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/agencia_vs_influenciador_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/agencia_vs_influenciador_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/agencia_vs_influenciador_updated.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">

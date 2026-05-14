@@ -18,7 +18,7 @@ const BlogPost = () => {
     return (
         <>
             <Helmet>
-                <title>O que Postar no Instagram da Sua Agência de Viagem (30 Ideias) | Canva Viagem</title>
+                <title>O que Postar no Instagram da Sua Agência de Viagem (30 Ideias)</title>
                 <meta
                     name="description"
                     content="Descubra 30 ideias do que postar no Instagram da sua agência de viagem hoje mesmo. Conteúdo pronto, estratégico e que atrai clientes — sem precisar gravar vídeo."

@@ -19,16 +19,16 @@ const BlogPost48 = () => {
     return (
         <>
             <Helmet>
-                <title>Google NotebookLM Para Agência de Viagem: Curadoria IA | Canva Viagem</title>
+                <title>Google NotebookLM Para Agência de Viagem: Curadoria IA</title>
                 <meta name="description" content="O Google NotebookLM é a ferramenta definitiva para agentes de viagem que precisam organizar propostas, sintetizar guias e criar conteúdo baseado em documentos." />
                 <meta name="keywords" content="Google NotebookLM agência de viagem, curadoria viagens IA, organizar pesquisas turismo" />
                 <link rel="canonical" href="https://canvaviagem.com/blog/google-notebooklm-para-agencia-de-viagem" />
                 <meta property="og:type" content="article" />
                 <meta property="og:title" content="Google NotebookLM: Sua Cérebro Digital no Turismo" />
                 <meta property="og:description" content="Organize propostas e roteiros complexos com o NotebookLM." />
-                <meta property="og:image" content="/assets/blog/updated/google_notebooklm_updated.png" />
+                <meta property="og:image" content="https://canvaviagem.com/assets/blog/updated/google_notebooklm_updated.png" />
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:image" content="/assets/blog/updated/google_notebooklm_updated.png" />
+                <meta name="twitter:image" content="https://canvaviagem.com/assets/blog/updated/google_notebooklm_updated.png" />
             </Helmet>
 
             <div className="min-h-screen bg-gray-50 text-slate-900">
