@@ -425,7 +425,6 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
   // BenefÃ­cios: pega os 3 primeiros highlights como bullet points
   const benefitLines = v.highlights
     .slice(0, 4)
-    .map((h) => `âœ… ${h.text}`)
     .map((h) => `✅ ${h.text}`)
     .join("\n");
 
