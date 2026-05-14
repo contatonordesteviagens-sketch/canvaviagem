@@ -42,7 +42,7 @@ const ICON_OPTIONS: { key: IconKey; Icon: typeof Bus; label: string }[] = [
   { key: "food", Icon: Utensils, label: "Refeição" },
   { key: "coffee", Icon: Coffee, label: "Café" },
   { key: "map", Icon: MapPin, label: "Mapa" },
-  { key: "camera", Icon: Camera, label: "Câmera" },
+  { key: "camera", Icon: Camera, label: "C🖼️mera" },
   { key: "star", Icon: Star, label: "Estrela" },
   { key: "heart", Icon: Heart, label: "Coração" },
   { key: "guide", Icon: User, label: "Guia" },
@@ -52,10 +52,10 @@ const ICON_OPTIONS: { key: IconKey; Icon: typeof Bus; label: string }[] = [
 interface Highlight { text: string; icon: IconKey; }
 
 const DEFAULT_HIGHLIGHTS: Highlight[] = [
-  { text: "Transporte incluso", icon: "bus" },
-  { text: "Hospedagem", icon: "hotel" },
-  { text: "Café da manhã", icon: "coffee" },
-  { text: "Guia local", icon: "guide" },
+  { text: "Transporte incluido", icon: "bus" },
+  { text: "Alojamiento", icon: "hotel" },
+  { text: "Desayuno", icon: "coffee" },
+  { text: "Guía local", icon: "guide" },
 ];
 
 const DEFAULT_EXPERIENCE_HIGHLIGHTS: Highlight[] = [
@@ -69,7 +69,7 @@ const DEFAULT_SUFFIX_EXPERIENCIA = "Sua viagem começa aqui";
 
 // ====== Padronização de CORES por categoria ======
 // Estas cores são aplicadas automaticamente ao trocar de categoria, garantindo
-// um visual coerente com o "tom" daquela categoria (oferta = âmbar/quente,
+// um visual coerente com o "tom" daquela categoria (oferta = 🖼️mbar/quente,
 // experiência = navy/dourado luxo). O usuário pode customizar livremente depois;
 // só são re-aplicadas se ele ainda estiver usando os defaults da OUTRA categoria.
 const DEFAULT_COLORS_OFERTA = { primary: "#F59E0B", secondary: "#FCD34D" };
@@ -105,7 +105,7 @@ type Currency = "BRL" | "USD" | "EUR" | "ARS" | "GBP";
 const CURRENCY_PRESETS: { id: Currency; symbol: string; label: string; locale: string }[] = [
   { id: "BRL", symbol: "R$", label: "Real (R$)", locale: "pt-BR" },
   { id: "USD", symbol: "US$", label: "Dólar (US$)", locale: "en-US" },
-  { id: "EUR", symbol: "â‚¬", label: "Euro (â‚¬)", locale: "de-DE" },
+  { id: "EUR", symbol: "🖼️‚¬", label: "Euro (🖼️‚¬)", locale: "de-DE" },
   { id: "GBP", symbol: "Â£", label: "Libra (Â£)", locale: "en-GB" },
   { id: "ARS", symbol: "AR$", label: "Peso AR (AR$)", locale: "es-AR" },
 ];
@@ -113,8 +113,8 @@ const CURRENCY_PRESETS: { id: Currency; symbol: string; label: string; locale: s
 /**
  * Formata um valor de preço aplicando separador de milhar e casa decimal
  * conforme a moeda selecionada. Aceita strings com vírgula ou ponto como decimal.
- * Ex: "4124312"  â†’ BRL: "4.124.312,00"  USD: "4,124,312.00"
- *     "1499,90"  â†’ BRL: "1.499,90"
+ * Ex: "4124312"  🖼️†’ BRL: "4.124.312,00"  USD: "4,124,312.00"
+ *     "1499,90"  🖼️†’ BRL: "1.499,90"
  */
 const formatPriceValue = (raw: string, currency: Currency, assumeCents = false, noCents = false): string => {
   const value = (raw || "").trim();
@@ -178,7 +178,7 @@ const buildPriceWithCurrency = (raw: string, currency: Currency): string => {
 
 const stripCurrencyFromPrice = (raw: string, currency: Currency): string => {
   const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
-  return (raw || "").replace(sym, "").replace(/R\$|US\$|AR\$|â‚¬|Â£/g, "").trim();
+  return (raw || "").replace(sym, "").replace(/R\$|US\$|AR\$|🖼️‚¬|Â£/g, "").trim();
 };
 
 const formatPriceWhileTyping = (raw: string, currency: Currency): string => {
@@ -210,9 +210,9 @@ interface PaymentPreset {
 }
 
 const PAYMENT_PRESETS: PaymentPreset[] = [
-  { id: "installments", name: "En cuotas",          emoji: "ðŸ’³", description: "Ex: 10x R$ 149,90",       hint: "Parcelas: 10x Â· Valor: 149,90" },
+  { id: "installments", name: "En cuotas",          emoji: "ðŸ’³", description: "Ex: 10x R$ 149,90",       hint: "Parcelas: 10x · Valor: 149,90" },
   { id: "cash",         name: "Al contado",            emoji: "ðŸ’°", description: "Ex: À VISTA R$ 1.499",    hint: "Valor: 1.499" },
-  { id: "down_plus",    name: "Enganche + cuotas", emoji: "ðŸ’µ", description: "Ex: ENTRADA + 10x R$ 149", hint: "Parcelas: ENTRADA R$ 200 + 10x Â· Valor: 149" },
+  { id: "down_plus",    name: "Enganche + cuotas", emoji: "ðŸ’µ", description: "Ex: ENTRADA + 10x R$ 149", hint: "Parcelas: ENTRADA R$ 200 + 10x · Valor: 149" },
 ];
 
 const AD_TITLE_PRESETS: string[] = [
@@ -233,21 +233,21 @@ const AD_TITLE_PRESETS: string[] = [
   "Vamos para {destino}?",
 ];
 
-// Presets de TÍTULO para a categoria "Experiência de Destino" (luxo / sensação)
+// Presets de TÍTULO para a categoria "Experiencia de Destino" (luxo / sensação)
 const AD_TITLE_PRESETS_EXPERIENCIA: string[] = [
   "Tu próximo viaje es {destino}",
   "Viva o melhor de {destino}",
   "Momentos inesquecíveis em {destino}",
   "Desperte os sentidos em {destino}",
   "Experiência exclusiva em {destino}",
-  "Prazer em cada detalhe Â· {destino}",
+  "Prazer em cada detalhe · {destino}",
   "{destino} como nunca has vivido",
-  "All Inclusive Â· {destino}",
+  "All Inclusive · {destino}",
   "Refúgio dos sonhos em {destino}",
   "Descubra o lado secreto de {destino}",
 ];
 
-// Nomes "promo" sofisticados para Experiência de Destino
+// Nomes "promo" sofisticados para Experiencia de Destino
 const PROMO_NAME_PRESETS_EXPERIENCIA: string[] = [
   "EXPERIÃŠNCIA EXCLUSIVA",
   "MOMENTOS INESQUECÍVEIS",
@@ -266,7 +266,7 @@ const PROMO_NAME_PRESETS: string[] = [
   "QUEIMA DE ESTOQUE"
 ];
 
-// Defaults reconhecidos como "padrão da Oferta" â€” autorizados a serem sobrescritos
+// Defaults reconhecidos como "padrão da Oferta" 🖼️€” autorizados a serem sobrescritos
 // quando o usuário troca de categoria sem ter customizado.
 const DEFAULT_PROMO_NAMES_OFERTA = new Set(["OFERTA ESPECIAL", "Oferta Especial", "BLACK FRIDAY"]);
 const DEFAULT_AD_TITLES_OFERTA = new Set(["Paquete {destino}", "Conoce lo mejor de {destino}", "Descubra {destino}"]);
@@ -289,10 +289,10 @@ const TITLE_NEIGHBORS: Record<string, string[]> = {
   // Vizinhos de Experiência
   "Tu próximo viaje es {destino}": ["Viva o melhor de {destino}", "Momentos inesquecíveis em {destino}"],
   "Viva o melhor de {destino}": ["Tu próximo viaje es {destino}", "Experiência exclusiva em {destino}"],
-  "Momentos inesquecíveis em {destino}": ["Desperte os sentidos em {destino}", "Prazer em cada detalhe Â· {destino}"],
+  "Momentos inesquecíveis em {destino}": ["Desperte os sentidos em {destino}", "Prazer em cada detalhe · {destino}"],
   "Desperte os sentidos em {destino}": ["Momentos inesquecíveis em {destino}", "Refúgio dos sonhos em {destino}"],
   "Experiência exclusiva em {destino}": ["Viva o melhor de {destino}", "{destino} como nunca has vivido"],
-  "Prazer em cada detalhe Â· {destino}": ["All Inclusive Â· {destino}", "Experiência exclusiva em {destino}"],
+  "Prazer em cada detalhe · {destino}": ["All Inclusive · {destino}", "Experiência exclusiva em {destino}"],
   "{destino} como nunca has vivido": ["Descubra o lado secreto de {destino}", "Viva o melhor de {destino}"],
 };
 
@@ -389,7 +389,7 @@ const pickPhotoRefs = (
 // ============================================================
 // GERADOR DE LEGENDAS / COPY para Instagram
 // Gera 3 variações de texto adaptadas aos dados do anúncio,
-// sem chamadas Ã  IA â€” 100% local, instantâneo.
+// sem chamadas Ã  IA 🖼️€” 100% local, instant🖼️neo.
 // ============================================================
 interface CaptionVars {
   destination: string;
@@ -425,7 +425,7 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
   // Benefícios: pega os 3 primeiros highlights como bullet points
   const benefitLines = v.highlights
     .slice(0, 4)
-    .map((h) => `âœ… ${h.text}`)
+    .map((h) => `🖼️œ… ${h.text}`)
     .map((h) => `✅ ${h.text}`)
     .join("\n");
 
@@ -440,13 +440,13 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
   if (v.isExperience) {
     // Variante Experiência: estilo editorial/luxo
     const caps: string[] = [
-      // Variação 1 â€” Cinematográfica
-      `âœ¨ ${destUp} te sorprenderá.\n\nExperiencias como esta no se olvidan — y tú mereces vivirlas.\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}${contactLine}`,
+      // Variação 1 🖼️€” Cinematográfica
+      `🖼️œ¨ ${destUp} te sorprenderá.\n\nExperiencias como esta no se olvidan — y tú mereces vivirlas.\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}${contactLine}`,
 
-      // Variação 2 â€” Direta com CTA
+      // Variação 2 🖼️€” Direta com CTA
       `ðŸŒŸ Já imaginou ${v.isExperience ? "viver" : "conhecer"} ${dest}?\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}Cada detalle ha sido pensado para ti. ¿Planeamos juntos?\n\n${contactLine}`,
 
-      // Variação 3 â€” Curiosidade/teaser
+      // Variação 3 🖼️€” Curiosidade/teaser
       `Hay destinos que transforman. ${dest} es uno de ellos. ðŸ§³\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}ðŸ’Œ Reserve com a ${agency}. Una agencia que entiende lo que buscas en un viaje.\n\n${contactLine}`,
     ];
     return caps;
@@ -454,14 +454,14 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
 
   // Variante Oferta: direto e comercial
   const caps: string[] = [
-    // Variação 1 â€” Urgência + preço em destaque
-    `ðŸš¨ *${v.promoName || "OFERTA ESPECIAL"}* â€” ${destUp}!\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\nâš ï¸ ¡Cupos limitados! No pierdas esta oportunidad.\n\n${contactLine}`,
+    // Variação 1 🖼️€” Urgência + preço em destaque
+    `ðŸš¨ *${v.promoName || "OFERTA ESPECIAL"}* 🖼️€” ${destUp}!\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n🖼️š ï¸ ¡Cupos limitados! No pierdas esta oportunidad.\n\n${contactLine}`,
 
-    // Variação 2 â€” Storytelling + preço
-    `Vámonos a ${dest}? âœˆï¸\n\nArmamos un paquete COMPLETO para que no te preocupes por nada:\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\nðŸ‘‰ ¡Escríbeme ahora y asegura tu lugar!\n\n${contactLine}`,
+    // Variação 2 🖼️€” Storytelling + preço
+    `Vámonos a ${dest}? 🖼️œˆï¸\n\nArmamos un paquete COMPLETO para que no te preocupes por nada:\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\nðŸ‘‰ ¡Escríbeme ahora y asegura tu lugar!\n\n${contactLine}`,
 
-    // Variação 3 â€” Benefícios + prova social
-    `ðŸ“ ${dest} â€” ¡Un paquete que te va a encantar!\n\nIncluido en tu viaje:\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\nâœ… Agencia especializada. Atención personalizada. Soporte 24h.\n\n${contactLine}`,
+    // Variação 3 🖼️€” Benefícios + prova social
+    `ðŸ“ ${dest} 🖼️€” ¡Un paquete que te va a encantar!\n\nIncluido en tu viaje:\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n🖼️œ… Agencia especializada. Atención personalizada. Soporte 24h.\n\n${contactLine}`,
   ];
   return caps;
 };
@@ -486,7 +486,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
   const [destinationState, setDestinationState] = useState(state.destinos?.[0] || "");
   const destination = destinationState;
-  // Persiste destino no contexto/localStorage para sobreviver Ã  navegação F1â†”F3â†”F4.
+  // Persiste destino no contexto/localStorage para sobreviver Ã  navegação F1🖼️†”F3🖼️†”F4.
   const setDestination = (v: string) => {
     setDestinationState(v);
     const rest = (state.destinos || []).slice(1);
@@ -513,7 +513,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const [pixBannerText, setPixBannerTextState] = useState<string>((state as any).pixBannerText || "");
   const setPixBannerText = (v: string) => { setPixBannerTextState(v); update({ pixBannerText: v } as any); };
 
-  // Tipografia global (família + escala título/descrição + cor de override)
+  // Tipografía global (família + escala título/descrição + cor de override)
   const [fontFamily, setFontFamilyState] = useState<string>((state as any).fontFamily || "Inter");
   const setFontFamily = (v: string) => { setFontFamilyState(v); update({ fontFamily: v } as any); };
   const [titleScale, setTitleScaleState] = useState<number>(((state as any).titleScale as number) || 1);
@@ -674,7 +674,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       return prev;
     });
 
-    // Padronização de CORES por categoria â€” só sobrescreve se o usuário ainda
+    // Padronização de CORES por categoria 🖼️€” só sobrescreve se o usuário ainda
     // estiver com os defaults da OUTRA categoria (preserva customização manual).
     setPrimaryColorState((prevP) => {
       const prevS = secondaryColor;
@@ -691,7 +691,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       return prevP;
     });
 
-    // Limpa override manual de cor de texto ao trocar categoria â€”
+    // Limpa override manual de cor de texto ao trocar categoria 🖼️€”
     // o auto-contraste (claro/escuro baseado na imagem) volta a valer.
     setTextColorOverrideState("");
     update({ textColorOverride: "" } as any);
@@ -706,7 +706,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const [promoName, setPromoNameState] = useState(state.lastPromoName || initialPromoDefault);
   const setPromoName = (n: string) => { setPromoNameState(n); update({ lastPromoName: n }); };
 
-  // Título do anúncio (com presets editáveis usando {destino})
+  // Título del anuncio (com presets editáveis usando {destino})
   const [adTitleTemplate, setAdTitleTemplateState] = useState(state.lastAdTitle || initialAdTitleDefault);
   const setAdTitleTemplate = (t: string) => { setAdTitleTemplateState(t); update({ lastAdTitle: t }); };
   const [adTitleMenuOpen, setAdTitleMenuOpen] = useState(false);
@@ -770,7 +770,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const [adCaptions, setAdCaptions] = useState<string[]>([]);
   const [selectedCaption, setSelectedCaption] = useState<string | null>(null);
   const [captionCopied, setCaptionCopied] = useState(false);
-  // Histórico das últimas variantes do compositor canvas (modo Sua Imagem) para forçar rotação
+  // Histórico das últimas variantes do compositor canvas (modo Tu Imagen) para forçar rotação
   const variantHistoryRef = useRef<number[]>([]);
   // Versão forçada (null = automático/rotação). 0..4 fixa a variante exata para correções cirúrgicas.
   const [forcedVariant, setForcedVariant] = useState<number | null>(null);
@@ -811,11 +811,11 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const [visiblePhotoCount, setVisiblePhotoCount] = useState(3);
   // Sua imagem
   const [customSource, setCustomSource] = useState<CustomSource>("upload");
-  const [customImageData, setCustomImageData] = useState<string>(""); // base64 (upload) ou URL (link) â€” só em memória
+  const [customImageData, setCustomImageData] = useState<string>(""); // base64 (upload) ou URL (link) 🖼️€” só em memória
   const [customLink, setCustomLink] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ====== Auto-contraste: detecta luminância média da imagem ativa e
+  // ====== Auto-contraste: detecta lumin🖼️ncia média da imagem ativa e
   // define cor de texto padrão (branca em fundos escuros, preta em fundos claros).
   // Garante nitidez/legibilidade automaticamente; o usuário ainda pode sobrescrever.
   useEffect(() => {
@@ -849,7 +849,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         const lum = n ? sum / n : 0.5;
         setAutoTextColor(lum > 0.55 ? "#0d0d0d" : "#ffffff");
       } catch {
-        // tainted canvas â†’ fallback seguro (branco com sombra cobre a maioria dos casos)
+        // tainted canvas 🖼️†’ fallback seguro (branco com sombra cobre a maioria dos casos)
         setAutoTextColor("#ffffff");
       }
     };
@@ -872,7 +872,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     }
     const reader = new FileReader();
     reader.onload = () => {
-      // base64 vive APENAS em memória do browser â†’ nunca toca o banco
+      // base64 vive APENAS em memória do browser 🖼️†’ nunca toca o banco
       setCustomImageData(String(reader.result || ""));
       toast.success("Imagem carregada (apenas em memória)");
     };
@@ -967,7 +967,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       return `${pVal} ${suffix}`;
     })();
 
-    const descLines = highlights.slice(0, 4).map((h) => `âœ… ${h.text}`).join("\n");
+    const descLines = highlights.slice(0, 4).map((h) => `🖼️œ… ${h.text}`).join("\n");
     const period = travelPeriod ? `\nðŸ“… ${travelPeriod}` : "";
     
     const cleanDest = destination.trim();
@@ -1057,7 +1057,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         localStorage.setItem(cycleKey, String(nextSeed));
       };
 
-      // ===== MODO FOTO (composição local) â€” gera 1 ou mais imagens =====
+      // ===== MODO FOTO (composição local) 🖼️€” gera 1 ou mais imagens =====
       if (genMode === "photo") {
         toast.info(isBatchMode ? "Gerando lote de 3 variações com foto real" : "Gerando 1 imagem única com foto real");
         const guard = getForbiddenSets(categoria, "photo", format);
@@ -1073,11 +1073,11 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         localStorage.setItem(stratHistKey, JSON.stringify(chosen));
         const photoRefs = pickPhotoRefs(photos, refImage, freshSeedPhoto, chosen.length);
 
-        // Paleta â€” sempre usa exatamente as cores selecionadas pelo usuário.
+        // Paleta 🖼️€” sempre usa exatamente as cores selecionadas pelo usuário.
         const palette = selectedPalette(primaryColor, secondaryColor);
 
         // Rotação determinística entre as 5 variantes do compositor (V0/V1/V2/V3/V4)
-        // evitando as 2 últimas usadas â€” garante imagem nova a cada clique e cobre V4.
+        // evitando as 2 últimas usadas 🖼️€” garante imagem nova a cada clique e cobre V4.
         const TOTAL_VARIANTS_PHOTO = 5;
         const recentPhoto = variantHistoryRef.current.slice(-2);
         let candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i).filter((v) => !recentPhoto.includes(v));
@@ -1159,7 +1159,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         // ===== MODO IA PURA: gera 1 prompt da categoria; Experiência usa fluxo seguro sem texto da IA =====
       if (genMode === "ai") {
         const cat = getCategoria(categoria);
-        // HÍBRIDO: para Experiência de Destino (qualquer formato â€” square 1:1 ou story 9:16),
+        // HÍBRIDO: para Experiencia de Destino (qualquer formato 🖼️€” square 1:1 ou story 9:16),
         // a IA gera APENAS o fundo fotográfico limpo; o motor Canvas (composeTravelAd)
         // desenha por cima logo, textos, preço, ícones e contraste com HEX exato.
         const isAiExperienceStory = categoria === "experiencia_destino" && (format === "square" || format === "story");
@@ -1177,7 +1177,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           : pickPromptsForCategoria(categoria, 1, storedLast, mergedRecent);
         const freshSeedAi = freshSeed(generationSeed);
 
-        // Paleta â€” sempre usa exatamente as cores selecionadas pelo usuário.
+        // Paleta 🖼️€” sempre usa exatamente as cores selecionadas pelo usuário.
         const palette = selectedPalette(primaryColor, secondaryColor);
         const aiExperienceStrategy = (() => {
           if (!isAiExperienceStory) return "experiencia_hero" as StrategyId;
@@ -1190,14 +1190,14 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           return picked;
         })();
 
-        toast.info(`Gerando ${picks.length} ${picks.length === 1 ? "variação" : "variações"} em IA Pura â€” ${cat.name}`);
+        toast.info(`Gerando ${picks.length} ${picks.length === 1 ? "variação" : "variações"} em IA Pura 🖼️€” ${cat.name}`);
 
-        // PROMPT DE FUNDO LIMPO â€” A IA é instruída a gerar APENAS a fotografia,
+        // PROMPT DE FUNDO LIMPO 🖼️€” A IA é instruída a gerar APENAS a fotografia,
         // sem nenhum elemento gráfico/tipográfico. Toda a UI (logo, textos, preço,
-        // â”€â”€ PROMPTS PARA EXPERIÃŠNCIA DE DESTINO (BLINDADOS) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // 🖼️”€🖼️”€ PROMPTS PARA EXPERIÃŠNCIA DE DESTINO (BLINDADOS) 🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€
         // REGRA DE OURO: a imagem da IA deve ser APENAS fotografia.
         // O motor de renderização (Canvas) é desenhado depois pelo motor Canvas (composeTravelAd).
-        const NEGATIVE_UI = `STRICT NEGATIVE CONSTRAINTS â€” the output MUST be a pure photograph only. ABSOLUTELY FORBIDDEN: any text, letters, numbers, words, captions, headlines, prices, currency symbols, dates, typography, fonts, watermarks, signatures, logos, brand marks, badges, stamps, stickers, labels, banners, ribbons, callouts, speech bubbles, icons, pictograms, emojis, arrows, frames, borders, overlays, color blocks, gradients painted on top, UI elements, buttons, cards, panels, mockup chrome, phone frames, social media UI, Instagram/Facebook/TikTok interface, hashtags, @mentions, QR codes, barcodes. The image must look like an untouched RAW photograph straight from a professional camera â€” nothing rendered, nothing added, no graphic design whatsoever. No people, no faces, no crowds.`;
+        const NEGATIVE_UI = `STRICT NEGATIVE CONSTRAINTS 🖼️€” the output MUST be a pure photograph only. ABSOLUTELY FORBIDDEN: any text, letters, numbers, words, captions, headlines, prices, currency symbols, dates, typography, fonts, watermarks, signatures, logos, brand marks, badges, stamps, stickers, labels, banners, ribbons, callouts, speech bubbles, icons, pictograms, emojis, arrows, frames, borders, overlays, color blocks, gradients painted on top, UI elements, buttons, cards, panels, mockup chrome, phone frames, social media UI, Instagram/Facebook/TikTok interface, hashtags, @mentions, QR codes, barcodes. The image must look like an untouched RAW photograph straight from a professional camera 🖼️€” nothing rendered, nothing added, no graphic design whatsoever. No people, no faces, no crowds.`;
         const experienceBackgroundPrompt = (variant: number) => {
           const base = `Ultra-high-end editorial travel photography, cinematic 8K, Shot on RED. Magnificent landscape of ${destination || "paradise destination"}.`;
           const variants = [
@@ -1210,11 +1210,11 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           return `${base} ${variants[variant % variants.length]} ${NEGATIVE_UI}`;
         };
 
-        // â”€â”€ Decisão V4 em IA Pura (apenas Oferta de Pacote) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // 🖼️”€🖼️”€ Decisão V4 em IA Pura (apenas Oferta de Paquete) 🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€
         // Sorteia se esta geração será V4 (compositor card) ou IA tradicional,
         // respeitando histórico para garantir variedade entre cliques.
         const isOfertaIA = categoria === "oferta_pacote";
-        // Experiência de Destino: V0-V4 agora totalmente suportados
+        // Experiencia de Destino: V0-V4 agora totalmente suportados
         const totalVariantsAi = 5;
         const recentAi = variantHistoryRef.current.slice(-2);
         let candidatesAi = Array.from({ length: totalVariantsAi }, (_, i) => i).filter((v) => !recentAi.includes(v));
@@ -1384,11 +1384,11 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         localStorage.setItem("fabrica_gen_count", String(newCount));
         finishCycle(images.length);
 
-        toast.success(`${images.length} ${images.length === 1 ? "variação gerada" : "variações geradas"} â€” ${cat.name}`);
+        toast.success(`${images.length} ${images.length === 1 ? "variação gerada" : "variações geradas"} 🖼️€” ${cat.name}`);
         return;
       }
 
-      // ===== MODO CUSTOM (link/upload do usuário) â€” gera 1 ou mais imagens locais =====
+      // ===== MODO CUSTOM (link/upload do usuário) 🖼️€” gera 1 ou mais imagens locais =====
       toast.info(isBatchMode ? "Gerando lote de 3 variações com sua imagem" : "Gerando 1 imagem única com sua imagem");
       const guardCustom = getForbiddenSets(categoria, "custom", format);
       const stratHistKeyCustom = scopedStrategyHistoryKey(categoria, "custom", format);
@@ -1548,13 +1548,13 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       }`}>
         <div className="flex items-start gap-3">
           <div className="text-2xl">
-            {lastProvider === "user_gemini" ? "ðŸŸ¢" : lastProvider === "lovable_ai" ? "ðŸ”µ" : "âš¡"}
+            {lastProvider === "user_gemini" ? "ðŸŸ¢" : lastProvider === "lovable_ai" ? "ðŸ”µ" : "⚡"}
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-bold text-white">
-              {lastProvider === "user_gemini" && "Usando sua chave Gemini (grátis)"}
+              {lastProvider === "user_gemini" && "Usando sua chave Gemini (gratis)"}
               {lastProvider === "lovable_ai" && "Usando créditos da plataforma"}
-              {!lastProvider && "Provedor de IA configurado"}
+              {!lastProvider && "Proveedor de IA configurado"}
             </div>
             <p className="text-[11px] text-white/60 leading-snug mt-0.5">
               {lastProvider === "user_gemini" && (
@@ -1564,7 +1564,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 <>Cada imagem consome créditos. Se acabar, sua chave Gemini gratuita será usada automaticamente.</>
               )}
               {!lastProvider && (
-                <>Tentaremos primeiro sua chave Gemini gratuita. Se falhar, cai pra créditos da plataforma. Imagens geradas nesta sessão: <strong className="text-white">{generationCount}</strong></>
+                <>Intentaremos primero con tu clave Gemini gratuita. Si falla, usará créditos de la plataforma. Imágenes generadas en esta sesión: <strong className="text-white">{generationCount}</strong></>
               )}
             </p>
           </div>
@@ -1603,7 +1603,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
           {/* Coluna Logo: mais estreita e profissional */}
           <div className="sm:col-span-4">
-            <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Identidade Visual</label>
+            <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Identidad Visual</label>
             {!state.logoBase64 ? (
               <label className="flex flex-col items-center justify-center gap-2.5 p-6 bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-white/20 hover:bg-white/[0.04] transition-all group h-[110px]">
                 <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -1635,7 +1635,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
           {/* Coluna Contatos: mais larga e organizada */}
           <div className="sm:col-span-8 space-y-3">
-            <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Canais de Atendimento</label>
+            <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Canales de Atención</label>
             
             {/* Contato 1 */}
             <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
@@ -1649,7 +1649,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
                   <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
                   <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
-                  <option value="website" className="bg-zinc-900">Website / Link</option>
+                  <option value="website" className="bg-zinc-900">Sitio Web / Link</option>
                   <option value="none" className="bg-zinc-900">Ocultar</option>
                 </select>
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
@@ -1682,7 +1682,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
                   <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
                   <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
-                  <option value="website" className="bg-zinc-900">Website / Link</option>
+                  <option value="website" className="bg-zinc-900">Sitio Web / Link</option>
                   <option value="none" className="bg-zinc-900">Ocultar</option>
                 </select>
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
@@ -1708,23 +1708,23 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           </div>
         </div>
       </div>
-      {/* 0 e 1 Â· Modo e Categoria */}
+      {/* 0 e 1 · Modo e Categoria */}
       <div className={`${sectionCls} space-y-5`}>
         {/* Modo de Geração - Segmented Control */}
         <div>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">0 Â· Modo de Criação</h3>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">0 · Modo de Creación</h3>
           <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full">
             <button
               onClick={() => setGenMode("photo")}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "photo" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
             >
-              <ImageIcon className="w-3.5 h-3.5" /> Foto Real <span className="hidden sm:inline font-normal opacity-50">(grátis)</span>
+              <ImageIcon className="w-3.5 h-3.5" /> Foto Real <span className="hidden sm:inline font-normal opacity-50">(gratis)</span>
             </button>
             <button
               onClick={() => setGenMode("custom")}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "custom" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
             >
-              <Upload className="w-3.5 h-3.5" /> Sua Imagem
+              <Upload className="w-3.5 h-3.5" /> Tu Imagen
             </button>
             <button
               onClick={() => setGenMode("ai")}
@@ -1735,14 +1735,14 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           </div>
           {genMode !== "ai" && (
             <p className="text-[10px] text-white/40 mt-1.5 leading-snug">
-              ðŸ”’ A imagem é processada <strong>apenas em memória</strong> para gerar o anúncio.
+              🔒 A imagem é processada <strong>apenas em memória</strong> para gerar o anúncio.
             </p>
           )}
 
-          {/* Seletor de Versão (V0..V4) â€” para correções cirúrgicas em cada layout */}
+          {/* Seletor de Versão (V0..V4) 🖼️€” para correções cirúrgicas em cada layout */}
           <div className="mt-4">
             <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">
-              0b Â· Versão do Layout
+              0b · Versión del Diseño
             </h3>
             <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full gap-1">
               <button
@@ -1765,7 +1765,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             </div>
             <p className="text-[10px] text-white/40 mt-1.5 leading-snug">
               {forcedVariant === null
-                ? "Rotação automática entre V0..V4 a cada clique."
+                ? "Rotación automática entre V0..V4 en cada clic."
                 : <>Gerando sempre a <strong className="text-white">V{forcedVariant}</strong>. Selecione "Auto" para retomar a rotação.</>}
             </p>
           </div>
@@ -1773,7 +1773,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
         {/* Categoria - Compacta */}
         <div>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">1 Â· Tipo de Anúncio</h3>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">1 · Tipo de Anuncio</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {CATEGORIAS.map((c) => {
               const isExperiencia = c.id === "experiencia_destino";
@@ -1814,13 +1814,13 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             })}
           </div>
           <p className="text-[10px] text-white/40 mt-2">
-            Cada clique gera 1 imagem única. A próxima geração troca layout, texto e formatação automaticamente.
+            Cada clic genera 1 imagen única. La siguiente generación cambiará el diseño, texto y formato automáticamente.
           </p>
         </div>
 
-        {/* Formato do Anúncio */}
+        {/* Formato del Anuncio */}
         <div>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">2 Â· Formato do Anúncio</h3>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">2 · Formato del Anuncio</h3>
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => setFormat("square")}
@@ -1830,8 +1830,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               style={format === "square" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
             >
               <Square className="w-6 h-6 mb-2 text-white/80" />
-              <div className="text-sm font-bold text-white">Quadrado 1:1</div>
-              <div className="text-[11px] text-white/55">Feed Instagram (1080Ã—1080)</div>
+              <div className="text-sm font-bold text-white">Cuadrado 1:1</div>
+              <div className="text-[11px] text-white/55">Feed Instagram (1080×1080)</div>
             </button>
             <button
               onClick={() => setFormat("story")}
@@ -1842,22 +1842,22 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             >
               <Smartphone className="w-6 h-6 mb-2 text-white/80" />
               <div className="text-sm font-bold text-white">Stories / Reels 9:16</div>
-              <div className="text-[11px] text-white/55">Vertical com safe zones (1080Ã—1920)</div>
+              <div className="text-[11px] text-white/55">Vertical con zonas seguras (1080×1920)</div>
             </button>
           </div>
         </div>
       </div>
 
-      {/* 1b Â· Galeria Pexels/Google (modo foto) */}
+      {/* 1b · Galeria Pexels/Google (modo foto) */}
       {genMode === "photo" && (
         <div className={sectionCls}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">1 Â· Escolha uma foto real</h3>
+            <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">1 · Elige una foto real</h3>
             <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 scale-90 origin-right flex-nowrap">
               {[
                 { id: "pexels", label: "Pexels (Top)" },
                 { id: "google", label: "Google/Web" },
-                { id: "galeria", label: "â­ Minha Galeria" }
+                { id: "galeria", label: "🖼️­ Mi Galería" }
               ].map((eng) => (
                 <button
                   key={eng.id}
@@ -1948,7 +1948,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 );
               })() : (
                 <div className="py-8 text-center text-[11px] text-white/40">
-                  {searchingPhotos ? "Buscando inspirações..." : "Digite um destino e clique em buscar."}
+                  {searchingPhotos ? "Buscando inspirações..." : "Ingresa un destino y haz clic en buscar."}
                 </div>
               )}
             </>
@@ -1993,10 +1993,10 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         </div>
       )}
 
-      {/* 1c Â· Sua imagem (modo custom) */}
+      {/* 1c · Sua imagem (modo custom) */}
       {genMode === "custom" && (
         <div className={sectionCls}>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">1 Â· Sua imagem de referência</h3>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">1 · Sua imagem de referência</h3>
           <div className="flex gap-2 mb-4">
             <button
               onClick={() => setCustomSource("upload")}
@@ -2028,13 +2028,13 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 {customImageData ? (
                   <>
                     <img src={customImageData} alt="preview" className="w-32 h-32 mx-auto rounded-lg object-cover mb-2" />
-                    <p className="text-xs text-emerald-400 font-semibold">âœ“ Imagem carregada â€” clique para trocar</p>
+                    <p className="text-xs text-emerald-400 font-semibold">🖼️œ“ Imagem carregada 🖼️€” clique para trocar</p>
                   </>
                 ) : (
                   <>
                     <Upload className="w-8 h-8 mx-auto text-white/40 mb-2" />
                     <p className="text-sm text-white font-semibold">Clique para enviar</p>
-                    <p className="text-[10px] text-white/40 mt-1">JPG, PNG ou WebP â€” máx 8MB</p>
+                    <p className="text-[10px] text-white/40 mt-1">JPG, PNG ou WebP 🖼️€” máx 8MB</p>
                   </>
                 )}
               </button>
@@ -2056,9 +2056,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         </div>
       )}
 
-      {/* 3 Â· Dados */}
+      {/* 3 · Dados */}
       <div className={`${sectionCls} space-y-4`}>
-        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">3 Â· Dados do anúncio</h3>
+        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">3 · Datos del anuncio</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -2099,7 +2099,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
           <div>
             <label className={labelCls}>
-              {categoria === "experiencia_destino" ? "Nome da experiência" : "Nome da promoção"}
+              {categoria === "experiencia_destino" ? "Nome da experiência" : "Nombre de la promoción"}
             </label>
             <div className="relative">
               <input
@@ -2135,7 +2135,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           </div>
 
           <div className="sm:col-span-2">
-            <label className={labelCls}>Título do anúncio</label>
+            <label className={labelCls}>Título del anuncio</label>
             <div className="relative">
               <input
                 value={adTitleTemplate}
@@ -2173,7 +2173,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         </div>
 
         <div>
-          <label className={labelCls}>Dias / data da viagem</label>
+          <label className={labelCls}>Días / fecha del viaje</label>
           <div className="relative">
             <input
               value={travelPeriod}
@@ -2211,7 +2211,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         {/* Modo de pagamento */}
         {categoria !== "experiencia_destino" && (
           <div className="space-y-3">
-            <label className={labelCls}>Modo de exibição do preço</label>
+            <label className={labelCls}>Modo de visualización del precio</label>
             <div className="grid grid-cols-3 gap-1.5">
               {PAYMENT_PRESETS.map((p) => (
                 <button
@@ -2282,7 +2282,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 onClick={() => setPriceOptionsOpen((v) => !v)}
                 className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
               >
-                <span className="text-sm font-bold text-white">Opções de preço</span>
+                <span className="text-sm font-bold text-white">Opciones de precio</span>
                 <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${priceOptionsOpen ? "rotate-180" : ""}`} />
               </button>
               {priceOptionsOpen && (
@@ -2306,9 +2306,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         )}
       </div>
 
-      {/* Tipografia, Cores, Benefícios e Gerar */}
+      {/* Tipografía, Colores, Benefícios e Gerar */}
       <div className={`${sectionCls} space-y-5`}>
-        {/* Tipografia â€” colapsável (mesmo padrão dos outros blocos) */}
+        {/* Tipografía 🖼️€” colapsável (mesmo padrão dos outros blocos) */}
         <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
           <button
             type="button"
@@ -2316,9 +2316,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
           >
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-sm font-bold text-white">Tipografia</span>
+              <span className="text-sm font-bold text-white">Tipografía</span>
               <span className="text-[10px] text-white/40 truncate" style={{ fontFamily: `${fontFamily}, Inter, sans-serif` }}>
-                {fontFamily} Â· T {Math.round(titleScale * 100)}% Â· D {Math.round(descScale * 100)}%
+                {fontFamily} · T {Math.round(titleScale * 100)}% · D {Math.round(descScale * 100)}%
               </span>
             </div>
             <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${fontOptionsOpen ? "rotate-180" : ""}`} />
@@ -2340,14 +2340,14 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 <p className="text-[10px] text-white/40 mt-1.5">A fonte escolhida é aplicada a todas as artes geradas.</p>
               </div>
 
-              {/* Ajustes Avançados de Tamanho â€” accordion interno */}
+              {/* Ajustes Avançados de Tamanho 🖼️€” accordion interno */}
               <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setAdvancedSizeOpen((v) => !v)}
                   className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/[0.04] transition-colors"
                 >
-                  <span className="text-[12px] font-semibold text-white/85">âš™ï¸ Ajustes Avançados de Tamanho</span>
+                  <span className="text-[12px] font-semibold text-white/85">🖼️š™ï¸ Ajustes Avançados de Tamanho</span>
                   <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${advancedSizeOpen ? "rotate-180" : ""}`} />
                 </button>
                 {advancedSizeOpen && (
@@ -2413,7 +2413,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           )}
         </div>
 
-        {/* Cores â€” colapsável (mesmo padrão de Tipografia) */}
+        {/* Colores 🖼️€” colapsável (mesmo padrão de Tipografía) */}
         <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
           <button
             type="button"
@@ -2421,7 +2421,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <span className="text-sm font-bold text-white">Cores</span>
+              <span className="text-sm font-bold text-white">Colores</span>
               <div className="flex items-center gap-1.5">
                 <span
                   className="w-4 h-4 rounded-full border border-white/30 shadow-sm"
@@ -2434,7 +2434,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   title={`Secundária ${secondaryColor}`}
                 />
                 <span className="text-[10px] text-white/40 ml-1">
-                  Â· {baseTextMode === "light" ? "Textos claros" : "Textos escuros"}
+                  · {baseTextMode === "light" ? "Textos claros" : "Textos escuros"}
                 </span>
               </div>
             </div>
@@ -2442,7 +2442,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           </button>
           {colorsOpen && (
             <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
-              {/* Bolinhas de cor â€” clicar abre o color picker nativo */}
+              {/* Bolinhas de cor 🖼️€” clicar abre o color picker nativo */}
               <div className="grid grid-cols-2 gap-4">
                 {[
                   { label: "Cor primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo principal" },
@@ -2505,10 +2505,10 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           )}
         </div>
 
-        {/* Benefícios â€” em Experiência de Destino usa apenas texto, sem selector de ícones. */}
+        {/* Benefícios 🖼️€” em Experiencia de Destino usa apenas texto, sem selector de ícones. */}
         <div>
           <div className="flex items-baseline justify-between mb-2 gap-2">
-            <label className={labelCls}>{categoria === "experiencia_destino" ? "Descrição da experiência" : "Benefícios / Inclusos"}</label>
+            <label className={labelCls}>{categoria === "experiencia_destino" ? "Descrição da experiência" : "Beneficios / Incluidos"}</label>
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -2528,7 +2528,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 Restaurar
               </button>
               <span className="text-[10px] text-white/40">
-                {highlights.length}/{MAX_HIGHLIGHTS}{categoria === "experiencia_destino" ? " Â· texto da experiência" : " Â· clique no ícone para trocar"}
+                {highlights.length}/{MAX_HIGHLIGHTS}{categoria === "experiencia_destino" ? " · texto da experiência" : " · haz clic en el icono para cambiar"}
               </span>
             </div>
           </div>
@@ -2579,7 +2579,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               );
             })}
 
-            {/* Slot "adicionar" â€” só aparece se ainda dá pra adicionar */}
+            {/* Slot "adicionar" 🖼️€” só aparece se ainda dá pra adicionar */}
             {highlights.length < MAX_HIGHLIGHTS && (
               <div className="bg-white/[0.02] border border-dashed border-white/15 rounded-lg flex gap-1.5 items-center px-2.5 py-2 hover:border-white/30 transition-colors">
                 <Plus className="w-4 h-4 flex-shrink-0" style={{ color: secondaryColor }} />
@@ -2587,7 +2587,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   value={newHl}
                   onChange={(e) => setNewHl(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && addHighlight()}
-                  placeholder={categoria === "experiencia_destino" ? "Ex: Pôr do sol privativo" : "Ex: Bebidas inclusas"}
+                  placeholder={categoria === "experiencia_destino" ? "Ex: Pôr do sol privativo" : "Ej: Bebidas incluidas"}
                   className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder:text-white/30 outline-none"
                 />
                 <button
@@ -2614,7 +2614,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             <div className="flex items-center gap-2">
               <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                Gerar Lote de Teste A/B
+                Generar Lote de Prueba A/B
               </h4>
               <span className="bg-indigo-500/20 text-indigo-300 text-[9px] px-1.5 py-0.5 rounded border border-indigo-500/30 font-bold uppercase">Premium</span>
             </div>
@@ -2630,10 +2630,10 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         </div>
 
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-[11px] text-amber-200/90">
-          ðŸ’¡ Dados da Fase 1: <strong>{state.agencyName || "agência"}</strong>
-          {state.city && <> Â· {state.city}</>}
-          {state.niche && <> Â· nicho {state.niche}</>}
-          {!state.logoBase64 && <> Â· <span className="text-amber-300">sem logo (será usado o nome como wordmark)</span></>}
+          💡 Datos de la Fase 1: <strong>{state.agencyName || "agência"}</strong>
+          {state.city && <> · {state.city}</>}
+          {state.niche && <> · nicho {state.niche}</>}
+          {!state.logoBase64 && <> · <span className="text-amber-300">sem logo (será usado o nome como wordmark)</span></>}
         </div>
 
         <button
@@ -2642,7 +2642,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           className="w-full py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110"
           style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 8px 24px ${primaryColor}55` }}
         >
-          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando com IA...</> : <><Sparkles className="w-4 h-4" /> Gerar Anúncio</>}
+          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando com IA...</> : <><Sparkles className="w-4 h-4" /> Generar Anuncio</>}
         </button>
         {loading && <p className="text-xs text-white/50 text-center mt-1">A IA leva 8 a 25 segundos.</p>}
 
