@@ -184,7 +184,7 @@ export const Phase5DashboardES = () => {
     {
       tag: "ATUALIZAÇÃO",
       title: "Mecanismo Lote A/B Premium",
-      desc: "Agora você pode gerar 3 versões das suas artes de uma vez gastando apenas 1 crédito.",
+      desc: "Ahora puedes generar 3 versiones de tus diseños a la vez gastando solo 1 crédito.",
       date: "Ontem",
       color: "indigo"
     }
@@ -560,7 +560,7 @@ export const Phase5DashboardES = () => {
                 <div className="space-y-3 text-sm text-white/70 leading-relaxed">
                    <p>
                      <strong className="text-white">1. É Automático?</strong><br/>
-                     Sim! O sistema apenas *reserva* o nome. Para ele funcionar na internet, você (o dono da plataforma) precisa apontar o seu domínio principal para o servidor (Vercel/Netlify) usando uma regra de DNS chamada "Wildcard" (*).
+                     ¡Sí! El sistema solo *reserva* el nombre. Para que funcione en internet, tú (el dueño de la plataforma) necesitas apuntar tu dominio principal al servidor (Vercel/Netlify) usando una regla DNS llamada 'Wildcard' (*).
                    </p>
                    <p>
                      <strong className="text-white">2. Tem custo ou limite de Tokens?</strong><br/>
