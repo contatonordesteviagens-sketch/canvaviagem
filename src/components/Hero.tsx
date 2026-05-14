@@ -49,6 +49,10 @@ export const Hero = () => {
           <img
             src={heroImage}
             alt="Influencers de viagens Eva, Mel e Bia"
+            width={1200}
+            height={800}
+            fetchPriority="high"
+            decoding="async"
             className="relative rounded-2xl shadow-2xl w-full h-auto object-cover transform hover:scale-[1.02] transition-transform duration-500"
           />
         </div>
