@@ -445,7 +445,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
       {/* GALERIA de imagens */}
       <FabricaCard title="ðŸ–¼ï¸ Banco de imagens">
         <p className="text-xs text-white/50 mb-3">
-          Salve aqui as imagens que você gerou na Fase 3 ou cole links externos. Depois é só clicar em "Usar" no pacote.
+          Guarda aquí las imágenes que generaste en la Fase 3 o pega enlaces externos. Luego, solo haz clic en 'Usar' en el paquete.
         </p>
         <ImageGallery
           images={state.siteContent.galleryImages}

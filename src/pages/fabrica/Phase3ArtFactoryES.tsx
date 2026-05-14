@@ -241,7 +241,7 @@ const AD_TITLE_PRESETS_EXPERIENCIA: string[] = [
   "Desperte os sentidos em {destino}",
   "Experiência exclusiva em {destino}",
   "Prazer em cada detalhe Â· {destino}",
-  "{destino} como você nunca viveu",
+  "{destino} como nunca has vivido",
   "All Inclusive Â· {destino}",
   "Refúgio dos sonhos em {destino}",
   "Descubra o lado secreto de {destino}",
@@ -291,9 +291,9 @@ const TITLE_NEIGHBORS: Record<string, string[]> = {
   "Viva o melhor de {destino}": ["Tu próximo viaje es {destino}", "Experiência exclusiva em {destino}"],
   "Momentos inesquecíveis em {destino}": ["Desperte os sentidos em {destino}", "Prazer em cada detalhe Â· {destino}"],
   "Desperte os sentidos em {destino}": ["Momentos inesquecíveis em {destino}", "Refúgio dos sonhos em {destino}"],
-  "Experiência exclusiva em {destino}": ["Viva o melhor de {destino}", "{destino} como você nunca viveu"],
+  "Experiência exclusiva em {destino}": ["Viva o melhor de {destino}", "{destino} como nunca has vivido"],
   "Prazer em cada detalhe Â· {destino}": ["All Inclusive Â· {destino}", "Experiência exclusiva em {destino}"],
-  "{destino} como você nunca viveu": ["Descubra o lado secreto de {destino}", "Viva o melhor de {destino}"],
+  "{destino} como nunca has vivido": ["Descubra o lado secreto de {destino}", "Viva o melhor de {destino}"],
 };
 
 const buildTitleVariations = (template: string, destination: string): string[] => {
@@ -1984,7 +1984,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   <ImageIcon className="w-8 h-8 text-white/20 mx-auto mb-2" />
                   <p className="text-sm font-bold text-white/70 mb-1">Galeria ainda vazia</p>
                   <p className="text-[11px] text-white/40">
-                    Suas fotos aparecerão aqui automaticamente assim que você subir fotos no Site ou gerar anúncios.
+                    Tus fotos aparecerán aquí automáticamente tan pronto como subas fotos al sitio o generes anuncios.
                   </p>
                 </div>
               )}
