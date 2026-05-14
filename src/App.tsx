@@ -21,6 +21,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 
 
 const PlanosES = lazy(() => import("./pages/PlanosES"));
+const SalesPageES = lazy(() => import("./pages/SalesPageES"));
 const Sucesso = lazy(() => import("./pages/Sucesso"));
 const Obrigado = lazy(() => import("./pages/Obrigado"));
 const ObrigadoES = lazy(() => import("./pages/ObrigadoES"));
@@ -163,7 +164,7 @@ const App = () => {
                         <CalendarES />
                       </ProtectedRoute>
                     } />
-                    <Route path="/es/planos" element={<PlanosES />} />
+                    <Route path="/es/planos" element={<SalesPageES />} />
                     <Route path="/es/obrigado" element={<ObrigadoES />} />
                     <Route path="/es/fabrica" element={<FabricaES />} />
 
