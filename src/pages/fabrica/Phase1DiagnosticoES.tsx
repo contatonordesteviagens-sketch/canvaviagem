@@ -21,7 +21,7 @@ const AGENCY_TYPES: { v: AgencyType; l: string }[] = [
   { v: "luxo", l: "Agência de Luxo / Alto Padrão" },
   { v: "corporativa", l: "Agência Corporativa (B2B)" },
   { v: "grupos", l: "Especialista em Grupos / Excursões" },
-  { v: "Cruceros", l: "Especialista em Cruzeiros" },
+  { v: "cruzeiros", l: "Especialista em Cruzeiros" },
   { v: "ecoturismo", l: "Ecoturismo / Aventura" },
   { v: "religioso", l: "Turismo Religioso" },
   { v: "outro", l: "Outro tipo" },
