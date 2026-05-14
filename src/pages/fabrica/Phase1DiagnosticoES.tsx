@@ -11,16 +11,16 @@ import { WhatsappSendModal } from "@/components/fabrica/WhatsappSendModal";
 import { extractPaletteFromCanvas } from "@/lib/extract-palette";
 
 const AGENCY_TYPES: { v: AgencyType; l: string }[] = [
-  { v: "autonoma", l: "Agente autÃ´nomo / Freelancer" },
-  { v: "pequena", l: "Pequena agÃªncia (atÃ© 3 pessoas)" },
-  { v: "media", l: "AgÃªncia mÃ©dia (4-10 pessoas)" },
+  { v: "autonoma", l: "Agente autônomo / Freelancer" },
+  { v: "pequena", l: "Pequena agência (até 3 pessoas)" },
+  { v: "media", l: "Agência média (4-10 pessoas)" },
   { v: "franquia", l: "Franquia" },
   { v: "consolidadora", l: "Consolidadora" },
-  { v: "receptiva", l: "AgÃªncia Receptiva" },
+  { v: "receptiva", l: "Agência Receptiva" },
   { v: "milhas", l: "Especialista em Milhas" },
-  { v: "luxo", l: "AgÃªncia de Luxo / Alto PadrÃ£o" },
-  { v: "corporativa", l: "AgÃªncia Corporativa (B2B)" },
-  { v: "grupos", l: "Especialista em Grupos / ExcursÃµes" },
+  { v: "luxo", l: "Agência de Luxo / Alto Padrão" },
+  { v: "corporativa", l: "Agência Corporativa (B2B)" },
+  { v: "grupos", l: "Especialista em Grupos / Excursões" },
   { v: "Cruceros", l: "Especialista em Cruzeiros" },
   { v: "ecoturismo", l: "Ecoturismo / Aventura" },
   { v: "religioso", l: "Turismo Religioso" },
@@ -31,14 +31,14 @@ type NicheOption = { id: Niche; label: string; emoji: string };
 
 const NICHES_DEFAULT: NicheOption[] = [
   { id: "nordeste", label: "Playa Caribe / Tulum", emoji: "ðŸ–ï¸" },
-  { id: "sul", label: "Playa PacÃ­fico / CancÃºn", emoji: "ðŸŒ…" },
+  { id: "sul", label: "Playa Pacífico / Cancún", emoji: "ðŸŒ…" },
   { id: "internacional", label: "Internacional", emoji: "âœˆï¸" },
   { id: "cruzeiro", label: "Cruceros", emoji: "ðŸš¢" },
   { id: "aventura", label: "Aventura / Ecoturismo", emoji: "â›°ï¸" },
   { id: "luademel", label: "Luna de Miel", emoji: "ðŸ’•" },
 ];
 
-// OpÃ§Ãµes de "carro-chefe / serviÃ§o principal" condicionadas ao tipo de agÃªncia.
+// Opções de "carro-chefe / serviço principal" condicionadas ao tipo de agência.
 // Usamos os mesmos ids do tipo Niche para reaproveitar destinos/legendas/ofertas.
 const NICHES_BY_AGENCY: Partial<Record<AgencyType, NicheOption[]>> = {
   receptiva: [
@@ -46,31 +46,31 @@ const NICHES_BY_AGENCY: Partial<Record<AgencyType, NicheOption[]>> = {
     { id: "sul", label: "Receptivo Sul / Serra", emoji: "ðŸŒ…" },
     { id: "aventura", label: "Receptivo Ecoturismo", emoji: "â›°ï¸" },
     { id: "internacional", label: "City Tour / Urbano", emoji: "ðŸ™ï¸" },
-    { id: "cruzeiro", label: "Transfer PortuÃ¡rio", emoji: "ðŸš¢" },
+    { id: "cruzeiro", label: "Transfer Portuário", emoji: "ðŸš¢" },
     { id: "luademel", label: "Roteiros Privativos", emoji: "ðŸ’•" },
   ],
   corporativa: [
     { id: "internacional", label: "Viagens Internacionais Executivas", emoji: "âœˆï¸" },
     { id: "sul", label: "Viagens Nacionais Corporativas", emoji: "ðŸ¢" },
     { id: "luademel", label: "Eventos & Incentivo", emoji: "ðŸŽ¯" },
-    { id: "cruzeiro", label: "ConvenÃ§Ãµes & MICE", emoji: "ðŸ¤" },
+    { id: "cruzeiro", label: "Convenções & MICE", emoji: "ðŸ¤" },
     { id: "aventura", label: "Team Building / Retiros", emoji: "â›°ï¸" },
     { id: "nordeste", label: "Workation / Bleisure", emoji: "ðŸ’¼" },
   ],
   religioso: [
     { id: "internacional", label: "Terra Santa", emoji: "ðŸ•Šï¸" },
-    { id: "luademel", label: "FÃ¡tima & SantuÃ¡rios (Europa)", emoji: "â›ª" },
-    { id: "sul", label: "Aparecida & SantuÃ¡rios BR", emoji: "ðŸ™" },
+    { id: "luademel", label: "Fátima & Santuários (Europa)", emoji: "â›ª" },
+    { id: "sul", label: "Aparecida & Santuários BR", emoji: "ðŸ™" },
     { id: "aventura", label: "Caminho de Santiago", emoji: "ðŸ¥¾" },
-    { id: "nordeste", label: "Juazeiro / CanindÃ©", emoji: "âœï¸" },
+    { id: "nordeste", label: "Juazeiro / Canindé", emoji: "âœï¸" },
     { id: "cruzeiro", label: "Cruzeiros Religiosos", emoji: "ðŸš¢" },
   ],
   milhas: [
-    { id: "internacional", label: "EmissÃµes Internacionais", emoji: "âœˆï¸" },
-    { id: "sul", label: "EmissÃµes DomÃ©sticas", emoji: "ðŸ›«" },
+    { id: "internacional", label: "Emissões Internacionais", emoji: "âœˆï¸" },
+    { id: "sul", label: "Emissões Domésticas", emoji: "ðŸ›«" },
     { id: "luademel", label: "Lua de Mel com Milhas", emoji: "ðŸ’•" },
     { id: "nordeste", label: "Pacotes Nordeste com Milhas", emoji: "ðŸ–ï¸" },
-    { id: "cruzeiro", label: "Cruzeiros + AÃ©reo Pontos", emoji: "ðŸš¢" },
+    { id: "cruzeiro", label: "Cruzeiros + Aéreo Pontos", emoji: "ðŸš¢" },
     { id: "aventura", label: "Roteiros Premium / Executiva", emoji: "ðŸ¥‚" },
   ],
   luxo: [
@@ -78,12 +78,12 @@ const NICHES_BY_AGENCY: Partial<Record<AgencyType, NicheOption[]>> = {
     { id: "luademel", label: "Maldivas / Bora Bora", emoji: "ðŸï¸" },
     { id: "nordeste", label: "Resorts Premium Nordeste", emoji: "ðŸ–ï¸" },
     { id: "cruzeiro", label: "Cruzeiros de Luxo", emoji: "ðŸš¢" },
-    { id: "aventura", label: "SafÃ¡ris / ExpediÃ§Ãµes", emoji: "ðŸ¦" },
-    { id: "sul", label: "Serra GaÃºcha Premium", emoji: "ðŸ·" },
+    { id: "aventura", label: "Safáris / Expedições", emoji: "ðŸ¦" },
+    { id: "sul", label: "Serra Gaúcha Premium", emoji: "ðŸ·" },
   ],
   grupos: [
-    { id: "internacional", label: "ExcursÃµes Internacionais", emoji: "âœˆï¸" },
-    { id: "sul", label: "ExcursÃµes Sul / Serra", emoji: "ðŸšŒ" },
+    { id: "internacional", label: "Excursões Internacionais", emoji: "âœˆï¸" },
+    { id: "sul", label: "Excursões Sul / Serra", emoji: "ðŸšŒ" },
     { id: "nordeste", label: "Caravanas Nordeste", emoji: "ðŸ–ï¸" },
     { id: "luademel", label: "Grupos da Terceira Idade", emoji: "ðŸ‘µ" },
     { id: "aventura", label: "Grupos de Ecoturismo", emoji: "â›°ï¸" },
@@ -92,22 +92,22 @@ const NICHES_BY_AGENCY: Partial<Record<AgencyType, NicheOption[]>> = {
   cruzeiros: [
     { id: "cruzeiro", label: "Cruzeiros pela Costa BR", emoji: "ðŸ‡§ðŸ‡·" },
     { id: "internacional", label: "Cruzeiros Caribe", emoji: "ðŸŒ´" },
-    { id: "luademel", label: "Cruzeiros MediterrÃ¢neo", emoji: "ðŸ›³ï¸" },
+    { id: "luademel", label: "Cruzeiros Mediterrâneo", emoji: "ðŸ›³ï¸" },
     { id: "aventura", label: "Cruzeiros Fiordes / Alasca", emoji: "ðŸ§Š" },
-    { id: "nordeste", label: "Cruzeiros TemÃ¡ticos", emoji: "ðŸŽ¤" },
+    { id: "nordeste", label: "Cruzeiros Temáticos", emoji: "ðŸŽ¤" },
     { id: "sul", label: "Cruzeiros Fluviais", emoji: "ðŸš¢" },
   ],
   ecoturismo: [
     { id: "aventura", label: "Chapadas & Trilhas", emoji: "â›°ï¸" },
-    { id: "nordeste", label: "LenÃ§Ã³is / JalapÃ£o", emoji: "ðŸœï¸" },
+    { id: "nordeste", label: "Lençóis / Jalapão", emoji: "ðŸœï¸" },
     { id: "sul", label: "Bonito / Pantanal", emoji: "ðŸ " },
-    { id: "internacional", label: "PatagÃ´nia / Atacama", emoji: "ðŸ”ï¸" },
+    { id: "internacional", label: "Patagônia / Atacama", emoji: "ðŸ”ï¸" },
     { id: "luademel", label: "Eco Lodges", emoji: "ðŸŒ¿" },
-    { id: "cruzeiro", label: "ExpediÃ§Ãµes AmazÃ´nia", emoji: "ðŸ›¶" },
+    { id: "cruzeiro", label: "Expedições Amazônia", emoji: "ðŸ›¶" },
   ],
   consolidadora: [
-    { id: "internacional", label: "AÃ©reo Internacional", emoji: "âœˆï¸" },
-    { id: "sul", label: "AÃ©reo DomÃ©stico", emoji: "ðŸ›«" },
+    { id: "internacional", label: "Aéreo Internacional", emoji: "âœˆï¸" },
+    { id: "sul", label: "Aéreo Doméstico", emoji: "ðŸ›«" },
     { id: "luademel", label: "Hotelaria Internacional", emoji: "ðŸ¨" },
     { id: "nordeste", label: "Hotelaria Nacional", emoji: "ðŸ–ï¸" },
     { id: "cruzeiro", label: "Cruzeiros (B2B)", emoji: "ðŸš¢" },
@@ -120,17 +120,17 @@ const NICHES_BY_AGENCY: Partial<Record<AgencyType, NicheOption[]>> = {
   outro: NICHES_DEFAULT,
 };
 
-// Destinos sugeridos por tipo de agÃªncia (usado quando faz mais sentido que niche)
+// Destinos sugeridos por tipo de agência (usado quando faz mais sentido que niche)
 const DESTINOS_BY_AGENCY: Partial<Record<AgencyType, string[]>> = {
-  receptiva: ["City Tour completo", "Transfer aeroporto", "Passeio de buggy", "Passeio de barco", "Tour gastronÃ´mico", "Tour histÃ³rico", "Day use em resort", "Passeio fotogrÃ¡fico"],
-  corporativa: ["ReuniÃµes executivas", "ConvenÃ§Ãµes nacionais", "ConvenÃ§Ãµes internacionais", "Viagens de incentivo", "Eventos corporativos", "Team building", "Feiras e congressos", "Bleisure / Workation"],
-  religioso: ["Terra Santa (Israel)", "FÃ¡tima (Portugal)", "Lourdes (FranÃ§a)", "Roma / Vaticano", "Aparecida (SP)", "Juazeiro do Norte (CE)", "Caminho de Santiago", "Medjugorje"],
-  milhas: ["EmissÃ£o Smiles", "EmissÃ£o Latam Pass", "EmissÃ£o TudoAzul", "EmissÃ£o Livelo", "EmissÃ£o Esfera", "Upgrade executiva", "EstratÃ©gia de pontos", "CartÃµes / programas"],
-  luxo: ["Maldivas", "Bora Bora", "Dubai", "Santorini", "SafÃ¡ri Ãfrica", "Aspen", "Toscana", "PolinÃ©sia"],
-  grupos: ["ExcursÃ£o Gramado", "ExcursÃ£o Maragogi", "ExcursÃ£o Beto Carrero", "Caravana Aparecida", "ExcursÃ£o Disney", "ExcursÃ£o Buenos Aires", "Cruzeiro em grupo", "ExcursÃ£o Foz do IguaÃ§u"],
-  cruzeiros: ["Cruzeiro Costa Brasileira", "Cruzeiro Caribe", "Cruzeiro MediterrÃ¢neo", "Cruzeiro Fiordes", "Cruzeiro Alasca", "Cruzeiro TemÃ¡tico (sertanejo, gospel...)", "Cruzeiro Disney", "Cruzeiro RÃ©veillon"],
-  ecoturismo: ["Bonito (MS)", "Chapada Diamantina", "Chapada dos Veadeiros", "JalapÃ£o", "LenÃ§Ã³is Maranhenses", "Pantanal", "Fernando de Noronha", "PatagÃ´nia"],
-  consolidadora: ["Pacotes CVC", "Pacotes Azul Viagens", "Pacotes Decolar", "Hotelaria nacional", "Hotelaria internacional", "AÃ©reo nacional", "AÃ©reo internacional", "Seguro viagem"],
+  receptiva: ["City Tour completo", "Transfer aeroporto", "Passeio de buggy", "Passeio de barco", "Tour gastronômico", "Tour histórico", "Day use em resort", "Passeio fotográfico"],
+  corporativa: ["Reuniões executivas", "Convenções nacionais", "Convenções internacionais", "Viagens de incentivo", "Eventos corporativos", "Team building", "Feiras e congressos", "Bleisure / Workation"],
+  religioso: ["Terra Santa (Israel)", "Fátima (Portugal)", "Lourdes (França)", "Roma / Vaticano", "Aparecida (SP)", "Juazeiro do Norte (CE)", "Caminho de Santiago", "Medjugorje"],
+  milhas: ["Emissão Smiles", "Emissão Latam Pass", "Emissão TudoAzul", "Emissão Livelo", "Emissão Esfera", "Upgrade executiva", "Estratégia de pontos", "Cartões / programas"],
+  luxo: ["Maldivas", "Bora Bora", "Dubai", "Santorini", "Safári África", "Aspen", "Toscana", "Polinésia"],
+  grupos: ["Excursão Gramado", "Excursão Maragogi", "Excursão Beto Carrero", "Caravana Aparecida", "Excursão Disney", "Excursão Buenos Aires", "Cruzeiro em grupo", "Excursão Foz do Iguaçu"],
+  cruzeiros: ["Cruzeiro Costa Brasileira", "Cruzeiro Caribe", "Cruzeiro Mediterrâneo", "Cruzeiro Fiordes", "Cruzeiro Alasca", "Cruzeiro Temático (sertanejo, gospel...)", "Cruzeiro Disney", "Cruzeiro Réveillon"],
+  ecoturismo: ["Bonito (MS)", "Chapada Diamantina", "Chapada dos Veadeiros", "Jalapão", "Lençóis Maranhenses", "Pantanal", "Fernando de Noronha", "Patagônia"],
+  consolidadora: ["Pacotes CVC", "Pacotes Azul Viagens", "Pacotes Decolar", "Hotelaria nacional", "Hotelaria internacional", "Aéreo nacional", "Aéreo internacional", "Seguro viagem"],
 };
 
 interface Props {
@@ -159,7 +159,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
         canvas.width = w; canvas.height = h;
         canvas.getContext("2d")?.drawImage(img, 0, 0, w, h);
         
-        // Limpa chaves pesadas legadas para liberar espaÃ§o no localStorage
+        // Limpa chaves pesadas legadas para liberar espaço no localStorage
         try {
           Object.keys(localStorage).forEach((key) => {
             if (key.startsWith("fabrica-heavy-v1:") && key !== "fabrica-heavy-v1:logoBase64") {
@@ -205,7 +205,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
         {/* Steps Indicator */}
         <div className="flex items-center justify-center gap-4 mb-8">
           {[
-            { s: 1, l: "Perfil EstratÃ©gico" },
+            { s: 1, l: "Perfil Estratégico" },
             { s: 2, l: "Maturidade Digital" }
           ].map((x) => (
             <div key={x.s} className="flex items-center gap-2">
@@ -230,7 +230,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
             >
               <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
-                1. Identidade & Perfil da AgÃªncia
+                1. Identidade & Perfil da Agência
               </h3>
 
               {/* ðŸ†• LOGO E NOME EM DESTAQUE */}
@@ -266,7 +266,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
                    
                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                      <div>
-                       <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Tipo de agÃªncia *</label>
+                       <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Tipo de agência *</label>
                        <select
                          value={state.agencyType}
                          onChange={(e) => update({ agencyType: e.target.value as AgencyType })}
@@ -285,7 +285,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/[0.02] border border-white/[0.05] rounded-xl p-4">
                  <FabField label="@ do Instagram Profissional" value={state.instagram} onChange={(v) => update({ instagram: v.replace(/^@/, "") })} placeholder="suaagencia" />
-                 <FabPhoneField label="WhatsApp de Ventas (con cÃ³digo) *" value={state.whatsapp} onChange={(v) => update({ whatsapp: v })} />
+                 <FabPhoneField label="WhatsApp de Ventas (con código) *" value={state.whatsapp} onChange={(v) => update({ whatsapp: v })} />
               </div>
               <div>
                 <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">Nicho / Carro-chefe *</label>
@@ -325,18 +325,18 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FabSelect
-                  label="FrequÃªncia de Postagem *"
+                  label="Frequência de Postagem *"
                   value={state.postFrequency}
                   onChange={(v) => update({ postFrequency: v })}
                   options={[
-                    { v: "diario", l: "DiÃ¡rio (Consistente)" },
+                    { v: "diario", l: "Diário (Consistente)" },
                     { v: "semanal", l: "Semanal (Algumas vezes)" },
-                    { v: "mensal", l: "Mensal (Muito esporÃ¡dico)" },
+                    { v: "mensal", l: "Mensal (Muito esporádico)" },
                     { v: "raro", l: "Raramente publico" }
                   ]}
                 />
                 <FabSelect
-                  label="Tamanho da AudiÃªncia *"
+                  label="Tamanho da Audiência *"
                   value={state.followers}
                   onChange={(v) => update({ followers: v })}
                   options={[
@@ -350,16 +350,16 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FabSelect
-                  label="Linha Editorial / ConteÃºdo *"
+                  label="Linha Editorial / Conteúdo *"
                   value={state.contentStrategy || "promo"}
                   onChange={(v) => update({ contentStrategy: v })}
                   options={[
-                    { v: "promo", l: "Foco 100% em PromoÃ§Ãµes / Ofertas" },
-                    { v: "misto", l: "Misto (Dicas de valor + PromoÃ§Ãµes)" }
+                    { v: "promo", l: "Foco 100% em Promoções / Ofertas" },
+                    { v: "misto", l: "Misto (Dicas de valor + Promoções)" }
                   ]}
                 />
                 <FabField 
-                  label="Vendas no mÃªs (MÃ©dia de Fechamentos) *" 
+                  label="Vendas no mês (Média de Fechamentos) *" 
                   value={state.fechamentosMes} 
                   onChange={(v) => update({ fechamentosMes: v.replace(/\D/g, "") })} 
                   placeholder="Ex: 15" 
@@ -368,21 +368,21 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
 
               <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                  <FabToggle label="Aparecem pessoas reais (donos/equipe)?" value={!!state.hasPeople} onChange={(v) => update({ hasPeople: v })} />
-                 <FabToggle label="Posta Reels com frequÃªncia?" value={!!state.usesReels} onChange={(v) => update({ usesReels: v })} />
-                 <FabToggle label="Investe em AnÃºncios Pagos (TrÃ¡fego)?" value={!!state.investeAds} onChange={(v) => update({ investeAds: v })} />
+                 <FabToggle label="Posta Reels com frequência?" value={!!state.usesReels} onChange={(v) => update({ usesReels: v })} />
+                 <FabToggle label="Investe em Anúncios Pagos (Tráfego)?" value={!!state.investeAds} onChange={(v) => update({ investeAds: v })} />
                  <FabToggle label="Tem Depoimentos de Clientes em Destaque?" value={!!state.hasDepoimentos} onChange={(v) => update({ hasDepoimentos: v })} />
               </div>
 
               <div className="flex gap-3 bg-blue-500/10 border border-blue-500/20 p-3 rounded-xl items-start">
                 <div className="text-xl">ðŸ’¡</div>
-                <p className="text-[11px] text-blue-200 leading-relaxed">Seja 100% transparente! Esse diagnÃ³stico Ã© para VOCÃŠ descobrir exatamente onde estÃ¡ o gargalo que te impede de faturar mais.</p>
+                <p className="text-[11px] text-blue-200 leading-relaxed">Seja 100% transparente! Esse diagnóstico é para VOCÃŠ descobrir exatamente onde está o gargalo que te impede de faturar mais.</p>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* AÃ§Ãµes do formulÃ¡rio */}
+      {/* Ações do formulário */}
       <div className="flex flex-col sm:flex-row gap-3 mt-6">
         {formStep === 1 ? (
           <>
@@ -398,7 +398,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
               className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110 shadow-lg"
               style={{ background: `linear-gradient(135deg, ${state.primaryColor || "#F59E0B"}, #FCD34D)` }}
             >
-              PrÃ³xima Etapa: DiagnÃ³stico <ChevronRight className="w-4 h-4" />
+              Próxima Etapa: Diagnóstico <ChevronRight className="w-4 h-4" />
             </button>
           </>
         ) : (
@@ -415,7 +415,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
               className="flex-[2] py-4 rounded-xl font-black text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110 shadow-lg shadow-yellow-500/20 uppercase tracking-wider text-sm"
               style={{ background: `linear-gradient(135deg, #10B981, #FCD34D)` }}
             >
-              ðŸ”¥ Gerar Meu DossiÃª Completo
+              ðŸ”¥ Gerar Meu Dossiê Completo
             </button>
           </>
         )}
@@ -436,7 +436,7 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
 
   const handleSave = () => {
     if (!user) {
-      toast.error("FaÃ§a login para salvar seu diagnÃ³stico", {
+      toast.error("Faça login para salvar seu diagnóstico", {
         action: { label: "Entrar", onClick: () => (window.location.href = "/auth") },
       });
       return;
@@ -473,7 +473,7 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
               <div className="text-[10px] opacity-80 mt-0.5">/ 100</div>
             </div>
             <div>
-              <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: scoreColor }}>NÃ­vel {result.level} â€” {result.levelName}</div>
+              <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: scoreColor }}>Nível {result.level} â€” {result.levelName}</div>
               <p className="text-sm text-gray-600 leading-relaxed">{result.levelDescription}</p>
             </div>
           </div>
@@ -499,11 +499,11 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
             ))}
           </div>
 
-          <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-500 mb-4 pb-2 border-b-2 border-gray-100">âœ… Plano de AÃ§Ã£o</h3>
+          <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-500 mb-4 pb-2 border-b-2 border-gray-100">âœ… Plano de Ação</h3>
           {[
-            { title: "Imediato (atÃ© 7 dias)", color: "bg-red-100 text-red-700", items: checklist.imediato },
-            { title: "PrÃ³ximos 15 dias", color: "bg-amber-100 text-amber-700", items: checklist.quinzeDias },
-            { title: "MÃªs 2 em diante", color: "bg-green-100 text-green-700", items: checklist.mesDois },
+            { title: "Imediato (até 7 dias)", color: "bg-red-100 text-red-700", items: checklist.imediato },
+            { title: "Próximos 15 dias", color: "bg-amber-100 text-amber-700", items: checklist.quinzeDias },
+            { title: "Mês 2 em diante", color: "bg-green-100 text-green-700", items: checklist.mesDois },
           ].map((phase, i) => (
             <div key={i} className="mb-5">
               <div className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
@@ -520,7 +520,7 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
         </div>
       </motion.div>
 
-      {/* Action buttons - 3 opÃ§Ãµes principais */}
+      {/* Action buttons - 3 opções principais */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-5">
         <button
           onClick={handleSave}
@@ -543,7 +543,7 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
         </button>
       </div>
 
-      {/* Refazer / Editar formulÃ¡rio */}
+      {/* Refazer / Editar formulário */}
       <div className="grid grid-cols-1 gap-2 mt-3">
         <button
           onClick={onEdit}
@@ -554,7 +554,7 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
       </div>
 
       <p className="text-[11px] text-white/40 text-center mt-2 px-4">
-        Seus dados sÃ£o preservados. Adicione novos destinos, pacotes e ajustes a qualquer momento â€” tudo fica salvo na sua conta.
+        Seus dados são preservados. Adicione novos destinos, pacotes e ajustes a qualquer momento â€” tudo fica salvo na sua conta.
       </p>
 
       <div className="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row gap-4">
@@ -569,7 +569,7 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
           className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all hover:brightness-110"
           style={{ background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)` }}
         >
-          AvanÃ§ar para Plano <ArrowRight className="w-4 h-4" />
+          Avançar para Plano <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>
@@ -602,14 +602,14 @@ const COUNTRIES: { code: string; name: string; flag: string; dial: string; maxDi
   { code: "PT", name: "Portugal", flag: "ðŸ‡µðŸ‡¹", dial: "+351", maxDigits: 9, format: (d) => d.replace(/(\d{3})(?=\d)/g, "$1 ") },
   { code: "ES", name: "Espanha", flag: "ðŸ‡ªðŸ‡¸", dial: "+34", maxDigits: 9, format: (d) => d.replace(/(\d{3})(?=\d)/g, "$1 ") },
   { code: "AR", name: "Argentina", flag: "ðŸ‡¦ðŸ‡·", dial: "+54", maxDigits: 11, format: (d) => d },
-  { code: "MX", name: "MÃ©xico", flag: "ðŸ‡²ðŸ‡½", dial: "+52", maxDigits: 10, format: (d) => d },
+  { code: "MX", name: "México", flag: "ðŸ‡²ðŸ‡½", dial: "+52", maxDigits: 10, format: (d) => d },
   { code: "CL", name: "Chile", flag: "ðŸ‡¨ðŸ‡±", dial: "+56", maxDigits: 9, format: (d) => d },
-  { code: "CO", name: "ColÃ´mbia", flag: "ðŸ‡¨ðŸ‡´", dial: "+57", maxDigits: 10, format: (d) => d },
+  { code: "CO", name: "Colômbia", flag: "ðŸ‡¨ðŸ‡´", dial: "+57", maxDigits: 10, format: (d) => d },
   { code: "PE", name: "Peru", flag: "ðŸ‡µðŸ‡ª", dial: "+51", maxDigits: 9, format: (d) => d },
   { code: "UY", name: "Uruguai", flag: "ðŸ‡ºðŸ‡¾", dial: "+598", maxDigits: 9, format: (d) => d },
   { code: "PY", name: "Paraguai", flag: "ðŸ‡µðŸ‡¾", dial: "+595", maxDigits: 9, format: (d) => d },
-  { code: "FR", name: "FranÃ§a", flag: "ðŸ‡«ðŸ‡·", dial: "+33", maxDigits: 9, format: (d) => d },
-  { code: "IT", name: "ItÃ¡lia", flag: "ðŸ‡®ðŸ‡¹", dial: "+39", maxDigits: 10, format: (d) => d },
+  { code: "FR", name: "França", flag: "ðŸ‡«ðŸ‡·", dial: "+33", maxDigits: 9, format: (d) => d },
+  { code: "IT", name: "Itália", flag: "ðŸ‡®ðŸ‡¹", dial: "+39", maxDigits: 10, format: (d) => d },
   { code: "DE", name: "Alemanha", flag: "ðŸ‡©ðŸ‡ª", dial: "+49", maxDigits: 11, format: (d) => d },
   { code: "GB", name: "Reino Unido", flag: "ðŸ‡¬ðŸ‡§", dial: "+44", maxDigits: 10, format: (d) => d },
 ];
@@ -627,7 +627,7 @@ const FabPhoneField = ({ label, value, onChange }: { label: string; value: strin
           type="button"
           onClick={() => setOpen((v) => !v)}
           className="flex items-center gap-1.5 px-3 border-r border-white/10 bg-white/[0.03] text-sm text-white/85 hover:bg-white/[0.06] transition-colors select-none"
-          aria-label="Selecionar paÃ­s"
+          aria-label="Selecionar país"
         >
           <span className="text-base leading-none" aria-hidden>{country.flag}</span>
           <span className="font-medium">{country.dial}</span>
@@ -655,7 +655,7 @@ const FabPhoneField = ({ label, value, onChange }: { label: string; value: strin
           autoComplete="tel-national"
           value={country.format(value.replace(/\D/g, "").slice(0, country.maxDigits))}
           onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, country.maxDigits))}
-          placeholder={country.code === "BR" ? "(11) 99999-9999" : "NÃºmero de telefone"}
+          placeholder={country.code === "BR" ? "(11) 99999-9999" : "Número de telefone"}
           className="flex-1 bg-transparent px-3 py-3 text-white placeholder:text-white/30 outline-none min-w-0"
         />
       </div>
@@ -692,12 +692,12 @@ const FabToggle = ({ label, value, onChange }: { label: string; value: boolean; 
 );
 
 const DESTINOS_SUGERIDOS: Record<string, string[]> = {
-  nordeste: ["Maragogi", "Jericoacoara", "Fernando de Noronha", "MaceiÃ³", "Natal", "Porto de Galinhas", "Salvador", "Pipa"],
-  sul: ["FlorianÃ³polis", "Gramado", "BalneÃ¡rio CamboriÃº", "Bombinhas", "Curitiba", "Foz do IguaÃ§u"],
-  internacional: ["CancÃºn", "Punta Cana", "Orlando", "Buenos Aires", "Paris", "Lisboa", "Dubai", "Maldivas"],
-  cruzeiro: ["Cruzeiro Caribe", "Cruzeiro MediterrÃ¢neo", "Cruzeiro pela Costa Brasileira"],
-  aventura: ["Chapada Diamantina", "Chapada dos Veadeiros", "Bonito", "JalapÃ£o", "LenÃ§Ã³is Maranhenses"],
-  luademel: ["Maldivas", "Bora Bora", "Santorini", "Maragogi", "Fernando de Noronha", "CancÃºn"],
+  nordeste: ["Maragogi", "Jericoacoara", "Fernando de Noronha", "Maceió", "Natal", "Porto de Galinhas", "Salvador", "Pipa"],
+  sul: ["Florianópolis", "Gramado", "Balneário Camboriú", "Bombinhas", "Curitiba", "Foz do Iguaçu"],
+  internacional: ["Cancún", "Punta Cana", "Orlando", "Buenos Aires", "Paris", "Lisboa", "Dubai", "Maldivas"],
+  cruzeiro: ["Cruzeiro Caribe", "Cruzeiro Mediterrâneo", "Cruzeiro pela Costa Brasileira"],
+  aventura: ["Chapada Diamantina", "Chapada dos Veadeiros", "Bonito", "Jalapão", "Lençóis Maranhenses"],
+  luademel: ["Maldivas", "Bora Bora", "Santorini", "Maragogi", "Fernando de Noronha", "Cancún"],
 };
 
 const DestinosInput = ({ destinos, onChange, primaryColor }: { destinos: string[]; onChange: (d: string[]) => void; primaryColor: string }) => {
@@ -751,7 +751,7 @@ const DestinosInput = ({ destinos, onChange, primaryColor }: { destinos: string[
         {sugestoes.length > 0 && (
           <div className="pt-3 border-t border-white/10">
             <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 flex items-center gap-2">
-              SugestÃµes RÃ¡pidas
+              Sugestões Rápidas
             </div>
             <div className="flex flex-wrap gap-1.5">
               {sugestoes.slice(0, 8).map((s) => (
