@@ -1097,7 +1097,7 @@ const IndexES = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <SeoMetadata title="Canva Viajes | Marketing y Diseños para Agencias" description="Videos y diseños listos para agencias de viajes. Contenido para Instagram editable en Canva." schema={homeEsSchema} suffixTitle={false} />
+      <SeoMetadata title="Videos para Agencias de Viajes" description="Videos y diseños listos para agencias de viajes. Contenido para Instagram editable en Canva." url="https://canvaviagem.com/es" />
       <SpanishPixel />
       <Header />
 
