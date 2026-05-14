@@ -1,6 +1,6 @@
 ﻿import { useState } from "react";
 import { useFabricaContext, type Niche, type AgencyType } from "@/hooks/useFabricaContext";
-import { calculateScore, getChecklistByLevel } from "@/lib/fabrica-scoring";
+import { calculateScore, getChecklistByLevel } from "@/lib/fabrica-scoring-es";
 import { generateDiagnosticoPDF, openWhatsappWithResumo } from "@/lib/fabrica-pdf";
 import { useSaveDiagnostico, useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import { useAuth } from "@/contexts/AuthContext";

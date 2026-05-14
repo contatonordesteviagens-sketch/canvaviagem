@@ -2,7 +2,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useFabricaContext, type Pacote, type Depoimento } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
-import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export";
+import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export-es";
 import {
   Plus,
   Trash2,
