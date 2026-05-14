@@ -1435,6 +1435,33 @@ const Index = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Helmet>
         {lcpImage && <link rel="preload" as="image" href={lcpImage} />}
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": "Canva Viagem — Plataforma de Conteúdo para Agência de Viagem",
+          "description": "Plataforma com 250+ vídeos prontos, artes editáveis no Canva, calendário editorial de 365 dias e 11 agentes de IA de marketing para agências de viagem.",
+          "image": ["https://storage.googleapis.com/gpt-engineer-file-uploads/gv52nlymyDZCKjaUbvIf7y1xoY12/social-images/social-1767713927214-canva mobile.jpg"],
+          "brand": { "@type": "Brand", "name": "Canva Viagem" },
+          "offers": {
+            "@type": "AggregateOffer",
+            "lowPrice": "16.41", "highPrice": "29.00", "priceCurrency": "BRL", "offerCount": "2",
+            "offers": [
+              { "@type": "Offer", "name": "Plano Anual", "price": "197.00", "priceCurrency": "BRL", "availability": "https://schema.org/InStock", "url": "https://canvaviagem.com/planos", "priceValidUntil": "2026-12-31" },
+              { "@type": "Offer", "name": "Plano Mensal", "price": "29.00", "priceCurrency": "BRL", "availability": "https://schema.org/InStock", "url": "https://canvaviagem.com/planos", "priceValidUntil": "2026-12-31" }
+            ]
+          },
+          "seller": { "@type": "Organization", "name": "Canva Viagem" }
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            { "@type": "Question", "name": "O que é o Canva Viagem?", "acceptedAnswer": { "@type": "Answer", "text": "Plataforma com 250+ vídeos prontos para agências de viagem postarem no Instagram. Editáveis no Canva. Planos a partir de R$29/mês." } },
+            { "@type": "Question", "name": "Preciso saber editar vídeo?", "acceptedAnswer": { "@type": "Answer", "text": "Não. Os vídeos já estão prontos e editáveis no Canva, que é gratuito e fácil de usar." } },
+            { "@type": "Question", "name": "Funcionam para qual rede social?", "acceptedAnswer": { "@type": "Answer", "text": "Instagram (Reels, Feed e Stories), TikTok e YouTube Shorts." } },
+            { "@type": "Question", "name": "Qual o preço?", "acceptedAnswer": { "@type": "Answer", "text": "Plano Anual R$197 (~R$16,41/mês) ou Mensal R$29, via Stripe." } }
+          ]
+        })}</script>
       </Helmet>
       <SeoMetadata
         title="Vídeos prontos para Agência de Viagem"
