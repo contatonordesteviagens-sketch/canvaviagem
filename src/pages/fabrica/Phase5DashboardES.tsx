@@ -21,7 +21,7 @@ import {
   MessageSquare
 } from "lucide-react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { es } from "date-fns/locale";
 
 export const Phase5DashboardES = () => {
   const { state, setPhase } = useFabricaContext();
@@ -34,12 +34,12 @@ export const Phase5DashboardES = () => {
   
   const handleDashboardPublish = async () => {
     if (!user?.id) {
-      toast.error("Faça login para publicar.");
+      toast.error("Inicie sesión para publicar.");
       return;
     }
     
     setIsPublishing(true);
-    const loadingToast = toast.loading("Publicando e ativando seu site...");
+    const loadingToast = toast.loading("Publicando y activando su sitio...");
     
     try {
       const html = buildLandingHTML(state, user.id);
@@ -67,7 +67,7 @@ export const Phase5DashboardES = () => {
       if (uploadError) throw uploadError;
       
       toast.dismiss(loadingToast);
-      toast.success("🚀 SITE PUBLICADO E ATIVO COM SUCESSO!");
+      toast.success("🚀 ¡SITIO PUBLICADO Y ACTIVO CON ÉXITO!");
       
       if (typeof window !== "undefined" && (window as any).confetti) {
          (window as any).confetti();
@@ -76,7 +76,7 @@ export const Phase5DashboardES = () => {
     } catch (err) {
       console.error("Publish error:", err);
       toast.dismiss(loadingToast);
-      toast.error("Erro ao publicar site.");
+      toast.error("Error al publicar el sitio.");
     } finally {
       setIsPublishing(false);
     }
@@ -130,7 +130,7 @@ export const Phase5DashboardES = () => {
           .eq("event_type", "page_view")
           .contains("event_data", { agency_id: agencyTrackingId });
 
-        // 2. Contagem REAL de Cliques WhatsApp
+        // 2. Contagem REAL de Clics WhatsApp
         const { count: cCount } = await supabase
           .from("analytics_events")
           .select("*", { count: "exact", head: true })
@@ -160,7 +160,7 @@ export const Phase5DashboardES = () => {
         });
         setLeadsList(lData || []);
       } catch (e) {
-        console.warn("Falha ao carregar métricas reais:", e);
+        console.warn("Fallo al cargar métricas reales:", e);
       } finally {
         setLoading(false);
       }
@@ -169,23 +169,23 @@ export const Phase5DashboardES = () => {
     fetchRealMetrics();
   }, [state.agencyName]);
 
-  const currentDay = format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR });
+  const currentDay = format(new Date(), "EEEE, d 'de' MMMM", { locale: es });
   const formatString = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
   // Lançamentos da semana (Ponto 10) - Destaques que mudam dinamicamente
   const NOVIDADES = [
     {
-      tag: "LANÇAMENTO",
-      title: "Novos Templates de Gramado/RS",
-      desc: "12 novas artes focadas na temporada de inverno 2024 acabam de entrar na Fábrica.",
-      date: "Hoje",
+      tag: "LANZAMIENTO",
+      title: "Nuevos Templates de Cancún",
+      desc: "12 nuevas artes enfocadas en la temporada de invierno 2024 acaban de entrar en la Fábrica.",
+      date: "Hoy",
       color: "amber"
     },
     {
-      tag: "ATUALIZAÇÃO",
+      tag: "ACTUALIZACIÓN",
       title: "Mecanismo Lote A/B Premium",
       desc: "Ahora puedes generar 3 versiones de tus diseños a la vez gastando solo 1 crédito.",
-      date: "Ontem",
+      date: "Ayer",
       color: "indigo"
     }
   ];
@@ -203,7 +203,7 @@ export const Phase5DashboardES = () => {
     
     let badge = { n: "Novato", e: "🐣", c: "text-gray-400" };
     if (points === 100) badge = { n: "Agência Pró", e: "🏆", c: "text-amber-400" };
-    else if (points >= 50) badge = { n: "Em Decolagem", e: "🚀", c: "text-blue-400" };
+    else if (points >= 50) badge = { n: "En Despegue", e: "🚀", c: "text-blue-400" };
     
     return { points, badge, count };
   };
@@ -227,17 +227,17 @@ export const Phase5DashboardES = () => {
           <div className="text-center sm:text-left flex-1">
             <div className="text-xs font-bold text-white/40 uppercase tracking-widest mb-1">{formatString(currentDay)}</div>
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-2">
-              Olá, {state.agencyName || "Agência"}! 👋
+              ¡Hola, {state.agencyName || "Agência"}! 👋
             </h2>
             <p className="text-sm text-white/60 max-w-md leading-relaxed">
-              Diagnóstico: <span className="font-bold text-emerald-400">Nível {state.level || 1}</span> • {state.selectedPackages.length} Pacotes Ativos no Site.
+              Diagnóstico: <span className="font-bold text-emerald-400">Nível {state.level || 1}</span> • {state.selectedPackages.length} Paquetes Activos en el Sitio.
             </p>
           </div>
           <button 
             onClick={() => setPhase(3)}
             className="text-[10px] font-bold bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-2 rounded-full text-white/60 transition-all hover:text-white"
           >
-            ✏️ Editar Dados
+            ✏️ Editar Datos
           </button>
         </div>
       </div>
@@ -251,7 +251,7 @@ export const Phase5DashboardES = () => {
            <div className="flex-1">
              <div className="flex items-center justify-between mb-1.5">
                <span className={`text-xs font-extrabold uppercase tracking-wider ${progress.badge.c}`}>{progress.badge.n}</span>
-               <span className="text-[10px] font-bold text-white/40">{progress.points}% Concluído</span>
+               <span className="text-[10px] font-bold text-white/40">{progress.points}% Completado</span>
              </div>
              <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                <div className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-1000" style={{ width: `${progress.points}%` }} />
@@ -259,7 +259,7 @@ export const Phase5DashboardES = () => {
            </div>
         </div>
         <div className="text-right hidden sm:block pl-4 border-l border-white/10">
-           <div className="text-[10px] font-bold text-white/40 uppercase">Passos Ativos</div>
+           <div className="text-[10px] font-bold text-white/40 uppercase">Pasos Activos</div>
            <div className="text-sm font-black text-white">{progress.count}/4</div>
         </div>
       </div>
@@ -273,7 +273,7 @@ export const Phase5DashboardES = () => {
               <Users className="w-5 h-5" />
             </div>
             <div className="text-[10px] font-bold px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/20 flex items-center gap-0.5">
-              AO VIVO
+              EN VIVO
             </div>
           </div>
           <div className="text-3xl font-black text-white mb-0.5">
@@ -292,13 +292,13 @@ export const Phase5DashboardES = () => {
               <MousePointerClick className="w-5 h-5" />
             </div>
             <div className="text-[10px] font-bold px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded-full border border-blue-500/20 flex items-center gap-0.5">
-              CONVERSÃO
+              CONVERSIÓN
             </div>
           </div>
           <div className="text-3xl font-black text-white mb-0.5">
             {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : stats.clicks}
           </div>
-          <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Cliques WhatsApp</div>
+          <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Clics WhatsApp</div>
           <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
             <div className="h-full bg-blue-500 rounded-full w-[40%] animate-in slide-in-from-left duration-1000 delay-100" />
           </div>
@@ -311,13 +311,13 @@ export const Phase5DashboardES = () => {
               <MessageSquare className="w-5 h-5" />
             </div>
             <div className="text-[10px] font-bold px-2 py-0.5 bg-violet-500/20 text-violet-300 rounded-full border border-violet-500/20">
-              {stats.leads > 0 ? "RECEBIDOS" : "AGUARDANDO"}
+              {stats.leads > 0 ? "RECIBIDOS" : "ESPERANDO"}
             </div>
           </div>
           <div className="text-3xl font-black text-white mb-0.5">
             {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : stats.leads}
           </div>
-          <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Formulários Preenchidos</div>
+          <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Formularios Completados</div>
           <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
             <div className="h-full bg-violet-500 rounded-full w-[25%] animate-in slide-in-from-left duration-1000 delay-200" />
           </div>
@@ -334,22 +334,22 @@ export const Phase5DashboardES = () => {
              <div className="flex items-center justify-between mb-6 relative">
                <h3 className="text-sm font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
                  <Activity className={`w-4 h-4 ${siteExists ? 'text-emerald-400' : siteExists === false ? 'text-amber-400' : 'text-white/40'}`} />
-                 {siteExists ? "Seu Site Está No Ar!" : siteExists === false ? "Site Aguardando Ativação" : "Verificando Status..."}
+                 {siteExists ? "¡Tu Sitio Está Online!" : siteExists === false ? "Sitio Esperando Activación" : "Verificando Estado..."}
                </h3>
                {siteExists ? (
                  <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-400 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/20">
                    <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                   ONLINE & ATIVO
+                   ONLINE Y ACTIVO
                  </span>
                ) : siteExists === false ? (
                  <span className="inline-flex items-center gap-1 text-[10px] font-black text-amber-400 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
                    <span className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
-                   AGUARDANDO ATIVAÇÃO
+                   ESPERANDO ATIVAÇÃO
                  </span>
                ) : (
                  <span className="inline-flex items-center gap-1 text-[10px] font-black text-white/30 px-2.5 py-1 rounded-full bg-white/5 border border-white/10">
                    <Loader2 className="w-3 h-3 animate-spin" />
-                   CHECANDO
+                   REVISANDO
                  </span>
                )}
              </div>
@@ -375,12 +375,12 @@ export const Phase5DashboardES = () => {
                          <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 group transition-all">
                             <div className="flex items-center justify-between mb-2">
                                <div className="text-[10px] font-bold text-emerald-300/80 uppercase tracking-wider flex items-center gap-1.5">
-                                  <Sparkles className="w-3 h-3" /> Seu Subdomínio Profissional
+                                  <Sparkles className="w-3 h-3" /> Tu Subdominio Profesional
                                </div>
                                <button 
                                   onClick={() => {
                                      navigator.clipboard.writeText(subdomainUrl);
-                                     toast.success("Link oficial copiado!");
+                                     toast.success("¡¡Link oficial copiado!");
                                   }}
                                   className="text-[10px] text-white/40 hover:text-white flex items-center gap-1"
                                   title="Copiar Link"
@@ -402,7 +402,7 @@ export const Phase5DashboardES = () => {
                                  {isPublishing ? (
                                     <><Loader2 className="w-4 h-4 animate-spin" /> PUBLICANDO...</>
                                  ) : (
-                                    <><Sparkles className="w-4 h-4" /> ATIVAR / ATUALIZAR SITE AGORA</>
+                                    <><Sparkles className="w-4 h-4" /> ACTIVAR / ACTUALIZAR SITIO AHORA</>
                                  )}
                               </button>
                               
@@ -412,11 +412,11 @@ export const Phase5DashboardES = () => {
                                  rel="noreferrer"
                                  className="w-full py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all"
                               >
-                                 <Eye className="w-3.5 h-3.5" /> Visualizar Site Online
+                                 <Eye className="w-3.5 h-3.5" /> Visualizar Sitio Online
                               </a>
                            </div>
                            <p className="text-[9px] text-white/40 mt-2 text-center">
-                              ℹ️ Você precisa clicar em Ativar acima pelo menos uma vez para o link acima carregar e não dar erro 404.
+                              ℹ️ Debes hacer clic en Activar arriba al menos una vez para que el link cargue y no dé error 404.
                            </p>
                         </div>
                       </>
@@ -430,7 +430,7 @@ export const Phase5DashboardES = () => {
         <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-6 flex flex-col">
           <div className="flex items-center gap-2 mb-6">
             <Newspaper className="w-5 h-5 text-indigo-400" />
-            <h3 className="font-extrabold text-white uppercase tracking-widest text-sm">Novidades da Semana</h3>
+            <h3 className="font-extrabold text-white uppercase tracking-widest text-sm">Novedades de la Semana</h3>
           </div>
 
           <div className="space-y-4 flex-1">
@@ -454,7 +454,7 @@ export const Phase5DashboardES = () => {
           <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-[10px] font-bold text-white/60">Sistema Atualizado</span>
+              <span className="text-[10px] font-bold text-white/60">Sistema Actualizado</span>
             </div>
             <span className="text-[9px] text-white/30 font-mono">v2.5.1-prod</span>
           </div>
@@ -470,12 +470,12 @@ export const Phase5DashboardES = () => {
                   <Users className="w-5 h-5" />
                </div>
                <div>
-                  <h3 className="font-black text-white text-base tracking-tight">Carteira de Clientes (Leads)</h3>
-                  <p className="text-[11px] text-white/50">Pessoas interessadas que preencheram o formulário no seu site.</p>
+                  <h3 className="font-black text-white text-base tracking-tight">Cartera de Clientes (Leads)</h3>
+                  <p className="text-[11px] text-white/50">Personas interesadas que completaron el formulario en tu sitio.</p>
                </div>
             </div>
             <div className="hidden sm:block text-[10px] font-extrabold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full animate-pulse">
-               DADOS AO VIVO
+               DADOS EN VIVO
             </div>
          </div>
 
@@ -483,17 +483,17 @@ export const Phase5DashboardES = () => {
             {leadsList.length === 0 ? (
                <div className="p-12 text-center flex flex-col items-center justify-center space-y-3 text-white/30">
                   <MousePointerClick className="w-8 h-8 opacity-40" />
-                  <div className="text-sm font-medium">Nenhum lead recebido ainda.</div>
-                  <p className="text-[10px] max-w-xs leading-relaxed">Assim que alguém clicar em comprar no seu site, os dados aparecerão aqui automaticamente em tempo real.</p>
+                  <div className="text-sm font-medium">Ningún lead recibido aún.</div>
+                  <p className="text-[10px] max-w-xs leading-relaxed">Tan pronto como alguien haga clic en comprar en tu sitio, los datos aparecerán aquí automáticamente en tiempo real.</p>
                </div>
             ) : (
                <table className="w-full text-left text-sm border-collapse">
                   <thead>
                      <tr className="bg-white/[0.02] border-b border-white/5">
-                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Data/Hora</th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Nome do Cliente</th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Interesse</th>
-                        <th className="px-6 py-4 text-right text-[10px] font-bold text-white/40 uppercase tracking-wider">Ação</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Fecha/Hora</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Nombre del Cliente</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Interés</th>
+                        <th className="px-6 py-4 text-right text-[10px] font-bold text-white/40 uppercase tracking-wider">Acción</th>
                      </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
@@ -513,14 +513,14 @@ export const Phase5DashboardES = () => {
                                        {String(data.name || "L").charAt(0).toUpperCase() || "L"}
                                     </div>
                                     <div>
-                                       <div className="font-bold text-white group-hover:text-violet-300 transition-colors">{data.name || "Não informado"}</div>
-                                       <div className="text-[10px] text-white/40">{data.phone || "Sem telefone"}</div>
+                                       <div className="font-bold text-white group-hover:text-violet-300 transition-colors">{data.name || "No informado"}</div>
+                                       <div className="text-[10px] text-white/40">{data.phone || "Sin teléfono"}</div>
                                     </div>
                                  </div>
                               </td>
                               <td className="px-6 py-4">
                                  <span className="inline-flex px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] font-medium text-white/70 max-w-[180px] truncate">
-                                    {data.interest || "Navegação Geral"}
+                                    {data.interest || "Navegación General"}
                                  </span>
                               </td>
                               <td className="px-6 py-4 text-right">
@@ -531,10 +531,10 @@ export const Phase5DashboardES = () => {
                                        rel="noreferrer"
                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#25D366] hover:bg-[#22c35e] text-white text-[11px] font-black rounded-lg transition-all active:scale-95 shadow-lg shadow-green-900/20"
                                     >
-                                       <MessageSquare className="w-3.5 h-3.5" /> Chamar Whats
+                                       <MessageSquare className="w-3.5 h-3.5" /> Llamar Whats
                                     </a>
                                  ) : (
-                                    <span className="text-[10px] text-white/30">Sem contato</span>
+                                    <span className="text-[10px] text-white/30">Sin contacto</span>
                                  )}
                               </td>
                            </tr>
@@ -552,37 +552,37 @@ export const Phase5DashboardES = () => {
           <div className="bg-[#121214] border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
              <div className="p-6 border-b border-white/10 bg-gradient-to-br from-amber-500/10 to-transparent">
                 <h3 className="text-lg font-black text-white flex items-center gap-2">
-                  <ExternalLink className="w-5 h-5 text-amber-400" /> Entendendo o Subdomínio
+                  <ExternalLink className="w-5 h-5 text-amber-400" /> Entendiendo el Subdominio
                 </h3>
-                <p className="text-xs text-white/50 mt-1">Como este recurso de escala funciona.</p>
+                <p className="text-xs text-white/50 mt-1">Cómo funciona este recurso de escala.</p>
              </div>
              <div className="p-6 space-y-5">
                 <div className="space-y-3 text-sm text-white/70 leading-relaxed">
                    <p>
-                     <strong className="text-white">1. É Automático?</strong><br/>
+                     <strong className="text-white">1. ¿Es Automático?</strong><br/>
                      ¡Sí! El sistema solo *reserva* el nombre. Para que funcione en internet, tú (el dueño de la plataforma) necesitas apuntar tu dominio principal al servidor (Vercel/Netlify) usando una regla DNS llamada 'Wildcard' (*).
                    </p>
                    <p>
-                     <strong className="text-white">2. Tem custo ou limite de Tokens?</strong><br/>
-                     <span className="text-emerald-400 font-bold">ZERO CUSTO.</span> Não usa tokens de IA! O site gerado é estático (HTML/CSS), o que significa que 1.000 ou 10.000 pessoas acessando não custam absolutamente nada nos servidores gratuitos.
+                     <strong className="text-white">2. ¿Tiene costo o límite de Tokens?</strong><br/>
+                     <span className="text-emerald-400 font-bold">CERO COSTO.</span> ¡No usa tokens de IA! El sitio generado es estático (HTML/CSS), lo que significa que 1.000 o 10.000 personas accediendo no cuestan absolutamente nada en los servidores gratuitos.
                    </p>
                    <p>
-                     <strong className="text-white">3. Onde ficam os dados?</strong><br/>
-                     Tudo no seu Supabase! Quando o site carrega, ele "pede" ao seu banco os textos e fotos da agência X e monta a tela instantaneamente. Sem gerar 1.000 contas separadas. Tudo centralizado na SUA conta mestra.
+                     <strong className="text-white">3. ¿Dónde están los datos?</strong><br/>
+                     ¡Todo en tu Supabase! Cuando el sitio carga, le "pide" a tu base de datos los textos y fotos de la agencia X y monta la pantalla instantáneamente. Sin generar 1.000 cuentas separadas. Todo centralizado en TU cuenta maestra.
                    </p>
                 </div>
                 <button 
                   onClick={() => setShowUrlHelp(false)}
                   className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-colors"
                 >
-                  Entendi, fechar
+                  Entendido, cerrar
                 </button>
              </div>
           </div>
         </div>
       )}
 
-      {/* 🆕 MODAL DE PRÉVIA AO VIVO (SIMULADOR) */}
+      {/* 🆕 MODAL DE PRÉVIA EN VIVO (SIMULADOR) */}
       {showLivePreview && (
         <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex flex-col animate-in fade-in duration-300">
            {/* Header da Prévia */}
@@ -592,8 +592,8 @@ export const Phase5DashboardES = () => {
                  <Eye className="w-5 h-5" />
                </div>
                <div>
-                 <h3 className="text-white font-black text-sm uppercase tracking-wider">Simulador de Site Ativo</h3>
-                 <p className="text-[10px] text-white/50">Visualizando sua agência localmente antes da publicação oficial.</p>
+                 <h3 className="text-white font-black text-sm uppercase tracking-wider">Simulador de Sitio Activo</h3>
+                 <p className="text-[10px] text-white/50">Visualizando tu agencia localmente antes de la publicación oficial.</p>
                </div>
              </div>
              <button 
@@ -614,7 +614,7 @@ export const Phase5DashboardES = () => {
                />
              ) : (
                <div className="absolute inset-0 flex items-center justify-center text-white/30 gap-2">
-                 <Loader2 className="w-6 h-6 animate-spin" /> Renderizando visualização...
+                 <Loader2 className="w-6 h-6 animate-spin" /> Renderizando visualización...
                </div>
              )}
            </div>

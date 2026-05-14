@@ -1519,15 +1519,22 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   }, [generatedImages.length, destination, formattedPriceForAd, price, paymentLabel, installments, paymentMode, paymentSuffix, highlights, promoName, travelPeriod, categoria, state.agencyName, state.footerContact1Value, state.whatsapp, state.footerContact2Value, state.instagram]);
 
   const downloadPNG = () => {
-    if (!generatedImage) return;
+    if (generatedImages.length === 0) return;
+    
     try {
-      const a = document.createElement("a");
-      a.href = generatedImage;
-      a.download = `anuncio-${(destination || "destino").toLowerCase().replace(/\s+/g, "-")}-${format}.png`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      toast.success("Imagem baixada!");
+      const toDownload = isBatchMode ? generatedImages : [generatedImage];
+      
+      toDownload.forEach((img, idx) => {
+        const a = document.createElement("a");
+        a.href = img;
+        const suffix = isBatchMode ? `-v${idx + 1}` : "";
+        a.download = `anuncio-${(destination || "destino").toLowerCase().replace(/\s+/g, "-")}-${format}${suffix}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      });
+      
+      toast.success(isBatchMode ? "Todas as imagens baixadas!" : "Imagem baixada!");
     } catch { toast.error("Erro ao baixar imagem"); }
   };
 
@@ -2674,15 +2681,29 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
                 <div className={`grid gap-3 ${generatedImages.length > 1 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1"}`}>
                   {generatedImages.map((img, idx) => (
-                    <button
-                      key={`${img.slice(0, 48)}-${idx}`}
-                      type="button"
-                      onClick={() => setGeneratedImage(img)}
-                      className={`overflow-hidden rounded-xl border-2 bg-black/30 transition-all ${generatedImage === img ? "border-white shadow-lg" : "border-white/10 hover:border-white/30"}`}
-                      title={`Selecionar variação ${idx + 1}`}
-                    >
-                      <img src={img} alt={`Anúncio gerado ${idx + 1}`} className="w-full h-auto object-contain" />
-                    </button>
+                    <div key={`${img.slice(0, 48)}-${idx}`} className="relative group/img">
+                      <button
+                        type="button"
+                        onClick={() => setGeneratedImage(img)}
+                        className={`w-full overflow-hidden rounded-xl border-2 bg-black/30 transition-all ${generatedImage === img ? "border-white shadow-lg" : "border-white/10 hover:border-white/30"}`}
+                        title={`Selecionar variação ${idx + 1}`}
+                      >
+                        <img src={img} alt={`Anúncio gerado ${idx + 1}`} className="w-full h-auto object-contain" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const newList = generatedImages.filter((_, i) => i !== idx);
+                          setGeneratedImages(newList);
+                          if (generatedImage === img) setGeneratedImage(newList[0] || "");
+                          toast.success("Variação removida");
+                        }}
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                        title="Excluir esta versão"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   ))}
                 </div>
 
@@ -2707,7 +2728,27 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                         Copiar
                       </button>
                     </div>
-                    <p className="whitespace-pre-line text-xs leading-relaxed text-white/70">{selectedCaption || adCaptions[0]}</p>
+                    <div className="flex bg-black/30 p-1 rounded-lg border border-white/5 mb-3">
+                      {adCaptions.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            setSelectedCaption(adCaptions[idx]);
+                            setCaptionCopied(false);
+                          }}
+                          className={`flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all ${
+                            (selectedCaption || adCaptions[0]) === adCaptions[idx]
+                              ? "bg-white/10 text-white shadow-sm"
+                              : "text-white/40 hover:text-white"
+                          }`}
+                        >
+                          Opção {idx + 1}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="whitespace-pre-line text-xs leading-relaxed text-white/70 min-h-[120px]">
+                      {selectedCaption || adCaptions[0]}
+                    </p>
                   </div>
                 )}
               </>

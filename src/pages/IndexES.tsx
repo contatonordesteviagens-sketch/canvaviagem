@@ -115,14 +115,14 @@ const IndexES = () => {
 
     if (isSubscribed) return undefined;
 
-    // Se o item for explicitamente premium (ex: ferramenta específica ou override)
+    // Si el elemento es explícitamente premium (ex: ferramenta específica ou override)
     if (isItemPremiumOverride) return () => setShowPremiumGate(true);
 
     // Biblioteca de vídeos y Reels son SIEMPRE premium
     const premiumTypes = ['video', 'seasonal', 'reel', 'story', 'weekly-story', 'feed'];
     if (itemType && premiumTypes.includes(itemType)) return () => setShowPremiumGate(true);
 
-    // Se categoria for premium (fallback)
+    // Si la categoría es premium (fallback)
     const isPremium = checkIfItemIsPremium(itemType || category || '', itemTitle, index);
     if (isPremium) return () => setShowPremiumGate(true);
 

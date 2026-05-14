@@ -11,107 +11,107 @@ import { WhatsappSendModal } from "@/components/fabrica/WhatsappSendModal";
 import { extractPaletteFromCanvas } from "@/lib/extract-palette";
 
 const AGENCY_TYPES: { v: AgencyType; l: string }[] = [
-  { v: "autonoma", l: "Agente autônomo / Freelancer" },
-  { v: "pequena", l: "Pequena agência (até 3 pessoas)" },
-  { v: "media", l: "Agência média (4-10 pessoas)" },
-  { v: "franquia", l: "Franquia" },
-  { v: "consolidadora", l: "Consolidadora" },
-  { v: "receptiva", l: "Agência Receptiva" },
-  { v: "milhas", l: "Especialista em Milhas" },
-  { v: "luxo", l: "Agência de Luxo / Alto Padrão" },
-  { v: "corporativa", l: "Agência Corporativa (B2B)" },
-  { v: "grupos", l: "Especialista em Grupos / Excursões" },
-  { v: "cruzeiros", l: "Especialista em Cruzeiros" },
+  { v: "autonoma", l: "Agente autónomo / Freelancer" },
+  { v: "pequena", l: "Agencia pequeña (hasta 3 personas)" },
+  { v: "media", l: "Agencia mediana (4-10 personas)" },
+  { v: "franquia", l: "Franquicia" },
+  { v: "consolidadora", l: "Consolidador" },
+  { v: "receptiva", l: "Agencia Receptiva" },
+  { v: "milhas", l: "Especialista en Millas" },
+  { v: "luxo", l: "Agencia de Lujo / Alto Nivel" },
+  { v: "corporativa", l: "Agencia Corporativa (B2B)" },
+  { v: "grupos", l: "Especialista en Grupos / Excursiones" },
+  { v: "cruzeiros", l: "Especialista en Cruceros" },
   { v: "ecoturismo", l: "Ecoturismo / Aventura" },
   { v: "religioso", l: "Turismo Religioso" },
-  { v: "outro", l: "Outro tipo" },
+  { v: "outro", l: "Otro tipo" },
 ];
 
 type NicheOption = { id: Niche; label: string; emoji: string };
 
 const NICHES_DEFAULT: NicheOption[] = [
   { id: "nordeste", label: "Playa Caribe / Tulum", emoji: "ðŸ–ï¸" },
-  { id: "sul", label: "Playa Pacífico / Cancún", emoji: "ðŸŒ…" },
+  { id: "sul", label: "Playa Pacífico / Cancún", emoji: "🌅" },
   { id: "internacional", label: "Internacional", emoji: "âœˆï¸" },
-  { id: "cruzeiro", label: "Cruceros", emoji: "ðŸš¢" },
+  { id: "cruzeiro", label: "Cruceros", emoji: "🚢" },
   { id: "aventura", label: "Aventura / Ecoturismo", emoji: "â›°ï¸" },
-  { id: "luademel", label: "Luna de Miel", emoji: "ðŸ’•" },
+  { id: "luademel", label: "Luna de Miel", emoji: "💕" },
 ];
 
 // Opções de "carro-chefe / serviço principal" condicionadas ao tipo de agência.
 // Usamos os mesmos ids do tipo Niche para reaproveitar destinos/legendas/ofertas.
 const NICHES_BY_AGENCY: Partial<Record<AgencyType, NicheOption[]>> = {
   receptiva: [
-    { id: "nordeste", label: "Receptivo Nordeste", emoji: "ðŸ–ï¸" },
-    { id: "sul", label: "Receptivo Sul / Serra", emoji: "ðŸŒ…" },
+    { id: "nordeste", label: "Receptivo Caribe", emoji: "ðŸ–ï¸" },
+    { id: "sul", label: "Receptivo Pacífico", emoji: "🌅" },
     { id: "aventura", label: "Receptivo Ecoturismo", emoji: "â›°ï¸" },
     { id: "internacional", label: "City Tour / Urbano", emoji: "ðŸ™ï¸" },
-    { id: "cruzeiro", label: "Transfer Portuário", emoji: "ðŸš¢" },
-    { id: "luademel", label: "Roteiros Privativos", emoji: "ðŸ’•" },
+    { id: "cruzeiro", label: "Transfer Portuario", emoji: "🚢" },
+    { id: "luademel", label: "Rutas Privadas", emoji: "💕" },
   ],
   corporativa: [
-    { id: "internacional", label: "Viagens Internacionais Executivas", emoji: "âœˆï¸" },
-    { id: "sul", label: "Viagens Nacionais Corporativas", emoji: "ðŸ¢" },
-    { id: "luademel", label: "Eventos & Incentivo", emoji: "ðŸŽ¯" },
-    { id: "cruzeiro", label: "Convenções & MICE", emoji: "ðŸ¤" },
+    { id: "internacional", label: "Viajes Internacionales Ejecutivos", emoji: "âœˆï¸" },
+    { id: "sul", label: "Viajes Nacionales Corporativos", emoji: "ðŸ¢" },
+    { id: "luademel", label: "Eventos e Incentivos", emoji: "🎯" },
+    { id: "cruzeiro", label: "Convenciones y MICE", emoji: "ðŸ¤" },
     { id: "aventura", label: "Team Building / Retiros", emoji: "â›°ï¸" },
-    { id: "nordeste", label: "Workation / Bleisure", emoji: "ðŸ’¼" },
+    { id: "nordeste", label: "Workation / Bleisure", emoji: "💼" },
   ],
   religioso: [
-    { id: "internacional", label: "Terra Santa", emoji: "ðŸ•Šï¸" },
-    { id: "luademel", label: "Fátima & Santuários (Europa)", emoji: "â›ª" },
-    { id: "sul", label: "Aparecida & Santuários BR", emoji: "ðŸ™" },
-    { id: "aventura", label: "Caminho de Santiago", emoji: "ðŸ¥¾" },
-    { id: "nordeste", label: "Juazeiro / Canindé", emoji: "âœï¸" },
-    { id: "cruzeiro", label: "Cruzeiros Religiosos", emoji: "ðŸš¢" },
+    { id: "internacional", label: "Tierra Santa", emoji: "ðŸ•Šï¸" },
+    { id: "luademel", label: "Fátima y Santuarios (Europa)", emoji: "⛪" },
+    { id: "sul", label: "Santuarios Nacionales", emoji: "ðŸ™" },
+    { id: "aventura", label: "Camino de Santiago", emoji: "🥾" },
+    { id: "nordeste", label: "Rutas de Peregrinación", emoji: "âœï¸" },
+    { id: "cruzeiro", label: "Cruceros Religiosos", emoji: "🚢" },
   ],
   milhas: [
-    { id: "internacional", label: "Emissões Internacionais", emoji: "âœˆï¸" },
-    { id: "sul", label: "Emissões Domésticas", emoji: "ðŸ›«" },
-    { id: "luademel", label: "Lua de Mel com Milhas", emoji: "ðŸ’•" },
-    { id: "nordeste", label: "Pacotes Nordeste com Milhas", emoji: "ðŸ–ï¸" },
-    { id: "cruzeiro", label: "Cruzeiros + Aéreo Pontos", emoji: "ðŸš¢" },
-    { id: "aventura", label: "Roteiros Premium / Executiva", emoji: "ðŸ¥‚" },
+    { id: "internacional", label: "Emisiones Internacionales", emoji: "âœˆï¸" },
+    { id: "sul", label: "Emisiones Domésticas", emoji: "🛫" },
+    { id: "luademel", label: "Luna de Miel con Millas", emoji: "💕" },
+    { id: "nordeste", label: "Paquetes Caribe con Millas", emoji: "ðŸ–ï¸" },
+    { id: "cruzeiro", label: "Cruceros + Vuelos con Puntos", emoji: "🚢" },
+    { id: "aventura", label: "Rutas Premium / Ejecutiva", emoji: "🥂" },
   ],
   luxo: [
-    { id: "internacional", label: "Europa Luxo", emoji: "ðŸ‡ªðŸ‡º" },
+    { id: "internacional", label: "Europa Lujo", emoji: "🇪🇺" },
     { id: "luademel", label: "Maldivas / Bora Bora", emoji: "ðŸï¸" },
-    { id: "nordeste", label: "Resorts Premium Nordeste", emoji: "ðŸ–ï¸" },
-    { id: "cruzeiro", label: "Cruzeiros de Luxo", emoji: "ðŸš¢" },
-    { id: "aventura", label: "Safáris / Expedições", emoji: "ðŸ¦" },
-    { id: "sul", label: "Serra Gaúcha Premium", emoji: "ðŸ·" },
+    { id: "nordeste", label: "Resorts Premium Caribe", emoji: "ðŸ–ï¸" },
+    { id: "cruzeiro", label: "Cruceros de Lujo", emoji: "🚢" },
+    { id: "aventura", label: "Safaris / Expediciones", emoji: "ðŸ¦" },
+    { id: "sul", label: "Destinos de Nieve Premium", emoji: "ðŸ·" },
   ],
   grupos: [
-    { id: "internacional", label: "Excursões Internacionais", emoji: "âœˆï¸" },
-    { id: "sul", label: "Excursões Sul / Serra", emoji: "ðŸšŒ" },
-    { id: "nordeste", label: "Caravanas Nordeste", emoji: "ðŸ–ï¸" },
-    { id: "luademel", label: "Grupos da Terceira Idade", emoji: "ðŸ‘µ" },
+    { id: "internacional", label: "Excursiones Internacionales", emoji: "âœˆï¸" },
+    { id: "sul", label: "Excursiones Pacífico / Nieve", emoji: "🚌" },
+    { id: "nordeste", label: "Caravanas Caribe", emoji: "ðŸ–ï¸" },
+    { id: "luademel", label: "Grupos de Tercera Edad", emoji: "👵" },
     { id: "aventura", label: "Grupos de Ecoturismo", emoji: "â›°ï¸" },
-    { id: "cruzeiro", label: "Grupos em Cruzeiros", emoji: "ðŸš¢" },
+    { id: "cruzeiro", label: "Grupos en Cruceros", emoji: "🚢" },
   ],
   cruzeiros: [
-    { id: "cruzeiro", label: "Cruzeiros pela Costa BR", emoji: "ðŸ‡§ðŸ‡·" },
-    { id: "internacional", label: "Cruzeiros Caribe", emoji: "ðŸŒ´" },
-    { id: "luademel", label: "Cruzeiros Mediterrâneo", emoji: "ðŸ›³ï¸" },
-    { id: "aventura", label: "Cruzeiros Fiordes / Alasca", emoji: "ðŸ§Š" },
-    { id: "nordeste", label: "Cruzeiros Temáticos", emoji: "ðŸŽ¤" },
-    { id: "sul", label: "Cruzeiros Fluviais", emoji: "ðŸš¢" },
+    { id: "cruzeiro", label: "Cruceros por la Costa LATAM", emoji: "🇧🇷" },
+    { id: "internacional", label: "Cruceros Caribe", emoji: "🌴" },
+    { id: "luademel", label: "Cruceros Mediterráneo", emoji: "ðŸ›³ï¸" },
+    { id: "aventura", label: "Cruceros Fiordos / Alaska", emoji: "🧊" },
+    { id: "nordeste", label: "Cruceros Temáticos", emoji: "🎤" },
+    { id: "sul", label: "Cruceros Fluviales", emoji: "🚢" },
   ],
   ecoturismo: [
-    { id: "aventura", label: "Chapadas & Trilhas", emoji: "â›°ï¸" },
-    { id: "nordeste", label: "Lençóis / Jalapão", emoji: "ðŸœï¸" },
-    { id: "sul", label: "Bonito / Pantanal", emoji: "ðŸ " },
-    { id: "internacional", label: "Patagônia / Atacama", emoji: "ðŸ”ï¸" },
-    { id: "luademel", label: "Eco Lodges", emoji: "ðŸŒ¿" },
-    { id: "cruzeiro", label: "Expedições Amazônia", emoji: "ðŸ›¶" },
+    { id: "aventura", label: "Montañas y Senderos", emoji: "â›°ï¸" },
+    { id: "nordeste", label: "Desiertos / Oasis", emoji: "ðŸœï¸" },
+    { id: "sul", label: "Selvas / Safari Pantanales", emoji: "ðŸ " },
+    { id: "internacional", label: "Patagonia / Atacama", emoji: "ðŸ”ï¸" },
+    { id: "luademel", label: "Eco Lodges", emoji: "🌿" },
+    { id: "cruzeiro", label: "Expediciones Amazonia", emoji: "🛶" },
   ],
   consolidadora: [
     { id: "internacional", label: "Aéreo Internacional", emoji: "âœˆï¸" },
-    { id: "sul", label: "Aéreo Doméstico", emoji: "ðŸ›«" },
-    { id: "luademel", label: "Hotelaria Internacional", emoji: "ðŸ¨" },
-    { id: "nordeste", label: "Hotelaria Nacional", emoji: "ðŸ–ï¸" },
-    { id: "cruzeiro", label: "Cruzeiros (B2B)", emoji: "ðŸš¢" },
-    { id: "aventura", label: "Pacotes Operadores", emoji: "ðŸ“¦" },
+    { id: "sul", label: "Aéreo Doméstico", emoji: "🛫" },
+    { id: "luademel", label: "Hotelería Internacional", emoji: "ðŸ¨" },
+    { id: "nordeste", label: "Hotelería Nacional", emoji: "ðŸ–ï¸" },
+    { id: "cruzeiro", label: "Cruceros (B2B)", emoji: "🚢" },
+    { id: "aventura", label: "Paquetes Operadores", emoji: "📦" },
   ],
   franquia: NICHES_DEFAULT,
   autonoma: NICHES_DEFAULT,
@@ -122,15 +122,15 @@ const NICHES_BY_AGENCY: Partial<Record<AgencyType, NicheOption[]>> = {
 
 // Destinos sugeridos por tipo de agência (usado quando faz mais sentido que niche)
 const DESTINOS_BY_AGENCY: Partial<Record<AgencyType, string[]>> = {
-  receptiva: ["City Tour completo", "Transfer aeroporto", "Passeio de buggy", "Passeio de barco", "Tour gastronômico", "Tour histórico", "Day use em resort", "Passeio fotográfico"],
-  corporativa: ["Reuniões executivas", "Convenções nacionais", "Convenções internacionais", "Viagens de incentivo", "Eventos corporativos", "Team building", "Feiras e congressos", "Bleisure / Workation"],
-  religioso: ["Terra Santa (Israel)", "Fátima (Portugal)", "Lourdes (França)", "Roma / Vaticano", "Aparecida (SP)", "Juazeiro do Norte (CE)", "Caminho de Santiago", "Medjugorje"],
-  milhas: ["Emissão Smiles", "Emissão Latam Pass", "Emissão TudoAzul", "Emissão Livelo", "Emissão Esfera", "Upgrade executiva", "Estratégia de pontos", "Cartões / programas"],
+  receptiva: ["City Tour completo", "Traslado aeropuerto", "Paseo en buggy", "Paseo en barco", "Tour gastronómico", "Tour histórico", "Day use en resort", "Paseo fotográfico"],
+  corporativa: ["Reuniones ejecutivas", "Convenciones nacionales", "Convenciones internacionales", "Viajes de incentivo", "Eventos corporativos", "Team building", "Ferias y congresos", "Bleisure / Workation"],
+  religioso: ["Terra Santa (Israel)", "Fátima (Portugal)", "Lourdes (França)", "Roma / Vaticano", "Aparecida (Brasil)", "Santuarios locales", "Camino de Santiago", "Medjugorje"],
+  milhas: ["Emisión con Millas Smiles", "Emisión con Latam Pass", "Emisión con Azul", "Emisión con Livelo", "Emisión con Esfera", "Upgrade a Ejecutiva", "Estrategia de puntos", "Tarjetas / programas"],
   luxo: ["Maldivas", "Bora Bora", "Dubai", "Santorini", "Safári África", "Aspen", "Toscana", "Polinésia"],
-  grupos: ["Excursão Gramado", "Excursão Maragogi", "Excursão Beto Carrero", "Caravana Aparecida", "Excursão Disney", "Excursão Buenos Aires", "Cruzeiro em grupo", "Excursão Foz do Iguaçu"],
-  cruzeiros: ["Cruzeiro Costa Brasileira", "Cruzeiro Caribe", "Cruzeiro Mediterrâneo", "Cruzeiro Fiordes", "Cruzeiro Alasca", "Cruzeiro Temático (sertanejo, gospel...)", "Cruzeiro Disney", "Cruzeiro Réveillon"],
-  ecoturismo: ["Bonito (MS)", "Chapada Diamantina", "Chapada dos Veadeiros", "Jalapão", "Lençóis Maranhenses", "Pantanal", "Fernando de Noronha", "Patagônia"],
-  consolidadora: ["Pacotes CVC", "Pacotes Azul Viagens", "Pacotes Decolar", "Hotelaria nacional", "Hotelaria internacional", "Aéreo nacional", "Aéreo internacional", "Seguro viagem"],
+  grupos: ["Excursión Bariloche", "Excursión Cancún", "Excursión Parques Temáticos", "Caravana Religiosa", "Excursión Disney", "Excursión Buenos Aires", "Crucero en grupo", "Excursión Cataratas"],
+  cruzeiros: ["Crucero Costa LATAM", "Crucero Caribe", "Crucero Mediterráneo", "Crucero Fiordos", "Crucero Alaska", "Crucero Temático", "Crucero Disney", "Crucero Año Nuevo"],
+  ecoturismo: ["Ecoturismo / Selva", "Montañas y Ríos", "Parques Nacionales", "Desiertos y Oasis", "Dunas y Lagunas", "Safari Pantanal", "Riviera Maya", "Patagônia"],
+  consolidadora: ["Paquetes de Operadores", "Paquetes Mayoristas", "Paquetes Online", "Hotelería nacional", "Hotelería internacional", "Vuelos nacionales", "Vuelos internacionales", "Seguro de viaje"],
 };
 
 interface Props {
@@ -172,7 +172,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
 
         const base64 = canvas.toDataURL("image/webp", 0.8);
         update({ logoBase64: base64 });
-        toast.success("Logo atualizada!");
+        toast.success("¡Logo actualizado!");
       };
       img.src = event.target?.result as string;
     };
@@ -206,7 +206,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
         <div className="flex items-center justify-center gap-4 mb-8">
           {[
             { s: 1, l: "Perfil Estratégico" },
-            { s: 2, l: "Maturidade Digital" }
+            { s: 2, l: "Madurez Digital" }
           ].map((x) => (
             <div key={x.s} className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${formStep >= x.s ? 'text-black' : 'bg-white/10 text-white/40'}`}
@@ -230,7 +230,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
             >
               <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
-                1. Identidade & Perfil da Agência
+                1. Identidad y Perfil de la Agencia
               </h3>
 
               {/* ðŸ†• LOGO E NOME EM DESTAQUE */}
@@ -244,7 +244,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
                     ) : (
                       <>
                         <Upload className="w-6 h-6 text-white/30 mb-1" />
-                        <span className="text-[9px] font-bold text-white/40 uppercase">Sua Logo</span>
+                        <span className="text-[9px] font-bold text-white/40 uppercase">Tu Logo</span>
                       </>
                     )}
                     <label className="absolute inset-0 cursor-pointer">
@@ -266,13 +266,13 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
                    
                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                      <div>
-                       <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Tipo de agência *</label>
+                       <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Tipo de agencia *</label>
                        <select
                          value={state.agencyType}
                          onChange={(e) => update({ agencyType: e.target.value as AgencyType })}
                          className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors text-sm"
                        >
-                         <option value="" className="bg-zinc-900">Selecione...</option>
+                         <option value="" className="bg-zinc-900">Seleccione...</option>
                          {AGENCY_TYPES.map((t) => (
                            <option key={t.v} value={t.v} className="bg-zinc-900">{t.l}</option>
                          ))}
@@ -284,11 +284,11 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/[0.02] border border-white/[0.05] rounded-xl p-4">
-                 <FabField label="@ do Instagram Profissional" value={state.instagram} onChange={(v) => update({ instagram: v.replace(/^@/, "") })} placeholder="suaagencia" />
+                 <FabField label="@ de Instagram Profesional" value={state.instagram} onChange={(v) => update({ instagram: v.replace(/^@/, "") })} placeholder="suaagencia" />
                  <FabPhoneField label="WhatsApp de Ventas (con código) *" value={state.whatsapp} onChange={(v) => update({ whatsapp: v })} />
               </div>
               <div>
-                <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">Nicho / Carro-chefe *</label>
+                <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">Nicho / Producto Estrella *</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {nicheOptions.map((n) => (
                     <button
@@ -306,7 +306,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
                 </div>
               </div>
               <div>
-                <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Seus principais destinos *</label>
+                <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Tus principales destinos *</label>
                 <DestinosInput destinos={state.destinos} onChange={(d) => update({ destinos: d })} primaryColor={state.primaryColor || "#F59E0B"} />
               </div>
             </motion.div>
@@ -320,46 +320,46 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
             >
               <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-6 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                2. Raio-X de Maturidade Digital
+                2. Radiografía de Madurez Digital
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FabSelect
-                  label="Frequência de Postagem *"
+                  label="Frecuencia de Publicación *"
                   value={state.postFrequency}
                   onChange={(v) => update({ postFrequency: v })}
                   options={[
-                    { v: "diario", l: "Diário (Consistente)" },
-                    { v: "semanal", l: "Semanal (Algumas vezes)" },
-                    { v: "mensal", l: "Mensal (Muito esporádico)" },
+                    { v: "diario", l: "Diario (Consistente)" },
+                    { v: "semanal", l: "Semanal (Algunas veces)" },
+                    { v: "mensal", l: "Mensual (Muy esporádico)" },
                     { v: "raro", l: "Raramente publico" }
                   ]}
                 />
                 <FabSelect
-                  label="Tamanho da Audiência *"
+                  label="Tamaño de la Audiencia *"
                   value={state.followers}
                   onChange={(v) => update({ followers: v })}
                   options={[
                     { v: "0-500", l: "0 a 500 seguidores" },
                     { v: "500-2k", l: "500 a 2.000 seguidores" },
                     { v: "2k-10k", l: "2.000 a 10.000 seguidores" },
-                    { v: "10k+", l: "Acima de 10.000" }
+                    { v: "10k+", l: "Más de 10.000" }
                   ]}
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FabSelect
-                  label="Linha Editorial / Conteúdo *"
+                  label="Línea Editorial / Contenido *"
                   value={state.contentStrategy || "promo"}
                   onChange={(v) => update({ contentStrategy: v })}
                   options={[
-                    { v: "promo", l: "Foco 100% em Promoções / Ofertas" },
-                    { v: "misto", l: "Misto (Dicas de valor + Promoções)" }
+                    { v: "promo", l: "Enfoque 100% en Promociones / Ofertas" },
+                    { v: "misto", l: "Mixto (Consejos de valor + Promociones)" }
                   ]}
                 />
                 <FabField 
-                  label="Vendas no mês (Média de Fechamentos) *" 
+                  label="Ventas por mes (Promedio de Cierres) *" 
                   value={state.fechamentosMes} 
                   onChange={(v) => update({ fechamentosMes: v.replace(/\D/g, "") })} 
                   placeholder="Ex: 15" 
@@ -367,15 +367,15 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
               </div>
 
               <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                 <FabToggle label="Aparecem pessoas reais (donos/equipe)?" value={!!state.hasPeople} onChange={(v) => update({ hasPeople: v })} />
-                 <FabToggle label="Posta Reels com frequência?" value={!!state.usesReels} onChange={(v) => update({ usesReels: v })} />
-                 <FabToggle label="Investe em Anúncios Pagos (Tráfego)?" value={!!state.investeAds} onChange={(v) => update({ investeAds: v })} />
-                 <FabToggle label="Tem Depoimentos de Clientes em Destaque?" value={!!state.hasDepoimentos} onChange={(v) => update({ hasDepoimentos: v })} />
+                 <FabToggle label="¿Aparecen personas reales (dueños/equipo)?" value={!!state.hasPeople} onChange={(v) => update({ hasPeople: v })} />
+                 <FabToggle label="¿Publicas Reels con frecuencia?" value={!!state.usesReels} onChange={(v) => update({ usesReels: v })} />
+                 <FabToggle label="¿Inviertes en Anuncios Pagados (Tráfico)?" value={!!state.investeAds} onChange={(v) => update({ investeAds: v })} />
+                 <FabToggle label="¿Tienes Testimonios de Clientes Destacados?" value={!!state.hasDepoimentos} onChange={(v) => update({ hasDepoimentos: v })} />
               </div>
 
               <div className="flex gap-3 bg-blue-500/10 border border-blue-500/20 p-3 rounded-xl items-start">
-                <div className="text-xl">ðŸ’¡</div>
-                <p className="text-[11px] text-blue-200 leading-relaxed">Seja 100% transparente! Esse diagnóstico é para VOCÃŠ descobrir exatamente onde está o gargalo que te impede de faturar mais.</p>
+                <div className="text-xl">💡</div>
+                <p className="text-[11px] text-blue-200 leading-relaxed">¡Sé 100% transparente! Este diagnóstico es para que TÚ descubras exactamente dónde está el cuello de botella que te impide facturar más.</p>
               </div>
             </motion.div>
           )}
@@ -390,7 +390,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
               onClick={onBack}
               className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white/70 font-bold hover:bg-white/[0.08] transition-all"
             >
-              Voltar
+              Volver
             </button>
             <button
               onClick={() => setFormStep(2)}
@@ -398,7 +398,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
               className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110 shadow-lg"
               style={{ background: `linear-gradient(135deg, ${state.primaryColor || "#F59E0B"}, #FCD34D)` }}
             >
-              Próxima Etapa: Diagnóstico <ChevronRight className="w-4 h-4" />
+              Siguiente Etapa: Diagnóstico <ChevronRight className="w-4 h-4" />
             </button>
           </>
         ) : (
@@ -407,7 +407,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
               onClick={() => setFormStep(1)}
               className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white/70 font-bold hover:bg-white/[0.08] transition-all"
             >
-              Voltar
+              Volver
             </button>
             <button
               onClick={finalize}
@@ -415,7 +415,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
               className="flex-[2] py-4 rounded-xl font-black text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110 shadow-lg shadow-yellow-500/20 uppercase tracking-wider text-sm"
               style={{ background: `linear-gradient(135deg, #10B981, #FCD34D)` }}
             >
-              ðŸ”¥ Gerar Meu Dossiê Completo
+              🔥 Generar Mi Dossier Completo
             </button>
           </>
         )}
@@ -436,7 +436,7 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
 
   const handleSave = () => {
     if (!user) {
-      toast.error("Faça login para salvar seu diagnóstico", {
+      toast.error("Inicia sesión para guardar tu diagnóstico", {
         action: { label: "Entrar", onClick: () => (window.location.href = "/auth") },
       });
       return;
@@ -460,9 +460,9 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white text-black rounded-3xl overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="bg-gradient-to-br from-[#0D1425] to-[#1a2744] text-white p-7">
-          <div className="text-[10px] font-bold tracking-[2px] mb-2" style={{ color: state.primaryColor }}>DIAGNÃ“STICO TRAVELBOOST</div>
+          <div className="text-[10px] font-bold tracking-[2px] mb-2" style={{ color: state.primaryColor }}>DIAGNÓSTICO TRAVELBOOST</div>
           <h2 className="text-2xl font-extrabold mb-1">{state.agencyName}</h2>
-          <p className="text-sm text-white/60 mb-4">{state.city} â€¢ @{state.instagram}</p>
+          <p className="text-sm text-white/60 mb-4">{state.city} • @{state.instagram}</p>
         </div>
 
         {/* Score */}
@@ -473,7 +473,7 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
               <div className="text-[10px] opacity-80 mt-0.5">/ 100</div>
             </div>
             <div>
-              <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: scoreColor }}>Nível {result.level} â€” {result.levelName}</div>
+              <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: scoreColor }}>Nivel {result.level} — {result.levelName}</div>
               <p className="text-sm text-gray-600 leading-relaxed">{result.levelDescription}</p>
             </div>
           </div>
@@ -489,7 +489,7 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
 
         {/* Body */}
         <div className="p-7">
-          <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-500 mb-4 pb-2 border-b-2 border-gray-100">âš ï¸ Gargalos identificados</h3>
+          <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-500 mb-4 pb-2 border-b-2 border-gray-100">âš ï¸ Cuellos de botella identificados</h3>
           <div className="space-y-2 mb-7">
             {result.gargalos.map((g, i) => (
               <div key={i} className={`flex gap-3 p-3 rounded-lg ${g.level === "red" ? "bg-red-50 border border-red-200" : g.level === "amber" ? "bg-amber-50 border border-amber-200" : "bg-green-50 border border-green-200"}`}>
@@ -499,11 +499,11 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
             ))}
           </div>
 
-          <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-500 mb-4 pb-2 border-b-2 border-gray-100">âœ… Plano de Ação</h3>
+          <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-500 mb-4 pb-2 border-b-2 border-gray-100">✅ Plan de Acción</h3>
           {[
-            { title: "Imediato (até 7 dias)", color: "bg-red-100 text-red-700", items: checklist.imediato },
-            { title: "Próximos 15 dias", color: "bg-amber-100 text-amber-700", items: checklist.quinzeDias },
-            { title: "Mês 2 em diante", color: "bg-green-100 text-green-700", items: checklist.mesDois },
+            { title: "Inmediato (hasta 7 días)", color: "bg-red-100 text-red-700", items: checklist.imediato },
+            { title: "Siguientes 15 días", color: "bg-amber-100 text-amber-700", items: checklist.quinzeDias },
+            { title: "Mes 2 en adelante", color: "bg-green-100 text-green-700", items: checklist.mesDois },
           ].map((phase, i) => (
             <div key={i} className="mb-5">
               <div className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
@@ -527,19 +527,19 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
           disabled={saveMutation.isPending}
           className="px-5 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors"
         >
-          <Save className="w-4 h-4" /> {saveMutation.isPending ? "Salvando..." : "Salvar na minha conta"}
+          <Save className="w-4 h-4" /> {saveMutation.isPending ? "Guardando..." : "Guardar en mi cuenta"}
         </button>
         <button
           onClick={() => generateDiagnosticoPDF(state)}
           className="px-5 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors"
         >
-          <Download className="w-4 h-4" /> Baixar PDF
+          <Download className="w-4 h-4" /> Descargar PDF
         </button>
         <button
           onClick={() => setWaOpen(true)}
           className="px-5 py-3 bg-[#25D366] hover:brightness-110 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors"
         >
-          <MessageCircle className="w-4 h-4" /> Enviar no WhatsApp
+          <MessageCircle className="w-4 h-4" /> Enviar por WhatsApp
         </button>
       </div>
 
@@ -549,12 +549,12 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
           onClick={onEdit}
           className="px-5 py-3 bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/10 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors"
         >
-          âœï¸ Editar / complementar dados (acumula sem apagar)
+          âœï¸ Editar / complementar datos (se acumula sin borrar)
         </button>
       </div>
 
       <p className="text-[11px] text-white/40 text-center mt-2 px-4">
-        Seus dados são preservados. Adicione novos destinos, pacotes e ajustes a qualquer momento â€” tudo fica salvo na sua conta.
+        Tus datos están protegidos. Agrega nuevos destinos, paquetes y ajustes en cualquier momento — todo queda guardado en tu cuenta.
       </p>
 
       <div className="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row gap-4">
@@ -562,14 +562,14 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
           onClick={onBack}
           className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white/70 font-bold hover:bg-white/[0.08] transition-all"
         >
-          Voltar
+          Volver
         </button>
         <button
           onClick={onNext}
           className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all hover:brightness-110"
           style={{ background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)` }}
         >
-          Avançar para Plano <ArrowRight className="w-4 h-4" />
+          Avanzar al Plan <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>
@@ -591,27 +591,27 @@ const FabField = ({ label, value, onChange, placeholder }: { label: string; valu
 
 // Country list with flag, dial code and national mask formatting.
 const COUNTRIES: { code: string; name: string; flag: string; dial: string; maxDigits: number; format: (d: string) => string }[] = [
-  { code: "BR", name: "Brasil", flag: "ðŸ‡§ðŸ‡·", dial: "+55", maxDigits: 11, format: (d) => {
+  { code: "BR", name: "Brasil", flag: "🇧🇷", dial: "+55", maxDigits: 11, format: (d) => {
       if (!d) return "";
       if (d.length <= 2) return `(${d}`;
       if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
       if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
       return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7, 11)}`;
     } },
-  { code: "US", name: "Estados Unidos", flag: "ðŸ‡ºðŸ‡¸", dial: "+1", maxDigits: 10, format: (d) => d.length <= 3 ? d : d.length <= 6 ? `(${d.slice(0,3)}) ${d.slice(3)}` : `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6,10)}` },
-  { code: "PT", name: "Portugal", flag: "ðŸ‡µðŸ‡¹", dial: "+351", maxDigits: 9, format: (d) => d.replace(/(\d{3})(?=\d)/g, "$1 ") },
-  { code: "ES", name: "Espanha", flag: "ðŸ‡ªðŸ‡¸", dial: "+34", maxDigits: 9, format: (d) => d.replace(/(\d{3})(?=\d)/g, "$1 ") },
-  { code: "AR", name: "Argentina", flag: "ðŸ‡¦ðŸ‡·", dial: "+54", maxDigits: 11, format: (d) => d },
-  { code: "MX", name: "México", flag: "ðŸ‡²ðŸ‡½", dial: "+52", maxDigits: 10, format: (d) => d },
-  { code: "CL", name: "Chile", flag: "ðŸ‡¨ðŸ‡±", dial: "+56", maxDigits: 9, format: (d) => d },
-  { code: "CO", name: "Colômbia", flag: "ðŸ‡¨ðŸ‡´", dial: "+57", maxDigits: 10, format: (d) => d },
-  { code: "PE", name: "Peru", flag: "ðŸ‡µðŸ‡ª", dial: "+51", maxDigits: 9, format: (d) => d },
-  { code: "UY", name: "Uruguai", flag: "ðŸ‡ºðŸ‡¾", dial: "+598", maxDigits: 9, format: (d) => d },
-  { code: "PY", name: "Paraguai", flag: "ðŸ‡µðŸ‡¾", dial: "+595", maxDigits: 9, format: (d) => d },
-  { code: "FR", name: "França", flag: "ðŸ‡«ðŸ‡·", dial: "+33", maxDigits: 9, format: (d) => d },
-  { code: "IT", name: "Itália", flag: "ðŸ‡®ðŸ‡¹", dial: "+39", maxDigits: 10, format: (d) => d },
-  { code: "DE", name: "Alemanha", flag: "ðŸ‡©ðŸ‡ª", dial: "+49", maxDigits: 11, format: (d) => d },
-  { code: "GB", name: "Reino Unido", flag: "ðŸ‡¬ðŸ‡§", dial: "+44", maxDigits: 10, format: (d) => d },
+  { code: "US", name: "Estados Unidos", flag: "🇺🇸", dial: "+1", maxDigits: 10, format: (d) => d.length <= 3 ? d : d.length <= 6 ? `(${d.slice(0,3)}) ${d.slice(3)}` : `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6,10)}` },
+  { code: "PT", name: "Portugal", flag: "🇵🇹", dial: "+351", maxDigits: 9, format: (d) => d.replace(/(\d{3})(?=\d)/g, "$1 ") },
+  { code: "ES", name: "España", flag: "🇪🇸", dial: "+34", maxDigits: 9, format: (d) => d.replace(/(\d{3})(?=\d)/g, "$1 ") },
+  { code: "AR", name: "Argentina", flag: "🇦🇷", dial: "+54", maxDigits: 11, format: (d) => d },
+  { code: "MX", name: "México", flag: "🇲🇽", dial: "+52", maxDigits: 10, format: (d) => d },
+  { code: "CL", name: "Chile", flag: "🇨🇱", dial: "+56", maxDigits: 9, format: (d) => d },
+  { code: "CO", name: "Colombia", flag: "🇨🇴", dial: "+57", maxDigits: 10, format: (d) => d },
+  { code: "PE", name: "Perú", flag: "🇵🇪", dial: "+51", maxDigits: 9, format: (d) => d },
+  { code: "UY", name: "Uruguay", flag: "🇺🇾", dial: "+598", maxDigits: 9, format: (d) => d },
+  { code: "PY", name: "Paraguay", flag: "🇵🇾", dial: "+595", maxDigits: 9, format: (d) => d },
+  { code: "FR", name: "Francia", flag: "🇫🇷", dial: "+33", maxDigits: 9, format: (d) => d },
+  { code: "IT", name: "Italia", flag: "🇮🇹", dial: "+39", maxDigits: 10, format: (d) => d },
+  { code: "DE", name: "Alemania", flag: "🇩🇪", dial: "+49", maxDigits: 11, format: (d) => d },
+  { code: "GB", name: "Reino Unido", flag: "🇬🇧", dial: "+44", maxDigits: 10, format: (d) => d },
 ];
 
 // WhatsApp field with country picker (flag + dial code) + national mask
@@ -627,7 +627,7 @@ const FabPhoneField = ({ label, value, onChange }: { label: string; value: strin
           type="button"
           onClick={() => setOpen((v) => !v)}
           className="flex items-center gap-1.5 px-3 border-r border-white/10 bg-white/[0.03] text-sm text-white/85 hover:bg-white/[0.06] transition-colors select-none"
-          aria-label="Selecionar país"
+          aria-label="Seleccionar país"
         >
           <span className="text-base leading-none" aria-hidden>{country.flag}</span>
           <span className="font-medium">{country.dial}</span>
@@ -655,7 +655,7 @@ const FabPhoneField = ({ label, value, onChange }: { label: string; value: strin
           autoComplete="tel-national"
           value={country.format(value.replace(/\D/g, "").slice(0, country.maxDigits))}
           onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, country.maxDigits))}
-          placeholder={country.code === "BR" ? "(11) 99999-9999" : "Número de telefone"}
+          placeholder={country.code === "BR" ? "(11) 99999-9999" : "Número de teléfono"}
           className="flex-1 bg-transparent px-3 py-3 text-white placeholder:text-white/30 outline-none min-w-0"
         />
       </div>
@@ -671,7 +671,7 @@ const FabSelect = ({ label, value, onChange, options }: { label: string; value: 
       onChange={(e) => onChange(e.target.value)}
       className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors"
     >
-      <option value="" className="bg-zinc-900">Selecione...</option>
+      <option value="" className="bg-zinc-900">Seleccione...</option>
       {options.map((o) => (
         <option key={o.v} value={o.v} className="bg-zinc-900">{o.l}</option>
       ))}
@@ -692,12 +692,12 @@ const FabToggle = ({ label, value, onChange }: { label: string; value: boolean; 
 );
 
 const DESTINOS_SUGERIDOS: Record<string, string[]> = {
-  nordeste: ["Maragogi", "Jericoacoara", "Fernando de Noronha", "Maceió", "Natal", "Porto de Galinhas", "Salvador", "Pipa"],
-  sul: ["Florianópolis", "Gramado", "Balneário Camboriú", "Bombinhas", "Curitiba", "Foz do Iguaçu"],
+  nordeste: ["Cancún", "Punta Cana", "Riviera Maya", "Cartagena", "San Andrés", "Los Cabos", "Acapulco", "Varadero"],
+  sul: ["Santiago", "Bariloche", "Viña del Mar", "Mendoza", "Bogotá", "Machu Picchu"],
   internacional: ["Cancún", "Punta Cana", "Orlando", "Buenos Aires", "Paris", "Lisboa", "Dubai", "Maldivas"],
-  cruzeiro: ["Cruzeiro Caribe", "Cruzeiro Mediterrâneo", "Cruzeiro pela Costa Brasileira"],
-  aventura: ["Chapada Diamantina", "Chapada dos Veadeiros", "Bonito", "Jalapão", "Lençóis Maranhenses"],
-  luademel: ["Maldivas", "Bora Bora", "Santorini", "Maragogi", "Fernando de Noronha", "Cancún"],
+  cruzeiro: ["Crucero Caribe", "Crucero Mediterráneo", "Cruzeiro pela Costa Brasileira"],
+  aventura: ["Montañas y Ríos", "Parques Nacionales", "Bonito", "Desiertos y Oasis", "Dunas y Lagunas"],
+  luademel: ["Maldivas", "Bora Bora", "Santorini", "Cancún", "Riviera Maya", "Cancún"],
 };
 
 const DestinosInput = ({ destinos, onChange, primaryColor }: { destinos: string[]; onChange: (d: string[]) => void; primaryColor: string }) => {
@@ -724,7 +724,7 @@ const DestinosInput = ({ destinos, onChange, primaryColor }: { destinos: string[
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), add(input))}
-          placeholder="Digite e aperte Enter (ex: Paris, Gramado)..."
+          placeholder="Escribe y presiona Enter (ej: Cancún, Madrid)..."
           className="w-full bg-white/[0.04] border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 transition-colors"
         />
         <button
@@ -739,7 +739,7 @@ const DestinosInput = ({ destinos, onChange, primaryColor }: { destinos: string[
 
       <div className="space-y-3">
         <div className="flex flex-wrap gap-2 min-h-[32px]">
-          {destinos.length === 0 && <span className="text-xs text-white/30 italic flex items-center">Nenhum adicionado ainda.</span>}
+          {destinos.length === 0 && <span className="text-xs text-white/30 italic flex items-center">Aún no se ha añadido ninguno.</span>}
           {destinos.map((d) => (
             <span key={d} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-black animate-in zoom-in duration-200" style={{ background: primaryColor }}>
               {d}
@@ -751,7 +751,7 @@ const DestinosInput = ({ destinos, onChange, primaryColor }: { destinos: string[
         {sugestoes.length > 0 && (
           <div className="pt-3 border-t border-white/10">
             <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 flex items-center gap-2">
-              Sugestões Rápidas
+              Sugerencias Rápidas
             </div>
             <div className="flex flex-wrap gap-1.5">
               {sugestoes.slice(0, 8).map((s) => (

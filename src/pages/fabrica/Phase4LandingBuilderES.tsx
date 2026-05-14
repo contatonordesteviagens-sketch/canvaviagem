@@ -1,6 +1,6 @@
 ﻿import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useFabricaContext, type Pacote, type Depoimento } from "@/hooks/useFabricaContext";
+import { useFabricaContext, type Pacote, type Testimonio } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export-es";
 import {
@@ -38,7 +38,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   const [autoSyncFields, setAutoSyncFields] = useState<string[]>([]);
   const [pickingHeroImage, setPickingHeroImage] = useState(false);
 
-  // â”€â”€ AUTO-SYNC: Injeta dados da Fase 3 na Fase 4 na primeira montagem â”€â”€
+  // ── AUTO-SYNC: Injeta dados da Fase 3 na Fase 4 na primeira montagem ──
   // Só atua se o usuário ainda não personalizou o site (campos padrão).
   // Garante que todas as informações preenchidas nas fases anteriores
   // apareçam pré-populadas no construtor do site.
@@ -55,25 +55,25 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
     const synced: string[] = [];
     const patches: Record<string, any> = {};
 
-    // 1. Hero Headline â€” usa nome da agência + destino
+    // 1. Hero Headline — usa nome da agência + destino
     const heroDefault = state.siteContent.heroHeadline;
-    if (!heroDefault || heroDefault === "" || heroDefault === `${state.agencyName} â€” Sua próxima viagem começa aqui`) {
+    if (!heroDefault || heroDefault === "" || heroDefault === `${state.agencyName} — Tu próximo viaje empieza aquí`) {
       const agency = state.agencyName?.trim();
       const headline = agency
-        ? `${agency} â€” ${dest ? `Pacotes para ${dest} e muito mais!` : "Sua próxima viagem começa aqui!"}`
-        : dest ? `Sua próxima viagem é ${dest}` : "";
+        ? `${agency} — ${dest ? `Paquetes para ${dest} y mucho más!` : "Tu próximo viaje empieza aquí!"}`
+        : dest ? `Tu próximo viaje es ${dest}` : "";
       if (headline) {
         patches["siteContent.heroHeadline"] = headline;
-        synced.push("Título principal do site");
+        synced.push("Título principal del sitio");
       }
     }
 
-    // 2. Hero Subheadline â€” usa destinos cadastrados
+    // 2. Hero Subheadline — usa destinos cadastrados
     if (!state.siteContent.heroSubheadline) {
       const ds = (state.destinos || []).filter(Boolean).slice(0, 4);
       if (ds.length > 0) {
-        patches["siteContent.heroSubheadline"] = `Roteiros para ${ds.join(", ")} e outros destinos incríveis. Atendimento personalizado e suporte 24h.`;
-        synced.push("Subtítulo do site");
+        patches["siteContent.heroSubheadline"] = `Rutas para ${ds.join(", ")} y otros destinos increíbles. Atención personalizada y soporte 24h.`;
+        synced.push("Subtítulo del sitio");
       }
     }
 
@@ -82,28 +82,28 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
     // em tempo real assim que a arte é gerada! Mantemos apenas o push seguro para a galeria:
     if (state.generatedAdImage && !state.siteContent.galleryImages.includes(state.generatedAdImage)) {
       patches["galleryImages"] = [state.generatedAdImage, ...state.siteContent.galleryImages];
-      synced.push("Imagem do anúncio");
+      synced.push("Imagen del anuncio");
     }
 
-    // 4. CTA final â€” usa WhatsApp/Instagram se disponíveis
-    if (!state.siteContent.finalCtaTitle || state.siteContent.finalCtaTitle === "Pronto para sua próxima viagem?") {
+    // 4. CTA final — usa WhatsApp/Instagram se disponíveis
+    if (!state.siteContent.finalCtaTitle || state.siteContent.finalCtaTitle === "¿Listo para tu próximo viaje?") {
       if (dest) {
-        patches["siteContent.finalCtaTitle"] = `Vai para ${dest}? Fala comigo agora!`;
+        patches["siteContent.finalCtaTitle"] = `¿Vas a ${dest}? ¡Habla conmigo ahora!`;
         synced.push("CTA final");
       }
     }
 
-    // ðŸ§  5. CONTINUIDADE DO DIAGNÃ“STICO (Ponto 3):
+    // ðŸ§  5. CONTINUIDADE DO DIAGNÓSTICO (Ponto 3):
     // Se o nível do usuário é baixo (menos que 3), o sistema INTUI que falta autoridade.
     // Logo, ele OBRIGA e ATIVA automaticamente os depoimentos e a sessão 'Por que Nós'.
     if (state.level && state.level < 3) {
       if (!state.siteContent.sections?.depoimentos) {
         patches["siteContent.sections.depoimentos"] = true;
-        synced.push("Blindagem de Autoridade (Depoimentos Ativados)");
+        synced.push("Blindaje de Autoridad (Testimonios Activados)");
       }
       if (!state.siteContent.sections?.porQue) {
         patches["siteContent.sections.porQue"] = true;
-        synced.push("Blindagem de Autoridade (Diferenciais Ativados)");
+        synced.push("Blindaje de Autoridad (Diferenciales Activados)");
       }
     }
 
@@ -150,26 +150,26 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         ...state.siteContent,
         heroHeadline: "",
         heroSubheadline: "",
-        heroCtaLabel: "Falar no WhatsApp",
-        finalCtaTitle: "Pronto para sua próxima viagem?",
-        finalCtaLabel: "Chamar no WhatsApp",
+        heroCtaLabel: "Hablar por WhatsApp",
+        finalCtaTitle: "¿Listo para tu próximo viaje?",
+        finalCtaLabel: "Llamar por WhatsApp",
         galleryImages: [],
       },
     });
     setAutoSyncDone(false);
     setAutoSyncFields([]);
-    toast.success("Site resetado para o modelo em branco.");
+    toast.success("Sitio restaurado a la plantilla en blanco.");
   };
 
   // Pacotes
   const addPacote = () => {
     const novo: Pacote = {
       id: String(Date.now()),
-      title: "Novo pacote",
-      description: "Descreva o que está incluso",
-      price: "R$ 0,00",
+      title: "Nuevo paquete",
+      description: "Describe lo que está incluido",
+      price: "$ 0,00",
       imageUrl: "",
-      ctaLabel: "Quero esse",
+      ctaLabel: "Quiero este",
     };
     update({ selectedPackages: [...state.selectedPackages, novo] });
   };
@@ -180,9 +180,9 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
     update({ selectedPackages: state.selectedPackages.filter((p) => p.id !== id) });
   };
 
-  // Depoimentos
-  const addDepo = () => update({ depoimentos: [...state.depoimentos, { name: "Cliente feliz", text: "Atendimento incrível!" }] });
-  const updDepo = (i: number, patch: Partial<Depoimento>) => {
+  // Testimonios
+  const addDepo = () => update({ depoimentos: [...state.depoimentos, { name: "Cliente feliz", text: "¡Atención increíble!" }] });
+  const updDepo = (i: number, patch: Partial<Testimonio>) => {
     update({ depoimentos: state.depoimentos.map((d, idx) => (idx === i ? { ...d, ...patch } : d)) });
   };
   const delDepo = (i: number) => update({ depoimentos: state.depoimentos.filter((_, idx) => idx !== i) });
@@ -197,7 +197,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         galleryImages: [...state.siteContent.galleryImages, url],
       },
     });
-    toast.success("Imagem adicionada ao banco!");
+    toast.success("¡Imagen añadida al banco!");
   };
   const removeFromGallery = (url: string) => {
     update({
@@ -229,18 +229,18 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   const handleDownload = () => {
     setDownloadCount((c) => c + 1);
     downloadLandingHTML(state, downloadCount + 1, user?.id);
-    toast.success(`Versão ${downloadCount + 1} baixada! Suba pro Lovable, Vercel ou Netlify.`);
+    toast.success(`Versión ${downloadCount + 1} descargada! Súbela a Lovable, Vercel o Netlify.`);
   };
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      {/* â”€â”€ Banner de Auto-Sync da Fase 3 â”€â”€ */}
+      {/* ── Banner de Auto-Sync da Fase 3 ── */}
       {autoSyncDone && autoSyncFields.length > 0 && (
         <div className="rounded-2xl p-4 border bg-emerald-500/10 border-emerald-500/25 flex items-start gap-3">
-          <div className="text-2xl flex-shrink-0">âœ…</div>
+          <div className="text-2xl flex-shrink-0">✅</div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-bold text-white mb-1">
-              Site pré-preenchido com seus dados da Fábrica!
+              ¡Sitio pre-llenado con tus datos de la Fábrica!
             </div>
             <p className="text-[11px] text-white/60 leading-snug">
               Importamos automaticamente: <strong className="text-emerald-300">{autoSyncFields.join(" Â· ")}</strong>.
@@ -250,9 +250,9 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
           <button
             onClick={resetSiteToBlank}
             className="flex-shrink-0 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
-            title="Limpar tudo e começar do zero"
+            title="Limpiar tudo e começar do zero"
           >
-            Limpar site
+            Limpiar sitio
           </button>
         </div>
       )}
@@ -263,20 +263,20 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
           <div className="flex items-center gap-3 min-w-0">
             <span className="text-lg flex-shrink-0">ðŸ”„</span>
             <p className="text-[11px] text-white/50 leading-snug">
-              Dados da Fábrica já sincronizados com este site.
-              <span className="ml-1 text-white/30">Edite os campos abaixo ou</span>
+              Datos de la Fábrica ya sincronizados con este sitio.
+              <span className="ml-1 text-white/30">Edita los campos de abajo o</span>
             </p>
           </div>
           <button
             onClick={resetSiteToBlank}
             className="flex-shrink-0 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
           >
-            Começar do zero
+            Empezar de cero
           </button>
         </div>
       )}
 
-      <FabricaCard title="ðŸŽ¨ Cor primária do site">
+      <FabricaCard title="🎨 Color primario del sitio">
         <div className="flex flex-wrap gap-3 items-center">
           {PRESET_COLORS.map((c) => (
             <button
@@ -298,24 +298,24 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             />
           </div>
         </div>
-        <p className="text-xs text-white/50 mt-3">Aplicada em botões, headers e CTAs.</p>
+        <p className="text-xs text-white/50 mt-3">Aplicado en botones, encabezados y CTAs.</p>
       </FabricaCard>
 
       {/* VISIBILIDADE DAS SEÃ‡Ã•ES */}
-      <FabricaCard title="ðŸ‘ï¸ Seções do site">
+      <FabricaCard title="ðŸ‘ï¸ Secciones del sitio">
         <p className="text-xs text-white/50 mb-3">
-          Escolha o que aparece no site. Desmarque qualquer seção pra removê-la (some também do HTML exportado).
+          Elige lo que aparece en el sitio. Desmarca cualquier sección para eliminarla (también desaparece del HTML exportado).
         </p>
         <div className="grid grid-cols-2 gap-2">
           {(
             [
-              { key: "hero", label: "Topo (Hero)" },
-              { key: "processo", label: "Como funciona (3 passos)" },
-              { key: "destinos", label: "Destinos / Pacotes" },
-              { key: "porQue", label: "Por que nós / Equipe" },
-              { key: "depoimentos", label: "Depoimentos" },
-              { key: "orcamento", label: "Formulário de orçamento" },
-              { key: "faq", label: "Perguntas Frequentes" },
+              { key: "hero", label: "Encabezado (Hero)" },
+              { key: "processo", label: "Cómo funciona (3 pasos)" },
+              { key: "destinos", label: "Destinos / Paquetes" },
+              { key: "porQue", label: "Por qué nosotros / Equipo" },
+              { key: "depoimentos", label: "Testimonios" },
+              { key: "orcamento", label: "Formulario de presupuesto" },
+              { key: "faq", label: "Preguntas Frecuentes" },
             ] as { key: keyof SectionVisibility; label: string }[]
           ).map(({ key, label }) => {
             const on = isVisible(key);
@@ -337,39 +337,39 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
       </FabricaCard>
 
       {/* HERO editável */}
-      <FabricaCard title="âœï¸ Topo do site (Hero)">
+      <FabricaCard title="âœï¸ Encabezado del sitio (Hero)">
         <div className="space-y-3">
           <FieldText
             label="Título principal"
             value={state.siteContent.heroHeadline}
             onChange={(v) => updSite({ heroHeadline: v })}
-            placeholder={`${state.agencyName || "Sua Agência"} â€” Sua próxima viagem começa aqui`}
+            placeholder={`${state.agencyName || "Tu Agencia"} — Tu próximo viaje empieza aquí`}
           />
           <FieldTextarea
             label="Subtítulo"
             value={state.siteContent.heroSubheadline}
             onChange={(v) => updSite({ heroSubheadline: v })}
-            placeholder="Atendimento personalizado, roteiros sob medida..."
+            placeholder="Atención personalizada, rutas a medida..."
           />
           <FieldText
-            label="Texto do botão principal"
+            label="Texto del botón principal"
             value={state.siteContent.heroCtaLabel}
             onChange={(v) => updSite({ heroCtaLabel: v })}
-            placeholder="Falar no WhatsApp"
+            placeholder="Hablar por WhatsApp"
           />
 
           {/* NOVO: Editor dinâmico de Imagem de Fundo / Capa do Site */}
           <div className="pt-3 mt-3 border-t border-white/10">
             <div className="flex items-center justify-between mb-2">
               <label className="text-[10px] font-bold text-white/60 uppercase tracking-wider flex items-center gap-1">
-                <ImageIcon className="w-3 h-3 text-amber-400/70" /> Fundo do Site (Banner)
+                <ImageIcon className="w-3 h-3 text-amber-400/70" /> Fondo del Sitio (Banner)
               </label>
               <button
                 onClick={() => setPickingHeroImage(!pickingHeroImage)}
                 className={`text-[10px] px-2 py-1 rounded font-medium transition-colors flex items-center gap-1 ${pickingHeroImage ? "bg-red-500/20 text-red-300" : "bg-white/[0.06] hover:bg-white/[0.1] text-amber-300"
                   }`}
               >
-                {pickingHeroImage ? "Fechar" : "Trocar Imagem"}
+                {pickingHeroImage ? "Fechar" : "Cambiar Imagen"}
               </button>
             </div>
 
@@ -378,11 +378,11 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                 <img
                   src={state.siteContent.heroImageUrl || state.siteContent.galleryImages?.[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80"}
                   className="w-full h-full object-cover opacity-60 transition-opacity group-hover:opacity-80"
-                  alt="Banner atual"
+                  alt="Banner actual"
                 />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <span className="text-[9px] font-bold tracking-wider uppercase text-white/70 bg-black/60 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
-                    Imagem de Fundo Ativa
+                    Imagen de Fondo Activa
                   </span>
                 </div>
               </div>
@@ -390,7 +390,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
             {pickingHeroImage && (
               <div className="bg-black/40 border border-white/10 rounded-xl p-3 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
-                <p className="text-[10px] text-white/40">Selecione uma imagem do seu banco gerado automaticamente:</p>
+                <p className="text-[10px] text-white/40">Selecciona una imagen de tu banco generado automáticamente:</p>
                 {state.siteContent.galleryImages.length > 0 ? (
                   <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto p-1 custom-scrollbar">
                     {state.siteContent.galleryImages.map((url, i) => (
@@ -399,7 +399,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                         onClick={() => {
                           updSite({ heroImageUrl: url });
                           setPickingHeroImage(false);
-                          toast.success("Banner atualizado!");
+                          toast.success("Banner actualizado!");
                         }}
                         className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${(state.siteContent.heroImageUrl === url || (!state.siteContent.heroImageUrl && i === 0)) ? "border-amber-400" : "border-white/10 hover:border-white/40"
                           }`}
@@ -410,17 +410,17 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                   </div>
                 ) : (
                   <div className="text-[10px] text-white/40 text-center italic py-4 border border-dashed border-white/10 rounded-lg">
-                    Ainda não há imagens geradas no seu banco.
+                    Aún no hay imágenes generadas en tu banco.
                   </div>
                 )}
 
                 <div className="flex gap-2 items-center pt-2 border-t border-white/10">
                   <input
-                    placeholder="Cole link externo (https://...)"
+                    placeholder="Pega un enlace externo (https://...)"
                     onChange={(e) => {
                       if (e.target.value.startsWith("http")) {
                         updSite({ heroImageUrl: e.target.value });
-                        toast.success("Link de fundo aplicado!");
+                        toast.success("¡Enlace de fondo aplicado!");
                       }
                     }}
                     className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-white/30 outline-none focus:border-white/30"
@@ -429,11 +429,11 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                     onClick={() => {
                       updSite({ heroImageUrl: "" });
                       setPickingHeroImage(false);
-                      toast.success("Fundo resetado ao padrão");
+                      toast.success("Fondo restaurado al predeterminado");
                     }}
                     className="px-2 py-1.5 rounded-lg bg-white/[0.06] text-white/60 text-[10px] hover:bg-red-500/20 hover:text-red-300 transition-colors"
                   >
-                    Limpar
+                    Limpiar
                   </button>
                 </div>
               </div>
@@ -443,7 +443,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
       </FabricaCard>
 
       {/* GALERIA de imagens */}
-      <FabricaCard title="ðŸ–¼ï¸ Banco de imagens">
+      <FabricaCard title="ðŸ–¼ï¸ Banco de imágenes">
         <p className="text-xs text-white/50 mb-3">
           Guarda aquí las imágenes que generaste en la Fase 3 o pega enlaces externos. Luego, solo haz clic en 'Usar' en el paquete.
         </p>
@@ -456,9 +456,9 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
       </FabricaCard>
 
       {/* PACOTES editáveis */}
-      <FabricaCard title="ðŸ“¦ Pacotes oferecidos">
+      <FabricaCard title="📦 Paquetes ofrecidos">
         <FieldText
-          label="Título da seção"
+          label="Título de la sección"
           value={state.siteContent.pacotesTitle}
           onChange={(v) => updSite({ pacotesTitle: v })}
         />
@@ -476,15 +476,15 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             onClick={addPacote}
             className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
           >
-            <Plus className="w-4 h-4" /> Adicionar pacote
+            <Plus className="w-4 h-4" /> Añadir paquete
           </button>
         </div>
       </FabricaCard>
 
       {/* DEPOIMENTOS */}
-      <FabricaCard title="â­ Depoimentos">
+      <FabricaCard title="â­ Testimonios">
         <FieldText
-          label="Título da seção"
+          label="Título de la sección"
           value={state.siteContent.depoimentosTitle}
           onChange={(v) => updSite({ depoimentosTitle: v })}
         />
@@ -495,7 +495,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                 <input
                   value={d.name}
                   onChange={(e) => updDepo(i, { name: e.target.value })}
-                  placeholder="Nome do cliente"
+                  placeholder="Nombre del cliente"
                   className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
                 />
                 <button
@@ -508,7 +508,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
               <textarea
                 value={d.text}
                 onChange={(e) => updDepo(i, { text: e.target.value })}
-                placeholder="Depoimento"
+                placeholder="Testimonio"
                 rows={2}
                 className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
               />
@@ -518,15 +518,15 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             onClick={addDepo}
             className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
           >
-            <Plus className="w-4 h-4" /> Adicionar depoimento
+            <Plus className="w-4 h-4" /> Añadir testimonio
           </button>
         </div>
       </FabricaCard>
 
       {/* FAQ */}
-      <FabricaCard title="â“ Perguntas Frequentes (FAQ)">
+      <FabricaCard title="â“ Preguntas Frecuentes (FAQ)">
         <FieldText
-          label="Título da seção"
+          label="Título de la sección"
           value={state.siteContent.faqTitle}
           onChange={(v) => updSite({ faqTitle: v })}
         />
@@ -541,7 +541,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                     next[i] = { ...next[i], q: e.target.value };
                     updSite({ faq: next });
                   }}
-                  placeholder="Pergunta"
+                  placeholder="Pregunta"
                   className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
                 />
                 <button
@@ -558,17 +558,17 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                   next[i] = { ...next[i], a: e.target.value };
                   updSite({ faq: next });
                 }}
-                placeholder="Resposta"
+                placeholder="Respuesta"
                 rows={2}
                 className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
               />
             </div>
           ))}
           <button
-            onClick={() => updSite({ faq: [...state.siteContent.faq, { q: "Nova pergunta?", a: "Resposta..." }] })}
+            onClick={() => updSite({ faq: [...state.siteContent.faq, { q: "¿Nueva pregunta?", a: "Respuesta..." }] })}
             className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
           >
-            <Plus className="w-4 h-4" /> Adicionar pergunta
+            <Plus className="w-4 h-4" /> Añadir pregunta
           </button>
         </div>
       </FabricaCard>
@@ -582,7 +582,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             onChange={(v) => updSite({ finalCtaTitle: v })}
           />
           <FieldText
-            label="Texto do botão"
+            label="Texto del botón"
             value={state.siteContent.finalCtaLabel}
             onChange={(v) => updSite({ finalCtaLabel: v })}
           />
@@ -595,13 +595,13 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
           onClick={onBack}
           className="flex-1 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white/80 font-semibold hover:bg-white/[0.08] flex items-center justify-center gap-2"
         >
-          Voltar
+          Volver
         </button>
         <button
           onClick={() => setPreviewing((p) => !p)}
           className="flex-1 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white/80 font-semibold hover:bg-white/[0.08] flex items-center justify-center gap-2"
         >
-          <Eye className="w-4 h-4" /> {previewing ? "Esconder" : "Preview"}
+          <Eye className="w-4 h-4" /> {previewing ? "Ocultar" : "Preview"}
         </button>
         <button
           onClick={handleDownload}
@@ -618,8 +618,8 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
       {previewing && (
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
           <div className="px-4 py-2 bg-white/[0.04] text-xs text-white/60 font-semibold uppercase tracking-widest flex items-center justify-between">
-            <span>Preview ao vivo</span>
-            <span className="text-white/40 normal-case tracking-normal">Atualiza a cada edição âœ¨</span>
+            <span>Vista previa en vivo</span>
+            <span className="text-white/40 normal-case tracking-normal">Se actualiza con cada edición âœ¨</span>
           </div>
           <iframe srcDoc={previewHTML} className="w-full h-[700px] bg-white" title="Preview" />
         </div>
@@ -630,7 +630,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   );
 };
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Sub-componentes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ───────────── Sub-componentes ───────────── */
 
 const FieldText = ({
   label,
@@ -723,7 +723,7 @@ const PacoteEditor = ({
             <input
               value={pacote.title}
               onChange={(e) => onChange({ title: e.target.value })}
-              placeholder="Ex: Jericoacoara 5 dias"
+              placeholder="Ej: Cancún 5 días"
               className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm font-bold text-white placeholder:text-white/30 outline-none focus:border-white/40"
             />
             <button
@@ -736,7 +736,7 @@ const PacoteEditor = ({
           <input
             value={pacote.price}
             onChange={(e) => onChange({ price: e.target.value })}
-            placeholder="R$ 1.997 / pessoa"
+            placeholder="$ 1.997 / pessoa"
             className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
           />
         </div>
@@ -745,30 +745,30 @@ const PacoteEditor = ({
       <textarea
         value={pacote.description}
         onChange={(e) => onChange({ description: e.target.value })}
-        placeholder="Descrição (o que está incluso)"
+        placeholder="Descripción (lo que está incluido)"
         rows={2}
         className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
       />
 
       <div className="flex gap-2 items-center">
-        <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Botão:</span>
+        <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Botón:</span>
         <input
           value={pacote.ctaLabel || ""}
           onChange={(e) => onChange({ ctaLabel: e.target.value })}
-          placeholder="Quero esse"
+          placeholder="Quiero este"
           className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-white/30 outline-none focus:border-white/40"
         />
-        <span className="text-[10px] text-white/40 italic">â†’ "Olá, tenho interesse em {pacote.title || "..."}"</span>
+        <span className="text-[10px] text-white/40 italic">â†’ "Hola, tengo interés en {pacote.title || "..."}"</span>
       </div>
 
       {pickingImage && (
         <div className="bg-black/40 border border-white/10 rounded-xl p-3 space-y-3">
-          <div className="text-[11px] font-bold text-white/60 uppercase tracking-wider">Escolher imagem</div>
+          <div className="text-[11px] font-bold text-white/60 uppercase tracking-wider">Elegir imagen</div>
 
           {/* Galeria salva */}
           {gallery.length > 0 && (
             <div>
-              <div className="text-[10px] text-white/40 mb-2">Do seu banco:</div>
+              <div className="text-[10px] text-white/40 mb-2">De tu banco:</div>
               <div className="grid grid-cols-4 gap-2">
                 {gallery.map((url) => (
                   <button
@@ -776,7 +776,7 @@ const PacoteEditor = ({
                     onClick={() => {
                       onChange({ imageUrl: url });
                       setPickingImage(false);
-                      toast.success("Imagem aplicada!");
+                      toast.success("¡Imagen aplicada!");
                     }}
                     className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${pacote.imageUrl === url ? "border-amber-400" : "border-white/10 hover:border-white/40"
                       }`}
@@ -793,7 +793,7 @@ const PacoteEditor = ({
             <input
               value={pacote.imageUrl || ""}
               onChange={(e) => onChange({ imageUrl: e.target.value })}
-              placeholder="Cole a URL da imagem (https://...)"
+              placeholder="Pega la URL de la imagen (https://...)"
               className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/30 outline-none focus:border-white/40"
             />
             <button
@@ -803,7 +803,7 @@ const PacoteEditor = ({
               }}
               className="px-3 py-2 rounded-lg bg-white/[0.06] text-white/70 text-xs hover:bg-white/[0.1]"
             >
-              Limpar
+              Limpiar
             </button>
           </div>
 
@@ -898,7 +898,7 @@ const ImageGallery = ({
           <input
             value={newUrl}
             onChange={(e) => setNewUrl(e.target.value)}
-            placeholder="Cole link da imagem (https://...)"
+            placeholder="Pega el enlace de la imagen (https://...)"
             className="w-full bg-white/[0.04] border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
           />
         </div>
@@ -921,7 +921,7 @@ const ImageGallery = ({
         onClick={() => fileRef.current?.click()}
         className="w-full py-2.5 rounded-lg border border-dashed border-white/20 text-white/60 hover:text-white hover:border-white/40 text-xs font-semibold flex items-center justify-center gap-2"
       >
-        <Upload className="w-3.5 h-3.5" /> Ou faça upload do seu computador
+        <Upload className="w-3.5 h-3.5" /> O sube desde tu computadora
       </button>
       <input
         ref={fileRef}
@@ -967,7 +967,7 @@ const PublishOnLovableCard = ({
       const blob = new Blob([html], { type: 'text/html' });
       const fileName = `sites/${user.id}.html`;
       
-      // ðŸš€ NOVO: Sistema de SUBDOMÍNIO REAL! Gera o slug limpo da agência!
+      // 🚀 NOVO: Sistema de SUBDOMÍNIO REAL! Gera o slug limpo da agência!
       const rawName = state.agencyName || `agencia-${user.id.substring(0,4)}`;
       const cleanSlug = rawName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
       const slugName = `sites/${cleanSlug}.html`;
@@ -990,7 +990,7 @@ const PublishOnLovableCard = ({
       // 3. Gera o Link Público Final!
       const internalUrl = `${window.location.origin}/view/${user.id}`;
       setPublishedUrl(internalUrl);
-      toast.success("ðŸš€ SITE PUBLICADO COM SUCESSO!");
+      toast.success("🚀 SITE PUBLICADO COM SUCESSO!");
 
       // Feedback visual de "Uau!"
       if (typeof window !== "undefined" && (window as any).confetti) {
@@ -1018,7 +1018,7 @@ const PublishOnLovableCard = ({
     try {
       const prompt = generateUpdatePackagesPrompt(state);
       await navigator.clipboard.writeText(prompt);
-      toast.success("ðŸš€ Prompt de atualização copiado! Agora cole no chat do seu Lovable.");
+      toast.success("🚀 Prompt de atualização copiado! Agora cole no chat do seu Lovable.");
     } catch {
       toast.error("Erro ao copiar prompt.");
     }
@@ -1069,9 +1069,9 @@ const PublishOnLovableCard = ({
 
         <div className="space-y-2.5 mb-6">
           {[
-            { n: 1, t: "Baixe ou copie o HTML do seu site (botões acima)" },
-            { n: 2, t: "Crie sua conta grátis no Lovable usando o link abaixo" },
-            { n: 3, t: "Cole o HTML, clique em Publicar e seu site está no ar ðŸš€" },
+            { n: 1, t: "Descarga o copia el HTML de tu sitio (botones de arriba)" },
+            { n: 2, t: "Crea tu cuenta gratis en Lovable usando el enlace de abajo" },
+            { n: 3, t: "Pega el HTML, haz clic en Publicar y tu sitio estará en línea 🚀" },
           ].map((s) => (
             <div key={s.n} className="flex items-start gap-3 bg-black/30 border border-white/[0.06] rounded-xl p-3">
               <div
@@ -1117,15 +1117,15 @@ const PublishOnLovableCard = ({
               color: "#FCD34D"
             }}
           >
-            <Rocket className="w-4 h-4" /> Copiar Atualização (Só Pacotes Novos) âš¡
+            <Rocket className="w-4 h-4" /> Copiar Actualización (Solo Paquetes Nuevos) âš¡
           </button>
           <p className="text-[10px] text-white/40 text-center mt-1.5 italic">
-            Use este botão caso seu site já esteja pronto e queira apenas adicionar novos pacotes sem reconstruir tudo.
+            Usa este botón si tu sitio ya está listo y solo quieres añadir paquetes nuevos sin reconstruir todo.
           </p>
         </div>
 
         <p className="text-[11px] text-white/50 text-center">
-          âœ“ Sem cartão de crédito Â· âœ“ Domínio grátis incluído Â· âœ“ Suporte a domínio próprio
+          âœ“ Sin tarjeta de crédito Â· âœ“ Dominio gratis incluido Â· âœ“ Soporte para dominio propio
         </p>
 
         <div className="mt-6 pt-5 border-t border-white/10 flex justify-center">
@@ -1137,7 +1137,7 @@ const PublishOnLovableCard = ({
             }}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.06] border border-white/15 text-white/80 hover:text-white hover:bg-white/[0.10] transition-all text-sm font-semibold"
           >
-            <ArrowLeft className="w-4 h-4" /> Voltar ao topo
+            <ArrowLeft className="w-4 h-4" /> Volver arriba
           </button>
         </div>
 
@@ -1146,14 +1146,14 @@ const PublishOnLovableCard = ({
             onClick={onBack}
             className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white/70 font-bold hover:bg-white/[0.08] transition-all"
           >
-            Voltar
+            Volver
           </button>
           <button
             onClick={onNext}
             className="flex-[2] py-4 rounded-xl font-black text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
             style={{ background: primaryColor }}
           >
-            Próximo Passo: Diagnóstico <Rocket className="w-5 h-5" />
+            Siguiente Paso: Diagnóstico <Rocket className="w-5 h-5" />
           </button>
         </div>
       </div>

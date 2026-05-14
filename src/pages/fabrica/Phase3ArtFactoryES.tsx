@@ -103,11 +103,11 @@ const PRESET_COLORS = [
 
 type Currency = "BRL" | "USD" | "EUR" | "ARS" | "GBP";
 const CURRENCY_PRESETS: { id: Currency; symbol: string; label: string; locale: string }[] = [
-  { id: "BRL", symbol: "R$", label: "Real (R$)", locale: "pt-BR" },
+  { id: "BRL", symbol: "$", label: "Real ($)", locale: "es-ES" },
   { id: "USD", symbol: "US$", label: "Dólar (US$)", locale: "en-US" },
   { id: "EUR", symbol: "🖼️‚¬", label: "Euro (🖼️‚¬)", locale: "de-DE" },
   { id: "GBP", symbol: "Â£", label: "Libra (Â£)", locale: "en-GB" },
-  { id: "ARS", symbol: "AR$", label: "Peso AR (AR$)", locale: "es-AR" },
+  { id: "ARS", symbol: "A$", label: "Peso AR (A$)", locale: "es-AR" },
 ];
 
 /**
@@ -172,12 +172,12 @@ const formatPriceValue = (raw: string, currency: Currency, assumeCents = false, 
 const buildPriceWithCurrency = (raw: string, currency: Currency): string => {
   const formatted = formatPriceValue(raw, currency);
   if (!formatted) return "";
-  const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
+  const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "$";
   return `${sym} ${formatted}`;
 };
 
 const stripCurrencyFromPrice = (raw: string, currency: Currency): string => {
-  const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
+  const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "$";
   return (raw || "").replace(sym, "").replace(/R\$|US\$|AR\$|🖼️‚¬|Â£/g, "").trim();
 };
 
@@ -210,9 +210,9 @@ interface PaymentPreset {
 }
 
 const PAYMENT_PRESETS: PaymentPreset[] = [
-  { id: "installments", name: "En cuotas",          emoji: "ðŸ’³", description: "Ex: 10x R$ 149,90",       hint: "Parcelas: 10x · Valor: 149,90" },
-  { id: "cash",         name: "Al contado",            emoji: "ðŸ’°", description: "Ex: À VISTA R$ 1.499",    hint: "Valor: 1.499" },
-  { id: "down_plus",    name: "Enganche + cuotas", emoji: "ðŸ’µ", description: "Ex: ENTRADA + 10x R$ 149", hint: "Parcelas: ENTRADA R$ 200 + 10x · Valor: 149" },
+  { id: "installments", name: "En cuotas",          emoji: "💳", description: "Ex: 10x $ 149,90",       hint: "Parcelas: 10x · Valor: 149,90" },
+  { id: "cash",         name: "Al contado",            emoji: "💰", description: "Ex: À VISTA $ 1.499",    hint: "Valor: 1.499" },
+  { id: "down_plus",    name: "Enganche + cuotas", emoji: "ðŸ’µ", description: "Ex: ENTRADA + 10x $ 149", hint: "Parcelas: ENTRADA $ 200 + 10x · Valor: 149" },
 ];
 
 const AD_TITLE_PRESETS: string[] = [
@@ -225,7 +225,7 @@ const AD_TITLE_PRESETS: string[] = [
   "Qué hacer en {destino}",
   "Lo mejor de {destino}",
   "Mi sueño se llama {destino}",
-  "Vámonos a {destino}",
+  "¿Vámonos a {destino}",
   "Tu próximo viaje es {destino}",
   "Paquete Promocional {destino}",
   "Viaje Completo {destino}",
@@ -266,7 +266,7 @@ const PROMO_NAME_PRESETS: string[] = [
   "LIQUIDACIÓN"
 ];
 
-// Defaults reconhecidos como "padrão da Oferta" 🖼️€” autorizados a serem sobrescritos
+// Defaults reconhecidos como "padrão da Oferta" — autorizados a serem sobrescritos
 // quando o usuário troca de categoria sem ter customizado.
 const DEFAULT_PROMO_NAMES_OFERTA = new Set(["OFERTA ESPECIAL", "Oferta Especial", "BLACK FRIDAY"]);
 const DEFAULT_AD_TITLES_OFERTA = new Set(["Paquete {destino}", "Conoce lo mejor de {destino}", "Descubre {destino}"]);
@@ -284,8 +284,8 @@ const TITLE_NEIGHBORS: Record<string, string[]> = {
   "Descubre {destino}": ["Conoce lo mejor de {destino}", "Explora {destino}"],
   "Paquete {destino}": ["Viaje Completo {destino}", "Paquete Promocional {destino}"],
   "Explora {destino}": ["Descubre {destino}", "{destino} te va a sorprender"],
-  "Vámonos a {destino}": ["¿Vamos a {destino}?", "{destino} te espera"],
-  "¿Vamos a {destino}?": ["Vámonos a {destino}", "{destino} te espera"],
+  "¿Vámonos a {destino}": ["¿Vamos a {destino}?", "{destino} te espera"],
+  "¿Vamos a {destino}?": ["¿Vámonos a {destino}", "{destino} te espera"],
   // Vizinhos de Experiência
   "Tu próximo viaje es {destino}": ["Vive lo mejor de {destino}", "Momentos inolvidables en {destino}"],
   "Vive lo mejor de {destino}": ["Tu próximo viaje es {destino}", "Experiencia exclusiva en {destino}"],
@@ -387,9 +387,9 @@ const pickPhotoRefs = (
 };
 
 // ============================================================
-// GERADOR DE LEGENDAS / COPY para Instagram
+// GENERADOR DE PIES DE FOTO / COPY para Instagram
 // Gera 3 variações de texto adaptadas aos dados do anúncio,
-// sem chamadas Ã  IA 🖼️€” 100% local, instant🖼️neo.
+// sem chamadas Ã  IA — 100% local, instant🖼️neo.
 // ============================================================
 interface CaptionVars {
   destination: string;
@@ -407,20 +407,20 @@ interface CaptionVars {
 }
 
 const buildAdCaptions = (v: CaptionVars): string[] => {
-  const dest = v.destination.trim() || "o destino";
+  const dest = v.destination.trim() || "el destino";
   const destUp = dest.toUpperCase();
   const priceStr = v.price.trim();
   const hasPrice = !!priceStr && v.paymentMode !== "free_quote";
   const hasInstall = !!v.installments.trim() && v.paymentMode === "installments";
   const period = v.travelPeriod.trim();
-  const agency = v.agencyName.trim() || "nossa agência";
+  const agency = v.agencyName.trim() || "nuestra agencia";
   const ig = v.instagram.trim() ? `@${v.instagram.replace(/^@/, "").trim()}` : "";
   const wa = v.whatsapp.trim();
   const contactLine = wa
-    ? `ðŸ“² Habla conmigo ahora: *${wa}* ${ig ? `| ${ig}` : ""}`
+    ? `📱 Habla conmigo ahora: *${wa}* ${ig ? `| ${ig}` : ""}`
     : ig
-    ? `ðŸ“² Síguenos: ${ig}`
-    : "ðŸ“² ¡Contáctanos para reservar!";
+    ? `📱 Síguenos: ${ig}`
+    : "📱 ¡Contáctanos para reservar!";
 
   // Benefícios: pega os 3 primeiros highlights como bullet points
   const benefitLines = v.highlights
@@ -439,28 +439,28 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
   if (v.isExperience) {
     // Variante Experiência: estilo editorial/luxo
     const caps: string[] = [
-      // Variação 1 🖼️€” Cinematográfica
-      `🖼️œ¨ ${destUp} te sorprenderá.\n\nExperiencias como esta no se olvidan — y tú mereces vivirlas.\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}${contactLine}`,
+      // Variação 1 — Cinematográfica
+      `✨ ${destUp} te sorprenderá.\n\nExperiencias como esta no se olvidan — y tú mereces vivirlas.\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}${contactLine}`,
 
-      // Variação 2 🖼️€” Direta com CTA
-      `ðŸŒŸ Já imaginou ${v.isExperience ? "viver" : "conhecer"} ${dest}?\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}Cada detalle ha sido pensado para ti. ¿Planeamos juntos?\n\n${contactLine}`,
+      // Variação 2 — Direta com CTA
+      `🌟 ¿Ya imaginaste ${v.isExperience ? "vivir" : "conocer"} ${dest}?\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}Cada detalle ha sido pensado para ti. ¿Planeamos juntos?\n\n${contactLine}`,
 
-      // Variação 3 🖼️€” Curiosidade/teaser
-      `Hay destinos que transforman. ${dest} es uno de ellos. ðŸ§³\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}ðŸ’Œ Reserve com a ${agency}. Una agencia que entiende lo que buscas en un viaje.\n\n${contactLine}`,
+      // Variação 3 — Curiosidade/teaser
+      `Hay destinos que transforman. ${dest} es uno de ellos. 🧳\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}💌 Reserva con ${agency}. Una agencia que entiende lo que buscas en un viaje.\n\n${contactLine}`,
     ];
     return caps;
   }
 
   // Variante Oferta: direto e comercial
   const caps: string[] = [
-    // Variação 1 🖼️€” Urgência + preço em destaque
-    `ðŸš¨ *${v.promoName || "OFERTA ESPECIAL"}* 🖼️€” ${destUp}!\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n🖼️š ï¸ ¡Cupos limitados! No pierdas esta oportunidad.\n\n${contactLine}`,
+    // Variação 1 — Urgência + preço em destaque
+    `🚨 *${v.promoName || "OFERTA ESPECIAL"}* — ${destUp}!\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n⚠️ ¡Cupos limitados! No pierdas esta oportunidad.\n\n${contactLine}`,
 
-    // Variação 2 🖼️€” Storytelling + preço
-    `Vámonos a ${dest}? 🖼️œˆï¸\n\nArmamos un paquete COMPLETO para que no te preocupes por nada:\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\nðŸ‘‰ ¡Escríbeme ahora y asegura tu lugar!\n\n${contactLine}`,
+    // Variação 2 — Storytelling + preço
+    `¿Vámonos a ${dest}? ✈️\n\nArmamos un paquete COMPLETO para que no te preocupes por nada:\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n👉 ¡Escríbeme ahora y asegura tu lugar!\n\n${contactLine}`,
 
-    // Variação 3 🖼️€” Benefícios + prova social
-    `ðŸ“ ${dest} 🖼️€” ¡Un paquete que te va a encantar!\n\nIncluido en tu viaje:\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n🖼️œ… Agencia especializada. Atención personalizada. Soporte 24h.\n\n${contactLine}`,
+    // Variação 3 — Benefícios + prova social
+    `📍 ${dest} — ¡Un paquete que te va a encantar!\n\nIncluido en tu viaje:\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n✅ Agencia especializada. Atención personalizada. Soporte 24h.\n\n${contactLine}`,
   ];
   return caps;
 };
@@ -512,7 +512,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const [pixBannerText, setPixBannerTextState] = useState<string>((state as any).pixBannerText || "");
   const setPixBannerText = (v: string) => { setPixBannerTextState(v); update({ pixBannerText: v } as any); };
 
-  // Tipografía global (família + escala título/descrição + cor de override)
+  // Tipografía global (familia + escala título/descripción + color de override)
   const [fontFamily, setFontFamilyState] = useState<string>((state as any).fontFamily || "Inter");
   const setFontFamily = (v: string) => { setFontFamilyState(v); update({ fontFamily: v } as any); };
   const [titleScale, setTitleScaleState] = useState<number>(((state as any).titleScale as number) || 1);
@@ -556,9 +556,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     }
   }, [fontFamily]);
 
-  // Preço formatado que será passado para o composer (ex: "R$ 1.499,90" ou "US$ 1,499.90")
+  // Preço formatado que será passado para o composer (ex: "$ 1.499,90" ou "US$ 1,499.90")
   const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
-  const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
+  const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "$";
 
   const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
   const setInstallments = (i: string) => { setInstallmentsState(i); update({ lastInstallments: i }); };
@@ -594,7 +594,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         const ctx = canvas.getContext("2d");
         ctx?.drawImage(img, 0, 0, width, height);
         
-        // Limpa chaves pesadas legadas para liberar espaço no localStorage antes de salvar a nova logo
+        // Limpia claves pesadas legadas para liberar espacio en el localStorage antes de guardar el nuevo logo
         try {
           Object.keys(localStorage).forEach((key) => {
             if (key.startsWith("fabrica-heavy-v1:") && key !== "fabrica-heavy-v1:logoBase64") {
@@ -673,7 +673,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       return prev;
     });
 
-    // Padronização de CORES por categoria 🖼️€” só sobrescreve se o usuário ainda
+    // Padronização de CORES por categoria — só sobrescreve se o usuário ainda
     // estiver com os defaults da OUTRA categoria (preserva customização manual).
     setPrimaryColorState((prevP) => {
       const prevS = secondaryColor;
@@ -690,7 +690,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       return prevP;
     });
 
-    // Limpa override manual de cor de texto ao trocar categoria 🖼️€”
+    // Limpa override manual de cor de texto ao trocar categoria —
     // o auto-contraste (claro/escuro baseado na imagem) volta a valer.
     setTextColorOverrideState("");
     update({ textColorOverride: "" } as any);
@@ -765,7 +765,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const [generatedImage, setGeneratedImage] = useState<string>("");
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [variationCounter, setVariationCounter] = useState(0);
-  // Legendas/Copy geradas automaticamente junto com as imagens
+  // Pies de foto/Copy generados automáticamente junto con las imágenes
   const [adCaptions, setAdCaptions] = useState<string[]>([]);
   const [selectedCaption, setSelectedCaption] = useState<string | null>(null);
   const [captionCopied, setCaptionCopied] = useState(false);
@@ -788,7 +788,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     localStorage.removeItem("fabrica-heavy-v1:generatedAdImage");
     localStorage.removeItem("fabrica_last_template_id");
     localStorage.removeItem("fabrica_recent_template_ids");
-    // Reseta o auto-sync da Fase 4 para que os novos dados sejam re-sincronizados
+    // Resetea el auto-sync de la Fase 4 para que los nuevos datos sean re-sincronizados
     localStorage.removeItem("fabrica-phase4-autosync-v1");
     Object.keys(localStorage)
       .filter((k) => k.startsWith("fabrica_generation_cycle_") || k.startsWith("fabrica_strategy_history_") || k.startsWith("fabrica_last_template_ids_") || k.startsWith("fabrica_recent_template_ids_"))
@@ -810,7 +810,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const [visiblePhotoCount, setVisiblePhotoCount] = useState(3);
   // Sua imagem
   const [customSource, setCustomSource] = useState<CustomSource>("upload");
-  const [customImageData, setCustomImageData] = useState<string>(""); // base64 (upload) ou URL (link) 🖼️€” só em memória
+  const [customImageData, setCustomImageData] = useState<string>(""); // base64 (upload) ou URL (link) — só em memória
   const [customLink, setCustomLink] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -946,7 +946,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     setEditingIconIdx(null);
   };
 
-  // ðŸŒ Integração Inteligente de Pacotes com o Site F2 (Acumulativo)
+  // ðŸŒ Integración Inteligente de Paquetes con el Sitio F2 (Acumulativo)
   // Pega o último anúncio gerado e o insere no Site, preferencialmente usando a FOTO LIMPA
   // para o fundo do site, em vez da arte poluída com texto do Canva, conforme exigido pelo usuário.
   const syncGeneratedPackageToSite = (finalComposedImg: string, sourceCleanImg?: string) => {
@@ -956,7 +956,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     const imageToUse = sourceCleanImg || finalComposedImg;
 
     const currentPrice = formattedPriceForAd || price;
-    const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
+    const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "$";
 
     const priceLabel = (() => {
       const suffix = paymentSuffix || "por persona";
@@ -966,8 +966,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       return `${pVal} ${suffix}`;
     })();
 
-    const descLines = highlights.slice(0, 4).map((h) => `🖼️œ… ${h.text}`).join("\n");
-    const period = travelPeriod ? `\nðŸ“… ${travelPeriod}` : "";
+    const descLines = highlights.slice(0, 4).map((h) => `✅ ${h.text}`).join("\n");
+    const period = travelPeriod ? `\n📅 ${travelPeriod}` : "";
     
     const cleanDest = destination.trim();
     const newPkg = {
@@ -994,7 +994,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         description: newPkg.description,
       };
     } else {
-      const base = currentPackages.filter((p: any) => p.title !== "Novo pacote");
+      const base = currentPackages.filter((p: any) => p.title !== "Nuevo paquete");
       updatedPackages = [newPkg, ...base];
     }
 
@@ -1056,7 +1056,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         localStorage.setItem(cycleKey, String(nextSeed));
       };
 
-      // ===== MODO FOTO (composição local) 🖼️€” gera 1 ou mais imagens =====
+      // ===== MODO FOTO (composição local) — gera 1 ou mais imagens =====
       if (genMode === "photo") {
         toast.info(isBatchMode ? "Gerando lote de 3 variações com foto real" : "Gerando 1 imagem única com foto real");
         const guard = getForbiddenSets(categoria, "photo", format);
@@ -1072,11 +1072,11 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         localStorage.setItem(stratHistKey, JSON.stringify(chosen));
         const photoRefs = pickPhotoRefs(photos, refImage, freshSeedPhoto, chosen.length);
 
-        // Paleta 🖼️€” sempre usa exatamente as cores selecionadas pelo usuário.
+        // Paleta — sempre usa exatamente as cores selecionadas pelo usuário.
         const palette = selectedPalette(primaryColor, secondaryColor);
 
         // Rotação determinística entre as 5 variantes do compositor (V0/V1/V2/V3/V4)
-        // evitando as 2 últimas usadas 🖼️€” garante imagem nova a cada clique e cobre V4.
+        // evitando as 2 últimas usadas — garante imagem nova a cada clique e cobre V4.
         const TOTAL_VARIANTS_PHOTO = 5;
         const recentPhoto = variantHistoryRef.current.slice(-2);
         let candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i).filter((v) => !recentPhoto.includes(v));
@@ -1158,7 +1158,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         // ===== MODO IA PURA: gera 1 prompt da categoria; Experiência usa fluxo seguro sem texto da IA =====
       if (genMode === "ai") {
         const cat = getCategoria(categoria);
-        // HÍBRIDO: para Experiencia de Destino (qualquer formato 🖼️€” square 1:1 ou story 9:16),
+        // HÍBRIDO: para Experiencia de Destino (qualquer formato — square 1:1 ou story 9:16),
         // a IA gera APENAS o fundo fotográfico limpo; o motor Canvas (composeTravelAd)
         // desenha por cima logo, textos, preço, ícones e contraste com HEX exato.
         const isAiExperienceStory = categoria === "experiencia_destino" && (format === "square" || format === "story");
@@ -1176,7 +1176,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           : pickPromptsForCategoria(categoria, 1, storedLast, mergedRecent);
         const freshSeedAi = freshSeed(generationSeed);
 
-        // Paleta 🖼️€” sempre usa exatamente as cores selecionadas pelo usuário.
+        // Paleta — sempre usa exatamente as cores selecionadas pelo usuário.
         const palette = selectedPalette(primaryColor, secondaryColor);
         const aiExperienceStrategy = (() => {
           if (!isAiExperienceStory) return "experiencia_hero" as StrategyId;
@@ -1189,14 +1189,14 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           return picked;
         })();
 
-        toast.info(`Gerando ${picks.length} ${picks.length === 1 ? "variação" : "variações"} em IA Pura 🖼️€” ${cat.name}`);
+        toast.info(`Gerando ${picks.length} ${picks.length === 1 ? "variação" : "variações"} em IA Pura — ${cat.name}`);
 
-        // PROMPT DE FUNDO LIMPO 🖼️€” A IA é instruída a gerar APENAS a fotografia,
+        // PROMPT DE FUNDO LIMPO — A IA é instruída a gerar APENAS a fotografia,
         // sem nenhum elemento gráfico/tipográfico. Toda a UI (logo, textos, preço,
         // 🖼️”€🖼️”€ PROMPTS PARA EXPERIÃŠNCIA DE DESTINO (BLINDADOS) 🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€🖼️”€
         // REGRA DE OURO: a imagem da IA deve ser APENAS fotografia.
         // O motor de renderização (Canvas) é desenhado depois pelo motor Canvas (composeTravelAd).
-        const NEGATIVE_UI = `STRICT NEGATIVE CONSTRAINTS 🖼️€” the output MUST be a pure photograph only. ABSOLUTELY FORBIDDEN: any text, letters, numbers, words, captions, headlines, prices, currency symbols, dates, typography, fonts, watermarks, signatures, logos, brand marks, badges, stamps, stickers, labels, banners, ribbons, callouts, speech bubbles, icons, pictograms, emojis, arrows, frames, borders, overlays, color blocks, gradients painted on top, UI elements, buttons, cards, panels, mockup chrome, phone frames, social media UI, Instagram/Facebook/TikTok interface, hashtags, @mentions, QR codes, barcodes. The image must look like an untouched RAW photograph straight from a professional camera 🖼️€” nothing rendered, nothing added, no graphic design whatsoever. No people, no faces, no crowds.`;
+        const NEGATIVE_UI = `STRICT NEGATIVE CONSTRAINTS — the output MUST be a pure photograph only. ABSOLUTELY FORBIDDEN: any text, letters, numbers, words, captions, headlines, prices, currency symbols, dates, typography, fonts, watermarks, signatures, logos, brand marks, badges, stamps, stickers, labels, banners, ribbons, callouts, speech bubbles, icons, pictograms, emojis, arrows, frames, borders, overlays, color blocks, gradients painted on top, UI elements, buttons, cards, panels, mockup chrome, phone frames, social media UI, Instagram/Facebook/TikTok interface, hashtags, @mentions, QR codes, barcodes. The image must look like an untouched RAW photograph straight from a professional camera — nothing rendered, nothing added, no graphic design whatsoever. No people, no faces, no crowds.`;
         const experienceBackgroundPrompt = (variant: number) => {
           const base = `Ultra-high-end editorial travel photography, cinematic 8K, Shot on RED. Magnificent landscape of ${destination || "paradise destination"}.`;
           const variants = [
@@ -1383,11 +1383,11 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         localStorage.setItem("fabrica_gen_count", String(newCount));
         finishCycle(images.length);
 
-        toast.success(`${images.length} ${images.length === 1 ? "variação gerada" : "variações geradas"} 🖼️€” ${cat.name}`);
+        toast.success(`${images.length} ${images.length === 1 ? "variação gerada" : "variações geradas"} — ${cat.name}`);
         return;
       }
 
-      // ===== MODO CUSTOM (link/upload do usuário) 🖼️€” gera 1 ou mais imagens locais =====
+      // ===== MODO CUSTOM (link/upload do usuário) — gera 1 ou mais imagens locais =====
       toast.info(isBatchMode ? "Gerando lote de 3 variações com sua imagem" : "Gerando 1 imagem única com sua imagem");
       const guardCustom = getForbiddenSets(categoria, "custom", format);
       const stratHistKeyCustom = scopedStrategyHistoryKey(categoria, "custom", format);
@@ -1496,7 +1496,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     generate(next, true);
   };
 
-  // Gera as legendas de copy sempre que as imagens ou os dados do anúncio mudarem
+  // Genera los pies de foto de copy siempre que las imágenes o los datos del anuncio cambien
   useEffect(() => {
     if (generatedImages.length === 0) return;
     const caps = buildAdCaptions({
@@ -1519,16 +1519,23 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   }, [generatedImages.length, destination, formattedPriceForAd, price, paymentLabel, installments, paymentMode, paymentSuffix, highlights, promoName, travelPeriod, categoria, state.agencyName, state.footerContact1Value, state.whatsapp, state.footerContact2Value, state.instagram]);
 
   const downloadPNG = () => {
-    if (!generatedImage) return;
+    if (generatedImages.length === 0) return;
+    
     try {
-      const a = document.createElement("a");
-      a.href = generatedImage;
-      a.download = `anuncio-${(destination || "destino").toLowerCase().replace(/\s+/g, "-")}-${format}.png`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      toast.success("Imagem baixada!");
-    } catch { toast.error("Erro ao baixar imagem"); }
+      const toDownload = isBatchMode ? generatedImages : [generatedImage];
+      
+      toDownload.forEach((img, idx) => {
+        const a = document.createElement("a");
+        a.href = img;
+        const suffix = isBatchMode ? `-v${idx + 1}` : "";
+        a.download = `anuncio-${(destination || "destino").toLowerCase().replace(/\s+/g, "-")}-${format}${suffix}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      });
+      
+      toast.success(isBatchMode ? "¡Todas las imágenes descargadas!" : "¡Imagen descargada!");
+    } catch { toast.error("Error al descargar la imagen"); }
   };
 
   const sectionCls = "bg-white/[0.05] border border-white/[0.08] rounded-2xl p-6";
@@ -1547,7 +1554,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       }`}>
         <div className="flex items-start gap-3">
           <div className="text-2xl">
-            {lastProvider === "user_gemini" ? "ðŸŸ¢" : lastProvider === "lovable_ai" ? "ðŸ”µ" : "⚡"}
+            {lastProvider === "user_gemini" ? "🟢" : lastProvider === "lovable_ai" ? "🔵" : "⚡"}
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-bold text-white">
@@ -1574,12 +1581,12 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         </div>
       </div>
 
-      {/* NOVO TOPO: Perfil e Logo */}
+      {/* NUEVO TOPO: Perfil y Logo */}
       <div className={`${sectionCls} space-y-5 mb-8`}>
         {user && savedProjects && savedProjects.length > 0 && (
           <div className="p-5 bg-white/[0.04] border border-white/10 rounded-2xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full" style={{ background: primaryColor }}></div>
-            <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">ðŸ“‚ Carregar Cliente / Projeto Salvo</label>
+            <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">📂 Cargar Cliente / Proyecto Guardado</label>
             <select
               onChange={(e) => {
                 const p = savedProjects.find(x => x.id === e.target.value);
@@ -1621,9 +1628,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   </label>
                   <button
                     type="button"
-                    onClick={() => { update({ logoBase64: "" }); toast.success("Logo removida"); }}
+                    onClick={() => { update({ logoBase64: "" }); toast.success("Logo eliminada"); }}
                     className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full transition-colors"
-                    title="Remover"
+                    title="Eliminar"
                   >
                     <X className="w-4 h-4 text-white" />
                   </button>
@@ -1738,7 +1745,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             </p>
           )}
 
-          {/* Seletor de Versão (V0..V4) 🖼️€” para correções cirúrgicas em cada layout */}
+          {/* Seletor de Versão (V0..V4) — para correções cirúrgicas em cada layout */}
           <div className="mt-4">
             <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">
               0b · Versión del Diseño
@@ -1953,7 +1960,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             </>
           ) : (
             <>
-              {/* NOVO RENDER DA GALERIA DA AGÃŠNCIA (PONTO 6) */}
+              {/* NUEVO RENDER DE LA GALERÍA DE LA AGENCIA */}
               <p className="text-[10px] text-indigo-300/80 mb-3 leading-relaxed font-medium">
                 📸 Fotos utilizadas recientemente en tu Sitio y anuncios generados. 
                 Centralizadas e reutilizáveis instantaneamente.
@@ -2027,13 +2034,13 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 {customImageData ? (
                   <>
                     <img src={customImageData} alt="preview" className="w-32 h-32 mx-auto rounded-lg object-cover mb-2" />
-                    <p className="text-xs text-emerald-400 font-semibold">🖼️œ“ Imagem carregada 🖼️€” clique para trocar</p>
+                    <p className="text-xs text-emerald-400 font-semibold">✓ Imagen cargada — haz clic para cambiar</p>
                   </>
                 ) : (
                   <>
                     <Upload className="w-8 h-8 mx-auto text-white/40 mb-2" />
                     <p className="text-sm text-white font-semibold">Clique para enviar</p>
-                    <p className="text-[10px] text-white/40 mt-1">JPG, PNG ou WebP 🖼️€” máx 8MB</p>
+                    <p className="text-[10px] text-white/40 mt-1">JPG, PNG ou WebP — máx 8MB</p>
                   </>
                 )}
               </button>
@@ -2141,7 +2148,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 onChange={(e) => setAdTitleTemplate(e.target.value)}
                 onFocus={(e) => { setTimeout(() => e.target.select(), 50); setAdTitleMenuOpen(true); }}
                 onClick={() => setAdTitleMenuOpen(true)}
-                placeholder="Ex: Pacote {destino}"
+                placeholder="Ej: Paquete {destino}"
                 className={`${inputCls} pr-10 cursor-pointer`}
               />
               <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${adTitleMenuOpen ? "rotate-180" : ""}`} />
@@ -2307,7 +2314,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
       {/* Tipografía, Colores, Benefícios e Gerar */}
       <div className={`${sectionCls} space-y-5`}>
-        {/* Tipografía 🖼️€” colapsável (mesmo padrão dos outros blocos) */}
+        {/* Tipografía — colapsável (mesmo padrão dos outros blocos) */}
         <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
           <button
             type="button"
@@ -2339,7 +2346,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 <p className="text-[10px] text-white/40 mt-1.5">La fuente elegida se aplica a todos los artes generados.</p>
               </div>
 
-              {/* Ajustes Avançados de Tamanho 🖼️€” accordion interno */}
+              {/* Ajustes Avançados de Tamanho — accordion interno */}
               <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden">
                 <button
                   type="button"
@@ -2412,7 +2419,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           )}
         </div>
 
-        {/* Colores 🖼️€” colapsável (mesmo padrão de Tipografía) */}
+        {/* Colores — colapsável (mesmo padrão de Tipografía) */}
         <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
           <button
             type="button"
@@ -2441,7 +2448,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           </button>
           {colorsOpen && (
             <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
-              {/* Bolinhas de cor 🖼️€” clicar abre o color picker nativo */}
+              {/* Bolinhas de cor — clicar abre o color picker nativo */}
               <div className="grid grid-cols-2 gap-4">
                 {[
                   { label: "Color primario", value: primaryColor, setter: setPrimaryColor, hint: "Fondo principal" },
@@ -2504,7 +2511,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           )}
         </div>
 
-        {/* Benefícios 🖼️€” em Experiencia de Destino usa apenas texto, sem selector de ícones. */}
+        {/* Benefícios — em Experiencia de Destino usa apenas texto, sem selector de ícones. */}
         <div>
           <div className="flex items-baseline justify-between mb-2 gap-2">
             <label className={labelCls}>{categoria === "experiencia_destino" ? "Descripción de la experiencia" : "Beneficios / Incluidos"}</label>
@@ -2578,7 +2585,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               );
             })}
 
-            {/* Slot "adicionar" 🖼️€” só aparece se ainda dá pra adicionar */}
+            {/* Slot "añadir" — solo aparece si aún se puede añadir */}
             {highlights.length < MAX_HIGHLIGHTS && (
               <div className="bg-white/[0.02] border border-dashed border-white/15 rounded-lg flex gap-1.5 items-center px-2.5 py-2 hover:border-white/30 transition-colors">
                 <Plus className="w-4 h-4 flex-shrink-0" style={{ color: secondaryColor }} />
@@ -2594,7 +2601,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   disabled={!newHl.trim()}
                   className="text-xs font-bold px-2 py-1 rounded text-black disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:brightness-110 flex-shrink-0"
                   style={{ background: secondaryColor }}
-                  title="Adicionar"
+                  title="Añadir"
                 >
                   +
                 </button>
@@ -2674,15 +2681,29 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
                 <div className={`grid gap-3 ${generatedImages.length > 1 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1"}`}>
                   {generatedImages.map((img, idx) => (
-                    <button
-                      key={`${img.slice(0, 48)}-${idx}`}
-                      type="button"
-                      onClick={() => setGeneratedImage(img)}
-                      className={`overflow-hidden rounded-xl border-2 bg-black/30 transition-all ${generatedImage === img ? "border-white shadow-lg" : "border-white/10 hover:border-white/30"}`}
-                      title={`Selecionar variação ${idx + 1}`}
-                    >
-                      <img src={img} alt={`Anúncio gerado ${idx + 1}`} className="w-full h-auto object-contain" />
-                    </button>
+                    <div key={`${img.slice(0, 48)}-${idx}`} className="relative group/img">
+                      <button
+                        type="button"
+                        onClick={() => setGeneratedImage(img)}
+                        className={`w-full overflow-hidden rounded-xl border-2 bg-black/30 transition-all ${generatedImage === img ? "border-white shadow-lg" : "border-white/10 hover:border-white/30"}`}
+                        title={`Seleccionar variación ${idx + 1}`}
+                      >
+                        <img src={img} alt={`Anuncio generado ${idx + 1}`} className="w-full h-auto object-contain" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const newList = generatedImages.filter((_, i) => i !== idx);
+                          setGeneratedImages(newList);
+                          if (generatedImage === img) setGeneratedImage(newList[0] || "");
+                          toast.success("Variación eliminada");
+                        }}
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                        title="Eliminar esta versión"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   ))}
                 </div>
 
@@ -2690,7 +2711,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   <div className="rounded-xl border border-white/10 bg-black/20 p-3">
                     <div className="flex items-center justify-between gap-3 mb-2">
                       <div className="text-xs font-bold text-white flex items-center gap-2">
-                        <FileText className="w-4 h-4" /> Legenda sugerida
+                        <FileText className="w-4 h-4" /> Pie de foto sugerido
                       </div>
                       <button
                         type="button"
@@ -2699,7 +2720,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                           await navigator.clipboard.writeText(text);
                           setSelectedCaption(text);
                           setCaptionCopied(true);
-                          toast.success("Legenda copiada!");
+                          toast.success("¡¡¡¡¡¡Copiado!");
                         }}
                         className="flex items-center gap-1.5 rounded-lg border border-white/10 px-2 py-1 text-[11px] font-semibold text-white/80 hover:bg-white/[0.08] transition-colors"
                       >
@@ -2707,7 +2728,27 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                         Copiar
                       </button>
                     </div>
-                    <p className="whitespace-pre-line text-xs leading-relaxed text-white/70">{selectedCaption || adCaptions[0]}</p>
+                    <div className="flex bg-black/30 p-1 rounded-lg border border-white/5 mb-3">
+                      {adCaptions.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            setSelectedCaption(adCaptions[idx]);
+                            setCaptionCopied(false);
+                          }}
+                          className={`flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all ${
+                            (selectedCaption || adCaptions[0]) === adCaptions[idx]
+                              ? "bg-white/10 text-white shadow-sm"
+                              : "text-white/40 hover:text-white"
+                          }`}
+                        >
+                          Opción {idx + 1}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="whitespace-pre-line text-xs leading-relaxed text-white/70 min-h-[120px]">
+                      {selectedCaption || adCaptions[0]}
+                    </p>
                   </div>
                 )}
               </>

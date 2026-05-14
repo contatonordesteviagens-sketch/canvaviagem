@@ -1,6 +1,7 @@
-﻿import { useFabricaContext } from "@/hooks/useFabricaContext";
+import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { useContentItems, useCaptions, useMarketingTools } from "@/hooks/useContent";
-import { getOfertasByNiche, type OfertaTemplate } from "@/data/fabrica-ofertas";
+import { getOfertasByNicheES, type OfertaTemplate } from "@/data/fabrica-ofertas-es";
+import { captionsES } from "@/data/captions-es";
 import { Copy, ExternalLink, ArrowRight, CheckCircle2, Plus, Trash2, Pencil, X, Check, Package, Sparkles, Layout, Video, Film } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
@@ -12,40 +13,40 @@ interface Props {
 
 const CHECKLIST_30: { week: string; tasks: { key: string; text: string }[] }[] = [
   {
-    week: "Semana 1 â€” Bases",
+    week: "Semana 1 — Bases",
     tasks: [
-      { key: "s1-1", text: "Atualizar bio + foto de perfil + destaques" },
-      { key: "s1-2", text: "Postar 1 carrossel apresentando a agência" },
-      { key: "s1-3", text: "Gravar 1 Reels com gancho forte" },
+      { key: "s1-1", text: "Actualizar bio + foto de perfil + destacados" },
+      { key: "s1-2", text: "Publicar 1 carrusel presentando la agencia" },
+      { key: "s1-3", text: "Grabar 1 Reels con un gancho fuerte" },
     ],
   },
   {
-    week: "Semana 2 â€” Provas e Ofertas",
+    week: "Semana 2 — Pruebas y Ofertas",
     tasks: [
-      { key: "s2-1", text: "Coletar e postar 3 depoimentos" },
-      { key: "s2-2", text: "Lançar 1 oferta-âncora do nicho" },
-      { key: "s2-3", text: "Postar 2 Reels (1 educativo + 1 emocional)" },
+      { key: "s2-1", text: "Recolectar y publicar 3 testimonios" },
+      { key: "s2-2", text: "Lanzar 1 oferta ancla del nicho" },
+      { key: "s2-3", text: "Publicar 2 Reels (1 educativo + 1 emocional)" },
     ],
   },
   {
-    week: "Semana 3 â€” Tráfego e Engajamento",
+    week: "Semana 3 — Tráfico y Engagement",
     tasks: [
-      { key: "s3-1", text: "Subir 1 campanha de mensagens R$ 10/dia" },
-      { key: "s3-2", text: "Postar 4x por semana + stories diários" },
-      { key: "s3-3", text: "Responder TODOS comentários e DMs em até 1h" },
+      { key: "s3-1", text: "Subir 1 campaña de mensajes $10/día" },
+      { key: "s3-2", text: "Publicar 4x por semana + stories diarios" },
+      { key: "s3-3", text: "Responder TODOS los comentarios y DMs en hasta 1h" },
     ],
   },
   {
-    week: "Semana 4 â€” Conversão",
+    week: "Semana 4 — Conversión",
     tasks: [
-      { key: "s4-1", text: "Lançar oferta de 'última semana do mês'" },
-      { key: "s4-2", text: "Coletar mais 3 depoimentos" },
-      { key: "s4-3", text: "Análise: o que mais converteu? Replicar." },
+      { key: "s4-1", text: "Lanzar oferta de 'última semana del mes'" },
+      { key: "s4-2", text: "Recolectar más 3 testimonios" },
+      { key: "s4-3", text: "Análisis: ¿qué convirtió más? Replicar." },
     ],
   },
 ];
 
-// â”€â”€â”€ Package Manager State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Package Manager State ───────────────────────────────────────────────────
 interface PackageItem extends OfertaTemplate {
   id: string;
   isCustom?: boolean;
@@ -59,25 +60,25 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
   const { data: captions = [], isLoading: loadingCaptions } = useCaptions();
   const { data: tools = [], isLoading: loadingTools } = useMarketingTools();
 
-  // â”€â”€ Package Manager â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // â”€â”€ Smart Package Linker â”€â”€
+  // ── Package Manager ────────────────────────────────────────────────────────
+  // ── Smart Package Linker ──
   // Inicializa pacotes templates no Contexto Global APENAS SE ESTIVER VAZIO, integrando nativamente com a Fase 2 (Site).
   useEffect(() => {
     if (state.selectedPackages.length === 0) {
-      const base = getOfertasByNiche(state.niche);
+      const base = getOfertasByNicheES(state.niche);
       const initial = base.map((o) => {
         // Smart Separator: Extrai o Preço do bloco de texto template
         const lines = o.text.split('\n');
-        const priceLine = lines.find(l => l.includes("ðŸ’¸") || l.includes("R$")) || "Consulte valores";
-        const desc = lines.filter(l => !l.includes("ðŸ’¸") && !l.includes("R$")).join(" ").replace(/\s+/g, " ").trim();
+        const priceLine = lines.find(l => l.includes("💸") || l.includes("$")) || "Consulte valores";
+        const desc = lines.filter(l => !l.includes("💸") && !l.includes("$")).join(" ").replace(/\s+/g, " ").trim();
         
         return {
           id: generateId(),
           title: o.title,
           description: desc.slice(0, 120) || o.title,
-          price: priceLine.replace("ðŸ’¸", "").trim(),
+          price: priceLine.replace("💸", "").trim(),
           imageUrl: "", 
-          ctaLabel: "Reservar agora"
+          ctaLabel: "Reservar ahora"
         };
       });
       update({ selectedPackages: initial });
@@ -111,44 +112,44 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
     );
     update({ selectedPackages: updated });
     setEditingId(null);
-    toast.success("Pacote atualizado e vinculado ao Site!");
+    toast.success("¡Paquete actualizado y vinculado al sitio!");
   };
 
   const removePackage = (id: string) => {
     const updated = packages.filter((p) => p.id !== id);
     update({ selectedPackages: updated });
-    toast.success("Pacote removido");
+    toast.success("Paquete eliminado");
   };
 
   const addPackage = () => {
-    if (!newTitle.trim()) { toast.error("Adicione um título ao pacote"); return; }
+    if (!newTitle.trim()) { toast.error("Agregue un título al paquete"); return; }
     const pkg = {
       id: generateId(),
       title: newTitle.trim(),
-      description: newDesc.trim() || "Nova oferta especial.",
+      description: newDesc.trim() || "Nueva oferta especial.",
       price: newPrice.trim() || "Consulte",
       imageUrl: "",
-      ctaLabel: "Reservar agora"
+      ctaLabel: "Reservar ahora"
     };
     update({ selectedPackages: [pkg, ...packages] });
     setNewTitle("");
     setNewDesc("");
     setNewPrice("");
     setShowAddForm(false);
-    toast.success("Novo pacote adicionado e já visível no Site!");
+    toast.success("¡Nuevo paquete añadido y visible en el sitio!");
   };
 
   const duplicatePackage = (original: any) => {
     const pkg = {
       ...original,
       id: generateId(),
-      title: `${original.title} (cópia)`,
+      title: `${original.title} (copia)`,
     };
     update({ selectedPackages: [pkg, ...packages] });
-    toast.success("Pacote duplicado");
+    toast.success("Paquete duplicado");
   };
 
-  // â”€â”€ Smart Dynamic Content Engine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Smart Dynamic Content Engine ─────────────────────────────────────────────
   const userDestinos = state.destinos || [];
   const normalize = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   
@@ -183,12 +184,12 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
   const filteredTools = tools.slice(0, 6); // Ferramentas são globais de agência
 
   // Filtra Legendas com Fallback
-  let filteredCaptions = captions.filter((c: any) => matchesDestinos(c.destination || "") || matchesDestinos(c.text || "")).slice(0, 10);
-  if (filteredCaptions.length === 0) filteredCaptions = captions.slice(0, 4);
+  let filteredCaptions = (captions.length > 0 ? captions : captionsES).filter((c: any) => matchesDestinos(c.destination || "") || matchesDestinos(c.text || "")).slice(0, 10);
+  if (filteredCaptions.length === 0) filteredCaptions = (captions.length > 0 ? captions : captionsES).slice(0, 4);
 
   const copy = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success("Copiado!");
+    toast.success("¡¡¡¡¡Copiado!");
   };
 
   // Gamificação: Calcula Progresso do Plano 30 Dias
@@ -197,10 +198,10 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
   const pct = Math.round((doneCount / totalTasks) * 100);
   
   const getRank = (p: number) => {
-    if (p >= 100) return { n: "Mestre Digital", e: "ðŸ‘‘", c: "text-amber-400" };
-    if (p >= 60) return { n: "Influenciador", e: "ðŸ”¥", c: "text-purple-400" };
-    if (p >= 30) return { n: "Engajado", e: "ðŸš€", c: "text-blue-400" };
-    return { n: "Iniciante", e: "ðŸŒ±", c: "text-emerald-400" };
+    if (p >= 100) return { n: "Maestro Digital", e: "👑", c: "text-amber-400" };
+    if (p >= 60) return { n: "Influenciador", e: "🔥", c: "text-purple-400" };
+    if (p >= 30) return { n: "Comprometido", e: "🚀", c: "text-blue-400" };
+    return { n: "Principiante", e: "🌱", c: "text-emerald-400" };
   };
   const rank = getRank(pct);
 
@@ -216,13 +217,13 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
                   {rank.e}
                </div>
                <div>
-                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Seu Nível Operacional</div>
+                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Tu Nivel Operacional</div>
                   <div className={`text-lg font-black tracking-tight ${rank.c}`}>{rank.n}</div>
                </div>
             </div>
             <div className="text-right">
                <div className="text-2xl font-black text-white">{pct}%</div>
-               <div className="text-[9px] font-bold text-white/50 uppercase">Concluído</div>
+               <div className="text-[9px] font-bold text-white/50 uppercase">Completado</div>
             </div>
          </div>
          <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden relative">
@@ -231,11 +232,11 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
               style={{ width: `${pct}%` }}
             />
          </div>
-         <p className="text-[10px] text-white/40 mt-2 text-center italic">Conclua o checklist de 30 dias abaixo para subir de nível!</p>
+         <p className="text-[10px] text-white/40 mt-2 text-center italic">¡Completa el checklist de 30 días abajo para subir de nivel!</p>
       </div>
       {userDestinos.length > 0 && (
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
-          <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-2">Filtrando conteúdo para</div>
+          <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-2">Filtrando contenido para</div>
           <div className="flex flex-wrap gap-1.5">
             {userDestinos.map((d) => (
               <span key={d} className="px-2.5 py-1 rounded-full text-[11px] font-bold text-black" style={{ background: state.primaryColor }}>{d}</span>
@@ -244,8 +245,8 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
         </div>
       )}
 
-      {/* â”€â”€ PACKAGE MANAGER â”€â”€ */}
-      <FabricaCard title={`ðŸ“¦ Pacotes prontos para vender (${packages.length})`}>
+      {/* ── PACKAGE MANAGER ── */}
+      <FabricaCard title={`📦 Paquetes listos para vender (${packages.length})`}>
         <div className="space-y-3">
           {/* Add button */}
           {!showAddForm ? (
@@ -253,32 +254,32 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
               onClick={() => { setShowAddForm(true); setEditingId(null); }}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-white/20 text-white/50 hover:border-white/40 hover:text-white/80 transition-all text-sm font-semibold"
             >
-              <Plus className="w-4 h-4" /> Adicionar novo pacote
+              <Plus className="w-4 h-4" /> Añadir nuevo paquete
             </button>
           ) : (
             <div className="bg-white/[0.06] border border-white/20 rounded-xl p-4 space-y-3">
-              <div className="text-xs font-bold text-white/60 uppercase tracking-widest">Novo pacote</div>
+              <div className="text-xs font-bold text-white/60 uppercase tracking-widest">Nuevo paquete</div>
               <input
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                placeholder="Título (ex: Jericoacoara 5 Dias)"
+                placeholder="Título (ej: Cancún 5 Días)"
                 className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
               />
               <textarea
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
-                placeholder="Descrição curta das inclusões..."
+                placeholder="Descripción corta de lo incluido..."
                 rows={2}
                 className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none resize-none"
               />
               <input
                 value={newPrice}
                 onChange={(e) => setNewPrice(e.target.value)}
-                placeholder="Preço (ex: 10x de R$ 149,90)"
+                placeholder="Precio (ej: 10x de $149.90)"
                 className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
               />
               <div className="flex gap-2 pt-1">
-                <button onClick={addPackage} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold text-black" style={{ background: state.primaryColor }}><Check className="w-4 h-4" /> Adicionar ao Site</button>
+                <button onClick={addPackage} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold text-black" style={{ background: state.primaryColor }}><Check className="w-4 h-4" /> Añadir al Sitio</button>
                 <button onClick={() => { setShowAddForm(false); setNewTitle(""); setNewDesc(""); setNewPrice(""); }} className="px-4 py-2.5 rounded-lg bg-white/[0.06] border border-white/10 text-white/60 hover:text-white"><X className="w-4 h-4" /></button>
               </div>
             </div>
@@ -288,7 +289,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
           {packages.length === 0 ? (
             <div className="text-center py-8 text-white/40 text-sm">
               <Package className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              Nenhum pacote ativo. Adicione clicando acima!
+              Ningún paquete activo. ¡Agrega haciendo clic arriba!
             </div>
           ) : (
             packages.map((pkg) => (
@@ -300,7 +301,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
                     <textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={2} className="w-full bg-white/[0.05] border border-white/20 rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none resize-none" />
                     <input value={editPrice} onChange={(e) => setEditPrice(e.target.value)} className="w-full bg-white/[0.05] border border-white/20 rounded-lg px-3 py-2 text-sm font-semibold text-emerald-400 focus:outline-none" />
                     <div className="flex gap-2 pt-1">
-                      <button onClick={() => saveEdit(pkg.id)} className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold text-black" style={{ background: state.primaryColor }}><Check className="w-4 h-4" /> Salvar no Site</button>
+                      <button onClick={() => saveEdit(pkg.id)} className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold text-black" style={{ background: state.primaryColor }}><Check className="w-4 h-4" /> Guardar en el Sitio</button>
                       <button onClick={() => setEditingId(null)} className="px-4 py-2 rounded-lg bg-white/[0.06] border border-white/10 text-white/60"><X className="w-4 h-4" /></button>
                     </div>
                   </div>
@@ -323,16 +324,16 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
                       <div className="flex gap-1 flex-shrink-0">
                         <button onClick={() => startEdit(pkg)} title="Editar" className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/50 hover:text-white transition-all"><Pencil className="w-3 h-3" /></button>
                         <button onClick={() => duplicatePackage(pkg)} title="Duplicar" className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/50 hover:text-white transition-all"><Copy className="w-3 h-3" /></button>
-                        <button onClick={() => removePackage(pkg.id)} title="Remover" className="w-7 h-7 flex items-center justify-center rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400/60 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
+                        <button onClick={() => removePackage(pkg.id)} title="Eliminar" className="w-7 h-7 flex items-center justify-center rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400/60 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>
                       </div>
                     </div>
                     {pkg.imageUrl ? (
                        <div className="text-[10px] text-emerald-400/80 flex items-center gap-1 mt-2 bg-emerald-500/5 py-1 px-2 rounded-md border border-emerald-500/10">
-                          <Check className="w-3 h-3" /> Vinculado com Foto da Fase 3
+                          <Check className="w-3 h-3" /> Vinculado con foto de la Fase 3
                        </div>
                     ) : (
                        <div className="text-[10px] text-amber-400/80 flex items-center gap-1 mt-2 bg-amber-500/5 py-1 px-2 rounded-md border border-amber-500/10">
-                          ðŸ’¡ Use a Fase 3 para criar o anúncio e imagem deste pacote
+                          💡 Usa la Fase 3 para crear el anuncio e imagen de este paquete
                        </div>
                     )}
                   </div>
@@ -343,17 +344,17 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
 
           {packages.length > 0 && (
             <div className="text-[10px] text-white/30 text-center pt-1 uppercase tracking-widest font-bold">
-              âœ… {packages.length} pacote{packages.length !== 1 ? "s" : ""} sincronizado{packages.length !== 1 ? "s" : ""} com seu site
+              ✅ {packages.length} pacote{packages.length !== 1 ? "s" : ""} sincronizado{packages.length !== 1 ? "s" : ""} com seu site
             </div>
           )}
         </div>
       </FabricaCard>
 
-      <FabricaCard title="ðŸŽ¬ Vídeos Reels e Templates para Seus Destinos">
+      <FabricaCard title="🎬 Videos Reels y Templates para Tus Destinos">
         {loadingContent ? (
           <div className="h-24 bg-white/[0.03] animate-pulse rounded-xl" />
         ) : (filteredVideos.length === 0 && filteredStories.length === 0) ? (
-          <p className="text-white/40 text-sm">Nenhum material de vídeo ou template encontrado.</p>
+          <p className="text-white/40 text-sm">No se encontró material de video o template.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[...filteredVideos, ...filteredStories].map((item: any, idx: number) => (
@@ -379,7 +380,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-bold text-white leading-tight mb-0.5 truncate">{item.title}</div>
                   <div className="text-[10px] text-emerald-300/80 flex items-center gap-1">
-                    <Video className="w-2.5 h-2.5" /> {item.subcategory || item.category || "Vídeos Reels"}
+                    <Video className="w-2.5 h-2.5" /> {item.subcategory || item.category || "Videos Reels"}
                   </div>
                 </div>
                 <ExternalLink className="w-3.5 h-3.5 text-white/20 group-hover:text-emerald-300 transition-colors relative z-10" />
@@ -389,21 +390,21 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
         )}
       </FabricaCard>
 
-      <FabricaCard title="ðŸ¤– Robôs de IA e Ferramentas Estratégicas">
+      <FabricaCard title="🤖 Robots de IA y Herramientas Estratégicas">
         {loadingTools ? (
           <div className="h-24 bg-white/[0.03] animate-pulse rounded-xl" />
         ) : filteredTools.length === 0 ? (
-          <p className="text-white/40 text-sm">Nenhuma ferramenta carregada.</p>
+          <p className="text-white/40 text-sm">No hay herramientas cargadas.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {filteredTools.map((tool: any) => (
               <a key={tool.id} href={tool.url} target="_blank" rel="noopener" className="flex items-center gap-3 bg-gradient-to-br from-purple-500/5 to-blue-500/5 border border-white/[0.08] hover:border-purple-500/30 rounded-xl p-3.5 transition-all hover:shadow-lg hover:shadow-purple-500/5 group relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="w-9 h-9 rounded-xl bg-white/[0.06] flex items-center justify-center text-xl shadow-inner">{tool.icon || "ðŸ¤–"}</div>
+                <div className="w-9 h-9 rounded-xl bg-white/[0.06] flex items-center justify-center text-xl shadow-inner">{tool.icon || "🤖"}</div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-bold text-white leading-tight mb-0.5">{tool.title}</div>
                   <div className="text-[10px] text-purple-300/80 flex items-center gap-1">
-                    <Sparkles className="w-2.5 h-2.5" /> Inteligência Artificial
+                    <Sparkles className="w-2.5 h-2.5" /> Inteligencia Artificial
                   </div>
                 </div>
                 <ExternalLink className="w-3.5 h-3.5 text-white/20 group-hover:text-purple-300 transition-colors relative z-10" />
@@ -415,9 +416,9 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
 
 
 
-      <FabricaCard title="âœï¸ Legendas prontas">
+      <FabricaCard title="âœï¸ Leyendas listas">
         {filteredCaptions.length === 0 ? (
-          <p className="text-white/50 text-sm">Sem legendas disponíveis no momento.</p>
+          <p className="text-white/50 text-sm">No hay leyendas disponibles en este momento.</p>
         ) : (
           <div className="space-y-3">
             {filteredCaptions.map((c: any) => (
@@ -434,7 +435,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
         )}
       </FabricaCard>
 
-      <FabricaCard title="ðŸ“… Plano de 30 dias">
+      <FabricaCard title="📅 Plan de 30 días">
         {CHECKLIST_30.map((wk) => (
           <div key={wk.week} className="mb-5 last:mb-0">
             <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: state.primaryColor }}>{wk.week}</div>
@@ -457,10 +458,10 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
 
       <div className="flex gap-3">
         <button onClick={onBack} className="flex-1 py-4 rounded-xl bg-white/[0.04] border border-white/10 text-white/70 font-semibold hover:bg-white/[0.08] transition-colors">
-          Voltar
+          Volver
         </button>
         <button onClick={onNext} className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all hover:brightness-110" style={{ background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)`, boxShadow: `0 8px 24px ${state.primaryColor}55` }}>
-          Avançar <ArrowRight className="w-4 h-4" />
+          Avanzar <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>

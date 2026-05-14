@@ -29,14 +29,14 @@ function darken(hex: string, amount = 0.7) {
 // Helper para estruturar o preço visualmente (como E-commerce)
 function parsePriceHTML(priceStr: string): string {
   const s = esc(priceStr);
-  // Captura Moeda + Valor (ex: R$ 1.499,90)
+  // Captura Moeda + Valor (ex: $ 1.499,90)
   const regex = /^(.*?)(R\$|US\$|€|£|AR\$)\s?([\d.,]+)(.*)$/i;
   const m = s.match(regex);
   
   if (!m) return `<div class="price-main">${s}</div>`;
 
   const prefix = m[1]?.trim() || "";
-  const symbol = m[2]?.trim() || "R$";
+  const symbol = m[2]?.trim() || "$";
   const value = m[3]?.trim() || "";
   const suffix = m[4]?.trim() || "";
 
@@ -92,7 +92,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   const heroImg = sc.heroImageUrl || sc.galleryImages?.[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80";
   
   return `<!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="es-ES">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -402,10 +402,10 @@ ${sc.sections?.porQue === false ? "" : `<section id="por-que" class="equipe">
         <span class="badge-counter">+15k Clientes Satisfechos</span>
         <div class="eyebrow" style="color:#fff;opacity:.6">Nuestro equipo</div>
         <h2>Un equipo dedicado exclusivamente a ti</h2>
-        <p class="intro">Cada viagem começa com uma conversa real. Nuestro equipo de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.</p>
+        <p class="intro">Cada viaje comienza con una conversación real. Nuestro equipo de expertos conoce los destinos de cerca — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.</p>
         <div class="equipe-features">
           <div class="feat"><div class="feat-icon">🛡️</div><div><h4>Seguridad y Confiabilidad</h4><p>Años de experiencia con miles de familias y socios verificados en todo el mundo.</p></div></div>
-          <div class="feat"><div class="feat-icon">📞</div><div><h4>Soporte 24h Durante el Viaje</h4><p>Nuestro equipo está disponível a qualquer hora. Qualquer imprevisto, resolvemos.</p></div></div>
+          <div class="feat"><div class="feat-icon">📞</div><div><h4>Soporte 24h Durante el Viaje</h4><p>Nuestro equipo está disponível a qualquer hora. Cualquier imprevisto, lo resolvemos.</p></div></div>
           <div class="feat"><div class="feat-icon">✨</div><div><h4>Experiencias Exclusivas</h4><p>Acceso a hoteles y experiencias no disponibles para el público en general.</p></div></div>
           <div class="feat"><div class="feat-icon">💰</div><div><h4>Mejor Relación Calidad-Precio</h4><p>Nuestra red de socios ofrece condiciones especiales que no encontrarás en otros lugares.</p></div></div>
         </div>
@@ -464,7 +464,7 @@ ${sc.sections?.orcamento === false ? "" : `<section id="orcamento">
           <div class="field"><label>WhatsApp</label><input name="wpp" required placeholder="(00) 00000-0000"></div>
         </div>
         <div class="form-row single">
-          <div class="field"><label>E-mail</label><input type="email" name="email" required placeholder="seu@email.com"></div>
+          <div class="field"><label>E-mail</label><input type="email" name="email" required placeholder="su@email.com"></div>
         </div>
         <div class="form-row">
           <div class="field"><label>Destino de Interés</label><select name="destino"><option value="">Seleccionar…</option>${pacotes.map((p) => `<option>${esc(p.title)}</option>`).join("")}<option>Otro / a medida</option></select></div>
@@ -709,7 +709,7 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
     .join("\n");
 
   return `Lovable, por favor, actualiza mi sitio actual.
-Adicione os seguintes pacotes atualizados na minha grade de destinos/pacotes existente.
+Agrega los siguientes paquetes actualizados en mi cuadrícula de destinos/paquetes existente.
 
 INSTRUÇÃO CRÍTICA: 
 1. NÃO recrie o site do zero. 

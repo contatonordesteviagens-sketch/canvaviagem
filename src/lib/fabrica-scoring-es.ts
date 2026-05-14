@@ -10,10 +10,10 @@ const LEVEL_NAMES = [
 
 const LEVEL_DESC = [
   "Tu agencia aún no ha construido una presencia digital sólida. Estás dejando dinero sobre la mesa y tus competidores dominan el mercado.",
-  "Você já começou, mas sua comunicação está frágil e inconstante. Falta posicionamento estratégico para atrair o cliente certo.",
-  "Você está no caminho certo, mas precisa escalar com inteligência. Hora de lapidar a oferta e injetar tráfego de forma agressiva.",
-  "Agência madura, com autoridade estabelecida. Otimize cada etapa do funil para extrair a máxima lucratividade por lead.",
-  "Nível Elite. Você é referência. O desafio agora é manter a inovação constante e diversificar canais para dominar totalmente o seu nicho.",
+  "Has comenzado, pero tu comunicación es frágil e inconstante. Falta un posicionamiento estratégico para atraer al cliente ideal.",
+  "Estás en el camino correcto, pero necesitas escalar con inteligencia. Es hora de pulir la oferta e inyectar tráfico de forma agresiva.",
+  "Agencia madura, con autoridad establecida. Optimiza cada etapa del embudo para extraer la máxima rentabilidad por prospecto.",
+  "Nivel Elite. Eres una referencia. El desafío ahora es mantener la innovación constante y diversificar canales para dominar totalmente tu nicho.",
 ];
 
 export function calculateScore(state: FabricaState): {
@@ -85,29 +85,29 @@ export function calculateScore(state: FabricaState): {
   };
 
   evaluate("Presencia Digital", presenca, {
-    red: "Sua agência é virtualmente invisível. O cliente entra no seu perfil e sente insegurança por falta de autoridade e profissionalismo.",
-    amber: "Presença morna. Você existe no Instagram, mas não tem magnetismo. Precisa de destaques estruturados e linha editorial clara.",
-    green: "Ótima autoridade! Sua marca transmite confiança à primeira vista. Continue refinando seu branding.",
+    red: "Tu agencia es virtualmente invisible. El cliente entra en tu perfil y siente inseguridad por falta de autoridad y profesionalismo.",
+    amber: "Presencia tibia. Existes en Instagram, pero no tienes magnetismo. Necesitas destacados estructurados y una línea editorial clara.",
+    green: "¡Excelente autoridad! Tu marca transmite confianza a primera vista. Continúa refinando tu branding.",
   });
   evaluate("Contenido", conteudo, {
-    red: "Conteúdo fraco ou 'panfletário'. Sem rostos, sem reels e sem utilidade — o cliente te ignora e o algoritmo te enterra.",
-    amber: "Produz conteúdo mas falta estratégia de conexão. Apareça mais e misture entretenimento com vendas.",
-    green: "Mix de conteúdo impecável! Humanização e estratégia gerando alto engajamento natural.",
+    red: "Contenido débil o 'panfletario'. Sin rostros, sin reels y sin utilidad — el cliente te ignora y el algoritmo te entierra.",
+    amber: "Produces contenido pero falta estrategia de conexión. Aparece más y mezcla entretenimiento con ventas.",
+    green: "¡Mix de contenido impecable! Humanización y estrategia generando un alto compromiso natural.",
   });
   evaluate("Ventas", vendas, {
-    red: "Vendas esporádicas e sem método. Seu negócio vive de indicações instáveis em vez de processos previsíveis.",
-    amber: "Vendas acontecendo mas falta cadência. Hora de profissionalizar o script e o acompanhamento comercial.",
-    green: "Máquina de vendas rodando! Continue tracionando e focando na retenção da carteira.",
+    red: "Ventas esporádicas y sin método. Tu negocio vive de recomendaciones inestables en lugar de procesos previsibles.",
+    amber: "Ventas ocurriendo pero falta cadencia. Es hora de profesionalizar el guion y el seguimiento comercial.",
+    green: "¡Máquina de ventas funcionando! Continúa traccionando y enfocándote en la retención de la cartera.",
   });
   evaluate("Tráfico Pago", trafego, {
-    red: "Você é 100% refém do algoritmo orgânico. Sem anúncios, seu crescimento está artificialmente travado.",
-    amber: "Investe timidamente. Dá pra escalar o orçamento e profissionalizar a segmentação para dobrar os leads.",
-    green: "Tráfego ativo bombardeando a audiência certa. Otimize o CPL (Custo por Lead) e escale.",
+    red: "Eres 100% rehén del algoritmo orgánico. Sin anuncios, tu crecimiento está bloqueado artificialmente.",
+    amber: "Inviertes tímidamente. Se puede escalar el presupuesto y profesionalizar la segmentación para duplicar los prospectos.",
+    green: "Tráfico activo impactando a la audiencia correcta. Optimiza el CPL (Costo por Prospecto) y escala.",
   });
   evaluate("Conversión", conversao, {
-    red: "Gargalo crítico na oferta. Você vende comodity e o cliente só briga por desconto. Falta gerar valor percebido.",
-    amber: "Conversão ok, mas pode subir o ticket médio vendendo agregados e serviços premium personalizados.",
-    green: "Posicionamento de valor máximo! O cliente paga pelo seu serviço, não só pelo aéreo.",
+    red: "Cuello de botella crítico en la oferta. Vendes lo mismo que todos y el cliente solo pelea por descuentos. Falta generar valor percibido.",
+    amber: "Conversión aceptable, pero puedes subir el ticket promedio vendiendo adicionales y servicios premium personalizados.",
+    green: "¡Posicionamiento de valor máximo! El cliente paga por tu servicio, no solo por el vuelo.",
   });
 
   return {
