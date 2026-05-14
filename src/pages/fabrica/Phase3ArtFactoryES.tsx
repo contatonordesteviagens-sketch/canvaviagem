@@ -2326,17 +2326,17 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
               {/* Fonte: select + chips */}
               <div>
-                <label className={labelCls}>Fonte</label>
+                <label className={labelCls}>Fuente</label>
                 <select
                   value={FONT_PRESETS.includes(fontFamily) ? fontFamily : "Inter"}
                   onChange={(e) => setFontFamily(e.target.value)}
                   className={inputCls}
                 >
                   {FONT_PRESETS.map((f) => (
-                    <option key={f} value={f}>{f}</option>
+                    <option key={f} value={f} className="bg-neutral-900 text-white">{f}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-white/40 mt-1.5">A fonte escolhida é aplicada a todas as artes geradas.</p>
+                <p className="text-[10px] text-white/40 mt-1.5">La fuente elegida se aplica a todos los artes generados.</p>
               </div>
 
               {/* Ajustes Avançados de Tamanho 🖼️€” accordion interno */}
@@ -2346,7 +2346,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   onClick={() => setAdvancedSizeOpen((v) => !v)}
                   className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/[0.04] transition-colors"
                 >
-                  <span className="text-[12px] font-semibold text-white/85">🖼️š™ï¸ Ajustes Avançados de Tamanho</span>
+                  <span className="text-[12px] font-semibold text-white/85">📏 Ajustes Avanzados de Tamaño</span>
                   <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${advancedSizeOpen ? "rotate-180" : ""}`} />
                 </button>
                 {advancedSizeOpen && (
@@ -2357,7 +2357,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                         onChange={(e) => setTitleScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
                     </div>
                     <div>
-                      <label className={labelCls}>Descrição <span className="text-white/40">({Math.round(descScale * 100)}%)</span></label>
+                      <label className={labelCls}>Descripción <span className="text-white/40">({Math.round(descScale * 100)}%)</span></label>
                       <input type="range" min={0.6} max={1.6} step={0.05} value={descScale}
                         onChange={(e) => setDescScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
                     </div>
@@ -2368,8 +2368,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               {/* Cor do texto: mesmo padrão das cores Primária/Secundária */}
               <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
                 <div className="flex items-baseline justify-between mb-2">
-                  <label className={labelCls}>Cor do texto</label>
-                  <span className="text-[10px] text-white/40">aplica em todos os textos</span>
+                  <label className={labelCls}>Color del texto</label>
+                  <span className="text-[10px] text-white/40">aplica en todos los textos</span>
                 </div>
                 <div className="grid grid-cols-10 gap-1 mb-3">
                   {PRESET_COLORS.map((c) => (
@@ -2391,12 +2391,12 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                     <span className="absolute inset-1.5 rounded-full border border-white/40" style={{ background: textColorOverride || "#ffffff" }} />
                   </label>
                   <input value={textColorOverride} onChange={(e) => setTextColorOverride(e.target.value)}
-                    placeholder="Padrão (branco)"
+                    placeholder="Predeterminado (blanco)"
                     className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase" />
                   {textColorOverride && (
                     <button onClick={() => setTextColorOverride("")}
                       className="text-[11px] text-white/60 hover:text-white px-2 py-1 rounded border border-white/10">
-                      Limpar
+                      Limpiar
                     </button>
                   )}
                 </div>
@@ -2406,7 +2406,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 onClick={() => { setFontFamily("Inter"); setTitleScale(1); setDescScale(1); setTextColorOverride(""); }}
                 className="text-[11px] text-white/60 hover:text-white underline"
               >
-                Restaurar padrão
+                Restaurar predeterminado
               </button>
             </div>
           )}
@@ -2444,8 +2444,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               {/* Bolinhas de cor 🖼️€” clicar abre o color picker nativo */}
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { label: "Cor primária", value: primaryColor, setter: setPrimaryColor, hint: "Fundo principal" },
-                  { label: "Cor secundária", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
+                  { label: "Color primario", value: primaryColor, setter: setPrimaryColor, hint: "Fondo principal" },
+                  { label: "Color secundario", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
                 ].map(({ label, value, setter, hint }) => (
                   <div key={label} className="flex flex-col items-start gap-2">
                     <div className="flex items-baseline justify-between w-full">
@@ -2455,7 +2455,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                     <label
                       className="relative w-12 h-12 rounded-full cursor-pointer overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
                       style={{ background: value }}
-                      title="Clique para escolher uma cor"
+                      title="Haz clic para elegir un color"
                     >
                       <input
                         type="color"
@@ -2471,7 +2471,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
               {/* Cor dos Textos Base */}
               <div>
-                <label className={labelCls}>Cor dos textos base</label>
+                <label className={labelCls}>Color base de los textos</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -2495,7 +2495,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                     }`}
                   >
                     <span className="w-3 h-3 rounded-full bg-neutral-900 border border-white/40" />
-                    Textos escuros
+                    Textos oscuros
                   </button>
                 </div>
                 <p className="text-[10px] text-white/40 mt-1.5">Define a cor dos textos sobre a arte para garantir legibilidade.</p>
@@ -2507,7 +2507,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         {/* Benefícios 🖼️€” em Experiencia de Destino usa apenas texto, sem selector de ícones. */}
         <div>
           <div className="flex items-baseline justify-between mb-2 gap-2">
-            <label className={labelCls}>{categoria === "experiencia_destino" ? "Descrição da experiência" : "Beneficios / Incluidos"}</label>
+            <label className={labelCls}>{categoria === "experiencia_destino" ? "Descripción de la experiencia" : "Beneficios / Incluidos"}</label>
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -2518,16 +2518,16 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   setHighlights(defaults);
                   setNewHl("");
                   setEditingIconIdx(null);
-                  toast.success("Benefícios restaurados ao padrão");
+                  toast.success("Beneficios restaurados al predeterminado");
                 }}
                 className="flex items-center gap-1 text-[10px] text-white/50 hover:text-white transition-colors"
-                title="Restaurar benefícios padrão"
+                title="Restaurar beneficios predeterminados"
               >
                 <RotateCcw className="w-3 h-3" />
                 Restaurar
               </button>
               <span className="text-[10px] text-white/40">
-                {highlights.length}/{MAX_HIGHLIGHTS}{categoria === "experiencia_destino" ? " · texto da experiência" : " · haz clic en el icono para cambiar"}
+                {highlights.length}/{MAX_HIGHLIGHTS}{categoria === "experiencia_destino" ? " · texto de la experiencia" : " · haz clic en el icono para cambiar"}
               </span>
             </div>
           </div>
@@ -2542,7 +2542,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                         onClick={() => setEditingIconIdx(editingIconIdx === i ? null : i)}
                         className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
                         style={{ color: secondaryColor }}
-                        title="Trocar ícone"
+                        title="Cambiar icono"
                       >
                         <IconComp className="w-4 h-4" />
                       </button>
@@ -2555,7 +2555,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                     <button
                       onClick={() => removeHighlight(i)}
                       className="text-white/40 hover:text-red-400 flex-shrink-0"
-                      title="Remover"
+                      title="Eliminar"
                     >
                       <X className="w-4 h-4" />
                     </button>
