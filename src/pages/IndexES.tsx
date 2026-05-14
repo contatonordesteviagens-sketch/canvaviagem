@@ -1098,9 +1098,10 @@ const IndexES = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SeoMetadata
-        title="Inicio"
+        title="Vídeos para Agencias de Viajes"
         description="Acceda a cientos de plantillas de videos Reels y artes para agencias de viajes. Contenido premium listo para editar en Canva."
-        keywords="plantillas canva viajes, reels turismo, artes agencia de viagens, marketing turístico"
+        keywords="plantillas canva viajes, reels turismo, artes agencia de viajes, marketing turístico"
+        url="https://canvaviagem.com/es"
       />
       <SpanishPixel />
       <Header />
