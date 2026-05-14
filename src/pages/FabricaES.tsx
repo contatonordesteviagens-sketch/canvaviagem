@@ -5,7 +5,7 @@ import { Phase1DiagnosticoES } from "@/pages/fabrica/Phase1DiagnosticoES";
 import { Phase2AtivosES } from "@/pages/fabrica/Phase2AtivosES";
 import { Phase3ArtFactoryES } from "@/pages/fabrica/Phase3ArtFactoryES";
 import { Phase4LandingBuilderES } from "@/pages/fabrica/Phase4LandingBuilderES";
-import { Phase5Dashboard } from "@/pages/fabrica/Phase5Dashboard";
+import { Phase5DashboardES } from "@/pages/fabrica/Phase5DashboardES";
 import { ArrowLeft, Crown, Sparkles, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
