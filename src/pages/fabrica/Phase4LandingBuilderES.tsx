@@ -39,32 +39,32 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   const [pickingHeroImage, setPickingHeroImage] = useState(false);
 
   // â”€â”€ AUTO-SYNC: Injeta dados da Fase 3 na Fase 4 na primeira montagem â”€â”€
-  // SÃ³ atua se o usuÃ¡rio ainda nÃ£o personalizou o site (campos padrÃ£o).
-  // Garante que todas as informaÃ§Ãµes preenchidas nas fases anteriores
-  // apareÃ§am prÃ©-populadas no construtor do site.
+  // Só atua se o usuário ainda não personalizou o site (campos padrão).
+  // Garante que todas as informações preenchidas nas fases anteriores
+  // apareçam pré-populadas no construtor do site.
   useEffect(() => {
     const SYNC_KEY = "fabrica-phase4-autosync-v1";
     const lastSyncHash = localStorage.getItem(SYNC_KEY);
     const dest = (state.destinos?.[0] || "").trim();
     const currentHash = [dest, state.lastPrice, state.lastPaymentMode, state.agencyName].join("|");
 
-    // Se jÃ¡ sincronizou com esses mesmos dados, nÃ£o re-sincroniza
+    // Se já sincronizou com esses mesmos dados, não re-sincroniza
     if (lastSyncHash === currentHash) return;
     if (!dest && !state.lastPrice) return; // nada para sincronizar
 
     const synced: string[] = [];
     const patches: Record<string, any> = {};
 
-    // 1. Hero Headline â€” usa nome da agÃªncia + destino
+    // 1. Hero Headline â€” usa nome da agência + destino
     const heroDefault = state.siteContent.heroHeadline;
-    if (!heroDefault || heroDefault === "" || heroDefault === `${state.agencyName} â€” Sua prÃ³xima viagem comeÃ§a aqui`) {
+    if (!heroDefault || heroDefault === "" || heroDefault === `${state.agencyName} â€” Sua próxima viagem começa aqui`) {
       const agency = state.agencyName?.trim();
       const headline = agency
-        ? `${agency} â€” ${dest ? `Pacotes para ${dest} e muito mais!` : "Sua prÃ³xima viagem comeÃ§a aqui!"}`
-        : dest ? `Sua prÃ³xima viagem Ã© ${dest}` : "";
+        ? `${agency} â€” ${dest ? `Pacotes para ${dest} e muito mais!` : "Sua próxima viagem começa aqui!"}`
+        : dest ? `Sua próxima viagem é ${dest}` : "";
       if (headline) {
         patches["siteContent.heroHeadline"] = headline;
-        synced.push("TÃ­tulo principal do site");
+        synced.push("Título principal do site");
       }
     }
 
@@ -72,21 +72,21 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
     if (!state.siteContent.heroSubheadline) {
       const ds = (state.destinos || []).filter(Boolean).slice(0, 4);
       if (ds.length > 0) {
-        patches["siteContent.heroSubheadline"] = `Roteiros para ${ds.join(", ")} e outros destinos incrÃ­veis. Atendimento personalizado e suporte 24h.`;
-        synced.push("SubtÃ­tulo do site");
+        patches["siteContent.heroSubheadline"] = `Roteiros para ${ds.join(", ")} e outros destinos incríveis. Atendimento personalizado e suporte 24h.`;
+        synced.push("Subtítulo do site");
       }
     }
 
-    // 3. Pacote automÃ¡tico desabilitado aqui:
-    // Agora o Phase3ArtFactory.tsx gerencia a inserÃ§Ã£o ACUMULATIVA em 'selectedPackages'
-    // em tempo real assim que a arte Ã© gerada! Mantemos apenas o push seguro para a galeria:
+    // 3. Pacote automático desabilitado aqui:
+    // Agora o Phase3ArtFactory.tsx gerencia a inserção ACUMULATIVA em 'selectedPackages'
+    // em tempo real assim que a arte é gerada! Mantemos apenas o push seguro para a galeria:
     if (state.generatedAdImage && !state.siteContent.galleryImages.includes(state.generatedAdImage)) {
       patches["galleryImages"] = [state.generatedAdImage, ...state.siteContent.galleryImages];
-      synced.push("Imagem do anÃºncio");
+      synced.push("Imagem do anúncio");
     }
 
-    // 4. CTA final â€” usa WhatsApp/Instagram se disponÃ­veis
-    if (!state.siteContent.finalCtaTitle || state.siteContent.finalCtaTitle === "Pronto para sua prÃ³xima viagem?") {
+    // 4. CTA final â€” usa WhatsApp/Instagram se disponíveis
+    if (!state.siteContent.finalCtaTitle || state.siteContent.finalCtaTitle === "Pronto para sua próxima viagem?") {
       if (dest) {
         patches["siteContent.finalCtaTitle"] = `Vai para ${dest}? Fala comigo agora!`;
         synced.push("CTA final");
@@ -94,8 +94,8 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
     }
 
     // ðŸ§  5. CONTINUIDADE DO DIAGNÃ“STICO (Ponto 3):
-    // Se o nÃ­vel do usuÃ¡rio Ã© baixo (menos que 3), o sistema INTUI que falta autoridade.
-    // Logo, ele OBRIGA e ATIVA automaticamente os depoimentos e a sessÃ£o 'Por que NÃ³s'.
+    // Se o nível do usuário é baixo (menos que 3), o sistema INTUI que falta autoridade.
+    // Logo, ele OBRIGA e ATIVA automaticamente os depoimentos e a sessão 'Por que Nós'.
     if (state.level && state.level < 3) {
       if (!state.siteContent.sections?.depoimentos) {
         patches["siteContent.sections.depoimentos"] = true;
@@ -151,7 +151,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         heroHeadline: "",
         heroSubheadline: "",
         heroCtaLabel: "Falar no WhatsApp",
-        finalCtaTitle: "Pronto para sua prÃ³xima viagem?",
+        finalCtaTitle: "Pronto para sua próxima viagem?",
         finalCtaLabel: "Chamar no WhatsApp",
         galleryImages: [],
       },
@@ -166,7 +166,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
     const novo: Pacote = {
       id: String(Date.now()),
       title: "Novo pacote",
-      description: "Descreva o que estÃ¡ incluso",
+      description: "Descreva o que está incluso",
       price: "R$ 0,00",
       imageUrl: "",
       ctaLabel: "Quero esse",
@@ -181,13 +181,13 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   };
 
   // Depoimentos
-  const addDepo = () => update({ depoimentos: [...state.depoimentos, { name: "Cliente feliz", text: "Atendimento incrÃ­vel!" }] });
+  const addDepo = () => update({ depoimentos: [...state.depoimentos, { name: "Cliente feliz", text: "Atendimento incrível!" }] });
   const updDepo = (i: number, patch: Partial<Depoimento>) => {
     update({ depoimentos: state.depoimentos.map((d, idx) => (idx === i ? { ...d, ...patch } : d)) });
   };
   const delDepo = (i: number) => update({ depoimentos: state.depoimentos.filter((_, idx) => idx !== i) });
 
-  // Galeria de imagens (banco do usuÃ¡rio)
+  // Galeria de imagens (banco do usuário)
   const addToGallery = (url: string) => {
     if (!url.trim()) return;
     if (state.siteContent.galleryImages.includes(url)) return;
@@ -229,7 +229,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   const handleDownload = () => {
     setDownloadCount((c) => c + 1);
     downloadLandingHTML(state, downloadCount + 1, user?.id);
-    toast.success(`VersÃ£o ${downloadCount + 1} baixada! Suba pro Lovable, Vercel ou Netlify.`);
+    toast.success(`Versão ${downloadCount + 1} baixada! Suba pro Lovable, Vercel ou Netlify.`);
   };
 
   return (
@@ -240,30 +240,30 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
           <div className="text-2xl flex-shrink-0">âœ…</div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-bold text-white mb-1">
-              Site prÃ©-preenchido com seus dados da FÃ¡brica!
+              Site pré-preenchido com seus dados da Fábrica!
             </div>
             <p className="text-[11px] text-white/60 leading-snug">
               Importamos automaticamente: <strong className="text-emerald-300">{autoSyncFields.join(" Â· ")}</strong>.
-              VocÃª pode editar qualquer campo abaixo.
+              Você pode editar qualquer campo abaixo.
             </p>
           </div>
           <button
             onClick={resetSiteToBlank}
             className="flex-shrink-0 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
-            title="Limpar tudo e comeÃ§ar do zero"
+            title="Limpar tudo e começar do zero"
           >
             Limpar site
           </button>
         </div>
       )}
 
-      {/* Banner para o caso de o site jÃ¡ estar sincronizado (nÃ£o Ã© a primeira vez) */}
+      {/* Banner para o caso de o site já estar sincronizado (não é a primeira vez) */}
       {!autoSyncDone && (state.destinos?.[0] || state.lastPrice) && (
         <div className="rounded-2xl p-4 border bg-white/[0.04] border-white/10 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <span className="text-lg flex-shrink-0">ðŸ”„</span>
             <p className="text-[11px] text-white/50 leading-snug">
-              Dados da FÃ¡brica jÃ¡ sincronizados com este site.
+              Dados da Fábrica já sincronizados com este site.
               <span className="ml-1 text-white/30">Edite os campos abaixo ou</span>
             </p>
           </div>
@@ -271,12 +271,12 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             onClick={resetSiteToBlank}
             className="flex-shrink-0 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
           >
-            ComeÃ§ar do zero
+            Começar do zero
           </button>
         </div>
       )}
 
-      <FabricaCard title="ðŸŽ¨ Cor primÃ¡ria do site">
+      <FabricaCard title="ðŸŽ¨ Cor primária do site">
         <div className="flex flex-wrap gap-3 items-center">
           {PRESET_COLORS.map((c) => (
             <button
@@ -298,13 +298,13 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             />
           </div>
         </div>
-        <p className="text-xs text-white/50 mt-3">Aplicada em botÃµes, headers e CTAs.</p>
+        <p className="text-xs text-white/50 mt-3">Aplicada em botões, headers e CTAs.</p>
       </FabricaCard>
 
       {/* VISIBILIDADE DAS SEÃ‡Ã•ES */}
-      <FabricaCard title="ðŸ‘ï¸ SeÃ§Ãµes do site">
+      <FabricaCard title="ðŸ‘ï¸ Seções do site">
         <p className="text-xs text-white/50 mb-3">
-          Escolha o que aparece no site. Desmarque qualquer seÃ§Ã£o pra removÃª-la (some tambÃ©m do HTML exportado).
+          Escolha o que aparece no site. Desmarque qualquer seção pra removê-la (some também do HTML exportado).
         </p>
         <div className="grid grid-cols-2 gap-2">
           {(
@@ -312,9 +312,9 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
               { key: "hero", label: "Topo (Hero)" },
               { key: "processo", label: "Como funciona (3 passos)" },
               { key: "destinos", label: "Destinos / Pacotes" },
-              { key: "porQue", label: "Por que nÃ³s / Equipe" },
+              { key: "porQue", label: "Por que nós / Equipe" },
               { key: "depoimentos", label: "Depoimentos" },
-              { key: "orcamento", label: "FormulÃ¡rio de orÃ§amento" },
+              { key: "orcamento", label: "Formulário de orçamento" },
               { key: "faq", label: "Perguntas Frequentes" },
             ] as { key: keyof SectionVisibility; label: string }[]
           ).map(({ key, label }) => {
@@ -336,29 +336,29 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         </div>
       </FabricaCard>
 
-      {/* HERO editÃ¡vel */}
+      {/* HERO editável */}
       <FabricaCard title="âœï¸ Topo do site (Hero)">
         <div className="space-y-3">
           <FieldText
-            label="TÃ­tulo principal"
+            label="Título principal"
             value={state.siteContent.heroHeadline}
             onChange={(v) => updSite({ heroHeadline: v })}
-            placeholder={`${state.agencyName || "Sua AgÃªncia"} â€” Sua prÃ³xima viagem comeÃ§a aqui`}
+            placeholder={`${state.agencyName || "Sua Agência"} â€” Sua próxima viagem começa aqui`}
           />
           <FieldTextarea
-            label="SubtÃ­tulo"
+            label="Subtítulo"
             value={state.siteContent.heroSubheadline}
             onChange={(v) => updSite({ heroSubheadline: v })}
             placeholder="Atendimento personalizado, roteiros sob medida..."
           />
           <FieldText
-            label="Texto do botÃ£o principal"
+            label="Texto do botão principal"
             value={state.siteContent.heroCtaLabel}
             onChange={(v) => updSite({ heroCtaLabel: v })}
             placeholder="Falar no WhatsApp"
           />
 
-          {/* NOVO: Editor dinÃ¢mico de Imagem de Fundo / Capa do Site */}
+          {/* NOVO: Editor dinâmico de Imagem de Fundo / Capa do Site */}
           <div className="pt-3 mt-3 border-t border-white/10">
             <div className="flex items-center justify-between mb-2">
               <label className="text-[10px] font-bold text-white/60 uppercase tracking-wider flex items-center gap-1">
@@ -410,7 +410,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                   </div>
                 ) : (
                   <div className="text-[10px] text-white/40 text-center italic py-4 border border-dashed border-white/10 rounded-lg">
-                    Ainda nÃ£o hÃ¡ imagens geradas no seu banco.
+                    Ainda não há imagens geradas no seu banco.
                   </div>
                 )}
 
@@ -429,7 +429,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                     onClick={() => {
                       updSite({ heroImageUrl: "" });
                       setPickingHeroImage(false);
-                      toast.success("Fundo resetado ao padrÃ£o");
+                      toast.success("Fundo resetado ao padrão");
                     }}
                     className="px-2 py-1.5 rounded-lg bg-white/[0.06] text-white/60 text-[10px] hover:bg-red-500/20 hover:text-red-300 transition-colors"
                   >
@@ -445,7 +445,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
       {/* GALERIA de imagens */}
       <FabricaCard title="ðŸ–¼ï¸ Banco de imagens">
         <p className="text-xs text-white/50 mb-3">
-          Salve aqui as imagens que vocÃª gerou na Fase 3 ou cole links externos. Depois Ã© sÃ³ clicar em "Usar" no pacote.
+          Salve aqui as imagens que você gerou na Fase 3 ou cole links externos. Depois é só clicar em "Usar" no pacote.
         </p>
         <ImageGallery
           images={state.siteContent.galleryImages}
@@ -455,10 +455,10 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         />
       </FabricaCard>
 
-      {/* PACOTES editÃ¡veis */}
+      {/* PACOTES editáveis */}
       <FabricaCard title="ðŸ“¦ Pacotes oferecidos">
         <FieldText
-          label="TÃ­tulo da seÃ§Ã£o"
+          label="Título da seção"
           value={state.siteContent.pacotesTitle}
           onChange={(v) => updSite({ pacotesTitle: v })}
         />
@@ -484,7 +484,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
       {/* DEPOIMENTOS */}
       <FabricaCard title="â­ Depoimentos">
         <FieldText
-          label="TÃ­tulo da seÃ§Ã£o"
+          label="Título da seção"
           value={state.siteContent.depoimentosTitle}
           onChange={(v) => updSite({ depoimentosTitle: v })}
         />
@@ -526,7 +526,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
       {/* FAQ */}
       <FabricaCard title="â“ Perguntas Frequentes (FAQ)">
         <FieldText
-          label="TÃ­tulo da seÃ§Ã£o"
+          label="Título da seção"
           value={state.siteContent.faqTitle}
           onChange={(v) => updSite({ faqTitle: v })}
         />
@@ -577,12 +577,12 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
       <FabricaCard title="ðŸŽ¯ CTA Final">
         <div className="space-y-3">
           <FieldText
-            label="TÃ­tulo"
+            label="Título"
             value={state.siteContent.finalCtaTitle}
             onChange={(v) => updSite({ finalCtaTitle: v })}
           />
           <FieldText
-            label="Texto do botÃ£o"
+            label="Texto do botão"
             value={state.siteContent.finalCtaLabel}
             onChange={(v) => updSite({ finalCtaLabel: v })}
           />
@@ -619,7 +619,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
           <div className="px-4 py-2 bg-white/[0.04] text-xs text-white/60 font-semibold uppercase tracking-widest flex items-center justify-between">
             <span>Preview ao vivo</span>
-            <span className="text-white/40 normal-case tracking-normal">Atualiza a cada ediÃ§Ã£o âœ¨</span>
+            <span className="text-white/40 normal-case tracking-normal">Atualiza a cada edição âœ¨</span>
           </div>
           <iframe srcDoc={previewHTML} className="w-full h-[700px] bg-white" title="Preview" />
         </div>
@@ -745,20 +745,20 @@ const PacoteEditor = ({
       <textarea
         value={pacote.description}
         onChange={(e) => onChange({ description: e.target.value })}
-        placeholder="DescriÃ§Ã£o (o que estÃ¡ incluso)"
+        placeholder="Descrição (o que está incluso)"
         rows={2}
         className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
       />
 
       <div className="flex gap-2 items-center">
-        <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">BotÃ£o:</span>
+        <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Botão:</span>
         <input
           value={pacote.ctaLabel || ""}
           onChange={(e) => onChange({ ctaLabel: e.target.value })}
           placeholder="Quero esse"
           className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-white/30 outline-none focus:border-white/40"
         />
-        <span className="text-[10px] text-white/40 italic">â†’ "OlÃ¡, tenho interesse em {pacote.title || "..."}"</span>
+        <span className="text-[10px] text-white/40 italic">â†’ "Olá, tenho interesse em {pacote.title || "..."}"</span>
       </div>
 
       {pickingImage && (
@@ -835,7 +835,7 @@ const ImageGallery = ({
 
   const handleFile = (file: File) => {
     if (file.size > 3 * 1024 * 1024) {
-      toast.error("Imagem muito grande (mÃ¡x 3MB).");
+      toast.error("Imagem muito grande (máx 3MB).");
       return;
     }
     const reader = new FileReader();
@@ -921,7 +921,7 @@ const ImageGallery = ({
         onClick={() => fileRef.current?.click()}
         className="w-full py-2.5 rounded-lg border border-dashed border-white/20 text-white/60 hover:text-white hover:border-white/40 text-xs font-semibold flex items-center justify-center gap-2"
       >
-        <Upload className="w-3.5 h-3.5" /> Ou faÃ§a upload do seu computador
+        <Upload className="w-3.5 h-3.5" /> Ou faça upload do seu computador
       </button>
       <input
         ref={fileRef}
@@ -957,7 +957,7 @@ const PublishOnLovableCard = ({
 
   const handleDirectPublish = async () => {
     if (!user?.id) {
-      toast.error("FaÃ§a login para publicar.");
+      toast.error("Faça login para publicar.");
       return;
     }
 
@@ -967,7 +967,7 @@ const PublishOnLovableCard = ({
       const blob = new Blob([html], { type: 'text/html' });
       const fileName = `sites/${user.id}.html`;
       
-      // ðŸš€ NOVO: Sistema de SUBDOMÃNIO REAL! Gera o slug limpo da agÃªncia!
+      // ðŸš€ NOVO: Sistema de SUBDOMÍNIO REAL! Gera o slug limpo da agência!
       const rawName = state.agencyName || `agencia-${user.id.substring(0,4)}`;
       const cleanSlug = rawName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
       const slugName = `sites/${cleanSlug}.html`;
@@ -982,12 +982,12 @@ const PublishOnLovableCard = ({
 
       if (uploadError) throw uploadError;
 
-      // 2.1. Faz o upload SECUNDÃRIO (por SLUB/SUBDOMÃNIO) para uso em subdominio.seusite.com
+      // 2.1. Faz o upload SECUNDÁRIO (por SLUB/SUBDOMÍNIO) para uso em subdominio.seusite.com
       if (cleanSlug.length > 2) {
          await supabase.storage.from("thumbnails").upload(slugName, blob, { contentType: 'text/html', upsert: true }).catch(e => console.warn("Subdomain upload error:", e));
       }
 
-      // 3. Gera o Link PÃºblico Final!
+      // 3. Gera o Link Público Final!
       const internalUrl = `${window.location.origin}/view/${user.id}`;
       setPublishedUrl(internalUrl);
       toast.success("ðŸš€ SITE PUBLICADO COM SUCESSO!");
@@ -999,7 +999,7 @@ const PublishOnLovableCard = ({
 
     } catch (err: any) {
       console.error("Publish error:", err);
-      toast.error(`Erro ao publicar: ${err.message || "Verifique sua conexÃ£o"}`);
+      toast.error(`Erro ao publicar: ${err.message || "Verifique sua conexão"}`);
     } finally {
       setIsPublishing(false);
     }
@@ -1010,7 +1010,7 @@ const PublishOnLovableCard = ({
       await navigator.clipboard.writeText(html);
       toast.success("HTML copiado! Cole no Lovable para gerar o site.");
     } catch {
-      toast.error("NÃ£o foi possÃ­vel copiar. Use o botÃ£o Baixar HTML.");
+      toast.error("Não foi possível copiar. Use o botão Baixar HTML.");
     }
   };
 
@@ -1018,7 +1018,7 @@ const PublishOnLovableCard = ({
     try {
       const prompt = generateUpdatePackagesPrompt(state);
       await navigator.clipboard.writeText(prompt);
-      toast.success("ðŸš€ Prompt de atualizaÃ§Ã£o copiado! Agora cole no chat do seu Lovable.");
+      toast.success("ðŸš€ Prompt de atualização copiado! Agora cole no chat do seu Lovable.");
     } catch {
       toast.error("Erro ao copiar prompt.");
     }
@@ -1050,7 +1050,7 @@ const PublishOnLovableCard = ({
           </div>
           <div>
             <div className="text-[10px] font-extrabold uppercase tracking-widest" style={{ color: primaryColor }}>
-              PASSO FINAL Â· 100% GRÃTIS
+              PASSO FINAL Â· 100% GRÁTIS
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
               Publique seu site no ar em <span style={{ color: primaryColor }}>2 minutos</span>
@@ -1059,19 +1059,19 @@ const PublishOnLovableCard = ({
         </div>
 
         <p className="text-sm text-white/70 mb-5 leading-relaxed">
-          Para colocar seu site no ar, conecte-se ao <strong>Lovable</strong> e cole o seu cÃ³digo gerado:
+          Para colocar seu site no ar, conecte-se ao <strong>Lovable</strong> e cole o seu código gerado:
         </p>
 
 
         <p className="text-xs text-white/60 mb-4 leading-relaxed bg-white/[0.02] p-3 rounded-xl border border-white/5">
-          Para personalizar fontes, alterar o layout avanÃ§ado ou conectar seu prÃ³prio domÃ­nio oficial, use o <strong className="text-white">Lovable</strong>:
+          Para personalizar fontes, alterar o layout avançado ou conectar seu próprio domínio oficial, use o <strong className="text-white">Lovable</strong>:
         </p>
 
         <div className="space-y-2.5 mb-6">
           {[
-            { n: 1, t: "Baixe ou copie o HTML do seu site (botÃµes acima)" },
-            { n: 2, t: "Crie sua conta grÃ¡tis no Lovable usando o link abaixo" },
-            { n: 3, t: "Cole o HTML, clique em Publicar e seu site estÃ¡ no ar ðŸš€" },
+            { n: 1, t: "Baixe ou copie o HTML do seu site (botões acima)" },
+            { n: 2, t: "Crie sua conta grátis no Lovable usando o link abaixo" },
+            { n: 3, t: "Cole o HTML, clique em Publicar e seu site está no ar ðŸš€" },
           ].map((s) => (
             <div key={s.n} className="flex items-start gap-3 bg-black/30 border border-white/[0.06] rounded-xl p-3">
               <div
@@ -1117,15 +1117,15 @@ const PublishOnLovableCard = ({
               color: "#FCD34D"
             }}
           >
-            <Rocket className="w-4 h-4" /> Copiar AtualizaÃ§Ã£o (SÃ³ Pacotes Novos) âš¡
+            <Rocket className="w-4 h-4" /> Copiar Atualização (Só Pacotes Novos) âš¡
           </button>
           <p className="text-[10px] text-white/40 text-center mt-1.5 italic">
-            Use este botÃ£o caso seu site jÃ¡ esteja pronto e queira apenas adicionar novos pacotes sem reconstruir tudo.
+            Use este botão caso seu site já esteja pronto e queira apenas adicionar novos pacotes sem reconstruir tudo.
           </p>
         </div>
 
         <p className="text-[11px] text-white/50 text-center">
-          âœ“ Sem cartÃ£o de crÃ©dito Â· âœ“ DomÃ­nio grÃ¡tis incluÃ­do Â· âœ“ Suporte a domÃ­nio prÃ³prio
+          âœ“ Sem cartão de crédito Â· âœ“ Domínio grátis incluído Â· âœ“ Suporte a domínio próprio
         </p>
 
         <div className="mt-6 pt-5 border-t border-white/10 flex justify-center">
@@ -1153,7 +1153,7 @@ const PublishOnLovableCard = ({
             className="flex-[2] py-4 rounded-xl font-black text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
             style={{ background: primaryColor }}
           >
-            PrÃ³ximo Passo: DiagnÃ³stico <Rocket className="w-5 h-5" />
+            Próximo Passo: Diagnóstico <Rocket className="w-5 h-5" />
           </button>
         </div>
       </div>

@@ -15,7 +15,7 @@ const CHECKLIST_30: { week: string; tasks: { key: string; text: string }[] }[] =
     week: "Semana 1 â€” Bases",
     tasks: [
       { key: "s1-1", text: "Atualizar bio + foto de perfil + destaques" },
-      { key: "s1-2", text: "Postar 1 carrossel apresentando a agÃªncia" },
+      { key: "s1-2", text: "Postar 1 carrossel apresentando a agência" },
       { key: "s1-3", text: "Gravar 1 Reels com gancho forte" },
     ],
   },
@@ -23,24 +23,24 @@ const CHECKLIST_30: { week: string; tasks: { key: string; text: string }[] }[] =
     week: "Semana 2 â€” Provas e Ofertas",
     tasks: [
       { key: "s2-1", text: "Coletar e postar 3 depoimentos" },
-      { key: "s2-2", text: "LanÃ§ar 1 oferta-Ã¢ncora do nicho" },
+      { key: "s2-2", text: "Lançar 1 oferta-âncora do nicho" },
       { key: "s2-3", text: "Postar 2 Reels (1 educativo + 1 emocional)" },
     ],
   },
   {
-    week: "Semana 3 â€” TrÃ¡fego e Engajamento",
+    week: "Semana 3 â€” Tráfego e Engajamento",
     tasks: [
       { key: "s3-1", text: "Subir 1 campanha de mensagens R$ 10/dia" },
-      { key: "s3-2", text: "Postar 4x por semana + stories diÃ¡rios" },
-      { key: "s3-3", text: "Responder TODOS comentÃ¡rios e DMs em atÃ© 1h" },
+      { key: "s3-2", text: "Postar 4x por semana + stories diários" },
+      { key: "s3-3", text: "Responder TODOS comentários e DMs em até 1h" },
     ],
   },
   {
-    week: "Semana 4 â€” ConversÃ£o",
+    week: "Semana 4 â€” Conversão",
     tasks: [
-      { key: "s4-1", text: "LanÃ§ar oferta de 'Ãºltima semana do mÃªs'" },
+      { key: "s4-1", text: "Lançar oferta de 'última semana do mês'" },
       { key: "s4-2", text: "Coletar mais 3 depoimentos" },
-      { key: "s4-3", text: "AnÃ¡lise: o que mais converteu? Replicar." },
+      { key: "s4-3", text: "Análise: o que mais converteu? Replicar." },
     ],
   },
 ];
@@ -66,7 +66,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
     if (state.selectedPackages.length === 0) {
       const base = getOfertasByNiche(state.niche);
       const initial = base.map((o) => {
-        // Smart Separator: Extrai o PreÃ§o do bloco de texto template
+        // Smart Separator: Extrai o Preço do bloco de texto template
         const lines = o.text.split('\n');
         const priceLine = lines.find(l => l.includes("ðŸ’¸") || l.includes("R$")) || "Consulte valores";
         const desc = lines.filter(l => !l.includes("ðŸ’¸") && !l.includes("R$")).join(" ").replace(/\s+/g, " ").trim();
@@ -121,7 +121,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
   };
 
   const addPackage = () => {
-    if (!newTitle.trim()) { toast.error("Adicione um tÃ­tulo ao pacote"); return; }
+    if (!newTitle.trim()) { toast.error("Adicione um título ao pacote"); return; }
     const pkg = {
       id: generateId(),
       title: newTitle.trim(),
@@ -135,14 +135,14 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
     setNewDesc("");
     setNewPrice("");
     setShowAddForm(false);
-    toast.success("Novo pacote adicionado e jÃ¡ visÃ­vel no Site!");
+    toast.success("Novo pacote adicionado e já visível no Site!");
   };
 
   const duplicatePackage = (original: any) => {
     const pkg = {
       ...original,
       id: generateId(),
-      title: `${original.title} (cÃ³pia)`,
+      title: `${original.title} (cópia)`,
     };
     update({ selectedPackages: [pkg, ...packages] });
     toast.success("Pacote duplicado");
@@ -162,7 +162,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
     });
   };
 
-  // Categoriza ConteÃºdos (Exclui Influencers/Bia por solicitaÃ§Ã£o do usuÃ¡rio)
+  // Categoriza Conteúdos (Exclui Influencers/Bia por solicitação do usuário)
   const isExcludedContent = (title: string) => {
     const t = (title || "").toLowerCase();
     return t.includes("bia") || t.includes("influencer");
@@ -171,16 +171,16 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
   const videos = allContent.filter(c => (c.type === 'video' || c.type === 'feed') && !isExcludedContent(c.title));
   const stories = allContent.filter(c => (c.type === 'story' || c.type === 'weekly-story' || c.type === 'seasonal') && !isExcludedContent(c.title));
 
-  // Filtra VÃ­deos com Fallback Inteligente
+  // Filtra Vídeos com Fallback Inteligente
   let filteredVideos = videos.filter((v: any) => matchesDestinos(v.title || "")).slice(0, 8);
-  if (filteredVideos.length === 0) filteredVideos = videos.slice(0, 6); // Fallback de seguranÃ§a
+  if (filteredVideos.length === 0) filteredVideos = videos.slice(0, 6); // Fallback de segurança
 
   // Filtra Stories
   let filteredStories = stories.filter((s: any) => matchesDestinos(s.title || "")).slice(0, 6);
   if (filteredStories.length === 0) filteredStories = stories.slice(0, 4); // Fallback
 
   // Filtra Ferramentas de IA & Scripts
-  const filteredTools = tools.slice(0, 6); // Ferramentas sÃ£o globais de agÃªncia
+  const filteredTools = tools.slice(0, 6); // Ferramentas são globais de agência
 
   // Filtra Legendas com Fallback
   let filteredCaptions = captions.filter((c: any) => matchesDestinos(c.destination || "") || matchesDestinos(c.text || "")).slice(0, 10);
@@ -191,7 +191,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
     toast.success("Copiado!");
   };
 
-  // GamificaÃ§Ã£o: Calcula Progresso do Plano 30 Dias
+  // Gamificação: Calcula Progresso do Plano 30 Dias
   const totalTasks = CHECKLIST_30.reduce((acc, val) => acc + val.tasks.length, 0);
   const doneCount = Object.values(state.checklist30days).filter(Boolean).length;
   const pct = Math.round((doneCount / totalTasks) * 100);
@@ -216,13 +216,13 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
                   {rank.e}
                </div>
                <div>
-                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Seu NÃ­vel Operacional</div>
+                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Seu Nível Operacional</div>
                   <div className={`text-lg font-black tracking-tight ${rank.c}`}>{rank.n}</div>
                </div>
             </div>
             <div className="text-right">
                <div className="text-2xl font-black text-white">{pct}%</div>
-               <div className="text-[9px] font-bold text-white/50 uppercase">ConcluÃ­do</div>
+               <div className="text-[9px] font-bold text-white/50 uppercase">Concluído</div>
             </div>
          </div>
          <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden relative">
@@ -231,11 +231,11 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
               style={{ width: `${pct}%` }}
             />
          </div>
-         <p className="text-[10px] text-white/40 mt-2 text-center italic">Conclua o checklist de 30 dias abaixo para subir de nÃ­vel!</p>
+         <p className="text-[10px] text-white/40 mt-2 text-center italic">Conclua o checklist de 30 dias abaixo para subir de nível!</p>
       </div>
       {userDestinos.length > 0 && (
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
-          <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-2">Filtrando conteÃºdo para</div>
+          <div className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-2">Filtrando conteúdo para</div>
           <div className="flex flex-wrap gap-1.5">
             {userDestinos.map((d) => (
               <span key={d} className="px-2.5 py-1 rounded-full text-[11px] font-bold text-black" style={{ background: state.primaryColor }}>{d}</span>
@@ -261,20 +261,20 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
               <input
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                placeholder="TÃ­tulo (ex: Jericoacoara 5 Dias)"
+                placeholder="Título (ex: Jericoacoara 5 Dias)"
                 className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
               />
               <textarea
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
-                placeholder="DescriÃ§Ã£o curta das inclusÃµes..."
+                placeholder="Descrição curta das inclusões..."
                 rows={2}
                 className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none resize-none"
               />
               <input
                 value={newPrice}
                 onChange={(e) => setNewPrice(e.target.value)}
-                placeholder="PreÃ§o (ex: 10x de R$ 149,90)"
+                placeholder="Preço (ex: 10x de R$ 149,90)"
                 className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none"
               />
               <div className="flex gap-2 pt-1">
@@ -332,7 +332,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
                        </div>
                     ) : (
                        <div className="text-[10px] text-amber-400/80 flex items-center gap-1 mt-2 bg-amber-500/5 py-1 px-2 rounded-md border border-amber-500/10">
-                          ðŸ’¡ Use a Fase 3 para criar o anÃºncio e imagem deste pacote
+                          ðŸ’¡ Use a Fase 3 para criar o anúncio e imagem deste pacote
                        </div>
                     )}
                   </div>
@@ -349,11 +349,11 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
         </div>
       </FabricaCard>
 
-      <FabricaCard title="ðŸŽ¬ VÃ­deos Reels e Templates para Seus Destinos">
+      <FabricaCard title="ðŸŽ¬ Vídeos Reels e Templates para Seus Destinos">
         {loadingContent ? (
           <div className="h-24 bg-white/[0.03] animate-pulse rounded-xl" />
         ) : (filteredVideos.length === 0 && filteredStories.length === 0) ? (
-          <p className="text-white/40 text-sm">Nenhum material de vÃ­deo ou template encontrado.</p>
+          <p className="text-white/40 text-sm">Nenhum material de vídeo ou template encontrado.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[...filteredVideos, ...filteredStories].map((item: any, idx: number) => (
@@ -379,7 +379,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-bold text-white leading-tight mb-0.5 truncate">{item.title}</div>
                   <div className="text-[10px] text-emerald-300/80 flex items-center gap-1">
-                    <Video className="w-2.5 h-2.5" /> {item.subcategory || item.category || "VÃ­deos Reels"}
+                    <Video className="w-2.5 h-2.5" /> {item.subcategory || item.category || "Vídeos Reels"}
                   </div>
                 </div>
                 <ExternalLink className="w-3.5 h-3.5 text-white/20 group-hover:text-emerald-300 transition-colors relative z-10" />
@@ -389,7 +389,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
         )}
       </FabricaCard>
 
-      <FabricaCard title="ðŸ¤– RobÃ´s de IA e Ferramentas EstratÃ©gicas">
+      <FabricaCard title="ðŸ¤– Robôs de IA e Ferramentas Estratégicas">
         {loadingTools ? (
           <div className="h-24 bg-white/[0.03] animate-pulse rounded-xl" />
         ) : filteredTools.length === 0 ? (
@@ -403,7 +403,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-bold text-white leading-tight mb-0.5">{tool.title}</div>
                   <div className="text-[10px] text-purple-300/80 flex items-center gap-1">
-                    <Sparkles className="w-2.5 h-2.5" /> InteligÃªncia Artificial
+                    <Sparkles className="w-2.5 h-2.5" /> Inteligência Artificial
                   </div>
                 </div>
                 <ExternalLink className="w-3.5 h-3.5 text-white/20 group-hover:text-purple-300 transition-colors relative z-10" />
@@ -417,7 +417,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
 
       <FabricaCard title="âœï¸ Legendas prontas">
         {filteredCaptions.length === 0 ? (
-          <p className="text-white/50 text-sm">Sem legendas disponÃ­veis no momento.</p>
+          <p className="text-white/50 text-sm">Sem legendas disponíveis no momento.</p>
         ) : (
           <div className="space-y-3">
             {filteredCaptions.map((c: any) => (
@@ -460,7 +460,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
           Voltar
         </button>
         <button onClick={onNext} className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all hover:brightness-110" style={{ background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)`, boxShadow: `0 8px 24px ${state.primaryColor}55` }}>
-          AvanÃ§ar <ArrowRight className="w-4 h-4" />
+          Avançar <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>
