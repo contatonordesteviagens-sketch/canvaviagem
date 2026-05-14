@@ -33,19 +33,19 @@ type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | 
 
 const ICON_OPTIONS: { key: IconKey; Icon: typeof Bus; label: string }[] = [
   { key: "check", Icon: Check, label: "Check" },
-  { key: "bus", Icon: Bus, label: "Ã”nibus" },
+  { key: "bus", Icon: Bus, label: "Autobús" },
   { key: "hotel", Icon: Hotel, label: "Hotel" },
-  { key: "plane", Icon: Plane, label: "Avião" },
-  { key: "ship", Icon: Ship, label: "Navio" },
-  { key: "palm", Icon: Palmtree, label: "Coqueiro" },
+  { key: "plane", Icon: Plane, label: "Avión" },
+  { key: "ship", Icon: Ship, label: "Barco" },
+  { key: "palm", Icon: Palmtree, label: "Palmera" },
   { key: "sun", Icon: Sun, label: "Sol" },
-  { key: "food", Icon: Utensils, label: "Refeição" },
+  { key: "food", Icon: Utensils, label: "Comida" },
   { key: "coffee", Icon: Coffee, label: "Café" },
   { key: "map", Icon: MapPin, label: "Mapa" },
-  { key: "camera", Icon: Camera, label: "C🖼️mera" },
-  { key: "star", Icon: Star, label: "Estrela" },
-  { key: "heart", Icon: Heart, label: "Coração" },
-  { key: "guide", Icon: User, label: "Guia" },
+  { key: "camera", Icon: Camera, label: "Cámara" },
+  { key: "star", Icon: Star, label: "Estrella" },
+  { key: "heart", Icon: Heart, label: "Corazón" },
+  { key: "guide", Icon: User, label: "Guía" },
   { key: "wifi", Icon: Wifi, label: "Wi-Fi" },
 ];
 
@@ -59,13 +59,13 @@ const DEFAULT_HIGHLIGHTS: Highlight[] = [
 ];
 
 const DEFAULT_EXPERIENCE_HIGHLIGHTS: Highlight[] = [
-  { text: "EXPERIÃŠNCIA SENSORIAL", icon: "check" },
-  { text: "MOMENTOS INESQUECÍVEIS", icon: "check" },
-  { text: "CURADORIA PREMIUM", icon: "check" },
+  { text: "EXPERIENCIA SENSORIAL", icon: "check" },
+  { text: "MOMENTOS INOLVIDABLES", icon: "check" },
+  { text: "CURADURÍA PREMIUM", icon: "check" },
 ];
 
 const DEFAULT_SUFFIXES_OFERTA = new Set(["por persona", "por pareja", "por paquete", "por grupo", "total del paquete"]);
-const DEFAULT_SUFFIX_EXPERIENCIA = "Sua viagem começa aqui";
+const DEFAULT_SUFFIX_EXPERIENCIA = "Tu viaje comienza aquí";
 
 // ====== Padronização de CORES por categoria ======
 // Estas cores são aplicadas automaticamente ao trocar de categoria, garantindo
@@ -217,83 +217,83 @@ const PAYMENT_PRESETS: PaymentPreset[] = [
 
 const AD_TITLE_PRESETS: string[] = [
   "Conoce lo mejor de {destino}",
-  "Descubra {destino}",
+  "Descubre {destino}",
   "Paquete {destino}",
-  "Explore {destino}",
-  "{destino} vai te surpreender",
-  "Você precisa conhecer {destino}!",
+  "Explora {destino}",
+  "{destino} te va a sorprender",
+  "¡Tienes que conocer {destino}!",
   "Qué hacer en {destino}",
-  "O melhor de {destino}",
-  "Meu sonho se chama {destino}",
+  "Lo mejor de {destino}",
+  "Mi sueño se llama {destino}",
   "Vámonos a {destino}",
   "Tu próximo viaje es {destino}",
-  "Pacote Promocional {destino}",
+  "Paquete Promocional {destino}",
   "Viaje Completo {destino}",
   "{destino} te espera",
-  "Vamos para {destino}?",
+  "¿Vamos a {destino}?",
 ];
 
 // Presets de TÍTULO para a categoria "Experiencia de Destino" (luxo / sensação)
 const AD_TITLE_PRESETS_EXPERIENCIA: string[] = [
   "Tu próximo viaje es {destino}",
-  "Viva o melhor de {destino}",
-  "Momentos inesquecíveis em {destino}",
-  "Desperte os sentidos em {destino}",
-  "Experiência exclusiva em {destino}",
-  "Prazer em cada detalhe · {destino}",
+  "Vive lo mejor de {destino}",
+  "Momentos inolvidables en {destino}",
+  "Despierta tus sentidos en {destino}",
+  "Experiencia exclusiva en {destino}",
+  "Placer en cada detalle · {destino}",
   "{destino} como nunca has vivido",
   "All Inclusive · {destino}",
-  "Refúgio dos sonhos em {destino}",
-  "Descubra o lado secreto de {destino}",
+  "Refugio de los sueños en {destino}",
+  "Descubre el lado secreto de {destino}",
 ];
 
 // Nomes "promo" sofisticados para Experiencia de Destino
 const PROMO_NAME_PRESETS_EXPERIENCIA: string[] = [
-  "EXPERIÃŠNCIA EXCLUSIVA",
-  "MOMENTOS INESQUECÍVEIS",
-  "PRAZER EM CADA VIAGEM",
+  "EXPERIENCIA EXCLUSIVA",
+  "MOMENTOS INOLVIDABLES",
+  "PLACER EN CADA VIAJE",
   "ALL INCLUSIVE",
-  "VIVÃŠNCIA PREMIUM",
-  "REFÃšGIO DOS SONHOS",
+  "VIVENCIA PREMIUM",
+  "REFUGIO DE LOS SUEÑOS",
 ];
 
 const PROMO_NAME_PRESETS: string[] = [
   "OFERTA ESPECIAL",
-  "SUPER OFERTA",
-  "ÃšLTIMAS VAGAS",
-  "PROMOÃ‡ÃƒO DO DIA",
+  "SÚPER OFERTA",
+  "ÚLTIMOS CUPOS",
+  "PROMOCIÓN DEL DÍA",
   "BLACK FRIDAY",
-  "QUEIMA DE ESTOQUE"
+  "LIQUIDACIÓN"
 ];
 
 // Defaults reconhecidos como "padrão da Oferta" 🖼️€” autorizados a serem sobrescritos
 // quando o usuário troca de categoria sem ter customizado.
 const DEFAULT_PROMO_NAMES_OFERTA = new Set(["OFERTA ESPECIAL", "Oferta Especial", "BLACK FRIDAY"]);
-const DEFAULT_AD_TITLES_OFERTA = new Set(["Paquete {destino}", "Conoce lo mejor de {destino}", "Descubra {destino}"]);
+const DEFAULT_AD_TITLES_OFERTA = new Set(["Paquete {destino}", "Conoce lo mejor de {destino}", "Descubre {destino}"]);
 const DEFAULT_PROMO_NAMES_EXPERIENCIA = new Set(PROMO_NAME_PRESETS_EXPERIENCIA);
 const DEFAULT_AD_TITLES_EXPERIENCIA = new Set(AD_TITLE_PRESETS_EXPERIENCIA);
 
 const TRAVEL_PERIOD_PRESETS: string[] = [
-  "5 dias", "7 dias", "10 dias", "15 dias", "Final de semana",
-  "Janeiro", "Julho", "Dezembro", "Feriado prolongado", "12 a 18/01",
-  "Data flexível", "Saídas semanais",
+  "5 días", "7 días", "10 días", "15 días", "Fin de semana",
+  "Enero", "Julio", "Diciembre", "Fin de semana largo", "12 al 18/01",
+  "Fecha flexible", "Salidas semanales",
 ];
 
 const TITLE_NEIGHBORS: Record<string, string[]> = {
-  "Conoce lo mejor de {destino}": ["Descubra {destino}", "Paquete {destino}"],
-  "Descubra {destino}": ["Conoce lo mejor de {destino}", "Explore {destino}"],
-  "Paquete {destino}": ["Viaje Completo {destino}", "Pacote Promocional {destino}"],
-  "Explore {destino}": ["Descubra {destino}", "{destino} vai te surpreender"],
-  "Vámonos a {destino}": ["Vamos para {destino}?", "{destino} te espera"],
-  "Vamos para {destino}?": ["Vámonos a {destino}", "{destino} te espera"],
+  "Conoce lo mejor de {destino}": ["Descubre {destino}", "Paquete {destino}"],
+  "Descubre {destino}": ["Conoce lo mejor de {destino}", "Explora {destino}"],
+  "Paquete {destino}": ["Viaje Completo {destino}", "Paquete Promocional {destino}"],
+  "Explora {destino}": ["Descubre {destino}", "{destino} te va a sorprender"],
+  "Vámonos a {destino}": ["¿Vamos a {destino}?", "{destino} te espera"],
+  "¿Vamos a {destino}?": ["Vámonos a {destino}", "{destino} te espera"],
   // Vizinhos de Experiência
-  "Tu próximo viaje es {destino}": ["Viva o melhor de {destino}", "Momentos inesquecíveis em {destino}"],
-  "Viva o melhor de {destino}": ["Tu próximo viaje es {destino}", "Experiência exclusiva em {destino}"],
-  "Momentos inesquecíveis em {destino}": ["Desperte os sentidos em {destino}", "Prazer em cada detalhe · {destino}"],
-  "Desperte os sentidos em {destino}": ["Momentos inesquecíveis em {destino}", "Refúgio dos sonhos em {destino}"],
-  "Experiência exclusiva em {destino}": ["Viva o melhor de {destino}", "{destino} como nunca has vivido"],
-  "Prazer em cada detalhe · {destino}": ["All Inclusive · {destino}", "Experiência exclusiva em {destino}"],
-  "{destino} como nunca has vivido": ["Descubra o lado secreto de {destino}", "Viva o melhor de {destino}"],
+  "Tu próximo viaje es {destino}": ["Vive lo mejor de {destino}", "Momentos inolvidables en {destino}"],
+  "Vive lo mejor de {destino}": ["Tu próximo viaje es {destino}", "Experiencia exclusiva en {destino}"],
+  "Momentos inolvidables en {destino}": ["Despierta tus sentidos en {destino}", "Placer en cada detalle · {destino}"],
+  "Despierta tus sentidos en {destino}": ["Momentos inolvidables en {destino}", "Refugio de los sueños en {destino}"],
+  "Experiencia exclusiva en {destino}": ["Vive lo mejor de {destino}", "{destino} como nunca has vivido"],
+  "Placer en cada detalle · {destino}": ["All Inclusive · {destino}", "Experiencia exclusiva en {destino}"],
+  "{destino} como nunca has vivido": ["Descubre el lado secreto de {destino}", "Vive lo mejor de {destino}"],
 };
 
 const buildTitleVariations = (template: string, destination: string): string[] => {
@@ -2603,7 +2603,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             )}
           </div>
           <p className="text-[10px] text-white/40 mt-1.5">
-            Pressione Enter ou clique em <kbd className="text-white/60">+</kbd> para adicionar. Até {MAX_HIGHLIGHTS} benefícios.
+            Presiona Enter o haz clic en <kbd className="text-white/60">+</kbd> para añadir. Hasta {MAX_HIGHLIGHTS} beneficios.
           </p>
         </div>
 
@@ -2619,7 +2619,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               <span className="bg-indigo-500/20 text-indigo-300 text-[9px] px-1.5 py-0.5 rounded border border-indigo-500/30 font-bold uppercase">Premium</span>
             </div>
             <p className="text-[10px] text-white/50 mt-1 leading-relaxed">
-              Gera 3 variações diferentes desta arte de uma vez só. {genMode === "ai" ? "Usa apenas 1 crédito de IA!" : "Mais velocidade."}
+              Genera 3 variaciones diferentes de este arte a la vez. {genMode === "ai" ? "¡Usa solo 1 crédito de IA!" : "Mayor velocidad."}
             </p>
           </div>
           
