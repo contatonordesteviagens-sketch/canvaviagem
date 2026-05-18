@@ -1014,7 +1014,8 @@ const PublishOnLovableCard = ({
           files: [
             {
               file: "index.html",
-              data: html,
+              data: btoa(unescape(encodeURIComponent(html))),
+              encoding: "base64",
             },
           ],
           projectSettings: {
