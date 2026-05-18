@@ -174,15 +174,15 @@ const LiveStream = () => {
                   className="h-full bg-[#25D366] rounded-full flex items-center justify-center text-[10px] font-black text-white tracking-wider animate-pulse" 
                   style={{ width: "84%" }}
                 >
-                  84% dos agentes de elite conectados...
+                  84% dos agentes de viagens conectados...
                 </div>
               </div>
             </div>
 
-            {/* TÍTULO PRINCIPAL */}
+            {/* TÍTULO PRINCIPAL (ALINHADO EM EXATAMENTE 2 LINHAS) */}
             <div className="text-center md:text-left">
-              <h3 className="text-2xl md:text-3xl font-black text-zinc-900 leading-tight">
-                A I.A que cria anúncios e site de viagens em minutos!
+              <h3 className="text-[22px] md:text-[28px] font-black text-zinc-900 leading-tight">
+                A I.A que cria anúncios <br className="hidden sm:inline" />e site de viagens em minutos!
               </h3>
             </div>
 
@@ -240,11 +240,11 @@ const LiveStream = () => {
         </div>
       ) : (
         
-        /* PASSO 2: PLAYER DA LIVE ULTRA CLEAN COM CHAT */
-        <main className="flex-1 max-w-[1550px] w-full mx-auto p-4 md:p-6 flex flex-col gap-5">
+        /* PASSO 2: PLAYER DA LIVE ULTRA CLEAN COM CHAT (TELA CHEIA) */
+        <main className="flex-1 w-full max-w-full mx-auto px-4 pb-4 md:px-6 md:pb-6 flex flex-col gap-4 h-[calc(100vh-20px)] lg:h-[calc(100vh-10px)] overflow-hidden">
           
           {/* TÍTULO DA LIVE ULTRA CLEAN */}
-          <div className="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-4 flex items-center justify-between gap-4">
+          <div className="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-4 flex items-center justify-between gap-4 flex-shrink-0">
             <h2 className="text-lg md:text-xl font-black text-white tracking-wide">
               Como ter um Feed Profissional de R$ 10k/mês e usar a Fábrica de Anúncios com I.A!
             </h2>
@@ -255,10 +255,10 @@ const LiveStream = () => {
           </div>
 
           {/* GRID PRINCIPAL: VÍDEO GIGANTE E CHAT LADO A LADO */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 flex-1 min-h-0 items-stretch">
             
             {/* LADO ESQUERDO: PLAYER DE VÍDEO HORIZONTAL 16:9 COM GLOW AMBIENT */}
-            <div className="lg:col-span-2 flex flex-col bg-black border border-zinc-800/80 rounded-3xl overflow-hidden shadow-[0_24px_50px_rgba(0,0,0,0.5)] relative aspect-video">
+            <div className="lg:col-span-3 flex flex-col bg-black border border-zinc-800/80 rounded-3xl overflow-hidden shadow-[0_24px_50px_rgba(0,0,0,0.5)] relative h-full">
               
               {/* BADGES DO LIVESTREAM EM CIMA DO VÍDEO */}
               <div className="absolute top-4 left-4 z-40 flex items-center gap-2">
@@ -291,10 +291,7 @@ const LiveStream = () => {
                     CLIQUE PARA ASSISTIR
                   </h3>
                 </div>
-              ) : (
-                /* PROTEÇÃO CONTRA CLIQUES E LINKS DO YOUTUBE (TRANSPARENT OVERLAY Z-20) */
-                <div className="absolute inset-0 z-20 bg-transparent cursor-default" />
-              )}
+              ) : null}
 
               {/* CONTAINER COM EFEITO DE BLUR AMBIENTE PARA EXPANDIR O VÍDEO HORIZONTAL */}
               <div className="relative w-full h-full flex items-center justify-center bg-zinc-950 overflow-hidden">
@@ -302,16 +299,17 @@ const LiveStream = () => {
                 {/* Imagem de Fundo Borrada (Ambient Glow) */}
                 <div 
                   className="absolute inset-0 bg-cover bg-center blur-3xl opacity-35 scale-125 pointer-events-none transition-all duration-700"
-                  style={{ backgroundImage: `url('https://img.youtube.com/vi/dvInvZZ7fLY/maxresdefault.jpg')` }}
+                  style={{ backgroundImage: `url('https://img.youtube.com/vi/Xqcw-NpPz08/maxresdefault.jpg')` }}
                 />
 
-                {/* Iframe do Vídeo Horizontal (16:9 Nativo) */}
-                <div className="relative w-full h-full bg-black shadow-[0_0_80px_rgba(0,0,0,0.9)] z-10 overflow-hidden">
+                {/* Iframe do Vídeo Horizontal (16:9 Nativo - Controles Ativados e Cliques Habilitados) */}
+                <div className="relative w-full h-full bg-black shadow-[0_0_80px_rgba(0,0,0,0.9)] z-10 overflow-hidden flex items-center justify-center">
                   <iframe
-                    className="w-full h-full border-none pointer-events-none"
-                    src={`https://www.youtube.com/embed/dvInvZZ7fLY?autoplay=${isPlaying ? 1 : 0}&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1`}
+                    className="w-full h-full border-none"
+                    src={`https://www.youtube.com/embed/Xqcw-NpPz08?autoplay=${isPlaying ? 1 : 0}&mute=0&controls=1&rel=0&showinfo=0&iv_load_policy=3&fs=1`}
                     title="Canva Viagem Live"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
                   />
                 </div>
 
@@ -319,8 +317,8 @@ const LiveStream = () => {
 
             </div>
 
-            {/* LADO DIREITO: CHAT DO LIVESTREAM (AUTOMATICAMENTE ESTICADO PARA A MESMA ALTURA DO VÍDEO 16:9) */}
-            <div className="flex flex-col bg-zinc-900/60 border border-zinc-800/80 rounded-3xl overflow-hidden shadow-2xl h-full min-h-[450px]">
+            {/* LADO DIREITO: CHAT DO LIVESTREAM (AUTOMATICAMENTE ESTICADO PARA A MESMA ALTURA DO VÍDEO) */}
+            <div className="flex flex-col bg-zinc-900/60 border border-zinc-800/80 rounded-3xl overflow-hidden shadow-2xl h-full min-h-0">
               
               {/* ABAS CHAT / SUPORTE */}
               <div className="flex p-2 bg-zinc-900 border-b border-zinc-800/80 gap-1">
