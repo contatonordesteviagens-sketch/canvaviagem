@@ -256,7 +256,7 @@ const LiveStream = () => {
           {/* TÍTULO DA LIVE ULTRA CLEAN */}
           <div className="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-4 flex items-center justify-between gap-4 flex-shrink-0">
             <h2 className="text-lg md:text-xl font-black text-white tracking-wide">
-              Como ter um Feed Profissional de R$ 10k/mês e usar a Fábrica de Anúncios com I.A!
+              Como usar a Fábrica de Anúncios e Criar Anúncios e Site de Viagens com I.A!
             </h2>
             <div className="flex items-center gap-1.5 bg-red-600/15 border border-red-500/20 px-3 py-1.5 rounded-xl flex-shrink-0 animate-pulse">
               <span className="h-2 w-2 rounded-full bg-red-500" />
