@@ -444,7 +444,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         </p>
         <ImageGallery
           images={state.siteContent.galleryImages}
-          generatedAd={state.generatedAdImage}
+          generatedAd={state.lastCleanPhoto || ""}
           onAdd={addToGallery}
           onRemove={removeFromGallery}
         />
@@ -843,13 +843,13 @@ const ImageGallery = ({
 
   return (
     <div className="space-y-3">
-      {/* Atalho: usar imagem gerada na Fase 3 */}
+      {/* Atalho: usar foto limpa gerada na Fase 3 */}
       {generatedAd && !images.includes(generatedAd) && (
         <button
           onClick={() => onAdd(generatedAd)}
           className="w-full p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold flex items-center gap-2 hover:bg-amber-500/15"
         >
-          <Sparkles className="w-4 h-4" /> Adicionar a imagem gerada na Fase 3 ao banco
+          <Sparkles className="w-4 h-4" /> Adicionar a foto limpa do destino (Fase 3) ao banco
         </button>
       )}
 
@@ -949,11 +949,117 @@ const PublishOnLovableCard = ({
   onBack: () => void;
   onNext: () => void;
 }) => {
-  const { state } = useFabricaContext();
+  const { state, update } = useFabricaContext();
   const { user } = useAuth();
 
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+
+  // ── ESTADOS E FUNÇÕES PARA A PUBLICAÇÃO 1-CLIQUE NO VERCEL ──
+  const [vercelSubdomain, setVercelSubdomain] = useState(() => {
+    if (state.siteContent.vercelUrl) {
+      return state.siteContent.vercelUrl.replace("https://", "").replace(".vercel.app", "");
+    }
+    const rawAgency = state.agencyName || "";
+    return rawAgency
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // remove acentos
+      .replace(/[^a-z0-9]/g, "-") // apenas minusculas e hifens
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+  });
+
+  const [isVercelDeploying, setIsVercelDeploying] = useState(false);
+  const [customVercelToken, setCustomVercelToken] = useState(() => localStorage.getItem("vercel_token") || "");
+  const [showVercelConfig, setShowVercelConfig] = useState(false);
+
+  const handleVercelPublish = async () => {
+    const token = (import.meta.env.VITE_VERCEL_TOKEN || customVercelToken || "").trim();
+    if (!token) {
+      toast.error("Vercel Token não configurado! Clique em 'Configurar Conta' abaixo e insira seu token.");
+      setShowVercelConfig(true);
+      return;
+    }
+
+    const cleanSubdomain = vercelSubdomain
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9-]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    if (!cleanSubdomain) {
+      toast.error("Por favor, digite um nome de subdomínio válido.");
+      return;
+    }
+
+    setIsVercelDeploying(true);
+    const toastId = toast.loading("Preparando publicação no Vercel...");
+
+    try {
+      toast.loading("Enviando código para o Vercel (sem limites)...", { id: toastId });
+
+      // Envia deploy para o Vercel usando API v13
+      const res = await fetch("https://api.vercel.com/v13/deployments", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: cleanSubdomain,
+          files: [
+            {
+              file: "index.html",
+              data: html,
+            },
+          ],
+          projectSettings: {
+            framework: null,
+          },
+          target: "production",
+        }),
+      });
+
+      const resData = await res.json();
+      if (!res.ok) {
+        throw new Error(resData?.error?.message || "Erro na resposta da API Vercel");
+      }
+
+      const domain = `${cleanSubdomain}.vercel.app`;
+      const liveUrl = `https://${domain}`;
+
+      // Salva no estado global
+      update({
+        siteContent: {
+          ...state.siteContent,
+          vercelUrl: liveUrl,
+        },
+      });
+
+      toast.success("🚀 PARABÉNS! SEU SITE ESTÁ NO AR NO VERCEL!", { id: toastId });
+
+      if (typeof window !== "undefined" && (window as any).confetti) {
+        (window as any).confetti();
+      }
+    } catch (err: any) {
+      console.error("Vercel Deploy Error:", err);
+      toast.error(`Erro ao publicar no Vercel: ${err.message || "Tente novamente"}`, { id: toastId });
+    } finally {
+      setIsVercelDeploying(false);
+    }
+  };
+
+  const handleSaveToken = (val: string) => {
+    setCustomVercelToken(val);
+    localStorage.setItem("vercel_token", val.trim());
+    if (val.trim()) {
+      toast.success("Vercel Token salvo localmente!");
+    }
+  };
 
   const handleDirectPublish = async () => {
     if (!user?.id) {
@@ -963,16 +1069,13 @@ const PublishOnLovableCard = ({
 
     setIsPublishing(true);
     try {
-      // 1. Converte HTML em Blob
       const blob = new Blob([html], { type: 'text/html' });
       const fileName = `sites/${user.id}.html`;
       
-      // 🚀 NOVO: Sistema de SUBDOMÍNIO REAL! Gera o slug limpo da agência!
       const rawName = state.agencyName || `agencia-${user.id.substring(0,4)}`;
       const cleanSlug = rawName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
       const slugName = `sites/${cleanSlug}.html`;
 
-      // 2. Faz o upload OFICIAL (por ID) para o bucket "thumbnails"
       const { error: uploadError } = await supabase.storage
         .from("thumbnails")
         .upload(fileName, blob, {
@@ -982,17 +1085,14 @@ const PublishOnLovableCard = ({
 
       if (uploadError) throw uploadError;
 
-      // 2.1. Faz o upload SECUNDÁRIO (por SLUB/SUBDOMÍNIO) para uso em subdominio.seusite.com
       if (cleanSlug.length > 2) {
          await supabase.storage.from("thumbnails").upload(slugName, blob, { contentType: 'text/html', upsert: true }).catch(e => console.warn("Subdomain upload error:", e));
       }
 
-      // 3. Gera o Link Público Final!
       const internalUrl = `${window.location.origin}/view/${user.id}`;
       setPublishedUrl(internalUrl);
       toast.success("🚀 SITE PUBLICADO COM SUCESSO!");
 
-      // Feedback visual de "Uau!"
       if (typeof window !== "undefined" && (window as any).confetti) {
         (window as any).confetti();
       }
@@ -1053,15 +1153,172 @@ const PublishOnLovableCard = ({
               PASSO FINAL · 100% GRÁTIS
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
-              Publique seu site no ar em <span style={{ color: primaryColor }}>2 minutos</span>
+              Publique seu site no ar em <span style={{ color: primaryColor }}>1 Clique</span>
             </h3>
           </div>
         </div>
 
         <p className="text-sm text-white/70 mb-5 leading-relaxed">
-          Para colocar seu site no ar, conecte-se ao <strong>Lovable</strong> e cole o seu código gerado:
+          Escolha a sua opção preferida para publicar ou baixar o código completo do seu site perfeitamente como ele está:
         </p>
 
+        {/* 🚀 SUPER RECURSO: PUBLICAÇÃO EXPRESSA VERCEL EM 1-CLIQUE */}
+        <div 
+          className="my-6 p-6 rounded-2xl border-2 backdrop-blur-xl transition-all relative overflow-hidden text-left"
+          style={{ 
+            borderColor: state.siteContent.vercelUrl ? "#10B98188" : `${primaryColor}44`,
+            background: state.siteContent.vercelUrl 
+              ? "linear-gradient(135deg, rgba(16,185,129,0.08), rgba(0,0,0,0.4))"
+              : "linear-gradient(135deg, rgba(245,158,11,0.06), rgba(0,0,0,0.4))",
+            boxShadow: state.siteContent.vercelUrl ? "0 10px 30px rgba(16,185,129,0.1)" : "none"
+          }}
+        >
+          {/* Tag de Destaque */}
+          <div className="absolute top-3 right-3 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[9px] font-black uppercase tracking-wider">
+            Recomendado
+          </div>
+
+          <div className="flex items-center gap-3 mb-4">
+            <div 
+              className="w-10 h-10 rounded-xl flex items-center justify-center border"
+              style={{ 
+                borderColor: state.siteContent.vercelUrl ? "#10B98188" : `${primaryColor}44`,
+                background: state.siteContent.vercelUrl ? "rgba(16,185,129,0.1)" : "rgba(255,255,255,0.03)"
+              }}
+            >
+              <Rocket className={`w-5 h-5 ${state.siteContent.vercelUrl ? "text-emerald-400" : "text-amber-400"}`} />
+            </div>
+            <div>
+              <h4 className="text-base font-black text-white tracking-wide">
+                🚀 Publicação Direta e Expressa no Vercel
+              </h4>
+              <p className="text-xs text-white/50">
+                Coloque o site completo da sua agência no ar instantaneamente, sem precisar de código ou configurações chatas!
+              </p>
+            </div>
+          </div>
+
+          {/* Se já estiver publicado, mostra o link em destaque */}
+          {state.siteContent.vercelUrl && (
+            <div className="mb-5 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Seu Site está Online! 🌟</div>
+                <a 
+                  href={state.siteContent.vercelUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm font-bold text-white hover:underline flex items-center gap-1.5 mt-0.5 group"
+                >
+                  {state.siteContent.vercelUrl}
+                  <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white transition-colors" />
+                </a>
+              </div>
+              <a 
+                href={state.siteContent.vercelUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs transition-all text-center"
+              >
+                Acessar Site do Cliente
+              </a>
+            </div>
+          )}
+
+          {/* Form de Publicação */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
+                Nome do Domínio (Link do Site):
+              </label>
+              <div className="flex items-center">
+                <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-l-lg text-xs text-white/40 select-none">
+                  https://
+                </span>
+                <input
+                  type="text"
+                  value={vercelSubdomain}
+                  onChange={(e) => setVercelSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
+                  placeholder="nome-da-sua-agencia"
+                  className="flex-1 bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30"
+                />
+                <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-l-0 rounded-r-lg text-xs text-white/40 select-none">
+                  .vercel.app
+                </span>
+              </div>
+              <p className="text-[10px] text-white/40 mt-1.5 italic">
+                Apenas letras, números e traços. Seu site ficará visível mundialmente no link acima.
+              </p>
+            </div>
+
+            <button
+              onClick={handleVercelPublish}
+              disabled={isVercelDeploying}
+              className="w-full py-3.5 px-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 hover:brightness-110 disabled:brightness-50 disabled:cursor-not-allowed transition-all text-sm"
+              style={{ 
+                background: state.siteContent.vercelUrl
+                  ? "linear-gradient(135deg, #10B981, #34D399)"
+                  : `linear-gradient(135deg, ${primaryColor}, #FCD34D)`,
+                boxShadow: state.siteContent.vercelUrl
+                  ? "0 8px 24px rgba(16,185,129,0.3)"
+                  : `0 8px 24px ${primaryColor}44`
+              }}
+            >
+              {isVercelDeploying ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  Publicando no Vercel...
+                </>
+              ) : state.siteContent.vercelUrl ? (
+                <>
+                  <Rocket className="w-4 h-4 animate-bounce" />
+                  Atualizar Site no Vercel (1-Clique) ⚡
+                </>
+              ) : (
+                <>
+                  <Rocket className="w-4 h-4" />
+                  Publicar Site no Vercel Agora! 🚀
+                </>
+              )}
+            </button>
+
+            {/* Configuração de Token para o Administrador */}
+            <div className="border-t border-white/5 pt-3 mt-2">
+              <button
+                type="button"
+                onClick={() => setShowVercelConfig(!showVercelConfig)}
+                className="text-[11px] font-semibold text-white/40 hover:text-white/60 transition-colors flex items-center gap-1.5"
+              >
+                ⚙️ {showVercelConfig ? "Ocultar" : "Mostrar"} Configurações do Desenvolvedor (Vercel API)
+              </button>
+
+              {showVercelConfig && (
+                <div className="mt-3 p-4 rounded-xl bg-black/50 border border-white/10 space-y-3">
+                  <p className="text-[11px] text-white/60 leading-relaxed">
+                    💡 <strong>Para o Proprietário do App:</strong> Para que seus clientes publiquem em 1-clique gratuitamente sem que precisem inserir nenhuma chave, configure a variável <strong>VITE_VERCEL_TOKEN</strong> no arquivo <strong>.env</strong> do seu projeto com o seu Token do Vercel.
+                  </p>
+                  
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-white/50 uppercase">
+                      Ou insira o Token do Vercel manualmente neste navegador:
+                    </label>
+                    <input
+                      type="password"
+                      value={customVercelToken}
+                      onChange={(e) => handleSaveToken(e.target.value)}
+                      placeholder="Cole seu token vercel_..."
+                      className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-white/30 outline-none focus:border-white/30"
+                    />
+                    {(import.meta.env.VITE_VERCEL_TOKEN || customVercelToken) && (
+                      <p className="text-[10px] text-emerald-400 font-semibold mt-1">
+                        ✓ Token configurado! Você e seus clientes já podem publicar com 1 clique.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
         <p className="text-xs text-white/60 mb-4 leading-relaxed bg-white/[0.02] p-3 rounded-xl border border-white/5">
           Para personalizar fontes, alterar o layout avançado ou conectar seu próprio domínio oficial, use o <strong className="text-white">Lovable</strong>:
@@ -1069,11 +1326,11 @@ const PublishOnLovableCard = ({
 
         <div className="space-y-2.5 mb-6">
           {[
-            { n: 1, t: "Baixe ou copie o HTML do seu site (botões acima)" },
+            { n: 1, t: "Baixe ou copie o HTML do seu site (botões abaixo)" },
             { n: 2, t: "Crie sua conta grátis no Lovable usando o link abaixo" },
             { n: 3, t: "Cole o HTML, clique em Publicar e seu site está no ar 🚀" },
           ].map((s) => (
-            <div key={s.n} className="flex items-start gap-3 bg-black/30 border border-white/[0.06] rounded-xl p-3">
+            <div key={s.n} className="flex items-start gap-3 bg-black/30 border border-white/[0.06] rounded-xl p-3 text-left">
               <div
                 className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black text-black"
                 style={{ background: primaryColor }}
@@ -1130,70 +1387,6 @@ const PublishOnLovableCard = ({
           </p>
         </div>
 
-        {/* GUIA DE PUBLICAÇÃO PREMIUM - VERCEL GRÁTIS */}
-        <div className="my-6 p-6 rounded-2xl border bg-black/40 backdrop-blur-xl transition-all"
-             style={{ borderColor: `${primaryColor}33` }}>
-          <div className="flex items-center gap-2.5 mb-3.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/30">
-              <Rocket className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white tracking-wide uppercase">
-                🚀 Como colocar seu Site no ar Grátis no Vercel (Sem Limites de Código)
-              </h4>
-              <p className="text-[11px] text-white/50 mt-0.5">
-                Publique diretamente seu arquivo HTML no Vercel e tenha o site da sua agência no ar com domínio próprio ou grátis!
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-4 text-xs text-white/80 leading-relaxed mb-5">
-            <div className="flex gap-2.5 items-start">
-              <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5">1</span>
-              <p>
-                Clique no botão verde <strong className="text-emerald-400">"Baixar HTML Local"</strong> acima para obter o arquivo de código completo do seu site no seu computador.
-              </p>
-            </div>
-            <div className="flex gap-2.5 items-start">
-              <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5">2</span>
-              <div>
-                <p className="font-semibold text-white">Prepare o arquivo:</p>
-                <p className="text-white/60 mt-0.5">
-                  Crie uma nova pasta no seu computador (com o nome da sua agência), coloque o arquivo baixado lá dentro e renomeie-o exatamente para <strong className="text-emerald-400">index.html</strong>.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-2.5 items-start">
-              <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5">3</span>
-              <div>
-                <p className="font-semibold text-white">Publique Grátis no Vercel:</p>
-                <p className="text-white/60 mt-0.5">
-                  Crie uma conta gratuita em <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline hover:text-indigo-300">vercel.com</a>, acesse o painel e simplesmente arraste e solte essa pasta que você criou!
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
-            <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" 
-               className="flex-1 py-3 px-4 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.08] transition-all flex items-center justify-center gap-2 group text-sm font-bold text-white">
-              <ExternalLink className="w-4 h-4 text-indigo-400" /> Criar Conta Grátis no Vercel
-            </a>
-            <a href="https://vercel.com/dashboard" target="_blank" rel="noopener noreferrer"
-               className="flex-1 py-3 px-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all text-sm"
-               style={{ background: `linear-gradient(135deg, ${primaryColor}, #FCD34D)` }}>
-              🚀 Ir para o Painel Vercel (Upload)
-            </a>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/10 text-[10.5px] text-amber-300/80 flex items-start gap-2.5">
-            <span className="text-sm">💡</span>
-            <p className="leading-normal">
-              <strong>Vantagem Vercel:</strong> Além de carregar o site instantaneamente no mundo todo de graça com o domínio <code className="text-white bg-white/10 px-1 py-0.5 rounded">sua-agencia.vercel.app</code>, você pode conectar o seu domínio próprio (ex: <code className="text-white">agenciadeviagens.com.br</code>) sem pagar absolutamente nada por isso!
-            </p>
-          </div>
-        </div>
-
         <p className="text-[11px] text-white/50 text-center">
           ✓ Sem cartão de crédito · ✓ Domínio grátis incluído · ✓ Suporte a domínio próprio
         </p>
@@ -1221,6 +1414,15 @@ const PublishOnLovableCard = ({
           <button
             onClick={onNext}
             className="flex-[2] py-4 rounded-xl font-black text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+            style={{ background: primaryColor }}
+          >
+            Próximo Passo: Diagnóstico <Rocket className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}; font-black text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
             style={{ background: primaryColor }}
           >
             Próximo Passo: Diagnóstico <Rocket className="w-5 h-5" />

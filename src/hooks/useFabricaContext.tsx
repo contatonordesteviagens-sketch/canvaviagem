@@ -55,6 +55,7 @@ export interface SiteContent {
   faq: Array<{ q: string; a: string }>;
   heroImageUrl?: string; // Imagem de fundo do banner principal do site
   galleryImages: string[]; // banco de imagens geradas pra reuso
+  vercelUrl?: string; // URL do site publicado no Vercel
   sections: SectionVisibility;
 }
 
@@ -114,6 +115,7 @@ export interface FabricaState {
   checklist30days: Record<string, boolean>;
   diagnosticoCompleto: boolean;
   generatedAdImage: string; // base64 da imagem gerada na Fase 3
+  lastCleanPhoto?: string; // foto limpa do destino gerada na Fase 3 (sem texto do anúncio)
   allGeneratedAdImages?: string[]; // lista de todas as artes geradas pelo usuário
   siteContent: SiteContent;
 
@@ -180,6 +182,7 @@ const defaultState: FabricaState = {
   checklist30days: {},
   diagnosticoCompleto: false,
   generatedAdImage: "",
+  lastCleanPhoto: "",
   allGeneratedAdImages: [],
   siteContent: {
     heroHeadline: "",
@@ -198,6 +201,7 @@ const defaultState: FabricaState = {
     ],
     heroImageUrl: "",
     galleryImages: [],
+    vercelUrl: "",
     sections: {
       hero: true,
       processo: true,
@@ -238,7 +242,7 @@ const defaultState: FabricaState = {
 
 const STORAGE_KEY = "fabrica-context-v1";
 // Campos pesados (base64) ficam em chaves separadas pra não estourar a quota do localStorage
-const HEAVY_KEYS = ["logoBase64", "generatedAdImage"] as const;
+const HEAVY_KEYS = ["logoBase64", "generatedAdImage", "lastCleanPhoto"] as const;
 const HEAVY_STORAGE_PREFIX = "fabrica-heavy-v1:";
 const GALLERY_KEY = "fabrica-gallery-v1";
 const GENERATED_KEY = "fabrica-generated-v1";
@@ -310,7 +314,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   // Persistência: salva campos leves em uma chave, pesados em chaves separadas
   useEffect(() => {
     try {
-      const { logoBase64, generatedAdImage, allGeneratedAdImages, siteContent, ...rest } = state;
+      const { logoBase64, generatedAdImage, lastCleanPhoto, allGeneratedAdImages, siteContent, ...rest } = state;
       const { galleryImages, ...siteRest } = siteContent;
 
       // Leve (sem base64 grandes)
@@ -325,6 +329,9 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
 
       if (generatedAdImage) safeSetItem(HEAVY_STORAGE_PREFIX + "generatedAdImage", generatedAdImage);
       else localStorage.removeItem(HEAVY_STORAGE_PREFIX + "generatedAdImage");
+
+      if (lastCleanPhoto) safeSetItem(HEAVY_STORAGE_PREFIX + "lastCleanPhoto", lastCleanPhoto);
+      else localStorage.removeItem(HEAVY_STORAGE_PREFIX + "lastCleanPhoto");
 
       // Galeria separada (pode ter várias imagens)
       safeSetItem(GALLERY_KEY, JSON.stringify(galleryImages || []));

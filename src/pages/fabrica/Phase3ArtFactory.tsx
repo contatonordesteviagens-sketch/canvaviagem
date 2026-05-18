@@ -1012,6 +1012,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
     update({
       selectedPackages: updatedPackages,
+      lastCleanPhoto: imageToAdd,
       siteContent: {
         ...state.siteContent,
         galleryImages: updatedGallery,
