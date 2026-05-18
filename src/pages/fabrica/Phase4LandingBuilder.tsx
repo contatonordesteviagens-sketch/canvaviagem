@@ -23,6 +23,7 @@ import {
   Upload,
   Undo,
   Redo,
+  ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { SectionVisibility } from "@/hooks/useFabricaContext";
