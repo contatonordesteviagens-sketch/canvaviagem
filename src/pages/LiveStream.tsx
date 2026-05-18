@@ -13,31 +13,25 @@ interface Comment {
 }
 
 const INITIAL_COMMENTS: Comment[] = [
-  { id: "1", username: "calielsuruagy", message: "Boraaaa povo", time: "22:40" },
-  { id: "2", username: "matheusborges1521", message: "opa", time: "22:41" },
-  { id: "3", username: "dalvanifaustinomoreira8910", message: "Sim", time: "22:41" },
-  { id: "4", username: "leonardoduarteneto", message: "Sim", time: "22:42" },
-  { id: "5", username: "dreduardo.carvalho", message: "Eduardo de recife escutando perfeito", time: "22:42" },
-  { id: "6", username: "luanfranca1248", message: "Boraaaaa fabricarr 🚀", time: "22:43" },
-  { id: "7", username: "matheusborges1521", message: "ta file", time: "22:43" },
-  { id: "8", username: "JulianoFerreira-k4b", message: "Sim!", time: "22:44" },
+  { id: "1", username: "Juliana Costa | Agente de Viagem", message: "Boa noite gente! Lucas, a ferramenta está incrível.", time: "20:02" },
+  { id: "2", username: "Marcos Silva | RM Turismo", message: "Conectado de Recife. Muito ansioso pela aula!", time: "20:02" },
+  { id: "3", username: "Fernanda Souza | Viagens Premium", message: "O áudio e o vídeo estão excelentes por aqui.", time: "20:03" },
+  { id: "4", username: "Carlos Eduardo | Agência Destinos", message: "Boa noite Lucas! Bora pra cima.", time: "20:04" },
 ];
 
 const AUTO_COMMENTS_POOL = [
-  { username: "alinemaria_viagens", message: "Estou chocada com a velocidade desse gerador! 😱" },
-  { username: "robertoturismo", message: "Consigo mudar o logo e as cores do cliente?" },
-  { username: "fernandotravels", message: "Sim, roberto, é super fácil no Canva!" },
-  { username: "agente_premium", message: "Isso vai me poupar umas 10 horas de trabalho por semana." },
-  { username: "lucas_viagens", message: "O som e vídeo estão ótimos aqui." },
-  { username: "carla_agente", message: "Já sou aluna do Elite e recomendo muito!" },
-  { username: "marcos_tur", message: "Bora lucrar galera! ✈️" },
-  { username: "patriciatravel", message: "Dá para exportar em PDF e JPG também?" },
-  { username: "tiago_vendas", message: "Show de bola esse modelo de negócios!" },
-  { username: "renata_agencia", message: "Dá pra usar no celular também ou só no PC?" },
-  { username: "valdir_tours", message: "Melhor investimento que fiz este ano!" },
-  { username: "agencia_viva", message: "Os criativos são de alta conversão mesmo, mudei meus resultados." },
-  { username: "beatriz_travel", message: "Como faço para acessar os bônus da Fábrica?" },
-  { username: "murilomarketing", message: "Muito bom ver o passo a passo na prática!" },
+  { username: "Patrícia Lemos | Lemos Travel", message: "Lucas, eu consigo colocar o logo e as cores da minha agência no gerador?" },
+  { username: "Ricardo Borges | RB Viagens", message: "Consigo sim, Patrícia! Já testei e é muito prático." },
+  { username: "Ana Paula | Agente Autônoma", message: "Essa Fábrica de Anúncios vai me poupar horas de trabalho por semana." },
+  { username: "Roberto Antunes | Antunes Tour", message: "Lucas, os criativos já vêm no tamanho certo para Reels e Stories?" },
+  { username: "Letícia Mendes | RM Turismo", message: "Sim Roberto, já vêm 100% no formato ideal!" },
+  { username: "Aline Maria | Viagens & Destinos", message: "Estou chocada com a velocidade desse gerador com IA. Sensacional, Lucas!" },
+  { username: "Carla Aguiar | Agente Elite", message: "Já sou aluna do Elite e o suporte do Lucas é fantástico, recomendo muito." },
+  { username: "Tiago Santos | Santos Agência", message: "Estou gostando muito da didática da explicação." },
+  { username: "Renata Vasconcelos | Rota do Sol", message: "O vídeo ensina direitinho como fechar pacotes no WhatsApp." },
+  { username: "Valdir Lima | Lima Turismo", message: "Melhor investimento do ano para a minha agência." },
+  { username: "Beatriz Nogueira | Viajar Mais", message: "Como faço para acessar o gerador com as IAs, Lucas?" },
+  { username: "Murilo Costa | Costa Premium", message: "Esse modelo de negócio de anúncios de viagens realmente funciona rápido." },
 ];
 
 const LiveStream = () => {
@@ -46,6 +40,9 @@ const LiveStream = () => {
   const [newComment, setNewComment] = useState("");
   const [activeTab, setActiveTab] = useState<"chat" | "support">("chat");
   const chatEndRef = useRef<HTMLDivElement>(null);
+  
+  // Keep track of remaining comments to avoid repetition
+  const poolRef = useRef<typeof AUTO_COMMENTS_POOL>([...AUTO_COMMENTS_POOL]);
 
   // Fluctuating viewers simulation (around 95 to 115)
   useEffect(() => {
@@ -55,16 +52,25 @@ const LiveStream = () => {
         const nextValue = prev + change;
         return Math.max(90, Math.min(120, nextValue));
       });
-    }, 4000);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  // Scrolling chat simulation (adding a fake comment every 3 to 7 seconds)
+  // Scrolling chat simulation (adding a fake non-repeated comment every 12 to 20 seconds)
   useEffect(() => {
     const addFakeComment = () => {
-      const randomDelay = Math.floor(Math.random() * 4000) + 3000; // 3s to 7s
+      const randomDelay = Math.floor(Math.random() * 8000) + 12000; // 12s to 20s
+      
       return setTimeout(() => {
-        const randomComment = AUTO_COMMENTS_POOL[Math.floor(Math.random() * AUTO_COMMENTS_POOL.length)];
+        if (poolRef.current.length === 0) return; // Stop when pool is empty to avoid repetitions
+
+        // Pick one random comment
+        const randomIndex = Math.floor(Math.random() * poolRef.current.length);
+        const randomComment = poolRef.current[randomIndex];
+        
+        // Remove it from current pool
+        poolRef.current.splice(randomIndex, 1);
+
         const now = new Date();
         const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         
@@ -77,6 +83,7 @@ const LiveStream = () => {
             time: timeStr
           }
         ]);
+        
         addFakeComment();
       }, randomDelay);
     };
@@ -99,7 +106,7 @@ const LiveStream = () => {
 
     const userComment: Comment = {
       id: String(Date.now()),
-      username: "você",
+      username: "Você",
       message: newComment.trim(),
       isUser: true,
       time: timeStr
@@ -111,40 +118,18 @@ const LiveStream = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none">
-      {/* HEADER PREMIUM */}
-      <header className="border-b border-zinc-800/80 bg-zinc-900/90 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-40">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-400 to-violet-600 flex items-center justify-center font-bold text-lg text-black shadow-lg">
-            CV
-          </div>
-          <div>
-            <h1 className="text-md md:text-lg font-black tracking-tight bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent uppercase">
-              Canva Viagem Live
-            </h1>
-            <p className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Painel de Acesso Interno</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-cyan-400 animate-pulse" />
-          <span className="text-xs font-bold uppercase tracking-wider text-cyan-400 hidden sm:inline">Servidor de Transmissão Ativo</span>
-        </div>
-      </header>
-
-      {/* CONTEÚDO PRINCIPAL */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none justify-center">
+      {/* CONTEÚDO PRINCIPAL (SEM HEADER/LOGO PARA UM DESIGN CLEAN) */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
         
         {/* LADO ESQUERDO: PLAYER DE VÍDEO & INFO */}
         <div className="lg:col-span-2 flex flex-col gap-4">
           
-          {/* TÍTULO DA LIVE */}
+          {/* TÍTULO DA LIVE SUGERIDO (CLEAN E DIRETO AO PONTO) */}
           <div className="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-4 md:p-5 flex items-start justify-between gap-4">
             <div>
-              <span className="text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2.5 py-1 rounded-full font-bold uppercase tracking-widest mb-2 inline-block">
-                Masterclass
-              </span>
               <h2 className="text-xl md:text-2xl font-black text-white leading-snug">
-                A Fábrica de Anúncios cria um Low Ticket por HORA!
+                Fábrica de Anúncios: Como Criar Anúncios de Viagem de Alta Conversão
               </h2>
             </div>
             <div className="flex items-center gap-1.5 bg-red-600/10 border border-red-500/20 px-3 py-1.5 rounded-xl flex-shrink-0 animate-pulse">
@@ -153,7 +138,7 @@ const LiveStream = () => {
             </div>
           </div>
 
-          {/* PLAYER DE VÍDEO COM EMBED REAL */}
+          {/* PLAYER DE VÍDEO COM EMBED DA PÁGINA DE PLANOS */}
           <div className="relative aspect-video rounded-3xl overflow-hidden bg-black border border-zinc-800/80 shadow-[0_24px_50px_rgba(0,0,0,0.5)]">
             
             {/* BADGES DO LIVESTREAM EM CIMA DO VÍDEO */}
@@ -168,10 +153,10 @@ const LiveStream = () => {
               </div>
             </div>
 
-            {/* EMBED YOUTUBE EM LOOP */}
+            {/* EMBED DO VÍDEO VSL DA PÁGINA DE PLANOS COM AUDIO & CONTROLES */}
             <iframe
               className="w-full h-full border-none"
-              src="https://www.youtube.com/embed/dvInvZZ7fLY?autoplay=1&mute=1&controls=1&loop=1&playlist=dvInvZZ7fLY&modestbranding=1&rel=0&iv_load_policy=3"
+              src="https://www.youtube.com/embed/dvInvZZ7fLY?autoplay=1&mute=0&controls=1&rel=0"
               title="Canva Viagem Live"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
@@ -193,7 +178,7 @@ const LiveStream = () => {
         </div>
 
         {/* LADO DIREITO: CHAT DO LIVESTREAM */}
-        <div className="flex flex-col h-[600px] lg:h-[680px] bg-zinc-900/60 border border-zinc-800/80 rounded-3xl overflow-hidden shadow-2xl">
+        <div className="flex flex-col h-[600px] lg:h-[650px] bg-zinc-900/60 border border-zinc-800/80 rounded-3xl overflow-hidden shadow-2xl">
           
           {/* ABAS CHAT / SUPORTE */}
           <div className="flex p-2 bg-zinc-900 border-b border-zinc-800/80 gap-1">
