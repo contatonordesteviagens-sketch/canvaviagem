@@ -1818,7 +1818,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                         onClick={() => {
                           setCategoriaState(opt.id as CategoriaId);
                           update({ lastCategoria: opt.id });
-                          syncCategoryDefaults(opt.id as CategoriaId);
+                          /* syncCategoryDefaults removido */
                         }}
                         className={`flex flex-col items-start p-4 rounded-2xl border text-left transition-all relative ${
                           selected
@@ -1881,40 +1881,40 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   <div className="relative flex-1">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                     <input
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && searchPhotos(searchQuery)}
+                      value={photoQuery}
+                      onChange={(e) => setPhotoQuery(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && searchPhotos(photoQuery)}
                       placeholder="Buscar destino (ej: Cancún, Orlando, Madrid...)"
                       className="w-full bg-white/[0.05] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-white/30 outline-none focus:border-white/30"
                     />
                   </div>
                   <button
                     type="button"
-                    onClick={() => searchPhotos(searchQuery)}
-                    disabled={searchingPhotos || !searchQuery.trim()}
+                    onClick={() => searchPhotos(photoQuery)}
+                    disabled={searchingPhotos || !photoQuery.trim()}
                     className="px-4 py-2.5 bg-white/10 hover:bg-white/15 disabled:opacity-40 disabled:hover:bg-white/10 rounded-xl text-xs font-bold text-white transition-all flex items-center gap-1.5"
                   >
                     {searchingPhotos ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Buscar"}
                   </button>
                 </div>
 
-                {photoResults.length > 0 ? (
+                {photos.length > 0 ? (
                   <div className="grid grid-cols-3 gap-2 max-h-[220px] overflow-y-auto pr-1">
-                    {photoResults.map((p) => {
-                      const active = selectedPhoto === p.src.large2x;
+                    {photos.map((p) => {
+                      const active = selectedPhotoUrl === p.url;
                       return (
                         <button
                           key={p.id}
                           type="button"
                           onClick={() => {
-                            setSelectedPhoto(p.src.large2x);
+                            setSelectedPhotoUrl(p.url);
                             toast.success("¡Foto seleccionada!");
                           }}
                           className={`relative aspect-[3/4] rounded-lg overflow-hidden border-2 bg-zinc-950 transition-all ${
                             active ? "border-white scale-95 shadow-lg" : "border-white/5 hover:border-white/20"
                           }`}
                         >
-                          <img src={p.src.tiny} alt={p.alt} className="w-full h-full object-cover" />
+                          <img src={p.thumb} alt={p.alt} className="w-full h-full object-cover" />
                           {active && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                               <Check className="w-5 h-5 text-white" />
@@ -1953,26 +1953,26 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
                 {customSource === "upload" ? (
                   <div>
-                    {!customImage ? (
+                    {!customImageData ? (
                       <label className="flex flex-col items-center justify-center gap-3 p-8 bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-white/20 hover:bg-white/[0.04] transition-all group h-[140px]">
                         <ImageIcon className="w-8 h-8 text-white/30 group-hover:scale-110 transition-transform" />
                         <div className="text-center">
                           <span className="text-[11px] font-bold text-white/50 block group-hover:text-white/80">Elegir imagen de anuncio</span>
                           <span className="text-[9px] text-white/30 block mt-0.5">JPG o PNG, hasta 5MB</span>
                         </div>
-                        <input type="file" accept="image/*" onChange={handleCustomImageUpload} className="hidden" />
+                        <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
                       </label>
                     ) : (
                       <div className="relative group rounded-2xl overflow-hidden bg-black/40 border border-white/10 aspect-video flex items-center justify-center">
-                        <img src={customImage} alt="Custom upload" className="max-w-full max-h-full object-contain" />
+                        <img src={customImageData} alt="Custom upload" className="max-w-full max-h-full object-contain" />
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 cursor-pointer transition-all backdrop-blur-sm">
                           <label className="p-2.5 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-colors" title="Cambiar imagen">
                             <RotateCcw className="w-4 h-4 text-white" />
-                            <input type="file" accept="image/*" onChange={handleCustomImageUpload} className="hidden" />
+                            <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
                           </label>
                           <button
                             type="button"
-                            onClick={() => { setCustomImage(""); toast.success("Imagen removida"); }}
+                            onClick={() => { setCustomImageData(""); toast.success("Imagen removida"); }}
                             className="p-2.5 bg-red-500/20 hover:bg-red-500/40 rounded-full transition-colors"
                             title="Eliminar"
                           >
@@ -1986,10 +1986,10 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   <div className="space-y-2">
                     <label className={labelCls}>URL de la imagen externa</label>
                     <input
-                      value={customUrl}
+                      value={customLink}
                       onChange={(e) => {
-                        setCustomUrl(e.target.value);
-                        setCustomImage(e.target.value);
+                        setCustomLink(e.target.value);
+                        setCustomImageData(e.target.value);
                       }}
                       placeholder="https://ejemplo.com/tu-imagen.jpg"
                       className={inputCls}
@@ -2095,9 +2095,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                         <button
                           key={s}
                           type="button"
-                          onClick={() => setSuffix(s)}
+                          onClick={() => setPaymentSuffix(s)}
                           className={`text-[9px] px-2 py-0.5 rounded border transition-colors ${
-                            suffix === s
+                            paymentSuffix === s
                               ? "bg-white/10 text-white border-white/20"
                               : "bg-white/[0.02] text-white/40 border-white/5 hover:border-white/15"
                           }`}
@@ -2108,8 +2108,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                     </div>
                   </div>
                   <input
-                    value={suffix}
-                    onChange={(e) => setSuffix(e.target.value)}
+                    value={paymentSuffix}
+                    onChange={(e) => setPaymentSuffix(e.target.value)}
                     placeholder="Ej: por persona, en hab doble..."
                     className={inputCls}
                   />
