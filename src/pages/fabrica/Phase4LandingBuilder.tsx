@@ -1727,9 +1727,57 @@ const PublishOnLovableCard = ({
     </div>
   );
 };
-const FabricaCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 backdrop-blur-xl">
-    <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">{title}</h3>
-    {children}
-  </div>
-);
+const FabricaCard = ({ title, children }: { title: string; children: React.ReactNode }) => {
+  const { state } = useFabricaContext();
+  const primaryColor = state.primaryColor || "#F59E0B";
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div
+      className="bg-white/[0.03] border rounded-2xl backdrop-blur-xl transition-all duration-300 overflow-hidden"
+      style={{
+        borderColor: isOpen ? `${primaryColor}66` : "rgba(255, 255, 255, 0.06)",
+        boxShadow: isOpen ? `0 10px 30px ${primaryColor}15` : "none",
+      }}
+    >
+      {/* Header clicável para abrir/fechar */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-5 text-left focus:outline-none select-none group"
+      >
+        <h3
+          className="text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2"
+          style={{ color: isOpen ? primaryColor : "rgba(255, 255, 255, 0.6)" }}
+        >
+          {isOpen && (
+            <span
+              className="w-2.5 h-2.5 rounded-full animate-pulse flex-shrink-0"
+              style={{ backgroundColor: primaryColor }}
+            />
+          )}
+          {title}
+        </h3>
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300 text-sm font-black"
+          style={{
+            borderColor: isOpen ? `${primaryColor}66` : "rgba(255, 255, 255, 0.15)",
+            backgroundColor: isOpen ? `${primaryColor}15` : "transparent",
+            color: isOpen ? primaryColor : "rgba(255, 255, 255, 0.6)",
+          }}
+        >
+          {isOpen ? "–" : "+"}
+        </div>
+      </button>
+
+      {/* Conteúdo animado/renderizado se aberto */}
+      <div
+        className={`transition-all duration-300 ease-in-out ${
+          isOpen ? "max-h-[4000px] opacity-100 p-6 pt-0 border-t border-white/[0.04]" : "max-h-0 opacity-0 pointer-events-none"
+        }`}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
+
