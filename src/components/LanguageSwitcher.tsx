@@ -26,6 +26,8 @@ export const LanguageSwitcher = ({ variant = "desktop" }: LanguageSwitcherProps)
         window.location.href = '/es/planos' + searchParams;
       } else if (currentPath.includes('/calendar') || currentPath.includes('/es/calendar')) {
         window.location.href = '/es/calendar' + searchParams;
+      } else if (currentPath.includes('/fabrica') || currentPath.includes('/es/fabrica')) {
+        window.location.href = '/es/fabrica' + searchParams;
       } else {
         window.location.href = '/es' + searchParams;
       }
@@ -35,6 +37,8 @@ export const LanguageSwitcher = ({ variant = "desktop" }: LanguageSwitcherProps)
         window.location.href = '/planos' + searchParams;
       } else if (currentPath.includes('/calendar') || currentPath.includes('/es/calendar')) {
         window.location.href = '/calendar' + searchParams;
+      } else if (currentPath.includes('/fabrica') || currentPath.includes('/es/fabrica')) {
+        window.location.href = '/fabrica' + searchParams;
       } else {
         window.location.href = '/' + searchParams;
       }

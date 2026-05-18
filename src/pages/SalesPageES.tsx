@@ -52,7 +52,7 @@ const PAINS = [
 ];
 
 const HOW_IT_WORKS = [
-  { num: "1", title: "ELIGE", text: "250+ videos 4K por destino. Maragogi, Caribe, Europa — atualizados toda semana." },
+  { num: "1", title: "ELIGE", text: "250+ videos 4K por destino. Caribe, Europa, playas exóticas — actualizados cada semana." },
   { num: "2", title: "PERSONALIZA", text: "Abre en Canva, cambia el logo, ajusta el color de la marca. En 2 minutos está listo." },
   { num: "3", title: "PUBLICA", text: "Calendario listo + scripts de WhatsApp para convertir el DM en paquete vendido." },
 ];
@@ -60,21 +60,21 @@ const HOW_IT_WORKS = [
 // Comparativo justo: pack único vs designer freelancer vs Canva Viagem
 const COMPARISON = [
   { feature: "Inversión",  hotmart: "$ 118 USD una vez", design: "$ 300 USD / mes", us: "Desde $ 118 USD / año" },
-  { feature: "Contenido",      hotmart: "150 reels fijos", design: "4–8 entregas/mes", us: "250+ videos 4K + Sites de Vendas" },
-  { feature: "Actualizaciones",  hotmart: "❌ Ninguna", design: "Depende de él", us: "✅ Acceso vitalicio a la evolución" },
+  { feature: "Contenido",      hotmart: "150 reels fijos", design: "4–8 entregas/mes", us: "250+ videos 4K + Sitios de Ventas" },
+  { feature: "Actualizaciones",  hotmart: "❌ Ninguna", design: "Depende de él", us: "✅ Acceso de por vida a la evolución" },
   { feature: "IAs y Scripts", hotmart: "❌ No tiene", design: "❌ No tiene", us: "✅ 11 IAs + Fábrica de Anuncios" },
   { feature: "Soporte",       hotmart: "Solo del productor", design: "1 freelancer", us: "WhatsApp VIP directo con Lucas" },
 ];
 
 const FAQS = [
-  { q: "Quanto tempo por dia eu preciso?", a: "Em média 5 a 10 minutos. Você escolhe o vídeo do destino, abre no Canva, troca seu logo e posta. Quem usa o calendário pronto faz um lote semanal de 30 minutos e fica liberado a semana inteira." },
-  { q: "Funciona se eu não souber Canva?", a: "Sim. Tudo é editável em arrastar e soltar — não precisa saber design. Os templates já vêm posicionados, com fonte certa, cores certas. Você só substitui o logo e o texto." },
-  { q: "Posso usar comercialmente?", a: "Sim. Sua assinatura libera uso ilimitado para a sua agência: posts, anúncios, story, WhatsApp, site. O que você não pode é revender os arquivos brutos." },
-  { q: "E se eu cancelar, perco os vídeos baixados?", a: "Não. Tudo o que você baixou e usou nas suas redes continua seu para sempre. Você só perde acesso ao acervo novo e às atualizações." },
-  { q: "Tem suporte em português via WhatsApp?", a: "Sim, no plano anual. Atendimento humano em horário comercial — não chatbot. Tempo médio de resposta: 2 horas." },
-  { q: "Os vídeos são exclusivos?", a: "Não exclusivos no sentido literal — mas com 250+ vídeos por destino e a customização do Canva (seu logo, sua cor, sua legenda), a chance de aparecer igual ao concorrente é mínima." },
-  { q: "Qual a diferença do pack único da Hotmart?", a: "O pack é uma fatia parada no tempo (150 reels e fim). Aqui você tem 250+ vídeos, +400 artes, 11 IAs, scripts de WhatsApp, calendário e novas entregas toda semana — pelo mesmo preço cobrado uma vez no pack." },
-  { q: "Funciona pra agência pequena (1 pessoa)?", a: "Foi feito justamente pra você. Quem trabalha sozinho é quem mais ganha tempo: 5 minutos por dia substituem um designer e um social media." },
+  { q: "¿Cuánto tiempo al día necesito?", a: "En promedio de 5 a 10 minutos. Eliges el video del destino, lo abres en Canva, cambias tu logo y lo publicas. Quien usa el calendario listo hace un lote semanal de 30 minutos y queda libre toda la semana." },
+  { q: "¿Funciona si no sé usar Canva?", a: "Sí. Todo es editable con arrastrar y soltar, no necesitas saber de diseño. Las plantillas ya vienen posicionadas, con la tipografía correcta, colores correctos. Solo sustituyes el logo y el texto." },
+  { q: "¿Puedo usarlo comercialmente?", a: "Sí. Tu suscripción libera el uso ilimitado para tu agencia: posts, anuncios, stories, WhatsApp, sitio web. Lo que no puedes hacer es revender los archivos base." },
+  { q: "¿Y si cancelo, pierdo los videos descargados?", a: "No. Todo lo que hayas descargado y usado en tus redes sigue siendo tuyo para siempre. Solo pierdes el acceso al nuevo contenido y a las actualizaciones." },
+  { q: "¿Hay soporte en español vía WhatsApp?", a: "Sí, en el plan anual. Atención humana en horario comercial (no es un chatbot). Tiempo promedio de respuesta: 2 horas." },
+  { q: "¿Los videos son exclusivos?", a: "No exclusivos en el sentido literal, pero con más de 250 videos por destino y la personalización de Canva (tu logo, tu color, tu subtítulo), la probabilidad de aparecer igual a la competencia es mínima." },
+  { q: "¿Cuál es la diferencia con el pack único de Hotmart?", a: "El pack es una porción estática en el tiempo (150 reels y ya). Aquí tienes más de 250 videos, más de 400 diseños, 11 IAs, guiones de WhatsApp, calendario y nuevas entregas cada semana, por el mismo precio que se cobra una sola vez en un pack." },
+  { q: "¿Funciona para una agencia pequeña (de 1 persona)?", a: "Fue hecho justamente para ti. Quien trabaja solo es quien más tiempo ahorra: 5 minutos al día reemplazan a un diseñador y a un social media." },
 ];
 
 // ────────────────────────────────────────────────────────────
@@ -800,23 +800,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
           <Reveal>
             <p style={{ textAlign: "center", fontSize: 11, color: T.accent, letterSpacing: 2, fontWeight: 800, marginBottom: 12 }}>
-              A PERGUNTA QUE TODO MUNDO FAZ
+              LA PREGUNTA QUE TODO EL MUNDO HACE
             </p>
             <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 900, textAlign: "center", marginBottom: 36, lineHeight: 1.2 }}>
-              "Por que tão barato? <span style={{ color: T.accent }}>Você não tá escondendo nada?"</span>
+              "¿Por qué tan barato? <span style={{ color: T.accent }}>¿No estás ocultando nada?"</span>
             </h2>
           </Reveal>
           <Reveal delay={0.1}>
             <div style={{ background: T.card, border: T.border, borderRadius: 20, padding: "32px 28px",
               display: "flex", flexDirection: "column", gap: 18, fontSize: 15, color: T.text2, lineHeight: 1.7 }}>
               <p style={{ margin: 0 }}>
-                <strong style={{ color: T.text }}>Resposta honesta:</strong> cobramos R$ 16/mês porque atendemos <strong style={{ color: T.text }}>187 agências</strong>, não 3 contas grandes. O custo de produzir um vídeo se divide entre todo mundo.
+                <strong style={{ color: T.text }}>Respuesta honesta:</strong> cobramos $ 9.09 USD/mes porque atendemos a cientos de agencias, no a 3 grandes cuentas. El costo de producir un video se divide entre todos.
               </p>
               <p style={{ margin: 0 }}>
-                <strong style={{ color: T.text }}>Sem designer no meio</strong> = sem repasse de R$ 1.500/mês para você. A IA escreve as legendas; o time só revisa.
+                <strong style={{ color: T.text }}>Sin intermediarios de diseño</strong> = sin transferirte un costo de $ 300 USD/mes a ti. La IA redacta los subtítulos; el equipo solo los revisa.
               </p>
               <p style={{ margin: 0 }}>
-                <strong style={{ color: T.text }}>Quanto mais agências entram</strong>, mais vídeos novos conseguimos produzir por semana. É por isso que o preço continua o mesmo desde 2023.
+                <strong style={{ color: T.text }}>Cuantas más agencias se unen</strong>, más videos nuevos podemos producir por semana. Es por eso que el precio se mantiene accesible desde 2023.
               </p>
               <div style={{ display: "flex", gap: 14, alignItems: "center", marginTop: 8, paddingTop: 18, borderTop: T.border }}>
                 <div style={{ width: 56, height: 56, borderRadius: "50%", border: `2px solid ${T.accent}`,
@@ -854,7 +854,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     delay: 0,
                   }}
                 >
-                  Escolha o seu plano
+                  Elige tu plan
                 </VerticalCutReveal>
               </h2>
 
@@ -881,7 +881,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     transition: "all 0.2s"
                   }}
                 >
-                  PAGAR ANUAL
+                  PAGO ANUAL
                 </button>
                 <button 
                   onClick={() => setBillingPeriod("monthly")}
@@ -897,17 +897,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     transition: "all 0.2s"
                   }}
                 >
-                  PAGAR MENSAL
+                  PAGO MENSUAL
                 </button>
               </div>
 
 
               <div style={{ maxWidth: 400, margin: "0 auto 20px", background: "rgba(255,255,255,0.02)", border: `1px solid rgba(0, 229, 255, 0.1)`, padding: "12px 16px", borderRadius: 12 }}>
                 <p style={{ color: T.accent, fontSize: 11, fontWeight: 900, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                  ⚠️ Preço 1° lote garantido hoje
+                  ⚠️ Precio del 1er lote garantizado hoy
                 </p>
                 <p style={{ color: T.text3, fontSize: 10, lineHeight: 1.4, fontStyle: "italic", margin: 0 }}>
-                  Quanto mais agências entram, mais mídias produzimos. O valor promocional atual só pode ser garantido para novos acessos agora.
+                  Cuantas más agencias se unen, más contenidos producimos. El valor promocional actual solo se puede garantizar para nuevos accesos en este momento.
                 </p>
               </div>
             </Reveal>
@@ -947,36 +947,36 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                   
                   {billingPeriod === "monthly" ? (
                     <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
-                      <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1 }}>97</span>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>,00</span>
-                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>$</span>
+                      <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1 }}>29</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>,90</span>
+                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>USD/mes</span>
                     </div>
                   ) : (
                     <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
-                      <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1 }}>28</span>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>,91</span>
-                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>$</span>
+                      <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1 }}>17</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>,33</span>
+                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>USD/mes</span>
                     </div>
                   )}
 
                   <p style={{ fontSize: 12, color: T.text2, marginBottom: 28 }}>
-                    {billingPeriod === "monthly" ? "Assinatura mensal sem fidelidade" : "Equivalente a R$ 347,00 cobrados anualmente (Economia massiva)"}
+                    {billingPeriod === "monthly" ? "Suscripción mensual sin permanencia" : "Equivalente a $ 208.00 USD facturados anualmente (Ahorro masivo)"}
                   </p>
 
                   <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 12 }}>
                     <li style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 13, fontWeight: 800, color: T.accent }}>
                       <span style={{ marginTop: 2, flexShrink: 0 }}><Check size={14} color={T.accent} /></span>
-                      <span>TUDO DO PLANO START +</span>
+                      <span>TODO LO DEL PLAN START +</span>
                     </li>
                     {[
-                      "Gerador de Anúncios e Artes de Viagem ILIMITADO (fotos reais em 5 segundos)",
-                      "Criador Automático de Sites de Venda para cada roteiro de viagem",
-                      "Gerador de Legendas magnéticas prontas para copiar e colar",
-                      "Plano de Ação e Checklist diário de postagens diárias",
-                      "Diagnóstico e Plano de ação individualizado para escala",
-                      "Soporte VIP no WhatsApp diretamente com Lucas Ferrari"
+                      "Generador ILIMITADO de Anuncios y Diseños de Viaje (fotos reales en 5 segundos)",
+                      "Creador Automático de Sitios de Venta para cada itinerario de viaje",
+                      "Generador de subtítulos magnéticos listos para copiar y pegar",
+                      "Plan de Acción y Checklist diario de publicaciones",
+                      "Diagnóstico y Plan de acción individualizado para escalar",
+                      "Soporte VIP en WhatsApp directo con Lucas Ferrari"
                     ].map(f => (
                       <li key={f} style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 13, color: T.text }}>
                         <span style={{ marginTop: 2, flexShrink: 0 }}><Check size={14} color={T.accent} /></span>
@@ -994,10 +994,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                       fontWeight: 900, fontSize: 15, cursor: "pointer", border: "none",
                       boxShadow: `0 12px 40px ${T.accent}55`, textTransform: "uppercase", letterSpacing: 0.5 }}
                   >
-                    Quero o Elite →
+                    Quiero el Elite →
                   </button>
                   <p style={{ textAlign: "center", fontSize: 12, color: T.text3, marginTop: 16, marginBottom: 0 }}>
-                    ⚡ Acesso imediato · Soporte garantido
+                    ⚡ Acceso inmediato · Soporte garantido
                   </p>
                 </div>
               </div>
@@ -1026,32 +1026,32 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                   
                   {billingPeriod === "monthly" ? (
                     <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
-                      <span style={{ fontSize: 52, fontWeight: 900, lineHeight: 1 }}>29</span>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>,90</span>
-                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>$</span>
+                      <span style={{ fontSize: 52, fontWeight: 900, lineHeight: 1 }}>17</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>,00</span>
+                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>USD/mes</span>
                     </div>
                   ) : (
                     <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>R$</span>
-                      <span style={{ fontSize: 52, fontWeight: 900, lineHeight: 1 }}>16</span>
-                      <span style={{ fontSize: 22, fontWeight: 800 }}>,41</span>
-                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>/mês</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>$</span>
+                      <span style={{ fontSize: 52, fontWeight: 900, lineHeight: 1 }}>9</span>
+                      <span style={{ fontSize: 22, fontWeight: 800 }}>,83</span>
+                      <span style={{ fontSize: 14, color: T.text3, marginLeft: 4 }}>USD/mes</span>
                     </div>
                   )}
 
                   <p style={{ fontSize: 12, color: T.text3, marginBottom: 28 }}>
-                    {billingPeriod === "monthly" ? "Assinatura mensal recorrente" : "Equivalente a R$ 197,00 cobrados anualmente"}
+                    {billingPeriod === "monthly" ? "Suscripción mensual recurrente" : "Equivalente a $ 118.00 USD facturados anualmente"}
                   </p>
 
                   <ul style={{ listStyle: "none", padding: 0, margin: "0 0 32px", display: "flex", flexDirection: "column", gap: 12 }}>
                     {[
-                      "Acesso ilimitado a 400+ mídias de viagens",
-                      "Reels, Stories, Artes feed de alta conversão",
-                      "Modelos prontos e 100% editáveis no Canva",
-                      "Texto e Copys de Ofertas de pacotes magnéticos",
-                      "Influencers de I.A prontos para divulgar",
-                      "Robôs de Inteligência Artificial tira-dúvidas",
+                      "Acceso ilimitado a más de 400 contenidos de viajes",
+                      "Reels, Stories y Diseños para feed de alta conversión",
+                      "Plantillas listas y 100% editables en Canva",
+                      "Textos y copys de ofertas de paquetes magnéticos",
+                      "Influencers de I.A. listos para promocionar",
+                      "Asistentes de Inteligencia Artificial para resolver dudas",
                       "Soporte completo por WhatsApp"
                     ].map(f => (
                       <li key={f} style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 13, color: T.text2 }}>
@@ -1060,9 +1060,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                       </li>
                     ))}
                     {[
-                      "Fábrica: Gerador de Anúncios e Ofertas de viagens",
-                      "Fábrica: Gerador de Sites de viagens de conversão",
-                      "Diagnóstico e Plano de ação individual para escala"
+                      "Fábrica: Generador de Anuncios y Ofertas de viajes",
+                      "Fábrica: Generador de Sitios web de viajes de conversión",
+                      "Diagnóstico y Plan de acción individual para escalar"
                     ].map(f => (
                       <li key={f} style={{ display: "flex", gap: 10, alignItems: "start", fontSize: 13, color: "rgba(255,255,255,0.25)", textDecoration: "line-through" }}>
                         <span style={{ marginTop: 2, flexShrink: 0 }}><X size={14} color="rgba(255,255,255,0.2)" /></span>
@@ -1080,14 +1080,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     background: "transparent", color: T.accent, fontWeight: 800, fontSize: 14,
                     cursor: "pointer", letterSpacing: 0.5, transition: "background 0.2s" }}
                 >
-                  Começar com o Start
+                  Comenzar con el Start
                 </button>
               </div>
             </TimelineContent>
 
           </div>
 
-          {/* ANCORAGEM DE PREÇO */}
+          {/* ANCLAJE DE PRECIO */}
           <Reveal delay={0.25}>
             <div style={{ 
               maxWidth: 600, 
@@ -1099,24 +1099,24 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               textAlign: "center"
             }}>
               <h4 style={{ fontSize: 16, fontWeight: 900, color: T.accent, marginBottom: 18, textTransform: "uppercase", letterSpacing: 1 }}>
-                O que você deixa de ganhar sem isso:
+                Lo que dejas de ganar sin esto:
               </h4>
               <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px", display: "flex", flexDirection: "column", gap: 12, textAlign: "left" }}>
                 <li style={{ display: "flex", gap: 10, fontSize: 14, color: T.text2 }}>
                   <span style={{ color: "#FF3366" }}>✕</span>
-                  <span><strong>Sem o Canva Viagem:</strong> feed parado = 0 DMs orgânicos por mês</span>
+                  <span><strong>Sin Canva Viagem:</strong> feed inactivo = 0 DMs orgánicos al mes</span>
                 </li>
                 <li style={{ display: "flex", gap: 10, fontSize: 14, color: T.text }}>
                   <span style={{ color: T.accent }}>✓</span>
-                  <span><strong>1 pacote vendido pelo feed:</strong> R$ 3.500 a R$ 8.000 de lucro</span>
+                  <span><strong>1 paquete vendido por el feed:</strong> $ 700 a $ 1,500 USD de ganancia</span>
                 </li>
                 <li style={{ display: "flex", gap: 10, fontSize: 14, color: T.accent, fontWeight: 800 }}>
                   <span style={{ color: T.accent }}>⭐</span>
-                  <span><strong>Retorno do plano Elite em 1 venda:</strong> 2.300%</span>
+                  <span><strong>Retorno del plan Elite en 1 venta:</strong> 2,300%</span>
                 </li>
               </ul>
               <p style={{ fontSize: 12, color: T.text3, margin: 0 }}>
-                1 pacote de viagem fechado paga 23 anos de assinatura.
+                1 paquete de viaje cerrado paga 23 años de suscripción.
               </p>
             </div>
           </Reveal>
@@ -1296,7 +1296,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            href="https://wa.me/558586411294?text=Quero%20adquirir%20o%20Canva%20Viagem"
+            href="https://wa.me/558586411294?text=Quiero%20adquirir%20el%20Canva%20Viagem"
             target="_blank"
             rel="noreferrer"
             onClick={() => trackContact()}
