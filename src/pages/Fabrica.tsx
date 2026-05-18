@@ -70,7 +70,7 @@ const FabricaInner = () => {
         </div>
       )}
 
-      <div className="max-w-3xl mx-auto px-4 pt-6 pb-32">
+      <div className="max-w-3xl lg:max-w-[1550px] mx-auto px-4 pt-6 pb-32 transition-all duration-300">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => navigate("/")} className="flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors">

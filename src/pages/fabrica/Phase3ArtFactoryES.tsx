@@ -1562,9 +1562,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const inputCls = "w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-white/40";
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl lg:max-w-[1550px] mx-auto transition-all duration-300">
       {/* Banner de provedor de IA */}
-      <div className={`rounded-2xl p-4 border ${
+      <div className={`rounded-2xl p-4 border mb-6 ${
         lastProvider === "user_gemini"
           ? "bg-emerald-500/15 border-emerald-500/30"
           : lastProvider === "lovable_ai"
@@ -1577,8 +1577,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-bold text-white">
-              {lastProvider === "user_gemini" && "Usando sua chave Gemini (gratis)"}
-              {lastProvider === "lovable_ai" && "Usando créditos da plataforma"}
+              {lastProvider === "user_gemini" && "Usando tu clave Gemini (gratis)"}
+              {lastProvider === "lovable_ai" && "Usando créditos de la plataforma"}
               {!lastProvider && "Proveedor de IA configurado"}
             </div>
             <p className="text-[11px] text-white/60 leading-snug mt-0.5">
@@ -1586,1141 +1586,1098 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 <>Cuota gratuita de Google: ~1.500 imágenes/día. Revisa tu uso en <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline text-emerald-300">aistudio.google.com</a>.</>
               )}
               {lastProvider === "lovable_ai" && (
-                <>Cada imagem consome créditos. Se acabar, sua chave Gemini gratuita será usada automaticamente.</>
+                <>Cada imagen consume créditos. Si se acaban, tu clave Gemini gratuita se usará automáticamente.</>
               )}
               {!lastProvider && (
-                <>Intentaremos primero con tu clave Gemini gratuita. Si falla, usará créditos de la plataforma. Imágenes generadas en esta sesión: <strong className="text-white">{generationCount}</strong></>
+                <>Intentaremos primero usar tu clave Gemini gratuita. Si falla, se usarán los créditos de la plataforma. Imágenes generadas en esta sesión: <strong className="text-white">{generationCount}</strong></>
               )}
             </p>
           </div>
           <div className="text-right shrink-0">
-            <div className="text-[10px] text-white/40 uppercase tracking-wider">Geradas</div>
+            <div className="text-[10px] text-white/40 uppercase tracking-wider">Generadas</div>
             <div className="text-lg font-bold text-white">{generationCount}</div>
           </div>
         </div>
       </div>
 
-      {/* NUEVO TOPO: Perfil y Logo */}
-      <div className={`${sectionCls} space-y-5 mb-8`}>
-        {user && savedProjects && savedProjects.length > 0 && (
-          <div className="p-5 bg-white/[0.04] border border-white/10 rounded-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full" style={{ background: primaryColor }}></div>
-            <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">📂 Cargar Cliente / Proyecto Guardado</label>
-            <select
-              onChange={(e) => {
-                const p = savedProjects.find(x => x.id === e.target.value);
-                if (p && p.state_snapshot) {
-                   update({ ...p.state_snapshot, diagnosticoCompleto: false });
-                   toast.success(`Cliente "${p.agency_name}" carregado! Todas as configs (logo, cor, etc) foram restauradas.`);
-                }
-                e.target.value = "";
-              }}
-              className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors"
-            >
-              <option value="" className="bg-zinc-900">Selecione um cliente salvo...</option>
-              {savedProjects.map((p) => (
-                <option key={p.id} value={p.id} className="bg-zinc-900">{p.agency_name || "Sem Nome"} (Salvo em {new Date(p.updated_at).toLocaleDateString()})</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
-          {/* Coluna Logo: mais estreita e profissional */}
-          <div className="sm:col-span-4">
-            <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Identidad Visual</label>
-            {!state.logoBase64 ? (
-              <label className="flex flex-col items-center justify-center gap-2.5 p-6 bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-white/20 hover:bg-white/[0.04] transition-all group h-[110px]">
-                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Upload className="w-5 h-5 text-white/40 group-hover:text-white/70" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* COLUNA ESQUERDA: Sidebar de Configurações */}
+        <div className="lg:col-span-5 space-y-6">
+          <MinimizableCard title="👤 Perfil y Canales de Atención">
+            <div className="space-y-5">
+              {user && savedProjects && savedProjects.length > 0 && (
+                <div className="p-4 bg-white/[0.04] border border-white/10 rounded-2xl relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full" style={{ background: primaryColor }}></div>
+                  <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">📂 Cargar Cliente / Proyecto Guardado</label>
+                  <select
+                    onChange={(e) => {
+                      const p = savedProjects.find(x => x.id === e.target.value);
+                      if (p && p.state_snapshot) {
+                         update({ ...p.state_snapshot, diagnosticoCompleto: false });
+                         toast.success(`¡Cliente "${p.agency_name}" cargado! Todas las configuraciones (logotipo, color, etc.) han sido restauradas.`);
+                      }
+                      e.target.value = "";
+                    }}
+                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-white/40 transition-colors"
+                  >
+                    <option value="" className="bg-zinc-900">Seleccionar un cliente...</option>
+                    {savedProjects.map((p) => (
+                      <option key={p.id} value={p.id} className="bg-zinc-900">{p.agency_name || "Sin Nombre"} ({new Date(p.updated_at).toLocaleDateString()})</option>
+                    ))}
+                  </select>
                 </div>
-                <span className="text-[10px] font-bold text-white/40 uppercase tracking-tighter group-hover:text-white/60">Subir Logo</span>
-                <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-              </label>
-            ) : (
-              <div className="relative group rounded-2xl overflow-hidden bg-white/[0.03] p-3 border border-white/10 h-[110px] flex items-center justify-center">
-                <img src={state.logoBase64} alt="Logo" className="max-w-full max-h-full object-contain" />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 cursor-pointer transition-all backdrop-blur-sm">
-                  <label className="p-2 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-colors" title="Trocar Logo">
-                    <RotateCcw className="w-4 h-4 text-white" />
-                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                  </label>
+              )}
+
+              <div className="grid grid-cols-1 gap-4">
+                {/* Logo */}
+                <div>
+                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Identidad Visual</label>
+                  {!state.logoBase64 ? (
+                    <label className="flex flex-col items-center justify-center gap-2.5 p-4 bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-white/20 hover:bg-white/[0.04] transition-all group h-[100px]">
+                      <Upload className="w-5 h-5 text-white/40 group-hover:text-white/70" />
+                      <span className="text-[10px] font-bold text-white/40 uppercase tracking-tighter group-hover:text-white/60">Subir Logo</span>
+                      <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                    </label>
+                  ) : (
+                    <div className="relative group rounded-2xl overflow-hidden bg-white/[0.03] p-3 border border-white/10 h-[100px] flex items-center justify-center">
+                      <img src={state.logoBase64} alt="Logo" className="max-w-full max-h-full object-contain" />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 cursor-pointer transition-all backdrop-blur-sm">
+                        <label className="p-2 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-colors" title="Cambiar Logo">
+                          <RotateCcw className="w-4 h-4 text-white" />
+                          <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => { update({ logoBase64: "" }); toast.success("Logotipo eliminado"); }}
+                          className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full transition-colors"
+                          title="Eliminar"
+                        >
+                          <X className="w-4 h-4 text-white" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Contatos */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-1 block">Canales de Atención</label>
+                  
+                  {/* Contato 1 */}
+                  <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
+                    <div className="w-[45%] relative">
+                      <select
+                        value={state.footerContact1Icon || "whatsapp_green"}
+                        onChange={(e) => update({ footerContact1Icon: e.target.value as any })}
+                        className="w-full bg-white/5 border-none rounded-lg pl-2 pr-6 py-1.5 text-[10px] font-medium text-white outline-none appearance-none cursor-pointer"
+                      >
+                        <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Oficial</option>
+                        <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
+                        <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
+                        <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
+                        <option value="website" className="bg-zinc-900">Website / Enlace</option>
+                        <option value="none" className="bg-zinc-900">Ocultar</option>
+                      </select>
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
+                        <ChevronDown className="w-3 h-3 text-white" />
+                      </div>
+                    </div>
+                    <div className="w-[55%]">
+                      <input
+                        value={state.footerContact1Value ?? formatAdPhone(state.whatsapp || "")}
+                        onChange={(e) => {
+                          const isPhone = state.footerContact1Icon?.startsWith("whatsapp");
+                          const val = isPhone ? formatAdPhone(e.target.value) : e.target.value;
+                          update({ footerContact1Value: val });
+                        }}
+                        placeholder={state.footerContact1Icon?.startsWith("whatsapp") ? "(00) 9 0000-0000" : "Enlace o Teléfono"}
+                        className="w-full bg-transparent border-none px-2 py-1.5 text-[10px] text-white outline-none placeholder:text-white/10"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Contato 2 */}
+                  <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
+                    <div className="w-[45%] relative">
+                      <select
+                        value={state.footerContact2Icon || "instagram_gradient"}
+                        onChange={(e) => update({ footerContact2Icon: e.target.value as any })}
+                        className="w-full bg-white/5 border-none rounded-lg pl-2 pr-6 py-1.5 text-[10px] font-medium text-white outline-none appearance-none cursor-pointer"
+                      >
+                        <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Oficial</option>
+                        <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
+                        <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
+                        <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
+                        <option value="website" className="bg-zinc-900">Website / Enlace</option>
+                        <option value="none" className="bg-zinc-900">Ocultar</option>
+                      </select>
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
+                        <ChevronDown className="w-3 h-3 text-white" />
+                      </div>
+                    </div>
+                    <div className="w-[55%]">
+                      <input
+                        value={state.footerContact2Value ?? (state.instagram || "")}
+                        onChange={(e) => {
+                          const isPhone = state.footerContact2Icon?.startsWith("whatsapp");
+                          const isInsta = state.footerContact2Icon?.startsWith("instagram");
+                          let val = e.target.value;
+                          if (isPhone) val = formatAdPhone(val);
+                          else if (isInsta) val = val.replace(/^@/, "");
+                          update({ footerContact2Value: val });
+                        }}
+                        placeholder={state.footerContact2Icon?.startsWith("instagram") ? "@usuario" : "Perfil o Enlace"}
+                        className="w-full bg-transparent border-none px-2 py-1.5 text-[10px] text-white outline-none placeholder:text-white/10"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </MinimizableCard>
+
+          <MinimizableCard title="🛠️ Modo de Creación y Categoría">
+            <div className="space-y-4">
+              {/* Modo de Geração */}
+              <div>
+                <label className={labelCls}>Modo de Creación</label>
+                <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full">
                   <button
                     type="button"
-                    onClick={() => { update({ logoBase64: "" }); toast.success("Logo eliminada"); }}
-                    className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full transition-colors"
-                    title="Eliminar"
+                    onClick={() => setGenMode("photo")}
+                    className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-bold transition-all disabled:opacity-30 ${genMode === "photo" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
                   >
-                    <X className="w-4 h-4 text-white" />
+                    <ImageIcon className="w-3.5 h-3.5 inline mr-1" /> Foto Real <span className="hidden sm:inline font-normal opacity-50">(gratis)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGenMode("custom")}
+                    className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-bold transition-all disabled:opacity-30 ${genMode === "custom" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+                  >
+                    <Upload className="w-3.5 h-3.5 inline mr-1" /> Tu Foto
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGenMode("ai")}
+                    className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-bold transition-all disabled:opacity-30 ${genMode === "ai" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400 inline mr-1" /> Imagen IA
                   </button>
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Coluna Contatos: mais larga e organizada */}
-          <div className="sm:col-span-8 space-y-3">
-            <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Canales de Atención</label>
-            
-            {/* Contato 1 */}
-            <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
-              <div className="w-[45%] relative">
-                <select
-                  value={state.footerContact1Icon || "whatsapp_green"}
-                  onChange={(e) => update({ footerContact1Icon: e.target.value as any })}
-                  className="w-full bg-white/5 border-none rounded-lg pl-3 pr-8 py-2 text-[11px] font-medium text-white outline-none appearance-none cursor-pointer"
-                >
-                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Oficial</option>
-                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
-                  <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
-                  <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
-                  <option value="website" className="bg-zinc-900">Sitio Web / Link</option>
-                  <option value="none" className="bg-zinc-900">Ocultar</option>
-                </select>
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
-                  <ChevronDown className="w-3.5 h-3.5 text-white" />
-                </div>
-              </div>
-              <div className="w-[55%]">
-                <input
-                  value={state.footerContact1Value ?? formatAdPhone(state.whatsapp || "")}
-                  onChange={(e) => {
-                    const isPhone = state.footerContact1Icon?.startsWith("whatsapp");
-                    const val = isPhone ? formatAdPhone(e.target.value) : e.target.value;
-                    update({ footerContact1Value: val });
-                  }}
-                  placeholder={state.footerContact1Icon?.startsWith("whatsapp") ? "(00) 9 0000-0000" : "Link ou Telefone"}
-                  className="w-full bg-transparent border-none px-3 py-2 text-[11px] text-white outline-none placeholder:text-white/10"
-                />
-              </div>
-            </div>
-
-            {/* Contato 2 */}
-            <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
-              <div className="w-[45%] relative">
-                <select
-                  value={state.footerContact2Icon || "instagram_gradient"}
-                  onChange={(e) => update({ footerContact2Icon: e.target.value as any })}
-                  className="w-full bg-white/5 border-none rounded-lg pl-3 pr-8 py-2 text-[11px] font-medium text-white outline-none appearance-none cursor-pointer"
-                >
-                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Oficial</option>
-                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
-                  <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
-                  <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
-                  <option value="website" className="bg-zinc-900">Sitio Web / Link</option>
-                  <option value="none" className="bg-zinc-900">Ocultar</option>
-                </select>
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
-                  <ChevronDown className="w-3.5 h-3.5 text-white" />
-                </div>
-              </div>
-              <div className="w-[55%]">
-                <input
-                  value={state.footerContact2Value ?? (state.instagram || "")}
-                  onChange={(e) => {
-                    const isPhone = state.footerContact2Icon?.startsWith("whatsapp");
-                    const isInsta = state.footerContact2Icon?.startsWith("instagram");
-                    let val = e.target.value;
-                    if (isPhone) val = formatAdPhone(val);
-                    else if (isInsta) val = val.replace(/^@/, "");
-                    update({ footerContact2Value: val });
-                  }}
-                  placeholder={state.footerContact2Icon?.startsWith("instagram") ? "@usuario" : "Perfil ou Link"}
-                  className="w-full bg-transparent border-none px-3 py-2 text-[11px] text-white outline-none placeholder:text-white/10"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* 0 e 1 · Modo e Categoria */}
-      <div className={`${sectionCls} space-y-5`}>
-        {/* Modo de Geração - Segmented Control */}
-        <div>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">0 · Modo de Creación</h3>
-          <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full">
-            <button
-              onClick={() => setGenMode("photo")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "photo" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-            >
-              <ImageIcon className="w-3.5 h-3.5" /> Foto Real <span className="hidden sm:inline font-normal opacity-50">(gratis)</span>
-            </button>
-            <button
-              onClick={() => setGenMode("custom")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "custom" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-            >
-              <Upload className="w-3.5 h-3.5" /> Tu Imagen
-            </button>
-            <button
-              onClick={() => setGenMode("ai")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all ${genMode === "ai" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-            >
-              <Wand2 className="w-3.5 h-3.5" /> IA Pura
-            </button>
-          </div>
-          {genMode !== "ai" && (
-            <p className="text-[10px] text-white/40 mt-1.5 leading-snug">
-              🔒 A imagem é processada <strong>apenas em memória</strong> para gerar o anúncio.
-            </p>
-          )}
-
-          {/* Seletor de Versão (V0..V4) — para correções cirúrgicas em cada layout */}
-          <div className="mt-4">
-            <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">
-              0b · Versión del Diseño
-            </h3>
-            <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full gap-1">
-              <button
-                onClick={() => setForcedVariant(null)}
-                className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${forcedVariant === null ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-                title="Rotação automática (sorteia entre V0..V4)"
-              >
-                Auto
-              </button>
-              {[0, 1, 2, 3, 4].map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setForcedVariant(v)}
-                  className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${forcedVariant === v ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-                  title={`Forçar variação V${v}`}
-                >
-                  V{v}
-                </button>
-              ))}
-            </div>
-            <p className="text-[10px] text-white/40 mt-1.5 leading-snug">
-              {forcedVariant === null
-                ? "Rotación automática entre V0..V4 en cada clic."
-                : <>Gerando sempre a <strong className="text-white">V{forcedVariant}</strong>. Selecione "Auto" para retomar a rotação.</>}
-            </p>
-          </div>
-        </div>
-
-        {/* Categoria - Compacta */}
-        <div>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">1 · Tipo de Anuncio</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {CATEGORIAS.map((c) => {
-              const isExperiencia = c.id === "experiencia_destino";
-              const selected = categoria === c.id;
-              return (
-                <button
-                  key={c.id}
-                  disabled={isExperiencia}
-                  onClick={() => {
-                    if (!isExperiencia) setCategoria(c.id);
-                  }}
-                  className={`p-3 rounded-xl border-2 text-left transition-all flex flex-col justify-between min-h-[85px] ${
-                    isExperiencia
-                      ? "border-white/5 bg-black/10 opacity-35 cursor-not-allowed pointer-events-none"
-                      : selected
-                      ? "shadow-lg scale-[1.02]"
-                      : "border-white/5 bg-black/20 hover:bg-white/[0.04]"
-                  }`}
-                  style={selected && !isExperiencia ? { borderColor: c.accent, background: `${c.accent}33` } : undefined}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl leading-none">{c.emoji}</span>
-                    <span
-                      className="text-[9px] font-extrabold px-1.5 py-0.5 rounded border tracking-wider"
-                      style={{ background: `${c.accent}26`, borderColor: `${c.accent}66`, color: c.accent }}
-                    >
-                      {c.badge}
-                    </span>
-                    {isExperiencia && (
-                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded border tracking-wider bg-amber-500/20 border-amber-500/40 text-amber-400 animate-pulse">
-                        EM BREVE
-                      </span>
-                    )}
+              {/* Layout Version Selector */}
+              {genMode !== "custom" && (
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className={labelCls}>0b · Versión del Layout</label>
+                    <span className="text-[9px] text-white/30 font-bold uppercase tracking-wider bg-white/5 px-2 py-0.5 rounded border border-white/10">Engine v3</span>
                   </div>
-                  <div className="text-sm font-bold text-white leading-tight">{c.name}</div>
-                </button>
-              );
-            })}
-          </div>
-          <p className="text-[10px] text-white/40 mt-2">
-            Cada clic genera 1 imagen única. La siguiente generación cambiará el diseño, texto y formato automáticamente.
-          </p>
-        </div>
-
-        {/* Formato del Anuncio */}
-        <div>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">2 · Formato del Anuncio</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => setFormat("square")}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
-                format === "square" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
-              }`}
-              style={format === "square" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
-            >
-              <Square className="w-6 h-6 mb-2 text-white/80" />
-              <div className="text-sm font-bold text-white">Cuadrado 1:1</div>
-              <div className="text-[11px] text-white/55">Feed Instagram (1080×1080)</div>
-            </button>
-            <button
-              onClick={() => setFormat("story")}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
-                format === "story" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
-              }`}
-              style={format === "story" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
-            >
-              <Smartphone className="w-6 h-6 mb-2 text-white/80" />
-              <div className="text-sm font-bold text-white">Stories / Reels 9:16</div>
-              <div className="text-[11px] text-white/55">Vertical con zonas seguras (1080×1920)</div>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 1b · Galeria Pexels (modo foto) - F1 só tem busca Pexels */}
-      {genMode === "photo" && (
-        <div className={sectionCls}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">1 · Elige una foto real</h3>
-            <span className="text-[9px] font-bold uppercase tracking-wider text-white/30 bg-white/5 px-2 py-1 rounded-md border border-white/10">Pexels (Top)</span>
-          </div>
-
-          <>
-            {/* Sugestões de destinos populares + os destinos da agência */}
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {[...new Set([...(state.destinos || []), ...POPULAR_PHOTO_DESTINATIONS])].slice(0, 14).map((d) => (
-                <button
-                  key={d}
-                  onClick={() => { setDestination(d); searchPhotos(d); }}
-                  className={`px-2.5 py-1 rounded-full text-[11px] border transition-colors ${
-                    photoQuery === d ? "text-black" : "bg-white/[0.05] border-white/10 text-white/70 hover:border-white/30"
-                  }`}
-                  style={photoQuery === d ? { background: secondaryColor, borderColor: secondaryColor } : undefined}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex gap-2 mb-3">
-              <input
-                value={photoQuery}
-                onChange={(e) => setPhotoQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && searchPhotos()}
-                onFocus={(e) => e.target.select()}
-                placeholder={destination ? `Buscar "${destination}"...` : "Ex: Maragogi, Paris, Cancún..."}
-                className={inputCls}
-              />
-              <button
-                onClick={() => searchPhotos()}
-                disabled={searchingPhotos}
-                className="px-4 rounded-xl font-bold text-black flex items-center gap-1.5 text-sm disabled:opacity-40 hover:brightness-110"
-                style={{ background: secondaryColor }}
-              >
-                {searchingPhotos ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                Buscar
-              </button>
-            </div>
-            {photos.length > 0 ? (() => {
-              const visible = photos.slice(0, visiblePhotoCount);
-              const hasMore = visiblePhotoCount < photos.length;
-              return (
-                <>
                   <div className="grid grid-cols-3 gap-2">
-                    {visible.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => setSelectedPhotoUrl(p.url)}
-                        className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                          selectedPhotoUrl === p.url ? "scale-95" : "border-white/10 hover:border-white/30"
-                        }`}
-                        style={selectedPhotoUrl === p.url ? { borderColor: secondaryColor, borderWidth: 3 } : undefined}
-                      >
-                        <img src={p.thumb} alt={p.alt} className="w-full h-full object-cover" />
-                        {selectedPhotoUrl === p.url && (
-                          <div className="absolute inset-0 flex items-center justify-center" style={{ background: `${primaryColor}cc` }}>
-                            <Check className="w-8 h-8 text-white" />
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                  {hasMore && (
-                    <button
-                      onClick={() => setVisiblePhotoCount((n) => n + 3)}
-                      className="w-full mt-3 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm font-semibold hover:bg-white/[0.06] transition-all flex items-center justify-center gap-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Ver más fotos ({photos.length - visiblePhotoCount} restantes)
-                    </button>
-                  )}
-                </>
-              );
-            })() : (
-              <div className="py-8 text-center text-[11px] text-white/40">
-                {searchingPhotos ? "Buscando inspiraciones..." : "Ingresa un destino y haz clic en buscar."}
-              </div>
-            )}
-          </>
-        </div>
-      )}
-
-      {/* 1c · Sua imagem (modo custom) */}
-      {genMode === "custom" && (
-        <div className={sectionCls}>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">1 · Sua imagem de referência</h3>
-          <div className="flex gap-2 mb-4">
-            <button
-              onClick={() => setCustomSource("upload")}
-              className={`flex-1 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${
-                customSource === "upload" ? "text-black" : "bg-white/[0.04] text-white/60 hover:bg-white/[0.08]"
-              }`}
-              style={customSource === "upload" ? { background: secondaryColor } : undefined}
-            >
-              <Upload className="w-4 h-4" /> Upload
-            </button>
-            <button
-              onClick={() => setCustomSource("link")}
-              className={`flex-1 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${
-                customSource === "link" ? "text-black" : "bg-white/[0.04] text-white/60 hover:bg-white/[0.08]"
-              }`}
-              style={customSource === "link" ? { background: secondaryColor } : undefined}
-            >
-              <Link2 className="w-4 h-4" /> Link
-            </button>
-          </div>
-
-          {customSource === "upload" && (
-            <div>
-              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full border-2 border-dashed border-white/20 rounded-xl p-8 text-center hover:border-white/40 transition-colors"
-              >
-                {customImageData ? (
-                  <>
-                    <img src={customImageData} alt="preview" className="w-32 h-32 mx-auto rounded-lg object-cover mb-2" />
-                    <p className="text-xs text-emerald-400 font-semibold">✓ Imagen cargada — haz clic para cambiar</p>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-8 h-8 mx-auto text-white/40 mb-2" />
-                    <p className="text-sm text-white font-semibold">Clique para enviar</p>
-                    <p className="text-[10px] text-white/40 mt-1">JPG, PNG ou WebP — máx 8MB</p>
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-
-          {customSource === "link" && (
-            <div>
-              <input
-                value={customLink}
-                onChange={(e) => setCustomLink(e.target.value)}
-                onFocus={(e) => setTimeout(() => e.target.select(), 50)}
-                placeholder="https://exemplo.com/foto.jpg"
-                className={inputCls}
-              />
-              <p className="text-[10px] text-white/40 mt-2">A IA vai adaptar a imagem ao formato escolhido.</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 3 · Dados */}
-      <div className={`${sectionCls} space-y-4`}>
-        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">3 · Datos del anuncio</h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>Destino *</label>
-            <div className="relative">
-              <input
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                onFocus={(e) => { setTimeout(() => e.target.select(), 50); setDestMenuOpen(true); }}
-                onClick={() => setDestMenuOpen(true)}
-                placeholder="Clique para escolher ou digite..."
-                className={`${inputCls} pr-10 cursor-pointer`}
-              />
-              <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${destMenuOpen ? "rotate-180" : ""}`} />
-              {destMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setDestMenuOpen(false)} />
-                  <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
-                    {DESTINATION_SUGGESTIONS.map((d) => {
-                      const active = destination === d;
+                    {[
+                      { id: "canvas-hybrid-v3-nowordmark", label: "Texto Integrado (Nueva)", desc: "Layout integrado premium sin franja gris", labelTag: "Mejor" },
+                      { id: "canvas-v3-clean", label: "Estilo Clásico", desc: "Texto con fondo semi-transparente clásico", labelTag: "Original" },
+                      { id: "canvas-v3-minimalist", label: "Arte Limpio", desc: "Diseño minimalista enfocado en la foto", labelTag: "Sutil" },
+                    ].map((opt) => {
+                      const selected = (state as any).renderEngineVersion === opt.id || (opt.id === "canvas-hybrid-v3-nowordmark" && !(state as any).renderEngineVersion);
                       return (
                         <button
-                          key={d}
+                          key={opt.id}
                           type="button"
-                          onClick={() => { setDestination(d); setDestMenuOpen(false); }}
-                          className={`w-full text-left px-3 py-2 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
+                          onClick={() => update({ renderEngineVersion: opt.id } as any)}
+                          className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all ${
+                            selected
+                              ? "bg-white/[0.08] text-white"
+                              : "bg-white/[0.02] text-white/60 border-white/5 hover:border-white/20"
+                          }`}
+                          style={selected ? { borderColor: primaryColor } : undefined}
                         >
-                          {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
-                          <span className={active ? "" : "ml-5"}>{d}</span>
+                          <span className="text-[10px] font-bold block leading-tight">{opt.label}</span>
+                          <span className="text-[8px] text-white/40 block mt-1 leading-normal scale-90">{opt.desc}</span>
                         </button>
                       );
                     })}
                   </div>
-                </>
+                </div>
               )}
-            </div>
-          </div>
 
-          <div>
-            <label className={labelCls}>
-              {categoria === "experiencia_destino" ? "Nome da experiência" : "Nombre de la promoción"}
-            </label>
-            <div className="relative">
-              <input
-                value={promoName}
-                onChange={(e) => setPromoName(e.target.value)}
-                onFocus={(e) => { setTimeout(() => e.target.select(), 50); setPromoMenuOpen(true); }}
-                onClick={() => setPromoMenuOpen(true)}
-                className={`${inputCls} pr-10 cursor-pointer`}
-              />
-              <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${promoMenuOpen ? "rotate-180" : ""}`} />
-              {promoMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setPromoMenuOpen(false)} />
-                  <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
-                    {(categoria === "experiencia_destino" ? PROMO_NAME_PRESETS_EXPERIENCIA : PROMO_NAME_PRESETS).map((p) => {
-                      const active = promoName === p;
-                      return (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => { setPromoName(p); setPromoMenuOpen(false); }}
-                          className={`w-full text-left px-3 py-2 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
-                        >
-                          {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
-                          <span className={active ? "" : "ml-5"}>{p}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className={labelCls}>Título del anuncio</label>
-            <div className="relative">
-              <input
-                value={adTitleTemplate}
-                onChange={(e) => setAdTitleTemplate(e.target.value)}
-                onFocus={(e) => { setTimeout(() => e.target.select(), 50); setAdTitleMenuOpen(true); }}
-                onClick={() => setAdTitleMenuOpen(true)}
-                placeholder="Ej: Paquete {destino}"
-                className={`${inputCls} pr-10 cursor-pointer`}
-              />
-              <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${adTitleMenuOpen ? "rotate-180" : ""}`} />
-              {adTitleMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setAdTitleMenuOpen(false)} />
-                  <div className="absolute left-0 right-0 mt-2 max-h-80 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
-                    {(categoria === "experiencia_destino" ? AD_TITLE_PRESETS_EXPERIENCIA : AD_TITLE_PRESETS).map((tpl) => {
-                      const preview = tpl.replace(/\{destino\}/gi, destination?.trim() || "Destino");
-                      const active = tpl === adTitleTemplate;
-                      return (
-                        <button
-                          key={tpl}
-                          type="button"
-                          onClick={() => { setAdTitleTemplate(tpl); setAdTitleMenuOpen(false); }}
-                          className={`w-full text-left px-3 py-2.5 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
-                        >
-                          {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
-                          <span className={active ? "" : "ml-5"}>{preview}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <label className={labelCls}>Días / fecha del viaje</label>
-          <div className="relative">
-            <input
-              value={travelPeriod}
-              onChange={(e) => setTravelPeriod(e.target.value)}
-              onFocus={(e) => { setTimeout(() => e.target.select(), 50); setTravelPeriodMenuOpen(true); }}
-              onClick={() => setTravelPeriodMenuOpen(true)}
-              placeholder="Ex: 5 dias, Janeiro"
-              className={`${inputCls} pr-10 cursor-pointer`}
-            />
-            <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${travelPeriodMenuOpen ? "rotate-180" : ""}`} />
-            {travelPeriodMenuOpen && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setTravelPeriodMenuOpen(false)} />
-                <div className="absolute left-0 right-0 mt-2 max-h-72 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
-                  {TRAVEL_PERIOD_PRESETS.map((opt) => {
-                    const active = travelPeriod === opt;
+              {/* Categoria */}
+              <div>
+                <label className={labelCls}>1 · Tipo de Anuncio</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: "oferta_pacote", label: "Oferta de Paquete", desc: "Foco en precio, cuotas, salidas e incluidos. Ideal para cerrar ventas rápidas.", badge: "Ventas" },
+                    { id: "experiencia_destino", label: "Experiencia de Destino", desc: "Foco visual, sentimento y exclusividad. Ideal para atraer leads cualificados.", badge: "Lujo" },
+                  ].map((opt) => {
+                    const selected = categoria === opt.id;
+                    const badgeColor = opt.badge === "Ventas" ? "bg-amber-500/20 text-amber-300" : "bg-emerald-500/20 text-emerald-300";
                     return (
                       <button
-                        key={opt}
+                        key={opt.id}
                         type="button"
-                        onClick={() => { setTravelPeriod(opt); setTravelPeriodMenuOpen(false); }}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-white/[0.08] transition-colors flex items-center gap-2 ${active ? "bg-white/[0.06] text-white font-semibold" : "text-white/80"}`}
+                        onClick={() => {
+                          setCategoriaState(opt.id as CategoriaId);
+                          update({ lastCategoria: opt.id });
+                          syncCategoryDefaults(opt.id as CategoriaId);
+                        }}
+                        className={`flex flex-col items-start p-4 rounded-2xl border text-left transition-all relative ${
+                          selected
+                            ? "bg-white/[0.08] text-white"
+                            : "bg-white/[0.02] text-white/60 border-white/5 hover:border-white/20"
+                        }`}
+                        style={selected ? { borderColor: primaryColor } : undefined}
                       >
-                        {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />}
-                        <span className={active ? "" : "ml-5"}>{opt}</span>
+                        <span className={`absolute top-3 right-3 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${badgeColor}`}>
+                          {opt.badge}
+                        </span>
+                        <span className="text-[11px] font-extrabold block mb-1">{opt.label}</span>
+                        <span className="text-[9px] text-white/40 block leading-relaxed">{opt.desc}</span>
                       </button>
                     );
                   })}
                 </div>
-              </>
-            )}
-          </div>
-        </div>
+              </div>
 
-        {/* Modo de pagamento */}
-        {categoria !== "experiencia_destino" && (
-          <div className="space-y-3">
-            <label className={labelCls}>Modo de visualización del precio</label>
-            <div className="grid grid-cols-3 gap-1.5">
-              {PAYMENT_PRESETS.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => {
-                    setPaymentMode(p.id);
-                    if (p.id === "installments" && !installments.trim()) setInstallments("10x");
-                  }}
-                  className={`px-2 py-1.5 rounded-lg border-2 text-center transition-all ${
-                    paymentMode === p.id ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
-                  }`}
-                  style={paymentMode === p.id ? { borderColor: secondaryColor, background: `${secondaryColor}1a` } : undefined}
-                >
-                  <span className="text-[11px] font-bold text-white">{p.name}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {paymentMode !== "cash" && (
+              {/* Formato */}
+              {genMode !== "custom" && (
                 <div>
-                  <label className={labelCls}>Parcelas</label>
-                  <input
-                    value={paymentLabel}
-                    onChange={(e) => setInstallments(e.target.value)}
-                    onFocus={(e) => e.target.select()}
-                    placeholder="10x"
-                    className={inputCls}
-                  />
+                  <label className={labelCls}>2 · Formato del Anuncio</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { id: "story", label: "Story / Reels", size: "9:16 (1080x1920)", desc: "Ideal para Stories y Reels de Instagram", Icon: Smartphone },
+                      { id: "square", label: "Cuadrado Feed", size: "1:1 (1080x1080)", desc: "Ideal para Feed y WhatsApp", Icon: Square },
+                    ].map((opt) => {
+                      const selected = format === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setFormat(opt.id as "square" | "story")}
+                          className={`flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all ${
+                            selected
+                              ? "bg-white/[0.08] text-white"
+                              : "bg-white/[0.02] text-white/60 border-white/5 hover:border-white/20"
+                          }`}
+                          style={selected ? { borderColor: primaryColor } : undefined}
+                        >
+                          <opt.Icon className="w-5 h-5 flex-shrink-0" style={{ color: selected ? primaryColor : "rgba(255,255,255,0.4)" }} />
+                          <div>
+                            <span className="text-[11px] font-bold block">{opt.label}</span>
+                            <span className="text-[9px] text-white/40 block">{opt.size}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
-              <div>
-                <label className={labelCls}>Valor ({currencySymbol})</label>
-                <div className="flex gap-1.5">
-                  <select
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value as Currency)}
-                    className="bg-white/[0.06] border border-white/10 rounded-xl px-2 py-3 text-white text-xs outline-none focus:border-white/40 cursor-pointer"
+            </div>
+          </MinimizableCard>
+
+          {genMode === "photo" && (
+            <MinimizableCard title="📷 Elegir una foto real">
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <input
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && searchPhotos(searchQuery)}
+                      placeholder="Buscar destino (ej: Cancún, Orlando, Madrid...)"
+                      className="w-full bg-white/[0.05] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-white/30 outline-none focus:border-white/30"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => searchPhotos(searchQuery)}
+                    disabled={searchingPhotos || !searchQuery.trim()}
+                    className="px-4 py-2.5 bg-white/10 hover:bg-white/15 disabled:opacity-40 disabled:hover:bg-white/10 rounded-xl text-xs font-bold text-white transition-all flex items-center gap-1.5"
                   >
-                    {CURRENCY_PRESETS.map((c) => (
-                      <option key={c.id} value={c.id} className="bg-neutral-900">{c.symbol}</option>
-                    ))}
-                  </select>
-                  <input
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    onFocus={(e) => e.target.select()}
-                    placeholder="1.499,00"
-                    className={`${inputCls} flex-1`}
-                  />
+                    {searchingPhotos ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Buscar"}
+                  </button>
                 </div>
-              </div>
-              <div>
-                <label className={labelCls}>Complemento</label>
-                <input
-                  value={paymentSuffix}
-                  onChange={(e) => setPaymentSuffix(e.target.value)}
-                  onFocus={(e) => e.target.select()}
-                  placeholder="por persona"
-                  className={inputCls}
-                />
-              </div>
-            </div>
 
-            <div className="mt-4 bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
-              <button
-                type="button"
-                onClick={() => setPriceOptionsOpen((v) => !v)}
-                className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
-              >
-                <span className="text-sm font-bold text-white">Opciones de precio</span>
-                <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${priceOptionsOpen ? "rotate-180" : ""}`} />
-              </button>
-              {priceOptionsOpen && (
-                <div className="px-4 pb-4 pt-1 space-y-3 border-t border-white/10">
-                  <label className="flex items-center gap-2 text-[12px] text-white/80 cursor-pointer">
-                    <input type="checkbox" checked={!hideCents} onChange={(e) => setHideCents(!e.target.checked)} className="accent-yellow-400" />
-                    Mostrar centavos
-                  </label>
-                  <label className="flex items-center gap-2 text-[12px] text-white/80 cursor-pointer">
-                    <input type="checkbox" checked={showTotal} onChange={(e) => setShowTotal(e.target.checked)} className="accent-yellow-400" />
-                    Mostrar valor total
-                  </label>
-                  <label className="flex items-center gap-2 text-[12px] text-white/80 cursor-pointer">
-                    <input type="checkbox" checked={showPixBanner} onChange={(e) => setShowPixBanner(e.target.checked)} className="accent-yellow-400" />
-                    Mostrar faixa de desconto
-                  </label>
+                {photoResults.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-2 max-h-[220px] overflow-y-auto pr-1">
+                    {photoResults.map((p) => {
+                      const active = selectedPhoto === p.src.large2x;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedPhoto(p.src.large2x);
+                            toast.success("¡Foto seleccionada!");
+                          }}
+                          className={`relative aspect-[3/4] rounded-lg overflow-hidden border-2 bg-zinc-950 transition-all ${
+                            active ? "border-white scale-95 shadow-lg" : "border-white/5 hover:border-white/20"
+                          }`}
+                        >
+                          <img src={p.src.tiny} alt={p.alt} className="w-full h-full object-cover" />
+                          {active && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                              <Check className="w-5 h-5 text-white" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-white/40 text-center py-4">¡Escribe tu destino arriba y busca entre miles de fotos de alta calidad!</p>
+                )}
+              </div>
+            </MinimizableCard>
+          )}
+
+          {genMode === "custom" && (
+            <MinimizableCard title="🖼️ Su imagen de referencia">
+              <div className="space-y-4">
+                <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full">
+                  <button
+                    type="button"
+                    onClick={() => setCustomSource("upload")}
+                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${customSource === "upload" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+                  >
+                    <Upload className="w-3.5 h-3.5 inline mr-1" /> Archivo de Computadora
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomSource("link")}
+                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${customSource === "link" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+                  >
+                    <Link2 className="w-3.5 h-3.5 inline mr-1" /> Enlace de Internet (URL)
+                  </button>
                 </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
 
-      {/* Tipografía, Colores, Benefícios e Gerar */}
-      <div className={`${sectionCls} space-y-5`}>
-        {/* Tipografía — colapsável (mesmo padrão dos outros blocos) */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setFontOptionsOpen((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-sm font-bold text-white">Tipografía</span>
-              <span className="text-[10px] text-white/40 truncate" style={{ fontFamily: `${fontFamily}, Inter, sans-serif` }}>
-                {fontFamily} · T {Math.round(titleScale * 100)}% · D {Math.round(descScale * 100)}%
-              </span>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${fontOptionsOpen ? "rotate-180" : ""}`} />
-          </button>
-          {fontOptionsOpen && (
-            <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
-              {/* Fonte: select + chips */}
-              <div>
-                <label className={labelCls}>Fuente</label>
-                <select
-                  value={FONT_PRESETS.includes(fontFamily) ? fontFamily : "Inter"}
-                  onChange={(e) => setFontFamily(e.target.value)}
-                  className={inputCls}
-                >
-                  {FONT_PRESETS.map((f) => (
-                    <option key={f} value={f} className="bg-neutral-900 text-white">{f}</option>
-                  ))}
-                </select>
-                <p className="text-[10px] text-white/40 mt-1.5">La fuente elegida se aplica a todos los artes generados.</p>
-              </div>
-
-              {/* Ajustes Avançados de Tamanho — accordion interno */}
-              <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setAdvancedSizeOpen((v) => !v)}
-                  className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/[0.04] transition-colors"
-                >
-                  <span className="text-[12px] font-semibold text-white/85">📏 Ajustes Avanzados de Tamaño</span>
-                  <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${advancedSizeOpen ? "rotate-180" : ""}`} />
-                </button>
-                {advancedSizeOpen && (
-                  <div className="px-3 pb-3 pt-2 grid grid-cols-2 gap-3 border-t border-white/10">
-                    <div>
-                      <label className={labelCls}>Título <span className="text-white/40">({Math.round(titleScale * 100)}%)</span></label>
-                      <input type="range" min={0.6} max={1.6} step={0.05} value={titleScale}
-                        onChange={(e) => setTitleScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Descripción <span className="text-white/40">({Math.round(descScale * 100)}%)</span></label>
-                      <input type="range" min={0.6} max={1.6} step={0.05} value={descScale}
-                        onChange={(e) => setDescScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
-                    </div>
+                {customSource === "upload" ? (
+                  <div>
+                    {!customImage ? (
+                      <label className="flex flex-col items-center justify-center gap-3 p-8 bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-white/20 hover:bg-white/[0.04] transition-all group h-[140px]">
+                        <ImageIcon className="w-8 h-8 text-white/30 group-hover:scale-110 transition-transform" />
+                        <div className="text-center">
+                          <span className="text-[11px] font-bold text-white/50 block group-hover:text-white/80">Elegir imagen de anuncio</span>
+                          <span className="text-[9px] text-white/30 block mt-0.5">JPG o PNG, hasta 5MB</span>
+                        </div>
+                        <input type="file" accept="image/*" onChange={handleCustomImageUpload} className="hidden" />
+                      </label>
+                    ) : (
+                      <div className="relative group rounded-2xl overflow-hidden bg-black/40 border border-white/10 aspect-video flex items-center justify-center">
+                        <img src={customImage} alt="Custom upload" className="max-w-full max-h-full object-contain" />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 cursor-pointer transition-all backdrop-blur-sm">
+                          <label className="p-2.5 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-colors" title="Cambiar imagen">
+                            <RotateCcw className="w-4 h-4 text-white" />
+                            <input type="file" accept="image/*" onChange={handleCustomImageUpload} className="hidden" />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => { setCustomImage(""); toast.success("Imagen removida"); }}
+                            className="p-2.5 bg-red-500/20 hover:bg-red-500/40 rounded-full transition-colors"
+                            title="Eliminar"
+                          >
+                            <X className="w-4 h-4 text-white" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <label className={labelCls}>URL de la imagen externa</label>
+                    <input
+                      value={customUrl}
+                      onChange={(e) => {
+                        setCustomUrl(e.target.value);
+                        setCustomImage(e.target.value);
+                      }}
+                      placeholder="https://ejemplo.com/tu-imagen.jpg"
+                      className={inputCls}
+                    />
                   </div>
                 )}
               </div>
-
-              {/* Cor do texto: mesmo padrão das cores Primária/Secundária */}
-              <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
-                <div className="flex items-baseline justify-between mb-2">
-                  <label className={labelCls}>Color del texto</label>
-                  <span className="text-[10px] text-white/40">aplica en todos los textos</span>
-                </div>
-                <div className="grid grid-cols-10 gap-1 mb-3">
-                  {PRESET_COLORS.map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => setTextColorOverride(c)}
-                      className={`w-5 h-5 rounded-full border transition-all ${(textColorOverride || "").toLowerCase() === c.toLowerCase() ? "border-white scale-125 shadow-md" : "border-white/20 hover:border-white/60"}`}
-                      style={{ background: c, boxShadow: c === "#ffffff" ? "0 0 0 1px rgba(255,255,255,0.2) inset" : undefined }}
-                      aria-label={c}
-                      title={c}
-                    />
-                  ))}
-                </div>
-                <div className="flex gap-2 items-center">
-                  <label className="relative w-10 h-10 rounded-full cursor-pointer flex-shrink-0 overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
-                    style={{ background: "conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}>
-                    <input type="color" value={textColorOverride || "#ffffff"}
-                      onChange={(e) => setTextColorOverride(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
-                    <span className="absolute inset-1.5 rounded-full border border-white/40" style={{ background: textColorOverride || "#ffffff" }} />
-                  </label>
-                  <input value={textColorOverride} onChange={(e) => setTextColorOverride(e.target.value)}
-                    placeholder="Predeterminado (blanco)"
-                    className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase" />
-                  {textColorOverride && (
-                    <button onClick={() => setTextColorOverride("")}
-                      className="text-[11px] text-white/60 hover:text-white px-2 py-1 rounded border border-white/10">
-                      Limpiar
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <button
-                onClick={() => { setFontFamily("Inter"); setTitleScale(1); setDescScale(1); setTextColorOverride(""); }}
-                className="text-[11px] text-white/60 hover:text-white underline"
-              >
-                Restaurar predeterminado
-              </button>
-            </div>
+            </MinimizableCard>
           )}
-        </div>
 
-        {/* Colores — colapsável (mesmo padrão de Tipografía) */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-xl overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setColorsOpen((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <span className="text-sm font-bold text-white">Colores</span>
-              <div className="flex items-center gap-1.5">
-                <span
-                  className="w-4 h-4 rounded-full border border-white/30 shadow-sm"
-                  style={{ background: primaryColor }}
-                  title={`Primária ${primaryColor}`}
-                />
-                <span
-                  className="w-4 h-4 rounded-full border border-white/30 shadow-sm"
-                  style={{ background: secondaryColor }}
-                  title={`Secundária ${secondaryColor}`}
-                />
-                <span className="text-[10px] text-white/40 ml-1">
-                  · {baseTextMode === "light" ? "Textos claros" : "Textos escuros"}
-                </span>
-              </div>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${colorsOpen ? "rotate-180" : ""}`} />
-          </button>
-          {colorsOpen && (
-            <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
-              {/* Bolinhas de cor — clicar abre o color picker nativo */}
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { label: "Color primario", value: primaryColor, setter: setPrimaryColor, hint: "Fondo principal" },
-                  { label: "Color secundario", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
-                ].map(({ label, value, setter, hint }) => (
-                  <div key={label} className="flex flex-col items-start gap-2">
-                    <div className="flex items-baseline justify-between w-full">
-                      <label className={labelCls}>{label}</label>
-                      <span className="text-[10px] text-white/40">{hint}</span>
-                    </div>
-                    <label
-                      className="relative w-12 h-12 rounded-full cursor-pointer overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
-                      style={{ background: value }}
-                      title="Haz clic para elegir un color"
-                    >
-                      <input
-                        type="color"
-                        value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#000000"}
-                        onChange={(e) => setter(e.target.value)}
-                        className="absolute inset-0 opacity-0 cursor-pointer"
-                      />
-                    </label>
-                    <span className="text-[10px] text-white/50 font-mono uppercase">{value}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Cor dos Textos Base */}
+          <MinimizableCard title="📝 Datos del anuncio">
+            <div className="space-y-4">
+              {/* Destino */}
               <div>
-                <label className={labelCls}>Color base de los textos</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setBaseTextMode("light")}
-                    className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all ${
-                      baseTextMode === "light"
-                        ? "bg-white text-black border-white"
-                        : "bg-white/[0.04] text-white/70 border-white/10 hover:border-white/30"
-                    }`}
-                  >
-                    <span className="w-3 h-3 rounded-full bg-white border border-black/20" />
-                    Textos claros
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setBaseTextMode("dark")}
-                    className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all ${
-                      baseTextMode === "dark"
-                        ? "bg-neutral-900 text-white border-white"
-                        : "bg-white/[0.04] text-white/70 border-white/10 hover:border-white/30"
-                    }`}
-                  >
-                    <span className="w-3 h-3 rounded-full bg-neutral-900 border border-white/40" />
-                    Textos oscuros
-                  </button>
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <label className={labelCls}>Nombre del Destino</label>
+                  <span className="text-[9px] text-white/30 font-bold uppercase">Campo Obligatorio</span>
                 </div>
-                <p className="text-[10px] text-white/40 mt-1.5">Define a cor dos textos sobre a arte para garantir legibilidade.</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Benefícios — em Experiencia de Destino usa apenas texto, sem selector de ícones. */}
-        <div>
-          <div className="flex items-baseline justify-between mb-2 gap-2">
-            <label className={labelCls}>{categoria === "experiencia_destino" ? "Descripción de la experiencia" : "Beneficios / Incluidos"}</label>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  const defaults = categoria === "experiencia_destino"
-                    ? DEFAULT_EXPERIENCE_HIGHLIGHTS
-                    : DEFAULT_HIGHLIGHTS;
-                  setHighlights(defaults);
-                  setNewHl("");
-                  setEditingIconIdx(null);
-                  toast.success("Beneficios restaurados al predeterminado");
-                }}
-                className="flex items-center gap-1 text-[10px] text-white/50 hover:text-white transition-colors"
-                title="Restaurar beneficios predeterminados"
-              >
-                <RotateCcw className="w-3 h-3" />
-                Restaurar
-              </button>
-              <span className="text-[10px] text-white/40">
-                {highlights.length}/{MAX_HIGHLIGHTS}{categoria === "experiencia_destino" ? " · texto de la experiencia" : " · haz clic en el icono para cambiar"}
-              </span>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {highlights.map((h, i) => {
-              const IconComp = ICON_OPTIONS.find((o) => o.key === h.icon)?.Icon || Check;
-              return (
-                <div key={i} className="bg-white/[0.04] border border-white/10 rounded-lg">
-                  <div className="flex gap-1.5 items-center px-2.5 py-2">
-                    {categoria !== "experiencia_destino" && (
-                      <button
-                        onClick={() => setEditingIconIdx(editingIconIdx === i ? null : i)}
-                        className="w-7 h-7 rounded flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
-                        style={{ color: secondaryColor }}
-                        title="Cambiar icono"
-                      >
-                        <IconComp className="w-4 h-4" />
-                      </button>
-                    )}
-                    <input
-                      value={h.text}
-                      onChange={(e) => updateHighlightText(i, e.target.value)}
-                      className="flex-1 min-w-0 bg-transparent text-sm text-white outline-none"
-                    />
+                <div className="relative">
+                  <input
+                    value={destinationState}
+                    onChange={(e) => setDestination(e.target.value)}
+                    placeholder="Ej: Cancún, Porto de Galinhas, Buenos Aires..."
+                    className={inputCls}
+                  />
+                  {destinationState && (
                     <button
-                      onClick={() => removeHighlight(i)}
-                      className="text-white/40 hover:text-red-400 flex-shrink-0"
-                      title="Eliminar"
+                      type="button"
+                      onClick={() => setDestination("")}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white"
                     >
                       <X className="w-4 h-4" />
                     </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Price Options */}
+              {categoria === "oferta_pacote" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={labelCls}>Moneda</label>
+                    <select
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value as Currency)}
+                      className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-white/40 appearance-none animate-none"
+                    >
+                      {CURRENCY_PRESETS.map((c) => (
+                        <option key={c.id} value={c.id} className="bg-zinc-900">{c.label}</option>
+                      ))}
+                    </select>
                   </div>
-                  {categoria !== "experiencia_destino" && editingIconIdx === i && (
-                    <div className="border-t border-white/10 p-2 grid grid-cols-8 gap-1">
-                      {ICON_OPTIONS.map(({ key, Icon, label }) => (
+                  <div>
+                    <label className={labelCls}>Precio Base</label>
+                    <input
+                      value={price}
+                      onChange={(e) => setPrice(formatPriceWhileTyping(e.target.value, currency))}
+                      placeholder="Ej: 149.90"
+                      className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-white/40"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Installments Options */}
+              {categoria === "oferta_pacote" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={labelCls}>Opción de Pago</label>
+                    <select
+                      value={paymentMode}
+                      onChange={(e) => setPaymentMode(e.target.value as PaymentMode)}
+                      className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-white/40"
+                    >
+                      {PAYMENT_PRESETS.map((p) => (
+                        <option key={p.id} value={p.id} className="bg-zinc-900">{p.emoji} {p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelCls}>
+                      {paymentMode === "installments" && "Cuotas (ej: 10x)"}
+                      {paymentMode === "cash" && "Texto de Destacado"}
+                      {paymentMode === "down_plus" && "Detalle del Pago"}
+                    </label>
+                    <input
+                      value={installments}
+                      onChange={(e) => setInstallments(e.target.value)}
+                      placeholder={PAYMENT_PRESETS.find(p => p.id === paymentMode)?.hint || "Ej: 10x"}
+                      className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-white/40"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Extras & Price Suffix */}
+              {categoria === "oferta_pacote" && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className={labelCls}>Sufijo del Precio (ej: por persona)</label>
+                    <div className="flex gap-2">
+                      {Array.from(DEFAULT_SUFFIXES_OFERTA).slice(0, 3).map((s) => (
                         <button
-                          key={key}
-                          onClick={() => updateHighlightIcon(i, key)}
-                          className={`p-1.5 rounded hover:bg-white/10 flex items-center justify-center transition-colors ${h.icon === key ? "bg-white/20" : ""}`}
-                          title={label}
+                          key={s}
+                          type="button"
+                          onClick={() => setSuffix(s)}
+                          className={`text-[9px] px-2 py-0.5 rounded border transition-colors ${
+                            suffix === s
+                              ? "bg-white/10 text-white border-white/20"
+                              : "bg-white/[0.02] text-white/40 border-white/5 hover:border-white/15"
+                          }`}
                         >
-                          <Icon className="w-3.5 h-3.5" style={{ color: h.icon === key ? secondaryColor : "rgba(255,255,255,0.7)" }} />
+                          {s}
                         </button>
                       ))}
+                    </div>
+                  </div>
+                  <input
+                    value={suffix}
+                    onChange={(e) => setSuffix(e.target.value)}
+                    placeholder="Ej: por persona, en hab doble..."
+                    className={inputCls}
+                  />
+
+                  {/* Hide cents check */}
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors cursor-pointer" onClick={() => setHideCents(!hideCents)}>
+                    <div>
+                      <span className="text-[11px] font-bold text-white block">Ocultar Centavos (,00)</span>
+                      <span className="text-[9px] text-white/40 block mt-0.5">Muestra precios como $ 1.499 en lugar de $ 1.499,00</span>
+                    </div>
+                    <div className={`w-10 h-5 rounded-full relative transition-colors ${hideCents ? 'bg-emerald-500' : 'bg-white/10'}`}>
+                      <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-200 ${hideCents ? 'left-5.5' : 'left-0.5'}`} />
+                    </div>
+                  </div>
+
+                  {/* Show Total value check */}
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors cursor-pointer" onClick={() => setShowTotal(!showTotal)}>
+                    <div>
+                      <span className="text-[11px] font-bold text-white block">Mostrar Valor Total del Paquete</span>
+                      <span className="text-[9px] text-white/40 block mt-0.5">Agrega una línea extra con el valor total abajo de la financiación</span>
+                    </div>
+                    <div className={`w-10 h-5 rounded-full relative transition-colors ${showTotal ? 'bg-emerald-500' : 'bg-white/10'}`}>
+                      <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-200 ${showTotal ? 'left-5.5' : 'left-0.5'}`} />
+                    </div>
+                  </div>
+
+                  {showTotal && (
+                    <div>
+                      <label className={labelCls}>Sobrescrever Valor Total (Opcional)</label>
+                      <input
+                        value={totalOverride}
+                        onChange={(e) => setTotalOverride(e.target.value)}
+                        placeholder="Ej: Valor total del paquete $ 1.499,00"
+                        className={inputCls}
+                      />
+                      <p className="text-[9px] text-white/40 mt-1">Déjalo en blanco para calcular automáticamente en base al Precio Base × 10.</p>
                     </div>
                   )}
                 </div>
-              );
-            })}
+              )}
 
-            {/* Slot "añadir" — solo aparece si aún se puede añadir */}
-            {highlights.length < MAX_HIGHLIGHTS && (
-              <div className="bg-white/[0.02] border border-dashed border-white/15 rounded-lg flex gap-1.5 items-center px-2.5 py-2 hover:border-white/30 transition-colors">
-                <Plus className="w-4 h-4 flex-shrink-0" style={{ color: secondaryColor }} />
-                <input
-                  value={newHl}
-                  onChange={(e) => setNewHl(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addHighlight()}
-                  placeholder={categoria === "experiencia_destino" ? "Ex: Pôr do sol privativo" : "Ej: Bebidas incluidas"}
-                  className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder:text-white/30 outline-none"
-                />
-                <button
-                  onClick={addHighlight}
-                  disabled={!newHl.trim()}
-                  className="text-xs font-bold px-2 py-1 rounded text-black disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:brightness-110 flex-shrink-0"
-                  style={{ background: secondaryColor }}
-                  title="Añadir"
-                >
-                  +
-                </button>
-              </div>
-            )}
-          </div>
-          <p className="text-[10px] text-white/40 mt-1.5">
-            Presiona Enter o haz clic en <kbd className="text-white/60">+</kbd> para añadir. Hasta {MAX_HIGHLIGHTS} beneficios.
-          </p>
-        </div>
-
-
-        {/* Feature: Lote A/B (3 variações) */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 flex items-center justify-between gap-4 hover:bg-white/[0.05] transition-colors cursor-pointer group" onClick={() => setIsBatchMode(!isBatchMode)}>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                Generar Lote de Prueba A/B
-              </h4>
-              <span className="bg-indigo-500/20 text-indigo-300 text-[9px] px-1.5 py-0.5 rounded border border-indigo-500/30 font-bold uppercase">Premium</span>
-            </div>
-            <p className="text-[10px] text-white/50 mt-1 leading-relaxed">
-              Genera 3 variaciones diferentes de este arte a la vez. {genMode === "ai" ? "¡Usa solo 1 crédito de IA!" : "Mayor velocidad."}
-            </p>
-          </div>
-          
-          {/* Switch toggle visual */}
-          <div className={`w-12 h-6 rounded-full relative transition-colors ${isBatchMode ? 'bg-indigo-500' : 'bg-white/10'}`}>
-            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-300 ${isBatchMode ? 'left-7' : 'left-1'}`} />
-          </div>
-        </div>
-
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-[11px] text-amber-200/90">
-          💡 Datos de la Fase 1: <strong>{state.agencyName || "agência"}</strong>
-          {state.city && <> · {state.city}</>}
-          {state.niche && <> · nicho {state.niche}</>}
-          {!state.logoBase64 && <> · <span className="text-amber-300">sem logo (será usado o nome como wordmark)</span></>}
-        </div>
-
-        <button
-          onClick={() => generateNext()}
-          disabled={loading || !destination}
-          className="w-full py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110"
-          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 8px 24px ${primaryColor}55` }}
-        >
-          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando com IA...</> : <><Sparkles className="w-4 h-4" /> Generar Anuncio</>}
-        </button>
-        {loading && <p className="text-xs text-white/50 text-center mt-1">A IA leva 8 a 25 segundos.</p>}
-
-        {(generationError || generatedImages.length > 0) && (
-          <div ref={resultRef} className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-4 scroll-mt-24">
-            {generationError && (
-              <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-100">
-                <div className="font-bold">Não foi possível gerar a imagem</div>
-                <p className="mt-1 text-xs text-red-100/80">{generationError}</p>
-              </div>
-            )}
-
-            {generatedImages.length > 0 && (
-              <>
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-bold text-white">Imagem gerada</h3>
-                    <p className="text-[11px] text-white/50">A última arte aparece abaixo e já está pronta para baixar.</p>
+              {/* PIX/Descuento Banner controls */}
+              {categoria === "oferta_pacote" && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors cursor-pointer" onClick={() => setShowPixBanner(!showPixBanner)}>
+                    <div>
+                      <span className="text-[11px] font-bold text-white block">Mostrar Destacado Transferencia / Pix</span>
+                      <span className="text-[9px] text-white/40 block mt-0.5">Agrega una franja de descuento en la parte inferior</span>
+                    </div>
+                    <div className={`w-10 h-5 rounded-full relative transition-colors ${showPixBanner ? 'bg-emerald-500' : 'bg-white/10'}`}>
+                      <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-200 ${showPixBanner ? 'left-5.5' : 'left-0.5'}`} />
+                    </div>
                   </div>
+
+                  {showPixBanner && (
+                    <div>
+                      <label className={labelCls}>Texto del Destacado (ex: +5% OFF en Transferencia)</label>
+                      <input
+                        value={pixBannerText}
+                        onChange={(e) => setPixBannerText(e.target.value)}
+                        placeholder="Ej: +5% de descuento por transferencia"
+                        className={inputCls}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Typography controls */}
+              {genMode !== "custom" && (
+                <div className="space-y-4">
+                  {/* Font Family selector */}
+                  <div className="border border-white/5 rounded-xl bg-white/[0.01] overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setFontOptionsOpen(!fontOptionsOpen)}
+                      className="w-full flex items-center justify-between p-3 text-left focus:outline-none"
+                    >
+                      <div>
+                        <span className="text-[11px] font-bold text-white block">🔤 Familia de Fuentes</span>
+                        <span className="text-[9px] text-white/40 block mt-0.5">Fuente actual: {fontFamily}</span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${fontOptionsOpen ? "rotate-180" : ""}`} />
+                    </button>
+                    {fontOptionsOpen && (
+                      <div className="p-3 border-t border-white/5 grid grid-cols-3 gap-1.5 max-h-[160px] overflow-y-auto">
+                        {FONT_PRESETS.map((f) => (
+                          <button
+                            key={f}
+                            type="button"
+                            onClick={() => setFontFamily(f)}
+                            className={`px-2 py-1.5 rounded-lg border text-center transition-all text-[10px] font-medium truncate ${
+                              fontFamily === f
+                                ? "bg-white/10 text-white border-white/20"
+                                : "bg-white/[0.02] text-white/60 border-white/5 hover:border-white/15"
+                            }`}
+                            style={{ fontFamily: f }}
+                          >
+                            {f}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Title & Desc Scalers */}
+                  <div className="border border-white/5 rounded-xl bg-white/[0.01] overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setAdvancedSizeOpen(!advancedSizeOpen)}
+                      className="w-full flex items-center justify-between p-3 text-left focus:outline-none"
+                    >
+                      <div>
+                        <span className="text-[11px] font-bold text-white block">📏 Escala y Ajustes de Tamaño</span>
+                        <span className="text-[9px] text-white/40 block mt-0.5">Título: {Math.round(titleScale * 100)}% · Descripción: {Math.round(descScale * 100)}%</span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${advancedSizeOpen ? "rotate-180" : ""}`} />
+                    </button>
+                    {advancedSizeOpen && (
+                      <div className="p-4 border-t border-white/5 space-y-4">
+                        <div>
+                          <div className="flex justify-between text-[10px] text-white/60 mb-1">
+                            <span>Tamaño del Título</span>
+                            <span>{Math.round(titleScale * 100)}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0.7"
+                            max="1.4"
+                            step="0.05"
+                            value={titleScale}
+                            onChange={(e) => setTitleScale(parseFloat(e.target.value))}
+                            className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                          />
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-[10px] text-white/60 mb-1">
+                            <span>Tamaño de la Descripción</span>
+                            <span>{Math.round(descScale * 100)}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0.7"
+                            max="1.4"
+                            step="0.05"
+                            value={descScale}
+                            onChange={(e) => setDescScale(parseFloat(e.target.value))}
+                            className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Color Customizer */}
+              {genMode !== "custom" && (
+                <div className="border border-white/5 rounded-xl bg-white/[0.01] overflow-hidden">
                   <button
                     type="button"
-                    onClick={downloadPNG}
-                    disabled={!generatedImage}
-                    className="shrink-0 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-bold text-white hover:bg-white/[0.12] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    onClick={() => setColorsOpen(!colorsOpen)}
+                    className="w-full flex items-center justify-between p-3 text-left focus:outline-none"
                   >
-                    <Download className="w-4 h-4" />
-                    Baixar PNG
-                  </button>
-                </div>
-
-                <div className={`grid gap-3 ${generatedImages.length > 1 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1"}`}>
-                  {generatedImages.map((img, idx) => (
-                    <div key={`${img.slice(0, 48)}-${idx}`} className="relative group/img">
-                      <button
-                        type="button"
-                        onClick={() => setGeneratedImage(img)}
-                        className={`w-full overflow-hidden rounded-xl border-2 bg-black/30 transition-all ${generatedImage === img ? "border-white shadow-lg" : "border-white/10 hover:border-white/30"}`}
-                        title={`Seleccionar variación ${idx + 1}`}
-                      >
-                        <img src={img} alt={`Anuncio generado ${idx + 1}`} className="w-full h-auto object-contain" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const newList = generatedImages.filter((_, i) => i !== idx);
-                          setGeneratedImages(newList);
-                          if (generatedImage === img) setGeneratedImage(newList[0] || "");
-                          toast.success("Variación eliminada");
-                        }}
-                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
-                        title="Eliminar esta versión"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                {adCaptions.length > 0 && (
-                  <div className="rounded-xl border border-white/10 bg-black/20 p-3">
-                    <div className="flex items-center justify-between gap-3 mb-2">
-                      <div className="text-xs font-bold text-white flex items-center gap-2">
-                        <FileText className="w-4 h-4" /> Pie de foto sugerido
+                    <div>
+                      <span className="text-[11px] font-bold text-white block">🎨 Colores de Fuentes y Arte</span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span
+                          className="w-4.5 h-4.5 rounded-full border border-white/30 shadow-sm"
+                          style={{ background: primaryColor }}
+                          title={`Primaria ${primaryColor}`}
+                        />
+                        <span
+                          className="w-4.5 h-4.5 rounded-full border border-white/30 shadow-sm"
+                          style={{ background: secondaryColor }}
+                          title={`Secundaria ${secondaryColor}`}
+                        />
+                        <span className="text-[10px] text-white/40 ml-1">
+                          · {baseTextMode === "light" ? "Textos claros" : "Textos oscuros"}
+                        </span>
                       </div>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${colorsOpen ? "rotate-180" : ""}`} />
+                  </button>
+                  {colorsOpen && (
+                    <div className="p-4 border-t border-white/5 space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        {[
+                          { label: "Color primario", value: primaryColor, setter: setPrimaryColor, hint: "Fondo principal" },
+                          { label: "Color secundario", value: secondaryColor, setter: setSecondaryColor, hint: "Acento" },
+                        ].map(({ label, value, setter, hint }) => (
+                          <div key={label} className="flex flex-col items-start gap-1">
+                            <div className="flex items-baseline justify-between w-full">
+                              <label className={labelCls}>{label}</label>
+                            </div>
+                            <label
+                              className="relative w-10 h-10 rounded-full cursor-pointer overflow-hidden border-2 border-white/20 hover:border-white/60 transition-all shadow-md"
+                              style={{ background: value }}
+                            >
+                              <input
+                                type="color"
+                                value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#000000"}
+                                onChange={(e) => setter(e.target.value)}
+                                className="absolute inset-0 opacity-0 cursor-pointer"
+                              />
+                            </label>
+                            <span className="text-[9px] text-white/50 font-mono uppercase mt-1">{value}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Cor dos Textos Base */}
+                      <div>
+                        <label className={labelCls}>Color de textos base</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setBaseTextMode("light")}
+                            className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition-all ${
+                              baseTextMode === "light"
+                                ? "bg-white text-black border-white"
+                                : "bg-white/[0.04] text-white/70 border-white/10 hover:border-white/30"
+                            }`}
+                          >
+                            <span className="w-2.5 h-2.5 rounded-full bg-white border border-black/20" />
+                            Textos claros
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setBaseTextMode("dark")}
+                            className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition-all ${
+                              baseTextMode === "dark"
+                                ? "bg-neutral-900 text-white border-white"
+                                : "bg-white/[0.04] text-white/70 border-white/10 hover:border-white/30"
+                            }`}
+                          >
+                            <span className="w-2.5 h-2.5 rounded-full bg-neutral-900 border border-white/40" />
+                            Textos oscuros
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Highlights/Benefits */}
+              <div>
+                <div className="flex items-baseline justify-between mb-1.5 gap-2">
+                  <label className={labelCls}>{categoria === "experiencia_destino" ? "Descripción de la experiencia" : "Beneficios / Incluidos"}</label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const defaults = categoria === "experiencia_destino"
+                          ? DEFAULT_EXPERIENCE_HIGHLIGHTS
+                          : DEFAULT_HIGHLIGHTS;
+                        setHighlights(defaults);
+                        setNewHl("");
+                        setEditingIconIdx(null);
+                        toast.success("Beneficios restaurados a los predeterminados");
+                      }}
+                      className="flex items-center gap-1 text-[9px] text-white/50 hover:text-white transition-colors"
+                    >
+                      <RotateCcw className="w-2.5 h-2.5" />
+                      Restaurar
+                    </button>
+                    <span className="text-[9px] text-white/40">
+                      {highlights.length}/{MAX_HIGHLIGHTS}
+                    </span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-2">
+                  {highlights.map((h, i) => {
+                    const IconComp = ICON_OPTIONS.find((o) => o.key === h.icon)?.Icon || Check;
+                    return (
+                      <div key={i} className="bg-white/[0.04] border border-white/10 rounded-lg">
+                        <div className="flex gap-1.5 items-center px-2 py-1.5">
+                          {categoria !== "experiencia_destino" && (
+                            <button
+                              type="button"
+                              onClick={() => setEditingIconIdx(editingIconIdx === i ? null : i)}
+                              className="w-6 h-6 rounded flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
+                              style={{ color: secondaryColor }}
+                            >
+                              <IconComp className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                          <input
+                            value={h.text}
+                            onChange={(e) => updateHighlightText(i, e.target.value)}
+                            className="flex-1 min-w-0 bg-transparent text-xs text-white outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeHighlight(i)}
+                            className="text-white/40 hover:text-red-400 flex-shrink-0"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        {categoria !== "experiencia_destino" && editingIconIdx === i && (
+                          <div className="border-t border-white/10 p-2 grid grid-cols-8 gap-1">
+                            {ICON_OPTIONS.map(({ key, Icon, label }) => (
+                              <button
+                                key={key}
+                                type="button"
+                                onClick={() => updateHighlightIcon(i, key)}
+                                className={`p-1 rounded hover:bg-white/10 flex items-center justify-center transition-colors ${h.icon === key ? "bg-white/20" : ""}`}
+                                title={label}
+                              >
+                                <Icon className="w-3 h-3" style={{ color: h.icon === key ? secondaryColor : "rgba(255,255,255,0.7)" }} />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {highlights.length < MAX_HIGHLIGHTS && (
+                    <div className="bg-white/[0.02] border border-dashed border-white/15 rounded-lg flex gap-1.5 items-center px-2 py-1.5 hover:border-white/30 transition-colors">
+                      <Plus className="w-3.5 h-3.5 flex-shrink-0" style={{ color: secondaryColor }} />
+                      <input
+                        value={newHl}
+                        onChange={(e) => setNewHl(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && addHighlight()}
+                        placeholder={categoria === "experiencia_destino" ? "Ex: Atardecer privado" : "Ex: Bebidas incluidas"}
+                        className="flex-1 min-w-0 bg-transparent text-xs text-white placeholder:text-white/30 outline-none"
+                      />
                       <button
                         type="button"
-                        onClick={async () => {
-                          const text = selectedCaption || adCaptions[0];
-                          await navigator.clipboard.writeText(text);
-                          setSelectedCaption(text);
-                          setCaptionCopied(true);
-                          toast.success("¡¡¡¡¡¡Copiado!");
-                        }}
-                        className="flex items-center gap-1.5 rounded-lg border border-white/10 px-2 py-1 text-[11px] font-semibold text-white/80 hover:bg-white/[0.08] transition-colors"
+                        onClick={addHighlight}
+                        disabled={!newHl.trim()}
+                        className="text-[10px] font-bold px-2 py-0.5 rounded text-black disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:brightness-110 flex-shrink-0"
+                        style={{ background: secondaryColor }}
                       >
-                        {captionCopied ? <ClipboardCheck className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                        Copiar
+                        +
                       </button>
                     </div>
-                    <div className="flex bg-black/30 p-1 rounded-lg border border-white/5 mb-3">
-                      {adCaptions.map((_, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            setSelectedCaption(adCaptions[idx]);
-                            setCaptionCopied(false);
-                          }}
-                          className={`flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all ${
-                            (selectedCaption || adCaptions[0]) === adCaptions[idx]
-                              ? "bg-white/10 text-white shadow-sm"
-                              : "text-white/40 hover:text-white"
-                          }`}
-                        >
-                          Opción {idx + 1}
-                        </button>
-                      ))}
-                    </div>
-                    <p className="whitespace-pre-line text-xs leading-relaxed text-white/70 min-h-[120px]">
-                      {selectedCaption || adCaptions[0]}
-                    </p>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
+                  )}
+                </div>
+              </div>
 
-        {/* ?? PONTO 10: GATILHO DE ESCASSEZ (GAMIFICAÃ‡AO DE SALDO) */}
+              {/* Lote A/B Switch */}
+              <div className="bg-white/[0.03] border border-white/10 rounded-xl p-3 flex items-center justify-between gap-4 hover:bg-white/[0.05] transition-colors cursor-pointer group" onClick={() => setIsBatchMode(!isBatchMode)}>
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-amber-400" />
+                      Probar Lote A/B (3 artes)
+                    </h4>
+                  </div>
+                  <p className="text-[9px] text-white/50 mt-0.5 leading-relaxed">
+                    Genera 3 variaciones del arte al mismo tiempo.
+                  </p>
+                </div>
+                <div className={`w-10 h-5 rounded-full relative transition-colors ${isBatchMode ? 'bg-indigo-500' : 'bg-white/10'}`}>
+                  <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-300 ${isBatchMode ? 'left-5.5' : 'left-0.5'}`} />
+                </div>
+              </div>
+            </div>
+          </MinimizableCard>
+
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-[10px] text-amber-200/90 leading-relaxed">
+            💡 Datos sincronizados de la agencia: <strong>{state.agencyName || "agencia"}</strong>
+            {state.city && <> · {state.city}</>}
+            {state.niche && <> · nicho {state.niche}</>}
+            {!state.logoBase64 && <> · <span className="text-amber-300">usando wordmark de texto</span></>}
+          </div>
+
+          <button
+            onClick={() => generateNext()}
+            disabled={loading || !destination}
+            className="w-full py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110 text-xs uppercase tracking-wider"
+            style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 8px 24px ${primaryColor}55` }}
+          >
+            {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Generando con IA...</> : <><Sparkles className="w-4 h-4" /> Generar Anuncio</>}
+          </button>
+          {loading && <p className="text-[10px] text-white/50 text-center mt-1">La IA toma de 8 a 25 segundos.</p>}
+        </div>
+
+        {/* COLUNA DIREITA: Resultado e visualização */}
+        <div className="lg:col-span-7 space-y-6 lg:sticky lg:top-24">
+          {(generationError || generatedImages.length > 0) ? (
+            <div ref={resultRef} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 space-y-4 scroll-mt-24">
+              {generationError && (
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-100">
+                  <div className="font-bold">No se pudo generar la imagen</div>
+                  <p className="mt-1 text-[11px] text-red-100/80">{generationError}</p>
+                </div>
+              )}
+
+              {generatedImages.length > 0 && (
+                <>
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-bold text-white">Tu Arte Generado</h3>
+                      <p className="text-[10px] text-white/50">Haz clic en las opciones para descargar o cambiar la versión activa.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={downloadPNG}
+                      disabled={!generatedImage}
+                      className="shrink-0 flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.08] px-3.5 py-2 text-xs font-bold text-white hover:bg-white/[0.12] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Descargar PNG
+                    </button>
+                  </div>
+
+                  <div className={`grid gap-3 ${generatedImages.length > 1 ? "grid-cols-3" : "grid-cols-1"}`}>
+                    {generatedImages.map((img, idx) => (
+                      <div key={`${img.slice(0, 48)}-${idx}`} className="relative group/img">
+                        <button
+                          type="button"
+                          onClick={() => setGeneratedImage(img)}
+                          className={`w-full overflow-hidden rounded-xl border-2 bg-black/30 transition-all ${generatedImage === img ? "border-white shadow-lg scale-98" : "border-white/10 hover:border-white/30"}`}
+                          title={`Seleccionar variación ${idx + 1}`}
+                        >
+                          <img src={img} alt={`Anuncio generado ${idx + 1}`} className="w-full h-auto object-contain" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const newList = generatedImages.filter((_, i) => i !== idx);
+                            setGeneratedImages(newList);
+                            if (generatedImage === img) setGeneratedImage(newList[0] || "");
+                            toast.success("Variación eliminada");
+                          }}
+                          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover/img:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {adCaptions.length > 0 && (
+                    <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <FileText className="w-4 h-4 text-amber-400" /> Leyenda sugerida
+                        </div>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const text = selectedCaption || adCaptions[0];
+                            await navigator.clipboard.writeText(text);
+                            setSelectedCaption(text);
+                            setCaptionCopied(true);
+                            toast.success("¡Leyenda copiada!");
+                          }}
+                          className="flex items-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-1 text-[10px] font-semibold text-white/80 hover:bg-white/[0.08] transition-colors"
+                        >
+                          {captionCopied ? <ClipboardCheck className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          Copiar
+                        </button>
+                      </div>
+                      <div className="flex bg-black/30 p-0.5 rounded-lg border border-white/5 mb-3">
+                        {adCaptions.map((_, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              setSelectedCaption(adCaptions[idx]);
+                              setCaptionCopied(false);
+                            }}
+                            className={`flex-1 py-1 rounded-md text-[9px] font-bold transition-all ${
+                              (selectedCaption || adCaptions[0]) === adCaptions[idx]
+                                ? "bg-white/10 text-white shadow-sm"
+                                : "text-white/40 hover:text-white"
+                            }`}
+                          >
+                            Opción {idx + 1}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="whitespace-pre-line text-[11px] leading-relaxed text-white/70 min-h-[100px] max-h-[160px] overflow-y-auto pr-1">
+                        {selectedCaption || adCaptions[0]}
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-white/15 bg-white/[0.01] p-12 text-center text-white/40 flex flex-col items-center justify-center min-h-[360px]">
+              <Sparkles className="w-8 h-8 mb-3 opacity-30 text-amber-400 animate-pulse" />
+              <h4 className="text-xs font-bold uppercase tracking-wider text-white/80">Esperando Generación del Arte</h4>
+              <p className="text-[11px] text-white/40 max-w-xs mt-1.5 leading-relaxed">¡Define los parámetros en el panel lateral izquierdo y haz clic en el botón para generar un creativo de ventas ultra profesional en segundos!</p>
+            </div>
+          )}
+
+          {/* Botão de avanço para Fase 2 */}
+          <div className="pt-6 border-t border-white/[0.06]">
+            <button
+              onClick={onNext}
+              className="w-full flex items-center justify-center gap-2.5 py-4 px-6 rounded-2xl font-extrabold text-xs uppercase tracking-wider transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30"
+              style={{
+                background: "linear-gradient(135deg, #F59E0B, #FCD34D)",
+                color: "#0A0A0A",
+              }}
+            >
+              <span>Avanzar a la Fase 2 — Tu Sitio</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <p className="text-center text-[10px] text-white/30 mt-2">
+              Crea la página de ventas de tu agencia en el siguiente paso
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
+const MinimizableCard = ({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) => {
+  const { state } = useFabricaContext();
+  const primaryColor = state.primaryColor || "#F59E0B";
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div
+      className="bg-white/[0.03] border rounded-2xl backdrop-blur-xl transition-all duration-300 overflow-hidden"
+      style={{
+        borderColor: isOpen ? `${primaryColor}66` : "rgba(255, 255, 255, 0.06)",
+        boxShadow: isOpen ? `0 10px 30px ${primaryColor}15` : "none",
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-4.5 text-left focus:outline-none select-none group"
+      >
+        <h3
+          className="text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2"
+          style={{ color: isOpen ? primaryColor : "rgba(255, 255, 255, 0.6)" }}
+        >
+          {isOpen && (
+            <span
+              className="w-2 h-2 rounded-full animate-pulse flex-shrink-0"
+              style={{ backgroundColor: primaryColor }}
+            />
+          )}
+          {title}
+        </h3>
+        <div
+          className="w-7 h-7 rounded-lg flex items-center justify-center border transition-all duration-300 text-xs font-black"
+          style={{
+            borderColor: isOpen ? `${primaryColor}66` : "rgba(255, 255, 255, 0.15)",
+            backgroundColor: isOpen ? `${primaryColor}15` : "transparent",
+            color: isOpen ? primaryColor : "rgba(255, 255, 255, 0.6)",
+          }}
+        >
+          {isOpen ? "–" : "+"}
+        </div>
+      </button>
+
+      <div
+        className={`transition-all duration-300 ease-in-out ${
+          isOpen ? "max-h-[4000px] opacity-100 p-5 pt-0 border-t border-white/[0.04]" : "max-h-0 opacity-0 pointer-events-none"
+        }`}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
