@@ -1130,7 +1130,7 @@ const PublishOnLovableCard = ({
           </p>
         </div>
 
-        {/* GUIA DE PUBLICAÇÃO PREMIUM E RECOMENDAÇÕES GRÁTIS */}
+        {/* GUIA DE PUBLICAÇÃO PREMIUM - VERCEL GRÁTIS */}
         <div className="my-6 p-6 rounded-2xl border bg-black/40 backdrop-blur-xl transition-all"
              style={{ borderColor: `${primaryColor}33` }}>
           <div className="flex items-center gap-2.5 mb-3.5">
@@ -1139,56 +1139,57 @@ const PublishOnLovableCard = ({
             </div>
             <div>
               <h4 className="text-sm font-bold text-white tracking-wide uppercase">
-                🚀 Cómo poner tu Web online en 10 Segundos (100% Gratis)
+                🚀 Cómo poner tu Web online Gratis en Vercel (Sin Límites de Código)
               </h4>
               <p className="text-[11px] text-white/50 mt-0.5">
-                ¡Evita los límites de tamaño de código de Lovable publicando directamente el archivo HTML!
+                ¡Publica directamente tu archivo HTML en Vercel y ten la web de tu agencia online con dominio propio o gratis!
               </p>
             </div>
           </div>
 
-          <div className="space-y-3.5 text-xs text-white/80 leading-relaxed mb-5">
+          <div className="space-y-4 text-xs text-white/80 leading-relaxed mb-5">
             <div className="flex gap-2.5 items-start">
               <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5">1</span>
               <p>
-                Haz clic en el botón verde <strong className="text-emerald-400">"Baixar HTML Local"</strong> arriba para guardar el archivo con el código completo de tu web en tu computadora.
+                Haz clic en el botón verde <strong className="text-emerald-400">"Baixar HTML Local"</strong> arriba para obtener el archivo con el código completo de tu web en tu computadora.
               </p>
             </div>
             <div className="flex gap-2.5 items-start">
               <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5">2</span>
-              <p>
-                Elige uno de los servidores gratis a continuación (nuestra recomendación para agencias de viajes):
-              </p>
+              <div>
+                <p className="font-semibold text-white">Prepara el archivo:</p>
+                <p className="text-white/60 mt-0.5">
+                  Crea una nueva carpeta en tu computadora (con el nombre de tu agencia), coloca el archivo descargado dentro y renómbralo exactamente a <strong className="text-emerald-400">index.html</strong>.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2.5 items-start">
+              <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5">3</span>
+              <div>
+                <p className="font-semibold text-white">Publica Gratis en Vercel:</p>
+                <p className="text-white/60 mt-0.5">
+                  Crea una cuenta gratis en <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline hover:text-indigo-300">vercel.com</a>, accede al panel de control y ¡simplemente arrastra y suelta la carpeta que creaste!
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-3.5 mb-4">
-            <a href="https://app.netlify.com/drop" target="_blank" rel="noopener noreferrer" 
-               className="p-3.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] transition-all flex flex-col justify-between group">
-              <div>
-                <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">Recomendado ✦</span>
-                <h5 className="font-bold text-white text-sm mt-2 group-hover:text-cyan-400 transition-colors">Netlify Drop</h5>
-                <p className="text-[11px] text-white/50 mt-1">¡Aloja tu web arrastrando el archivo sin siquiera tener que registrarte! Súper práctico.</p>
-              </div>
-              <span className="text-[10px] font-semibold text-white/70 mt-3 flex items-center gap-1">Acceder a Netlify Drop <ExternalLink className="w-3 h-3" /></span>
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+            <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" 
+               className="flex-1 py-3 px-4 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.08] transition-all flex items-center justify-center gap-2 group text-sm font-bold text-white">
+              <ExternalLink className="w-4 h-4 text-indigo-400" /> Crear Cuenta Gratis en Vercel
             </a>
-
-            <a href="https://tiiny.host" target="_blank" rel="noopener noreferrer"
-               className="p-3.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] transition-all flex flex-col justify-between group">
-              <div>
-                <span className="text-[10px] font-bold text-pink-400 uppercase tracking-widest bg-pink-500/10 px-2 py-0.5 rounded border border-pink-500/20">Más Fácil ⚡</span>
-                <h5 className="font-bold text-white text-sm mt-2 group-hover:text-pink-400 transition-colors">Tiiny.host</h5>
-                <p className="text-[11px] text-white/50 mt-1">¡Escribe el nombre de tu agencia y sube el archivo. Tu web estará online al instante!</p>
-              </div>
-              <span className="text-[10px] font-semibold text-white/70 mt-3 flex items-center gap-1">Acceder a Tiiny.host <ExternalLink className="w-3 h-3" /></span>
+            <a href="https://vercel.com/dashboard" target="_blank" rel="noopener noreferrer"
+               className="flex-1 py-3 px-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all text-sm"
+               style={{ background: `linear-gradient(135deg, ${primaryColor}, #FCD34D)` }}>
+              🚀 Ir al Panel de Vercel (Upload)
             </a>
           </div>
 
-          <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 text-[10.5px] text-amber-300/80 flex items-start gap-2.5">
+          <div className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/10 text-[10.5px] text-amber-300/80 flex items-start gap-2.5">
             <span className="text-sm">💡</span>
             <p className="leading-normal">
-              <strong>Consejo de oro:</strong> Al descargar la web, se guardará con el nombre <code className="text-white bg-white/10 px-1 py-0.5 rounded">site-nome.html</code>. 
-              ¡Antes de subirlo a la plataforma de hospedagem, renombra el archivo a <strong className="text-white">index.html</strong> para que se abra automáticamente en el navegador cuando accedan a tu enlace!
+              <strong>Ventaja Vercel:</strong> Además de cargar tu web de forma instantánea en todo el mundo gratis con el dominio <code className="text-white bg-white/10 px-1 py-0.5 rounded">su-agencia.vercel.app</code>, ¡puedes conectar tu propio dominio (ej: <code className="text-white">agenciadeviajes.com</code>) sin pagar absolutamente nada por ello!
             </p>
           </div>
         </div>

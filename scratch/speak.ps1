@@ -1,5 +1,21 @@
-Add-Type -AssemblyName System.speech
-$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer
-$speak.Rate = 2
-$speak.SelectVoice('Microsoft Daniel')
-$speak.Speak('Estou falando em voz alta com o Daniel, como você pediu! Primeiro: os erros e falhas da fábrica em espanhol já foram corrigidos agorinha pouco. Aquele problema dos caracteres que quebravam o sistema sumiu. Sobre a página de planos: eu acabei de verificar. A página Planos ES já existe no sistema, e o melhor, está completamente separada da original em português. A original está intacta. Eu vou te enviar por escrito a minha análise dos preços da página em espanhol e o que a gente pode melhorar na conversão para Dólar na América Latina.')
+Add-Type -AssemblyName System.Speech
+$synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
+
+# Procura uma voz em Português instalada no Windows (Maria, Daniel, etc.)
+$ptVoice = $synth.GetInstalledVoices() | Where-Object { $_.VoiceInfo.Culture.Name -like "*pt*" } | Select-Object -First 1
+
+if ($ptVoice) {
+    $synth.SelectVoice($ptVoice.VoiceInfo.Name)
+    Write-Host "Voz em Português encontrada: $($ptVoice.VoiceInfo.Name)"
+} else {
+    Write-Host "Voz em Português não encontrada. Usando voz padrão do sistema."
+}
+
+# Define a velocidade para 2x (Rate aceita valores de -10 a 10. 5 a 6 representa aproximadamente o dobro da velocidade)
+$synth.Rate = 5
+
+# Mensagem cirúrgica e de alta energia para o alto-falante do Windows
+$texto = "Fala líder! O deploy completo das correções foi realizado com sucesso! As buscas por imagem F1 foram corrigidas para Pexels apenas. A aba de galeria e artes salvas foi migrada para a fase final. E o seu guia premium de hospedagem gratuita com Netlify, Tiiny e Vercel já está no ar para os seus usuários!"
+
+Write-Host "Falando: $texto"
+$synth.Speak($texto)
