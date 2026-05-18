@@ -1316,36 +1316,51 @@ const PublishOnLovableCard = ({
               </p>
             </div>
 
-            <button
-              onClick={handleVercelPublish}
-              disabled={isVercelDeploying}
-              className="w-full py-3.5 px-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 hover:brightness-110 disabled:brightness-50 disabled:cursor-not-allowed transition-all text-sm"
-              style={{ 
-                background: state.siteContent.vercelUrl
-                  ? "linear-gradient(135deg, #10B981, #34D399)"
-                  : `linear-gradient(135deg, ${primaryColor}, #FCD34D)`,
-                boxShadow: state.siteContent.vercelUrl
-                  ? "0 8px 24px rgba(16,185,129,0.3)"
-                  : `0 8px 24px ${primaryColor}44`
-              }}
-            >
-              {isVercelDeploying ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                  Publicando en Vercel...
-                </>
-              ) : state.siteContent.vercelUrl ? (
-                <>
-                  <Rocket className="w-4 h-4 animate-bounce" />
-                  Actualizar Sitio en Vercel (1-Clic) ⚡
-                </>
-              ) : (
-                <>
-                  <Rocket className="w-4 h-4" />
-                  ¡Publicar Sitio en Vercel Ahora! 🚀
-                </>
-              )}
-            </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                onClick={handleVercelPublish}
+                disabled={isVercelDeploying}
+                className="py-3.5 px-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 hover:brightness-110 disabled:brightness-50 disabled:cursor-not-allowed transition-all text-sm"
+                style={{ 
+                  background: `linear-gradient(135deg, ${primaryColor}, #F59E0B)`,
+                  boxShadow: `0 4px 12px ${primaryColor}33`
+                }}
+              >
+                {isVercelDeploying ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Publicando...
+                  </>
+                ) : (
+                  <>
+                    <Rocket className="w-4 h-4" />
+                    Publicar Nuevo Sitio 🚀
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={handleVercelPublish}
+                disabled={isVercelDeploying}
+                className="py-3.5 px-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 hover:brightness-110 disabled:brightness-50 disabled:cursor-not-allowed transition-all text-sm"
+                style={{ 
+                  background: "linear-gradient(135deg, #10B981, #34D399)",
+                  boxShadow: "0 4px 12px rgba(16,185,129,0.2)"
+                }}
+              >
+                {isVercelDeploying ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    Actualizando...
+                  </>
+                ) : (
+                  <>
+                    <Rocket className="w-4 h-4 animate-bounce" />
+                    Actualizar Sitio Existente ⚡
+                  </>
+                )}
+              </button>
+            </div>
 
             {/* Configuración de Token para o Administrador */}
             <div className="border-t border-white/5 pt-3 mt-2">
