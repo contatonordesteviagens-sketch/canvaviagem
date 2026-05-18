@@ -13,25 +13,35 @@ interface Comment {
 }
 
 const INITIAL_COMMENTS: Comment[] = [
-  { id: "1", username: "Juliana Costa | Agente de Viagem", message: "Boa noite gente! Lucas, a ferramenta está incrível.", time: "20:02" },
-  { id: "2", username: "Marcos Silva | RM Turismo", message: "Conectado de Recife. Muito ansioso pela aula!", time: "20:02" },
-  { id: "3", username: "Fernanda Souza | Viagens Premium", message: "O áudio e o vídeo estão excelentes por aqui.", time: "20:03" },
-  { id: "4", username: "Carlos Eduardo | Agência Destinos", message: "Boa noite Lucas! Bora pra cima.", time: "20:04" },
+  { id: "1", username: "Juliana Costa", message: "boa noite gente! lucas a ferramenta ta rodando?", time: "20:02" },
+  { id: "2", username: "Marcos Silva", message: "conectado de recife. ansioso pra ver a fabrica de anuncios", time: "20:02" },
+  { id: "3", username: "Fernanda", message: "o audio e video tao perfeitos aqui", time: "20:03" },
+  { id: "4", username: "Carlos", message: "Bora pra cima! boa noite lucas", time: "20:04" },
 ];
 
 const AUTO_COMMENTS_POOL = [
-  { username: "Patrícia Lemos | Lemos Travel", message: "Lucas, eu consigo colocar o logo e as cores da minha agência no gerador?" },
-  { username: "Ricardo Borges | RB Viagens", message: "Consigo sim, Patrícia! Já testei e é muito prático." },
-  { username: "Ana Paula | Agente Autônoma", message: "Essa Fábrica de Anúncios vai me poupar horas de trabalho por semana." },
-  { username: "Roberto Antunes | Antunes Tour", message: "Lucas, os criativos já vêm no tamanho certo para Reels e Stories?" },
-  { username: "Letícia Mendes | RM Turismo", message: "Sim Roberto, já vêm 100% no formato ideal!" },
-  { username: "Aline Maria | Viagens & Destinos", message: "Estou chocada com a velocidade desse gerador com IA. Sensacional, Lucas!" },
-  { username: "Carla Aguiar | Agente Elite", message: "Já sou aluna do Elite e o suporte do Lucas é fantástico, recomendo muito." },
-  { username: "Tiago Santos | Santos Agência", message: "Estou gostando muito da didática da explicação." },
-  { username: "Renata Vasconcelos | Rota do Sol", message: "O vídeo ensina direitinho como fechar pacotes no WhatsApp." },
-  { username: "Valdir Lima | Lima Turismo", message: "Melhor investimento do ano para a minha agência." },
-  { username: "Beatriz Nogueira | Viajar Mais", message: "Como faço para acessar o gerador com as IAs, Lucas?" },
-  { username: "Murilo Costa | Costa Premium", message: "Esse modelo de negócio de anúncios de viagens realmente funciona rápido." },
+  { username: "Patricia Lemos", message: "lucas, da pra colocar a logo e as cores da minha agencia?" },
+  { username: "Ricardo", message: "Da sim Patricia! Eu ja uso e fica mt bom" },
+  { username: "Ana Paula", message: "nossa essa IA vai economizar mt tempo de postagem" },
+  { username: "Roberto Antunes", message: "lucas, os criativos ja vem no formato de reels?" },
+  { username: "Leticia", message: "ja sim roberto, fica perfeito" },
+  { username: "Aline Maria", message: "chocada com a velocidade q gera as fotos com preco" },
+  { username: "Carla Aguiar", message: "ja sou aluna do elite o suporte é top demais msm" },
+  { username: "Tiago", message: "top" },
+  { username: "Renata", message: "kd o preço? " },
+  { username: "Valdir", message: "concorrente vai odiar isso kkk" },
+  { username: "Beatriz", message: "como faco pra acessar o gerador com as IAs lucas?" },
+  { username: "Murilo Costa", message: "escolhe a foto de Jeri" },
+  { username: "Sandra Souza", message: "funciona pra quem ta comecando do zero?" },
+  { username: "Diego", message: "tem q ter notebook ou da pra fazer tudo pelo celular?" },
+  { username: "Lucas Agente", message: "dá pra gerar quantos anuncios por dia?" },
+  { username: "Gisele", message: "como faz pra assinar? libera o link logo lucas rs" },
+  { username: "Bruno Reis", message: "isso ajuda mt quem nao sabe usar o canva do zero" },
+  { username: "Mariana", message: "dá pra usar fotos proprias ou so as da IA?" },
+  { username: "Felipe", message: "tem destinos internacionais tbm?" },
+  { username: "Julio Cesar", message: "jeri fica lindo dms na fabrica" },
+  { username: "Amanda", message: "Consigo mudar as cores dps?" },
+  { username: "Katia Tur", message: "ja quero assinar hj com desconto" },
 ];
 
 const LiveStream = () => {
@@ -291,7 +301,10 @@ const LiveStream = () => {
                     CLIQUE PARA ASSISTIR
                   </h3>
                 </div>
-              ) : null}
+              ) : (
+                /* PROTEÇÃO CONTRA CLIQUES E LINKS DO YOUTUBE (TRANSPARENT OVERLAY Z-20 - USUÁRIO NÃO PODE SAIR DA PÁGINA NEM PAUSAR) */
+                <div className="absolute inset-0 z-20 bg-transparent cursor-default" />
+              )}
 
               {/* CONTAINER COM EFEITO DE BLUR AMBIENTE PARA EXPANDIR O VÍDEO HORIZONTAL */}
               <div className="relative w-full h-full flex items-center justify-center bg-zinc-950 overflow-hidden">
@@ -302,14 +315,13 @@ const LiveStream = () => {
                   style={{ backgroundImage: `url('https://img.youtube.com/vi/Xqcw-NpPz08/maxresdefault.jpg')` }}
                 />
 
-                {/* Iframe do Vídeo Horizontal (16:9 Nativo - Controles Ativados e Cliques Habilitados) */}
+                {/* Iframe do Vídeo Horizontal (16:9 Nativo - Bloqueado Contra Cliques e Sem Controles de Busca) */}
                 <div className="relative w-full h-full bg-black shadow-[0_0_80px_rgba(0,0,0,0.9)] z-10 overflow-hidden flex items-center justify-center">
                   <iframe
-                    className="w-full h-full border-none"
-                    src={`https://www.youtube.com/embed/Xqcw-NpPz08?autoplay=${isPlaying ? 1 : 0}&mute=0&controls=1&rel=0&showinfo=0&iv_load_policy=3&fs=1`}
+                    className="w-full h-full border-none pointer-events-none"
+                    src={`https://www.youtube.com/embed/Xqcw-NpPz08?autoplay=${isPlaying ? 1 : 0}&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1`}
                     title="Canva Viagem Live"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
                   />
                 </div>
 
