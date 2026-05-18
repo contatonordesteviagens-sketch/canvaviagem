@@ -1437,17 +1437,7 @@ const PublishOnLovableCard = ({
       </div>
     </div>
   );
-}; font-black text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
-            style={{ background: primaryColor }}
-          >
-            Próximo Passo: Diagnóstico <Rocket className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 };
-
 const FabricaCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 backdrop-blur-xl">
     <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">{title}</h3>
