@@ -83,7 +83,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
     const handleIframeLoad = () => {
       const doc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (!doc) return;
+      if (!doc || !doc.head || !doc.body) return;
 
       // Inyectar estilos de hover, focus e indicador visual de edición
       const style = doc.createElement("style");
