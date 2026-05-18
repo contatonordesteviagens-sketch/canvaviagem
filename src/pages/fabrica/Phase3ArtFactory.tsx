@@ -2844,7 +2844,23 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
         )}
 
-        {/* ?? PONTO 10: GATILHO DE ESCASSEZ (GAMIFICAÇAO DE SALDO) */}
+        {/* Botão de avanço para Fase 2 */}
+        <div className="mt-8 pt-6 border-t border-white/[0.06]">
+          <button
+            onClick={onNext}
+            className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30"
+            style={{
+              background: "linear-gradient(135deg, #F59E0B, #FCD34D)",
+              color: "#0A0A0A",
+            }}
+          >
+            <span>Avançar para Fase 2 — Seu Site</span>
+            <ArrowRight className="w-5 h-5" />
+          </button>
+          <p className="text-center text-[11px] text-white/30 mt-2">
+            Crie a página de vendas da sua agência no próximo passo
+          </p>
+        </div>
       </div>
     </div>
   );
