@@ -49,6 +49,10 @@ const LiveStream = () => {
   
   const poolRef = useRef<typeof AUTO_COMMENTS_POOL>([...AUTO_COMMENTS_POOL]);
 
+  useEffect(() => {
+    document.title = "Canva Viagem — Aula Secreta Ao Vivo";
+  }, []);
+
   // Fluctuating viewers simulation (around 95 to 115)
   useEffect(() => {
     if (step !== "watch") return;
@@ -152,14 +156,14 @@ const LiveStream = () => {
             
             {/* BANNER ESTILIZADO SUPERIOR */}
             <div className="bg-black text-white p-5 rounded-2xl flex flex-col items-center justify-center text-center relative overflow-hidden border border-zinc-800">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 to-amber-500" />
-              <span className="text-[9px] uppercase tracking-[0.2em] font-black text-zinc-500">Fabricando Seu</span>
-              <h2 className="text-lg md:text-xl font-black italic tracking-tighter text-yellow-400 mt-1">
-                LOW TICKET <span className="text-white">plug and play</span>
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 to-blue-500" />
+              <span className="text-[9px] uppercase tracking-[0.2em] font-black text-zinc-500">Acelere Suas Vendas com</span>
+              <h2 className="text-lg md:text-xl font-black italic tracking-tighter text-cyan-400 mt-1">
+                CANVA VIAGEM <span className="text-white">& FÁBRICA</span>
               </h2>
               <div className="flex gap-1.5 mt-3 justify-center">
-                <span className="text-[8px] bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 font-bold">✓ Você escolhe o destino</span>
-                <span className="text-[8px] bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 font-bold">✓ IA gera em 5s</span>
+                <span className="text-[8px] bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 font-bold">✓ Feed Premium em 5 min</span>
+                <span className="text-[8px] bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 font-bold">✓ Anúncios com I.A em 5s</span>
               </div>
             </div>
 
@@ -167,10 +171,10 @@ const LiveStream = () => {
             <div className="w-full">
               <div className="h-6 w-full bg-zinc-200 rounded-full overflow-hidden relative border border-zinc-300">
                 <div 
-                  className="h-full bg-red-600 rounded-full flex items-center justify-center text-[10px] font-black text-white tracking-wider animate-pulse" 
-                  style={{ width: "71%" }}
+                  className="h-full bg-[#25D366] rounded-full flex items-center justify-center text-[10px] font-black text-white tracking-wider animate-pulse" 
+                  style={{ width: "84%" }}
                 >
-                  71% das vagas preenchidas...
+                  84% dos agentes de elite conectados...
                 </div>
               </div>
             </div>
@@ -178,7 +182,7 @@ const LiveStream = () => {
             {/* TÍTULO PRINCIPAL */}
             <div className="text-center md:text-left">
               <h3 className="text-2xl md:text-3xl font-black text-zinc-900 leading-tight">
-                A Fábrica cria um Low Ticket por HORA!
+                Tenha um Feed Profissional de R$ 10k/mês e crie anúncios em 5 segundos!
               </h3>
             </div>
 
@@ -191,7 +195,7 @@ const LiveStream = () => {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Seu nome completo"
                   required
-                  className="bg-zinc-50 border-zinc-200 text-zinc-900 focus-visible:ring-emerald-500 rounded-xl py-5"
+                  className="bg-zinc-50 border-zinc-200 text-zinc-900 focus-visible:ring-[#00E5FF] rounded-xl py-5"
                 />
               </div>
 
@@ -207,21 +211,28 @@ const LiveStream = () => {
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="(85) 99845-8995"
                     required
-                    className="flex-1 bg-zinc-50 border-zinc-200 text-zinc-900 focus-visible:ring-emerald-500 rounded-xl py-5"
+                    className="flex-1 bg-zinc-50 border-zinc-200 text-zinc-900 focus-visible:ring-[#00E5FF] rounded-xl py-5"
                   />
                 </div>
               </div>
 
-              {/* BOTÃO DE ENVIAR COM CLICK DIRETO */}
+              {/* BOTÃO DE ENVIAR COM CLICK DIRETO (VERDE ANTES, MUDA DE COR PARA CIANO DEPOIS DO CLICK) */}
               <Button
                 onClick={handleRegister}
                 disabled={isSubmitting}
-                className="w-full bg-[#8ade9b] hover:bg-[#7bc88b] text-zinc-950 font-black py-6 rounded-xl shadow-lg border-none flex items-center justify-center text-md transition-all duration-300"
+                className={`w-full font-black py-6 rounded-xl shadow-lg border-none flex items-center justify-center text-md transition-all duration-300 ${
+                  isSubmitting 
+                    ? "bg-[#00E5FF] hover:bg-[#00c8e0] text-black" 
+                    : "bg-[#25D366] hover:bg-[#20ba59] text-white"
+                }`}
               >
                 {isSubmitting ? (
-                  <div className="h-5 w-5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                  <div className="flex items-center gap-2">
+                    <div className="h-5 w-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    <span>Conectando à Live...</span>
+                  </div>
                 ) : (
-                  "C"
+                  "Confirmar Inscrição"
                 )}
               </Button>
             </div>
@@ -235,7 +246,7 @@ const LiveStream = () => {
           {/* TÍTULO DA LIVE ULTRA CLEAN */}
           <div className="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-4 flex items-center justify-between gap-4">
             <h2 className="text-lg md:text-xl font-black text-white tracking-wide">
-              A Fábrica cria um Low Ticket por HORA!
+              Como ter um Feed Profissional de R$ 10k/mês e usar a Fábrica de Anúncios com I.A!
             </h2>
             <div className="flex items-center gap-1.5 bg-red-600/15 border border-red-500/20 px-3 py-1.5 rounded-xl flex-shrink-0 animate-pulse">
               <span className="h-2 w-2 rounded-full bg-red-500" />
@@ -246,8 +257,8 @@ const LiveStream = () => {
           {/* GRID PRINCIPAL: VÍDEO GIGANTE E CHAT LADO A LADO */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
             
-            {/* LADO ESQUERDO: PLAYER DE VÍDEO VERTICAL COM GLOW AMBIENT */}
-            <div className="lg:col-span-2 flex flex-col h-[650px] bg-black border border-zinc-800/80 rounded-3xl overflow-hidden shadow-[0_24px_50px_rgba(0,0,0,0.5)] relative">
+            {/* LADO ESQUERDO: PLAYER DE VÍDEO HORIZONTAL 16:9 COM GLOW AMBIENT */}
+            <div className="lg:col-span-2 flex flex-col bg-black border border-zinc-800/80 rounded-3xl overflow-hidden shadow-[0_24px_50px_rgba(0,0,0,0.5)] relative aspect-video">
               
               {/* BADGES DO LIVESTREAM EM CIMA DO VÍDEO */}
               <div className="absolute top-4 left-4 z-40 flex items-center gap-2">
@@ -261,7 +272,7 @@ const LiveStream = () => {
                 </div>
               </div>
 
-              {/* CAPA INTERATIVA DE CLICK-TO-PLAY (EXATAMENTE COMO NO SEU PRINT) */}
+              {/* CAPA INTERATIVA DE CLICK-TO-PLAY */}
               {!isPlaying ? (
                 <div 
                   onClick={() => setIsPlaying(true)}
@@ -285,7 +296,7 @@ const LiveStream = () => {
                 <div className="absolute inset-0 z-20 bg-transparent cursor-default" />
               )}
 
-              {/* CONTAINER COM EFEITO DE BLUR AMBIENTE PARA EXPANDIR O VÍDEO VERTICAL */}
+              {/* CONTAINER COM EFEITO DE BLUR AMBIENTE PARA EXPANDIR O VÍDEO HORIZONTAL */}
               <div className="relative w-full h-full flex items-center justify-center bg-zinc-950 overflow-hidden">
                 
                 {/* Imagem de Fundo Borrada (Ambient Glow) */}
@@ -294,10 +305,10 @@ const LiveStream = () => {
                   style={{ backgroundImage: `url('https://img.youtube.com/vi/dvInvZZ7fLY/maxresdefault.jpg')` }}
                 />
 
-                {/* Iframe do Vídeo Vertical (Fica gigante no centro aproveitando 100% da altura de 650px) */}
-                <div className="relative h-full aspect-[9/16] bg-black shadow-[0_0_80px_rgba(0,0,0,0.9)] z-10 overflow-hidden">
+                {/* Iframe do Vídeo Horizontal (16:9 Nativo) */}
+                <div className="relative w-full h-full bg-black shadow-[0_0_80px_rgba(0,0,0,0.9)] z-10 overflow-hidden">
                   <iframe
-                    className="w-full h-full border-none pointer-events-none scale-105"
+                    className="w-full h-full border-none pointer-events-none"
                     src={`https://www.youtube.com/embed/dvInvZZ7fLY?autoplay=${isPlaying ? 1 : 0}&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1`}
                     title="Canva Viagem Live"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -308,8 +319,8 @@ const LiveStream = () => {
 
             </div>
 
-            {/* LADO DIREITO: CHAT DO LIVESTREAM */}
-            <div className="flex flex-col h-[650px] bg-zinc-900/60 border border-zinc-800/80 rounded-3xl overflow-hidden shadow-2xl">
+            {/* LADO DIREITO: CHAT DO LIVESTREAM (AUTOMATICAMENTE ESTICADO PARA A MESMA ALTURA DO VÍDEO 16:9) */}
+            <div className="flex flex-col bg-zinc-900/60 border border-zinc-800/80 rounded-3xl overflow-hidden shadow-2xl h-full min-h-[450px]">
               
               {/* ABAS CHAT / SUPORTE */}
               <div className="flex p-2 bg-zinc-900 border-b border-zinc-800/80 gap-1">
@@ -437,13 +448,7 @@ const LiveStream = () => {
         </main>
       )}
 
-      {/* FOOTER PREMIUM SEGURANÇA */}
-      {step === "watch" && (
-        <footer className="border-t border-zinc-900 py-3 bg-zinc-950 flex items-center justify-center gap-6 text-[10px] text-zinc-500 uppercase font-black tracking-wider mt-4">
-          <span className="flex items-center gap-1"><Check size={11} className="text-emerald-500" /> Site Seguro</span>
-          <span className="flex items-center gap-1"><Check size={11} className="text-emerald-500" /> Privacidade Protegida</span>
-        </footer>
-      )}
+      {/* RODA PÉ REMOVIDO CONFORME DIRETRIZ DE UX */}
     </div>
   );
 };
