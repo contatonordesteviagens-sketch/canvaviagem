@@ -262,6 +262,10 @@ interface FabricaContextType {
   reset: () => void;
   setPhase: (phase: number) => void;
   toggleChecklist: (key: string) => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 const FabricaContext = createContext<FabricaContextType | undefined>(undefined);
@@ -431,24 +435,64 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     const timer = setTimeout(syncState, 2500);
     return () => clearTimeout(timer);
   }, [
-    state.agencyName, 
-    state.currentPhase, 
-    state.niche, 
-    state.digitalScore, 
-    state.selectedPackages.length, 
-    state.siteContent.heroHeadline,
-    state.logoBase64,
-    state.generatedAdImage,
-    state.siteContent.galleryImages.length,
-    state.allGeneratedAdImages?.length,
+    JSON.stringify({
+      ...state,
+      logoBase64: !!state.logoBase64,
+      generatedAdImage: !!state.generatedAdImage,
+      lastCleanPhoto: !!state.lastCleanPhoto,
+    }),
     user?.id
   ]);
 
+  // Histórico de alterações (Undo / Redo)
+  const [history, setHistory] = useState<FabricaState[]>([]);
+  const [redoStack, setRedoStack] = useState<FabricaState[]>([]);
+
   const update = useCallback((patch: Partial<FabricaState>) => {
-    setState((prev) => ({ ...prev, ...patch }));
+    setState((prev) => {
+      // Salva no histórico antes de aplicar o patch
+      setHistory((h) => {
+        const nextH = [...h, prev];
+        if (nextH.length > 50) nextH.shift(); // limite de 50 ações
+        return nextH;
+      });
+      // Limpa pilha de refazer ao fazer uma nova alteração
+      setRedoStack([]);
+      return { ...prev, ...patch };
+    });
   }, []);
 
-  const reset = useCallback(() => setState(defaultState), []);
+  const undo = useCallback(() => {
+    setHistory((h) => {
+      if (h.length === 0) return h;
+      const prev = h[h.length - 1];
+      const nextH = h.slice(0, -1);
+      setState((current) => {
+        setRedoStack((r) => [...r, current]);
+        return prev;
+      });
+      return nextH;
+    });
+  }, []);
+
+  const redo = useCallback(() => {
+    setRedoStack((r) => {
+      if (r.length === 0) return r;
+      const next = r[r.length - 1];
+      const nextR = r.slice(0, -1);
+      setState((current) => {
+        setHistory((h) => [...h, current]);
+        return next;
+      });
+      return nextR;
+    });
+  }, []);
+
+  const reset = useCallback(() => {
+    setHistory([]);
+    setRedoStack([]);
+    setState(defaultState);
+  }, []);
 
   const setPhase = useCallback((phase: number) => {
     setState((prev) => ({ ...prev, currentPhase: phase }));
@@ -462,7 +506,19 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <FabricaContext.Provider value={{ state, update, reset, setPhase, toggleChecklist }}>
+    <FabricaContext.Provider
+      value={{
+        state,
+        update,
+        reset,
+        setPhase,
+        toggleChecklist,
+        undo,
+        redo,
+        canUndo: history.length > 0,
+        canRedo: redoStack.length > 0,
+      }}
+    >
       {children}
     </FabricaContext.Provider>
   );
