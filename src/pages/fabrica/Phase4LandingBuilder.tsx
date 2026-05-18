@@ -222,7 +222,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
     return () => {
       iframe.removeEventListener("load", handleIframeLoad);
     };
-  }, [previewHTML, state.selectedPackages, state.depoimentos]);
+  }, [state, state.selectedPackages, state.depoimentos]);
 
   // ── AUTO-SYNC: Injeta dados da Fase 3 na Fase 4 na primeira montagem ──
   // Só atua se o usuário ainda não personalizou o site (campos padrão).
