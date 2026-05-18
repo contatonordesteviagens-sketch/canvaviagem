@@ -998,12 +998,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       updatedPackages = [newPkg, ...base];
     }
 
-    // Garante as duas imagens na Galeria do site (a limpa E a montada)
+    // Garante APENAS a imagem LIMPA (sem a arte poluída de texto do anúncio) no banco do site
     const currentGallery = state.siteContent.galleryImages || [];
     let updatedGallery = [...currentGallery];
-    if (!updatedGallery.includes(imageToUse)) updatedGallery = [imageToUse, ...updatedGallery];
-    if (sourceCleanImg && sourceCleanImg !== finalComposedImg && !updatedGallery.includes(finalComposedImg)) {
-       updatedGallery = [finalComposedImg, ...updatedGallery];
+    const imageToAdd = sourceCleanImg || finalComposedImg;
+    if (imageToAdd && !updatedGallery.includes(imageToAdd)) {
+       updatedGallery = [imageToAdd, ...updatedGallery];
     }
 
     // Inteligência Adicional: Se o site não tem NENHUMA foto de capa no Hero,
@@ -1872,35 +1872,15 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         </div>
       </div>
 
-      {/* 1b · Galeria Pexels/Google (modo foto) */}
+      {/* 1b · Galeria Pexels (modo foto) - F1 só tem busca Pexels */}
       {genMode === "photo" && (
         <div className={sectionCls}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">1 · Escolha uma foto real</h3>
-            <div className="flex bg-black/40 p-1 rounded-lg border border-white/10 scale-90 origin-right flex-nowrap">
-              {[
-                { id: "pexels", label: "Pexels (Top)" },
-                { id: "google", label: "Google/Web" },
-                { id: "galeria", label: "⭐ Minha Galeria" },
-                { id: "geradas", label: "⚡ Artes Geradas" }
-              ].map((eng) => (
-                <button
-                  key={eng.id}
-                  onClick={() => setSearchEngine(eng.id as any)}
-                  className={`px-2 py-1.5 rounded-md text-[9px] uppercase tracking-wider font-bold transition-all whitespace-nowrap ${
-                    searchEngine === eng.id 
-                      ? (eng.id === "galeria" ? "bg-indigo-500 text-white shadow-md" : eng.id === "geradas" ? "bg-orange-500 text-white shadow-md" : "bg-white/10 text-white") 
-                      : "text-white/40 hover:text-white"
-                  }`}
-                >
-                  {eng.label}
-                </button>
-              ))}
-            </div>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-white/30 bg-white/5 px-2 py-1 rounded-md border border-white/10">Pexels (Top)</span>
           </div>
 
-          {searchEngine === "pexels" || searchEngine === "google" ? (
-            <>
+          <>
               {/* Sugestões de destinos populares + os destinos da agência */}
               <div className="flex flex-wrap gap-1.5 mb-3">
                 {[...new Set([...(state.destinos || []), ...POPULAR_PHOTO_DESTINATIONS])].slice(0, 14).map((d) => (
@@ -1977,115 +1957,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 </div>
               )}
             </>
-          ) : searchEngine === "galeria" ? (
-            <>
-              {/* NOVO RENDER DA GALERIA DA AGÊNCIA (PONTO 6) */}
-              <p className="text-[10px] text-indigo-300/80 mb-3 leading-relaxed font-medium">
-                📸 Fotos utilizadas recentemente no seu Site e anúncios gerados. 
-                Centralizadas e reutilizáveis instantaneamente.
-              </p>
-              {(state.siteContent.galleryImages || []).length > 0 ? (
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-80 overflow-y-auto pr-1 custom-scrollbar">
-                  {(state.siteContent.galleryImages || []).map((imgUrl: string, idx: number) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedPhotoUrl(imgUrl)}
-                      className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                        selectedPhotoUrl === imgUrl ? "scale-95" : "border-white/10 hover:border-white/30"
-                      }`}
-                      style={selectedPhotoUrl === imgUrl ? { borderColor: secondaryColor, borderWidth: 3 } : undefined}
-                    >
-                      <img src={imgUrl} alt="Foto da Galeria" className="w-full h-full object-cover" />
-                      {selectedPhotoUrl === imgUrl && (
-                        <div className="absolute inset-0 flex items-center justify-center" style={{ background: `${primaryColor}cc` }}>
-                          <Check className="w-8 h-8 text-white" />
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-8 border border-dashed border-white/10 rounded-xl text-center">
-                  <ImageIcon className="w-8 h-8 text-white/20 mx-auto mb-2" />
-                  <p className="text-sm font-bold text-white/70 mb-1">Galeria ainda vazia</p>
-                  <p className="text-[11px] text-white/40">
-                    Suas fotos aparecerão aqui automaticamente assim que você subir fotos no Site ou gerar anúncios.
-                  </p>
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              {/* ABA DE TODAS AS ARTES DE ANÚNCIOS GERADOS COM SALVAMENTO E EXCLUSÃO (DEVE TER UMA ABA DE TODAS AS IMAGENS QUE FORAM GERADAS) */}
-              <p className="text-[10px] text-orange-300/80 mb-3 leading-relaxed font-medium">
-                ⚡ Todas as artes de anúncios geradas com IA na sua conta. Clique para usar como plano de fundo ou baixar diretamente.
-              </p>
-              {(state.allGeneratedAdImages || []).length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-96 overflow-y-auto pr-1 custom-scrollbar">
-                  {(state.allGeneratedAdImages || []).map((imgUrl: string, idx: number) => (
-                    <div
-                      key={idx}
-                      className={`relative group aspect-[4/5] rounded-xl overflow-hidden border-2 transition-all bg-black/40 ${
-                        selectedPhotoUrl === imgUrl ? "scale-95" : "border-white/10 hover:border-white/30"
-                      }`}
-                      style={selectedPhotoUrl === imgUrl ? { borderColor: secondaryColor, borderWidth: 3 } : undefined}
-                    >
-                      <img src={imgUrl} alt="Arte Gerada" className="w-full h-full object-cover" />
-                      
-                      {/* Hover Overlay com controles */}
-                      <div className="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-3 gap-2 text-center">
-                        <button
-                          onClick={() => setSelectedPhotoUrl(imgUrl)}
-                          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 px-2 rounded-lg text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer border-0"
-                        >
-                          <Check className="w-3.5 h-3.5" /> Usar Fundo
-                        </button>
-                        <button
-                          onClick={() => {
-                            const link = document.createElement("a");
-                            link.href = imgUrl;
-                            link.download = `anuncio-fabrica-${idx + 1}.png`;
-                            link.click();
-                            toast.success("Download iniciado!");
-                          }}
-                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-2 rounded-lg text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer border-0"
-                        >
-                          <Download className="w-3.5 h-3.5" /> Baixar PNG
-                        </button>
-                        <button
-                          onClick={() => {
-                            const updated = (state.allGeneratedAdImages || []).filter((_, i) => i !== idx);
-                            update({ allGeneratedAdImages: updated });
-                            toast.success("Arte removida do histórico");
-                          }}
-                          className="w-full bg-red-500/20 hover:bg-red-500/40 text-red-300 font-bold py-1 px-2 rounded-lg text-[9px] uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer border-0"
-                        >
-                          <Trash2 className="w-3 h-3" /> Excluir
-                        </button>
-                      </div>
-
-                      {/* Selected indicator */}
-                      {selectedPhotoUrl === imgUrl && (
-                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg">
-                          <Check className="w-4 h-4 text-white" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-8 border border-dashed border-white/10 rounded-xl text-center">
-                  <ImageIcon className="w-8 h-8 text-white/20 mx-auto mb-2" />
-                  <p className="text-sm font-bold text-white/70 mb-1">Nenhuma arte gerada ainda</p>
-                  <p className="text-[11px] text-white/40">
-                    Gere seu primeiro anúncio para ver todas as suas artes arquivadas de forma segura aqui.
-                  </p>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
+          </div>
+        )}
 
       {/* 1c · Sua imagem (modo custom) */}
       {genMode === "custom" && (

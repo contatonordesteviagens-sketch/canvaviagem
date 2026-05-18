@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFabricaContext, type Pacote, type Testimonio } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -77,13 +77,8 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
       }
     }
 
-    // 3. Pacote automático desabilitado aqui:
-    // Agora o Phase3ArtFactory.tsx gerencia a inserção ACUMULATIVA em 'selectedPackages'
-    // em tempo real assim que a arte é gerada! Mantemos apenas o push seguro para a galeria:
-    if (state.generatedAdImage && !state.siteContent.galleryImages.includes(state.generatedAdImage)) {
-      patches["galleryImages"] = [state.generatedAdImage, ...state.siteContent.galleryImages];
-      synced.push("Imagen del anuncio");
-    }
+    // 3. Pacote automático desabilitado aqui (gerenciado pela Fase 3 de forma acumulativa)
+
 
     // 4. CTA final — usa WhatsApp/Instagram se disponíveis
     if (!state.siteContent.finalCtaTitle || state.siteContent.finalCtaTitle === "¿Listo para tu próximo viaje?") {
@@ -862,26 +857,31 @@ const ImageGallery = ({
       {images.length > 0 ? (
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
           {images.map((url) => (
-            <div key={url} className="relative aspect-square rounded-lg overflow-hidden border border-white/10 group">
+            <div key={url} className="relative aspect-square rounded-lg overflow-hidden border border-white/10 bg-black/20 group">
               <img src={url} alt="" className="w-full h-full object-cover" />
-              <button
-                onClick={() => {
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `banco-imagem-${Date.now()}.png`;
-                  a.click();
-                }}
-                className="absolute top-1 left-1 p-1 rounded-md bg-black/70 text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                title="Baixar imagem original"
-              >
-                <Download className="w-3 h-3" />
-              </button>
-              <button
-                onClick={() => onRemove(url)}
-                className="absolute top-1 right-1 p-1 rounded-md bg-black/70 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="w-3 h-3" />
-              </button>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/40 flex flex-col justify-between p-1.5 pointer-events-none">
+                <div className="flex justify-between items-center w-full pointer-events-auto">
+                  <button
+                    onClick={() => {
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `banco-imagem-${Date.now()}.png`;
+                      a.click();
+                    }}
+                    className="p-1.5 rounded-lg bg-black/80 backdrop-blur-md text-emerald-400 hover:bg-black hover:scale-105 active:scale-95 transition-all"
+                    title="Baixar imagem original"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => onRemove(url)}
+                    className="p-1.5 rounded-lg bg-black/80 backdrop-blur-md text-red-400 hover:bg-black hover:scale-105 active:scale-95 transition-all"
+                    title="Excluir imagem"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -1085,18 +1085,24 @@ const PublishOnLovableCard = ({
           ))}
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-2.5 mb-2">
+        <div className="grid sm:grid-cols-3 gap-2.5 mb-2.5">
           <button
             onClick={copyHtml}
-            className="py-3 px-4 rounded-xl bg-white/[0.06] border border-white/15 text-white font-semibold hover:bg-white/[0.10] transition-all flex items-center justify-center gap-2 text-sm"
+            className="py-3 px-3 rounded-xl bg-white/[0.06] border border-white/15 text-white font-semibold hover:bg-white/[0.10] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm"
           >
             <Copy className="w-4 h-4" /> Copiar HTML Completo
+          </button>
+          <button
+            onClick={() => downloadLandingHTML(state, undefined, user?.id)}
+            className="py-3 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 font-semibold hover:bg-emerald-500/20 transition-all flex items-center justify-center gap-2 text-xs sm:text-sm"
+          >
+            <Download className="w-4 h-4" /> Baixar HTML Local
           </button>
           <a
             href={LOVABLE_INVITE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="py-3 px-4 rounded-xl font-black text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all text-sm"
+            className="py-3 px-3 rounded-xl font-black text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all text-xs sm:text-sm"
             style={{
               background: `linear-gradient(135deg, ${primaryColor}, #FCD34D)`,
               boxShadow: `0 8px 24px ${primaryColor}55`,
@@ -1124,8 +1130,71 @@ const PublishOnLovableCard = ({
           </p>
         </div>
 
+        {/* GUIA DE PUBLICAÇÃO PREMIUM E RECOMENDAÇÕES GRÁTIS */}
+        <div className="my-6 p-6 rounded-2xl border bg-black/40 backdrop-blur-xl transition-all"
+             style={{ borderColor: `${primaryColor}33` }}>
+          <div className="flex items-center gap-2.5 mb-3.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/30">
+              <Rocket className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white tracking-wide uppercase">
+                🚀 Cómo poner tu Web online en 10 Segundos (100% Gratis)
+              </h4>
+              <p className="text-[11px] text-white/50 mt-0.5">
+                ¡Evita los límites de tamaño de código de Lovable publicando directamente el archivo HTML!
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3.5 text-xs text-white/80 leading-relaxed mb-5">
+            <div className="flex gap-2.5 items-start">
+              <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5">1</span>
+              <p>
+                Haz clic en el botón verde <strong className="text-emerald-400">"Baixar HTML Local"</strong> arriba para guardar el archivo con el código completo de tu web en tu computadora.
+              </p>
+            </div>
+            <div className="flex gap-2.5 items-start">
+              <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5">2</span>
+              <p>
+                Elige uno de los servidores gratis a continuación (nuestra recomendación para agencias de viajes):
+              </p>
+            </div>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-3.5 mb-4">
+            <a href="https://app.netlify.com/drop" target="_blank" rel="noopener noreferrer" 
+               className="p-3.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] transition-all flex flex-col justify-between group">
+              <div>
+                <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">Recomendado ✦</span>
+                <h5 className="font-bold text-white text-sm mt-2 group-hover:text-cyan-400 transition-colors">Netlify Drop</h5>
+                <p className="text-[11px] text-white/50 mt-1">¡Aloja tu web arrastrando el archivo sin siquiera tener que registrarte! Súper práctico.</p>
+              </div>
+              <span className="text-[10px] font-semibold text-white/70 mt-3 flex items-center gap-1">Acceder a Netlify Drop <ExternalLink className="w-3 h-3" /></span>
+            </a>
+
+            <a href="https://tiiny.host" target="_blank" rel="noopener noreferrer"
+               className="p-3.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] transition-all flex flex-col justify-between group">
+              <div>
+                <span className="text-[10px] font-bold text-pink-400 uppercase tracking-widest bg-pink-500/10 px-2 py-0.5 rounded border border-pink-500/20">Más Fácil ⚡</span>
+                <h5 className="font-bold text-white text-sm mt-2 group-hover:text-pink-400 transition-colors">Tiiny.host</h5>
+                <p className="text-[11px] text-white/50 mt-1">¡Escribe el nombre de tu agencia y sube el archivo. Tu web estará online al instante!</p>
+              </div>
+              <span className="text-[10px] font-semibold text-white/70 mt-3 flex items-center gap-1">Acceder a Tiiny.host <ExternalLink className="w-3 h-3" /></span>
+            </a>
+          </div>
+
+          <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 text-[10.5px] text-amber-300/80 flex items-start gap-2.5">
+            <span className="text-sm">💡</span>
+            <p className="leading-normal">
+              <strong>Consejo de oro:</strong> Al descargar la web, se guardará con el nombre <code className="text-white bg-white/10 px-1 py-0.5 rounded">site-nome.html</code>. 
+              ¡Antes de subirlo a la plataforma de hospedagem, renombra el archivo a <strong className="text-white">index.html</strong> para que se abra automáticamente en el navegador cuando accedan a tu enlace!
+            </p>
+          </div>
+        </div>
+
         <p className="text-[11px] text-white/50 text-center">
-          âœ“ Sin tarjeta de crédito Â· âœ“ Dominio gratis incluido Â· âœ“ Soporte para dominio propio
+          ✓ Sem cartão de crédito · ✓ Domínio grátis incluído · ✓ Suporte a domínio próprio
         </p>
 
         <div className="mt-6 pt-5 border-t border-white/10 flex justify-center">

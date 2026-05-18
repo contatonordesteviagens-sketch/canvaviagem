@@ -1886,6 +1886,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
     const destUp = (destination || "DESTINO").toUpperCase();
 
     if (variant === 0) {
+      // Story 9:16: usa o mesmo renderer premium do V3-story (box amarelo sobre foto)
+      // O layout de quadrado abaixo é exclusivo do formato 1:1.
+      if (format === "story") {
+        // Redireciona internamente: força variant=3 com format=story (já testado e estável)
+        const savedVariant = variant;
+        // Re-executa como V3-story chamando o mesmo bloco via recursão controlada
+        return await composeTravelAd({ ...options, forceVariant: 3 });
+      }
+
       // REGRA GLOBAL DE LEGIBILIDADE: texto sempre tem que destacar do fundo.
       // Painel = secondaryColor → texto principal = primaryColor com contraste garantido.
       // Badge  = primaryColor   → texto da badge = secondaryColor com contraste garantido.

@@ -77,13 +77,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
       }
     }
 
-    // 3. Pacote automático desabilitado aqui:
-    // Agora o Phase3ArtFactory.tsx gerencia a inserção ACUMULATIVA em 'selectedPackages'
-    // em tempo real assim que a arte é gerada! Mantemos apenas o push seguro para a galeria:
-    if (state.generatedAdImage && !state.siteContent.galleryImages.includes(state.generatedAdImage)) {
-      patches["galleryImages"] = [state.generatedAdImage, ...state.siteContent.galleryImages];
-      synced.push("Imagem do anúncio");
-    }
+    // 3. Pacote automático desabilitado aqui (gerenciado pela Fase 3 de forma acumulativa)
+
 
     // 4. CTA final — usa WhatsApp/Instagram se disponíveis
     if (!state.siteContent.finalCtaTitle || state.siteContent.finalCtaTitle === "Pronto para sua próxima viagem?") {
@@ -862,26 +857,31 @@ const ImageGallery = ({
       {images.length > 0 ? (
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
           {images.map((url) => (
-            <div key={url} className="relative aspect-square rounded-lg overflow-hidden border border-white/10 group">
+            <div key={url} className="relative aspect-square rounded-lg overflow-hidden border border-white/10 bg-black/20 group">
               <img src={url} alt="" className="w-full h-full object-cover" />
-              <button
-                onClick={() => {
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `banco-imagem-${Date.now()}.png`;
-                  a.click();
-                }}
-                className="absolute top-1 left-1 p-1 rounded-md bg-black/70 text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                title="Baixar imagem original"
-              >
-                <Download className="w-3 h-3" />
-              </button>
-              <button
-                onClick={() => onRemove(url)}
-                className="absolute top-1 right-1 p-1 rounded-md bg-black/70 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="w-3 h-3" />
-              </button>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/40 flex flex-col justify-between p-1.5 pointer-events-none">
+                <div className="flex justify-between items-center w-full pointer-events-auto">
+                  <button
+                    onClick={() => {
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `banco-imagem-${Date.now()}.png`;
+                      a.click();
+                    }}
+                    className="p-1.5 rounded-lg bg-black/80 backdrop-blur-md text-emerald-400 hover:bg-black hover:scale-105 active:scale-95 transition-all"
+                    title="Baixar imagem original"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => onRemove(url)}
+                    className="p-1.5 rounded-lg bg-black/80 backdrop-blur-md text-red-400 hover:bg-black hover:scale-105 active:scale-95 transition-all"
+                    title="Excluir imagem"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -1085,18 +1085,24 @@ const PublishOnLovableCard = ({
           ))}
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-2.5 mb-2">
+        <div className="grid sm:grid-cols-3 gap-2.5 mb-2.5">
           <button
             onClick={copyHtml}
-            className="py-3 px-4 rounded-xl bg-white/[0.06] border border-white/15 text-white font-semibold hover:bg-white/[0.10] transition-all flex items-center justify-center gap-2 text-sm"
+            className="py-3 px-3 rounded-xl bg-white/[0.06] border border-white/15 text-white font-semibold hover:bg-white/[0.10] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm"
           >
             <Copy className="w-4 h-4" /> Copiar HTML Completo
+          </button>
+          <button
+            onClick={() => downloadLandingHTML(state, undefined, user?.id)}
+            className="py-3 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 font-semibold hover:bg-emerald-500/20 transition-all flex items-center justify-center gap-2 text-xs sm:text-sm"
+          >
+            <Download className="w-4 h-4" /> Baixar HTML Local
           </button>
           <a
             href={LOVABLE_INVITE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="py-3 px-4 rounded-xl font-black text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all text-sm"
+            className="py-3 px-3 rounded-xl font-black text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all text-xs sm:text-sm"
             style={{
               background: `linear-gradient(135deg, ${primaryColor}, #FCD34D)`,
               boxShadow: `0 8px 24px ${primaryColor}55`,
@@ -1122,6 +1128,69 @@ const PublishOnLovableCard = ({
           <p className="text-[10px] text-white/40 text-center mt-1.5 italic">
             Use este botão caso seu site já esteja pronto e queira apenas adicionar novos pacotes sem reconstruir tudo.
           </p>
+        </div>
+
+        {/* GUIA DE PUBLICAÇÃO PREMIUM E RECOMENDAÇÕES GRÁTIS */}
+        <div className="my-6 p-6 rounded-2xl border bg-black/40 backdrop-blur-xl transition-all"
+             style={{ borderColor: `${primaryColor}33` }}>
+          <div className="flex items-center gap-2.5 mb-3.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/30">
+              <Rocket className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white tracking-wide uppercase">
+                🚀 Como colocar seu Site no ar em 10 Segundos (100% Grátis)
+              </h4>
+              <p className="text-[11px] text-white/50 mt-0.5">
+                Evite os limites de tamanho de código do Lovable publicando diretamente o arquivo HTML!
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3.5 text-xs text-white/80 leading-relaxed mb-5">
+            <div className="flex gap-2.5 items-start">
+              <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5">1</span>
+              <p>
+                Clique no botão verde <strong className="text-emerald-400">"Baixar HTML Local"</strong> acima para salvar o arquivo de código completo do seu site no seu computador.
+              </p>
+            </div>
+            <div className="flex gap-2.5 items-start">
+              <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white shrink-0 mt-0.5">2</span>
+              <p>
+                Escolha um dos servidores grátis abaixo (nossa recomendação para agências de viagem):
+              </p>
+            </div>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-3.5 mb-4">
+            <a href="https://app.netlify.com/drop" target="_blank" rel="noopener noreferrer" 
+               className="p-3.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] transition-all flex flex-col justify-between group">
+              <div>
+                <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">Recomendado ✦</span>
+                <h5 className="font-bold text-white text-sm mt-2 group-hover:text-cyan-400 transition-colors">Netlify Drop</h5>
+                <p className="text-[11px] text-white/50 mt-1">Hospede arrastando o arquivo sem precisar nem criar conta! Super prático.</p>
+              </div>
+              <span className="text-[10px] font-semibold text-white/70 mt-3 flex items-center gap-1">Acessar Netlify Drop <ExternalLink className="w-3 h-3" /></span>
+            </a>
+
+            <a href="https://tiiny.host" target="_blank" rel="noopener noreferrer"
+               className="p-3.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] transition-all flex flex-col justify-between group">
+              <div>
+                <span className="text-[10px] font-bold text-pink-400 uppercase tracking-widest bg-pink-500/10 px-2 py-0.5 rounded border border-pink-500/20">Mais Fácil ⚡</span>
+                <h5 className="font-bold text-white text-sm mt-2 group-hover:text-pink-400 transition-colors">Tiiny.host</h5>
+                <p className="text-[11px] text-white/50 mt-1">Digite o nome da sua agência e envie o arquivo. Seu site fica online na hora!</p>
+              </div>
+              <span className="text-[10px] font-semibold text-white/70 mt-3 flex items-center gap-1">Acessar Tiiny.host <ExternalLink className="w-3 h-3" /></span>
+            </a>
+          </div>
+
+          <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 text-[10.5px] text-amber-300/80 flex items-start gap-2.5">
+            <span className="text-sm">💡</span>
+            <p className="leading-normal">
+              <strong>Dica de ouro:</strong> Ao baixar o site, ele virá com o nome <code className="text-white bg-white/10 px-1 py-0.5 rounded">site-nome.html</code>. 
+              Antes de enviar para a plataforma de hospedagem, renomeie o arquivo para <strong className="text-white">index.html</strong> para que ele abra automaticamente no navegador ao acessarem o link!
+            </p>
+          </div>
         </div>
 
         <p className="text-[11px] text-white/50 text-center">
