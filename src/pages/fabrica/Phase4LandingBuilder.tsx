@@ -462,7 +462,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
       {/* Grid lateral */}
       <div className="flex flex-col-reverse gap-8 items-stretch">
         {/* Painel Esquerdo: Opções de Configuração (5 colunas em lg) */}
-        <div className="lg:col-span-5 space-y-6">
+        <div className="w-full space-y-6">
           <div className="border-b border-white/10 pb-4">
             <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <Palette className="w-5 h-5 text-amber-400" />
@@ -726,7 +726,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         </div>
 
         {/* Painel Direito: Preview do Site (7 colunas em lg, Sticky) */}
-        <div className="lg:col-span-7 space-y-6 lg:sticky lg:top-24">
+        <div className="w-full space-y-6">
           <div className="bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
             <div className="px-4 py-3 bg-zinc-950 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
