@@ -1,0 +1,33 @@
+:root {
+  --background: 0 0% 4%;
+  --background-elevated: 0 0% 7%;
+  --foreground: 0 0% 100%;
+  --muted-foreground: 0 0% 77%;
+  --subtle-foreground: 0 0% 62%;
+  --line: 0 0% 100% / 0.1;
+  --line-strong: 18 100% 60% / 0.28;
+  --card: 0 0% 8% / 0.88;
+  --card-solid: 0 0% 8%;
+  --brand: 18 100% 60%;
+  --brand-strong: 16 100% 56%;
+  --brand-soft: 28 100% 69%;
+  --danger: 4 90% 62%;
+  --success: 149 68% 47%;
+  --success-soft: 149 68% 47% / 0.15;
+  --red-soft: 4 90% 62% / 0.14;
+  --warning-soft: 18 100% 60% / 0.16;
+  --shadow-soft: 0 32px 80px hsl(0 0% 0% / 0.34);
+  --shadow-brand: 0 22px 60px hsl(var(--brand) / 0.24);
+  --radius-sm: 14px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
+  --radius-pill: 999px;
+  --container: 1180px;
+  --section-space: clamp(4.5rem, 8vw, 8rem);
+  --font-display: 'Outfit', 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --gradient-brand: linear-gradient(135deg, hsl(var(--brand-soft)) 0%, hsl(var(--brand)) 52%, hsl(var(--brand-strong)) 100%);
+  --gradient-danger: linear-gradient(135deg, hsl(4 100% 66%) 0%, hsl(0 82% 58%) 100%);
+  --gradient-surface: linear-gradient(180deg, hsl(0 0% 10% / 0.82), hsl(0 0% 6% / 0.92));
+  --gradient-hero: radial-gradient(circle at top left, hsl(var(--brand) / 0.16), transparent 38%), radial-gradient(circle at 85% 10%, hsl(4 90% 62% / 0.12), transparent 28%), radial-gradient(circle at 50% 100%, hsl(var(--brand-soft) / 0.08), transparent 38%);
+}

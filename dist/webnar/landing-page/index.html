@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula Secreta — O Mapa da Agência 5 Estrelas | Canva Viagem</title>
+    <meta name="description"
+        content="Descubra o sistema que as melhores agências de viagem usam para vender todo dia no Instagram. Aula Secreta gratuita — 18/03/2026. Vagas limitadas.">
+    <meta property="og:title" content="Aula Secreta | Canva Viagem — O Mapa da Agência 5 Estrelas">
+    <meta property="og:description"
+        content="Sua agência some do Instagram no fim de semana. Seus clientes não. Assista gratuitamente em 18/03.">
+    <meta property="og:type" content="website">
+    <style>
+        :root {
+            --bg-dark: #050510;
+            --accent-purple: #7000FF;
+            --accent-blue: #00D1FF;
+            --text-primary: #FFFFFF;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+
+        .glow-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 0%, rgba(112, 0, 255, 0.15), transparent 70%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            padding: 80px 0;
+        }
+
+        .hero-img {
+            width: 100%;
+            height: auto;
+            border-radius: 20px;
+        }
+    </style>
+    <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="style.css">
+    </noscript>
+    <link rel="preload" href="assets/hero.png" as="image" fetchpriority="high">
+</head>
+
+<body>
+    <div class="glow-bg"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar glass">
+        <div class="container">
+            <div class="logo-wrapper">
+                <img src="assets/icon.png" alt="Canva Viagem Icon" class="nav-icon" loading="lazy">
+                <span class="logo">CANVA<span>VIAGEM</span></span>
+            </div>
+            <div class="tag-exclusive">AULA SECRETA • 18/03</div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <header class="hero container">
+        <div class="hero-content">
+            <span class="badge">RESERVADO PARA AGENTES DE VIAGEM</span>
+            <h1>"Sua agência some do Instagram no fim de semana.<br><span>Seus clientes não."</span></h1>
+            <p class="subtitle">O que as agências de luxo da Oscar Freire fazem para vender todo dia — enquanto você
+                briga com o sistema de emissão.</p>
+
+            <div class="countdown-wrapper">
+                <p class="countdown-label">⏳ A aula começa em:</p>
+                <div class="countdown" id="countdown-hero">
+                    <div class="count-block">
+                        <span id="cd-days">00</span>
+                        <label>Dias</label>
+                    </div>
+                    <span class="separator">:</span>
+                    <div class="count-block">
+                        <span id="cd-hours">00</span>
+                        <label>Horas</label>
+                    </div>
+                    <span class="separator">:</span>
+                    <div class="count-block">
+                        <span id="cd-minutes">00</span>
+                        <label>Min</label>
+                    </div>
+                    <span class="separator">:</span>
+                    <div class="count-block">
+                        <span id="cd-seconds">00</span>
+                        <label>Seg</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-form" id="hero-form-wrapper">
+                <form id="registration-form-1" class="reg-form">
+                    <div class="form-group">
+                        <input type="text" id="name-1" placeholder="Seu nome completo" required autocomplete="name">
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" id="whatsapp-1" placeholder="WhatsApp com DDD (ex: 11 99999-9999)" required
+                            autocomplete="tel">
+                    </div>
+                    <button type="submit" class="btn-primary btn-hero">
+                        🔓 QUERO MINHA VAGA GRATUITA
+                    </button>
+                </form>
+                <p class="urgency">⚠️ Vagas limitadas. Inscrições encerram em breve.</p>
+            </div>
+        </div>
+
+        <div class="hero-visual glass">
+            <img src="assets/hero.png" alt="Aula Secreta Preview" class="hero-img" fetchpriority="high">
+            <div class="aula-preview-overlay">
+                <div class="preview-top">
+                    <span class="preview-badge">🔐 AULA SECRETA</span>
+                    <span class="preview-date">18 de Março • 20h</span>
+                </div>
+                <div class="preview-title">
+                    <h3>O Mapa da Agência<br><span>5 Estrelas</span></h3>
+                </div>
+                <div class="preview-topics">
+                    <div class="topic-item"><span class="check">✅</span> Como ter 5 meses de conteúdo pronto</div>
+                    <div class="topic-item"><span class="check">✅</span> O Efeito UAU no seu Instagram</div>
+                    <div class="topic-item"><span class="check">✅</span> De 0 a 15 orçamentos por semana</div>
+                    <div class="topic-item"><span class="check">✅</span> Sem ser designer. Sem gastar horas.</div>
+                    <div class="topic-item"><span class="check">✅</span> 100% gratuito</div>
+                </div>
+                <div class="preview-host">
+                    <div class="host-avatar">LH</div>
+                    <div class="host-info">
+                        <strong>Lucas Henrique</strong>
+                        <p>Criador do Canva Viagem</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- PREMISSAS LÓGICAS -->
+    <section class="logic container">
+        <div class="glass-card logic-card">
+            <h3>Vamos ser racionais:</h3>
+            <div class="logic-steps">
+                <div class="step">
+                    <span class="number">01</span>
+                    <p>Toda semana surgem novos viajantes pesquisando agências no Instagram.</p>
+                </div>
+                <div class="step">
+                    <span class="number">02</span>
+                    <p>Eles te julgam em <strong>0.3 segundos</strong> pela aparência do seu perfil.</p>
+                </div>
+                <div class="step">
+                    <span class="number">03</span>
+                    <p>Agência com perfil amador só atrai <strong>cliente que pede desconto.</strong></p>
+                </div>
+            </div>
+            <div class="conclusion">
+                <p><strong>Conclusão Inevitável:</strong> Ou você aprende a ser designer à noite — ou usa o sistema que
+                    já entrega tudo pronto para você postar em <strong>30 segundos.</strong></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- O QUE VOCÊ VAI DESCOBRIR -->
+    <section class="discoveries container">
+        <span class="section-tag">O QUE VOCÊ VAI DESCOBRIR</span>
+        <h2 class="section-title">Uma aula. <span>Cinco meses de resultado.</span></h2>
+        <p class="section-subtitle">Nesta aula secreta de 60 minutos, você vai aprender o sistema que agências premium
+            usam para nunca mais ficar sem o que postar.</p>
+        <div class="discoveries-grid">
+            <div class="discovery-card glass">
+                <span class="discovery-num">01</span>
+                <h4>Por que postar foto bonita de destino está acabando com o seu alcance</h4>
+                <p>O erro que 95% das agências cometem — e por que isso espanta exatamente o cliente que você quer.</p>
+            </div>
+            <div class="discovery-card glass">
+                <span class="discovery-num">02</span>
+                <h4>O Efeito UAU — como gerar autoridade antes do cliente te chamar</h4>
+                <p>Como seu feed faz o cliente decidir confiar em você 3 segundos antes de mandar a primeira mensagem.
+                </p>
+            </div>
+            <div class="discovery-card glass">
+                <span class="discovery-num">03</span>
+                <h4>Os 3 erros que travam o Instagram de toda agência pequena</h4>
+                <p>Você provavelmente comete todos os três. E a solução de cada um é mais simples do que você imagina.
+                </p>
+            </div>
+            <div class="discovery-card glass">
+                <span class="discovery-num">04</span>
+                <h4>Por que você não é concorrente do Decolar — e como usar isso a seu favor</h4>
+                <p>A virada de chave que separa agências que sobrevivem das que prosperam em 2026.</p>
+            </div>
+            <div class="discovery-card glass">
+                <span class="discovery-num">05</span>
+                <h4>Como ter 5 meses de conteúdo pronto sem criar nada do zero</h4>
+                <p>O sistema que transforma 15 minutos por dia em presença diária no feed dos seus clientes ideais.</p>
+            </div>
+            <div class="discovery-card glass">
+                <span class="discovery-num">06</span>
+                <h4>O plano de 4 semanas para começar a receber orçamentos orgânicos</h4>
+                <p>Exatamente o que fazer na semana 1, 2, 3 e 4 — sem adivinhar, sem improvisar.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- PARA QUEM É -->
+    <section class="for-who container">
+        <h2 class="section-title">Esta aula foi feita para <span>você?</span></h2>
+        <div class="for-who-grid">
+            <div class="for-who-card glass for-yes">
+                <div class="for-who-header yes">
+                    <span>✅ Esta aula É para você se...</span>
+                </div>
+                <ul>
+                    <li>Você é agente de viagem ou dono de pequena agência</li>
+                    <li>Sabe que precisa do Instagram mas não sabe o que postar</li>
+                    <li>Já tentou criar conteúdo e travou na tela em branco</li>
+                    <li>Quer mais orçamentos chegando sem depender de indicação</li>
+                    <li>Não tem tempo para aprender design mas quer presença digital</li>
+                    <li>Quer que sua agência pareça grande sem gastar muito</li>
+                </ul>
+            </div>
+            <div class="for-who-card glass for-no">
+                <div class="for-who-header no">
+                    <span>❌ Esta aula NÃO é para você se...</span>
+                </div>
+                <ul>
+                    <li>Você quer aprender "estratégias complexas de marketing digital"</li>
+                    <li>Está buscando curso demorado com horas de teoria</li>
+                    <li>Acha que marketing digital não funciona para o turismo</li>
+                    <li>Prefere continuar dependendo 100% de indicação</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- BENEFÍCIOS -->
+    <section class="benefits container">
+        <span class="section-tag">O QUE MUDA NA SUA AGÊNCIA</span>
+        <h2 class="section-title">Você vai <span>sentir a diferença</span> em 30 dias</h2>
+        <div class="grid">
+            <div class="benefit-card glass">
+                <div class="icon">😌</div>
+                <h4>Alívio Imediato</h4>
+                <p>Nunca mais abra o aplicativo sem saber o que postar. Você vai ter conteúdo pronto para mais de 5
+                    meses — sem criar nada do zero.</p>
+            </div>
+            <div class="benefit-card glass">
+                <div class="icon">💎</div>
+                <h4>Autoridade Premium</h4>
+                <p>O cliente vai abrir seu Instagram, ver 6 meses de posts profissionais, e pensar: <em>"essa agência é
+                        séria."</em> — antes de te contratar.</p>
+            </div>
+            <div class="benefit-card glass">
+                <div class="icon">⏳</div>
+                <h4>3 Horas de Volta Todo Mês</h4>
+                <p>São 3 horas semanais que você perdia brigando no Canva. 12 horas por mês. De volta para o que
+                    realmente vende: o atendimento.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- AUTORIDADE -->
+    <section class="authority container">
+        <div class="authority-card glass">
+            <div class="authority-content">
+                <span class="section-tag">QUEM VAI TE MOSTRAR ISSO</span>
+                <h2>Lucas Henrique</h2>
+                <p class="authority-subtitle">Criador do Canva Viagem — o maior ecossistema de conteúdo digital para
+                    agências de viagem no Brasil.</p>
+                <div class="authority-stats">
+                    <div class="stat">
+                        <span class="stat-num">500<span class="stat-plus">+</span></span>
+                        <span class="stat-label">Agências atendidas</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-num">150<span class="stat-plus">+</span></span>
+                        <span class="stat-label">Vídeos para o nicho</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-num">100<span class="stat-plus">%</span></span>
+                        <span class="stat-label">Foco em agência de viagem</span>
+                    </div>
+                </div>
+                <blockquote>
+                    "Eu não ensino teoria de marketing. Eu entrego o sistema pronto para você usar amanhã cedo."
+                    <cite>— Lucas Henrique</cite>
+                </blockquote>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq container">
+        <span class="section-tag">DÚVIDAS FREQUENTES</span>
+        <h2 class="section-title">Perguntas que todo mundo <span>sempre pergunta</span></h2>
+        <div class="faq-list">
+            <div class="faq-item glass">
+                <button class="faq-question" aria-expanded="false">
+                    <span>Preciso saber editar vídeo para participar?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Não. Os conteúdos são entregues prontos. Você não precisa editar nada — só baixar e publicar.
+                        Esta aula foi feita especialmente para quem não tem tempo de aprender design.</p>
+                </div>
+            </div>
+            <div class="faq-item glass">
+                <button class="faq-question" aria-expanded="false">
+                    <span>Funciona para agências de cidades pequenas?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Sim. Turismo não tem fronteira no Instagram. Uma agência do interior pode atender cliente de São
+                        Paulo, do Rio, de qualquer cidade. Já aconteceu com quem usa nosso sistema.</p>
+                </div>
+            </div>
+            <div class="faq-item glass">
+                <button class="faq-question" aria-expanded="false">
+                    <span>Já tentei postar e não funcionou. Por quê desta vez seria diferente?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>A diferença é consistência + conteúdo certo. Uma semana não forma hábito de compra no cliente. 5
+                        meses sim. E agora você vai ter exatamente esse conteúdo pronto para postar todo dia, sem
+                        inventar.</p>
+                </div>
+            </div>
+            <div class="faq-item glass">
+                <button class="faq-question" aria-expanded="false">
+                    <span>A aula é gratuita mesmo? Vai ter alguma venda?</span>
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Sim, é 100% gratuita. Você vai receber o mapa completo para profissionalizar sua agência no
+                        Instagram. Se ao final quiser ir além com ferramentas prontas, você vai ter essa opção — mas sem
+                        nenhuma obrigação.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="cta-final container">
+        <div class="cta-final-card glass">
+            <span class="section-tag">GARANTA SUA VAGA AGORA</span>
+            <h2>As inscrições encerram em:</h2>
+            <div class="countdown countdown-final" id="countdown-final">
+                <div class="count-block">
+                    <span id="cd-days-2">00</span>
+                    <label>Dias</label>
+                </div>
+                <span class="separator">:</span>
+                <div class="count-block">
+                    <span id="cd-hours-2">00</span>
+                    <label>Horas</label>
+                </div>
+                <span class="separator">:</span>
+                <div class="count-block">
+                    <span id="cd-minutes-2">00</span>
+                    <label>Min</label>
+                </div>
+                <span class="separator">:</span>
+                <div class="count-block">
+                    <span id="cd-seconds-2">00</span>
+                    <label>Seg</label>
+                </div>
+            </div>
+
+            <p class="cta-final-text">É gratuito. É ao vivo. É no dia <strong>18/03/2026 às 20h.</strong></p>
+
+            <div class="final-form">
+                <form id="registration-form-2" class="reg-form">
+                    <div class="form-row">
+                        <input type="text" id="name-2" placeholder="Seu nome completo" required autocomplete="name">
+                        <input type="tel" id="whatsapp-2" placeholder="WhatsApp com DDD" required autocomplete="tel">
+                        <button type="submit" class="btn-primary">GARANTIR MINHA VAGA GRATUITA →</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="cta-guarantees">
+                <span>🔒 100% Gratuito</span>
+                <span>📱 Acesso no celular</span>
+                <span>🎁 Bônus para inscritos</span>
+                <span>⏱️ 60 minutos</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <span class="logo footer-logo">CANVA<span>VIAGEM</span></span>
+            <p>© 2026 Canva Viagem — Lucas Henrique. Todos os direitos reservados.</p>
+            <p class="footer-small">Este é um evento online gratuito. Ao se inscrever, você concorda em receber
+                comunicações da Canva Viagem via WhatsApp.</p>
+        </div>
+    </footer>
+
+    <!-- SUCCESS MODAL -->
+    <div class="modal-overlay" id="success-modal" aria-hidden="true">
+        <div class="modal glass" role="dialog" aria-modal="true">
+            <div class="modal-icon">🎉</div>
+            <h3>Vaga Garantida!</h3>
+            <p>Sua inscrição na <strong>Aula Secreta de 18/03</strong> foi confirmada, <span id="modal-name"></span>!
+            </p>
+            <p class="modal-sub">Salve a data no seu celular: <strong>18/03 às 20h.</strong><br>Vamos te avisar no
+                WhatsApp antes de começar.</p>
+            <button class="btn-primary" id="modal-close">PERFEITO, ESTOU PRONTO! ✓</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
