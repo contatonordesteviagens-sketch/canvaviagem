@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Paperclip, Smile, Eye, MessageCircle, AlertCircle, Sparkles, Play, Check } from "lucide-react";
+import { Send, Paperclip, Smile, Eye, MessageCircle, AlertCircle, Sparkles, Play, Check, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -50,18 +50,38 @@ const LiveStream = () => {
   const [phone, setPhone] = useState("(85) 99845-8995");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   
   const [viewers, setViewers] = useState(107);
   const [comments, setComments] = useState<Comment[]>(INITIAL_COMMENTS);
   const [newComment, setNewComment] = useState("");
   const [activeTab, setActiveTab] = useState<"chat" | "support">("chat");
-  const chatEndRef = useRef<HTMLDivElement>(null);
   
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const poolRef = useRef<typeof AUTO_COMMENTS_POOL>([...AUTO_COMMENTS_POOL]);
 
   useEffect(() => {
     document.title = "Canva Viagem — Aula Secreta Ao Vivo";
   }, []);
+
+  const handleTogglePause = () => {
+    if (!isPlaying) {
+      setIsPlaying(true);
+      return;
+    }
+    const nextPaused = !isPaused;
+    setIsPaused(nextPaused);
+    
+    if (iframeRef.current?.contentWindow) {
+      const command = nextPaused ? "pauseVideo" : "playVideo";
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: "command", func: command, args: "" }), 
+        "*"
+      );
+      toast.info(nextPaused ? "Vídeo pausado" : "Vídeo retomado");
+    }
+  };
 
   // Fluctuating viewers simulation (around 95 to 115)
   useEffect(() => {
@@ -78,7 +98,7 @@ const LiveStream = () => {
 
   // Scrolling chat simulation (adding a fake non-repeated comment every 12 to 20 seconds)
   useEffect(() => {
-    if (step !== "watch") return;
+    if (step !== "watch" || isPaused) return; // Pause comment generation when video is paused
     const addFakeComment = () => {
       const randomDelay = Math.floor(Math.random() * 8000) + 12000; // 12s to 20s
       
@@ -111,7 +131,7 @@ const LiveStream = () => {
 
     const timer = addFakeComment();
     return () => clearTimeout(timer);
-  }, [step]);
+  }, [step, isPaused]);
 
   // Auto scroll chat to bottom when comments update
   useEffect(() => {
@@ -302,8 +322,46 @@ const LiveStream = () => {
                   </h3>
                 </div>
               ) : (
-                /* PROTEÇÃO CONTRA CLIQUES E LINKS DO YOUTUBE (TRANSPARENT OVERLAY Z-20 - USUÁRIO NÃO PODE SAIR DA PÁGINA NEM PAUSAR) */
-                <div className="absolute inset-0 z-20 bg-transparent cursor-default" />
+                /* OVERLAY DE INTERAÇÃO COM A LIVE - PERMITE PAUSAR E REPRODUZIR COM CLICK NA TELA SEM SAIR DA PÁGINA */
+                <div 
+                  onClick={handleTogglePause}
+                  className="absolute inset-0 z-20 cursor-pointer flex flex-col items-center justify-center group"
+                >
+                  {/* Overlay Escuro com Vidro Fosco quando Pausado */}
+                  {isPaused && (
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4 transition-all duration-300 animate-fade-in z-30">
+                      <div className="h-20 w-20 md:h-24 md:w-24 rounded-full bg-cyan-400/20 border-2 border-cyan-400 flex items-center justify-center shadow-2xl transition-all duration-300 transform scale-110 hover:scale-125">
+                        <Play size={36} className="text-cyan-400 fill-cyan-400 ml-1.5 animate-pulse" />
+                      </div>
+                      <span className="text-xs md:text-sm font-black tracking-[0.2em] text-cyan-400 uppercase drop-shadow-[0_2px_10px_rgba(0,229,255,0.4)]">
+                        Transmissão Pausada
+                      </span>
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
+                        Clique em qualquer lugar para retomar
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Botão de Controle de Pause Flutuante e Indicador no Canto Inferior (Aparece ao passar o mouse) */}
+                  {!isPaused && (
+                    <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-zinc-800 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center gap-3 shadow-lg z-30">
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                        <span className="text-[9px] font-black text-red-500 uppercase tracking-wider">Ao Vivo</span>
+                      </div>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTogglePause();
+                        }}
+                        className="bg-zinc-800 hover:bg-zinc-700 text-white p-1.5 rounded-lg transition-all flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider"
+                      >
+                        <Pause size={12} className="fill-white" />
+                        Pausar Live
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* CONTAINER COM EFEITO DE BLUR AMBIENTE PARA EXPANDIR O VÍDEO HORIZONTAL */}
@@ -318,8 +376,9 @@ const LiveStream = () => {
                 {/* Iframe do Vídeo Horizontal (16:9 Nativo - Bloqueado Contra Cliques e Sem Controles de Busca) */}
                 <div className="relative w-full h-full bg-black shadow-[0_0_80px_rgba(0,0,0,0.9)] z-10 overflow-hidden flex items-center justify-center">
                   <iframe
+                    ref={iframeRef}
                     className="w-full h-full border-none pointer-events-none"
-                    src={`https://www.youtube.com/embed/Xqcw-NpPz08?autoplay=${isPlaying ? 1 : 0}&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1`}
+                    src={`https://www.youtube.com/embed/Xqcw-NpPz08?autoplay=${isPlaying ? 1 : 0}&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1`}
                     title="Canva Viagem Live"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   />
