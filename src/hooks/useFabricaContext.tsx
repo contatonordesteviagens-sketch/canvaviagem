@@ -111,6 +111,8 @@ export interface FabricaState {
   depoimentos: Depoimento[];
   primaryColor: string;
   secondaryColor: string;
+  backgroundColor?: string;
+  sectionOrder?: string[];
   currentPhase: number;
   checklist30days: Record<string, boolean>;
   diagnosticoCompleto: boolean;
@@ -178,6 +180,8 @@ const defaultState: FabricaState = {
   depoimentos: [],
   primaryColor: "#F59E0B",
   secondaryColor: "#FCD34D",
+  backgroundColor: "#F4F6F9",
+  sectionOrder: ["hero", "processo", "destinos", "porQue", "depoimentos", "orcamento", "faq"],
   currentPhase: 1,
   checklist30days: {},
   diagnosticoCompleto: false,

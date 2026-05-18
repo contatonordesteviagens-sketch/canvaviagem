@@ -100,8 +100,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
 <meta name="description" content="${esc(subheadline)}">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--brand:${color};--brand-dark:${colorDark};--ink:#0a0a0b;--muted:#5a6470;--soft:#f4f6f9}
+*{margin:0;padding::root{--brand:${color};--brand-dark:${colorDark};--ink:#0a0a0b;--muted:#5a6470;--soft:${state.backgroundColor || "#f4f6f9"}}
 html{scroll-behavior:smooth}
 body{font-family:'Inter',sans-serif;color:var(--ink);background:#fff;line-height:1.6;-webkit-font-smoothing:antialiased}
 h1,h2,h3,h4{font-family:'Playfair Display',serif;letter-spacing:-0.02em;line-height:1.15;color:var(--ink)}
@@ -182,7 +181,7 @@ section{padding:80px 0}
 .proc-num{width:52px;height:52px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:20px}
 .proc-card h3{font-size:22px;margin-bottom:12px}
 .proc-card p{color:var(--muted);font-size:15px;line-height:1.7}
-@media(max-width:840px){.proc-grid{grid-template-columns:1fr;gap:16px}.proc-card{padding:28px 22px}}
+@media(max-width:840px){/deep/ .proc-grid{grid-template-columns:1fr;gap:16px}.proc-card{padding:28px 22px}}
 
 /* DESTINOS */
 .destinos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
@@ -336,8 +335,12 @@ footer{background:var(--ink);color:#9ba3ad;padding:64px 0 28px}
   </div>
 </header>
 
+${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos", "orcamento", "faq"])
+  .map((secKey) => {
+    if (secKey === "hero") {
+      return sc.sections?.hero === false ? "" : `
 <!-- HERO -->
-${sc.sections?.hero === false ? "" : `<section id="inicio" class="hero">
+<section id="inicio" class="hero">
   <div class="container">
     <div class="hero-grid">
       <div class="hero-content">
@@ -354,10 +357,12 @@ ${sc.sections?.hero === false ? "" : `<section id="inicio" class="hero">
       ${stats.map((s) => `<div><div class="stat-num">${esc(s.num)}</div><div class="stat-label">${esc(s.label)}</div></div>`).join("")}
     </div>
   </div>
-</section>`}
-
+</section>`;
+    }
+    if (secKey === "processo") {
+      return sc.sections?.processo === false ? "" : `
 <!-- PROCESSO -->
-${sc.sections?.processo === false ? "" : `<section class="processo">
+<section class="processo">
   <div class="container">
     <div class="section-eyebrow eyebrow">Processo</div>
     <h2 class="section-title">Sua viagem dos sonhos em 3 passos</h2>
@@ -367,10 +372,12 @@ ${sc.sections?.processo === false ? "" : `<section class="processo">
       <div class="proc-card"><div class="proc-num">3</div><h3>Embarque Tranquilo</h3><p>Cuidamos de passagens, hospedagem, transfers e suporte 24h durante toda a sua viagem.</p></div>
     </div>
   </div>
-</section>`}
-
+</section>`;
+    }
+    if (secKey === "destinos") {
+      return sc.sections?.destinos === false ? "" : `
 <!-- DESTINOS -->
-${sc.sections?.destinos === false ? "" : `<section id="destinos">
+<section id="destinos">
   <div class="container">
     <div class="section-eyebrow eyebrow">Destinos</div>
     <h2 class="section-title">${esc(sc.pacotesTitle || "Experiências que ficam na memória")}</h2>
@@ -395,10 +402,12 @@ ${sc.sections?.destinos === false ? "" : `<section id="destinos">
         .join("")}
     </div>
   </div>
-</section>`}
-
+</section>`;
+    }
+    if (secKey === "porQue") {
+      return sc.sections?.porQue === false ? "" : `
 <!-- POR QUE NÓS / EQUIPE -->
-${sc.sections?.porQue === false ? "" : `<section id="por-que" class="equipe">
+<section id="por-que" class="equipe">
   <div class="container">
     <div class="equipe-grid">
       <div class="equipe-left">
@@ -417,12 +426,13 @@ ${sc.sections?.porQue === false ? "" : `<section id="por-que" class="equipe">
       <div class="equipe-img"></div>
     </div>
   </div>
-</section>`}
-
+</section>`;
+    }
+    if (secKey === "depoimentos") {
+      return sc.sections?.depoimentos !== false && state.depoimentos.length > 0
+        ? `
 <!-- DEPOIMENTOS -->
-${
-  sc.sections?.depoimentos !== false && state.depoimentos.length > 0
-    ? `<section class="depo-bg">
+<section class="depo-bg">
   <div class="container">
     <div class="section-eyebrow eyebrow">Depoimentos</div>
     <h2 class="section-title">${esc(sc.depoimentosTitle || "O que nossos viajantes dizem")}</h2>
@@ -443,11 +453,12 @@ ${
     </div>
   </div>
 </section>`
-    : ""
-}
-
+        : "";
+    }
+    if (secKey === "orcamento") {
+      return sc.sections?.orcamento === false ? "" : `
 <!-- ORÇAMENTO -->
-${sc.sections?.orcamento === false ? "" : `<section id="orcamento">
+<section id="orcamento">
   <div class="container">
     <div class="orc-grid">
       <div class="orc-info">
@@ -484,12 +495,13 @@ ${sc.sections?.orcamento === false ? "" : `<section id="orcamento">
       </form>
     </div>
   </div>
-</section>`}
-
+</section>`;
+    }
+    if (secKey === "faq") {
+      return sc.sections?.faq !== false && sc.faq && sc.faq.length > 0
+        ? `
 <!-- FAQ -->
-${
-  sc.sections?.faq !== false && sc.faq && sc.faq.length > 0
-    ? `<section class="faq-bg">
+<section class="faq-bg">
   <div class="container">
     <div class="section-eyebrow eyebrow">Dúvidas</div>
     <h2 class="section-title">${esc(sc.faqTitle || "Perguntas Frequentes")}</h2>
@@ -498,8 +510,10 @@ ${
     </div>
   </div>
 </section>`
-    : ""
-}
+        : "";
+    }
+    return "";
+  }).join("\n")}
 
 <!-- FOOTER -->
 <footer>
@@ -530,10 +544,9 @@ ${
           <li>Seg–Sex 8h–20h</li>
         </ul>
       </div>
-    </div>
     <div class="foot-bottom">
       <div>© ${new Date().getFullYear()} ${esc(agencia)} · Todos os direitos reservados</div>
-      <div>Feito com ❤ para quem ama viajar</div>
+      <div>Feito com ❤ com <a href="https://canvaviagem.com" target="_blank" style="text-decoration: underline; font-weight: 600; color: #fff;">Canva Viagem</a></div>
     </div>
   </div>
 </footer>

@@ -63,7 +63,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
     sc.heroHeadline?.trim() || "Viajes que transforman para siempre";
   const subheadline =
     sc.heroSubheadline?.trim() ||
-    `Itinerarios exclusivos y a medida para viajeros que no aceptan lo común. Desde la primera reunión hasta el regreso a casa, cuidamos cada detalle.`;
+    `Itinerarios exclusivos y a medida para viajeros que no aceptan lo comum. Desde la primera reunión hasta el regreso a casa, cuidamos cada detalle.`;
 
   const pacotes = state.selectedPackages.length
     ? state.selectedPackages
@@ -101,7 +101,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Playfair+Display:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--brand:${color};--brand-dark:${colorDark};--ink:#0a0a0b;--muted:#5a6470;--soft:#f4f6f9}
+:root{--brand:${color};--brand-dark:${colorDark};--ink:#0a0a0b;--muted:#5a6470;--soft:${state.backgroundColor || "#f4f6f9"}}
 html{scroll-behavior:smooth}
 body{font-family:'Inter',sans-serif;color:var(--ink);background:#fff;line-height:1.6;-webkit-font-smoothing:antialiased}
 h1,h2,h3,h4{font-family:'Playfair Display',serif;letter-spacing:-0.02em;line-height:1.15;color:var(--ink)}
@@ -270,7 +270,7 @@ section{padding:80px 0}
 
 /* FOOTER */
 footer{background:var(--ink);color:#9ba3ad;padding:64px 0 28px}
-.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1.2fr;gap:48px;margin-bottom:48px}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1.2fr;gap:48px;margin-bottom:48px}
 .foot-brand{font-family:'Playfair Display',serif;font-size:22px;color:#fff;font-weight:700;margin-bottom:16px}
 .foot-grid p{font-size:14px;line-height:1.7;margin-bottom:18px}
 .foot-grid h4{font-family:'Inter',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:#fff;margin-bottom:18px;font-weight:600}
@@ -336,8 +336,12 @@ footer{background:var(--ink);color:#9ba3ad;padding:64px 0 28px}
   </div>
 </header>
 
+${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos", "orcamento", "faq"])
+  .map((secKey) => {
+    if (secKey === "hero") {
+      return sc.sections?.hero === false ? "" : `
 <!-- HERO -->
-${sc.sections?.hero === false ? "" : `<section id="inicio" class="hero">
+<section id="inicio" class="hero">
   <div class="container">
     <div class="hero-grid">
       <div class="hero-content">
@@ -354,10 +358,12 @@ ${sc.sections?.hero === false ? "" : `<section id="inicio" class="hero">
       ${stats.map((s) => `<div><div class="stat-num">${esc(s.num)}</div><div class="stat-label">${esc(s.label)}</div></div>`).join("")}
     </div>
   </div>
-</section>`}
-
+</section>`;
+    }
+    if (secKey === "processo") {
+      return sc.sections?.processo === false ? "" : `
 <!-- PROCESSO -->
-${sc.sections?.processo === false ? "" : `<section class="processo">
+<section class="processo">
   <div class="container">
     <div class="section-eyebrow eyebrow">Proceso</div>
     <h2 class="section-title">Tu viaje de ensueño en 3 pasos</h2>
@@ -367,10 +373,12 @@ ${sc.sections?.processo === false ? "" : `<section class="processo">
       <div class="proc-card"><div class="proc-num">3</div><h3>Embarque Tranquilo</h3><p>Nos encargamos de vuelos, alojamiento, traslados y soporte 24h durante todo tu viaje.</p></div>
     </div>
   </div>
-</section>`}
-
+</section>`;
+    }
+    if (secKey === "destinos") {
+      return sc.sections?.destinos === false ? "" : `
 <!-- DESTINOS -->
-${sc.sections?.destinos === false ? "" : `<section id="destinos">
+<section id="destinos">
   <div class="container">
     <div class="section-eyebrow eyebrow">Destinos</div>
     <h2 class="section-title">${esc(sc.pacotesTitle || "Experiencias que quedan en la memoria")}</h2>
@@ -395,10 +403,12 @@ ${sc.sections?.destinos === false ? "" : `<section id="destinos">
         .join("")}
     </div>
   </div>
-</section>`}
-
+</section>`;
+    }
+    if (secKey === "porQue") {
+      return sc.sections?.porQue === false ? "" : `
 <!-- POR QUE NÓS / EQUIPE -->
-${sc.sections?.porQue === false ? "" : `<section id="por-que" class="equipe">
+<section id="por-que" class="equipe">
   <div class="container">
     <div class="equipe-grid">
       <div class="equipe-left">
@@ -417,12 +427,13 @@ ${sc.sections?.porQue === false ? "" : `<section id="por-que" class="equipe">
       <div class="equipe-img"></div>
     </div>
   </div>
-</section>`}
-
+</section>`;
+    }
+    if (secKey === "depoimentos") {
+      return sc.sections?.depoimentos !== false && state.depoimentos.length > 0
+        ? `
 <!-- DEPOIMENTOS -->
-${
-  sc.sections?.depoimentos !== false && state.depoimentos.length > 0
-    ? `<section class="depo-bg">
+<section class="depo-bg">
   <div class="container">
     <div class="section-eyebrow eyebrow">Testimonios</div>
     <h2 class="section-title">${esc(sc.depoimentosTitle || "Lo que dicen nuestros viajeros")}</h2>
@@ -443,11 +454,12 @@ ${
     </div>
   </div>
 </section>`
-    : ""
-}
-
+        : "";
+    }
+    if (secKey === "orcamento") {
+      return sc.sections?.orcamento === false ? "" : `
 <!-- ORÇAMENTO -->
-${sc.sections?.orcamento === false ? "" : `<section id="orcamento">
+<section id="orcamento">
   <div class="container">
     <div class="orc-grid">
       <div class="orc-info">
@@ -478,18 +490,19 @@ ${sc.sections?.orcamento === false ? "" : `<section id="orcamento">
           <div class="field"><label>Fecha de Regreso</label><input type="date" name="volta"></div>
         </div>
         <div class="form-row single">
-          <div class="field"><label>Observaciones (opcional)</label><textarea name="obs" placeholder="Preferencias, ocasión especial, presupuesto…"></textarea></div>
+          <div class="field"><label>Observações (opcional)</label><textarea name="obs" placeholder="Preferências, ocasião especial, orçamento…"></textarea></div>
         </div>
         <button type="submit" class="btn form-submit">💬 Enviar por WhatsApp</button>
       </form>
     </div>
   </div>
-</section>`}
-
+</section>`;
+    }
+    if (secKey === "faq") {
+      return sc.sections?.faq !== false && sc.faq && sc.faq.length > 0
+        ? `
 <!-- FAQ -->
-${
-  sc.sections?.faq !== false && sc.faq && sc.faq.length > 0
-    ? `<section class="faq-bg">
+<section class="faq-bg">
   <div class="container">
     <div class="section-eyebrow eyebrow">Dudas</div>
     <h2 class="section-title">${esc(sc.faqTitle || "Preguntas Frecuentes")}</h2>
@@ -498,8 +511,10 @@ ${
     </div>
   </div>
 </section>`
-    : ""
-}
+        : "";
+    }
+    return "";
+  }).join("\n")}
 
 <!-- FOOTER -->
 <footer>
@@ -532,8 +547,8 @@ ${
       </div>
     </div>
     <div class="foot-bottom">
-      <div>© ${new Date().getFullYear()} ${esc(agencia)} · Todos los derechos reservados</div>
-      <div>Hecho con ❤ para quienes aman viajar</div>
+      <div>© ${new Date().getFullYear()} ${esc(agencia)} · Todos os direitos reservados</div>
+      <div>Hecho con ❤ con <a href="https://canvaviagem.com" target="_blank" style="text-decoration: underline; font-weight: 600; color: #fff;">Canva Viagem</a></div>
     </div>
   </div>
 </footer>
@@ -687,7 +702,7 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
   const pacotes = state.selectedPackages.length ? state.selectedPackages : [];
   
   if (pacotes.length === 0) {
-    return "Aún no se ha generado ningún paquete. Por favor, crea anuncios en la Fase 3 primero.";
+    return "Aún no se ha generado ningún paquete. Por favor, crea anuncios en la Fase 3 primeiro.";
   }
 
   const wppMsg = (titulo: string) =>
@@ -726,6 +741,5 @@ Aqui está o bloco de código HTML que deve ser inserido:
 ${cardsHTML}
 \`\`\`
 
-Obrigado!`;
+Obrado!`;
 }
-
