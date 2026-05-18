@@ -5,30 +5,35 @@ import { Phase1Diagnostico } from "@/pages/fabrica/Phase1Diagnostico";
 import { Phase2Ativos } from "@/pages/fabrica/Phase2Ativos";
 import { Phase3ArtFactory } from "@/pages/fabrica/Phase3ArtFactory";
 import { Phase4LandingBuilder } from "@/pages/fabrica/Phase4LandingBuilder";
-import { ArrowLeft, Crown, Sparkles, Loader2 } from "lucide-react";
+import { 
+  ArrowLeft, 
+  Crown, 
+  Sparkles, 
+  Loader2, 
+  LayoutDashboard, 
+  Image as ImageIcon, 
+  Zap, 
+  FileText, 
+  FolderOpen, 
+  Sliders, 
+  Library,
+  Menu,
+  X
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
-
-const PHASES = [
-  { num: 1, label: "ADS Destino" },
-  { num: 2, label: "Seu Site" },
-  { num: 3, label: "Diagnóstico" },
-  { num: 4, label: "Plano" },
-];
 
 const FabricaInner = () => {
   const { state, setPhase } = useFabricaContext();
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
-  const [primary] = useState(state.primaryColor);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const color = state.primaryColor || "#F59E0B";
     document.documentElement.style.setProperty("--fabrica-primary", color);
   }, [state.primaryColor]);
 
-  // Decide texto preto/branco com base na luminância da primaryColor
-  // Evita "texto preto sobre fundo escuro" quando alguém escolhe uma cor escura.
   const getContrastText = (hex: string): string => {
     const c = hex.replace("#", "");
     if (c.length !== 6) return "#000";
@@ -40,92 +45,260 @@ const FabricaInner = () => {
   };
   const onPrimaryText = getContrastText(state.primaryColor);
 
+  const getPhaseName = () => {
+    if (state.currentPhase === 1) return "Gerador de Imagens";
+    if (state.currentPhase === 2) return "Página de Vendas";
+    if (state.currentPhase === 3) return "Criador de Oferta";
+    if (state.currentPhase === 4) return "Meus Ativos";
+    return "";
+  };
+
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen flex bg-[#0A0A0B] text-white"
       style={{
-        background: "#0A0A0B",
-        color: "#fff",
         fontFamily: "Inter, sans-serif",
-        backgroundImage:
-          "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(245,158,11,0.08), transparent 60%), radial-gradient(ellipse 60% 50% at 100% 100%, rgba(139,92,246,0.05), transparent 60%)",
       }}
     >
-      {/* Admin nav (skip phases) */}
-      {isAdmin && (
-        <div className="sticky top-0 z-50 bg-black border-b-2 flex items-center gap-2 px-4 py-2 overflow-x-auto" style={{ borderColor: state.primaryColor }}>
-          <span className="text-[10px] font-extrabold uppercase tracking-widest whitespace-nowrap" style={{ color: state.primaryColor }}>ADMIN</span>
-          {PHASES.map((p) => (
+      {/* ── SIDEBAR LATERAL ESQUERDA (DESKTOP) ── */}
+      <aside className="w-64 border-r border-white/5 bg-[#0F0F11] flex-shrink-0 flex flex-col hidden md:flex sticky top-0 h-screen z-40 select-none">
+        {/* Brand Header */}
+        <div className="p-6 border-b border-white/5 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-br from-amber-500 to-yellow-300 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+            <Sparkles className="w-4 h-4 text-black font-black" />
+          </div>
+          <div>
+            <div className="text-xs font-black text-white leading-none tracking-tight">Fábrica de Viagens</div>
+            <div className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-0.5">Painel de Criação</div>
+          </div>
+        </div>
+
+        {/* Menu Items */}
+        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+          {/* Dashboard Geral */}
+          <div>
             <button
-              key={p.num}
-              onClick={() => setPhase(p.num)}
-              className={`px-2.5 py-1 rounded text-[11px] font-semibold whitespace-nowrap border transition-colors ${
-                state.currentPhase === p.num ? "" : "text-white/60 border-white/10 bg-white/[0.04] hover:border-white/30"
-              }`}
-              style={state.currentPhase === p.num ? { background: state.primaryColor, borderColor: state.primaryColor, color: onPrimaryText } : undefined}
+              onClick={() => navigate("/")}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white/60 hover:text-white hover:bg-white/[0.04] transition-all"
             >
-              F{p.num}
+              <LayoutDashboard className="w-4 h-4 text-white/40" />
+              <span>Painel Inicial</span>
             </button>
-          ))}
+          </div>
+
+          {/* GERAÇÃO */}
+          <div>
+            <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-3 mb-2">
+              GERAÇÃO
+            </div>
+            <button
+              onClick={() => setPhase(1)}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                state.currentPhase === 1
+                  ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
+                  : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <ImageIcon className={`w-4 h-4 ${state.currentPhase === 1 ? "text-amber-400" : "text-white/40"}`} />
+                <span>Gerador de Imagens</span>
+              </div>
+              <span className="text-[10px] text-white/30 font-bold">F1</span>
+            </button>
+          </div>
+
+          {/* FERRAMENTAS */}
+          <div>
+            <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-3 mb-2">
+              FERRAMENTAS
+            </div>
+            <div className="space-y-1">
+              <button
+                onClick={() => setPhase(3)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  state.currentPhase === 3
+                    ? "bg-[#D97706]/15 text-[#F59E0B] border border-[#D97706]/35 shadow-[0_0_15px_rgba(245,158,11,0.08)]"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Zap className={`w-4 h-4 ${state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>Criador de Oferta</span>
+                </div>
+                <span className={`text-[10px] font-bold ${state.currentPhase === 3 ? "text-amber-400" : "text-white/30"}`}>F3</span>
+              </button>
+
+              <button
+                onClick={() => setPhase(2)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  state.currentPhase === 2
+                    ? "bg-white/[0.06] text-white border border-white/10"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <FileText className={`w-4 h-4 ${state.currentPhase === 2 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>Página de Vendas</span>
+                </div>
+                <span className="text-[10px] text-white/30 font-bold">F2</span>
+              </button>
+
+              <button
+                onClick={() => setPhase(4)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  state.currentPhase === 4
+                    ? "bg-white/[0.06] text-white border border-white/10"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Sliders className={`w-4 h-4 ${state.currentPhase === 4 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>Meus Ativos</span>
+                </div>
+                <span className="text-[10px] text-white/30 font-bold">F4</span>
+              </button>
+            </div>
+          </div>
+
+          {/* CONTEÚDO */}
+          <div>
+            <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-3 mb-2">
+              CONTEÚDO
+            </div>
+            <div className="space-y-1">
+              <button
+                disabled
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white/30 cursor-not-allowed text-left"
+              >
+                <FolderOpen className="w-4 h-4 text-white/20" />
+                <span>Minhas Ofertas</span>
+              </button>
+              <button
+                disabled
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white/30 cursor-not-allowed text-left"
+              >
+                <Library className="w-4 h-4 text-white/20" />
+                <span>Minha Biblioteca</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* User Footer / Info */}
+        <div className="p-4 border-t border-white/5 bg-[#0A0A0B]/40">
+          <button
+            onClick={() => navigate("/")}
+            className="w-full py-2.5 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] text-white/80 text-xs font-semibold flex items-center justify-center gap-2 transition-all"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Voltar ao Painel
+          </button>
+        </div>
+      </aside>
+
+      {/* ── MOBILE HEADER (SELETOR COMPATÍVEL) ── */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#0F0F11] border-b border-white/5 flex items-center justify-between px-4 z-50">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br from-amber-500 to-yellow-300">
+            <Sparkles className="w-3.5 h-3.5 text-black" />
+          </div>
+          <span className="text-xs font-black uppercase tracking-wider text-white">Fábrica</span>
+          <span className="text-white/30">/</span>
+          <span className="text-xs font-bold text-amber-400">{getPhaseName()}</span>
+        </div>
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="p-2 rounded-lg bg-white/[0.04] border border-white/15"
+        >
+          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
+
+      {/* Mobile Menu Dropdown */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed top-16 left-0 right-0 bg-[#0F0F11] border-b border-white/10 z-40 p-4 space-y-3 flex flex-col">
+          <button
+            onClick={() => {
+              setPhase(1);
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+              state.currentPhase === 1 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            🖼️ Gerador de Imagens
+          </button>
+          <button
+            onClick={() => {
+              setPhase(3);
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+              state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            ⚡ Criador de Oferta
+          </button>
+          <button
+            onClick={() => {
+              setPhase(2);
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+              state.currentPhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            📄 Página de Vendas
+          </button>
+          <button
+            onClick={() => {
+              setPhase(4);
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+              state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            ⚙️ Meus Ativos
+          </button>
+          <div className="border-t border-white/5 pt-3">
+            <button
+              onClick={() => navigate("/")}
+              className="w-full py-3 px-4 rounded-xl text-left text-sm font-semibold text-white/50"
+            >
+              ← Voltar ao Início
+            </button>
+          </div>
         </div>
       )}
 
-      <div className="max-w-3xl lg:max-w-[1550px] mx-auto px-4 pt-6 pb-32 transition-all duration-300">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Voltar
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="text-sm font-extrabold leading-tight">Fábrica de Viagens</div>
+      {/* ── CONTEÚDO PRINCIPAL (ÁREA DE TRABALHO) ── */}
+      <main className="flex-1 min-w-0 min-h-screen pt-20 md:pt-8 px-4 md:px-8 pb-24 overflow-y-auto bg-[#0A0A0B]">
+        {/* Admin Quick Phase Selector */}
+        {isAdmin && (
+          <div className="mb-6 p-3 rounded-2xl bg-black border border-white/10 flex items-center gap-2 overflow-x-auto">
+            <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest mr-2 select-none">Atalhos Admin:</span>
+            {[1, 2, 3, 4].map((num) => (
+              <button
+                key={num}
+                onClick={() => setPhase(num)}
+                className={`px-3 py-1 rounded-lg text-[10px] font-bold border transition-colors ${
+                  state.currentPhase === num ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60"
+                }`}
+              >
+                Fase {num}
+              </button>
+            ))}
           </div>
-        </div>
+        )}
 
-        {/* Hero */}
-        <div className="text-center py-8">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/10 bg-white/[0.04] mb-4">
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: state.primaryColor }} />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">Fábrica de Viagens</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-black mb-3 tracking-tight leading-[1.1]">
-            Sua agência{" "}
-            <span
-              className="bg-clip-text text-transparent"
-              style={{
-                backgroundImage: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)`,
-              }}
-            >
-              profissional
-            </span>
-            <br className="hidden sm:block" /> em minutos!
-          </h1>
-          <p className="text-sm text-white/60 max-w-lg mx-auto">
-            Diagnóstico, anúncios prontos com IA e site no ar — tudo em 4 passos guiados, sem precisar de designer ou agência.
-          </p>
+        {/* Phase Component Render */}
+        <div className="transition-all duration-300">
+          {state.currentPhase === 1 && <Phase3ArtFactory onNext={() => setPhase(2)} onBack={() => {}} />}
+          {state.currentPhase === 2 && <Phase4LandingBuilder onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
+          {state.currentPhase === 3 && <Phase1Diagnostico onComplete={() => setPhase(4)} onBack={() => setPhase(2)} />}
+          {state.currentPhase === 4 && <Phase2Ativos onNext={() => setPhase(1)} onBack={() => setPhase(3)} />}
         </div>
-
-        {/* Stepper */}
-        <div className="flex gap-1 mb-8 bg-white/[0.04] p-1.5 rounded-full border border-white/[0.06]">
-          {PHASES.map((p) => (
-            <button
-              key={p.num}
-              onClick={() => setPhase(p.num)}
-              className={`flex-1 py-2 px-2 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-colors ${
-                state.currentPhase === p.num ? "" : state.currentPhase > p.num ? "text-white/80" : "text-white/40"
-              }`}
-              style={state.currentPhase === p.num ? { background: state.primaryColor, color: onPrimaryText } : undefined}
-            >
-              <span className="hidden sm:inline">F{p.num} · </span>{p.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Phase content */}
-        {state.currentPhase === 1 && <Phase3ArtFactory onNext={() => setPhase(2)} onBack={() => {}} />}
-        {state.currentPhase === 2 && <Phase4LandingBuilder onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
-        {state.currentPhase === 3 && <Phase1Diagnostico onComplete={() => setPhase(4)} onBack={() => setPhase(2)} />}
-        {state.currentPhase === 4 && <Phase2Ativos onNext={() => setPhase(1)} onBack={() => setPhase(3)} />}
-      </div>
+      </main>
     </div>
   );
 };
@@ -186,7 +359,7 @@ const FabricaContent = () => {
 
           {/* Cards de Opções */}
           <div className="grid gap-4 mb-6">
-            {/* Opção Anual (Recomendada - AGORA NO TOPO) */}
+            {/* Opção Anual */}
             <div className="border border-orange-500/30 bg-orange-500/[0.02] hover:bg-orange-500/[0.04] p-5 rounded-2xl text-left relative overflow-hidden transition-all shadow-[0_0_15px_rgba(249,115,22,0.05)]">
               <div className="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-red-600 text-[9px] font-black uppercase text-white px-2.5 py-1 rounded-bl-xl tracking-wider">
                 MAIOR ECONOMIA (70% DE DESCONTO)
@@ -219,7 +392,7 @@ const FabricaContent = () => {
               </button>
             </div>
 
-            {/* Opção Mensal (AGORA EMBAIXO) */}
+            {/* Opção Mensal */}
             <div className="border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] p-4 rounded-2xl text-left transition-all">
               <div className="flex justify-between items-start mb-2">
                 <div>

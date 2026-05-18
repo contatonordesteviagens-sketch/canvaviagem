@@ -417,10 +417,10 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl lg:max-w-[1550px] mx-auto transition-all duration-300">
       {/* ── Banner de Auto-Sync da Fase 3 ── */}
       {autoSyncDone && autoSyncFields.length > 0 && (
-        <div className="rounded-2xl p-4 border bg-emerald-500/10 border-emerald-500/25 flex items-start gap-3">
+        <div className="rounded-2xl p-4 border bg-emerald-500/10 border-emerald-500/25 flex items-start gap-3 mb-6">
           <div className="text-2xl flex-shrink-0">✅</div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-bold text-white mb-1">
@@ -441,14 +441,13 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         </div>
       )}
 
-      {/* Banner para o caso de o site já estar sincronizado (não é a primeira vez) */}
       {!autoSyncDone && (state.destinos?.[0] || state.lastPrice) && (
-        <div className="rounded-2xl p-4 border bg-white/[0.04] border-white/10 flex items-center justify-between gap-3">
+        <div className="rounded-2xl p-4 border bg-white/[0.04] border-white/10 flex items-center justify-between gap-3 mb-6">
           <div className="flex items-center gap-3 min-w-0">
             <span className="text-lg flex-shrink-0">🔄</span>
             <p className="text-[11px] text-white/50 leading-snug">
               Dados da Fábrica já sincronizados com este site.
-              <span className="ml-1 text-white/30">Edite clicando na prévia abaixo ou use as configurações.</span>
+              <span className="ml-1 text-white/30">Edite clicando na prévia ao lado ou use as configurações.</span>
             </p>
           </div>
           <button
@@ -460,358 +459,362 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         </div>
       )}
 
-      {/* 🖥️ PREVIEW INTERATIVO AO VIVO (COM EDITOR DIRECT-CLICK & SIMULADOR DE DISPOSITIVO) */}
-      <div className="bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-        <div className="px-4 py-3 bg-zinc-950 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="flex gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
-              <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block" />
-              <span className="w-3 h-3 rounded-full bg-green-500/80 inline-block" />
-            </div>
-            <div className="ml-3 px-3 py-1 rounded-lg bg-white/[0.04] text-[11px] font-mono text-white/50 w-60 sm:w-80 truncate border border-white/5">
-              https://{(state.agencyName || "sua-agencia").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "-")}.vercel.app
-            </div>
+      {/* Grid lateral */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Painel Esquerdo: Opções de Configuração (5 colunas em lg) */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="border-b border-white/10 pb-4">
+            <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <Palette className="w-5 h-5 text-amber-400" />
+              ⚙️ Ajustes Finos e Configurações Avançadas do Site:
+            </h4>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Histórico Desfazer/Refazer */}
-            <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/15">
-              <button
-                onClick={undo}
-                disabled={!canUndo}
-                className={`p-1.5 rounded-md transition-all ${
-                  canUndo ? "text-amber-400 hover:bg-white/10" : "text-white/20 cursor-not-allowed"
-                }`}
-                title="Desfazer alteração (Undo)"
-              >
-                <Undo className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={redo}
-                disabled={!canRedo}
-                className={`p-1.5 rounded-md transition-all ${
-                  canRedo ? "text-emerald-400 hover:bg-white/10" : "text-white/20 cursor-not-allowed"
-                }`}
-                title="Refazer alteração (Redo)"
-              >
-                <Redo className="w-3.5 h-3.5" />
-              </button>
-            </div>
+          <div className="space-y-6">
+            <FabricaCard title="🎨 Cor primária do site">
+              <div className="flex flex-wrap gap-3 items-center">
+                {PRESET_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => update({ primaryColor: c })}
+                    className={`w-10 h-10 rounded-xl border-2 transition-all ${
+                      state.primaryColor === c ? "border-white scale-110" : "border-white/20"
+                    }`}
+                    style={{ background: c }}
+                    aria-label={c}
+                  />
+                ))}
+                <div className="flex items-center gap-2 ml-2">
+                  <Palette className="w-4 h-4 text-white/50" />
+                  <input
+                    type="color"
+                    value={state.primaryColor}
+                    onChange={(e) => update({ primaryColor: e.target.value })}
+                    className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border border-white/10"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-white/50 mt-3">Aplicada em botões, headers e CTAs.</p>
+            </FabricaCard>
 
-            {/* Seletor Dispositivo */}
-            <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/15">
-              <button
-                onClick={() => setPreviewMode("desktop")}
-                className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${
-                  previewMode === "desktop" ? "bg-white text-zinc-900 shadow" : "text-white/60 hover:text-white"
-                }`}
-              >
-                Computador
-              </button>
-              <button
-                onClick={() => setPreviewMode("mobile")}
-                className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${
-                  previewMode === "mobile" ? "bg-white text-zinc-900 shadow" : "text-white/60 hover:text-white"
-                }`}
-              >
-                Celular
-              </button>
-            </div>
+            <FabricaCard title="👁️ Seções do site">
+              <p className="text-xs text-white/50 mb-3">
+                Escolha o que aparece no site. Desmarque qualquer seção pra removê-la (some também do HTML exportado).
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {(
+                  [
+                    { key: "hero", label: "Topo (Hero)" },
+                    { key: "processo", label: "Como funciona (3 passos)" },
+                    { key: "destinos", label: "Destinos / Pacotes" },
+                    { key: "porQue", label: "Por que nós / Equipe" },
+                    { key: "depoimentos", label: "Depoimentos" },
+                    { key: "orcamento", label: "Formulário de orçamento" },
+                    { key: "faq", label: "Perguntas Frequentes" },
+                    { key: "ctaFinal", label: "CTA Final" },
+                  ] as { key: keyof SectionVisibility; label: string }[]
+                ).map(({ key, label }) => {
+                  const on = isVisible(key);
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => toggleSection(key)}
+                      className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${
+                        on
+                          ? "bg-white/[0.06] border-white/20 text-white"
+                          : "bg-white/[0.02] border-white/10 text-white/40 line-through"
+                      }`}
+                    >
+                      <span className="truncate text-left">{label}</span>
+                      {on ? <Eye className="w-4 h-4 flex-shrink-0" /> : <EyeOff className="w-4 h-4 flex-shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </FabricaCard>
 
-            <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-              Editor Visual Ativo
-            </span>
-          </div>
-        </div>
+            <FabricaCard title="✏️ Topo do site (Hero)">
+              <div className="space-y-3">
+                <FieldText
+                  label="Título principal"
+                  value={state.siteContent.heroHeadline}
+                  onChange={(v) => updSite({ heroHeadline: v })}
+                  placeholder={`${state.agencyName || "Sua Agência"} — Sua próxima viagem começa aqui`}
+                />
+                <FieldTextarea
+                  label="Subtítulo"
+                  value={state.siteContent.heroSubheadline}
+                  onChange={(v) => updSite({ heroSubheadline: v })}
+                  placeholder="Atendimento personalizado, roteiros sob medida..."
+                />
+                <FieldText
+                  label="Texto do botão principal"
+                  value={state.siteContent.heroCtaLabel}
+                  onChange={(v) => updSite({ heroCtaLabel: v })}
+                  placeholder="Falar no WhatsApp"
+                />
+              </div>
+            </FabricaCard>
 
-        <div className="p-4 bg-zinc-950/40 relative">
-          <div className="mb-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center text-xs text-amber-300 font-semibold flex items-center justify-center gap-2">
-            <Pencil className="w-4 h-4 text-amber-400" />
-            💡 <strong>Clique em qualquer texto do site para digitar</strong> ou <strong>toque em uma foto</strong> para trocá-la ao vivo na tela!
-          </div>
-
-          <div className="transition-all duration-300 ease-in-out">
-            <iframe
-              ref={iframeRef}
-              srcDoc={previewHTML}
-              className={`bg-white transition-all duration-300 shadow-xl ${
-                previewMode === "mobile"
-                  ? "w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px]"
-                  : "w-full h-[800px] border border-white/10 rounded-2xl"
-              }`}
-              title="Preview"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="border-t border-white/10 pt-6">
-        <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-          <Palette className="w-5 h-5 text-amber-400" />
-          ⚙️ Ajustes Finos e Configurações Avançadas do Site:
-        </h4>
-      </div>
-
-      {/* PAINEL DE CONTROLES AVANÇADOS (ABAIXO DA PRÉVIA) */}
-      <div className="space-y-6">
-        <FabricaCard title="🎨 Cor primária do site">
-          <div className="flex flex-wrap gap-3 items-center">
-            {PRESET_COLORS.map((c) => (
-              <button
-                key={c}
-                onClick={() => update({ primaryColor: c })}
-                className={`w-10 h-10 rounded-xl border-2 transition-all ${
-                  state.primaryColor === c ? "border-white scale-110" : "border-white/20"
-                }`}
-                style={{ background: c }}
-                aria-label={c}
+            <FabricaCard title="🖼️ Banco de imagens">
+              <p className="text-xs text-white/50 mb-3">
+                Salve aqui as imagens que você gerou na Fase 3 ou cole links externos. Elas ficam disponíveis no seletor de fotos da prévia.
+              </p>
+              <ImageGallery
+                images={state.siteContent.galleryImages}
+                generatedAd={state.lastCleanPhoto || ""}
+                onAdd={addToGallery}
+                onRemove={removeFromGallery}
               />
-            ))}
-            <div className="flex items-center gap-2 ml-2">
-              <Palette className="w-4 h-4 text-white/50" />
-              <input
-                type="color"
-                value={state.primaryColor}
-                onChange={(e) => update({ primaryColor: e.target.value })}
-                className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border border-white/10"
-              />
-            </div>
-          </div>
-          <p className="text-xs text-white/50 mt-3">Aplicada em botões, headers e CTAs.</p>
-        </FabricaCard>
+            </FabricaCard>
 
-        {/* VISIBILIDADE DAS SEÇÕES */}
-        <FabricaCard title="👁️ Seções do site">
-          <p className="text-xs text-white/50 mb-3">
-            Escolha o que aparece no site. Desmarque qualquer seção pra removê-la (some também do HTML exportado).
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            {(
-              [
-                { key: "hero", label: "Topo (Hero)" },
-                { key: "processo", label: "Como funciona (3 passos)" },
-                { key: "destinos", label: "Destinos / Pacotes" },
-                { key: "porQue", label: "Por que nós / Equipe" },
-                { key: "depoimentos", label: "Depoimentos" },
-                { key: "orcamento", label: "Formulário de orçamento" },
-                { key: "faq", label: "Perguntas Frequentes" },
-              ] as { key: keyof SectionVisibility; label: string }[]
-            ).map(({ key, label }) => {
-              const on = isVisible(key);
-              return (
+            <FabricaCard title="📦 Pacotes oferecidos">
+              <FieldText
+                label="Título da seção"
+                value={state.siteContent.pacotesTitle}
+                onChange={(v) => updSite({ pacotesTitle: v })}
+              />
+              <div className="space-y-3 mt-4">
+                {state.selectedPackages.map((p) => (
+                  <PacoteEditor
+                    key={p.id}
+                    pacote={p}
+                    gallery={state.siteContent.galleryImages}
+                    onChange={(patch) => updPacote(p.id, patch)}
+                    onDelete={() => delPacote(p.id)}
+                  />
+                ))}
                 <button
-                  key={key}
-                  onClick={() => toggleSection(key)}
-                  className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                    on
-                      ? "bg-white/[0.06] border-white/20 text-white"
-                      : "bg-white/[0.02] border-white/10 text-white/40 line-through"
-                  }`}
+                  onClick={addPacote}
+                  className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
                 >
-                  <span className="truncate text-left">{label}</span>
-                  {on ? <Eye className="w-4 h-4 flex-shrink-0" /> : <EyeOff className="w-4 h-4 flex-shrink-0" />}
+                  <Plus className="w-4 h-4" /> Adicionar pacote
                 </button>
-              );
-            })}
-          </div>
-        </FabricaCard>
+              </div>
+            </FabricaCard>
 
-        {/* HERO editável */}
-        <FabricaCard title="✏️ Topo do site (Hero)">
-          <div className="space-y-3">
-            <FieldText
-              label="Título principal"
-              value={state.siteContent.heroHeadline}
-              onChange={(v) => updSite({ heroHeadline: v })}
-              placeholder={`${state.agencyName || "Sua Agência"} — Sua próxima viagem começa aqui`}
-            />
-            <FieldTextarea
-              label="Subtítulo"
-              value={state.siteContent.heroSubheadline}
-              onChange={(v) => updSite({ heroSubheadline: v })}
-              placeholder="Atendimento personalizado, roteiros sob medida..."
-            />
-            <FieldText
-              label="Texto do botão principal"
-              value={state.siteContent.heroCtaLabel}
-              onChange={(v) => updSite({ heroCtaLabel: v })}
-              placeholder="Falar no WhatsApp"
-            />
-          </div>
-        </FabricaCard>
-
-        {/* GALERIA de imagens */}
-        <FabricaCard title="🖼️ Banco de imagens">
-          <p className="text-xs text-white/50 mb-3">
-            Salve aqui as imagens que você gerou na Fase 3 ou cole links externos. Elas ficam disponíveis no seletor de fotos da prévia.
-          </p>
-          <ImageGallery
-            images={state.siteContent.galleryImages}
-            generatedAd={state.lastCleanPhoto || ""}
-            onAdd={addToGallery}
-            onRemove={removeFromGallery}
-          />
-        </FabricaCard>
-
-        {/* PACOTES editáveis */}
-        <FabricaCard title="📦 Pacotes oferecidos">
-          <FieldText
-            label="Título da seção"
-            value={state.siteContent.pacotesTitle}
-            onChange={(v) => updSite({ pacotesTitle: v })}
-          />
-          <div className="space-y-3 mt-4">
-            {state.selectedPackages.map((p) => (
-              <PacoteEditor
-                key={p.id}
-                pacote={p}
-                gallery={state.siteContent.galleryImages}
-                onChange={(patch) => updPacote(p.id, patch)}
-                onDelete={() => delPacote(p.id)}
+            <FabricaCard title="⭐ Depoimentos">
+              <FieldText
+                label="Título da seção"
+                value={state.siteContent.depoimentosTitle}
+                onChange={(v) => updSite({ depoimentosTitle: v })}
               />
-            ))}
-            <button
-              onClick={addPacote}
-              className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
-            >
-              <Plus className="w-4 h-4" /> Adicionar pacote
-            </button>
-          </div>
-        </FabricaCard>
+              <div className="space-y-3 mt-4">
+                {state.depoimentos.map((d, i) => (
+                  <div key={i} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        value={d.name}
+                        onChange={(e) => updDepo(i, { name: e.target.value })}
+                        placeholder="Nome do cliente"
+                        className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
+                      />
+                      <button
+                        onClick={() => delDepo(i)}
+                        className="p-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <textarea
+                      value={d.text}
+                      onChange={(e) => updDepo(i, { text: e.target.value })}
+                      placeholder="Depoimento"
+                      rows={2}
+                      className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
+                    />
+                  </div>
+                ))}
+                <button
+                  onClick={addDepo}
+                  className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
+                >
+                  <Plus className="w-4 h-4" /> Adicionar depoimento
+                </button>
+              </div>
+            </FabricaCard>
 
-        {/* DEPOIMENTOS */}
-        <FabricaCard title="⭐ Depoimentos">
-          <FieldText
-            label="Título da seção"
-            value={state.siteContent.depoimentosTitle}
-            onChange={(v) => updSite({ depoimentosTitle: v })}
-          />
-          <div className="space-y-3 mt-4">
-            {state.depoimentos.map((d, i) => (
-              <div key={i} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 space-y-2">
-                <div className="flex gap-2">
-                  <input
-                    value={d.name}
-                    onChange={(e) => updDepo(i, { name: e.target.value })}
-                    placeholder="Nome do cliente"
-                    className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
-                  />
-                  <button
-                    onClick={() => delDepo(i)}
-                    className="p-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-                <textarea
-                  value={d.text}
-                  onChange={(e) => updDepo(i, { text: e.target.value })}
-                  placeholder="Depoimento"
-                  rows={2}
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
+            <FabricaCard title="❓ Perguntas Frequentes (FAQ)">
+              <FieldText
+                label="Título da seção"
+                value={state.siteContent.faqTitle}
+                onChange={(v) => updSite({ faqTitle: v })}
+              />
+              <div className="space-y-3 mt-4">
+                {state.siteContent.faq.map((item, i) => (
+                  <div key={i} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        value={item.q}
+                        onChange={(e) => {
+                          const next = [...state.siteContent.faq];
+                          next[i] = { ...next[i], q: e.target.value };
+                          updSite({ faq: next });
+                        }}
+                        placeholder="Pergunta"
+                        className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
+                      />
+                      <button
+                        onClick={() => updSite({ faq: state.siteContent.faq.filter((_, idx) => idx !== i) })}
+                        className="p-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <textarea
+                      value={item.a}
+                      onChange={(e) => {
+                        const next = [...state.siteContent.faq];
+                        next[i] = { ...next[i], a: e.target.value };
+                        updSite({ faq: next });
+                      }}
+                      placeholder="Resposta"
+                      rows={2}
+                      className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
+                    />
+                  </div>
+                ))}
+                <button
+                  onClick={() => updSite({ faq: [...state.siteContent.faq, { q: "Nova pergunta?", a: "Resposta..." }] })}
+                  className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
+                >
+                  <Plus className="w-4 h-4" /> Adicionar pergunta
+                </button>
+              </div>
+            </FabricaCard>
+
+            <FabricaCard title="🎯 CTA Final">
+              <div className="space-y-3">
+                <FieldText
+                  label="Título"
+                  value={state.siteContent.finalCtaTitle}
+                  onChange={(v) => updSite({ finalCtaTitle: v })}
+                />
+                <FieldText
+                  label="Texto do botão"
+                  value={state.siteContent.finalCtaLabel}
+                  onChange={(v) => updSite({ finalCtaLabel: v })}
                 />
               </div>
-            ))}
+            </FabricaCard>
+          </div>
+
+          {/* BARRA DE AÇÕES INFERIOR FIXA */}
+          <div className="flex gap-3 bg-black/40 backdrop-blur-md p-2 rounded-2xl border border-white/10 mt-6">
             <button
-              onClick={addDepo}
-              className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
+              onClick={onBack}
+              className="flex-1 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white/80 font-semibold hover:bg-white/[0.08] flex items-center justify-center gap-2"
             >
-              <Plus className="w-4 h-4" /> Adicionar depoimento
+              Voltar
+            </button>
+            <button
+              onClick={handleDownload}
+              className="flex-1 py-3 rounded-xl font-bold text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+              style={{
+                background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)`,
+                boxShadow: `0 8px 24px ${state.primaryColor}55`,
+              }}
+            >
+              <Download className="w-4 h-4" /> Baixar HTML {downloadCount > 0 && `(v${downloadCount})`}
             </button>
           </div>
-        </FabricaCard>
 
-        {/* FAQ */}
-        <FabricaCard title="❓ Perguntas Frequentes (FAQ)">
-          <FieldText
-            label="Título da seção"
-            value={state.siteContent.faqTitle}
-            onChange={(v) => updSite({ faqTitle: v })}
-          />
-          <div className="space-y-3 mt-4">
-            {state.siteContent.faq.map((item, i) => (
-              <div key={i} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 space-y-2">
-                <div className="flex gap-2">
-                  <input
-                    value={item.q}
-                    onChange={(e) => {
-                      const next = [...state.siteContent.faq];
-                      next[i] = { ...next[i], q: e.target.value };
-                      updSite({ faq: next });
-                    }}
-                    placeholder="Pergunta"
-                    className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40"
-                  />
+          {/* PUBLICAÇÃO DIRETA NO VERCEL */}
+          <div className="mt-6">
+            <PublishOnLovableCard primaryColor={state.primaryColor} html={previewHTML} onBack={onBack} onNext={onNext} />
+          </div>
+        </div>
+
+        {/* Painel Direito: Preview do Site (7 colunas em lg, Sticky) */}
+        <div className="lg:col-span-7 space-y-6 lg:sticky lg:top-24">
+          <div className="bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="px-4 py-3 bg-zinc-950 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1.5">
+                  <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
+                  <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block" />
+                  <span className="w-3 h-3 rounded-full bg-green-500/80 inline-block" />
+                </div>
+                <div className="ml-3 px-3 py-1 rounded-lg bg-white/[0.04] text-[11px] font-mono text-white/50 w-44 sm:w-64 truncate border border-white/5">
+                  https://{(state.agencyName || "sua-agencia").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "-")}.vercel.app
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {/* Histórico Desfazer/Refazer */}
+                <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/15">
                   <button
-                    onClick={() => updSite({ faq: state.siteContent.faq.filter((_, idx) => idx !== i) })}
-                    className="p-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25"
+                    onClick={undo}
+                    disabled={!canUndo}
+                    className={`p-1.5 rounded-md transition-all ${
+                      canUndo ? "text-amber-400 hover:bg-white/10" : "text-white/20 cursor-not-allowed"
+                    }`}
+                    title="Desfazer alteração (Undo)"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Undo className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={redo}
+                    disabled={!canRedo}
+                    className={`p-1.5 rounded-md transition-all ${
+                      canRedo ? "text-emerald-400 hover:bg-white/10" : "text-white/20 cursor-not-allowed"
+                    }`}
+                    title="Refazer alteração (Redo)"
+                  >
+                    <Redo className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <textarea
-                  value={item.a}
-                  onChange={(e) => {
-                    const next = [...state.siteContent.faq];
-                    next[i] = { ...next[i], a: e.target.value };
-                    updSite({ faq: next });
-                  }}
-                  placeholder="Resposta"
-                  rows={2}
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/40 resize-none"
+
+                {/* Seletor Dispositivo */}
+                <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/15">
+                  <button
+                    onClick={() => setPreviewMode("desktop")}
+                    className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${
+                      previewMode === "desktop" ? "bg-white text-zinc-900 shadow" : "text-white/60 hover:text-white"
+                    }`}
+                  >
+                    Computador
+                  </button>
+                  <button
+                    onClick={() => setPreviewMode("mobile")}
+                    className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${
+                      previewMode === "mobile" ? "bg-white text-zinc-900 shadow" : "text-white/60 hover:text-white"
+                    }`}
+                  >
+                    Celular
+                  </button>
+                </div>
+
+                <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+                  Editor Visual
+                </span>
+              </div>
+            </div>
+
+            <div className="p-4 bg-zinc-950/40 relative">
+              <div className="mb-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center text-xs text-amber-300 font-semibold flex items-center justify-center gap-2">
+                <Pencil className="w-4 h-4 text-amber-400" />
+                💡 <strong>Clique em qualquer texto do site para digitar</strong> ou <strong>toque em uma foto</strong> para trocá-la ao vivo na tela!
+              </div>
+
+              <div className="transition-all duration-300 ease-in-out">
+                <iframe
+                  ref={iframeRef}
+                  srcDoc={previewHTML}
+                  className={`bg-white transition-all duration-300 shadow-xl ${
+                    previewMode === "mobile"
+                      ? "w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px]"
+                      : "w-full h-[1150px] border border-white/10 rounded-2xl"
+                  }`}
+                  title="Preview"
                 />
               </div>
-            ))}
-            <button
-              onClick={() => updSite({ faq: [...state.siteContent.faq, { q: "Nova pergunta?", a: "Resposta..." }] })}
-              className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
-            >
-              <Plus className="w-4 h-4" /> Adicionar pergunta
-            </button>
+            </div>
           </div>
-        </FabricaCard>
-
-        {/* CTA Final */}
-        <FabricaCard title="🎯 CTA Final">
-          <div className="space-y-3">
-            <FieldText
-              label="Título"
-              value={state.siteContent.finalCtaTitle}
-              onChange={(v) => updSite({ finalCtaTitle: v })}
-            />
-            <FieldText
-              label="Texto do botão"
-              value={state.siteContent.finalCtaLabel}
-              onChange={(v) => updSite({ finalCtaLabel: v })}
-            />
-          </div>
-        </FabricaCard>
+        </div>
       </div>
 
-      {/* ── BARRA DE AÇÕES INFERIOR FIXA ── */}
-      <div className="flex gap-3 sticky bottom-4 z-10 bg-black/40 backdrop-blur-md p-2 rounded-2xl border border-white/10">
-        <button
-          onClick={onBack}
-          className="flex-1 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white/80 font-semibold hover:bg-white/[0.08] flex items-center justify-center gap-2"
-        >
-          Voltar
-        </button>
-        <button
-          onClick={handleDownload}
-          className="flex-1 py-3 rounded-xl font-bold text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
-          style={{
-            background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)`,
-            boxShadow: `0 8px 24px ${state.primaryColor}55`,
-          }}
-        >
-          <Download className="w-4 h-4" /> Baixar HTML {downloadCount > 0 && `(v${downloadCount})`}
-        </button>
-      </div>
-
-      {/* PUBLICAÇÃO DIRETA NO VERCEL */}
-      <PublishOnLovableCard primaryColor={state.primaryColor} html={previewHTML} onBack={onBack} onNext={onNext} />
 
       {/* 🖼️ MODAL GLOBAL DE SELEÇÃO DE IMAGEM (DISPARADO AO CLICAR NA PRÉVIA) */}
       {globalPickingImage && activeImageEdit && (
