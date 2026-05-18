@@ -460,7 +460,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
       )}
 
       {/* Grid lateral */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="flex flex-col-reverse gap-8 items-stretch">
         {/* Painel Esquerdo: Opções de Configuração (5 colunas em lg) */}
         <div className="lg:col-span-5 space-y-6">
           <div className="border-b border-white/10 pb-4">
