@@ -801,7 +801,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
   // ===== Modo de geração =====
   const [genMode, setGenMode] = useState<GenMode>("photo");
-  const [searchEngine, setSearchEngine] = useState<"pexels" | "google" | "galeria">("pexels");
+  const [searchEngine, setSearchEngine] = useState<"pexels" | "google" | "galeria" | "geradas">("pexels");
   // Foto Real (Pexels/Google)
   const [photoQuery, setPhotoQuery] = useState("");
   const [photos, setPhotos] = useState<Array<{ id: number; url: string; thumb: string; alt: string }>>([]);
@@ -1142,7 +1142,13 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         const MAX_VARIATIONS_PHOTO = 3;
         setGeneratedImages((prev) => [...prev, ...composed].slice(-MAX_VARIATIONS_PHOTO));
         setGeneratedImage(composed[composed.length - 1]);
-        update({ generatedAdImage: composed[composed.length - 1], primaryColor: palette.primary });
+        const currentGenerated = state.allGeneratedAdImages || [];
+        const updatedGenerated = [composed[composed.length - 1], ...currentGenerated].slice(0, 30);
+        update({ 
+          generatedAdImage: composed[composed.length - 1], 
+          primaryColor: palette.primary,
+          allGeneratedAdImages: updatedGenerated
+        });
         syncGeneratedPackageToSite(composed[composed.length - 1], refImage);
 
         const newCount = generationCount + composed.length;
@@ -1348,7 +1354,13 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         const MAX_VARIATIONS_AI = 3;
         setGeneratedImages((prev) => [...prev, ...images].slice(-MAX_VARIATIONS_AI));
         setGeneratedImage(images[images.length - 1]);
-        update({ generatedAdImage: images[images.length - 1], primaryColor: palette.primary });
+        const currentGenerated = state.allGeneratedAdImages || [];
+        const updatedGenerated = [images[images.length - 1], ...currentGenerated].slice(0, 30);
+        update({ 
+          generatedAdImage: images[images.length - 1], 
+          primaryColor: palette.primary,
+          allGeneratedAdImages: updatedGenerated
+        });
         // Passa a ÃšLTIMA imagem final E a ÃšLTIMA imagem limpa gerada no loop (via closure seria complexo, então guardamos uma referência fora do loop se precisasse, mas podemos re-extrair ou apenas guardar no array)
         // ATENÃ‡ÃƒO: Para IA, como gera múltiplos em array, precisamos capturar a LIMPA da que foi pra tela!
         syncGeneratedPackageToSite(images[images.length - 1], cleanBackgroundForSite);
@@ -1470,7 +1482,13 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         return merged;
       });
       setGeneratedImage(imagesCustom[imagesCustom.length - 1]);
-      update({ generatedAdImage: imagesCustom[imagesCustom.length - 1], primaryColor: palette.primary });
+      const currentGenerated = state.allGeneratedAdImages || [];
+      const updatedGenerated = [imagesCustom[imagesCustom.length - 1], ...currentGenerated].slice(0, 30);
+      update({ 
+        generatedAdImage: imagesCustom[imagesCustom.length - 1], 
+        primaryColor: palette.primary,
+        allGeneratedAdImages: updatedGenerated
+      });
       syncGeneratedPackageToSite(imagesCustom[imagesCustom.length - 1], refImage);
 
       const newCount = generationCount + imagesCustom.length;
@@ -1863,14 +1881,15 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               {[
                 { id: "pexels", label: "Pexels (Top)" },
                 { id: "google", label: "Google/Web" },
-                { id: "galeria", label: "🖼️­ Mi Galería" }
+                { id: "galeria", label: "🖼️­  Mi Galería" },
+                { id: "geradas", label: "⚡ Artes Creadas" }
               ].map((eng) => (
                 <button
                   key={eng.id}
                   onClick={() => setSearchEngine(eng.id as any)}
                   className={`px-2 py-1.5 rounded-md text-[9px] uppercase tracking-wider font-bold transition-all whitespace-nowrap ${
                     searchEngine === eng.id 
-                      ? (eng.id === "galeria" ? "bg-indigo-500 text-white shadow-md" : "bg-white/10 text-white") 
+                      ? (eng.id === "galeria" ? "bg-indigo-500 text-white shadow-md" : eng.id === "geradas" ? "bg-orange-500 text-white shadow-md" : "bg-white/10 text-white") 
                       : "text-white/40 hover:text-white"
                   }`}
                 >
@@ -1880,7 +1899,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             </div>
           </div>
 
-          {searchEngine !== "galeria" ? (
+          {searchEngine === "pexels" || searchEngine === "google" ? (
             <>
               {/* Sugestões de destinos populares + os destinos da agência */}
               <div className="flex flex-wrap gap-1.5 mb-3">
@@ -1958,7 +1977,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 </div>
               )}
             </>
-          ) : (
+          ) : searchEngine === "galeria" ? (
             <>
               {/* NUEVO RENDER DE LA GALERÍA DE LA AGENCIA */}
               <p className="text-[10px] text-indigo-300/80 mb-3 leading-relaxed font-medium">
@@ -1991,6 +2010,75 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   <p className="text-sm font-bold text-white/70 mb-1">Galeria ainda vazia</p>
                   <p className="text-[11px] text-white/40">
                     Tus fotos aparecerán aquí automáticamente tan pronto como subas fotos al sitio o generes anuncios.
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {/* ABA DE TODAS AS ARTES DE ANÚNCIOS GERADOS COM SALVAMENTO E EXCLUSÃO (DEVE TER UMA ABA DE TODAS AS IMAGENS QUE FORAM GERADAS) */}
+              <p className="text-[10px] text-orange-300/80 mb-3 leading-relaxed font-medium">
+                ⚡ Todos los anuncios creados con IA en tu cuenta. Haz clic para usarlos como fondo o descargarlos directamente.
+              </p>
+              {(state.allGeneratedAdImages || []).length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-96 overflow-y-auto pr-1 custom-scrollbar">
+                  {(state.allGeneratedAdImages || []).map((imgUrl: string, idx: number) => (
+                    <div
+                      key={idx}
+                      className={`relative group aspect-[4/5] rounded-xl overflow-hidden border-2 transition-all bg-black/40 ${
+                        selectedPhotoUrl === imgUrl ? "scale-95" : "border-white/10 hover:border-white/30"
+                      }`}
+                      style={selectedPhotoUrl === imgUrl ? { borderColor: secondaryColor, borderWidth: 3 } : undefined}
+                    >
+                      <img src={imgUrl} alt="Arte Gerada" className="w-full h-full object-cover" />
+                      
+                      {/* Hover Overlay com controles */}
+                      <div className="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-3 gap-2 text-center">
+                        <button
+                          onClick={() => setSelectedPhotoUrl(imgUrl)}
+                          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 px-2 rounded-lg text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer border-0"
+                        >
+                          <Check className="w-3.5 h-3.5" /> Usar Fondo
+                        </button>
+                        <button
+                          onClick={() => {
+                            const link = document.createElement("a");
+                            link.href = imgUrl;
+                            link.download = `anuncio-fabrica-${idx + 1}.png`;
+                            link.click();
+                            toast.success("¡Descarga iniciada!");
+                          }}
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-2 rounded-lg text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer border-0"
+                        >
+                          <Download className="w-3.5 h-3.5" /> Descargar PNG
+                        </button>
+                        <button
+                          onClick={() => {
+                            const updated = (state.allGeneratedAdImages || []).filter((_, i) => i !== idx);
+                            update({ allGeneratedAdImages: updated });
+                            toast.success("Anuncio eliminado del historial");
+                          }}
+                          className="w-full bg-red-500/20 hover:bg-red-500/40 text-red-300 font-bold py-1 px-2 rounded-lg text-[9px] uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer border-0"
+                        >
+                          <Trash2 className="w-3 h-3" /> Anuncio eliminado
+                        </button>
+                      </div>
+
+                      {/* Selected indicator */}
+                      {selectedPhotoUrl === imgUrl && (
+                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg">
+                          <Check className="w-4 h-4 text-white" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 border border-dashed border-white/10 rounded-xl text-center">
+                  <ImageIcon className="w-8 h-8 text-white/20 mx-auto mb-2" />
+                  <p className="text-sm font-bold text-white/70 mb-1">Aún no hay anuncios creados</p>
+                  <p className="text-[11px] text-white/40">
+                    Crea tu primer anuncio para ver todas tus artes archivadas de forma segura aquí.
                   </p>
                 </div>
               )}

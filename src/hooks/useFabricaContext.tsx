@@ -114,6 +114,7 @@ export interface FabricaState {
   checklist30days: Record<string, boolean>;
   diagnosticoCompleto: boolean;
   generatedAdImage: string; // base64 da imagem gerada na Fase 3
+  allGeneratedAdImages?: string[]; // lista de todas as artes geradas pelo usuário
   siteContent: SiteContent;
 
   // Persistência da Fase 3 (para não resetar ao voltar)
@@ -179,6 +180,7 @@ const defaultState: FabricaState = {
   checklist30days: {},
   diagnosticoCompleto: false,
   generatedAdImage: "",
+  allGeneratedAdImages: [],
   siteContent: {
     heroHeadline: "",
     heroSubheadline: "",
@@ -239,6 +241,7 @@ const STORAGE_KEY = "fabrica-context-v1";
 const HEAVY_KEYS = ["logoBase64", "generatedAdImage"] as const;
 const HEAVY_STORAGE_PREFIX = "fabrica-heavy-v1:";
 const GALLERY_KEY = "fabrica-gallery-v1";
+const GENERATED_KEY = "fabrica-generated-v1";
 
 const safeSetItem = (key: string, value: string): boolean => {
   try {
@@ -275,10 +278,17 @@ const loadInitialState = (): FabricaState => {
       if (g) gallery = JSON.parse(g);
     } catch {}
 
+    let generated: string[] = [];
+    try {
+      const gen = localStorage.getItem(GENERATED_KEY);
+      if (gen) generated = JSON.parse(gen);
+    } catch {}
+
     return {
       ...defaultState,
       ...parsed,
       ...heavy,
+      allGeneratedAdImages: generated.length ? generated : (parsed.allGeneratedAdImages || []),
       siteContent: {
         ...defaultState.siteContent,
         ...(parsed.siteContent || {}),
@@ -300,7 +310,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   // Persistência: salva campos leves em uma chave, pesados em chaves separadas
   useEffect(() => {
     try {
-      const { logoBase64, generatedAdImage, siteContent, ...rest } = state;
+      const { logoBase64, generatedAdImage, allGeneratedAdImages, siteContent, ...rest } = state;
       const { galleryImages, ...siteRest } = siteContent;
 
       // Leve (sem base64 grandes)
@@ -318,10 +328,59 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
 
       // Galeria separada (pode ter várias imagens)
       safeSetItem(GALLERY_KEY, JSON.stringify(galleryImages || []));
+
+      // Artes geradas separadas
+      safeSetItem(GENERATED_KEY, JSON.stringify(allGeneratedAdImages || []));
     } catch {}
   }, [state]);
 
   const { user } = useAuth();
+
+  // ☁️ CARREGAR DO BANCO: Busca o estado salvo do usuário no Supabase
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const loadSavedState = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("fabrica_diagnosticos")
+          .select("state_snapshot")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.warn("[Supabase Load] Falha ao carregar estado:", error.message);
+          return;
+        }
+
+        if (data?.state_snapshot) {
+          const saved = data.state_snapshot as Partial<FabricaState>;
+          setState((prev) => {
+            // Mescla o estado com cuidado para preservar o que já está na sessão
+            const merged = {
+              ...prev,
+              ...saved,
+              siteContent: {
+                ...prev.siteContent,
+                ...(saved.siteContent || {}),
+                galleryImages: saved.siteContent?.galleryImages || prev.siteContent?.galleryImages || [],
+                sections: {
+                  ...prev.siteContent.sections,
+                  ...(saved.siteContent?.sections || {}),
+                }
+              },
+              allGeneratedAdImages: saved.allGeneratedAdImages || prev.allGeneratedAdImages || []
+            };
+            return merged;
+          });
+        }
+      } catch (err) {
+        console.error("[Supabase Load] Erro catastrófico:", err);
+      }
+    };
+
+    loadSavedState();
+  }, [user?.id]);
 
   // ☁️ PERSISTÊNCIA NUVEM: Sincroniza estado debounced com Supabase
   useEffect(() => {
@@ -329,18 +388,17 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     
     const syncState = async () => {
       // 🛡️ SEGURANÇA DE HIDRATAÇÃO: Não sobe um estado VAZIO por cima do que já está na nuvem!
-      // Só sobe se tiver um Nome preenchido ou algum progresso detectado.
       if (!state.agencyName && state.digitalScore === 0 && state.currentPhase <= 1) return;
 
       try {
-        // 🛑 SANITIZAÇÃO DE BLOAT: Remove base64 pesados (logo/artes) E a galeria para economizar espaço DB
-        // e garantir que ficamos SEMPRE no Plano Gratuito, sem limites de payload!
-        const { logoBase64, generatedAdImage, siteContent, ...rest } = state;
-        const { galleryImages, ...siteRest } = siteContent;
-        
-        const minimalSnapshot = {
-          ...rest,
-          siteContent: siteRest // Snapshot leve (apenas textos e configurações)
+        // Salva o snapshot com fotos, logos e galeria sob controle de tamanho para não exceder limites
+        const cleanState = {
+          ...state,
+          siteContent: {
+            ...state.siteContent,
+            galleryImages: (state.siteContent.galleryImages || []).slice(0, 10),
+          },
+          allGeneratedAdImages: (state.allGeneratedAdImages || []).slice(0, 10)
         };
 
         const { error } = await supabase
@@ -350,7 +408,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
             agency_name: state.agencyName || "Nova Agência",
             digital_score: state.digitalScore || 0,
             level: state.level || 1,
-            state_snapshot: minimalSnapshot as any, // Salvando versão sanitizada super leve!
+            state_snapshot: cleanState as any,
             updated_at: new Date().toISOString()
           }, { onConflict: "user_id" });
 
@@ -358,7 +416,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
           console.warn("[Supabase Sync] Falha silenciosa:", error.message);
         }
       } catch (err) {
-        // Falha silenciosa para não quebrar experiência se offline
+        // Falha silenciosa
       }
     };
 
@@ -372,6 +430,10 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     state.digitalScore, 
     state.selectedPackages.length, 
     state.siteContent.heroHeadline,
+    state.logoBase64,
+    state.generatedAdImage,
+    state.siteContent.galleryImages.length,
+    state.allGeneratedAdImages?.length,
     user?.id
   ]);
 

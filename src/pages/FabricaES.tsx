@@ -125,7 +125,7 @@ const FabricaInnerES = () => {
   );
 };
 
-const FabricaES = () => {
+const FabricaContentES = () => {
   const navigate = useNavigate();
   const { subscription, isAdmin, user, loading: authLoading } = useAuth();
 
@@ -271,11 +271,17 @@ const FabricaES = () => {
 
   return (
     <>
-      <SeoMetadata title="Fábrica de Destinos | Canva Viajes" description="Sistema completo de marketing y generación de anuncios con IA para agencias de viajes." />
-      <FabricaProvider>
-        <FabricaInnerES />
-      </FabricaProvider>
+      <SeoMetadata title="Fábrica de Destinos | Canva Viajes" description="Sistema completo de marketing y geração de anúncios com IA para agências de viagens." />
+      <FabricaInnerES />
     </>
+  );
+};
+
+const FabricaES = () => {
+  return (
+    <FabricaProvider>
+      <FabricaContentES />
+    </FabricaProvider>
   );
 };
 
