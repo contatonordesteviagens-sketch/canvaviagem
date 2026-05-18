@@ -135,7 +135,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         });
 
         el.addEventListener("blur", () => {
-          const textVal = el.innerText.trim();
+          const textVal = (el as HTMLElement).innerText.trim();
           
           if (el.classList.contains("brand-name")) {
             update({ agencyName: textVal });
@@ -158,7 +158,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                 } else if (el.classList.contains("price-value") || el.classList.contains("price-main")) {
                   updPacote(pkgId, { price: textVal });
                 } else if (el.classList.contains("dest-tag")) {
-                  updPacote(pkgId, { category: textVal });
+                  updPacote(pkgId, { category: textVal } as any);
                 }
               }
             }
