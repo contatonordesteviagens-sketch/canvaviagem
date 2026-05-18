@@ -182,7 +182,7 @@ const LiveStream = () => {
             {/* TÍTULO PRINCIPAL */}
             <div className="text-center md:text-left">
               <h3 className="text-2xl md:text-3xl font-black text-zinc-900 leading-tight">
-                Tenha um Feed Profissional de R$ 10k/mês e crie anúncios em 5 segundos!
+                A I.A que cria anúncios e site de viagens em minutos!
               </h3>
             </div>
 
