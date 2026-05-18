@@ -18,6 +18,8 @@ const IndexES = lazy(() => import("./pages/IndexES"));
 const Calendar = lazy(() => import("./pages/Calendar"));
 const CalendarES = lazy(() => import("./pages/CalendarES"));
 const Auth = lazy(() => import("./pages/Auth"));
+const LiveStream = lazy(() => import("./pages/LiveStream"));
+const LiveStreamES = lazy(() => import("./pages/LiveStreamES"));
 
 
 const PlanosES = lazy(() => import("./pages/PlanosES"));
@@ -150,6 +152,7 @@ const App = () => {
                     <Route path="/diferencas" element={<Diferencas />} />
                     <Route path="/imersao-ao-vivo" element={<AulaSecreta />} />
                     <Route path="/fabrica" element={<Fabrica />} />
+                    <Route path="/live" element={<LiveStream />} />
                     <Route path="/painel-marketing" element={
                       <ProtectedRoute requireElite>
                         <PainelMarketing />
@@ -167,6 +170,7 @@ const App = () => {
                     <Route path="/es/planos" element={<SalesPageES />} />
                     <Route path="/es/obrigado" element={<ObrigadoES />} />
                     <Route path="/es/fabrica" element={<FabricaES />} />
+                    <Route path="/es/live" element={<LiveStreamES />} />
 
                     {/* Auth e outras rotas compartilhadas */}
                     <Route path="/auth" element={<Auth />} />
