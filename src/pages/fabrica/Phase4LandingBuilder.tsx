@@ -23,6 +23,7 @@ import {
   Upload,
   Undo,
   Redo,
+  ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { SectionVisibility } from "@/hooks/useFabricaContext";
@@ -135,7 +136,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         });
 
         el.addEventListener("blur", () => {
-          const textVal = el.innerText.trim();
+          const textVal = (el as HTMLElement).innerText.trim();
           
           if (el.classList.contains("brand-name")) {
             update({ agencyName: textVal });
@@ -158,7 +159,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                 } else if (el.classList.contains("price-value") || el.classList.contains("price-main")) {
                   updPacote(pkgId, { price: textVal });
                 } else if (el.classList.contains("dest-tag")) {
-                  updPacote(pkgId, { category: textVal });
+                  updPacote(pkgId, { category: textVal } as any);
                 }
               }
             }
@@ -222,7 +223,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
     return () => {
       iframe.removeEventListener("load", handleIframeLoad);
     };
-  }, [previewHTML, state.selectedPackages, state.depoimentos]);
+  }, [state, state.selectedPackages, state.depoimentos]);
 
   // ── AUTO-SYNC: Injeta dados da Fase 3 na Fase 4 na primeira montagem ──
   // Só atua se o usuário ainda não personalizou o site (campos padrão).
