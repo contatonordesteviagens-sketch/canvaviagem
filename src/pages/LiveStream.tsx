@@ -106,19 +106,18 @@ const LiveStream = () => {
     }
   }, [comments, step]);
 
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegister = () => {
     if (!name.trim()) {
       toast.error("Por favor, digite seu nome.");
       return;
     }
     setIsSubmitting(true);
     
-    // Simulate loading/C spinner
+    // Simulate loading spinner
     setTimeout(() => {
       setIsSubmitting(false);
       setStep("watch");
-      toast.success("Cadastro realizado com sucesso! Bem-vindo à aula.");
+      toast.success("Inscrição confirmada! Aproveite a transmissão.");
     }, 1200);
   };
 
@@ -129,9 +128,10 @@ const LiveStream = () => {
     const now = new Date();
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
+    // Sincroniza com o nome do usuário cadastrado na captura
     const userComment: Comment = {
       id: String(Date.now()),
-      username: "Você",
+      username: name.trim() || "Lucas",
       message: newComment.trim(),
       isUser: true,
       time: timeStr
@@ -139,11 +139,11 @@ const LiveStream = () => {
 
     setComments(prev => [...prev, userComment]);
     setNewComment("");
-    toast.success("Mensagem enviada no chat ao vivo!");
+    toast.success("Comentário publicado!");
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none justify-center">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none justify-center animate-fade-in">
       
       {/* PASSO 1: CARD DE CADASTRO */}
       {step === "register" ? (
@@ -182,8 +182,8 @@ const LiveStream = () => {
               </h3>
             </div>
 
-            {/* FORMULÁRIO DE CADASTRO */}
-            <form onSubmit={handleRegister} className="flex flex-col gap-4">
+            {/* FORMULÁRIO DE CADASTRO COM DIV DIRETA (EVITA BLOQUEIOS DO NAVEGADOR) */}
+            <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-black text-zinc-700 uppercase tracking-wider">Nome</label>
                 <Input
@@ -199,7 +199,7 @@ const LiveStream = () => {
                 <label className="text-xs font-black text-zinc-700 uppercase tracking-wider">Telefone</label>
                 <div className="flex gap-2">
                   <div className="flex items-center justify-center gap-1.5 px-3 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 text-sm font-bold flex-shrink-0">
-                    <span>🇧🇷</span>
+                    <span>🇧🇷 BR</span>
                     <span className="text-[10px] text-zinc-500">▼</span>
                   </div>
                   <Input
@@ -212,9 +212,9 @@ const LiveStream = () => {
                 </div>
               </div>
 
-              {/* BOTÃO DE ENVIAR COM LOADING */}
+              {/* BOTÃO DE ENVIAR COM CLICK DIRETO */}
               <Button
-                type="submit"
+                onClick={handleRegister}
                 disabled={isSubmitting}
                 className="w-full bg-[#8ade9b] hover:bg-[#7bc88b] text-zinc-950 font-black py-6 rounded-xl shadow-lg border-none flex items-center justify-center text-md transition-all duration-300"
               >
@@ -224,7 +224,7 @@ const LiveStream = () => {
                   "C"
                 )}
               </Button>
-            </form>
+            </div>
           </div>
         </div>
       ) : (
@@ -347,21 +347,12 @@ const LiveStream = () => {
                     {comments.map((c) => (
                       <div
                         key={c.id}
-                        className={`flex flex-col gap-1 p-3 rounded-2xl max-w-[85%] transition-all duration-300 ${
-                          c.isUser
-                            ? "ml-auto bg-gradient-to-br from-cyan-400/20 to-violet-500/20 border border-cyan-400/30 text-white rounded-tr-none"
-                            : "bg-zinc-800/40 border border-zinc-800/30 text-zinc-100 rounded-tl-none"
-                        }`}
+                        className="flex flex-col gap-1 p-3 rounded-2xl max-w-[85%] transition-all duration-300 bg-zinc-800/40 border border-zinc-800/30 text-zinc-100 rounded-tl-none"
                       >
                         <div className="flex items-center gap-2">
-                          <span className={`text-[11px] font-bold ${c.isUser ? "text-cyan-400" : "text-zinc-400"}`}>
+                          <span className="text-[11px] font-bold text-zinc-400">
                             @{c.username}
                           </span>
-                          {c.isUser && (
-                            <span className="text-[8px] bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 px-1.5 py-0.5 rounded font-black uppercase">
-                              Você
-                            </span>
-                          )}
                           <span className="text-[9px] text-zinc-500 ml-auto">{c.time}</span>
                         </div>
                         <p className="text-xs md:text-sm font-medium leading-relaxed break-words">{c.message}</p>
