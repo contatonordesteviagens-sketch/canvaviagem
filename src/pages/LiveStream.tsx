@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Paperclip, Smile, Eye, MessageCircle, AlertCircle, Sparkles, Play, Check, Pause } from "lucide-react";
+import { Send, Paperclip, Smile, Eye, MessageCircle, AlertCircle, Sparkles, Play, Check, Pause, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -17,6 +17,41 @@ const INITIAL_COMMENTS: Comment[] = [
   { id: "2", username: "Marcos Silva", message: "conectado de recife. ansioso pra ver a fabrica de anuncios", time: "20:02" },
   { id: "3", username: "Fernanda", message: "o audio e video tao perfeitos aqui", time: "20:03" },
   { id: "4", username: "Carlos", message: "Bora pra cima! boa noite lucas", time: "20:04" },
+];
+
+interface ScheduledComment {
+  time: string; // Time in "MM:SS" format relative to video start
+  username: string;
+  message: string;
+}
+
+const SCHEDULED_COMMENTS: ScheduledComment[] = [
+  { time: "00:05", username: "Juliana Costa", message: "boa noite gente! lucas a ferramenta ta rodando?" },
+  { time: "00:15", username: "Marcos Silva", message: "conectado de recife. ansioso pra ver a fabrica de anuncios" },
+  { time: "00:30", username: "Fernanda", message: "o audio e video tao perfeitos aqui" },
+  { time: "00:45", username: "Carlos", message: "Bora pra cima! boa noite lucas" },
+  { time: "01:05", username: "Patricia Lemos", message: "lucas, da pra colocar a logo e as cores da minha agencia?" },
+  { time: "01:25", username: "Ricardo", message: "Da sim Patricia! Eu ja uso e fica mt bom" },
+  { time: "01:45", username: "Ana Paula", message: "nossa essa IA vai economizar mt tempo de postagem" },
+  { time: "02:05", username: "Roberto Antunes", message: "lucas, os criativos ja vem no formato de reels?" },
+  { time: "02:25", username: "Leticia", message: "ja sim roberto, fica perfeito" },
+  { time: "02:50", username: "Aline Maria", message: "chocada com a velocidade q gera as fotos com preco" },
+  { time: "03:15", username: "Carla Aguiar", message: "ja sou aluna do elite o suporte é top demais msm" },
+  { time: "03:35", username: "Tiago", message: "top" },
+  { time: "03:50", username: "Renata", message: "kd o preço? " },
+  { time: "04:10", username: "Valdir", message: "concorrente vai odiar isso kkk" },
+  { time: "04:30", username: "Beatriz", message: "como faco pra acessar o gerador com as IAs lucas?" },
+  { time: "04:55", username: "Murilo Costa", message: "escolhe a foto de Jeri" },
+  { time: "05:20", username: "Sandra Souza", message: "funciona pra quem ta comecando do zero?" },
+  { time: "05:45", username: "Diego", message: "tem q ter notebook ou da pra fazer tudo pelo celular?" },
+  { time: "06:15", username: "Lucas Agente", message: "dá pra gerar quantos anuncios por dia?" },
+  { time: "06:45", username: "Gisele", message: "como faz pra assinar? libera o link logo lucas rs" },
+  { time: "07:15", username: "Bruno Reis", message: "isso ajuda mt quem nao sabe usar o canva do zero" },
+  { time: "07:45", username: "Mariana", message: "dá pra usar fotos proprias ou so as da IA?" },
+  { time: "08:15", username: "Felipe", message: "tem destinos internacionais tbm?" },
+  { time: "08:45", username: "Julio Cesar", message: "jeri fica lindo dms na fabrica" },
+  { time: "09:15", username: "Amanda", message: "Consigo mudar as cores dps?" },
+  { time: "09:45", username: "Katia Tur", message: "ja quero assinar hj com desconto" },
 ];
 
 const AUTO_COMMENTS_POOL = [
@@ -45,12 +80,43 @@ const AUTO_COMMENTS_POOL = [
 ];
 
 const LiveStream = () => {
+  const [isTimeAllowed, setIsTimeAllowed] = useState<boolean>(() => {
+    try {
+      const now = new Date();
+      const formatter = new Intl.DateTimeFormat("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+      const parts = formatter.formatToParts(now);
+      const hourStr = parts.find(p => p.type === "hour")?.value;
+      const minuteStr = parts.find(p => p.type === "minute")?.value;
+      if (!hourStr || !minuteStr) return false;
+
+      const hour = parseInt(hourStr, 10);
+      const minute = parseInt(minuteStr, 10);
+      const currentTimeInMinutes = hour * 60 + minute;
+      const startTimeInMinutes = 19 * 60 + 30; // 19:30
+      const endTimeInMinutes = 22 * 60;        // 22:00
+
+      return currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes <= endTimeInMinutes;
+    } catch (error) {
+      const now = new Date();
+      const hour = now.getHours();
+      const minute = now.getMinutes();
+      const currentTimeInMinutes = hour * 60 + minute;
+      return currentTimeInMinutes >= 1170 && currentTimeInMinutes <= 1320;
+    }
+  });
+
   const [step, setStep] = useState<"register" | "watch">("register");
   const [name, setName] = useState("Lucas");
   const [phone, setPhone] = useState("(85) 99845-8995");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [playbackSeconds, setPlaybackSeconds] = useState(0);
   
   const [viewers, setViewers] = useState(107);
   const [comments, setComments] = useState<Comment[]>(INITIAL_COMMENTS);
@@ -63,6 +129,45 @@ const LiveStream = () => {
 
   useEffect(() => {
     document.title = "Canva Viagem — Aula Secreta Ao Vivo";
+  }, []);
+
+  useEffect(() => {
+    const verify = () => {
+      try {
+        const now = new Date();
+        const formatter = new Intl.DateTimeFormat("pt-BR", {
+          timeZone: "America/Sao_Paulo",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        });
+        const parts = formatter.formatToParts(now);
+        const hourStr = parts.find(p => p.type === "hour")?.value;
+        const minuteStr = parts.find(p => p.type === "minute")?.value;
+        if (!hourStr || !minuteStr) {
+          setIsTimeAllowed(false);
+          return;
+        }
+
+        const hour = parseInt(hourStr, 10);
+        const minute = parseInt(minuteStr, 10);
+        const currentTimeInMinutes = hour * 60 + minute;
+        const startTimeInMinutes = 19 * 60 + 30;
+        const endTimeInMinutes = 22 * 60;
+
+        setIsTimeAllowed(currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes <= endTimeInMinutes);
+      } catch (error) {
+        const now = new Date();
+        const hour = now.getHours();
+        const minute = now.getMinutes();
+        const currentTimeInMinutes = hour * 60 + minute;
+        setIsTimeAllowed(currentTimeInMinutes >= 1170 && currentTimeInMinutes <= 1320);
+      }
+    };
+    
+    // Periódico a cada 15 segundos
+    const interval = setInterval(verify, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleTogglePause = () => {
@@ -96,20 +201,56 @@ const LiveStream = () => {
     return () => clearInterval(interval);
   }, [step]);
 
-  // Scrolling chat simulation (adding a fake non-repeated comment every 12 to 20 seconds)
+  // Increment playback timer in seconds
   useEffect(() => {
-    if (step !== "watch" || isPaused) return; // Pause comment generation when video is paused
+    if (!isPlaying || isPaused || step !== "watch") return;
+    const interval = setInterval(() => {
+      setPlaybackSeconds(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isPlaying, isPaused, step]);
+
+  // Trigger scheduled comments at exact MM:SS markers
+  useEffect(() => {
+    if (!isPlaying || isPaused || step !== "watch") return;
+
+    const match = SCHEDULED_COMMENTS.find(c => {
+      const parts = c.time.split(":");
+      const mins = parseInt(parts[0], 10);
+      const secs = parseInt(parts[1], 10);
+      const totalSecs = mins * 60 + secs;
+      return totalSecs === playbackSeconds;
+    });
+
+    if (match) {
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      
+      setComments(prev => [
+        ...prev,
+        {
+          id: `scheduled-${match.time}-${Date.now()}`,
+          username: match.username,
+          message: match.message,
+          time: timeStr
+        }
+      ]);
+    }
+  }, [playbackSeconds, isPlaying, isPaused, step]);
+
+  // Fallback scrolling chat simulation (adds a comment every 15s to 25s after scheduled comments run out, which is 600s/10m)
+  useEffect(() => {
+    if (step !== "watch" || isPaused || !isPlaying) return;
+    if (playbackSeconds < 600) return; // Keep chat only displaying scheduled comments for first 10 minutes
+
     const addFakeComment = () => {
-      const randomDelay = Math.floor(Math.random() * 8000) + 12000; // 12s to 20s
+      const randomDelay = Math.floor(Math.random() * 10000) + 15000; // 15s to 25s
       
       return setTimeout(() => {
-        if (poolRef.current.length === 0) return; // Stop when pool is empty to avoid repetitions
+        if (poolRef.current.length === 0) return;
 
-        // Pick one random comment
         const randomIndex = Math.floor(Math.random() * poolRef.current.length);
         const randomComment = poolRef.current[randomIndex];
-        
-        // Remove it from current pool
         poolRef.current.splice(randomIndex, 1);
 
         const now = new Date();
@@ -118,7 +259,7 @@ const LiveStream = () => {
         setComments(prev => [
           ...prev,
           {
-            id: String(Date.now()),
+            id: `fallback-${Date.now()}`,
             username: randomComment.username,
             message: randomComment.message,
             time: timeStr
@@ -131,7 +272,7 @@ const LiveStream = () => {
 
     const timer = addFakeComment();
     return () => clearTimeout(timer);
-  }, [step, isPaused]);
+  }, [step, isPaused, isPlaying, playbackSeconds]);
 
   // Auto scroll chat to bottom when comments update
   useEffect(() => {
@@ -175,6 +316,68 @@ const LiveStream = () => {
     setNewComment("");
     toast.success("Comentário publicado!");
   };
+
+  if (!isTimeAllowed) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none justify-center items-center p-4 md:p-6 animate-fade-in relative overflow-hidden">
+        {/* Glow ambient background effects */}
+        <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-cyan-500/10 blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-80 h-80 rounded-full bg-blue-500/10 blur-[100px] pointer-events-none" />
+
+        <div className="max-w-md w-full relative z-10">
+          <div className="bg-zinc-900/80 backdrop-blur-xl text-zinc-100 rounded-3xl shadow-2xl border border-zinc-800/80 p-6 md:p-8 flex flex-col gap-6 items-center text-center">
+            
+            {/* Header / Brand */}
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] uppercase tracking-[0.25em] font-black text-cyan-400">Canva Viagem</span>
+              <h2 className="text-xl font-black italic tracking-tighter text-white mt-1">
+                AULA SECRETA AO VIVO
+              </h2>
+            </div>
+
+            {/* Offline Icon Container */}
+            <div className="relative flex items-center justify-center my-2">
+              <div className="absolute inset-0 w-24 h-24 rounded-full bg-cyan-400/5 animate-pulse" />
+              <div className="h-20 w-20 rounded-full bg-zinc-950 border border-zinc-800 flex items-center justify-center shadow-inner relative z-10">
+                <Clock size={36} className="text-cyan-400" />
+              </div>
+            </div>
+
+            {/* Title & Info */}
+            <div className="space-y-2">
+              <h3 className="text-lg md:text-xl font-black text-white uppercase tracking-wide">
+                Transmissão Offline
+              </h3>
+              <p className="text-xs md:text-sm text-zinc-400 leading-relaxed px-2">
+                A aula secreta ao vivo da Fábrica de Anúncios e criação de sites está programada para iniciar pontualmente no horário reservado.
+              </p>
+            </div>
+
+            {/* Time badge details with premium visual container */}
+            <div className="w-full bg-zinc-950 border border-zinc-800/50 rounded-2xl p-4 flex flex-col gap-3">
+              <div className="flex justify-between items-center text-xs border-b border-zinc-800/50 pb-2">
+                <span className="text-zinc-500 font-bold uppercase tracking-wider">Período de Acesso</span>
+                <span className="text-zinc-300 font-black">Diário</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-zinc-500 font-bold uppercase tracking-wider">Horário de Brasília</span>
+                <span className="text-cyan-400 font-black text-sm bg-cyan-400/10 px-3 py-1 rounded-xl">
+                  19:30 às 22:00
+                </span>
+              </div>
+            </div>
+
+            {/* Countdown / Wait notice */}
+            <div className="flex items-center gap-2 bg-zinc-950/40 border border-zinc-800/40 px-4 py-2 rounded-xl text-[10px] text-zinc-400 uppercase tracking-widest font-black">
+              <span className="h-2 w-2 rounded-full bg-zinc-600 animate-pulse" />
+              Retorne no horário da transmissão
+            </div>
+            
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none justify-center animate-fade-in">
