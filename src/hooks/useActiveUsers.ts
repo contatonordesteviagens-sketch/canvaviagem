@@ -11,6 +11,9 @@ export interface ActiveUser {
   created_at: string;
   current_period_end: string | null;
   profile_id?: string; // For audited PII access
+  product_id: string | null;
+  plan_name: string;
+  plan_value: string;
 }
 
 // Helper to mask email (fallback for client-side masking)
@@ -77,10 +80,16 @@ export const useActiveUsers = () => {
       }
 
       // Combinar dados - priorizar view mascarada, depois fallback com mascaramento client-side
+      const ELITE_PRODUCT_IDS = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
+
       const users: ActiveUser[] = subscriptions.map((sub) => {
         const maskedProfile = maskedProfiles.find((p) => p.user_id === sub.user_id);
         const emailRecord = emailData?.find((e) => e.user_id === sub.user_id);
         
+        const isElite = sub.product_id && ELITE_PRODUCT_IDS.includes(sub.product_id);
+        const plan_name = isElite ? "Plano Elite 👑" : "Plano Start ✈️";
+        const plan_value = isElite ? "R$ 197,00" : "R$ 97,00";
+
         return {
           user_id: sub.user_id,
           email: maskedProfile?.email_masked || maskEmail(emailRecord?.email || null),
@@ -91,6 +100,9 @@ export const useActiveUsers = () => {
           created_at: sub.created_at,
           current_period_end: sub.current_period_end,
           profile_id: maskedProfile?.id,
+          product_id: sub.product_id,
+          plan_name,
+          plan_value,
         };
       });
 

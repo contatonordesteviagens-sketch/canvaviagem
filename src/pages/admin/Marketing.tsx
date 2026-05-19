@@ -2,11 +2,53 @@ import { useMarketingStats } from "@/hooks/useMarketingStats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FunnelChart } from "@/components/admin/FunnelChart";
 import { ROITable } from "@/components/admin/ROITable";
-import { Loader2, Users, UserCheck, CreditCard, DollarSign, TrendingUp, Mail, MousePointer, Star } from "lucide-react";
+import { Loader2, Users, UserCheck, CreditCard, DollarSign, TrendingUp, Mail, MousePointer, Star, Send, AlertTriangle, Sparkles, CheckCircle2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 export default function Marketing() {
-  const { data, isLoading, error } = useMarketingStats();
+  const { data, isLoading, error, refetch } = useMarketingStats();
+  const [sendingCampaign, setSendingCampaign] = useState<string | null>(null);
+
+  const handleSendCampaign = async (campaignType: "recovery" | "upgrade") => {
+    const confirmSend = window.confirm(
+      campaignType === "recovery"
+        ? `Tem certeza que deseja disparar a campanha de recuperação para todos os pagamentos pendentes/carrinhos abandonados? Isso enviará e-mails via Resend.`
+        : `Tem certeza que deseja disparar a oferta de upgrade para todos os assinantes do Plano Start? Isso enviará e-mails via Resend.`
+    );
+
+    if (!confirmSend) return;
+
+    setSendingCampaign(campaignType);
+    toast.loading("Processando disparos da campanha...", { id: "campaign-toast" });
+
+    try {
+      const { data, error } = await supabase.functions.invoke("send-promotional-campaign", {
+        body: { campaignType },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast.success(`Campanha disparada com sucesso! ${data.sent} e-mails enviados, ${data.errors} erros.`, {
+          id: "campaign-toast",
+        });
+        refetch();
+      } else {
+        throw new Error(data?.error || "Erro desconhecido no servidor");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(`Falha ao disparar campanha: ${err.message || "Erro interno"}`, {
+        id: "campaign-toast",
+      });
+    } finally {
+      setSendingCampaign(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -129,6 +171,7 @@ export default function Marketing() {
           <TabsTrigger value="funnel">📊 Funil</TabsTrigger>
           <TabsTrigger value="sources">💰 Fontes (ROI)</TabsTrigger>
           <TabsTrigger value="email">📧 Email</TabsTrigger>
+          <TabsTrigger value="campaigns">🎯 Disparo de Campanhas</TabsTrigger>
         </TabsList>
 
         {/* Funnel Tab */}
@@ -225,6 +268,89 @@ export default function Marketing() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Campaigns Tab */}
+        <TabsContent value="campaigns" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Campaign 1: Payment Recovery */}
+            <Card className="border-red-100 dark:border-red-900/50 shadow-md">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl font-bold flex items-center gap-2 text-red-600 dark:text-red-400">
+                  <AlertTriangle className="h-5 w-5" />
+                  Recuperação de Pagamentos Pendentes
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-black tracking-tight text-red-600 dark:text-red-400">
+                    {stats.failedPaymentsCount}
+                  </span>
+                  <span className="text-sm font-semibold text-muted-foreground">leads qualificados</span>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Esta campanha envia um e-mail de suporte e reengajamento com link direto de checkout seguro para todos os leads com <strong>carrinhos abandonados</strong> ou cujo status da assinatura seja <strong>past_due (pagamento falhado)</strong>.
+                </p>
+                <div className="bg-red-50 dark:bg-red-900/10 p-3 rounded-lg border border-red-200 dark:border-red-800 text-xs text-red-800 dark:text-red-200 flex gap-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span>Cuidado: certifique-se de ter limite diário suficiente no seu Resend antes de disparar.</span>
+                </div>
+                <Button 
+                  onClick={() => handleSendCampaign("recovery")}
+                  disabled={sendingCampaign !== null || stats.failedPaymentsCount === 0}
+                  className="w-full h-12 font-bold bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-lg shadow-red-500/10 flex items-center justify-center gap-2"
+                >
+                  {sendingCampaign === "recovery" ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      Disparar Recuperação de Vendas
+                      <Send className="h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Campaign 2: Start to Elite Upgrade */}
+            <Card className="border-purple-100 dark:border-purple-900/50 shadow-md">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl font-bold flex items-center gap-2 text-purple-600 dark:text-purple-400">
+                  <Sparkles className="h-5 w-5" />
+                  Upgrade Start ➔ Elite (Fábrica IA)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-black tracking-tight text-purple-600 dark:text-purple-400">
+                    {stats.startSubscribersCount}
+                  </span>
+                  <span className="text-sm font-semibold text-muted-foreground">assinantes Start ativos</span>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Esta campanha envia um convite exclusivo com cupom/desconto para incentivar os membros atuais do <strong>Plano Start</strong> a fazerem o upgrade para o <strong>Plano Elite</strong> para desbloquear a Fábrica IA e o Construtor de Sites.
+                </p>
+                <div className="bg-purple-50 dark:bg-purple-900/10 p-3 rounded-lg border border-purple-200 dark:border-purple-800 text-xs text-purple-800 dark:text-purple-200 flex gap-2">
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <span>Ótima campanha para ROI imediato! Envia links personalizados para a oferta do Plano Elite.</span>
+                </div>
+                <Button 
+                  onClick={() => handleSendCampaign("upgrade")}
+                  disabled={sendingCampaign !== null || stats.startSubscribersCount === 0}
+                  className="w-full h-12 font-bold bg-purple-600 hover:bg-purple-700 text-white rounded-xl shadow-lg shadow-purple-500/10 flex items-center justify-center gap-2"
+                >
+                  {sendingCampaign === "upgrade" ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      Disparar Oferta de Upgrade Elite
+                      <Send className="h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 

@@ -102,11 +102,13 @@ export const UsersSection = () => {
       return;
     }
 
-    const headers = ["Email", "Status", "Inscrito em", "Válido até", "Stripe Customer ID"];
+    const headers = ["Email", "Status", "Plano", "Valor", "Inscrito em", "Válido até", "Stripe Customer ID"];
 
     const rows = usersToExport.map((user) => [
       user.email,
       getStatusText(user.status),
+      user.plan_name,
+      user.plan_value,
       formatDate(user.created_at),
       formatDate(user.current_period_end),
       user.stripe_customer_id || "-",
@@ -242,6 +244,8 @@ export const UsersSection = () => {
                   <TableRow>
                     <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Plano</TableHead>
+                    <TableHead>Valor</TableHead>
                     <TableHead>Inscrito em</TableHead>
                     <TableHead>Válido até</TableHead>
                   </TableRow>
@@ -251,6 +255,12 @@ export const UsersSection = () => {
                     <TableRow key={user.user_id}>
                       <TableCell className="font-medium">{user.email}</TableCell>
                       <TableCell>{getStatusBadge(user.status)}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="font-semibold text-xs">
+                          {user.plan_name}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-green-600 dark:text-green-400 font-semibold">{user.plan_value}</TableCell>
                       <TableCell>{formatDate(user.created_at)}</TableCell>
                       <TableCell>{formatDate(user.current_period_end)}</TableCell>
                     </TableRow>

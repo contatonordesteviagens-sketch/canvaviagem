@@ -37,6 +37,8 @@ interface MarketingStats {
   emailMetrics: EmailMetrics;
   funnel: FunnelStage[];
   topSource: MarketingSource | null;
+  startSubscribersCount: number;
+  failedPaymentsCount: number;
 }
 
 export const useMarketingStats = () => {
@@ -63,6 +65,24 @@ export const useMarketingStats = () => {
         .select("*");
 
       if (autoError) throw autoError;
+
+      // Fetch subscriptions and checkouts for targeted campaigns
+      const { data: subscriptions } = await supabase
+        .from("subscriptions")
+        .select("product_id, status");
+
+      const { data: abandonedCheckouts } = await supabase
+        .from("abandoned_checkouts")
+        .select("id");
+
+      const ELITE_PRODUCT_IDS = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
+      const activeSubs = subscriptions || [];
+      const startSubscribersCount = activeSubs.filter(
+        s => s.status === "active" && (!s.product_id || !ELITE_PRODUCT_IDS.includes(s.product_id))
+      ).length;
+
+      const failedPaymentsCount = (abandonedCheckouts || []).length + 
+        activeSubs.filter(s => s.status === "past_due" || s.status === "unpaid").length;
 
       // Calculate totals
       const typedSources = (sources || []) as MarketingSource[];
@@ -146,6 +166,8 @@ export const useMarketingStats = () => {
         },
         funnel,
         topSource,
+        startSubscribersCount,
+        failedPaymentsCount,
       };
     },
     staleTime: 1000 * 60 * 2, // 2 minutes cache
