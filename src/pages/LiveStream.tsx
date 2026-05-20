@@ -868,14 +868,8 @@ const LiveStream = () => {
         playbackSecond: c.playbackSecond !== undefined ? c.playbackSecond : currentSeconds
       }));
 
-      // Mapeia comentários de simulação/fallback
-      const activeFallbackComments = fallbackComments.map((c: any) => ({
-        ...c,
-        playbackSecond: c.playbackSecond !== undefined ? c.playbackSecond : currentSeconds
-      }));
-
       // Mescla e ordena estritamente por playbackSecond para fluxo contínuo onde os novos empurram os antigos para cima
-      const merged = [...activePrePlay, ...activeScheduled, ...activeUserComments, ...activeFallbackComments]
+      const merged = [...activePrePlay, ...activeScheduled, ...activeUserComments]
         .sort((a: any, b: any) => {
           const secA = a.playbackSecond ?? 0;
           const secB = b.playbackSecond ?? 0;
@@ -887,7 +881,7 @@ const LiveStream = () => {
     } catch (e) {
       console.error("Error in comments playback synchronization:", e);
     }
-  }, [playbackSeconds, step, isPlaying, scheduledCommentsList, userComments, fallbackComments]);
+  }, [playbackSeconds, step, isPlaying, scheduledCommentsList, userComments, prePlayComments]);
 
   // Monitor exit-intent (mouse leaving the screen top)
   useEffect(() => {
@@ -912,7 +906,7 @@ const LiveStream = () => {
     if (!isPlaying || step !== "watch") return;
     if (playbackSeconds < 15 * 60) return; // Only allow after 15 minutes of watching
     
-    let pauseTimer: NodeJS.Timeout;
+    let pauseTimer: ReturnType<typeof setTimeout> | undefined;
     if (isPaused) {
       const offerStartSeconds = getOfferActivationSeconds();
       const isOfferShownOrLate = playbackSeconds >= offerStartSeconds || playbackSeconds >= 65 * 60;
