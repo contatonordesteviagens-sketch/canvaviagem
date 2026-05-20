@@ -495,6 +495,63 @@ const LiveStream = () => {
     } catch (e) {
       console.error("Erro ao carregar sessão ativa persistida:", e);
     }
+
+    // Real-Time subscription para sincronização automática da Gestão com a Live
+    const channel = supabase
+      .channel('global-settings-live')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'webinar_leads',
+          filter: "whatsapp=eq.global_live_settings"
+        },
+        (payload) => {
+          try {
+            if (payload.new && payload.new.source) {
+              const globalSettings = typeof payload.new.source === "string" ? JSON.parse(payload.new.source) : payload.new.source;
+              
+              if (globalSettings.videoUrl) {
+                const videoId = getYouTubeId(globalSettings.videoUrl);
+                setVideoUrlId(videoId);
+                localStorage.setItem("live_stream_video_url", globalSettings.videoUrl);
+              }
+              
+              if (globalSettings.offerSettings) {
+                setOfferSettings(globalSettings.offerSettings);
+                localStorage.setItem("live_stream_offer_settings", JSON.stringify(globalSettings.offerSettings));
+                if (globalSettings.offerSettings.status === "visible") {
+                  setShowOfferBanner(true);
+                } else {
+                  setShowOfferBanner(false);
+                }
+              }
+              
+              if (globalSettings.scheduledComments && Array.isArray(globalSettings.scheduledComments)) {
+                setScheduledCommentsList(globalSettings.scheduledComments);
+                localStorage.setItem("live_stream_comments", JSON.stringify(globalSettings.scheduledComments));
+              }
+              
+              if (globalSettings.prePlayComments && Array.isArray(globalSettings.prePlayComments)) {
+                const cleaned = globalSettings.prePlayComments.map((c: any) => ({
+                  ...c,
+                  message: c.message.replace(" 🙌", "").replace("🙌", "")
+                }));
+                setPrePlayComments(cleaned);
+                localStorage.setItem("live_stream_pre_play_comments", JSON.stringify(cleaned));
+              }
+            }
+          } catch (e) {
+            console.error("Erro ao processar realtime global settings:", e);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
