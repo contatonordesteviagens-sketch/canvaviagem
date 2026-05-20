@@ -160,6 +160,7 @@ export const LiveCommentsSection = () => {
   const [presetUsername, setPresetUsername] = useState("");
   const [presetMessage, setPresetMessage] = useState("");
   const [saveAsPresetCheckbox, setSaveAsPresetCheckbox] = useState(false);
+  const [presetScheduleImmediately, setPresetScheduleImmediately] = useState(false);
   const [activePresetTab, setActivePresetTab] = useState<"standard" | "custom">("standard");
 
   // Load everything from localStorage on mount
@@ -457,6 +458,29 @@ export const LiveCommentsSection = () => {
     setCustomPresets(updatedPresets);
     localStorage.setItem("live_stream_custom_presets", JSON.stringify(updatedPresets));
     
+    // Schedule immediately if checkbox is checked
+    if (presetScheduleImmediately) {
+      const newCommentItem: ScheduledComment = {
+        time: presetTime.trim(),
+        username: cleanUsername,
+        message: presetMessage.trim()
+      };
+
+      const duplicate = comments.some(
+        c => c.time === newCommentItem.time && 
+             c.username === newCommentItem.username && 
+             c.message === newCommentItem.message
+      );
+
+      if (!duplicate) {
+        saveComments([...comments, newCommentItem]);
+        toast.success(`Comentário agendado para o tempo ${newCommentItem.time}!`);
+      } else {
+        toast.warning(`Comentário de @${cleanUsername} já está agendado em ${newCommentItem.time}.`);
+      }
+      setPresetScheduleImmediately(false); // Reset checkbox
+    }
+
     // Clear inputs
     setPresetLabel("");
     setPresetTime("");
@@ -813,6 +837,22 @@ export const LiveCommentsSection = () => {
                       onChange={(e) => setPresetMessage(e.target.value)}
                       className="bg-card border-muted-foreground/15 h-9 text-xs"
                     />
+                  </div>
+
+                  <div className="flex items-center space-x-2 pt-1 pb-1">
+                    <input
+                      type="checkbox"
+                      id="preset-schedule-immediately"
+                      checked={presetScheduleImmediately}
+                      onChange={(e) => setPresetScheduleImmediately(e.target.checked)}
+                      className="h-4 w-4 rounded border-muted-foreground/30 bg-muted/30 text-cyan-500 focus:ring-cyan-500"
+                    />
+                    <label
+                      htmlFor="preset-schedule-immediately"
+                      className="text-xs font-semibold text-muted-foreground cursor-pointer select-none"
+                    >
+                      Agendar imediatamente na transmissão ao salvar
+                    </label>
                   </div>
 
                   <Button 
@@ -1193,6 +1233,102 @@ export const LiveCommentsSection = () => {
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            {editingIndex === null && (
+              <div className="grid gap-2">
+                <label htmlFor="preset-loader" className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-cyan-400" />
+                  Carregar de uma Predefinição <span className="text-xs text-muted-foreground font-normal">(Opcional)</span>
+                </label>
+                <select
+                  id="preset-loader"
+                  className="w-full rounded-md border border-muted-foreground/15 bg-muted/30 px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-cyan-500 h-9"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (!val) return;
+                    
+                    if (val.startsWith("custom_")) {
+                      const presetId = val.replace("custom_", "");
+                      const found = customPresets.find(p => p.id === presetId);
+                      if (found) {
+                        setFormUsername(found.username);
+                        setFormMessage(found.message);
+                        setFormTime(found.time);
+                        toast.success(`Carregado: ${found.label} (${found.time})`);
+                      }
+                    } else if (val.startsWith("single_")) {
+                      const idx = parseInt(val.replace("single_", ""), 10);
+                      const found = SINGLE_COMMENT_PRESETS[idx];
+                      if (found) {
+                        setFormUsername(found.username);
+                        setFormMessage(found.message);
+                        
+                        // Sugerir tempo sequencial inteligente
+                        let suggestedTime = "50:00";
+                        if (comments.length > 0) {
+                          const lastComment = comments[comments.length - 1];
+                          const parts = lastComment.time.split(":");
+                          if (parts.length === 2) {
+                            let mins = parseInt(parts[0], 10) || 0;
+                            let secs = parseInt(parts[1], 10) || 0;
+                            secs += 10;
+                            if (secs >= 60) {
+                              mins += Math.floor(secs / 60);
+                              secs = secs % 60;
+                            }
+                            suggestedTime = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                          }
+                        }
+                        setFormTime(suggestedTime);
+                        toast.success(`Carregado: ${found.label} (Tempo sugerido: ${suggestedTime})`);
+                      }
+                    }
+                    e.target.value = ""; // Limpa a seleção do select após carregar
+                  }}
+                >
+                  <option value="">-- Escolha uma predefinição para preencher os campos --</option>
+                  {customPresets.length > 0 && (
+                    <optgroup label="Sua Biblioteca (Predefinições com Tempo)">
+                      {customPresets.map((p) => (
+                        <option key={p.id} value={`custom_${p.id}`}>
+                          ⏱️ {p.time} - @{p.username} ({p.label})
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  <optgroup label="Prova Social (Sugere tempo sequencial)">
+                    {SINGLE_COMMENT_PRESETS.filter(p => p.category === "social").map((preset) => {
+                      const originalIdx = SINGLE_COMMENT_PRESETS.indexOf(preset);
+                      return (
+                        <option key={`opt-social-${originalIdx}`} value={`single_${originalIdx}`}>
+                          ⭐ {preset.label} - @{preset.username}
+                        </option>
+                      );
+                    })}
+                  </optgroup>
+                  <optgroup label="Compra / FOMO (Sugere tempo sequencial)">
+                    {SINGLE_COMMENT_PRESETS.filter(p => p.category === "purchase").map((preset) => {
+                      const originalIdx = SINGLE_COMMENT_PRESETS.indexOf(preset);
+                      return (
+                        <option key={`opt-purchase-${originalIdx}`} value={`single_${originalIdx}`}>
+                          🔥 {preset.label} - @{preset.username}
+                        </option>
+                      );
+                    })}
+                  </optgroup>
+                  <optgroup label="Dúvidas / Perguntas (Sugere tempo sequencial)">
+                    {SINGLE_COMMENT_PRESETS.filter(p => p.category === "question").map((preset) => {
+                      const originalIdx = SINGLE_COMMENT_PRESETS.indexOf(preset);
+                      return (
+                        <option key={`opt-question-${originalIdx}`} value={`single_${originalIdx}`}>
+                          ❓ {preset.label} - @{preset.username}
+                        </option>
+                      );
+                    })}
+                  </optgroup>
+                </select>
+              </div>
+            )}
+
             <div className="grid gap-2">
               <label htmlFor="form-time" className="text-sm font-semibold text-foreground flex items-center gap-1.5">
                 <Clock className="w-4 h-4 text-muted-foreground" />
