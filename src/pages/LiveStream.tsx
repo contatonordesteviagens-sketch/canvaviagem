@@ -985,8 +985,11 @@ const LiveStream = () => {
       setIsMobileLandscape(w > h && h <= 520);
       setIsMobileViewport(w < 1024 || h <= 520);
       
-      // Força o scroll do viewport de volta a 0 para impedir Safari de empurrar a tela fixed para cima de forma segura
-      if (top > 0 || window.scrollY > 0) {
+      // Força o scroll do viewport de volta a 0 para impedir Safari de empurrar a tela fixed para cima.
+      // IMPORTANTE: não fazer isso quando um input/textarea está focado (teclado aberto), senão trava a digitação.
+      const ae = document.activeElement as HTMLElement | null;
+      const isTyping = !!ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable);
+      if (!isTyping && (top > 0 || window.scrollY > 0)) {
         requestAnimationFrame(() => {
           window.scrollTo(0, 0);
         });
