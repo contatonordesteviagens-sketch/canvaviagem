@@ -204,9 +204,9 @@ const LiveStream = () => {
   const [isMobileLandscape, setIsMobileLandscape] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
-  // viewportHeight: atualizado pelo visualViewport para funcionar com teclado virtual do iOS
+  // Altura estável da live. Não usar visualViewport durante digitação: no Chrome/iPhone isso pode cancelar o foco do input.
   const [viewportHeight, setViewportHeight] = useState<number>(
-    () => (typeof window !== 'undefined' ? (window.visualViewport?.height ?? window.innerHeight) : 800)
+    () => (typeof window !== 'undefined' ? window.innerHeight : 800)
   );
   const [viewportOffsetTop, setViewportOffsetTop] = useState(0);
 
@@ -860,28 +860,19 @@ const LiveStream = () => {
     return () => clearInterval(interval);
   }, [step]);
 
-  // Mark as "left the live" when tab hides or closes
+  // Mantém presença real sem marcar saída falsa quando o Chrome/iPhone abre teclado, PiP ou alterna foco rapidamente
   useEffect(() => {
     if (step !== "watch") return;
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        syncProgressToSupabase(playbackSecondsRef.current, { left: true });
-      } else if (document.visibilityState === "visible") {
+      if (document.visibilityState === "visible") {
         syncProgressToSupabase(playbackSecondsRef.current);
       }
     };
-    const handleBeforeUnload = () => {
-      syncProgressToSupabase(playbackSecondsRef.current, { left: true });
-    };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    window.addEventListener("pagehide", handleBeforeUnload);
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      window.removeEventListener("pagehide", handleBeforeUnload);
     };
   }, [step]);
 
@@ -962,38 +953,22 @@ const LiveStream = () => {
     };
   }, [step]);
 
-  // Listener do teclado virtual mobile: mantém o chat digitável no Chrome/Android sem esconder o painel
+  // Layout mobile estável: não reage ao abre/fecha do teclado para não derrubar o foco do comentário
   useEffect(() => {
-    const updateVH = () => {
-      const vv = window.visualViewport;
-      const h = vv?.height ?? window.innerHeight;
-      const w = vv?.width ?? window.innerWidth;
-      const top = vv?.offsetTop ?? 0;
-      const ae = document.activeElement as HTMLElement | null;
-      const isTyping = !!ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable);
-      const keyboardOpen = isTyping && !!vv && h < window.innerHeight - 80;
-
+    const updateLayout = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
       setViewportHeight(h);
-      setViewportOffsetTop(top);
-      setIsMobileLandscape(!keyboardOpen && w > h && h <= 520);
+      setViewportOffsetTop(0);
+      setIsMobileLandscape(w > h && h <= 520);
       setIsMobileViewport(w < 1024 || h <= 520);
-      
-      // Força o scroll do viewport de volta a 0 para impedir Safari de empurrar a tela fixed para cima.
-      // IMPORTANTE: não fazer isso quando um input/textarea está focado (teclado aberto), senão trava a digitação.
-      if (!isTyping && (top > 0 || window.scrollY > 0)) {
-        requestAnimationFrame(() => {
-          window.scrollTo(0, 0);
-        });
-      }
     };
-    updateVH();
-    window.visualViewport?.addEventListener('resize', updateVH);
-    window.visualViewport?.addEventListener('scroll', updateVH);
-    window.addEventListener('resize', updateVH);
+    updateLayout();
+    window.addEventListener('orientationchange', updateLayout);
+    window.addEventListener('resize', updateLayout);
     return () => {
-      window.visualViewport?.removeEventListener('resize', updateVH);
-      window.visualViewport?.removeEventListener('scroll', updateVH);
-      window.removeEventListener('resize', updateVH);
+      window.removeEventListener('orientationchange', updateLayout);
+      window.removeEventListener('resize', updateLayout);
     };
   }, []);
 
@@ -1433,6 +1408,7 @@ const LiveStream = () => {
             top: `${viewportOffsetTop}px`,
             left: 0,
             right: 0,
+            bottom: 0,
             height: `${viewportHeight}px`,
             maxHeight: `${viewportHeight}px`,
             paddingTop: 'env(safe-area-inset-top)',
@@ -1706,9 +1682,7 @@ const LiveStream = () => {
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       onFocus={(e) => {
-                        const input = e.currentTarget;
                         setIsPlayerExpanded(false);
-                        setTimeout(() => input?.scrollIntoView({ block: "nearest", inline: "nearest" }), 120);
                       }}
                       type="text"
                       placeholder="Digite algo..."
