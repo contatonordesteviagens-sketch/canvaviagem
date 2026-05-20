@@ -957,22 +957,35 @@ const LiveStream = () => {
     };
   }, [step]);
 
-  // Layout mobile estável: não reage ao abre/fecha do teclado para não derrubar o foco do comentário
+  // Layout mobile estável: não reage ao abre/fecha do teclado para não derrubar
+  // o foco do comentário NEM travar/recarregar o vídeo durante a digitação.
   useEffect(() => {
-    const updateLayout = () => {
+    let baseHeight = window.innerHeight;
+    let baseWidth = window.innerWidth;
+
+    const updateLayout = (force = false) => {
       const w = window.innerWidth;
       const h = window.innerHeight;
+      const ae = document.activeElement as HTMLElement | null;
+      const typing = !!ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable);
+      // Heurística de teclado aberto: altura encolheu significativamente sem mudar a largura.
+      const keyboardOpen = !force && w === baseWidth && h < baseHeight - 100;
+      if (typing || keyboardOpen) return; // não recalcula layout: evita travar o player
+      baseHeight = h;
+      baseWidth = w;
       setViewportHeight(h);
       setViewportOffsetTop(0);
       setIsMobileLandscape(w > h && h <= 520);
       setIsMobileViewport(w < 1024 || h <= 520);
     };
-    updateLayout();
-    window.addEventListener('orientationchange', updateLayout);
-    window.addEventListener('resize', updateLayout);
+    updateLayout(true);
+    const onOrientation = () => updateLayout(true);
+    const onResize = () => updateLayout(false);
+    window.addEventListener('orientationchange', onOrientation);
+    window.addEventListener('resize', onResize);
     return () => {
-      window.removeEventListener('orientationchange', updateLayout);
-      window.removeEventListener('resize', updateLayout);
+      window.removeEventListener('orientationchange', onOrientation);
+      window.removeEventListener('resize', onResize);
     };
   }, []);
 
