@@ -1362,7 +1362,7 @@ const LiveStream = () => {
           <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
 
             {/* ── PLAYER DE VÍDEO ─────────────────────────────────────── */}
-            <div className="relative bg-black lg:w-3/4 lg:flex-none lg:h-full overflow-hidden mobile-landscape-fullscreen" style={{ minHeight: "min(56vw, 58vh)" }}>
+            <div className="relative bg-black w-full aspect-video lg:w-3/4 lg:flex-none lg:h-full overflow-hidden mobile-landscape-fullscreen">
 
               {/* BADGES */}
               <div className="absolute top-3 left-3 z-40 flex items-center gap-2">
@@ -1448,22 +1448,20 @@ const LiveStream = () => {
                     className="absolute w-full h-full object-cover pointer-events-none z-0"
                     style={{ transform: "scale(1.02)", transformOrigin: "center" }}
                   />
-                  {isPlaying && (
-                    <iframe
-                      ref={iframeRef}
-                      className="absolute w-full h-full border-none z-10 transition-opacity duration-500 opacity-100"
-                      style={{ transform: "scale(1.02)", transformOrigin: "center" }}
-                      src={`https://www.youtube.com/embed/${videoUrlId}?autoplay=1&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&enablejsapi=1${initialStartSeconds > 0 ? `&start=${initialStartSeconds}` : ""}`}
-                      title="Canva Viagem Live"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    />
-                  )}
+                  <iframe
+                    ref={iframeRef}
+                    className={`absolute w-full h-full border-none z-10 transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-0'}`}
+                    style={{ transform: "scale(1.02)", transformOrigin: "center", pointerEvents: isPlaying ? 'auto' : 'none' }}
+                    src={`https://www.youtube.com/embed/${videoUrlId}?enablejsapi=1&autoplay=0&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1${initialStartSeconds > 0 ? `&start=${initialStartSeconds}` : ""}`}
+                    title="Canva Viagem Live"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  />
                 </div>
               </div>
 
-              {/* BANNER DE OFERTA SOBRE O VÍDEO */}
+              {/* BANNER DE OFERTA SOBRE O VÍDEO (DESKTOP E TABLET) */}
               {showOfferBanner && (
-                <div className="absolute bottom-3 left-3 right-3 z-40 bg-zinc-950/95 backdrop-blur-xl border-2 border-cyan-400/40 p-3 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-[0_0_40px_rgba(34,211,238,0.25)] animate-fade-in">
+                <div className="hidden sm:flex absolute bottom-3 left-3 right-3 z-40 bg-zinc-950/95 backdrop-blur-xl border-2 border-cyan-400/40 p-3 rounded-2xl flex-col sm:flex-row items-center justify-between gap-3 shadow-[0_0_40px_rgba(34,211,238,0.25)] animate-fade-in">
                   {offerSettings.bannerUrl ? (
                     <div className="relative w-full flex flex-col items-center">
                       <button 
@@ -1525,6 +1523,68 @@ const LiveStream = () => {
                 </div>
               )}
             </div>
+
+            {/* BANNER DE OFERTA (MOBILE - ABAIXO DO VÍDEO PARA NÃO SOBREPOR) */}
+            {showOfferBanner && (
+              <div className="sm:hidden bg-zinc-950/95 border-b border-cyan-400/40 p-3 flex flex-col items-center justify-between gap-3 shadow-[0_4px_20px_rgba(34,211,238,0.15)] animate-fade-in relative z-20">
+                {offerSettings.bannerUrl ? (
+                  <div className="relative w-full flex flex-col items-center">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setShowOfferBanner(false); }}
+                      className="absolute -top-2 -right-2 z-50 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full w-6 h-6 flex items-center justify-center border border-zinc-700 shadow-md text-[10px]"
+                    >
+                      ✕
+                    </button>
+                    <a 
+                      href={offerSettings.checkoutUrl || "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d"} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="w-full"
+                      onClick={trackCheckoutClick}
+                    >
+                      <img 
+                        src={offerSettings.bannerUrl} 
+                        alt="Oferta Especial" 
+                        className="w-full h-auto rounded-xl hover:scale-[1.01] transition-transform duration-300 max-h-[140px] object-cover" 
+                      />
+                    </a>
+                  </div>
+                ) : (
+                  <div className="relative w-full flex flex-col items-center text-center gap-3">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setShowOfferBanner(false); }}
+                      className="absolute -top-1 -right-1 z-50 text-zinc-400 hover:text-white text-xs font-bold bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-full w-6 h-6 flex items-center justify-center"
+                    >
+                      ✕
+                    </button>
+
+                    <div className="flex flex-col items-center gap-1.5 w-full px-4">
+                      <div className="bg-gradient-to-tr from-cyan-400 to-blue-600 p-2.5 rounded-full text-black mb-1">
+                        <ShoppingBag size={18} className="animate-bounce" />
+                      </div>
+                      <h4 className="text-sm font-black text-white uppercase tracking-wider">{offerSettings.title}</h4>
+                      <p className="text-[11px] text-zinc-300 font-medium leading-tight">{offerSettings.description}</p>
+                    </div>
+
+                    <a 
+                      href={offerSettings.checkoutUrl || "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d"} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        trackCheckoutClick();
+                      }}
+                      className="w-full mt-1"
+                    >
+                      <button className="w-full bg-gradient-to-r from-emerald-400 to-green-500 text-black font-black px-4 py-3.5 rounded-xl shadow-[0_4px_20px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2 text-xs uppercase tracking-widest animate-pulse">
+                        <Sparkles size={14} className="fill-black" />
+                        Garantir Desconto
+                      </button>
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* ── PAINEL DO CHAT ───────────────────────────────────────── */}
             <div
