@@ -1697,19 +1697,23 @@ const LiveStream = () => {
                   <form
                     onSubmit={handleSendMessage}
                     data-chat-panel
-                    className="p-2 border-t border-zinc-800/80 bg-zinc-900/60 flex items-center gap-1.5 flex-shrink-0"
+                    className="p-2 border-t border-zinc-800/80 bg-zinc-900/60 flex items-center gap-1.5 flex-shrink-0 pointer-events-auto touch-manipulation"
                   >
                     <Input
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
+                      onFocus={() => setMobileVideoFocusMode(false)}
+                      type="text"
                       placeholder="Digite algo..."
                       autoComplete="off"
+                      autoCapitalize="sentences"
+                      inputMode="text"
                       enterKeyHint="send"
-                      className="flex-1 bg-zinc-950 border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-cyan-500 rounded-xl text-[16px] md:text-xs py-2 h-9"
+                      className="flex-1 min-w-0 bg-zinc-950 border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-cyan-500 rounded-xl text-[16px] md:text-xs py-2 h-10 pointer-events-auto touch-manipulation"
                     />
                     <button
                       type="submit"
-                      className="rounded-xl bg-cyan-400 text-black hover:bg-cyan-300 shadow-md flex-shrink-0 h-9 w-9 flex items-center justify-center transition-colors border-none"
+                      className="rounded-xl bg-cyan-400 text-black hover:bg-cyan-300 shadow-md flex-shrink-0 h-10 w-10 flex items-center justify-center transition-colors border-none pointer-events-auto touch-manipulation"
                     >
                       <Send size={14} />
                     </button>
