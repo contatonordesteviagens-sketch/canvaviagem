@@ -268,6 +268,7 @@ const LiveStream = () => {
   });
   const [showOfferBanner, setShowOfferBanner] = useState(false);
   const [isMobileLandscape, setIsMobileLandscape] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
   // viewportHeight: atualizado pelo visualViewport para funcionar com teclado virtual do iOS
   const [viewportHeight, setViewportHeight] = useState<number>(
@@ -1039,6 +1040,7 @@ const LiveStream = () => {
       setViewportHeight(h);
       setViewportOffsetTop(top);
       setIsMobileLandscape(w > h && h <= 520);
+      setIsMobileViewport(w < 1024 || h <= 520);
       
       // Força o scroll do viewport de volta a 0 para impedir Safari de empurrar a tela fixed para cima de forma segura
       if (top > 0 || window.scrollY > 0) {
@@ -1610,11 +1612,11 @@ const LiveStream = () => {
               </div>
 
               {/* BOTÃO TELA CHEIA — MOBILE */}
-              {isPlaying && (
+              {isPlaying && isMobileViewport && (
                 <button
                   onClick={handleMobileFullscreen}
                   aria-label="Tela cheia"
-                  className="xl:hidden absolute top-3 right-3 z-50 bg-black/70 backdrop-blur-md hover:bg-black/90 text-white p-2 rounded-full border border-white/15 shadow-lg active:scale-95 transition"
+                  className="absolute top-3 right-3 z-50 bg-black/70 backdrop-blur-md hover:bg-black/90 text-white p-2 rounded-full border border-white/15 shadow-lg active:scale-95 transition"
                 >
                   <Maximize2 size={16} />
                 </button>
