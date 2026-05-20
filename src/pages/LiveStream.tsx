@@ -485,8 +485,9 @@ const LiveStream = () => {
         },
         (payload) => {
           try {
-            if (payload.new && payload.new.source) {
-              const globalSettings = typeof payload.new.source === "string" ? JSON.parse(payload.new.source) : payload.new.source;
+            const nextRow = payload.new as { source?: string | Record<string, unknown> };
+            if (nextRow && nextRow.source) {
+              const globalSettings = typeof nextRow.source === "string" ? JSON.parse(nextRow.source) : nextRow.source;
               
               if (globalSettings.videoUrl) {
                 const videoId = getYouTubeId(globalSettings.videoUrl);
