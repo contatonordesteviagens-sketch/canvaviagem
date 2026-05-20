@@ -962,21 +962,24 @@ const LiveStream = () => {
     };
   }, [step]);
 
-  // Listener do teclado virtual iOS (visualViewport resize & scroll) para manter o layout fixado perfeitamente no topo
+  // Listener do teclado virtual mobile: mantém o chat digitável no Chrome/Android sem esconder o painel
   useEffect(() => {
     const updateVH = () => {
-      const h = window.visualViewport?.height ?? window.innerHeight;
-      const w = window.visualViewport?.width ?? window.innerWidth;
-      const top = window.visualViewport?.offsetTop ?? 0;
+      const vv = window.visualViewport;
+      const h = vv?.height ?? window.innerHeight;
+      const w = vv?.width ?? window.innerWidth;
+      const top = vv?.offsetTop ?? 0;
+      const ae = document.activeElement as HTMLElement | null;
+      const isTyping = !!ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable);
+      const keyboardOpen = isTyping && !!vv && h < window.innerHeight - 80;
+
       setViewportHeight(h);
       setViewportOffsetTop(top);
-      setIsMobileLandscape(w > h && h <= 520);
+      setIsMobileLandscape(!keyboardOpen && w > h && h <= 520);
       setIsMobileViewport(w < 1024 || h <= 520);
       
       // Força o scroll do viewport de volta a 0 para impedir Safari de empurrar a tela fixed para cima.
       // IMPORTANTE: não fazer isso quando um input/textarea está focado (teclado aberto), senão trava a digitação.
-      const ae = document.activeElement as HTMLElement | null;
-      const isTyping = !!ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable);
       if (!isTyping && (top > 0 || window.scrollY > 0)) {
         requestAnimationFrame(() => {
           window.scrollTo(0, 0);
