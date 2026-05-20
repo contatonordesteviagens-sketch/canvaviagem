@@ -1402,16 +1402,16 @@ const LiveStream = () => {
       ) : (
 
         /* PASSO 2: PLAYER DA LIVE — LAYOUT MOBILE-FIRST SCROLLÁVEL */
-        <div className="flex flex-col bg-zinc-950 min-h-[100dvh] lg:h-[100dvh] lg:overflow-hidden">
+        <div className="flex flex-col bg-zinc-950 min-h-[100dvh] lg:h-[100dvh] lg:overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
 
           {/* HEADER DA LIVE */}
-          <div className="bg-zinc-900/80 border-b border-zinc-800/80 px-3 pt-safe-top pb-2.5 flex items-center justify-between gap-2 flex-shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top), 10px)' }}>
-            <h2 className="text-[11px] sm:text-sm font-black text-white leading-tight flex-1 min-w-0 break-words whitespace-normal">
+          <div className="bg-zinc-900 border-b border-zinc-800 px-4 py-3 flex items-center justify-between gap-3 flex-shrink-0" style={{ marginTop: '10px' }}>
+            <h2 className="text-sm sm:text-base font-black text-white leading-snug flex-1 min-w-0 break-words">
               A Fábrica de Criar Anúncios e Criar Site de Viagens Ilimitados em minutos!
             </h2>
-            <div className="flex items-center gap-1.5 bg-red-600/15 border border-red-500/20 px-2.5 py-1 rounded-xl flex-shrink-0 animate-pulse">
-              <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-              <span className="text-[9px] font-black text-red-400 uppercase tracking-wider">AO VIVO</span>
+            <div className="flex items-center gap-1.5 bg-red-600 px-2.5 py-1 rounded-full flex-shrink-0 animate-pulse">
+              <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
+              <span className="text-[9px] font-black text-white uppercase tracking-wider">AO VIVO</span>
             </div>
           </div>
 
@@ -1618,7 +1618,7 @@ const LiveStream = () => {
                 <div className="flex flex-col">
                   <div
                     className="overflow-y-auto p-3 space-y-2.5 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent"
-                    style={{ minHeight: '160px', maxHeight: '320px' }}
+                    style={{ minHeight: '80px', maxHeight: '280px' }}
                   >
                     {comments.map((c) => (
                       <div
