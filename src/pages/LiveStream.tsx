@@ -1400,26 +1400,26 @@ const LiveStream = () => {
           </div>
         </div>
       ) : (
-        
-        /* PASSO 2: PLAYER DA LIVE — LAYOUT MOBILE-FIRST */
-        <div className="flex flex-col h-[100dvh] overflow-hidden bg-zinc-950">
+
+        /* PASSO 2: PLAYER DA LIVE — LAYOUT MOBILE-FIRST SCROLLÁVEL */
+        <div className="flex flex-col bg-zinc-950 min-h-[100dvh] lg:h-[100dvh] lg:overflow-hidden">
 
           {/* HEADER DA LIVE */}
-          <div className="bg-zinc-900/80 border-b border-zinc-800/80 px-3 py-2.5 flex items-center justify-between gap-2 flex-shrink-0">
-            <h2 className="text-xs sm:text-sm font-black text-white leading-tight flex-1 min-w-0 break-words whitespace-normal py-0.5">
+          <div className="bg-zinc-900/80 border-b border-zinc-800/80 px-3 pt-safe-top pb-2.5 flex items-center justify-between gap-2 flex-shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top), 10px)' }}>
+            <h2 className="text-[11px] sm:text-sm font-black text-white leading-tight flex-1 min-w-0 break-words whitespace-normal">
               A Fábrica de Criar Anúncios e Criar Site de Viagens Ilimitados em minutos!
             </h2>
             <div className="flex items-center gap-1.5 bg-red-600/15 border border-red-500/20 px-2.5 py-1 rounded-xl flex-shrink-0 animate-pulse">
               <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-              <span className="text-[9px] font-black text-red-400 uppercase tracking-wider hidden sm:block">Ao Vivo</span>
+              <span className="text-[9px] font-black text-red-400 uppercase tracking-wider">AO VIVO</span>
             </div>
           </div>
 
-          {/* LAYOUT PRINCIPAL: empilhado no mobile, lado a lado no desktop */}
-          <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
+          {/* LAYOUT PRINCIPAL: empilhado no mobile (scroll), lado a lado no desktop (fixo) */}
+          <div className="flex flex-col lg:flex-row lg:flex-1 lg:min-h-0 lg:overflow-hidden">
 
             {/* ── PLAYER DE VÍDEO ─────────────────────────────────────── */}
-            <div className="relative bg-black w-full aspect-video flex-shrink-0 lg:w-3/4 lg:flex-none lg:h-full overflow-hidden mobile-landscape-fullscreen">
+            <div className="relative bg-black w-full flex-shrink-0 lg:w-3/4 lg:flex-none lg:h-full overflow-hidden" style={{ aspectRatio: '16/9' }}>
 
               {/* BADGES */}
               <div className="absolute top-3 left-3 z-40 flex items-center gap-2">
@@ -1435,34 +1435,32 @@ const LiveStream = () => {
 
               {/* CLICK-TO-PLAY OVERLAY */}
               {!isPlaying ? (
-                <div 
+                <div
                   onClick={handleStartPlay}
-                  className="absolute inset-0 z-30 cursor-pointer bg-gradient-to-t from-zinc-950 via-zinc-900/90 to-zinc-950 flex flex-col items-center justify-center p-2 text-center hover:brightness-110 transition-all duration-500"
+                  className="absolute inset-0 z-30 cursor-pointer bg-gradient-to-t from-zinc-950 via-zinc-900/90 to-zinc-950 flex flex-col items-center justify-center p-4 text-center hover:brightness-110 transition-all duration-500"
                 >
-                  <h3 className="text-sm md:text-3xl font-black text-white tracking-widest uppercase mb-2 mt-2">
+                  <h3 className="text-base sm:text-3xl font-black text-white tracking-widest uppercase mb-3">
                     SUA AULA JÁ COMEÇOU
                   </h3>
-
-                  <div className="h-14 w-14 md:h-28 md:w-28 rounded-full bg-red-600 border-4 border-red-500 flex items-center justify-center shadow-[0_0_35px_rgba(239,68,68,0.9)] transition-all duration-300 hover:scale-115 hover:bg-red-500 animate-pulse">
-                    <Play size={24} className="text-white fill-white ml-1.5 md:ml-2 md:w-10 md:h-10 animate-pulse" />
+                  <div className="h-16 w-16 sm:h-28 sm:w-28 rounded-full bg-red-600 border-4 border-red-500 flex items-center justify-center shadow-[0_0_35px_rgba(239,68,68,0.9)] animate-pulse">
+                    <Play size={28} className="text-white fill-white ml-2 sm:w-10 sm:h-10" />
                   </div>
-
-                  <h3 className="text-xs md:text-2xl font-black text-white tracking-widest uppercase mt-2 mb-2">
+                  <h3 className="text-sm sm:text-2xl font-black text-white tracking-widest uppercase mt-3">
                     CLIQUE PARA ASSISTIR
                   </h3>
                 </div>
               ) : (
                 /* OVERLAY DE PAUSE */
-                <div 
+                <div
                   onClick={handleTogglePause}
                   className="absolute inset-0 z-20 cursor-pointer flex flex-col items-center justify-center group"
                 >
                   {isPaused && (
                     <div className="absolute inset-0 bg-zinc-950 flex flex-col items-center justify-center gap-4 transition-all duration-300 animate-fade-in z-30">
-                      <div className="h-16 w-16 md:h-24 md:w-24 rounded-full bg-cyan-400/20 border-2 border-cyan-400 flex items-center justify-center shadow-2xl transition-all duration-300 transform scale-110 hover:scale-125">
+                      <div className="h-16 w-16 sm:h-24 sm:w-24 rounded-full bg-cyan-400/20 border-2 border-cyan-400 flex items-center justify-center shadow-2xl">
                         <Play size={28} className="text-cyan-400 fill-cyan-400 ml-1.5 animate-pulse" />
                       </div>
-                      <span className="text-xs md:text-sm font-black tracking-[0.2em] text-cyan-400 uppercase drop-shadow-[0_2px_10px_rgba(0,229,255,0.4)]">
+                      <span className="text-xs sm:text-sm font-black tracking-[0.2em] text-cyan-400 uppercase">
                         Transmissão Pausada
                       </span>
                       <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
@@ -1470,18 +1468,14 @@ const LiveStream = () => {
                       </span>
                     </div>
                   )}
-
                   {!isPaused && (
                     <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md px-3 py-2 rounded-2xl border border-zinc-800 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center gap-2 shadow-lg z-30">
                       <div className="flex items-center gap-1.5">
                         <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
                         <span className="text-[9px] font-black text-red-500 uppercase tracking-wider">Ao Vivo</span>
                       </div>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleTogglePause();
-                        }}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleTogglePause(); }}
                         className="bg-zinc-800 hover:bg-zinc-700 text-white p-1.5 rounded-lg transition-all flex items-center gap-1 text-[10px] font-black uppercase tracking-wider"
                       >
                         <Pause size={11} className="fill-white" />
@@ -1492,14 +1486,14 @@ const LiveStream = () => {
                 </div>
               )}
 
-              {/* VÍDEO COM AMBIENT GLOW */}
+              {/* VÍDEO */}
               <div className="relative w-full h-full flex items-center justify-center bg-zinc-950 overflow-hidden">
-                <div 
-                  className="absolute inset-0 bg-cover bg-center blur-3xl opacity-35 scale-125 pointer-events-none transition-all duration-700"
+                <div
+                  className="absolute inset-0 bg-cover bg-center blur-3xl opacity-35 scale-125 pointer-events-none"
                   style={{ backgroundImage: `url('https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg')` }}
                 />
-                <div className="relative w-full h-full bg-black shadow-[0_0_80px_rgba(0,0,0,0.9)] z-10 overflow-hidden flex items-center justify-center">
-                  <img 
+                <div className="relative w-full h-full bg-black z-10 overflow-hidden">
+                  <img
                     src={`https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg`}
                     alt="Live Thumbnail"
                     className="absolute w-full h-full object-cover pointer-events-none z-0"
@@ -1516,139 +1510,75 @@ const LiveStream = () => {
                 </div>
               </div>
 
-              {/* BANNER DE OFERTA SOBRE O VÍDEO (DESKTOP E TABLET) */}
+              {/* BANNER DE OFERTA SOBRE O VÍDEO — DESKTOP APENAS */}
               {showOfferBanner && (
-                <div className="hidden sm:flex absolute bottom-3 left-3 right-3 z-40 bg-zinc-950/95 backdrop-blur-xl border-2 border-cyan-400/40 p-3 rounded-2xl flex-col sm:flex-row items-center justify-between gap-3 shadow-[0_0_40px_rgba(34,211,238,0.25)] animate-fade-in">
-                  {offerSettings.bannerUrl ? (
-                    <div className="relative w-full flex flex-col items-center">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setShowOfferBanner(false); }}
-                        className="absolute -top-1 -right-1 z-50 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full w-5 h-5 flex items-center justify-center border border-zinc-700 shadow-md text-[9px]"
-                      >
-                        ✕
-                      </button>
-                      <a 
-                        href={offerSettings.checkoutUrl || "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d"} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="w-full"
-                        onClick={trackCheckoutClick}
-                      >
-                        <img 
-                          src={offerSettings.bannerUrl} 
-                          alt="Oferta Especial" 
-                          className="w-full h-auto rounded-xl hover:scale-[1.01] transition-transform duration-300 max-h-[120px] object-cover" 
-                        />
-                      </a>
-                    </div>
-                  ) : (
-                    <div className="relative w-full flex flex-col sm:flex-row items-center justify-between gap-3 pr-6">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setShowOfferBanner(false); }}
-                        className="absolute -top-1 right-0 z-50 text-zinc-400 hover:text-white text-xs font-bold bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-full w-5 h-5 flex items-center justify-center"
-                      >
-                        ✕
-                      </button>
-
-                      <div className="flex items-center gap-2">
-                        <div className="bg-gradient-to-tr from-cyan-400 to-blue-600 p-2 rounded-xl text-black flex-shrink-0">
-                          <ShoppingBag size={16} className="animate-bounce" />
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-black text-white uppercase tracking-wider line-clamp-1">{offerSettings.title}</h4>
-                          <p className="text-[10px] text-zinc-300 font-medium leading-tight line-clamp-1">{offerSettings.description}</p>
-                        </div>
-                      </div>
-
-                      <a 
-                        href={offerSettings.checkoutUrl || "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d"} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          trackCheckoutClick();
-                        }}
-                        className="w-full sm:w-auto flex-shrink-0"
-                      >
-                        <button className="w-full sm:w-auto bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-300 hover:to-green-400 text-black font-black px-4 py-2 rounded-xl shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:scale-105 transition-all duration-300 flex items-center justify-center gap-1.5 text-xs uppercase tracking-wider animate-pulse whitespace-nowrap">
-                          <Sparkles size={11} className="fill-black" />
-                          Garantir Desconto
-                        </button>
-                      </a>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* BANNER DE OFERTA (MOBILE - ABAIXO DO VÍDEO PARA NÃO SOBREPOR) */}
-            {showOfferBanner && (
-              <div className="sm:hidden flex-shrink-0 bg-zinc-950/95 border-b border-cyan-400/40 p-3 flex flex-col items-center justify-between gap-3 shadow-[0_4px_20px_rgba(34,211,238,0.15)] animate-fade-in relative z-20">
-                {offerSettings.bannerUrl ? (
-                  <div className="relative w-full flex flex-col items-center">
-                    <button 
+                <div className="hidden sm:flex absolute bottom-3 left-3 right-3 z-40 bg-zinc-950/95 backdrop-blur-xl border-2 border-cyan-400/40 p-3 rounded-2xl flex-row items-center justify-between gap-3 shadow-[0_0_40px_rgba(34,211,238,0.25)] animate-fade-in">
+                  <div className="relative w-full flex flex-row items-center justify-between gap-3 pr-6">
+                    <button
                       onClick={(e) => { e.stopPropagation(); setShowOfferBanner(false); }}
-                      className="absolute -top-2 -right-2 z-50 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full w-6 h-6 flex items-center justify-center border border-zinc-700 shadow-md text-[10px]"
+                      className="absolute -top-1 right-0 z-50 text-zinc-400 hover:text-white text-xs font-bold bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-full w-5 h-5 flex items-center justify-center"
                     >
                       ✕
                     </button>
-                    <a 
-                      href={offerSettings.checkoutUrl || "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d"} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="w-full"
-                      onClick={trackCheckoutClick}
-                    >
-                      <img 
-                        src={offerSettings.bannerUrl} 
-                        alt="Oferta Especial" 
-                        className="w-full h-auto rounded-xl hover:scale-[1.01] transition-transform duration-300 max-h-[140px] object-cover" 
-                      />
-                    </a>
-                  </div>
-                ) : (
-                  <div className="relative w-full flex flex-col items-center text-center gap-3">
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setShowOfferBanner(false); }}
-                      className="absolute -top-1 -right-1 z-50 text-zinc-400 hover:text-white text-xs font-bold bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-full w-6 h-6 flex items-center justify-center"
-                    >
-                      ✕
-                    </button>
-
-                    <div className="flex flex-col items-center gap-1.5 w-full px-4">
-                      <div className="bg-gradient-to-tr from-cyan-400 to-blue-600 p-2.5 rounded-full text-black mb-1">
-                        <ShoppingBag size={18} className="animate-bounce" />
+                    <div className="flex items-center gap-2">
+                      <div className="bg-gradient-to-tr from-cyan-400 to-blue-600 p-2 rounded-xl text-black flex-shrink-0">
+                        <ShoppingBag size={16} className="animate-bounce" />
                       </div>
-                      <h4 className="text-sm font-black text-white uppercase tracking-wider">{offerSettings.title}</h4>
-                      <p className="text-[11px] text-zinc-300 font-medium leading-tight">{offerSettings.description}</p>
+                      <div>
+                        <h4 className="text-xs font-black text-white uppercase tracking-wider line-clamp-1">{offerSettings.title}</h4>
+                        <p className="text-[10px] text-zinc-300 font-medium leading-tight line-clamp-1">{offerSettings.description}</p>
+                      </div>
                     </div>
-
-                    <a 
-                      href={offerSettings.checkoutUrl || "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d"} 
-                      target="_blank" 
+                    <a
+                      href={offerSettings.checkoutUrl || "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d"}
+                      target="_blank"
                       rel="noopener noreferrer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        trackCheckoutClick();
-                      }}
-                      className="w-full mt-1"
+                      onClick={(e) => { e.stopPropagation(); trackCheckoutClick(); }}
+                      className="flex-shrink-0"
                     >
-                      <button className="w-full bg-gradient-to-r from-emerald-400 to-green-500 text-black font-black px-4 py-3.5 rounded-xl shadow-[0_4px_20px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2 text-xs uppercase tracking-widest animate-pulse">
-                        <Sparkles size={14} className="fill-black" />
+                      <button className="bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-300 hover:to-green-400 text-black font-black px-4 py-2 rounded-xl shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:scale-105 transition-all duration-300 flex items-center gap-1.5 text-xs uppercase tracking-wider animate-pulse whitespace-nowrap">
+                        <Sparkles size={11} className="fill-black" />
                         Garantir Desconto
                       </button>
                     </a>
                   </div>
-                )}
+                </div>
+              )}
+            </div>
+
+            {/* ── BANNER DE OFERTA MOBILE (ABAIXO DO VÍDEO, NÃO SOBREPOSTO) ── */}
+            {showOfferBanner && (
+              <div className="sm:hidden flex-shrink-0 bg-zinc-950 border-b border-cyan-400/30 px-3 py-2.5 animate-fade-in">
+                <div className="flex flex-row items-center gap-3">
+                  <div className="bg-gradient-to-tr from-cyan-400 to-blue-600 p-2 rounded-xl text-black flex-shrink-0">
+                    <ShoppingBag size={16} className="animate-bounce" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-[11px] font-black text-white uppercase tracking-wide leading-tight line-clamp-1">{offerSettings.title}</h4>
+                    <p className="text-[10px] text-zinc-400 leading-tight line-clamp-1 mt-0.5">{offerSettings.description}</p>
+                  </div>
+                  <a
+                    href={offerSettings.checkoutUrl || "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => { e.stopPropagation(); trackCheckoutClick(); }}
+                    className="flex-shrink-0"
+                  >
+                    <button className="bg-gradient-to-r from-emerald-400 to-green-500 text-black font-black px-3 py-2 rounded-xl text-[10px] uppercase tracking-wider whitespace-nowrap flex items-center gap-1">
+                      <Sparkles size={10} className="fill-black" />
+                      Garantir
+                    </button>
+                  </a>
+                </div>
               </div>
             )}
 
             {/* ── PAINEL DO CHAT ───────────────────────────────────────── */}
             <div
-              className="flex flex-col bg-zinc-900/60 border-t border-zinc-800/80 lg:border-t-0 lg:border-l lg:w-1/4 lg:flex-none flex-1 min-h-0 overflow-hidden lg:h-full"
+              className="flex flex-col bg-zinc-900/60 border-t border-zinc-800/80 lg:border-t-0 lg:border-l lg:w-1/4 lg:flex-none lg:flex-1 lg:min-h-0 lg:overflow-hidden"
               data-chat-panel
             >
-              
+
               {/* ABAS: CHAT e OFERTA */}
               {offerUnlocked && (
                 <div className="flex p-1.5 bg-zinc-900 border-b border-zinc-800/80 gap-1 flex-shrink-0">
@@ -1672,7 +1602,6 @@ const LiveStream = () => {
                         : "text-zinc-600 cursor-default"
                     }`}
                   >
-                    {/* Dot piscante só aparece APÓS ativação */}
                     {offerUnlocked && activeTab !== "offer" && (
                       <span className="absolute top-1.5 right-2 flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -1686,8 +1615,11 @@ const LiveStream = () => {
 
               {/* ABA CHAT */}
               {activeTab === "chat" && (
-                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                  <div className="flex-1 overflow-y-auto p-3 space-y-2.5 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+                <div className="flex flex-col">
+                  <div
+                    className="overflow-y-auto p-3 space-y-2.5 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent"
+                    style={{ minHeight: '160px', maxHeight: '320px' }}
+                  >
                     {comments.map((c) => (
                       <div
                         key={c.id}
@@ -1706,7 +1638,7 @@ const LiveStream = () => {
                     <div ref={chatEndRef} />
                   </div>
 
-                  <form onSubmit={handleSendMessage} className="p-2 border-t border-zinc-800/80 bg-zinc-900/60 flex items-center gap-1.5 flex-shrink-0">
+                  <form onSubmit={handleSendMessage} className="p-2 border-t border-zinc-800/80 bg-zinc-900/60 flex items-center gap-1.5">
                     <Input
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
@@ -1726,42 +1658,48 @@ const LiveStream = () => {
 
               {/* ABA DE OFERTA ESPECIAL */}
               {activeTab === "offer" && (
-                <div className="flex-1 overflow-y-auto p-3 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+                <div className="overflow-y-auto p-3 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
                   {!offerUnlocked ? (
-                    <div className="flex flex-col items-center justify-center h-full gap-3 text-center py-8">
+                    <div className="flex flex-col items-center justify-center gap-3 text-center py-8">
                       <div className="h-12 w-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
                         <Clock size={20} className="text-zinc-500" />
                       </div>
                       <p className="text-xs text-zinc-400 max-w-[180px]">A oferta especial será revelada no momento certo da transmissão!</p>
                     </div>
                   ) : (
-                    <div className="bg-white rounded-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-zinc-200 flex flex-col gap-3 text-zinc-900">
-                      
+                    <div className="bg-white rounded-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-zinc-200 flex flex-col gap-4 text-zinc-900">
+
+                      {/* CRONÔMETRO — SEMPRE NO TOPO */}
+                      <div className="flex flex-col items-center justify-center gap-1 bg-red-50 rounded-2xl py-3 px-2 border border-red-100">
+                        <span className="text-[10px] text-red-500 font-black uppercase tracking-wider flex items-center gap-1">
+                          <Clock size={11} className="animate-pulse" />
+                          A OFERTA EXPIRA EM
+                        </span>
+                        <div className="text-red-600 font-black text-3xl tracking-widest font-mono select-none">
+                          {getOfferCountdown()}
+                        </div>
+                      </div>
+
                       {/* BANNER NEGRO DA OFERTA */}
                       <div className="bg-black rounded-xl p-5 flex flex-col items-center justify-center text-center relative overflow-hidden">
                         <div className="absolute -top-8 -left-8 w-20 h-20 rounded-full bg-emerald-500/10 blur-xl pointer-events-none" />
                         <div className="absolute -bottom-8 -right-8 w-20 h-20 rounded-full bg-yellow-500/10 blur-xl pointer-events-none" />
-                        
-                        <span className="text-[#FFD700] font-black text-lg md:text-xl tracking-wider animate-pulse drop-shadow-[0_2px_8px_rgba(255,215,0,0.3)]">
+                        <span className="text-[#FFD700] font-black text-lg tracking-wider animate-pulse drop-shadow-[0_2px_8px_rgba(255,215,0,0.3)]">
                           APENAS {getDynamicSeats()} VAGAS RESTANTES
                         </span>
-                        
                         <span className="text-zinc-400 text-xs font-bold uppercase tracking-widest mt-2 block">
                           DE <span className="line-through decoration-red-500 decoration-2 font-black text-white text-sm">R$ 1.500,00</span>
                         </span>
-                        
                         <span className="text-zinc-400 text-[10px] font-black uppercase tracking-widest block mt-1.5">
                           POR APENAS
                         </span>
-                        
                         <div className="flex items-baseline justify-center gap-1 mt-2">
                           <span className="text-white text-xs font-extrabold uppercase tracking-wide">12x</span>
-                          <span className="text-[#00E676] font-black text-2xl md:text-3xl tracking-tight drop-shadow-[0_0_15px_rgba(0,230,118,0.4)]">
+                          <span className="text-[#00E676] font-black text-2xl tracking-tight drop-shadow-[0_0_15px_rgba(0,230,118,0.4)]">
                             R$ 28,91
                           </span>
                         </div>
-                        
-                        <span className="text-white text-xs underline mt-2 block font-bold hover:text-zinc-200 transition-colors">
+                        <span className="text-white text-xs underline mt-2 block font-bold">
                           ou R$ 347,00 à vista
                         </span>
                       </div>
@@ -1779,31 +1717,22 @@ const LiveStream = () => {
                       </div>
 
                       {/* BOTÃO GRANDE VERDE */}
-                      <a 
-                        href={offerSettings.checkoutUrl || "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d"} 
-                        target="_blank" 
+                      <a
+                        href={offerSettings.checkoutUrl || "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d"}
+                        target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full block animate-pulse"
+                        className="w-full block"
                         onClick={trackCheckoutClick}
                       >
-                        <Button className="w-full py-5 bg-[#25D366] hover:bg-[#1ebd54] text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-[0_8px_25px_rgba(37,211,102,0.35)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] border-none flex items-center justify-center gap-2 whitespace-nowrap overflow-hidden">
+                        <Button className="w-full py-5 bg-[#25D366] hover:bg-[#1ebd54] text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-[0_8px_25px_rgba(37,211,102,0.35)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] border-none flex items-center justify-center gap-2">
                           <ShoppingBag size={16} className="fill-white animate-bounce flex-shrink-0" />
                           APROVEITAR OPORTUNIDADE
                         </Button>
                       </a>
 
-                      {/* CRONÔMETRO DE 10 MINUTOS */}
-                      <div className="flex flex-col items-center justify-center gap-1 bg-zinc-50 rounded-xl py-2.5 border border-zinc-100">
-                        <span className="text-[10px] text-zinc-400 font-black uppercase tracking-wider">A oferta expira em</span>
-                        <div className="flex items-center gap-1.5 text-zinc-900 font-black text-2xl tracking-widest font-mono select-none">
-                          <Clock size={18} className="text-red-500 animate-pulse" />
-                          {getOfferCountdown()}
-                        </div>
-                      </div>
-
-                      {/* LINK VER OUTROS PLANOS */}
+                      {/* VER OUTROS PLANOS */}
                       <div className="text-center">
-                        <a 
+                        <a
                           href="/planos"
                           className="text-zinc-400 hover:text-zinc-800 text-xs font-black transition-colors underline uppercase tracking-widest"
                         >
