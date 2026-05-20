@@ -69,6 +69,7 @@ const LiveStream = () => {
   const [hasManuallyClosedWidget, setHasManuallyClosedWidget] = useState(false);
   const [hasTriggeredOfferWidget, setHasTriggeredOfferWidget] = useState(false);
   const [hasTriggered65MinWidget, setHasTriggered65MinWidget] = useState(false);
+  const [hasReceivedYTUpdate, setHasReceivedYTUpdate] = useState(false);
   const triggeredCommentsRef = useRef<Set<string>>(new Set());
 
 
@@ -305,22 +306,41 @@ const LiveStream = () => {
   };
 
   useEffect(() => {
-    // 1. Comments
+    // 1. Comments - Force auto-refresh if old cache contains 'travando' or 'travou' comments to protect the live VSL illusion
     let list: ScheduledComment[] = [];
     const saved = localStorage.getItem("live_stream_comments");
+    let needsReset = false;
+
     if (saved) {
       try {
-        list = JSON.parse(saved);
-        setScheduledCommentsList(list);
+        const parsed = JSON.parse(saved);
+        if (
+          !Array.isArray(parsed) || 
+          parsed.length === 0 || 
+          parsed.some((c: any) => 
+            c.message && (
+              c.message.toLowerCase().includes("travando") || 
+              c.message.toLowerCase().includes("travou") ||
+              c.message.toLowerCase().includes("melhorou")
+            )
+          )
+        ) {
+          needsReset = true;
+        } else {
+          list = parsed;
+        }
       } catch (e) {
-        list = DEFAULT_SCHEDULED_COMMENTS;
-        setScheduledCommentsList(list);
+        needsReset = true;
       }
     } else {
+      needsReset = true;
+    }
+
+    if (needsReset) {
       list = DEFAULT_SCHEDULED_COMMENTS;
-      setScheduledCommentsList(list);
       localStorage.setItem("live_stream_comments", JSON.stringify(DEFAULT_SCHEDULED_COMMENTS));
     }
+    setScheduledCommentsList(list);
 
     // 2. Video URL/ID
     const savedVideo = localStorage.getItem("live_stream_video_url");
@@ -358,6 +378,57 @@ const LiveStream = () => {
     } else {
       setPrePlayComments(DEFAULT_PRE_PLAY_COMMENTS);
     }
+
+    // Fetch global settings from Supabase to sync admin settings on mount
+    const fetchGlobalSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("webinar_leads")
+          .select("source")
+          .eq("whatsapp", "global_live_settings")
+          .maybeSingle();
+
+        if (error) {
+          console.error("Erro ao buscar configurações globais do Supabase:", error);
+          return;
+        }
+
+        if (data && data.source) {
+          const globalSettings = typeof data.source === "string" ? JSON.parse(data.source) : data.source;
+          
+          if (globalSettings.videoUrl) {
+            const videoId = getYouTubeId(globalSettings.videoUrl);
+            setVideoUrlId(videoId);
+            localStorage.setItem("live_stream_video_url", globalSettings.videoUrl);
+          }
+          
+          if (globalSettings.offerSettings) {
+            setOfferSettings(globalSettings.offerSettings);
+            localStorage.setItem("live_stream_offer_settings", JSON.stringify(globalSettings.offerSettings));
+            if (globalSettings.offerSettings.status === "visible") {
+              setShowOfferBanner(true);
+            }
+          }
+          
+          if (globalSettings.scheduledComments && Array.isArray(globalSettings.scheduledComments)) {
+            setScheduledCommentsList(globalSettings.scheduledComments);
+            localStorage.setItem("live_stream_comments", JSON.stringify(globalSettings.scheduledComments));
+          }
+          
+          if (globalSettings.prePlayComments && Array.isArray(globalSettings.prePlayComments)) {
+            const cleaned = globalSettings.prePlayComments.map((c: any) => ({
+              ...c,
+              message: c.message.replace(" 🙌", "").replace("🙌", "")
+            }));
+            setPrePlayComments(cleaned);
+            localStorage.setItem("live_stream_pre_play_comments", JSON.stringify(cleaned));
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao processar configurações globais:", e);
+      }
+    };
+    fetchGlobalSettings();
 
     // 5. Restore active session (Falta de Persistência no Recarregamento / Conexão)
     try {
@@ -409,6 +480,7 @@ const LiveStream = () => {
   
   const chatEndRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const hasInitializedStartRef = useRef(false);
   const poolRef = useRef<typeof AUTO_COMMENTS_POOL>([...AUTO_COMMENTS_POOL]);
   const offerActivatedRef = useRef(false);
 
@@ -429,19 +501,78 @@ const LiveStream = () => {
     return () => timers.forEach(clearTimeout);
   }, [step, isPlaying, prePlayComments]);
 
-
+  // Sync state changes and real-time events from YouTube iframe
   useEffect(() => {
-    const verify = () => {
-      setIsTimeAllowed(true);
+    const handleYTMessage = (event: MessageEvent) => {
+      if (!event.origin.includes("youtube.com")) return;
+      
+      try {
+        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        
+        if (data.event === "infoDelivery" && data.info) {
+          const info = data.info;
+          
+          if (typeof info.playerState !== "undefined") {
+            const state = info.playerState;
+            if (state === 1) {
+              setIsPaused(false);
+            } else if (state === 2 || state === 3) {
+              setIsPaused(true);
+            }
+          }
+          
+          if (typeof info.currentTime !== "undefined" && isPlaying && !isPaused) {
+            const ytTime = Math.floor(info.currentTime);
+            
+            // Ignore low currentTime reports immediately after start when seek is pending
+            if (initialStartSeconds > 0 && !hasInitializedStartRef.current) {
+              if (ytTime >= initialStartSeconds - 5) {
+                hasInitializedStartRef.current = true;
+                setPlaybackSeconds(ytTime);
+              }
+            } else {
+              setPlaybackSeconds(ytTime);
+            }
+          }
+        }
+        
+        if (data.event === "onStateChange") {
+          const state = data.info;
+          if (state === 1) {
+            setIsPaused(false);
+          } else if (state === 2 || state === 3) {
+            setIsPaused(true);
+          }
+        }
+      } catch (e) {
+        // Safe to ignore
+      }
     };
-    verify();
-    const interval = setInterval(verify, 15000);
-    return () => clearInterval(interval);
-  }, []);
+    
+    window.addEventListener("message", handleYTMessage);
+    return () => window.removeEventListener("message", handleYTMessage);
+  }, [isPlaying, isPaused, initialStartSeconds]);
+
+  const handleStartPlay = () => {
+    setIsPlaying(true);
+    setIsPaused(false);
+    hasInitializedStartRef.current = false;
+    
+    if (iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: "command", func: "playVideo", args: "" }), 
+        "*"
+      );
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: "command", func: "unMute", args: "" }), 
+        "*"
+      );
+    }
+  };
 
   const handleTogglePause = () => {
     if (!isPlaying) {
-      setIsPlaying(true);
+      handleStartPlay();
       return;
     }
     const nextPaused = !isPaused;
@@ -1177,7 +1308,7 @@ const LiveStream = () => {
       ) : (
         
         /* PASSO 2: PLAYER DA LIVE — LAYOUT MOBILE-FIRST */
-        <div className="flex flex-col h-screen overflow-hidden">
+        <div className="flex flex-col h-[100dvh] overflow-hidden bg-zinc-950">
 
           {/* HEADER DA LIVE */}
           <div className="bg-zinc-900/80 border-b border-zinc-800/80 px-3 py-2.5 flex items-center justify-between gap-2 flex-shrink-0">
@@ -1194,7 +1325,7 @@ const LiveStream = () => {
           <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
 
             {/* ── PLAYER DE VÍDEO ─────────────────────────────────────── */}
-            <div className="relative bg-black lg:w-3/4 lg:flex-none lg:h-full overflow-hidden" style={{ minHeight: "min(56vw, 58vh)" }}>
+            <div className="relative bg-black lg:w-3/4 lg:flex-none lg:h-full overflow-hidden mobile-landscape-fullscreen" style={{ minHeight: "min(56vw, 58vh)" }}>
 
               {/* BADGES */}
               <div className="absolute top-3 left-3 z-40 flex items-center gap-2">
@@ -1211,10 +1342,10 @@ const LiveStream = () => {
               {/* CLICK-TO-PLAY OVERLAY */}
               {!isPlaying ? (
                 <div 
-                  onClick={() => setIsPlaying(true)}
+                  onClick={handleStartPlay}
                   className="absolute inset-0 z-30 cursor-pointer bg-gradient-to-t from-zinc-950 via-zinc-900/90 to-zinc-950 flex flex-col items-center justify-between p-6 text-center hover:brightness-110 transition-all duration-500"
                 >
-                  <h3 className="text-lg md:text-3xl font-black text-white tracking-widest uppercase mt-4">
+                  <h3 className="text-lg md:text-3xl font-black text-white tracking-widest uppercase mt-6 md:mt-8">
                     SUA AULA JÁ COMEÇOU
                   </h3>
 
@@ -1274,16 +1405,17 @@ const LiveStream = () => {
                   style={{ backgroundImage: `url('https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg')` }}
                 />
                 <div className="relative w-full h-full bg-black shadow-[0_0_80px_rgba(0,0,0,0.9)] z-10 overflow-hidden flex items-center justify-center">
-                  {isPlaying ? (
-                    <iframe
-                      ref={iframeRef}
-                      className="absolute w-full h-full border-none pointer-events-none"
-                      style={{ transform: "scale(1.02)", transformOrigin: "center" }}
-                      src={`https://www.youtube.com/embed/${videoUrlId}?autoplay=1&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1${initialStartSeconds > 0 ? `&start=${initialStartSeconds}` : ""}`}
-                      title="Canva Viagem Live"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    />
-                  ) : (
+                  <iframe
+                    ref={iframeRef}
+                    className={`absolute w-full h-full border-none transition-opacity duration-500 ${
+                      isPlaying ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0"
+                    }`}
+                    style={{ transform: "scale(1.02)", transformOrigin: "center" }}
+                    src={`https://www.youtube.com/embed/${videoUrlId}?autoplay=0&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1${initialStartSeconds > 0 ? `&start=${initialStartSeconds}` : ""}`}
+                    title="Canva Viagem Live"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  />
+                  {!isPlaying && (
                     <img 
                       src={`https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg`}
                       alt="Live Thumbnail"

@@ -482,11 +482,27 @@ export const LiveCommentsSection = () => {
 
   // Load settings on mount and listen to Supabase realtime events
   useEffect(() => {
-    // 1. Comments
+    // 1. Comments & perform proactive cache validation to clean up old complaining comments
     const savedComments = localStorage.getItem("live_stream_comments");
     if (savedComments) {
       try {
-        setComments(JSON.parse(savedComments));
+        const parsed = JSON.parse(savedComments);
+        if (
+          !Array.isArray(parsed) || 
+          parsed.length === 0 || 
+          parsed.some((c: any) => 
+            c.message && (
+              c.message.toLowerCase().includes("travando") || 
+              c.message.toLowerCase().includes("travou") ||
+              c.message.toLowerCase().includes("melhorou")
+            )
+          )
+        ) {
+          setComments([...DEFAULT_SCHEDULED_COMMENTS]);
+          localStorage.setItem("live_stream_comments", JSON.stringify(DEFAULT_SCHEDULED_COMMENTS));
+        } else {
+          setComments(parsed);
+        }
       } catch (e) {
         console.error("Error parsing saved comments, using default", e);
         setComments([...DEFAULT_SCHEDULED_COMMENTS]);
@@ -697,9 +713,70 @@ export const LiveCommentsSection = () => {
     };
   }, []);
 
-  const savePrePlay = (list: typeof prePlayComments) => {
-    setPrePlayComments(list);
-    localStorage.setItem("live_stream_pre_play_comments", JSON.stringify(list));
+  const syncGlobalSettingsToSupabase = async () => {
+    try {
+      const savedVideo = localStorage.getItem("live_stream_video_url") || "Xqcw-NpPz08";
+      const savedOffer = localStorage.getItem("live_stream_offer_settings");
+      const savedComments = localStorage.getItem("live_stream_comments");
+      const savedPrePlay = localStorage.getItem("live_stream_pre_play_comments");
+
+      const offerData = savedOffer ? JSON.parse(savedOffer) : {
+        status: "scheduled",
+        time: "60:00",
+        title: "🔥 OFERTA EXCLUSIVA DA LIVE LIBERADA!",
+        description: "Adquira o Canva Viagem Vitalício + Fábrica de Anúncios I.A com Desconto!",
+        price: "Apenas 12x de R$ 28,91 ou R$ 347 à vista",
+        checkoutUrl: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
+        bannerUrl: ""
+      };
+
+      const scheduledComments = savedComments ? JSON.parse(savedComments) : DEFAULT_SCHEDULED_COMMENTS;
+      const prePlayCommentsList = savedPrePlay ? JSON.parse(savedPrePlay) : [
+        { id: "pre-1", username: "Fabiotravell", message: "aguardando começar...", time: "19:28" },
+        { id: "pre-2", username: "Jr99", message: "to esperando a live! bora", time: "19:29" },
+        { id: "pre-3", username: "AnaPeloMundo", message: "esperando aqui, ansiosa demais!", time: "19:30" },
+      ];
+
+      const globalSettings = {
+        videoUrl: savedVideo,
+        offerSettings: offerData,
+        scheduledComments,
+        prePlayComments: prePlayCommentsList,
+        updatedAt: Date.now()
+      };
+
+      const { data: existing } = await supabase
+        .from("webinar_leads")
+        .select("*")
+        .eq("whatsapp", "global_live_settings")
+        .maybeSingle();
+
+      if (existing) {
+        await supabase
+          .from("webinar_leads")
+          .update({
+            name: "Global Live Settings",
+            source: JSON.stringify(globalSettings)
+          })
+          .eq("whatsapp", "global_live_settings");
+      } else {
+        await supabase
+          .from("webinar_leads")
+          .insert({
+            name: "Global Live Settings",
+            whatsapp: "global_live_settings",
+            source: JSON.stringify(globalSettings)
+          });
+      }
+    } catch (e) {
+      console.error("Erro ao sincronizar configurações com o Supabase:", e);
+    }
+  };
+
+  const savePrePlay = async () => {
+    localStorage.setItem("live_stream_pre_play_comments", JSON.stringify(prePlayComments));
+    await syncGlobalSettingsToSupabase();
+    toast.success("Comentários de espera salvos com sucesso!");
   };
 
   // Funções de gerenciamento dos contatos/leads capturados
@@ -945,7 +1022,7 @@ export const LiveCommentsSection = () => {
   }, [leads]);
 
   // Sync comments to localStorage
-  const saveComments = (newComments: ScheduledComment[]) => {
+  const saveComments = async (newComments: ScheduledComment[]) => {
     const sorted = [...newComments].sort((a, b) => {
       const parseTimeToSeconds = (t: string) => {
         const parts = t.split(":");
@@ -959,20 +1036,22 @@ export const LiveCommentsSection = () => {
 
     setComments(sorted);
     localStorage.setItem("live_stream_comments", JSON.stringify(sorted));
+    await syncGlobalSettingsToSupabase();
   };
 
   // Save Video settings
-  const handleSaveVideoSettings = () => {
+  const handleSaveVideoSettings = async () => {
     if (!videoUrl.trim()) {
       toast.error("O link ou ID do vídeo não pode estar em branco.");
       return;
     }
     localStorage.setItem("live_stream_video_url", videoUrl.trim());
+    await syncGlobalSettingsToSupabase();
     toast.success("Link do vídeo da transmissão atualizado com sucesso!");
   };
 
   // Save Offer Settings
-  const handleSaveOfferSettings = () => {
+  const handleSaveOfferSettings = async () => {
     if (offerStatus === "scheduled") {
       const timeRegex = /^[0-9]{1,3}:[0-5][0-9]$/;
       if (!timeRegex.test(offerTime)) {
@@ -1000,6 +1079,7 @@ export const LiveCommentsSection = () => {
     };
 
     localStorage.setItem("live_stream_offer_settings", JSON.stringify(settings));
+    await syncGlobalSettingsToSupabase();
     toast.success("Configurações da oferta salvas com sucesso!");
   };
 
@@ -1999,7 +2079,7 @@ export const LiveCommentsSection = () => {
                         onChange={(e) => {
                           const updated = [...prePlayComments];
                           updated[index] = { ...updated[index], username: e.target.value };
-                          savePrePlay(updated);
+                          setPrePlayComments(updated);
                         }}
                         placeholder="Ex: Fabiotravell"
                         className="pl-6 bg-muted/20 border-muted-foreground/10 text-xs h-8 focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0"
@@ -2016,7 +2096,7 @@ export const LiveCommentsSection = () => {
                       onChange={(e) => {
                         const updated = [...prePlayComments];
                         updated[index] = { ...updated[index], message: e.target.value };
-                        savePrePlay(updated);
+                        setPrePlayComments(updated);
                       }}
                       placeholder="Mensagem de espera..."
                       className="bg-muted/20 border-muted-foreground/10 text-xs h-8 focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0"
@@ -2025,6 +2105,15 @@ export const LiveCommentsSection = () => {
                 </div>
               </div>
             ))}
+          </div>
+          <div className="flex justify-end pt-4">
+            <Button 
+              onClick={savePrePlay}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-5 py-2 rounded-xl flex items-center gap-2"
+            >
+              <Check className="h-4 w-4" />
+              Salvar Comentários de Espera
+            </Button>
           </div>
         </CardContent>
       </Card>
