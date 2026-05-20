@@ -208,6 +208,10 @@ const LiveStream = () => {
   const [viewportHeight, setViewportHeight] = useState<number>(
     () => (typeof window !== 'undefined' ? window.innerHeight : 800)
   );
+  const isIOSMobile = typeof navigator !== "undefined" && (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
   const [viewportOffsetTop, setViewportOffsetTop] = useState(0);
 
   const playbackSecondsRef = useRef(0);
