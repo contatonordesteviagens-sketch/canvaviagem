@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { DEFAULT_SCHEDULED_COMMENTS, ScheduledComment } from "@/data/scheduledComments";
-import { ArrowLeft, Save, Trash2, Plus, ExternalLink, Video, Tag, Clock, ShoppingBag, Pencil } from "lucide-react";
+import { ArrowLeft, Save, Trash2, Plus, ExternalLink, Video, Tag, Clock, ShoppingBag, Pencil, MessageSquare } from "lucide-react";
 
 const LiveManager = () => {
   const navigate = useNavigate();
@@ -37,6 +37,13 @@ const LiveManager = () => {
   const [editingComment, setEditingComment] = useState<ScheduledComment>({ time: "", username: "", message: "" });
   const [search, setSearch] = useState("");
 
+  // ─── Pre-Play Comments ─────────────────────────────────────────────────────
+  const [prePlayComments, setPrePlayComments] = useState([
+    { id: "pre-1", username: "Fabiotravell", message: "aguardando começar..." },
+    { id: "pre-2", username: "Jr99", message: "to esperando a live! bora" },
+    { id: "pre-3", username: "AnaPeloMundo", message: "esperando aqui, ansiosa demais!" },
+  ]);
+
   useEffect(() => {
     // Load video URL
     const savedVideo = localStorage.getItem("live_stream_video_url");
@@ -55,7 +62,18 @@ const LiveManager = () => {
     } else {
       setComments(DEFAULT_SCHEDULED_COMMENTS);
     }
+
+    // Load pre-play comments
+    const savedPrePlay = localStorage.getItem("live_stream_pre_play_comments");
+    if (savedPrePlay) {
+      try { setPrePlayComments(JSON.parse(savedPrePlay)); } catch {}
+    }
   }, []);
+
+  const savePrePlay = (list: typeof prePlayComments) => {
+    setPrePlayComments(list);
+    localStorage.setItem("live_stream_pre_play_comments", JSON.stringify(list));
+  };
 
   // ─── Save video ────────────────────────────────────────────────────────────
   const saveVideo = () => {
@@ -371,6 +389,55 @@ const LiveManager = () => {
           <Button variant="outline" onClick={resetToDefault} className="border-zinc-700 text-zinc-400 hover:text-white font-bold rounded-xl text-xs w-full">
             ↺ Restaurar lista padrão original
           </Button>
+        </section>
+
+        {/* ── SEÇÃO 4: Comentários de Espera (Antes do Play) ───────────────── */}
+        <section className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <MessageSquare size={16} className="text-pink-400" />
+            <h2 className="font-black text-sm uppercase tracking-wider text-white">Comentários de Espera (Antes do Play)</h2>
+          </div>
+          <p className="text-xs text-zinc-400">
+            Estes 3 comentários aparecem fixos na tela de chat antes de o usuário clicar no Play (simulando que outras pessoas já estavam aguardando).
+          </p>
+
+          <div className="space-y-3">
+            {prePlayComments.map((comment, index) => (
+              <div key={comment.id} className="bg-zinc-950 border border-zinc-800 rounded-xl p-3.5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black text-pink-400 uppercase tracking-wider">Comentário {index + 1}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[9px] text-zinc-500 font-bold uppercase">@Usuário</label>
+                    <Input
+                      value={comment.username}
+                      onChange={(e) => {
+                        const updated = [...prePlayComments];
+                        updated[index] = { ...updated[index], username: e.target.value };
+                        savePrePlay(updated);
+                      }}
+                      placeholder="username"
+                      className="bg-zinc-900 border-zinc-700 text-zinc-100 rounded-lg text-xs h-9 px-2.5"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1 sm:col-span-2">
+                    <label className="text-[9px] text-zinc-500 font-bold uppercase">Mensagem</label>
+                    <Input
+                      value={comment.message}
+                      onChange={(e) => {
+                        const updated = [...prePlayComments];
+                        updated[index] = { ...updated[index], message: e.target.value };
+                        savePrePlay(updated);
+                      }}
+                      placeholder="Sua mensagem..."
+                      className="bg-zinc-900 border-zinc-700 text-zinc-100 rounded-lg text-xs h-9 px-2.5"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
       </div>

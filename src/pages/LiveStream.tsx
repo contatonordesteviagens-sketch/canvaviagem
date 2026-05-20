@@ -13,8 +13,8 @@ interface Comment {
 }
 
 // Comentários exibidos ANTES do play (esperando a live começar)
-const PRE_PLAY_COMMENTS: Comment[] = [
-  { id: "pre-1", username: "Fabiotravell", message: "aguardando começar... 🙌", time: "19:28" },
+const DEFAULT_PRE_PLAY_COMMENTS: Comment[] = [
+  { id: "pre-1", username: "Fabiotravell", message: "aguardando começar...", time: "19:28" },
   { id: "pre-2", username: "Jr99", message: "to esperando a live! bora", time: "19:29" },
   { id: "pre-3", username: "AnaPeloMundo", message: "esperando aqui, ansiosa demais!", time: "19:30" },
 ];
@@ -72,6 +72,7 @@ const LiveStream = () => {
   const [newComment, setNewComment] = useState("");
   const [activeTab, setActiveTab] = useState<"chat" | "offer">("chat");
   const [scheduledCommentsList, setScheduledCommentsList] = useState<ScheduledComment[]>([]);
+  const [prePlayComments, setPrePlayComments] = useState<Comment[]>(DEFAULT_PRE_PLAY_COMMENTS);
   const [videoUrlId, setVideoUrlId] = useState("Xqcw-NpPz08");
   const [offerSettings, setOfferSettings] = useState({
     status: "scheduled",
@@ -125,6 +126,18 @@ const LiveStream = () => {
         console.error("Error parsing offer settings", e);
       }
     }
+
+    // 4. Pre-play Comments
+    const savedPrePlay = localStorage.getItem("live_stream_pre_play_comments");
+    if (savedPrePlay) {
+      try {
+        setPrePlayComments(JSON.parse(savedPrePlay));
+      } catch (e) {
+        setPrePlayComments(DEFAULT_PRE_PLAY_COMMENTS);
+      }
+    } else {
+      setPrePlayComments(DEFAULT_PRE_PLAY_COMMENTS);
+    }
   }, []);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -136,7 +149,7 @@ const LiveStream = () => {
   useEffect(() => {
     if (step !== "watch" || isPlaying) return;
 
-    const timers = PRE_PLAY_COMMENTS.map((c, i) =>
+    const timers = prePlayComments.map((c, i) =>
       setTimeout(() => {
         setComments(prev => {
           // Não adiciona se o play já começou
@@ -147,7 +160,7 @@ const LiveStream = () => {
     );
 
     return () => timers.forEach(clearTimeout);
-  }, [step, isPlaying]);
+  }, [step, isPlaying, prePlayComments]);
 
 
   useEffect(() => {
@@ -553,8 +566,8 @@ const LiveStream = () => {
                     SUA AULA JÁ COMEÇOU
                   </h3>
 
-                  <div className="h-20 w-20 md:h-28 md:w-28 rounded-full bg-white/10 border-4 border-white/20 flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 hover:bg-white/15 animate-pulse">
-                    <Play size={36} className="text-white fill-white ml-2" />
+                  <div className="h-20 w-20 md:h-28 md:w-28 rounded-full bg-red-600 border-4 border-red-500 flex items-center justify-center shadow-[0_0_35px_rgba(239,68,68,0.9)] transition-all duration-300 hover:scale-115 hover:bg-red-500 animate-pulse">
+                    <Play size={36} className="text-white fill-white ml-2 animate-pulse" />
                   </div>
 
                   <h3 className="text-lg md:text-3xl font-black text-white tracking-widest uppercase mb-4">
@@ -609,13 +622,23 @@ const LiveStream = () => {
                   style={{ backgroundImage: `url('https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg')` }}
                 />
                 <div className="relative w-full h-full bg-black shadow-[0_0_80px_rgba(0,0,0,0.9)] z-10 overflow-hidden flex items-center justify-center">
-                  <iframe
-                    ref={iframeRef}
-                    className="w-full h-full border-none pointer-events-none"
-                    src={`https://www.youtube.com/embed/${videoUrlId}?autoplay=${isPlaying ? 1 : 0}&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1`}
-                    title="Canva Viagem Live"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  />
+                  {isPlaying ? (
+                    <iframe
+                      ref={iframeRef}
+                      className="absolute w-full h-full border-none pointer-events-none"
+                      style={{ transform: "scale(1.3) translateY(-5%)", transformOrigin: "center" }}
+                      src={`https://www.youtube.com/embed/${videoUrlId}?autoplay=1&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1`}
+                      title="Canva Viagem Live"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    />
+                  ) : (
+                    <img 
+                      src={`https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg`}
+                      alt="Live Thumbnail"
+                      className="w-full h-full object-cover pointer-events-none"
+                      style={{ transform: "scale(1.3) translateY(-5%)", transformOrigin: "center" }}
+                    />
+                  )}
                 </div>
               </div>
 
