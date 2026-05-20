@@ -1038,7 +1038,7 @@ const LiveStream = () => {
       const top = window.visualViewport?.offsetTop ?? 0;
       setViewportHeight(h);
       setViewportOffsetTop(top);
-      setIsMobileLandscape(w > h && w < 1024);
+      setIsMobileLandscape(w > h && h <= 520);
       
       // Força o scroll do viewport de volta a 0 para impedir Safari de empurrar a tela fixed para cima de forma segura
       if (top > 0 || window.scrollY > 0) {
@@ -1055,6 +1055,22 @@ const LiveStream = () => {
       window.visualViewport?.removeEventListener('resize', updateVH);
       window.visualViewport?.removeEventListener('scroll', updateVH);
       window.removeEventListener('resize', updateVH);
+    };
+  }, []);
+
+  useEffect(() => {
+    const syncFullscreenState = () => {
+      const doc = document as Document & { webkitFullscreenElement?: Element | null };
+      if (!document.fullscreenElement && !doc.webkitFullscreenElement) {
+        setIsPlayerExpanded(false);
+      }
+    };
+
+    document.addEventListener("fullscreenchange", syncFullscreenState);
+    document.addEventListener("webkitfullscreenchange", syncFullscreenState as EventListener);
+    return () => {
+      document.removeEventListener("fullscreenchange", syncFullscreenState);
+      document.removeEventListener("webkitfullscreenchange", syncFullscreenState as EventListener);
     };
   }, []);
 
@@ -1598,7 +1614,7 @@ const LiveStream = () => {
                 <button
                   onClick={handleMobileFullscreen}
                   aria-label="Tela cheia"
-                  className="lg:hidden absolute top-3 right-3 z-50 bg-black/70 backdrop-blur-md hover:bg-black/90 text-white p-2 rounded-full border border-white/15 shadow-lg active:scale-95 transition"
+                  className="xl:hidden absolute top-3 right-3 z-50 bg-black/70 backdrop-blur-md hover:bg-black/90 text-white p-2 rounded-full border border-white/15 shadow-lg active:scale-95 transition"
                 >
                   <Maximize2 size={16} />
                 </button>
