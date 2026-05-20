@@ -851,30 +851,39 @@ const LiveStream = () => {
     }
   }, [playbackSeconds, step, isPlaying, isPaused, hasTriggeredOfferWidget, hasTriggered65MinWidget]);
 
-  // Economical progress sync to Supabase (only every 3 minutes to save database write costs)
-  useEffect(() => {
-    if (!isPlaying || isPaused || step !== "watch") return;
-    
-    if (playbackSeconds > 0 && playbackSeconds % 180 === 0) {
-      syncProgressToSupabase(playbackSeconds);
-    }
-  }, [playbackSeconds, isPlaying, isPaused, step]);
-
-  // Sync immediately on page/tab visibility change (e.g. when leaving, locking phone or closing tab)
+  // Heartbeat to Supabase every 20s while watching (keeps "online" status fresh in /gestao)
   useEffect(() => {
     if (step !== "watch") return;
-    
+    const interval = setInterval(() => {
+      syncProgressToSupabase(playbackSecondsRef.current);
+    }, 20000);
+    return () => clearInterval(interval);
+  }, [step]);
+
+  // Mark as "left the live" when tab hides or closes
+  useEffect(() => {
+    if (step !== "watch") return;
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
-        syncProgressToSupabase(playbackSeconds);
+        syncProgressToSupabase(playbackSecondsRef.current, { left: true });
+      } else if (document.visibilityState === "visible") {
+        syncProgressToSupabase(playbackSecondsRef.current);
       }
     };
-    
+    const handleBeforeUnload = () => {
+      syncProgressToSupabase(playbackSecondsRef.current, { left: true });
+    };
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("pagehide", handleBeforeUnload);
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("pagehide", handleBeforeUnload);
     };
-  }, [playbackSeconds, step]);
+  }, [step]);
 
   // Oferta aparece exatamente no minuto 60:00 da live
   const getOfferActivationSeconds = () => {
