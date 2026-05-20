@@ -213,8 +213,8 @@ export const LiveCommentsSection = () => {
     return () => clearInterval(i);
   }, []);
 
-  // Janela considerada "online" — o player envia heartbeat a cada 20s
-  const ONLINE_WINDOW_MS = 45000;
+  // Janela considerada "online" — mais tolerante para atrasos de mobile/rede durante live real
+  const ONLINE_WINDOW_MS = 120000;
   const isLeadOnline = (lead: Lead) =>
     lead.lastActiveAt ? (nowTick - lead.lastActiveAt < ONLINE_WINDOW_MS) : false;
 
