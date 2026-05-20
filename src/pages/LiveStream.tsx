@@ -65,6 +65,13 @@ const LiveStream = () => {
 
   const handlePhoneChange = (val: string) => {
     let cleaned = val.replace(/\D/g, "");
+    
+    // Se o número começa com 55 e tem mais de 10 dígitos, provavelmente o preenchimento automático inseriu o código do país (+55).
+    // Remove o prefixo 55 para preservar o DDD + 9 dígitos de celular (total 11 dígitos).
+    if (cleaned.startsWith("55") && cleaned.length >= 12) {
+      cleaned = cleaned.slice(2);
+    }
+    
     if (cleaned.length > 11) {
       cleaned = cleaned.slice(0, 11);
     }
@@ -772,6 +779,8 @@ const LiveStream = () => {
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Seu nome completo"
                     required
+                    name="name"
+                    autoComplete="name"
                     className="bg-zinc-50 border-zinc-200 text-zinc-900 focus-visible:ring-[#00E5FF] rounded-xl py-5"
                   />
                 </div>
@@ -786,8 +795,10 @@ const LiveStream = () => {
                     <Input
                       value={phone}
                       onChange={(e) => handlePhoneChange(e.target.value)}
-                      placeholder="(85) 99845-8995"
+                      placeholder="(XX) XXXXX-XXXX"
                       required
+                      name="phone"
+                      autoComplete="tel"
                       className="flex-1 bg-zinc-50 border-zinc-200 text-zinc-900 focus-visible:ring-[#00E5FF] rounded-xl py-5"
                     />
                   </div>
@@ -835,7 +846,7 @@ const LiveStream = () => {
           <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
 
             {/* ── PLAYER DE VÍDEO ─────────────────────────────────────── */}
-            <div className="relative bg-black lg:flex-1 lg:h-full overflow-hidden" style={{ minHeight: "min(56vw, 58vh)" }}>
+            <div className="relative bg-black lg:w-3/4 lg:flex-none lg:h-full overflow-hidden" style={{ minHeight: "min(56vw, 58vh)" }}>
 
               {/* BADGES */}
               <div className="absolute top-3 left-3 z-40 flex items-center gap-2">
@@ -1002,7 +1013,7 @@ const LiveStream = () => {
 
             {/* ── PAINEL DO CHAT ───────────────────────────────────────── */}
             <div
-              className="flex flex-col bg-zinc-900/60 border-t border-zinc-800/80 lg:border-t-0 lg:border-l lg:w-80 xl:w-96 flex-1 min-h-0 overflow-hidden lg:h-full"
+              className="flex flex-col bg-zinc-900/60 border-t border-zinc-800/80 lg:border-t-0 lg:border-l lg:w-1/4 lg:flex-none flex-1 min-h-0 overflow-hidden lg:h-full"
               data-chat-panel
             >
               

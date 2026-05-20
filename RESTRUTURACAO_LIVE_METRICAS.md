@@ -21,20 +21,20 @@ Anteriormente, o formulário de cadastro na live aceitava qualquer entrada como 
 
 ---
 
-### 3. Painel de Status Em Tempo Real com Ponto de Saída Exato
-* Reformulamos a exibição da tabela de leads em `LiveCommentsSection.tsx`.
-* **Espectador Ativo:** Se o lead registrou atividade nos últimos 10 segundos, ele recebe o badge verde pulsante **`Online Agora`**.
-* **Espectador Inativo:** Se ele saiu, o badge muda para vermelho **`Offline (Saiu da Live)`**, e logo abaixo exibe o tempo exato em que ele saiu: *"Momento de saída: MM:SS"*.
-* **Resultado:** Visão operacional clara e instantânea do status de cada contato.
+### 3. Tabela Premium com Colunas Limpas, Avatares e Máscaras de Telefone
+* **Identificação Clara do Lead:** Separamos os dados de contato e os status em colunas individuais para acabar com a confusão visual.
+  * **Nova Coluna 1 (Lead):** Exibe um **Avatar Circular Premium** com gradientes de cores baseados no nome do usuário (facilitando a identificação imediata), o Nome em negrito e o Telefone com uma **Máscara Inteligente** (ex: `(11) 99999-9999` ou `+55 (XX) XXXXX-XXXX`), o que facilita muito a visualização. Além disso, exibe o alerta de duplicidade inline (ex: `🚨 3x`).
+  * **Nova Coluna 2 (Status de Conexão):** Dedicada 100% para o status dinâmico. Exibe o badge verde pulsante `🔴 ASSISTINDO AGORA` se online, ou o badge vermelho `SAIU DA LIVE` acompanhado do tempo exato de saída com um ícone de relógio: `Momento: MM:SS`.
+  * **Nova Coluna 3 (Data de Entrada):** Exibe a data e hora do cadastro do lead ao lado de um ícone de calendário.
+  * **Nova Coluna 4 (Tempo Assistido):** Exibe o tempo assistido no formato `MM:SS` com uma cor de destaque e um ícone de vídeo player.
+  * **Nova Coluna 5 (Interação / Oferta):** Exibe de forma visível se o usuário clicou no botão de compra (`🔥 CLICOU EM COMPRAR` em laranja/amber brilhante) ou se está apenas assistindo (`👀 Assistindo Live` em tom neutro).
 
 ---
 
-### 4. Abordagem Comercial 1-a-1 via WhatsApp com Mensagem Exata
-* Atualizamos o link de redirecionamento dinâmico do WhatsApp com a mensagem exata solicitada:
-  ```
-  Olá [Nome], vi que você está assistindo à nossa aula ao vivo sobre a Fábrica de Anúncios! Tem alguma dúvida?
-  ```
-* Ao clicar no botão premium verde **`Conversar no WhatsApp`** na linha de qualquer lead, um chat é aberto no celular/computador com o contato dele com a mensagem perfeitamente formatada e pronta para envio.
+### 4. Ações de Contato Simplificadas com Um Clique
+* **Nova Coluna 6 (Ações de Contato):**
+  * Inclui o botão verde de alta conversão **`Chamar no Whats`** com o ícone de mensagem oficial. Ele aponta para o link personalizado com o telefone do lead formatado com DDD + DDI brasileiro 55 e carrega a mensagem exata solicitada: *"Olá [Nome], vi que você está assistindo à nossa aula ao vivo sobre a Fábrica de Anúncios! Tem alguma dúvida?"*.
+  * Botão de exclusão (lixeira) posicionado ao lado do WhatsApp, alinhado perfeitamente no final da linha.
 
 ---
 

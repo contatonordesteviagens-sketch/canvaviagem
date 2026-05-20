@@ -323,6 +323,20 @@ export const LiveCommentsSection = () => {
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
+  const formatPhoneNumber = (phoneStr: string) => {
+    const digits = phoneStr.replace(/\D/g, "");
+    if (digits.startsWith("55") && digits.length === 13) {
+      return `+55 (${digits.slice(2, 4)}) ${digits.slice(4, 9)}-${digits.slice(9)}`;
+    }
+    if (digits.length === 11) {
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+    }
+    if (digits.length === 10) {
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    }
+    return phoneStr;
+  };
+
   const getWhatsAppLink = (phone: string, name: string) => {
     const digits = phone.replace(/\D/g, "");
     // Prepara número brasileiro para o link (garantindo DDI 55)
@@ -1849,12 +1863,12 @@ export const LiveCommentsSection = () => {
                   <Table>
                     <TableHeader className="bg-muted/50 sticky top-0 z-10">
                       <TableRow>
-                        <TableHead className="w-[180px] font-black uppercase text-[10px] tracking-wider text-muted-foreground">Data de Entrada</TableHead>
-                        <TableHead className="w-[220px] font-black uppercase text-[10px] tracking-wider text-muted-foreground">Nome & Status</TableHead>
-                        <TableHead className="w-[200px] font-black uppercase text-[10px] tracking-wider text-muted-foreground">WhatsApp (Contato 1-a-1)</TableHead>
-                        <TableHead className="w-[120px] font-black uppercase text-[10px] tracking-wider text-muted-foreground">Tempo Assistido</TableHead>
-                        <TableHead className="w-[180px] font-black uppercase text-[10px] tracking-wider text-muted-foreground">Status / Oferta</TableHead>
-                        <TableHead className="w-[80px] text-right font-black uppercase text-[10px] tracking-wider text-muted-foreground">Ação</TableHead>
+                        <TableHead className="w-[240px] font-black uppercase text-[10px] tracking-wider text-muted-foreground">Identificação (Lead)</TableHead>
+                        <TableHead className="w-[180px] font-black uppercase text-[10px] tracking-wider text-muted-foreground">Status de Conexão</TableHead>
+                        <TableHead className="w-[160px] font-black uppercase text-[10px] tracking-wider text-muted-foreground">Data de Entrada</TableHead>
+                        <TableHead className="w-[130px] font-black uppercase text-[10px] tracking-wider text-muted-foreground">Tempo Assistido</TableHead>
+                        <TableHead className="w-[180px] font-black uppercase text-[10px] tracking-wider text-muted-foreground">Interação / Oferta</TableHead>
+                        <TableHead className="w-[180px] text-right font-black uppercase text-[10px] tracking-wider text-muted-foreground">Ações de Contato</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1864,106 +1878,133 @@ export const LiveCommentsSection = () => {
                           const entryCount = lead.entryCount || 1;
                           const isFrequent = entryCount >= 3;
                           
+                          // Avatar initials and custom gradient background based on lead ID or name hash
+                          const nameInitials = lead.name
+                            ? lead.name.split(" ").slice(0, 2).map((n: string) => n[0]).join("").toUpperCase()
+                            : "U";
+                          
+                          const charCodeSum = lead.name ? lead.name.split("").reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) : 0;
+                          const gradientColors = [
+                            "from-purple-500/15 to-indigo-500/15 text-purple-400 border-purple-500/25",
+                            "from-emerald-500/15 to-teal-500/15 text-emerald-400 border-emerald-500/25",
+                            "from-amber-500/15 to-orange-500/15 text-amber-400 border-amber-500/25",
+                            "from-pink-500/15 to-rose-500/15 text-pink-400 border-pink-500/25",
+                            "from-blue-500/15 to-cyan-500/15 text-blue-400 border-blue-500/25"
+                          ];
+                          const gradientClass = gradientColors[charCodeSum % gradientColors.length];
+
                           return (
-                            <TableRow key={lead.id} className="hover:bg-muted/20 transition-all duration-200 border-b border-muted-foreground/5">
-                              {/* Data de Entrada */}
+                            <TableRow key={lead.id} className="hover:bg-muted/20 transition-all duration-200 border-b border-muted-foreground/5 py-3">
+                              {/* Identificação (Lead) */}
                               <TableCell>
-                                <Badge variant="outline" className="font-mono text-xs px-2.5 py-0.5 bg-emerald-500/5 text-emerald-400 border-emerald-500/20">
-                                  {lead.registeredAt}
-                                </Badge>
-                              </TableCell>
-                              
-                              {/* Nome & Status */}
-                              <TableCell className="font-medium text-foreground">
-                                <div className="flex flex-col gap-1">
-                                  <div className="flex items-center gap-1.5 flex-wrap">
-                                    {isFrequent && (
-                                      <span className="relative flex h-2.5 w-2.5 mr-1 shadow-[0_0_10px_#ef4444]">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-                                      </span>
-                                    )}
-                                    <span className="font-bold text-sm">{lead.name}</span>
-                                    {isFrequent && (
-                                      <Badge variant="destructive" className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.2 animate-pulse bg-red-500/20 text-red-400 border border-red-500/30">
-                                        🚨 {entryCount} Entradas
-                                      </Badge>
-                                    )}
+                                <div className="flex items-center gap-3">
+                                  {/* Avatar circular premium */}
+                                  <div className={`h-9 w-9 rounded-xl bg-gradient-to-br ${gradientClass} flex items-center justify-center font-bold text-xs tracking-wider border flex-shrink-0 shadow-sm`}>
+                                    {nameInitials}
                                   </div>
-                                  <div>
-                                    {isOnline ? (
-                                      <span className="text-[9px] font-black text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-md inline-flex items-center gap-1 animate-pulse border border-emerald-500/20">
-                                        <span className="h-1 w-1 rounded-full bg-emerald-400 animate-ping" />
-                                        Online Agora
-                                      </span>
-                                    ) : (
-                                      <div className="flex flex-col gap-0.5 mt-0.5">
-                                        <span className="text-[9px] font-black text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded-md inline-flex items-center gap-1 border border-red-500/20 w-fit">
-                                          <span className="h-1 w-1 rounded-full bg-red-500" />
-                                          Offline (Saiu da Live)
+                                  
+                                  <div className="flex flex-col gap-0.5">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      {isFrequent && (
+                                        <span className="relative flex h-2 w-2 shadow-[0_0_8px_#ef4444] mr-0.5">
+                                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                                         </span>
-                                        {lead.lastPlaybackTime !== undefined && (
-                                          <span className="text-[10px] text-muted-foreground font-semibold">
-                                            Momento de saída: {formatWatchTime(lead.lastPlaybackTime)}
-                                          </span>
-                                        )}
-                                      </div>
-                                    )}
+                                      )}
+                                      <span className="font-extrabold text-sm text-slate-800 dark:text-slate-200 tracking-wide">{lead.name}</span>
+                                      {isFrequent && (
+                                        <Badge variant="destructive" className="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.2 animate-pulse bg-red-500/20 text-red-700 dark:text-red-400 border border-red-500/30">
+                                          🚨 {entryCount}x
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <span className="text-slate-500 dark:text-slate-400 font-mono text-xs font-semibold">
+                                      {formatPhoneNumber(lead.phone)}
+                                    </span>
                                   </div>
                                 </div>
                               </TableCell>
                               
-                              {/* Telefone & WhatsApp link */}
+                              {/* Status de Conexão */}
                               <TableCell>
-                                <div className="flex flex-col gap-1">
-                                  <span className="text-foreground font-mono text-xs font-semibold">{lead.phone}</span>
-                                  <a 
-                                    href={getWhatsAppLink(lead.phone, lead.name)} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
-                                    className="text-xs text-emerald-400 font-bold hover:underline flex items-center gap-1 hover:text-emerald-300 w-fit mt-0.5"
-                                  >
-                                    <span className="text-[9px] bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30 font-black uppercase tracking-wider flex items-center gap-1 hover:bg-emerald-500/25 transition-all">
-                                      <MessageSquare className="w-3 h-3 fill-emerald-400" />
-                                      Conversar no WhatsApp
+                                {isOnline ? (
+                                  <span className="text-[9px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 animate-pulse border border-emerald-500/20 shadow-[0_2px_8px_rgba(16,185,129,0.1)]">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-ping" />
+                                    🔴 ASSISTINDO AGORA
+                                  </span>
+                                ) : (
+                                  <div className="flex flex-col gap-1">
+                                    <span className="text-[9px] font-black text-red-700 dark:text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 border border-red-500/20 w-fit">
+                                      <span className="h-1.5 w-1.5 rounded-full bg-red-600 dark:bg-red-400" />
+                                      SAIU DA LIVE
                                     </span>
-                                  </a>
+                                    <span className="text-[10px] text-slate-600 dark:text-slate-400 font-semibold flex items-center gap-1">
+                                      <Clock className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                                      Momento: {formatWatchTime(lead.lastPlaybackTime !== undefined ? lead.lastPlaybackTime : (lead.watchTime || 0))}
+                                    </span>
+                                  </div>
+                                )}
+                              </TableCell>
+                              
+                              {/* Data de Entrada */}
+                              <TableCell>
+                                <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 font-bold">
+                                  <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                                  <span>{lead.registeredAt}</span>
                                 </div>
                               </TableCell>
                               
                               {/* Tempo Assistido */}
                               <TableCell>
-                                <Badge variant="outline" className="font-mono text-xs bg-muted/40 border-muted-foreground/10 px-2 py-0.5">
+                                <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5">
+                                  <Video className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                                   {formatWatchTime(lead.watchTime || 0)}
-                                </Badge>
+                                </span>
                               </TableCell>
                               
                               {/* Status Oferta / Compra */}
                               <TableCell>
                                 {lead.clickedOffer ? (
-                                  <span className="text-[9px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-1 rounded-md inline-flex items-center gap-1.5 animate-pulse">
-                                    <ShoppingBag className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20" />
+                                  <span className="text-[9px] font-black text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 animate-pulse shadow-[0_0_12px_rgba(245,158,11,0.1)]">
+                                    <ShoppingBag className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 fill-amber-500/20" />
                                     🔥 CLICOU EM COMPRAR
                                   </span>
                                 ) : (
-                                  <span className="text-[9px] font-semibold text-muted-foreground bg-muted/30 border border-muted-foreground/5 px-2 py-1 rounded-md inline-flex items-center gap-1.5">
-                                    <Eye className="w-3 h-3 text-muted-foreground" />
-                                    Assistindo
+                                  <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-full inline-flex items-center gap-1.5">
+                                    <Eye className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                                    Assistindo Live
                                   </span>
                                 )}
                               </TableCell>
                               
-                              {/* Excluir Lead */}
+                              {/* Ações de Contato */}
                               <TableCell className="text-right">
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  onClick={() => handleDeleteLead(lead.id)}
-                                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                  title="Excluir Lead"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
+                                <div className="flex items-center justify-end gap-2">
+                                  <a 
+                                    href={getWhatsAppLink(lead.phone, lead.name)} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    title="Chamar no WhatsApp"
+                                  >
+                                    <Button 
+                                      size="sm" 
+                                      className="bg-emerald-500 hover:bg-emerald-600 text-black font-extrabold text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-[0_4px_12px_rgba(16,185,129,0.15)] hover:shadow-[0_4px_20px_rgba(16,185,129,0.25)] transition-all border-none h-8"
+                                    >
+                                      <MessageSquare className="w-3.5 h-3.5 fill-black text-black" />
+                                      Chamar no Whats
+                                    </Button>
+                                  </a>
+                                  
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => handleDeleteLead(lead.id)}
+                                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg flex-shrink-0"
+                                    title="Excluir Lead"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
                               </TableCell>
                             </TableRow>
                           );
@@ -1996,14 +2037,14 @@ export const LiveCommentsSection = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             
             {/* CARD 1: TOTAL DE LEADS */}
-            <Card className="border border-purple-500/20 bg-card/65 shadow-md flex items-center p-5 gap-4 relative overflow-hidden group hover:border-purple-500/40 transition-all duration-300">
-              <div className="p-3 bg-purple-500/10 rounded-xl text-purple-400 border border-purple-500/20">
+            <Card className="border border-purple-500/20 bg-card/95 dark:bg-card/40 shadow-md flex items-center p-5 gap-4 relative overflow-hidden group hover:border-purple-500/40 transition-all duration-300">
+              <div className="p-3 bg-purple-500/10 rounded-xl text-purple-600 dark:text-purple-400 border border-purple-500/20">
                 <Users className="w-6 h-6" />
               </div>
-              <div className="space-y-1">
-                <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">Leads Únicos</p>
-                <h3 className="text-2xl font-black text-white">{metricsStats.totalLeads}</h3>
-                <p className="text-[10px] text-muted-foreground">Inscritos cadastrados na live</p>
+              <div className="space-y-1 z-10">
+                <p className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">Leads Únicos</p>
+                <h3 className="text-3xl font-black text-purple-700 dark:text-purple-300 tracking-tight">{metricsStats.totalLeads}</h3>
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Inscritos cadastrados na live</p>
               </div>
               <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 text-purple-400 pointer-events-none group-hover:scale-110 transition-transform duration-500">
                 <Users className="w-24 h-24 font-black" />
@@ -2011,19 +2052,19 @@ export const LiveCommentsSection = () => {
             </Card>
 
             {/* CARD 2: CRESCIMENTO */}
-            <Card className="border border-emerald-500/20 bg-card/65 shadow-md flex items-center p-5 gap-4 relative overflow-hidden group hover:border-emerald-500/40 transition-all duration-300">
-              <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20">
+            <Card className="border border-emerald-500/20 bg-card/95 dark:bg-card/40 shadow-md flex items-center p-5 gap-4 relative overflow-hidden group hover:border-emerald-500/40 transition-all duration-300">
+              <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                 <TrendingUp className="w-6 h-6" />
               </div>
-              <div className="space-y-1">
-                <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">Crescimento</p>
-                <div className="flex items-center gap-1">
-                  <h3 className="text-2xl font-black text-white">
+              <div className="space-y-1 z-10">
+                <p className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">Crescimento</p>
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-3xl font-black text-emerald-700 dark:text-emerald-300 tracking-tight">
                     {metricsStats.growthRate > 0 ? `+${metricsStats.growthRate}%` : `${metricsStats.growthRate}%`}
                   </h3>
-                  <span className="text-[9px] font-black bg-emerald-500/20 text-emerald-400 px-1 py-0.2 rounded border border-emerald-500/30">3d vs 3d</span>
+                  <span className="text-[9px] font-black bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30">3d vs 3d</span>
                 </div>
-                <p className="text-[10px] text-muted-foreground">Cadastros dos últimos 3 dias: <strong className="text-emerald-400">{metricsStats.leadsLast3Days}</strong></p>
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Cadastros dos últimos 3 dias: <strong className="text-emerald-700 dark:text-emerald-400 font-extrabold">{metricsStats.leadsLast3Days}</strong></p>
               </div>
               <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 text-emerald-400 pointer-events-none group-hover:scale-110 transition-transform duration-500">
                 <TrendingUp className="w-24 h-24 font-black" />
@@ -2031,14 +2072,14 @@ export const LiveCommentsSection = () => {
             </Card>
 
             {/* CARD 3: TEMPO MÉDIO */}
-            <Card className="border border-cyan-500/20 bg-card/65 shadow-md flex items-center p-5 gap-4 relative overflow-hidden group hover:border-cyan-500/40 transition-all duration-300">
-              <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-400 border border-cyan-500/20">
+            <Card className="border border-cyan-500/20 bg-card/95 dark:bg-card/40 shadow-md flex items-center p-5 gap-4 relative overflow-hidden group hover:border-cyan-500/40 transition-all duration-300">
+              <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
                 <Clock className="w-6 h-6" />
               </div>
-              <div className="space-y-1">
-                <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">Tempo de Tela</p>
-                <h3 className="text-2xl font-black text-white">{formatWatchTime(metricsStats.avgSeconds)}</h3>
-                <p className="text-[10px] text-muted-foreground">Média de retenção por usuário</p>
+              <div className="space-y-1 z-10">
+                <p className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">Tempo de Tela</p>
+                <h3 className="text-3xl font-black text-cyan-700 dark:text-cyan-300 tracking-tight">{formatWatchTime(metricsStats.avgSeconds)}</h3>
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Média de retenção por usuário</p>
               </div>
               <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 text-cyan-400 pointer-events-none group-hover:scale-110 transition-transform duration-500">
                 <Clock className="w-24 h-24 font-black" />
@@ -2046,17 +2087,17 @@ export const LiveCommentsSection = () => {
             </Card>
 
             {/* CARD 4: CONVERSÃO CTR */}
-            <Card className="border border-amber-500/20 bg-card/65 shadow-md flex items-center p-5 gap-4 relative overflow-hidden group hover:border-amber-500/40 transition-all duration-300">
-              <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20">
+            <Card className="border border-amber-500/20 bg-card/95 dark:bg-card/40 shadow-md flex items-center p-5 gap-4 relative overflow-hidden group hover:border-amber-500/40 transition-all duration-300">
+              <div className="p-3 bg-amber-500/10 rounded-xl text-amber-600 dark:text-amber-400 border border-amber-500/20">
                 <ShoppingBag className="w-6 h-6" />
               </div>
-              <div className="space-y-1">
-                <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">Conversão (CTR)</p>
-                <div className="flex items-center gap-1">
-                  <h3 className="text-2xl font-black text-white">{metricsStats.ctr}%</h3>
-                  <span className="text-[9px] font-black bg-amber-500/20 text-amber-400 px-1 py-0.2 rounded border border-amber-500/30">CTR</span>
+              <div className="space-y-1 z-10">
+                <p className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">Conversão (CTR)</p>
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-3xl font-black text-amber-700 dark:text-amber-300 tracking-tight">{metricsStats.ctr}%</h3>
+                  <span className="text-[9px] font-black bg-amber-500/20 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30">CTR</span>
                 </div>
-                <p className="text-[10px] text-muted-foreground">Total: <strong className="text-amber-400">{metricsStats.totalClicks}</strong> cliques no botão de compra</p>
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Total: <strong className="text-amber-700 dark:text-amber-400 font-extrabold">{metricsStats.totalClicks}</strong> cliques no botão</p>
               </div>
               <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 text-amber-400 pointer-events-none group-hover:scale-110 transition-transform duration-500">
                 <ShoppingBag className="w-24 h-24 font-black" />
@@ -2069,146 +2110,141 @@ export const LiveCommentsSection = () => {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             
             {/* COLUNA 1 & 2: GRÁFICO DE RETENÇÃO PURE CSS */}
-            <Card className="border border-muted-foreground/10 bg-card/65 backdrop-blur-sm shadow-md xl:col-span-2">
+            <Card className="border border-muted-foreground/10 bg-card/95 dark:bg-card/40 backdrop-blur-sm shadow-md xl:col-span-2">
               <CardHeader className="border-b border-muted-foreground/5 pb-4">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-cyan-400 animate-pulse" />
+                  <Activity className="w-5 h-5 text-cyan-500 animate-pulse" />
                   Gráfico de Retenção e Abandono da Audiência (Drop-off)
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-slate-500 dark:text-slate-400 font-medium">
                   Entenda exatamente em qual momento do vídeo você está perdendo espectadores e onde direcionar a oferta.
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-6 space-y-6">
                 
-                {/* ZONA DE PERIGO DANGER ZONE DE EXITS */}
-                {dangerZoneAnalysis.dangerExits > 0 && (
-                  <div className="border border-red-500/20 bg-red-500/5 rounded-2xl p-4.5 flex flex-col md:flex-row items-center gap-4 shadow-[0_4px_25px_rgba(239,68,68,0.02)]">
-                    <div className="h-12 w-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 flex-shrink-0">
-                      <AlertCircle className="w-6 h-6 text-red-500 animate-bounce" />
-                    </div>
-                    <div className="space-y-1 text-left flex-1">
-                      <h4 className="text-xs font-black uppercase tracking-wider text-red-400">
+                {/* Danger Zone banner */}
+                {dangerZoneAnalysis.dangerIntervalName !== "Nenhum" && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-3 text-red-950 dark:text-red-200 animate-pulse">
+                    <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-500 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="font-extrabold text-sm uppercase tracking-wide">
                         ⚠️ Zona de Perigo Detectada (Foco de Evasão)
-                      </h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        A maior taxa de abandono da live ocorre no intervalo de <strong className="text-red-400">{dangerZoneAnalysis.dangerIntervalName}</strong>. 
-                        Nesse trecho, <strong className="text-white">{dangerZoneAnalysis.dangerExits} leads</strong> encerraram a visualização.
+                      </p>
+                      <p className="text-xs font-semibold leading-relaxed">
+                        A maior taxa de abandono da live ocorre no intervalo de <strong className="text-red-700 dark:text-red-400 font-extrabold">{dangerZoneAnalysis.dangerIntervalName}</strong>. 
+                        Nesse trecho, <strong className="text-red-700 dark:text-red-400 font-extrabold">{dangerZoneAnalysis.dangerExits} leads</strong> encerraram a visualização. 
                         Sugerimos otimizar a dinâmica do vídeo ou antecipar a chamada para ação (CTA) nesse período para evitar a perda de vendas!
                       </p>
                     </div>
                   </div>
                 )}
 
-                <div className="space-y-5">
-                  {retentionChartData.map((bar, idx) => (
-                    <div key={idx} className="space-y-2 group">
-                      <div className="flex justify-between items-center text-xs font-semibold">
-                        <div className="flex flex-col">
-                          <span className="text-foreground font-bold">{bar.label}</span>
-                          <span className="text-[10px] text-muted-foreground font-normal">{bar.desc}</span>
+                {/* Bars */}
+                <div className="space-y-4">
+                  {retentionChartData.map((item, i) => (
+                    <div key={i} className="space-y-2">
+                      <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200">
+                        <div className="space-y-0.5">
+                          <span className="font-extrabold">{item.label}</span>
+                          <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">{item.desc}</p>
                         </div>
-                        <div className="flex items-center gap-2 font-mono">
-                          <span className="text-muted-foreground">{bar.count} usuários</span>
-                          <Badge variant="outline" className={`text-[10px] font-bold border ${bar.border}`}>
-                            {bar.pct}%
-                          </Badge>
+                        <div className="text-right flex items-center gap-2">
+                          <span className="font-black text-slate-750 dark:text-slate-300">{item.count} usuários</span>
+                          <span className="font-black bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-400">{item.pct}%</span>
                         </div>
                       </div>
-                      
-                      {/* Barra Pure CSS */}
-                      <div className="h-3 w-full bg-muted/40 rounded-full overflow-hidden border border-muted-foreground/5">
+                      <div className="w-full bg-slate-150 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
                         <div 
-                          className={`h-full ${bar.color} rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(var(--primary),0.15)] group-hover:brightness-110`}
-                          style={{ width: `${bar.pct}%`, minWidth: bar.pct > 0 ? "4px" : "0px" }}
+                          className={`h-full ${item.color} rounded-full transition-all duration-500`}
+                          style={{ width: `${item.pct}%` }}
                         />
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="bg-muted/15 border border-muted-foreground/10 rounded-xl p-4 space-y-2 mt-2">
-                  <h4 className="text-xs font-black uppercase text-foreground tracking-wider flex items-center gap-1">
-                    <AlertCircle className="w-3.5 h-3.5 text-cyan-400" />
-                    Análise Prática de Retenção:
-                  </h4>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    - O intervalo de <strong className="text-cyan-400">30-60 min (Momento da Oferta)</strong> mostra as pessoas que assistiram a explicação do produto. Elas têm a maior probabilidade de clique e compra.
-                  </p>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    - A retenção qualificada da live atual é de <strong className="text-cyan-400">{metricsStats.qualifiedPct}%</strong> (usuários que assistiram mais de 15 minutos).
-                  </p>
-                </div>
               </CardContent>
             </Card>
 
-            {/* COLUNA 3: CALENDÁRIO DIÁRIO DE INSCRIÇÕES */}
-            <Card className="border border-muted-foreground/10 bg-card/65 backdrop-blur-sm shadow-md">
+            {/* COLUNA 3: CALENDÁRIO DE INSCRIÇÕES */}
+            <Card className="border border-muted-foreground/10 bg-card/95 dark:bg-card/40 backdrop-blur-sm shadow-md">
               <CardHeader className="border-b border-muted-foreground/5 pb-4">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-purple-400" />
-                  Calendário de Inscrições (Últimos 7 dias)
+                  <Calendar className="w-5 h-5 text-purple-600" />
+                  Calendário de Inscrições
                 </CardTitle>
-                <CardDescription>
-                  Volume diário de novos inscritos e identificação de usuários repetidos.
+                <CardDescription className="text-slate-500 dark:text-slate-400 font-medium">
+                  Inscrições diárias e análise de reincidência nos últimos 7 dias.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="space-y-4 max-h-[380px] overflow-y-auto pr-1">
-                  {calendarDailyData.map((day, idx) => (
-                    <div 
-                      key={idx} 
-                      className={`p-3.5 border rounded-xl flex flex-col gap-2.5 transition-all duration-300 hover:border-purple-500/20 ${
-                        day.highlyRecurrent > 0 
-                          ? "bg-red-500/5 border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.02)]" 
-                          : "bg-muted/10 border-muted-foreground/10"
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-purple-400" />
-                          <span className="font-black text-sm text-foreground">{day.dateLabel}</span>
-                          <span className="text-[10px] text-muted-foreground font-mono">({day.dateString})</span>
-                        </div>
-                        <Badge variant="outline" className="font-mono bg-purple-500/10 text-purple-400 border-purple-500/20 font-black">
-                          {day.total} inscritos
-                        </Badge>
-                      </div>
-
-                      {/* Progresso visual simples */}
-                      <div className="h-1.5 w-full bg-muted/40 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-purple-500 rounded-full" 
-                          style={{ width: `${Math.min(100, (day.total / Math.max(1, metricsStats.totalLeads)) * 250)}%` }}
-                        />
-                      </div>
-
-                      {/* Métricas do dia */}
-                      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                        <div className="flex gap-2">
-                          <span>Únicos: <strong className="text-foreground">{day.uniques}</strong></span>
-                          <span>•</span>
-                          <span>Recorrentes: <strong className="text-foreground">{day.recurrents}</strong></span>
-                        </div>
-                        
-                        {/* Alerta de recorrentes perigosos */}
+              <CardContent className="pt-6 space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  {calendarDailyData.map((day, i) => {
+                    const isToday = i === 0;
+                    return (
+                      <div 
+                        key={i} 
+                        className={`p-3 rounded-xl border flex flex-col justify-between relative transition-all duration-300 ${
+                          day.highlyRecurrent > 0 
+                            ? "border-red-500/40 bg-red-500/5 hover:border-red-500/60 shadow-[0_2px_8px_rgba(239,68,68,0.05)]" 
+                            : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:border-purple-500/30"
+                        }`}
+                      >
+                        {/* Red dot and alert icon if highly recurrent exists */}
                         {day.highlyRecurrent > 0 && (
-                          <div className="flex items-center gap-1 text-xs text-red-400 font-bold bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded-md animate-pulse">
-                            <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-ping" />
-                            <span>{day.highlyRecurrent} com +3 acessos!</span>
+                          <div className="absolute top-2.5 right-2.5 flex items-center gap-1">
+                            <span className="w-2 h-2 bg-red-550 dark:bg-red-500 rounded-full animate-pulse" title="Lead com mais de 3 acessos!" />
+                            <AlertCircle className="w-3.5 h-3.5 text-red-650 dark:text-red-500" title={`${day.highlyRecurrent} usuário(s) com > 3 acessos!`} />
                           </div>
                         )}
+                        
+                        <div className="space-y-1">
+                          <div className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                            {day.dateString}
+                          </div>
+                          <div className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                            {day.dateLabel}
+                            {isToday && (
+                              <span className="text-[8px] bg-purple-500/20 text-purple-700 dark:text-purple-400 px-1 py-0.2 rounded font-extrabold uppercase">Hoje</span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-bold text-slate-500 dark:text-slate-400">Total:</span>
+                            <span className="font-black text-slate-850 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">{day.total}</span>
+                          </div>
+                          <div className="flex flex-col gap-0.5 text-[9px] font-bold text-slate-500 dark:text-slate-450 mt-1">
+                            <div>Únicos: <strong className="text-slate-800 dark:text-slate-350">{day.uniques}</strong></div>
+                            <div>Recorr.: <strong className="text-slate-800 dark:text-slate-350">{day.recurrents}</strong></div>
+                          </div>
+                          
+                          {day.highlyRecurrent > 0 && (
+                            <div className="text-[9px] font-black text-red-700 dark:text-red-400 mt-1 flex items-center gap-0.5">
+                              <span>🚨 Multi-Acesso!</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
+                </div>
+                
+                <div className="p-3 bg-purple-500/5 border border-purple-500/10 rounded-xl flex items-start gap-2.5">
+                  <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5 animate-pulse" />
+                  <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400 leading-relaxed">
+                    <strong>Alerta de Multi-Acesso:</strong> Blocos com bordas vermelhas e ícone de alerta indicam dias em que o mesmo usuário acessou a live 3 ou mais vezes.
+                  </p>
                 </div>
               </CardContent>
             </Card>
-            
+
           </div>
           
         </div>
       )}
+
 
       {/* Add / Edit Dialog for Comments */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
