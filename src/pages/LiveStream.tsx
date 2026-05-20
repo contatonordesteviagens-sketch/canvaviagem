@@ -831,14 +831,15 @@ const LiveStream = () => {
         playbackSecond: -100 + index
       }));
 
-      // Mescla somente comentários administrados para impedir comentários fantasmas; mensagens do usuário seguem salvas para a Gestão.
-      const merged = [...activePrePlay, ...activeScheduled]
+      // Mescla comentários administrados + comentários do próprio usuário (aparecem inline na rolagem).
+      const merged = [...activePrePlay, ...activeScheduled, ...userComments]
         .sort((a: any, b: any) => {
           const secA = a.playbackSecond ?? 0;
           const secB = b.playbackSecond ?? 0;
           return secA - secB;
         })
         .slice(-20); // Keep only the 20 most recent comments to avoid flooding from zero
+
 
       setComments(merged);
     } catch (e) {
