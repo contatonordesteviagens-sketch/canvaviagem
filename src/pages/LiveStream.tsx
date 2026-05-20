@@ -831,12 +831,6 @@ const LiveStream = () => {
         playbackSecond: -100 + index
       }));
 
-      // Mapeia comentários de usuário (se não tiverem playbackSecond, usam o segundo em que foram criados)
-      const activeUserComments = userComments.map((c: any) => ({
-        ...c,
-        playbackSecond: c.playbackSecond !== undefined ? c.playbackSecond : currentSeconds
-      }));
-
       // Mescla somente comentários administrados para impedir comentários fantasmas; mensagens do usuário seguem salvas para a Gestão.
       const merged = [...activePrePlay, ...activeScheduled]
         .sort((a: any, b: any) => {
