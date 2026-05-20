@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Smile, Eye, MessageCircle, AlertCircle, Sparkles, Play, Check, Pause, Clock, ShoppingBag, Paperclip } from "lucide-react";
+import { Send, Smile, Eye, MessageCircle, AlertCircle, Sparkles, Play, Check, Pause, Clock, ShoppingBag, Paperclip, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
