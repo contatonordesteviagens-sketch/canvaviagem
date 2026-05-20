@@ -208,6 +208,10 @@ const LiveStream = () => {
   const [viewportHeight, setViewportHeight] = useState<number>(
     () => (typeof window !== 'undefined' ? window.innerHeight : 800)
   );
+  const isIOSMobile = typeof navigator !== "undefined" && (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
   const [viewportOffsetTop, setViewportOffsetTop] = useState(0);
 
   const playbackSecondsRef = useRef(0);
@@ -1302,7 +1306,7 @@ const LiveStream = () => {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans">
       
       {/* PASSO 1: CARD DE CADASTRO */}
       {step === "register" ? (
@@ -1404,7 +1408,7 @@ const LiveStream = () => {
         <div
           className="flex flex-col bg-zinc-950 overflow-hidden"
           style={{
-            position: 'fixed',
+            position: isIOSMobile ? 'absolute' : 'fixed',
             top: `${viewportOffsetTop}px`,
             left: 0,
             right: 0,
@@ -1676,9 +1680,9 @@ const LiveStream = () => {
                   <form
                     onSubmit={handleSendMessage}
                     data-chat-panel
-                    className="p-2 border-t border-zinc-800/80 bg-zinc-900/60 flex items-center gap-1.5 flex-shrink-0 pointer-events-auto touch-manipulation"
+                    className="p-2 border-t border-zinc-800/80 bg-zinc-900/60 flex items-center gap-1.5 flex-shrink-0 pointer-events-auto touch-auto select-text"
                   >
-                    <Input
+                    <input
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       onFocus={(e) => {
@@ -1690,7 +1694,7 @@ const LiveStream = () => {
                       autoCapitalize="sentences"
                       inputMode="text"
                       enterKeyHint="send"
-                      className="flex-1 min-w-0 bg-zinc-950 border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-cyan-500 rounded-xl text-[16px] md:text-xs py-2 h-10 pointer-events-auto touch-manipulation"
+                      className="flex-1 min-w-0 bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 rounded-xl text-[16px] md:text-xs px-3 py-2 h-10 pointer-events-auto touch-auto select-text"
                     />
                     <button
                       type="submit"
