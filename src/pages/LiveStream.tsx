@@ -24,41 +24,6 @@ const DEFAULT_PRE_PLAY_COMMENTS: Comment[] = [
 
 import { DEFAULT_SCHEDULED_COMMENTS, ScheduledComment } from "@/data/scheduledComments";
 
-const AUTO_COMMENTS_POOL = [
-  { username: "PatriciaLemosAgente", message: "lucas, da pra colocar a logo e as cores da minha agencia?" },
-  { username: "RicardoViagens", message: "Da sim Patricia! Eu ja uso e fica mt bom" },
-  { username: "AnaPeloMundo", message: "nossa essa IA vai economizar mt tempo de postagem" },
-  { username: "RobertoTrilhas", message: "lucas, os criativos ja vem no formato de reels?" },
-  { username: "LeticiaViajante", message: "ja sim roberto, fica perfeito" },
-  { username: "AlinePeloMundo", message: "chocada com a velocidade q gera as fotos com preco" },
-  { username: "CarlaTurismo", message: "ja sou aluna do elite o suporte é top demais msm" },
-  { username: "TiagoTurismo", message: "top" },
-  { username: "Jr99", message: "kd o preço? " },
-  { username: "Fabiotravell", message: "concorrente vai odiar isso kkk" },
-  { username: "TripsByGabi", message: "como faco pra acessar o gerador com as IAs lucas?" },
-  { username: "VaneMundial", message: "escolhe a foto de Jeri" },
-  { username: "GuiDoDestino", message: "funciona pra quem ta comecando do zero?" },
-  { username: "RafaDeFerias", message: "tem q ter notebook ou da pra fazer tudo pelo celular?" },
-  { username: "PedroViagens", message: "dá pra gerar quantos anuncios por dia?" },
-  { username: "MariEmJericoacoara", message: "como faz pra assinar? libera o link logo lucas rs" },
-  { username: "CarlosTrip", message: "isso ajuda mt quem nao sabe usar o canva do zero" },
-  { username: "Let_Viajante", message: "dá pra usar fotos proprias ou so as da IA?" },
-  { username: "AmandaTurismo", message: "tem destinos internacionais tbm?" },
-  { username: "BrunoPeloGlobo", message: "jeri fica lindo dms na fabrica" },
-  { username: "LeoMundoAfora", message: "Consigo mudar as cores dps?" },
-  { username: "GiseleDestinos", message: "ja quero assinar hj com desconto" },
-  { username: "DiegoExpedicoes", message: "muito prático de verdade" },
-  { username: "SandraRoteiros", message: "dá pra usar no plano Start?" },
-  { username: "RenataPeloMundo", message: "sensacional isso, facilitou 100%" },
-  { username: "ValdirTur", message: "quais os limites de geração diária?" },
-  { username: "BiaExplora", message: "aula incrível! obrigado" },
-  { username: "MuriloTrilhas", message: "muito ansioso pelo gerador" },
-  { username: "KarinaViagens", message: "já mudei meu feed com o Canva Viagem" },
-  { username: "DuduPeloMundo", message: "esse suporte do elite é de outro planeta" },
-  { username: "ThiagoMochileiro", message: "vou aplicar isso no meu insta hoje mesmo" },
-  { username: "FernandaRoteiros", message: "ótimo método" },
-];
-
 const LiveStream = () => {
   const [isTimeAllowed, setIsTimeAllowed] = useState<boolean>(true);
 
@@ -287,7 +252,6 @@ const LiveStream = () => {
   const [viewers, setViewers] = useState(35);
   const [comments, setComments] = useState<Comment[]>([]);
   const [userComments, setUserComments] = useState<Comment[]>([]);
-  const [fallbackComments, setFallbackComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [activeTab, setActiveTab] = useState<"chat" | "offer">("chat");
   const [scheduledCommentsList, setScheduledCommentsList] = useState<ScheduledComment[]>([]);
@@ -323,41 +287,9 @@ const LiveStream = () => {
   };
 
   useEffect(() => {
-    // 1. Comments - Force auto-refresh if old cache contains 'travando' or 'travou' comments to protect the live VSL illusion
-    let list: ScheduledComment[] = [];
-    const saved = localStorage.getItem("live_stream_comments");
-    let needsReset = false;
-
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (
-          !Array.isArray(parsed) || 
-          parsed.length === 0 || 
-          parsed.some((c: any) => 
-            c.message && (
-              c.message.toLowerCase().includes("travando") || 
-              c.message.toLowerCase().includes("travou") ||
-              c.message.toLowerCase().includes("melhorou")
-            )
-          )
-        ) {
-          needsReset = true;
-        } else {
-          list = parsed;
-        }
-      } catch (e) {
-        needsReset = true;
-      }
-    } else {
-      needsReset = true;
-    }
-
-    if (needsReset) {
-      list = DEFAULT_SCHEDULED_COMMENTS;
-      localStorage.setItem("live_stream_comments", JSON.stringify(DEFAULT_SCHEDULED_COMMENTS));
-    }
-    setScheduledCommentsList(list);
+    // 1. Comments - não confiar no cache local do visitante para evitar comentários fantasmas por dispositivo.
+    setScheduledCommentsList(DEFAULT_SCHEDULED_COMMENTS);
+    localStorage.setItem("live_stream_comments", JSON.stringify(DEFAULT_SCHEDULED_COMMENTS));
 
     // 2. Video URL/ID
     const savedVideo = localStorage.getItem("live_stream_video_url");
@@ -546,15 +478,16 @@ const LiveStream = () => {
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*',
           schema: 'public',
           table: 'webinar_leads',
           filter: "whatsapp=eq.global_live_settings"
         },
         (payload) => {
           try {
-            if (payload.new && payload.new.source) {
-              const globalSettings = typeof payload.new.source === "string" ? JSON.parse(payload.new.source) : payload.new.source;
+            const nextRow = payload.new as { source?: string | Record<string, unknown> };
+            if (nextRow && nextRow.source) {
+              const globalSettings = typeof nextRow.source === "string" ? JSON.parse(nextRow.source) : nextRow.source;
               
               if (globalSettings.videoUrl) {
                 const videoId = getYouTubeId(globalSettings.videoUrl);
@@ -602,7 +535,6 @@ const LiveStream = () => {
   const chatScrollRef = useRef<HTMLDivElement>(null); // container scroll (não scrollIntoView)
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const hasInitializedStartRef = useRef(false);
-  const poolRef = useRef<typeof AUTO_COMMENTS_POOL>([...AUTO_COMMENTS_POOL]);
   const offerActivatedRef = useRef(false);
 
   // Insere 3 comentários de "aguardando" gradualmente ANTES do play
@@ -899,20 +831,8 @@ const LiveStream = () => {
         playbackSecond: -100 + index
       }));
 
-      // Mapeia comentários de usuário (se não tiverem playbackSecond, usam o segundo em que foram criados)
-      const activeUserComments = userComments.map((c: any) => ({
-        ...c,
-        playbackSecond: c.playbackSecond !== undefined ? c.playbackSecond : currentSeconds
-      }));
-
-      // Mapeia comentários de simulação/fallback
-      const activeFallbackComments = fallbackComments.map((c: any) => ({
-        ...c,
-        playbackSecond: c.playbackSecond !== undefined ? c.playbackSecond : currentSeconds
-      }));
-
-      // Mescla e ordena estritamente por playbackSecond para fluxo contínuo onde os novos empurram os antigos para cima
-      const merged = [...activePrePlay, ...activeScheduled, ...activeUserComments, ...activeFallbackComments]
+      // Mescla somente comentários administrados para impedir comentários fantasmas; mensagens do usuário seguem salvas para a Gestão.
+      const merged = [...activePrePlay, ...activeScheduled]
         .sort((a: any, b: any) => {
           const secA = a.playbackSecond ?? 0;
           const secB = b.playbackSecond ?? 0;
@@ -924,7 +844,7 @@ const LiveStream = () => {
     } catch (e) {
       console.error("Error in comments playback synchronization:", e);
     }
-  }, [playbackSeconds, step, isPlaying, scheduledCommentsList, userComments, fallbackComments]);
+  }, [playbackSeconds, step, isPlaying, scheduledCommentsList, prePlayComments]);
 
   // Monitor exit-intent (mouse leaving the screen top)
   useEffect(() => {
@@ -949,7 +869,7 @@ const LiveStream = () => {
     if (!isPlaying || step !== "watch") return;
     if (playbackSeconds < 15 * 60) return; // Only allow after 15 minutes of watching
     
-    let pauseTimer: NodeJS.Timeout;
+    let pauseTimer: ReturnType<typeof setTimeout> | undefined;
     if (isPaused) {
       const offerStartSeconds = getOfferActivationSeconds();
       const isOfferShownOrLate = playbackSeconds >= offerStartSeconds || playbackSeconds >= 65 * 60;
@@ -1069,44 +989,6 @@ const LiveStream = () => {
       }
     }
   }, [playbackSeconds, isPlaying, isPaused, step, offerSettings, showOfferBanner]);
-
-  // Fallback scrolling chat simulation after scheduled comments run out or in sparse intervals
-  useEffect(() => {
-    if (step !== "watch" || isPaused || !isPlaying) return;
-
-    const addFakeComment = () => {
-      // Gera um comentário a cada 4 a 12 segundos para manter a live ativa
-      const randomDelay = Math.floor(Math.random() * 8000) + 4000;
-      
-      return setTimeout(() => {
-        if (!poolRef.current || poolRef.current.length === 0) {
-          poolRef.current = [...AUTO_COMMENTS_POOL];
-        }
-
-        const randomIndex = Math.floor(Math.random() * poolRef.current.length);
-        const randomComment = poolRef.current[randomIndex];
-        poolRef.current.splice(randomIndex, 1);
-
-        const now = new Date();
-        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        
-        const newFake: Comment = {
-          id: `fallback-${Date.now()}-${randomComment.username}-${Math.random()}`,
-          username: randomComment.username,
-          message: randomComment.message,
-          time: timeStr,
-          playbackSecond: playbackSecondsRef.current
-        };
-        
-        setFallbackComments(prev => [...prev, newFake]);
-        
-        addFakeComment();
-      }, randomDelay);
-    };
-
-    const timer = addFakeComment();
-    return () => clearTimeout(timer);
-  }, [step, isPaused, isPlaying]);
 
   // Auto scroll: usa container.scrollTop para não rolar a página inteira
   useEffect(() => {
