@@ -189,6 +189,7 @@ export const LiveCommentsSection = () => {
     watchTime?: number;
     clickedOffer?: boolean;
     lastActiveAt?: number;
+    lastPlaybackTime?: number;
   }
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsSearch, setLeadsSearch] = useState("");
@@ -241,7 +242,8 @@ export const LiveCommentsSection = () => {
         entryCount,
         watchTime,
         clickedOffer,
-        lastActiveAt
+        lastActiveAt,
+        lastPlaybackTime: watchTime
       });
     }
 
@@ -325,7 +327,7 @@ export const LiveCommentsSection = () => {
     const digits = phone.replace(/\D/g, "");
     // Prepara número brasileiro para o link (garantindo DDI 55)
     const cleanPhone = digits.startsWith("55") ? digits : `55${digits}`;
-    const text = encodeURIComponent(`Olá ${name}, vi que você entrou na nossa live da Fábrica de Anúncios e Canva Viagem! Como posso te ajudar?`);
+    const text = encodeURIComponent(`Olá ${name}, vi que você está assistindo à nossa aula ao vivo sobre a Fábrica de Anúncios! Tem alguma dúvida?`);
     return `https://wa.me/${cleanPhone}?text=${text}`;
   };
 
@@ -616,6 +618,51 @@ export const LiveCommentsSection = () => {
         border: "border-emerald-500/20 bg-emerald-500/5 text-emerald-400" 
       }
     ];
+  }, [leads]);
+
+  // Análise de Zona de Perigo de Drop-off
+  const dangerZoneAnalysis = useMemo(() => {
+    // 5-minute intervals up to 70 minutes (14 intervals)
+    const intervalExits = Array(14).fill(0);
+    const intervalNames = [
+      "0-5 min", "5-10 min", "10-15 min", "15-20 min", "20-25 min", "25-30 min",
+      "30-35 min", "35-40 min", "40-45 min", "45-50 min", "50-55 min", "55-60 min",
+      "60-65 min", "65-70 min"
+    ];
+    
+    let totalOffline = 0;
+    
+    leads.forEach(l => {
+      const isOnline = l.lastActiveAt ? (Date.now() - l.lastActiveAt < 10000) : false;
+      if (!isOnline) {
+        totalOffline++;
+        const exitTime = l.lastPlaybackTime !== undefined ? l.lastPlaybackTime : (l.watchTime || 0);
+        const minutes = exitTime / 60;
+        const intervalIndex = Math.min(13, Math.floor(minutes / 5));
+        intervalExits[intervalIndex]++;
+      }
+    });
+    
+    let maxExits = 0;
+    let dangerIndex = -1;
+    for (let i = 0; i < intervalExits.length; i++) {
+      if (intervalExits[i] > maxExits) {
+        maxExits = intervalExits[i];
+        dangerIndex = i;
+      }
+    }
+    
+    return {
+      dangerIntervalName: dangerIndex !== -1 ? intervalNames[dangerIndex] : "Nenhum",
+      dangerExits: maxExits,
+      totalOffline,
+      dangerIndex,
+      allExits: intervalExits.map((count, i) => ({
+        interval: intervalNames[i],
+        count,
+        pct: totalOffline > 0 ? Math.round((count / totalOffline) * 100) : 0
+      })).filter(item => item.count > 0)
+    };
   }, [leads]);
 
   // Calendário de Inscrição Diária (Últimos 7 dias)
@@ -1847,12 +1894,20 @@ export const LiveCommentsSection = () => {
                                     {isOnline ? (
                                       <span className="text-[9px] font-black text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-md inline-flex items-center gap-1 animate-pulse border border-emerald-500/20">
                                         <span className="h-1 w-1 rounded-full bg-emerald-400 animate-ping" />
-                                        🔴 ASSISTINDO AGORA
+                                        Online Agora
                                       </span>
                                     ) : (
-                                      <span className="text-[9px] font-semibold text-muted-foreground bg-muted/20 px-1.5 py-0.5 rounded-md inline-block">
-                                        Off-line
-                                      </span>
+                                      <div className="flex flex-col gap-0.5 mt-0.5">
+                                        <span className="text-[9px] font-black text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded-md inline-flex items-center gap-1 border border-red-500/20 w-fit">
+                                          <span className="h-1 w-1 rounded-full bg-red-500" />
+                                          Offline (Saiu da Live)
+                                        </span>
+                                        {lead.lastPlaybackTime !== undefined && (
+                                          <span className="text-[10px] text-muted-foreground font-semibold">
+                                            Momento de saída: {formatWatchTime(lead.lastPlaybackTime)}
+                                          </span>
+                                        )}
+                                      </div>
                                     )}
                                   </div>
                                 </div>
@@ -2026,6 +2081,25 @@ export const LiveCommentsSection = () => {
               </CardHeader>
               <CardContent className="pt-6 space-y-6">
                 
+                {/* ZONA DE PERIGO DANGER ZONE DE EXITS */}
+                {dangerZoneAnalysis.dangerExits > 0 && (
+                  <div className="border border-red-500/20 bg-red-500/5 rounded-2xl p-4.5 flex flex-col md:flex-row items-center gap-4 shadow-[0_4px_25px_rgba(239,68,68,0.02)]">
+                    <div className="h-12 w-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 flex-shrink-0">
+                      <AlertCircle className="w-6 h-6 text-red-500 animate-bounce" />
+                    </div>
+                    <div className="space-y-1 text-left flex-1">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-red-400">
+                        ⚠️ Zona de Perigo Detectada (Foco de Evasão)
+                      </h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        A maior taxa de abandono da live ocorre no intervalo de <strong className="text-red-400">{dangerZoneAnalysis.dangerIntervalName}</strong>. 
+                        Nesse trecho, <strong className="text-white">{dangerZoneAnalysis.dangerExits} leads</strong> encerraram a visualização.
+                        Sugerimos otimizar a dinâmica do vídeo ou antecipar a chamada para ação (CTA) nesse período para evitar a perda de vendas!
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-5">
                   {retentionChartData.map((bar, idx) => (
                     <div key={idx} className="space-y-2 group">

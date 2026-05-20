@@ -373,6 +373,7 @@ const LiveStream = () => {
               const leadIndex = leads.findIndex((l: any) => l.phone === activeSession.phone);
               if (leadIndex !== -1) {
                 leads[leadIndex].watchTime = (leads[leadIndex].watchTime || 0) + 1;
+                leads[leadIndex].lastPlaybackTime = next; // Rastreia o momento exato em segundos do vídeo
                 leads[leadIndex].lastActiveAt = Date.now(); // Heartbeat de atividade online
                 localStorage.setItem("live_stream_leads", JSON.stringify(leads));
               }
@@ -529,6 +530,13 @@ const LiveStream = () => {
       toast.error("Por favor, digite seu telefone.");
       return;
     }
+    
+    const digitsOnly = phone.replace(/\D/g, "");
+    if (digitsOnly.length !== 11) {
+      toast.error("Por favor, insira um número de WhatsApp válido com DDD (11 dígitos, ex: (11) 99999-9999).");
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
@@ -553,7 +561,8 @@ const LiveStream = () => {
           entryCount: 1,
           watchTime: 0,
           clickedOffer: false,
-          hasLeft: false
+          hasLeft: false,
+          lastPlaybackTime: 0
         };
         existingLeads.unshift(newLead);
       }
