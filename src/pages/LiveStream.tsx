@@ -746,12 +746,12 @@ const LiveStream = () => {
 
   // Keep comments in perfect synchronization with playback progress (never repeats, never starts from zero, seeks perfectly)
   useEffect(() => {
-    if (step !== "watch") return;
+    if (step !== "watch" || !isPlaying) return; // NUNCA sincroniza os comentários gravados antes de dar o Play
 
     try {
       const activeSessionStr = localStorage.getItem("live_stream_active_session");
       const activeSession = activeSessionStr ? JSON.parse(activeSessionStr) : null;
-      const currentSeconds = isPlaying ? playbackSeconds : (activeSession?.lastTime || 0);
+      const currentSeconds = playbackSeconds;
       const sessionStart = activeSession?.startedAt || (Date.now() - currentSeconds * 1000);
 
       const activeScheduled = scheduledCommentsList
