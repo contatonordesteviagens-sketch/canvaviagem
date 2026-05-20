@@ -960,6 +960,15 @@ export type Database = {
       }
     }
     Functions: {
+      append_webinar_lead_comment: {
+        Args: {
+          p_message: string
+          p_playback_second?: number
+          p_time: string
+          p_whatsapp: string
+        }
+        Returns: undefined
+      }
       get_customer_email_audited: {
         Args: { p_reason: string; p_record_id: string; p_table_name: string }
         Returns: string
