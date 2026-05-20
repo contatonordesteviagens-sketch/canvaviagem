@@ -1702,7 +1702,7 @@ const LiveStream = () => {
                     <Input
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
-                      onFocus={() => setMobileVideoFocusMode(false)}
+                      onFocus={() => setIsPlayerExpanded(false)}
                       type="text"
                       placeholder="Digite algo..."
                       autoComplete="off"
