@@ -124,6 +124,13 @@ export const LiveCommentsSection = () => {
   
   // Video Settings State
   const [videoUrl, setVideoUrl] = useState("https://www.youtube.com/watch?v=Xqcw-NpPz08");
+
+  // Pre-Play Comments State
+  const [prePlayComments, setPrePlayComments] = useState([
+    { id: "pre-1", username: "Fabiotravell", message: "aguardando começar...", time: "19:28" },
+    { id: "pre-2", username: "Jr99", message: "to esperando a live! bora", time: "19:29" },
+    { id: "pre-3", username: "AnaPeloMundo", message: "esperando aqui, ansiosa demais!", time: "19:30" },
+  ]);
   
   // Offer Settings State
   const [offerStatus, setOfferStatus] = useState<"hidden" | "visible" | "scheduled">("scheduled");
@@ -245,7 +252,27 @@ export const LiveCommentsSection = () => {
       setCustomPresets(defaultCustom);
       localStorage.setItem("live_stream_custom_presets", JSON.stringify(defaultCustom));
     }
+
+    // 5. Pre-Play Comments
+    const savedPrePlay = localStorage.getItem("live_stream_pre_play_comments");
+    if (savedPrePlay) {
+      try {
+        const parsed = JSON.parse(savedPrePlay);
+        const cleaned = parsed.map((c: any) => ({
+          ...c,
+          message: c.message.replace(" 🙌", "").replace("🙌", "")
+        }));
+        setPrePlayComments(cleaned);
+      } catch (e) {
+        console.error("Error loading preplay comments", e);
+      }
+    }
   }, []);
+
+  const savePrePlay = (list: typeof prePlayComments) => {
+    setPrePlayComments(list);
+    localStorage.setItem("live_stream_pre_play_comments", JSON.stringify(list));
+  };
 
   // Sync comments to localStorage
   const saveComments = (newComments: ScheduledComment[]) => {
@@ -1213,6 +1240,74 @@ export const LiveCommentsSection = () => {
                 </TableBody>
               </Table>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* NOVO CARD: COMENTÁRIOS DE ESPERA (ANTES DO PLAY) */}
+      <Card className="border border-muted-foreground/10 bg-card mt-6">
+        <CardHeader>
+          <div>
+            <CardTitle className="text-xl font-bold flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-pink-400" />
+              Comentários de Espera (Antes do Play)
+            </CardTitle>
+            <CardDescription>
+              Estes 3 comentários aparecem fixos na tela de chat antes de o usuário clicar no Play (simulando que outras pessoas já estavam aguardando).
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {prePlayComments.map((comment, index) => (
+              <div key={comment.id} className="bg-muted/10 border border-muted-foreground/10 rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between border-b border-muted-foreground/5 pb-2">
+                  <span className="text-xs font-black text-pink-400 uppercase tracking-wider">
+                    Comentário {index + 1}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground font-mono">
+                    Aparece no início
+                  </span>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                      @usuario
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-2.5 top-2 text-muted-foreground text-xs font-semibold">@</span>
+                      <Input
+                        value={comment.username}
+                        onChange={(e) => {
+                          const updated = [...prePlayComments];
+                          updated[index] = { ...updated[index], username: e.target.value };
+                          savePrePlay(updated);
+                        }}
+                        placeholder="Ex: Fabiotravell"
+                        className="pl-6 bg-muted/20 border-muted-foreground/10 text-xs h-8 focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                      Mensagem
+                    </label>
+                    <Input
+                      value={comment.message}
+                      onChange={(e) => {
+                        const updated = [...prePlayComments];
+                        updated[index] = { ...updated[index], message: e.target.value };
+                        savePrePlay(updated);
+                      }}
+                      placeholder="Mensagem de espera..."
+                      className="bg-muted/20 border-muted-foreground/10 text-xs h-8 focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
