@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { DEFAULT_SCHEDULED_COMMENTS, ScheduledComment } from "@/data/scheduledComments";
 import { ArrowLeft, Save, Trash2, Plus, ExternalLink, Video, Tag, Clock, ShoppingBag, Pencil, MessageSquare } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
 
 const LiveManager = () => {
   const navigate = useNavigate();
@@ -55,12 +57,34 @@ const LiveManager = () => {
       try { setOfferSettings(JSON.parse(savedOffer)); } catch {}
     }
 
-    // Load comments
+    // Load comments & perform proactive cache validation to clean up old complaining comments
     const savedComments = localStorage.getItem("live_stream_comments");
     if (savedComments) {
-      try { setComments(JSON.parse(savedComments)); } catch { setComments(DEFAULT_SCHEDULED_COMMENTS); }
+      try { 
+        const parsed = JSON.parse(savedComments);
+        if (
+          !Array.isArray(parsed) || 
+          parsed.length === 0 || 
+          parsed.some((c: any) => 
+            c.message && (
+              c.message.toLowerCase().includes("travando") || 
+              c.message.toLowerCase().includes("travou") ||
+              c.message.toLowerCase().includes("melhorou")
+            )
+          )
+        ) {
+          setComments(DEFAULT_SCHEDULED_COMMENTS);
+          localStorage.setItem("live_stream_comments", JSON.stringify(DEFAULT_SCHEDULED_COMMENTS));
+        } else {
+          setComments(parsed); 
+        }
+      } catch { 
+        setComments(DEFAULT_SCHEDULED_COMMENTS); 
+        localStorage.setItem("live_stream_comments", JSON.stringify(DEFAULT_SCHEDULED_COMMENTS));
+      }
     } else {
       setComments(DEFAULT_SCHEDULED_COMMENTS);
+      localStorage.setItem("live_stream_comments", JSON.stringify(DEFAULT_SCHEDULED_COMMENTS));
     }
 
     // Load pre-play comments
@@ -77,39 +101,103 @@ const LiveManager = () => {
     }
   }, []);
 
-  const savePrePlay = (list: typeof prePlayComments) => {
-    setPrePlayComments(list);
-    localStorage.setItem("live_stream_pre_play_comments", JSON.stringify(list));
+  const syncGlobalSettingsToSupabase = async () => {
+    try {
+      const savedVideo = localStorage.getItem("live_stream_video_url") || "Xqcw-NpPz08";
+      const savedOffer = localStorage.getItem("live_stream_offer_settings");
+      const savedComments = localStorage.getItem("live_stream_comments");
+      const savedPrePlay = localStorage.getItem("live_stream_pre_play_comments");
+
+      const offerData = savedOffer ? JSON.parse(savedOffer) : {
+        status: "scheduled",
+        time: "60:00",
+        title: "🔥 OFERTA EXCLUSIVA DA LIVE LIBERADA!",
+        description: "Adquira o Canva Viagem Vitalício + Fábrica de Anúncios I.A com Desconto!",
+        price: "Apenas 12x de R$ 28,91 ou R$ 347 à vista",
+        checkoutUrl: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
+        bannerUrl: ""
+      };
+
+      const scheduledComments = savedComments ? JSON.parse(savedComments) : DEFAULT_SCHEDULED_COMMENTS;
+      const prePlayCommentsList = savedPrePlay ? JSON.parse(savedPrePlay) : [
+        { id: "pre-1", username: "Fabiotravell", message: "aguardando começar...", time: "19:28" },
+        { id: "pre-2", username: "Jr99", message: "to esperando a live! bora", time: "19:29" },
+        { id: "pre-3", username: "AnaPeloMundo", message: "esperando aqui, ansiosa demais!", time: "19:30" },
+      ];
+
+      const globalSettings = {
+        videoUrl: savedVideo,
+        offerSettings: offerData,
+        scheduledComments,
+        prePlayComments: prePlayCommentsList,
+        updatedAt: Date.now()
+      };
+
+      const { data: existing } = await supabase
+        .from("webinar_leads")
+        .select("*")
+        .eq("whatsapp", "global_live_settings")
+        .maybeSingle();
+
+      if (existing) {
+        await supabase
+          .from("webinar_leads")
+          .update({
+            name: "Global Live Settings",
+            source: JSON.stringify(globalSettings)
+          })
+          .eq("whatsapp", "global_live_settings");
+      } else {
+        await supabase
+          .from("webinar_leads")
+          .insert({
+            name: "Global Live Settings",
+            whatsapp: "global_live_settings",
+            source: JSON.stringify(globalSettings)
+          });
+      }
+    } catch (e) {
+      console.error("Erro ao sincronizar configurações com o Supabase:", e);
+    }
+  };
+
+  const savePrePlay = async () => {
+    localStorage.setItem("live_stream_pre_play_comments", JSON.stringify(prePlayComments));
+    await syncGlobalSettingsToSupabase();
+    toast.success("Comentários de espera salvos com sucesso!");
   };
 
   // ─── Save video ────────────────────────────────────────────────────────────
-  const saveVideo = () => {
+  const saveVideo = async () => {
     localStorage.setItem("live_stream_video_url", videoUrl.trim());
+    await syncGlobalSettingsToSupabase();
     toast.success("URL do vídeo salva com sucesso!");
   };
 
   // ─── Save offer ────────────────────────────────────────────────────────────
-  const saveOffer = () => {
+  const saveOffer = async () => {
     localStorage.setItem("live_stream_offer_settings", JSON.stringify(offerSettings));
+    await syncGlobalSettingsToSupabase();
     toast.success("Configurações da oferta salvas!");
   };
 
-  const resetOfferVisibility = () => {
+  const resetOfferVisibility = async () => {
     const updated = { ...offerSettings, status: "scheduled" };
     setOfferSettings(updated);
     localStorage.setItem("live_stream_offer_settings", JSON.stringify(updated));
+    await syncGlobalSettingsToSupabase();
     toast.success("Oferta revertida para aparecer no tempo programado!");
   };
 
-  const showOfferNow = () => {
+  const showOfferNow = async () => {
     const updated = { ...offerSettings, status: "visible" };
     setOfferSettings(updated);
     localStorage.setItem("live_stream_offer_settings", JSON.stringify(updated));
+    await syncGlobalSettingsToSupabase();
     toast.success("Oferta ativada para aparecer agora!");
   };
 
-  // ─── Comments helpers ──────────────────────────────────────────────────────
-  const saveComments = (list: ScheduledComment[]) => {
+  const saveComments = async (list: ScheduledComment[]) => {
     const sorted = [...list].sort((a, b) => {
       const toSecs = (t: string) => {
         const [m, s] = t.split(":").map(Number);
@@ -119,6 +207,7 @@ const LiveManager = () => {
     });
     setComments(sorted);
     localStorage.setItem("live_stream_comments", JSON.stringify(sorted));
+    await syncGlobalSettingsToSupabase();
   };
 
   const addComment = () => {
@@ -422,7 +511,7 @@ const LiveManager = () => {
                       onChange={(e) => {
                         const updated = [...prePlayComments];
                         updated[index] = { ...updated[index], username: e.target.value };
-                        savePrePlay(updated);
+                        setPrePlayComments(updated);
                       }}
                       placeholder="username"
                       className="bg-zinc-900 border-zinc-700 text-zinc-100 rounded-lg text-xs h-9 px-2.5"
@@ -435,7 +524,7 @@ const LiveManager = () => {
                       onChange={(e) => {
                         const updated = [...prePlayComments];
                         updated[index] = { ...updated[index], message: e.target.value };
-                        savePrePlay(updated);
+                        setPrePlayComments(updated);
                       }}
                       placeholder="Sua mensagem..."
                       className="bg-zinc-900 border-zinc-700 text-zinc-100 rounded-lg text-xs h-9 px-2.5"
@@ -445,6 +534,14 @@ const LiveManager = () => {
               </div>
             ))}
           </div>
+
+          <Button 
+            onClick={savePrePlay} 
+            className="w-full bg-pink-600 hover:bg-pink-500 text-white font-black rounded-xl py-5 flex items-center justify-center gap-1.5 text-xs uppercase tracking-wider transition-all duration-300"
+          >
+            <Save size={13} />
+            Salvar Comentários de Espera
+          </Button>
         </section>
 
       </div>

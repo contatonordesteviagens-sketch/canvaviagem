@@ -122,3 +122,19 @@
   font-family: 'Dancing Script', 'Great Vibes', 'Brush Script MT', cursive;
   font-weight: 600;
 }
+
+/* Mobile landscape fullscreen for the video container to deliver a premium theatrical VSL experience */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .mobile-landscape-fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    z-index: 9999 !important;
+    background-color: #000000 !important;
+  }
+}
+
