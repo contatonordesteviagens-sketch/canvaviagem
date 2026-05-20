@@ -34,7 +34,9 @@ import {
   Users,
   TrendingUp,
   Percent,
-  Activity
+  Activity,
+  CloudUpload,
+  Save
 } from "lucide-react";
 import { 
   Dialog, 
@@ -179,6 +181,7 @@ export const LiveCommentsSection = () => {
 
   // Sub-abas de gestão da live
   const [activeSubTab, setActiveSubTab] = useState<"comments" | "leads" | "metrics">("comments");
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Leads / Contatos State
   interface Lead {
@@ -779,31 +782,54 @@ export const LiveCommentsSection = () => {
         updatedAt: Date.now()
       };
 
-      const { data: existing } = await supabase
+      const { data: existing, error: fetchError } = await supabase
         .from("webinar_leads")
         .select("*")
         .eq("whatsapp", "global_live_settings")
         .maybeSingle();
 
+      if (fetchError) throw fetchError;
+
       if (existing) {
-        await supabase
+        const { error } = await supabase
           .from("webinar_leads")
           .update({
             name: "Global Live Settings",
             source: JSON.stringify(globalSettings)
           })
           .eq("whatsapp", "global_live_settings");
+        if (error) throw error;
       } else {
-        await supabase
+        const { error } = await supabase
           .from("webinar_leads")
           .insert({
             name: "Global Live Settings",
             whatsapp: "global_live_settings",
             source: JSON.stringify(globalSettings)
           });
+        if (error) throw error;
       }
-    } catch (e) {
+      return true;
+    } catch (e: any) {
       console.error("Erro ao sincronizar configurações com o Supabase:", e);
+      throw e;
+    }
+  };
+
+  const handleSyncWithCloud = async () => {
+    setIsSyncing(true);
+    const loadingToast = toast.loading("Salvando e sincronizando comentários na Live...");
+    try {
+      localStorage.setItem("live_stream_comments", JSON.stringify(comments));
+      await syncGlobalSettingsToSupabase();
+      toast.dismiss(loadingToast);
+      toast.success("Comentários salvos e aplicados na Live com sucesso! Todos os clientes e celulares verão a lista atualizada.");
+    } catch (error: any) {
+      toast.dismiss(loadingToast);
+      console.error("Sync error:", error);
+      toast.error(`Erro ao salvar na nuvem: ${error.message || "Verifique a conexão ou permissões no Supabase."}`);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -1961,7 +1987,16 @@ export const LiveCommentsSection = () => {
                 Adicione, edite e remova os comentários agendados que aparecem automaticamente no replay da live (/live-aovivo).
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button 
+                onClick={handleSyncWithCloud}
+                size="sm" 
+                disabled={isSyncing}
+                className="gap-2 bg-emerald-600 text-white hover:bg-emerald-600/95 font-bold shadow-md"
+              >
+                <CloudUpload className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`} />
+                {isSyncing ? "Salvando..." : "Salvar na Live"}
+              </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
