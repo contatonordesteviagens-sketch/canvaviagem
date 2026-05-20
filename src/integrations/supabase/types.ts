@@ -981,6 +981,16 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      update_webinar_lead_session: {
+        Args: {
+          p_clicked_offer?: boolean
+          p_last_playback_time?: number
+          p_left?: boolean
+          p_watch_time?: number
+          p_whatsapp: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

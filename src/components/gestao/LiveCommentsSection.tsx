@@ -205,6 +205,26 @@ export const LiveCommentsSection = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsSearch, setLeadsSearch] = useState("");
   const [expandedLeadId, setExpandedLeadId] = useState<string | null>(null);
+  const [nowTick, setNowTick] = useState(Date.now());
+
+  // Tick "agora" a cada 5s para reavaliar quem está online/saiu da live em tempo real
+  useEffect(() => {
+    const i = setInterval(() => setNowTick(Date.now()), 5000);
+    return () => clearInterval(i);
+  }, []);
+
+  // Janela considerada "online" — o player envia heartbeat a cada 20s
+  const ONLINE_WINDOW_MS = 45000;
+  const isLeadOnline = (lead: Lead) =>
+    lead.lastActiveAt ? (nowTick - lead.lastActiveAt < ONLINE_WINDOW_MS) : false;
+
+  // Estatísticas reais da live (online agora / entraram / saíram)
+  const liveSessionStats = useMemo(() => {
+    const online = leads.filter(isLeadOnline).length;
+    const entered = leads.length;
+    const left = entered - online;
+    return { online, entered, left };
+  }, [leads, nowTick]);
 
   // Audio chime synthesizer via Web Audio API
   const playChime = (type: "new-lead" | "clicked-buy" | "new-comment") => {
@@ -1011,7 +1031,7 @@ export const LiveCommentsSection = () => {
     let totalOffline = 0;
     
     leads.forEach(l => {
-      const isOnline = l.lastActiveAt ? (Date.now() - l.lastActiveAt < 10000) : false;
+      const isOnline = isLeadOnline(l);
       if (!isOnline) {
         totalOffline++;
         const exitTime = l.lastPlaybackTime !== undefined ? l.lastPlaybackTime : (l.watchTime || 0);
@@ -2297,9 +2317,34 @@ export const LiveCommentsSection = () => {
                     className="pl-9 bg-muted/30 border-muted-foreground/10 focus:border-emerald-500/30"
                   />
                 </div>
-                <div className="flex items-center gap-2 px-2 text-sm text-muted-foreground font-semibold">
-                  <Users className="w-4 h-4 text-emerald-400" />
-                  <span>Total Filtrado: <Badge variant="secondary" className="ml-1 font-bold bg-emerald-500/10 text-emerald-400 border-emerald-500/20">{filteredLeads.length}</Badge></span>
+                <div className="flex flex-wrap items-center gap-3 px-2 text-sm font-semibold">
+                  <span className="flex items-center gap-1.5 text-emerald-400">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    Online agora:
+                    <Badge variant="secondary" className="ml-1 font-bold bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                      {liveSessionStats.online}
+                    </Badge>
+                  </span>
+                  <span className="flex items-center gap-1.5 text-sky-400">
+                    Entraram:
+                    <Badge variant="secondary" className="ml-1 font-bold bg-sky-500/10 text-sky-400 border-sky-500/20">
+                      {liveSessionStats.entered}
+                    </Badge>
+                  </span>
+                  <span className="flex items-center gap-1.5 text-rose-400">
+                    Saíram:
+                    <Badge variant="secondary" className="ml-1 font-bold bg-rose-500/10 text-rose-400 border-rose-500/20">
+                      {liveSessionStats.left}
+                    </Badge>
+                  </span>
+                  <span className="flex items-center gap-1.5 text-muted-foreground">
+                    <Users className="w-4 h-4" />
+                    Filtrado:
+                    <Badge variant="secondary" className="ml-1 font-bold">{filteredLeads.length}</Badge>
+                  </span>
                 </div>
               </div>
 
@@ -2319,7 +2364,7 @@ export const LiveCommentsSection = () => {
                     <TableBody>
                       {filteredLeads.length > 0 ? (
                         filteredLeads.map((lead) => {
-                          const isOnline = lead.lastActiveAt ? (Date.now() - lead.lastActiveAt < 10000) : false;
+                          const isOnline = isLeadOnline(lead);
                           const entryCount = lead.entryCount || 1;
                           const isFrequent = entryCount >= 3;
                           

@@ -104,94 +104,55 @@ const LiveStream = () => {
     return `https://wa.me/5585998458995?text=${encodeURIComponent(text)}`;
   };
 
-  // Helper to sync watch progress to Supabase source JSON (highly optimized/economical)
-  const syncProgressToSupabase = async (currentSeconds: number) => {
+  // Helper to sync watch progress via SECURITY DEFINER RPC (RLS blocks direct updates)
+  const syncProgressToSupabase = async (currentSeconds: number, opts?: { left?: boolean }) => {
     try {
       const activeSessionStr = localStorage.getItem("live_stream_active_session");
       if (!activeSessionStr) return;
       const activeSession = JSON.parse(activeSessionStr);
       const cleanPhone = activeSession.phone;
-      
-      const { data: lead } = await supabase
-        .from("webinar_leads")
-        .select("source")
-        .eq("whatsapp", cleanPhone)
-        .maybeSingle();
-        
-      if (lead) {
-        let parsedSource: any = {};
-        try {
-          parsedSource = lead.source ? JSON.parse(lead.source) : {};
-        } catch (e) {
-          parsedSource = {};
-        }
-        
-        // Fetch accurate watchTime from localStorage
+      if (!cleanPhone) return;
+
+      let localWatchTime = 0;
+      try {
         const leadsStr = localStorage.getItem("live_stream_leads");
-        let localWatchTime = 0;
         if (leadsStr) {
           const leads = JSON.parse(leadsStr);
           const localLead = leads.find((l: any) => l.phone === cleanPhone);
-          if (localLead) {
-            localWatchTime = localLead.watchTime || 0;
-          }
+          if (localLead) localWatchTime = localLead.watchTime || 0;
         }
-        
-        const nextSource = {
-          ...parsedSource,
-          sourceType: "live",
-          watchTime: localWatchTime || (parsedSource.watchTime || 0),
-          lastPlaybackTime: currentSeconds,
-          lastActiveAt: Date.now(),
-        };
-        
-        await supabase
-          .from("webinar_leads")
-          .update({
-            source: JSON.stringify(nextSource)
-          })
-          .eq("whatsapp", cleanPhone);
-      }
+      } catch (_) {}
+
+      const { error } = await (supabase as any).rpc("update_webinar_lead_session", {
+        p_whatsapp: cleanPhone,
+        p_watch_time: localWatchTime || null,
+        p_last_playback_time: currentSeconds,
+        p_clicked_offer: null,
+        p_left: !!opts?.left,
+      });
+      if (error) console.error("Erro RPC update_webinar_lead_session:", error);
     } catch (err) {
       console.error("Erro no sync progress do Supabase:", err);
     }
   };
 
-  // Helper to update clicked offer status in Supabase
+  // Helper to update clicked offer status via SECURITY DEFINER RPC
   const updateClickedOfferInSupabase = async () => {
     try {
       const activeSessionStr = localStorage.getItem("live_stream_active_session");
       if (!activeSessionStr) return;
       const activeSession = JSON.parse(activeSessionStr);
       const cleanPhone = activeSession.phone;
-      
-      const { data: lead } = await supabase
-        .from("webinar_leads")
-        .select("source")
-        .eq("whatsapp", cleanPhone)
-        .maybeSingle();
-        
-      if (lead) {
-        let parsedSource: any = {};
-        try {
-          parsedSource = lead.source ? JSON.parse(lead.source) : {};
-        } catch (e) {
-          parsedSource = {};
-        }
-        
-        const nextSource = {
-          ...parsedSource,
-          clickedOffer: true,
-          lastActiveAt: Date.now(),
-        };
-        
-        await supabase
-          .from("webinar_leads")
-          .update({
-            source: JSON.stringify(nextSource)
-          })
-          .eq("whatsapp", cleanPhone);
-      }
+      if (!cleanPhone) return;
+
+      const { error } = await (supabase as any).rpc("update_webinar_lead_session", {
+        p_whatsapp: cleanPhone,
+        p_watch_time: null,
+        p_last_playback_time: null,
+        p_clicked_offer: true,
+        p_left: false,
+      });
+      if (error) console.error("Erro RPC clicked offer:", error);
     } catch (e) {
       console.error("Erro ao atualizar clique no checkout no Supabase:", e);
     }
@@ -890,30 +851,39 @@ const LiveStream = () => {
     }
   }, [playbackSeconds, step, isPlaying, isPaused, hasTriggeredOfferWidget, hasTriggered65MinWidget]);
 
-  // Economical progress sync to Supabase (only every 3 minutes to save database write costs)
-  useEffect(() => {
-    if (!isPlaying || isPaused || step !== "watch") return;
-    
-    if (playbackSeconds > 0 && playbackSeconds % 180 === 0) {
-      syncProgressToSupabase(playbackSeconds);
-    }
-  }, [playbackSeconds, isPlaying, isPaused, step]);
-
-  // Sync immediately on page/tab visibility change (e.g. when leaving, locking phone or closing tab)
+  // Heartbeat to Supabase every 20s while watching (keeps "online" status fresh in /gestao)
   useEffect(() => {
     if (step !== "watch") return;
-    
+    const interval = setInterval(() => {
+      syncProgressToSupabase(playbackSecondsRef.current);
+    }, 20000);
+    return () => clearInterval(interval);
+  }, [step]);
+
+  // Mark as "left the live" when tab hides or closes
+  useEffect(() => {
+    if (step !== "watch") return;
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
-        syncProgressToSupabase(playbackSeconds);
+        syncProgressToSupabase(playbackSecondsRef.current, { left: true });
+      } else if (document.visibilityState === "visible") {
+        syncProgressToSupabase(playbackSecondsRef.current);
       }
     };
-    
+    const handleBeforeUnload = () => {
+      syncProgressToSupabase(playbackSecondsRef.current, { left: true });
+    };
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("pagehide", handleBeforeUnload);
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("pagehide", handleBeforeUnload);
     };
-  }, [playbackSeconds, step]);
+  }, [step]);
 
   // Oferta aparece exatamente no minuto 60:00 da live
   const getOfferActivationSeconds = () => {
