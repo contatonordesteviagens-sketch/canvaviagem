@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, LayoutDashboard, FolderOpen, Upload, StickyNote, Eye, History, Users } from "lucide-react";
+import { Loader2, LayoutDashboard, FolderOpen, Upload, StickyNote, Eye, History, Users, MessageSquare } from "lucide-react";
 import {
   useAllContentItems,
   useAllCaptions,
@@ -25,6 +25,7 @@ import { PreviewSection } from "@/components/gestao/PreviewSection";
 import { DashboardSection } from "@/components/gestao/DashboardSection";
 import { HistorySection } from "@/components/gestao/HistorySection";
 import { UsersSection } from "@/components/gestao/UsersSection";
+import { LiveCommentsSection } from "@/components/gestao/LiveCommentsSection";
 import { EditModal } from "@/components/gestao/EditModal";
 import { CaptionEditModal } from "@/components/gestao/CaptionEditModal";
 import { DeleteConfirmDialog } from "@/components/gestao/DeleteConfirmDialog";
@@ -216,6 +217,10 @@ const Gestao = () => {
               <Users className="h-4 w-4" />
               Usuários
             </TabsTrigger>
+            <TabsTrigger value="live-chat" className="flex items-center gap-2 flex-1 min-w-[120px]">
+              <MessageSquare className="h-4 w-4" />
+              Comentários Live
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
@@ -266,6 +271,11 @@ const Gestao = () => {
           {/* Users Tab */}
           <TabsContent value="users" className="mt-0">
             <UsersSection />
+          </TabsContent>
+
+          {/* Live Comments Tab */}
+          <TabsContent value="live-chat" className="mt-0">
+            <LiveCommentsSection />
           </TabsContent>
         </Tabs>
       </div>
