@@ -78,6 +78,10 @@ const SCHEDULED_COMMENTS: ScheduledComment[] = [
   { time: "59:20", username: "BetoMochileiro", message: "deve ser mil reais" },
   { time: "59:52", username: "DaniloMilhas", message: "Deve ser mil reais" },
   { time: "60:15", username: "CarlaTrips", message: "quero saber os preços também" },
+  { time: "61:20", username: "TaniaDestinos", message: "Já assinei esse plano start é muito bom" },
+  { time: "62:40", username: "RodrigoMilhas", message: "Eita, achei que ia ser mais de R$ 500" },
+  { time: "63:12", username: "MariEmJericoacoara", message: "Cadê o link?" },
+  { time: "63:42", username: "FelipeRoteiros", message: "Achei que era mais caro mas vai aumentar né" },
 ];
 
 const AUTO_COMMENTS_POOL = [
