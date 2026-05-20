@@ -85,6 +85,7 @@ const LiveStream = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [playbackSeconds, setPlaybackSeconds] = useState(0);
+  const [initialStartSeconds, setInitialStartSeconds] = useState<number>(0);
   
   const [viewers, setViewers] = useState(35);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -179,6 +180,7 @@ const LiveStream = () => {
           
           if (activeSession.lastTime && activeSession.lastTime > 0) {
             setPlaybackSeconds(activeSession.lastTime);
+            setInitialStartSeconds(activeSession.lastTime);
             
             // Popula os comentários que já aconteceram para dar contexto à live!
             const now = new Date();
@@ -909,7 +911,7 @@ const LiveStream = () => {
                       ref={iframeRef}
                       className="absolute w-full h-full border-none pointer-events-none"
                       style={{ transform: "scale(1.02)", transformOrigin: "center" }}
-                      src={`https://www.youtube.com/embed/${videoUrlId}?autoplay=1&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1${playbackSeconds > 0 ? `&start=${playbackSeconds}` : ""}`}
+                      src={`https://www.youtube.com/embed/${videoUrlId}?autoplay=1&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1${initialStartSeconds > 0 ? `&start=${initialStartSeconds}` : ""}`}
                       title="Canva Viagem Live"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     />
