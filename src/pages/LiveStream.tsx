@@ -1308,6 +1308,7 @@ const LiveStream = () => {
 
   const offerActivationSec = getOfferActivationSeconds();
   const offerUnlocked = playbackSeconds >= offerActivationSec;
+  const mobileVideoFocusMode = isMobileLandscape || isPlayerExpanded;
 
   if (!isTimeAllowed) {
     return (
@@ -1479,7 +1480,7 @@ const LiveStream = () => {
         >
 
           {/* HEADER DA LIVE */}
-          <div className="bg-zinc-900 border-b border-zinc-800 px-4 py-2 sm:py-3 flex items-center justify-between gap-3 flex-shrink-0" style={{ marginTop: '10px' }}>
+          <div className={`${mobileVideoFocusMode ? "hidden" : "flex"} bg-zinc-900 border-b border-zinc-800 px-4 py-2 sm:py-3 items-center justify-between gap-3 flex-shrink-0`} style={{ marginTop: '10px' }}>
             <h2 className="text-xs sm:text-base font-black text-white leading-tight flex-1 min-w-0 break-words line-clamp-2">
               A Fábrica de Criar Anúncios e Criar Site de Viagens Ilimitados em minutos!
             </h2>
@@ -1493,7 +1494,10 @@ const LiveStream = () => {
           <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
 
             {/* ── PLAYER DE VÍDEO ─────────────────────────────────────── */}
-            <div className="relative bg-black w-full flex-shrink-0 lg:w-3/4 lg:flex-none lg:h-full overflow-hidden" style={{ aspectRatio: '16/9' }}>
+            <div
+              className={`relative bg-black w-full lg:w-3/4 lg:flex-none lg:h-full overflow-hidden ${mobileVideoFocusMode ? "flex-1 min-h-0" : "flex-shrink-0"}`}
+              style={mobileVideoFocusMode ? { height: "100%", minHeight: 0 } : { aspectRatio: "16/9" }}
+            >
 
               {/* BADGES */}
               <div className="absolute top-3 left-3 z-40 flex items-center gap-2">
@@ -1561,7 +1565,7 @@ const LiveStream = () => {
               )}
 
               {/* VÍDEO */}
-              <div id="live-video-container" className="relative w-full h-full flex items-center justify-center bg-zinc-950 overflow-hidden">
+              <div ref={videoContainerRef} id="live-video-container" className="relative w-full h-full flex items-center justify-center bg-zinc-950 overflow-hidden">
                 <div
                   className="absolute inset-0 bg-cover bg-center blur-3xl opacity-35 scale-125 pointer-events-none"
                   style={{ backgroundImage: `url('https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg')` }}
@@ -1576,7 +1580,7 @@ const LiveStream = () => {
                     ref={iframeRef}
                     className={`absolute inset-0 w-full h-full border-none z-10 transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-0'}`}
                     style={{ pointerEvents: isPlaying ? 'auto' : 'none' }}
-                    src={`https://www.youtube.com/embed/${videoUrlId}?enablejsapi=1&autoplay=1&mute=1&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1${initialStartSeconds > 0 ? `&start=${initialStartSeconds}` : ""}`}
+                    src={`https://www.youtube.com/embed/${videoUrlId}?enablejsapi=1&autoplay=1&mute=1&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=1&disablekb=1&playsinline=1${initialStartSeconds > 0 ? `&start=${initialStartSeconds}` : ""}`}
                     title="Canva Viagem Live"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                     allowFullScreen
@@ -1586,17 +1590,7 @@ const LiveStream = () => {
                 {/* BOTÃO TELA CHEIA — MOBILE */}
                 {isPlaying && (
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const el = document.getElementById("live-video-container") as any;
-                      if (!el) return;
-                      const isFs = document.fullscreenElement || (document as any).webkitFullscreenElement;
-                      if (isFs) {
-                        (document.exitFullscreen?.() || (document as any).webkitExitFullscreen?.());
-                      } else {
-                        (el.requestFullscreen?.() || el.webkitRequestFullscreen?.() || el.webkitEnterFullscreen?.());
-                      }
-                    }}
+                    onClick={handleMobileFullscreen}
                     aria-label="Tela cheia"
                     className="lg:hidden absolute top-3 right-3 z-40 bg-black/70 backdrop-blur-md hover:bg-black/90 text-white p-2 rounded-full border border-white/15 shadow-lg active:scale-95 transition"
                   >
