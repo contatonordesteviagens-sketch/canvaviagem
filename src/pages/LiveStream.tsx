@@ -82,6 +82,13 @@ const SCHEDULED_COMMENTS: ScheduledComment[] = [
   { time: "62:40", username: "RodrigoMilhas", message: "Eita, achei que ia ser mais de R$ 500" },
   { time: "63:12", username: "MariEmJericoacoara", message: "Cadê o link?" },
   { time: "63:42", username: "FelipeRoteiros", message: "Achei que era mais caro mas vai aumentar né" },
+  { time: "64:00", username: "EduardoMundo", message: "O anual compensa bem mais só por entregar um site vou pegar" },
+  { time: "65:20", username: "BeatrizTrips", message: "Adoro seu trabalho Lucas parabéns" },
+  { time: "66:10", username: "GustavoRoteiros", message: "Meu faturamento mudou depois que conheci esse cara" },
+  { time: "66:35", username: "LuanDestinos", message: "tamo junto Lucas, assinei aqui" },
+  { time: "67:00", username: "CamilaMochileira", message: "Concordo demais" },
+  { time: "67:20", username: "RenatoViajante", message: "Eu amo vender viagens" },
+  { time: "67:55", username: "TatiPeloMundo", message: "Amo viajar e fazer amigos viajar tbm" },
 ];
 
 const AUTO_COMMENTS_POOL = [
