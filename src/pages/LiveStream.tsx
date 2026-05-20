@@ -348,7 +348,28 @@ const LiveStream = () => {
       toast.error("Por favor, digite seu nome.");
       return;
     }
+    if (!phone.trim()) {
+      toast.error("Por favor, digite seu telefone.");
+      return;
+    }
     setIsSubmitting(true);
+    
+    try {
+      const existingLeadsStr = localStorage.getItem("live_stream_leads");
+      const existingLeads = existingLeadsStr ? JSON.parse(existingLeadsStr) : [];
+      
+      const newLead = {
+        id: Date.now().toString(),
+        name: name.trim(),
+        phone: phone.trim(),
+        registeredAt: new Date().toLocaleString("pt-BR")
+      };
+      
+      existingLeads.unshift(newLead);
+      localStorage.setItem("live_stream_leads", JSON.stringify(existingLeads));
+    } catch (e) {
+      console.error("Erro ao salvar o lead:", e);
+    }
     
     setTimeout(() => {
       setIsSubmitting(false);

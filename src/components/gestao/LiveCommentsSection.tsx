@@ -170,6 +170,16 @@ export const LiveCommentsSection = () => {
   const [presetScheduleImmediately, setPresetScheduleImmediately] = useState(false);
   const [activePresetTab, setActivePresetTab] = useState<"standard" | "custom">("standard");
 
+  // Leads / Contatos State
+  interface Lead {
+    id: string;
+    name: string;
+    phone: string;
+    registeredAt: string;
+  }
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [leadsSearch, setLeadsSearch] = useState("");
+
   // Load everything from localStorage on mount
   useEffect(() => {
     // 1. Comments
@@ -267,12 +277,75 @@ export const LiveCommentsSection = () => {
         console.error("Error loading preplay comments", e);
       }
     }
+
+    // 6. Leads / Contatos
+    const savedLeads = localStorage.getItem("live_stream_leads");
+    if (savedLeads) {
+      try {
+        setLeads(JSON.parse(savedLeads));
+      } catch (e) {
+        console.error("Error parsing saved leads", e);
+      }
+    }
   }, []);
 
   const savePrePlay = (list: typeof prePlayComments) => {
     setPrePlayComments(list);
     localStorage.setItem("live_stream_pre_play_comments", JSON.stringify(list));
   };
+
+  // Funções de gerenciamento dos contatos/leads capturados
+  const handleClearLeads = () => {
+    if (window.confirm("Tem certeza que deseja apagar TODOS os leads/contatos capturados? Esta ação não pode ser desfeita.")) {
+      setLeads([]);
+      localStorage.removeItem("live_stream_leads");
+      toast.success("Lista de leads limpa com sucesso!");
+    }
+  };
+
+  const handleDeleteLead = (id: string) => {
+    const updated = leads.filter(lead => lead.id !== id);
+    setLeads(updated);
+    localStorage.setItem("live_stream_leads", JSON.stringify(updated));
+    toast.success("Lead removido com sucesso!");
+  };
+
+  const handleExportLeadsCSV = () => {
+    if (leads.length === 0) {
+      toast.error("Nenhum lead capturado para exportar.");
+      return;
+    }
+    
+    let csvContent = "\uFEFF"; // UTF-8 BOM para forçar UTF-8 no Excel do Windows
+    csvContent += "Data de Inscrição;Nome;Telefone\n";
+    
+    leads.forEach(lead => {
+      const escapedName = lead.name.replace(/;/g, ",").replace(/"/g, '""');
+      const escapedPhone = lead.phone.replace(/;/g, ",").replace(/"/g, '""');
+      csvContent += `${lead.registeredAt};${escapedName};${escapedPhone}\n`;
+    });
+    
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `leads-live-${new Date().toISOString().slice(0, 10)}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success("Lista de contatos (CSV/Excel) baixada com sucesso!");
+  };
+
+  const filteredLeads = useMemo(() => {
+    return leads.filter(lead => {
+      const nameMatch = lead.name.toLowerCase().includes(leadsSearch.toLowerCase());
+      const phoneMatch = lead.phone.toLowerCase().includes(leadsSearch.toLowerCase());
+      const dateMatch = lead.registeredAt.toLowerCase().includes(leadsSearch.toLowerCase());
+      return nameMatch || phoneMatch || dateMatch;
+    });
+  }, [leads, leadsSearch]);
 
   // Sync comments to localStorage
   const saveComments = (newComments: ScheduledComment[]) => {
@@ -1308,6 +1381,123 @@ export const LiveCommentsSection = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* SEÇÃO DE LEADS E CAPTURA DE CONTATOS */}
+      <Card className="border border-muted-foreground/10 bg-card mt-6">
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-xl font-bold flex items-center gap-2 text-emerald-400">
+                <User className="w-5 h-5 text-emerald-400" />
+                Contatos Capturados / Leads da Live
+              </CardTitle>
+              <CardDescription>
+                Abaixo estão listadas as pessoas que preencheram o formulário de nome e telefone antes de entrar na transmissão ao vivo.
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleClearLeads}
+                className="gap-2 text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="w-4 h-4" />
+                Limpar Leads
+              </Button>
+              <Button 
+                onClick={handleExportLeadsCSV}
+                size="sm" 
+                className="gap-2 bg-emerald-500 text-black hover:bg-emerald-600 font-bold"
+              >
+                <Download className="w-4 h-4" />
+                Exportar Excel (CSV)
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome, telefone ou data..."
+                value={leadsSearch}
+                onChange={(e) => setLeadsSearch(e.target.value)}
+                className="pl-9 bg-muted/30 border-muted-foreground/10 focus:border-emerald-500/30"
+              />
+            </div>
+            <div className="flex items-center gap-2 px-2 text-sm text-muted-foreground">
+              <User className="w-4 h-4 text-emerald-400" />
+              <span>Total de Leads: <Badge variant="secondary" className="ml-1 font-bold bg-emerald-500/10 text-emerald-400 border-emerald-500/20">{leads.length}</Badge></span>
+            </div>
+          </div>
+
+          <div className="rounded-md border border-muted-foreground/15 overflow-hidden">
+            <div className="max-h-[350px] overflow-y-auto">
+              <Table>
+                <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                  <TableRow>
+                    <TableHead className="w-[180px] font-bold">Data de Entrada</TableHead>
+                    <TableHead className="w-[200px] font-bold">Nome</TableHead>
+                    <TableHead className="font-bold">Telefone (WhatsApp)</TableHead>
+                    <TableHead className="w-[120px] text-right font-bold">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredLeads.length > 0 ? (
+                    filteredLeads.map((lead) => (
+                      <TableRow key={lead.id} className="hover:bg-muted/20">
+                        <TableCell>
+                          <Badge variant="outline" className="font-mono text-xs px-2.5 py-0.5 bg-emerald-500/5 text-emerald-400 border-emerald-500/20">
+                            {lead.registeredAt}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-medium text-foreground">
+                          {lead.name}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          <a 
+                            href={`https://wa.me/${lead.phone.replace(/\D/g, "")}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-emerald-400 hover:underline flex items-center gap-1.5"
+                          >
+                            <span>{lead.phone}</span>
+                            <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.2 rounded border border-emerald-500/20 font-bold uppercase">
+                              WhatsApp
+                            </span>
+                          </a>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => handleDeleteLead(lead.id)}
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            title="Excluir Lead"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <AlertCircle className="w-8 h-8 text-muted-foreground/60" />
+                          <p>Nenhum contato/lead encontrado.</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </CardContent>
       </Card>
