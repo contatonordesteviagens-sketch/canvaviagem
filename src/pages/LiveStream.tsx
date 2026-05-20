@@ -727,12 +727,9 @@ const LiveStream = () => {
                             : "bg-zinc-800/40 border border-zinc-800/30 text-zinc-100"
                         }`}
                       >
-                        <div className="flex items-center gap-1.5">
-                          <span className={`text-[10px] font-bold ${c.isUser ? "text-cyan-400" : "text-zinc-400"}`}>
-                            @{c.username}
-                          </span>
-                          <span className="text-[9px] text-zinc-600 ml-auto">{c.time}</span>
-                        </div>
+                        <span className={`text-[10px] font-bold ${c.isUser ? "text-cyan-400" : "text-zinc-400"}`}>
+                          @{c.username}
+                        </span>
                         <p className="text-xs font-medium leading-relaxed break-words">{c.message}</p>
                       </div>
                     ))}
