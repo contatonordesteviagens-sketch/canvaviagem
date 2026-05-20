@@ -287,41 +287,9 @@ const LiveStream = () => {
   };
 
   useEffect(() => {
-    // 1. Comments - Force auto-refresh if old cache contains 'travando' or 'travou' comments to protect the live VSL illusion
-    let list: ScheduledComment[] = [];
-    const saved = localStorage.getItem("live_stream_comments");
-    let needsReset = false;
-
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (
-          !Array.isArray(parsed) || 
-          parsed.length === 0 || 
-          parsed.some((c: any) => 
-            c.message && (
-              c.message.toLowerCase().includes("travando") || 
-              c.message.toLowerCase().includes("travou") ||
-              c.message.toLowerCase().includes("melhorou")
-            )
-          )
-        ) {
-          needsReset = true;
-        } else {
-          list = parsed;
-        }
-      } catch (e) {
-        needsReset = true;
-      }
-    } else {
-      needsReset = true;
-    }
-
-    if (needsReset) {
-      list = DEFAULT_SCHEDULED_COMMENTS;
-      localStorage.setItem("live_stream_comments", JSON.stringify(DEFAULT_SCHEDULED_COMMENTS));
-    }
-    setScheduledCommentsList(list);
+    // 1. Comments - não confiar no cache local do visitante para evitar comentários fantasmas por dispositivo.
+    setScheduledCommentsList(DEFAULT_SCHEDULED_COMMENTS);
+    localStorage.setItem("live_stream_comments", JSON.stringify(DEFAULT_SCHEDULED_COMMENTS));
 
     // 2. Video URL/ID
     const savedVideo = localStorage.getItem("live_stream_video_url");
@@ -510,7 +478,7 @@ const LiveStream = () => {
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*',
           schema: 'public',
           table: 'webinar_leads',
           filter: "whatsapp=eq.global_live_settings"
@@ -868,8 +836,8 @@ const LiveStream = () => {
         playbackSecond: c.playbackSecond !== undefined ? c.playbackSecond : currentSeconds
       }));
 
-      // Mescla e ordena estritamente por playbackSecond para fluxo contínuo onde os novos empurram os antigos para cima
-      const merged = [...activePrePlay, ...activeScheduled, ...activeUserComments]
+      // Mescla somente comentários administrados para impedir comentários fantasmas; mensagens do usuário seguem salvas para a Gestão.
+      const merged = [...activePrePlay, ...activeScheduled]
         .sort((a: any, b: any) => {
           const secA = a.playbackSecond ?? 0;
           const secB = b.playbackSecond ?? 0;
@@ -881,7 +849,7 @@ const LiveStream = () => {
     } catch (e) {
       console.error("Error in comments playback synchronization:", e);
     }
-  }, [playbackSeconds, step, isPlaying, scheduledCommentsList, userComments, prePlayComments]);
+  }, [playbackSeconds, step, isPlaying, scheduledCommentsList, prePlayComments]);
 
   // Monitor exit-intent (mouse leaving the screen top)
   useEffect(() => {
