@@ -946,35 +946,19 @@ const LiveStream = () => {
     }
   }, [comments, step]);
 
-  // Bloqueia rolagem do body/documento no passo de assistir para blindar layout mobile contra puxões do teclado
+  // Evita "puxão" da página na live sem bloquear eventos de toque do teclado/campo de comentário no mobile
   useEffect(() => {
     if (step !== "watch") return;
     
-    const originalOverflow = document.body.style.overflow;
-    const originalHTMLOverflow = document.documentElement.style.overflow;
+    const originalOverscroll = document.body.style.overscrollBehavior;
+    const originalHTMLOverscroll = document.documentElement.style.overscrollBehavior;
     
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-    
-    const preventScroll = (e: TouchEvent) => {
-      const target = e.target as HTMLElement;
-      // Permite interação em inputs/textareas/botões e dentro do chat ou áreas roláveis da live
-      if (
-        target.closest('input, textarea, button, form, [contenteditable="true"]') ||
-        target.closest('.overflow-y-auto') ||
-        target.closest('[data-chat-panel]')
-      ) {
-        return;
-      }
-      e.preventDefault();
-    };
-    
-    document.addEventListener('touchmove', preventScroll, { passive: false });
+    document.body.style.overscrollBehavior = "none";
+    document.documentElement.style.overscrollBehavior = "none";
     
     return () => {
-      document.body.style.overflow = originalOverflow;
-      document.documentElement.style.overflow = originalHTMLOverflow;
-      document.removeEventListener('touchmove', preventScroll);
+      document.body.style.overscrollBehavior = originalOverscroll;
+      document.documentElement.style.overscrollBehavior = originalHTMLOverscroll;
     };
   }, [step]);
 
