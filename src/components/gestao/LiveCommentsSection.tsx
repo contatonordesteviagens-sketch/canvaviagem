@@ -2269,15 +2269,8 @@ export const LiveCommentsSection = () => {
                   </CardDescription>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={seedMockData}
-                    className="gap-2 text-purple-400 border-purple-500/20 hover:bg-purple-500/10 font-bold"
-                  >
-                    <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
-                    Simular Dados (+35 Leads)
-                  </Button>
+                  {/* Botão de simulação removido — painel exibe apenas dados reais */}
+
                   <Button 
                     variant="outline" 
                     size="sm" 
