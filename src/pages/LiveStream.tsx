@@ -267,6 +267,9 @@ const LiveStream = () => {
     bannerUrl: ""
   });
   const [showOfferBanner, setShowOfferBanner] = useState(false);
+  const [isMobileLandscape, setIsMobileLandscape] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
   // viewportHeight: atualizado pelo visualViewport para funcionar com teclado virtual do iOS
   const [viewportHeight, setViewportHeight] = useState<number>(
     () => (typeof window !== 'undefined' ? (window.visualViewport?.height ?? window.innerHeight) : 800)
@@ -534,6 +537,7 @@ const LiveStream = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null); // container scroll (não scrollIntoView)
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
   const hasInitializedStartRef = useRef(false);
   const offerActivatedRef = useRef(false);
 
@@ -1031,9 +1035,12 @@ const LiveStream = () => {
   useEffect(() => {
     const updateVH = () => {
       const h = window.visualViewport?.height ?? window.innerHeight;
+      const w = window.visualViewport?.width ?? window.innerWidth;
       const top = window.visualViewport?.offsetTop ?? 0;
       setViewportHeight(h);
       setViewportOffsetTop(top);
+      setIsMobileLandscape(w > h && h <= 520);
+      setIsMobileViewport(w < 1024 || h <= 520);
       
       // Força o scroll do viewport de volta a 0 para impedir Safari de empurrar a tela fixed para cima de forma segura
       if (top > 0 || window.scrollY > 0) {
@@ -1052,6 +1059,64 @@ const LiveStream = () => {
       window.removeEventListener('resize', updateVH);
     };
   }, []);
+
+  useEffect(() => {
+    const syncFullscreenState = () => {
+      const doc = document as Document & { webkitFullscreenElement?: Element | null };
+      if (!document.fullscreenElement && !doc.webkitFullscreenElement) {
+        setIsPlayerExpanded(false);
+      }
+    };
+
+    document.addEventListener("fullscreenchange", syncFullscreenState);
+    document.addEventListener("webkitfullscreenchange", syncFullscreenState as EventListener);
+    return () => {
+      document.removeEventListener("fullscreenchange", syncFullscreenState);
+      document.removeEventListener("webkitfullscreenchange", syncFullscreenState as EventListener);
+    };
+  }, []);
+
+  const handleMobileFullscreen = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const target = videoContainerRef.current;
+    if (!target) return;
+
+    const doc = document as Document & {
+      webkitFullscreenElement?: Element | null;
+      webkitExitFullscreen?: () => Promise<void> | void;
+    };
+    const element = target as HTMLDivElement & {
+      webkitRequestFullscreen?: () => Promise<void> | void;
+      webkitEnterFullscreen?: () => Promise<void> | void;
+    };
+
+    try {
+      const activeFullscreen = document.fullscreenElement || doc.webkitFullscreenElement;
+      if (activeFullscreen) {
+        await (document.exitFullscreen?.() || doc.webkitExitFullscreen?.());
+        setIsPlayerExpanded(false);
+        return;
+      }
+      if (isPlayerExpanded) {
+        setIsPlayerExpanded(false);
+        return;
+      }
+
+      if (element.requestFullscreen) {
+        await element.requestFullscreen({ navigationUI: "hide" });
+      } else if (element.webkitRequestFullscreen) {
+        await element.webkitRequestFullscreen();
+      } else if (element.webkitEnterFullscreen) {
+        await element.webkitEnterFullscreen();
+      } else {
+        setIsPlayerExpanded(true);
+      }
+    } catch (err) {
+      setIsPlayerExpanded(true);
+    }
+  };
 
   const handleRegister = async () => {
     if (!name.trim()) {
@@ -1265,6 +1330,7 @@ const LiveStream = () => {
 
   const offerActivationSec = getOfferActivationSeconds();
   const offerUnlocked = playbackSeconds >= offerActivationSec;
+  const mobileVideoFocusMode = isMobileLandscape || isPlayerExpanded;
 
   if (!isTimeAllowed) {
     return (
@@ -1436,7 +1502,7 @@ const LiveStream = () => {
         >
 
           {/* HEADER DA LIVE */}
-          <div className="bg-zinc-900 border-b border-zinc-800 px-4 py-2 sm:py-3 flex items-center justify-between gap-3 flex-shrink-0" style={{ marginTop: '10px' }}>
+          <div className={`${mobileVideoFocusMode ? "hidden" : "flex"} bg-zinc-900 border-b border-zinc-800 px-4 py-2 sm:py-3 items-center justify-between gap-3 flex-shrink-0`} style={{ marginTop: '10px' }}>
             <h2 className="text-xs sm:text-base font-black text-white leading-tight flex-1 min-w-0 break-words line-clamp-2">
               A Fábrica de Criar Anúncios e Criar Site de Viagens Ilimitados em minutos!
             </h2>
@@ -1450,7 +1516,10 @@ const LiveStream = () => {
           <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
 
             {/* ── PLAYER DE VÍDEO ─────────────────────────────────────── */}
-            <div className="relative bg-black w-full flex-shrink-0 lg:w-3/4 lg:flex-none lg:h-full overflow-hidden" style={{ aspectRatio: '16/9' }}>
+            <div
+              className={`relative bg-black w-full lg:w-3/4 lg:flex-none lg:h-full overflow-hidden ${mobileVideoFocusMode ? "flex-1 min-h-0" : "flex-shrink-0"}`}
+              style={mobileVideoFocusMode ? { height: "100%", minHeight: 0 } : { aspectRatio: "16/9" }}
+            >
 
               {/* BADGES */}
               <div className="absolute top-3 left-3 z-40 flex items-center gap-2">
@@ -1518,7 +1587,7 @@ const LiveStream = () => {
               )}
 
               {/* VÍDEO */}
-              <div id="live-video-container" className="relative w-full h-full flex items-center justify-center bg-zinc-950 overflow-hidden">
+              <div ref={videoContainerRef} id="live-video-container" className="relative w-full h-full flex items-center justify-center bg-zinc-950 overflow-hidden">
                 <div
                   className="absolute inset-0 bg-cover bg-center blur-3xl opacity-35 scale-125 pointer-events-none"
                   style={{ backgroundImage: `url('https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg')` }}
@@ -1533,34 +1602,25 @@ const LiveStream = () => {
                     ref={iframeRef}
                     className={`absolute inset-0 w-full h-full border-none z-10 transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-0'}`}
                     style={{ pointerEvents: isPlaying ? 'auto' : 'none' }}
-                    src={`https://www.youtube.com/embed/${videoUrlId}?enablejsapi=1&autoplay=1&mute=1&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1${initialStartSeconds > 0 ? `&start=${initialStartSeconds}` : ""}`}
+                    src={`https://www.youtube.com/embed/${videoUrlId}?enablejsapi=1&autoplay=1&mute=1&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=1&disablekb=1&playsinline=1${initialStartSeconds > 0 ? `&start=${initialStartSeconds}` : ""}`}
                     title="Canva Viagem Live"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                     allowFullScreen
                   />
                 </div>
 
-                {/* BOTÃO TELA CHEIA — MOBILE */}
-                {isPlaying && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const el = document.getElementById("live-video-container") as any;
-                      if (!el) return;
-                      const isFs = document.fullscreenElement || (document as any).webkitFullscreenElement;
-                      if (isFs) {
-                        (document.exitFullscreen?.() || (document as any).webkitExitFullscreen?.());
-                      } else {
-                        (el.requestFullscreen?.() || el.webkitRequestFullscreen?.() || el.webkitEnterFullscreen?.());
-                      }
-                    }}
-                    aria-label="Tela cheia"
-                    className="lg:hidden absolute top-3 right-3 z-40 bg-black/70 backdrop-blur-md hover:bg-black/90 text-white p-2 rounded-full border border-white/15 shadow-lg active:scale-95 transition"
-                  >
-                    <Maximize2 size={16} />
-                  </button>
-                )}
               </div>
+
+              {/* BOTÃO TELA CHEIA — MOBILE */}
+              {isPlaying && isMobileViewport && (
+                <button
+                  onClick={handleMobileFullscreen}
+                  aria-label="Tela cheia"
+                  className="absolute top-3 right-3 z-50 bg-black/70 backdrop-blur-md hover:bg-black/90 text-white p-2 rounded-full border border-white/15 shadow-lg active:scale-95 transition"
+                >
+                  <Maximize2 size={16} />
+                </button>
+              )}
 
 
               {/* BANNER DE OFERTA SOBRE O VÍDEO — DESKTOP APENAS */}
@@ -1600,7 +1660,7 @@ const LiveStream = () => {
             </div>
 
             {/* ── BANNER DE OFERTA MOBILE (ABAIXO DO VÍDEO, NÃO SOBREPOSTO) ── */}
-            {showOfferBanner && (
+            {showOfferBanner && !mobileVideoFocusMode && (
               <div className="sm:hidden flex-shrink-0 bg-zinc-950 border-b border-cyan-400/30 px-3 py-2 animate-fade-in">
                 <div className="flex flex-row items-center gap-3">
                   <div className="bg-gradient-to-tr from-cyan-400 to-blue-600 p-2 rounded-xl text-black flex-shrink-0">
@@ -1628,7 +1688,7 @@ const LiveStream = () => {
 
             {/* ── PAINEL DO CHAT ───────────────────────────────────────── */}
             <div
-              className="flex flex-col bg-zinc-900/60 border-t border-zinc-800/80 lg:border-t-0 lg:border-l lg:w-1/4 lg:flex-none flex-1 min-h-0 overflow-hidden"
+              className={`flex-col bg-zinc-900/60 border-t border-zinc-800/80 lg:border-t-0 lg:border-l lg:w-1/4 lg:flex-none flex-1 min-h-0 overflow-hidden ${mobileVideoFocusMode ? "hidden lg:flex" : "flex"}`}
               data-chat-panel
             >
 
