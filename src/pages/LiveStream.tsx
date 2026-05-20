@@ -12,11 +12,11 @@ interface Comment {
   time: string;
 }
 
-const INITIAL_COMMENTS: Comment[] = [
-  { id: "init-1", username: "Fabiotravell", message: "boa noite galera, ansioso pra live começar!", time: "19:28" },
-  { id: "init-2", username: "Jr99", message: "boa noite pessoal, lucas já está online?", time: "19:29" },
-  { id: "init-3", username: "AnaPeloMundo", message: "oiii gente, boa noiteee! ansiosa demais", time: "19:30" },
-  { id: "init-4", username: "PedroViagens", message: "Bora pra cima! Ansioso por essa aula da fábrica de anúncios", time: "19:30" },
+// Comentários exibidos ANTES do play (esperando a live começar)
+const PRE_PLAY_COMMENTS: Comment[] = [
+  { id: "pre-1", username: "Fabiotravell", message: "aguardando começar... 🙌", time: "19:28" },
+  { id: "pre-2", username: "Jr99", message: "to esperando a live! bora", time: "19:29" },
+  { id: "pre-3", username: "AnaPeloMundo", message: "esperando aqui, ansiosa demais!", time: "19:30" },
 ];
 
 import { DEFAULT_SCHEDULED_COMMENTS, ScheduledComment } from "@/data/scheduledComments";
@@ -68,7 +68,7 @@ const LiveStream = () => {
   const [playbackSeconds, setPlaybackSeconds] = useState(0);
   
   const [viewers, setViewers] = useState(107);
-  const [comments, setComments] = useState<Comment[]>(INITIAL_COMMENTS);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [activeTab, setActiveTab] = useState<"chat" | "offer">("chat");
   const [scheduledCommentsList, setScheduledCommentsList] = useState<ScheduledComment[]>([]);
@@ -132,9 +132,23 @@ const LiveStream = () => {
   const poolRef = useRef<typeof AUTO_COMMENTS_POOL>([...AUTO_COMMENTS_POOL]);
   const offerActivatedRef = useRef(false);
 
+  // Insere 3 comentários de "aguardando" gradualmente ANTES do play
   useEffect(() => {
-    document.title = "Canva Viagem — Aula Secreta Ao Vivo";
-  }, []);
+    if (step !== "watch" || isPlaying) return;
+
+    const timers = PRE_PLAY_COMMENTS.map((c, i) =>
+      setTimeout(() => {
+        setComments(prev => {
+          // Não adiciona se o play já começou
+          if (prev.some(p => p.id === c.id)) return prev;
+          return [...prev, c];
+        });
+      }, (i + 1) * 2500)
+    );
+
+    return () => timers.forEach(clearTimeout);
+  }, [step, isPlaying]);
+
 
   useEffect(() => {
     const verify = () => {
@@ -515,7 +529,7 @@ const LiveStream = () => {
           <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
 
             {/* ── PLAYER DE VÍDEO ─────────────────────────────────────── */}
-            <div className="relative bg-black lg:flex-1 overflow-hidden" style={{ minHeight: "min(55vw, 56vh)" }}>
+            <div className="relative bg-black lg:flex-1 lg:h-full overflow-hidden" style={{ minHeight: "min(56vw, 58vh)" }}>
 
               {/* BADGES */}
               <div className="absolute top-3 left-3 z-40 flex items-center gap-2">
@@ -662,7 +676,10 @@ const LiveStream = () => {
             </div>
 
             {/* ── PAINEL DO CHAT ───────────────────────────────────────── */}
-            <div className="flex flex-col bg-zinc-900/60 border-t border-zinc-800/80 lg:border-t-0 lg:border-l lg:w-80 xl:w-96 flex-shrink-0 min-h-0 overflow-hidden" style={{ height: "auto", maxHeight: "45vh" }} data-chat-panel>
+            <div
+              className="flex flex-col bg-zinc-900/60 border-t border-zinc-800/80 lg:border-t-0 lg:border-l lg:w-80 xl:w-96 flex-shrink-0 overflow-hidden h-[45vw] max-h-[45vh] lg:h-full lg:max-h-none"
+              data-chat-panel
+            >
               
               {/* ABAS: CHAT e OFERTA */}
               <div className="flex p-1.5 bg-zinc-900 border-b border-zinc-800/80 gap-1 flex-shrink-0">
