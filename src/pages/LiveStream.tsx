@@ -1034,9 +1034,11 @@ const LiveStream = () => {
   useEffect(() => {
     const updateVH = () => {
       const h = window.visualViewport?.height ?? window.innerHeight;
+      const w = window.visualViewport?.width ?? window.innerWidth;
       const top = window.visualViewport?.offsetTop ?? 0;
       setViewportHeight(h);
       setViewportOffsetTop(top);
+      setIsMobileLandscape(w > h && w < 1024);
       
       // Força o scroll do viewport de volta a 0 para impedir Safari de empurrar a tela fixed para cima de forma segura
       if (top > 0 || window.scrollY > 0) {
@@ -1055,6 +1057,44 @@ const LiveStream = () => {
       window.removeEventListener('resize', updateVH);
     };
   }, []);
+
+  const handleMobileFullscreen = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const target = videoContainerRef.current;
+    if (!target) return;
+
+    const doc = document as Document & {
+      webkitFullscreenElement?: Element | null;
+      webkitExitFullscreen?: () => Promise<void> | void;
+    };
+    const element = target as HTMLDivElement & {
+      webkitRequestFullscreen?: () => Promise<void> | void;
+      webkitEnterFullscreen?: () => Promise<void> | void;
+    };
+
+    try {
+      const activeFullscreen = document.fullscreenElement || doc.webkitFullscreenElement;
+      if (activeFullscreen) {
+        await (document.exitFullscreen?.() || doc.webkitExitFullscreen?.());
+        setIsPlayerExpanded(false);
+        return;
+      }
+
+      if (element.requestFullscreen) {
+        await element.requestFullscreen({ navigationUI: "hide" });
+      } else if (element.webkitRequestFullscreen) {
+        await element.webkitRequestFullscreen();
+      } else if (element.webkitEnterFullscreen) {
+        await element.webkitEnterFullscreen();
+      } else {
+        setIsPlayerExpanded(true);
+      }
+    } catch (err) {
+      setIsPlayerExpanded(true);
+    }
+  };
 
   const handleRegister = async () => {
     if (!name.trim()) {
