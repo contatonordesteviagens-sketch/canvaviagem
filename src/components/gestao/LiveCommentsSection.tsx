@@ -24,7 +24,10 @@ import {
   Settings2,
   Tag,
   Sparkles,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Zap,
+  HelpCircle,
+  Layers
 } from "lucide-react";
 import { 
   Dialog, 
@@ -35,6 +38,85 @@ import {
   DialogTitle 
 } from "@/components/ui/dialog";
 import { DEFAULT_SCHEDULED_COMMENTS, ScheduledComment } from "@/data/scheduledComments";
+
+// Preset Single Comments Data
+interface CommentPreset {
+  category: "social" | "purchase" | "question";
+  username: string;
+  message: string;
+  label: string;
+}
+
+const SINGLE_COMMENT_PRESETS: CommentPreset[] = [
+  // Prova Social / Elogios
+  { category: "social", label: "Uso todo dia", username: "GiseleDestinos", message: "Assino o canva viagem uso todo dia me salva demais!" },
+  { category: "social", label: "Suporte Incrível", username: "DuduPeloMundo", message: "Esse suporte do elite é de outro planeta!" },
+  { category: "social", label: "Feed Premium", username: "KarinaViagens", message: "Já mudei meu feed com o Canva Viagem, clientes amando!" },
+  { category: "social", label: "Velocidade I.A", username: "AlinePeloMundo", message: "Chocada com a velocidade q gera as fotos com preco!" },
+  
+  // Compra Confirmada (FOMO)
+  { category: "purchase", label: "COMPRADO! Acesso Ok", username: "PedroViagens", message: "COMPRADO! Já chegou meu acesso no e-mail, muito rápido!" },
+  { category: "purchase", label: "Assinei agora", username: "AnaPeloMundo", message: "Assinei agora mesmo! Ansiosa para começar!" },
+  { category: "purchase", label: "Garantido com Desconto", username: "DiegoExpedicoes", message: "Consegui assinar com desconto! Cupom funcionou perfeito!" },
+  { category: "purchase", label: "Já sou Aluna", username: "CarlaTurismo", message: "Já sou aluna do Elite, melhor investimento que fiz!" },
+
+  // Dúvidas / Preço
+  { category: "question", label: "Funciona celular?", username: "RafaDeFerias", message: "Tem q ter notebook ou dá pra fazer tudo pelo celular?" },
+  { category: "question", label: "Como assinar?", username: "MariEmJericoacoara", message: "Como faz pra assinar? Libera o link logo Lucas!" },
+  { category: "question", label: "Formato Reels?", username: "RobertoTrilhas", message: "Lucas, os criativos já vem no formato de reels e stories?" },
+  { category: "question", label: "Limites diários", username: "ValdirTur", message: "Quais os limites de geração diária na Fábrica I.A?" },
+];
+
+// Preset Packages Data
+interface PresetPack {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  comments: Omit<ScheduledComment, "time">[];
+}
+
+const PRESET_PACKS: PresetPack[] = [
+  {
+    id: "pack_purchase",
+    name: "🔥 Pack Compra Confirmada (Gera FOMO e Pressão)",
+    description: "Injeta 5 comentários de compra confirmada simulando alta conversão após liberação do link.",
+    icon: "ShoppingBag",
+    comments: [
+      { username: "PedroViagens", message: "COMPRADO! Acesso liberado no e-mail super rápido!" },
+      { username: "AnaPeloMundo", message: "Assinei! O cupom de desconto da live funcionou perfeito!" },
+      { username: "DiegoExpedicoes", message: "Garantido! Ansioso pra mexer na fábrica de anúncios hoje!" },
+      { username: "SandraRoteiros", message: "Consegui assinar! O suporte já me mandou os bônus no whats!" },
+      { username: "MuriloTrilhas", message: "Acabei de fechar o plano anual, melhor investimento!" }
+    ]
+  },
+  {
+    id: "pack_social",
+    name: "⭐ Pack Prova Social (Aquece a Audiência)",
+    description: "Injeta 5 comentários elogiando o Canva Viagem e a Fábrica I.A.",
+    icon: "Sparkles",
+    comments: [
+      { username: "GiseleDestinos", message: "Uso o canva viagem todo dia, me economiza horas de postagem!" },
+      { username: "CarlaTurismo", message: "O suporte do Elite responde em minutos, é surreal de bom!" },
+      { username: "DuduPeloMundo", message: "Esse gerador de anúncios é o futuro, facilidade extrema!" },
+      { username: "KarinaViagens", message: "Meus anúncios agora parecem feitos por agência de R$ 5k!" },
+      { username: "PatriciaLemos", message: "O melhor de tudo é que dá pra colocar nossa logo e cores!" }
+    ]
+  },
+  {
+    id: "pack_questions",
+    name: "❓ Pack Dúvidas (Prepara Venda)",
+    description: "Injeta 5 perguntas comuns de clientes interessados para justificar suas respostas.",
+    icon: "HelpCircle",
+    comments: [
+      { username: "Jr99", message: "Qual vai ser o preço do Canva Viagem na live de hoje?" },
+      { username: "MariEmJericoacoara", message: "Lucas, libera o link de inscrição logo por favor!" },
+      { username: "RafaDeFerias", message: "Consigo criar anúncios e mexer em tudo pelo celular?" },
+      { username: "RobertoTrilhas", message: "Já vem com os textos e hashtags prontas também?" },
+      { username: "AmandaTurismo", message: "Tem templates para destinos internacionais e nacionais?" }
+    ]
+  }
+];
 
 export const LiveCommentsSection = () => {
   const [comments, setComments] = useState<ScheduledComment[]>([]);
@@ -58,6 +140,27 @@ export const LiveCommentsSection = () => {
   const [formUsername, setFormUsername] = useState("");
   const [formMessage, setFormMessage] = useState("");
   const [formTime, setFormTime] = useState("");
+
+  // Bulk Pack Settings
+  const [selectedPackId, setSelectedPackId] = useState("pack_purchase");
+  const [packStartTime, setPackStartTime] = useState("50:00");
+  const [packInterval, setPackInterval] = useState(15); // 15 seconds spacing
+
+  // Custom Presets State
+  interface CustomCommentPreset {
+    id: string;
+    time: string;
+    username: string;
+    message: string;
+    label: string;
+  }
+  const [customPresets, setCustomPresets] = useState<CustomCommentPreset[]>([]);
+  const [presetLabel, setPresetLabel] = useState("");
+  const [presetTime, setPresetTime] = useState("");
+  const [presetUsername, setPresetUsername] = useState("");
+  const [presetMessage, setPresetMessage] = useState("");
+  const [saveAsPresetCheckbox, setSaveAsPresetCheckbox] = useState(false);
+  const [activePresetTab, setActivePresetTab] = useState<"standard" | "custom">("standard");
 
   // Load everything from localStorage on mount
   useEffect(() => {
@@ -97,6 +200,49 @@ export const LiveCommentsSection = () => {
       } catch (e) {
         console.error("Error parsing saved offer settings", e);
       }
+    }
+
+    // 4. Custom Presets
+    const savedCustomPresets = localStorage.getItem("live_stream_custom_presets");
+    if (savedCustomPresets) {
+      try {
+        setCustomPresets(JSON.parse(savedCustomPresets));
+      } catch (e) {
+        console.error("Error parsing saved custom presets", e);
+      }
+    } else {
+      const defaultCustom: CustomCommentPreset[] = [
+        {
+          id: "preset_1",
+          label: "Boas-vindas Fábio",
+          time: "00:18",
+          username: "Fabiotravell",
+          message: "opa cheguei"
+        },
+        {
+          id: "preset_2",
+          label: "Boas-vindas Jr99",
+          time: "00:26",
+          username: "Jr99",
+          message: "boraaa"
+        },
+        {
+          id: "preset_3",
+          label: "Cidade Sorocaba",
+          time: "00:47",
+          username: "PedroViagens",
+          message: "São Paulo Sorocaba"
+        },
+        {
+          id: "preset_4",
+          label: "Elogio Canva Viagem",
+          time: "01:29",
+          username: "GiseleDestinos",
+          message: "Assino o canva viagem uso todo dia me salva demais"
+        }
+      ];
+      setCustomPresets(defaultCustom);
+      localStorage.setItem("live_stream_custom_presets", JSON.stringify(defaultCustom));
     }
   }, []);
 
@@ -175,6 +321,7 @@ export const LiveCommentsSection = () => {
     setFormUsername("");
     setFormMessage("");
     setFormTime("");
+    setSaveAsPresetCheckbox(false);
     setDialogOpen(true);
   };
 
@@ -184,6 +331,7 @@ export const LiveCommentsSection = () => {
     setFormUsername(comment.username);
     setFormMessage(comment.message);
     setFormTime(comment.time);
+    setSaveAsPresetCheckbox(false);
     setDialogOpen(true);
   };
 
@@ -255,8 +403,162 @@ export const LiveCommentsSection = () => {
       toast.success("Comentário adicionado!");
     }
 
+    // Save as Custom Preset if checkbox is checked
+    if (saveAsPresetCheckbox) {
+      const newPreset: CustomCommentPreset = {
+        id: `custom_preset_${Date.now()}`,
+        label: `Predef. - ${cleanUsername}`,
+        time: formTime,
+        username: cleanUsername,
+        message: formMessage.trim()
+      };
+      const updatedPresets = [...customPresets, newPreset];
+      setCustomPresets(updatedPresets);
+      localStorage.setItem("live_stream_custom_presets", JSON.stringify(updatedPresets));
+      setSaveAsPresetCheckbox(false); // Reset checkbox
+      toast.success("Comentário também foi salvo como predefinição!");
+    }
+
     saveComments(updated);
     setDialogOpen(false);
+  };
+
+  // Custom Preset Helpers
+  const handleSaveCustomPreset = () => {
+    if (!presetLabel.trim()) {
+      toast.error("O campo identificador da predefinição é obrigatório.");
+      return;
+    }
+    if (!presetUsername.trim()) {
+      toast.error("O campo @usuario é obrigatório.");
+      return;
+    }
+    if (!presetMessage.trim()) {
+      toast.error("O campo comentário é obrigatório.");
+      return;
+    }
+    
+    const timeRegex = /^[0-9]{1,3}:[0-5][0-9]$/;
+    if (!timeRegex.test(presetTime)) {
+      toast.error("O tempo de vídeo deve estar no formato MM:SS (ex: 00:18 ou 68:20).");
+      return;
+    }
+
+    const cleanUsername = presetUsername.trim().replace(/^@/, "");
+    const newPreset: CustomCommentPreset = {
+      id: `custom_preset_${Date.now()}`,
+      label: presetLabel.trim(),
+      time: presetTime.trim(),
+      username: cleanUsername,
+      message: presetMessage.trim()
+    };
+
+    const updatedPresets = [...customPresets, newPreset];
+    setCustomPresets(updatedPresets);
+    localStorage.setItem("live_stream_custom_presets", JSON.stringify(updatedPresets));
+    
+    // Clear inputs
+    setPresetLabel("");
+    setPresetTime("");
+    setPresetUsername("");
+    setPresetMessage("");
+    
+    toast.success("Nova predefinição salva com sucesso!");
+  };
+
+  const handleDeleteCustomPreset = (id: string) => {
+    const updated = customPresets.filter(p => p.id !== id);
+    setCustomPresets(updated);
+    localStorage.setItem("live_stream_custom_presets", JSON.stringify(updated));
+    toast.success("Predefinição excluída da biblioteca.");
+  };
+
+  const handleApplyCustomPreset = (preset: CustomCommentPreset) => {
+    const newCommentItem: ScheduledComment = {
+      time: preset.time,
+      username: preset.username,
+      message: preset.message
+    };
+
+    const duplicate = comments.some(
+      c => c.time === preset.time && 
+           c.username === preset.username && 
+           c.message === preset.message
+    );
+
+    if (duplicate) {
+      toast.warning(`Este comentário já está agendado em ${preset.time}.`);
+      return;
+    }
+
+    const updated = [...comments, newCommentItem];
+    saveComments(updated);
+    toast.success(`Comentário de @${preset.username} agendado para o tempo ${preset.time}!`);
+  };
+
+  // Preset 1-Click Fill handler
+  const handleSelectPreset = (preset: CommentPreset) => {
+    setEditingIndex(null);
+    setFormUsername(preset.username);
+    setFormMessage(preset.message);
+    
+    // Guess next time logic: use the time of the last comment + 10s, or "50:00"
+    let suggestedTime = "50:00";
+    if (comments.length > 0) {
+      const lastComment = comments[comments.length - 1];
+      const parts = lastComment.time.split(":");
+      if (parts.length === 2) {
+        let mins = parseInt(parts[0], 10) || 0;
+        let secs = parseInt(parts[1], 10) || 0;
+        secs += 10;
+        if (secs >= 60) {
+          mins += Math.floor(secs / 60);
+          secs = secs % 60;
+        }
+        suggestedTime = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }
+    }
+    
+    setFormTime(suggestedTime);
+    setDialogOpen(true);
+    toast.success(`Predefinição de @${preset.username} carregada com sucesso!`);
+  };
+
+  // Bulk Inject preset pack handler
+  const handleInjectPack = () => {
+    const timeRegex = /^[0-9]{1,3}:[0-5][0-9]$/;
+    if (!timeRegex.test(packStartTime)) {
+      toast.error("O tempo inicial de injeção deve estar no formato MM:SS (ex: 50:00).");
+      return;
+    }
+
+    const pack = PRESET_PACKS.find(p => p.id === selectedPackId);
+    if (!pack) return;
+
+    // Calculate time sequences
+    const parts = packStartTime.split(":");
+    let mins = parseInt(parts[0], 10) || 0;
+    let secs = parseInt(parts[1], 10) || 0;
+    let totalSecs = mins * 60 + secs;
+
+    const newComments: ScheduledComment[] = [];
+
+    pack.comments.forEach((c, i) => {
+      const currentTotalSecs = totalSecs + (i * packInterval);
+      const currentMins = Math.floor(currentTotalSecs / 60);
+      const currentSecs = currentTotalSecs % 60;
+      const formattedTime = `${String(currentMins).padStart(2, '0')}:${String(currentSecs).padStart(2, '0')}`;
+      
+      newComments.push({
+        time: formattedTime,
+        username: c.username,
+        message: c.message
+      });
+    });
+
+    const updated = [...comments, ...newComments];
+    saveComments(updated);
+    toast.success(`Pacote "${pack.name}" com 5 comentários injetado e ordenado com sucesso!`);
   };
 
   // Export JSON for backup
@@ -274,6 +576,317 @@ export const LiveCommentsSection = () => {
   return (
     <div className="space-y-6">
       
+      {/* SEÇÃO 1: BIBLIOTECA DE PREDEFINIÇÕES & INSERÇÃO RÁPIDA (SOLICITADA PELO USUÁRIO) */}
+      <Card className="border border-cyan-500/20 bg-card/65 backdrop-blur-sm shadow-[0_4px_20px_rgba(6,182,212,0.05)]">
+        <CardHeader className="border-b border-muted-foreground/10 pb-4">
+          <CardTitle className="text-xl font-bold flex items-center gap-2">
+            <Zap className="w-5 h-5 text-cyan-400 animate-pulse" />
+            Biblioteca de Comentários Predefinidos
+          </CardTitle>
+          <CardDescription>
+            Agilize a criação da live! Use predefinições de alta conversão para preencher o formulário com um clique ou criar predefinições customizadas de tempo, nome e comentário.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6 space-y-6">
+          
+          {/* SELETOR DE ABAS */}
+          <div className="flex gap-2 p-1 bg-muted/30 border border-muted-foreground/10 rounded-lg w-fit">
+            <button
+              onClick={() => setActivePresetTab("standard")}
+              className={`px-4 py-2 text-xs font-black uppercase tracking-wider rounded-md transition-all duration-300 flex items-center gap-1.5 ${
+                activePresetTab === "standard"
+                  ? "bg-cyan-500 text-black shadow-[0_2px_10px_rgba(6,182,212,0.15)]"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              }`}
+            >
+              <Sparkles className="w-4 h-4" />
+              Padrão & Pacotes
+            </button>
+            <button
+              onClick={() => setActivePresetTab("custom")}
+              className={`px-4 py-2 text-xs font-black uppercase tracking-wider rounded-md transition-all duration-300 flex items-center gap-1.5 ${
+                activePresetTab === "custom"
+                  ? "bg-cyan-500 text-black shadow-[0_2px_10px_rgba(6,182,212,0.15)]"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              }`}
+            >
+              <Zap className="w-4 h-4" />
+              Predefinições com Tempo (Tempo, Nome, Comentário)
+            </button>
+          </div>
+
+          {activePresetTab === "standard" ? (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* COLUNA 1 & 2: MODELOS INDIVIDUAIS (1-CLICK FILL) */}
+              <div className="lg:col-span-2 space-y-4">
+                <h4 className="text-sm font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  Modelos Individuais de Alta Conversão (Clique para Preencher)
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Categoria 1: Prova Social */}
+                  <div className="space-y-2.5">
+                    <span className="text-[10px] uppercase font-black tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                      ⭐ Prova Social
+                    </span>
+                    <div className="flex flex-col gap-1.5">
+                      {SINGLE_COMMENT_PRESETS.filter(p => p.category === "social").map((preset, idx) => (
+                        <Button
+                          key={`social-${idx}`}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSelectPreset(preset)}
+                          className="justify-start text-left text-xs font-semibold py-1.5 h-auto truncate border-muted-foreground/15 hover:bg-emerald-500/5 hover:border-emerald-500/30 group"
+                        >
+                          <Plus className="w-3.5 h-3.5 mr-1.5 text-muted-foreground group-hover:text-emerald-400 transition-colors" />
+                          <span className="truncate" title={preset.message}>{preset.label}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Categoria 2: Compra Confirmada */}
+                  <div className="space-y-2.5">
+                    <span className="text-[10px] uppercase font-black tracking-widest text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-md">
+                      🔥 Compra (FOMO)
+                    </span>
+                    <div className="flex flex-col gap-1.5">
+                      {SINGLE_COMMENT_PRESETS.filter(p => p.category === "purchase").map((preset, idx) => (
+                        <Button
+                          key={`purchase-${idx}`}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSelectPreset(preset)}
+                          className="justify-start text-left text-xs font-semibold py-1.5 h-auto truncate border-muted-foreground/15 hover:bg-cyan-500/5 hover:border-cyan-500/30 group"
+                        >
+                          <Plus className="w-3.5 h-3.5 mr-1.5 text-muted-foreground group-hover:text-cyan-400 transition-colors" />
+                          <span className="truncate" title={preset.message}>{preset.label}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Categoria 3: Dúvidas */}
+                  <div className="space-y-2.5">
+                    <span className="text-[10px] uppercase font-black tracking-widest text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md">
+                      ❓ Dúvidas & Perguntas
+                    </span>
+                    <div className="flex flex-col gap-1.5">
+                      {SINGLE_COMMENT_PRESETS.filter(p => p.category === "question").map((preset, idx) => (
+                        <Button
+                          key={`question-${idx}`}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSelectPreset(preset)}
+                          className="justify-start text-left text-xs font-semibold py-1.5 h-auto truncate border-muted-foreground/15 hover:bg-amber-500/5 hover:border-amber-500/30 group"
+                        >
+                          <Plus className="w-3.5 h-3.5 mr-1.5 text-muted-foreground group-hover:text-amber-400 transition-colors" />
+                          <span className="truncate" title={preset.message}>{preset.label}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* COLUNA 3: INJEÇÃO DE PACOTES EM LOTE (BULK PACKS) */}
+              <div className="border-t lg:border-t-0 lg:border-l border-muted-foreground/10 pt-4 lg:pt-0 lg:pl-6 space-y-4">
+                <h4 className="text-sm font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <Layers className="w-4 h-4 text-cyan-400 animate-pulse" />
+                  Injetar Pacotes em Lote (Lançamento)
+                </h4>
+                
+                <div className="space-y-3.5">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase">Escolha o Pacote Temático</label>
+                    <select
+                      value={selectedPackId}
+                      onChange={(e) => setSelectedPackId(e.target.value)}
+                      className="w-full rounded-md border border-muted-foreground/15 bg-muted/30 px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                    >
+                      {PRESET_PACKS.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-cyan-400" />
+                        Início (MM:SS)
+                      </label>
+                      <Input
+                        size={5}
+                        placeholder="50:00"
+                        value={packStartTime}
+                        onChange={(e) => setPackStartTime(e.target.value)}
+                        className="bg-muted/30 border-muted-foreground/15 h-8 text-xs font-mono"
+                      />
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-muted-foreground uppercase">
+                        Espaçamento
+                      </label>
+                      <select
+                        value={packInterval}
+                        onChange={(e) => setPackInterval(parseInt(e.target.value, 10))}
+                        className="w-full rounded-md border border-muted-foreground/15 bg-muted/30 px-2 py-1.5 text-xs text-foreground h-8 focus:outline-none"
+                      >
+                        <option value={10}>10 segundos</option>
+                        <option value={15}>15 segundos</option>
+                        <option value={20}>20 segundos</option>
+                        <option value={30}>30 segundos</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <Button 
+                    onClick={handleInjectPack}
+                    className="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-black text-xs h-9 tracking-wide uppercase shadow-[0_2px_10px_rgba(6,182,212,0.15)] flex items-center justify-center gap-2"
+                  >
+                    <Zap className="w-4 h-4 fill-black" />
+                    Injetar 5 Comentários
+                  </Button>
+
+                  <p className="text-[10px] text-muted-foreground text-center leading-tight">
+                    Adiciona 5 comentários em sequência espaçados pelo tempo selecionado a partir do tempo inicial.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
+              {/* COLUNA 1: FORMULÁRIO DE CADASTRO DE PREDEFINIÇÃO */}
+              <div className="space-y-4 bg-muted/10 border border-muted-foreground/10 p-4 rounded-xl">
+                <h4 className="text-sm font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <Plus className="w-4 h-4 text-cyan-400 animate-pulse" />
+                  Nova Predefinição Completa
+                </h4>
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-black text-muted-foreground uppercase">Nome da Predefinição / Etiqueta</label>
+                    <Input
+                      placeholder="Ex: Boas-vindas Fábio"
+                      value={presetLabel}
+                      onChange={(e) => setPresetLabel(e.target.value)}
+                      className="bg-card border-muted-foreground/15 h-9 text-xs"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-black text-muted-foreground uppercase flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                        Tempo (MM:SS)
+                      </label>
+                      <Input
+                        placeholder="00:18"
+                        value={presetTime}
+                        onChange={(e) => setPresetTime(e.target.value)}
+                        className="bg-card border-muted-foreground/15 h-9 text-xs font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-black text-muted-foreground uppercase flex items-center gap-1">
+                        <User className="w-3.5 h-3.5 text-cyan-400" />
+                        @usuario
+                      </label>
+                      <Input
+                        placeholder="Fabiotravell"
+                        value={presetUsername}
+                        onChange={(e) => setPresetUsername(e.target.value)}
+                        className="bg-card border-muted-foreground/15 h-9 text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-black text-muted-foreground uppercase">Comentário</label>
+                    <Input
+                      placeholder="opa cheguei"
+                      value={presetMessage}
+                      onChange={(e) => setPresetMessage(e.target.value)}
+                      className="bg-card border-muted-foreground/15 h-9 text-xs"
+                    />
+                  </div>
+
+                  <Button 
+                    onClick={handleSaveCustomPreset}
+                    className="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-black text-xs h-9 tracking-wide uppercase shadow-[0_2px_10px_rgba(6,182,212,0.15)] flex items-center justify-center gap-1.5"
+                  >
+                    <Check className="w-4 h-4" />
+                    Salvar na Biblioteca
+                  </Button>
+                </div>
+              </div>
+
+              {/* COLUNA 2 & 3: GRID DE PREDEFINIÇÕES CADASTRADAS */}
+              <div className="lg:col-span-2 space-y-4">
+                <h4 className="text-sm font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <Layers className="w-4 h-4 text-cyan-400 animate-pulse" />
+                  Predefinições de Comentários Cadastradas ({customPresets.length})
+                </h4>
+
+                {customPresets.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[360px] overflow-y-auto pr-1">
+                    {customPresets.map((preset) => (
+                      <div 
+                        key={preset.id} 
+                        className="bg-card border border-muted-foreground/15 p-3 rounded-xl space-y-3 shadow-sm hover:border-cyan-500/30 transition-all duration-300 relative group flex flex-col justify-between"
+                      >
+                        <button 
+                          onClick={() => handleDeleteCustomPreset(preset.id)}
+                          className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors duration-200"
+                          title="Excluir Predefinição"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center pr-6">
+                            <span className="font-black text-xs text-foreground uppercase tracking-wider truncate" title={preset.label}>
+                              {preset.label}
+                            </span>
+                            <Badge variant="outline" className="font-mono text-[10px] bg-cyan-500/10 text-cyan-400 border-cyan-500/20 px-2 py-0.5">
+                              {preset.time}
+                            </Badge>
+                          </div>
+
+                          <div className="text-[11px] text-muted-foreground bg-muted/20 p-2 rounded-lg border border-muted-foreground/5 font-mono leading-relaxed truncate-2-lines">
+                            <span className="text-primary font-bold">@{preset.username}: </span>
+                            "{preset.message}"
+                          </div>
+                        </div>
+
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleApplyCustomPreset(preset)} 
+                          className="w-full bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500 text-cyan-400 hover:text-black font-black text-[10px] h-7.5 tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-1"
+                        >
+                          <Zap className="w-3 h-3" />
+                          Agendar Comentário
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-[200px] border border-dashed border-muted-foreground/15 rounded-xl bg-muted/5 gap-2 text-center p-4">
+                    <AlertCircle className="w-8 h-8 text-muted-foreground/50" />
+                    <p className="text-xs font-semibold text-muted-foreground">Nenhuma predefinição com tempo cadastrada.</p>
+                    <p className="text-[10px] text-muted-foreground max-w-xs">Use o formulário ao lado para criar predefinições contendo tempo, nome de usuário e comentário.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* GRID DE CONFIGURAÇÕES DE TRANSMISSÃO & OFERTAS */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         
@@ -623,6 +1236,22 @@ export const LiveCommentsSection = () => {
                 onChange={(e) => setFormMessage(e.target.value)}
                 className="bg-muted/30 border-muted-foreground/15"
               />
+            </div>
+
+            <div className="flex items-center space-x-2 pt-2">
+              <input
+                type="checkbox"
+                id="save-as-preset"
+                checked={saveAsPresetCheckbox}
+                onChange={(e) => setSaveAsPresetCheckbox(e.target.checked)}
+                className="h-4 w-4 rounded border-muted-foreground/30 bg-muted/30 text-primary focus:ring-primary"
+              />
+              <label
+                htmlFor="save-as-preset"
+                className="text-xs font-semibold text-muted-foreground cursor-pointer select-none"
+              >
+                Salvar também na Biblioteca de Predefinições com Tempo
+              </label>
             </div>
           </div>
 
