@@ -535,7 +535,7 @@ const LiveStream = () => {
           {/* HEADER DA LIVE */}
           <div className="bg-zinc-900/80 border-b border-zinc-800/80 px-3 py-2.5 flex items-center justify-between gap-2 flex-shrink-0">
             <h2 className="text-xs sm:text-sm font-black text-white leading-tight flex-1 min-w-0 break-words whitespace-normal py-0.5">
-              Como usar a Fábrica de Anúncios e Criar Site de Viagens com I.A!
+              A Fábrica de Criar Anúncios e Criar Site de Viagens Ilimitados em minutos!
             </h2>
             <div className="flex items-center gap-1.5 bg-red-600/15 border border-red-500/20 px-2.5 py-1 rounded-xl flex-shrink-0 animate-pulse">
               <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
