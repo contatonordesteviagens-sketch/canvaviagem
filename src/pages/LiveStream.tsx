@@ -1076,8 +1076,12 @@ const LiveStream = () => {
 
     try {
       const activeFullscreen = document.fullscreenElement || doc.webkitFullscreenElement;
-      if (activeFullscreen || isPlayerExpanded) {
+      if (activeFullscreen) {
         await (document.exitFullscreen?.() || doc.webkitExitFullscreen?.());
+        setIsPlayerExpanded(false);
+        return;
+      }
+      if (isPlayerExpanded) {
         setIsPlayerExpanded(false);
         return;
       }
@@ -1587,17 +1591,18 @@ const LiveStream = () => {
                   />
                 </div>
 
-                {/* BOTÃO TELA CHEIA — MOBILE */}
-                {isPlaying && (
-                  <button
-                    onClick={handleMobileFullscreen}
-                    aria-label="Tela cheia"
-                    className="lg:hidden absolute top-3 right-3 z-40 bg-black/70 backdrop-blur-md hover:bg-black/90 text-white p-2 rounded-full border border-white/15 shadow-lg active:scale-95 transition"
-                  >
-                    <Maximize2 size={16} />
-                  </button>
-                )}
               </div>
+
+              {/* BOTÃO TELA CHEIA — MOBILE */}
+              {isPlaying && (
+                <button
+                  onClick={handleMobileFullscreen}
+                  aria-label="Tela cheia"
+                  className="lg:hidden absolute top-3 right-3 z-50 bg-black/70 backdrop-blur-md hover:bg-black/90 text-white p-2 rounded-full border border-white/15 shadow-lg active:scale-95 transition"
+                >
+                  <Maximize2 size={16} />
+                </button>
+              )}
 
 
               {/* BANNER DE OFERTA SOBRE O VÍDEO — DESKTOP APENAS */}
