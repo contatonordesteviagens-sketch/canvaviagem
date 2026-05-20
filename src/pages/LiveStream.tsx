@@ -1250,10 +1250,6 @@ const LiveStream = () => {
   const offerActivationSec = getOfferActivationSeconds();
   const offerUnlocked = playbackSeconds >= offerActivationSec;
   const mobileVideoFocusMode = isMobileLandscape || isPlayerExpanded;
-  const isIOSMobile = typeof navigator !== "undefined" && (
-    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
-  );
 
   if (!isTimeAllowed) {
     return (
