@@ -79,6 +79,8 @@ export default function Marketing() {
     sources: [],
     topSource: null,
   };
+  const failedPaymentsCount = (stats as any).failedPaymentsCount ?? 0;
+  const startSubscribersCount = (stats as any).startSubscribersCount ?? 0;
 
   return (
     <div className="p-6 space-y-6">
@@ -284,7 +286,7 @@ export default function Marketing() {
               <CardContent className="space-y-4">
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-black tracking-tight text-red-600 dark:text-red-400">
-                    {stats.failedPaymentsCount}
+                    {failedPaymentsCount}
                   </span>
                   <span className="text-sm font-semibold text-muted-foreground">leads qualificados</span>
                 </div>
@@ -297,7 +299,7 @@ export default function Marketing() {
                 </div>
                 <Button 
                   onClick={() => handleSendCampaign("recovery")}
-                  disabled={sendingCampaign !== null || stats.failedPaymentsCount === 0}
+                  disabled={sendingCampaign !== null || failedPaymentsCount === 0}
                   className="w-full h-12 font-bold bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-lg shadow-red-500/10 flex items-center justify-center gap-2"
                 >
                   {sendingCampaign === "recovery" ? (
@@ -323,7 +325,7 @@ export default function Marketing() {
               <CardContent className="space-y-4">
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-black tracking-tight text-purple-600 dark:text-purple-400">
-                    {stats.startSubscribersCount}
+                    {startSubscribersCount}
                   </span>
                   <span className="text-sm font-semibold text-muted-foreground">assinantes Start ativos</span>
                 </div>
@@ -336,7 +338,7 @@ export default function Marketing() {
                 </div>
                 <Button 
                   onClick={() => handleSendCampaign("upgrade")}
-                  disabled={sendingCampaign !== null || stats.startSubscribersCount === 0}
+                  disabled={sendingCampaign !== null || startSubscribersCount === 0}
                   className="w-full h-12 font-bold bg-purple-600 hover:bg-purple-700 text-white rounded-xl shadow-lg shadow-purple-500/10 flex items-center justify-center gap-2"
                 >
                   {sendingCampaign === "upgrade" ? (
