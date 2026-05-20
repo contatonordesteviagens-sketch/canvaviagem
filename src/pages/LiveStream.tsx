@@ -197,53 +197,26 @@ const LiveStream = () => {
     }
   };
 
-  // Helper to add user comment to Supabase source JSON
+  // Helper to add user comment to Supabase via SECURITY DEFINER RPC (RLS blocks direct updates)
   const addCommentToSupabase = async (message: string) => {
     try {
       const activeSessionStr = localStorage.getItem("live_stream_active_session");
       if (!activeSessionStr) return;
       const activeSession = JSON.parse(activeSessionStr);
       const cleanPhone = activeSession.phone;
-      
-      const { data: lead } = await supabase
-        .from("webinar_leads")
-        .select("source")
-        .eq("whatsapp", cleanPhone)
-        .maybeSingle();
-        
-      if (lead) {
-        let parsedSource: any = {};
-        try {
-          parsedSource = lead.source ? JSON.parse(lead.source) : {};
-        } catch (e) {
-          parsedSource = {};
-        }
-        
-        const currentComments = parsedSource.comments || [];
-        const minutes = Math.floor(playbackSeconds / 60);
-        const seconds = playbackSeconds % 60;
-        const timeStr = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-        
-        const newCommentObj = {
-          time: timeStr,
-          message: message,
-          timestamp: Date.now(),
-          answered: false,
-        };
-        
-        const nextSource = {
-          ...parsedSource,
-          comments: [...currentComments, newCommentObj],
-          lastActiveAt: Date.now(),
-        };
-        
-        await supabase
-          .from("webinar_leads")
-          .update({
-            source: JSON.stringify(nextSource)
-          })
-          .eq("whatsapp", cleanPhone);
-      }
+      if (!cleanPhone) return;
+
+      const minutes = Math.floor(playbackSeconds / 60);
+      const seconds = playbackSeconds % 60;
+      const timeStr = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
+      const { error } = await (supabase as any).rpc("append_webinar_lead_comment", {
+        p_whatsapp: cleanPhone,
+        p_message: message,
+        p_time: timeStr,
+        p_playback_second: playbackSeconds,
+      });
+      if (error) console.error("Erro RPC append_webinar_lead_comment:", error);
     } catch (e) {
       console.error("Erro ao salvar comentário no Supabase:", e);
     }
