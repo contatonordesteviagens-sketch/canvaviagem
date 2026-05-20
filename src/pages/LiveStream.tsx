@@ -1705,7 +1705,10 @@ const LiveStream = () => {
                     <Input
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
-                      onFocus={() => setIsPlayerExpanded(false)}
+                      onFocus={(e) => {
+                        setIsPlayerExpanded(false);
+                        setTimeout(() => e.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" }), 120);
+                      }}
                       type="text"
                       placeholder="Digite algo..."
                       autoComplete="off"
