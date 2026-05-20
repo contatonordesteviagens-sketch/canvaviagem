@@ -281,6 +281,7 @@ const LiveStream = () => {
 
   const [viewers, setViewers] = useState(35);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [userComments, setUserComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [activeTab, setActiveTab] = useState<"chat" | "offer">("chat");
   const [scheduledCommentsList, setScheduledCommentsList] = useState<ScheduledComment[]>([]);
@@ -443,34 +444,52 @@ const LiveStream = () => {
           if (activeSession.lastTime && activeSession.lastTime > 0) {
             setPlaybackSeconds(activeSession.lastTime);
             setInitialStartSeconds(activeSession.lastTime);
-            
-            // Popula os comentários que já aconteceram para dar contexto à live!
-            const now = new Date();
-            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            
-            const restored = list
-              .filter((c: any) => {
-                const parts = c.time.split(":");
-                const mins = parseInt(parts[0], 10) || 0;
-                const secs = parseInt(parts[1], 10) || 0;
-                const totalSecs = mins * 60 + secs;
-                return totalSecs <= activeSession.lastTime;
-              })
-              .map((c: any, index: number) => {
-                const commentKey = `${c.time}-${c.username}-${c.message}`;
-                triggeredCommentsRef.current.add(commentKey);
-                return {
-                  id: `restored-${c.time}-${index}-${Date.now()}`,
-                  username: c.username,
-                  message: c.message,
-                  time: timeStr
-                };
-              });
-              
-            setComments(restored);
-            
-            toast.info(`Retomando transmissão de onde você parou: ${Math.floor(activeSession.lastTime / 60)} min e ${activeSession.lastTime % 60}s`);
           }
+
+          // Fetch user comments from localStorage
+          const savedUserComments = localStorage.getItem(`live_stream_user_comments_${activeSession.phone}`);
+          if (savedUserComments) {
+            setUserComments(JSON.parse(savedUserComments));
+          }
+
+          // Fetch user comments from Supabase if active session exists
+          const fetchUserCommentsFromSupabase = async () => {
+            try {
+              const { data: lead } = await supabase
+                .from("webinar_leads")
+                .select("source")
+                .eq("whatsapp", activeSession.phone)
+                .maybeSingle();
+
+              if (lead && lead.source) {
+                const parsedSource = typeof lead.source === "string" ? JSON.parse(lead.source) : lead.source;
+                if (parsedSource.comments && Array.isArray(parsedSource.comments)) {
+                  const dbComments = parsedSource.comments.map((c: any) => ({
+                    id: c.id || String(c.timestamp || Date.now()),
+                    username: activeSession.name || "Lucas",
+                    message: c.message,
+                    isUser: true,
+                    time: c.time,
+                    sortTimestamp: c.timestamp || Date.now()
+                  }));
+
+                  setUserComments(prev => {
+                    const merged = [...prev];
+                    dbComments.forEach((dbc: any) => {
+                      if (!merged.some(mc => mc.message === dbc.message && Math.abs((mc.sortTimestamp || 0) - dbc.sortTimestamp) < 5000)) {
+                        merged.push(dbc);
+                      }
+                    });
+                    localStorage.setItem(`live_stream_user_comments_${activeSession.phone}`, JSON.stringify(merged));
+                    return merged;
+                  });
+                }
+              }
+            } catch (err) {
+              console.error("Erro ao sincronizar comentários do usuário com o Supabase:", err);
+            }
+          };
+          fetchUserCommentsFromSupabase();
         }
       }
     } catch (e) {
@@ -709,51 +728,53 @@ const LiveStream = () => {
     return () => clearInterval(interval);
   }, [isPlaying, isPaused, step]);
 
-  // Trigger scheduled comments at exact MM:SS markers with Jitter
+  // Keep comments in perfect synchronization with playback progress (never repeats, never starts from zero, seeks perfectly)
   useEffect(() => {
-    if (!isPlaying || isPaused || step !== "watch" || scheduledCommentsList.length === 0) return;
+    if (step !== "watch") return;
 
-    // Encontra os comentários correspondentes ao segundo atual que AINDA não foram disparados
-    const matches = scheduledCommentsList.filter(c => {
-      const parts = c.time.split(":");
-      const mins = parseInt(parts[0], 10) || 0;
-      const secs = parseInt(parts[1], 10) || 0;
-      const totalSecs = mins * 60 + secs;
-      
-      const commentKey = `${c.time}-${c.username}-${c.message}`;
-      return totalSecs === playbackSeconds && !triggeredCommentsRef.current.has(commentKey);
-    });
+    try {
+      const activeSessionStr = localStorage.getItem("live_stream_active_session");
+      const activeSession = activeSessionStr ? JSON.parse(activeSessionStr) : null;
+      const currentSeconds = isPlaying ? playbackSeconds : (activeSession?.lastTime || 0);
+      const sessionStart = activeSession?.startedAt || (Date.now() - currentSeconds * 1000);
 
-    matches.forEach(match => {
-      const commentKey = `${match.time}-${match.username}-${match.message}`;
-      triggeredCommentsRef.current.add(commentKey);
-
-      // Jitter aleatório humano (300ms a 1800ms)
-      const delay = Math.random() * 1500 + 300;
-      
-      setTimeout(() => {
-        const now = new Date();
-        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        
-        setComments(prev => {
-          // Garante unicidade
-          const id = `scheduled-${match.time}-${Date.now()}`;
-          if (prev.some(c => c.username === match.username && c.message === match.message && c.time === timeStr)) {
-            return prev;
-          }
-          return [
-            ...prev,
-            {
-              id,
-              username: match.username,
-              message: match.message,
-              time: timeStr
-            }
-          ];
+      const activeScheduled = scheduledCommentsList
+        .filter((c: any) => {
+          const parts = c.time.split(":");
+          const mins = parseInt(parts[0], 10) || 0;
+          const secs = parseInt(parts[1], 10) || 0;
+          const totalSecs = mins * 60 + secs;
+          return totalSecs <= currentSeconds;
+        })
+        .map((c: any) => {
+          const parts = c.time.split(":");
+          const mins = parseInt(parts[0], 10) || 0;
+          const secs = parseInt(parts[1], 10) || 0;
+          const totalSecs = mins * 60 + secs;
+          const commentTimeMs = sessionStart + totalSecs * 1000;
+          const d = new Date(commentTimeMs);
+          const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+          
+          return {
+            id: `scheduled-${c.time}-${c.username}-${c.message}`,
+            username: c.username,
+            message: c.message,
+            time: timeStr,
+            sortTimestamp: commentTimeMs
+          };
         });
-      }, delay);
-    });
-  }, [playbackSeconds, isPlaying, isPaused, step, scheduledCommentsList]);
+
+      const merged = [...activeScheduled, ...userComments].sort((a: any, b: any) => {
+        const tA = a.sortTimestamp || 0;
+        const tB = b.sortTimestamp || 0;
+        return tA - tB;
+      });
+
+      setComments(merged);
+    } catch (e) {
+      console.error("Error in comments playback synchronization:", e);
+    }
+  }, [playbackSeconds, step, isPlaying, scheduledCommentsList, userComments]);
 
   // Monitor exit-intent (mouse leaving the screen top)
   useEffect(() => {
@@ -1090,15 +1111,31 @@ const LiveStream = () => {
     const now = new Date();
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-    const userComment: Comment = {
+    const userComment: Comment & { sortTimestamp: number } = {
       id: String(Date.now()),
       username: name.trim() || "Lucas",
       message: newComment.trim(),
       isUser: true,
-      time: timeStr
+      time: timeStr,
+      sortTimestamp: Date.now()
     };
 
-    setComments(prev => [...prev, userComment]);
+    setUserComments(prev => {
+      const updated = [...prev, userComment];
+      try {
+        const activeSessionStr = localStorage.getItem("live_stream_active_session");
+        if (activeSessionStr) {
+          const activeSession = JSON.parse(activeSessionStr);
+          if (activeSession.phone) {
+            localStorage.setItem(`live_stream_user_comments_${activeSession.phone}`, JSON.stringify(updated));
+          }
+        }
+      } catch (e) {
+        console.error("Error saving user comment to localStorage:", e);
+      }
+      return updated;
+    });
+
     addCommentToSupabase(newComment.trim()); // Sync to Supabase in real-time
     setNewComment("");
     toast.success("Comentário publicado!");
