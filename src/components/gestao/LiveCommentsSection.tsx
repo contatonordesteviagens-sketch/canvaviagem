@@ -2339,7 +2339,7 @@ export const LiveCommentsSection = () => {
                     <TableBody>
                       {filteredLeads.length > 0 ? (
                         filteredLeads.map((lead) => {
-                          const isOnline = lead.lastActiveAt ? (Date.now() - lead.lastActiveAt < 10000) : false;
+                          const isOnline = isLeadOnline(lead);
                           const entryCount = lead.entryCount || 1;
                           const isFrequent = entryCount >= 3;
                           
