@@ -1419,7 +1419,7 @@ const LiveStream = () => {
           <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
 
             {/* ── PLAYER DE VÍDEO ─────────────────────────────────────── */}
-            <div className="relative bg-black w-full aspect-video lg:w-3/4 lg:flex-none lg:h-full overflow-hidden mobile-landscape-fullscreen">
+            <div className="relative bg-black w-full aspect-video flex-shrink-0 lg:w-3/4 lg:flex-none lg:h-full overflow-hidden mobile-landscape-fullscreen">
 
               {/* BADGES */}
               <div className="absolute top-3 left-3 z-40 flex items-center gap-2">
@@ -1583,7 +1583,7 @@ const LiveStream = () => {
 
             {/* BANNER DE OFERTA (MOBILE - ABAIXO DO VÍDEO PARA NÃO SOBREPOR) */}
             {showOfferBanner && (
-              <div className="sm:hidden bg-zinc-950/95 border-b border-cyan-400/40 p-3 flex flex-col items-center justify-between gap-3 shadow-[0_4px_20px_rgba(34,211,238,0.15)] animate-fade-in relative z-20">
+              <div className="sm:hidden flex-shrink-0 bg-zinc-950/95 border-b border-cyan-400/40 p-3 flex flex-col items-center justify-between gap-3 shadow-[0_4px_20px_rgba(34,211,238,0.15)] animate-fade-in relative z-20">
                 {offerSettings.bannerUrl ? (
                   <div className="relative w-full flex flex-col items-center">
                     <button 
