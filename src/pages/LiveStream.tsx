@@ -1104,14 +1104,17 @@ const LiveStream = () => {
         return;
       }
 
+      // Ativa imediatamente o modo tela-cheia interno. Em muitos celulares,
+      // o navegador bloqueia/ignora fullscreen nativo para iframes, então este
+      // modo garante o resultado visual mesmo quando a API nativa falha.
+      setIsPlayerExpanded(true);
+
       if (element.requestFullscreen) {
         await element.requestFullscreen({ navigationUI: "hide" });
       } else if (element.webkitRequestFullscreen) {
         await element.webkitRequestFullscreen();
       } else if (element.webkitEnterFullscreen) {
         await element.webkitEnterFullscreen();
-      } else {
-        setIsPlayerExpanded(true);
       }
     } catch (err) {
       setIsPlayerExpanded(true);
@@ -1614,11 +1617,17 @@ const LiveStream = () => {
               {/* BOTÃO TELA CHEIA — MOBILE */}
               {isPlaying && isMobileViewport && (
                 <button
+                  type="button"
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onTouchStart={(e) => e.stopPropagation()}
                   onClick={handleMobileFullscreen}
-                  aria-label="Tela cheia"
-                  className="absolute top-3 right-3 z-50 bg-black/70 backdrop-blur-md hover:bg-black/90 text-white p-2 rounded-full border border-white/15 shadow-lg active:scale-95 transition"
+                  aria-label={isPlayerExpanded ? "Sair da tela cheia" : "Tela cheia"}
+                  className="absolute top-3 right-3 z-[80] bg-black/70 backdrop-blur-md hover:bg-black/90 text-white p-2 rounded-full border border-white/15 shadow-lg active:scale-95 transition pointer-events-auto"
                 >
-                  <Maximize2 size={16} />
+                  {isPlayerExpanded ? <span className="block text-sm font-black leading-none">×</span> : <Maximize2 size={16} />}
                 </button>
               )}
 
