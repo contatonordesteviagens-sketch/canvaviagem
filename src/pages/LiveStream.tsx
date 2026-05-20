@@ -286,7 +286,7 @@ const LiveStream = () => {
   const [activeTab, setActiveTab] = useState<"chat" | "offer">("chat");
   const [scheduledCommentsList, setScheduledCommentsList] = useState<ScheduledComment[]>([]);
   const [prePlayComments, setPrePlayComments] = useState<Comment[]>(DEFAULT_PRE_PLAY_COMMENTS);
-  const [videoUrlId, setVideoUrlId] = useState("Xqcw-NpPz08");
+  const [videoUrlId, setVideoUrlId] = useState("uqicM_vSGPw");
   const [offerSettings, setOfferSettings] = useState({
     status: "scheduled",
     time: "60:00",
@@ -507,6 +507,15 @@ const LiveStream = () => {
   useEffect(() => {
     if (step !== "watch" || isPlaying) return;
 
+    // Não exibe comentários de "aguardando" se o usuário está retomando o vídeo de onde parou
+    const activeSessionStr = localStorage.getItem("live_stream_active_session");
+    if (activeSessionStr) {
+      try {
+        const session = JSON.parse(activeSessionStr);
+        if (session.lastTime && session.lastTime > 0) return;
+      } catch (e) {}
+    }
+
     const timers = prePlayComments.map((c, i) =>
       setTimeout(() => {
         setComments(prev => {
@@ -576,6 +585,14 @@ const LiveStream = () => {
     setIsPlaying(true);
     setIsPaused(false);
     hasInitializedStartRef.current = false;
+    
+    // Auto-play the iframe immediately upon overlay click
+    if (iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: "command", func: "playVideo", args: "" }), 
+        "*"
+      );
+    }
   };
 
   const handleTogglePause = () => {
@@ -592,7 +609,6 @@ const LiveStream = () => {
         JSON.stringify({ event: "command", func: command, args: "" }), 
         "*"
       );
-      toast.info(nextPaused ? "Vídeo pausado" : "Vídeo retomado");
     }
 
     // Synergize pause event: immediately sync progress to Supabase when paused!
@@ -1364,17 +1380,17 @@ const LiveStream = () => {
               {!isPlaying ? (
                 <div 
                   onClick={handleStartPlay}
-                  className="absolute inset-0 z-30 cursor-pointer bg-gradient-to-t from-zinc-950 via-zinc-900/90 to-zinc-950 flex flex-col items-center justify-between p-6 text-center hover:brightness-110 transition-all duration-500"
+                  className="absolute inset-0 z-30 cursor-pointer bg-gradient-to-t from-zinc-950 via-zinc-900/90 to-zinc-950 flex flex-col items-center justify-center p-2 text-center hover:brightness-110 transition-all duration-500"
                 >
-                  <h3 className="text-lg md:text-3xl font-black text-white tracking-widest uppercase mt-6 md:mt-8">
+                  <h3 className="text-sm md:text-3xl font-black text-white tracking-widest uppercase mb-2 mt-2">
                     SUA AULA JÁ COMEÇOU
                   </h3>
 
-                  <div className="h-20 w-20 md:h-28 md:w-28 rounded-full bg-red-600 border-4 border-red-500 flex items-center justify-center shadow-[0_0_35px_rgba(239,68,68,0.9)] transition-all duration-300 hover:scale-115 hover:bg-red-500 animate-pulse">
-                    <Play size={36} className="text-white fill-white ml-2 animate-pulse" />
+                  <div className="h-14 w-14 md:h-28 md:w-28 rounded-full bg-red-600 border-4 border-red-500 flex items-center justify-center shadow-[0_0_35px_rgba(239,68,68,0.9)] transition-all duration-300 hover:scale-115 hover:bg-red-500 animate-pulse">
+                    <Play size={24} className="text-white fill-white ml-1.5 md:ml-2 md:w-10 md:h-10 animate-pulse" />
                   </div>
 
-                  <h3 className="text-lg md:text-3xl font-black text-white tracking-widest uppercase mb-4">
+                  <h3 className="text-xs md:text-2xl font-black text-white tracking-widest uppercase mt-2 mb-2">
                     CLIQUE PARA ASSISTIR
                   </h3>
                 </div>
