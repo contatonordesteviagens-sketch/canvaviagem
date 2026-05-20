@@ -104,13 +104,16 @@ const LiveStream = () => {
   const [playbackSeconds, setPlaybackSeconds] = useState(0);
   const [initialStartSeconds, setInitialStartSeconds] = useState<number>(0);
   
-  // Helper for dynamic decrementing seats starting at 9, decrementing to 4 every 90s
+  // Helper for dynamic decrementing seats: 10 → 8 → 7 → 5 → 4
   const getDynamicSeats = () => {
     const offerStartSeconds = getOfferActivationSeconds();
-    if (playbackSeconds < offerStartSeconds) return 9;
+    if (playbackSeconds < offerStartSeconds) return 10;
     const elapsed = playbackSeconds - offerStartSeconds;
-    const decrements = Math.floor(elapsed / 90);
-    return Math.max(4, 9 - decrements);
+    if (elapsed < 90)  return 10; // 0–90s
+    if (elapsed < 210) return 8;  // 90–210s
+    if (elapsed < 360) return 7;  // 210–360s
+    if (elapsed < 480) return 5;  // 360–480s
+    return 4;                      // 480s+ (final da live)
   };
 
   // Helper to get psychological phase & dynamic support link
@@ -940,10 +943,9 @@ const LiveStream = () => {
     };
   }, [playbackSeconds, step]);
 
-  // Calcula o segundo de ativação da oferta com base no tempo configurado
+  // Oferta aparece exatamente no minuto 60:00 da live
   const getOfferActivationSeconds = () => {
-    // Configurado para 3 segundos para teste de produção instantâneo
-    return 3;
+    return 3600; // 60 minutos
   };
 
   // Auto-switch to "Oferta" tab at configured time
@@ -965,9 +967,10 @@ const LiveStream = () => {
 
   const getOfferCountdown = () => {
     const offerStartSeconds = getOfferActivationSeconds();
-    const countdownTotal = 600; // 10 minutes (600 seconds)
+    // Duração exata = fim do vídeo (1:08:39 = 4119s) − início da oferta (3600s) = 519s = 8min39s
+    const countdownTotal = 519;
     if (playbackSeconds < offerStartSeconds) {
-      return "10:00";
+      return "08:39";
     }
     const elapsed = playbackSeconds - offerStartSeconds;
     const remaining = Math.max(0, countdownTotal - elapsed);
@@ -1712,7 +1715,7 @@ const LiveStream = () => {
                         </div>
                         <div className="flex flex-col text-right gap-0.5">
                           <span className="text-zinc-400 font-semibold">Por tempo limitado</span>
-                          <span className="text-zinc-900 font-extrabold text-sm">Oferta só hoje</span>
+                          <span className="text-zinc-900 font-extrabold text-sm">Oferta de lançamento</span>
                         </div>
                       </div>
 
@@ -1725,7 +1728,7 @@ const LiveStream = () => {
                         onClick={trackCheckoutClick}
                       >
                         <Button className="w-full py-5 bg-[#25D366] hover:bg-[#1ebd54] text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-[0_8px_25px_rgba(37,211,102,0.35)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] border-none flex items-center justify-center gap-2">
-                          <ShoppingBag size={16} className="fill-white animate-bounce flex-shrink-0" />
+                          <ShoppingBag size={16} className="animate-bounce flex-shrink-0" />
                           APROVEITAR OPORTUNIDADE
                         </Button>
                       </a>
