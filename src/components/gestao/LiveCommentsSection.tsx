@@ -650,18 +650,10 @@ export const LiveCommentsSection = () => {
           });
           setLeads(formattedLeads);
         } else {
-          // Empty DB? Semeia fallback/mock data localmente
-          const savedLeads = localStorage.getItem("live_stream_leads");
-          if (savedLeads && JSON.parse(savedLeads).length > 0) {
-            setLeads(JSON.parse(savedLeads));
-          } else {
-            seedMockData();
-            const freshLeads = localStorage.getItem("live_stream_leads");
-            if (freshLeads) {
-              setLeads(JSON.parse(freshLeads));
-            }
-          }
+          // Sem leads no banco: apenas mostra estado vazio (sem dados simulados)
+          setLeads([]);
         }
+
       } catch (err) {
         console.error("Erro ao carregar leads iniciais:", err);
       }
