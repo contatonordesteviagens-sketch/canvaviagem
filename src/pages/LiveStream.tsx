@@ -267,6 +267,8 @@ const LiveStream = () => {
     bannerUrl: ""
   });
   const [showOfferBanner, setShowOfferBanner] = useState(false);
+  const [isMobileLandscape, setIsMobileLandscape] = useState(false);
+  const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
   // viewportHeight: atualizado pelo visualViewport para funcionar com teclado virtual do iOS
   const [viewportHeight, setViewportHeight] = useState<number>(
     () => (typeof window !== 'undefined' ? (window.visualViewport?.height ?? window.innerHeight) : 800)
@@ -534,6 +536,7 @@ const LiveStream = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null); // container scroll (não scrollIntoView)
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
   const hasInitializedStartRef = useRef(false);
   const offerActivatedRef = useRef(false);
 
