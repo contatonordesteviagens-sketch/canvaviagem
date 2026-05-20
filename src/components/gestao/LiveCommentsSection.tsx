@@ -27,7 +27,13 @@ import {
   Link as LinkIcon,
   Zap,
   HelpCircle,
-  Layers
+  Layers,
+  BarChart3,
+  Calendar,
+  Users,
+  TrendingUp,
+  Percent,
+  Activity
 } from "lucide-react";
 import { 
   Dialog, 
@@ -170,15 +176,158 @@ export const LiveCommentsSection = () => {
   const [presetScheduleImmediately, setPresetScheduleImmediately] = useState(false);
   const [activePresetTab, setActivePresetTab] = useState<"standard" | "custom">("standard");
 
+  // Sub-abas de gestão da live
+  const [activeSubTab, setActiveSubTab] = useState<"comments" | "leads" | "metrics">("comments");
+
   // Leads / Contatos State
   interface Lead {
     id: string;
     name: string;
     phone: string;
     registeredAt: string;
+    entryCount?: number;
+    watchTime?: number;
+    clickedOffer?: boolean;
+    lastActiveAt?: number;
   }
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsSearch, setLeadsSearch] = useState("");
+
+  // Função para semear dados demonstrativos ultra realistas na live
+  const seedMockData = () => {
+    const mockNames = [
+      "Roberto Almeida", "Patrícia Lemos", "Ana Julia Silva", "Carlos Eduardo", "Sandra Regina",
+      "Tiago Santos", "Gabriela Costa", "Marcos Vinicius", "Juliana Mendes", "Felipe Souza",
+      "Fernanda Roteiros", "Lucas Viagens", "Amanda Nogueira", "Bruno Lima", "Gisele Araujo",
+      "Valdir Teixeira", "Carla Dias", "Mariana Jeri", "Ricardo Gomes", "Aline Barbosa",
+      "Rodrigo Carvalho", "Beatriz Rocha", "Guilherme Santos", "Larissa Cruz", "Marcelo Pereira",
+      "Vanessa Castro", "Thiago Martins", "Letícia Pires", "Diego Ribeiro", "Sofia Ramos",
+      "Daniel Faria", "Renata Vasconcellos", "Murilo Reis", "Isabela Mundo", "Pedro Tur"
+    ];
+
+    const mockPhones = [
+      "(11) 98765-4321", "(21) 99876-5432", "(85) 99765-1122", "(31) 98877-6655", "(41) 99112-2334",
+      "(71) 98223-4455", "(51) 99334-5566", "(81) 98445-6677", "(98) 98556-7788", "(61) 99667-8899",
+      "(19) 98778-9900", "(84) 99889-0011", "(47) 98990-1122", "(62) 99112-3344", "(27) 99223-4455",
+      "(92) 99334-5566", "(12) 99445-6677", "(83) 99556-7788", "(16) 99667-8899", "(54) 99778-9900",
+      "(32) 98889-0011", "(86) 98990-1122", "(34) 99112-2233", "(73) 99223-3344", "(65) 99334-4455",
+      "(91) 99445-5566", "(79) 99556-6677", "(48) 99667-7788", "(82) 99778-8899", "(55) 99889-9900",
+      "(15) 98112-2334", "(24) 98223-3445", "(37) 98334-4556", "(43) 98445-5667", "(88) 98556-6778"
+    ];
+
+    const seededLeads: Lead[] = [];
+    const now = new Date();
+    
+    for (let i = 0; i < mockNames.length; i++) {
+      const daysAgo = Math.floor(Math.random() * 8); // 0 a 7 dias atrás
+      const leadDate = new Date();
+      leadDate.setDate(now.getDate() - daysAgo);
+      leadDate.setHours(Math.floor(Math.random() * 5) + 18, Math.floor(Math.random() * 60)); // Entre 18:00 e 23:00
+
+      const entryCount = Math.random() > 0.85 ? Math.floor(Math.random() * 3) + 3 : Math.floor(Math.random() * 2) + 1; // 15% recorrente (>= 3)
+      const watchTime = Math.floor(Math.random() * 4200) + 60; // 1 a 71 min
+      const clickedOffer = watchTime > 2400 ? Math.random() > 0.45 : Math.random() > 0.88;
+      
+      const isCurrentlyActive = i < 3; 
+      const lastActiveAt = isCurrentlyActive 
+        ? Date.now() - Math.floor(Math.random() * 8000) 
+        : leadDate.getTime() + watchTime * 1000;
+
+      seededLeads.push({
+        id: `mock_${i}_${Date.now()}`,
+        name: mockNames[i],
+        phone: mockPhones[i],
+        registeredAt: leadDate.toLocaleString("pt-BR"),
+        entryCount,
+        watchTime,
+        clickedOffer,
+        lastActiveAt
+      });
+    }
+
+    localStorage.setItem("live_stream_leads", JSON.stringify(seededLeads));
+    
+    // Configura estatísticas
+    const totalSessions = seededLeads.reduce((acc, l) => acc + (l.entryCount || 1), 0);
+    const totalOfferClicks = seededLeads.filter(l => l.clickedOffer).length;
+    
+    const exitIntervals = {
+      "0-5min": 0,
+      "5-15min": 0,
+      "15-30min": 0,
+      "30-60min": 0,
+      "60min+": 0
+    };
+
+    seededLeads.forEach(l => {
+      const minutes = (l.watchTime || 0) / 60;
+      if (minutes < 5) exitIntervals["0-5min"]++;
+      else if (minutes < 15) exitIntervals["5-15min"]++;
+      else if (minutes < 30) exitIntervals["15-30min"]++;
+      else if (minutes < 60) exitIntervals["30-60min"]++;
+      else exitIntervals["60min+"]++;
+    });
+
+    const dailyEntries: Record<string, number> = {};
+    for (let d = 0; d < 8; d++) {
+      const targetDate = new Date();
+      targetDate.setDate(now.getDate() - d);
+      const dateStr = targetDate.toLocaleDateString("pt-BR").split("/").reverse().join("-");
+      dailyEntries[dateStr] = seededLeads.filter(l => {
+        const parts = l.registeredAt.split(" ")[0].split("/");
+        const lDateStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        return lDateStr === dateStr;
+      }).length;
+    }
+
+    const stats = {
+      totalSessions,
+      totalOfferClicks,
+      exitIntervals,
+      dailyEntries
+    };
+
+    localStorage.setItem("live_stream_analytics_stats", JSON.stringify(stats));
+    setLeads(seededLeads);
+    toast.success("Dados simulados de Leads e Métricas semeados com sucesso para visualização!");
+  };
+
+  // Funções auxiliares para o dashboard de métricas e leads
+  const parseRegisteredDate = (dateStr: string) => {
+    try {
+      if (!dateStr) return new Date();
+      // Formato esperado: "DD/MM/YYYY, HH:MM:SS" ou "DD/MM/YYYY HH:MM:SS"
+      const cleanStr = dateStr.replace(",", "");
+      const [datePart, timePart] = cleanStr.trim().split(" ");
+      const [day, month, year] = datePart.split("/").map(Number);
+      
+      if (timePart) {
+        const [hours, minutes, seconds] = timePart.split(":").map(Number);
+        return new Date(year, month - 1, day, hours || 0, minutes || 0, seconds || 0);
+      }
+      return new Date(year, month - 1, day);
+    } catch (e) {
+      return new Date();
+    }
+  };
+
+  const formatWatchTime = (seconds: number = 0) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    if (h > 0) {
+      return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
+
+  const getWhatsAppLink = (phone: string, name: string) => {
+    const digits = phone.replace(/\D/g, "");
+    // Prepara número brasileiro para o link (garantindo DDI 55)
+    const cleanPhone = digits.startsWith("55") ? digits : `55${digits}`;
+    const text = encodeURIComponent(`Olá ${name}, vi que você entrou na nossa live da Fábrica de Anúncios e Canva Viagem! Como posso te ajudar?`);
+    return `https://wa.me/${cleanPhone}?text=${text}`;
+  };
 
   // Load everything from localStorage on mount
   useEffect(() => {
@@ -280,11 +429,18 @@ export const LiveCommentsSection = () => {
 
     // 6. Leads / Contatos
     const savedLeads = localStorage.getItem("live_stream_leads");
-    if (savedLeads) {
+    if (savedLeads && JSON.parse(savedLeads).length > 0) {
       try {
         setLeads(JSON.parse(savedLeads));
       } catch (e) {
         console.error("Error parsing saved leads", e);
+      }
+    } else {
+      // Semeia dados automaticamente se estiver vazia
+      seedMockData();
+      const freshLeads = localStorage.getItem("live_stream_leads");
+      if (freshLeads) {
+        setLeads(JSON.parse(freshLeads));
       }
     }
   }, []);
@@ -346,6 +502,150 @@ export const LiveCommentsSection = () => {
       return nameMatch || phoneMatch || dateMatch;
     });
   }, [leads, leadsSearch]);
+
+  // ── CONTADORES & ANÁLISE DE MÉTRICAS (MEMOIZADO) ────────────────────
+  const metricsStats = useMemo(() => {
+    const totalLeads = leads.length;
+    
+    // Cliques no CTA de compra
+    const totalClicks = leads.filter(l => l.clickedOffer).length;
+    const ctr = totalLeads > 0 ? ((totalClicks / totalLeads) * 100).toFixed(1) : "0.0";
+    
+    // Tempo Médio Assistido
+    const totalSeconds = leads.reduce((acc, l) => acc + (l.watchTime || 0), 0);
+    const avgSeconds = totalLeads > 0 ? totalSeconds / totalLeads : 0;
+    
+    // Retenção Qualificada (>15 min)
+    const qualifiedLeadsCount = leads.filter(l => (l.watchTime || 0) > 900).length;
+    const qualifiedPct = totalLeads > 0 ? ((qualifiedLeadsCount / totalLeads) * 100).toFixed(1) : "0.0";
+    
+    // Leads nos últimos 3 dias e últimos 7 dias
+    const now = Date.now();
+    const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    
+    const leadsLast3Days = leads.filter(l => {
+      const d = parseRegisteredDate(l.registeredAt);
+      return now - d.getTime() < threeDaysMs;
+    }).length;
+    
+    const leadsLast7Days = leads.filter(l => {
+      const d = parseRegisteredDate(l.registeredAt);
+      return now - d.getTime() < sevenDaysMs;
+    }).length;
+    
+    // Taxa de crescimento: últimos 3 dias vs 3 dias anteriores (dias 4 a 6)
+    const leadsDays4to6 = leads.filter(l => {
+      const d = parseRegisteredDate(l.registeredAt);
+      const diff = now - d.getTime();
+      return diff >= threeDaysMs && diff < 2 * threeDaysMs;
+    }).length;
+    
+    let growthRate = 0;
+    if (leadsDays4to6 > 0) {
+      growthRate = Math.round(((leadsLast3Days - leadsDays4to6) / leadsDays4to6) * 100);
+    } else if (leadsLast3Days > 0) {
+      growthRate = 100;
+    }
+
+    return {
+      totalLeads,
+      totalClicks,
+      ctr,
+      avgSeconds,
+      qualifiedPct,
+      leadsLast3Days,
+      leadsLast7Days,
+      growthRate
+    };
+  }, [leads]);
+
+  // Drop-off de Retenção
+  const retentionChartData = useMemo(() => {
+    const total = Math.max(1, leads.length);
+    const counts = { t1: 0, t2: 0, t3: 0, t4: 0, t5: 0 };
+    
+    leads.forEach(l => {
+      const mins = (l.watchTime || 0) / 60;
+      if (mins < 5) counts.t1++;
+      else if (mins < 15) counts.t2++;
+      else if (mins < 30) counts.t3++;
+      else if (mins < 60) counts.t4++;
+      else counts.t5++;
+    });
+
+    return [
+      { 
+        label: "0-5 min (Abandono Inicial)", 
+        desc: "Usuários que saíram nos primeiros minutos da live",
+        count: counts.t1, 
+        pct: Math.round((counts.t1 / total) * 100), 
+        color: "bg-red-500", 
+        border: "border-red-500/20 bg-red-500/5 text-red-400" 
+      },
+      { 
+        label: "5-15 min (Abandono Precoce)", 
+        desc: "Usuários que perderam o interesse antes do conteúdo principal",
+        count: counts.t2, 
+        pct: Math.round((counts.t2 / total) * 100), 
+        color: "bg-orange-500", 
+        border: "border-orange-500/20 bg-orange-500/5 text-orange-400" 
+      },
+      { 
+        label: "15-30 min (Engajados)", 
+        desc: "Assistiram o conteúdo prático intermediário",
+        count: counts.t3, 
+        pct: Math.round((counts.t3 / total) * 100), 
+        color: "bg-yellow-500", 
+        border: "border-yellow-500/20 bg-yellow-500/5 text-yellow-400" 
+      },
+      { 
+        label: "30-60 min (Momento da Oferta)", 
+        desc: "Permaneceram até o anúncio e detalhes dos planos",
+        count: counts.t4, 
+        pct: Math.round((counts.t4 / total) * 100), 
+        color: "bg-cyan-500", 
+        border: "border-cyan-500/20 bg-cyan-500/5 text-cyan-400" 
+      },
+      { 
+        label: "60+ min (Fidelizados / Final)", 
+        desc: "Assistiram até o encerramento completo (público super quente)",
+        count: counts.t5, 
+        pct: Math.round((counts.t5 / total) * 100), 
+        color: "bg-emerald-500", 
+        border: "border-emerald-500/20 bg-emerald-500/5 text-emerald-400" 
+      }
+    ];
+  }, [leads]);
+
+  // Calendário de Inscrição Diária (Últimos 7 dias)
+  const calendarDailyData = useMemo(() => {
+    const list = [];
+    const now = new Date();
+    
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(now.getDate() - i);
+      const dateString = d.toLocaleDateString("pt-BR"); // "DD/MM/YYYY"
+      const dateLabel = d.toLocaleDateString("pt-BR", { day: 'numeric', month: 'short' }); // "20 mai."
+      
+      const dayLeads = leads.filter(l => l.registeredAt.startsWith(dateString));
+      const total = dayLeads.length;
+      const uniques = dayLeads.filter(l => (l.entryCount || 1) === 1).length;
+      const recurrents = dayLeads.filter(l => (l.entryCount || 1) > 1).length;
+      const highlyRecurrent = dayLeads.filter(l => (l.entryCount || 1) >= 3).length; // Alerta de > 3 entradas
+
+      list.push({
+        dateLabel,
+        dateString,
+        total,
+        uniques,
+        recurrents,
+        highlyRecurrent
+      });
+    }
+    return list;
+  }, [leads]);
 
   // Sync comments to localStorage
   const saveComments = (newComments: ScheduledComment[]) => {
@@ -699,6 +999,53 @@ export const LiveCommentsSection = () => {
 
   return (
     <div className="space-y-6">
+      
+      {/* SELETOR DE ABAS PRINCIPAIS - GESTÃO PREMIUM */}
+      <div className="flex flex-wrap border-b border-muted-foreground/15 pb-2 mb-6 gap-2">
+        <button
+          onClick={() => setActiveSubTab("comments")}
+          className={`px-5 py-3 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 flex items-center gap-2 border ${
+            activeSubTab === "comments"
+              ? "bg-cyan-500 text-black border-cyan-500 shadow-[0_4px_20px_rgba(6,182,212,0.25)] font-extrabold"
+              : "text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/40 font-bold"
+          }`}
+        >
+          <MessageSquare className="w-4 h-4" />
+          Comentários e Oferta
+        </button>
+        
+        <button
+          onClick={() => setActiveSubTab("leads")}
+          className={`px-5 py-3 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 flex items-center gap-2 border ${
+            activeSubTab === "leads"
+              ? "bg-emerald-500 text-black border-emerald-500 shadow-[0_4px_20px_rgba(16,185,129,0.25)] font-extrabold"
+              : "text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/40 font-bold"
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          Contatos Capturados (Leads)
+          {leads.length > 0 && (
+            <Badge className="bg-black text-white text-[10px] px-1.5 py-0.2 rounded font-black border border-white/10 ml-1">
+              {leads.length}
+            </Badge>
+          )}
+        </button>
+        
+        <button
+          onClick={() => setActiveSubTab("metrics")}
+          className={`px-5 py-3 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 flex items-center gap-2 border ${
+            activeSubTab === "metrics"
+              ? "bg-purple-500 text-white border-purple-500 shadow-[0_4px_20px_rgba(168,85,247,0.25)] font-extrabold"
+              : "text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/40 font-bold"
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          Métricas e Calendário
+        </button>
+      </div>
+
+      {activeSubTab === "comments" && (
+        <div className="space-y-6 animate-fadeIn">
       
       {/* SEÇÃO 1: BIBLIOTECA DE PREDEFINIÇÕES & INSERÇÃO RÁPIDA (SOLICITADA PELO USUÁRIO) */}
       <Card className="border border-cyan-500/20 bg-card/65 backdrop-blur-sm shadow-[0_4px_20px_rgba(6,182,212,0.05)]">
@@ -1385,122 +1732,409 @@ export const LiveCommentsSection = () => {
         </CardContent>
       </Card>
 
-      {/* SEÇÃO DE LEADS E CAPTURA DE CONTATOS */}
-      <Card className="border border-muted-foreground/10 bg-card mt-6">
-        <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <CardTitle className="text-xl font-bold flex items-center gap-2 text-emerald-400">
-                <User className="w-5 h-5 text-emerald-400" />
-                Contatos Capturados / Leads da Live
-              </CardTitle>
-              <CardDescription>
-                Abaixo estão listadas as pessoas que preencheram o formulário de nome e telefone antes de entrar na transmissão ao vivo.
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleClearLeads}
-                className="gap-2 text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive"
-              >
-                <Trash2 className="w-4 h-4" />
-                Limpar Leads
-              </Button>
-              <Button 
-                onClick={handleExportLeadsCSV}
-                size="sm" 
-                className="gap-2 bg-emerald-500 text-black hover:bg-emerald-600 font-bold"
-              >
-                <Download className="w-4 h-4" />
-                Exportar Excel (CSV)
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nome, telefone ou data..."
-                value={leadsSearch}
-                onChange={(e) => setLeadsSearch(e.target.value)}
-                className="pl-9 bg-muted/30 border-muted-foreground/10 focus:border-emerald-500/30"
-              />
-            </div>
-            <div className="flex items-center gap-2 px-2 text-sm text-muted-foreground">
-              <User className="w-4 h-4 text-emerald-400" />
-              <span>Total de Leads: <Badge variant="secondary" className="ml-1 font-bold bg-emerald-500/10 text-emerald-400 border-emerald-500/20">{leads.length}</Badge></span>
-            </div>
+        </div>
+      )}
+
+      {/* ABA DE LEADS / CONTATOS CAPTURADOS */}
+      {activeSubTab === "leads" && (
+        <div className="space-y-6 animate-fadeIn">
+          <Card className="border border-emerald-500/20 bg-card/65 backdrop-blur-sm shadow-[0_4px_25px_rgba(16,185,129,0.05)]">
+            <CardHeader className="border-b border-muted-foreground/10 pb-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <CardTitle className="text-xl font-bold flex items-center gap-2 text-emerald-400">
+                    <Users className="w-5 h-5 text-emerald-400" />
+                    Contatos Capturados / Leads da Live
+                  </CardTitle>
+                  <CardDescription>
+                    Pessoas que se inscreveram para a live. Entre em contato 1-a-1 via WhatsApp e veja os dados de retenção e cliques.
+                  </CardDescription>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={seedMockData}
+                    className="gap-2 text-purple-400 border-purple-500/20 hover:bg-purple-500/10 font-bold"
+                  >
+                    <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
+                    Simular Dados (+35 Leads)
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleClearLeads}
+                    className="gap-2 text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Limpar Leads
+                  </Button>
+                  <Button 
+                    onClick={handleExportLeadsCSV}
+                    size="sm" 
+                    className="gap-2 bg-emerald-500 text-black hover:bg-emerald-600 font-black tracking-wide uppercase shadow-[0_2px_10px_rgba(16,185,129,0.15)] h-9"
+                  >
+                    <Download className="w-4 h-4" />
+                    Exportar Excel (CSV)
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nome, telefone ou data de entrada..."
+                    value={leadsSearch}
+                    onChange={(e) => setLeadsSearch(e.target.value)}
+                    className="pl-9 bg-muted/30 border-muted-foreground/10 focus:border-emerald-500/30"
+                  />
+                </div>
+                <div className="flex items-center gap-2 px-2 text-sm text-muted-foreground font-semibold">
+                  <Users className="w-4 h-4 text-emerald-400" />
+                  <span>Total Filtrado: <Badge variant="secondary" className="ml-1 font-bold bg-emerald-500/10 text-emerald-400 border-emerald-500/20">{filteredLeads.length}</Badge></span>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-muted-foreground/15 overflow-hidden">
+                <div className="max-h-[500px] overflow-y-auto">
+                  <Table>
+                    <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                      <TableRow>
+                        <TableHead className="w-[180px] font-black uppercase text-[10px] tracking-wider text-muted-foreground">Data de Entrada</TableHead>
+                        <TableHead className="w-[220px] font-black uppercase text-[10px] tracking-wider text-muted-foreground">Nome & Status</TableHead>
+                        <TableHead className="w-[200px] font-black uppercase text-[10px] tracking-wider text-muted-foreground">WhatsApp (Contato 1-a-1)</TableHead>
+                        <TableHead className="w-[120px] font-black uppercase text-[10px] tracking-wider text-muted-foreground">Tempo Assistido</TableHead>
+                        <TableHead className="w-[180px] font-black uppercase text-[10px] tracking-wider text-muted-foreground">Status / Oferta</TableHead>
+                        <TableHead className="w-[80px] text-right font-black uppercase text-[10px] tracking-wider text-muted-foreground">Ação</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredLeads.length > 0 ? (
+                        filteredLeads.map((lead) => {
+                          const isOnline = lead.lastActiveAt ? (Date.now() - lead.lastActiveAt < 10000) : false;
+                          const entryCount = lead.entryCount || 1;
+                          const isFrequent = entryCount >= 3;
+                          
+                          return (
+                            <TableRow key={lead.id} className="hover:bg-muted/20 transition-all duration-200 border-b border-muted-foreground/5">
+                              {/* Data de Entrada */}
+                              <TableCell>
+                                <Badge variant="outline" className="font-mono text-xs px-2.5 py-0.5 bg-emerald-500/5 text-emerald-400 border-emerald-500/20">
+                                  {lead.registeredAt}
+                                </Badge>
+                              </TableCell>
+                              
+                              {/* Nome & Status */}
+                              <TableCell className="font-medium text-foreground">
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    {isFrequent && (
+                                      <span className="relative flex h-2.5 w-2.5 mr-1 shadow-[0_0_10px_#ef4444]">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                      </span>
+                                    )}
+                                    <span className="font-bold text-sm">{lead.name}</span>
+                                    {isFrequent && (
+                                      <Badge variant="destructive" className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.2 animate-pulse bg-red-500/20 text-red-400 border border-red-500/30">
+                                        🚨 {entryCount} Entradas
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <div>
+                                    {isOnline ? (
+                                      <span className="text-[9px] font-black text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-md inline-flex items-center gap-1 animate-pulse border border-emerald-500/20">
+                                        <span className="h-1 w-1 rounded-full bg-emerald-400 animate-ping" />
+                                        🔴 ASSISTINDO AGORA
+                                      </span>
+                                    ) : (
+                                      <span className="text-[9px] font-semibold text-muted-foreground bg-muted/20 px-1.5 py-0.5 rounded-md inline-block">
+                                        Off-line
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              
+                              {/* Telefone & WhatsApp link */}
+                              <TableCell>
+                                <div className="flex flex-col gap-1">
+                                  <span className="text-foreground font-mono text-xs font-semibold">{lead.phone}</span>
+                                  <a 
+                                    href={getWhatsAppLink(lead.phone, lead.name)} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="text-xs text-emerald-400 font-bold hover:underline flex items-center gap-1 hover:text-emerald-300 w-fit mt-0.5"
+                                  >
+                                    <span className="text-[9px] bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30 font-black uppercase tracking-wider flex items-center gap-1 hover:bg-emerald-500/25 transition-all">
+                                      <MessageSquare className="w-3 h-3 fill-emerald-400" />
+                                      Conversar no WhatsApp
+                                    </span>
+                                  </a>
+                                </div>
+                              </TableCell>
+                              
+                              {/* Tempo Assistido */}
+                              <TableCell>
+                                <Badge variant="outline" className="font-mono text-xs bg-muted/40 border-muted-foreground/10 px-2 py-0.5">
+                                  {formatWatchTime(lead.watchTime || 0)}
+                                </Badge>
+                              </TableCell>
+                              
+                              {/* Status Oferta / Compra */}
+                              <TableCell>
+                                {lead.clickedOffer ? (
+                                  <span className="text-[9px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-1 rounded-md inline-flex items-center gap-1.5 animate-pulse">
+                                    <ShoppingBag className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20" />
+                                    🔥 CLICOU EM COMPRAR
+                                  </span>
+                                ) : (
+                                  <span className="text-[9px] font-semibold text-muted-foreground bg-muted/30 border border-muted-foreground/5 px-2 py-1 rounded-md inline-flex items-center gap-1.5">
+                                    <Eye className="w-3 h-3 text-muted-foreground" />
+                                    Assistindo
+                                  </span>
+                                )}
+                              </TableCell>
+                              
+                              {/* Excluir Lead */}
+                              <TableCell className="text-right">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => handleDeleteLead(lead.id)}
+                                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  title="Excluir Lead"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                            <div className="flex flex-col items-center justify-center gap-2">
+                              <AlertCircle className="w-8 h-8 text-muted-foreground/60" />
+                              <p className="font-bold text-xs">Nenhum lead encontrado para a busca.</p>
+                              <p className="text-[10px] text-muted-foreground">Certifique-se de que há leads registrados ou simule novos dados.</p>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* ABA DE MÉTRICAS E ANÁLISE / CALENDÁRIO */}
+      {activeSubTab === "metrics" && (
+        <div className="space-y-6 animate-fadeIn">
+          
+          {/* SEÇÃO 1: KPI CARDS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            {/* CARD 1: TOTAL DE LEADS */}
+            <Card className="border border-purple-500/20 bg-card/65 shadow-md flex items-center p-5 gap-4 relative overflow-hidden group hover:border-purple-500/40 transition-all duration-300">
+              <div className="p-3 bg-purple-500/10 rounded-xl text-purple-400 border border-purple-500/20">
+                <Users className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">Leads Únicos</p>
+                <h3 className="text-2xl font-black text-white">{metricsStats.totalLeads}</h3>
+                <p className="text-[10px] text-muted-foreground">Inscritos cadastrados na live</p>
+              </div>
+              <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 text-purple-400 pointer-events-none group-hover:scale-110 transition-transform duration-500">
+                <Users className="w-24 h-24 font-black" />
+              </div>
+            </Card>
+
+            {/* CARD 2: CRESCIMENTO */}
+            <Card className="border border-emerald-500/20 bg-card/65 shadow-md flex items-center p-5 gap-4 relative overflow-hidden group hover:border-emerald-500/40 transition-all duration-300">
+              <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">Crescimento</p>
+                <div className="flex items-center gap-1">
+                  <h3 className="text-2xl font-black text-white">
+                    {metricsStats.growthRate > 0 ? `+${metricsStats.growthRate}%` : `${metricsStats.growthRate}%`}
+                  </h3>
+                  <span className="text-[9px] font-black bg-emerald-500/20 text-emerald-400 px-1 py-0.2 rounded border border-emerald-500/30">3d vs 3d</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground">Cadastros dos últimos 3 dias: <strong className="text-emerald-400">{metricsStats.leadsLast3Days}</strong></p>
+              </div>
+              <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 text-emerald-400 pointer-events-none group-hover:scale-110 transition-transform duration-500">
+                <TrendingUp className="w-24 h-24 font-black" />
+              </div>
+            </Card>
+
+            {/* CARD 3: TEMPO MÉDIO */}
+            <Card className="border border-cyan-500/20 bg-card/65 shadow-md flex items-center p-5 gap-4 relative overflow-hidden group hover:border-cyan-500/40 transition-all duration-300">
+              <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-400 border border-cyan-500/20">
+                <Clock className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">Tempo de Tela</p>
+                <h3 className="text-2xl font-black text-white">{formatWatchTime(metricsStats.avgSeconds)}</h3>
+                <p className="text-[10px] text-muted-foreground">Média de retenção por usuário</p>
+              </div>
+              <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 text-cyan-400 pointer-events-none group-hover:scale-110 transition-transform duration-500">
+                <Clock className="w-24 h-24 font-black" />
+              </div>
+            </Card>
+
+            {/* CARD 4: CONVERSÃO CTR */}
+            <Card className="border border-amber-500/20 bg-card/65 shadow-md flex items-center p-5 gap-4 relative overflow-hidden group hover:border-amber-500/40 transition-all duration-300">
+              <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20">
+                <ShoppingBag className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-black text-muted-foreground uppercase tracking-wider">Conversão (CTR)</p>
+                <div className="flex items-center gap-1">
+                  <h3 className="text-2xl font-black text-white">{metricsStats.ctr}%</h3>
+                  <span className="text-[9px] font-black bg-amber-500/20 text-amber-400 px-1 py-0.2 rounded border border-amber-500/30">CTR</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground">Total: <strong className="text-amber-400">{metricsStats.totalClicks}</strong> cliques no botão de compra</p>
+              </div>
+              <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 text-amber-400 pointer-events-none group-hover:scale-110 transition-transform duration-500">
+                <ShoppingBag className="w-24 h-24 font-black" />
+              </div>
+            </Card>
+            
           </div>
 
-          <div className="rounded-md border border-muted-foreground/15 overflow-hidden">
-            <div className="max-h-[350px] overflow-y-auto">
-              <Table>
-                <TableHeader className="bg-muted/50 sticky top-0 z-10">
-                  <TableRow>
-                    <TableHead className="w-[180px] font-bold">Data de Entrada</TableHead>
-                    <TableHead className="w-[200px] font-bold">Nome</TableHead>
-                    <TableHead className="font-bold">Telefone (WhatsApp)</TableHead>
-                    <TableHead className="w-[120px] text-right font-bold">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredLeads.length > 0 ? (
-                    filteredLeads.map((lead) => (
-                      <TableRow key={lead.id} className="hover:bg-muted/20">
-                        <TableCell>
-                          <Badge variant="outline" className="font-mono text-xs px-2.5 py-0.5 bg-emerald-500/5 text-emerald-400 border-emerald-500/20">
-                            {lead.registeredAt}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-medium text-foreground">
-                          {lead.name}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground text-sm">
-                          <a 
-                            href={`https://wa.me/${lead.phone.replace(/\D/g, "")}`} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="text-emerald-400 hover:underline flex items-center gap-1.5"
-                          >
-                            <span>{lead.phone}</span>
-                            <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.2 rounded border border-emerald-500/20 font-bold uppercase">
-                              WhatsApp
-                            </span>
-                          </a>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={() => handleDeleteLead(lead.id)}
-                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            title="Excluir Lead"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
-                        <div className="flex flex-col items-center justify-center gap-2">
-                          <AlertCircle className="w-8 h-8 text-muted-foreground/60" />
-                          <p>Nenhum contato/lead encontrado.</p>
+          {/* SEÇÃO 2: GRÁFICO DE RETENÇÃO PURE CSS E CALENDÁRIO */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            
+            {/* COLUNA 1 & 2: GRÁFICO DE RETENÇÃO PURE CSS */}
+            <Card className="border border-muted-foreground/10 bg-card/65 backdrop-blur-sm shadow-md xl:col-span-2">
+              <CardHeader className="border-b border-muted-foreground/5 pb-4">
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-cyan-400 animate-pulse" />
+                  Gráfico de Retenção e Abandono da Audiência (Drop-off)
+                </CardTitle>
+                <CardDescription>
+                  Entenda exatamente em qual momento do vídeo você está perdendo espectadores e onde direcionar a oferta.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-6">
+                
+                <div className="space-y-5">
+                  {retentionChartData.map((bar, idx) => (
+                    <div key={idx} className="space-y-2 group">
+                      <div className="flex justify-between items-center text-xs font-semibold">
+                        <div className="flex flex-col">
+                          <span className="text-foreground font-bold">{bar.label}</span>
+                          <span className="text-[10px] text-muted-foreground font-normal">{bar.desc}</span>
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                        <div className="flex items-center gap-2 font-mono">
+                          <span className="text-muted-foreground">{bar.count} usuários</span>
+                          <Badge variant="outline" className={`text-[10px] font-bold border ${bar.border}`}>
+                            {bar.pct}%
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      {/* Barra Pure CSS */}
+                      <div className="h-3 w-full bg-muted/40 rounded-full overflow-hidden border border-muted-foreground/5">
+                        <div 
+                          className={`h-full ${bar.color} rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(var(--primary),0.15)] group-hover:brightness-110`}
+                          style={{ width: `${bar.pct}%`, minWidth: bar.pct > 0 ? "4px" : "0px" }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="bg-muted/15 border border-muted-foreground/10 rounded-xl p-4 space-y-2 mt-2">
+                  <h4 className="text-xs font-black uppercase text-foreground tracking-wider flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5 text-cyan-400" />
+                    Análise Prática de Retenção:
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    - O intervalo de <strong className="text-cyan-400">30-60 min (Momento da Oferta)</strong> mostra as pessoas que assistiram a explicação do produto. Elas têm a maior probabilidade de clique e compra.
+                  </p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    - A retenção qualificada da live atual é de <strong className="text-cyan-400">{metricsStats.qualifiedPct}%</strong> (usuários que assistiram mais de 15 minutos).
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* COLUNA 3: CALENDÁRIO DIÁRIO DE INSCRIÇÕES */}
+            <Card className="border border-muted-foreground/10 bg-card/65 backdrop-blur-sm shadow-md">
+              <CardHeader className="border-b border-muted-foreground/5 pb-4">
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-purple-400" />
+                  Calendário de Inscrições (Últimos 7 dias)
+                </CardTitle>
+                <CardDescription>
+                  Volume diário de novos inscritos e identificação de usuários repetidos.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="space-y-4 max-h-[380px] overflow-y-auto pr-1">
+                  {calendarDailyData.map((day, idx) => (
+                    <div 
+                      key={idx} 
+                      className={`p-3.5 border rounded-xl flex flex-col gap-2.5 transition-all duration-300 hover:border-purple-500/20 ${
+                        day.highlyRecurrent > 0 
+                          ? "bg-red-500/5 border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.02)]" 
+                          : "bg-muted/10 border-muted-foreground/10"
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-purple-400" />
+                          <span className="font-black text-sm text-foreground">{day.dateLabel}</span>
+                          <span className="text-[10px] text-muted-foreground font-mono">({day.dateString})</span>
+                        </div>
+                        <Badge variant="outline" className="font-mono bg-purple-500/10 text-purple-400 border-purple-500/20 font-black">
+                          {day.total} inscritos
+                        </Badge>
+                      </div>
+
+                      {/* Progresso visual simples */}
+                      <div className="h-1.5 w-full bg-muted/40 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-purple-500 rounded-full" 
+                          style={{ width: `${Math.min(100, (day.total / Math.max(1, metricsStats.totalLeads)) * 250)}%` }}
+                        />
+                      </div>
+
+                      {/* Métricas do dia */}
+                      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                        <div className="flex gap-2">
+                          <span>Únicos: <strong className="text-foreground">{day.uniques}</strong></span>
+                          <span>•</span>
+                          <span>Recorrentes: <strong className="text-foreground">{day.recurrents}</strong></span>
+                        </div>
+                        
+                        {/* Alerta de recorrentes perigosos */}
+                        {day.highlyRecurrent > 0 && (
+                          <div className="flex items-center gap-1 text-xs text-red-400 font-bold bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded-md animate-pulse">
+                            <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-ping" />
+                            <span>{day.highlyRecurrent} com +3 acessos!</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            
           </div>
-        </CardContent>
-      </Card>
+          
+        </div>
+      )}
 
       {/* Add / Edit Dialog for Comments */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

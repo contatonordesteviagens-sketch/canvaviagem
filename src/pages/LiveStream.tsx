@@ -60,14 +60,33 @@ const LiveStream = () => {
   const [isTimeAllowed, setIsTimeAllowed] = useState<boolean>(true);
 
   const [step, setStep] = useState<"register" | "watch">("register");
-  const [name, setName] = useState("Lucas");
-  const [phone, setPhone] = useState("(85) 99845-8995");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+
+  const handlePhoneChange = (val: string) => {
+    let cleaned = val.replace(/\D/g, "");
+    if (cleaned.length > 11) {
+      cleaned = cleaned.slice(0, 11);
+    }
+    let formatted = cleaned;
+    if (cleaned.length > 2) {
+      formatted = `(${cleaned.slice(0, 2)}) `;
+      if (cleaned.length > 7) {
+        formatted += `${cleaned.slice(2, 7)}-${cleaned.slice(7)}`;
+      } else {
+        formatted += cleaned.slice(2);
+      }
+    } else if (cleaned.length > 0) {
+      formatted = `(${cleaned}`;
+    }
+    setPhone(formatted);
+  };
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [playbackSeconds, setPlaybackSeconds] = useState(0);
   
-  const [viewers, setViewers] = useState(107);
+  const [viewers, setViewers] = useState(35);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [activeTab, setActiveTab] = useState<"chat" | "offer">("chat");
@@ -195,24 +214,125 @@ const LiveStream = () => {
     }
   };
 
-  // Fluctuating viewers simulation (around 95 to 115)
+  // Atualiza espectadores dinâmicos de forma ultra realista baseada no tempo do vídeo (curva exata solicitada)
   useEffect(() => {
     if (step !== "watch") return;
-    const interval = setInterval(() => {
-      setViewers(prev => {
-        const change = Math.floor(Math.random() * 5) - 2;
-        const nextValue = prev + change;
-        return Math.max(90, Math.min(120, nextValue));
-      });
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [step]);
+    
+    const m = playbackSeconds / 60; // tempo da live em minutos (float)
+    let nextViewers = 35;
 
-  // Increment playback timer in seconds
+    if (playbackSeconds < 60) {
+      // 1. Começando em 35 e subindo suavemente para 42 no primeiro minuto (0 a 60 segundos)
+      const t = playbackSeconds / 60;
+      nextViewers = Math.round(35 + (42 - 35) * t);
+    } else if (playbackSeconds < 120) {
+      // 2. Do minuto 1 ao 2 (60 a 120 segundos): sobe suavemente de 42 para 58
+      const t = (playbackSeconds - 60) / 60;
+      nextViewers = Math.round(42 + (58 - 42) * t);
+    } else if (playbackSeconds < 180) {
+      // 3. Do minuto 2 ao 3 (120 a 180 segundos): sobe suavemente de 58 para 68
+      const t = (playbackSeconds - 120) / 60;
+      nextViewers = Math.round(58 + (68 - 58) * t);
+    } else if (playbackSeconds < 240) {
+      // 4. Do minuto 3 ao 4 (180 a 240 segundos): sobe suavemente de 68 para 95
+      const t = (playbackSeconds - 180) / 60;
+      nextViewers = Math.round(68 + (95 - 68) * t);
+    } else if (playbackSeconds < 20 * 60) {
+      // 5. Do minuto 4 ao 20: mantém estável entre 91 e 98 sem oscilações bruscas
+      // Onda senoidal de 4 minutos para flutuação super natural
+      const sineValue = Math.sin(((playbackSeconds - 240) * Math.PI) / 120); // período de 4 minutos (240s)
+      nextViewers = Math.round(94.5 + 3.5 * sineValue); // flutua entre 91 e 98
+    } else if (playbackSeconds < 40 * 60) {
+      // 6. Do minuto 20 ao 40: intercalando entre 90 e 110 usuários sem muitas oscilações, com pico de 115 na meta (minuto 30)
+      // Ajustamos a fase inicial da senóide para iniciar exatamente em 95 e manter a continuidade
+      const osc = Math.sin(((playbackSeconds - 20 * 60) * Math.PI) / (5 * 60) - Math.PI / 6); // período de 10 min
+      let base = 100 + 10 * osc; // flutua entre 90 e 110 (em m=20, base é 95, 100% contínuo!)
+      
+      // Pico de 115 na meta (exatamente aos 30 minutos / 1800 segundos) com decaimento suave de 4 minutos para cada lado
+      const peakTime = 30 * 60;
+      const diffMinutes = Math.abs(playbackSeconds - peakTime) / 60;
+      if (diffMinutes < 4) { // transição suave de 4 minutos para o pico de 115
+        const t = diffMinutes / 4;
+        const peakWeight = (1 - t * t) * (1 - t * t); // perfil de suavização smooth
+        base = base * (1 - peakWeight) + 115 * peakWeight;
+      }
+      nextViewers = Math.round(base);
+    } else if (playbackSeconds < 50 * 60) {
+      // 7. Do minuto 40 ao 50 (Hora da Oferta): baixa levemente para a faixa de 74
+      // De 40 a 41 min, cai de forma suave de 95 para a faixa de 74. Depois fica flutuando entre 72 e 76
+      const startOfPeriod = 40 * 60;
+      const elapsed = playbackSeconds - startOfPeriod;
+      const osc74 = Math.sin((elapsed * Math.PI) / 180); // ciclo de 6 min
+      const targetBase = 74 + 2 * osc74; // flutua entre 72 e 76 (média 74)
+      
+      if (elapsed < 60) { // transição suave de 1 minuto
+        const t = elapsed / 60;
+        nextViewers = Math.round(95 * (1 - t) + targetBase * t);
+      } else {
+        nextViewers = Math.round(targetBase);
+      }
+    } else if (playbackSeconds < 61.5 * 60) {
+      // 8. Do minuto 50 ao 61.5: baixa para a faixa de 56
+      // De 50 a 51 min, cai suavemente de 74 para a faixa de 56. Depois flutua entre 54 e 58
+      const startOfPeriod = 50 * 60;
+      const elapsed = playbackSeconds - startOfPeriod;
+      const osc56 = Math.sin((elapsed * Math.PI) / 180); // ciclo de 6 min
+      const targetBase = 56 + 2 * osc56; // flutua entre 54 e 58 (média 56)
+      
+      if (elapsed < 60) { // transição suave de 1 minuto
+        const t = elapsed / 60;
+        nextViewers = Math.round(74 * (1 - t) + targetBase * t);
+      } else {
+        nextViewers = Math.round(targetBase);
+      }
+    } else if (playbackSeconds < 62 * 60) {
+      // 9. Do minuto 61.5 ao 62: cai suavemente para atingir 25 pessoas exatamente no minuto 62
+      const startOfPeriod = 61.5 * 60;
+      const elapsed = playbackSeconds - startOfPeriod;
+      const t = elapsed / 30; // 30 segundos de queda
+      nextViewers = Math.round(54 * (1 - t) + 25 * t);
+    } else if (playbackSeconds < 63 * 60) {
+      // 10. Do minuto 62 ao 63: cai suavemente de 25 para 19 pessoas
+      const startOfPeriod = 62 * 60;
+      const elapsed = playbackSeconds - startOfPeriod;
+      const t = elapsed / 60; // 1 minuto de queda
+      nextViewers = Math.round(25 * (1 - t) + 19 * t);
+    } else {
+      // 11. Do minuto 63 até o final da transmissão (68 minutos+): permanece estável em 19 pessoas
+      nextViewers = 19;
+    }
+
+    setViewers(nextViewers);
+  }, [playbackSeconds, step]);
+
+  // Increment playback timer in seconds and track watch time / activity heartbeat in background
   useEffect(() => {
     if (!isPlaying || isPaused || step !== "watch") return;
     const interval = setInterval(() => {
-      setPlaybackSeconds(prev => prev + 1);
+      setPlaybackSeconds(prev => {
+        const next = prev + 1;
+        
+        try {
+          const activeSessionStr = localStorage.getItem("live_stream_active_session");
+          if (activeSessionStr) {
+            const activeSession = JSON.parse(activeSessionStr);
+            const leadsStr = localStorage.getItem("live_stream_leads");
+            if (leadsStr) {
+              const leads = JSON.parse(leadsStr);
+              const leadIndex = leads.findIndex((l: any) => l.phone === activeSession.phone);
+              if (leadIndex !== -1) {
+                leads[leadIndex].watchTime = (leads[leadIndex].watchTime || 0) + 1;
+                leads[leadIndex].lastActiveAt = Date.now(); // Atualiza heartbeat de atividade online
+                localStorage.setItem("live_stream_leads", JSON.stringify(leads));
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Erro ao atualizar watch time do lead:", e);
+        }
+        
+        return next;
+      });
     }, 1000);
     return () => clearInterval(interval);
   }, [isPlaying, isPaused, step]);
@@ -358,17 +478,61 @@ const LiveStream = () => {
       const existingLeadsStr = localStorage.getItem("live_stream_leads");
       const existingLeads = existingLeadsStr ? JSON.parse(existingLeadsStr) : [];
       
-      const newLead = {
-        id: Date.now().toString(),
+      const cleanPhone = phone.trim();
+      const existingIndex = existingLeads.findIndex((l: any) => l.phone === cleanPhone);
+      
+      if (existingIndex !== -1) {
+        // Incrementa o número de entradas para usuário recorrente
+        existingLeads[existingIndex].entryCount = (existingLeads[existingIndex].entryCount || 1) + 1;
+        existingLeads[existingIndex].name = name.trim(); // Atualiza o nome caso mude
+        existingLeads[existingIndex].registeredAt = new Date().toLocaleString("pt-BR");
+      } else {
+        // Cria um lead novinho em folha
+        const newLead = {
+          id: Date.now().toString(),
+          name: name.trim(),
+          phone: cleanPhone,
+          registeredAt: new Date().toLocaleString("pt-BR"),
+          entryCount: 1,
+          watchTime: 0,
+          clickedOffer: false,
+          hasLeft: false
+        };
+        existingLeads.unshift(newLead);
+      }
+      
+      localStorage.setItem("live_stream_leads", JSON.stringify(existingLeads));
+      
+      // Salva a sessão ativa no navegador para rastrear assistir/comprar em tempo real
+      const activeSession = {
+        phone: cleanPhone,
         name: name.trim(),
-        phone: phone.trim(),
-        registeredAt: new Date().toLocaleString("pt-BR")
+        startedAt: Date.now()
+      };
+      localStorage.setItem("live_stream_active_session", JSON.stringify(activeSession));
+      
+      // Atualiza o painel de estatísticas gerais
+      const statsStr = localStorage.getItem("live_stream_analytics_stats");
+      const stats = statsStr ? JSON.parse(statsStr) : {
+        totalSessions: 0,
+        totalOfferClicks: 0,
+        exitIntervals: {
+          "0-5min": 0,
+          "5-15min": 0,
+          "15-30min": 0,
+          "30-60min": 0,
+          "60min+": 0
+        },
+        dailyEntries: {}
       };
       
-      existingLeads.unshift(newLead);
-      localStorage.setItem("live_stream_leads", JSON.stringify(existingLeads));
+      stats.totalSessions = (stats.totalSessions || 0) + 1;
+      const todayStr = new Date().toLocaleDateString("pt-BR").split("/").reverse().join("-"); // AAAA-MM-DD
+      stats.dailyEntries[todayStr] = (stats.dailyEntries[todayStr] || 0) + 1;
+      localStorage.setItem("live_stream_analytics_stats", JSON.stringify(stats));
+      
     } catch (e) {
-      console.error("Erro ao salvar o lead:", e);
+      console.error("Erro ao processar cadastro de lead:", e);
     }
     
     setTimeout(() => {
@@ -396,6 +560,43 @@ const LiveStream = () => {
     setComments(prev => [...prev, userComment]);
     setNewComment("");
     toast.success("Comentário publicado!");
+  };
+
+  const trackCheckoutClick = () => {
+    try {
+      const activeSessionStr = localStorage.getItem("live_stream_active_session");
+      if (activeSessionStr) {
+        const activeSession = JSON.parse(activeSessionStr);
+        const leadsStr = localStorage.getItem("live_stream_leads");
+        if (leadsStr) {
+          const leads = JSON.parse(leadsStr);
+          const leadIndex = leads.findIndex((l: any) => l.phone === activeSession.phone);
+          if (leadIndex !== -1) {
+            leads[leadIndex].clickedOffer = true;
+            localStorage.setItem("live_stream_leads", JSON.stringify(leads));
+          }
+        }
+      }
+      
+      const statsStr = localStorage.getItem("live_stream_analytics_stats");
+      const stats = statsStr ? JSON.parse(statsStr) : {
+        totalSessions: 0,
+        totalOfferClicks: 0,
+        exitIntervals: {
+          "0-5min": 0,
+          "5-15min": 0,
+          "15-30min": 0,
+          "30-60min": 0,
+          "60min+": 0
+        },
+        dailyEntries: {}
+      };
+      
+      stats.totalOfferClicks = (stats.totalOfferClicks || 0) + 1;
+      localStorage.setItem("live_stream_analytics_stats", JSON.stringify(stats));
+    } catch (e) {
+      console.error("Erro ao rastrear clique de checkout:", e);
+    }
   };
 
   const offerActivationSec = getOfferActivationSeconds();
@@ -492,7 +693,7 @@ const LiveStream = () => {
               {/* TÍTULO PRINCIPAL */}
               <div className="text-center">
                 <h3 className="text-[22px] md:text-[26px] font-black text-zinc-900 leading-tight">
-                  A I.A que cria anúncios e site de viagens em minutos!
+                  A Fábrica de Criar Anúncios e Criar Site de Viagens Ilimitados em minutos!
                 </h3>
               </div>
 
@@ -518,7 +719,7 @@ const LiveStream = () => {
                     </div>
                     <Input
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => handlePhoneChange(e.target.value)}
                       placeholder="(85) 99845-8995"
                       required
                       className="flex-1 bg-zinc-50 border-zinc-200 text-zinc-900 focus-visible:ring-[#00E5FF] rounded-xl py-5"
@@ -679,7 +880,13 @@ const LiveStream = () => {
                       >
                         ✕
                       </button>
-                      <a href={offerSettings.checkoutUrl} target="_blank" rel="noopener noreferrer" className="w-full">
+                      <a 
+                        href={offerSettings.checkoutUrl || "https://buy.stripe.com/8x26oIgGuej656zaAY8so05"} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="w-full"
+                        onClick={trackCheckoutClick}
+                      >
                         <img 
                           src={offerSettings.bannerUrl} 
                           alt="Oferta Especial" 
@@ -707,10 +914,13 @@ const LiveStream = () => {
                       </div>
 
                       <a 
-                        href={offerSettings.checkoutUrl} 
+                        href={offerSettings.checkoutUrl || "https://buy.stripe.com/8x26oIgGuej656zaAY8so05"} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          trackCheckoutClick();
+                        }}
                         className="w-full sm:w-auto flex-shrink-0"
                       >
                         <button className="w-full sm:w-auto bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-300 hover:to-green-400 text-black font-black px-4 py-2 rounded-xl shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:scale-105 transition-all duration-300 flex items-center justify-center gap-1.5 text-xs uppercase tracking-wider animate-pulse whitespace-nowrap">
@@ -861,10 +1071,11 @@ const LiveStream = () => {
 
                       {/* BOTÃO GRANDE VERDE */}
                       <a 
-                        href="https://buy.stripe.com/8x26oIgGuej656zaAY8so05" 
+                        href={offerSettings.checkoutUrl || "https://buy.stripe.com/8x26oIgGuej656zaAY8so05"} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="w-full block animate-pulse"
+                        onClick={trackCheckoutClick}
                       >
                         <Button className="w-full py-5 bg-[#25D366] hover:bg-[#1ebd54] text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-[0_8px_25px_rgba(37,211,102,0.35)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] border-none flex items-center justify-center gap-2 whitespace-nowrap overflow-hidden">
                           <ShoppingBag size={16} className="fill-white animate-bounce flex-shrink-0" />
