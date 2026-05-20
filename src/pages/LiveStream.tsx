@@ -204,9 +204,9 @@ const LiveStream = () => {
   const [isMobileLandscape, setIsMobileLandscape] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
-  // viewportHeight: atualizado pelo visualViewport para funcionar com teclado virtual do iOS
+  // Altura estável da live. Não usar visualViewport durante digitação: no Chrome/iPhone isso pode cancelar o foco do input.
   const [viewportHeight, setViewportHeight] = useState<number>(
-    () => (typeof window !== 'undefined' ? (window.visualViewport?.height ?? window.innerHeight) : 800)
+    () => (typeof window !== 'undefined' ? window.innerHeight : 800)
   );
   const [viewportOffsetTop, setViewportOffsetTop] = useState(0);
 
