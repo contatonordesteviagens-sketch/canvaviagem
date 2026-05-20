@@ -3,6 +3,7 @@ import { Send, Smile, Eye, MessageCircle, AlertCircle, Sparkles, Play, Check, Pa
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Comment {
   id: string;
@@ -62,6 +63,11 @@ const LiveStream = () => {
   const [step, setStep] = useState<"register" | "watch">("register");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  
+  // Controle de intenção de saída e widget de WhatsApp de suporte
+  const [showRecoveryWidget, setShowRecoveryWidget] = useState(false);
+  const triggeredCommentsRef = useRef<Set<string>>(new Set());
+
 
   const handlePhoneChange = (val: string) => {
     let cleaned = val.replace(/\D/g, "");
@@ -94,6 +100,128 @@ const LiveStream = () => {
   const [playbackSeconds, setPlaybackSeconds] = useState(0);
   const [initialStartSeconds, setInitialStartSeconds] = useState<number>(0);
   
+  // Helper for dynamic decrementing seats starting at 9, decrementing to 4 every 90s
+  const getDynamicSeats = () => {
+    const offerStartSeconds = getOfferActivationSeconds();
+    if (playbackSeconds < offerStartSeconds) return 9;
+    const elapsed = playbackSeconds - offerStartSeconds;
+    const decrements = Math.floor(elapsed / 90);
+    return Math.max(4, 9 - decrements);
+  };
+
+  // Helper to get psychological phase & dynamic support link
+  const getDynamicSupportLink = () => {
+    const minutes = Math.floor(playbackSeconds / 60);
+    const seconds = playbackSeconds % 60;
+    const timeStr = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    
+    let phase = "Introdução da Aula e Alinhamento";
+    if (playbackSeconds >= 5 * 60 && playbackSeconds < 20 * 60) {
+      phase = "Apresentação da Fábrica de Criativos";
+    } else if (playbackSeconds >= 20 * 60 && playbackSeconds < 40 * 60) {
+      phase = "Demonstração Prática da I.A";
+    } else if (playbackSeconds >= 40 * 60 && playbackSeconds < 50 * 60) {
+      phase = "Revelação dos Planos e Descontos";
+    } else if (playbackSeconds >= 50 * 60) {
+      phase = "Oferta Vitalícia e Bônus Exclusivos";
+    }
+
+    const text = `Olá Lucas! Estava assistindo à aula especial da Fábrica de Criativos e parei no minuto ${timeStr} (${phase}). Gostaria de tirar uma dúvida sobre...`;
+    return `https://wa.me/5585986411294?text=${encodeURIComponent(text)}`;
+  };
+
+  // Helper to update clicked offer status in Supabase
+  const updateClickedOfferInSupabase = async () => {
+    try {
+      const activeSessionStr = localStorage.getItem("live_stream_active_session");
+      if (!activeSessionStr) return;
+      const activeSession = JSON.parse(activeSessionStr);
+      const cleanPhone = activeSession.phone;
+      
+      const { data: lead } = await supabase
+        .from("webinar_leads")
+        .select("source")
+        .eq("whatsapp", cleanPhone)
+        .maybeSingle();
+        
+      if (lead) {
+        let parsedSource: any = {};
+        try {
+          parsedSource = lead.source ? JSON.parse(lead.source) : {};
+        } catch (e) {
+          parsedSource = {};
+        }
+        
+        const nextSource = {
+          ...parsedSource,
+          clickedOffer: true,
+          lastActiveAt: Date.now(),
+        };
+        
+        await supabase
+          .from("webinar_leads")
+          .update({
+            source: JSON.stringify(nextSource)
+          })
+          .eq("whatsapp", cleanPhone);
+      }
+    } catch (e) {
+      console.error("Erro ao atualizar clique no checkout no Supabase:", e);
+    }
+  };
+
+  // Helper to add user comment to Supabase source JSON
+  const addCommentToSupabase = async (message: string) => {
+    try {
+      const activeSessionStr = localStorage.getItem("live_stream_active_session");
+      if (!activeSessionStr) return;
+      const activeSession = JSON.parse(activeSessionStr);
+      const cleanPhone = activeSession.phone;
+      
+      const { data: lead } = await supabase
+        .from("webinar_leads")
+        .select("source")
+        .eq("whatsapp", cleanPhone)
+        .maybeSingle();
+        
+      if (lead) {
+        let parsedSource: any = {};
+        try {
+          parsedSource = lead.source ? JSON.parse(lead.source) : {};
+        } catch (e) {
+          parsedSource = {};
+        }
+        
+        const currentComments = parsedSource.comments || [];
+        const minutes = Math.floor(playbackSeconds / 60);
+        const seconds = playbackSeconds % 60;
+        const timeStr = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+        
+        const newCommentObj = {
+          time: timeStr,
+          message: message,
+          timestamp: Date.now(),
+          answered: false,
+        };
+        
+        const nextSource = {
+          ...parsedSource,
+          comments: [...currentComments, newCommentObj],
+          lastActiveAt: Date.now(),
+        };
+        
+        await supabase
+          .from("webinar_leads")
+          .update({
+            source: JSON.stringify(nextSource)
+          })
+          .eq("whatsapp", cleanPhone);
+      }
+    } catch (e) {
+      console.error("Erro ao salvar comentário no Supabase:", e);
+    }
+  };
+
   const [viewers, setViewers] = useState(35);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -201,12 +329,16 @@ const LiveStream = () => {
                 const totalSecs = mins * 60 + secs;
                 return totalSecs <= activeSession.lastTime;
               })
-              .map((c: any, index: number) => ({
-                id: `restored-${c.time}-${index}-${Date.now()}`,
-                username: c.username,
-                message: c.message,
-                time: timeStr
-              }));
+              .map((c: any, index: number) => {
+                const commentKey = `${c.time}-${c.username}-${c.message}`;
+                triggeredCommentsRef.current.add(commentKey);
+                return {
+                  id: `restored-${c.time}-${index}-${Date.now()}`,
+                  username: c.username,
+                  message: c.message,
+                  time: timeStr
+                };
+              });
               
             setComments(restored);
             
@@ -396,31 +528,134 @@ const LiveStream = () => {
     return () => clearInterval(interval);
   }, [isPlaying, isPaused, step]);
 
-  // Trigger scheduled comments at exact MM:SS markers
+  // Trigger scheduled comments at exact MM:SS markers with Jitter
   useEffect(() => {
     if (!isPlaying || isPaused || step !== "watch" || scheduledCommentsList.length === 0) return;
 
-    const match = scheduledCommentsList.find(c => {
+    // Encontra os comentários correspondentes ao segundo atual que AINDA não foram disparados
+    const matches = scheduledCommentsList.filter(c => {
       const parts = c.time.split(":");
-      const mins = parseInt(parts[0], 10);
-      const secs = parseInt(parts[1], 10);
+      const mins = parseInt(parts[0], 10) || 0;
+      const secs = parseInt(parts[1], 10) || 0;
       const totalSecs = mins * 60 + secs;
-      return totalSecs === playbackSeconds;
+      
+      const commentKey = `${c.time}-${c.username}-${c.message}`;
+      return totalSecs === playbackSeconds && !triggeredCommentsRef.current.has(commentKey);
     });
 
-    if (match) {
-      const now = new Date();
-      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    matches.forEach(match => {
+      const commentKey = `${match.time}-${match.username}-${match.message}`;
+      triggeredCommentsRef.current.add(commentKey);
+
+      // Jitter aleatório humano (300ms a 1800ms)
+      const delay = Math.random() * 1500 + 300;
       
-      setComments(prev => [
-        ...prev,
-        {
-          id: `scheduled-${match.time}-${Date.now()}`,
-          username: match.username,
-          message: match.message,
-          time: timeStr
+      setTimeout(() => {
+        const now = new Date();
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        
+        setComments(prev => {
+          // Garante unicidade
+          const id = `scheduled-${match.time}-${Date.now()}`;
+          if (prev.some(c => c.username === match.username && c.message === match.message && c.time === timeStr)) {
+            return prev;
+          }
+          return [
+            ...prev,
+            {
+              id,
+              username: match.username,
+              message: match.message,
+              time: timeStr
+            }
+          ];
+        });
+      }, delay);
+    });
+  }, [playbackSeconds, isPlaying, isPaused, step, scheduledCommentsList]);
+
+  // Monitor exit-intent (mouse leaving the screen top)
+  useEffect(() => {
+    if (step !== "watch") return;
+    
+    const handleMouseLeave = (e: MouseEvent) => {
+      if (e.clientY < 5) {
+        setShowRecoveryWidget(true);
+      }
+    };
+    
+    document.addEventListener("mouseleave", handleMouseLeave);
+    return () => {
+      document.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, [step]);
+
+  // Monitor pause duration (trigger WhatsApp popup if paused for > 5 seconds)
+  useEffect(() => {
+    if (!isPlaying || step !== "watch") return;
+    
+    let pauseTimer: NodeJS.Timeout;
+    if (isPaused) {
+      pauseTimer = setTimeout(() => {
+        setShowRecoveryWidget(true);
+      }, 5000);
+    } else {
+      setShowRecoveryWidget(false);
+    }
+    
+    return () => {
+      if (pauseTimer) clearTimeout(pauseTimer);
+    };
+  }, [isPaused, isPlaying, step]);
+
+  // Heartbeat to Supabase every 10 seconds
+  useEffect(() => {
+    if (!isPlaying || isPaused || step !== "watch") return;
+    
+    if (playbackSeconds > 0 && playbackSeconds % 10 === 0) {
+      const syncHeartbeat = async () => {
+        try {
+          const activeSessionStr = localStorage.getItem("live_stream_active_session");
+          if (!activeSessionStr) return;
+          const activeSession = JSON.parse(activeSessionStr);
+          const cleanPhone = activeSession.phone;
+          
+          const { data: lead } = await supabase
+            .from("webinar_leads")
+            .select("source")
+            .eq("whatsapp", cleanPhone)
+            .maybeSingle();
+            
+          if (lead) {
+            let parsedSource: any = {};
+            try {
+              parsedSource = lead.source ? JSON.parse(lead.source) : {};
+            } catch (e) {
+              parsedSource = {};
+            }
+            
+            const currentWatchTime = parsedSource.watchTime || 0;
+            const nextSource = {
+              ...parsedSource,
+              sourceType: "live",
+              watchTime: currentWatchTime + 10,
+              lastPlaybackTime: playbackSeconds,
+              lastActiveAt: Date.now(),
+            };
+            
+            await supabase
+              .from("webinar_leads")
+              .update({
+                source: JSON.stringify(nextSource)
+              })
+              .eq("whatsapp", cleanPhone);
+          }
+        } catch (err) {
+          console.error("Erro no heartbeat do Supabase:", err);
         }
-      ]);
+      };
+      
+      syncHeartbeat();
     }
   }, [playbackSeconds, isPlaying, isPaused, step]);
 
@@ -528,7 +763,7 @@ const LiveStream = () => {
     }
   }, [comments, step]);
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!name.trim()) {
       toast.error("Por favor, digite seu nome.");
       return;
@@ -547,19 +782,67 @@ const LiveStream = () => {
     setIsSubmitting(true);
     
     try {
+      const cleanPhone = phone.trim();
+      
+      // 1. Persist to Supabase Database
+      const { data: existingLead } = await supabase
+        .from("webinar_leads")
+        .select("*")
+        .eq("whatsapp", cleanPhone)
+        .maybeSingle();
+        
+      if (existingLead) {
+        let parsedSource: any = {};
+        try {
+          parsedSource = existingLead.source ? JSON.parse(existingLead.source) : {};
+        } catch (e) {
+          parsedSource = {};
+        }
+        
+        const nextSource = {
+          ...parsedSource,
+          sourceType: "live",
+          entryCount: (parsedSource.entryCount || 1) + 1,
+          lastActiveAt: Date.now(),
+        };
+        
+        await supabase
+          .from("webinar_leads")
+          .update({
+            name: name.trim(),
+            source: JSON.stringify(nextSource)
+          })
+          .eq("whatsapp", cleanPhone);
+      } else {
+        const newSource = {
+          sourceType: "live",
+          entryCount: 1,
+          watchTime: 0,
+          lastPlaybackTime: 0,
+          clickedOffer: false,
+          comments: [],
+          lastActiveAt: Date.now(),
+        };
+        
+        await supabase
+          .from("webinar_leads")
+          .insert({
+            name: name.trim(),
+            whatsapp: cleanPhone,
+            source: JSON.stringify(newSource)
+          });
+      }
+
+      // 2. Also keep local storage synchronized for backward compatibility / fallback
       const existingLeadsStr = localStorage.getItem("live_stream_leads");
       const existingLeads = existingLeadsStr ? JSON.parse(existingLeadsStr) : [];
-      
-      const cleanPhone = phone.trim();
       const existingIndex = existingLeads.findIndex((l: any) => l.phone === cleanPhone);
       
       if (existingIndex !== -1) {
-        // Incrementa o número de entradas para usuário recorrente
         existingLeads[existingIndex].entryCount = (existingLeads[existingIndex].entryCount || 1) + 1;
-        existingLeads[existingIndex].name = name.trim(); // Atualiza o nome caso mude
+        existingLeads[existingIndex].name = name.trim();
         existingLeads[existingIndex].registeredAt = new Date().toLocaleString("pt-BR");
       } else {
-        // Cria um lead novinho em folha
         const newLead = {
           id: Date.now().toString(),
           name: name.trim(),
@@ -576,7 +859,6 @@ const LiveStream = () => {
       
       localStorage.setItem("live_stream_leads", JSON.stringify(existingLeads));
       
-      // Salva a sessão ativa no navegador para rastrear assistir/comprar em tempo real
       const activeSession = {
         phone: cleanPhone,
         name: name.trim(),
@@ -584,7 +866,6 @@ const LiveStream = () => {
       };
       localStorage.setItem("live_stream_active_session", JSON.stringify(activeSession));
       
-      // Atualiza o painel de estatísticas gerais
       const statsStr = localStorage.getItem("live_stream_analytics_stats");
       const stats = statsStr ? JSON.parse(statsStr) : {
         totalSessions: 0,
@@ -600,7 +881,7 @@ const LiveStream = () => {
       };
       
       stats.totalSessions = (stats.totalSessions || 0) + 1;
-      const todayStr = new Date().toLocaleDateString("pt-BR").split("/").reverse().join("-"); // AAAA-MM-DD
+      const todayStr = new Date().toLocaleDateString("pt-BR").split("/").reverse().join("-");
       stats.dailyEntries[todayStr] = (stats.dailyEntries[todayStr] || 0) + 1;
       localStorage.setItem("live_stream_analytics_stats", JSON.stringify(stats));
       
@@ -631,12 +912,15 @@ const LiveStream = () => {
     };
 
     setComments(prev => [...prev, userComment]);
+    addCommentToSupabase(newComment.trim()); // Sync to Supabase in real-time
     setNewComment("");
     toast.success("Comentário publicado!");
   };
 
   const trackCheckoutClick = () => {
     try {
+      updateClickedOfferInSupabase(); // Sync to Supabase in real-time
+      
       const activeSessionStr = localStorage.getItem("live_stream_active_session");
       if (activeSessionStr) {
         const activeSession = JSON.parse(activeSessionStr);
@@ -1111,7 +1395,7 @@ const LiveStream = () => {
                         <div className="absolute -bottom-8 -right-8 w-20 h-20 rounded-full bg-yellow-500/10 blur-xl pointer-events-none" />
                         
                         <span className="text-[#FFD700] font-black text-lg md:text-xl tracking-wider animate-pulse drop-shadow-[0_2px_8px_rgba(255,215,0,0.3)]">
-                          SOMENTE 10 VAGAS
+                          APENAS {getDynamicSeats()} VAGAS RESTANTES
                         </span>
                         
                         <span className="text-zinc-400 text-xs font-bold uppercase tracking-widest mt-2 block">
@@ -1185,6 +1469,42 @@ const LiveStream = () => {
               )}
 
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* FLOAT RECOVERY WIDGET (Whats Support on exit-intent or long pause) */}
+      {showRecoveryWidget && (
+        <div className="fixed bottom-4 right-4 z-50 max-w-sm w-full bg-zinc-950/90 backdrop-blur-md border border-emerald-500/30 p-4 rounded-2xl shadow-[0_8px_32px_rgba(16,185,129,0.25)] flex items-center gap-3 animate-fade-in text-white">
+          <div className="bg-[#25D366]/20 p-2.5 rounded-xl text-[#25D366] flex-shrink-0 animate-bounce">
+            <MessageCircle size={20} className="fill-[#25D366]/20 text-[#25D366]" />
+          </div>
+          <div className="flex-1 flex flex-col gap-0.5">
+            <h4 className="text-xs font-black uppercase tracking-wider text-emerald-400">Dúvidas sobre o Canva Viagem?</h4>
+            <p className="text-[10px] text-zinc-300 font-medium leading-normal">
+              Ficou com alguma dúvida ou travou em algo? Fale agora com o Lucas no WhatsApp.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 flex-shrink-0">
+            <a 
+              href={getDynamicSupportLink()} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              onClick={() => {
+                setShowRecoveryWidget(false);
+                trackCheckoutClick();
+              }}
+            >
+              <Button size="sm" className="bg-[#25D366] hover:bg-[#1ebd54] text-white font-extrabold text-[10px] uppercase tracking-wider px-3 h-8 rounded-lg flex items-center gap-1">
+                Chamar Lucas
+              </Button>
+            </a>
+            <button 
+              onClick={() => setShowRecoveryWidget(false)}
+              className="text-[9px] text-zinc-500 hover:text-zinc-300 font-bold uppercase tracking-wider text-center"
+            >
+              Fechar
+            </button>
           </div>
         </div>
       )}

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Search, 
   MessageSquare, 
@@ -190,9 +191,143 @@ export const LiveCommentsSection = () => {
     clickedOffer?: boolean;
     lastActiveAt?: number;
     lastPlaybackTime?: number;
+    comments?: Array<{
+      time: string;
+      message: string;
+      timestamp: number;
+      answered?: boolean;
+    }>;
   }
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsSearch, setLeadsSearch] = useState("");
+  const [expandedLeadId, setExpandedLeadId] = useState<string | null>(null);
+
+  // Audio chime synthesizer via Web Audio API
+  const playChime = (type: "new-lead" | "clicked-buy" | "new-comment") => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      
+      if (type === "new-lead") {
+        const playTone = (freq: number, start: number, duration: number) => {
+          const osc = ctx.createOscillator();
+          const gainNode = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, start);
+          gainNode.gain.setValueAtTime(0.15, start);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, start + duration);
+          osc.connect(gainNode);
+          gainNode.connect(ctx.destination);
+          osc.start(start);
+          osc.stop(start + duration);
+        };
+        playTone(1046.50, ctx.currentTime, 0.4); // C6
+        playTone(1318.51, ctx.currentTime + 0.15, 0.5); // E6
+      } else if (type === "clicked-buy") {
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gainNode = ctx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.1);
+          gainNode.gain.setValueAtTime(0.2, ctx.currentTime + idx * 0.1);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.1 + 0.4);
+          osc.connect(gainNode);
+          gainNode.connect(ctx.destination);
+          osc.start(ctx.currentTime + idx * 0.1);
+          osc.stop(ctx.currentTime + idx * 0.1 + 0.4);
+        });
+      } else if (type === "new-comment") {
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(880.00, ctx.currentTime);
+        gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+        osc.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.3);
+      }
+    } catch (e) {
+      console.warn("Falha ao inicializar chime sintetizado:", e);
+    }
+  };
+
+  // Memoized unanswered comments tracking across all leads
+  const unansweredComments = useMemo(() => {
+    const list: Array<{ leadId: string; leadName: string; leadPhone: string; commentIndex: number; time: string; message: string; timestamp: number }> = [];
+    leads.forEach((l) => {
+      if (l.comments && Array.isArray(l.comments)) {
+        l.comments.forEach((c: any, idx: number) => {
+          if (!c.answered) {
+            list.push({
+              leadId: l.id,
+              leadName: l.name,
+              leadPhone: l.phone,
+              commentIndex: idx,
+              time: c.time,
+              message: c.message,
+              timestamp: c.timestamp || Date.now(),
+            });
+          }
+        });
+      }
+    });
+    return list.sort((a, b) => b.timestamp - a.timestamp);
+  }, [leads]);
+
+  // Mark specific comment as answered in local state & remote database
+  const handleMarkCommentAnswered = async (leadId: string, commentIdx: number) => {
+    try {
+      const idx = leads.findIndex((l) => l.id === leadId);
+      if (idx === -1) return;
+      
+      const updatedLead = { ...leads[idx] };
+      const updatedComments = [...(updatedLead.comments || [])];
+      if (updatedComments[commentIdx]) {
+        updatedComments[commentIdx] = {
+          ...updatedComments[commentIdx],
+          answered: true
+        };
+      }
+      updatedLead.comments = updatedComments;
+      
+      // Local state update
+      setLeads((prev) => {
+        const next = [...prev];
+        const i = next.findIndex((l) => l.id === leadId);
+        if (i !== -1) {
+          next[i] = updatedLead;
+        }
+        return next;
+      });
+      
+      // Remote Supabase update
+      const nextSource = {
+        sourceType: "live",
+        entryCount: updatedLead.entryCount,
+        watchTime: updatedLead.watchTime,
+        lastPlaybackTime: updatedLead.lastPlaybackTime,
+        clickedOffer: updatedLead.clickedOffer,
+        comments: updatedComments,
+        lastActiveAt: Date.now()
+      };
+      
+      await supabase
+        .from("webinar_leads")
+        .update({
+          source: JSON.stringify(nextSource)
+        })
+        .eq("id", leadId);
+        
+      toast.success("Comentário marcado como respondido!");
+    } catch (e) {
+      console.error("Erro ao marcar comentário como respondido:", e);
+      toast.error("Erro ao salvar resposta no banco de dados.");
+    }
+  };
 
   // Função para semear dados demonstrativos ultra realistas na live
   const seedMockData = () => {
@@ -345,7 +480,7 @@ export const LiveCommentsSection = () => {
     return `https://wa.me/${cleanPhone}?text=${text}`;
   };
 
-  // Load everything from localStorage on mount
+  // Load settings on mount and listen to Supabase realtime events
   useEffect(() => {
     // 1. Comments
     const savedComments = localStorage.getItem("live_stream_comments");
@@ -395,34 +530,10 @@ export const LiveCommentsSection = () => {
       }
     } else {
       const defaultCustom: CustomCommentPreset[] = [
-        {
-          id: "preset_1",
-          label: "Boas-vindas Fábio",
-          time: "00:18",
-          username: "Fabiotravell",
-          message: "opa cheguei"
-        },
-        {
-          id: "preset_2",
-          label: "Boas-vindas Jr99",
-          time: "00:26",
-          username: "Jr99",
-          message: "boraaa"
-        },
-        {
-          id: "preset_3",
-          label: "Cidade Sorocaba",
-          time: "00:47",
-          username: "PedroViagens",
-          message: "São Paulo Sorocaba"
-        },
-        {
-          id: "preset_4",
-          label: "Elogio Canva Viagem",
-          time: "01:29",
-          username: "GiseleDestinos",
-          message: "Assino o canva viagem uso todo dia me salva demais"
-        }
+        { id: "preset_1", label: "Boas-vindas Fábio", time: "00:18", username: "Fabiotravell", message: "opa cheguei" },
+        { id: "preset_2", label: "Boas-vindas Jr99", time: "00:26", username: "Jr99", message: "boraaa" },
+        { id: "preset_3", label: "Cidade Sorocaba", time: "00:47", username: "PedroViagens", message: "São Paulo Sorocaba" },
+        { id: "preset_4", label: "Elogio Canva Viagem", time: "01:29", username: "GiseleDestinos", message: "Assino o canva viagem uso todo dia me salva demais" }
       ];
       setCustomPresets(defaultCustom);
       localStorage.setItem("live_stream_custom_presets", JSON.stringify(defaultCustom));
@@ -443,22 +554,147 @@ export const LiveCommentsSection = () => {
       }
     }
 
-    // 6. Leads / Contatos
-    const savedLeads = localStorage.getItem("live_stream_leads");
-    if (savedLeads && JSON.parse(savedLeads).length > 0) {
+    // 6. Fetch initial leads from Supabase and register realtime subscriber
+    const initSupabaseLeads = async () => {
       try {
-        setLeads(JSON.parse(savedLeads));
-      } catch (e) {
-        console.error("Error parsing saved leads", e);
+        const { data: dbLeads, error } = await supabase
+          .from("webinar_leads")
+          .select("*")
+          .order("created_at", { ascending: false });
+          
+        if (dbLeads && dbLeads.length > 0) {
+          const formattedLeads = dbLeads.map((l: any) => {
+            let parsedSource: any = {};
+            try {
+              parsedSource = l.source ? JSON.parse(l.source) : {};
+            } catch (e) {
+              parsedSource = {};
+            }
+            
+            return {
+              id: l.id,
+              name: l.name,
+              phone: l.whatsapp,
+              registeredAt: new Date(l.created_at).toLocaleString("pt-BR"),
+              entryCount: parsedSource.entryCount || 1,
+              watchTime: parsedSource.watchTime || 0,
+              clickedOffer: parsedSource.clickedOffer || false,
+              lastActiveAt: parsedSource.lastActiveAt || null,
+              lastPlaybackTime: parsedSource.lastPlaybackTime || 0,
+              comments: parsedSource.comments || [],
+            };
+          });
+          setLeads(formattedLeads);
+        } else {
+          // Empty DB? Semeia fallback/mock data localmente
+          const savedLeads = localStorage.getItem("live_stream_leads");
+          if (savedLeads && JSON.parse(savedLeads).length > 0) {
+            setLeads(JSON.parse(savedLeads));
+          } else {
+            seedMockData();
+            const freshLeads = localStorage.getItem("live_stream_leads");
+            if (freshLeads) {
+              setLeads(JSON.parse(freshLeads));
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao carregar leads iniciais:", err);
       }
-    } else {
-      // Semeia dados automaticamente se estiver vazia
-      seedMockData();
-      const freshLeads = localStorage.getItem("live_stream_leads");
-      if (freshLeads) {
-        setLeads(JSON.parse(freshLeads));
-      }
-    }
+    };
+    
+    initSupabaseLeads();
+
+    // 7. Supabase Realtime Postgres Changes Subscription
+    const channel = supabase
+      .channel("gestao-db-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "webinar_leads",
+        },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const newRow = payload.new;
+            let parsedSource: any = {};
+            try {
+              parsedSource = newRow.source ? JSON.parse(newRow.source) : {};
+            } catch (e) {
+              parsedSource = {};
+            }
+            
+            const newLead = {
+              id: newRow.id,
+              name: newRow.name,
+              phone: newRow.whatsapp,
+              registeredAt: new Date(newRow.created_at).toLocaleString("pt-BR"),
+              entryCount: parsedSource.entryCount || 1,
+              watchTime: parsedSource.watchTime || 0,
+              clickedOffer: parsedSource.clickedOffer || false,
+              lastActiveAt: parsedSource.lastActiveAt || null,
+              lastPlaybackTime: parsedSource.lastPlaybackTime || 0,
+              comments: parsedSource.comments || [],
+            };
+            
+            setLeads((prev) => {
+              if (prev.some((l) => l.id === newLead.id || l.phone === newLead.phone)) return prev;
+              return [newLead, ...prev];
+            });
+            
+            playChime("new-lead");
+            toast.success(`✨ Novo Lead conectado: ${newLead.name}!`);
+          } else if (payload.eventType === "UPDATE") {
+            const updatedRow = payload.new;
+            let parsedSource: any = {};
+            try {
+              parsedSource = updatedRow.source ? JSON.parse(updatedRow.source) : {};
+            } catch (e) {
+              parsedSource = {};
+            }
+            
+            setLeads((prev) => {
+              const idx = prev.findIndex((l) => l.id === updatedRow.id || l.phone === updatedRow.whatsapp);
+              if (idx === -1) return prev;
+              
+              const oldLead = prev[idx];
+              const nextLead = {
+                ...oldLead,
+                name: updatedRow.name,
+                entryCount: parsedSource.entryCount || 1,
+                watchTime: parsedSource.watchTime || 0,
+                clickedOffer: parsedSource.clickedOffer || false,
+                lastActiveAt: parsedSource.lastActiveAt || null,
+                lastPlaybackTime: parsedSource.lastPlaybackTime || 0,
+                comments: parsedSource.comments || [],
+              };
+              
+              // Trigger sound & visual alerts based on dynamic changes
+              if (nextLead.clickedOffer && !oldLead.clickedOffer) {
+                playChime("clicked-buy");
+                toast.success(`🔥 ${nextLead.name} clicou em comprar na oferta!`);
+              } else if (nextLead.comments && oldLead.comments && nextLead.comments.length > oldLead.comments.length) {
+                playChime("new-comment");
+                const newText = nextLead.comments[nextLead.comments.length - 1]?.message || "";
+                toast.info(`💬 Novo comentário de ${nextLead.name}: "${newText}"`);
+              }
+              
+              const nextList = [...prev];
+              nextList[idx] = nextLead;
+              return nextList;
+            });
+          } else if (payload.eventType === "DELETE") {
+            const deletedRow = payload.old;
+            setLeads((prev) => prev.filter((l) => l.id !== deletedRow.id));
+          }
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const savePrePlay = (list: typeof prePlayComments) => {
@@ -1799,6 +2035,66 @@ export const LiveCommentsSection = () => {
       {/* ABA DE LEADS / CONTATOS CAPTURADOS */}
       {activeSubTab === "leads" && (
         <div className="space-y-6 animate-fadeIn">
+          
+          {/* SEÇÃO ESPECIAL: Novos Comentários de Usuários (Não Respondidos) */}
+          {unansweredComments.length > 0 && (
+            <Card className="border border-amber-500/25 bg-amber-500/5 backdrop-blur-sm shadow-[0_4px_25px_rgba(245,158,11,0.08)] animate-fadeIn">
+              <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-md font-black flex items-center gap-2 text-amber-400 uppercase tracking-wider">
+                    <MessageSquare className="w-5 h-5 text-amber-400 animate-pulse" />
+                    Comentários Recentes de Usuários (Não Respondidos)
+                  </CardTitle>
+                  <CardDescription className="text-amber-200/60 font-semibold text-xs mt-0.5">
+                    Perguntas reais enviadas pelos leads durante a live. Clique para responder diretamente no WhatsApp do lead ou marcar como respondido.
+                  </CardDescription>
+                </div>
+                <Badge variant="outline" className="font-extrabold bg-amber-500/10 text-amber-400 border-amber-500/30 text-xs px-2.5 py-1">
+                  {unansweredComments.length} PENDENTE(S)
+                </Badge>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {unansweredComments.map((item, idx) => (
+                    <div key={idx} className="bg-zinc-950/90 border border-amber-500/20 p-4 rounded-xl flex flex-col justify-between gap-3 text-white">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between border-b border-zinc-800 pb-1.5">
+                          <span className="font-extrabold text-xs text-amber-400 tracking-wide">@{item.leadName}</span>
+                          <span className="text-[9px] bg-zinc-800 text-zinc-400 font-bold px-1.5 py-0.5 rounded">Vídeo: {item.time}</span>
+                        </div>
+                        <p className="text-xs text-zinc-200 leading-relaxed font-semibold italic">
+                          "{item.message}"
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between border-t border-zinc-800 pt-2 text-[10px] mt-1.5">
+                        <span className="text-zinc-500 font-bold">{new Date(item.timestamp).toLocaleTimeString("pt-BR")}</span>
+                        <div className="flex gap-1.5">
+                          <a 
+                            href={`https://wa.me/${item.leadPhone.replace(/\D/g, "").startsWith("55") ? item.leadPhone.replace(/\D/g, "") : "55" + item.leadPhone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${item.leadName}! Vi sua pergunta na live: "${item.message}". Vamos conversar?`)}`}
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                          >
+                            <Button size="sm" className="bg-[#25D366] hover:bg-[#1ebd54] text-white font-extrabold text-[9px] uppercase tracking-wider h-7 px-2 border-none">
+                              Responder Whats
+                            </Button>
+                          </a>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleMarkCommentAnswered(item.leadId, item.commentIndex)}
+                            className="border-amber-500/20 hover:bg-amber-500/10 text-amber-400 text-[9px] font-black uppercase h-7 px-2"
+                          >
+                            ✓ Concluído
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Card className="border border-emerald-500/20 bg-card/65 backdrop-blur-sm shadow-[0_4px_25px_rgba(16,185,129,0.05)]">
             <CardHeader className="border-b border-muted-foreground/10 pb-4">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1894,119 +2190,250 @@ export const LiveCommentsSection = () => {
                           const gradientClass = gradientColors[charCodeSum % gradientColors.length];
 
                           return (
-                            <TableRow key={lead.id} className="hover:bg-muted/20 transition-all duration-200 border-b border-muted-foreground/5 py-3">
-                              {/* Identificação (Lead) */}
-                              <TableCell>
-                                <div className="flex items-center gap-3">
-                                  {/* Avatar circular premium */}
-                                  <div className={`h-9 w-9 rounded-xl bg-gradient-to-br ${gradientClass} flex items-center justify-center font-bold text-xs tracking-wider border flex-shrink-0 shadow-sm`}>
-                                    {nameInitials}
-                                  </div>
-                                  
-                                  <div className="flex flex-col gap-0.5">
-                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                      {isFrequent && (
-                                        <span className="relative flex h-2 w-2 shadow-[0_0_8px_#ef4444] mr-0.5">
-                                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                                        </span>
-                                      )}
-                                      <span className="font-extrabold text-sm text-slate-800 dark:text-slate-200 tracking-wide">{lead.name}</span>
-                                      {isFrequent && (
-                                        <Badge variant="destructive" className="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.2 animate-pulse bg-red-500/20 text-red-700 dark:text-red-400 border border-red-500/30">
-                                          🚨 {entryCount}x
-                                        </Badge>
-                                      )}
+                            <>
+                              <TableRow 
+                                key={lead.id} 
+                                onClick={() => setExpandedLeadId(expandedLeadId === lead.id ? null : lead.id)}
+                                className={`hover:bg-muted/20 cursor-pointer transition-all duration-200 border-b border-muted-foreground/5 py-3 ${expandedLeadId === lead.id ? "bg-muted/15" : ""}`}
+                              >
+                                {/* Identificação (Lead) */}
+                                <TableCell>
+                                  <div className="flex items-center gap-3">
+                                    {/* Avatar circular premium */}
+                                    <div className={`h-9 w-9 rounded-xl bg-gradient-to-br ${gradientClass} flex items-center justify-center font-bold text-xs tracking-wider border flex-shrink-0 shadow-sm`}>
+                                      {nameInitials}
                                     </div>
-                                    <span className="text-slate-500 dark:text-slate-400 font-mono text-xs font-semibold">
-                                      {formatPhoneNumber(lead.phone)}
-                                    </span>
+                                    
+                                    <div className="flex flex-col gap-0.5">
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        {isFrequent && (
+                                          <span className="relative flex h-2 w-2 shadow-[0_0_8px_#ef4444] mr-0.5">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                          </span>
+                                        )}
+                                        <span className="font-extrabold text-sm text-slate-800 dark:text-slate-200 tracking-wide">{lead.name}</span>
+                                        {isFrequent && (
+                                          <Badge variant="destructive" className="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.2 bg-red-500/25 text-red-600 dark:text-red-400 border border-red-500/30">
+                                            🚨 {entryCount}x
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <span className="text-slate-500 dark:text-slate-400 font-mono text-xs font-semibold">
+                                        {formatPhoneNumber(lead.phone)}
+                                      </span>
+                                    </div>
                                   </div>
-                                </div>
-                              </TableCell>
-                              
-                              {/* Status de Conexão */}
-                              <TableCell>
-                                {isOnline ? (
-                                  <span className="text-[9px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 animate-pulse border border-emerald-500/20 shadow-[0_2px_8px_rgba(16,185,129,0.1)]">
-                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-ping" />
-                                    🔴 ASSISTINDO AGORA
-                                  </span>
-                                ) : (
-                                  <div className="flex flex-col gap-1">
-                                    <span className="text-[9px] font-black text-red-700 dark:text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 border border-red-500/20 w-fit">
-                                      <span className="h-1.5 w-1.5 rounded-full bg-red-600 dark:bg-red-400" />
-                                      SAIU DA LIVE
+                                </TableCell>
+                                
+                                {/* Status de Conexão */}
+                                <TableCell>
+                                  {isOnline ? (
+                                    <span className="text-[9px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 animate-pulse border border-emerald-500/20 shadow-[0_2px_8px_rgba(16,185,129,0.1)]">
+                                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-ping" />
+                                      🔴 ASSISTINDO AGORA
                                     </span>
-                                    <span className="text-[10px] text-slate-600 dark:text-slate-400 font-semibold flex items-center gap-1">
-                                      <Clock className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                                      Momento: {formatWatchTime(lead.lastPlaybackTime !== undefined ? lead.lastPlaybackTime : (lead.watchTime || 0))}
-                                    </span>
+                                  ) : (
+                                    <div className="flex flex-col gap-1">
+                                      <span className="text-[9px] font-black text-red-700 dark:text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 border border-red-500/20 w-fit">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-red-600 dark:bg-red-400" />
+                                        SAIU DA LIVE
+                                      </span>
+                                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-semibold flex items-center gap-1">
+                                        <Clock className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                                        Momento: {formatWatchTime(lead.lastPlaybackTime !== undefined ? lead.lastPlaybackTime : (lead.watchTime || 0))}
+                                      </span>
+                                    </div>
+                                  )}
+                                </TableCell>
+                                
+                                {/* Data de Entrada */}
+                                <TableCell>
+                                  <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 font-bold">
+                                    <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                                    <span>{lead.registeredAt}</span>
                                   </div>
-                                )}
-                              </TableCell>
-                              
-                              {/* Data de Entrada */}
-                              <TableCell>
-                                <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 font-bold">
-                                  <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                                  <span>{lead.registeredAt}</span>
-                                </div>
-                              </TableCell>
-                              
-                              {/* Tempo Assistido */}
-                              <TableCell>
-                                <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5">
-                                  <Video className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                                  {formatWatchTime(lead.watchTime || 0)}
-                                </span>
-                              </TableCell>
-                              
-                              {/* Status Oferta / Compra */}
-                              <TableCell>
-                                {lead.clickedOffer ? (
-                                  <span className="text-[9px] font-black text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 animate-pulse shadow-[0_0_12px_rgba(245,158,11,0.1)]">
-                                    <ShoppingBag className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 fill-amber-500/20" />
-                                    🔥 CLICOU EM COMPRAR
+                                </TableCell>
+                                
+                                {/* Tempo Assistido */}
+                                <TableCell>
+                                  <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-lg inline-flex items-center gap-1.5">
+                                    <Video className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                    {formatWatchTime(lead.watchTime || 0)}
                                   </span>
-                                ) : (
-                                  <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-full inline-flex items-center gap-1.5">
-                                    <Eye className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                                    Assistindo Live
-                                  </span>
-                                )}
-                              </TableCell>
-                              
-                              {/* Ações de Contato */}
-                              <TableCell className="text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  <a 
-                                    href={getWhatsAppLink(lead.phone, lead.name)} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
-                                    title="Chamar no WhatsApp"
-                                  >
-                                    <Button 
-                                      size="sm" 
-                                      className="bg-emerald-500 hover:bg-emerald-600 text-black font-extrabold text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-[0_4px_12px_rgba(16,185,129,0.15)] hover:shadow-[0_4px_20px_rgba(16,185,129,0.25)] transition-all border-none h-8"
+                                </TableCell>
+                                
+                                {/* Status Oferta / Compra */}
+                                <TableCell>
+                                  {lead.clickedOffer ? (
+                                    <span className="text-[9px] font-black text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 animate-pulse shadow-[0_0_12px_rgba(245,158,11,0.1)]">
+                                      <ShoppingBag className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 fill-amber-500/20" />
+                                      🔥 CLICOU EM COMPRAR
+                                    </span>
+                                  ) : (
+                                    <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-full inline-flex items-center gap-1.5">
+                                      <Eye className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                                      Assistindo Live
+                                    </span>
+                                  )}
+                                </TableCell>
+                                
+                                {/* Ações de Contato */}
+                                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                                  <div className="flex items-center justify-end gap-2">
+                                    <a 
+                                      href={getWhatsAppLink(lead.phone, lead.name)} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer" 
+                                      title="Chamar no WhatsApp"
                                     >
-                                      <MessageSquare className="w-3.5 h-3.5 fill-black text-black" />
-                                      Chamar no Whats
+                                      <Button 
+                                        size="sm" 
+                                        className="bg-emerald-500 hover:bg-emerald-600 text-black font-extrabold text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-[0_4px_12px_rgba(16,185,129,0.15)] hover:shadow-[0_4px_20px_rgba(16,185,129,0.25)] transition-all border-none h-8"
+                                      >
+                                        <MessageSquare className="w-3.5 h-3.5 fill-black text-black" />
+                                        Chamar no Whats
+                                      </Button>
+                                    </a>
+                                    
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      onClick={() => handleDeleteLead(lead.id)}
+                                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg flex-shrink-0"
+                                      title="Excluir Lead"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
                                     </Button>
-                                  </a>
-                                  
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    onClick={() => handleDeleteLead(lead.id)}
-                                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg flex-shrink-0"
-                                    title="Excluir Lead"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                              
+                              {/* Sub-row Timeline Drawer */}
+                              {expandedLeadId === lead.id && (
+                                <TableRow className="bg-muted/10 border-b border-muted-foreground/10 animate-fadeIn" onClick={(e) => e.stopPropagation()}>
+                                  <TableCell colSpan={6} className="p-6">
+                                    <div className="bg-zinc-950/80 backdrop-blur-md rounded-2xl border border-muted-foreground/15 p-6 space-y-5 text-white">
+                                      <div className="flex items-center justify-between border-b border-muted-foreground/10 pb-3">
+                                        <h4 className="text-sm font-black uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+                                          <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
+                                          Linha do Tempo da Sessão Interativa - {lead.name}
+                                        </h4>
+                                        <span className="text-[10px] text-zinc-500 font-bold font-mono">ID: {lead.id}</span>
+                                      </div>
+                                      
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {/* Vertical Timeline Steps */}
+                                        <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[2px] before:bg-zinc-800">
+                                          {/* Step 1: Entry */}
+                                          <div className="relative flex flex-col gap-1">
+                                            <span className="absolute -left-[23px] top-1 h-3.5 w-3.5 rounded-full border-2 border-emerald-500 bg-black flex items-center justify-center">
+                                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                            </span>
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-[10px] bg-emerald-500/10 text-emerald-400 font-extrabold uppercase px-2 py-0.5 rounded-md">Entrada</span>
+                                              <span className="text-xs text-zinc-400 font-semibold">{lead.registeredAt}</span>
+                                            </div>
+                                            <p className="text-xs text-zinc-200">
+                                              Acessou a live ao vivo e preencheu os dados de inscrição com sucesso.
+                                            </p>
+                                          </div>
+                                          
+                                          {/* Step 2: Recurrency */}
+                                          {entryCount > 1 && (
+                                            <div className="relative flex flex-col gap-1">
+                                              <span className="absolute -left-[23px] top-1 h-3.5 w-3.5 rounded-full border-2 border-red-500 bg-black flex items-center justify-center animate-pulse">
+                                                <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                              </span>
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-[10px] bg-red-500/10 text-red-400 font-extrabold uppercase px-2 py-0.5 rounded-md">Entradas Recorrentes</span>
+                                                <span className="text-xs text-zinc-400 font-semibold">{entryCount} visitas</span>
+                                              </div>
+                                              <p className="text-xs text-zinc-200">
+                                                Usuário retornou ou recarregou a transmissão {entryCount} vezes. Retomou do minuto exato.
+                                              </p>
+                                            </div>
+                                          )}
+                                          
+                                          {/* Step 3: Watch Progression */}
+                                          <div className="relative flex flex-col gap-1">
+                                            <span className="absolute -left-[23px] top-1 h-3.5 w-3.5 rounded-full border-2 border-cyan-400 bg-black flex items-center justify-center">
+                                              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
+                                            </span>
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-[10px] bg-cyan-500/10 text-cyan-400 font-extrabold uppercase px-2 py-0.5 rounded-md">Retenção de Vídeo</span>
+                                              <span className="text-xs text-zinc-400 font-semibold">{formatWatchTime(lead.watchTime)} assistidos</span>
+                                            </div>
+                                            <p className="text-xs text-zinc-200">
+                                              Assistiu a live por um total acumulado de {formatWatchTime(lead.watchTime)} segundos. Último playback marcado no segundo {lead.lastPlaybackTime || 0}.
+                                            </p>
+                                          </div>
+                                          
+                                          {/* Step 4: Clicked Offer */}
+                                          {lead.clickedOffer && (
+                                            <div className="relative flex flex-col gap-1">
+                                              <span className="absolute -left-[23px] top-1 h-3.5 w-3.5 rounded-full border-2 border-amber-500 bg-black flex items-center justify-center animate-pulse">
+                                                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                              </span>
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-[10px] bg-amber-500/10 text-amber-400 font-extrabold uppercase px-2 py-0.5 rounded-md">Gatilho de Venda</span>
+                                                <span className="text-xs text-zinc-400 font-semibold">Clicou no CTA</span>
+                                              </div>
+                                              <p className="text-xs text-zinc-200">
+                                                Demonstrou alto interesse psicológico: clicou na oferta especial para ir ao checkout da Fábrica de Criativos.
+                                              </p>
+                                            </div>
+                                          )}
+                                        </div>
+                                        
+                                        {/* Messages & Chat History inside Live */}
+                                        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col gap-3 max-h-[250px] overflow-y-auto">
+                                          <h5 className="text-xs font-black uppercase tracking-wider text-cyan-400 border-b border-zinc-800 pb-2 flex items-center gap-1.5">
+                                            <MessageSquare className="w-3.5 h-3.5" />
+                                            Histórico de Mensagens Enviadas pelo Lead
+                                          </h5>
+                                          {lead.comments && lead.comments.length > 0 ? (
+                                            <div className="space-y-2">
+                                              {lead.comments.map((comm: any, idx: number) => (
+                                                <div key={idx} className="bg-zinc-950/60 p-2.5 rounded-lg border border-zinc-800 flex flex-col gap-1">
+                                                  <div className="flex justify-between items-center text-[10px]">
+                                                    <span className="text-cyan-400 font-bold">Vídeo: {comm.time}</span>
+                                                    <span className="text-zinc-500 font-mono font-medium">{new Date(comm.timestamp || Date.now()).toLocaleTimeString("pt-BR")}</span>
+                                                  </div>
+                                                  <p className="text-xs text-zinc-100 font-medium leading-relaxed">
+                                                    {comm.message}
+                                                  </p>
+                                                  <div className="flex justify-between items-center mt-1 pt-1 border-t border-zinc-900 text-[10px]">
+                                                    <span className={comm.answered ? "text-emerald-400 font-bold" : "text-amber-500 font-bold"}>
+                                                      {comm.answered ? "✓ Respondido" : "⌛ Pendente"}
+                                                    </span>
+                                                    {!comm.answered && (
+                                                      <Button 
+                                                        size="sm" 
+                                                        variant="ghost" 
+                                                        onClick={() => handleMarkCommentAnswered(lead.id, idx)}
+                                                        className="h-5 px-2 text-[9px] font-black uppercase text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded border-none"
+                                                      >
+                                                        Marcar Respondido
+                                                      </Button>
+                                                    )}
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          ) : (
+                                            <div className="flex-1 flex flex-col items-center justify-center text-zinc-500 py-4">
+                                              <MessageSquare className="w-6 h-6 text-zinc-600 mb-1" />
+                                              <p className="text-[10px] text-center">Nenhum comentário digitado por este lead nesta transmissão.</p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </>
                           );
                         })
                       ) : (
