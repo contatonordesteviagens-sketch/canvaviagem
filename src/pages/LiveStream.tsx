@@ -831,8 +831,8 @@ const LiveStream = () => {
         playbackSecond: -100 + index
       }));
 
-      // Mescla somente comentários administrados para impedir comentários fantasmas; mensagens do usuário seguem salvas para a Gestão.
-      const merged = [...activePrePlay, ...activeScheduled]
+      // Mescla comentários administrados + comentários do próprio usuário (aparecem inline na rolagem).
+      const merged = [...activePrePlay, ...activeScheduled, ...userComments]
         .sort((a: any, b: any) => {
           const secA = a.playbackSecond ?? 0;
           const secB = b.playbackSecond ?? 0;
@@ -840,11 +840,12 @@ const LiveStream = () => {
         })
         .slice(-20); // Keep only the 20 most recent comments to avoid flooding from zero
 
+
       setComments(merged);
     } catch (e) {
       console.error("Error in comments playback synchronization:", e);
     }
-  }, [playbackSeconds, step, isPlaying, scheduledCommentsList, prePlayComments]);
+  }, [playbackSeconds, step, isPlaying, scheduledCommentsList, prePlayComments, userComments]);
 
   // Monitor exit-intent (mouse leaving the screen top)
   useEffect(() => {
@@ -1220,7 +1221,7 @@ const LiveStream = () => {
 
     addCommentToSupabase(newComment.trim()); // Sync to Supabase in real-time
     setNewComment("");
-    toast.success("Comentário publicado!");
+
   };
 
   const trackCheckoutClick = () => {
