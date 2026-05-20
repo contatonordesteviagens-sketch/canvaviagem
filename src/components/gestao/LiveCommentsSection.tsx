@@ -573,6 +573,40 @@ export const LiveCommentsSection = () => {
     // 6. Fetch initial leads from Supabase and register realtime subscriber
     const initSupabaseLeads = async () => {
       try {
+        // PROATIVE SYNC: Fetch global settings from Supabase to ensure Gestão is up-to-date across devices
+        const { data: globalData } = await supabase
+          .from("webinar_leads")
+          .select("source")
+          .eq("whatsapp", "global_live_settings")
+          .maybeSingle();
+
+        if (globalData && globalData.source) {
+          const globalSettings = typeof globalData.source === "string" ? JSON.parse(globalData.source) : globalData.source;
+          
+          if (globalSettings.videoUrl) {
+            setVideoUrl(globalSettings.videoUrl);
+            localStorage.setItem("live_stream_video_url", globalSettings.videoUrl);
+          }
+          if (globalSettings.offerSettings) {
+            setOfferStatus(globalSettings.offerSettings.status || "scheduled");
+            setOfferTime(globalSettings.offerSettings.time || "50:00");
+            setOfferTitle(globalSettings.offerSettings.title || "🔥 OFERTA EXCLUSIVA DA LIVE LIBERADA!");
+            setOfferDesc(globalSettings.offerSettings.description || "Adquira o Canva Viagem Vitalício + Fábrica de Anúncios I.A com Desconto!");
+            setOfferPrice(globalSettings.offerSettings.price || "Apenas 12x de R$ 29,70 ou R$ 297 à vista");
+            setOfferCheckoutUrl(globalSettings.offerSettings.checkoutUrl || "/planos");
+            setOfferBannerUrl(globalSettings.offerSettings.bannerUrl || "");
+            localStorage.setItem("live_stream_offer_settings", JSON.stringify(globalSettings.offerSettings));
+          }
+          if (globalSettings.scheduledComments && Array.isArray(globalSettings.scheduledComments)) {
+            setComments(globalSettings.scheduledComments);
+            localStorage.setItem("live_stream_comments", JSON.stringify(globalSettings.scheduledComments));
+          }
+          if (globalSettings.prePlayComments && Array.isArray(globalSettings.prePlayComments)) {
+            setPrePlayComments(globalSettings.prePlayComments);
+            localStorage.setItem("live_stream_pre_play_comments", JSON.stringify(globalSettings.prePlayComments));
+          }
+        }
+
         const { data: dbLeads, error } = await supabase
           .from("webinar_leads")
           .select("*")
