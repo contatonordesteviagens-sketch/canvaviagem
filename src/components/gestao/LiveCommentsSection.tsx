@@ -17,6 +17,7 @@ import {
   User, 
   Check, 
   AlertCircle,
+  AlertTriangle,
   FileText,
   Download,
   Video,
@@ -2779,7 +2780,9 @@ export const LiveCommentsSection = () => {
                         {day.highlyRecurrent > 0 && (
                           <div className="absolute top-2.5 right-2.5 flex items-center gap-1">
                             <span className="w-2 h-2 bg-red-550 dark:bg-red-500 rounded-full animate-pulse" title="Lead com mais de 3 acessos!" />
-                            <AlertCircle className="w-3.5 h-3.5 text-red-650 dark:text-red-500" title={`${day.highlyRecurrent} usuário(s) com > 3 acessos!`} />
+                            <span title={`${day.highlyRecurrent} usuário(s) com > 3 acessos!`}>
+                              <AlertCircle className="w-3.5 h-3.5 text-red-650 dark:text-red-500" />
+                            </span>
                           </div>
                         )}
                         
