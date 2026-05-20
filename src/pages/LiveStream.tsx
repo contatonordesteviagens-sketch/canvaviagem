@@ -1518,28 +1518,50 @@ const LiveStream = () => {
               )}
 
               {/* VÍDEO */}
-              <div className="relative w-full h-full flex items-center justify-center bg-zinc-950 overflow-hidden">
+              <div id="live-video-container" className="relative w-full h-full flex items-center justify-center bg-zinc-950 overflow-hidden">
                 <div
                   className="absolute inset-0 bg-cover bg-center blur-3xl opacity-35 scale-125 pointer-events-none"
                   style={{ backgroundImage: `url('https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg')` }}
                 />
-                <div className="relative w-full h-full bg-black z-10 overflow-hidden">
+                <div className="relative w-full h-full bg-black z-10 overflow-hidden flex items-center justify-center">
                   <img
                     src={`https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg`}
                     alt="Live Thumbnail"
-                    className="absolute w-full h-full object-cover pointer-events-none z-0"
-                    style={{ transform: "scale(1.02)", transformOrigin: "center" }}
+                    className="absolute inset-0 w-full h-full object-contain pointer-events-none z-0"
                   />
                   <iframe
                     ref={iframeRef}
-                    className={`absolute w-full h-full border-none z-10 transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-0'}`}
-                    style={{ transform: "scale(1.02)", transformOrigin: "center", pointerEvents: isPlaying ? 'auto' : 'none' }}
+                    className={`absolute inset-0 w-full h-full border-none z-10 transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-0'}`}
+                    style={{ pointerEvents: isPlaying ? 'auto' : 'none' }}
                     src={`https://www.youtube.com/embed/${videoUrlId}?enablejsapi=1&autoplay=1&mute=1&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1${initialStartSeconds > 0 ? `&start=${initialStartSeconds}` : ""}`}
                     title="Canva Viagem Live"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                    allowFullScreen
                   />
                 </div>
+
+                {/* BOTÃO TELA CHEIA — MOBILE */}
+                {isPlaying && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const el = document.getElementById("live-video-container") as any;
+                      if (!el) return;
+                      const isFs = document.fullscreenElement || (document as any).webkitFullscreenElement;
+                      if (isFs) {
+                        (document.exitFullscreen?.() || (document as any).webkitExitFullscreen?.());
+                      } else {
+                        (el.requestFullscreen?.() || el.webkitRequestFullscreen?.() || el.webkitEnterFullscreen?.());
+                      }
+                    }}
+                    aria-label="Tela cheia"
+                    className="lg:hidden absolute top-3 right-3 z-40 bg-black/70 backdrop-blur-md hover:bg-black/90 text-white p-2 rounded-full border border-white/15 shadow-lg active:scale-95 transition"
+                  >
+                    <Maximize2 size={16} />
+                  </button>
+                )}
               </div>
+
 
               {/* BANNER DE OFERTA SOBRE O VÍDEO — DESKTOP APENAS */}
               {showOfferBanner && (
