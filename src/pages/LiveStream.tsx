@@ -1124,9 +1124,11 @@ const LiveStream = () => {
       setViewportHeight(h);
       setViewportOffsetTop(top);
       
-      // Força o scroll do viewport de volta a 0 para impedir Safari de empurrar a tela fixed para cima
+      // Força o scroll do viewport de volta a 0 para impedir Safari de empurrar a tela fixed para cima de forma segura
       if (top > 0 || window.scrollY > 0) {
-        window.scrollTo(0, 0);
+        requestAnimationFrame(() => {
+          window.scrollTo(0, 0);
+        });
       }
     };
     updateVH();
@@ -1459,7 +1461,7 @@ const LiveStream = () => {
                     required
                     name="name"
                     autoComplete="name"
-                    className="bg-zinc-50 border-zinc-200 text-zinc-900 focus-visible:ring-[#00E5FF] rounded-xl py-5"
+                    className="bg-zinc-50 border-zinc-200 text-zinc-900 focus-visible:ring-[#00E5FF] rounded-xl py-5 text-[16px] md:text-sm"
                   />
                 </div>
 
@@ -1477,7 +1479,7 @@ const LiveStream = () => {
                       required
                       name="phone"
                       autoComplete="tel"
-                      className="flex-1 bg-zinc-50 border-zinc-200 text-zinc-900 focus-visible:ring-[#00E5FF] rounded-xl py-5"
+                      className="flex-1 bg-zinc-50 border-zinc-200 text-zinc-900 focus-visible:ring-[#00E5FF] rounded-xl py-5 text-[16px] md:text-sm"
                     />
                   </div>
                 </div>
@@ -1761,7 +1763,7 @@ const LiveStream = () => {
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Digite algo..."
-                      className="flex-1 bg-zinc-950 border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-cyan-500 rounded-xl text-xs py-2 h-9"
+                      className="flex-1 bg-zinc-950 border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-cyan-500 rounded-xl text-[16px] md:text-xs py-2 h-9"
                     />
                     <button
                       type="submit"
