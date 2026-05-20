@@ -66,7 +66,14 @@ const LiveManager = () => {
     // Load pre-play comments
     const savedPrePlay = localStorage.getItem("live_stream_pre_play_comments");
     if (savedPrePlay) {
-      try { setPrePlayComments(JSON.parse(savedPrePlay)); } catch {}
+      try {
+        const parsed = JSON.parse(savedPrePlay);
+        const cleaned = parsed.map((c: any) => ({
+          ...c,
+          message: c.message.replace(" 🙌", "").replace("🙌", "")
+        }));
+        setPrePlayComments(cleaned);
+      } catch {}
     }
   }, []);
 

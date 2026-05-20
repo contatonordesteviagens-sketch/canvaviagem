@@ -131,7 +131,12 @@ const LiveStream = () => {
     const savedPrePlay = localStorage.getItem("live_stream_pre_play_comments");
     if (savedPrePlay) {
       try {
-        setPrePlayComments(JSON.parse(savedPrePlay));
+        const parsed = JSON.parse(savedPrePlay);
+        const cleaned = parsed.map((c: any) => ({
+          ...c,
+          message: c.message.replace(" 🙌", "").replace("🙌", "")
+        }));
+        setPrePlayComments(cleaned);
       } catch (e) {
         setPrePlayComments(DEFAULT_PRE_PLAY_COMMENTS);
       }
@@ -581,7 +586,7 @@ const LiveStream = () => {
                   className="absolute inset-0 z-20 cursor-pointer flex flex-col items-center justify-center group"
                 >
                   {isPaused && (
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4 transition-all duration-300 animate-fade-in z-30">
+                    <div className="absolute inset-0 bg-zinc-950 flex flex-col items-center justify-center gap-4 transition-all duration-300 animate-fade-in z-30">
                       <div className="h-16 w-16 md:h-24 md:w-24 rounded-full bg-cyan-400/20 border-2 border-cyan-400 flex items-center justify-center shadow-2xl transition-all duration-300 transform scale-110 hover:scale-125">
                         <Play size={28} className="text-cyan-400 fill-cyan-400 ml-1.5 animate-pulse" />
                       </div>
@@ -700,7 +705,7 @@ const LiveStream = () => {
 
             {/* ── PAINEL DO CHAT ───────────────────────────────────────── */}
             <div
-              className="flex flex-col bg-zinc-900/60 border-t border-zinc-800/80 lg:border-t-0 lg:border-l lg:w-80 xl:w-96 flex-shrink-0 overflow-hidden h-[45vw] max-h-[45vh] lg:h-full lg:max-h-none"
+              className="flex flex-col bg-zinc-900/60 border-t border-zinc-800/80 lg:border-t-0 lg:border-l lg:w-80 xl:w-96 flex-1 min-h-0 overflow-hidden lg:h-full"
               data-chat-panel
             >
               
