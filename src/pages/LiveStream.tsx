@@ -24,41 +24,6 @@ const DEFAULT_PRE_PLAY_COMMENTS: Comment[] = [
 
 import { DEFAULT_SCHEDULED_COMMENTS, ScheduledComment } from "@/data/scheduledComments";
 
-const AUTO_COMMENTS_POOL = [
-  { username: "PatriciaLemosAgente", message: "lucas, da pra colocar a logo e as cores da minha agencia?" },
-  { username: "RicardoViagens", message: "Da sim Patricia! Eu ja uso e fica mt bom" },
-  { username: "AnaPeloMundo", message: "nossa essa IA vai economizar mt tempo de postagem" },
-  { username: "RobertoTrilhas", message: "lucas, os criativos ja vem no formato de reels?" },
-  { username: "LeticiaViajante", message: "ja sim roberto, fica perfeito" },
-  { username: "AlinePeloMundo", message: "chocada com a velocidade q gera as fotos com preco" },
-  { username: "CarlaTurismo", message: "ja sou aluna do elite o suporte é top demais msm" },
-  { username: "TiagoTurismo", message: "top" },
-  { username: "Jr99", message: "kd o preço? " },
-  { username: "Fabiotravell", message: "concorrente vai odiar isso kkk" },
-  { username: "TripsByGabi", message: "como faco pra acessar o gerador com as IAs lucas?" },
-  { username: "VaneMundial", message: "escolhe a foto de Jeri" },
-  { username: "GuiDoDestino", message: "funciona pra quem ta comecando do zero?" },
-  { username: "RafaDeFerias", message: "tem q ter notebook ou da pra fazer tudo pelo celular?" },
-  { username: "PedroViagens", message: "dá pra gerar quantos anuncios por dia?" },
-  { username: "MariEmJericoacoara", message: "como faz pra assinar? libera o link logo lucas rs" },
-  { username: "CarlosTrip", message: "isso ajuda mt quem nao sabe usar o canva do zero" },
-  { username: "Let_Viajante", message: "dá pra usar fotos proprias ou so as da IA?" },
-  { username: "AmandaTurismo", message: "tem destinos internacionais tbm?" },
-  { username: "BrunoPeloGlobo", message: "jeri fica lindo dms na fabrica" },
-  { username: "LeoMundoAfora", message: "Consigo mudar as cores dps?" },
-  { username: "GiseleDestinos", message: "ja quero assinar hj com desconto" },
-  { username: "DiegoExpedicoes", message: "muito prático de verdade" },
-  { username: "SandraRoteiros", message: "dá pra usar no plano Start?" },
-  { username: "RenataPeloMundo", message: "sensacional isso, facilitou 100%" },
-  { username: "ValdirTur", message: "quais os limites de geração diária?" },
-  { username: "BiaExplora", message: "aula incrível! obrigado" },
-  { username: "MuriloTrilhas", message: "muito ansioso pelo gerador" },
-  { username: "KarinaViagens", message: "já mudei meu feed com o Canva Viagem" },
-  { username: "DuduPeloMundo", message: "esse suporte do elite é de outro planeta" },
-  { username: "ThiagoMochileiro", message: "vou aplicar isso no meu insta hoje mesmo" },
-  { username: "FernandaRoteiros", message: "ótimo método" },
-];
-
 const LiveStream = () => {
   const [isTimeAllowed, setIsTimeAllowed] = useState<boolean>(true);
 
@@ -287,7 +252,6 @@ const LiveStream = () => {
   const [viewers, setViewers] = useState(35);
   const [comments, setComments] = useState<Comment[]>([]);
   const [userComments, setUserComments] = useState<Comment[]>([]);
-  const [fallbackComments, setFallbackComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [activeTab, setActiveTab] = useState<"chat" | "offer">("chat");
   const [scheduledCommentsList, setScheduledCommentsList] = useState<ScheduledComment[]>([]);
@@ -602,7 +566,6 @@ const LiveStream = () => {
   const chatScrollRef = useRef<HTMLDivElement>(null); // container scroll (não scrollIntoView)
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const hasInitializedStartRef = useRef(false);
-  const poolRef = useRef<typeof AUTO_COMMENTS_POOL>([...AUTO_COMMENTS_POOL]);
   const offerActivatedRef = useRef(false);
 
   // Insere 3 comentários de "aguardando" gradualmente ANTES do play
