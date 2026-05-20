@@ -1031,7 +1031,7 @@ export const LiveCommentsSection = () => {
     let totalOffline = 0;
     
     leads.forEach(l => {
-      const isOnline = l.lastActiveAt ? (Date.now() - l.lastActiveAt < 10000) : false;
+      const isOnline = isLeadOnline(l);
       if (!isOnline) {
         totalOffline++;
         const exitTime = l.lastPlaybackTime !== undefined ? l.lastPlaybackTime : (l.watchTime || 0);
