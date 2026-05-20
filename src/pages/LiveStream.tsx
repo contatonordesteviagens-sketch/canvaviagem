@@ -1221,7 +1221,7 @@ const LiveStream = () => {
 
     addCommentToSupabase(newComment.trim()); // Sync to Supabase in real-time
     setNewComment("");
-    toast.success("Comentário publicado!");
+
   };
 
   const trackCheckoutClick = () => {
