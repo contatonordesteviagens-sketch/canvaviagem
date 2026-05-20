@@ -56,6 +56,10 @@ const SCHEDULED_COMMENTS: ScheduledComment[] = [
   { time: "22:15", username: "CarolTurista", message: "eu" },
   { time: "22:20", username: "RodrigoTrips", message: "eu" },
   { time: "22:25", username: "AmandaPeloMundo", message: "eu" },
+  { time: "23:42", username: "RuteViagens", message: "Vou criar um grupo hj" },
+  { time: "24:07", username: "LucasMilhas", message: "eu vendo muito no meu grupo" },
+  { time: "28:01", username: "SandraRoteiros", message: "Não sei nada disso" },
+  { time: "28:05", username: "ThiagoMochileiro", message: "Muita coisa pra minha cabeça" },
 ];
 
 const AUTO_COMMENTS_POOL = [
