@@ -1680,9 +1680,9 @@ const LiveStream = () => {
                   <form
                     onSubmit={handleSendMessage}
                     data-chat-panel
-                    className="p-2 border-t border-zinc-800/80 bg-zinc-900/60 flex items-center gap-1.5 flex-shrink-0 pointer-events-auto touch-manipulation"
+                    className="p-2 border-t border-zinc-800/80 bg-zinc-900/60 flex items-center gap-1.5 flex-shrink-0 pointer-events-auto touch-auto select-text"
                   >
-                    <Input
+                    <input
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       onFocus={(e) => {
@@ -1694,7 +1694,7 @@ const LiveStream = () => {
                       autoCapitalize="sentences"
                       inputMode="text"
                       enterKeyHint="send"
-                      className="flex-1 min-w-0 bg-zinc-950 border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-cyan-500 rounded-xl text-[16px] md:text-xs py-2 h-10 pointer-events-auto touch-manipulation"
+                      className="flex-1 min-w-0 bg-zinc-950 border border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 rounded-xl text-[16px] md:text-xs px-3 py-2 h-10 pointer-events-auto touch-auto select-text"
                     />
                     <button
                       type="submit"
