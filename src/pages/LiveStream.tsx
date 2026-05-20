@@ -66,6 +66,9 @@ const LiveStream = () => {
   
   // Controle de intenção de saída e widget de WhatsApp de suporte
   const [showRecoveryWidget, setShowRecoveryWidget] = useState(false);
+  const [hasManuallyClosedWidget, setHasManuallyClosedWidget] = useState(false);
+  const [hasTriggeredOfferWidget, setHasTriggeredOfferWidget] = useState(false);
+  const [hasTriggered65MinWidget, setHasTriggered65MinWidget] = useState(false);
   const triggeredCommentsRef = useRef<Set<string>>(new Set());
 
 
@@ -639,6 +642,7 @@ const LiveStream = () => {
     const handleMouseLeave = (e: MouseEvent) => {
       if (e.clientY < 5) {
         setShowRecoveryWidget(true);
+        setHasManuallyClosedWidget(false); // Permite reabrir ao tentar sair, mesmo se fechado antes
       }
     };
     
@@ -648,23 +652,51 @@ const LiveStream = () => {
     };
   }, [step]);
 
-  // Monitor pause duration (trigger WhatsApp popup if paused for > 5 seconds)
+  // Monitor pause duration (trigger WhatsApp popup if paused for > 5 seconds, only after offer shown or min 65)
   useEffect(() => {
     if (!isPlaying || step !== "watch") return;
     
     let pauseTimer: NodeJS.Timeout;
     if (isPaused) {
-      pauseTimer = setTimeout(() => {
-        setShowRecoveryWidget(true);
-      }, 5000);
+      const offerStartSeconds = getOfferActivationSeconds();
+      const isOfferShownOrLate = playbackSeconds >= offerStartSeconds || playbackSeconds >= 65 * 60;
+      
+      if (isOfferShownOrLate) {
+        pauseTimer = setTimeout(() => {
+          setShowRecoveryWidget(true);
+          setHasManuallyClosedWidget(false); // Reabre no pause prolongado
+        }, 5000);
+      }
     } else {
+      // Fecha o widget expandido ao retomar para não cobrir o vídeo
       setShowRecoveryWidget(false);
     }
     
     return () => {
       if (pauseTimer) clearTimeout(pauseTimer);
     };
-  }, [isPaused, isPlaying, step]);
+  }, [isPaused, isPlaying, step, playbackSeconds]);
+
+  // Auto-disparar o popup do WhatsApp em momentos cruciais da live (revelação da oferta e aos 65 minutos)
+  useEffect(() => {
+    if (step !== "watch" || !isPlaying || isPaused) return;
+    
+    const offerStartSeconds = getOfferActivationSeconds();
+    
+    // Dispara no segundo exato da oferta (ou se passar um pouco e ainda não foi disparado)
+    if (playbackSeconds >= offerStartSeconds && !hasTriggeredOfferWidget) {
+      setHasTriggeredOfferWidget(true);
+      setShowRecoveryWidget(true);
+      setHasManuallyClosedWidget(false);
+    }
+    
+    // Dispara no minuto 65 (3900 segundos)
+    if (playbackSeconds >= 65 * 60 && !hasTriggered65MinWidget) {
+      setHasTriggered65MinWidget(true);
+      setShowRecoveryWidget(true);
+      setHasManuallyClosedWidget(false);
+    }
+  }, [playbackSeconds, step, isPlaying, isPaused, hasTriggeredOfferWidget, hasTriggered65MinWidget]);
 
   // Economical progress sync to Supabase (only every 3 minutes to save database write costs)
   useEffect(() => {
@@ -1506,14 +1538,14 @@ const LiveStream = () => {
       )}
 
       {/* FLOAT RECOVERY WIDGET (Whats Support on exit-intent or long pause) */}
-      {showRecoveryWidget && (
+      {showRecoveryWidget && !hasManuallyClosedWidget && (
         <div className="fixed bottom-4 right-4 z-50 max-w-sm w-full bg-zinc-950/90 backdrop-blur-md border border-emerald-500/30 p-4 rounded-2xl shadow-[0_8px_32px_rgba(16,185,129,0.25)] flex items-center gap-3 animate-fade-in text-white">
           <div className="bg-[#25D366]/20 p-2.5 rounded-xl text-[#25D366] flex-shrink-0 animate-bounce">
             <MessageCircle size={20} className="fill-[#25D366]/20 text-[#25D366]" />
           </div>
           <div className="flex-1 flex flex-col gap-0.5">
-            <h4 className="text-xs font-black uppercase tracking-wider text-emerald-400">Dúvidas sobre o Canva Viagem?</h4>
-            <p className="text-[10px] text-zinc-300 font-medium leading-normal">
+            <h4 className="text-xs font-black uppercase tracking-wider text-emerald-400 font-sans">Dúvidas sobre o Canva Viagem?</h4>
+            <p className="text-[10px] text-zinc-300 font-medium leading-normal font-sans">
               Ficou com alguma dúvida ou travou em algo? Fale agora com o Lucas no WhatsApp.
             </p>
           </div>
@@ -1524,21 +1556,46 @@ const LiveStream = () => {
               rel="noopener noreferrer"
               onClick={() => {
                 setShowRecoveryWidget(false);
+                setHasManuallyClosedWidget(true);
                 trackCheckoutClick();
               }}
             >
-              <Button size="sm" className="bg-[#25D366] hover:bg-[#1ebd54] text-white font-extrabold text-[10px] uppercase tracking-wider px-3 h-8 rounded-lg flex items-center gap-1">
+              <Button size="sm" className="bg-[#25D366] hover:bg-[#1ebd54] text-white font-extrabold text-[10px] uppercase tracking-wider px-3 h-8 rounded-lg flex items-center gap-1 font-sans">
                 Chamar Lucas
               </Button>
             </a>
             <button 
-              onClick={() => setShowRecoveryWidget(false)}
-              className="text-[9px] text-zinc-500 hover:text-zinc-300 font-bold uppercase tracking-wider text-center"
+              onClick={() => {
+                setShowRecoveryWidget(false);
+                setHasManuallyClosedWidget(true);
+              }}
+              className="text-[9px] text-zinc-500 hover:text-zinc-300 font-bold uppercase tracking-wider text-center font-sans"
             >
               Fechar
             </button>
           </div>
         </div>
+      )}
+
+      {/* Sleek floating pulsing WhatsApp support button (visible only after offer is shown or min 65, and if the card is closed) */}
+      {(playbackSeconds >= getOfferActivationSeconds() || playbackSeconds >= 65 * 60) && (!showRecoveryWidget || hasManuallyClosedWidget) && step === "watch" && (
+        <a
+          href={getDynamicSupportLink()}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={trackCheckoutClick}
+          className="fixed bottom-4 right-4 z-50 flex items-center justify-center bg-[#25D366] hover:bg-[#1ebd54] text-white p-3.5 rounded-full shadow-[0_8px_30px_rgba(37,211,102,0.4)] hover:scale-110 active:scale-95 transition-all duration-300 group"
+          title="Falar no WhatsApp"
+        >
+          {/* Pulsing ring */}
+          <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-40 animate-ping group-hover:animate-none pointer-events-none" />
+          <MessageCircle size={22} className="fill-white text-white relative z-10" />
+          
+          {/* Premium micro-tooltip on hover */}
+          <span className="absolute right-14 bg-zinc-950/95 backdrop-blur-md border border-zinc-800 text-white font-black text-[9px] uppercase tracking-widest px-3 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap shadow-xl transform translate-x-2 group-hover:translate-x-0 font-sans">
+            Dúvidas? Chame no WhatsApp
+          </span>
+        </a>
       )}
     </div>
   );
