@@ -28,7 +28,7 @@ const LiveManager = () => {
     title: "🔥 OFERTA EXCLUSIVA DA LIVE LIBERADA!",
     description: "Adquira o Canva Viagem Vitalício + Fábrica de Anúncios I.A com Desconto!",
     price: "Apenas 12x de R$ 28,91 ou R$ 347 à vista",
-    checkoutUrl: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
+    checkoutUrl: "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d",
     bannerUrl: "",
   });
 
@@ -114,7 +114,7 @@ const LiveManager = () => {
         title: "🔥 OFERTA EXCLUSIVA DA LIVE LIBERADA!",
         description: "Adquira o Canva Viagem Vitalício + Fábrica de Anúncios I.A com Desconto!",
         price: "Apenas 12x de R$ 28,91 ou R$ 347 à vista",
-        checkoutUrl: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
+        checkoutUrl: "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d",
         bannerUrl: ""
       };
 
