@@ -1104,14 +1104,17 @@ const LiveStream = () => {
         return;
       }
 
+      // Ativa imediatamente o modo tela-cheia interno. Em muitos celulares,
+      // o navegador bloqueia/ignora fullscreen nativo para iframes, então este
+      // modo garante o resultado visual mesmo quando a API nativa falha.
+      setIsPlayerExpanded(true);
+
       if (element.requestFullscreen) {
         await element.requestFullscreen({ navigationUI: "hide" });
       } else if (element.webkitRequestFullscreen) {
         await element.webkitRequestFullscreen();
       } else if (element.webkitEnterFullscreen) {
         await element.webkitEnterFullscreen();
-      } else {
-        setIsPlayerExpanded(true);
       }
     } catch (err) {
       setIsPlayerExpanded(true);
