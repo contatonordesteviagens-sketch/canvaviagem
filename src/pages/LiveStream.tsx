@@ -768,7 +768,7 @@ const LiveStream = () => {
         const tA = a.sortTimestamp || 0;
         const tB = b.sortTimestamp || 0;
         return tA - tB;
-      });
+      }).slice(-20); // Keep only the 20 most recent comments to avoid flooding from zero
 
       setComments(merged);
     } catch (e) {
@@ -869,11 +869,8 @@ const LiveStream = () => {
 
   // Calcula o segundo de ativação da oferta com base no tempo configurado
   const getOfferActivationSeconds = () => {
-    const parts = offerSettings.time.split(":");
-    if (parts.length === 2) {
-      return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
-    }
-    return 3600; // default 60 min
+    // Configurado para 3 segundos para teste de produção instantâneo
+    return 3;
   };
 
   // Auto-switch to "Oferta" tab at configured time
@@ -910,20 +907,15 @@ const LiveStream = () => {
   useEffect(() => {
     if (!isPlaying || isPaused || step !== "watch" || offerSettings.status !== "scheduled") return;
 
-    const parts = offerSettings.time.split(":");
-    if (parts.length === 2) {
-      const mins = parseInt(parts[0], 10) || 0;
-      const secs = parseInt(parts[1], 10) || 0;
-      const totalSecs = mins * 60 + secs;
-      if (playbackSeconds >= totalSecs) {
-        if (!showOfferBanner) {
-          setShowOfferBanner(true);
-          toast.success("🔥 Oferta Especial Revelada! Aproveite o desconto exclusivo.");
-        }
-      } else {
-        if (showOfferBanner) {
-          setShowOfferBanner(false);
-        }
+    const totalSecs = getOfferActivationSeconds();
+    if (playbackSeconds >= totalSecs) {
+      if (!showOfferBanner) {
+        setShowOfferBanner(true);
+        toast.success("🔥 Oferta Especial Revelada! Aproveite o desconto exclusivo.");
+      }
+    } else {
+      if (showOfferBanner) {
+        setShowOfferBanner(false);
       }
     }
   }, [playbackSeconds, isPlaying, isPaused, step, offerSettings, showOfferBanner]);
