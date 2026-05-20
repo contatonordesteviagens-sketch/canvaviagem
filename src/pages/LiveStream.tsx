@@ -1408,6 +1408,7 @@ const LiveStream = () => {
             top: `${viewportOffsetTop}px`,
             left: 0,
             right: 0,
+            bottom: 0,
             height: `${viewportHeight}px`,
             maxHeight: `${viewportHeight}px`,
             paddingTop: 'env(safe-area-inset-top)',
