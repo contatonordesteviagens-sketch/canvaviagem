@@ -860,28 +860,19 @@ const LiveStream = () => {
     return () => clearInterval(interval);
   }, [step]);
 
-  // Mark as "left the live" when tab hides or closes
+  // Mantém presença real sem marcar saída falsa quando o Chrome/iPhone abre teclado, PiP ou alterna foco rapidamente
   useEffect(() => {
     if (step !== "watch") return;
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        syncProgressToSupabase(playbackSecondsRef.current, { left: true });
-      } else if (document.visibilityState === "visible") {
+      if (document.visibilityState === "visible") {
         syncProgressToSupabase(playbackSecondsRef.current);
       }
     };
-    const handleBeforeUnload = () => {
-      syncProgressToSupabase(playbackSecondsRef.current, { left: true });
-    };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    window.addEventListener("pagehide", handleBeforeUnload);
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      window.removeEventListener("pagehide", handleBeforeUnload);
     };
   }, [step]);
 
