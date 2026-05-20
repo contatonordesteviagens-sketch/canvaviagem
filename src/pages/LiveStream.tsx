@@ -1076,7 +1076,7 @@ const LiveStream = () => {
 
     try {
       const activeFullscreen = document.fullscreenElement || doc.webkitFullscreenElement;
-      if (activeFullscreen) {
+      if (activeFullscreen || isPlayerExpanded) {
         await (document.exitFullscreen?.() || doc.webkitExitFullscreen?.());
         setIsPlayerExpanded(false);
         return;
@@ -1637,7 +1637,7 @@ const LiveStream = () => {
             </div>
 
             {/* ── BANNER DE OFERTA MOBILE (ABAIXO DO VÍDEO, NÃO SOBREPOSTO) ── */}
-            {showOfferBanner && (
+            {showOfferBanner && !mobileVideoFocusMode && (
               <div className="sm:hidden flex-shrink-0 bg-zinc-950 border-b border-cyan-400/30 px-3 py-2 animate-fade-in">
                 <div className="flex flex-row items-center gap-3">
                   <div className="bg-gradient-to-tr from-cyan-400 to-blue-600 p-2 rounded-xl text-black flex-shrink-0">
@@ -1665,7 +1665,7 @@ const LiveStream = () => {
 
             {/* ── PAINEL DO CHAT ───────────────────────────────────────── */}
             <div
-              className="flex flex-col bg-zinc-900/60 border-t border-zinc-800/80 lg:border-t-0 lg:border-l lg:w-1/4 lg:flex-none flex-1 min-h-0 overflow-hidden"
+              className={`flex-col bg-zinc-900/60 border-t border-zinc-800/80 lg:border-t-0 lg:border-l lg:w-1/4 lg:flex-none flex-1 min-h-0 overflow-hidden ${mobileVideoFocusMode ? "hidden lg:flex" : "flex"}`}
               data-chat-panel
             >
 
