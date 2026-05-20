@@ -71,6 +71,13 @@ const SCHEDULED_COMMENTS: ScheduledComment[] = [
   { time: "38:36", username: "ArthurDestinos", message: "Preciso arrumar meu perfil" },
   { time: "49:06", username: "VaniaTur", message: "Muito bom" },
   { time: "49:11", username: "RafaMochileiro", message: "bom demais" },
+  { time: "51:13", username: "JuniorViagens", message: "caraca muito bom" },
+  { time: "51:29", username: "GiseleDestinos", message: "uau eu quero!" },
+  { time: "51:42", username: "MarcosRoteiros", message: "finalmente vou ter um site bom" },
+  { time: "58:56", username: "FabioTravel", message: "Perfeito e preço?" },
+  { time: "59:20", username: "BetoMochileiro", message: "deve ser mil reais" },
+  { time: "59:52", username: "DaniloMilhas", message: "Deve ser mil reais" },
+  { time: "60:15", username: "CarlaTrips", message: "quero saber os preços também" },
 ];
 
 const AUTO_COMMENTS_POOL = [
@@ -267,10 +274,10 @@ const LiveStream = () => {
     }
   }, [playbackSeconds, isPlaying, isPaused, step]);
 
-  // Fallback scrolling chat simulation (adds a comment every 15s to 25s after scheduled comments run out, which is 3600s/1h)
+  // Fallback scrolling chat simulation (adds a comment every 15s to 25s after scheduled comments run out, which is 7200s/2h)
   useEffect(() => {
     if (step !== "watch" || isPaused || !isPlaying) return;
-    if (playbackSeconds < 3600) return; // Keep chat only displaying scheduled comments for first 1 hour
+    if (playbackSeconds < 7200) return; // Keep chat only displaying scheduled comments for first 2 hours
 
     const addFakeComment = () => {
       const randomDelay = Math.floor(Math.random() * 10000) + 15000; // 15s to 25s
