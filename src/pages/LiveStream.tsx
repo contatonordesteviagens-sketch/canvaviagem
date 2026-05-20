@@ -534,7 +534,7 @@ const LiveStream = () => {
 
           {/* HEADER DA LIVE */}
           <div className="bg-zinc-900/80 border-b border-zinc-800/80 px-3 py-2.5 flex items-center justify-between gap-2 flex-shrink-0">
-            <h2 className="text-xs sm:text-sm font-black text-white leading-tight flex-1 min-w-0 truncate">
+            <h2 className="text-xs sm:text-sm font-black text-white leading-tight flex-1 min-w-0 break-words whitespace-normal py-0.5">
               Como usar a Fábrica de Anúncios e Criar Site de Viagens com I.A!
             </h2>
             <div className="flex items-center gap-1.5 bg-red-600/15 border border-red-500/20 px-2.5 py-1 rounded-xl flex-shrink-0 animate-pulse">
@@ -631,7 +631,7 @@ const LiveStream = () => {
                     <iframe
                       ref={iframeRef}
                       className="absolute w-full h-full border-none pointer-events-none"
-                      style={{ transform: "scale(1.3) translateY(-5%)", transformOrigin: "center" }}
+                      style={{ transform: "scale(1.02)", transformOrigin: "center" }}
                       src={`https://www.youtube.com/embed/${videoUrlId}?autoplay=1&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1`}
                       title="Canva Viagem Live"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -641,7 +641,7 @@ const LiveStream = () => {
                       src={`https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg`}
                       alt="Live Thumbnail"
                       className="w-full h-full object-cover pointer-events-none"
-                      style={{ transform: "scale(1.3) translateY(-5%)", transformOrigin: "center" }}
+                      style={{ transform: "scale(1.02)", transformOrigin: "center" }}
                     />
                   )}
                 </div>
@@ -710,37 +710,39 @@ const LiveStream = () => {
             >
               
               {/* ABAS: CHAT e OFERTA */}
-              <div className="flex p-1.5 bg-zinc-900 border-b border-zinc-800/80 gap-1 flex-shrink-0">
-                <button
-                  onClick={() => setActiveTab("chat")}
-                  className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black tracking-wider uppercase transition-all duration-300 ${
-                    activeTab === "chat"
-                      ? "bg-white text-black shadow-lg"
-                      : "text-zinc-400 hover:text-white hover:bg-zinc-800/40"
-                  }`}
-                >
-                  Chat
-                </button>
-                <button
-                  onClick={() => setActiveTab("offer")}
-                  className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black tracking-wider uppercase transition-all duration-300 relative overflow-hidden ${
-                    activeTab === "offer" && offerUnlocked
-                      ? "bg-gradient-to-r from-emerald-400 to-green-500 text-black shadow-lg"
-                      : offerUnlocked
-                      ? "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/20 border border-emerald-900/30"
-                      : "text-zinc-600 cursor-default"
-                  }`}
-                >
-                  {/* Dot piscante só aparece APÓS ativação */}
-                  {offerUnlocked && activeTab !== "offer" && (
-                    <span className="absolute top-1.5 right-2 flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                    </span>
-                  )}
-                  🔥 Oferta
-                </button>
-              </div>
+              {offerUnlocked && (
+                <div className="flex p-1.5 bg-zinc-900 border-b border-zinc-800/80 gap-1 flex-shrink-0">
+                  <button
+                    onClick={() => setActiveTab("chat")}
+                    className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black tracking-wider uppercase transition-all duration-300 ${
+                      activeTab === "chat"
+                        ? "bg-white text-black shadow-lg"
+                        : "text-zinc-400 hover:text-white hover:bg-zinc-800/40"
+                    }`}
+                  >
+                    Chat
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("offer")}
+                    className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black tracking-wider uppercase transition-all duration-300 relative overflow-hidden ${
+                      activeTab === "offer" && offerUnlocked
+                        ? "bg-gradient-to-r from-emerald-400 to-green-500 text-black shadow-lg"
+                        : offerUnlocked
+                        ? "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/20 border border-emerald-900/30"
+                        : "text-zinc-600 cursor-default"
+                    }`}
+                  >
+                    {/* Dot piscante só aparece APÓS ativação */}
+                    {offerUnlocked && activeTab !== "offer" && (
+                      <span className="absolute top-1.5 right-2 flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                      </span>
+                    )}
+                    🔥 Oferta
+                  </button>
+                </div>
+              )}
 
               {/* ABA CHAT */}
               {activeTab === "chat" && (
