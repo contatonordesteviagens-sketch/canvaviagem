@@ -11,6 +11,8 @@ interface Comment {
   message: string;
   isUser?: boolean;
   time: string;
+  sortTimestamp?: number;
+  playbackSecond?: number;
 }
 
 // Comentários exibidos ANTES do play (esperando a live começar)
@@ -285,6 +287,7 @@ const LiveStream = () => {
   const [viewers, setViewers] = useState(35);
   const [comments, setComments] = useState<Comment[]>([]);
   const [userComments, setUserComments] = useState<Comment[]>([]);
+  const [fallbackComments, setFallbackComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [activeTab, setActiveTab] = useState<"chat" | "offer">("chat");
   const [scheduledCommentsList, setScheduledCommentsList] = useState<ScheduledComment[]>([]);
@@ -300,6 +303,16 @@ const LiveStream = () => {
     bannerUrl: ""
   });
   const [showOfferBanner, setShowOfferBanner] = useState(false);
+  // viewportHeight: atualizado pelo visualViewport para funcionar com teclado virtual do iOS
+  const [viewportHeight, setViewportHeight] = useState<number>(
+    () => (typeof window !== 'undefined' ? (window.visualViewport?.height ?? window.innerHeight) : 800)
+  );
+  const [viewportOffsetTop, setViewportOffsetTop] = useState(0);
+
+  const playbackSecondsRef = useRef(0);
+  useEffect(() => {
+    playbackSecondsRef.current = playbackSeconds;
+  }, [playbackSeconds]);
 
   const getYouTubeId = (urlOrId: string) => {
     if (!urlOrId) return "Xqcw-NpPz08";
@@ -558,6 +571,7 @@ const LiveStream = () => {
   }, []);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null); // container scroll (não scrollIntoView)
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const hasInitializedStartRef = useRef(false);
   const poolRef = useRef<typeof AUTO_COMMENTS_POOL>([...AUTO_COMMENTS_POOL]);
@@ -604,7 +618,7 @@ const LiveStream = () => {
             const state = info.playerState;
             if (state === 1) {
               setIsPaused(false);
-            } else if (state === 2 || state === 3) {
+            } else if (state === 2) { // Apenas estado 2 (pausado), ignorando estado 3 (buffering) para evitar overlays falsos de pausa
               setIsPaused(true);
             }
           }
@@ -628,7 +642,7 @@ const LiveStream = () => {
           const state = data.info;
           if (state === 1) {
             setIsPaused(false);
-          } else if (state === 2 || state === 3) {
+          } else if (state === 2) { // Apenas estado 2 (pausado)
             setIsPaused(true);
           }
         }
@@ -646,8 +660,12 @@ const LiveStream = () => {
     setIsPaused(false);
     hasInitializedStartRef.current = false;
     
-    // Auto-play the iframe immediately upon overlay click
+    // Auto-play and unmute the iframe immediately upon overlay click
     if (iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ event: "command", func: "unMute", args: "" }), 
+        "*"
+      );
       iframeRef.current.contentWindow.postMessage(
         JSON.stringify({ event: "command", func: "playVideo", args: "" }), 
         "*"
@@ -665,6 +683,12 @@ const LiveStream = () => {
     
     if (iframeRef.current?.contentWindow) {
       const command = nextPaused ? "pauseVideo" : "playVideo";
+      if (!nextPaused) {
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func: "unMute", args: "" }), 
+          "*"
+        );
+      }
       iframeRef.current.contentWindow.postMessage(
         JSON.stringify({ event: "command", func: command, args: "" }), 
         "*"
@@ -814,6 +838,7 @@ const LiveStream = () => {
       const currentSeconds = playbackSeconds;
       const sessionStart = activeSession?.startedAt || (Date.now() - currentSeconds * 1000);
 
+      // Mapeia os comentários agendados utilizando o playbackSecond real (totalSecs)
       const activeScheduled = scheduledCommentsList
         .filter((c: any) => {
           const parts = c.time.split(":");
@@ -836,21 +861,42 @@ const LiveStream = () => {
             username: c.username,
             message: c.message,
             time: timeStr,
-            sortTimestamp: commentTimeMs
+            playbackSecond: totalSecs
           };
         });
 
-      const merged = [...prePlayComments, ...activeScheduled, ...userComments].sort((a: any, b: any) => {
-        const tA = a.sortTimestamp || 0;
-        const tB = b.sortTimestamp || 0;
-        return tA - tB;
-      }).slice(-20); // Keep only the 20 most recent comments to avoid flooding from zero
+      // Mapeia comentários pré-play para ficarem no início
+      const activePrePlay = prePlayComments.map((c: any, index: number) => ({
+        ...c,
+        playbackSecond: -100 + index
+      }));
+
+      // Mapeia comentários de usuário (se não tiverem playbackSecond, usam o segundo em que foram criados)
+      const activeUserComments = userComments.map((c: any) => ({
+        ...c,
+        playbackSecond: c.playbackSecond !== undefined ? c.playbackSecond : currentSeconds
+      }));
+
+      // Mapeia comentários de simulação/fallback
+      const activeFallbackComments = fallbackComments.map((c: any) => ({
+        ...c,
+        playbackSecond: c.playbackSecond !== undefined ? c.playbackSecond : currentSeconds
+      }));
+
+      // Mescla e ordena estritamente por playbackSecond para fluxo contínuo onde os novos empurram os antigos para cima
+      const merged = [...activePrePlay, ...activeScheduled, ...activeUserComments, ...activeFallbackComments]
+        .sort((a: any, b: any) => {
+          const secA = a.playbackSecond ?? 0;
+          const secB = b.playbackSecond ?? 0;
+          return secA - secB;
+        })
+        .slice(-20); // Keep only the 20 most recent comments to avoid flooding from zero
 
       setComments(merged);
     } catch (e) {
       console.error("Error in comments playback synchronization:", e);
     }
-  }, [playbackSeconds, step, isPlaying, scheduledCommentsList, userComments]);
+  }, [playbackSeconds, step, isPlaying, scheduledCommentsList, userComments, fallbackComments]);
 
   // Monitor exit-intent (mouse leaving the screen top)
   useEffect(() => {
@@ -996,16 +1042,18 @@ const LiveStream = () => {
     }
   }, [playbackSeconds, isPlaying, isPaused, step, offerSettings, showOfferBanner]);
 
-  // Fallback scrolling chat simulation after scheduled comments run out
+  // Fallback scrolling chat simulation after scheduled comments run out or in sparse intervals
   useEffect(() => {
     if (step !== "watch" || isPaused || !isPlaying) return;
-    if (playbackSeconds < 7200) return;
 
     const addFakeComment = () => {
-      const randomDelay = Math.floor(Math.random() * 10000) + 15000;
+      // Gera um comentário a cada 4 a 12 segundos para manter a live ativa
+      const randomDelay = Math.floor(Math.random() * 8000) + 4000;
       
       return setTimeout(() => {
-        if (poolRef.current.length === 0) return;
+        if (!poolRef.current || poolRef.current.length === 0) {
+          poolRef.current = [...AUTO_COMMENTS_POOL];
+        }
 
         const randomIndex = Math.floor(Math.random() * poolRef.current.length);
         const randomComment = poolRef.current[randomIndex];
@@ -1014,15 +1062,15 @@ const LiveStream = () => {
         const now = new Date();
         const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         
-        setComments(prev => [
-          ...prev,
-          {
-            id: `fallback-${Date.now()}`,
-            username: randomComment.username,
-            message: randomComment.message,
-            time: timeStr
-          }
-        ]);
+        const newFake: Comment = {
+          id: `fallback-${Date.now()}-${randomComment.username}-${Math.random()}`,
+          username: randomComment.username,
+          message: randomComment.message,
+          time: timeStr,
+          playbackSecond: playbackSecondsRef.current
+        };
+        
+        setFallbackComments(prev => [...prev, newFake]);
         
         addFakeComment();
       }, randomDelay);
@@ -1030,14 +1078,67 @@ const LiveStream = () => {
 
     const timer = addFakeComment();
     return () => clearTimeout(timer);
-  }, [step, isPaused, isPlaying, playbackSeconds]);
+  }, [step, isPaused, isPlaying]);
 
-  // Auto scroll chat to bottom when comments update
+  // Auto scroll: usa container.scrollTop para não rolar a página inteira
   useEffect(() => {
-    if (step === "watch") {
-      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (step === "watch" && chatScrollRef.current) {
+      const el = chatScrollRef.current;
+      el.scrollTop = el.scrollHeight;
     }
   }, [comments, step]);
+
+  // Bloqueia rolagem do body/documento no passo de assistir para blindar layout mobile contra puxões do teclado
+  useEffect(() => {
+    if (step !== "watch") return;
+    
+    const originalOverflow = document.body.style.overflow;
+    const originalHTMLOverflow = document.documentElement.style.overflow;
+    
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    
+    const preventScroll = (e: TouchEvent) => {
+      const target = e.target as HTMLElement;
+      // Permite rolagem apenas dentro do chat ou áreas roláveis da live
+      if (target.closest('.overflow-y-auto') || target.closest('[data-chat-panel]')) {
+        return;
+      }
+      e.preventDefault();
+    };
+    
+    document.addEventListener('touchmove', preventScroll, { passive: false });
+    
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.documentElement.style.overflow = originalHTMLOverflow;
+      document.removeEventListener('touchmove', preventScroll);
+    };
+  }, [step]);
+
+  // Listener do teclado virtual iOS (visualViewport resize & scroll) para manter o layout fixado perfeitamente no topo
+  useEffect(() => {
+    const updateVH = () => {
+      const h = window.visualViewport?.height ?? window.innerHeight;
+      const top = window.visualViewport?.offsetTop ?? 0;
+      setViewportHeight(h);
+      setViewportOffsetTop(top);
+      
+      // Força o scroll do viewport de volta a 0 para impedir Safari de empurrar a tela fixed para cima
+      if (top > 0 || window.scrollY > 0) {
+        window.scrollTo(0, 0);
+      }
+    };
+    updateVH();
+    window.visualViewport?.addEventListener('resize', updateVH);
+    window.visualViewport?.addEventListener('scroll', updateVH);
+    window.addEventListener('resize', updateVH);
+    return () => {
+      window.visualViewport?.removeEventListener('resize', updateVH);
+      window.visualViewport?.removeEventListener('scroll', updateVH);
+      window.removeEventListener('resize', updateVH);
+    };
+  }, []);
 
   const handleRegister = async () => {
     if (!name.trim()) {
@@ -1179,13 +1280,14 @@ const LiveStream = () => {
     const now = new Date();
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-    const userComment: Comment & { sortTimestamp: number } = {
+    const userComment: Comment & { sortTimestamp: number; playbackSecond: number } = {
       id: String(Date.now()),
       username: name.trim() || "Lucas",
       message: newComment.trim(),
       isUser: true,
       time: timeStr,
-      sortTimestamp: Date.now()
+      sortTimestamp: Date.now(),
+      playbackSecond: playbackSeconds // Armazena a posição exata da live para rolagem integrada
     };
 
     setUserComments(prev => {
@@ -1404,12 +1506,25 @@ const LiveStream = () => {
         </div>
       ) : (
 
-        /* PASSO 2: PLAYER DA LIVE — LAYOUT MOBILE-FIRST SCROLLÁVEL */
-        <div className="flex flex-col bg-zinc-950 min-h-[100dvh] lg:h-[100dvh] lg:overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        /* PASSO 2: PLAYER DA LIVE — LAYOUT MOBILE-FIRST CORRIGIDO */
+        <div
+          className="flex flex-col bg-zinc-950 overflow-hidden"
+          style={{
+            position: 'fixed',
+            top: `${viewportOffsetTop}px`,
+            left: 0,
+            right: 0,
+            height: `${viewportHeight}px`,
+            maxHeight: `${viewportHeight}px`,
+            paddingTop: 'env(safe-area-inset-top)',
+            paddingBottom: 'env(safe-area-inset-bottom)',
+            zIndex: 50,
+          }}
+        >
 
           {/* HEADER DA LIVE */}
-          <div className="bg-zinc-900 border-b border-zinc-800 px-4 py-3 flex items-center justify-between gap-3 flex-shrink-0" style={{ marginTop: '10px' }}>
-            <h2 className="text-sm sm:text-base font-black text-white leading-snug flex-1 min-w-0 break-words">
+          <div className="bg-zinc-900 border-b border-zinc-800 px-4 py-2 sm:py-3 flex items-center justify-between gap-3 flex-shrink-0" style={{ marginTop: '10px' }}>
+            <h2 className="text-xs sm:text-base font-black text-white leading-tight flex-1 min-w-0 break-words line-clamp-2">
               A Fábrica de Criar Anúncios e Criar Site de Viagens Ilimitados em minutos!
             </h2>
             <div className="flex items-center gap-1.5 bg-red-600 px-2.5 py-1 rounded-full flex-shrink-0 animate-pulse">
@@ -1418,8 +1533,8 @@ const LiveStream = () => {
             </div>
           </div>
 
-          {/* LAYOUT PRINCIPAL: empilhado no mobile (scroll), lado a lado no desktop (fixo) */}
-          <div className="flex flex-col lg:flex-row lg:flex-1 lg:min-h-0 lg:overflow-hidden">
+          {/* LAYOUT PRINCIPAL: empilhado no mobile (altura limitada), lado a lado no desktop (fixo) */}
+          <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
 
             {/* ── PLAYER DE VÍDEO ─────────────────────────────────────── */}
             <div className="relative bg-black w-full flex-shrink-0 lg:w-3/4 lg:flex-none lg:h-full overflow-hidden" style={{ aspectRatio: '16/9' }}>
@@ -1506,7 +1621,7 @@ const LiveStream = () => {
                     ref={iframeRef}
                     className={`absolute w-full h-full border-none z-10 transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-0'}`}
                     style={{ transform: "scale(1.02)", transformOrigin: "center", pointerEvents: isPlaying ? 'auto' : 'none' }}
-                    src={`https://www.youtube.com/embed/${videoUrlId}?enablejsapi=1&autoplay=0&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1${initialStartSeconds > 0 ? `&start=${initialStartSeconds}` : ""}`}
+                    src={`https://www.youtube.com/embed/${videoUrlId}?enablejsapi=1&autoplay=1&mute=1&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1${initialStartSeconds > 0 ? `&start=${initialStartSeconds}` : ""}`}
                     title="Canva Viagem Live"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   />
@@ -1551,7 +1666,7 @@ const LiveStream = () => {
 
             {/* ── BANNER DE OFERTA MOBILE (ABAIXO DO VÍDEO, NÃO SOBREPOSTO) ── */}
             {showOfferBanner && (
-              <div className="sm:hidden flex-shrink-0 bg-zinc-950 border-b border-cyan-400/30 px-3 py-2.5 animate-fade-in">
+              <div className="sm:hidden flex-shrink-0 bg-zinc-950 border-b border-cyan-400/30 px-3 py-2 animate-fade-in">
                 <div className="flex flex-row items-center gap-3">
                   <div className="bg-gradient-to-tr from-cyan-400 to-blue-600 p-2 rounded-xl text-black flex-shrink-0">
                     <ShoppingBag size={16} className="animate-bounce" />
@@ -1578,7 +1693,7 @@ const LiveStream = () => {
 
             {/* ── PAINEL DO CHAT ───────────────────────────────────────── */}
             <div
-              className="flex flex-col bg-zinc-900/60 border-t border-zinc-800/80 lg:border-t-0 lg:border-l lg:w-1/4 lg:flex-none lg:flex-1 lg:min-h-0 lg:overflow-hidden"
+              className="flex flex-col bg-zinc-900/60 border-t border-zinc-800/80 lg:border-t-0 lg:border-l lg:w-1/4 lg:flex-none flex-1 min-h-0 overflow-hidden"
               data-chat-panel
             >
 
@@ -1618,10 +1733,10 @@ const LiveStream = () => {
 
               {/* ABA CHAT */}
               {activeTab === "chat" && (
-                <div className="flex flex-col">
+                <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
                   <div
-                    className="overflow-y-auto p-3 space-y-2.5 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent"
-                    style={{ minHeight: '80px', maxHeight: '280px' }}
+                    ref={chatScrollRef}
+                    className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2.5 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent"
                   >
                     {comments.map((c) => (
                       <div
@@ -1641,27 +1756,26 @@ const LiveStream = () => {
                     <div ref={chatEndRef} />
                   </div>
 
-                  <form onSubmit={handleSendMessage} className="p-2 border-t border-zinc-800/80 bg-zinc-900/60 flex items-center gap-1.5">
+                  <form onSubmit={handleSendMessage} className="p-2 border-t border-zinc-800/80 bg-zinc-900/60 flex items-center gap-1.5 flex-shrink-0">
                     <Input
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Digite algo..."
                       className="flex-1 bg-zinc-950 border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-cyan-500 rounded-xl text-xs py-2 h-9"
                     />
-                    <Button
+                    <button
                       type="submit"
-                      size="icon"
-                      className="rounded-xl bg-cyan-400 text-black hover:bg-cyan-300 shadow-md flex-shrink-0 h-9 w-9"
+                      className="rounded-xl bg-cyan-400 text-black hover:bg-cyan-300 shadow-md flex-shrink-0 h-9 w-9 flex items-center justify-center transition-colors border-none"
                     >
                       <Send size={14} />
-                    </Button>
+                    </button>
                   </form>
                 </div>
               )}
 
               {/* ABA DE OFERTA ESPECIAL */}
               {activeTab === "offer" && (
-                <div className="overflow-y-auto p-3 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+                <div className="flex-1 min-h-0 overflow-y-auto p-3 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent flex flex-col gap-3">
                   {!offerUnlocked ? (
                     <div className="flex flex-col items-center justify-center gap-3 text-center py-8">
                       <div className="h-12 w-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
@@ -1673,7 +1787,7 @@ const LiveStream = () => {
                     <div className="bg-white rounded-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-zinc-200 flex flex-col gap-4 text-zinc-900">
 
                       {/* CRONÔMETRO — SEMPRE NO TOPO */}
-                      <div className="flex flex-col items-center justify-center gap-1 bg-red-50 rounded-2xl py-3 px-2 border border-red-100">
+                      <div className="flex flex-col items-center justify-center gap-1 bg-red-50 rounded-2xl py-3 px-2 border border-red-100 flex-shrink-0">
                         <span className="text-[10px] text-red-500 font-black uppercase tracking-wider flex items-center gap-1">
                           <Clock size={11} className="animate-pulse" />
                           A OFERTA EXPIRA EM
@@ -1684,7 +1798,7 @@ const LiveStream = () => {
                       </div>
 
                       {/* BANNER NEGRO DA OFERTA */}
-                      <div className="bg-black rounded-xl p-5 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                      <div className="bg-black rounded-xl p-5 flex flex-col items-center justify-center text-center relative overflow-hidden flex-shrink-0">
                         <div className="absolute -top-8 -left-8 w-20 h-20 rounded-full bg-emerald-500/10 blur-xl pointer-events-none" />
                         <div className="absolute -bottom-8 -right-8 w-20 h-20 rounded-full bg-yellow-500/10 blur-xl pointer-events-none" />
                         <span className="text-[#FFD700] font-black text-lg tracking-wider animate-pulse drop-shadow-[0_2px_8px_rgba(255,215,0,0.3)]">
@@ -1708,7 +1822,7 @@ const LiveStream = () => {
                       </div>
 
                       {/* ANCORAGEM DE PREÇOS */}
-                      <div className="flex justify-between items-center px-1 text-xs">
+                      <div className="flex justify-between items-center px-1 text-xs flex-shrink-0">
                         <div className="flex flex-col gap-0.5">
                           <span className="text-zinc-400 line-through font-semibold">De R$ 1.500,00</span>
                           <span className="text-zinc-900 font-extrabold text-sm">Por R$ 347,00</span>
@@ -1724,17 +1838,17 @@ const LiveStream = () => {
                         href={offerSettings.checkoutUrl || "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d"}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full block"
+                        className="w-full block flex-shrink-0"
                         onClick={trackCheckoutClick}
                       >
-                        <Button className="w-full py-5 bg-[#25D366] hover:bg-[#1ebd54] text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-[0_8px_25px_rgba(37,211,102,0.35)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] border-none flex items-center justify-center gap-2">
-                          <ShoppingBag size={16} className="animate-bounce flex-shrink-0" />
+                        <button className="w-full py-3.5 bg-[#25D366] hover:bg-[#1ebd54] text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-[0_8px_25px_rgba(37,211,102,0.35)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] border-none flex items-center justify-center gap-2">
+                          <ShoppingBag size={16} className="animate-bounce flex-shrink-0 text-white fill-none" />
                           APROVEITAR OPORTUNIDADE
-                        </Button>
+                        </button>
                       </a>
 
                       {/* VER OUTROS PLANOS */}
-                      <div className="text-center">
+                      <div className="text-center flex-shrink-0">
                         <a
                           href="/planos"
                           className="text-zinc-400 hover:text-zinc-800 text-xs font-black transition-colors underline uppercase tracking-widest"
