@@ -780,7 +780,7 @@ const LiveStream = () => {
           };
         });
 
-      const merged = [...activeScheduled, ...userComments].sort((a: any, b: any) => {
+      const merged = [...prePlayComments, ...activeScheduled, ...userComments].sort((a: any, b: any) => {
         const tA = a.sortTimestamp || 0;
         const tB = b.sortTimestamp || 0;
         return tA - tB;
