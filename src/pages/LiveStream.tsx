@@ -127,7 +127,60 @@ const LiveStream = () => {
     }
 
     const text = `Olá Lucas! Estava assistindo à aula especial da Fábrica de Criativos e parei no minuto ${timeStr} (${phase}). Gostaria de tirar uma dúvida sobre...`;
-    return `https://wa.me/5585986411294?text=${encodeURIComponent(text)}`;
+    return `https://wa.me/5585998458995?text=${encodeURIComponent(text)}`;
+  };
+
+  // Helper to sync watch progress to Supabase source JSON (highly optimized/economical)
+  const syncProgressToSupabase = async (currentSeconds: number) => {
+    try {
+      const activeSessionStr = localStorage.getItem("live_stream_active_session");
+      if (!activeSessionStr) return;
+      const activeSession = JSON.parse(activeSessionStr);
+      const cleanPhone = activeSession.phone;
+      
+      const { data: lead } = await supabase
+        .from("webinar_leads")
+        .select("source")
+        .eq("whatsapp", cleanPhone)
+        .maybeSingle();
+        
+      if (lead) {
+        let parsedSource: any = {};
+        try {
+          parsedSource = lead.source ? JSON.parse(lead.source) : {};
+        } catch (e) {
+          parsedSource = {};
+        }
+        
+        // Fetch accurate watchTime from localStorage
+        const leadsStr = localStorage.getItem("live_stream_leads");
+        let localWatchTime = 0;
+        if (leadsStr) {
+          const leads = JSON.parse(leadsStr);
+          const localLead = leads.find((l: any) => l.phone === cleanPhone);
+          if (localLead) {
+            localWatchTime = localLead.watchTime || 0;
+          }
+        }
+        
+        const nextSource = {
+          ...parsedSource,
+          sourceType: "live",
+          watchTime: localWatchTime || (parsedSource.watchTime || 0),
+          lastPlaybackTime: currentSeconds,
+          lastActiveAt: Date.now(),
+        };
+        
+        await supabase
+          .from("webinar_leads")
+          .update({
+            source: JSON.stringify(nextSource)
+          })
+          .eq("whatsapp", cleanPhone);
+      }
+    } catch (err) {
+      console.error("Erro no sync progress do Supabase:", err);
+    }
   };
 
   // Helper to update clicked offer status in Supabase
@@ -399,6 +452,11 @@ const LiveStream = () => {
       );
       toast.info(nextPaused ? "Vídeo pausado" : "Vídeo retomado");
     }
+
+    // Synergize pause event: immediately sync progress to Supabase when paused!
+    if (nextPaused) {
+      syncProgressToSupabase(playbackSeconds);
+    }
   };
 
   // Atualiza espectadores dinâmicos de forma ultra realista baseada no tempo do vídeo (curva exata solicitada)
@@ -608,56 +666,30 @@ const LiveStream = () => {
     };
   }, [isPaused, isPlaying, step]);
 
-  // Heartbeat to Supabase every 10 seconds
+  // Economical progress sync to Supabase (only every 3 minutes to save database write costs)
   useEffect(() => {
     if (!isPlaying || isPaused || step !== "watch") return;
     
-    if (playbackSeconds > 0 && playbackSeconds % 10 === 0) {
-      const syncHeartbeat = async () => {
-        try {
-          const activeSessionStr = localStorage.getItem("live_stream_active_session");
-          if (!activeSessionStr) return;
-          const activeSession = JSON.parse(activeSessionStr);
-          const cleanPhone = activeSession.phone;
-          
-          const { data: lead } = await supabase
-            .from("webinar_leads")
-            .select("source")
-            .eq("whatsapp", cleanPhone)
-            .maybeSingle();
-            
-          if (lead) {
-            let parsedSource: any = {};
-            try {
-              parsedSource = lead.source ? JSON.parse(lead.source) : {};
-            } catch (e) {
-              parsedSource = {};
-            }
-            
-            const currentWatchTime = parsedSource.watchTime || 0;
-            const nextSource = {
-              ...parsedSource,
-              sourceType: "live",
-              watchTime: currentWatchTime + 10,
-              lastPlaybackTime: playbackSeconds,
-              lastActiveAt: Date.now(),
-            };
-            
-            await supabase
-              .from("webinar_leads")
-              .update({
-                source: JSON.stringify(nextSource)
-              })
-              .eq("whatsapp", cleanPhone);
-          }
-        } catch (err) {
-          console.error("Erro no heartbeat do Supabase:", err);
-        }
-      };
-      
-      syncHeartbeat();
+    if (playbackSeconds > 0 && playbackSeconds % 180 === 0) {
+      syncProgressToSupabase(playbackSeconds);
     }
   }, [playbackSeconds, isPlaying, isPaused, step]);
+
+  // Sync immediately on page/tab visibility change (e.g. when leaving, locking phone or closing tab)
+  useEffect(() => {
+    if (step !== "watch") return;
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        syncProgressToSupabase(playbackSeconds);
+      }
+    };
+    
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [playbackSeconds, step]);
 
   // Calcula o segundo de ativação da oferta com base no tempo configurado
   const getOfferActivationSeconds = () => {

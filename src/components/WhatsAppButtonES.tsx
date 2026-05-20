@@ -1,5 +1,5 @@
 const WhatsAppButtonES = () => {
-    const whatsappUrl = "https://wa.me/5585986411294?text=Hola%2C%20me%20gustar%C3%ADa%20obtener%20informaci%C3%B3n%20sobre%20Canva%20Viagem.";
+    const whatsappUrl = "https://wa.me/5585998458995?text=Hola%2C%20me%20gustar%C3%ADa%20obtener%20informaci%C3%B3n%20sobre%20Canva%20Viagem.";
 
     return (
         <a

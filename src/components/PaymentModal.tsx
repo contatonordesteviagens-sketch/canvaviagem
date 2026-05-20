@@ -15,7 +15,7 @@ export const PaymentModal = ({ isOpen, onClose, onConfirmCard, isLoading }: Paym
     const [paymentMethod, setPaymentMethod] = useState<"selection" | "pix">("selection");
 
     const pixKey = "financeiro@rochadigitalmidia.com.br";
-    const whatsappNumber = "5585986411294"; // Updated to match the one found in code previously
+    const whatsappNumber = "5585998458995"; // Updated to match the user's single support number
 
     const handleCopyPix = () => {
         navigator.clipboard.writeText(pixKey);
