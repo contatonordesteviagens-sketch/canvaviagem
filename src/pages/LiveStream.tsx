@@ -557,17 +557,6 @@ const LiveStream = () => {
     setIsPlaying(true);
     setIsPaused(false);
     hasInitializedStartRef.current = false;
-    
-    if (iframeRef.current?.contentWindow) {
-      iframeRef.current.contentWindow.postMessage(
-        JSON.stringify({ event: "command", func: "playVideo", args: "" }), 
-        "*"
-      );
-      iframeRef.current.contentWindow.postMessage(
-        JSON.stringify({ event: "command", func: "unMute", args: "" }), 
-        "*"
-      );
-    }
   };
 
   const handleTogglePause = () => {
@@ -771,6 +760,7 @@ const LiveStream = () => {
     if (step !== "watch") return;
     
     const handleMouseLeave = (e: MouseEvent) => {
+      if (playbackSeconds < 15 * 60) return; // Only allow after 15 minutes of watching
       if (e.clientY < 5) {
         setShowRecoveryWidget(true);
         setHasManuallyClosedWidget(false); // Permite reabrir ao tentar sair, mesmo se fechado antes
@@ -781,11 +771,12 @@ const LiveStream = () => {
     return () => {
       document.removeEventListener("mouseleave", handleMouseLeave);
     };
-  }, [step]);
+  }, [step, playbackSeconds]);
 
   // Monitor pause duration (trigger WhatsApp popup if paused for > 5 seconds, only after offer shown or min 65)
   useEffect(() => {
     if (!isPlaying || step !== "watch") return;
+    if (playbackSeconds < 15 * 60) return; // Only allow after 15 minutes of watching
     
     let pauseTimer: NodeJS.Timeout;
     if (isPaused) {
@@ -811,6 +802,7 @@ const LiveStream = () => {
   // Auto-disparar o popup do WhatsApp em momentos cruciais da live (revelação da oferta e aos 65 minutos)
   useEffect(() => {
     if (step !== "watch" || !isPlaying || isPaused) return;
+    if (playbackSeconds < 15 * 60) return; // Only allow after 15 minutes of watching
     
     const offerStartSeconds = getOfferActivationSeconds();
     
@@ -1405,22 +1397,20 @@ const LiveStream = () => {
                   style={{ backgroundImage: `url('https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg')` }}
                 />
                 <div className="relative w-full h-full bg-black shadow-[0_0_80px_rgba(0,0,0,0.9)] z-10 overflow-hidden flex items-center justify-center">
-                  <iframe
-                    ref={iframeRef}
-                    className={`absolute w-full h-full border-none transition-opacity duration-500 ${
-                      isPlaying ? "opacity-100 z-10" : "opacity-0 pointer-events-none z-0"
-                    }`}
+                  <img 
+                    src={`https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg`}
+                    alt="Live Thumbnail"
+                    className="absolute w-full h-full object-cover pointer-events-none z-0"
                     style={{ transform: "scale(1.02)", transformOrigin: "center" }}
-                    src={`https://www.youtube.com/embed/${videoUrlId}?autoplay=0&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1${initialStartSeconds > 0 ? `&start=${initialStartSeconds}` : ""}`}
-                    title="Canva Viagem Live"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   />
-                  {!isPlaying && (
-                    <img 
-                      src={`https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg`}
-                      alt="Live Thumbnail"
-                      className="w-full h-full object-cover pointer-events-none"
+                  {isPlaying && (
+                    <iframe
+                      ref={iframeRef}
+                      className="absolute w-full h-full border-none z-10 transition-opacity duration-500 opacity-100"
                       style={{ transform: "scale(1.02)", transformOrigin: "center" }}
+                      src={`https://www.youtube.com/embed/${videoUrlId}?autoplay=1&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&enablejsapi=1${initialStartSeconds > 0 ? `&start=${initialStartSeconds}` : ""}`}
+                      title="Canva Viagem Live"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     />
                   )}
                 </div>
@@ -1670,7 +1660,7 @@ const LiveStream = () => {
       )}
 
       {/* FLOAT RECOVERY WIDGET (Whats Support on exit-intent or long pause) */}
-      {showRecoveryWidget && !hasManuallyClosedWidget && (
+      {playbackSeconds >= 15 * 60 && showRecoveryWidget && !hasManuallyClosedWidget && (
         <div className="fixed bottom-4 right-4 z-50 max-w-sm w-full bg-zinc-950/90 backdrop-blur-md border border-emerald-500/30 p-4 rounded-2xl shadow-[0_8px_32px_rgba(16,185,129,0.25)] flex items-center gap-3 animate-fade-in text-white">
           <div className="bg-[#25D366]/20 p-2.5 rounded-xl text-[#25D366] flex-shrink-0 animate-bounce">
             <MessageCircle size={20} className="fill-[#25D366]/20 text-[#25D366]" />
@@ -1709,8 +1699,8 @@ const LiveStream = () => {
         </div>
       )}
 
-      {/* Sleek floating pulsing WhatsApp support button (visible only after offer is shown or min 65, and if the card is closed) */}
-      {(playbackSeconds >= getOfferActivationSeconds() || playbackSeconds >= 65 * 60) && (!showRecoveryWidget || hasManuallyClosedWidget) && step === "watch" && (
+      {/* Sleek floating pulsing WhatsApp support button (visible only after 15 minutes AND (offer is shown or min 65), and if the card is closed) */}
+      {playbackSeconds >= 15 * 60 && (playbackSeconds >= getOfferActivationSeconds() || playbackSeconds >= 65 * 60) && (!showRecoveryWidget || hasManuallyClosedWidget) && step === "watch" && (
         <a
           href={getDynamicSupportLink()}
           target="_blank"
