@@ -958,8 +958,12 @@ const LiveStream = () => {
     
     const preventScroll = (e: TouchEvent) => {
       const target = e.target as HTMLElement;
-      // Permite rolagem apenas dentro do chat ou áreas roláveis da live
-      if (target.closest('.overflow-y-auto') || target.closest('[data-chat-panel]')) {
+      // Permite interação em inputs/textareas/botões e dentro do chat ou áreas roláveis da live
+      if (
+        target.closest('input, textarea, button, form, [contenteditable="true"]') ||
+        target.closest('.overflow-y-auto') ||
+        target.closest('[data-chat-panel]')
+      ) {
         return;
       }
       e.preventDefault();
