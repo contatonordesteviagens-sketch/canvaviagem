@@ -1306,7 +1306,7 @@ const LiveStream = () => {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans">
       
       {/* PASSO 1: CARD DE CADASTRO */}
       {step === "register" ? (
@@ -1408,7 +1408,7 @@ const LiveStream = () => {
         <div
           className="flex flex-col bg-zinc-950 overflow-hidden"
           style={{
-            position: 'fixed',
+            position: isIOSMobile ? 'absolute' : 'fixed',
             top: `${viewportOffsetTop}px`,
             left: 0,
             right: 0,
