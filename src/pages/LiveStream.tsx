@@ -13,10 +13,10 @@ interface Comment {
 }
 
 const INITIAL_COMMENTS: Comment[] = [
-  { id: "1", username: "Juliana Costa", message: "boa noite gente! lucas a ferramenta ta rodando?", time: "20:02" },
-  { id: "2", username: "Marcos Silva", message: "conectado de recife. ansioso pra ver a fabrica de anuncios", time: "20:02" },
-  { id: "3", username: "Fernanda", message: "o audio e video tao perfeitos aqui", time: "20:03" },
-  { id: "4", username: "Carlos", message: "Bora pra cima! boa noite lucas", time: "20:04" },
+  { id: "init-1", username: "Fabiotravell", message: "boa noite galera, ansioso pra live começar!", time: "19:28" },
+  { id: "init-2", username: "Jr99", message: "boa noite pessoal, lucas já está online?", time: "19:29" },
+  { id: "init-3", username: "AnaPeloMundo", message: "oiii gente, boa noiteee! ansiosa demais", time: "19:30" },
+  { id: "init-4", username: "PedroViagens", message: "Bora pra cima! Ansioso por essa aula da fábrica de anúncios", time: "19:30" },
 ];
 
 import { DEFAULT_SCHEDULED_COMMENTS, ScheduledComment } from "@/data/scheduledComments";
