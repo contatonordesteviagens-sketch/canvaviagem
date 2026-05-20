@@ -462,10 +462,28 @@ const LiveStream = () => {
             setInitialStartSeconds(activeSession.lastTime);
           }
 
-          // Fetch user comments from localStorage
+          // Fetch user comments from localStorage with robust playbackSecond parsing
           const savedUserComments = localStorage.getItem(`live_stream_user_comments_${activeSession.phone}`);
           if (savedUserComments) {
-            setUserComments(JSON.parse(savedUserComments));
+            try {
+              const parsed = JSON.parse(savedUserComments);
+              const mapped = parsed.map((c: any) => {
+                let pSec = c.playbackSecond;
+                if (pSec === undefined && c.time && typeof c.time === "string" && c.time.includes(":")) {
+                  const parts = c.time.split(":");
+                  const mins = parseInt(parts[0], 10) || 0;
+                  const secs = parseInt(parts[1], 10) || 0;
+                  pSec = mins * 60 + secs;
+                }
+                return {
+                  ...c,
+                  playbackSecond: pSec
+                };
+              });
+              setUserComments(mapped);
+            } catch (e) {
+              console.error("Erro ao fazer parse dos comentários do localStorage:", e);
+            }
           }
 
           // Fetch user comments from Supabase if active session exists
@@ -480,14 +498,24 @@ const LiveStream = () => {
               if (lead && lead.source) {
                 const parsedSource = typeof lead.source === "string" ? JSON.parse(lead.source) : lead.source;
                 if (parsedSource.comments && Array.isArray(parsedSource.comments)) {
-                  const dbComments = parsedSource.comments.map((c: any) => ({
-                    id: c.id || String(c.timestamp || Date.now()),
-                    username: activeSession.name || "Lucas",
-                    message: c.message,
-                    isUser: true,
-                    time: c.time,
-                    sortTimestamp: c.timestamp || Date.now()
-                  }));
+                  const dbComments = parsedSource.comments.map((c: any) => {
+                    let playbackSecond = 0;
+                    if (c.time && typeof c.time === "string" && c.time.includes(":")) {
+                      const parts = c.time.split(":");
+                      const mins = parseInt(parts[0], 10) || 0;
+                      const secs = parseInt(parts[1], 10) || 0;
+                      playbackSecond = mins * 60 + secs;
+                    }
+                    return {
+                      id: c.id || String(c.timestamp || Date.now()),
+                      username: activeSession.name || "Lucas",
+                      message: c.message,
+                      isUser: true,
+                      time: c.time,
+                      sortTimestamp: c.timestamp || Date.now(),
+                      playbackSecond: playbackSecond
+                    };
+                  });
 
                   setUserComments(prev => {
                     const merged = [...prev];
