@@ -1710,11 +1710,17 @@ const LiveStream = () => {
                     <div ref={chatEndRef} />
                   </div>
 
-                  <form onSubmit={handleSendMessage} className="p-2 border-t border-zinc-800/80 bg-zinc-900/60 flex items-center gap-1.5 flex-shrink-0">
+                  <form
+                    onSubmit={handleSendMessage}
+                    data-chat-panel
+                    className="p-2 border-t border-zinc-800/80 bg-zinc-900/60 flex items-center gap-1.5 flex-shrink-0"
+                  >
                     <Input
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Digite algo..."
+                      autoComplete="off"
+                      enterKeyHint="send"
                       className="flex-1 bg-zinc-950 border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-cyan-500 rounded-xl text-[16px] md:text-xs py-2 h-9"
                     />
                     <button
