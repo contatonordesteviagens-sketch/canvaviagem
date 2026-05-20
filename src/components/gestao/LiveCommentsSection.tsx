@@ -584,7 +584,20 @@ export const LiveCommentsSection = () => {
       }
     }
 
+    // Limpa qualquer resíduo de dados simulados antigos em localStorage
+    try {
+      const existing = localStorage.getItem("live_stream_leads");
+      if (existing) {
+        const parsed = JSON.parse(existing);
+        if (Array.isArray(parsed) && parsed.some((l: any) => typeof l.id === "string" && l.id.startsWith("mock_"))) {
+          localStorage.removeItem("live_stream_leads");
+          localStorage.removeItem("live_stream_analytics_stats");
+        }
+      }
+    } catch {}
+
     // 6. Fetch initial leads from Supabase and register realtime subscriber
+
     const initSupabaseLeads = async () => {
       try {
         // PROATIVE SYNC: Fetch global settings from Supabase to ensure Gestão is up-to-date across devices
@@ -650,18 +663,10 @@ export const LiveCommentsSection = () => {
           });
           setLeads(formattedLeads);
         } else {
-          // Empty DB? Semeia fallback/mock data localmente
-          const savedLeads = localStorage.getItem("live_stream_leads");
-          if (savedLeads && JSON.parse(savedLeads).length > 0) {
-            setLeads(JSON.parse(savedLeads));
-          } else {
-            seedMockData();
-            const freshLeads = localStorage.getItem("live_stream_leads");
-            if (freshLeads) {
-              setLeads(JSON.parse(freshLeads));
-            }
-          }
+          // Sem leads no banco: apenas mostra estado vazio (sem dados simulados)
+          setLeads([]);
         }
+
       } catch (err) {
         console.error("Erro ao carregar leads iniciais:", err);
       }
@@ -2277,15 +2282,8 @@ export const LiveCommentsSection = () => {
                   </CardDescription>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={seedMockData}
-                    className="gap-2 text-purple-400 border-purple-500/20 hover:bg-purple-500/10 font-bold"
-                  >
-                    <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
-                    Simular Dados (+35 Leads)
-                  </Button>
+                  {/* Botão de simulação removido — painel exibe apenas dados reais */}
+
                   <Button 
                     variant="outline" 
                     size="sm" 
