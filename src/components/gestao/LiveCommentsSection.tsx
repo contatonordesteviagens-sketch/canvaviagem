@@ -584,7 +584,20 @@ export const LiveCommentsSection = () => {
       }
     }
 
+    // Limpa qualquer resíduo de dados simulados antigos em localStorage
+    try {
+      const existing = localStorage.getItem("live_stream_leads");
+      if (existing) {
+        const parsed = JSON.parse(existing);
+        if (Array.isArray(parsed) && parsed.some((l: any) => typeof l.id === "string" && l.id.startsWith("mock_"))) {
+          localStorage.removeItem("live_stream_leads");
+          localStorage.removeItem("live_stream_analytics_stats");
+        }
+      }
+    } catch {}
+
     // 6. Fetch initial leads from Supabase and register realtime subscriber
+
     const initSupabaseLeads = async () => {
       try {
         // PROATIVE SYNC: Fetch global settings from Supabase to ensure Gestão is up-to-date across devices
