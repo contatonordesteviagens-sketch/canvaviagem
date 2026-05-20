@@ -205,6 +205,26 @@ export const LiveCommentsSection = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsSearch, setLeadsSearch] = useState("");
   const [expandedLeadId, setExpandedLeadId] = useState<string | null>(null);
+  const [nowTick, setNowTick] = useState(Date.now());
+
+  // Tick "agora" a cada 5s para reavaliar quem está online/saiu da live em tempo real
+  useEffect(() => {
+    const i = setInterval(() => setNowTick(Date.now()), 5000);
+    return () => clearInterval(i);
+  }, []);
+
+  // Janela considerada "online" — o player envia heartbeat a cada 20s
+  const ONLINE_WINDOW_MS = 45000;
+  const isLeadOnline = (lead: Lead) =>
+    lead.lastActiveAt ? (nowTick - lead.lastActiveAt < ONLINE_WINDOW_MS) : false;
+
+  // Estatísticas reais da live (online agora / entraram / saíram)
+  const liveSessionStats = useMemo(() => {
+    const online = leads.filter(isLeadOnline).length;
+    const entered = leads.length;
+    const left = entered - online;
+    return { online, entered, left };
+  }, [leads, nowTick]);
 
   // Audio chime synthesizer via Web Audio API
   const playChime = (type: "new-lead" | "clicked-buy" | "new-comment") => {
