@@ -845,7 +845,7 @@ const LiveStream = () => {
     } catch (e) {
       console.error("Error in comments playback synchronization:", e);
     }
-  }, [playbackSeconds, step, isPlaying, scheduledCommentsList, prePlayComments]);
+  }, [playbackSeconds, step, isPlaying, scheduledCommentsList, prePlayComments, userComments]);
 
   // Monitor exit-intent (mouse leaving the screen top)
   useEffect(() => {
