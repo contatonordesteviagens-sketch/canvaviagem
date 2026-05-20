@@ -114,15 +114,19 @@ const LiveStream = () => {
 
   useEffect(() => {
     // 1. Comments
+    let list: ScheduledComment[] = [];
     const saved = localStorage.getItem("live_stream_comments");
     if (saved) {
       try {
-        setScheduledCommentsList(JSON.parse(saved));
+        list = JSON.parse(saved);
+        setScheduledCommentsList(list);
       } catch (e) {
-        setScheduledCommentsList(DEFAULT_SCHEDULED_COMMENTS);
+        list = DEFAULT_SCHEDULED_COMMENTS;
+        setScheduledCommentsList(list);
       }
     } else {
-      setScheduledCommentsList(DEFAULT_SCHEDULED_COMMENTS);
+      list = DEFAULT_SCHEDULED_COMMENTS;
+      setScheduledCommentsList(list);
       localStorage.setItem("live_stream_comments", JSON.stringify(DEFAULT_SCHEDULED_COMMENTS));
     }
 
@@ -161,6 +165,48 @@ const LiveStream = () => {
       }
     } else {
       setPrePlayComments(DEFAULT_PRE_PLAY_COMMENTS);
+    }
+
+    // 5. Restore active session (Falta de Persistência no Recarregamento / Conexão)
+    try {
+      const activeSessionStr = localStorage.getItem("live_stream_active_session");
+      if (activeSessionStr) {
+        const activeSession = JSON.parse(activeSessionStr);
+        if (activeSession.phone && activeSession.name) {
+          setName(activeSession.name);
+          setPhone(activeSession.phone);
+          setStep("watch");
+          
+          if (activeSession.lastTime && activeSession.lastTime > 0) {
+            setPlaybackSeconds(activeSession.lastTime);
+            
+            // Popula os comentários que já aconteceram para dar contexto à live!
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            const restored = list
+              .filter((c: any) => {
+                const parts = c.time.split(":");
+                const mins = parseInt(parts[0], 10) || 0;
+                const secs = parseInt(parts[1], 10) || 0;
+                const totalSecs = mins * 60 + secs;
+                return totalSecs <= activeSession.lastTime;
+              })
+              .map((c: any, index: number) => ({
+                id: `restored-${c.time}-${index}-${Date.now()}`,
+                username: c.username,
+                message: c.message,
+                time: timeStr
+              }));
+              
+            setComments(restored);
+            
+            toast.info(`Retomando transmissão de onde você parou: ${Math.floor(activeSession.lastTime / 60)} min e ${activeSession.lastTime % 60}s`);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Erro ao carregar sessão ativa persistida:", e);
     }
   }, []);
   
@@ -316,13 +362,16 @@ const LiveStream = () => {
           const activeSessionStr = localStorage.getItem("live_stream_active_session");
           if (activeSessionStr) {
             const activeSession = JSON.parse(activeSessionStr);
+            activeSession.lastTime = next; // Persiste o segundo de reprodução atualizado para resiliência de queda/recarregamento
+            localStorage.setItem("live_stream_active_session", JSON.stringify(activeSession));
+
             const leadsStr = localStorage.getItem("live_stream_leads");
             if (leadsStr) {
               const leads = JSON.parse(leadsStr);
               const leadIndex = leads.findIndex((l: any) => l.phone === activeSession.phone);
               if (leadIndex !== -1) {
                 leads[leadIndex].watchTime = (leads[leadIndex].watchTime || 0) + 1;
-                leads[leadIndex].lastActiveAt = Date.now(); // Atualiza heartbeat de atividade online
+                leads[leadIndex].lastActiveAt = Date.now(); // Heartbeat de atividade online
                 localStorage.setItem("live_stream_leads", JSON.stringify(leads));
               }
             }
@@ -404,7 +453,7 @@ const LiveStream = () => {
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   };
 
-  // Trigger scheduled pricing banner/offer at exact MM:SS marker
+  // Trigger scheduled pricing banner/offer at exact MM:SS marker (and keep visible if past that time)
   useEffect(() => {
     if (!isPlaying || isPaused || step !== "watch" || offerSettings.status !== "scheduled") return;
 
@@ -413,12 +462,18 @@ const LiveStream = () => {
       const mins = parseInt(parts[0], 10) || 0;
       const secs = parseInt(parts[1], 10) || 0;
       const totalSecs = mins * 60 + secs;
-      if (playbackSeconds === totalSecs) {
-        setShowOfferBanner(true);
-        toast.success("🔥 Oferta Especial Revelada! Aproveite o desconto exclusivo.");
+      if (playbackSeconds >= totalSecs) {
+        if (!showOfferBanner) {
+          setShowOfferBanner(true);
+          toast.success("🔥 Oferta Especial Revelada! Aproveite o desconto exclusivo.");
+        }
+      } else {
+        if (showOfferBanner) {
+          setShowOfferBanner(false);
+        }
       }
     }
-  }, [playbackSeconds, isPlaying, isPaused, step, offerSettings]);
+  }, [playbackSeconds, isPlaying, isPaused, step, offerSettings, showOfferBanner]);
 
   // Fallback scrolling chat simulation after scheduled comments run out
   useEffect(() => {
@@ -854,7 +909,7 @@ const LiveStream = () => {
                       ref={iframeRef}
                       className="absolute w-full h-full border-none pointer-events-none"
                       style={{ transform: "scale(1.02)", transformOrigin: "center" }}
-                      src={`https://www.youtube.com/embed/${videoUrlId}?autoplay=1&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1`}
+                      src={`https://www.youtube.com/embed/${videoUrlId}?autoplay=1&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1${playbackSeconds > 0 ? `&start=${playbackSeconds}` : ""}`}
                       title="Canva Viagem Live"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     />
