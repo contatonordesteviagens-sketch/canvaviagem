@@ -100,8 +100,28 @@ const LiveStream = () => {
   const [newComment, setNewComment] = useState("");
   const [activeTab, setActiveTab] = useState<"chat" | "support">("chat");
   const [scheduledCommentsList, setScheduledCommentsList] = useState<ScheduledComment[]>([]);
+  const [videoUrlId, setVideoUrlId] = useState("Xqcw-NpPz08");
+  const [offerSettings, setOfferSettings] = useState({
+    status: "scheduled",
+    time: "50:00",
+    title: "🔥 OFERTA EXCLUSIVA DA LIVE LIBERADA!",
+    description: "Adquira o Canva Viagem Vitalício + Fábrica de Anúncios I.A com Desconto!",
+    price: "Apenas 12x de R$ 29,70 ou R$ 297 à vista",
+    checkoutUrl: "/planos",
+    bannerUrl: ""
+  });
+  const [showOfferBanner, setShowOfferBanner] = useState(false);
+
+  const getYouTubeId = (urlOrId: string) => {
+    if (!urlOrId) return "Xqcw-NpPz08";
+    if (urlOrId.length === 11) return urlOrId;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = urlOrId.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : urlOrId;
+  };
 
   useEffect(() => {
+    // 1. Comments
     const saved = localStorage.getItem("live_stream_comments");
     if (saved) {
       try {
@@ -113,6 +133,26 @@ const LiveStream = () => {
     } else {
       setScheduledCommentsList(DEFAULT_SCHEDULED_COMMENTS);
       localStorage.setItem("live_stream_comments", JSON.stringify(DEFAULT_SCHEDULED_COMMENTS));
+    }
+
+    // 2. Video URL/ID
+    const savedVideo = localStorage.getItem("live_stream_video_url");
+    if (savedVideo) {
+      setVideoUrlId(getYouTubeId(savedVideo));
+    }
+
+    // 3. Offer Settings
+    const savedOffer = localStorage.getItem("live_stream_offer_settings");
+    if (savedOffer) {
+      try {
+        const parsed = JSON.parse(savedOffer);
+        setOfferSettings(parsed);
+        if (parsed.status === "visible") {
+          setShowOfferBanner(true);
+        }
+      } catch (e) {
+        console.error("Error parsing offer settings", e);
+      }
     }
   }, []);
   
@@ -230,6 +270,22 @@ const LiveStream = () => {
       ]);
     }
   }, [playbackSeconds, isPlaying, isPaused, step]);
+
+  // Trigger scheduled pricing banner/offer at exact MM:SS marker
+  useEffect(() => {
+    if (!isPlaying || isPaused || step !== "watch" || offerSettings.status !== "scheduled") return;
+
+    const parts = offerSettings.time.split(":");
+    if (parts.length === 2) {
+      const mins = parseInt(parts[0], 10) || 0;
+      const secs = parseInt(parts[1], 10) || 0;
+      const totalSecs = mins * 60 + secs;
+      if (playbackSeconds === totalSecs) {
+        setShowOfferBanner(true);
+        toast.success("🔥 Oferta Especial Revelada! Aproveite o desconto exclusivo.");
+      }
+    }
+  }, [playbackSeconds, isPlaying, isPaused, step, offerSettings]);
 
   // Fallback scrolling chat simulation (adds a comment every 15s to 25s after scheduled comments run out, which is 7200s/2h)
   useEffect(() => {
@@ -566,7 +622,7 @@ const LiveStream = () => {
                 {/* Imagem de Fundo Borrada (Ambient Glow) */}
                 <div 
                   className="absolute inset-0 bg-cover bg-center blur-3xl opacity-35 scale-125 pointer-events-none transition-all duration-700"
-                  style={{ backgroundImage: `url('https://img.youtube.com/vi/Xqcw-NpPz08/maxresdefault.jpg')` }}
+                  style={{ backgroundImage: `url('https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg')` }}
                 />
 
                 {/* Iframe do Vídeo Horizontal (16:9 Nativo - Bloqueado Contra Cliques e Sem Controles de Busca) */}
@@ -574,13 +630,80 @@ const LiveStream = () => {
                   <iframe
                     ref={iframeRef}
                     className="w-full h-full border-none pointer-events-none"
-                    src={`https://www.youtube.com/embed/Xqcw-NpPz08?autoplay=${isPlaying ? 1 : 0}&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1`}
+                    src={`https://www.youtube.com/embed/${videoUrlId}?autoplay=${isPlaying ? 1 : 0}&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&enablejsapi=1`}
                     title="Canva Viagem Live"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   />
                 </div>
 
               </div>
+
+              {/* BANNER DE OFERTA EXCLUSIVA DINÂMICO E BOTÃO DE CHECKOUT */}
+              {showOfferBanner && (
+                <div className="absolute bottom-4 left-4 right-4 z-40 bg-zinc-950/95 backdrop-blur-xl border-2 border-cyan-400/40 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-[0_0_40px_rgba(34,211,238,0.25)] animate-fade-in transition-all duration-500">
+                  {offerSettings.bannerUrl ? (
+                    <div className="relative w-full flex flex-col items-center">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setShowOfferBanner(false); }}
+                        className="absolute -top-2 -right-2 z-50 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full w-6 h-6 flex items-center justify-center border border-zinc-700 shadow-md text-[10px]"
+                      >
+                        ✕
+                      </button>
+                      <a href={offerSettings.checkoutUrl} target="_blank" rel="noopener noreferrer" className="w-full">
+                        <img 
+                          src={offerSettings.bannerUrl} 
+                          alt="Oferta Especial" 
+                          className="w-full h-auto rounded-xl hover:scale-[1.01] transition-transform duration-300 max-h-[140px] object-cover" 
+                        />
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="relative w-full flex flex-col md:flex-row items-center justify-between gap-4 pr-8">
+                      {/* Botão de Fechar */}
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setShowOfferBanner(false); }}
+                        className="absolute -top-2 -right-2 md:top-0 md:right-0 z-50 text-zinc-400 hover:text-white text-xs font-bold bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-full w-6 h-6 flex items-center justify-center"
+                      >
+                        ✕
+                      </button>
+
+                      {/* Info Esquerda */}
+                      <div className="flex items-center gap-3">
+                        <div className="bg-gradient-to-tr from-cyan-400 to-blue-600 p-2.5 rounded-xl text-black flex-shrink-0">
+                          <ShoppingBag size={20} className="animate-bounce" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] bg-red-600 px-2 py-0.5 rounded text-white font-black uppercase tracking-wider animate-pulse flex-shrink-0">Live Oferta</span>
+                            <h4 className="text-xs md:text-sm font-black text-white uppercase tracking-wider line-clamp-1">{offerSettings.title}</h4>
+                          </div>
+                          <p className="text-[11px] text-zinc-300 font-medium leading-tight mt-1 line-clamp-1">{offerSettings.description}</p>
+                        </div>
+                      </div>
+
+                      {/* Preço Meio */}
+                      <div className="flex flex-col items-center md:items-end text-center md:text-right bg-zinc-900/60 px-4 py-1.5 rounded-xl border border-zinc-800/80 flex-shrink-0">
+                        <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Valor Especial</span>
+                        <span className="text-cyan-400 font-black text-xs md:text-sm tracking-tight">{offerSettings.price}</span>
+                      </div>
+
+                      {/* Botão Direita */}
+                      <a 
+                        href={offerSettings.checkoutUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-full md:w-auto"
+                      >
+                        <button className="w-full md:w-auto bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-300 hover:to-green-400 text-black font-black px-5 py-2.5 rounded-xl shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 text-xs uppercase tracking-wider animate-pulse whitespace-nowrap">
+                          <Sparkles size={13} className="fill-black" />
+                          Garantir Desconto
+                        </button>
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
 
             </div>
 
