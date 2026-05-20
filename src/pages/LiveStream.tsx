@@ -1027,44 +1027,6 @@ const LiveStream = () => {
     }
   }, [playbackSeconds, isPlaying, isPaused, step, offerSettings, showOfferBanner]);
 
-  // Fallback scrolling chat simulation after scheduled comments run out or in sparse intervals
-  useEffect(() => {
-    if (step !== "watch" || isPaused || !isPlaying) return;
-
-    const addFakeComment = () => {
-      // Gera um comentário a cada 4 a 12 segundos para manter a live ativa
-      const randomDelay = Math.floor(Math.random() * 8000) + 4000;
-      
-      return setTimeout(() => {
-        if (!poolRef.current || poolRef.current.length === 0) {
-          poolRef.current = [...AUTO_COMMENTS_POOL];
-        }
-
-        const randomIndex = Math.floor(Math.random() * poolRef.current.length);
-        const randomComment = poolRef.current[randomIndex];
-        poolRef.current.splice(randomIndex, 1);
-
-        const now = new Date();
-        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        
-        const newFake: Comment = {
-          id: `fallback-${Date.now()}-${randomComment.username}-${Math.random()}`,
-          username: randomComment.username,
-          message: randomComment.message,
-          time: timeStr,
-          playbackSecond: playbackSecondsRef.current
-        };
-        
-        setFallbackComments(prev => [...prev, newFake]);
-        
-        addFakeComment();
-      }, randomDelay);
-    };
-
-    const timer = addFakeComment();
-    return () => clearTimeout(timer);
-  }, [step, isPaused, isPlaying]);
-
   // Auto scroll: usa container.scrollTop para não rolar a página inteira
   useEffect(() => {
     if (step === "watch" && chatScrollRef.current) {
