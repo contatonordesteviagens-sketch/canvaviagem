@@ -486,22 +486,12 @@ export const LiveCommentsSection = () => {
 
   // Load settings on mount and listen to Supabase realtime events
   useEffect(() => {
-    // 1. Comments & perform proactive cache validation to clean up old complaining comments
+    // 1. Comments - carrega exatamente a lista administrada, sem filtrar/remover mensagens pelo texto.
     const savedComments = localStorage.getItem("live_stream_comments");
     if (savedComments) {
       try {
         const parsed = JSON.parse(savedComments);
-        if (
-          !Array.isArray(parsed) || 
-          parsed.length === 0 || 
-          parsed.some((c: any) => 
-            c.message && (
-              c.message.toLowerCase().includes("travando") || 
-              c.message.toLowerCase().includes("travou") ||
-              c.message.toLowerCase().includes("melhorou")
-            )
-          )
-        ) {
+        if (!Array.isArray(parsed) || parsed.length === 0) {
           setComments([...DEFAULT_SCHEDULED_COMMENTS]);
           localStorage.setItem("live_stream_comments", JSON.stringify(DEFAULT_SCHEDULED_COMMENTS));
         } else {
