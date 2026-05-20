@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Paperclip, Smile, Eye, MessageCircle, AlertCircle, Sparkles, Play, Check, Pause, Clock, ShoppingBag } from "lucide-react";
+import { Send, Smile, Eye, MessageCircle, AlertCircle, Sparkles, Play, Check, Pause, Clock, ShoppingBag, Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -70,16 +70,16 @@ const LiveStream = () => {
   const [viewers, setViewers] = useState(107);
   const [comments, setComments] = useState<Comment[]>(INITIAL_COMMENTS);
   const [newComment, setNewComment] = useState("");
-  const [activeTab, setActiveTab] = useState<"chat" | "support" | "offer">("chat");
+  const [activeTab, setActiveTab] = useState<"chat" | "offer">("chat");
   const [scheduledCommentsList, setScheduledCommentsList] = useState<ScheduledComment[]>([]);
   const [videoUrlId, setVideoUrlId] = useState("Xqcw-NpPz08");
   const [offerSettings, setOfferSettings] = useState({
     status: "scheduled",
-    time: "50:00",
+    time: "60:00",
     title: "🔥 OFERTA EXCLUSIVA DA LIVE LIBERADA!",
     description: "Adquira o Canva Viagem Vitalício + Fábrica de Anúncios I.A com Desconto!",
-    price: "Apenas 12x de R$ 29,70 ou R$ 297 à vista",
-    checkoutUrl: "/planos",
+    price: "Apenas 12x de R$ 28,91 ou R$ 347 à vista",
+    checkoutUrl: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
     bannerUrl: ""
   });
   const [showOfferBanner, setShowOfferBanner] = useState(false);
@@ -99,7 +99,6 @@ const LiveStream = () => {
       try {
         setScheduledCommentsList(JSON.parse(saved));
       } catch (e) {
-        console.error("Error parsing saved comments", e);
         setScheduledCommentsList(DEFAULT_SCHEDULED_COMMENTS);
       }
     } else {
@@ -142,8 +141,6 @@ const LiveStream = () => {
       setIsTimeAllowed(true);
     };
     verify();
-    
-    // Periódico a cada 15 segundos
     const interval = setInterval(verify, 15000);
     return () => clearInterval(interval);
   }, []);
@@ -171,7 +168,7 @@ const LiveStream = () => {
     if (step !== "watch") return;
     const interval = setInterval(() => {
       setViewers(prev => {
-        const change = Math.floor(Math.random() * 5) - 2; // -2 to +2
+        const change = Math.floor(Math.random() * 5) - 2;
         const nextValue = prev + change;
         return Math.max(90, Math.min(120, nextValue));
       });
@@ -216,14 +213,24 @@ const LiveStream = () => {
     }
   }, [playbackSeconds, isPlaying, isPaused, step]);
 
-  // Auto-switch to "Oferta" tab at minute 60 (3600 seconds)
+  // Calcula o segundo de ativação da oferta com base no tempo configurado
+  const getOfferActivationSeconds = () => {
+    const parts = offerSettings.time.split(":");
+    if (parts.length === 2) {
+      return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+    }
+    return 3600; // default 60 min
+  };
+
+  // Auto-switch to "Oferta" tab at configured time
   useEffect(() => {
     if (isPlaying && step === "watch") {
-      if (playbackSeconds >= 3600 && !offerActivatedRef.current) {
+      const offerStartSeconds = getOfferActivationSeconds();
+      if (playbackSeconds >= offerStartSeconds && !offerActivatedRef.current) {
         offerActivatedRef.current = true;
         setActiveTab("offer");
         toast.success("🔥 Oferta Especial Revelada! Aproveite o desconto exclusivo.");
-      } else if (playbackSeconds < 3600 && offerActivatedRef.current) {
+      } else if (playbackSeconds < offerStartSeconds && offerActivatedRef.current) {
         offerActivatedRef.current = false;
         if (activeTab === "offer") {
           setActiveTab("chat");
@@ -233,7 +240,7 @@ const LiveStream = () => {
   }, [playbackSeconds, isPlaying, step, activeTab]);
 
   const getOfferCountdown = () => {
-    const offerStartSeconds = 3600; // Minute 60
+    const offerStartSeconds = getOfferActivationSeconds();
     const countdownTotal = 600; // 10 minutes (600 seconds)
     if (playbackSeconds < offerStartSeconds) {
       return "10:00";
@@ -261,13 +268,13 @@ const LiveStream = () => {
     }
   }, [playbackSeconds, isPlaying, isPaused, step, offerSettings]);
 
-  // Fallback scrolling chat simulation (adds a comment every 15s to 25s after scheduled comments run out, which is 7200s/2h)
+  // Fallback scrolling chat simulation after scheduled comments run out
   useEffect(() => {
     if (step !== "watch" || isPaused || !isPlaying) return;
-    if (playbackSeconds < 7200) return; // Keep chat only displaying scheduled comments for first 2 hours
+    if (playbackSeconds < 7200) return;
 
     const addFakeComment = () => {
-      const randomDelay = Math.floor(Math.random() * 10000) + 15000; // 15s to 25s
+      const randomDelay = Math.floor(Math.random() * 10000) + 15000;
       
       return setTimeout(() => {
         if (poolRef.current.length === 0) return;
@@ -311,7 +318,6 @@ const LiveStream = () => {
     }
     setIsSubmitting(true);
     
-    // Simulate loading spinner
     setTimeout(() => {
       setIsSubmitting(false);
       setStep("watch");
@@ -326,7 +332,6 @@ const LiveStream = () => {
     const now = new Date();
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-    // Sincroniza com o nome do usuário cadastrado na captura
     const userComment: Comment = {
       id: String(Date.now()),
       username: name.trim() || "Lucas",
@@ -340,17 +345,17 @@ const LiveStream = () => {
     toast.success("Comentário publicado!");
   };
 
+  const offerActivationSec = getOfferActivationSeconds();
+  const offerUnlocked = playbackSeconds >= offerActivationSec;
+
   if (!isTimeAllowed) {
     return (
       <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none justify-center items-center p-4 md:p-6 animate-fade-in relative overflow-hidden">
-        {/* Glow ambient background effects */}
         <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-cyan-500/10 blur-[100px] pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-80 h-80 rounded-full bg-blue-500/10 blur-[100px] pointer-events-none" />
 
         <div className="max-w-md w-full relative z-10">
           <div className="bg-zinc-900/80 backdrop-blur-xl text-zinc-100 rounded-3xl shadow-2xl border border-zinc-800/80 p-6 md:p-8 flex flex-col gap-6 items-center text-center">
-            
-            {/* Header / Brand */}
             <div className="flex flex-col items-center">
               <span className="text-[10px] uppercase tracking-[0.25em] font-black text-cyan-400">Canva Viagem</span>
               <h2 className="text-xl font-black italic tracking-tighter text-white mt-1">
@@ -358,7 +363,6 @@ const LiveStream = () => {
               </h2>
             </div>
 
-            {/* Offline Icon Container */}
             <div className="relative flex items-center justify-center my-2">
               <div className="absolute inset-0 w-24 h-24 rounded-full bg-cyan-400/5 animate-pulse" />
               <div className="h-20 w-20 rounded-full bg-zinc-950 border border-zinc-800 flex items-center justify-center shadow-inner relative z-10">
@@ -366,7 +370,6 @@ const LiveStream = () => {
               </div>
             </div>
 
-            {/* Title & Info */}
             <div className="space-y-2">
               <h3 className="text-lg md:text-xl font-black text-white uppercase tracking-wide">
                 Transmissão Offline
@@ -376,7 +379,6 @@ const LiveStream = () => {
               </p>
             </div>
 
-            {/* Time badge details with premium visual container */}
             <div className="w-full bg-zinc-950 border border-zinc-800/50 rounded-2xl p-4 flex flex-col gap-3">
               <div className="flex justify-between items-center text-xs border-b border-zinc-800/50 pb-2">
                 <span className="text-zinc-500 font-bold uppercase tracking-wider">Período de Acesso</span>
@@ -390,12 +392,10 @@ const LiveStream = () => {
               </div>
             </div>
 
-            {/* Countdown / Wait notice */}
             <div className="flex items-center gap-2 bg-zinc-950/40 border border-zinc-800/40 px-4 py-2 rounded-xl text-[10px] text-zinc-400 uppercase tracking-widest font-black">
               <span className="h-2 w-2 rounded-full bg-zinc-600 animate-pulse" />
               Retorne no horário da transmissão
             </div>
-            
           </div>
         </div>
       </div>
@@ -403,161 +403,160 @@ const LiveStream = () => {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none justify-center animate-fade-in">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none">
       
       {/* PASSO 1: CARD DE CADASTRO */}
       {step === "register" ? (
-        <div className="max-w-md w-full mx-auto p-4 md:p-6">
-          <div className="bg-white text-zinc-900 rounded-3xl shadow-2xl overflow-hidden border border-zinc-200 p-6 flex flex-col gap-6">
-            
-            {/* BANNER ESTILIZADO SUPERIOR */}
-            <div className="bg-black text-white p-5 rounded-2xl flex flex-col items-center justify-center text-center relative overflow-hidden border border-zinc-800">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 to-blue-500" />
-              <span className="text-[9px] uppercase tracking-[0.2em] font-black text-zinc-500">Acelere Suas Vendas com</span>
-              <h2 className="text-lg md:text-xl font-black italic tracking-tighter text-cyan-400 mt-1">
-                CANVA VIAGEM <span className="text-white">& FÁBRICA</span>
-              </h2>
-              <div className="flex gap-1.5 mt-3 justify-center">
-                <span className="text-[8px] bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 font-bold">✓ Feed Premium em 5 min</span>
-                <span className="text-[8px] bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 font-bold">✓ Anúncios com I.A em 5s</span>
-              </div>
-            </div>
-
-            {/* BARRA DE PROGRESSO DE VAGAS */}
-            <div className="w-full">
-              <div className="h-6 w-full bg-zinc-200 rounded-full overflow-hidden relative border border-zinc-300">
-                <div 
-                  className="h-full bg-[#25D366] rounded-full flex items-center justify-center text-[10px] font-black text-white tracking-wider animate-pulse" 
-                  style={{ width: "84%" }}
-                >
-                  84% dos agentes de viagens conectados...
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full max-w-sm">
+            <div className="bg-white text-zinc-900 rounded-3xl shadow-2xl overflow-hidden border border-zinc-200 p-6 flex flex-col gap-5">
+              
+              {/* BANNER ESTILIZADO SUPERIOR */}
+              <div className="bg-black text-white p-5 rounded-2xl flex flex-col items-center justify-center text-center relative overflow-hidden border border-zinc-800">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 to-blue-500" />
+                <span className="text-[9px] uppercase tracking-[0.2em] font-black text-zinc-500">Acelere Suas Vendas com</span>
+                <h2 className="text-lg md:text-xl font-black italic tracking-tighter text-cyan-400 mt-1">
+                  CANVA VIAGEM <span className="text-white">&amp; FÁBRICA</span>
+                </h2>
+                <div className="flex gap-1.5 mt-3 justify-center">
+                  <span className="text-[8px] bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 font-bold">✓ Feed Premium em 5 min</span>
+                  <span className="text-[8px] bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 font-bold">✓ Anúncios com I.A em 5s</span>
                 </div>
               </div>
-            </div>
 
-            {/* TÍTULO PRINCIPAL (ALINHADO EM EXATAMENTE 2 LINHAS) */}
-            <div className="text-center md:text-left">
-              <h3 className="text-[22px] md:text-[28px] font-black text-zinc-900 leading-tight">
-                A I.A que cria anúncios <br className="hidden sm:inline" />e site de viagens em minutos!
-              </h3>
-            </div>
-
-            {/* FORMULÁRIO DE CADASTRO COM DIV DIRETA (EVITA BLOQUEIOS DO NAVEGADOR) */}
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-black text-zinc-700 uppercase tracking-wider">Nome</label>
-                <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Seu nome completo"
-                  required
-                  className="bg-zinc-50 border-zinc-200 text-zinc-900 focus-visible:ring-[#00E5FF] rounded-xl py-5"
-                />
+              {/* BARRA DE PROGRESSO DE VAGAS */}
+              <div className="w-full">
+                <div className="h-6 w-full bg-zinc-200 rounded-full overflow-hidden relative border border-zinc-300">
+                  <div 
+                    className="h-full bg-[#25D366] rounded-full flex items-center justify-center text-[10px] font-black text-white tracking-wider animate-pulse" 
+                    style={{ width: "84%" }}
+                  >
+                    84% dos agentes de viagens conectados...
+                  </div>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-black text-zinc-700 uppercase tracking-wider">Telefone</label>
-                <div className="flex gap-2">
-                  <div className="flex items-center justify-center gap-1.5 px-3 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 text-sm font-bold flex-shrink-0">
-                    <span>🇧🇷 BR</span>
-                    <span className="text-[10px] text-zinc-500">▼</span>
-                  </div>
+              {/* TÍTULO PRINCIPAL */}
+              <div className="text-center">
+                <h3 className="text-[22px] md:text-[26px] font-black text-zinc-900 leading-tight">
+                  A I.A que cria anúncios e site de viagens em minutos!
+                </h3>
+              </div>
+
+              {/* FORMULÁRIO */}
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-black text-zinc-700 uppercase tracking-wider">Nome</label>
                   <Input
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="(85) 99845-8995"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Seu nome completo"
                     required
-                    className="flex-1 bg-zinc-50 border-zinc-200 text-zinc-900 focus-visible:ring-[#00E5FF] rounded-xl py-5"
+                    className="bg-zinc-50 border-zinc-200 text-zinc-900 focus-visible:ring-[#00E5FF] rounded-xl py-5"
                   />
                 </div>
-              </div>
 
-              {/* BOTÃO DE ENVIAR COM CLICK DIRETO (VERDE ANTES, MUDA DE COR PARA CIANO DEPOIS DO CLICK) */}
-              <Button
-                onClick={handleRegister}
-                disabled={isSubmitting}
-                className={`w-full font-black py-6 rounded-xl shadow-lg border-none flex items-center justify-center text-md transition-all duration-300 ${
-                  isSubmitting 
-                    ? "bg-[#00E5FF] hover:bg-[#00c8e0] text-black" 
-                    : "bg-[#25D366] hover:bg-[#20ba59] text-white"
-                }`}
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center gap-2">
-                    <div className="h-5 w-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                    <span>Conectando à Live...</span>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-black text-zinc-700 uppercase tracking-wider">Telefone</label>
+                  <div className="flex gap-2">
+                    <div className="flex items-center justify-center gap-1.5 px-3 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 text-sm font-bold flex-shrink-0">
+                      <span>🇧🇷 BR</span>
+                      <span className="text-[10px] text-zinc-500">▼</span>
+                    </div>
+                    <Input
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="(85) 99845-8995"
+                      required
+                      className="flex-1 bg-zinc-50 border-zinc-200 text-zinc-900 focus-visible:ring-[#00E5FF] rounded-xl py-5"
+                    />
                   </div>
-                ) : (
-                  "Confirmar Inscrição"
-                )}
-              </Button>
+                </div>
+
+                <Button
+                  onClick={handleRegister}
+                  disabled={isSubmitting}
+                  className={`w-full font-black py-6 rounded-xl shadow-lg border-none flex items-center justify-center text-md transition-all duration-300 ${
+                    isSubmitting 
+                      ? "bg-[#00E5FF] hover:bg-[#00c8e0] text-black" 
+                      : "bg-[#25D366] hover:bg-[#20ba59] text-white"
+                  }`}
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-2">
+                      <div className="h-5 w-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                      <span>Conectando à Live...</span>
+                    </div>
+                  ) : (
+                    "Confirmar Inscrição"
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       ) : (
         
-        /* PASSO 2: PLAYER DA LIVE ULTRA CLEAN COM CHAT (TELA CHEIA) */
-        <main className="flex-1 w-full max-w-full mx-auto px-4 pb-4 md:px-6 md:pb-6 flex flex-col gap-4 h-[calc(100vh-20px)] lg:h-[calc(100vh-10px)] overflow-hidden">
-          
-          {/* TÍTULO DA LIVE ULTRA CLEAN */}
-          <div className="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-4 flex items-center justify-between gap-4 flex-shrink-0">
-            <h2 className="text-lg md:text-xl font-black text-white tracking-wide">
-              Como usar a Fábrica de Anúncios e Criar Anúncios e Site de Viagens com I.A!
+        /* PASSO 2: PLAYER DA LIVE — LAYOUT MOBILE-FIRST */
+        <div className="flex flex-col h-screen overflow-hidden">
+
+          {/* HEADER DA LIVE */}
+          <div className="bg-zinc-900/80 border-b border-zinc-800/80 px-3 py-2.5 flex items-center justify-between gap-2 flex-shrink-0">
+            <h2 className="text-xs sm:text-sm font-black text-white leading-tight flex-1 min-w-0 truncate">
+              Como usar a Fábrica de Anúncios e Criar Site de Viagens com I.A!
             </h2>
-            <div className="flex items-center gap-1.5 bg-red-600/15 border border-red-500/20 px-3 py-1.5 rounded-xl flex-shrink-0 animate-pulse">
-              <span className="h-2 w-2 rounded-full bg-red-500" />
-              <span className="text-[10px] font-black text-red-500 uppercase tracking-wider">Ao Vivo</span>
+            <div className="flex items-center gap-1.5 bg-red-600/15 border border-red-500/20 px-2.5 py-1 rounded-xl flex-shrink-0 animate-pulse">
+              <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+              <span className="text-[9px] font-black text-red-400 uppercase tracking-wider hidden sm:block">Ao Vivo</span>
             </div>
           </div>
 
-          {/* GRID PRINCIPAL: VÍDEO GIGANTE E CHAT LADO A LADO */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 flex-1 min-h-0 items-stretch">
-            
-            {/* LADO ESQUERDO: PLAYER DE VÍDEO HORIZONTAL 16:9 COM GLOW AMBIENT */}
-            <div className="lg:col-span-3 flex flex-col bg-black border border-zinc-800/80 rounded-3xl overflow-hidden shadow-[0_24px_50px_rgba(0,0,0,0.5)] relative h-full">
-              
-              {/* BADGES DO LIVESTREAM EM CIMA DO VÍDEO */}
-              <div className="absolute top-4 left-4 z-40 flex items-center gap-2">
-                <div className="flex items-center gap-1.5 bg-red-600 px-3 py-1.5 rounded-full font-black text-xs text-white uppercase tracking-wider shadow-lg">
-                  <span className="h-2 w-2 rounded-full bg-white animate-ping" />
+          {/* LAYOUT PRINCIPAL: empilhado no mobile, lado a lado no desktop */}
+          <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
+
+            {/* ── PLAYER DE VÍDEO ─────────────────────────────────────── */}
+            <div className="relative bg-black lg:flex-1 overflow-hidden" style={{ minHeight: "min(55vw, 56vh)" }}>
+
+              {/* BADGES */}
+              <div className="absolute top-3 left-3 z-40 flex items-center gap-2">
+                <div className="flex items-center gap-1.5 bg-red-600 px-2.5 py-1 rounded-full font-black text-[10px] text-white uppercase tracking-wider shadow-lg">
+                  <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
                   Ao Vivo
                 </div>
-                <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-black text-white shadow-lg border border-white/10">
-                  <Eye size={13} className="text-cyan-400 animate-pulse" />
+                <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-black text-white shadow-lg border border-white/10">
+                  <Eye size={11} className="text-cyan-400 animate-pulse" />
                   <span>{viewers}</span>
                 </div>
               </div>
 
-              {/* CAPA INTERATIVA DE CLICK-TO-PLAY */}
+              {/* CLICK-TO-PLAY OVERLAY */}
               {!isPlaying ? (
                 <div 
                   onClick={() => setIsPlaying(true)}
-                  className="absolute inset-0 z-30 cursor-pointer bg-gradient-to-t from-zinc-950 via-zinc-900/90 to-zinc-950 flex flex-col items-center justify-between p-8 text-center transition-all duration-500 hover:brightness-110"
+                  className="absolute inset-0 z-30 cursor-pointer bg-gradient-to-t from-zinc-950 via-zinc-900/90 to-zinc-950 flex flex-col items-center justify-between p-6 text-center hover:brightness-110 transition-all duration-500"
                 >
-                  <h3 className="text-xl md:text-3xl font-black text-white tracking-widest uppercase mt-4">
+                  <h3 className="text-lg md:text-3xl font-black text-white tracking-widest uppercase mt-4">
                     SUA AULA JÁ COMEÇOU
                   </h3>
 
-                  {/* CÍRCULO PLAY GIGANTE */}
-                  <div className="h-24 w-24 md:h-32 md:w-32 rounded-full bg-white/10 border-4 border-white/20 flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 hover:bg-white/15 animate-pulse">
-                    <Play size={44} className="text-white fill-white ml-2" />
+                  <div className="h-20 w-20 md:h-28 md:w-28 rounded-full bg-white/10 border-4 border-white/20 flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 hover:bg-white/15 animate-pulse">
+                    <Play size={36} className="text-white fill-white ml-2" />
                   </div>
 
-                  <h3 className="text-xl md:text-3xl font-black text-white tracking-widest uppercase mb-4">
+                  <h3 className="text-lg md:text-3xl font-black text-white tracking-widest uppercase mb-4">
                     CLIQUE PARA ASSISTIR
                   </h3>
                 </div>
               ) : (
-                /* OVERLAY DE INTERAÇÃO COM A LIVE - PERMITE PAUSAR E REPRODUZIR COM CLICK NA TELA SEM SAIR DA PÁGINA */
+                /* OVERLAY DE PAUSE */
                 <div 
                   onClick={handleTogglePause}
                   className="absolute inset-0 z-20 cursor-pointer flex flex-col items-center justify-center group"
                 >
-                  {/* Overlay Escuro com Vidro Fosco quando Pausado */}
                   {isPaused && (
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4 transition-all duration-300 animate-fade-in z-30">
-                      <div className="h-20 w-20 md:h-24 md:w-24 rounded-full bg-cyan-400/20 border-2 border-cyan-400 flex items-center justify-center shadow-2xl transition-all duration-300 transform scale-110 hover:scale-125">
-                        <Play size={36} className="text-cyan-400 fill-cyan-400 ml-1.5 animate-pulse" />
+                      <div className="h-16 w-16 md:h-24 md:w-24 rounded-full bg-cyan-400/20 border-2 border-cyan-400 flex items-center justify-center shadow-2xl transition-all duration-300 transform scale-110 hover:scale-125">
+                        <Play size={28} className="text-cyan-400 fill-cyan-400 ml-1.5 animate-pulse" />
                       </div>
                       <span className="text-xs md:text-sm font-black tracking-[0.2em] text-cyan-400 uppercase drop-shadow-[0_2px_10px_rgba(0,229,255,0.4)]">
                         Transmissão Pausada
@@ -568,11 +567,10 @@ const LiveStream = () => {
                     </div>
                   )}
 
-                  {/* Botão de Controle de Pause Flutuante e Indicador no Canto Inferior (Aparece ao passar o mouse) */}
                   {!isPaused && (
-                    <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-zinc-800 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center gap-3 shadow-lg z-30">
+                    <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md px-3 py-2 rounded-2xl border border-zinc-800 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center gap-2 shadow-lg z-30">
                       <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
                         <span className="text-[9px] font-black text-red-500 uppercase tracking-wider">Ao Vivo</span>
                       </div>
                       <button 
@@ -580,26 +578,22 @@ const LiveStream = () => {
                           e.stopPropagation();
                           handleTogglePause();
                         }}
-                        className="bg-zinc-800 hover:bg-zinc-700 text-white p-1.5 rounded-lg transition-all flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider"
+                        className="bg-zinc-800 hover:bg-zinc-700 text-white p-1.5 rounded-lg transition-all flex items-center gap-1 text-[10px] font-black uppercase tracking-wider"
                       >
-                        <Pause size={12} className="fill-white" />
-                        Pausar Live
+                        <Pause size={11} className="fill-white" />
+                        Pausar
                       </button>
                     </div>
                   )}
                 </div>
               )}
 
-              {/* CONTAINER COM EFEITO DE BLUR AMBIENTE PARA EXPANDIR O VÍDEO HORIZONTAL */}
+              {/* VÍDEO COM AMBIENT GLOW */}
               <div className="relative w-full h-full flex items-center justify-center bg-zinc-950 overflow-hidden">
-                
-                {/* Imagem de Fundo Borrada (Ambient Glow) */}
                 <div 
                   className="absolute inset-0 bg-cover bg-center blur-3xl opacity-35 scale-125 pointer-events-none transition-all duration-700"
                   style={{ backgroundImage: `url('https://img.youtube.com/vi/${videoUrlId}/maxresdefault.jpg')` }}
                 />
-
-                {/* Iframe do Vídeo Horizontal (16:9 Nativo - Bloqueado Contra Cliques e Sem Controles de Busca) */}
                 <div className="relative w-full h-full bg-black shadow-[0_0_80px_rgba(0,0,0,0.9)] z-10 overflow-hidden flex items-center justify-center">
                   <iframe
                     ref={iframeRef}
@@ -609,17 +603,16 @@ const LiveStream = () => {
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   />
                 </div>
-
               </div>
 
-              {/* BANNER DE OFERTA EXCLUSIVA DINÂMICO E BOTÃO DE CHECKOUT */}
+              {/* BANNER DE OFERTA SOBRE O VÍDEO */}
               {showOfferBanner && (
-                <div className="absolute bottom-4 left-4 right-4 z-40 bg-zinc-950/95 backdrop-blur-xl border-2 border-cyan-400/40 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-[0_0_40px_rgba(34,211,238,0.25)] animate-fade-in transition-all duration-500">
+                <div className="absolute bottom-3 left-3 right-3 z-40 bg-zinc-950/95 backdrop-blur-xl border-2 border-cyan-400/40 p-3 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-[0_0_40px_rgba(34,211,238,0.25)] animate-fade-in">
                   {offerSettings.bannerUrl ? (
                     <div className="relative w-full flex flex-col items-center">
                       <button 
                         onClick={(e) => { e.stopPropagation(); setShowOfferBanner(false); }}
-                        className="absolute -top-2 -right-2 z-50 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full w-6 h-6 flex items-center justify-center border border-zinc-700 shadow-md text-[10px]"
+                        className="absolute -top-1 -right-1 z-50 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full w-5 h-5 flex items-center justify-center border border-zinc-700 shadow-md text-[9px]"
                       >
                         ✕
                       </button>
@@ -627,50 +620,38 @@ const LiveStream = () => {
                         <img 
                           src={offerSettings.bannerUrl} 
                           alt="Oferta Especial" 
-                          className="w-full h-auto rounded-xl hover:scale-[1.01] transition-transform duration-300 max-h-[140px] object-cover" 
+                          className="w-full h-auto rounded-xl hover:scale-[1.01] transition-transform duration-300 max-h-[120px] object-cover" 
                         />
                       </a>
                     </div>
                   ) : (
-                    <div className="relative w-full flex flex-col md:flex-row items-center justify-between gap-4 pr-8">
-                      {/* Botão de Fechar */}
+                    <div className="relative w-full flex flex-col sm:flex-row items-center justify-between gap-3 pr-6">
                       <button 
                         onClick={(e) => { e.stopPropagation(); setShowOfferBanner(false); }}
-                        className="absolute -top-2 -right-2 md:top-0 md:right-0 z-50 text-zinc-400 hover:text-white text-xs font-bold bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-full w-6 h-6 flex items-center justify-center"
+                        className="absolute -top-1 right-0 z-50 text-zinc-400 hover:text-white text-xs font-bold bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-full w-5 h-5 flex items-center justify-center"
                       >
                         ✕
                       </button>
 
-                      {/* Info Esquerda */}
-                      <div className="flex items-center gap-3">
-                        <div className="bg-gradient-to-tr from-cyan-400 to-blue-600 p-2.5 rounded-xl text-black flex-shrink-0">
-                          <ShoppingBag size={20} className="animate-bounce" />
+                      <div className="flex items-center gap-2">
+                        <div className="bg-gradient-to-tr from-cyan-400 to-blue-600 p-2 rounded-xl text-black flex-shrink-0">
+                          <ShoppingBag size={16} className="animate-bounce" />
                         </div>
                         <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[9px] bg-red-600 px-2 py-0.5 rounded text-white font-black uppercase tracking-wider animate-pulse flex-shrink-0">Live Oferta</span>
-                            <h4 className="text-xs md:text-sm font-black text-white uppercase tracking-wider line-clamp-1">{offerSettings.title}</h4>
-                          </div>
-                          <p className="text-[11px] text-zinc-300 font-medium leading-tight mt-1 line-clamp-1">{offerSettings.description}</p>
+                          <h4 className="text-xs font-black text-white uppercase tracking-wider line-clamp-1">{offerSettings.title}</h4>
+                          <p className="text-[10px] text-zinc-300 font-medium leading-tight line-clamp-1">{offerSettings.description}</p>
                         </div>
                       </div>
 
-                      {/* Preço Meio */}
-                      <div className="flex flex-col items-center md:items-end text-center md:text-right bg-zinc-900/60 px-4 py-1.5 rounded-xl border border-zinc-800/80 flex-shrink-0">
-                        <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">Valor Especial</span>
-                        <span className="text-cyan-400 font-black text-xs md:text-sm tracking-tight">{offerSettings.price}</span>
-                      </div>
-
-                      {/* Botão Direita */}
                       <a 
                         href={offerSettings.checkoutUrl} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="w-full md:w-auto"
+                        className="w-full sm:w-auto flex-shrink-0"
                       >
-                        <button className="w-full md:w-auto bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-300 hover:to-green-400 text-black font-black px-5 py-2.5 rounded-xl shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 text-xs uppercase tracking-wider animate-pulse whitespace-nowrap">
-                          <Sparkles size={13} className="fill-black" />
+                        <button className="w-full sm:w-auto bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-300 hover:to-green-400 text-black font-black px-4 py-2 rounded-xl shadow-[0_4px_20px_rgba(16,185,129,0.3)] hover:scale-105 transition-all duration-300 flex items-center justify-center gap-1.5 text-xs uppercase tracking-wider animate-pulse whitespace-nowrap">
+                          <Sparkles size={11} className="fill-black" />
                           Garantir Desconto
                         </button>
                       </a>
@@ -678,17 +659,16 @@ const LiveStream = () => {
                   )}
                 </div>
               )}
-
             </div>
 
-            {/* LADO DIREITO: CHAT DO LIVESTREAM (AUTOMATICAMENTE ESTICADO PARA A MESMA ALTURA DO VÍDEO) */}
-            <div className="flex flex-col bg-zinc-900/60 border border-zinc-800/80 rounded-3xl overflow-hidden shadow-2xl h-full min-h-0">
+            {/* ── PAINEL DO CHAT ───────────────────────────────────────── */}
+            <div className="flex flex-col bg-zinc-900/60 border-t border-zinc-800/80 lg:border-t-0 lg:border-l lg:w-80 xl:w-96 flex-shrink-0 min-h-0 overflow-hidden" style={{ height: "auto", maxHeight: "45vh" }} data-chat-panel>
               
-              {/* ABAS CHAT / SUPORTE / OFERTA */}
-              <div className="flex p-2 bg-zinc-900 border-b border-zinc-800/80 gap-1 overflow-x-auto">
+              {/* ABAS: CHAT e OFERTA */}
+              <div className="flex p-1.5 bg-zinc-900 border-b border-zinc-800/80 gap-1 flex-shrink-0">
                 <button
                   onClick={() => setActiveTab("chat")}
-                  className={`flex-1 py-3 px-2 rounded-2xl text-xs font-black tracking-wider uppercase transition-all duration-300 min-w-[65px] ${
+                  className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black tracking-wider uppercase transition-all duration-300 ${
                     activeTab === "chat"
                       ? "bg-white text-black shadow-lg"
                       : "text-zinc-400 hover:text-white hover:bg-zinc-800/40"
@@ -697,242 +677,164 @@ const LiveStream = () => {
                   Chat
                 </button>
                 <button
-                  onClick={() => {
-                    setActiveTab("support");
-                    toast.info("Canal de Suporte carregado com sucesso!");
-                  }}
-                  className={`flex-1 py-3 px-2 rounded-2xl text-xs font-black tracking-wider uppercase transition-all duration-300 min-w-[70px] ${
-                    activeTab === "support"
-                      ? "bg-white text-black shadow-lg"
-                      : "text-zinc-400 hover:text-white hover:bg-zinc-800/40"
+                  onClick={() => setActiveTab("offer")}
+                  className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black tracking-wider uppercase transition-all duration-300 relative overflow-hidden ${
+                    activeTab === "offer" && offerUnlocked
+                      ? "bg-gradient-to-r from-emerald-400 to-green-500 text-black shadow-lg"
+                      : offerUnlocked
+                      ? "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/20 border border-emerald-900/30"
+                      : "text-zinc-600 cursor-default"
                   }`}
                 >
-                  Suporte
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveTab("offer");
-                  }}
-                  className={`flex-1 py-3 px-2 rounded-2xl text-xs font-black tracking-wider uppercase transition-all duration-300 min-w-[70px] relative overflow-hidden ${
-                    activeTab === "offer"
-                      ? "bg-gradient-to-r from-emerald-400 to-green-500 text-black shadow-lg font-black"
-                      : "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/20 border border-emerald-950/30"
-                  }`}
-                >
-                  {playbackSeconds < 3600 && (
+                  {/* Dot piscante só aparece APÓS ativação */}
+                  {offerUnlocked && activeTab !== "offer" && (
                     <span className="absolute top-1.5 right-2 flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                     </span>
                   )}
-                  Oferta
+                  🔥 Oferta
                 </button>
               </div>
 
-              {/* ABA DO CHAT DE TRANSMISSÃO */}
+              {/* ABA CHAT */}
               {activeTab === "chat" && (
-                <div className="flex-1 flex flex-col justify-between overflow-hidden">
-                  
-                  {/* HISTÓRICO DE MENSAGENS COM ROLAGEM */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                  <div className="flex-1 overflow-y-auto p-3 space-y-2.5 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
                     {comments.map((c) => (
                       <div
                         key={c.id}
-                        className="flex flex-col gap-1 p-3 rounded-2xl max-w-[85%] transition-all duration-300 bg-zinc-800/40 border border-zinc-800/30 text-zinc-100 rounded-tl-none"
+                        className={`flex flex-col gap-0.5 p-2.5 rounded-2xl max-w-[90%] transition-all duration-300 ${
+                          c.isUser
+                            ? "bg-cyan-950/40 border border-cyan-800/30 ml-auto text-zinc-100"
+                            : "bg-zinc-800/40 border border-zinc-800/30 text-zinc-100"
+                        }`}
                       >
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-bold text-zinc-400">
+                        <div className="flex items-center gap-1.5">
+                          <span className={`text-[10px] font-bold ${c.isUser ? "text-cyan-400" : "text-zinc-400"}`}>
                             @{c.username}
                           </span>
-                          <span className="text-[9px] text-zinc-500 ml-auto">{c.time}</span>
+                          <span className="text-[9px] text-zinc-600 ml-auto">{c.time}</span>
                         </div>
-                        <p className="text-xs md:text-sm font-medium leading-relaxed break-words">{c.message}</p>
+                        <p className="text-xs font-medium leading-relaxed break-words">{c.message}</p>
                       </div>
                     ))}
                     <div ref={chatEndRef} />
                   </div>
 
-                  {/* INPUT DE MENSAGEM */}
-                  <form onSubmit={handleSendMessage} className="p-4 border-t border-zinc-800/80 bg-zinc-900/60 flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800"
-                      onClick={() => toast.success("Anexar arquivo disponível apenas no suporte")}
-                    >
-                      <Paperclip size={18} />
-                    </Button>
-                    
+                  <form onSubmit={handleSendMessage} className="p-2 border-t border-zinc-800/80 bg-zinc-900/60 flex items-center gap-1.5 flex-shrink-0">
                     <Input
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Digite algo..."
-                      className="flex-1 bg-zinc-950 border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-cyan-500 rounded-xl"
+                      className="flex-1 bg-zinc-950 border-zinc-800 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-cyan-500 rounded-xl text-xs py-2 h-9"
                     />
-
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800"
-                      onClick={() => toast.info("Escolha de emojis em desenvolvimento")}
-                    >
-                      <Smile size={18} />
-                    </Button>
-
                     <Button
                       type="submit"
                       size="icon"
-                      className="rounded-xl bg-cyan-400 text-black hover:bg-cyan-300 shadow-md flex-shrink-0"
+                      className="rounded-xl bg-cyan-400 text-black hover:bg-cyan-300 shadow-md flex-shrink-0 h-9 w-9"
                     >
-                      <Send size={16} />
+                      <Send size={14} />
                     </Button>
                   </form>
-
-                </div>
-              )}
-
-              {/* ABA DE SUPORTE */}
-              {activeTab === "support" && (
-                <div className="flex-1 p-6 flex flex-col items-center justify-center text-center gap-6 animate-scale-in">
-                  <div className="h-16 w-16 rounded-full bg-cyan-400/10 border border-cyan-400/20 flex items-center justify-center">
-                    <MessageCircle size={32} className="text-cyan-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-white uppercase tracking-wider mb-2">Canal de Suporte Ativo</h3>
-                    <p className="text-xs text-zinc-400 max-w-xs mx-auto leading-relaxed">
-                      Precisa de assistência técnica ou comercial imediata? Nossos assistentes estão de plantão para ajudar você a configurar seu acesso.
-                    </p>
-                  </div>
-                  <a
-                    href="https://wa.me/5585986411294?text=Olá,%20estou%20assistindo%20a%20Live%20da%20Fábrica%20e%20preciso%20de%20suporte."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full"
-                  >
-                    <Button className="w-full py-6 bg-[#25D366] hover:bg-[#22c35e] text-white font-black text-sm rounded-2xl shadow-lg border-none flex items-center justify-center gap-2">
-                      <MessageCircle size={18} />
-                      Falar no WhatsApp
-                    </Button>
-                  </a>
-                  <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 uppercase tracking-widest font-black mt-2">
-                    <AlertCircle size={12} />
-                    Tempo de resposta menor que 2 min
-                  </div>
                 </div>
               )}
 
               {/* ABA DE OFERTA ESPECIAL */}
               {activeTab === "offer" && (
-                <div className="flex-1 p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent animate-scale-in flex flex-col justify-start">
-                  
-                  {/* Banner informando liberação se for antes do tempo (facilita testar mas dá o aviso comercial correto) */}
-                  {playbackSeconds < 3600 && (
-                    <div className="bg-emerald-950/20 border border-emerald-500/20 rounded-2xl p-3 text-center flex flex-col gap-1.5 shadow-sm">
-                      <span className="text-[10px] text-emerald-400 font-extrabold uppercase tracking-widest flex items-center justify-center gap-1">
-                        <Sparkles size={10} className="fill-emerald-400" /> MODO DE VISUALIZAÇÃO PRÉVIA
-                      </span>
-                      <p className="text-[10px] text-zinc-300 leading-normal">
-                        Esta oferta será liberada automaticamente no minuto 60 da transmissão para os clientes. Aproveite para revisar o design.
-                      </p>
+                <div className="flex-1 overflow-y-auto p-3 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+                  {!offerUnlocked ? (
+                    <div className="flex flex-col items-center justify-center h-full gap-3 text-center py-8">
+                      <div className="h-12 w-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+                        <Clock size={20} className="text-zinc-500" />
+                      </div>
+                      <p className="text-xs text-zinc-400 max-w-[180px]">A oferta especial será revelada no momento certo da transmissão!</p>
                     </div>
-                  )}
-
-                  {/* CONTAINER DA ARTE E PREÇOS (CARD BRANCO PREMIUM CONFORME MOCKUP) */}
-                  <div className="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-zinc-200 flex flex-col gap-4 text-zinc-900">
-                    
-                    {/* BANNER NEGRO INTERNO - A "ARTE" DO BANNER GRANDE */}
-                    <div className="bg-black rounded-2xl p-6 flex flex-col items-center justify-center text-center border border-zinc-850 relative overflow-hidden font-sans">
-                      {/* Glow sutil ao fundo do banner */}
-                      <div className="absolute -top-10 -left-10 w-24 h-24 rounded-full bg-emerald-500/10 blur-xl pointer-events-none" />
-                      <div className="absolute -bottom-10 -right-10 w-24 h-24 rounded-full bg-yellow-500/10 blur-xl pointer-events-none" />
+                  ) : (
+                    <div className="bg-white rounded-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-zinc-200 flex flex-col gap-3 text-zinc-900">
                       
-                      {/* Linha 1: Somente 10 Vagas */}
-                      <span className="text-[#FFD700] font-black text-xl md:text-2xl tracking-wider animate-pulse drop-shadow-[0_2px_8px_rgba(255,215,0,0.3)]">
-                        SOMENTE 10 VAGAS
-                      </span>
-                      
-                      {/* Linha 2: De R$ 1.500,00 */}
-                      <span className="text-zinc-400 text-xs md:text-sm font-bold uppercase tracking-widest mt-3 block">
-                        DE <span className="line-through decoration-red-650 decoration-[3px] font-black text-white text-base md:text-lg">R$ 1.500,00</span>
-                      </span>
-                      
-                      {/* Linha 3: Por Apenas */}
-                      <span className="text-zinc-350 text-xs font-black uppercase tracking-widest block mt-2">
-                        POR APENAS
-                      </span>
-                      
-                      {/* Linha 4: 12x R$ 28,91 */}
-                      <div className="flex items-baseline justify-center gap-1.5 mt-2.5">
-                        <span className="text-white text-xs md:text-sm font-extrabold uppercase tracking-wide">12x</span>
-                        <span className="text-[#00E676] font-black text-3xl md:text-4xl tracking-tight drop-shadow-[0_0_15px_rgba(0,230,118,0.4)]">
-                          R$ 28,91
+                      {/* BANNER NEGRO DA OFERTA */}
+                      <div className="bg-black rounded-xl p-5 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                        <div className="absolute -top-8 -left-8 w-20 h-20 rounded-full bg-emerald-500/10 blur-xl pointer-events-none" />
+                        <div className="absolute -bottom-8 -right-8 w-20 h-20 rounded-full bg-yellow-500/10 blur-xl pointer-events-none" />
+                        
+                        <span className="text-[#FFD700] font-black text-lg md:text-xl tracking-wider animate-pulse drop-shadow-[0_2px_8px_rgba(255,215,0,0.3)]">
+                          SOMENTE 10 VAGAS
+                        </span>
+                        
+                        <span className="text-zinc-400 text-xs font-bold uppercase tracking-widest mt-2 block">
+                          DE <span className="line-through decoration-red-500 decoration-2 font-black text-white text-sm">R$ 1.500,00</span>
+                        </span>
+                        
+                        <span className="text-zinc-400 text-[10px] font-black uppercase tracking-widest block mt-1.5">
+                          POR APENAS
+                        </span>
+                        
+                        <div className="flex items-baseline justify-center gap-1 mt-2">
+                          <span className="text-white text-xs font-extrabold uppercase tracking-wide">12x</span>
+                          <span className="text-[#00E676] font-black text-2xl md:text-3xl tracking-tight drop-shadow-[0_0_15px_rgba(0,230,118,0.4)]">
+                            R$ 28,91
+                          </span>
+                        </div>
+                        
+                        <span className="text-white text-xs underline mt-2 block font-bold hover:text-zinc-200 transition-colors">
+                          ou R$ 347,00 à vista
                         </span>
                       </div>
-                      
-                      {/* Linha 5: ou R$ 347,00 à vista */}
-                      <span className="text-white text-xs md:text-sm underline mt-3 block font-bold hover:text-zinc-200 transition-colors">
-                        ou R$ 347,00 à vista
-                      </span>
-                    </div>
 
-                    {/* TEXTO DE PREÇOS ANCORADOS DEBAIXO DA ARTE */}
-                    <div className="flex justify-between items-center px-1 text-xs mt-1">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-zinc-400 line-through font-semibold">De R$ 1.500,00</span>
-                        <span className="text-zinc-900 font-extrabold text-sm md:text-base">Por R$ 347,00</span>
+                      {/* ANCORAGEM DE PREÇOS */}
+                      <div className="flex justify-between items-center px-1 text-xs">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-zinc-400 line-through font-semibold">De R$ 1.500,00</span>
+                          <span className="text-zinc-900 font-extrabold text-sm">Por R$ 347,00</span>
+                        </div>
+                        <div className="flex flex-col text-right gap-0.5">
+                          <span className="text-zinc-400 font-semibold">Por tempo limitado</span>
+                          <span className="text-zinc-900 font-extrabold text-sm">Oferta só hoje</span>
+                        </div>
                       </div>
-                      <div className="flex flex-col text-right gap-0.5">
-                        <span className="text-zinc-400 font-semibold">Por tempo limitado</span>
-                        <span className="text-zinc-900 font-extrabold text-sm md:text-base">Oferta só hoje</span>
-                      </div>
-                    </div>
 
-                    {/* BOTÃO GRANDE VERDE PULSANTE DE COMPRA */}
-                    <a 
-                      href="https://buy.stripe.com/8x26oIgGuej656zaAY8so05" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="w-full block mt-2 animate-pulse"
-                    >
-                      <Button className="w-full py-7 bg-[#25D366] hover:bg-[#1ebd54] text-white font-black text-base uppercase tracking-wider rounded-2xl shadow-[0_8px_25px_rgba(37,211,102,0.35)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] border-none flex items-center justify-center gap-2">
-                        <ShoppingBag size={18} className="fill-white animate-bounce" />
-                        APROVEITAR OPORTUNIDADE
-                      </Button>
-                    </a>
-
-                    {/* CRONÔMETRO DE 10 MINUTOS */}
-                    <div className="flex flex-col items-center justify-center gap-1 mt-2 bg-zinc-50 rounded-2xl py-3 border border-zinc-100">
-                      <span className="text-[10px] text-zinc-400 font-black uppercase tracking-wider">A oferta expira em</span>
-                      <div className="flex items-center gap-1.5 text-zinc-900 font-black text-3xl tracking-widest font-mono select-none">
-                        <Clock size={20} className="text-red-500 animate-pulse" />
-                        {getOfferCountdown()}
-                      </div>
-                    </div>
-
-                    {/* LINK PEQUENO VER OUTROS PLANOS */}
-                    <div className="text-center mt-2">
+                      {/* BOTÃO GRANDE VERDE */}
                       <a 
-                        href="/planos"
-                        className="text-zinc-400 hover:text-zinc-800 text-xs font-black transition-colors underline uppercase tracking-widest"
+                        href="https://buy.stripe.com/8x26oIgGuej656zaAY8so05" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="w-full block animate-pulse"
                       >
-                        ver outros planos
+                        <Button className="w-full py-5 bg-[#25D366] hover:bg-[#1ebd54] text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-[0_8px_25px_rgba(37,211,102,0.35)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] border-none flex items-center justify-center gap-2 whitespace-nowrap overflow-hidden">
+                          <ShoppingBag size={16} className="fill-white animate-bounce flex-shrink-0" />
+                          APROVEITAR OPORTUNIDADE
+                        </Button>
                       </a>
-                    </div>
 
-                  </div>
+                      {/* CRONÔMETRO DE 10 MINUTOS */}
+                      <div className="flex flex-col items-center justify-center gap-1 bg-zinc-50 rounded-xl py-2.5 border border-zinc-100">
+                        <span className="text-[10px] text-zinc-400 font-black uppercase tracking-wider">A oferta expira em</span>
+                        <div className="flex items-center gap-1.5 text-zinc-900 font-black text-2xl tracking-widest font-mono select-none">
+                          <Clock size={18} className="text-red-500 animate-pulse" />
+                          {getOfferCountdown()}
+                        </div>
+                      </div>
+
+                      {/* LINK VER OUTROS PLANOS */}
+                      <div className="text-center">
+                        <a 
+                          href="/planos"
+                          className="text-zinc-400 hover:text-zinc-800 text-xs font-black transition-colors underline uppercase tracking-widest"
+                        >
+                          ver outros planos
+                        </a>
+                      </div>
+
+                    </div>
+                  )}
                 </div>
               )}
 
             </div>
-
           </div>
-
-        </main>
+        </div>
       )}
-
-      {/* RODA PÉ REMOVIDO CONFORME DIRETRIZ DE UX */}
     </div>
   );
 };

@@ -11,13 +11,15 @@ import {
   Home,
   Loader2,
   TrendingUp,
-  ShoppingBag
+  ShoppingBag,
+  Video
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/admin/live", label: "Gestão Live", icon: Video },
   { path: "/admin/marketing", label: "Marketing", icon: TrendingUp },
   { path: "/admin/content", label: "Conteúdos", icon: FileText },
   { path: "/admin/captions", label: "Legendas", icon: MessageSquare },
