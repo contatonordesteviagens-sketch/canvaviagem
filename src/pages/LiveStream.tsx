@@ -1024,42 +1024,55 @@ const LiveStream = () => {
   // Ao girar o celular para horizontal, tenta entrar em tela cheia automaticamente
   useEffect(() => {
     if (!isMobileLandscape || step !== "watch") return;
-    const target = videoContainerRef.current as (HTMLDivElement & {
+    const doc = document as Document & { webkitFullscreenElement?: Element | null };
+    if (document.fullscreenElement || doc.webkitFullscreenElement) return;
+    setIsPlayerExpanded(true);
+    // Em alguns navegadores o orientationchange ainda conta como user gesture
+    requestNativeFullscreen().catch(() => {});
+  }, [isMobileLandscape, step]);
+
+  const requestNativeFullscreen = async () => {
+    // Tenta primeiro o IFRAME (Chrome Android esconde a barra de URL),
+    // depois o container, depois o <video> interno (iOS Safari).
+    const iframeEl = iframeRef.current as (HTMLIFrameElement & {
       webkitRequestFullscreen?: () => Promise<void> | void;
       webkitEnterFullscreen?: () => Promise<void> | void;
     }) | null;
-    if (!target) return;
-    const doc = document as Document & { webkitFullscreenElement?: Element | null };
-    const already = document.fullscreenElement || doc.webkitFullscreenElement;
-    if (already) return;
-    setIsPlayerExpanded(true);
-    try {
-      if (target.requestFullscreen) {
-        target.requestFullscreen({ navigationUI: "hide" } as FullscreenOptions).catch(() => {});
-      } else if (target.webkitRequestFullscreen) {
-        target.webkitRequestFullscreen();
-      } else if (target.webkitEnterFullscreen) {
-        target.webkitEnterFullscreen();
+    const containerEl = videoContainerRef.current as (HTMLDivElement & {
+      webkitRequestFullscreen?: () => Promise<void> | void;
+    }) | null;
+
+    const candidates: Array<HTMLElement | null> = [iframeEl, containerEl];
+    for (const el of candidates) {
+      if (!el) continue;
+      const anyEl = el as any;
+      try {
+        if (anyEl.requestFullscreen) {
+          await anyEl.requestFullscreen({ navigationUI: "hide" });
+          return true;
+        }
+        if (anyEl.webkitRequestFullscreen) {
+          await anyEl.webkitRequestFullscreen();
+          return true;
+        }
+        if (anyEl.webkitEnterFullscreen) {
+          await anyEl.webkitEnterFullscreen();
+          return true;
+        }
+      } catch {
+        /* tenta o próximo candidato */
       }
-    } catch {
-      /* fallback: mantém o modo interno expandido */
     }
-  }, [isMobileLandscape, step]);
+    return false;
+  };
 
   const handleMobileFullscreen = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const target = videoContainerRef.current;
-    if (!target) return;
-
     const doc = document as Document & {
       webkitFullscreenElement?: Element | null;
       webkitExitFullscreen?: () => Promise<void> | void;
-    };
-    const element = target as HTMLDivElement & {
-      webkitRequestFullscreen?: () => Promise<void> | void;
-      webkitEnterFullscreen?: () => Promise<void> | void;
     };
 
     try {
@@ -1074,19 +1087,13 @@ const LiveStream = () => {
         return;
       }
 
-      // Ativa imediatamente o modo tela-cheia interno. Em muitos celulares,
-      // o navegador bloqueia/ignora fullscreen nativo para iframes, então este
-      // modo garante o resultado visual mesmo quando a API nativa falha.
+      // Ativa o modo interno (fallback CSS 100vh) ANTES de pedir nativo.
       setIsPlayerExpanded(true);
-
-      if (element.requestFullscreen) {
-        await element.requestFullscreen({ navigationUI: "hide" });
-      } else if (element.webkitRequestFullscreen) {
-        await element.webkitRequestFullscreen();
-      } else if (element.webkitEnterFullscreen) {
-        await element.webkitEnterFullscreen();
+      const ok = await requestNativeFullscreen();
+      if (!ok) {
+        // Fallback puro CSS já está ativo via setIsPlayerExpanded
       }
-    } catch (err) {
+    } catch {
       setIsPlayerExpanded(true);
     }
   };
@@ -1491,8 +1498,18 @@ const LiveStream = () => {
 
             {/* ── PLAYER DE VÍDEO ─────────────────────────────────────── */}
             <div
-              className={`relative bg-black w-full lg:w-3/4 lg:flex-none lg:h-full overflow-hidden ${mobileVideoFocusMode ? "flex-1 min-h-0" : "flex-shrink-0"}`}
-              style={mobileVideoFocusMode ? { height: "100%", minHeight: 0 } : { aspectRatio: "16/9" }}
+              className={`relative bg-black overflow-hidden ${
+                isPlayerExpanded
+                  ? "fixed inset-0 z-[9999] w-screen h-[100dvh]"
+                  : `w-full lg:w-3/4 lg:flex-none lg:h-full ${mobileVideoFocusMode ? "flex-1 min-h-0" : "flex-shrink-0"}`
+              }`}
+              style={
+                isPlayerExpanded
+                  ? { width: "100vw", height: "100dvh" }
+                  : mobileVideoFocusMode
+                    ? { height: "100%", minHeight: 0 }
+                    : { aspectRatio: "16/9" }
+              }
             >
 
               {/* BADGES */}
