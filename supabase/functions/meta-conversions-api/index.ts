@@ -156,7 +156,7 @@ serve(async (req) => {
           throw new Error(`Failed for pixel ${pixelId}: ${JSON.stringify(result)}`);
         }
 
-        console.log(`Event ${event_name} sent to pixel ${pixelId} for user ${user.id}`);
+        console.log(`Event ${event_name} sent to pixel ${pixelId} for user ${user?.id ?? 'anonymous'}`);
         return { pixelId, result };
       })
     );
