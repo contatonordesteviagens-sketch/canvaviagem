@@ -1046,20 +1046,48 @@ const LiveStream = () => {
     }
   }, [isMobileLandscape, step]);
 
+  const requestNativeFullscreen = async () => {
+    // Tenta primeiro o IFRAME (Chrome Android esconde a barra de URL),
+    // depois o container, depois o <video> interno (iOS Safari).
+    const iframeEl = iframeRef.current as (HTMLIFrameElement & {
+      webkitRequestFullscreen?: () => Promise<void> | void;
+      webkitEnterFullscreen?: () => Promise<void> | void;
+    }) | null;
+    const containerEl = videoContainerRef.current as (HTMLDivElement & {
+      webkitRequestFullscreen?: () => Promise<void> | void;
+    }) | null;
+
+    const candidates: Array<HTMLElement | null> = [iframeEl, containerEl];
+    for (const el of candidates) {
+      if (!el) continue;
+      const anyEl = el as any;
+      try {
+        if (anyEl.requestFullscreen) {
+          await anyEl.requestFullscreen({ navigationUI: "hide" });
+          return true;
+        }
+        if (anyEl.webkitRequestFullscreen) {
+          await anyEl.webkitRequestFullscreen();
+          return true;
+        }
+        if (anyEl.webkitEnterFullscreen) {
+          await anyEl.webkitEnterFullscreen();
+          return true;
+        }
+      } catch {
+        /* tenta o próximo candidato */
+      }
+    }
+    return false;
+  };
+
   const handleMobileFullscreen = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const target = videoContainerRef.current;
-    if (!target) return;
-
     const doc = document as Document & {
       webkitFullscreenElement?: Element | null;
       webkitExitFullscreen?: () => Promise<void> | void;
-    };
-    const element = target as HTMLDivElement & {
-      webkitRequestFullscreen?: () => Promise<void> | void;
-      webkitEnterFullscreen?: () => Promise<void> | void;
     };
 
     try {
@@ -1074,19 +1102,13 @@ const LiveStream = () => {
         return;
       }
 
-      // Ativa imediatamente o modo tela-cheia interno. Em muitos celulares,
-      // o navegador bloqueia/ignora fullscreen nativo para iframes, então este
-      // modo garante o resultado visual mesmo quando a API nativa falha.
+      // Ativa o modo interno (fallback CSS 100vh) ANTES de pedir nativo.
       setIsPlayerExpanded(true);
-
-      if (element.requestFullscreen) {
-        await element.requestFullscreen({ navigationUI: "hide" });
-      } else if (element.webkitRequestFullscreen) {
-        await element.webkitRequestFullscreen();
-      } else if (element.webkitEnterFullscreen) {
-        await element.webkitEnterFullscreen();
+      const ok = await requestNativeFullscreen();
+      if (!ok) {
+        // Fallback puro CSS já está ativo via setIsPlayerExpanded
       }
-    } catch (err) {
+    } catch {
       setIsPlayerExpanded(true);
     }
   };
