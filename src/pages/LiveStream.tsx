@@ -1583,7 +1583,7 @@ const LiveStream = () => {
                 <div className="hidden sm:flex absolute bottom-3 left-3 right-3 z-40 bg-zinc-950/95 backdrop-blur-xl border-2 border-cyan-400/40 p-3 rounded-2xl flex-row items-center justify-between gap-3 shadow-[0_0_40px_rgba(34,211,238,0.25)] animate-fade-in">
                   <div className="relative w-full flex flex-row items-center justify-between gap-3 pr-6">
                     <button
-                      onClick={(e) => { e.stopPropagation(); setShowOfferBanner(false); }}
+                      onClick={(e) => { e.stopPropagation(); setShowOfferBanner(false); setUserClosedOffer(true); }}
                       className="absolute -top-1 right-0 z-50 text-zinc-400 hover:text-white text-xs font-bold bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-full w-5 h-5 flex items-center justify-center"
                     >
                       ✕
