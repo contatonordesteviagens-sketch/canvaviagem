@@ -209,6 +209,7 @@ const LiveStream = () => {
     bannerUrl: ""
   });
   const [showOfferBanner, setShowOfferBanner] = useState(false);
+  const [userClosedOffer, setUserClosedOffer] = useState(false);
   const [isMobileLandscape, setIsMobileLandscape] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
