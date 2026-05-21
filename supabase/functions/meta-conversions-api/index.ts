@@ -66,31 +66,24 @@ serve(async (req) => {
   }
 
   try {
-    // Security: Require authentication - verify user session
+    // Authentication is optional for tracking — anonymous events are allowed.
+    // If a valid bearer token is present we tag user_id; otherwise we proceed
+    // anonymously instead of returning 401 (which surfaces as a runtime error).
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      console.error('Missing authorization header');
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    let user: { id: string } | null = null;
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-    
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
-
-    // Verify the user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      console.error('Authentication failed:', authError?.message);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+        const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+          global: { headers: { Authorization: authHeader } }
+        });
+        const { data } = await supabase.auth.getUser();
+        if (data?.user) user = { id: data.user.id };
+      } catch (_e) {
+        // ignore — treat as anonymous
+      }
     }
 
     const accessToken = Deno.env.get('META_CONVERSIONS_API_TOKEN');
@@ -163,7 +156,7 @@ serve(async (req) => {
           throw new Error(`Failed for pixel ${pixelId}: ${JSON.stringify(result)}`);
         }
 
-        console.log(`Event ${event_name} sent to pixel ${pixelId} for user ${user.id}`);
+        console.log(`Event ${event_name} sent to pixel ${pixelId} for user ${user?.id ?? 'anonymous'}`);
         return { pixelId, result };
       })
     );
