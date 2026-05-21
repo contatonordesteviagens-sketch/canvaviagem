@@ -936,7 +936,7 @@ const LiveStream = () => {
 
     const totalSecs = getOfferActivationSeconds();
     if (playbackSeconds >= totalSecs) {
-      if (!showOfferBanner) {
+      if (!showOfferBanner && !userClosedOffer) {
         setShowOfferBanner(true);
         toast.success("🔥 Oferta Especial Revelada! Aproveite o desconto exclusivo.");
       }
@@ -944,8 +944,10 @@ const LiveStream = () => {
       if (showOfferBanner) {
         setShowOfferBanner(false);
       }
+      // Se voltou para antes do gatilho, reseta o flag de fechado
+      if (userClosedOffer) setUserClosedOffer(false);
     }
-  }, [playbackSeconds, isPlaying, isPaused, step, offerSettings, showOfferBanner]);
+  }, [playbackSeconds, isPlaying, isPaused, step, offerSettings, showOfferBanner, userClosedOffer]);
 
   // Auto scroll: usa container.scrollTop para não rolar a página inteira
   useEffect(() => {
