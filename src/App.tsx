@@ -153,7 +153,6 @@ const App = () => {
                     <Route path="/imersao-ao-vivo" element={<AulaSecreta />} />
                     <Route path="/fabrica" element={<Fabrica />} />
                     <Route path="/live-aovivo" element={<LiveStream />} />
-                    <Route path="/live" element={<LiveStream />} />
                     <Route path="/painel-marketing" element={
                       <ProtectedRoute requireElite>
                         <PainelMarketing />
