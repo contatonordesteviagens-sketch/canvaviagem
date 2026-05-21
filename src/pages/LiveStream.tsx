@@ -25,20 +25,7 @@ const DEFAULT_PRE_PLAY_COMMENTS: Comment[] = [
 import { DEFAULT_SCHEDULED_COMMENTS, ScheduledComment } from "@/data/scheduledComments";
 
 const LiveStream = () => {
-  const computeIsTimeAllowed = () => {
-    try {
-      const hourStr = new Intl.DateTimeFormat("en-US", {
-        timeZone: "America/Sao_Paulo",
-        hour: "2-digit",
-        hour12: false,
-      }).format(new Date());
-      const hour = parseInt(hourStr, 10);
-      // Liberado entre 17h e 23:59 (horário de Brasília). À meia-noite encerra.
-      return hour >= 17 && hour <= 23;
-    } catch {
-      return true;
-    }
-  };
+  const computeIsTimeAllowed = () => true;
   const [isTimeAllowed, setIsTimeAllowed] = useState<boolean>(computeIsTimeAllowed());
 
   useEffect(() => {
@@ -584,15 +571,20 @@ const LiveStream = () => {
     hasInitializedStartRef.current = false;
     
     // Auto-play and unmute the iframe immediately upon overlay click
-    if (iframeRef.current?.contentWindow) {
-      iframeRef.current.contentWindow.postMessage(
-        JSON.stringify({ event: "command", func: "unMute", args: "" }), 
-        "*"
-      );
-      iframeRef.current.contentWindow.postMessage(
-        JSON.stringify({ event: "command", func: "playVideo", args: "" }), 
-        "*"
-      );
+    const cw = iframeRef.current?.contentWindow;
+    if (cw) {
+      const send = (func: string, args: any = "") =>
+        cw.postMessage(JSON.stringify({ event: "command", func, args }), "*");
+      const forceUnmute = () => {
+        send("unMute");
+        send("setVolume", [100]);
+        send("playVideo");
+      };
+      forceUnmute();
+      // Retries para Chrome mobile (1ª chamada às vezes é ignorada antes do iframe estar pronto)
+      setTimeout(forceUnmute, 250);
+      setTimeout(forceUnmute, 800);
+      setTimeout(forceUnmute, 1800);
     }
   };
 
