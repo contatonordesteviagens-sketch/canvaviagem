@@ -209,6 +209,7 @@ const LiveStream = () => {
     bannerUrl: ""
   });
   const [showOfferBanner, setShowOfferBanner] = useState(false);
+  const [userClosedOffer, setUserClosedOffer] = useState(false);
   const [isMobileLandscape, setIsMobileLandscape] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
@@ -935,7 +936,7 @@ const LiveStream = () => {
 
     const totalSecs = getOfferActivationSeconds();
     if (playbackSeconds >= totalSecs) {
-      if (!showOfferBanner) {
+      if (!showOfferBanner && !userClosedOffer) {
         setShowOfferBanner(true);
         toast.success("🔥 Oferta Especial Revelada! Aproveite o desconto exclusivo.");
       }
@@ -943,8 +944,10 @@ const LiveStream = () => {
       if (showOfferBanner) {
         setShowOfferBanner(false);
       }
+      // Se voltou para antes do gatilho, reseta o flag de fechado
+      if (userClosedOffer) setUserClosedOffer(false);
     }
-  }, [playbackSeconds, isPlaying, isPaused, step, offerSettings, showOfferBanner]);
+  }, [playbackSeconds, isPlaying, isPaused, step, offerSettings, showOfferBanner, userClosedOffer]);
 
   // Auto scroll: usa container.scrollTop para não rolar a página inteira
   useEffect(() => {
@@ -1017,6 +1020,31 @@ const LiveStream = () => {
       document.removeEventListener("webkitfullscreenchange", syncFullscreenState as EventListener);
     };
   }, []);
+
+  // Ao girar o celular para horizontal, tenta entrar em tela cheia automaticamente
+  useEffect(() => {
+    if (!isMobileLandscape || step !== "watch") return;
+    const target = videoContainerRef.current as (HTMLDivElement & {
+      webkitRequestFullscreen?: () => Promise<void> | void;
+      webkitEnterFullscreen?: () => Promise<void> | void;
+    }) | null;
+    if (!target) return;
+    const doc = document as Document & { webkitFullscreenElement?: Element | null };
+    const already = document.fullscreenElement || doc.webkitFullscreenElement;
+    if (already) return;
+    setIsPlayerExpanded(true);
+    try {
+      if (target.requestFullscreen) {
+        target.requestFullscreen({ navigationUI: "hide" } as FullscreenOptions).catch(() => {});
+      } else if (target.webkitRequestFullscreen) {
+        target.webkitRequestFullscreen();
+      } else if (target.webkitEnterFullscreen) {
+        target.webkitEnterFullscreen();
+      }
+    } catch {
+      /* fallback: mantém o modo interno expandido */
+    }
+  }, [isMobileLandscape, step]);
 
   const handleMobileFullscreen = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -1580,7 +1608,7 @@ const LiveStream = () => {
                 <div className="hidden sm:flex absolute bottom-3 left-3 right-3 z-40 bg-zinc-950/95 backdrop-blur-xl border-2 border-cyan-400/40 p-3 rounded-2xl flex-row items-center justify-between gap-3 shadow-[0_0_40px_rgba(34,211,238,0.25)] animate-fade-in">
                   <div className="relative w-full flex flex-row items-center justify-between gap-3 pr-6">
                     <button
-                      onClick={(e) => { e.stopPropagation(); setShowOfferBanner(false); }}
+                      onClick={(e) => { e.stopPropagation(); setShowOfferBanner(false); setUserClosedOffer(true); }}
                       className="absolute -top-1 right-0 z-50 text-zinc-400 hover:text-white text-xs font-bold bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-full w-5 h-5 flex items-center justify-center"
                     >
                       ✕
@@ -1613,8 +1641,15 @@ const LiveStream = () => {
 
             {/* ── BANNER DE OFERTA MOBILE (ABAIXO DO VÍDEO, NÃO SOBREPOSTO) ── */}
             {showOfferBanner && !mobileVideoFocusMode && (
-              <div className="sm:hidden flex-shrink-0 bg-zinc-950 border-b border-cyan-400/30 px-3 py-2 animate-fade-in">
-                <div className="flex flex-row items-center gap-3">
+              <div className="sm:hidden flex-shrink-0 bg-zinc-950 border-b border-cyan-400/30 px-3 py-2 animate-fade-in relative">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowOfferBanner(false); setUserClosedOffer(true); }}
+                  aria-label="Fechar oferta"
+                  className="absolute top-1 right-1 z-50 text-zinc-400 hover:text-white text-[10px] font-bold bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-full w-5 h-5 flex items-center justify-center"
+                >
+                  ✕
+                </button>
+                <div className="flex flex-row items-center gap-3 pr-6">
                   <div className="bg-gradient-to-tr from-cyan-400 to-blue-600 p-2 rounded-xl text-black flex-shrink-0">
                     <ShoppingBag size={16} className="animate-bounce" />
                   </div>
