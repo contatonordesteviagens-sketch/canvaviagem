@@ -1024,26 +1024,11 @@ const LiveStream = () => {
   // Ao girar o celular para horizontal, tenta entrar em tela cheia automaticamente
   useEffect(() => {
     if (!isMobileLandscape || step !== "watch") return;
-    const target = videoContainerRef.current as (HTMLDivElement & {
-      webkitRequestFullscreen?: () => Promise<void> | void;
-      webkitEnterFullscreen?: () => Promise<void> | void;
-    }) | null;
-    if (!target) return;
     const doc = document as Document & { webkitFullscreenElement?: Element | null };
-    const already = document.fullscreenElement || doc.webkitFullscreenElement;
-    if (already) return;
+    if (document.fullscreenElement || doc.webkitFullscreenElement) return;
     setIsPlayerExpanded(true);
-    try {
-      if (target.requestFullscreen) {
-        target.requestFullscreen({ navigationUI: "hide" } as FullscreenOptions).catch(() => {});
-      } else if (target.webkitRequestFullscreen) {
-        target.webkitRequestFullscreen();
-      } else if (target.webkitEnterFullscreen) {
-        target.webkitEnterFullscreen();
-      }
-    } catch {
-      /* fallback: mantém o modo interno expandido */
-    }
+    // Em alguns navegadores o orientationchange ainda conta como user gesture
+    requestNativeFullscreen().catch(() => {});
   }, [isMobileLandscape, step]);
 
   const requestNativeFullscreen = async () => {
