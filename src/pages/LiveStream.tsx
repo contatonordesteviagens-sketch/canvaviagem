@@ -1498,8 +1498,18 @@ const LiveStream = () => {
 
             {/* ── PLAYER DE VÍDEO ─────────────────────────────────────── */}
             <div
-              className={`relative bg-black w-full lg:w-3/4 lg:flex-none lg:h-full overflow-hidden ${mobileVideoFocusMode ? "flex-1 min-h-0" : "flex-shrink-0"}`}
-              style={mobileVideoFocusMode ? { height: "100%", minHeight: 0 } : { aspectRatio: "16/9" }}
+              className={`relative bg-black overflow-hidden ${
+                isPlayerExpanded
+                  ? "fixed inset-0 z-[9999] w-screen h-[100dvh]"
+                  : `w-full lg:w-3/4 lg:flex-none lg:h-full ${mobileVideoFocusMode ? "flex-1 min-h-0" : "flex-shrink-0"}`
+              }`}
+              style={
+                isPlayerExpanded
+                  ? { width: "100vw", height: "100dvh" }
+                  : mobileVideoFocusMode
+                    ? { height: "100%", minHeight: 0 }
+                    : { aspectRatio: "16/9" }
+              }
             >
 
               {/* BADGES */}
