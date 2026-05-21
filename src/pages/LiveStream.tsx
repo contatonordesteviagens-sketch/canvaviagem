@@ -25,7 +25,28 @@ const DEFAULT_PRE_PLAY_COMMENTS: Comment[] = [
 import { DEFAULT_SCHEDULED_COMMENTS, ScheduledComment } from "@/data/scheduledComments";
 
 const LiveStream = () => {
-  const [isTimeAllowed, setIsTimeAllowed] = useState<boolean>(true);
+  const computeIsTimeAllowed = () => {
+    try {
+      const hourStr = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Sao_Paulo",
+        hour: "2-digit",
+        hour12: false,
+      }).format(new Date());
+      const hour = parseInt(hourStr, 10);
+      // Liberado entre 17h e 23:59 (horário de Brasília). À meia-noite encerra.
+      return hour >= 17 && hour <= 23;
+    } catch {
+      return true;
+    }
+  };
+  const [isTimeAllowed, setIsTimeAllowed] = useState<boolean>(computeIsTimeAllowed());
+
+  useEffect(() => {
+    const tick = () => setIsTimeAllowed(computeIsTimeAllowed());
+    tick();
+    const id = setInterval(tick, 30000);
+    return () => clearInterval(id);
+  }, []);
 
   const [step, setStep] = useState<"register" | "watch">("register");
   const [name, setName] = useState("");
@@ -1288,10 +1309,10 @@ const LiveStream = () => {
 
             <div className="space-y-2">
               <h3 className="text-lg md:text-xl font-black text-white uppercase tracking-wide">
-                Transmissão Offline
+                A live encerrou
               </h3>
               <p className="text-xs md:text-sm text-zinc-400 leading-relaxed px-2">
-                A aula secreta ao vivo da Fábrica de Anúncios e criação de sites está programada para iniciar pontualmente no horário reservado.
+                Aguarde a próxima live no grupo. A transmissão ao vivo fica disponível diariamente das 17h às 00h (horário de Brasília), com início pontual às 19h.
               </p>
             </div>
 
@@ -1303,7 +1324,7 @@ const LiveStream = () => {
               <div className="flex justify-between items-center text-xs">
                 <span className="text-zinc-500 font-bold uppercase tracking-wider">Horário de Brasília</span>
                 <span className="text-cyan-400 font-black text-sm bg-cyan-400/10 px-3 py-1 rounded-xl">
-                  19:30 às 22:00
+                  17:00 às 00:00
                 </span>
               </div>
             </div>
