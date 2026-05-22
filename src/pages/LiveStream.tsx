@@ -626,6 +626,38 @@ const LiveStream = () => {
     }
   };
 
+  // Reinicia o vídeo após terminar — recarrega o iframe DENTRO do gesture do clique
+  // para garantir que o navegador (Chrome iOS/Android) permita autoplay com áudio
+  const handleRestartVideo = () => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    setVideoEnded(false);
+    setIsPaused(false);
+    setIsPlaying(true);
+    setPlaybackSeconds(0);
+    hasInitializedStartRef.current = false;
+
+    // Reload iframe com autoplay e mute=0 (gesture do usuário libera áudio)
+    const freshSrc = `https://www.youtube.com/embed/${videoUrlId}?enablejsapi=1&autoplay=1&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=1&disablekb=1&playsinline=1&t=${Date.now()}`;
+    iframe.src = freshSrc;
+
+    // Retries de unMute/play para garantir
+    const cw = () => iframe.contentWindow;
+    const force = () => {
+      const w = cw();
+      if (!w) return;
+      const send = (func: string, args: any = "") =>
+        w.postMessage(JSON.stringify({ event: "command", func, args }), "*");
+      send("unMute");
+      send("setVolume", [100]);
+      send("playVideo");
+    };
+    setTimeout(force, 600);
+    setTimeout(force, 1500);
+    setTimeout(force, 3000);
+  };
+
   // Atualiza espectadores dinâmicos de forma ultra realista baseada no tempo do vídeo (curva exata solicitada)
   useEffect(() => {
     if (step !== "watch") return;
