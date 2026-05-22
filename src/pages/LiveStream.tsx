@@ -213,6 +213,7 @@ const LiveStream = () => {
   const [isMobileLandscape, setIsMobileLandscape] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
+  const [videoEnded, setVideoEnded] = useState(false);
   // Altura estável da live. Não usar visualViewport durante digitação: no Chrome/iPhone isso pode cancelar o foco do input.
   const [viewportHeight, setViewportHeight] = useState<number>(
     () => (typeof window !== 'undefined' ? window.innerHeight : 800)
