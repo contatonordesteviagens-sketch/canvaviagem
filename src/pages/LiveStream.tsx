@@ -385,16 +385,9 @@ const LiveStream = () => {
             try {
               const parsed = JSON.parse(savedUserComments);
               const mapped = parsed.map((c: any) => {
-                let pSec = c.playbackSecond;
-                if (pSec === undefined && c.time && typeof c.time === "string" && c.time.includes(":")) {
-                  const parts = c.time.split(":");
-                  const mins = parseInt(parts[0], 10) || 0;
-                  const secs = parseInt(parts[1], 10) || 0;
-                  pSec = mins * 60 + secs;
-                }
                 return {
                   ...c,
-                  playbackSecond: pSec
+                  playbackSecond: getStoredPlaybackSecond(c)
                 };
               });
               setUserComments(mapped);
@@ -416,13 +409,7 @@ const LiveStream = () => {
                 const parsedSource = typeof lead.source === "string" ? JSON.parse(lead.source) : lead.source;
                 if (parsedSource.comments && Array.isArray(parsedSource.comments)) {
                   const dbComments = parsedSource.comments.map((c: any) => {
-                    let playbackSecond = 0;
-                    if (c.time && typeof c.time === "string" && c.time.includes(":")) {
-                      const parts = c.time.split(":");
-                      const mins = parseInt(parts[0], 10) || 0;
-                      const secs = parseInt(parts[1], 10) || 0;
-                      playbackSecond = mins * 60 + secs;
-                    }
+                    const playbackSecond = getStoredPlaybackSecond(c);
                     return {
                       id: c.id || String(c.timestamp || Date.now()),
                       username: activeSession.name || "Lucas",
