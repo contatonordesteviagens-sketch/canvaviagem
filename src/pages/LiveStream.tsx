@@ -563,16 +563,17 @@ const LiveStream = () => {
           }
           
           if (typeof info.currentTime !== "undefined" && isPlaying && !isPaused) {
-            setHasReceivedYTUpdate(true);
             const ytTime = Math.floor(info.currentTime);
             
             // Ignore low currentTime reports immediately after start when seek is pending
             if (initialStartSeconds > 0 && !hasInitializedStartRef.current) {
               if (ytTime >= initialStartSeconds - 5) {
                 hasInitializedStartRef.current = true;
+                setHasReceivedYTUpdate(true);
                 setPlaybackSeconds(ytTime);
               }
             } else {
+              setHasReceivedYTUpdate(true);
               setPlaybackSeconds(ytTime);
             }
           }
