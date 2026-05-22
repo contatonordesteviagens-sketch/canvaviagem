@@ -558,8 +558,12 @@ const LiveStream = () => {
           const state = data.info;
           if (state === 1) {
             setIsPaused(false);
+            setVideoEnded(false);
           } else if (state === 2) { // Apenas estado 2 (pausado)
             setIsPaused(true);
+          } else if (state === 0) {
+            setVideoEnded(true);
+            setIsPaused(false);
           }
         }
       } catch (e) {
