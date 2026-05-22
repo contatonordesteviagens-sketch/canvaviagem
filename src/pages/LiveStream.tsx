@@ -778,7 +778,7 @@ const LiveStream = () => {
 
   // Increment playback timer in seconds and track watch time / activity heartbeat in background
   useEffect(() => {
-    if (!isPlaying || isPaused || step !== "watch") return;
+    if (!isPlaying || isPaused || step !== "watch" || hasReceivedYTUpdate) return;
     const interval = setInterval(() => {
       setPlaybackSeconds(prev => {
         const next = prev + 1;
@@ -810,7 +810,7 @@ const LiveStream = () => {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [isPlaying, isPaused, step]);
+  }, [isPlaying, isPaused, step, hasReceivedYTUpdate]);
 
   // Keep comments in perfect synchronization with playback progress (never repeats, never starts from zero, seeks perfectly)
   useEffect(() => {
