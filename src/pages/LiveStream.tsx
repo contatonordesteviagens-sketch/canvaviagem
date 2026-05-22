@@ -1565,9 +1565,9 @@ const LiveStream = () => {
           {/* TÍTULO MOBILE FIXO: mantém o nome da aula acima do player sem cortar o vídeo */}
           {!mobileVideoFocusMode && (
             <div className="lg:hidden bg-zinc-950 px-4 py-2.5 border-b border-zinc-900 flex-shrink-0">
-              <h1 className="text-center text-[15px] font-black text-white leading-tight uppercase tracking-wide">
+              <div className="text-center text-[15px] font-black text-white leading-tight uppercase tracking-wide">
                 Sua aula já começou
-              </h1>
+              </div>
             </div>
           )}
 
@@ -1608,7 +1608,7 @@ const LiveStream = () => {
                   onClick={handleStartPlay}
                   className="absolute inset-0 z-30 cursor-pointer bg-gradient-to-t from-zinc-950 via-zinc-900/90 to-zinc-950 flex flex-col items-center justify-center p-4 text-center hover:brightness-110 transition-all duration-500"
                 >
-                  <h3 className="text-base sm:text-3xl font-black text-white tracking-widest uppercase mb-3">
+                  <h3 className="hidden sm:block text-base sm:text-3xl font-black text-white tracking-widest uppercase mb-3">
                     SUA AULA JÁ COMEÇOU
                   </h3>
                   <div className="h-16 w-16 sm:h-28 sm:w-28 rounded-full bg-red-600 border-4 border-red-500 flex items-center justify-center shadow-[0_0_35px_rgba(239,68,68,0.9)] animate-pulse">
