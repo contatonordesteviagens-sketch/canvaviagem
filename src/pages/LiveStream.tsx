@@ -530,8 +530,12 @@ const LiveStream = () => {
             const state = info.playerState;
             if (state === 1) {
               setIsPaused(false);
+              setVideoEnded(false);
             } else if (state === 2) { // Apenas estado 2 (pausado), ignorando estado 3 (buffering) para evitar overlays falsos de pausa
               setIsPaused(true);
+            } else if (state === 0) {
+              setVideoEnded(true);
+              setIsPaused(false);
             }
           }
           
