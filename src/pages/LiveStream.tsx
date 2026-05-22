@@ -1641,7 +1641,27 @@ const LiveStream = () => {
                   />
                 </div>
 
+                {/* OVERLAY DE REINICIAR — quando vídeo terminar */}
+                {videoEnded && (
+                  <button
+                    type="button"
+                    onClick={handleRestartVideo}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    className="absolute inset-0 z-[70] flex flex-col items-center justify-center gap-3 bg-black/85 backdrop-blur-sm cursor-pointer animate-fade-in"
+                    aria-label="Reiniciar vídeo"
+                  >
+                    <div className="bg-gradient-to-tr from-cyan-400 to-blue-600 p-5 rounded-full shadow-[0_0_40px_rgba(34,211,238,0.5)] hover:scale-110 transition-transform">
+                      <RefreshCw size={36} className="text-black" strokeWidth={3} />
+                    </div>
+                    <span className="text-white font-black text-sm sm:text-base uppercase tracking-wider">
+                      Reiniciar vídeo
+                    </span>
+                    <span className="text-zinc-300 text-xs sm:text-sm">Toque para assistir novamente com áudio</span>
+                  </button>
+                )}
+
               </div>
+
 
               {/* BOTÃO TELA CHEIA — MOBILE */}
               {isPlaying && isMobileViewport && (
