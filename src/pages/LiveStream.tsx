@@ -563,6 +563,7 @@ const LiveStream = () => {
           }
           
           if (typeof info.currentTime !== "undefined" && isPlaying && !isPaused) {
+            setHasReceivedYTUpdate(true);
             const ytTime = Math.floor(info.currentTime);
             
             // Ignore low currentTime reports immediately after start when seek is pending
@@ -601,6 +602,7 @@ const LiveStream = () => {
   const handleStartPlay = () => {
     setIsPlaying(true);
     setIsPaused(false);
+    setHasReceivedYTUpdate(false);
     hasInitializedStartRef.current = false;
     
     // Auto-play and unmute the iframe immediately upon overlay click
@@ -659,10 +661,12 @@ const LiveStream = () => {
     setIsPaused(false);
     setIsPlaying(true);
     setPlaybackSeconds(0);
+    setInitialStartSeconds(0);
+    setHasReceivedYTUpdate(false);
     hasInitializedStartRef.current = false;
 
     // Reload iframe com autoplay e mute=0 (gesture do usuário libera áudio)
-    const freshSrc = `https://www.youtube.com/embed/${videoUrlId}?enablejsapi=1&autoplay=1&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=1&disablekb=1&playsinline=1&t=${Date.now()}`;
+    const freshSrc = `${buildYouTubeEmbedSrc(0, true, false)}&t=${Date.now()}`;
     iframe.src = freshSrc;
 
     // Retries de unMute/play para garantir
