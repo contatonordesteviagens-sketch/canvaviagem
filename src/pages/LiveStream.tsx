@@ -237,6 +237,40 @@ const LiveStream = () => {
     return (match && match[2].length === 11) ? match[2] : urlOrId;
   };
 
+  const parsePlaybackTimeToSeconds = (time?: string) => {
+    if (!time || !time.includes(":")) return 0;
+    const parts = time.split(":").map((part) => parseInt(part, 10) || 0);
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    return parts[0] * 60 + parts[1];
+  };
+
+  const getStoredPlaybackSecond = (comment: any) => {
+    const explicit = comment?.playbackSecond ?? comment?.playback_second ?? comment?.playbackSeconds;
+    if (Number.isFinite(Number(explicit))) return Math.max(0, Math.floor(Number(explicit)));
+
+    // Fallback apenas para comentários antigos salvos como MM:SS do vídeo.
+    // Evita tratar horários reais (ex: 19:11) como minuto 19 do vídeo.
+    const fallback = parsePlaybackTimeToSeconds(comment?.time);
+    return fallback <= 90 * 60 ? fallback : 0;
+  };
+
+  const buildYouTubeEmbedSrc = (startSeconds = 0, autoplay = false, muted = false) => {
+    const params = new URLSearchParams({
+      enablejsapi: "1",
+      autoplay: autoplay ? "1" : "0",
+      mute: muted ? "1" : "0",
+      controls: "0",
+      rel: "0",
+      showinfo: "0",
+      iv_load_policy: "3",
+      fs: "1",
+      disablekb: "1",
+      playsinline: "1",
+    });
+    if (startSeconds > 0) params.set("start", String(Math.floor(startSeconds)));
+    return `https://www.youtube.com/embed/${videoUrlId}?${params.toString()}`;
+  };
+
   useEffect(() => {
     // 1. Comments - não confiar no cache local do visitante para evitar comentários fantasmas por dispositivo.
     setScheduledCommentsList(DEFAULT_SCHEDULED_COMMENTS);
