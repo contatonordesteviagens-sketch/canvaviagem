@@ -347,6 +347,7 @@ const LiveStream = () => {
           if (globalSettings.scheduledComments && Array.isArray(globalSettings.scheduledComments)) {
             setScheduledCommentsList(globalSettings.scheduledComments);
             localStorage.setItem("live_stream_comments", JSON.stringify(globalSettings.scheduledComments));
+          triggeredCommentsRef.current.clear();
           }
           
           if (globalSettings.prePlayComments && Array.isArray(globalSettings.prePlayComments)) {
@@ -480,6 +481,7 @@ const LiveStream = () => {
               if (globalSettings.scheduledComments && Array.isArray(globalSettings.scheduledComments)) {
                 setScheduledCommentsList(globalSettings.scheduledComments);
                 localStorage.setItem("live_stream_comments", JSON.stringify(globalSettings.scheduledComments));
+                  triggeredCommentsRef.current.clear();
               }
               
               if (globalSettings.prePlayComments && Array.isArray(globalSettings.prePlayComments)) {
