@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Smile, Eye, MessageCircle, AlertCircle, Sparkles, Play, Check, Pause, Clock, ShoppingBag, Paperclip, Maximize2 } from "lucide-react";
+import { Send, Smile, Eye, MessageCircle, AlertCircle, Sparkles, Play, Check, Pause, Clock, ShoppingBag, Paperclip, Maximize2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -213,6 +213,7 @@ const LiveStream = () => {
   const [isMobileLandscape, setIsMobileLandscape] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
+  const [videoEnded, setVideoEnded] = useState(false);
   // Altura estável da live. Não usar visualViewport durante digitação: no Chrome/iPhone isso pode cancelar o foco do input.
   const [viewportHeight, setViewportHeight] = useState<number>(
     () => (typeof window !== 'undefined' ? window.innerHeight : 800)
@@ -529,8 +530,12 @@ const LiveStream = () => {
             const state = info.playerState;
             if (state === 1) {
               setIsPaused(false);
+              setVideoEnded(false);
             } else if (state === 2) { // Apenas estado 2 (pausado), ignorando estado 3 (buffering) para evitar overlays falsos de pausa
               setIsPaused(true);
+            } else if (state === 0) {
+              setVideoEnded(true);
+              setIsPaused(false);
             }
           }
           
@@ -553,8 +558,12 @@ const LiveStream = () => {
           const state = data.info;
           if (state === 1) {
             setIsPaused(false);
+            setVideoEnded(false);
           } else if (state === 2) { // Apenas estado 2 (pausado)
             setIsPaused(true);
+          } else if (state === 0) {
+            setVideoEnded(true);
+            setIsPaused(false);
           }
         }
       } catch (e) {
@@ -615,6 +624,38 @@ const LiveStream = () => {
     if (nextPaused) {
       syncProgressToSupabase(playbackSeconds);
     }
+  };
+
+  // Reinicia o vídeo após terminar — recarrega o iframe DENTRO do gesture do clique
+  // para garantir que o navegador (Chrome iOS/Android) permita autoplay com áudio
+  const handleRestartVideo = () => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    setVideoEnded(false);
+    setIsPaused(false);
+    setIsPlaying(true);
+    setPlaybackSeconds(0);
+    hasInitializedStartRef.current = false;
+
+    // Reload iframe com autoplay e mute=0 (gesture do usuário libera áudio)
+    const freshSrc = `https://www.youtube.com/embed/${videoUrlId}?enablejsapi=1&autoplay=1&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=1&disablekb=1&playsinline=1&t=${Date.now()}`;
+    iframe.src = freshSrc;
+
+    // Retries de unMute/play para garantir
+    const cw = () => iframe.contentWindow;
+    const force = () => {
+      const w = cw();
+      if (!w) return;
+      const send = (func: string, args: any = "") =>
+        w.postMessage(JSON.stringify({ event: "command", func, args }), "*");
+      send("unMute");
+      send("setVolume", [100]);
+      send("playVideo");
+    };
+    setTimeout(force, 600);
+    setTimeout(force, 1500);
+    setTimeout(force, 3000);
   };
 
   // Atualiza espectadores dinâmicos de forma ultra realista baseada no tempo do vídeo (curva exata solicitada)
@@ -1600,7 +1641,27 @@ const LiveStream = () => {
                   />
                 </div>
 
+                {/* OVERLAY DE REINICIAR — quando vídeo terminar */}
+                {videoEnded && (
+                  <button
+                    type="button"
+                    onClick={handleRestartVideo}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    className="absolute inset-0 z-[70] flex flex-col items-center justify-center gap-3 bg-black/85 backdrop-blur-sm cursor-pointer animate-fade-in"
+                    aria-label="Reiniciar vídeo"
+                  >
+                    <div className="bg-gradient-to-tr from-cyan-400 to-blue-600 p-5 rounded-full shadow-[0_0_40px_rgba(34,211,238,0.5)] hover:scale-110 transition-transform">
+                      <RefreshCw size={36} className="text-black" strokeWidth={3} />
+                    </div>
+                    <span className="text-white font-black text-sm sm:text-base uppercase tracking-wider">
+                      Reiniciar vídeo
+                    </span>
+                    <span className="text-zinc-300 text-xs sm:text-sm">Toque para assistir novamente com áudio</span>
+                  </button>
+                )}
+
               </div>
+
 
               {/* BOTÃO TELA CHEIA — MOBILE */}
               {isPlaying && isMobileViewport && (
