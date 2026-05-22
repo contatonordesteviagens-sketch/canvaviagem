@@ -237,6 +237,40 @@ const LiveStream = () => {
     return (match && match[2].length === 11) ? match[2] : urlOrId;
   };
 
+  const parsePlaybackTimeToSeconds = (time?: string) => {
+    if (!time || !time.includes(":")) return 0;
+    const parts = time.split(":").map((part) => parseInt(part, 10) || 0);
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    return parts[0] * 60 + parts[1];
+  };
+
+  const getStoredPlaybackSecond = (comment: any) => {
+    const explicit = comment?.playbackSecond ?? comment?.playback_second ?? comment?.playbackSeconds;
+    if (Number.isFinite(Number(explicit))) return Math.max(0, Math.floor(Number(explicit)));
+
+    // Fallback apenas para comentários antigos salvos como MM:SS do vídeo.
+    // Evita tratar horários reais (ex: 19:11) como minuto 19 do vídeo.
+    const fallback = parsePlaybackTimeToSeconds(comment?.time);
+    return fallback <= 90 * 60 ? fallback : 0;
+  };
+
+  const buildYouTubeEmbedSrc = (startSeconds = 0, autoplay = false, muted = false) => {
+    const params = new URLSearchParams({
+      enablejsapi: "1",
+      autoplay: autoplay ? "1" : "0",
+      mute: muted ? "1" : "0",
+      controls: "0",
+      rel: "0",
+      showinfo: "0",
+      iv_load_policy: "3",
+      fs: "1",
+      disablekb: "1",
+      playsinline: "1",
+    });
+    if (startSeconds > 0) params.set("start", String(Math.floor(startSeconds)));
+    return `https://www.youtube.com/embed/${videoUrlId}?${params.toString()}`;
+  };
+
   useEffect(() => {
     // 1. Comments - não confiar no cache local do visitante para evitar comentários fantasmas por dispositivo.
     setScheduledCommentsList(DEFAULT_SCHEDULED_COMMENTS);
@@ -313,6 +347,7 @@ const LiveStream = () => {
           if (globalSettings.scheduledComments && Array.isArray(globalSettings.scheduledComments)) {
             setScheduledCommentsList(globalSettings.scheduledComments);
             localStorage.setItem("live_stream_comments", JSON.stringify(globalSettings.scheduledComments));
+          triggeredCommentsRef.current.clear();
           }
           
           if (globalSettings.prePlayComments && Array.isArray(globalSettings.prePlayComments)) {
@@ -351,16 +386,9 @@ const LiveStream = () => {
             try {
               const parsed = JSON.parse(savedUserComments);
               const mapped = parsed.map((c: any) => {
-                let pSec = c.playbackSecond;
-                if (pSec === undefined && c.time && typeof c.time === "string" && c.time.includes(":")) {
-                  const parts = c.time.split(":");
-                  const mins = parseInt(parts[0], 10) || 0;
-                  const secs = parseInt(parts[1], 10) || 0;
-                  pSec = mins * 60 + secs;
-                }
                 return {
                   ...c,
-                  playbackSecond: pSec
+                  playbackSecond: getStoredPlaybackSecond(c)
                 };
               });
               setUserComments(mapped);
@@ -382,13 +410,7 @@ const LiveStream = () => {
                 const parsedSource = typeof lead.source === "string" ? JSON.parse(lead.source) : lead.source;
                 if (parsedSource.comments && Array.isArray(parsedSource.comments)) {
                   const dbComments = parsedSource.comments.map((c: any) => {
-                    let playbackSecond = 0;
-                    if (c.time && typeof c.time === "string" && c.time.includes(":")) {
-                      const parts = c.time.split(":");
-                      const mins = parseInt(parts[0], 10) || 0;
-                      const secs = parseInt(parts[1], 10) || 0;
-                      playbackSecond = mins * 60 + secs;
-                    }
+                    const playbackSecond = getStoredPlaybackSecond(c);
                     return {
                       id: c.id || String(c.timestamp || Date.now()),
                       username: activeSession.name || "Lucas",
@@ -459,6 +481,7 @@ const LiveStream = () => {
               if (globalSettings.scheduledComments && Array.isArray(globalSettings.scheduledComments)) {
                 setScheduledCommentsList(globalSettings.scheduledComments);
                 localStorage.setItem("live_stream_comments", JSON.stringify(globalSettings.scheduledComments));
+                  triggeredCommentsRef.current.clear();
               }
               
               if (globalSettings.prePlayComments && Array.isArray(globalSettings.prePlayComments)) {
@@ -546,9 +569,11 @@ const LiveStream = () => {
             if (initialStartSeconds > 0 && !hasInitializedStartRef.current) {
               if (ytTime >= initialStartSeconds - 5) {
                 hasInitializedStartRef.current = true;
+                setHasReceivedYTUpdate(true);
                 setPlaybackSeconds(ytTime);
               }
             } else {
+              setHasReceivedYTUpdate(true);
               setPlaybackSeconds(ytTime);
             }
           }
@@ -578,6 +603,7 @@ const LiveStream = () => {
   const handleStartPlay = () => {
     setIsPlaying(true);
     setIsPaused(false);
+    setHasReceivedYTUpdate(false);
     hasInitializedStartRef.current = false;
     
     // Auto-play and unmute the iframe immediately upon overlay click
@@ -636,10 +662,12 @@ const LiveStream = () => {
     setIsPaused(false);
     setIsPlaying(true);
     setPlaybackSeconds(0);
+    setInitialStartSeconds(0);
+    setHasReceivedYTUpdate(false);
     hasInitializedStartRef.current = false;
 
     // Reload iframe com autoplay e mute=0 (gesture do usuário libera áudio)
-    const freshSrc = `https://www.youtube.com/embed/${videoUrlId}?enablejsapi=1&autoplay=1&mute=0&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=1&disablekb=1&playsinline=1&t=${Date.now()}`;
+    const freshSrc = `${buildYouTubeEmbedSrc(0, true, false)}&t=${Date.now()}`;
     iframe.src = freshSrc;
 
     // Retries de unMute/play para garantir
@@ -751,7 +779,7 @@ const LiveStream = () => {
 
   // Increment playback timer in seconds and track watch time / activity heartbeat in background
   useEffect(() => {
-    if (!isPlaying || isPaused || step !== "watch") return;
+    if (!isPlaying || isPaused || step !== "watch" || hasReceivedYTUpdate) return;
     const interval = setInterval(() => {
       setPlaybackSeconds(prev => {
         const next = prev + 1;
@@ -783,7 +811,7 @@ const LiveStream = () => {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [isPlaying, isPaused, step]);
+  }, [isPlaying, isPaused, step, hasReceivedYTUpdate]);
 
   // Keep comments in perfect synchronization with playback progress (never repeats, never starts from zero, seeks perfectly)
   useEffect(() => {
@@ -1534,6 +1562,15 @@ const LiveStream = () => {
             </div>
           </div>
 
+          {/* TÍTULO MOBILE FIXO: mantém o nome da aula acima do player sem cortar o vídeo */}
+          {!mobileVideoFocusMode && (
+            <div className="lg:hidden bg-zinc-950 px-4 py-2.5 border-b border-zinc-900 flex-shrink-0">
+              <div className="text-center text-[15px] font-black text-white leading-tight uppercase tracking-wide">
+                Sua aula já começou
+              </div>
+            </div>
+          )}
+
           {/* LAYOUT PRINCIPAL: empilhado no mobile (altura limitada), lado a lado no desktop (fixo) */}
           <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
 
@@ -1571,7 +1608,7 @@ const LiveStream = () => {
                   onClick={handleStartPlay}
                   className="absolute inset-0 z-30 cursor-pointer bg-gradient-to-t from-zinc-950 via-zinc-900/90 to-zinc-950 flex flex-col items-center justify-center p-4 text-center hover:brightness-110 transition-all duration-500"
                 >
-                  <h3 className="text-base sm:text-3xl font-black text-white tracking-widest uppercase mb-3">
+                  <h3 className="hidden sm:block text-base sm:text-3xl font-black text-white tracking-widest uppercase mb-3">
                     SUA AULA JÁ COMEÇOU
                   </h3>
                   <div className="h-16 w-16 sm:h-28 sm:w-28 rounded-full bg-red-600 border-4 border-red-500 flex items-center justify-center shadow-[0_0_35px_rgba(239,68,68,0.9)] animate-pulse">
@@ -1634,7 +1671,7 @@ const LiveStream = () => {
                     ref={iframeRef}
                     className={`absolute inset-0 w-full h-full border-none z-10 transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-0'}`}
                     style={{ pointerEvents: isPlaying ? 'auto' : 'none' }}
-                    src={`https://www.youtube.com/embed/${videoUrlId}?enablejsapi=1&autoplay=1&mute=1&controls=0&rel=0&showinfo=0&iv_load_policy=3&fs=1&disablekb=1&playsinline=1${initialStartSeconds > 0 ? `&start=${initialStartSeconds}` : ""}`}
+                    src={buildYouTubeEmbedSrc(initialStartSeconds, false, true)}
                     title="Canva Viagem Live"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                     allowFullScreen
