@@ -1562,6 +1562,15 @@ const LiveStream = () => {
             </div>
           </div>
 
+          {/* TÍTULO MOBILE FIXO: mantém o nome da aula acima do player sem cortar o vídeo */}
+          {!mobileVideoFocusMode && (
+            <div className="lg:hidden bg-zinc-950 px-4 py-2.5 border-b border-zinc-900 flex-shrink-0">
+              <h1 className="text-center text-[15px] font-black text-white leading-tight uppercase tracking-wide">
+                Sua aula já começou
+              </h1>
+            </div>
+          )}
+
           {/* LAYOUT PRINCIPAL: empilhado no mobile (altura limitada), lado a lado no desktop (fixo) */}
           <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
 
