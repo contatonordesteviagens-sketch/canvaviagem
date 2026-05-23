@@ -450,14 +450,18 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       if (!state.agencyName && state.digitalScore === 0 && state.currentPhase <= 1) return;
 
       try {
-        // Salva o snapshot com fotos, logos e galeria sob controle de tamanho para não exceder limites
+        // Salva na nuvem só o estado leve da conta; imagens/base64 grandes ficam no navegador do próprio usuário
+        const logoForCloud = state.logoBase64 && state.logoBase64.length < 400_000 ? state.logoBase64 : "";
         const cleanState = {
           ...state,
+          logoBase64: logoForCloud,
+          generatedAdImage: "",
+          lastCleanPhoto: "",
           siteContent: {
             ...state.siteContent,
-            galleryImages: (state.siteContent.galleryImages || []).slice(0, 10),
+            galleryImages: [],
           },
-          allGeneratedAdImages: (state.allGeneratedAdImages || []).slice(0, 10)
+          allGeneratedAdImages: []
         };
 
         const { error } = await supabase
@@ -481,8 +485,8 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    // Debounce 2.5s para evitar flooding do banco em digitações rápidas
-    const timer = setTimeout(syncState, 2500);
+    // Debounce maior para evitar flooding do banco em digitações rápidas
+    const timer = setTimeout(syncState, 8000);
     return () => clearTimeout(timer);
   }, [
     JSON.stringify({
@@ -490,6 +494,11 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       logoBase64: !!state.logoBase64,
       generatedAdImage: !!state.generatedAdImage,
       lastCleanPhoto: !!state.lastCleanPhoto,
+      allGeneratedAdImages: state.allGeneratedAdImages?.length || 0,
+      siteContent: {
+        ...state.siteContent,
+        galleryImages: state.siteContent?.galleryImages?.length || 0,
+      },
     }),
     user?.id,
     hasLoadedFromDb
