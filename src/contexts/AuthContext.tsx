@@ -55,8 +55,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Cache for subscription status to avoid rate limits
-const CACHE_DURATION = 30000; // 30 seconds cache
+// Cache for subscription status to avoid rate limits and prevent mid-session lockouts
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes in-memory cache
+const PERSISTED_CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days: instant UX, verified silently
+const SUBSCRIPTION_CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutes: never interrupt users while editing
 let subscriptionCache: {
   data: SubscriptionStatus | null;
   timestamp: number;
@@ -146,7 +148,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const stored = localStorage.getItem(`cv-sub-cache-${userId}`);
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (now - parsed.timestamp < 86400000) { // 24 hours valid
+          if (now - parsed.timestamp < PERSISTED_CACHE_DURATION) {
             subscriptionCache = {
               data: parsed.data,
               timestamp: parsed.timestamp,
@@ -380,7 +382,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const stored = localStorage.getItem(`cv-sub-cache-${userId}`);
             if (stored) {
               const parsed = JSON.parse(stored);
-              if (Date.now() - parsed.timestamp < 86400000) { // 24 hours
+                if (Date.now() - parsed.timestamp < PERSISTED_CACHE_DURATION) {
                 cached = parsed.data;
                 subscriptionCache = {
                   data: parsed.data,
@@ -407,13 +409,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => authSubscription.unsubscribe();
   }, [checkSubscription]);
 
-  // Auto-refresh subscription every 2 minutes (reduced frequency)
+  // Auto-refresh subscription quietly; avoid interrupting users while editing tools
   useEffect(() => {
     if (!session?.access_token || !user) return;
 
     const interval = setInterval(() => {
       checkSubscription(session.access_token, user);
-    }, 120000); // 2 minutes instead of 1
+    }, SUBSCRIPTION_CHECK_INTERVAL);
 
     return () => clearInterval(interval);
   }, [session?.access_token, user, checkSubscription]);
