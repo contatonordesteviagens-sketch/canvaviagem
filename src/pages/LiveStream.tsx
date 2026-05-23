@@ -35,19 +35,27 @@ const LiveStream = () => {
       return true;
     }
 
-    // Liberado diariamente das 17h às 23h59 (horário de Brasília)
+    // Liberado diariamente das 18h30 às 01h00 (horário de Brasília)
     try {
-      const hourStr = new Intl.DateTimeFormat("en-US", {
+      const now = new Date();
+      const parts = new Intl.DateTimeFormat("en-US", {
         timeZone: "America/Sao_Paulo",
         hour: "2-digit",
         hour12: false,
-      }).format(new Date());
-      const hour = parseInt(hourStr, 10);
-      return hour >= 17 && hour <= 23;
+        minute: "2-digit",
+      }).formatToParts(now);
+      const hour = parseInt(parts.find((p) => p.type === "hour")?.value || "0", 10);
+      const minute = parseInt(parts.find((p) => p.type === "minute")?.value || "0", 10);
+      const timeValue = hour * 60 + minute; // minutos desde meia-noite
+      // 18:30 = 1110, 01:00 = 60
+      return timeValue >= 1110 || timeValue <= 60;
     } catch {
-      const h = new Date().getUTCHours() - 3;
+      const d = new Date();
+      const h = d.getUTCHours() - 3;
       const hour = (h + 24) % 24;
-      return hour >= 17 && hour <= 23;
+      const minute = d.getUTCMinutes();
+      const timeValue = hour * 60 + minute;
+      return timeValue >= 1110 || timeValue <= 60;
     }
   };
   const [isTimeAllowed, setIsTimeAllowed] = useState<boolean>(computeIsTimeAllowed());
