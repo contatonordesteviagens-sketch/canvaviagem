@@ -300,6 +300,14 @@ footer{background:var(--ink);color:#9ba3ad;padding:64px 0 28px}
 .modal-form .field label{margin-bottom:6px}
 .modal-form input{border-color:rgba(0,0,0,.12)}
 .modal-submit{width:100%;justify-content:center;gap:10px;margin-top:8px}
+
+/* MAPA */
+.mapa-section{background:#fff;padding:80px 0}
+.mapa-container{width:100%;max-width:100%;border-radius:16px;overflow:hidden}
+@media (max-width: 640px){
+  .mapa-section{padding:56px 0}
+  .mapa-container iframe{height:320px}
+}
 </style>
 </head>
 <body>
@@ -514,6 +522,26 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     }
     return "";
   }).join("\n")}
+
+${state.address ? `
+<!-- MAPA -->
+<section id="mapa" class="mapa-section">
+  <div class="container">
+    <div class="section-eyebrow eyebrow">Localização</div>
+    <h2 class="section-title">Onde nos encontrar</h2>
+    <div class="mapa-container">
+      <iframe 
+        width="100%" 
+        height="450" 
+        style="border:0; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08);" 
+        allowfullscreen="" 
+        loading="lazy" 
+        referrerpolicy="no-referrer-when-downgrade" 
+        src="https://maps.google.com/maps?q=${encodeURIComponent(state.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed">
+      </iframe>
+    </div>
+  </div>
+</section>` : ""}
 
 <!-- FOOTER -->
 <footer>

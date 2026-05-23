@@ -497,6 +497,20 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               <p className="text-xs text-white/50 mt-3">Aplicada em botões, headers e CTAs.</p>
             </FabricaCard>
 
+            <FabricaCard title="📍 Endereço e Mapa">
+              <div className="space-y-3">
+                <FieldText
+                  label="Endereço da Agência"
+                  value={state.address || ""}
+                  onChange={(v) => update({ address: v })}
+                  placeholder="Ex: Av. Paulista, 1000 - Bela Vista, São Paulo - SP"
+                />
+                <p className="text-xs text-white/50">
+                  Ao preencher o endereço, um Google Map interativo responsivo será exibido automaticamente no rodapé do seu site! Deixe em branco caso não queira exibir o mapa.
+                </p>
+              </div>
+            </FabricaCard>
+
             <FabricaCard title="👁️ Seções do site">
               <p className="text-xs text-white/50 mb-3">
                 Escolha o que aparece no site. Desmarque qualquer seção pra removê-la (some também do HTML exportado).
