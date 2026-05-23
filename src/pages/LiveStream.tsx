@@ -856,8 +856,19 @@ const LiveStream = () => {
         playbackSecond: -100 + index
       }));
 
-      // Mescla comentários administrados + comentários do próprio usuário (aparecem inline na rolagem).
-      const merged = [...activePrePlay, ...activeScheduled, ...userComments]
+      // Mapeia comentários de usuário (se não tiverem playbackSecond, usam o segundo em que foram criados) e filtra para exibir apenas após o tempo de reprodução atual
+      const activeUserComments = userComments
+        .filter((c: any) => {
+          const pSec = c.playbackSecond !== undefined ? c.playbackSecond : currentSeconds;
+          return pSec <= currentSeconds;
+        })
+        .map((c: any) => ({
+          ...c,
+          playbackSecond: c.playbackSecond !== undefined ? c.playbackSecond : currentSeconds
+        }));
+
+      // Mescla e ordena estritamente por playbackSecond para fluxo contínuo onde os novos empurram os antigos para cima
+      const merged = [...activePrePlay, ...activeScheduled, ...activeUserComments]
         .sort((a: any, b: any) => {
           const secA = a.playbackSecond ?? 0;
           const secB = b.playbackSecond ?? 0;
