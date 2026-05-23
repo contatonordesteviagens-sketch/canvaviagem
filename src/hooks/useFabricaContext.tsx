@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import type { Context } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -274,7 +275,14 @@ interface FabricaContextType {
   canRedo: boolean;
 }
 
-const FabricaContext = createContext<FabricaContextType | undefined>(undefined);
+const FABRICA_CONTEXT_KEY = "__CANVA_VIAGEM_FABRICA_CONTEXT__" as const;
+const globalFabricaScope = globalThis as typeof globalThis & {
+  [FABRICA_CONTEXT_KEY]?: Context<FabricaContextType | undefined>;
+};
+
+const FabricaContext =
+  globalFabricaScope[FABRICA_CONTEXT_KEY] ??
+  (globalFabricaScope[FABRICA_CONTEXT_KEY] = createContext<FabricaContextType | undefined>(undefined));
 
 const loadInitialState = (): FabricaState => {
   if (typeof window === "undefined") return defaultState;
@@ -376,7 +384,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (data?.state_snapshot) {
-          const saved = data.state_snapshot as FabricaState;
+          const saved = data.state_snapshot as unknown as FabricaState;
           setState((prev) => {
             // Se prev é o estado inicial/limpo, usa o salvo do banco diretamente!
             const isPrevDefault = !prev.agencyName && prev.digitalScore === 0 && prev.instagram === "" && prev.whatsapp === "";
