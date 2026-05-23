@@ -374,6 +374,13 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    setState((prev) => {
+      const scopedLocal = loadInitialState(user.id);
+      const hasScopedProgress = !!scopedLocal.agencyName || !!scopedLocal.logoBase64 || !!scopedLocal.whatsapp || scopedLocal.currentPhase > 1;
+      const prevIsDefault = !prev.agencyName && !prev.logoBase64 && !prev.whatsapp && prev.digitalScore === 0 && prev.currentPhase <= 1;
+      return hasScopedProgress && prevIsDefault ? scopedLocal : prev;
+    });
+
     const loadSavedState = async () => {
       try {
         console.log("[Supabase Load] Iniciando carregamento do banco de dados...");
@@ -392,7 +399,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
           const saved = data.state_snapshot as unknown as FabricaState;
           setState((prev) => {
             // Se prev é o estado inicial/limpo, usa o salvo do banco diretamente!
-            const isPrevDefault = !prev.agencyName && prev.digitalScore === 0 && prev.instagram === "" && prev.whatsapp === "";
+            const isPrevDefault = !prev.agencyName && !prev.logoBase64 && prev.digitalScore === 0 && prev.instagram === "" && prev.whatsapp === "" && prev.currentPhase <= 1;
             if (isPrevDefault) {
               console.log("[Supabase Load] Local state is default. Adopting DB state entirely.");
               return saved;
