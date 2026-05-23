@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import type { Context } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -333,7 +333,12 @@ const loadInitialState = (userId?: string | null): FabricaState => {
 export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [state, setState] = useState<FabricaState>(() => loadInitialState());
+  const stateRef = useRef(state);
   const [hasLoadedFromDb, setHasLoadedFromDb] = useState(false);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   // Persistência: salva campos leves em uma chave, pesados em chaves separadas
   useEffect(() => {
@@ -510,16 +515,21 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
 
   const update = useCallback((patch: Partial<FabricaState>) => {
     // Salva o histórico de forma limpa e síncrona no corpo do callback do evento
+    const snapshot = stateRef.current;
     setHistory((h) => {
-      const nextH = [...h, state];
+      const nextH = [...h, snapshot];
       if (nextH.length > 50) nextH.shift(); // limite de 50 ações
       return nextH;
     });
     // Limpa a pilha de refazer ao realizar uma nova alteração
     setRedoStack([]);
     // Aplica a alteração no estado principal
-    setState((prev) => ({ ...prev, ...patch }));
-  }, [state]);
+    setState((prev) => {
+      const next = { ...prev, ...patch };
+      stateRef.current = next;
+      return next;
+    });
+  }, []);
 
   const undo = useCallback(() => {
     if (history.length === 0) return;
