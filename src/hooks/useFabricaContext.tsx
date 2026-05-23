@@ -384,7 +384,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (data?.state_snapshot) {
-          const saved = data.state_snapshot as FabricaState;
+          const saved = data.state_snapshot as unknown as FabricaState;
           setState((prev) => {
             // Se prev é o estado inicial/limpo, usa o salvo do banco diretamente!
             const isPrevDefault = !prev.agencyName && prev.digitalScore === 0 && prev.instagram === "" && prev.whatsapp === "";
