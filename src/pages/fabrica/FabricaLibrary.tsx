@@ -1,5 +1,5 @@
 import { useFabricaContext } from "@/hooks/useFabricaContext";
-import { Download, Trash2, Library, FolderOpen, AlertCircle, ImageIcon } from "lucide-react";
+import { Download, Trash2, Library, FolderOpen, AlertCircle, ImageIcon, Sparkles, Camera } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props {
@@ -13,17 +13,41 @@ export const FabricaLibrary = ({ subTab, setSubTab }: Props) => {
   const getAdImages = () => state.allGeneratedAdImages || [];
   const getGalleryImages = () => state.siteContent?.galleryImages || [];
 
-  const handleDownload = (imgUrl: string, filename: string) => {
+  // Download robusto: converte qualquer URL para Blob antes de baixar
+  // Isso garante que data:base64 e URLs externas façam download real (não abrem em nova aba)
+  const handleDownload = async (imgUrl: string, filename: string) => {
     try {
+      let blobUrl: string;
+
+      if (imgUrl.startsWith("data:")) {
+        // data: URL — converte para blob diretamente
+        const res = await fetch(imgUrl);
+        const blob = await res.blob();
+        blobUrl = URL.createObjectURL(blob);
+      } else {
+        // URL externa — faz fetch com mode no-cors fallback
+        try {
+          const res = await fetch(imgUrl);
+          const blob = await res.blob();
+          blobUrl = URL.createObjectURL(blob);
+        } catch {
+          // Se CORS bloquear, abre em nova aba com dica manual
+          window.open(imgUrl, "_blank");
+          toast.info("Imagem aberta em nova aba — clique com o botão direito para salvar.");
+          return;
+        }
+      }
+
       const link = document.createElement("a");
-      link.href = imgUrl;
+      link.href = blobUrl;
       link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
       toast.success("Download iniciado!");
     } catch (err) {
-      toast.error("Não foi possível baixar o arquivo diretamente.");
+      toast.error("Não foi possível baixar o arquivo.");
     }
   };
 
@@ -56,7 +80,7 @@ export const FabricaLibrary = ({ subTab, setSubTab }: Props) => {
             Minha Biblioteca de Ativos 📚
           </h2>
           <p className="text-xs text-white/50 leading-relaxed max-w-xl">
-            Acesse todas as artes publicitárias que você já gerou e as fotos de destinos que você selecionou. Baixe as imagens para suas redes sociais ou vincule-as aos seus pacotes comerciais!
+            Acesse suas artes publicitárias geradas e as fotos de destinos selecionadas — cada uma em sua aba separada. Baixe qualquer imagem direto para o dispositivo!
           </p>
         </div>
 
@@ -70,22 +94,39 @@ export const FabricaLibrary = ({ subTab, setSubTab }: Props) => {
                 : "bg-white/[0.02] border border-white/5 text-white/60 hover:bg-white/[0.06] hover:text-white"
             }`}
           >
-            <FolderOpen className="w-3.5 h-3.5" />
+            <Sparkles className="w-3.5 h-3.5" />
             Minhas Artes & Anúncios ({getAdImages().length})
           </button>
           <button
             onClick={() => setSubTab("galeria")}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
               subTab === "galeria"
-                ? "bg-amber-500 text-black shadow-md shadow-amber-500/10"
+                ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/10"
                 : "bg-white/[0.02] border border-white/5 text-white/60 hover:bg-white/[0.06] hover:text-white"
             }`}
           >
-            <Library className="w-3.5 h-3.5" />
+            <Camera className="w-3.5 h-3.5" />
             Banco de Fotos Selecionadas ({getGalleryImages().length})
           </button>
         </div>
       </div>
+
+      {/* Tab Label Banner */}
+      {subTab === "ofertas" ? (
+        <div className="flex items-center gap-3 bg-amber-500/5 border border-amber-500/20 rounded-2xl px-4 py-3">
+          <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
+          <p className="text-[11px] text-amber-200 leading-normal">
+            <strong>Artes & Anúncios:</strong> Aqui ficam todas as imagens compostas geradas pelo motor de criação — anúncios prontos com logo, preço e texto, prontos para postar nas redes sociais.
+          </p>
+        </div>
+      ) : (
+        <div className="flex items-center gap-3 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl px-4 py-3">
+          <Camera className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+          <p className="text-[11px] text-emerald-200 leading-normal">
+            <strong>Banco de Fotos:</strong> Aqui ficam somente as fotos limpas de destinos — sem texto nem sobreposições. Use-as como fundo do site, galeria de viagens ou materiais de apoio.
+          </p>
+        </div>
+      )}
 
       {/* Database Guard Notice */}
       <div className="flex items-start gap-3 bg-blue-500/5 border border-blue-500/20 rounded-2xl p-4 text-[11px] text-blue-200 leading-normal">
@@ -102,37 +143,46 @@ export const FabricaLibrary = ({ subTab, setSubTab }: Props) => {
           <div className="space-y-1">
             <h3 className="text-sm font-bold text-white/60 uppercase tracking-wider">Biblioteca Vazia</h3>
             <p className="text-xs text-white/30 max-w-[320px] mx-auto leading-normal">
-              {subTab === "ofertas" 
-                ? "Você ainda não gerou nenhum anúncio promocional. Vá para o Gerador de Imagens (F1) e crie sua primeira arte!"
-                : "Você ainda não salvou nenhuma foto limpa na galeria. Use as fases de geração para salvar e reutilizar suas melhores mídias."}
+              {subTab === "ofertas"
+                ? "Você ainda não gerou nenhum anúncio. Vá para o Gerador de Imagens (F3) e crie sua primeira arte!"
+                : "Nenhuma foto limpa salva ainda. Gere anúncios no modo Foto Real (F3) — as fotos de fundo são salvas automaticamente aqui."}
             </p>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
           {activeImages.map((imgUrl, idx) => (
-            <div 
+            <div
               key={`${subTab}-${idx}`}
               className="group relative aspect-[3/4] sm:aspect-square bg-[#0F0F11] border border-white/5 rounded-2xl overflow-hidden shadow-lg hover:border-amber-500/30 transition-all duration-300"
             >
+              {/* Tab badge */}
+              <div className={`absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                subTab === "ofertas"
+                  ? "bg-amber-500/90 text-black"
+                  : "bg-emerald-500/90 text-black"
+              }`}>
+                {subTab === "ofertas" ? "Arte" : "Foto"}
+              </div>
+
               {/* Main Image */}
-              <img 
-                src={imgUrl} 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                alt="" 
+              <img
+                src={imgUrl}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                alt=""
                 loading="lazy"
               />
 
               {/* Gradient Dark Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 gap-2.5">
                 <div className="flex gap-2">
-                  <button 
-                    onClick={() => handleDownload(imgUrl, `fabrica-${subTab}-${idx}.png`)}
+                  <button
+                    onClick={() => handleDownload(imgUrl, `fabrica-${subTab === "ofertas" ? "arte" : "foto"}-${idx + 1}.png`)}
                     className="flex-1 py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-black text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" /> Baixar
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleDelete(idx)}
                     className="w-9 h-9 rounded-xl bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
                     title="Excluir da biblioteca"

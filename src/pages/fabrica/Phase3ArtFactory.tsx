@@ -998,12 +998,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       updatedPackages = [newPkg, ...base];
     }
 
-    // Garante APENAS a imagem LIMPA (sem a arte poluída de texto do anúncio) no banco do site
+    // Garante APENAS a foto LIMPA (sem a arte poluída de texto do anúncio) no banco do site.
+    // Se não há foto limpa (modo IA pura sem referência), não adiciona nada ao banco de fotos.
     const currentGallery = state.siteContent.galleryImages || [];
     let updatedGallery = [...currentGallery];
-    const imageToAdd = sourceCleanImg || finalComposedImg;
-    if (imageToAdd && !updatedGallery.includes(imageToAdd)) {
-       updatedGallery = [imageToAdd, ...updatedGallery];
+    if (sourceCleanImg && !updatedGallery.includes(sourceCleanImg)) {
+       updatedGallery = [sourceCleanImg, ...updatedGallery];
     }
 
     // Inteligência Adicional: Se o site não tem NENHUMA foto de capa no Hero,
@@ -1012,7 +1012,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
     update({
       selectedPackages: updatedPackages,
-      lastCleanPhoto: imageToAdd,
+      lastCleanPhoto: sourceCleanImg || finalComposedImg,
       siteContent: {
         ...state.siteContent,
         galleryImages: updatedGallery,
