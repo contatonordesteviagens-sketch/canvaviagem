@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Comment {
   id: string;
@@ -25,7 +26,15 @@ const DEFAULT_PRE_PLAY_COMMENTS: Comment[] = [
 import { DEFAULT_SCHEDULED_COMMENTS, ScheduledComment } from "@/data/scheduledComments";
 
 const LiveStream = () => {
+  const { user } = useAuth();
+
   const computeIsTimeAllowed = () => {
+    // Liberar acesso irrestrito para o administrador principal
+    if (user?.email === "lucashenriquephd@gmail.com") {
+      console.log("[LiveStream] Acesso de administrador principal liberado!");
+      return true;
+    }
+
     // Liberado diariamente das 17h às 23h59 (horário de Brasília)
     try {
       const hourStr = new Intl.DateTimeFormat("en-US", {
@@ -48,7 +57,7 @@ const LiveStream = () => {
     tick();
     const id = setInterval(tick, 30000);
     return () => clearInterval(id);
-  }, []);
+  }, [user?.email]);
 
   const [step, setStep] = useState<"register" | "watch">("register");
   const [name, setName] = useState("");
