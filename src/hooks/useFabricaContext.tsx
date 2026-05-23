@@ -331,40 +331,41 @@ const loadInitialState = (userId?: string | null): FabricaState => {
 };
 
 export const FabricaProvider = ({ children }: { children: ReactNode }) => {
-  const [state, setState] = useState<FabricaState>(loadInitialState);
+  const { user } = useAuth();
+  const [state, setState] = useState<FabricaState>(() => loadInitialState());
   const [hasLoadedFromDb, setHasLoadedFromDb] = useState(false);
 
   // Persistência: salva campos leves em uma chave, pesados em chaves separadas
   useEffect(() => {
+    const userId = user?.id;
     try {
       const { logoBase64, generatedAdImage, lastCleanPhoto, allGeneratedAdImages, siteContent, ...rest } = state;
       const { galleryImages, ...siteRest } = siteContent;
 
       // Leve (sem base64 grandes)
       safeSetItem(
-        STORAGE_KEY,
+        scopedKey(STORAGE_KEY, userId),
         JSON.stringify({ ...rest, siteContent: siteRest })
       );
 
       // Pesados em chaves próprias (sobrevivem mesmo se um deles falhar)
-      if (logoBase64) safeSetItem(HEAVY_STORAGE_PREFIX + "logoBase64", logoBase64);
-      else localStorage.removeItem(HEAVY_STORAGE_PREFIX + "logoBase64");
+      const heavyPrefix = scopedHeavyPrefix(userId);
+      if (logoBase64) safeSetItem(heavyPrefix + "logoBase64", logoBase64);
+      else localStorage.removeItem(heavyPrefix + "logoBase64");
 
-      if (generatedAdImage) safeSetItem(HEAVY_STORAGE_PREFIX + "generatedAdImage", generatedAdImage);
-      else localStorage.removeItem(HEAVY_STORAGE_PREFIX + "generatedAdImage");
+      if (generatedAdImage) safeSetItem(heavyPrefix + "generatedAdImage", generatedAdImage);
+      else localStorage.removeItem(heavyPrefix + "generatedAdImage");
 
-      if (lastCleanPhoto) safeSetItem(HEAVY_STORAGE_PREFIX + "lastCleanPhoto", lastCleanPhoto);
-      else localStorage.removeItem(HEAVY_STORAGE_PREFIX + "lastCleanPhoto");
+      if (lastCleanPhoto) safeSetItem(heavyPrefix + "lastCleanPhoto", lastCleanPhoto);
+      else localStorage.removeItem(heavyPrefix + "lastCleanPhoto");
 
       // Galeria separada (pode ter várias imagens)
-      safeSetItem(GALLERY_KEY, JSON.stringify(galleryImages || []));
+      safeSetItem(scopedKey(GALLERY_KEY, userId), JSON.stringify(galleryImages || []));
 
       // Artes geradas separadas
-      safeSetItem(GENERATED_KEY, JSON.stringify(allGeneratedAdImages || []));
+      safeSetItem(scopedKey(GENERATED_KEY, userId), JSON.stringify(allGeneratedAdImages || []));
     } catch {}
-  }, [state]);
-
-  const { user } = useAuth();
+  }, [state, user?.id]);
 
   // ☁️ CARREGAR DO BANCO: Busca o estado salvo do usuário no Supabase
   useEffect(() => {
