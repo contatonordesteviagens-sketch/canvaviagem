@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import type { Context } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -274,7 +275,14 @@ interface FabricaContextType {
   canRedo: boolean;
 }
 
-const FabricaContext = createContext<FabricaContextType | undefined>(undefined);
+const FABRICA_CONTEXT_KEY = "__CANVA_VIAGEM_FABRICA_CONTEXT__" as const;
+const globalFabricaScope = globalThis as typeof globalThis & {
+  [FABRICA_CONTEXT_KEY]?: Context<FabricaContextType | undefined>;
+};
+
+const FabricaContext =
+  globalFabricaScope[FABRICA_CONTEXT_KEY] ??
+  (globalFabricaScope[FABRICA_CONTEXT_KEY] = createContext<FabricaContextType | undefined>(undefined));
 
 const loadInitialState = (): FabricaState => {
   if (typeof window === "undefined") return defaultState;
