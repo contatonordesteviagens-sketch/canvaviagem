@@ -25,26 +25,11 @@ const DEFAULT_PRE_PLAY_COMMENTS: Comment[] = [
 import { DEFAULT_SCHEDULED_COMMENTS, ScheduledComment } from "@/data/scheduledComments";
 
 const LiveStream = () => {
-  const computeIsTimeAllowed = () => {
-    // Liberado diariamente das 17h às 23h59 (horário de Brasília)
-    try {
-      const hourStr = new Intl.DateTimeFormat("en-US", {
-        timeZone: "America/Sao_Paulo",
-        hour: "2-digit",
-        hour12: false,
-      }).format(new Date());
-      const hour = parseInt(hourStr, 10);
-      return hour >= 17 && hour <= 23;
-    } catch {
-      const h = new Date().getUTCHours() - 3;
-      const hour = (h + 24) % 24;
-      return hour >= 17 && hour <= 23;
-    }
-  };
-  const [isTimeAllowed, setIsTimeAllowed] = useState<boolean>(computeIsTimeAllowed());
+  const computeIsTimeAllowed = () => true;
+  const [isTimeAllowed, setIsTimeAllowed] = useState<boolean>(true);
 
   useEffect(() => {
-    const tick = () => setIsTimeAllowed(computeIsTimeAllowed());
+    const tick = () => setIsTimeAllowed(true);
     tick();
     const id = setInterval(tick, 30000);
     return () => clearInterval(id);
