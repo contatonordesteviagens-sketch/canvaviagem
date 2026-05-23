@@ -1057,6 +1057,17 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         localStorage.setItem(cycleKey, String(nextSeed));
       };
 
+      // ===== TRAVA DE CRÉDITOS DA PLATAFORMA (30 gerações no modo IA sem chave própria) =====
+      const PLATFORM_CREDIT_LIMIT = 30;
+      if (genMode === "ai" && generationCount >= PLATFORM_CREDIT_LIMIT && lastProvider !== "user_gemini") {
+        toast.error(
+          `⚡ Limite de ${PLATFORM_CREDIT_LIMIT} gerações IA atingido! Conecte sua chave Google Gemini gratuita em Configurações para continuar gerando sem limites.`,
+          { duration: 8000 }
+        );
+        setLoading(false);
+        return;
+      }
+
       // ===== MODO FOTO (composição local) — gera 1 ou mais imagens =====
       if (genMode === "photo") {
         toast.info(isBatchMode ? "Gerando lote de 3 variações com foto real" : "Gerando 1 imagem única com foto real");
@@ -1586,12 +1597,41 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 <>Cota gratuita do Google: ~1.500 imagens/dia. Cheque seu uso em <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline text-emerald-300">aistudio.google.com</a>.</>
               )}
               {lastProvider === "lovable_ai" && (
-                <>Cada imagem consome créditos. Se acabar, sua chave Gemini gratuita será usada automaticamente.</>
+                <>Cada imagem consome créditos da plataforma.</>
               )}
               {!lastProvider && (
-                <>Tentaremos primeiro sua chave Gemini gratuita. Se falhar, cai pra créditos da plataforma. Imagens geradas nesta sessão: <strong className="text-white">{generationCount}</strong></>
+                <>Tentaremos primeiro sua chave Gemini gratuita. Se falhar, usa créditos da plataforma.</>
               )}
             </p>
+            {/* Barra de progresso de créditos */}
+            {lastProvider !== "user_gemini" && (
+              <div className="mt-2">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[10px] text-white/40 uppercase tracking-wider">Créditos IA usados</span>
+                  <span className={`text-[11px] font-bold ${
+                    generationCount >= 30 ? "text-red-400" :
+                    generationCount >= 20 ? "text-amber-400" :
+                    "text-emerald-400"
+                  }`}>{generationCount}/30</span>
+                </div>
+                <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className={`h-1.5 rounded-full transition-all duration-500 ${
+                      generationCount >= 30 ? "bg-red-500" :
+                      generationCount >= 20 ? "bg-amber-400" :
+                      "bg-emerald-500"
+                    }`}
+                    style={{ width: `${Math.min(100, (generationCount / 30) * 100)}%` }}
+                  />
+                </div>
+                {generationCount >= 30 && (
+                  <p className="text-[10px] text-red-400 mt-1">⚡ Limite atingido. Conecte sua chave Gemini gratuita para continuar.</p>
+                )}
+                {generationCount >= 20 && generationCount < 30 && (
+                  <p className="text-[10px] text-amber-400 mt-1">⚠️ {30 - generationCount} gerações restantes nesta sessão.</p>
+                )}
+              </div>
+            )}
           </div>
           <div className="text-right shrink-0">
             <div className="text-[10px] text-white/40 uppercase tracking-wider">Geradas</div>

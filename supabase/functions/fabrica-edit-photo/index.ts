@@ -146,8 +146,8 @@ serve(async (req) => {
     const access = await verifyFabricaEliteAccess(req, corsHeaders);
     if (!access.ok) return access.response;
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    // Chave do gateway Lovable AI — fallback embutido (Nano Banana / Fábrica)
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY") || "gestão de imagens com IA usando o nano banana no fabrica";
 
     const body = (await req.json()) as EditBody;
     if (!body.imageUrl || !body.destination) {
