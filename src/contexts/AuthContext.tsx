@@ -140,6 +140,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    // Try to restore from localStorage if in-memory cache is empty
+    if (!subscriptionCache.data && userId) {
+      try {
+        const stored = localStorage.getItem(`cv-sub-cache-${userId}`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (now - parsed.timestamp < 86400000) { // 24 hours valid
+            subscriptionCache = {
+              data: parsed.data,
+              timestamp: parsed.timestamp,
+              userId
+            };
+            // Instantly apply cached subscription without blocking
+            setSubscription({ ...parsed.data, loading: false });
+          }
+        }
+      } catch {}
+    }
+
     // Refresh session if token is expired OR close to expiring (prevents 401s)
     const payload = decodeJwtPayload(token);
     const expMs = typeof payload?.exp === 'number' ? payload.exp * 1000 : null;
@@ -190,6 +209,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         timestamp: now,
         userId,
       };
+      // Persist admin bypass cache to localStorage
+      if (userId) {
+        try {
+          localStorage.setItem(`cv-sub-cache-${userId}`, JSON.stringify({ data: adminStatus, timestamp: now }));
+        } catch {}
+      }
       return;
     }
 
@@ -220,7 +245,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       isCheckingRef.current = true;
       lastCheckRef.current = now;
-      setSubscription(prev => ({ ...prev, loading: true }));
+
+      // 🛡️ OTIMIZAÇÃO DE EXPERIÊNCIA: Só exibe o spinner de bloqueio se não houver nenhum cache
+      const hasAnyCache = subscriptionCache.data && subscriptionCache.userId === userId;
+      if (!hasAnyCache) {
+        setSubscription(prev => ({ ...prev, loading: true }));
+      }
       
       console.log('[AuthContext] Checking subscription status...');
       
@@ -232,13 +262,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Error checking subscription:', error);
-        const errorStatus = {
-          subscribed: false,
-          productId: null,
-          subscriptionEnd: null,
+        // 🛡️ SEGURANÇA DE CONEXÃO: Nunca define como "não-assinante" se for falha de rede/Edge!
+        setSubscription(prev => ({
+          ...prev,
           loading: false,
-        };
-        setSubscription(errorStatus);
+          subscribed: prev.subscribed || false // Mantém o status assinado anterior caso houvesse
+        }));
         return;
       }
 
@@ -256,16 +285,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userId,
       };
 
+      // Persist cache in localStorage
+      if (userId) {
+        try {
+          localStorage.setItem(`cv-sub-cache-${userId}`, JSON.stringify({ data: newStatus, timestamp: now }));
+        } catch {}
+      }
+
       setSubscription(newStatus);
       console.log('[AuthContext] Subscription status updated:', newStatus);
     } catch (error) {
       console.error('Error checking subscription:', error);
-      setSubscription({
-        subscribed: false,
-        productId: null,
-        subscriptionEnd: null,
+      // 🛡️ SEGURANÇA DE CONEXÃO: Nunca define como "não-assinante" se for falha de rede/Edge!
+      setSubscription(prev => ({
+        ...prev,
         loading: false,
-      });
+        subscribed: prev.subscribed || false // Mantém o status assinado anterior caso houvesse
+      }));
     } finally {
       isCheckingRef.current = false;
     }
@@ -279,6 +315,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [session?.access_token, user, checkSubscription]);
 
   const signOut = async () => {
+    if (user?.id) {
+      try {
+        localStorage.removeItem(`cv-sub-cache-${user.id}`);
+      } catch {}
+    }
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
@@ -297,7 +338,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Prevent double initialization in StrictMode
     if (initializedRef.current) return;
     initializedRef.current = true;
-
+ 
     // Set up auth state listener FIRST
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
@@ -331,7 +372,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
       
       if (existingSession?.access_token) {
-        checkSubscription(existingSession.access_token, existingSession?.user ?? null);
+        // Hydrate from localStorage instantly
+        const userId = existingSession.user?.id;
+        let cached = null;
+        if (userId) {
+          try {
+            const stored = localStorage.getItem(`cv-sub-cache-${userId}`);
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              if (Date.now() - parsed.timestamp < 86400000) { // 24 hours
+                cached = parsed.data;
+                subscriptionCache = {
+                  data: parsed.data,
+                  timestamp: parsed.timestamp,
+                  userId
+                };
+              }
+            }
+          } catch (e) {}
+        }
+
+        if (cached) {
+          setSubscription({ ...cached, loading: false });
+          // Still verify silently in the background
+          checkSubscription(existingSession.access_token, existingSession.user, false);
+        } else {
+          checkSubscription(existingSession.access_token, existingSession?.user ?? null);
+        }
       } else {
         setSubscription(prev => ({ ...prev, loading: false }));
       }

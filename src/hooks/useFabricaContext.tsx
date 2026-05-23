@@ -318,6 +318,7 @@ const loadInitialState = (): FabricaState => {
 
 export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<FabricaState>(loadInitialState);
+  const [hasLoadedFromDb, setHasLoadedFromDb] = useState(false);
 
   // Persistência: salva campos leves em uma chave, pesados em chaves separadas
   useEffect(() => {
@@ -353,10 +354,14 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
 
   // ☁️ CARREGAR DO BANCO: Busca o estado salvo do usuário no Supabase
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setHasLoadedFromDb(false);
+      return;
+    }
 
     const loadSavedState = async () => {
       try {
+        console.log("[Supabase Load] Iniciando carregamento do banco de dados...");
         const { data, error } = await supabase
           .from("fabrica_diagnosticos")
           .select("state_snapshot")
@@ -388,9 +393,14 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
             };
             return merged;
           });
+          console.log("[Supabase Load] Estado carregado e mesclado com sucesso!");
+        } else {
+          console.log("[Supabase Load] Nenhum estado prévio encontrado para este usuário no banco.");
         }
       } catch (err) {
-        console.error("[Supabase Load] Erro catastrófico:", err);
+        console.error("[Supabase Load] Erro catastrófico ao carregar do Supabase:", err);
+      } finally {
+        setHasLoadedFromDb(true);
       }
     };
 
@@ -399,7 +409,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
 
   // ☁️ PERSISTÊNCIA NUVEM: Sincroniza estado debounced com Supabase
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id || !hasLoadedFromDb) return; // 🛡️ Bloqueia sincronização antes da hidratação completa!
     
     const syncState = async () => {
       // 🛡️ SEGURANÇA DE HIDRATAÇÃO: Não sobe um estado VAZIO por cima do que já está na nuvem!
@@ -428,7 +438,9 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
           }, { onConflict: "user_id" });
 
         if (error) {
-          console.warn("[Supabase Sync] Falha silenciosa:", error.message);
+          console.warn("[Supabase Sync] Falha silenciosa no sincronismo:", error.message);
+        } else {
+          console.log("[Supabase Sync] Sincronização de estado concluída no Supabase.");
         }
       } catch (err) {
         // Falha silenciosa
@@ -445,7 +457,8 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       generatedAdImage: !!state.generatedAdImage,
       lastCleanPhoto: !!state.lastCleanPhoto,
     }),
-    user?.id
+    user?.id,
+    hasLoadedFromDb
   ]);
 
   // Histórico de alterações (Undo / Redo)
