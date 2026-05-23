@@ -5,6 +5,8 @@ import { Phase1DiagnosticoES } from "@/pages/fabrica/Phase1DiagnosticoES";
 import { Phase2AtivosES } from "@/pages/fabrica/Phase2AtivosES";
 import { Phase3ArtFactoryES } from "@/pages/fabrica/Phase3ArtFactoryES";
 import { Phase4LandingBuilderES } from "@/pages/fabrica/Phase4LandingBuilderES";
+import { FabricaDashboardES } from "@/pages/fabrica/FabricaDashboardES";
+import { FabricaLibraryES } from "@/pages/fabrica/FabricaLibraryES";
 import { 
   ArrowLeft, 
   Crown, 
@@ -28,6 +30,8 @@ const FabricaInnerES = () => {
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"dashboard" | "phase" | "library">("dashboard");
+  const [librarySubTab, setLibrarySubTab] = useState<"ofertas" | "galeria">("ofertas");
 
   useEffect(() => {
     const color = state.primaryColor || "#F59E0B";
@@ -46,6 +50,10 @@ const FabricaInnerES = () => {
   const onPrimaryText = getContrastText(state.primaryColor);
 
   const getPhaseName = () => {
+    if (activeTab === "dashboard") return "Panel Inicial";
+    if (activeTab === "library") {
+      return librarySubTab === "ofertas" ? "Mis Ofertas" : "Mi Biblioteca";
+    }
     if (state.currentPhase === 1) return "Generador de Imágenes";
     if (state.currentPhase === 2) return "Página de Ventas";
     if (state.currentPhase === 3) return "Creador de Oferta";
@@ -68,8 +76,8 @@ const FabricaInnerES = () => {
             <Sparkles className="w-4 h-4 text-black font-black" />
           </div>
           <div>
-            <div className="text-xs font-black text-white leading-none tracking-tight">Fábrica de Viagens</div>
-            <div className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-0.5">Panel de Creación</div>
+            <div className="text-xs font-black text-white leading-none tracking-tight font-sans">Fábrica de Viagens</div>
+            <div className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-0.5 font-sans">Panel de Creación</div>
           </div>
         </div>
 
@@ -78,29 +86,36 @@ const FabricaInnerES = () => {
           {/* Dashboard Geral */}
           <div>
             <button
-              onClick={() => navigate("/es")}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white/60 hover:text-white hover:bg-white/[0.04] transition-all"
+              onClick={() => setActiveTab("dashboard")}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                activeTab === "dashboard"
+                  ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
+                  : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+              }`}
             >
-              <LayoutDashboard className="w-4 h-4 text-white/40" />
+              <LayoutDashboard className={`w-4 h-4 ${activeTab === "dashboard" ? "text-amber-400" : "text-white/40"}`} />
               <span>Panel Inicial</span>
             </button>
           </div>
 
           {/* GENERACIÓN */}
           <div>
-            <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-3 mb-2">
+            <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-3 mb-2 font-sans">
               GENERACIÓN
             </div>
             <button
-              onClick={() => setPhase(1)}
+              onClick={() => {
+                setPhase(1);
+                setActiveTab("phase");
+              }}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                state.currentPhase === 1
+                activeTab === "phase" && state.currentPhase === 1
                   ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
                   : "text-white/60 hover:text-white hover:bg-white/[0.04]"
               }`}
             >
               <div className="flex items-center gap-3">
-                <ImageIcon className={`w-4 h-4 ${state.currentPhase === 1 ? "text-amber-400" : "text-white/40"}`} />
+                <ImageIcon className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 1 ? "text-amber-400" : "text-white/40"}`} />
                 <span>Generador de Imágenes</span>
               </div>
               <span className="text-[10px] text-white/30 font-bold">F1</span>
@@ -109,75 +124,101 @@ const FabricaInnerES = () => {
 
           {/* HERRAMIENTAS */}
           <div>
-            <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-3 mb-2">
+            <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-3 mb-2 font-sans">
               HERRAMIENTAS
             </div>
             <div className="space-y-1">
+              {/* F2: Página de Ventas (Moved up) */}
               <button
-                onClick={() => setPhase(3)}
+                onClick={() => {
+                  setPhase(2);
+                  setActiveTab("phase");
+                }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  state.currentPhase === 3
+                  activeTab === "phase" && state.currentPhase === 2
+                    ? "bg-white/[0.06] text-white border border-white/10"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <FileText className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 2 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>Página de Ventas</span>
+                </div>
+                <span className="text-[10px] text-white/30 font-bold font-sans">F2</span>
+              </button>
+
+              {/* F3: Creador de Oferta */}
+              <button
+                onClick={() => {
+                  setPhase(3);
+                  setActiveTab("phase");
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  activeTab === "phase" && state.currentPhase === 3
                     ? "bg-[#D97706]/15 text-[#F59E0B] border border-[#D97706]/35 shadow-[0_0_15px_rgba(245,158,11,0.08)]"
                     : "text-white/60 hover:text-white hover:bg-white/[0.04]"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Zap className={`w-4 h-4 ${state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
+                  <Zap className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Creador de Oferta</span>
                 </div>
-                <span className={`text-[10px] font-bold ${state.currentPhase === 3 ? "text-amber-400" : "text-white/30"}`}>F3</span>
+                <span className={`text-[10px] font-bold ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/30"}`}>F3</span>
               </button>
 
+              {/* F4: Mis Activos */}
               <button
-                onClick={() => setPhase(2)}
+                onClick={() => {
+                  setPhase(4);
+                  setActiveTab("phase");
+                }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  state.currentPhase === 2
+                  activeTab === "phase" && state.currentPhase === 4
                     ? "bg-white/[0.06] text-white border border-white/10"
                     : "text-white/60 hover:text-white hover:bg-white/[0.04]"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <FileText className={`w-4 h-4 ${state.currentPhase === 2 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Página de Ventas</span>
-                </div>
-                <span className="text-[10px] text-white/30 font-bold">F2</span>
-              </button>
-
-              <button
-                onClick={() => setPhase(4)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                  state.currentPhase === 4
-                    ? "bg-white/[0.06] text-white border border-white/10"
-                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Sliders className={`w-4 h-4 ${state.currentPhase === 4 ? "text-amber-400" : "text-white/40"}`} />
+                  <Sliders className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 4 ? "text-amber-400" : "text-white/40"}`} />
                   <span>Mis Activos</span>
                 </div>
-                <span className="text-[10px] text-white/30 font-bold">F4</span>
+                <span className="text-[10px] text-white/30 font-bold font-sans">F4</span>
               </button>
             </div>
           </div>
 
           {/* CONTENIDO */}
           <div>
-            <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-3 mb-2">
+            <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-3 mb-2 font-sans">
               CONTENIDO
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 font-sans">
               <button
-                disabled
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white/30 cursor-not-allowed text-left"
+                onClick={() => {
+                  setActiveTab("library");
+                  setLibrarySubTab("ofertas");
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left ${
+                  activeTab === "library" && librarySubTab === "ofertas"
+                    ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
               >
-                <FolderOpen className="w-4 h-4 text-white/20" />
+                <FolderOpen className={`w-4 h-4 ${activeTab === "library" && librarySubTab === "ofertas" ? "text-amber-400" : "text-white/40"}`} />
                 <span>Mis Ofertas</span>
               </button>
               <button
-                disabled
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-white/30 cursor-not-allowed text-left"
+                onClick={() => {
+                  setActiveTab("library");
+                  setLibrarySubTab("galeria");
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left ${
+                  activeTab === "library" && librarySubTab === "galeria"
+                    ? "bg-white/[0.06] text-white border border-white/10 shadow-sm"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
               >
-                <Library className="w-4 h-4 text-white/20" />
+                <Library className={`w-4 h-4 ${activeTab === "library" && librarySubTab === "galeria" ? "text-amber-400" : "text-white/40"}`} />
                 <span>Mi Biblioteca</span>
               </button>
             </div>
@@ -185,7 +226,7 @@ const FabricaInnerES = () => {
         </div>
 
         {/* User Footer / Info */}
-        <div className="p-4 border-t border-white/5 bg-[#0A0A0B]/40">
+        <div className="p-4 border-t border-white/5 bg-[#0A0A0B]/40 font-sans">
           <button
             onClick={() => navigate("/es")}
             className="w-full py-2.5 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] text-white/80 text-xs font-semibold flex items-center justify-center gap-2 transition-all"
@@ -196,7 +237,7 @@ const FabricaInnerES = () => {
       </aside>
 
       {/* ── MOBILE HEADER (SELETOR COMPATÍVEL) ── */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#0F0F11] border-b border-white/5 flex items-center justify-between px-4 z-50">
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#0F0F11] border-b border-white/5 flex items-center justify-between px-4 z-50 animate-slideDown">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br from-amber-500 to-yellow-300">
             <Sparkles className="w-3.5 h-3.5 text-black" />
@@ -215,57 +256,103 @@ const FabricaInnerES = () => {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed top-16 left-0 right-0 bg-[#0F0F11] border-b border-white/10 z-40 p-4 space-y-3 flex flex-col">
+        <div className="md:hidden fixed top-16 left-0 right-0 bg-[#0F0F11] border-b border-white/10 z-40 p-4 space-y-3 flex flex-col max-h-[80vh] overflow-y-auto font-sans">
           <button
             onClick={() => {
-              setPhase(1);
+              setActiveTab("dashboard");
               setMobileMenuOpen(false);
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
-              state.currentPhase === 1 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+              activeTab === "dashboard" ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            🖼️ Generador de Imágenes
+            📊 Panel Inicial
+          </button>
+          
+          <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Generación</div>
+          <button
+            onClick={() => {
+              setPhase(1);
+              setActiveTab("phase");
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+              activeTab === "phase" && state.currentPhase === 1 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            🖼️ Generador de Imágenes (F1)
+          </button>
+
+          <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Herramientas</div>
+          <button
+            onClick={() => {
+              setPhase(2);
+              setActiveTab("phase");
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+              activeTab === "phase" && state.currentPhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            📄 Página de Ventas (F2)
           </button>
           <button
             onClick={() => {
               setPhase(3);
+              setActiveTab("phase");
               setMobileMenuOpen(false);
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
-              state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+              activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ⚡ Creador de Oferta
-          </button>
-          <button
-            onClick={() => {
-              setPhase(2);
-              setMobileMenuOpen(false);
-            }}
-            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
-              state.currentPhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
-            }`}
-          >
-            📄 Página de Ventas
+            ⚡ Creador de Oferta (F3)
           </button>
           <button
             onClick={() => {
               setPhase(4);
+              setActiveTab("phase");
               setMobileMenuOpen(false);
             }}
             className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
-              state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+              activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ⚙️ Mis Activos
+            ⚙️ Mis Activos (F4)
           </button>
+
+          <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Contenido</div>
+          <button
+            onClick={() => {
+              setActiveTab("library");
+              setLibrarySubTab("ofertas");
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+              activeTab === "library" && librarySubTab === "ofertas" ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            📂 Mis Ofertas
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("library");
+              setLibrarySubTab("galeria");
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+              activeTab === "library" && librarySubTab === "galeria" ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            📚 Mi Biblioteca
+          </button>
+
           <div className="border-t border-white/5 pt-3">
             <button
               onClick={() => navigate("/es")}
               className="w-full py-3 px-4 rounded-xl text-left text-sm font-semibold text-white/50"
             >
-              ← Volver al Inicio
+              ← Volver al Panel
             </button>
           </div>
         </div>
@@ -275,14 +362,17 @@ const FabricaInnerES = () => {
       <main className="flex-1 min-w-0 min-h-screen pt-20 md:pt-8 px-4 md:px-8 pb-24 overflow-y-auto bg-[#0A0A0B]">
         {/* Admin Quick Phase Selector */}
         {isAdmin && (
-          <div className="mb-6 p-3 rounded-2xl bg-black border border-white/10 flex items-center gap-2 overflow-x-auto">
-            <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest mr-2 select-none">Atalhos Admin:</span>
+          <div className="mb-6 p-3 rounded-2xl bg-black border border-white/10 flex items-center gap-2 overflow-x-auto font-sans">
+            <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest mr-2 select-none">Atajos Admin:</span>
             {[1, 2, 3, 4].map((num) => (
               <button
                 key={num}
-                onClick={() => setPhase(num)}
+                onClick={() => {
+                  setPhase(num);
+                  setActiveTab("phase");
+                }}
                 className={`px-3 py-1 rounded-lg text-[10px] font-bold border transition-colors ${
-                  state.currentPhase === num ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60"
+                  activeTab === "phase" && state.currentPhase === num ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60"
                 }`}
               >
                 Fase {num}
@@ -291,12 +381,20 @@ const FabricaInnerES = () => {
           </div>
         )}
 
-        {/* Phase Component Render */}
+        {/* Dynamic Component Render */}
         <div className="transition-all duration-300">
-          {state.currentPhase === 1 && <Phase3ArtFactoryES onNext={() => setPhase(2)} onBack={() => {}} />}
-          {state.currentPhase === 2 && <Phase4LandingBuilderES onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
-          {state.currentPhase === 3 && <Phase1DiagnosticoES onComplete={() => setPhase(4)} onBack={() => setPhase(2)} />}
-          {state.currentPhase === 4 && <Phase2AtivosES onNext={() => setPhase(1)} onBack={() => setPhase(3)} />}
+          {activeTab === "dashboard" && <FabricaDashboardES />}
+          {activeTab === "library" && (
+            <FabricaLibraryES subTab={librarySubTab} setSubTab={setLibrarySubTab} />
+          )}
+          {activeTab === "phase" && (
+            <>
+              {state.currentPhase === 1 && <Phase3ArtFactoryES onNext={() => setPhase(2)} onBack={() => {}} />}
+              {state.currentPhase === 2 && <Phase4LandingBuilderES onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
+              {state.currentPhase === 3 && <Phase1DiagnosticoES onComplete={() => setPhase(4)} onBack={() => setPhase(2)} />}
+              {state.currentPhase === 4 && <Phase2AtivosES onNext={() => setPhase(1)} onBack={() => setPhase(3)} />}
+            </>
+          )}
         </div>
       </main>
     </div>
@@ -345,7 +443,7 @@ const FabricaContentES = () => {
 
   if (authLoading || subscription.loading) {
     return (
-      <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center text-white">
+      <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center text-white font-sans">
         <Loader2 className="w-8 h-8 animate-spin text-amber-500 mb-2" />
         <span className="text-sm text-white/60">Verificando tus credenciales...</span>
       </div>
@@ -354,7 +452,7 @@ const FabricaContentES = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center text-white">
+      <div className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center text-white font-sans">
         <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mb-2" />
         <span className="text-sm text-white/60">Redirigiendo al inicio de sesión...</span>
       </div>
@@ -364,7 +462,7 @@ const FabricaContentES = () => {
   if (!hasAccess) {
     return (
       <div 
-        className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center p-4 relative overflow-hidden"
+        className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans"
         style={{
           backgroundImage: "radial-gradient(circle at 50% 30%, rgba(0,229,255,0.08) 0%, transparent 60%)"
         }}
@@ -420,7 +518,7 @@ const FabricaContentES = () => {
             <div className="border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] p-4 rounded-2xl text-left transition-all">
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <span className="text-xs font-bold text-white/80">Plan Elite Mensual</span>
+                  <span className="text-xs font-bold text-white/80">Plan Elite Mensal</span>
                   <p className="text-[10px] text-white/40 mt-0.5">Acceso recurrente, cancela cuando quieras</p>
                 </div>
                 <div className="text-right">
@@ -441,7 +539,7 @@ const FabricaContentES = () => {
             onClick={() => navigate("/es")}
             className="text-xs text-white/40 hover:text-white flex items-center justify-center gap-1.5 mx-auto transition-colors border-0 bg-transparent cursor-pointer"
           >
-            ← Volver al Panel
+            ← Voltar para o Painel
           </button>
         </div>
       </div>
@@ -450,7 +548,7 @@ const FabricaContentES = () => {
 
   return (
     <>
-      <SeoMetadata title="Fábrica de Viagens | Canva Viajes" description="Sistema completo de marketing y geração de anúncios com IA para agências de viagens." />
+      <SeoMetadata title="Fábrica de Viagens | Canva Viajes" description="Sistema completo de marketing e geração de anúncios com IA para agências de viagens." />
       <FabricaInnerES />
     </>
   );
