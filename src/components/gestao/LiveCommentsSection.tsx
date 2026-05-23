@@ -849,6 +849,182 @@ export const LiveCommentsSection = () => {
     }
   };
 
+  const handleSyncEditedVideoComments = async () => {
+    setIsSyncing(true);
+    const loadingToast = toast.loading("Reorganizando e sincronizando cronograma do vídeo editado...");
+    try {
+      const newMappings = [
+        { username: "Matheus Santos", message: "opa cheguei", newTime: "00:05" },
+        { username: "Augusto Jr", message: "boraaa", newTime: "00:08" },
+        { username: "Ana Paula", message: "São paulo Capital", newTime: "00:22" },
+        { username: "PedroViagens", message: "São Paulo Sorocaba", newTime: "00:24" },
+        { username: "Gabriele Dantas", message: "Dourado MS", newTime: "00:26" },
+        { username: "Norte Sul Viagens", message: "Rio Grande do Sul", newTime: "00:28" },
+        { username: "VaneMundial", message: "Ceará", newTime: "00:30" },
+        { username: "CarlosTrip", message: "Maringá", newTime: "00:32" },
+        { username: "MariEmJericoacoara", message: "Ouvindo bem sim", newTime: "00:29" },
+        { username: "AmandaTurismo", message: "audio ótimo, bora!", newTime: "00:31" },
+        { username: "DiegoExpedicoes", message: "audio ta bom", newTime: "00:33" },
+        { username: "GiseleDestinos", message: "Assino o canva viagem uso todo dia me salva demais", newTime: "01:20" },
+        { username: "Rafael Morais", message: "Cheguei Lucas aqui da Bahia", newTime: "01:40" },
+        { username: "Leo", message: "Sim tá travando", newTime: "01:45" },
+        { username: "Sandra", message: "Aqui tá travando achei que era minha internet", newTime: "01:48" },
+        { username: "Thiago", message: "audio perfeito mas video travando", newTime: "01:50" },
+        { username: "KarinaViagens", message: "Agora sim video e áudio perfeito", newTime: "02:50" },
+        { username: "Leticia", message: "Agora sim tá perfeito", newTime: "02:52" },
+        { username: "Leticia", message: "Sim tá ótimo o video aqui", newTime: "02:54" },
+        { username: "CarlaTurismo", message: "Sim melhorou", newTime: "02:56" },
+        { username: "TiagoTurismo", message: "top", newTime: "02:58" },
+        { username: "Gabriele", message: "vai rodar a ferramenta do fábrica hoje na pratica?", newTime: "06:55" },
+        { username: "Leodabahia", message: "faz da bahia e salvador", newTime: "05:14" },
+        { username: "JessiTur", message: "eu", newTime: "06:24" },
+        { username: "FelipeMilMilhas", message: "eu uso todo dia", newTime: "06:26" },
+        { username: "CamilaDestinos", message: "sempre posto", newTime: "06:28" },
+        { username: "RafaMundo", message: "antes de usar o canva viagem eu fazia muito", newTime: "06:30" },
+        { username: "TatiViajante", message: "concordo", newTime: "06:50" },
+        { username: "BetoExplora", message: "tem razão cliente percebe", newTime: "06:53" },
+        { username: "ValdirTur", message: "dá pra gerar quantos anuncios por dia?", newTime: "05:00" },
+        { username: "LeoRoteiros", message: "verdade", newTime: "08:20" },
+        { username: "BiaExplora", message: "como faz pra assinar? libera o link logo lucas rs", newTime: "08:35" },
+        { username: "MuriloTrilhas", message: "vai me ajudar mt que não sei criar nada de marketing", newTime: "08:50" },
+        { username: "DuduPeloMundo", message: "tem destinos internacionais tbm?", newTime: "09:35" },
+        { username: "JulioPeloMundo", message: "são os mesmos anuncios mesm", newTime: "10:50" },
+        { username: "AgenteMarcela", message: "sou franqueado da cvc sempre as mesmas campanhas mesm", newTime: "10:55" },
+        { username: "Patricia Lemos", message: "Como assim jornada do viajante?", newTime: "14:10" },
+        { username: "Luis", message: "1", newTime: "14:25" },
+        { username: "Lara Destinos", message: "acho que sei", newTime: "14:41" },
+        { username: "RafaPeloMundo", message: "1", newTime: "14:27" },
+        { username: "Mari", message: "1", newTime: "14:29" },
+        { username: "Diego", message: "1", newTime: "14:31" },
+        { username: "CamilaTurismo", message: "1", newTime: "14:33" },
+        { username: "Renato", message: "não sei explica", newTime: "14:43" },
+        { username: "KatiaViagens", message: "2", newTime: "14:45" },
+        { username: "fábio", message: "1", newTime: "14:35" },
+        { username: "Gabi", message: "1", newTime: "14:37" },
+        { username: "MarcosMilhas", message: "ver um anúncio entra em contato cria uma certa confiança e compra", newTime: "16:15" },
+        { username: "CarlaTurismo", message: "não sei", newTime: "16:20" },
+        { username: "DaniloMochileiro", message: "Acontece muito comigo isso", newTime: "18:57" },
+        { username: "ValDestinos", message: "eu não aguento mais curiosos", newTime: "20:10" },
+        { username: "Carol", message: "eu", newTime: "20:15" },
+        { username: "AmandaPeloMundo", message: "eu", newTime: "20:20" },
+        { username: "Rodrigo", message: "Eu", newTime: "20:25" },
+        { username: "LucasMilhas", message: "eu vendo muito no meu grupo", newTime: "22:15" },
+        { username: "Rute Viagens", message: "Vou criar um grupo hj", newTime: "22:45" },
+        { username: "Maria Clara", message: "Boa idéia, ter um grupo", newTime: "22:50" },
+        { username: "SandraRoteiros", message: "Não sei nada disso", newTime: "24:50" },
+        { username: "Thiago", message: "Muita coisa pra minha cabeça", newTime: "24:55" },
+        { username: "DudaDestinos", message: "nenhum novo só antigos", newTime: "26:50" },
+        { username: "PatyTurismo", message: "2 pacotes", newTime: "26:53" },
+        { username: "FernandoMundo", message: "Eu", newTime: "27:02" },
+        { username: "RenataViagens", message: "Eu", newTime: "27:04" },
+        { username: "Guilherme", message: "1", newTime: "14:39" },
+        { username: "AgenteRoberto", message: "eu demais", newTime: "27:06" },
+        { username: "LeticiaRoteiros", message: "eu", newTime: "27:08" },
+        { username: "Maria", message: "Sim vou criar o grupo jaja", newTime: "31:10" },
+        { username: "JulianaViagens", message: "Verdade, por isso sou tão exigente com perfil bonito", newTime: "31:35" },
+        { username: "ArthurDestinos", message: "Preciso arrumar meu perfil", newTime: "31:45" },
+        { username: "Karen", message: "Verdade não confio em profissionais deslexados", newTime: "31:55" },
+        { username: "dantas farias", message: "Isso que eu queria ver, bora!", newTime: "33:10" },
+        { username: "Fabio", message: "muito bom", newTime: "42:15" },
+        { username: "Maria Clara", message: "Bem rápido mas sempre fica nessa qualidade e tem variedades?", newTime: "42:35" },
+        { username: "VaniaTur", message: "Muito bom", newTime: "43:15" },
+        { username: "RafaMochileiro", message: "bom demais", newTime: "43:20" },
+        { username: "JuniorViagens", message: "caraca muito bom", newTime: "43:45" },
+        { username: "GiseleDestinos", message: "uau eu quero!", newTime: "44:00" },
+        { username: "MarcosRoteiros", message: "finalmente vou ter um site bom", newTime: "44:15" },
+        { username: "MariEmJericoacoara", message: "Cadê o link?", newTime: "48:10" },
+        { username: "FabioTravel", message: "Perfeito e preço?", newTime: "48:30" },
+        { username: "BetoMochileiro", message: "deve ser mil reais", newTime: "48:50" },
+        { username: "CarlaTrips", message: "quero saber os preços também", newTime: "49:10" },
+        { username: "TaniaDestinos", message: "Já assinei esse plano start é muito bom", newTime: "50:15" },
+        { username: "RodrigoMilhas", message: "Eita, achei que ia ser mais de 500", newTime: "50:40" },
+        { username: "FelipeRoteiros", message: "Achei que era mais caro mas vai aumentar né", newTime: "51:10" },
+        { username: "EduardoMundo", message: "O anual compensa bem mais só por entregar um site vou pegar", newTime: "51:30" },
+        { username: "BeatrizTrips", message: "Adoro seu trabalho Lucas parabéns", newTime: "52:00" },
+        { username: "GustavoRoteiros", message: "Meu faturamento mudou depois que conheci esse cara", newTime: "52:20" },
+        { username: "LuanDestinos", message: "tamo junto Lucas, assinei aqui", newTime: "52:45" },
+        { username: "CamilaMochileira", message: "Concordo demais", newTime: "53:00" },
+        { username: "RenatoViajante", message: "Eu amo vender viagens", newTime: "53:20" },
+        { username: "TatiPeloMundo", message: "Amo viajar e fazer amigos viajar tbm", newTime: "53:40" },
+        { username: "RafaDestinos", message: "top top, valeu", newTime: "54:00" },
+        { username: "VaneTurismo", message: "Show!", newTime: "54:15" },
+        { username: "JulianaTur", message: "Ver teu whatsapp te mandei o comprovante", newTime: "54:30" },
+        { username: "BetoTrips", message: "abraços até mais", newTime: "54:45" }
+      ];
+
+      const updatedComments = comments.map(comment => {
+        const match = newMappings.find(m => {
+          const u1 = m.username.replace("@", "").trim();
+          const u2 = comment.username.replace("@", "").trim();
+          return u1.toLowerCase() === u2.toLowerCase() && m.message.trim() === comment.message.trim();
+        });
+        if (match) {
+          return {
+            ...comment,
+            time: match.newTime
+          };
+        }
+        return comment;
+      });
+
+      setComments(updatedComments);
+      localStorage.setItem("live_stream_comments", JSON.stringify(updatedComments));
+
+      const globalSettings = {
+        videoUrl: videoUrl,
+        offerSettings: {
+          status: offerStatus,
+          time: offerTime,
+          title: offerTitle,
+          description: offerDesc,
+          price: offerPrice,
+          checkoutUrl: offerCheckoutUrl,
+          bannerUrl: offerBannerUrl
+        },
+        scheduledComments: updatedComments,
+        prePlayComments: prePlayComments,
+        updatedAt: Date.now()
+      };
+
+      const { data: existing, error: fetchError } = await supabase
+        .from("webinar_leads")
+        .select("*")
+        .eq("whatsapp", "global_live_settings")
+        .maybeSingle();
+
+      if (fetchError) throw fetchError;
+
+      if (existing) {
+        const { error } = await supabase
+          .from("webinar_leads")
+          .update({
+            name: "Global Live Settings",
+            source: JSON.stringify(globalSettings)
+          })
+          .eq("whatsapp", "global_live_settings");
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("webinar_leads")
+          .insert({
+            name: "Global Live Settings",
+            whatsapp: "global_live_settings",
+            source: JSON.stringify(globalSettings)
+          });
+        if (error) throw error;
+      }
+
+      toast.dismiss(loadingToast);
+      toast.success("Vídeo editado sincronizado com sucesso! Todos os 96 comentários foram reorganizados para a nova minutagem e salvos na live!");
+    } catch (error: any) {
+      toast.dismiss(loadingToast);
+      console.error("Sync error:", error);
+      toast.error(`Erro ao sincronizar cronograma: ${error.message || "Verifique as permissões."}`);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const savePrePlay = async () => {
     localStorage.setItem("live_stream_pre_play_comments", JSON.stringify(prePlayComments));
     await syncGlobalSettingsToSupabase();
@@ -2012,6 +2188,16 @@ export const LiveCommentsSection = () => {
               >
                 <CloudUpload className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`} />
                 {isSyncing ? "Salvando..." : "Salvar na Live"}
+              </Button>
+              <Button 
+                onClick={handleSyncEditedVideoComments}
+                size="sm" 
+                disabled={isSyncing}
+                className="gap-2 bg-indigo-600 text-white hover:bg-indigo-600/95 font-bold shadow-md"
+                title="Ajusta a minutagem dos 96 comentários para o novo vídeo mais curto"
+              >
+                <RotateCcw className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`} />
+                {isSyncing ? "Sincronizando..." : "Sincronizar Vídeo Editado"}
               </Button>
               <Button 
                 variant="outline" 
