@@ -374,11 +374,17 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (data?.state_snapshot) {
-          const saved = data.state_snapshot as Partial<FabricaState>;
+          const saved = data.state_snapshot as FabricaState;
           setState((prev) => {
-            // 🛡️ SEGURANÇA DE MESCLAGEM: Prioriza o estado da sessão local (prev)
-            // caso o usuário já tenha informações editadas recentemente na máquina atual.
-            // O estado do banco (saved) atua como base e fallback de sincronização multidevice.
+            // Se prev é o estado inicial/limpo, usa o salvo do banco diretamente!
+            const isPrevDefault = !prev.agencyName && prev.digitalScore === 0 && prev.instagram === "" && prev.whatsapp === "";
+            if (isPrevDefault) {
+              console.log("[Supabase Load] Local state is default. Adopting DB state entirely.");
+              return saved;
+            }
+
+            // Caso contrário, mescla priorizando prev para preservar edições ativas da sessão local,
+            // mas garante que campos vazios ou não editados no prev não sobresscrevam dados salvos no banco.
             const merged = {
               ...saved,
               ...prev,
