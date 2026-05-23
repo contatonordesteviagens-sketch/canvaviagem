@@ -254,6 +254,9 @@ const HEAVY_STORAGE_PREFIX = "fabrica-heavy-v1:";
 const GALLERY_KEY = "fabrica-gallery-v1";
 const GENERATED_KEY = "fabrica-generated-v1";
 
+const scopedKey = (key: string, userId?: string | null) => (userId ? `${key}:${userId}` : key);
+const scopedHeavyPrefix = (userId?: string | null) => (userId ? `${HEAVY_STORAGE_PREFIX}${userId}:` : HEAVY_STORAGE_PREFIX);
+
 const safeSetItem = (key: string, value: string): boolean => {
   try {
     localStorage.setItem(key, value);
@@ -284,25 +287,26 @@ const FabricaContext =
   globalFabricaScope[FABRICA_CONTEXT_KEY] ??
   (globalFabricaScope[FABRICA_CONTEXT_KEY] = createContext<FabricaContextType | undefined>(undefined));
 
-const loadInitialState = (): FabricaState => {
+const loadInitialState = (userId?: string | null): FabricaState => {
   if (typeof window === "undefined") return defaultState;
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(scopedKey(STORAGE_KEY, userId)) || (userId ? localStorage.getItem(STORAGE_KEY) : null);
     const parsed = stored ? JSON.parse(stored) : {};
     const heavy: Record<string, string> = {};
+    const heavyPrefix = scopedHeavyPrefix(userId);
     HEAVY_KEYS.forEach((k) => {
-      const v = localStorage.getItem(HEAVY_STORAGE_PREFIX + k);
+      const v = localStorage.getItem(heavyPrefix + k) || (userId ? localStorage.getItem(HEAVY_STORAGE_PREFIX + k) : null);
       if (v) heavy[k] = v;
     });
     let gallery: string[] = [];
     try {
-      const g = localStorage.getItem(GALLERY_KEY);
+      const g = localStorage.getItem(scopedKey(GALLERY_KEY, userId)) || (userId ? localStorage.getItem(GALLERY_KEY) : null);
       if (g) gallery = JSON.parse(g);
     } catch {}
 
     let generated: string[] = [];
     try {
-      const gen = localStorage.getItem(GENERATED_KEY);
+      const gen = localStorage.getItem(scopedKey(GENERATED_KEY, userId)) || (userId ? localStorage.getItem(GENERATED_KEY) : null);
       if (gen) generated = JSON.parse(gen);
     } catch {}
 
