@@ -474,44 +474,43 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const [redoStack, setRedoStack] = useState<FabricaState[]>([]);
 
   const update = useCallback((patch: Partial<FabricaState>) => {
-    setState((prev) => {
-      // Salva no histórico antes de aplicar o patch
-      setHistory((h) => {
-        const nextH = [...h, prev];
-        if (nextH.length > 50) nextH.shift(); // limite de 50 ações
-        return nextH;
-      });
-      // Limpa pilha de refazer ao fazer uma nova alteração
-      setRedoStack([]);
-      return { ...prev, ...patch };
-    });
-  }, []);
-
-  const undo = useCallback(() => {
+    // Salva o histórico de forma limpa e síncrona no corpo do callback do evento
     setHistory((h) => {
-      if (h.length === 0) return h;
-      const prev = h[h.length - 1];
-      const nextH = h.slice(0, -1);
-      setState((current) => {
-        setRedoStack((r) => [...r, current]);
-        return prev;
-      });
+      const nextH = [...h, state];
+      if (nextH.length > 50) nextH.shift(); // limite de 50 ações
       return nextH;
     });
-  }, []);
+    // Limpa a pilha de refazer ao realizar uma nova alteração
+    setRedoStack([]);
+    // Aplica a alteração no estado principal
+    setState((prev) => ({ ...prev, ...patch }));
+  }, [state]);
+
+  const undo = useCallback(() => {
+    if (history.length === 0) return;
+
+    const previous = history[history.length - 1];
+    const newHistory = history.slice(0, -1);
+
+    // Adiciona o estado atual à pilha de refazer (redo)
+    setRedoStack((prevRedo) => [...prevRedo, state]);
+    // Atualiza a pilha de histórico e o estado principal
+    setHistory(newHistory);
+    setState(previous);
+  }, [history, state]);
 
   const redo = useCallback(() => {
-    setRedoStack((r) => {
-      if (r.length === 0) return r;
-      const next = r[r.length - 1];
-      const nextR = r.slice(0, -1);
-      setState((current) => {
-        setHistory((h) => [...h, current]);
-        return next;
-      });
-      return nextR;
-    });
-  }, []);
+    if (redoStack.length === 0) return;
+
+    const next = redoStack[redoStack.length - 1];
+    const newRedoStack = redoStack.slice(0, -1);
+
+    // Adiciona o estado atual à pilha de desfazer (history)
+    setHistory((prevHistory) => [...prevHistory, state]);
+    // Atualiza a pilha de refazer e o estado principal
+    setRedoStack(newRedoStack);
+    setState(next);
+  }, [redoStack, state]);
 
   const reset = useCallback(() => {
     setHistory([]);
