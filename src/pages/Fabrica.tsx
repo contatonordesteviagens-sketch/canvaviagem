@@ -404,6 +404,7 @@ const FabricaInner = () => {
 const FabricaContent = () => {
   const navigate = useNavigate();
   const { subscription, isAdmin, user, loading: authLoading } = useAuth();
+  const [accessGranted, setAccessGranted] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !subscription.loading && !user) {
@@ -414,8 +415,13 @@ const FabricaContent = () => {
   const ELITE_PRODUCT_IDS = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
   const isElite = subscription.subscribed && ELITE_PRODUCT_IDS.includes(subscription.productId || "");
   const hasAccess = isAdmin || isElite;
+  const canUseFabrica = accessGranted || hasAccess;
 
-  if (authLoading || subscription.loading) {
+  useEffect(() => {
+    if (hasAccess) setAccessGranted(true);
+  }, [hasAccess]);
+
+  if (authLoading || (subscription.loading && !accessGranted)) {
     return (
       <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center text-white">
         <Loader2 className="w-8 h-8 animate-spin text-amber-500 mb-2" />
@@ -433,7 +439,7 @@ const FabricaContent = () => {
     );
   }
 
-  if (!hasAccess) {
+  if (!canUseFabrica) {
     return (
       <div 
         className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center p-4 relative overflow-hidden"
