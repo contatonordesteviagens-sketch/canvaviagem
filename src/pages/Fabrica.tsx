@@ -401,10 +401,14 @@ const FabricaInner = () => {
   );
 };
 
+const FABRICA_ACCESS_KEY = "cv-fabrica-access-granted";
+
 const FabricaContent = () => {
   const navigate = useNavigate();
   const { subscription, isAdmin, user, loading: authLoading } = useAuth();
-  const [accessGranted, setAccessGranted] = useState(false);
+  const [accessGranted, setAccessGranted] = useState<boolean>(() => {
+    try { return localStorage.getItem(FABRICA_ACCESS_KEY) === "1"; } catch { return false; }
+  });
 
   useEffect(() => {
     if (!authLoading && !subscription.loading && !user) {
@@ -418,10 +422,15 @@ const FabricaContent = () => {
   const canUseFabrica = accessGranted || hasAccess;
 
   useEffect(() => {
-    if (hasAccess) setAccessGranted(true);
-  }, [hasAccess]);
+    if (hasAccess && !accessGranted) {
+      setAccessGranted(true);
+      try { localStorage.setItem(FABRICA_ACCESS_KEY, "1"); } catch {}
+    }
+  }, [hasAccess, accessGranted]);
 
-  if (authLoading || (subscription.loading && !accessGranted)) {
+  // Spinner SÓ no primeiro carregamento real (sem user e sem acesso já concedido).
+  // Reverificações silenciosas em background NÃO devem mais derrubar pra esta tela.
+  if (!accessGranted && authLoading && !user) {
     return (
       <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center text-white">
         <Loader2 className="w-8 h-8 animate-spin text-amber-500 mb-2" />
