@@ -338,6 +338,9 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   // Persistência: salva campos leves em uma chave, pesados em chaves separadas
   useEffect(() => {
     const userId = user?.id;
+    const isEmptyInitialState = !state.agencyName && !state.logoBase64 && !state.whatsapp && state.digitalScore === 0 && state.currentPhase <= 1 && !state.generatedAdImage;
+    if (userId && !hasLoadedFromDb && isEmptyInitialState) return;
+
     try {
       const { logoBase64, generatedAdImage, lastCleanPhoto, allGeneratedAdImages, siteContent, ...rest } = state;
       const { galleryImages, ...siteRest } = siteContent;
@@ -365,7 +368,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       // Artes geradas separadas
       safeSetItem(scopedKey(GENERATED_KEY, userId), JSON.stringify(allGeneratedAdImages || []));
     } catch {}
-  }, [state, user?.id]);
+  }, [state, user?.id, hasLoadedFromDb]);
 
   // ☁️ CARREGAR DO BANCO: Busca o estado salvo do usuário no Supabase
   useEffect(() => {
