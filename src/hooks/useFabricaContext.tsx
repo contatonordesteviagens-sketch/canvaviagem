@@ -338,8 +338,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   // Persistência: salva campos leves em uma chave, pesados em chaves separadas
   useEffect(() => {
     const userId = user?.id;
-    const isEmptyInitialState = !state.agencyName && !state.logoBase64 && !state.whatsapp && state.digitalScore === 0 && state.currentPhase <= 1 && !state.generatedAdImage;
-    if (userId && !hasLoadedFromDb && isEmptyInitialState) return;
+    if (userId && !hasLoadedFromDb) return;
 
     try {
       const { logoBase64, generatedAdImage, lastCleanPhoto, allGeneratedAdImages, siteContent, ...rest } = state;
@@ -376,6 +375,8 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       setHasLoadedFromDb(false);
       return;
     }
+
+    setHasLoadedFromDb(false);
 
     setState((prev) => {
       const scopedLocal = loadInitialState(user.id);
