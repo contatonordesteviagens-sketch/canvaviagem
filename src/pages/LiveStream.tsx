@@ -1443,27 +1443,22 @@ const LiveStream = () => {
                 A live encerrou
               </h3>
               <p className="text-xs md:text-sm text-zinc-400 leading-relaxed px-2">
-                Aguarde a próxima live no grupo. A transmissão ao vivo fica disponível diariamente, com início pontual às 19h.
+                Aguarde a próxima live no grupo.
               </p>
             </div>
 
-            <div className="w-full bg-zinc-950 border border-zinc-800/50 rounded-2xl p-4 flex flex-col gap-3">
-              <div className="flex justify-between items-center text-xs border-b border-zinc-800/50 pb-2">
-                <span className="text-zinc-500 font-bold uppercase tracking-wider">Período de Acesso</span>
-                <span className="text-zinc-300 font-black">Diário</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-zinc-500 font-bold uppercase tracking-wider">Horário de Brasília</span>
-                <span className="text-cyan-400 font-black text-sm bg-cyan-400/10 px-3 py-1 rounded-xl">
-                  Consulte o calendário
-                </span>
-              </div>
+            <div className="w-full bg-zinc-950 border border-zinc-800/50 rounded-2xl p-4 flex justify-between items-center text-xs">
+              <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">Período de Acesso</span>
+              <span className="text-zinc-300 font-black">Diário</span>
             </div>
 
-            <div className="flex items-center gap-2 bg-zinc-950/40 border border-zinc-800/40 px-4 py-2 rounded-xl text-[10px] text-zinc-400 uppercase tracking-widest font-black">
-              <span className="h-2 w-2 rounded-full bg-zinc-600 animate-pulse" />
-              Retorne no horário da transmissão
-            </div>
+            <Button
+              onClick={() => window.open("https://wa.me/5585998458995?text=Ol%C3%A1!%20Preciso%20de%20suporte%20sobre%20a%20live%20ao%20vivo.", "_blank")}
+              className="w-full bg-[#25D366] hover:bg-[#20ba56] text-black font-extrabold py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 border-0 cursor-pointer shadow-lg shadow-emerald-500/10 transition-all text-xs uppercase tracking-widest mt-2"
+            >
+              <MessageCircle className="w-4 h-4 text-black font-black" />
+              <span>Suporte no WhatsApp</span>
+            </Button>
           </div>
         </div>
       </div>
