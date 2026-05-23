@@ -376,22 +376,24 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         if (data?.state_snapshot) {
           const saved = data.state_snapshot as Partial<FabricaState>;
           setState((prev) => {
-            // Mescla o estado com cuidado para preservar o que já está na sessão
+            // 🛡️ SEGURANÇA DE MESCLAGEM: Prioriza o estado da sessão local (prev)
+            // caso o usuário já tenha informações editadas recentemente na máquina atual.
+            // O estado do banco (saved) atua como base e fallback de sincronização multidevice.
             const merged = {
-              ...prev,
               ...saved,
+              ...prev,
               siteContent: {
-                ...prev.siteContent,
                 ...(saved.siteContent || {}),
-                galleryImages: saved.siteContent?.galleryImages || prev.siteContent?.galleryImages || [],
+                ...prev.siteContent,
+                galleryImages: prev.siteContent?.galleryImages?.length ? prev.siteContent.galleryImages : (saved.siteContent?.galleryImages || []),
                 sections: {
-                  ...prev.siteContent.sections,
-                  ...(saved.siteContent?.sections || {}),
+                  ...((saved.siteContent && saved.siteContent.sections) || {}),
+                  ...prev.siteContent?.sections,
                 }
               },
-              allGeneratedAdImages: saved.allGeneratedAdImages || prev.allGeneratedAdImages || []
+              allGeneratedAdImages: prev.allGeneratedAdImages?.length ? prev.allGeneratedAdImages : (saved.allGeneratedAdImages || [])
             };
-            return merged;
+            return merged as FabricaState;
           });
           console.log("[Supabase Load] Estado carregado e mesclado com sucesso!");
         } else {

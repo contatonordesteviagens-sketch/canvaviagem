@@ -181,7 +181,7 @@ section{padding:80px 0}
 .proc-num{width:52px;height:52px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:20px}
 .proc-card h3{font-size:22px;margin-bottom:12px}
 .proc-card p{color:var(--muted);font-size:15px;line-height:1.7}
-@media(max-width:840px){/deep/ .proc-grid{grid-template-columns:1fr;gap:16px}.proc-card{padding:28px 22px}}
+@media(max-width:840px){.proc-grid{grid-template-columns:1fr;gap:16px}.proc-card{padding:28px 22px}}
 
 /* DESTINOS */
 .destinos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
