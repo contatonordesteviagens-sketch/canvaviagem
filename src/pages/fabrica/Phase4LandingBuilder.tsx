@@ -24,6 +24,7 @@ import {
   Undo,
   Redo,
   ArrowLeft,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { SectionVisibility } from "@/hooks/useFabricaContext";
