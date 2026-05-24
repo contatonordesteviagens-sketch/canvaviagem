@@ -1318,6 +1318,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 ? { customPrompt: experienceBackgroundPrompt(nextVariantAi + idx) }
                 : {}),
               iaPuraMode: true,
+              userGeminiKey: import.meta.env.VITE_USER_GEMINI_API_KEY || "",
             },
           }))
         );
