@@ -118,6 +118,26 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         ".brand-name",
         ".hero h1",
         ".hero p.lead",
+        ".hero .eyebrow",
+        ".processo .section-eyebrow",
+        ".processo .section-title",
+        ".proc-num",
+        ".proc-card h3",
+        ".proc-card p",
+        "#destinos .section-eyebrow",
+        "#destinos .section-title",
+        ".badge-counter",
+        ".equipe .eyebrow",
+        ".equipe h2",
+        ".equipe p.intro",
+        ".feat-icon",
+        ".feat h4",
+        ".feat p",
+        ".orc-info .eyebrow",
+        ".orc-info h2",
+        ".orc-info p",
+        "footer .foot-desc",
+        ".btn",
         ".dest-card h3",
         ".dest-card p",
         ".price-value",
@@ -142,44 +162,76 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         el.addEventListener("blur", () => {
           const textVal = (el as HTMLElement).innerText.trim();
           
-          if (el.classList.contains("brand-name")) {
-            update({ agencyName: textVal });
-          } else if (el.tagName === "H1" && el.closest(".hero")) {
-            updSite({ heroHeadline: textVal });
-          } else if (el.classList.contains("lead") && el.closest(".hero")) {
-            updSite({ heroSubheadline: textVal });
-          } else {
-            // Se for dentro de um pacote (destination card)
-            const destCard = el.closest(".dest-card");
-            if (destCard) {
-              const allCards = Array.from(doc.querySelectorAll(".dest-card"));
-              const idx = allCards.indexOf(destCard);
-              if (idx !== -1 && state.selectedPackages[idx]) {
-                const pkgId = state.selectedPackages[idx].id;
-                if (el.tagName === "H3") {
-                  updPacote(pkgId, { title: textVal });
-                } else if (el.tagName === "P") {
-                  updPacote(pkgId, { description: textVal });
-                } else if (el.classList.contains("price-value") || el.classList.contains("price-main")) {
-                  updPacote(pkgId, { price: textVal });
-                } else if (el.classList.contains("dest-tag")) {
-                  updPacote(pkgId, { category: textVal } as any);
-                }
-              }
+          // Hero
+          if (el.classList.contains("brand-name")) update({ agencyName: textVal });
+          else if (el.tagName === "H1" && el.closest(".hero")) updSite({ heroHeadline: textVal });
+          else if (el.classList.contains("lead") && el.closest(".hero")) updSite({ heroSubheadline: textVal });
+          else if (el.classList.contains("eyebrow") && el.closest(".hero")) updSite({ heroEyebrow: textVal });
+          // Processo
+          else if (el.classList.contains("section-eyebrow") && el.closest(".processo")) updSite({ processoEyebrow: textVal });
+          else if (el.classList.contains("section-title") && el.closest(".processo")) updSite({ processoTitle: textVal });
+          else if (el.closest(".proc-card")) {
+            const card = el.closest(".proc-card");
+            const allCards = Array.from(doc.querySelectorAll(".proc-card"));
+            const idx = allCards.indexOf(card as Element);
+            if (idx !== -1) {
+              const steps = [...(state.siteContent.processoSteps || [])];
+              if (!steps[idx]) steps[idx] = { num: "", title: "", desc: "" };
+              if (el.classList.contains("proc-num")) steps[idx].num = textVal;
+              else if (el.tagName === "H3") steps[idx].title = textVal;
+              else if (el.tagName === "P") steps[idx].desc = textVal;
+              updSite({ processoSteps: steps });
             }
-
-            // Se for dentro de um depoimento
+          }
+          // Destinos
+          else if (el.classList.contains("section-eyebrow") && el.closest("#destinos")) updSite({ destinosEyebrow: textVal });
+          else if (el.classList.contains("section-title") && el.closest("#destinos")) updSite({ pacotesTitle: textVal });
+          // Equipe
+          else if (el.classList.contains("badge-counter")) updSite({ equipeBadge: textVal });
+          else if (el.classList.contains("eyebrow") && el.closest(".equipe")) updSite({ equipeEyebrow: textVal });
+          else if (el.tagName === "H2" && el.closest(".equipe")) updSite({ equipeTitle: textVal });
+          else if (el.classList.contains("intro") && el.closest(".equipe")) updSite({ equipeIntro: textVal });
+          else if (el.closest(".feat")) {
+            const feat = el.closest(".feat");
+            const allFeats = Array.from(doc.querySelectorAll(".feat"));
+            const idx = allFeats.indexOf(feat as Element);
+            if (idx !== -1) {
+              const feats = [...(state.siteContent.equipeFeatures || [])];
+              if (!feats[idx]) feats[idx] = { icon: "", title: "", desc: "" };
+              if (el.classList.contains("feat-icon")) feats[idx].icon = textVal;
+              else if (el.tagName === "H4") feats[idx].title = textVal;
+              else if (el.tagName === "P") feats[idx].desc = textVal;
+              updSite({ equipeFeatures: feats });
+            }
+          }
+          // Orçamento
+          else if (el.classList.contains("eyebrow") && el.closest(".orc-info")) updSite({ orcamentoEyebrow: textVal });
+          else if (el.tagName === "H2" && el.closest(".orc-info")) updSite({ orcamentoTitle: textVal });
+          else if (el.tagName === "P" && el.closest(".orc-info")) updSite({ orcamentoText: textVal });
+          // Footer
+          else if (el.classList.contains("foot-desc")) updSite({ footerText: textVal });
+          
+          // Pacotes dinâmicos
+          else if (el.closest(".dest-card")) {
+            const destCard = el.closest(".dest-card");
+            const allCards = Array.from(doc.querySelectorAll(".dest-card"));
+            const idx = allCards.indexOf(destCard as Element);
+            if (idx !== -1 && state.selectedPackages[idx]) {
+              const pkgId = state.selectedPackages[idx].id;
+              if (el.tagName === "H3") updPacote(pkgId, { title: textVal });
+              else if (el.tagName === "P") updPacote(pkgId, { description: textVal });
+              else if (el.classList.contains("price-value") || el.classList.contains("price-main")) updPacote(pkgId, { price: textVal });
+              else if (el.classList.contains("dest-tag")) updPacote(pkgId, { category: textVal } as any);
+            }
+          }
+          // Depoimentos
+          else if (el.closest(".depo-card")) {
             const depoCard = el.closest(".depo-card");
-            if (depoCard) {
-              const allDepos = Array.from(doc.querySelectorAll(".depo-card"));
-              const idx = allDepos.indexOf(depoCard);
-              if (idx !== -1 && state.depoimentos[idx]) {
-                if (el.classList.contains("depo-text")) {
-                  updDepo(idx, { text: textVal });
-                } else if (el.classList.contains("depo-name")) {
-                  updDepo(idx, { name: textVal });
-                }
-              }
+            const allDepos = Array.from(doc.querySelectorAll(".depo-card"));
+            const idx = allDepos.indexOf(depoCard as Element);
+            if (idx !== -1 && state.depoimentos[idx]) {
+              if (el.classList.contains("depo-text")) updDepo(idx, { text: textVal });
+              else if (el.classList.contains("depo-name")) updDepo(idx, { name: textVal });
             }
           }
         });

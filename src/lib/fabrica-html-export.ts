@@ -476,7 +476,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
   <div class="container">
     <div class="hero-grid">
       <div class="hero-content">
-        <span class="eyebrow">Consultoria Premium de Viagens</span>
+        <span class="eyebrow">${esc(sc.heroEyebrow || "Consultoria Premium de Viagens")}</span>
         <h1>${esc(headline)}</h1>
         <p class="lead">${esc(subheadline)}</p>
         <div class="hero-actions">
@@ -496,12 +496,12 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
 <!-- PROCESSO -->
 <section class="processo">
   <div class="container">
-    <div class="section-eyebrow eyebrow">Processo</div>
-    <h2 class="section-title">Sua viagem dos sonhos em 3 passos</h2>
+    <div class="section-eyebrow eyebrow">${esc(sc.processoEyebrow || "Processo")}</div>
+    <h2 class="section-title">${esc(sc.processoTitle || "Sua viagem dos sonhos em 3 passos")}</h2>
     <div class="proc-grid">
-      <div class="proc-card"><div class="proc-num">1</div><h3>Consulta Personalizada</h3><p>Entendemos seus sonhos, datas, orçamento e estilo em uma conversa de 30 minutos sem compromisso.</p></div>
-      <div class="proc-card"><div class="proc-num">2</div><h3>Curadoria Exclusiva</h3><p>Criamos um roteiro 100% personalizado com os melhores hotéis, passeios e experiências para o seu perfil.</p></div>
-      <div class="proc-card"><div class="proc-num">3</div><h3>Embarque Tranquilo</h3><p>Cuidamos de passagens, hospedagem, transfers e suporte 24h durante toda a sua viagem.</p></div>
+      ${(sc.processoSteps || []).map((step, i) => `
+      <div class="proc-card"><div class="proc-num">${esc(step.num)}</div><h3>${esc(step.title)}</h3><p>${esc(step.desc)}</p></div>
+      `).join("")}
     </div>
   </div>
 </section>`;
@@ -511,7 +511,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
 <!-- DESTINOS -->
 <section id="destinos">
   <div class="container">
-    <div class="section-eyebrow eyebrow">Destinos</div>
+    <div class="section-eyebrow eyebrow">${esc(sc.destinosEyebrow || "Destinos")}</div>
     <h2 class="section-title">${esc(sc.pacotesTitle || "Experiências que ficam na memória")}</h2>
     <div class="destinos-grid">
       ${pacotes
@@ -543,15 +543,14 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
   <div class="container">
     <div class="equipe-grid">
       <div class="equipe-left">
-        <span class="badge-counter">+15k Clientes Satisfeitos</span>
-        <div class="eyebrow" style="color:#fff;opacity:.6">Nossa equipe</div>
-        <h2>Uma equipe dedicada exclusivamente a você</h2>
-        <p class="intro">Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.</p>
+        <span class="badge-counter">${esc(sc.equipeBadge || "+15k Clientes Satisfeitos")}</span>
+        <div class="eyebrow" style="color:#fff;opacity:.6">${esc(sc.equipeEyebrow || "Nossa equipe")}</div>
+        <h2>${esc(sc.equipeTitle || "Uma equipe dedicada exclusivamente a você")}</h2>
+        <p class="intro">${esc(sc.equipeIntro || "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.")}</p>
         <div class="equipe-features">
-          <div class="feat"><div class="feat-icon">🛡️</div><div><h4>Segurança e Confiabilidade</h4><p>Anos de atuação com milhares de famílias e parceiros verificados mundialmente.</p></div></div>
-          <div class="feat"><div class="feat-icon">📞</div><div><h4>Suporte 24h Durante a Viagem</h4><p>Nossa equipe está disponível a qualquer hora. Qualquer imprevisto, resolvemos.</p></div></div>
-          <div class="feat"><div class="feat-icon">✨</div><div><h4>Experiências Exclusivas</h4><p>Acesso a hotéis e experiências que não estão disponíveis para o público geral.</p></div></div>
-          <div class="feat"><div class="feat-icon">💰</div><div><h4>Melhor Custo-Benefício</h4><p>Nossa rede de parceiros oferece condições especiais que você não encontra em outros lugares.</p></div></div>
+          ${(sc.equipeFeatures || []).map(feat => `
+          <div class="feat"><div class="feat-icon">${feat.icon}</div><div><h4>${esc(feat.title)}</h4><p>${esc(feat.desc)}</p></div></div>
+          `).join("")}
         </div>
         <a href="#" onclick="openLeadForm('Falar com Especialista', 'https://wa.me/55${wpp}');return false;" class="btn">Falar com um especialista</a>
       </div>
@@ -594,9 +593,9 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
   <div class="container">
     <div class="orc-grid">
       <div class="orc-info">
-        <span class="eyebrow">Orçamento</span>
-        <h2 style="margin-top:12px">Fale com um consultor agora</h2>
-        <p>Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.</p>
+        <span class="eyebrow">${esc(sc.orcamentoEyebrow || "Orçamento")}</span>
+        <h2 style="margin-top:12px">${esc(sc.orcamentoTitle || "Fale com um consultor agora")}</h2>
+        <p>${esc(sc.orcamentoText || "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.")}</p>
         <div class="contact-list">
           <div class="contact-item"><div class="contact-icon">💬</div><div><strong>WhatsApp</strong><span>${esc(state.whatsapp || "—")}</span></div></div>
           <div class="contact-item"><div class="contact-icon">✉</div><div><strong>E-mail</strong><span>contato@${esc((agencia || "agencia").toLowerCase().replace(/[^a-z0-9]/g, ""))}.com.br</span></div></div>
@@ -673,7 +672,7 @@ ${state.address ? `
     <div class="foot-grid">
       <div>
         <div class="foot-brand">${esc(agencia)}</div>
-        <p>Consultoria especializada em viagens premium e roteiros personalizados para quem não aceita o comum.</p>
+        <p class="foot-desc">${esc(sc.footerText || "Consultoria especializada em viagens premium e roteiros personalizados para quem não aceita o comum.")}</p>
       </div>
       <div>
         <h4>Destinos</h4>

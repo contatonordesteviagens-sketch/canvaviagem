@@ -61,6 +61,22 @@ export interface SiteContent {
   animationEffect?: "none" | "namorados_hearts" | "namorados_pulse" | "neve" | "confete";
   animationLocation?: "all" | "buttons" | "cards" | "footer";
   aboutImageUrl?: string; // Imagem da seção Sobre/Equipe do site
+  
+  // NOVOS CAMPOS PARA EDIÇÃO 100%
+  heroEyebrow?: string;
+  processoEyebrow?: string;
+  processoTitle?: string;
+  processoSteps?: Array<{ num: string; title: string; desc: string }>;
+  destinosEyebrow?: string;
+  equipeBadge?: string;
+  equipeEyebrow?: string;
+  equipeTitle?: string;
+  equipeIntro?: string;
+  equipeFeatures?: Array<{ icon: string; title: string; desc: string }>;
+  orcamentoEyebrow?: string;
+  orcamentoTitle?: string;
+  orcamentoText?: string;
+  footerText?: string;
 }
 
 export type AgencyType =
@@ -241,6 +257,31 @@ const defaultState: FabricaState = {
     animationEffect: "none",
     animationLocation: "all",
     aboutImageUrl: "",
+    
+    // Default values for new fields
+    heroEyebrow: "Consultoria Premium de Viagens",
+    processoEyebrow: "Processo",
+    processoTitle: "Sua viagem dos sonhos em 3 passos",
+    processoSteps: [
+      { num: "1", title: "Consulta Personalizada", desc: "Entendemos seus sonhos, datas, orçamento e estilo em uma conversa de 30 minutos sem compromisso." },
+      { num: "2", title: "Curadoria Exclusiva", desc: "Criamos um roteiro 100% personalizado com os melhores hotéis, passeios e experiências para o seu perfil." },
+      { num: "3", title: "Embarque Tranquilo", desc: "Cuidamos de passagens, hospedagem, transfers e suporte 24h durante toda a sua viagem." }
+    ],
+    destinosEyebrow: "Destinos",
+    equipeBadge: "+15k Clientes Satisfeitos",
+    equipeEyebrow: "Nossa equipe",
+    equipeTitle: "Uma equipe dedicada exclusivamente a você",
+    equipeIntro: "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.",
+    equipeFeatures: [
+      { icon: "🛡️", title: "Segurança e Confiabilidade", desc: "Anos de atuação com milhares de famílias e parceiros verificados mundialmente." },
+      { icon: "📞", title: "Suporte 24h Durante a Viagem", desc: "Nossa equipe está disponível a qualquer hora. Qualquer imprevisto, resolvemos." },
+      { icon: "✨", title: "Experiências Exclusivas", desc: "Acesso a hotéis e experiências que não estão disponíveis para o público geral." },
+      { icon: "💰", title: "Melhor Custo-Benefício", desc: "Nossa rede de parceiros oferece condições especiais que você não encontra em outros lugares." }
+    ],
+    orcamentoEyebrow: "Orçamento",
+    orcamentoTitle: "Fale com um consultor agora",
+    orcamentoText: "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.",
+    footerText: "Sua parceira ideal para viagens inesquecíveis. Cuidamos de cada detalhe para que você apenas aproveite o momento.",
   },
   lastCategoria: "oferta_pacote",
   lastFormat: "story",

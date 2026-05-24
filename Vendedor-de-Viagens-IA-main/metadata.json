@@ -1,0 +1,8 @@
+{
+  "name": "Copy Travel",
+  "description": "Seu estrategista de vendas de elite para o mercado de turismo e agências.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
