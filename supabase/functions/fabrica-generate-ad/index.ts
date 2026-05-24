@@ -108,9 +108,14 @@ serve(async (req) => {
 
     // Chave do gateway Lovable AI — fallback embutido (Nano Banana / Fábrica)
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY") || "gestão de imagens com IA usando o nano banana no fabrica";
-    const USER_GEMINI_API_KEY = Deno.env.get("USER_GEMINI_API_KEY");
+    const IA_PURA_GEMINI_KEY = Deno.env.get("IA_PURA_GEMINI_KEY");
+    const USER_GEMINI_API_KEY_RAW = Deno.env.get("USER_GEMINI_API_KEY");
 
-    const body = (await req.json()) as AdParams & { customPrompt?: string };
+    const body = (await req.json()) as AdParams & { customPrompt?: string; iaPuraMode?: boolean };
+    // Quando vier do modo "IA Pura", usa EXCLUSIVAMENTE a chave dedicada do Gemini (se configurada).
+    const USER_GEMINI_API_KEY = body.iaPuraMode
+      ? (IA_PURA_GEMINI_KEY || USER_GEMINI_API_KEY_RAW)
+      : USER_GEMINI_API_KEY_RAW;
     // Se o template for de força bruta, a IA tentará renderizar a UI na marra
     const isForcaBruta = body.templateId?.startsWith("forca_bruta");
     // TRAVA GLOBAL: esta função NUNCA mais gera UI, exceto nos templates Força Bruta
