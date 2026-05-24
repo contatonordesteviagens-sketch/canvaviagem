@@ -431,7 +431,7 @@ footer{background:var(--ink);color:#9ba3ad;padding:64px 0 28px}
   .mapa-section{padding:56px 0}
   .mapa-container iframe{height:320px}
 }
-\${seasonalStyles}
+${seasonalStyles}
 </style>
 </head>
 <body>
