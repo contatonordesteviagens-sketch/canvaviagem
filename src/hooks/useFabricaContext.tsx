@@ -470,29 +470,26 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         if (data?.state_snapshot) {
           const saved = data.state_snapshot as unknown as FabricaState;
           setState((prev) => {
-            // Se prev é o estado inicial/limpo, usa o salvo do banco diretamente!
-            const isPrevDefault = !prev.agencyName && !prev.logoBase64 && prev.digitalScore === 0 && prev.instagram === "" && prev.whatsapp === "" && prev.currentPhase <= 1;
-            if (isPrevDefault) {
-              console.log("[Supabase Load] Local state is default. Adopting DB state entirely.");
-              return saved;
-            }
-
-            // Caso contrário, mescla priorizando prev para preservar edições ativas da sessão local,
-            // mas garante que campos vazios ou não editados no prev não sobresscrevam dados salvos no banco.
+            console.log("[Supabase Load] Adopting DB state as Single Source of Truth, keeping only heavy Base64 from local cache.");
+            
+            // O Banco de Dados é a Fonte Única de Verdade para textos, configs, urls.
+            // O localStorage (prev) é usado EXCLUSIVAMENTE para hidratar os base64 pesados que o Supabase não guarda.
             const merged = {
-              ...saved,
-              ...prev,
+              ...saved, // Supabase WIN
+              
+              // Hidratação segura de campos pesados que estavam no cache local do usuário
+              logoBase64: prev.logoBase64 || saved.logoBase64,
+              generatedAdImage: prev.generatedAdImage || saved.generatedAdImage,
+              lastCleanPhoto: prev.lastCleanPhoto || saved.lastCleanPhoto,
+              allGeneratedAdImages: prev.allGeneratedAdImages?.length ? prev.allGeneratedAdImages : (saved.allGeneratedAdImages || []),
+              
               siteContent: {
-                ...(saved.siteContent || {}),
-                ...prev.siteContent,
+                ...(saved.siteContent || {}), // Supabase WIN
+                // Hidrata as imagens da galeria que ficaram no cache local
                 galleryImages: prev.siteContent?.galleryImages?.length ? prev.siteContent.galleryImages : (saved.siteContent?.galleryImages || []),
-                sections: {
-                  ...((saved.siteContent && saved.siteContent.sections) || {}),
-                  ...prev.siteContent?.sections,
-                }
-              },
-              allGeneratedAdImages: prev.allGeneratedAdImages?.length ? prev.allGeneratedAdImages : (saved.allGeneratedAdImages || [])
+              }
             };
+            
             return merged as FabricaState;
           });
           console.log("[Supabase Load] Estado carregado e mesclado com sucesso!");
