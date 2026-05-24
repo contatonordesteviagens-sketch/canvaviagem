@@ -66,69 +66,51 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   let seasonalScripts = "";
 
   if (sc.animationEffect === "namorados_hearts") {
-    seasonalStyles = `
-/* ANIMAÇÃO DIA DOS NAMORADOS - CORAÇÕES */
-@keyframes heartFloat {
-  0% { transform: translateY(0) scale(0); opacity: 0; }
-  50% { opacity: 0.8; }
-  100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
-}
-.heart-particle {
-  position: absolute;
-  pointer-events: none;
-  font-size: 14px;
-  animation: heartFloat 0.8s ease-out forwards;
-  color: #ff4b72;
-  z-index: 100;
-}
-`;
-    seasonalScripts = `
-  // Corações flutuantes no hover (Campanha Dia dos Namorados)
-  const animLoc = "${sc.animationLocation || 'all'}";
-  let targetSelector = '.btn, .nav-cta, .dest-card, .form-submit';
-  if (animLoc === 'buttons') targetSelector = '.btn, .nav-cta, .form-submit';
-  if (animLoc === 'cards') targetSelector = '.dest-card';
-  if (animLoc === 'footer') targetSelector = 'footer, .foot-bottom';
+    let targetSelector = '.dest-card, .btn, .nav-cta, .form-submit';
+    if (sc.animationLocation === 'buttons') targetSelector = '.btn, .nav-cta, .form-submit';
+    if (sc.animationLocation === 'cards') targetSelector = '.dest-card';
+    if (sc.animationLocation === 'footer') targetSelector = 'footer';
 
-  document.querySelectorAll(targetSelector).forEach(btn => {
-    btn.style.position = 'relative';
-    btn.addEventListener('mousemove', (e) => {
-      if (Math.random() > 0.08) return;
-      const heart = document.createElement('span');
-      heart.className = 'heart-particle';
-      heart.innerHTML = '💖';
-      const rect = btn.getBoundingClientRect();
-      heart.style.left = (e.clientX - rect.left) + 'px';
-      heart.style.top = (e.clientY - rect.top) + 'px';
-      btn.appendChild(heart);
-      setTimeout(() => heart.remove(), 800);
-    });
-  });
+    seasonalStyles = `
+/* ANIMAÇÃO DIA DOS NAMORADOS - CORAÇÕES (PURE CSS) */
+@keyframes heartFloat {
+  0% { transform: translate(-50%, 0) scale(0); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translate(-50%, -50px) scale(1.5); opacity: 0; }
+}
+${targetSelector} {
+  position: relative;
+}
+${targetSelector}:hover::after {
+  content: '💖';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  font-size: 20px;
+  pointer-events: none;
+  animation: heartFloat 1s ease-out forwards;
+  z-index: 100;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
 `;
   } else if (sc.animationEffect === "namorados_pulse") {
+    let targetSelector = '.dest-card, .btn, .nav-cta, .form-submit';
+    if (sc.animationLocation === 'buttons') targetSelector = '.btn, .nav-cta, .form-submit';
+    if (sc.animationLocation === 'cards') targetSelector = '.dest-card';
+    if (sc.animationLocation === 'footer') targetSelector = 'footer';
+
     seasonalStyles = `
-/* ANIMAÇÃO DIA DOS NAMORADOS - PULSAR */
+/* ANIMAÇÃO DIA DOS NAMORADOS - PULSAR (PURE CSS) */
 @keyframes romanticPulse {
   0% { box-shadow: 0 0 0 0 rgba(255, 75, 114, 0.5); }
   70% { box-shadow: 0 0 0 12px rgba(255, 75, 114, 0); }
   100% { box-shadow: 0 0 0 0 rgba(255, 75, 114, 0); }
 }
-.romantic-pulse-active {
+${targetSelector} {
   animation: romanticPulse 2s infinite !important;
-  border-color: rgba(255, 75, 114, 0.6) !important;
+  border: 2px solid rgba(255, 75, 114, 0.6) !important;
+  box-sizing: border-box;
 }
-`;
-    seasonalScripts = `
-  // Pulsar romântico (Campanha Dia dos Namorados)
-  const animLoc = "${sc.animationLocation || 'all'}";
-  let targetSelector = '.dest-card';
-  if (animLoc === 'buttons') targetSelector = '.btn, .nav-cta, .form-submit';
-  if (animLoc === 'all') targetSelector = '.dest-card, .btn, .nav-cta, .form-submit';
-  if (animLoc === 'footer') targetSelector = 'footer';
-
-  document.querySelectorAll(targetSelector).forEach(el => {
-    el.classList.add('romantic-pulse-active');
-  });
 `;
   } else if (sc.animationEffect === "neve") {
     seasonalStyles = `
