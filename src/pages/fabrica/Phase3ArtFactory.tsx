@@ -1317,6 +1317,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               ...(isAiExperienceStory
                 ? { customPrompt: experienceBackgroundPrompt(nextVariantAi + idx) }
                 : {}),
+              iaPuraMode: true,
             },
           }))
         );
