@@ -54,10 +54,151 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   const color = state.primaryColor || "#0F2742";
   const colorDark = darken(color, 0.45);
   const rawWpp = (state.whatsapp || "").replace(/\D/g, "");
-  const wpp = rawWpp.startsWith("55") ? rawWpp : `55${rawWpp}`;
+  // Usa o DDI salvo no estado (padrão Brasil +55)
+  const dialCode = (state.whatsappDialCode || "55").replace(/\D/g, "");
+  const wpp = rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`;
   const sc = state.siteContent;
   const agencia = state.agencyName || "Agência de Viagens";
   const cidade = state.city || "Brasil";
+
+  // ----- SISTEMA DE ANIMAÇÕES SAZONAIS E TEMÁTICAS -----
+  let seasonalStyles = "";
+  let seasonalScripts = "";
+
+  if (sc.animationEffect === "namorados_hearts") {
+    seasonalStyles = `
+/* ANIMAÇÃO DIA DOS NAMORADOS - CORAÇÕES */
+@keyframes heartFloat {
+  0% { transform: translateY(0) scale(0); opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+}
+.heart-particle {
+  position: absolute;
+  pointer-events: none;
+  font-size: 14px;
+  animation: heartFloat 0.8s ease-out forwards;
+  color: #ff4b72;
+  z-index: 100;
+}
+`;
+    seasonalScripts = `
+  // Corações flutuantes no hover (Campanha Dia dos Namorados)
+  const animLoc = "${sc.animationLocation || 'all'}";
+  let targetSelector = '.btn, .nav-cta, .dest-card, .form-submit';
+  if (animLoc === 'buttons') targetSelector = '.btn, .nav-cta, .form-submit';
+  if (animLoc === 'cards') targetSelector = '.dest-card';
+  if (animLoc === 'footer') targetSelector = 'footer, .foot-bottom';
+
+  document.querySelectorAll(targetSelector).forEach(btn => {
+    btn.style.position = 'relative';
+    btn.addEventListener('mousemove', (e) => {
+      if (Math.random() > 0.08) return;
+      const heart = document.createElement('span');
+      heart.className = 'heart-particle';
+      heart.innerHTML = '💖';
+      const rect = btn.getBoundingClientRect();
+      heart.style.left = (e.clientX - rect.left) + 'px';
+      heart.style.top = (e.clientY - rect.top) + 'px';
+      btn.appendChild(heart);
+      setTimeout(() => heart.remove(), 800);
+    });
+  });
+`;
+  } else if (sc.animationEffect === "namorados_pulse") {
+    seasonalStyles = `
+/* ANIMAÇÃO DIA DOS NAMORADOS - PULSAR */
+@keyframes romanticPulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 75, 114, 0.5); }
+  70% { box-shadow: 0 0 0 12px rgba(255, 75, 114, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 75, 114, 0); }
+}
+.romantic-pulse-active {
+  animation: romanticPulse 2s infinite !important;
+  border-color: rgba(255, 75, 114, 0.6) !important;
+}
+`;
+    seasonalScripts = `
+  // Pulsar romântico (Campanha Dia dos Namorados)
+  const animLoc = "${sc.animationLocation || 'all'}";
+  let targetSelector = '.dest-card';
+  if (animLoc === 'buttons') targetSelector = '.btn, .nav-cta, .form-submit';
+  if (animLoc === 'all') targetSelector = '.dest-card, .btn, .nav-cta, .form-submit';
+  if (animLoc === 'footer') targetSelector = 'footer';
+
+  document.querySelectorAll(targetSelector).forEach(el => {
+    el.classList.add('romantic-pulse-active');
+  });
+`;
+  } else if (sc.animationEffect === "neve") {
+    seasonalStyles = `
+/* ANIMAÇÃO INVERNO - NEVE */
+@keyframes snowFall {
+  0% { transform: translateY(-10px) translateX(0); opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { transform: translateY(105vh) translateX(20px); opacity: 0; }
+}
+.snow-particle {
+  position: fixed;
+  top: -10px;
+  pointer-events: none;
+  font-size: 8px;
+  z-index: 9999;
+  animation: snowFall 6s linear forwards;
+}
+`;
+    seasonalScripts = `
+  // Queda de neve leve
+  setInterval(() => {
+    const snow = document.createElement('span');
+    snow.className = 'snow-particle';
+    snow.innerHTML = '❄️';
+    snow.style.left = (Math.random() * window.innerWidth) + 'px';
+    snow.style.fontSize = (Math.random() * 8 + 6) + 'px';
+    snow.style.animationDuration = (Math.random() * 4 + 4) + 's';
+    document.body.appendChild(snow);
+    setTimeout(() => snow.remove(), 8000);
+  }, 350);
+`;
+  } else if (sc.animationEffect === "confete") {
+    seasonalStyles = `
+/* ANIMAÇÃO FESTAS - CONFETE */
+@keyframes confeteFall {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
+}
+.confete-particle {
+  position: fixed;
+  top: -10px;
+  pointer-events: none;
+  width: 6px;
+  height: 12px;
+  z-index: 9999;
+  animation: confeteFall 4s ease-out forwards;
+}
+`;
+    seasonalScripts = `
+  // Chuva de confetes coloridos
+  const colors = ['#ff4b72', '#00e5a0', '#00b8ff', '#fcd34d', '#7000ff'];
+  function spawnConfete() {
+    const conf = document.createElement('div');
+    conf.className = 'confete-particle';
+    conf.style.left = (Math.random() * window.innerWidth) + 'px';
+    conf.style.background = colors[Math.floor(Math.random() * colors.length)];
+    conf.style.animationDuration = (Math.random() * 3 + 2) + 's';
+    conf.style.transform = \`rotate(\${Math.random() * 360}deg)\`;
+    document.body.appendChild(conf);
+    setTimeout(() => conf.remove(), 5000);
+  }
+  // Explosão inicial
+  for (let i = 0; i < 30; i++) setTimeout(spawnConfete, i * 60);
+  // Chuva mantida
+  setInterval(spawnConfete, 400);
+`;
+  }
 
   const headline =
     sc.heroHeadline?.trim() || "Viagens que transformam para sempre";
@@ -308,6 +449,7 @@ footer{background:var(--ink);color:#9ba3ad;padding:64px 0 28px}
   .mapa-section{padding:56px 0}
   .mapa-container iframe{height:320px}
 }
+\${seasonalStyles}
 </style>
 </head>
 <body>
@@ -695,6 +837,7 @@ ${state.address ? `
     // Síncrono garante que o navegador não bloqueie o popup!
     window.open(finalWppUrl, "_blank");
   }
+  ${seasonalScripts}
 </script>
 
 </body>
@@ -722,7 +865,8 @@ export function downloadLandingHTML(state: FabricaState, version?: number, track
  */
 export function generateUpdatePackagesPrompt(state: FabricaState): string {
   const rawWpp = (state.whatsapp || "").replace(/\D/g, "");
-  const wpp = rawWpp.startsWith("55") ? rawWpp : `55${rawWpp}`;
+  const dialCode = (state.whatsappDialCode || "55").replace(/\D/g, "");
+  const wpp = rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`;
   const cidade = state.city || "Brasil";
 
   const pacotes = state.selectedPackages.length ? state.selectedPackages : [];

@@ -781,6 +781,46 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     return saved ? parseInt(saved, 10) : 0;
   });
 
+  const getAiPureDailyCount = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const savedDay = localStorage.getItem("fabrica_ai_pure_day");
+    if (savedDay !== today) {
+      localStorage.setItem("fabrica_ai_pure_day", today);
+      localStorage.setItem("fabrica_ai_pure_daily_count", "0");
+      return 0;
+    }
+    const savedCount = localStorage.getItem("fabrica_ai_pure_daily_count");
+    return savedCount ? parseInt(savedCount, 10) : 0;
+  };
+
+  const incrementAiPureDailyCount = (amount: number) => {
+    const today = new Date().toISOString().split('T')[0];
+    const current = getAiPureDailyCount();
+    const next = current + amount;
+    localStorage.setItem("fabrica_ai_pure_day", today);
+    localStorage.setItem("fabrica_ai_pure_daily_count", String(next));
+    return next;
+  };
+
+  const [aiPureCount, setAiPureCount] = useState<number>(() => getAiPureDailyCount());
+
+  // Zerar limites de geração diária de todos os usuários (uma única vez por nova versão)
+  useEffect(() => {
+    const resetKey = "fabrica_limits_reset_v4";
+    if (!localStorage.getItem(resetKey)) {
+      localStorage.setItem(resetKey, "true");
+      localStorage.setItem("fabrica_ai_pure_daily_count", "0");
+      localStorage.setItem("fabrica_gen_count", "0");
+      // Quando reiniciar os limites (nova chave adicionada), forçamos o provedor inicial a ser "user_gemini"
+      // para permitir que todos os usuários tentem usar a nova chave sem esbarrar no limite local!
+      localStorage.setItem("fabrica_last_provider", "user_gemini");
+      setAiPureCount(0);
+      setGenerationCount(0);
+      setLastProvider("user_gemini");
+      toast.success("¡Límites de generación diaria reiniciados con la nueva clave API!");
+    }
+  }, []);
+
   useEffect(() => {
     const key = "fabrica-render-engine-version";
     if (localStorage.getItem(key) === FABRICA_RENDER_ENGINE_VERSION) return;
@@ -1057,11 +1097,11 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         localStorage.setItem(cycleKey, String(nextSeed));
       };
 
-      // ===== TRAVA DE CRÉDITOS DA PLATAFORMA (30 gerações no modo IA sem chave própria) =====
-      const PLATFORM_CREDIT_LIMIT = 30;
-      if (genMode === "ai" && generationCount >= PLATFORM_CREDIT_LIMIT && lastProvider !== "user_gemini") {
+      // ===== TRAVA DE CRÉDITOS DA PLATAFORMA (20 gerações no modo IA sem chave própria) =====
+      const PLATFORM_CREDIT_LIMIT = 20;
+      if (genMode === "ai" && aiPureCount >= PLATFORM_CREDIT_LIMIT && lastProvider !== "user_gemini") {
         toast.error(
-          `⚡ Límite de ${PLATFORM_CREDIT_LIMIT} generaciones IA alcanzado. Conecta tu clave Google Gemini gratuita en Configuración para continuar sin límites.`,
+          `⚡ ¡Límite de ${PLATFORM_CREDIT_LIMIT} generaciones de IA Pura diarias alcanzado! Usa las otras formas ilimitadas: modo Foto Real y modo Tu Foto, o conecta tu clave Gemini en Configuración.`,
           { duration: 8000 }
         );
         setLoading(false);
@@ -1405,6 +1445,10 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         const newCount = generationCount + images.length;
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
+
+        const newAiCount = incrementAiPureDailyCount(images.length);
+        setAiPureCount(newAiCount);
+
         finishCycle(images.length);
 
         toast.success(`${images.length} ${images.length === 1 ? "variação gerada" : "variações geradas"} — ${cat.name}`);
@@ -1787,7 +1831,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                     onClick={() => setGenMode("photo")}
                     className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-bold transition-all disabled:opacity-30 ${genMode === "photo" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
                   >
-                    <ImageIcon className="w-3.5 h-3.5 inline mr-1" /> Foto Real <span className="hidden sm:inline font-normal opacity-50">(gratis)</span>
+                    <ImageIcon className="w-3.5 h-3.5 inline mr-1" /> Foto Real <span className="hidden sm:inline font-normal opacity-50">(ilimitada)</span>
                   </button>
                   <button
                     type="button"
@@ -1805,6 +1849,46 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   </button>
                 </div>
               </div>
+              {genMode === "ai" && (
+                <div className="mt-3 p-3 rounded-xl border bg-black/20 flex flex-col gap-1.5 transition-all border-white/5">
+                  {lastProvider === "user_gemini" ? (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+                        Clave Gemini activa: Generación Ilimitada ({aiPureCount} hoy)
+                      </div>
+                      <p className="text-[10px] text-white/50 leading-relaxed">
+                        🎉 ¡Felicidades! Estás usando tu propia clave de API gratuita, sin límite diario de generaciones de IA.
+                      </p>
+                    </div>
+                  ) : aiPureCount < 15 ? (
+                    <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+                      Generación de IA Pura: todo normal ({aiPureCount}/20 hoy)
+                    </div>
+                  ) : aiPureCount < 20 ? (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-amber-400">
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse inline-block" />
+                        Quedan {20 - aiPureCount} generaciones de IA usando la API de generación de imágenes
+                      </div>
+                      <p className="text-[10px] text-white/50 leading-relaxed">
+                        💡 Te recomendamos usar otras formas ilimitadas para ahorrar créditos: ¡prueba el modo <strong>Foto Real</strong> o el modo <strong>Tu Foto</strong>!
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-red-400">
+                        <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />
+                        Límite de 20 generaciones de IA Pura diarias alcanzado
+                      </div>
+                      <p className="text-[10px] text-white/50 leading-relaxed">
+                        Usa las otras formas ilimitadas: modo <strong>Foto Real</strong> y modo <strong>Tu Foto</strong>, o conecta tu propia clave Gemini en la Configuración del panel lateral.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Layout Version Selector */}
               {genMode !== "custom" && (

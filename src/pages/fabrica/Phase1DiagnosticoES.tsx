@@ -1,13 +1,14 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useFabricaContext, type Niche, type AgencyType } from "@/hooks/useFabricaContext";
 import { calculateScore, getChecklistByLevel } from "@/lib/fabrica-scoring-es";
 import { generateDiagnosticoPDF, openWhatsappWithResumo } from "@/lib/fabrica-pdf";
 import { useSaveDiagnostico, useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, Download, MessageCircle, ArrowRight, Upload, Check, Save, Plus, X } from "lucide-react";
+import { ChevronRight, Download, MessageCircle, ArrowRight, Upload, Check, Save, Plus, X, Sparkles, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { WhatsappSendModal } from "@/components/fabrica/WhatsappSendModal";
+import { useMarketingTools } from "@/hooks/useContent";
 import { extractPaletteFromCanvas } from "@/lib/extract-palette";
 
 const AGENCY_TYPES: { v: AgencyType; l: string }[] = [
@@ -233,60 +234,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
                 1. Identidad y Perfil de la Agencia
               </h3>
 
-              {/* ðŸ†• LOGO E NOME EM DESTAQUE */}
-              <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 flex flex-col sm:flex-row gap-6 items-center mb-6">
-                <div className="relative group flex-shrink-0">
-                  <div 
-                    className="w-24 h-24 rounded-2xl border-2 border-dashed border-white/20 bg-white/[0.02] flex flex-col items-center justify-center overflow-hidden transition-all group-hover:border-white/40 cursor-pointer relative"
-                  >
-                    {state.logoBase64 ? (
-                      <img src={state.logoBase64} className="w-full h-full object-contain p-2" alt="Logo" />
-                    ) : (
-                      <>
-                        <Upload className="w-6 h-6 text-white/30 mb-1" />
-                        <span className="text-[9px] font-bold text-white/40 uppercase">Tu Logo</span>
-                      </>
-                    )}
-                    <label className="absolute inset-0 cursor-pointer">
-                      <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-                    </label>
-                  </div>
-                  {state.logoBase64 && (
-                    <button 
-                      onClick={() => update({ logoBase64: "" })}
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex-1 w-full space-y-4">
-                   <FabField label="Nombre de tu Agencia *" value={state.agencyName} onChange={(v) => update({ agencyName: v })} placeholder="Ex: Lua Cheia Viagens" />
-                   
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                     <div>
-                       <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Tipo de agencia *</label>
-                       <select
-                         value={state.agencyType}
-                         onChange={(e) => update({ agencyType: e.target.value as AgencyType })}
-                         className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors text-sm"
-                       >
-                         <option value="" className="bg-zinc-900">Seleccione...</option>
-                         {AGENCY_TYPES.map((t) => (
-                           <option key={t.v} value={t.v} className="bg-zinc-900">{t.l}</option>
-                         ))}
-                       </select>
-                     </div>
-                     <div className="sm:hidden h-0" /> {/* spacer */}
-                   </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/[0.02] border border-white/[0.05] rounded-xl p-4">
-                 <FabField label="@ de Instagram Profesional" value={state.instagram} onChange={(v) => update({ instagram: v.replace(/^@/, "") })} placeholder="suaagencia" />
-                 <FabPhoneField label="WhatsApp de Ventas (con código) *" value={state.whatsapp} onChange={(v) => update({ whatsapp: v })} />
-              </div>
+              {/* Campos de identidad ya preenchidos en el Panel Inicial se omiten aquí para simplificar */}
               <div>
                 <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">Nicho / Producto Estrella *</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -366,11 +314,32 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
                 />
               </div>
 
+              <div className="grid grid-cols-1 gap-4">
+                <FabSelect
+                  label="Cantidad de publicaciones en Instagram *"
+                  value={state.instagramPosts || "less_10"}
+                  onChange={(v) => update({ instagramPosts: v })}
+                  options={[
+                    { v: "less_10", l: "Menos de 10 publicaciones (Fase Inicial / Desde Cero)" },
+                    { v: "10_20", l: "Entre 10 y 20 publicaciones" },
+                    { v: "20_50", l: "Más de 20 publicaciones" },
+                    { v: "50_200", l: "Más de 50 publicaciones" },
+                    { v: "200_500", l: "Más de 200 publicaciones" },
+                    { v: "more_500", l: "Más de 500 publicaciones" }
+                  ]}
+                />
+              </div>
+
               <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                  <FabToggle label="¿Aparecen personas reales (dueños/equipo)?" value={!!state.hasPeople} onChange={(v) => update({ hasPeople: v })} />
                  <FabToggle label="¿Publicas Reels con frecuencia?" value={!!state.usesReels} onChange={(v) => update({ usesReels: v })} />
                  <FabToggle label="¿Inviertes en Anuncios Pagados (Tráfico)?" value={!!state.investeAds} onChange={(v) => update({ investeAds: v })} />
                  <FabToggle label="¿Tienes Testimonios de Clientes Destacados?" value={!!state.hasDepoimentos} onChange={(v) => update({ hasDepoimentos: v })} />
+                 <FabToggle label="¿Publicaste el sitio generado y lo pusiste en el enlace de la bio?" value={!!state.hasBioLink} onChange={(v) => update({ hasBioLink: v })} />
+                 <FabToggle label="¿Creaste un grupo VIP de avisos en WhatsApp (solo admin envía)?" value={!!state.whatsappGroupActive} onChange={(v) => update({ whatsappGroupActive: v })} />
+                 <FabToggle label="¿Usas voces sintéticas de IA (ElevenLabs / Fish Audio) en Reels?" value={!!state.usesVoiceovers} onChange={(v) => update({ usesVoiceovers: v })} />
+                 <FabToggle label="¿Buscas noticias de turismo y compartes fotos de influencers para curaduría?" value={!!state.publishesNews} onChange={(v) => update({ publishesNews: v })} />
+                 <FabToggle label="¿Generas 5 nuevas promociones al día en Fábrica y las publicas?" value={!!state.usesFabricaTemplates} onChange={(v) => update({ usesFabricaTemplates: v })} />
               </div>
 
               <div className="flex gap-3 bg-blue-500/10 border border-blue-500/20 p-3 rounded-xl items-start">
@@ -394,7 +363,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
             </button>
             <button
               onClick={() => setFormStep(2)}
-              disabled={!state.agencyName || !state.whatsapp || !state.niche || state.destinos.length === 0}
+              disabled={!state.niche || state.destinos.length === 0}
               className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110 shadow-lg"
               style={{ background: `linear-gradient(135deg, ${state.primaryColor || "#F59E0B"}, #FCD34D)` }}
             >
@@ -411,7 +380,7 @@ export const Phase1DiagnosticoES = ({ onComplete, onBack }: Props) => {
             </button>
             <button
               onClick={finalize}
-              disabled={!state.postFrequency || !state.followers || !state.fechamentosMes}
+              disabled={!state.postFrequency || !state.followers || !state.fechamentosMes || !state.instagramPosts}
               className="flex-[2] py-4 rounded-xl font-black text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110 shadow-lg shadow-yellow-500/20 uppercase tracking-wider text-sm"
               style={{ background: `linear-gradient(135deg, #10B981, #FCD34D)` }}
             >
@@ -428,9 +397,11 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
   const { state } = useFabricaContext();
   const { user } = useAuth();
   const result = calculateScore(state);
-  const checklist = getChecklistByLevel(result.level);
+  const checklist = getChecklistByLevel(result.level, state);
   const saveMutation = useSaveDiagnostico();
   const [waOpen, setWaOpen] = useState(false);
+  const { data: tools = [], isLoading: loadingTools } = useMarketingTools();
+  const filteredTools = tools.filter((t: any) => !t.title.toLowerCase().includes("vendedor de viagens"));
 
   const scoreColor = result.digitalScore >= 70 ? "#10B981" : result.digitalScore >= 40 ? "#F59E0B" : "#EF4444";
 
@@ -460,7 +431,7 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white text-black rounded-3xl overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="bg-gradient-to-br from-[#0D1425] to-[#1a2744] text-white p-7">
-          <div className="text-[10px] font-bold tracking-[2px] mb-2" style={{ color: state.primaryColor }}>DIAGNÓSTICO TRAVELBOOST</div>
+          <div className="text-[10px] font-bold tracking-[2px] mb-2" style={{ color: state.primaryColor }}>DIAGNÓSTICO CANVA VIAGEM</div>
           <h2 className="text-2xl font-extrabold mb-1">{state.agencyName}</h2>
           <p className="text-sm text-white/60 mb-4">{state.city} • @{state.instagram}</p>
         </div>
@@ -517,6 +488,72 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
               ))}
             </div>
           ))}
+
+          {/* 🆕 📚 Dossier de Recomendaciones Estratégicas */}
+          <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-500 mt-6 mb-4 pb-2 border-b-2 border-gray-100">📚 Dossier de Recomendaciones Estratégicas</h3>
+          
+          <div className="bg-gradient-to-br from-zinc-50 to-gray-50 border border-gray-200 rounded-2xl p-6 space-y-6 text-sm text-gray-700 mb-6">
+            <div className="flex gap-3.5 items-start">
+              <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center text-lg flex-shrink-0">🌐</div>
+              <div>
+                <h4 className="font-extrabold text-gray-900 mb-1">1. Posicionamiento Digital y Enlace en Bio</h4>
+                <p className="text-xs leading-relaxed text-gray-600">
+                  Transmite profesionalismo y autoridad de inmediato. Publica tu sitio web generado en la Fábrica y agrégalo como enlace principal de tu biografía de Instagram. Estandariza los colores de tu feed utilizando la paleta de Canva Viagem y organiza tus destacados con dedicación en al menos 4 secciones esenciales: <b>Quiénes Somos (Sobre Mí), Nuestros Paquetes, Testimonios de Clientes y Contacto Directo</b>.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3.5 items-start">
+              <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center text-lg flex-shrink-0">💬</div>
+              <div>
+                <h4 className="font-extrabold text-gray-900 mb-1">2. Máquina de Ventas en WhatsApp (Grupo VIP)</h4>
+                <p className="text-xs leading-relaxed text-gray-600">
+                  Crea un grupo VIP de avisos y ofertas en WhatsApp y configura los permisos para que <b>solo los administradores puedan enviar mensajes</b> (evitando spam y que la gente se salga). Escribe una invitación personalizada y elegante, y envíala uno a uno a todos tus contactos invitándolos a entrar. Todos los días, abre la Fábrica de Canva Viagem, genera <b>5 nuevas ofertas al día en formato feed e historias</b>, y compártelas en tu grupo VIP de avisos para retener y convertir clientes constantemente.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3.5 items-start">
+              <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-lg flex-shrink-0">🎙️</div>
+              <div>
+                <h4 className="font-extrabold text-gray-900 mb-1">3. Videos Virales y Locución Realista con Inteligencia Artificial</h4>
+                <p className="text-xs leading-relaxed text-gray-600">
+                  Aumenta de manera masiva las visualizaciones y retención de tus Reels y TikToks. Utiliza el <b>Narrador de Ofertas</b> o el <b>Robot de IA</b> integrados en Canva Viagem para crear tus guiones de venta altamente persuasivos. Luego, genera locuciones realistas y profesionales con las siguientes plataformas punteras en síntesis de voz:
+                </p>
+                <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <a href="https://fish.audio/pt/text-to-speech/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 border border-gray-200 rounded-lg font-semibold text-gray-800 transition-colors">
+                    <span className="w-2 h-2 rounded-full bg-blue-500" /> Fish Audio <ExternalLink className="w-3 h-3 text-gray-400" />
+                  </a>
+                  <a href="https://elevenlabs.io/app/speech-synthesis/text-to-speech" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 border border-gray-200 rounded-lg font-semibold text-gray-800 transition-colors">
+                    <span className="w-2 h-2 rounded-full bg-purple-500" /> ElevenLabs <ExternalLink className="w-3 h-3 text-gray-400" />
+                  </a>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Agrega el audio generado encima de las plantillas premium del Canva Viagem o clips reales del destino. Busca referencias de videos virales y ganchos exitosos de turismo en TikTok para inspirarte a multiplicar tus conversiones.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3.5 items-start">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-lg flex-shrink-0">📰</div>
+              <div>
+                <h4 className="font-extrabold text-gray-900 mb-1">4. Curaduría de Contenido y Noticias del Sector</h4>
+                <p className="text-xs leading-relaxed text-gray-600">
+                  Gana autoridad inmediata frente a tu audiencia. Investiga noticias interesantes del sector en blogs del mercado de turismo. Comparte fotos y videos maravillosos de grandes influencers de viajes en los destinos específicos que vendes (dando los debidos créditos), comentando tu opinión y tips del itinerario. Esto educa e inspira a viajar.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3.5 items-start">
+              <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-lg flex-shrink-0">⚡</div>
+              <div>
+                <h4 className="font-extrabold text-gray-900 mb-1">5. Campañas de Anuncios en Redes Sociales (Tráfico Pago)</h4>
+                <p className="text-xs leading-relaxed text-gray-600">
+                  Escala y atrae clientes fríos todos los días. Si ya cuentas con tus primeras publicaciones, crea campañas de tráfico pago (Meta Ads) dirigidas al público del feed/stories de Instagram enviándolos directamente a tu landing page profesional del Fabrica. Al visualizar tu web de viajes, ¡hacen clic en el botón de reservar y van listos a tu WhatsApp para cerrar la venta!
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </motion.div>
 
@@ -556,6 +593,36 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
       <p className="text-[11px] text-white/40 text-center mt-2 px-4">
         Tus datos están protegidos. Agrega nuevos destinos, paquetes y ajustes en cualquier momento — todo queda guardado en tu cuenta.
       </p>
+
+      {/* 🤖 Robots de IA y Herramientas Estratégicas */}
+      <div className="mt-8 p-6 bg-white/[0.02] border border-white/[0.08] rounded-3xl space-y-4">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">🤖</span>
+          <h3 className="text-sm font-extrabold uppercase tracking-widest text-white/80">Robots de IA y Herramientas Estratégicas</h3>
+        </div>
+        
+        {loadingTools ? (
+          <div className="h-24 bg-white/[0.03] animate-pulse rounded-xl" />
+        ) : filteredTools.length === 0 ? (
+          <p className="text-white/40 text-sm">No hay herramientas cargadas.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {filteredTools.map((tool: any) => (
+              <a key={tool.id} href={tool.url} target="_blank" rel="noopener" className="flex items-center gap-3 bg-gradient-to-br from-purple-500/5 to-blue-500/5 border border-white/[0.08] hover:border-purple-500/30 rounded-xl p-3.5 transition-all hover:shadow-lg hover:shadow-purple-500/5 group relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="w-9 h-9 rounded-xl bg-white/[0.06] flex items-center justify-center text-xl shadow-inner">{tool.icon || "🤖"}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-bold text-white leading-tight mb-0.5">{tool.title}</div>
+                  <div className="text-[10px] text-purple-300/80 flex items-center gap-1">
+                    <Sparkles className="w-2.5 h-2.5" /> Inteligencia Artificial
+                  </div>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-white/20 group-hover:text-purple-300 transition-colors relative z-10" />
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row gap-4">
         <button

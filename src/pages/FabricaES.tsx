@@ -56,7 +56,7 @@ const FabricaInnerES = () => {
     }
     if (state.currentPhase === 1) return "Generador de Imágenes";
     if (state.currentPhase === 2) return "Página de Ventas";
-    if (state.currentPhase === 3) return "Creador de Oferta";
+    if (state.currentPhase === 3) return "Diagnóstico";
     if (state.currentPhase === 4) return "Mis Activos";
     return "";
   };
@@ -147,7 +147,7 @@ const FabricaInnerES = () => {
                 <span className="text-[10px] text-white/30 font-bold font-sans">F2</span>
               </button>
 
-              {/* F3: Creador de Oferta */}
+              {/* F3: Diagnóstico */}
               <button
                 onClick={() => {
                   setPhase(3);
@@ -161,7 +161,7 @@ const FabricaInnerES = () => {
               >
                 <div className="flex items-center gap-3">
                   <Zap className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Creador de Oferta</span>
+                  <span>Diagnóstico</span>
                 </div>
                 <span className={`text-[10px] font-bold ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/30"}`}>F3</span>
               </button>
@@ -306,7 +306,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ⚡ Creador de Oferta (F3)
+            ⚡ Diagnóstico (F3)
           </button>
           <button
             onClick={() => {

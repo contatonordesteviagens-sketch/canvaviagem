@@ -59,7 +59,7 @@ function addFooter(doc: jsPDF) {
   doc.setTextColor(...COLORS.muted);
   doc.setFont("helvetica", "normal");
   doc.text(
-    clean(`Diagnóstico TravelBoost · Canva Viagem · Página ${pageNum}`),
+    clean(`Diagnóstico Canva Viagem · Página ${pageNum}`),
     PAGE_W / 2,
     PAGE_H - 10,
     { align: "center" }
@@ -81,7 +81,7 @@ export function generateDiagnosticoPDF(state: FabricaState) {
   const doc = new jsPDF();
   const result = calculateScore(state);
   const { digitalScore, scoreBreakdown, levelName, levelDescription, gargalos } = result;
-  const checklist = getChecklistByLevel(result.level);
+  const checklist = getChecklistByLevel(result.level, state);
   const scoreColor =
     digitalScore >= 70 ? COLORS.green : digitalScore >= 40 ? COLORS.amber : COLORS.red;
 
@@ -94,7 +94,7 @@ export function generateDiagnosticoPDF(state: FabricaState) {
   doc.setTextColor(...COLORS.primary);
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
-  doc.text("DIAGNÓSTICO TRAVELBOOST", MARGIN, 16);
+  doc.text("DIAGNÓSTICO CANVA VIAGEM", MARGIN, 16);
 
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
@@ -268,13 +268,13 @@ export function generateDiagnosticoPDF(state: FabricaState) {
 
 export function buildWhatsappResumo(state: FabricaState): string {
   const result = calculateScore(state);
-  const checklist = getChecklistByLevel(result.level);
+  const checklist = getChecklistByLevel(result.level, state);
   const top3 = result.gargalos.filter((g) => g.level !== "green").slice(0, 3);
 
   const fmtList = (items: { text: string }[]) =>
     items.map((i) => `- ${i.text}`).join("\n");
 
-  return `*DIAGNOSTICO TRAVELBOOST*
+  return `*DIAGNÓSTICO CANVA VIAGEM*
 
 *${state.agencyName || "Agencia"}*${state.city ? ` - ${state.city}` : ""}
 ${state.instagram ? `Instagram: @${state.instagram}\n` : ""}

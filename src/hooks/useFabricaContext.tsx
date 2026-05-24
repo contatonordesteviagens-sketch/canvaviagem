@@ -58,6 +58,8 @@ export interface SiteContent {
   galleryImages: string[]; // banco de imagens geradas pra reuso
   vercelUrl?: string; // URL do site publicado no Vercel
   sections: SectionVisibility;
+  animationEffect?: "none" | "namorados_hearts" | "namorados_pulse" | "neve" | "confete";
+  animationLocation?: "all" | "buttons" | "cards" | "footer";
 }
 
 export type AgencyType =
@@ -84,7 +86,9 @@ export interface FabricaState {
   agencyTypeOther: string;
   city: string;
   instagram: string;
-  whatsapp: string;
+  whatsapp: string;          // número nacional (sem DDI)
+  whatsappDialCode: string;  // DDI em dígitos: "55", "1", "351"...
+  whatsappCountryCode: string; // ISO code: "BR", "US", "PT"...
   niche: Niche;
   destinos: string[]; // destinos específicos vendidos pela agência
   logoBase64: string;
@@ -101,6 +105,12 @@ export interface FabricaState {
   investeAds: boolean;
   hasPeople: boolean; // "Aparecem pessoas reais nas redes?"
   contentStrategy: string; // "promo" | "misto"
+  instagramPosts?: string; // "less_10" | "10_20" | "20_50" | "50_200" | "200_500" | "more_500"
+  hasBioLink?: boolean;
+  whatsappGroupActive?: boolean;
+  usesVoiceovers?: boolean;
+  publishesNews?: boolean;
+  usesFabricaTemplates?: boolean;
 
   // Resultado
   digitalScore: number;
@@ -161,6 +171,8 @@ const defaultState: FabricaState = {
   city: "",
   instagram: "",
   whatsapp: "",
+  whatsappDialCode: "55",
+  whatsappCountryCode: "BR",
   niche: "",
   destinos: [],
   logoBase64: "",
@@ -175,6 +187,12 @@ const defaultState: FabricaState = {
   investeAds: false,
   hasPeople: false,
   contentStrategy: "promo",
+  instagramPosts: "less_10",
+  hasBioLink: false,
+  whatsappGroupActive: false,
+  usesVoiceovers: false,
+  publishesNews: false,
+  usesFabricaTemplates: false,
   digitalScore: 0,
   scoreBreakdown: { presenca: 0, conteudo: 0, vendas: 0, trafego: 0, conversao: 0 },
   level: 1,
@@ -219,6 +237,8 @@ const defaultState: FabricaState = {
       faq: true,
       finalCta: true,
     },
+    animationEffect: "none",
+    animationLocation: "all",
   },
   lastCategoria: "oferta_pacote",
   lastFormat: "story",

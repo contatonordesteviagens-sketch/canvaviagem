@@ -180,7 +180,7 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
   if (filteredStories.length === 0) filteredStories = stories.slice(0, 4); // Fallback
 
   // Filtra Ferramentas de IA & Scripts
-  const filteredTools = tools.slice(0, 6); // Ferramentas são globais de agência
+  const filteredTools = tools.filter((t: any) => !t.title.toLowerCase().includes("vendedor de viagens")).slice(0, 6); // Ferramentas são globais de agência
 
   // Filtra Legendas com Fallback
   let filteredCaptions = captions.filter((c: any) => matchesDestinos(c.destination || "") || matchesDestinos(c.text || "")).slice(0, 10);

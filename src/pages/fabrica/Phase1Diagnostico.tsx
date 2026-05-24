@@ -5,9 +5,10 @@ import { generateDiagnosticoPDF, openWhatsappWithResumo } from "@/lib/fabrica-pd
 import { useSaveDiagnostico, useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, Download, MessageCircle, ArrowRight, Upload, Check, Save, Plus, X } from "lucide-react";
+import { ChevronRight, Download, MessageCircle, ArrowRight, Upload, Check, Save, Plus, X, Sparkles, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { WhatsappSendModal } from "@/components/fabrica/WhatsappSendModal";
+import { useMarketingTools } from "@/hooks/useContent";
 import { extractPaletteFromCanvas } from "@/lib/extract-palette";
 
 const AGENCY_TYPES: { v: AgencyType; l: string }[] = [
@@ -233,60 +234,7 @@ export const Phase1Diagnostico = ({ onComplete, onBack }: Props) => {
                 1. Identidade & Perfil da Agência
               </h3>
 
-              {/* 🆕 LOGO E NOME EM DESTAQUE */}
-              <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 flex flex-col sm:flex-row gap-6 items-center mb-6">
-                <div className="relative group flex-shrink-0">
-                  <div 
-                    className="w-24 h-24 rounded-2xl border-2 border-dashed border-white/20 bg-white/[0.02] flex flex-col items-center justify-center overflow-hidden transition-all group-hover:border-white/40 cursor-pointer relative"
-                  >
-                    {state.logoBase64 ? (
-                      <img src={state.logoBase64} className="w-full h-full object-contain p-2" alt="Logo" />
-                    ) : (
-                      <>
-                        <Upload className="w-6 h-6 text-white/30 mb-1" />
-                        <span className="text-[9px] font-bold text-white/40 uppercase">Sua Logo</span>
-                      </>
-                    )}
-                    <label className="absolute inset-0 cursor-pointer">
-                      <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-                    </label>
-                  </div>
-                  {state.logoBase64 && (
-                    <button 
-                      onClick={() => update({ logoBase64: "" })}
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex-1 w-full space-y-4">
-                   <FabField label="Nome Fantasia da sua Agência *" value={state.agencyName} onChange={(v) => update({ agencyName: v })} placeholder="Ex: Lua Cheia Viagens" />
-                   
-                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                     <div>
-                       <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">Tipo de agência *</label>
-                       <select
-                         value={state.agencyType}
-                         onChange={(e) => update({ agencyType: e.target.value as AgencyType })}
-                         className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-white/40 transition-colors text-sm"
-                       >
-                         <option value="" className="bg-zinc-900">Selecione...</option>
-                         {AGENCY_TYPES.map((t) => (
-                           <option key={t.v} value={t.v} className="bg-zinc-900">{t.l}</option>
-                         ))}
-                       </select>
-                     </div>
-                     <div className="sm:hidden h-0" /> {/* spacer */}
-                   </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/[0.02] border border-white/[0.05] rounded-xl p-4">
-                 <FabField label="@ do Instagram Profissional" value={state.instagram} onChange={(v) => update({ instagram: v.replace(/^@/, "") })} placeholder="suaagencia" />
-                 <FabPhoneField label="WhatsApp de Vendas (com DDD) *" value={state.whatsapp} onChange={(v) => update({ whatsapp: v })} />
-              </div>
+              {/* Campos de identidade já preenchidos no Painel Inicial são omitidos aqui para simplificar seu preenchimento */}
               <div>
                 <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-3">Nicho / Carro-chefe *</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -366,11 +314,32 @@ export const Phase1Diagnostico = ({ onComplete, onBack }: Props) => {
                 />
               </div>
 
+              <div className="grid grid-cols-1 gap-4">
+                <FabSelect
+                  label="Quantidade de postagens no Instagram *"
+                  value={state.instagramPosts || "less_10"}
+                  onChange={(v) => update({ instagramPosts: v })}
+                  options={[
+                    { v: "less_10", l: "Menos de 10 postagens (Fase Inicial / Do Zero)" },
+                    { v: "10_20", l: "Entre 10 e 20 postagens" },
+                    { v: "20_50", l: "Mais de 20 postagens" },
+                    { v: "50_200", l: "Mais de 50 postagens" },
+                    { v: "200_500", l: "Mais de 200 postagens" },
+                    { v: "more_500", l: "Mais de 500 postagens" }
+                  ]}
+                />
+              </div>
+
               <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                  <FabToggle label="Aparecem pessoas reais (donos/equipe)?" value={!!state.hasPeople} onChange={(v) => update({ hasPeople: v })} />
                  <FabToggle label="Posta Reels com frequência?" value={!!state.usesReels} onChange={(v) => update({ usesReels: v })} />
                  <FabToggle label="Investe em Anúncios Pagos (Tráfego)?" value={!!state.investeAds} onChange={(v) => update({ investeAds: v })} />
                  <FabToggle label="Tem Depoimentos de Clientes em Destaque?" value={!!state.hasDepoimentos} onChange={(v) => update({ hasDepoimentos: v })} />
+                 <FabToggle label="Publicou o site gerado e colocou no link da bio?" value={!!state.hasBioLink} onChange={(v) => update({ hasBioLink: v })} />
+                 <FabToggle label="Criou grupo VIP de avisos no WhatsApp (somente admin envia)?" value={!!state.whatsappGroupActive} onChange={(v) => update({ whatsappGroupActive: v })} />
+                 <FabToggle label="Usa vozes sintéticas de IA (ElevenLabs / Fish Audio) nos Reels?" value={!!state.usesVoiceovers} onChange={(v) => update({ usesVoiceovers: v })} />
+                 <FabToggle label="Pesquisa notícias de turismo e reposta influenciadores para curadoria?" value={!!state.publishesNews} onChange={(v) => update({ publishesNews: v })} />
+                 <FabToggle label="Gera 5 novas promoções por dia no Fábrica e publica nas redes?" value={!!state.usesFabricaTemplates} onChange={(v) => update({ usesFabricaTemplates: v })} />
               </div>
 
               <div className="flex gap-3 bg-blue-500/10 border border-blue-500/20 p-3 rounded-xl items-start">
@@ -394,7 +363,7 @@ export const Phase1Diagnostico = ({ onComplete, onBack }: Props) => {
             </button>
             <button
               onClick={() => setFormStep(2)}
-              disabled={!state.agencyName || !state.whatsapp || !state.niche || state.destinos.length === 0}
+              disabled={!state.niche || state.destinos.length === 0}
               className="flex-[2] py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110 shadow-lg"
               style={{ background: `linear-gradient(135deg, ${state.primaryColor || "#F59E0B"}, #FCD34D)` }}
             >
@@ -411,7 +380,7 @@ export const Phase1Diagnostico = ({ onComplete, onBack }: Props) => {
             </button>
             <button
               onClick={finalize}
-              disabled={!state.postFrequency || !state.followers || !state.fechamentosMes}
+              disabled={!state.postFrequency || !state.followers || !state.fechamentosMes || !state.instagramPosts}
               className="flex-[2] py-4 rounded-xl font-black text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110 shadow-lg shadow-yellow-500/20 uppercase tracking-wider text-sm"
               style={{ background: `linear-gradient(135deg, #10B981, #FCD34D)` }}
             >
@@ -428,9 +397,11 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
   const { state } = useFabricaContext();
   const { user } = useAuth();
   const result = calculateScore(state);
-  const checklist = getChecklistByLevel(result.level);
+  const checklist = getChecklistByLevel(result.level, state);
   const saveMutation = useSaveDiagnostico();
   const [waOpen, setWaOpen] = useState(false);
+  const { data: tools = [], isLoading: loadingTools } = useMarketingTools();
+  const filteredTools = tools.filter((t: any) => !t.title.toLowerCase().includes("vendedor de viagens"));
 
   const scoreColor = result.digitalScore >= 70 ? "#10B981" : result.digitalScore >= 40 ? "#F59E0B" : "#EF4444";
 
@@ -460,7 +431,7 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white text-black rounded-3xl overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="bg-gradient-to-br from-[#0D1425] to-[#1a2744] text-white p-7">
-          <div className="text-[10px] font-bold tracking-[2px] mb-2" style={{ color: state.primaryColor }}>DIAGNÓSTICO TRAVELBOOST</div>
+          <div className="text-[10px] font-bold tracking-[2px] mb-2" style={{ color: state.primaryColor }}>DIAGNÓSTICO CANVA VIAGEM</div>
           <h2 className="text-2xl font-extrabold mb-1">{state.agencyName}</h2>
           <p className="text-sm text-white/60 mb-4">{state.city} • @{state.instagram}</p>
         </div>
@@ -517,6 +488,72 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
               ))}
             </div>
           ))}
+
+          {/* 🆕 📚 Dossiê de Recomendações Estratégicas */}
+          <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-500 mt-6 mb-4 pb-2 border-b-2 border-gray-100">📚 Dossiê de Recomendações Estratégicas</h3>
+          
+          <div className="bg-gradient-to-br from-zinc-50 to-gray-50 border border-gray-200 rounded-2xl p-6 space-y-6 text-sm text-gray-700 mb-6">
+            <div className="flex gap-3.5 items-start">
+              <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center text-lg flex-shrink-0">🌐</div>
+              <div>
+                <h4 className="font-extrabold text-gray-900 mb-1">1. Posicionamento Digital & Bio Link</h4>
+                <p className="text-xs leading-relaxed text-gray-600">
+                  Transmita profissionalismo e autoridade imediata. Publique seu site gerado na Fábrica e insira-o como o link principal da sua bio do Instagram. Padronize as cores do seu feed utilizando a paleta de cores do Canva Viagem e organize seus destaques com capricho em pelo menos 4 tópicos essenciais: <b>Quem Somos (Sobre), Nossos Pacotes, Depoimentos de Clientes e Contato Direto</b>.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3.5 items-start">
+              <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center text-lg flex-shrink-0">💬</div>
+              <div>
+                <h4 className="font-extrabold text-gray-900 mb-1">2. Máquina de Vendas no WhatsApp (Grupo VIP)</h4>
+                <p className="text-xs leading-relaxed text-gray-600">
+                  Crie um grupo VIP de avisos e promoções no WhatsApp e configure as permissões para que <b>somente administradores possam enviar mensagens</b> (evitando spam e distrações). Escreva um convite personalizado e elegante, e envie individualmente para todos os seus contatos convidando-os a entrar no grupo. Diariamente, abra a ferramenta Fábrica do Canva Viagem, gere <b>5 novas promoções por dia nos formatos feed e stories</b>, e envie-as no seu grupo de avisos para reter e converter seus clientes de forma recorrente.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3.5 items-start">
+              <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-lg flex-shrink-0">🎙️</div>
+              <div>
+                <h4 className="font-extrabold text-gray-900 mb-1">3. Vídeos Virais & Narração Realista com Inteligência Artificial</h4>
+                <p className="text-xs leading-relaxed text-gray-600">
+                  Aumente drasticamente a visualização e o engajamento dos seus Reels e TikToks. Utilize o <b>Narrador de Ofertas</b> ou o <b>Robô de IA</b> integrados no Canva Viagem para criar roteiros persuasivos. Em seguida, utilize as principais plataformas de áudio para gerar vozes sintéticas realistas e profissionais:
+                </p>
+                <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <a href="https://fish.audio/pt/text-to-speech/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 border border-gray-200 rounded-lg font-semibold text-gray-800 transition-colors">
+                    <span className="w-2 h-2 rounded-full bg-blue-500" /> Fish Audio <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
+                  </a>
+                  <a href="https://elevenlabs.io/app/speech-synthesis/text-to-speech" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-gray-100 border border-gray-200 rounded-lg font-semibold text-gray-800 transition-colors">
+                    <span className="w-2 h-2 rounded-full bg-purple-500" /> ElevenLabs <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
+                  </a>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Gere o arquivo de áudio e insira-o sobre imagens de alta qualidade do Canva Viagem ou vídeos reais do destino. Busque referências de ganchos e edições virais de viagem no TikTok para se inspirar e multiplicar seus cliques.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3.5 items-start">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-lg flex-shrink-0">📰</div>
+              <div>
+                <h4 className="font-extrabold text-gray-900 mb-1">4. Curadoria de Conteúdo & Notícias de Turismo</h4>
+                <p className="text-xs leading-relaxed text-gray-600">
+                  Gere autoridade e conecte-se com sua audiência. Pesquise notícias relevantes sobre o mercado de turismo em blogs do setor. Reposte fotos e mídias incríveis de grandes influenciadores de viagem em destinos específicos (dando os devidos créditos), comentando sobre dicas do roteiro ou novidades do local. Isso educa sua audiência e desperta desejo imediato de viagem.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3.5 items-start">
+              <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-lg flex-shrink-0">⚡</div>
+              <div>
+                <h4 className="font-extrabold text-gray-900 mb-1">5. Campanhas de Anúncios Online de Alto Impacto</h4>
+                <p className="text-xs leading-relaxed text-gray-600">
+                  Para escalar e sair do anonimato: se você já possui suas primeiras postagens, crie campanhas de anúncios online (Meta Ads) direcionando o público do feed/stories do Instagram direto para a landing page profissional gerada pelo Fábrica. Ao visualizar seus pacotes completos no site, o usuário clica e cai diretamente no seu WhatsApp para fechar a reserva!
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </motion.div>
 
@@ -556,6 +593,36 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
       <p className="text-[11px] text-white/40 text-center mt-2 px-4">
         Seus dados são preservados. Adicione novos destinos, pacotes e ajustes a qualquer momento — tudo fica salvo na sua conta.
       </p>
+
+      {/* 🤖 Robôs de IA e Ferramentas Estratégicas */}
+      <div className="mt-8 p-6 bg-white/[0.02] border border-white/[0.08] rounded-3xl space-y-4">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">🤖</span>
+          <h3 className="text-sm font-extrabold uppercase tracking-widest text-white/80">Robôs de IA e Ferramentas Estratégicas</h3>
+        </div>
+        
+        {loadingTools ? (
+          <div className="h-24 bg-white/[0.03] animate-pulse rounded-xl" />
+        ) : filteredTools.length === 0 ? (
+          <p className="text-white/40 text-sm">Nenhuma ferramenta carregada.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {filteredTools.map((tool: any) => (
+              <a key={tool.id} href={tool.url} target="_blank" rel="noopener" className="flex items-center gap-3 bg-gradient-to-br from-purple-500/5 to-blue-500/5 border border-white/[0.08] hover:border-purple-500/30 rounded-xl p-3.5 transition-all hover:shadow-lg hover:shadow-purple-500/5 group relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="w-9 h-9 rounded-xl bg-white/[0.06] flex items-center justify-center text-xl shadow-inner">{tool.icon || "🤖"}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-bold text-white leading-tight mb-0.5">{tool.title}</div>
+                  <div className="text-[10px] text-purple-300/80 flex items-center gap-1">
+                    <Sparkles className="w-2.5 h-2.5" /> Inteligência Artificial
+                  </div>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-white/20 group-hover:text-purple-300 transition-colors relative z-10" />
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row gap-4">
         <button

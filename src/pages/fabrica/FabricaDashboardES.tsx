@@ -18,6 +18,7 @@ import {
   Image as ImageIcon 
 } from "lucide-react";
 import { toast } from "sonner";
+import { COUNTRIES_DIAL, type CountryDial } from "@/lib/countriesDial";
 
 const AGENCY_TYPES = [
   { v: "autonoma", l: "Agente autónomo / Freelancer" },
@@ -39,6 +40,17 @@ const AGENCY_TYPES = [
 export const FabricaDashboardES = () => {
   const { state, update } = useFabricaContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [phoneDropOpen, setPhoneDropOpen] = useState(false);
+
+  const currentCountry: CountryDial =
+    COUNTRIES_DIAL.find((c) => c.code === (state.whatsappCountryCode || "BR")) ||
+    COUNTRIES_DIAL[0];
+
+  const handleCountrySelect = (c: CountryDial) => {
+    setPhoneDropOpen(false);
+    update({ whatsappDialCode: c.dialRaw, whatsappCountryCode: c.code, whatsapp: "" });
+  };
 
   // Form de edición de paquetes
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -291,16 +303,60 @@ export const FabricaDashboardES = () => {
 
                 <div>
                   <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">WhatsApp de Ventas *</label>
-                  <div className="relative">
-                    <Phone className="absolute left-3.5 top-3.5 w-4 h-4 text-white/30" />
-                    <input 
-                      type="text"
-                      value={state.whatsapp || ""}
-                      onChange={(e) => update({ whatsapp: e.target.value })}
-                      placeholder="(85) 99845-8995"
-                      className="w-full bg-white/[0.03] border border-white/5 hover:border-white/10 focus:border-amber-500/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-all"
+                  <div className="relative flex items-stretch w-full bg-white/[0.03] border border-white/5 hover:border-white/10 focus-within:border-amber-500/50 rounded-xl overflow-visible transition-all">
+                    <button
+                      type="button"
+                      onClick={() => setPhoneDropOpen((v) => !v)}
+                      className="flex items-center gap-1.5 px-3 border-r border-white/10 bg-white/[0.02] hover:bg-white/[0.06] text-sm text-white/85 transition-colors select-none rounded-l-xl shrink-0"
+                      aria-label="Seleccionar país"
+                    >
+                      <span className="text-base leading-none" aria-hidden>{currentCountry.flag}</span>
+                      <span className="font-semibold text-xs">{currentCountry.dial}</span>
+                      <span className="text-white/40 text-[10px]">▾</span>
+                    </button>
+
+                    {phoneDropOpen && (
+                      <div className="absolute z-50 top-full left-0 mt-1 w-64 max-h-64 overflow-y-auto rounded-xl border border-white/10 bg-zinc-900 shadow-2xl">
+                        {COUNTRIES_DIAL.map((c) => (
+                          <button
+                            key={c.code}
+                            type="button"
+                            onClick={() => handleCountrySelect(c)}
+                            className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-white/85 hover:bg-white/10 transition-colors ${
+                              c.code === currentCountry.code ? "bg-white/[0.06]" : ""
+                            }`}
+                          >
+                            <span className="text-base">{c.flag}</span>
+                            <span className="flex-1 text-left">{c.name}</span>
+                            <span className="text-white/50 text-xs">{c.dial}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel-national"
+                      value={currentCountry.format(
+                        (state.whatsapp || "").replace(/\D/g, "").slice(0, currentCountry.maxDigits)
+                      )}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, "").slice(0, currentCountry.maxDigits);
+                        update({ whatsapp: raw });
+                        if (phoneDropOpen) setPhoneDropOpen(false);
+                      }}
+                      placeholder={
+                        currentCountry.code === "BR" ? "(85) 99999-9999" : "Número de teléfono"
+                      }
+                      className="flex-1 bg-transparent px-3 py-3 text-sm text-white placeholder-white/20 outline-none min-w-0"
                     />
                   </div>
+                  {state.whatsapp && (
+                    <p className="text-[9px] text-white/30 mt-1 pl-1">
+                      wa.me/{currentCountry.dialRaw}{(state.whatsapp || "").replace(/\D/g, "")}
+                    </p>
+                  )}
                 </div>
               </div>
 
