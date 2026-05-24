@@ -573,7 +573,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         </div>
         <a href="#" onclick="openLeadForm('Falar com Especialista', 'https://wa.me/55${wpp}');return false;" class="btn">Falar com um especialista</a>
       </div>
-      <div class="equipe-img"></div>
+      <div class="equipe-img" style="background-image: url('${esc(sc.aboutImageUrl || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=900&q=80")}')"></div>
     </div>
   </div>
 </section>`;

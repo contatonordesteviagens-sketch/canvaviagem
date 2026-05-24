@@ -60,6 +60,7 @@ export interface SiteContent {
   sections: SectionVisibility;
   animationEffect?: "none" | "namorados_hearts" | "namorados_pulse" | "neve" | "confete";
   animationLocation?: "all" | "buttons" | "cards" | "footer";
+  aboutImageUrl?: string; // Imagem da seção Sobre/Equipe do site
 }
 
 export type AgencyType =
@@ -239,6 +240,7 @@ const defaultState: FabricaState = {
     },
     animationEffect: "none",
     animationLocation: "all",
+    aboutImageUrl: "",
   },
   lastCategoria: "oferta_pacote",
   lastFormat: "story",

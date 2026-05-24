@@ -45,7 +45,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [globalPickingImage, setGlobalPickingImage] = useState(false);
   const [activeImageEdit, setActiveImageEdit] = useState<{
-    type: "logo" | "hero" | "package";
+    type: "logo" | "hero" | "package" | "about";
     packageId?: string;
   } | null>(null);
 
@@ -58,6 +58,9 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
     } else if (activeImageEdit.type === "hero") {
       updSite({ heroImageUrl: url });
       toast.success("¡Banner principal actualizado con éxito!");
+    } else if (activeImageEdit.type === "about") {
+      updSite({ aboutImageUrl: url });
+      toast.success("¡Foto del equipo/empresa actualizada!");
     } else if (activeImageEdit.type === "package" && activeImageEdit.packageId) {
       updPacote(activeImageEdit.packageId, { imageUrl: url });
       toast.success("¡Foto del paquete actualizada con éxito!");
@@ -199,6 +202,9 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
           if (el.classList.contains("brand-logo")) {
             setActiveImageEdit({ type: "logo" });
+            setGlobalPickingImage(true);
+          } else if (el.classList.contains("equipe-img")) {
+            setActiveImageEdit({ type: "about" });
             setGlobalPickingImage(true);
           } else if (el.closest(".hero") || el.classList.contains("hero")) {
             setActiveImageEdit({ type: "hero" });
