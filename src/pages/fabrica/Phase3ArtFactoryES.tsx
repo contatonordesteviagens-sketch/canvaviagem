@@ -1653,33 +1653,33 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-[10px] text-white/40 uppercase tracking-wider">Créditos IA usados</span>
                   <span className={`text-[11px] font-bold ${
-                    generationCount >= 30 ? "text-red-400" :
-                    generationCount >= 20 ? "text-amber-400" :
+                    aiPureCount >= 20 ? "text-red-400" :
+                    aiPureCount >= 15 ? "text-amber-400" :
                     "text-emerald-400"
-                  }`}>{generationCount}/30</span>
+                  }`}>{aiPureCount}/20</span>
                 </div>
                 <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
                   <div
                     className={`h-1.5 rounded-full transition-all duration-500 ${
-                      generationCount >= 30 ? "bg-red-500" :
-                      generationCount >= 20 ? "bg-amber-400" :
+                      aiPureCount >= 20 ? "bg-red-500" :
+                      aiPureCount >= 15 ? "bg-amber-400" :
                       "bg-emerald-500"
                     }`}
-                    style={{ width: `${Math.min(100, (generationCount / 30) * 100)}%` }}
+                    style={{ width: `${Math.min(100, (aiPureCount / 20) * 100)}%` }}
                   />
                 </div>
-                {generationCount >= 30 && (
+                {aiPureCount >= 20 && (
                   <p className="text-[10px] text-red-400 mt-1">⚡ Límite alcanzado. Conecta tu clave Gemini gratuita para continuar.</p>
                 )}
-                {generationCount >= 20 && generationCount < 30 && (
-                  <p className="text-[10px] text-amber-400 mt-1">⚠️ {30 - generationCount} generaciones restantes en esta sesión.</p>
+                {aiPureCount >= 15 && aiPureCount < 20 && (
+                  <p className="text-[10px] text-amber-400 mt-1">⚠️ {20 - aiPureCount} generaciones restantes en esta sesión.</p>
                 )}
               </div>
             )}
           </div>
           <div className="text-right shrink-0">
             <div className="text-[10px] text-white/40 uppercase tracking-wider">Generadas</div>
-            <div className="text-lg font-bold text-white">{generationCount}</div>
+            <div className="text-lg font-bold text-white">{aiPureCount}</div>
           </div>
         </div>
       </div>
