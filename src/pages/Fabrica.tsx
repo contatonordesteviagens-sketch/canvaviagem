@@ -20,7 +20,8 @@ import {
   Sliders, 
   Library,
   Menu,
-  X
+  X,
+  ChevronDown
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";

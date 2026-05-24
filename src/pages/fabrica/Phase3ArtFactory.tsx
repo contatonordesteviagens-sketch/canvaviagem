@@ -765,6 +765,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [generatedImage, setGeneratedImage] = useState<string>("");
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [variationCounter, setVariationCounter] = useState(0);
+  const [forcedVariant, setForcedVariant] = useState<number | null>(null);
   // Legendas/Copy geradas automaticamente junto com as imagens
   const [adCaptions, setAdCaptions] = useState<string[]>([]);
   const [selectedCaption, setSelectedCaption] = useState<string | null>(null);
