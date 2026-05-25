@@ -487,6 +487,7 @@ const clearLegacyState = () => {
 interface FabricaContextType {
   state: FabricaState;
   update: (patch: Partial<FabricaState>) => void;
+  systemUpdate: (patch: Partial<FabricaState>) => void;
   reset: () => void;
   setPhase: (phase: number) => void;
   toggleChecklist: (key: string) => void;
@@ -496,6 +497,7 @@ interface FabricaContextType {
   canRedo: boolean;
   syncStatus: "idle" | "saving" | "saved" | "error";
   lastSyncedAt: Date | null;
+  isHydrated: boolean;
 }
 
 const FABRICA_CONTEXT_KEY = "__CANVA_VIAGEM_FABRICA_CONTEXT__" as const;
@@ -760,25 +762,47 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const [history, setHistory] = useState<FabricaState[]>([]);
   const [redoStack, setRedoStack] = useState<FabricaState[]>([]);
 
+  const applyPatch = useCallback(
+    (
+      patch: Partial<FabricaState>,
+      options?: { recordHistory?: boolean; markEdited?: boolean }
+    ) => {
+      const { recordHistory = false, markEdited = false } = options || {};
+
+      if (markEdited) {
+        lastUserEditAtRef.current = Date.now();
+      }
+
+      if (recordHistory) {
+        const snapshot = stateRef.current;
+        setHistory((h) => {
+          const nextH = [...h, snapshot];
+          if (nextH.length > 50) nextH.shift();
+          return nextH;
+        });
+        setRedoStack([]);
+      }
+
+      setState((prev) => {
+        const next = {
+          ...prev,
+          ...patch,
+          ...(markEdited ? { lastEditedAt: new Date().toISOString() } : {}),
+        };
+        stateRef.current = next;
+        return next;
+      });
+    },
+    []
+  );
+
   const update = useCallback((patch: Partial<FabricaState>) => {
-    const editedAt = new Date().toISOString();
-    lastUserEditAtRef.current = Date.now();
-    // Salva o histórico de forma limpa e síncrona no corpo do callback do evento
-    const snapshot = stateRef.current;
-    setHistory((h) => {
-      const nextH = [...h, snapshot];
-      if (nextH.length > 50) nextH.shift(); // limite de 50 ações
-      return nextH;
-    });
-    // Limpa a pilha de refazer ao realizar uma nova alteração
-    setRedoStack([]);
-    // Aplica a alteração no estado principal
-    setState((prev) => {
-      const next = { ...prev, ...patch, lastEditedAt: editedAt };
-      stateRef.current = next;
-      return next;
-    });
-  }, []);
+    applyPatch(patch, { recordHistory: true, markEdited: true });
+  }, [applyPatch]);
+
+  const systemUpdate = useCallback((patch: Partial<FabricaState>) => {
+    applyPatch(patch, { recordHistory: false, markEdited: false });
+  }, [applyPatch]);
 
   const undo = useCallback(() => {
     if (history.length === 0) return;
@@ -790,6 +814,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     setRedoStack((prevRedo) => [...prevRedo, state]);
     // Atualiza a pilha de histórico e o estado principal
     setHistory(newHistory);
+    stateRef.current = previous;
     setState(previous);
   }, [history, state]);
 
@@ -803,12 +828,14 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     setHistory((prevHistory) => [...prevHistory, state]);
     // Atualiza a pilha de refazer e o estado principal
     setRedoStack(newRedoStack);
+    stateRef.current = next;
     setState(next);
   }, [redoStack, state]);
 
   const reset = useCallback(() => {
     setHistory([]);
     setRedoStack([]);
+    stateRef.current = defaultState;
     setState(defaultState);
   }, []);
 
@@ -828,6 +855,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       value={{
         state,
         update,
+        systemUpdate,
         reset,
         setPhase,
         toggleChecklist,
@@ -837,6 +865,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         canRedo: redoStack.length > 0,
         syncStatus,
         lastSyncedAt,
+        isHydrated: hasLoadedFromDb,
       }}
     >
       {children}
