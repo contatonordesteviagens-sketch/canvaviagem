@@ -18,7 +18,11 @@ import {
   Newspaper,
   BarChart3,
   MousePointerClick,
-  MessageSquare
+  MessageSquare,
+  Clock,
+  Filter,
+  Maximize2,
+  ChevronDown
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -113,9 +117,70 @@ export const Phase5Dashboard = () => {
     }
   }, [showLivePreview, state, user]);
   
-  const [stats, setStats] = useState({ visits: 0, clicks: 0, leads: 0 });
+  const [stats, setStats] = useState({ visits: 0, clicks: 0, leads: 0, avgTime: 0 });
   const [leadsList, setLeadsList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Filtros
+  const [filterRoteiro, setFilterRoteiro] = useState("Todos");
+  const [filterData, setFilterData] = useState("Todas");
+  const [filterFase, setFilterFase] = useState("Todas");
+
+  // Modal
+  const [selectedLead, setSelectedLead] = useState<any | null>(null);
+
+  const getRoteirosUnicos = () => {
+    const roteiros = leadsList.map(l => l.destino_interesse || "Navegação Geral");
+    return ["Todos", ...Array.from(new Set(roteiros))];
+  };
+
+  const hasActiveFilters = filterRoteiro !== "Todos" || filterData !== "Todas" || filterFase !== "Todas";
+
+  const clearFilters = () => {
+    setFilterRoteiro("Todos");
+    setFilterData("Todas");
+    setFilterFase("Todas");
+  };
+
+  // Fechar modal com Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedLead(null);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleStatusChange = async (leadId: string, newStatus: string) => {
+    try {
+      // O lead tem id do evento
+      const { data, error } = await supabase
+        .from("analytics_events")
+        .select("event_data")
+        .eq("id", leadId)
+        .single();
+      
+      if (error) throw error;
+      
+      const updatedData = {
+        ...data.event_data,
+        status: newStatus
+      };
+      
+      const { error: updateError } = await supabase
+        .from("analytics_events")
+        .update({ event_data: updatedData })
+        .eq("id", leadId);
+        
+      if (updateError) throw updateError;
+      
+      setLeadsList(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
+      toast.success("Fase atualizada!");
+    } catch (e) {
+      console.error(e);
+      toast.error("Erro ao atualizar a fase do lead.");
+    }
+  };
 
   useEffect(() => {
     const fetchRealMetrics = async () => {
@@ -144,14 +209,27 @@ export const Phase5Dashboard = () => {
           .eq("event_type", "lead_captured")
           .contains("event_data", { agency_id: agencyTrackingId });
 
-        // 4. NOVA COLEÇÃO: BUSCA OS DADOS REAIS DOS ÚLTIMOS 15 LEADS (CRM!)
+        // 4. Contagem REAL do tempo no site
+        const { data: timeData } = await supabase
+          .from("analytics_events")
+          .select("event_data")
+          .eq("event_type", "time_on_site")
+          .contains("event_data", { agency_id: agencyTrackingId });
+        
+        let avgTime = 0;
+        if (timeData && timeData.length > 0) {
+            const total = timeData.reduce((acc, curr) => acc + (curr.event_data.duration || 0), 0);
+            avgTime = Math.round(total / timeData.length);
+        }
+
+        // 5. NOVA COLEÇÃO: BUSCA OS DADOS REAIS DOS ÚLTIMOS 100 LEADS (CRM!)
         const { data: lData } = await supabase
           .from("analytics_events")
           .select("*")
           .eq("event_type", "lead_captured")
           .contains("event_data", { agency_id: agencyTrackingId })
           .order("created_at", { ascending: false })
-          .limit(15);
+          .limit(100);
 
         // Mapeia os dados do analytics_events para o formato de Lead esperado pela interface
         const mappedLeads = (lData || []).map((e: any) => ({
@@ -159,7 +237,7 @@ export const Phase5Dashboard = () => {
           nome_completo: e.event_data?.name || "Sem Nome",
           whatsapp: e.event_data?.phone || "",
           email: e.event_data?.email || "",
-          destino_interesse: e.event_data?.interest || "Não informado",
+          destino_interesse: e.event_data?.interest || "Navegação Geral",
           data_ida: e.event_data?.ida || null,
           data_volta: e.event_data?.volta || null,
           numero_viajantes: e.event_data?.viajantes ? parseInt(e.event_data.viajantes) : 1,
@@ -171,7 +249,8 @@ export const Phase5Dashboard = () => {
         setStats({
           visits: vCount || 0,
           clicks: cCount || 0,
-          leads: lCount || 0
+          leads: lCount || 0,
+          avgTime
         });
         setLeadsList(mappedLeads);
       } catch (e) {
@@ -223,6 +302,34 @@ export const Phase5Dashboard = () => {
     return { points, badge, count };
   };
   const progress = getAppProgress();
+
+  const filteredLeads = leadsList.filter((l) => {
+    if (filterRoteiro !== "Todos") {
+      const destino = l.destino_interesse || "Navegação Geral";
+      if (destino !== filterRoteiro) return false;
+    }
+    if (filterFase !== "Todas" && (l.status || 'novo') !== filterFase) return false;
+    if (filterData !== "Todas") {
+      const leadDate = new Date(l.created_at);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - leadDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (filterData === "Hoje" && diffDays > 1) return false;
+      if (filterData === "7 dias" && diffDays > 7) return false;
+      if (filterData === "30 dias" && diffDays > 30) return false;
+    }
+    return true;
+  });
+
+  const getFaseColor = (status: string) => {
+    switch (status) {
+      case 'contato': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'proposta': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+      case 'venda': return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'perda': return 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30';
+      default: return 'bg-amber-500/20 text-amber-400 border-amber-500/30'; // novo
+    }
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -280,7 +387,7 @@ export const Phase5Dashboard = () => {
       </div>
 
       {/* MÓDULO F5: OS DADOS VITAIS (MUITO VISUAL!) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card Visitas */}
         <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.04] transition-all group">
           <div className="flex items-start justify-between mb-4">
@@ -295,8 +402,8 @@ export const Phase5Dashboard = () => {
             {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : stats.visits}
           </div>
           <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Visitas Únicas</div>
-          <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 rounded-full w-[65%] animate-in slide-in-from-left duration-1000" />
+          <div className="mt-3 flex items-center gap-2 text-[10px] font-medium text-white/50 bg-white/5 px-2 py-1.5 rounded-lg w-max">
+            <Clock className="w-3.5 h-3.5 text-white/40" /> Tempo Médio: <strong className="text-white">{stats.avgTime > 0 ? `${stats.avgTime}s` : '--'}</strong>
           </div>
         </div>
 
@@ -307,7 +414,7 @@ export const Phase5Dashboard = () => {
               <MousePointerClick className="w-5 h-5" />
             </div>
             <div className="text-[10px] font-bold px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded-full border border-blue-500/20 flex items-center gap-0.5">
-              CONVERSÃO
+              INTERAÇÃO
             </div>
           </div>
           <div className="text-3xl font-black text-white mb-0.5">
@@ -332,47 +439,116 @@ export const Phase5Dashboard = () => {
           <div className="text-3xl font-black text-white mb-0.5">
             {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : stats.leads}
           </div>
-          <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Formulários Preenchidos</div>
+          <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Formulários (Leads)</div>
           <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
             <div className="h-full bg-violet-500 rounded-full w-[25%] animate-in slide-in-from-left duration-1000 delay-200" />
+          </div>
+        </div>
+
+        {/* Card Conversão */}
+        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.04] transition-all group">
+          <div className="flex items-start justify-between mb-4">
+            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400">
+              <Target className="w-5 h-5" />
+            </div>
+            <div className="text-[10px] font-bold px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded-full border border-amber-500/20 flex items-center gap-0.5">
+              RESULTADO
+            </div>
+          </div>
+          <div className="text-3xl font-black text-white mb-0.5">
+            {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : `${stats.visits > 0 ? Math.round((stats.leads / stats.visits) * 100) : 0}%`}
+          </div>
+          <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Taxa de Conversão</div>
+          <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
+            <div className="h-full bg-amber-500 rounded-full w-[50%] animate-in slide-in-from-left duration-1000 delay-300" />
           </div>
         </div>
       </div>
 
       {/* Conteúdo Removido: O bloco de Status Lovable/Vercel e Novidades foi removido para focar o F5 no CRM */}
 
-      {/* 🆕 NOVO MÓDULO: CENTRO DE LEADS / CRM INTEGRADO (ULTRA VALOR AGREGADO) */}
+      {/* 🆕 NOVO MÓDULO: CENTRO DE LEADS / CRM INTEGRADO */}
       <div className="bg-white/[0.03] border border-white/10 rounded-3xl overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-6 duration-700 mt-6">
-         <div className="p-6 border-b border-white/10 flex items-center justify-between bg-gradient-to-br from-violet-500/5 to-transparent">
+         <div className="p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-br from-violet-500/5 to-transparent">
             <div className="flex items-center gap-3">
                <div className="p-2.5 rounded-xl bg-violet-500/20 text-violet-400 shadow-inner">
                   <Users className="w-5 h-5" />
                </div>
                <div>
-                  <h3 className="font-black text-white text-base tracking-tight">Carteira de Clientes (Leads)</h3>
-                  <p className="text-[11px] text-white/50">Pessoas interessadas que preencheram o formulário no seu site.</p>
+                  <h3 className="font-black text-white text-base tracking-tight flex items-center gap-2">
+                     Carteira de Clientes
+                     {filteredLeads.length > 0 && (
+                       <span className="text-[10px] font-extrabold bg-violet-500/20 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-full">
+                         {filteredLeads.length} {filteredLeads.length === 1 ? 'lead' : 'leads'}
+                         {hasActiveFilters && ` filtrado${filteredLeads.length !== 1 ? 's' : ''}`}
+                       </span>
+                     )}
+                  </h3>
+                  <p className="text-[11px] text-white/50">Gerencie e filtre seus potenciais clientes.</p>
                </div>
             </div>
-            <div className="hidden sm:block text-[10px] font-extrabold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full animate-pulse">
-               DADOS AO VIVO
+            
+            {/* Toolbar de Filtros */}
+            <div className="flex flex-wrap items-center gap-2">
+               <div className="flex items-center gap-2 bg-black/40 border border-white/10 px-3 py-1.5 rounded-xl">
+                 <Filter className="w-3.5 h-3.5 text-white/40" />
+                 
+                 <select 
+                   value={filterData}
+                   onChange={(e) => setFilterData(e.target.value)}
+                   className="bg-transparent text-xs text-white/70 outline-none cursor-pointer border-r border-white/10 pr-2"
+                 >
+                   <option value="Todas">Qualquer Data</option>
+                   <option value="Hoje">Hoje</option>
+                   <option value="7 dias">Últimos 7 dias</option>
+                   <option value="30 dias">Últimos 30 dias</option>
+                 </select>
+
+                 <select 
+                   value={filterFase}
+                   onChange={(e) => setFilterFase(e.target.value)}
+                   className="bg-transparent text-xs text-white/70 outline-none cursor-pointer border-r border-white/10 pr-2 ml-2"
+                 >
+                   <option value="Todas">Todas as Fases</option>
+                   <option value="novo">Novo</option>
+                   <option value="contato">Em Contato</option>
+                   <option value="proposta">Proposta</option>
+                   <option value="venda">Venda</option>
+                   <option value="perda">Perda</option>
+                 </select>
+
+                 <select 
+                   value={filterRoteiro}
+                   onChange={(e) => setFilterRoteiro(e.target.value)}
+                   className="bg-transparent text-xs text-white/70 outline-none cursor-pointer ml-2 max-w-[100px] sm:max-w-[150px]"
+                 >
+                   {getRoteirosUnicos().map(r => (
+                     <option key={r} value={r}>{r}</option>
+                   ))}
+                 </select>
+               </div>
+
+               {hasActiveFilters && (
+                 <button
+                   onClick={clearFilters}
+                   className="text-[10px] font-bold text-white/50 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                 >
+                   <CloseIcon className="w-3 h-3" /> Limpar
+                 </button>
+               )}
             </div>
          </div>
 
          <div className="overflow-x-auto">
-            {leadsList.length === 0 ? (
+            {filteredLeads.length === 0 ? (
                  <div className="py-16 px-6 text-center flex flex-col items-center justify-center space-y-4">
                     <div className="p-4 rounded-full bg-amber-500/10 text-amber-400/80 mb-2 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
                        <MousePointerClick className="w-8 h-8" />
                     </div>
-                    <h4 className="text-sm font-bold text-white">Nenhum lead por aqui... ainda!</h4>
-                    <div className="max-w-md text-[11px] text-white/50 leading-relaxed text-center space-y-3 bg-white/[0.02] border border-white/5 p-5 rounded-2xl">
-                      <p className="font-semibold text-white/70">Como capturar contatos e encher seu CRM:</p>
-                      <ul className="text-left space-y-2 inline-block">
-                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div> Volte ao <strong className="text-white">Painel Fábrica</strong> ou vá em <strong className="text-white">Página de Vendas</strong> e crie o seu site.</li>
-                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div> Envie o <strong className="text-white">link do seu site</strong> para seus potenciais clientes.</li>
-                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div> Quando alguém preencher o formulário lá, os dados cairão aqui automaticamente.</li>
-                      </ul>
-                    </div>
+                    <h4 className="text-sm font-bold text-white">Nenhum lead encontrado</h4>
+                    <p className="text-[11px] text-white/50 max-w-md text-center">
+                       {leadsList.length === 0 ? "Você ainda não tem leads na sua carteira." : "Nenhum lead corresponde aos filtros selecionados."}
+                    </p>
                  </div>
             ) : (
                <table className="w-full text-left text-sm border-collapse">
@@ -380,20 +556,25 @@ export const Phase5Dashboard = () => {
                      <tr className="bg-white/[0.02] border-b border-white/5">
                         <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Data/Hora</th>
                         <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Nome do Cliente</th>
-                         <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Destino</th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Detalhes</th>
-                        <th className="px-6 py-4 text-right text-[10px] font-bold text-white/40 uppercase tracking-wider">Ação</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Destino</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Fase do Lead</th>
+                        <th className="px-6 py-4 text-right text-[10px] font-bold text-white/40 uppercase tracking-wider">Ações</th>
                      </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                     {leadsList.map((l: any) => {
+                     {filteredLeads.map((l: any) => {
                         const rawDate = new Date(l.created_at);
                         const cleanPhone = String(l.whatsapp || "").replace(/\D/g, "");
+                        const currentStatus = l.status || 'novo';
                         
                         return (
                            <tr key={l.id} className="hover:bg-white/[0.02] transition-colors group">
                               <td className="px-6 py-4 whitespace-nowrap text-xs text-white/50">
-                                 {rawDate.toLocaleDateString('pt-BR')} <span className="opacity-50 text-[10px] ml-1">{rawDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                 <div>{rawDate.toLocaleDateString('pt-BR')} <span className="opacity-50 text-[10px] ml-1">{rawDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span></div>
+                                 {/* Badge NOVO para leads das últimas 24h */}
+                                 {(Date.now() - rawDate.getTime()) < 86400000 && (
+                                   <span className="inline-block mt-0.5 text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded-full animate-pulse">NOVO</span>
+                                 )}
                               </td>
                               <td className="px-6 py-4">
                                  <div className="flex items-center gap-3">
@@ -412,25 +593,44 @@ export const Phase5Dashboard = () => {
                                  </span>
                               </td>
                               <td className="px-6 py-4">
-                                 <div className="text-[10px] text-white/50 space-y-0.5">
-                                    <div>Viajantes: <strong className="text-white/80">{l.numero_viajantes || 1}</strong></div>
-                                    {l.data_ida && <div>Ida: <strong className="text-white/80">{new Date(l.data_ida).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</strong></div>}
-                                    {l.data_volta && <div>Volta: <strong className="text-white/80">{new Date(l.data_volta).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</strong></div>}
+                                 <div className="relative inline-block">
+                                    <select
+                                       value={currentStatus}
+                                       onChange={(e) => handleStatusChange(l.id, e.target.value)}
+                                       className={`appearance-none cursor-pointer pl-3 pr-8 py-1 rounded-full text-[10px] font-bold border transition-colors outline-none ${getFaseColor(currentStatus)}`}
+                                    >
+                                       <option value="novo" className="bg-zinc-900 text-amber-400">🟡 Novo</option>
+                                       <option value="contato" className="bg-zinc-900 text-blue-400">🔵 Em Contato</option>
+                                       <option value="proposta" className="bg-zinc-900 text-purple-400">🟣 Proposta</option>
+                                       <option value="venda" className="bg-zinc-900 text-green-400">🟢 Venda</option>
+                                       <option value="perda" className="bg-zinc-900 text-zinc-400">⚪ Perda</option>
+                                    </select>
+                                    <ChevronDown className="absolute right-2.5 top-1.5 w-3 h-3 pointer-events-none opacity-50" />
                                  </div>
                               </td>
                               <td className="px-6 py-4 text-right">
-                                 {cleanPhone ? (
-                                    <a 
-                                       href={`https://wa.me/${cleanPhone.startsWith('55') ? '' : '55'}${cleanPhone}`} 
-                                       target="_blank" 
-                                       rel="noreferrer"
-                                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#25D366] hover:bg-[#22c35e] text-white text-[11px] font-black rounded-lg transition-all active:scale-95 shadow-lg shadow-green-900/20"
+                                 <div className="flex items-center justify-end gap-2">
+                                    <button 
+                                       onClick={() => setSelectedLead(l)}
+                                       className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+                                       title="Ver Detalhes"
                                     >
-                                       <MessageSquare className="w-3.5 h-3.5" /> Chamar Whats
-                                    </a>
-                                 ) : (
-                                    <span className="text-[10px] text-white/30">Sem contato</span>
-                                 )}
+                                       <Maximize2 className="w-4 h-4" />
+                                    </button>
+                                    
+                                    {cleanPhone ? (
+                                       <a 
+                                          href={`https://wa.me/${cleanPhone.startsWith('55') ? '' : '55'}${cleanPhone}?text=${encodeURIComponent(`Olá ${l.nome_completo || 'viajante'}! Vi seu interesse no destino ${l.destino_interesse || 'Geral'}. Como podemos ajudar com sua viagem?`)}`} 
+                                          target="_blank" 
+                                          rel="noreferrer"
+                                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#25D366] hover:bg-[#22c35e] text-white text-[11px] font-black rounded-lg transition-all active:scale-95 shadow-lg shadow-green-900/20"
+                                       >
+                                          <MessageSquare className="w-3.5 h-3.5" /> Whats
+                                       </a>
+                                    ) : (
+                                       <span className="text-[10px] text-white/30 px-2">S/ Whats</span>
+                                    )}
+                                 </div>
                               </td>
                            </tr>
                         );
@@ -440,6 +640,116 @@ export const Phase5Dashboard = () => {
             )}
          </div>
       </div>
+
+      {/* Modal: Maximizar Detalhes do Lead */}
+      {selectedLead && (
+         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-[#121214] border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+               <div className="p-5 border-b border-white/10 flex items-center justify-between bg-gradient-to-br from-violet-500/10 to-transparent">
+                  <h3 className="font-black text-white flex items-center gap-2">
+                     <Users className="w-5 h-5 text-violet-400" />
+                     Ficha do Cliente
+                  </h3>
+                  <button onClick={() => setSelectedLead(null)} className="p-1.5 hover:bg-white/10 rounded-full text-white/50 transition-colors">
+                     <CloseIcon className="w-5 h-5" />
+                  </button>
+               </div>
+               
+               <div className="p-6 overflow-y-auto space-y-6">
+                  <div className="flex items-center gap-4">
+                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xl font-black text-white shadow-lg">
+                        {String(selectedLead.nome_completo || "L").charAt(0).toUpperCase()}
+                     </div>
+                     <div className="flex-1">
+                        <h4 className="text-lg font-bold text-white">{selectedLead.nome_completo || "Não informado"}</h4>
+                        <div className="flex items-center gap-3 text-xs mt-1 flex-wrap">
+                           <span className="text-white/40">{new Date(selectedLead.created_at).toLocaleString('pt-BR')}</span>
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Fase diretamente no modal */}
+                  <div className="bg-white/5 border border-white/5 p-4 rounded-2xl">
+                     <div className="text-[10px] text-white/40 font-bold uppercase mb-2">Fase do Lead</div>
+                     <div className="flex flex-wrap gap-2">
+                       {['novo','contato','proposta','venda','perda'].map(fase => {
+                         const labels: Record<string, string> = { novo: '🟡 Novo', contato: '🔵 Em Contato', proposta: '🟣 Proposta', venda: '🟢 Venda', perda: '⚪ Perda' };
+                         const isActive = (selectedLead.status || 'novo') === fase;
+                         return (
+                           <button
+                             key={fase}
+                             onClick={() => {
+                               handleStatusChange(selectedLead.id, fase);
+                               setSelectedLead((prev: any) => ({ ...prev, status: fase }));
+                             }}
+                             className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${
+                               isActive ? getFaseColor(fase) + ' scale-105 shadow-lg' : 'bg-white/5 border-white/10 text-white/40 hover:text-white/70'
+                             }`}
+                           >
+                             {labels[fase]}
+                           </button>
+                         );
+                       })}
+                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                     <div className="bg-white/5 border border-white/5 p-4 rounded-2xl">
+                        <div className="text-[10px] text-white/40 font-bold uppercase mb-1">Contato</div>
+                        <div className="text-sm font-medium text-white">{selectedLead.whatsapp || "N/A"}</div>
+                        <div className="text-xs text-white/60 mt-0.5 truncate" title={selectedLead.email}>{selectedLead.email || "N/A"}</div>
+                     </div>
+                     <div className="bg-white/5 border border-white/5 p-4 rounded-2xl">
+                        <div className="text-[10px] text-white/40 font-bold uppercase mb-1">Destino</div>
+                        <div className="text-sm font-medium text-white">{selectedLead.destino_interesse || "Geral"}</div>
+                        <div className="text-xs text-white/60 mt-0.5">{selectedLead.numero_viajantes} Viajante(s)</div>
+                     </div>
+                  </div>
+
+                  {(selectedLead.data_ida || selectedLead.data_volta) && (
+                     <div className="bg-white/5 border border-white/5 p-4 rounded-2xl flex gap-6">
+                        {selectedLead.data_ida && (
+                           <div>
+                              <div className="text-[10px] text-white/40 font-bold uppercase mb-1">Data Ida</div>
+                              <div className="text-sm font-medium text-white">{new Date(selectedLead.data_ida).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</div>
+                           </div>
+                        )}
+                        {selectedLead.data_volta && (
+                           <div>
+                              <div className="text-[10px] text-white/40 font-bold uppercase mb-1">Data Volta</div>
+                              <div className="text-sm font-medium text-white">{new Date(selectedLead.data_volta).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</div>
+                           </div>
+                        )}
+                     </div>
+                  )}
+
+                  <div className="bg-white/5 border border-white/5 p-4 rounded-2xl">
+                     <div className="text-[10px] text-white/40 font-bold uppercase mb-2">Observações do Cliente</div>
+                     <p className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap">
+                        {selectedLead.observacoes || <span className="italic text-white/30">Nenhuma observação informada no formulário.</span>}
+                     </p>
+                  </div>
+               </div>
+
+               <div className="p-5 border-t border-white/10 bg-black/20 flex justify-end">
+                  {selectedLead.whatsapp ? (
+                     <a 
+                        href={`https://wa.me/${String(selectedLead.whatsapp).replace(/\D/g, "").startsWith('55') ? '' : '55'}${String(selectedLead.whatsapp).replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${selectedLead.nome_completo || 'viajante'}! Vi seu interesse no destino ${selectedLead.destino_interesse || 'Geral'}. Como podemos ajudar com sua viagem?`)}`} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="px-6 py-2.5 bg-[#25D366] hover:bg-[#22c35e] text-white text-sm font-black rounded-xl transition-all flex items-center gap-2 shadow-lg"
+                     >
+                        <MessageSquare className="w-4 h-4" /> Iniciar Conversa
+                     </a>
+                  ) : (
+                     <button onClick={() => setSelectedLead(null)} className="px-6 py-2.5 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-all">
+                        Fechar Detalhes
+                     </button>
+                  )}
+               </div>
+            </div>
+         </div>
+      )}
 
       {/* EXPLANATORY MODAL: COMO FUNCIONA O SUBDOMÍNIO */}
       {showUrlHelp && (

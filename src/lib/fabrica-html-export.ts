@@ -1333,6 +1333,13 @@ ${state.address ? `
   }
 
   // Registra a visita ÚNICA no carregamento da página para métricas reais
+  const _cvStart = Date.now();
+  window.addEventListener('pagehide', () => {
+    const duration = Math.round((Date.now() - _cvStart) / 1000);
+    if (duration > 3 && duration < 3600) {
+      track("time_on_site", { duration, path: window.location.pathname });
+    }
+  });
   window.onload = () => {
     const trackerKey = "cv_visit_" + CONFIG.agencyId;
     if (!localStorage.getItem(trackerKey)) {
