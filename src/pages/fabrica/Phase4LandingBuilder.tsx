@@ -632,6 +632,66 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
+            <FabricaCard title="🌐 Redes Sociais e Canais">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {SOCIAL_OPTIONS.map((option) => (
+                    <button
+                      key={option.type}
+                      type="button"
+                      onClick={() => addSocialLink(option.type)}
+                      className="px-3 py-2 rounded-xl border border-white/10 bg-white/[0.04] text-white/70 hover:text-white hover:border-white/25 text-xs font-semibold flex items-center justify-center gap-2 transition-all"
+                    >
+                      <span className="text-sm">{option.icon}</span>
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="space-y-3">
+                  {(state.socialLinks || []).length === 0 ? (
+                    <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-4 text-xs text-white/40 text-center">
+                      Clique em uma rede acima para adicionar o link no site.
+                    </div>
+                  ) : (
+                    (state.socialLinks || []).map((link) => {
+                      const option = SOCIAL_OPTIONS.find((item) => item.type === link.type) || SOCIAL_OPTIONS[0];
+                      return (
+                        <div key={link.id} className="grid grid-cols-1 sm:grid-cols-[160px_1fr_auto] gap-2 items-center rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                          <select
+                            value={link.type}
+                            onChange={(e) => updateSocialLink(link.id, { type: e.target.value as SocialType, url: "" })}
+                            className="bg-zinc-900 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-white/30"
+                          >
+                            {SOCIAL_OPTIONS.map((item) => (
+                              <option key={item.type} value={item.type} className="bg-zinc-900">
+                                {item.label}
+                              </option>
+                            ))}
+                          </select>
+                          <input
+                            value={link.url}
+                            onChange={(e) => updateSocialLink(link.id, { url: e.target.value })}
+                            onBlur={(e) => updateSocialLink(link.id, { url: normalizeSocialUrl(link.type, e.target.value) })}
+                            placeholder={option.placeholder}
+                            className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 outline-none focus:border-white/30"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeSocialLink(link.id)}
+                            className="p-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25 justify-self-start sm:justify-self-auto"
+                            aria-label="Remover rede social"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </FabricaCard>
+
             <FabricaCard title="👁️ Seções do site">
               <p className="text-xs text-white/50 mb-3">
                 Escolha o que aparece no site. Desmarque qualquer seção pra removê-la (some também do HTML exportado).
