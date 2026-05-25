@@ -807,6 +807,73 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
   const [aiPureCount, setAiPureCount] = useState<number>(() => getAiPureDailyCount());
 
+  useEffect(() => {
+    setCategoriaState((state.lastCategoria as CategoriaId) || "oferta_pacote");
+    setFormatState(state.lastFormat || "story");
+    setDestinationState(state.destinos?.[0] || "");
+    setPriceState(state.lastPrice || "149,90");
+    setCurrencyState((state.lastCurrency as Currency) || "BRL");
+    setHideCentsState(!!state.hideCents);
+    setShowTotalState(state.showTotal !== false);
+    setTotalOverrideState(state.totalOverride || "");
+    setShowPixBannerState((state as any).showPixBanner !== false);
+    setPixBannerTextState((state as any).pixBannerText || "");
+    setFontFamilyState((state as any).fontFamily || "Inter");
+    setTitleScaleState(((state as any).titleScale as number) || 1);
+    setDescScaleState(((state as any).descScale as number) || 1);
+    setTextColorOverrideState((state as any).textColorOverride || "");
+    setInstallmentsState(state.lastInstallments || "10x");
+    setPromoNameState(state.lastPromoName || initialPromoDefault);
+    setAdTitleTemplateState(state.lastAdTitle || initialAdTitleDefault);
+    setTravelPeriodState(state.lastTravelPeriod || "");
+    setPaymentModeState(state.lastPaymentMode || "installments");
+    setPaymentLabelState(state.lastPaymentLabel || "");
+    setPaymentSuffixState(() => {
+      const savedSuffix = state.lastPaymentSuffix || "por pessoa";
+      return (state.lastCategoria as CategoriaId) === "experiencia_destino" && DEFAULT_SUFFIXES_OFERTA.has(savedSuffix)
+        ? DEFAULT_SUFFIX_EXPERIENCIA
+        : savedSuffix;
+    });
+    setPrimaryColorState(state.primaryColor || initialCategoryColors.primary);
+    setSecondaryColorState(state.secondaryColor || initialCategoryColors.secondary);
+    setHighlightsState(() => {
+      const savedHighlights = state.lastHighlights || DEFAULT_HIGHLIGHTS;
+      if ((state.lastCategoria as CategoriaId) === "experiencia_destino" && sameHighlightTexts(savedHighlights, DEFAULT_HIGHLIGHTS)) {
+        return DEFAULT_EXPERIENCE_HIGHLIGHTS;
+      }
+      return savedHighlights;
+    });
+  }, [
+    state.lastCategoria,
+    state.lastFormat,
+    state.destinos,
+    state.lastPrice,
+    state.lastCurrency,
+    state.hideCents,
+    state.showTotal,
+    state.totalOverride,
+    (state as any).showPixBanner,
+    (state as any).pixBannerText,
+    (state as any).fontFamily,
+    (state as any).titleScale,
+    (state as any).descScale,
+    (state as any).textColorOverride,
+    state.lastInstallments,
+    state.lastPromoName,
+    state.lastAdTitle,
+    state.lastTravelPeriod,
+    state.lastPaymentMode,
+    state.lastPaymentLabel,
+    state.lastPaymentSuffix,
+    state.primaryColor,
+    state.secondaryColor,
+    state.lastHighlights,
+    initialPromoDefault,
+    initialAdTitleDefault,
+    initialCategoryColors.primary,
+    initialCategoryColors.secondary,
+  ]);
+
   // Zerar limites de geração diária de todos os usuários (uma única vez por nova versão)
   useEffect(() => {
     const resetKey = "fabrica_limits_reset_v4";

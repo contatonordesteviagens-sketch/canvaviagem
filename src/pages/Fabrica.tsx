@@ -25,16 +25,24 @@ import {
   ChevronDown,
   Users
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
 
 const FabricaInner = () => {
-  const { state, setPhase } = useFabricaContext();
+  const { state, setPhase, update } = useFabricaContext();
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"dashboard" | "phase" | "library">("dashboard");
   const [librarySubTab, setLibrarySubTab] = useState<"ofertas" | "galeria">("ofertas");
+
+  useEffect(() => {
+    const snapshot = (location.state as { prefillSnapshot?: any } | null)?.prefillSnapshot;
+    if (!snapshot) return;
+    update({ ...(snapshot as any), diagnosticoCompleto: false });
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.state, location.pathname, navigate, update]);
 
   useEffect(() => {
     const color = state.primaryColor || "#F59E0B";

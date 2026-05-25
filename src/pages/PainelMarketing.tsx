@@ -15,13 +15,7 @@ export default function PainelMarketing() {
   const deleteDiag = useDeleteDiagnostico();
 
   const continueWith = (snapshot: unknown) => {
-    // Persiste no localStorage para a /fabrica carregar automaticamente
-    try {
-      localStorage.setItem("fabrica-context-v1", JSON.stringify(snapshot));
-    } catch {
-      // ignore
-    }
-    navigate("/fabrica");
+    navigate("/fabrica", { state: { prefillSnapshot: snapshot } });
   };
 
   return (
