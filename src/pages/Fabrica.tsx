@@ -29,7 +29,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
 
 const FabricaInner = () => {
-  const { state, setPhase } = useFabricaContext();
+  const { state, setPhase, update } = useFabricaContext();
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,9 +40,9 @@ const FabricaInner = () => {
   useEffect(() => {
     const snapshot = (location.state as { prefillSnapshot?: any } | null)?.prefillSnapshot;
     if (!snapshot) return;
-    window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: snapshot }));
+    update({ ...(snapshot as any), diagnosticoCompleto: false });
     navigate(location.pathname, { replace: true, state: null });
-  }, [location.state, location.pathname, navigate]);
+  }, [location.state, location.pathname, navigate, update]);
 
   useEffect(() => {
     const color = state.primaryColor || "#F59E0B";
