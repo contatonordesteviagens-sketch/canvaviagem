@@ -920,6 +920,12 @@ section{padding:80px 0}
 .contact-icon{width:40px;height:40px;border-radius:10px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .contact-item strong{display:block;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:600}
 .contact-item span{font-size:15px;color:var(--ink);font-weight:500}
+.social-icons{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.social-icon{width:40px;height:40px;border-radius:999px;background:var(--ink);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;transition:all .2s;border:1px solid rgba(255,255,255,.12)}
+.social-icon:hover{background:var(--brand);transform:translateY(-2px)}
+.social-icon span{line-height:1;color:inherit;font-weight:inherit}
+.footer-socials{margin-top:18px}
+.footer-socials .social-icon{background:rgba(255,255,255,.08);color:#fff}
 .orc-form{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:20px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.04)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .form-row.single{grid-template-columns:1fr}
