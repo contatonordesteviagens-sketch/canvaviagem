@@ -1340,32 +1340,17 @@ ${state.address ? `
     btn.innerHTML = 'Aguarde...';
     btn.disabled = true;
 
-    const leadData = {
-      user_id: CONFIG.agencyId,
-      nome_completo: f.nome.value,
-      whatsapp: f.wpp.value,
+    track("lead_captured", { 
+      name: f.nome.value, 
+      phone: f.wpp.value, 
       email: f.email.value,
-      destino_interesse: f.destino.value,
-      numero_viajantes: parseInt(f.viaj.value) || 1,
-      data_ida: f.ida.value || null,
-      data_volta: f.volta.value || null,
-      observacoes: f.obs.value || null
-    };
-
-    if (CONFIG.supabaseUrl && CONFIG.supabaseKey) {
-      await fetch(\`\${CONFIG.supabaseUrl}/rest/v1/leads\`, {
-        method: 'POST',
-        headers: {
-          'apikey': CONFIG.supabaseKey,
-          'Authorization': 'Bearer ' + CONFIG.supabaseKey,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify(leadData)
-      }).catch(console.error);
-    }
-    
-    track("lead_captured", { name: f.nome.value, phone: f.wpp.value, interest: f.destino.value });
+      interest: f.destino.value,
+      viajantes: f.viaj.value,
+      ida: f.ida.value,
+      volta: f.volta.value,
+      obs: f.obs.value,
+      status: 'novo'
+    });
     
     const msg = encodeURIComponent('Olá! Quero um orçamento.\\n\\nNome: '+f.nome.value+'\\nWhatsApp: '+f.wpp.value+'\\nE-mail: '+f.email.value+'\\nDestino: '+f.destino.value+'\\nViajantes: '+f.viaj.value+'\\nIda: '+f.ida.value+'\\nVolta: '+f.volta.value+'\\nObs: '+f.obs.value);
     
@@ -1386,28 +1371,11 @@ ${state.address ? `
     
     localStorage.setItem("cv_lead_name", name);
 
-    if (CONFIG.supabaseUrl && CONFIG.supabaseKey) {
-      await fetch(\`\${CONFIG.supabaseUrl}/rest/v1/leads\`, {
-        method: 'POST',
-        headers: {
-          'apikey': CONFIG.supabaseKey,
-          'Authorization': 'Bearer ' + CONFIG.supabaseKey,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({
-          user_id: CONFIG.agencyId,
-          nome_completo: name,
-          whatsapp: phone,
-          destino_interesse: currentTarget
-        })
-      }).catch(console.error);
-    }
-
     track("lead_captured", {
       name: name,
       phone: phone,
-      interest: currentTarget
+      interest: currentTarget,
+      status: 'novo'
     });
 
     closeModal();

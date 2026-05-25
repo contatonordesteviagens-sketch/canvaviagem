@@ -137,26 +137,43 @@ export const Phase5DashboardES = () => {
           .eq("event_type", "click_whatsapp")
           .contains("event_data", { agency_id: agencyTrackingId });
 
-        // 3. Contagem REAL de Leads Capturados (Agora na tabela leads!)
+        // 3. Contagem REAL de Leads Capturados (Agora via analytics_events)
         const { count: lCount } = await supabase
-          .from("leads")
+          .from("analytics_events")
           .select("*", { count: "exact", head: true })
-          .eq("user_id", user?.id);
+          .eq("event_type", "lead_captured")
+          .contains("event_data", { agency_id: agencyTrackingId });
 
         // 4. NOVA COLEÇÃO: BUSCA OS DADOS REAIS DOS ÚLTIMOS 15 LEADS (CRM!)
         const { data: lData } = await supabase
-          .from("leads")
+          .from("analytics_events")
           .select("*")
-          .eq("user_id", user?.id)
+          .eq("event_type", "lead_captured")
+          .contains("event_data", { agency_id: agencyTrackingId })
           .order("created_at", { ascending: false })
           .limit(15);
+
+        // Mapeia os dados do analytics_events para o formato de Lead esperado pela interface
+        const mappedLeads = (lData || []).map((e: any) => ({
+          id: e.id,
+          nome_completo: e.event_data?.name || "Sem Nome",
+          whatsapp: e.event_data?.phone || "",
+          email: e.event_data?.email || "",
+          destino_interesse: e.event_data?.interest || "No informado",
+          data_ida: e.event_data?.ida || null,
+          data_volta: e.event_data?.volta || null,
+          numero_viajantes: e.event_data?.viajantes ? parseInt(e.event_data.viajantes) : 1,
+          observacoes: e.event_data?.obs || "",
+          created_at: e.created_at,
+          status: e.event_data?.status || 'novo'
+        }));
 
         setStats({
           visits: vCount || 0,
           clicks: cCount || 0,
           leads: lCount || 0
         });
-        setLeadsList(lData || []);
+        setLeadsList(mappedLeads);
       } catch (e) {
         console.warn("Fallo al cargar métricas reales:", e);
       } finally {
