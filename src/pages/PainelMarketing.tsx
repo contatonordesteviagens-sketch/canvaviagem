@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -5,24 +6,29 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useDiagnosticos, useDeleteDiagnostico } from "@/hooks/useFabricaDiagnosticos";
+import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { generateDiagnosticoPDF } from "@/lib/fabrica-pdf";
 import { Factory, FileDown, Trash2, ExternalLink, Plus, Sparkles } from "lucide-react";
 
 export default function PainelMarketing() {
   const navigate = useNavigate();
+  const { update } = useFabricaContext();
 
   const { data: diagnosticos = [], isLoading } = useDiagnosticos();
   const deleteDiag = useDeleteDiagnostico();
 
   const continueWith = (snapshot: unknown) => {
-    // Persiste no localStorage para a /fabrica carregar automaticamente
+    update(snapshot as any);
+    navigate("/fabrica");
+  };
+
+  useEffect(() => {
     try {
-      localStorage.setItem("fabrica-context-v1", JSON.stringify(snapshot));
+      localStorage.removeItem("fabrica-context-v1");
     } catch {
       // ignore
     }
-    navigate("/fabrica");
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
