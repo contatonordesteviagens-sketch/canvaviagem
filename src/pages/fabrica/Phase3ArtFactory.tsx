@@ -905,9 +905,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       .forEach((k) => localStorage.removeItem(k));
     setGeneratedImage("");
     setGeneratedImages([]);
-    update({ generatedAdImage: "" });
+    systemUpdate({ generatedAdImage: "" });
     localStorage.setItem(key, FABRICA_RENDER_ENGINE_VERSION);
-  }, [update]);
+  }, [systemUpdate]);
 
   // ===== Modo de geração =====
   const [genMode, setGenMode] = useState<GenMode>("photo");
