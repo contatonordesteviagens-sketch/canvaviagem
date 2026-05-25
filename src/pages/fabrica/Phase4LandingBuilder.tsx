@@ -1774,76 +1774,45 @@ const PublishOnLovableCard = ({
           </div>
         </div>
 
-        <p className="text-xs text-white/60 mb-4 leading-relaxed bg-white/[0.02] p-3 rounded-xl border border-white/5">
-          Para personalizar fontes, alterar o layout avançado ou conectar seu próprio domínio oficial, use o <strong className="text-white">Lovable</strong>:
-        </p>
-
-        <div className="space-y-2.5 mb-6">
-          {[
-            { n: 1, t: "Baixe ou copie o HTML do seu site (botões abaixo)" },
-            { n: 2, t: "Crie sua conta grátis no Lovable usando o link abaixo" },
-            { n: 3, t: "Cole o HTML, clique em Publicar e seu site está no ar 🚀" },
-          ].map((s) => (
-            <div key={s.n} className="flex items-start gap-3 bg-black/30 border border-white/[0.06] rounded-xl p-3 text-left">
-              <div
-                className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black text-black"
-                style={{ background: primaryColor }}
-              >
-                {s.n}
-              </div>
-              <p className="text-sm text-white/85 leading-snug pt-0.5">{s.t}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid sm:grid-cols-3 gap-2.5 mb-2.5">
-          <button
-            onClick={copyHtml}
-            className="py-3 px-3 rounded-xl bg-white/[0.06] border border-white/15 text-white font-semibold hover:bg-white/[0.10] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm"
-          >
-            <Copy className="w-4 h-4" /> Copiar HTML Completo
-          </button>
+        {/* Opções secundárias — minimalistas */}
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
           <button
             onClick={() => downloadLandingHTML(state, undefined, user?.id)}
-            className="py-3 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 font-semibold hover:bg-emerald-500/20 transition-all flex items-center justify-center gap-2 text-xs sm:text-sm"
+            className="py-2 px-3 rounded-lg bg-white/[0.04] border border-white/10 text-white/70 hover:text-white hover:bg-white/[0.08] transition-all flex items-center gap-1.5"
           >
-            <Download className="w-4 h-4" /> Baixar HTML Local
+            <Download className="w-3.5 h-3.5" /> Baixar HTML
           </button>
-          <a
-            href={LOVABLE_INVITE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="py-3 px-3 rounded-xl font-black text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all text-xs sm:text-sm"
-            style={{
-              background: `linear-gradient(135deg, ${primaryColor}, #FCD34D)`,
-              boxShadow: `0 8px 24px ${primaryColor}55`,
-            }}
-          >
-            <Sparkles className="w-4 h-4" /> Abrir Lovable
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
-        </div>
-
-        {/* NOVO BOTÃO DE ATUALIZAÇÃO CIRÚRGICA */}
-        <div className="mb-3">
           <button
-            onClick={copyUpdatePrompt}
-            className="w-full py-3 px-4 rounded-xl border-2 border-dashed transition-all flex items-center justify-center gap-2 text-sm font-bold text-white hover:bg-amber-500/10"
-            style={{
-              borderColor: `${primaryColor}77`,
-              color: "#FCD34D"
-            }}
+            onClick={copyHtml}
+            className="py-2 px-3 rounded-lg bg-white/[0.04] border border-white/10 text-white/70 hover:text-white hover:bg-white/[0.08] transition-all flex items-center gap-1.5"
           >
-            <Rocket className="w-4 h-4" /> Copiar Atualização (Só Pacotes Novos) ⚡
+            <Copy className="w-3.5 h-3.5" /> Copiar HTML
           </button>
-          <p className="text-[10px] text-white/40 text-center mt-1.5 italic">
-            Use este botão caso seu site já esteja pronto e queira apenas adicionar novos pacotes sem reconstruir tudo.
-          </p>
+          <details className="group">
+            <summary className="list-none cursor-pointer py-2 px-3 rounded-lg text-white/40 hover:text-white/70 transition-colors flex items-center gap-1.5">
+              Opções avançadas
+            </summary>
+            <div className="absolute z-10 mt-2 right-0 sm:right-auto w-72 p-3 rounded-xl bg-black/90 border border-white/10 backdrop-blur-xl text-left space-y-2 shadow-2xl">
+              <p className="text-[11px] text-white/60 leading-relaxed">
+                Quer customizar fontes, layout avançado ou usar domínio próprio? Edite no Lovable.
+              </p>
+              <a
+                href={LOVABLE_INVITE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2 px-3 rounded-lg bg-white/[0.06] border border-white/15 text-white text-xs font-semibold hover:bg-white/[0.10] transition-all flex items-center justify-center gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5" /> Abrir Lovable <ExternalLink className="w-3 h-3" />
+              </a>
+              <button
+                onClick={copyUpdatePrompt}
+                className="w-full py-2 px-3 rounded-lg border border-dashed border-white/15 text-white/70 hover:text-white hover:bg-white/[0.04] transition-all text-xs flex items-center justify-center gap-1.5"
+              >
+                <Rocket className="w-3.5 h-3.5" /> Copiar prompt de atualização
+              </button>
+            </div>
+          </details>
         </div>
-
-        <p className="text-[11px] text-white/50 text-center">
-          ✓ Sem cartão de crédito · ✓ Domínio grátis incluído · ✓ Suporte a domínio próprio
-        </p>
 
         <div className="mt-6 pt-5 border-t border-white/10 flex justify-center">
           <button
