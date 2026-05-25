@@ -55,7 +55,7 @@ interface PackageItem extends OfertaTemplate {
 const generateId = () => `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
 export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
-  const { state, update, toggleChecklist } = useFabricaContext();
+  const { state, update, toggleChecklist, isHydrated } = useFabricaContext();
   const { data: allContent = [], isLoading: loadingContent } = useContentItems(["video", "feed", "story", "weekly-story", "seasonal", "resource"]);
   const { data: captions = [], isLoading: loadingCaptions } = useCaptions();
   const { data: tools = [], isLoading: loadingTools } = useMarketingTools();
@@ -64,6 +64,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
   // ── Smart Package Linker ──
   // Inicializa pacotes templates no Contexto Global APENAS SE ESTIVER VAZIO, integrando nativamente com a Fase 2 (Site).
   useEffect(() => {
+    if (!isHydrated) return;
     if (state.selectedPackages.length === 0) {
       const base = getOfertasByNicheES(state.niche);
       const initial = base.map((o) => {
@@ -83,7 +84,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
       });
       update({ selectedPackages: initial });
     }
-  }, [state.niche, state.selectedPackages.length]);
+  }, [isHydrated, state.niche, state.selectedPackages.length, update]);
 
   const packages = state.selectedPackages;
 
