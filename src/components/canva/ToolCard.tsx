@@ -45,6 +45,9 @@ const ToolCardComponent = ({
     return gradients[index];
   };
 
+  const isVendedorIa = (title.toLowerCase().includes("vendedor") && title.toLowerCase().includes("ia")) || url.includes("copy-travel-1089893400135.us-west1.run.app");
+  const targetUrl = isVendedorIa ? "/vendedor-ia" : url;
+
   const handleClick = (e: React.MouseEvent) => {
     // Check if premium gate should be triggered - only if the item is truly premium
     if (onPremiumRequired) {
@@ -53,12 +56,12 @@ const ToolCardComponent = ({
       return;
     }
     
-    if (url.startsWith("/")) {
+    if (targetUrl.startsWith("/")) {
       e.preventDefault();
       if (onClick) {
         onClick();
       }
-      navigate(url);
+      navigate(targetUrl);
       return;
     }
 
@@ -76,11 +79,11 @@ const ToolCardComponent = ({
     }
   };
 
-  const isRelative = url.startsWith("/");
+  const isRelative = targetUrl.startsWith("/");
 
   return (
     <a
-      href={url}
+      href={targetUrl}
       target={isRelative ? undefined : "_blank"}
       rel={isRelative ? undefined : "noopener noreferrer"}
       className="group block"
