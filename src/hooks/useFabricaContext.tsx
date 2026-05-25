@@ -461,11 +461,23 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     const loadSavedState = async () => {
       try {
         console.log("[Supabase Load] Iniciando carregamento do banco de dados...");
-        const { data, error } = await supabase
+        let { data, error } = await supabase
           .from("fabrica_user_states")
           .select("state_snapshot, updated_at")
           .eq("user_id", user.id)
           .maybeSingle();
+
+        if (!data && !error) {
+          const fallback = await supabase
+            .from("fabrica_diagnosticos")
+            .select("state_snapshot, updated_at")
+            .eq("user_id", user.id)
+            .order("updated_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          data = fallback.data;
+          error = fallback.error;
+        }
 
         if (error) {
           console.warn("[Supabase Load] Falha ao carregar estado:", error.message);
