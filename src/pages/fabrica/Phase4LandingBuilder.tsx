@@ -248,7 +248,9 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             if (strongLabel.includes("atendimento")) {
               updSite({ atendimentoText: textVal });
             } else if (strongLabel.includes("whatsapp")) {
-              update({ whatsapp: textVal });
+              const digits = textVal.replace(/\D/g, "");
+              const dial = (state.whatsappDialCode || "55").replace(/\D/g, "");
+              update({ whatsapp: digits.startsWith(dial) ? digits.slice(dial.length) : digits });
             } else if (strongLabel.includes("e-mail") || strongLabel.includes("email")) {
               update({ agencyEmail: textVal });
             } else if (strongLabel.includes("local") || strongLabel.includes("endereço")) {
