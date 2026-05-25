@@ -501,6 +501,21 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
     update({ siteContent: { ...state.siteContent, ...patch } });
   };
 
+  const addSocialLink = (type: SocialType) => {
+    const exists = state.socialLinks?.some((link) => link.type === type && !link.url);
+    if (exists) return;
+    const next: SocialLink = { id: `${type}_${Date.now()}`, type, url: "" };
+    update({ socialLinks: [...(state.socialLinks || []), next] });
+  };
+
+  const updateSocialLink = (id: string, patch: Partial<SocialLink>) => {
+    update({ socialLinks: (state.socialLinks || []).map((link) => (link.id === id ? { ...link, ...patch } : link)) });
+  };
+
+  const removeSocialLink = (id: string) => {
+    update({ socialLinks: (state.socialLinks || []).filter((link) => link.id !== id) });
+  };
+
   const toggleSection = (key: keyof SectionVisibility) => {
     updSite({
       sections: {
