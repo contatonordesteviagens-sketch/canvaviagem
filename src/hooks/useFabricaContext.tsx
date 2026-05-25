@@ -437,10 +437,7 @@ const loadInitialState = (userId?: string | null): FabricaState => {
   const rememberedUserId = userId ?? localStorage.getItem(LAST_ACTIVE_USER_KEY);
   const scopedState = rememberedUserId ? readPersistedState(rememberedUserId) : defaultState;
 
-  if (hasMeaningfulProgress(scopedState)) return scopedState;
-
-  const legacyState = readPersistedState();
-  return hasMeaningfulProgress(legacyState) ? legacyState : scopedState;
+  return hasMeaningfulProgress(scopedState) ? scopedState : defaultState;
 };
 
 const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
