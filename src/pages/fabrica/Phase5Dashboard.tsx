@@ -28,7 +28,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export const Phase5Dashboard = () => {
-  const { state, setPhase } = useFabricaContext();
+  const { state, setPhase, update } = useFabricaContext();
   const { user } = useAuth();
   const [showUrlHelp, setShowUrlHelp] = useState(false);
   const [showLivePreview, setShowLivePreview] = useState(false);
@@ -168,7 +168,7 @@ export const Phase5Dashboard = () => {
         .eq("id", leadId)
         .single();
       
-      if (!error && data) {
+      if (!error && data && typeof data.event_data === "object" && data.event_data !== null && !Array.isArray(data.event_data)) {
         const updatedData = {
           ...data.event_data,
           status: newStatus
@@ -219,7 +219,13 @@ export const Phase5Dashboard = () => {
         
         let avgTime = 0;
         if (timeData && timeData.length > 0) {
-            const total = timeData.reduce((acc, curr) => acc + (curr.event_data.duration || 0), 0);
+            const total = timeData.reduce((acc, curr) => {
+              const payload = curr.event_data;
+              const duration = typeof payload === "object" && payload !== null && !Array.isArray(payload) && "duration" in payload
+                ? Number((payload as { duration?: unknown }).duration) || 0
+                : 0;
+              return acc + duration;
+            }, 0);
             avgTime = Math.round(total / timeData.length);
         }
 
