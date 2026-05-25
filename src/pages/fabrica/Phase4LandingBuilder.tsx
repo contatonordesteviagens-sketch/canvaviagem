@@ -32,6 +32,14 @@ import type { SectionVisibility } from "@/hooks/useFabricaContext";
 const LOVABLE_INVITE_URL = "https://lovable.dev/invite/2ZD6VL6";
 const PRESET_COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#000000"];
 
+// Sugestões padrão de fotos para a seção "Equipe / Agência"
+const TEAM_PRESET_IMAGES = [
+  "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80",
+  "https://img.freepik.com/fotos-premium/agente-de-viagens-de-frente-sentada-atras-do-seu-local-de-trabalho-a-brincar-com-um-aviao-de-brinquedo_926199-2841227.jpg?semt=ais_hybrid&w=740&q=80",
+  "https://img.freepik.com/fotos-premium/retrato-de-um-agente-de-viagens-em-uma-agencia-de-viagens-com-passaportes-e-passagens_199620-11415.jpg",
+  "https://img.freepik.com/fotos-gratis/pessoas-em-filmagens-medias-na-agencia-de-viagens_52683-136429.jpg?semt=ais_hybrid&w=740&q=80",
+];
+
 export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
   const { state, update, undo, redo, canUndo, canRedo } = useFabricaContext();
   const { user } = useAuth();
@@ -993,13 +1001,35 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-5 h-5 text-amber-400" />
               <h3 className="text-lg font-bold text-white uppercase tracking-wider">
-                Trocar Foto {activeImageEdit.type === "logo" ? "da Logo" : activeImageEdit.type === "hero" ? "do Banner" : "do Pacote"}
+                Trocar Foto {activeImageEdit.type === "logo" ? "da Logo" : activeImageEdit.type === "hero" ? "do Banner" : activeImageEdit.type === "about" ? "da Equipe / Agência" : "do Pacote"}
               </h3>
             </div>
 
             <p className="text-xs text-white/60 mb-4">
-              Clique em uma das imagens do seu banco abaixo para aplicar ou envie uma nova do seu computador:
+              {activeImageEdit.type === "about"
+                ? "Escolha uma das sugestões de equipe abaixo, reuse uma imagem do seu banco, ou envie a sua própria:"
+                : "Clique em uma das imagens do seu banco abaixo para aplicar ou envie uma nova do seu computador:"}
             </p>
+
+            {/* Sugestões padrão para Equipe/Agência */}
+            {activeImageEdit.type === "about" && (
+              <div className="mb-4">
+                <div className="text-[10px] uppercase tracking-wider text-amber-400/80 font-semibold mb-2">Sugestões de Equipe</div>
+                <div className="grid grid-cols-4 gap-2 p-2 border border-amber-400/20 rounded-xl bg-amber-400/[0.03]">
+                  {TEAM_PRESET_IMAGES.map((url, i) => (
+                    <button
+                      key={i}
+                      onClick={() => applyGlobalImage(url)}
+                      className={`aspect-square rounded-lg overflow-hidden border-2 transition-all scale-95 hover:scale-100 ${
+                        state.siteContent.aboutImageUrl === url ? "border-amber-400 ring-2 ring-amber-400/40" : "border-white/10 hover:border-amber-400"
+                      }`}
+                    >
+                      <img src={url} alt={`Sugestão ${i + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Galeria do usuário */}
             {state.siteContent.galleryImages.length > 0 ? (
@@ -1014,11 +1044,11 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                   </button>
                 ))}
               </div>
-            ) : (
+            ) : activeImageEdit.type !== "about" ? (
               <div className="text-xs text-white/40 italic text-center py-6 border border-dashed border-white/10 rounded-xl mb-4 bg-black/10">
                 Nenhuma imagem no banco de imagens ainda. Faça upload ou cole um link abaixo!
               </div>
-            )}
+            ) : null}
 
             {/* Upload e URL */}
             <div className="space-y-3">
