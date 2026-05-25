@@ -414,7 +414,7 @@ const Index = () => {
         const initialRemainingCount = isMobile ? 4 : 20;
 
         const remainingVideos = showAllVideos
-          ? [...coveredVideos.slice(4), ...uncoveredVideos]
+          ? coveredVideos.slice(4)
           : coveredVideos.slice(4, initialRemainingCount);
 
         const initialCaptions = filteredCaptions.slice(0, 8);
@@ -586,6 +586,33 @@ const Index = () => {
                   )}
                 </Suspense>
 
+                {/* Artes para Agência de Viagens (Feed) — 2 cols mobile, 4 cols desktop */}
+                {!feedLoading && localFeedTemplates.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground pt-2">Artes para Agência de Viagens</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                      {localFeedTemplates.slice(0, 4).map((template, index) => (
+                        <PremiumCard
+                          key={template.id || `home-feed-${index}`}
+                          id={template.id || `home-feed-${index}`}
+                          title={template.title}
+                          url={template.url}
+                          imageUrl={template.image_url}
+                          category={template.category}
+                          isNew={(template as any).isNew || (template as any).is_new}
+                          icon={getIcon(template.type, template.icon)}
+                          aspectRatio="4/5"
+                          onClick={() => handleCardClick(template as ContentItem)}
+                          isFavorite={template.id ? isFavorite("content_item", template.id) : false}
+                          onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
+                          onPremiumRequired={getPremiumCallback('feed', false, template.type, template.title, index)}
+                          isPremium={checkIfItemIsPremium(template.type, template.title, index)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Remaining videos — 2 cols mobile, 4 cols desktop */}
                 {!videosLoading && remainingVideos.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
@@ -593,8 +620,7 @@ const Index = () => {
                       <PremiumCard
                         key={template.id} id={template.id} title={template.title} url={template.url}
                         isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
-                        // Performance: Only load images for the first few remaining items to save 75MB+ payload
-                        imageUrl={(index < 4 || template.is_featured) ? (template.image_url || undefined) : undefined}
+                        imageUrl={template.image_url || undefined}
                         aspectRatio={template.image_url ? "9/16" : "1/1"}
                         contentType={template.type}
                         onClick={() => handleCardClick(template)}

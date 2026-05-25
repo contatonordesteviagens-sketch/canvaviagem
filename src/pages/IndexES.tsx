@@ -285,8 +285,7 @@ const IndexES = () => {
       case 'all': {
         const firstFourTools = toolsData?.slice(0, 4) || [];
         const coveredVideos = sortedVideos.filter(v => v.image_url);
-        const uncoveredVideos = sortedVideos.filter(v => !v.image_url);
-        const remainingVideos = showAllVideos ? sortedVideos : uncoveredVideos.slice(0, 8);
+        const remainingVideos = showAllVideos ? coveredVideos.slice(10) : coveredVideos.slice(10, 20);
         const initialCaptions = captionsData?.slice(0, 8) || [];
         const initialOffers = contentLibraryES.filter(item => item.category === 'offer').slice(0, 2);
 
@@ -336,6 +335,33 @@ const IndexES = () => {
                 </div>
               )}
 
+              {/* Artes para Agencia de Viajes (Feed) — 2 cols mobile, 4 cols desktop */}
+              {!feedLoading && localFeedTemplates.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground pt-2">Artes para Agencia de Viajes</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                    {localFeedTemplates.slice(0, 4).map((template, index) => (
+                      <PremiumCard
+                        key={template.id || `home-feed-es-${index}`}
+                        id={template.id || `home-feed-es-${index}`}
+                        title={template.title}
+                        url={template.url}
+                        imageUrl={template.image_url}
+                        category={template.category}
+                        isNew={template.is_new}
+                        icon={getIcon(template.type, template.icon)}
+                        aspectRatio="4/5"
+                        onClick={() => handleCardClick(template as ContentItem)}
+                        isFavorite={template.id ? isFavorite("content_item", template.id) : false}
+                        onToggleFavorite={() => template.id && handleToggleFavorite("content_item", template.id)}
+                        onPremiumRequired={getPremiumCallback('feed', false, template.type, template.title, index)}
+                        isPremium={checkIfItemIsPremium(template.type, template.title, index)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Remaining content */}
               {!videosLoading && remainingVideos.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
@@ -343,7 +369,7 @@ const IndexES = () => {
                     <PremiumCard
                       key={template.id} id={template.id} title={template.title} url={template.url}
                       isNew={newestIds.includes(template.id)} icon={getIcon(template.type, template.icon)}
-                      imageUrl={index < 4 ? (template.image_url || undefined) : undefined}
+                      imageUrl={template.image_url || undefined}
                       aspectRatio="9/16" onClick={() => handleCardClick(template)}
                       isFavorite={isFavorite("content_item", template.id)}
                       onToggleFavorite={() => handleToggleFavorite("content_item", template.id)}
@@ -355,7 +381,7 @@ const IndexES = () => {
               )}
 
               {/* Show more button */}
-              {(uncoveredVideos.length > 8) && (
+              {(coveredVideos.length > 20) && (
                 <div className="flex justify-center">
                   <Button variant="outline" onClick={() => setShowAllVideos(!showAllVideos)} className="gap-2 rounded-full px-6">
                     {showAllVideos ? <><ChevronUp className="h-4 w-4" />Menos</> : <><ChevronDown className="h-4 w-4" />Más videos</>}
