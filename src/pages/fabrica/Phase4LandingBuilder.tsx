@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useFabricaContext, type Pacote, type Depoimento } from "@/hooks/useFabricaContext";
+import { useFabricaContext, type Pacote, type Depoimento, type SocialLink, type SocialType } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export";
 import {
@@ -39,6 +39,32 @@ const TEAM_PRESET_IMAGES = [
   "https://img.freepik.com/fotos-premium/retrato-de-um-agente-de-viagens-em-uma-agencia-de-viagens-com-passaportes-e-passagens_199620-11415.jpg",
   "https://img.freepik.com/fotos-gratis/pessoas-em-filmagens-medias-na-agencia-de-viagens_52683-136429.jpg?semt=ais_hybrid&w=740&q=80",
 ];
+
+const SOCIAL_OPTIONS: Array<{ type: SocialType; label: string; icon: string; placeholder: string }> = [
+  { type: "instagram", label: "Instagram", icon: "📸", placeholder: "@suaagencia ou instagram.com/suaagencia" },
+  { type: "facebook", label: "Facebook", icon: "f", placeholder: "facebook.com/suaagencia" },
+  { type: "tiktok", label: "TikTok", icon: "♪", placeholder: "tiktok.com/@suaagencia" },
+  { type: "youtube", label: "YouTube", icon: "▶", placeholder: "youtube.com/@suaagencia" },
+  { type: "google", label: "Google", icon: "G", placeholder: "Perfil no Google ou Google Maps" },
+  { type: "linkedin", label: "LinkedIn", icon: "in", placeholder: "linkedin.com/company/suaagencia" },
+  { type: "x", label: "X/Twitter", icon: "𝕏", placeholder: "x.com/suaagencia" },
+  { type: "site", label: "Site próprio", icon: "🌐", placeholder: "https://suaagencia.com.br" },
+];
+
+const normalizeSocialUrl = (type: SocialType, value: string) => {
+  const v = value.trim();
+  if (!v) return "";
+  if (/^https?:\/\//i.test(v)) return v;
+  const clean = v.replace(/^@/, "").replace(/^\/+/, "");
+  if (type === "instagram") return `https://instagram.com/${clean.replace(/^instagram\.com\//, "")}`;
+  if (type === "facebook") return `https://facebook.com/${clean.replace(/^facebook\.com\//, "")}`;
+  if (type === "tiktok") return `https://tiktok.com/@${clean.replace(/^tiktok\.com\/@?/, "")}`;
+  if (type === "youtube") return clean.includes("youtube.com") ? `https://${clean}` : `https://youtube.com/@${clean}`;
+  if (type === "linkedin") return clean.includes("linkedin.com") ? `https://${clean}` : `https://linkedin.com/company/${clean}`;
+  if (type === "x") return `https://x.com/${clean.replace(/^(x|twitter)\.com\//, "")}`;
+  if (type === "google") return clean.includes("google.") || clean.includes("maps.") ? `https://${clean}` : `https://www.google.com/search?q=${encodeURIComponent(v)}`;
+  return `https://${clean}`;
+};
 
 export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
   const { state, update, undo, redo, canUndo, canRedo } = useFabricaContext();
