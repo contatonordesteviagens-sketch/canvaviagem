@@ -1846,57 +1846,16 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <Upload className="w-3.5 h-3.5" /> Sua Imagem
             </button>
             <button
-              onClick={() => setGenMode("ai")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all ${genMode === "ai" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+              type="button"
+              disabled
+              title="Em manutenção — reativaremos em breve"
+              aria-disabled="true"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold text-white/30 cursor-not-allowed opacity-50"
             >
-              <Wand2 className="w-3.5 h-3.5" /> IA Pura
+              <Wand2 className="w-3.5 h-3.5" /> IA Pura <span className="hidden sm:inline font-normal opacity-70">(desativado)</span>
             </button>
           </div>
-          {genMode === "ai" && (
-            <div className="mt-3 p-3 rounded-xl border bg-black/20 flex flex-col gap-1.5 transition-all border-white/5">
-              {lastProvider === "user_gemini" ? (
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
-                    Chave Gemini ativa: Geração Ilimitada ({aiPureCount} hoje)
-                  </div>
-                  <p className="text-[10px] text-white/50 leading-relaxed">
-                    🎉 Parabéns! Você está usando sua própria chave API gratuita, sem limite diário de gerações de IA.
-                  </p>
-                </div>
-              ) : aiPureCount < 15 ? (
-                <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
-                  Geração de IA Pura: tudo normal ({aiPureCount}/20 hoje)
-                </div>
-              ) : aiPureCount < 20 ? (
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-amber-400">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse inline-block" />
-                    Restam {20 - aiPureCount} gerações de IA usando a api de geração de imagens restantes
-                  </div>
-                  <p className="text-[10px] text-white/50 leading-relaxed">
-                    💡 Recomendamos usar outras formas ilimitadas para economizar seus créditos: experimente o modo <strong>Foto Real</strong> ou o modo <strong>Sua Imagem</strong>!
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-red-400">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />
-                    Limite de 20 gerações de IA Pura por dia atingido
-                  </div>
-                  <p className="text-[10px] text-white/50 leading-relaxed">
-                    Use as outras formas ilimitadas: modo <strong>Foto Real</strong> e modo <strong>Sua Imagem</strong>, ou adicione sua própria chave do Gemini nas Configurações.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-          {genMode === "ai" && (
-            <p className="text-[10px] text-white/40 mt-1.5 leading-snug">
-              🔒 A imagem é processada <strong>apenas em memória</strong> para gerar o anúncio.
-            </p>
-          )}
+
 
           {/* Seletor de Versão (V0..V4) — para correções cirúrgicas em cada layout */}
           <div className="mt-4">
