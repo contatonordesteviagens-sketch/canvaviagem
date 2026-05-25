@@ -517,6 +517,39 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     stateRef.current = state;
   }, [state]);
 
+  useEffect(() => {
+    const handlePrefillSnapshot = (event: Event) => {
+      const customEvent = event as CustomEvent<Partial<FabricaState>>;
+      const snapshot = customEvent.detail;
+      if (!snapshot) return;
+
+      setState((prev) => {
+        const merged = {
+          ...defaultState,
+          ...snapshot,
+          currentPhase: prev.currentPhase,
+          diagnosticoCompleto: false,
+          lastEditedAt: new Date().toISOString(),
+          siteContent: {
+            ...defaultState.siteContent,
+            ...(snapshot.siteContent || {}),
+            sections: {
+              ...defaultState.siteContent.sections,
+              ...(snapshot.siteContent?.sections || {}),
+            },
+          },
+        } as FabricaState;
+
+        stateRef.current = merged;
+        if (activeUserIdRef.current) persistLocalState(merged, activeUserIdRef.current);
+        return merged;
+      });
+    };
+
+    window.addEventListener("fabrica-load-snapshot", handlePrefillSnapshot as EventListener);
+    return () => window.removeEventListener("fabrica-load-snapshot", handlePrefillSnapshot as EventListener);
+  }, []);
+
   // Persistência: salva campos leves em uma chave, pesados em chaves separadas
   useEffect(() => {
     const userId = user?.id;
