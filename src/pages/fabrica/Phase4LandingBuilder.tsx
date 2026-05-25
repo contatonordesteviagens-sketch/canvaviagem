@@ -541,6 +541,10 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
   return (
     <div className="max-w-3xl lg:max-w-[1550px] mx-auto transition-all duration-300">
+      {/* ── Indicador de salvamento na nuvem ── */}
+      <div className="flex justify-end mb-3">
+        <CloudSaveIndicator />
+      </div>
       {/* ── Banner de Auto-Sync da Fase 3 ── */}
       {autoSyncDone && autoSyncFields.length > 0 && (
         <div className="rounded-2xl p-4 border bg-emerald-500/10 border-emerald-500/25 flex items-start gap-3 mb-6">
