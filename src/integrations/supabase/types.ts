@@ -380,6 +380,33 @@ export type Database = {
         }
         Relationships: []
       }
+      fabrica_user_states: {
+        Row: {
+          agency_name: string
+          created_at: string
+          id: string
+          state_snapshot: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agency_name?: string
+          created_at?: string
+          id?: string
+          state_snapshot?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agency_name?: string
+          created_at?: string
+          id?: string
+          state_snapshot?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       magic_link_tokens: {
         Row: {
           created_at: string | null
