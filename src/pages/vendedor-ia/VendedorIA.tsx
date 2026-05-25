@@ -47,8 +47,8 @@ const VendedorIA: React.FC = () => {
           if (data) {
             const prof: UserProfile = {
               id: user.id,
-              full_name: data.full_name || 'Agente de Elite',
-              agency_name: data.agency_name || 'Minha Agência',
+              full_name: data.name || 'Agente de Elite',
+              agency_name: data.name || 'Minha Agência',
               phone: data.phone || '',
               email: user.email
             };
