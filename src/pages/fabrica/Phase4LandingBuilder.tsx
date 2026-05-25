@@ -621,8 +621,35 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                       className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#00ff88]/50 transition-colors appearance-none pr-8"
                     >
                       <option value="none" className="bg-zinc-900">Nenhum (Padrão)</option>
-                      <option value="neve" className="bg-zinc-900">❄️ Queda de Neve (Inverno)</option>
-                      <option value="confete" className="bg-zinc-900">🎉 Chuva de Confetes (Ofertas)</option>
+                      
+                      <optgroup label="📅 Datas Comemorativas">
+                        <option value="junina_bandeiras" className="bg-zinc-900">🌽 Festa Junina (Bandeirinhas)</option>
+                        <option value="junina_baloes" className="bg-zinc-900">🌽 Festa Junina (Balões)</option>
+                        <option value="junina_fagulhas" className="bg-zinc-900">🔥 Festa Junina (Fagulhas)</option>
+                        <option value="natal_luzes" className="bg-zinc-900">🎄 Especial Natal (Luzes)</option>
+                        <option value="natal_estrela" className="bg-zinc-900">⭐ Especial Natal (Estrela Guia)</option>
+                        <option value="reveillon_fogos" className="bg-zinc-900">🎆 Ano Novo (Micro-Fogos)</option>
+                        <option value="reveillon_poeira" className="bg-zinc-900">✨ Ano Novo (Poeira de Ouro)</option>
+                        <option value="carnaval_mascaras" className="bg-zinc-900">🎭 Carnaval (Máscaras Flutuantes)</option>
+                        <option value="pascoa_orelhas" className="bg-zinc-900">🐰 Páscoa (Orelhas Curiosas)</option>
+                        <option value="pascoa_pegadas" className="bg-zinc-900">🐾 Páscoa (Pegadas de Coelho)</option>
+                        <option value="neve" className="bg-zinc-900">❄️ Queda de Neve (Inverno)</option>
+                        <option value="confete" className="bg-zinc-900">🎉 Chuva de Confetes (Ofertas)</option>
+                      </optgroup>
+
+                      <optgroup label="🎯 Temas por Nicho (Ano Todo)">
+                        <option value="eco_folhas" className="bg-zinc-900">🏔️ Ecoturismo (Folhas ao Vento)</option>
+                        <option value="eco_borboletas" className="bg-zinc-900">🦋 Ecoturismo (Borboletas)</option>
+                        <option value="praia_bolhas" className="bg-zinc-900">🏖️ Praia (Bolhas de Água)</option>
+                        <option value="praia_ondas" className="bg-zinc-900">🌊 Praia (Ondas Suaves)</option>
+                        <option value="praia_sol" className="bg-zinc-900">☀️ Praia (Brilho do Sol)</option>
+                        <option value="cruzeiro_navio" className="bg-zinc-900">🛳️ Cruzeiro (Navio Navegante)</option>
+                        <option value="cruzeiro_gotas" className="bg-zinc-900">💧 Cruzeiro (Gotas de Orvalho)</option>
+                        <option value="internacional_aviao" className="bg-zinc-900">✈️ Internacional (Avião de Papel)</option>
+                        <option value="internacional_bussola" className="bg-zinc-900">🧭 Internacional (Bússola Giratória)</option>
+                        <option value="luxo_aurora" className="bg-zinc-900">👑 Luxo (Aurora Boreal)</option>
+                        <option value="luxo_reflexo" className="bg-zinc-900">✨ Luxo (Reflexo Metálico)</option>
+                      </optgroup>
                     </select>
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
                       <ChevronDown className="w-4 h-4 text-white" />

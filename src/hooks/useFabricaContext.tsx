@@ -58,7 +58,7 @@ export interface SiteContent {
   galleryImages: string[]; // banco de imagens geradas pra reuso
   vercelUrl?: string; // URL do site publicado no Vercel
   sections: SectionVisibility;
-  animationEffect?: "none" | "neve" | "confete";
+  animationEffect?: "none" | "neve" | "confete" | "junina_bandeiras" | "natal_luzes" | "eco_folhas" | "praia_bolhas" | "junina_baloes" | "junina_fagulhas" | "natal_estrela" | "reveillon_fogos" | "reveillon_poeira" | "carnaval_mascaras" | "pascoa_orelhas" | "pascoa_pegadas" | "praia_ondas" | "praia_sol" | "eco_borboletas" | "cruzeiro_navio" | "cruzeiro_gotas" | "internacional_aviao" | "internacional_bussola" | "luxo_aurora" | "luxo_reflexo";
   animationLocation?: "all" | "buttons" | "cards" | "footer";
   animationDuration?: "5" | "10" | "30" | "always";
   aboutImageUrl?: string; // Imagem da seção Sobre/Equipe do site

@@ -144,6 +144,663 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
     setTimeout(() => clearInterval(confeteInterval), parseInt(durationStr) * 1000);
   }
 `;
+  } else if (sc.animationEffect === "junina_bandeiras") {
+    seasonalStyles = `
+/* ANIMAÇÃO FESTA JUNINA - BANDEIRINHAS */
+.junina-flags {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 24px;
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 120 24" xmlns="http://www.w3.org/2000/svg"><path d="M0,0 L15,24 L30,0 Z" fill="%23ff4b72"/><path d="M30,0 L45,24 L60,0 Z" fill="%2300e5a0"/><path d="M60,0 L75,24 L90,0 Z" fill="%2300b8ff"/><path d="M90,0 L105,24 L120,0 Z" fill="%23fcd34d"/></svg>');
+  background-size: 120px 24px;
+  background-repeat: repeat-x;
+  z-index: 9999;
+  transform-origin: top center;
+  animation: flagSwing 2.5s ease-in-out infinite alternate;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15));
+}
+@keyframes flagSwing {
+  0% { transform: perspective(400px) rotateX(15deg); }
+  100% { transform: perspective(400px) rotateX(-15deg); }
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const flags = document.createElement('div');
+  flags.className = 'junina-flags';
+  document.body.appendChild(flags);
+  if (durationStr !== "always") {
+    setTimeout(() => flags.remove(), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "natal_luzes") {
+    seasonalStyles = `
+/* ANIMAÇÃO NATAL - FAIRY LIGHTS */
+.natal-luzes {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 8px;
+  z-index: 9999;
+  pointer-events: none;
+  background: radial-gradient(circle at 10px 4px, #ff4b72 3px, transparent 4px),
+              radial-gradient(circle at 30px 4px, #00e5a0 3px, transparent 4px),
+              radial-gradient(circle at 50px 4px, #00b8ff 3px, transparent 4px),
+              radial-gradient(circle at 70px 4px, #fcd34d 3px, transparent 4px);
+  background-size: 80px 8px;
+  animation: twinkle 1s ease-in-out infinite alternate;
+}
+@keyframes twinkle {
+  0% { opacity: 0.4; filter: drop-shadow(0 0 2px rgba(255,255,255,0.8)); }
+  100% { opacity: 1; filter: drop-shadow(0 0 10px rgba(255,255,255,1)) drop-shadow(0 0 5px #fcd34d); }
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const lights = document.createElement('div');
+  lights.className = 'natal-luzes';
+  document.body.appendChild(lights);
+  if (durationStr !== "always") {
+    setTimeout(() => lights.remove(), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "eco_folhas") {
+    seasonalStyles = `
+/* ANIMAÇÃO ECOTURISMO - FOLHAS AO VENTO */
+@keyframes leafFall {
+  0% { transform: translateY(-10px) translateX(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(105vh) translateX(40px) rotate(360deg); opacity: 0; }
+}
+.leaf-particle {
+  position: fixed;
+  top: -20px;
+  pointer-events: none;
+  font-size: 16px;
+  z-index: 9999;
+  animation: leafFall 7s linear forwards;
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const leaves = ['🍃', '🌿', '🍂'];
+  const leafInterval = setInterval(() => {
+    const leaf = document.createElement('span');
+    leaf.className = 'leaf-particle';
+    leaf.innerHTML = leaves[Math.floor(Math.random() * leaves.length)];
+    leaf.style.left = (Math.random() * window.innerWidth) + 'px';
+    leaf.style.fontSize = (Math.random() * 12 + 10) + 'px';
+    leaf.style.animationDuration = (Math.random() * 5 + 5) + 's';
+    document.body.appendChild(leaf);
+    setTimeout(() => leaf.remove(), 10000);
+  }, 400);
+  if (durationStr !== "always") {
+    setTimeout(() => clearInterval(leafInterval), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "praia_bolhas") {
+    seasonalStyles = `
+/* ANIMAÇÃO PRAIA - BOLHAS */
+@keyframes bubbleRise {
+  0% { transform: translateY(105vh) translateX(0) scale(0.5); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(-10px) translateX(-20px) scale(1.2); opacity: 0; }
+}
+.bubble-particle {
+  position: fixed;
+  bottom: -20px;
+  pointer-events: none;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.4);
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.1));
+  z-index: 9999;
+  animation: bubbleRise 8s linear forwards;
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const bubbleInterval = setInterval(() => {
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble-particle';
+    bubble.style.left = (Math.random() * window.innerWidth) + 'px';
+    const size = (Math.random() * 15 + 5) + 'px';
+    bubble.style.width = size;
+    bubble.style.height = size;
+    bubble.style.animationDuration = (Math.random() * 4 + 6) + 's';
+    document.body.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 10000);
+  }, 300);
+  if (durationStr !== "always") {
+    setTimeout(() => clearInterval(bubbleInterval), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "junina_baloes") {
+    seasonalStyles = `
+/* ANIMAÇÃO FESTA JUNINA - BALÕES */
+@keyframes balloonRise {
+  0% { transform: translateY(110vh) translateX(0) scale(0.8); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-20vh) translateX(30px) scale(1); opacity: 0; }
+}
+.junina-balloon {
+  position: fixed;
+  bottom: -50px;
+  pointer-events: none;
+  font-size: 30px;
+  z-index: 9999;
+  animation: balloonRise 15s linear forwards;
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const spawnBalloon = () => {
+    const b = document.createElement('div');
+    b.className = 'junina-balloon';
+    b.innerHTML = '🎈';
+    b.style.left = (Math.random() * window.innerWidth) + 'px';
+    b.style.animationDuration = (Math.random() * 5 + 12) + 's';
+    document.body.appendChild(b);
+    setTimeout(() => b.remove(), 20000);
+  };
+  spawnBalloon(); setTimeout(spawnBalloon, 4000); setTimeout(spawnBalloon, 8000);
+  const balloonInterval = setInterval(spawnBalloon, 6000);
+  if (durationStr !== "always") {
+    setTimeout(() => clearInterval(balloonInterval), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "junina_fagulhas") {
+    seasonalStyles = `
+/* ANIMAÇÃO FESTA JUNINA - FAGULHAS */
+@keyframes sparkRise {
+  0% { transform: translateY(100vh) translateX(0) scale(1); opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { transform: translateY(0vh) translateX(20px) scale(0); opacity: 0; }
+}
+.junina-spark {
+  position: fixed;
+  bottom: -10px;
+  pointer-events: none;
+  width: 4px; height: 4px;
+  background: #ffaa00;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #ff4500;
+  z-index: 9999;
+  animation: sparkRise 5s linear forwards;
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const sparkInterval = setInterval(() => {
+    const s = document.createElement('div');
+    s.className = 'junina-spark';
+    s.style.left = (Math.random() * window.innerWidth) + 'px';
+    s.style.animationDuration = (Math.random() * 3 + 3) + 's';
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 6000);
+  }, 150);
+  if (durationStr !== "always") {
+    setTimeout(() => clearInterval(sparkInterval), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "natal_estrela") {
+    seasonalStyles = `
+/* ANIMAÇÃO NATAL - ESTRELA GUIA */
+@keyframes shootingStar {
+  0% { transform: translate(120vw, -20vh) rotate(-45deg); opacity: 0; }
+  10% { opacity: 1; }
+  20% { transform: translate(-20vw, 120vh) rotate(-45deg); opacity: 0; }
+  100% { opacity: 0; }
+}
+.shooting-star {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100px; height: 2px;
+  background: linear-gradient(90deg, transparent, #fff);
+  pointer-events: none;
+  z-index: 9999;
+  animation: shootingStar 15s linear infinite;
+}
+.shooting-star::after {
+  content: '⭐';
+  position: absolute;
+  right: -10px; top: -10px;
+  font-size: 20px;
+  filter: drop-shadow(0 0 10px #fff);
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const star = document.createElement('div');
+  star.className = 'shooting-star';
+  document.body.appendChild(star);
+  if (durationStr !== "always") {
+    setTimeout(() => star.remove(), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "reveillon_fogos") {
+    seasonalStyles = `
+/* ANIMAÇÃO REVEILLON - MICRO-FOGOS */
+@keyframes fireworkBurst {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+.firework {
+  position: fixed;
+  pointer-events: none;
+  border-radius: 50%;
+  z-index: 9998;
+  animation: fireworkBurst 1s ease-out forwards;
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const colors = ['#fcd34d', '#fff', '#00e5a0', '#ff4b72'];
+  const fwInterval = setInterval(() => {
+    const fw = document.createElement('div');
+    fw.className = 'firework';
+    const size = (Math.random() * 30 + 20) + 'px';
+    fw.style.width = size; fw.style.height = size;
+    fw.style.left = (Math.random() * window.innerWidth) + 'px';
+    fw.style.top = (Math.random() * (window.innerHeight / 2)) + 'px';
+    fw.style.background = \`radial-gradient(circle, \${colors[Math.floor(Math.random()*colors.length)]} 10%, transparent 60%)\`;
+    document.body.appendChild(fw);
+    setTimeout(() => fw.remove(), 1000);
+  }, 800);
+  if (durationStr !== "always") {
+    setTimeout(() => clearInterval(fwInterval), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "reveillon_poeira") {
+    seasonalStyles = `
+/* ANIMAÇÃO REVEILLON - POEIRA DE OURO */
+@keyframes goldDust {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+}
+.gold-dust {
+  position: fixed;
+  pointer-events: none;
+  width: 3px; height: 3px;
+  background: #ffd700;
+  box-shadow: 0 0 4px #ffdf00;
+  border-radius: 50%;
+  z-index: 9999;
+  animation: goldDust 3s linear forwards;
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const dustInterval = setInterval(() => {
+    const d = document.createElement('div');
+    d.className = 'gold-dust';
+    d.style.left = (Math.random() * window.innerWidth) + 'px';
+    d.style.top = (Math.random() * window.innerHeight) + 'px';
+    d.style.animationDuration = (Math.random() * 2 + 2) + 's';
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 4000);
+  }, 200);
+  if (durationStr !== "always") {
+    setTimeout(() => clearInterval(dustInterval), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "carnaval_mascaras") {
+    seasonalStyles = `
+/* ANIMAÇÃO CARNAVAL - MÁSCARAS */
+@keyframes maskRise {
+  0% { transform: translateY(110vh) rotate(-20deg); opacity: 0; }
+  10% { opacity: 0.7; }
+  90% { opacity: 0.7; }
+  100% { transform: translateY(-20vh) rotate(20deg); opacity: 0; }
+}
+.carnaval-mask {
+  position: fixed;
+  pointer-events: none;
+  font-size: 24px;
+  z-index: 9999;
+  animation: maskRise 10s ease-in-out forwards;
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const maskInterval = setInterval(() => {
+    const m = document.createElement('div');
+    m.className = 'carnaval-mask';
+    m.innerHTML = '🎭';
+    m.style.left = (Math.random() * window.innerWidth) + 'px';
+    m.style.animationDuration = (Math.random() * 5 + 8) + 's';
+    document.body.appendChild(m);
+    setTimeout(() => m.remove(), 15000);
+  }, 1500);
+  if (durationStr !== "always") {
+    setTimeout(() => clearInterval(maskInterval), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "pascoa_orelhas") {
+    seasonalStyles = `
+/* ANIMAÇÃO PÁSCOA - ORELHAS CURIOSAS */
+@keyframes peekEars {
+  0% { transform: translateY(100%); }
+  10%, 90% { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+.pascoa-orelhas {
+  position: fixed;
+  bottom: 0; right: 10%;
+  font-size: 50px;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translateY(100%);
+  animation: peekEars 8s ease-in-out infinite;
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const e = document.createElement('div');
+  e.className = 'pascoa-orelhas';
+  e.innerHTML = '🐰';
+  document.body.appendChild(e);
+  if (durationStr !== "always") {
+    setTimeout(() => e.remove(), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "pascoa_pegadas") {
+    seasonalStyles = `
+/* ANIMAÇÃO PÁSCOA - PEGADAS */
+@keyframes pawFade {
+  0% { opacity: 0; transform: scale(0.5); }
+  20% { opacity: 0.5; transform: scale(1); }
+  80% { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+.pascoa-paw {
+  position: absolute;
+  pointer-events: none;
+  font-size: 20px;
+  z-index: 1;
+  animation: pawFade 4s ease-in-out forwards;
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const pawHandler = () => {
+    if (Math.random() > 0.8) {
+      const p = document.createElement('div');
+      p.className = 'pascoa-paw';
+      p.innerHTML = '🐾';
+      p.style.left = (Math.random() * window.innerWidth) + 'px';
+      p.style.top = (window.scrollY + Math.random() * window.innerHeight) + 'px';
+      p.style.transform = \`rotate(\${Math.random() * 360}deg)\`;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 4000);
+    }
+  };
+  window.addEventListener('scroll', pawHandler);
+  if (durationStr !== "always") {
+    setTimeout(() => window.removeEventListener('scroll', pawHandler), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "praia_ondas") {
+    seasonalStyles = `
+/* ANIMAÇÃO PRAIA - ONDAS SUAVES */
+.praia-ondas {
+  position: fixed;
+  bottom: -20px; left: 0; right: 0;
+  height: 50px;
+  background: rgba(0, 184, 255, 0.15);
+  border-top-left-radius: 50% 20px;
+  border-top-right-radius: 50% 20px;
+  pointer-events: none;
+  z-index: 9998;
+  animation: waveMotion 4s ease-in-out infinite alternate;
+}
+@keyframes waveMotion {
+  0% { transform: translateY(10px) scaleX(1.05); }
+  100% { transform: translateY(0) scaleX(1); }
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const w = document.createElement('div');
+  w.className = 'praia-ondas';
+  document.body.appendChild(w);
+  if (durationStr !== "always") {
+    setTimeout(() => w.remove(), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "praia_sol") {
+    seasonalStyles = `
+/* ANIMAÇÃO PRAIA - BRILHO DO SOL */
+.praia-sol {
+  position: fixed;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle at 50% 50%, rgba(252, 211, 77, 0.15) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 9997;
+  animation: sunBeam 10s ease-in-out infinite alternate;
+}
+@keyframes sunBeam {
+  0% { transform: translate(-10%, -10%); }
+  100% { transform: translate(10%, 10%); }
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const s = document.createElement('div');
+  s.className = 'praia-sol';
+  document.body.appendChild(s);
+  if (durationStr !== "always") {
+    setTimeout(() => s.remove(), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "eco_borboletas") {
+    seasonalStyles = `
+/* ANIMAÇÃO ECOTURISMO - BORBOLETAS */
+@keyframes butterflyFlutter {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translate(100vw, -50vh) rotate(45deg); opacity: 0; }
+}
+.eco-borboleta {
+  position: fixed;
+  bottom: 20%; left: -50px;
+  pointer-events: none;
+  font-size: 20px;
+  z-index: 9999;
+  animation: butterflyFlutter 12s ease-in-out forwards;
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const bInterval = setInterval(() => {
+    const b = document.createElement('div');
+    b.className = 'eco-borboleta';
+    b.innerHTML = '🦋';
+    b.style.bottom = (Math.random() * 50 + 10) + '%';
+    b.style.animationDuration = (Math.random() * 5 + 10) + 's';
+    document.body.appendChild(b);
+    setTimeout(() => b.remove(), 15000);
+  }, 3000);
+  if (durationStr !== "always") {
+    setTimeout(() => clearInterval(bInterval), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "cruzeiro_navio") {
+    seasonalStyles = `
+/* ANIMAÇÃO CRUZEIRO - NAVIO NAVEGANTE */
+@keyframes shipSail {
+  0% { transform: translateX(-100px) rotate(-2deg); }
+  50% { transform: translateX(50vw) rotate(2deg); }
+  100% { transform: translateX(110vw) rotate(-2deg); }
+}
+.cruzeiro-navio {
+  position: fixed;
+  bottom: 20px; left: 0;
+  pointer-events: none;
+  font-size: 40px;
+  z-index: 9999;
+  animation: shipSail 30s linear infinite;
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const n = document.createElement('div');
+  n.className = 'cruzeiro-navio';
+  n.innerHTML = '🛳️';
+  document.body.appendChild(n);
+  if (durationStr !== "always") {
+    setTimeout(() => n.remove(), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "cruzeiro_gotas") {
+    seasonalStyles = `
+/* ANIMAÇÃO CRUZEIRO - GOTAS DE ORVALHO */
+@keyframes dropFall {
+  0% { transform: translateY(-20px); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+.cruzeiro-gota {
+  position: fixed;
+  top: 0;
+  pointer-events: none;
+  width: 2px; height: 10px;
+  background: rgba(0, 184, 255, 0.4);
+  border-radius: 5px;
+  z-index: 9999;
+  animation: dropFall 2s linear forwards;
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const gotaInterval = setInterval(() => {
+    const g = document.createElement('div');
+    g.className = 'cruzeiro-gota';
+    g.style.left = (Math.random() * window.innerWidth) + 'px';
+    g.style.animationDuration = (Math.random() * 1 + 1.5) + 's';
+    document.body.appendChild(g);
+    setTimeout(() => g.remove(), 3000);
+  }, 200);
+  if (durationStr !== "always") {
+    setTimeout(() => clearInterval(gotaInterval), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "internacional_aviao") {
+    seasonalStyles = `
+/* ANIMAÇÃO INTERNACIONAL - AVIÃO DE PAPEL */
+@keyframes paperPlane {
+  0% { transform: translate(-50px, 100vh) rotate(45deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translate(110vw, -20vh) rotate(45deg); opacity: 0; }
+}
+.inter-aviao {
+  position: fixed;
+  pointer-events: none;
+  font-size: 30px;
+  z-index: 9999;
+  animation: paperPlane 15s linear infinite;
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const a = document.createElement('div');
+  a.className = 'inter-aviao';
+  a.innerHTML = '✈️';
+  document.body.appendChild(a);
+  if (durationStr !== "always") {
+    setTimeout(() => a.remove(), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "internacional_bussola") {
+    seasonalStyles = `
+/* ANIMAÇÃO INTERNACIONAL - BÚSSOLA */
+.inter-bussola {
+  position: fixed;
+  bottom: 20px; right: 20px;
+  font-size: 40px;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.3;
+  transition: transform 0.2s ease-out;
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const b = document.createElement('div');
+  b.className = 'inter-bussola';
+  b.innerHTML = '🧭';
+  document.body.appendChild(b);
+  const scrollHandler = () => {
+    b.style.transform = \`rotate(\${window.scrollY / 5}deg)\`;
+  };
+  window.addEventListener('scroll', scrollHandler);
+  if (durationStr !== "always") {
+    setTimeout(() => {
+      window.removeEventListener('scroll', scrollHandler);
+      b.remove();
+    }, parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "luxo_aurora") {
+    seasonalStyles = `
+/* ANIMAÇÃO LUXO - AURORA BOREAL */
+.luxo-aurora {
+  position: fixed;
+  top: 0; left: 0; right: 0; height: 30vh;
+  background: linear-gradient(180deg, rgba(112, 0, 255, 0.15), transparent);
+  pointer-events: none;
+  z-index: 9997;
+  filter: blur(20px);
+  animation: auroraPulse 8s alternate infinite ease-in-out;
+}
+@keyframes auroraPulse {
+  0% { opacity: 0.5; transform: scaleY(1); }
+  100% { opacity: 1; transform: scaleY(1.5); }
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const a = document.createElement('div');
+  a.className = 'luxo-aurora';
+  document.body.appendChild(a);
+  if (durationStr !== "always") {
+    setTimeout(() => a.remove(), parseInt(durationStr) * 1000);
+  }
+`;
+  } else if (sc.animationEffect === "luxo_reflexo") {
+    seasonalStyles = `
+/* ANIMAÇÃO LUXO - REFLEXO METÁLICO */
+.luxo-reflexo {
+  position: fixed;
+  top: 0; bottom: 0; width: 100px;
+  background: linear-gradient(90deg, transparent, rgba(255,215,0,0.1), transparent);
+  pointer-events: none;
+  z-index: 9999;
+  transform: skewX(-20deg) translateX(-200px);
+  animation: sheenPass 6s infinite;
+}
+@keyframes sheenPass {
+  0% { transform: skewX(-20deg) translateX(-20vw); }
+  20%, 100% { transform: skewX(-20deg) translateX(120vw); }
+}
+`;
+    seasonalScripts = `
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const r = document.createElement('div');
+  r.className = 'luxo-reflexo';
+  document.body.appendChild(r);
+  if (durationStr !== "always") {
+    setTimeout(() => r.remove(), parseInt(durationStr) * 1000);
+  }
+`;
   }
 
   const headline =
