@@ -68,7 +68,7 @@ const normalizeSocialUrl = (type: SocialType, value: string) => {
 };
 
 export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
-  const { state, update, undo, redo, canUndo, canRedo } = useFabricaContext();
+  const { state, update, systemUpdate, undo, redo, canUndo, canRedo, isHydrated } = useFabricaContext();
   const { user } = useAuth();
   const [previewing, setPreviewing] = useState(true);
   const [downloadCount, setDownloadCount] = useState(0);
@@ -339,6 +339,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   // Garante que todas as informações preenchidas nas fases anteriores
   // apareçam pré-populadas no construtor do site.
   useEffect(() => {
+    if (!isHydrated) return;
     const SYNC_KEY = "fabrica-phase4-autosync-v1";
     const lastSyncHash = localStorage.getItem(SYNC_KEY);
     const dest = (state.destinos?.[0] || "").trim();
@@ -425,12 +426,12 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
       };
     }
 
-    update(rootPatches);
+    systemUpdate(rootPatches);
     setAutoSyncFields(synced);
     setAutoSyncDone(true);
     localStorage.setItem(SYNC_KEY, currentHash);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isHydrated, state.agencyName, state.destinos, state.lastPaymentMode, state.lastPrice, state.level, state.siteContent, systemUpdate]);
 
   const resetSiteToBlank = () => {
     const SYNC_KEY = "fabrica-phase4-autosync-v1";
