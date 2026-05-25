@@ -1294,7 +1294,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     const savedName = localStorage.getItem("cv_lead_name");
     if (savedName) {
        track("click_whatsapp", { target: targetName, cached_user: savedName });
-       window.open(finalUrl, "_blank");
+       window.location.href = finalUrl;
        return;
     }
 
@@ -1346,7 +1346,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     
     btn.innerHTML = originalText;
     btn.disabled = false;
-    window.open('https://wa.me/${wpp}?text=' + msg, '_blank');
+    window.location.href = \`https://api.whatsapp.com/send?phone=\${wpp}&text=\` + msg;
   }
 
   async function handleSubmitLead(e) {
@@ -1396,7 +1396,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
       finalWppUrl += encodeURIComponent(" (Mi nombre es " + name + ")");
     }
     
-    window.open(finalWppUrl, "_blank");
+    window.location.href = finalWppUrl;
   }
   ${seasonalScripts}
 </script>
