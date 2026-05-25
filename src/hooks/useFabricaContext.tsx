@@ -497,6 +497,8 @@ interface FabricaContextType {
   redo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  syncStatus: "idle" | "saving" | "saved" | "error";
+  lastSyncedAt: Date | null;
 }
 
 const FABRICA_CONTEXT_KEY = "__CANVA_VIAGEM_FABRICA_CONTEXT__" as const;
