@@ -1288,7 +1288,7 @@ ${state.address ? `
     const savedName = localStorage.getItem("cv_lead_name");
     if (savedName) {
        track("click_whatsapp", { target: targetName, cached_user: savedName });
-       window.location.href = finalUrl;
+       window.open(finalUrl, '_blank');
        return;
     }
 
@@ -1309,6 +1309,9 @@ ${state.address ? `
     btn.innerHTML = 'Aguarde...';
     btn.disabled = true;
 
+    // Abrir a nova guia ANTES do await para evitar bloqueio de popup
+    const newTab = window.open('about:blank', '_blank');
+
     await track("lead_captured", { 
       name: f.nome.value, 
       phone: f.wpp.value, 
@@ -1325,7 +1328,12 @@ ${state.address ? `
     
     btn.innerHTML = originalText;
     btn.disabled = false;
-    window.location.href = "https://api.whatsapp.com/send?phone=${wpp}&text=" + msg;
+    
+    if (newTab) {
+      newTab.location.href = "https://api.whatsapp.com/send?phone=${wpp}&text=" + msg;
+    } else {
+      window.location.href = "https://api.whatsapp.com/send?phone=${wpp}&text=" + msg;
+    }
   }
 
   async function handleSubmitLead(e) {
@@ -1337,6 +1345,9 @@ ${state.address ? `
     const originalText = btn.innerHTML;
     btn.innerHTML = 'Aguarde...';
     btn.disabled = true;
+    
+    // Abrir a nova guia ANTES do await para evitar bloqueio de popup
+    const newTab = window.open('about:blank', '_blank');
     
     localStorage.setItem("cv_lead_name", name);
 
@@ -1358,7 +1369,11 @@ ${state.address ? `
       finalWppUrl += encodeURIComponent(" (Meu nome é " + name + ")");
     }
     
-    window.location.href = finalWppUrl;
+    if (newTab) {
+      newTab.location.href = finalWppUrl;
+    } else {
+      window.location.href = finalWppUrl;
+    }
   }
   // Máscara de telefone simples
   function maskPhone(e) {
