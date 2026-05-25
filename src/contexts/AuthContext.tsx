@@ -93,6 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isCheckingRef = useRef(false);
   const lastCheckRef = useRef<number>(0);
   const initializedRef = useRef(false);
+  const authReadyRef = useRef(false);
   
   /**
    * Check if user is admin by querying the database user_roles table.
@@ -347,14 +348,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('[AuthContext] Auth state changed:', event);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
-        setLoading(false);
+        if (authReadyRef.current) {
+          setLoading(false);
+        }
         
         // Only check subscription on specific events, not every state change
         if (currentSession?.access_token && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
           setTimeout(() => {
             checkSubscription(currentSession.access_token, currentSession?.user ?? null);
           }, 100);
-        } else if (!currentSession) {
+        } else if (!currentSession && authReadyRef.current) {
           setIsAdmin(false);
           setSubscription({
             subscribed: false,
@@ -369,6 +372,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+      authReadyRef.current = true;
       setSession(existingSession);
       setUser(existingSession?.user ?? null);
       setLoading(false);
