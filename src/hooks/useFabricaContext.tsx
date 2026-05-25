@@ -371,23 +371,23 @@ const FabricaContext =
 const loadInitialState = (userId?: string | null): FabricaState => {
   if (typeof window === "undefined") return defaultState;
   try {
-    const stored = localStorage.getItem(scopedKey(STORAGE_KEY, userId)) || (userId ? localStorage.getItem(STORAGE_KEY) : null);
+    const stored = localStorage.getItem(scopedKey(STORAGE_KEY, userId));
     const parsed = stored ? JSON.parse(stored) : {};
     const heavy: Record<string, string> = {};
     const heavyPrefix = scopedHeavyPrefix(userId);
     HEAVY_KEYS.forEach((k) => {
-      const v = localStorage.getItem(heavyPrefix + k) || (userId ? localStorage.getItem(HEAVY_STORAGE_PREFIX + k) : null);
+      const v = localStorage.getItem(heavyPrefix + k);
       if (v) heavy[k] = v;
     });
     let gallery: string[] = [];
     try {
-      const g = localStorage.getItem(scopedKey(GALLERY_KEY, userId)) || (userId ? localStorage.getItem(GALLERY_KEY) : null);
+      const g = localStorage.getItem(scopedKey(GALLERY_KEY, userId));
       if (g) gallery = JSON.parse(g);
     } catch {}
 
     let generated: string[] = [];
     try {
-      const gen = localStorage.getItem(scopedKey(GENERATED_KEY, userId)) || (userId ? localStorage.getItem(GENERATED_KEY) : null);
+      const gen = localStorage.getItem(scopedKey(GENERATED_KEY, userId));
       if (gen) generated = JSON.parse(gen);
     } catch {}
 
