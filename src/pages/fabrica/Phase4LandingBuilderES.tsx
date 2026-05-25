@@ -33,7 +33,7 @@ const LOVABLE_INVITE_URL = "https://lovable.dev/invite/2ZD6VL6";
 const PRESET_COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#000000"];
 
 export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
-  const { state, update, undo, redo, canUndo, canRedo } = useFabricaContext();
+  const { state, update, systemUpdate, undo, redo, canUndo, canRedo, isHydrated } = useFabricaContext();
   const { user } = useAuth();
   const [previewing, setPreviewing] = useState(true);
   const [downloadCount, setDownloadCount] = useState(0);
@@ -237,6 +237,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   // Garante que todas as informações preenchidas nas fases anteriores
   // apareçam pré-populadas no construtor do site.
   useEffect(() => {
+    if (!isHydrated) return;
     const SYNC_KEY = "fabrica-phase4-autosync-v1";
     const lastSyncHash = localStorage.getItem(SYNC_KEY);
     const dest = (state.destinos?.[0] || "").trim();
@@ -323,12 +324,12 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
       };
     }
 
-    update(rootPatches);
+    systemUpdate(rootPatches);
     setAutoSyncFields(synced);
     setAutoSyncDone(true);
     localStorage.setItem(SYNC_KEY, currentHash);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isHydrated, state.agencyName, state.destinos, state.lastPaymentMode, state.lastPrice, state.level, state.siteContent, systemUpdate]);
 
   const resetSiteToBlank = () => {
     const SYNC_KEY = "fabrica-phase4-autosync-v1";
