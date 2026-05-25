@@ -11,7 +11,10 @@ export const FabricaLibrary = ({ subTab, setSubTab }: Props) => {
   const { state, update } = useFabricaContext();
 
   const getAdImages = () => state.allGeneratedAdImages || [];
-  const getGalleryImages = () => state.siteContent?.galleryImages || [];
+  const getGalleryImages = () => {
+    const ads = new Set(state.allGeneratedAdImages || []);
+    return (state.siteContent?.galleryImages || []).filter((img) => !ads.has(img));
+  };
 
   // Download robusto: converte qualquer URL para Blob antes de baixar
   // Isso garante que data:base64 e URLs externas façam download real (não abrem em nova aba)

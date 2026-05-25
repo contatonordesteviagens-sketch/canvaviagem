@@ -1665,13 +1665,14 @@ const PublishOnLovableCard = ({
         .from("thumbnails")
         .upload(fileName, blob, {
           contentType: 'text/html',
-          upsert: true
+          upsert: true,
+          cacheControl: '0'
         });
 
       if (uploadError) throw uploadError;
 
       if (cleanSlug.length > 2) {
-         await supabase.storage.from("thumbnails").upload(slugName, blob, { contentType: 'text/html', upsert: true }).catch(e => console.warn("Subdomain upload error:", e));
+         await supabase.storage.from("thumbnails").upload(slugName, blob, { contentType: 'text/html', upsert: true, cacheControl: '0' }).catch(e => console.warn("Subdomain upload error:", e));
       }
 
       const internalUrl = `${window.location.origin}/view/${user.id}`;
@@ -1747,7 +1748,7 @@ const PublishOnLovableCard = ({
           Escolha a sua opção preferida para publicar ou baixar o código completo do seu site perfeitamente como ele está:
         </p>
 
-        {/* 🚀 SUPER RECURSO: PUBLICAÇÃO EXPRESSA VERCEL EM 1-CLIQUE */}
+        {/* PUBLICAÇÃO DIRETA */}
         <div 
           className="my-6 p-6 rounded-2xl border-2 backdrop-blur-xl transition-all relative overflow-hidden text-left"
           style={{ 
@@ -1758,29 +1759,10 @@ const PublishOnLovableCard = ({
             boxShadow: state.siteContent.vercelUrl ? "0 10px 30px rgba(16,185,129,0.1)" : "none"
           }}
         >
-          {/* Tag de Destaque */}
-          <div className="absolute top-3 right-3 px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[9px] font-black uppercase tracking-wider">
-            Recomendado
-          </div>
-
-          <div className="flex items-center gap-3 mb-4">
-            <div 
-              className="w-10 h-10 rounded-xl flex items-center justify-center border"
-              style={{ 
-                borderColor: state.siteContent.vercelUrl ? "#10B98188" : `${primaryColor}44`,
-                background: state.siteContent.vercelUrl ? "rgba(16,185,129,0.1)" : "rgba(255,255,255,0.03)"
-              }}
-            >
-              <Rocket className={`w-5 h-5 ${state.siteContent.vercelUrl ? "text-emerald-400" : "text-amber-400"}`} />
-            </div>
-            <div>
-              <h4 className="text-base font-black text-white tracking-wide">
-                🚀 Publicação Direta e Expressa no Vercel
-              </h4>
-              <p className="text-xs text-white/50">
-                Coloque o site completo da sua agência no ar instantaneamente, sem precisar de código ou configurações chatas!
-              </p>
-            </div>
+          <div className="mb-4">
+            <h4 className="text-base font-black text-white tracking-wide">
+              Publicar Site Diretamente
+            </h4>
           </div>
 
           {/* Se já estiver publicado, mostra o link em destaque */}
@@ -1813,7 +1795,7 @@ const PublishOnLovableCard = ({
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
-                Nome do Domínio (Link do Site):
+                NOME DO DOMÍNIO (LINK DO SITE):
               </label>
               <div className="flex items-center">
                 <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-l-lg text-xs text-white/40 select-none">
@@ -1830,9 +1812,6 @@ const PublishOnLovableCard = ({
                   .vercel.app
                 </span>
               </div>
-              <p className="text-[10px] text-white/40 mt-1.5 italic">
-                Apenas letras, números e traços. Seu site ficará visível mundialmente no link acima.
-              </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1852,8 +1831,7 @@ const PublishOnLovableCard = ({
                   </>
                 ) : (
                   <>
-                    <Rocket className="w-4 h-4" />
-                    Publicar Novo Site 🚀
+                    Publicar Site
                   </>
                 )}
               </button>
@@ -1874,48 +1852,10 @@ const PublishOnLovableCard = ({
                   </>
                 ) : (
                   <>
-                    <Rocket className="w-4 h-4 animate-bounce" />
-                    Atualizar Site Existente ⚡
+                    Atualizar Site
                   </>
                 )}
               </button>
-            </div>
-
-            {/* Configuração de Token para o Administrador */}
-            <div className="border-t border-white/5 pt-3 mt-2">
-              <button
-                type="button"
-                onClick={() => setShowVercelConfig(!showVercelConfig)}
-                className="text-[11px] font-semibold text-white/40 hover:text-white/60 transition-colors flex items-center gap-1.5"
-              >
-                ⚙️ {showVercelConfig ? "Ocultar" : "Mostrar"} Configurações do Desenvolvedor (Vercel API)
-              </button>
-
-              {showVercelConfig && (
-                <div className="mt-3 p-4 rounded-xl bg-black/50 border border-white/10 space-y-3">
-                  <p className="text-[11px] text-white/60 leading-relaxed">
-                    💡 <strong>Para o Proprietário do App:</strong> Para que seus clientes publiquem em 1-clique gratuitamente sem que precisem inserir nenhuma chave, configure a variável <strong>VITE_VERCEL_TOKEN</strong> no arquivo <strong>.env</strong> do seu projeto com o seu Token do Vercel.
-                  </p>
-                  
-                  <div className="space-y-1.5">
-                    <label className="block text-[10px] font-bold text-white/50 uppercase">
-                      Ou insira o Token do Vercel manualmente neste navegador:
-                    </label>
-                    <input
-                      type="password"
-                      value={customVercelToken}
-                      onChange={(e) => handleSaveToken(e.target.value)}
-                      placeholder="Cole seu token vercel_..."
-                      className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-white/30 outline-none focus:border-white/30"
-                    />
-                    {(import.meta.env.VITE_VERCEL_TOKEN || customVercelToken) && (
-                      <p className="text-[10px] text-emerald-400 font-semibold mt-1">
-                        ✓ Token configurado! Você e seus clientes já podem publicar com 1 clique.
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -1934,31 +1874,47 @@ const PublishOnLovableCard = ({
           >
             <Copy className="w-3.5 h-3.5" /> Copiar HTML
           </button>
-          <details className="group">
-            <summary className="list-none cursor-pointer py-2 px-3 rounded-lg text-white/40 hover:text-white/70 transition-colors flex items-center gap-1.5">
-              Opções avançadas
-            </summary>
-            <div className="absolute z-10 mt-2 right-0 sm:right-auto w-72 p-3 rounded-xl bg-black/90 border border-white/10 backdrop-blur-xl text-left space-y-2 shadow-2xl">
-              <p className="text-[11px] text-white/60 leading-relaxed">
-                Quer customizar fontes, layout avançado ou usar domínio próprio? Edite no Lovable.
-              </p>
+        </div>
+
+        <details className="mt-6 p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
+          <summary className="list-none cursor-pointer text-sm font-semibold text-white/60 hover:text-white transition-colors flex items-center gap-2">
+            <span>Opções Avançadas (Lovable)</span>
+          </summary>
+          <div className="mt-4 space-y-4">
+            <p className="text-xs text-white/60 leading-relaxed">
+              Quer customizar fontes, layout avançado ou usar domínio próprio? Você pode enviar o seu site para o Lovable e pedir edições avançadas por IA.
+            </p>
+            
+            <div className="space-y-2 mb-4">
+              <div className="text-xs text-white/50 bg-black/40 p-3 rounded-lg border border-white/5">
+                <strong className="text-white">Passo 1:</strong> Copie o prompt de atualização abaixo.
+              </div>
+              <div className="text-xs text-white/50 bg-black/40 p-3 rounded-lg border border-white/5">
+                <strong className="text-white">Passo 2:</strong> Abra o Lovable e cole o prompt no chat.
+              </div>
+              <div className="text-xs text-white/50 bg-black/40 p-3 rounded-lg border border-white/5">
+                <strong className="text-white">Passo 3:</strong> Deixe o Lovable gerar o seu site atualizado!
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                onClick={copyUpdatePrompt}
+                className="flex-1 py-3 px-3 rounded-lg border border-white/15 text-white/80 hover:text-white hover:bg-white/[0.04] transition-all text-xs font-semibold flex items-center justify-center gap-1.5"
+              >
+                <Copy className="w-4 h-4" /> 1. Copiar Prompt
+              </button>
               <a
                 href={LOVABLE_INVITE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-2 px-3 rounded-lg bg-white/[0.06] border border-white/15 text-white text-xs font-semibold hover:bg-white/[0.10] transition-all flex items-center justify-center gap-1.5"
+                className="flex-1 py-3 px-3 rounded-lg bg-white/[0.06] border border-white/15 text-white text-xs font-semibold hover:bg-white/[0.10] transition-all flex items-center justify-center gap-1.5"
               >
-                <Sparkles className="w-3.5 h-3.5" /> Abrir Lovable <ExternalLink className="w-3 h-3" />
+                <Sparkles className="w-4 h-4" /> 2. Abrir Lovable <ExternalLink className="w-3 h-3 ml-1" />
               </a>
-              <button
-                onClick={copyUpdatePrompt}
-                className="w-full py-2 px-3 rounded-lg border border-dashed border-white/15 text-white/70 hover:text-white hover:bg-white/[0.04] transition-all text-xs flex items-center justify-center gap-1.5"
-              >
-                <Rocket className="w-3.5 h-3.5" /> Copiar prompt de atualização
-              </button>
             </div>
-          </details>
-        </div>
+          </div>
+        </details>
 
         <div className="mt-6 pt-5 border-t border-white/10 flex justify-center">
           <button
