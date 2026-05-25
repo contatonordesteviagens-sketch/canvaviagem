@@ -1,0 +1,495 @@
+﻿import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { useFabricaContext } from "@/hooks/useFabricaContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { buildLandingHTML } from "@/lib/fabrica-html-export";
+import { Loader2, Eye, X as CloseIcon } from "lucide-react";
+import { 
+  TrendingUp, 
+  Users, 
+  Target, 
+  Activity, 
+  Calendar, 
+  Sparkles, 
+  ArrowRight, 
+  ExternalLink, 
+  CheckCircle2, 
+  Newspaper,
+  BarChart3,
+  MousePointerClick,
+  MessageSquare
+} from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+export const Phase5Dashboard = () => {
+  const { state, setPhase } = useFabricaContext();
+  const { user } = useAuth();
+  const [showUrlHelp, setShowUrlHelp] = useState(false);
+  const [showLivePreview, setShowLivePreview] = useState(false);
+  const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
+
+  const [isPublishing, setIsPublishing] = useState(false);
+  
+  const handleDashboardPublish = async () => {
+    if (!user?.id) {
+      toast.error("Fa├ºa login para publicar.");
+      return;
+    }
+    
+    setIsPublishing(true);
+    const loadingToast = toast.loading("Publicando e ativando seu site...");
+    
+    try {
+      const html = buildLandingHTML(state, user.id);
+      const blob = new Blob([html], { type: 'text/html' });
+      const fileName = `sites/${user.id}.html`;
+      
+      // ­ƒÜÇ NOVO: Motor de Subdom├¡nios Reais!
+      const rawName = state.agencyName || `agencia-${user.id.substring(0,4)}`;
+      const cleanSlug = rawName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      const slugName = `sites/${cleanSlug}.html`;
+      
+      // Faz o upload Oficial
+      const { error: uploadError } = await supabase.storage
+        .from("thumbnails")
+        .upload(fileName, blob, {
+          contentType: 'text/html',
+          upsert: true
+        });
+      
+      // Faz o upload Secund├írio para Subdom├¡nio (se for v├ílido)
+      if (cleanSlug.length > 2) {
+         await supabase.storage.from("thumbnails").upload(slugName, blob, { contentType: 'text/html', upsert: true }).catch(() => {});
+      }
+        
+      if (uploadError) throw uploadError;
+      
+      toast.dismiss(loadingToast);
+      toast.success("­ƒÜÇ SITE PUBLICADO E ATIVO COM SUCESSO!");
+      
+      if (typeof window !== "undefined" && (window as any).confetti) {
+         (window as any).confetti();
+      }
+      
+    } catch (err) {
+      console.error("Publish error:", err);
+      toast.dismiss(loadingToast);
+      toast.error("Erro ao publicar site.");
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const [siteExists, setSiteExists] = useState<boolean | null>(null);
+  
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (!user?.id) return;
+      try {
+        const siteUrl = `${window.location.origin}/view/${user.id}`;
+        const res = await fetch(siteUrl, { method: 'HEAD', cache: 'no-cache' });
+        setSiteExists(res.ok);
+      } catch {
+        setSiteExists(false);
+      }
+    };
+    checkStatus();
+  }, [user?.id, isPublishing]);
+
+
+
+  // Gera a pr├®via ao vivo instantaneamente sem depender de DNS ou servidores
+  useEffect(() => {
+    if (showLivePreview) {
+      const html = buildLandingHTML(state, user?.id);
+      const blob = new Blob([html], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      setPreviewBlobUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreviewBlobUrl(null);
+    }
+  }, [showLivePreview, state, user]);
+  
+  const [stats, setStats] = useState({ visits: 0, clicks: 0, leads: 0 });
+  const [leadsList, setLeadsList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRealMetrics = async () => {
+      // USA O ID DO USU├üRIO (├ÜNICO) PARA EVITAR COLIS├âO DE DADOS ENTRE AG├èNCIAS DIFERENTES
+      const agencyTrackingId = user?.id || state.agencyName || "Ag├¬ncia";
+      
+      try {
+        // 1. Contagem REAL de visualiza├º├Áes
+        const { count: vCount } = await supabase
+          .from("analytics_events")
+          .select("*", { count: "exact", head: true })
+          .eq("event_type", "page_view")
+          .contains("event_data", { agency_id: agencyTrackingId });
+
+        // 2. Contagem REAL de Cliques WhatsApp
+        const { count: cCount } = await supabase
+          .from("analytics_events")
+          .select("*", { count: "exact", head: true })
+          .eq("event_type", "click_whatsapp")
+          .contains("event_data", { agency_id: agencyTrackingId });
+
+        // 3. Contagem REAL de Leads Capturados (Agora na tabela leads!)
+        const { count: lCount } = await supabase
+          .from("leads")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user?.id);
+
+        // 4. NOVA COLE├ç├âO: BUSCA OS DADOS REAIS DOS ├ÜLTIMOS 15 LEADS (CRM!)
+        const { data: lData } = await supabase
+          .from("leads")
+          .select("*")
+          .eq("user_id", user?.id)
+          .order("created_at", { ascending: false })
+          .limit(15);
+
+        setStats({
+          visits: vCount || 0,
+          clicks: cCount || 0,
+          leads: lCount || 0
+        });
+        setLeadsList(lData || []);
+      } catch (e) {
+        console.warn("Falha ao carregar m├®tricas reais:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRealMetrics();
+  }, [state.agencyName]);
+
+  const currentDay = format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR });
+  const formatString = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  // Lan├ºamentos da semana (Ponto 10) - Destaques que mudam dinamicamente
+  const NOVIDADES = [
+    {
+      tag: "LAN├çAMENTO",
+      title: "Novos Templates de Gramado/RS",
+      desc: "12 novas artes focadas na temporada de inverno 2024 acabam de entrar na F├íbrica.",
+      date: "Hoje",
+      color: "amber"
+    },
+    {
+      tag: "ATUALIZA├ç├âO",
+      title: "Mecanismo Lote A/B Premium",
+      desc: "Agora voc├¬ pode gerar 3 vers├Áes das suas artes de uma vez gastando apenas 1 cr├®dito.",
+      date: "Ontem",
+      color: "indigo"
+    }
+  ];
+
+  const primaryColor = state.primaryColor || "#F59E0B";
+
+  // C├üLCULO DE GAMIFICA├ç├âO GLOBAL DA CONTA
+  const getAppProgress = () => {
+    let points = 0;
+    let count = 0;
+    if (state.logoBase64) { points += 25; count++; }
+    if (state.agencyName) { points += 25; count++; }
+    if (state.diagnosticoCompleto) { points += 25; count++; }
+    if (state.selectedPackages.length > 0) { points += 25; count++; }
+    
+    let badge = { n: "Novato", e: "­ƒÉú", c: "text-gray-400" };
+    if (points === 100) badge = { n: "Ag├¬ncia Pr├│", e: "­ƒÅå", c: "text-amber-400" };
+    else if (points >= 50) badge = { n: "Em Decolagem", e: "­ƒÜÇ", c: "text-blue-400" };
+    
+    return { points, badge, count };
+  };
+  const progress = getAppProgress();
+
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      
+      {/* Boas Vindas Super Premium */}
+      <div className="relative p-6 rounded-3xl overflow-hidden border border-white/10 group bg-black/20">
+        <div 
+          className="absolute top-0 right-0 w-64 h-64 blur-[100px] rounded-full opacity-20 -mr-10 -mt-10 transition-all group-hover:opacity-30"
+          style={{ background: primaryColor }}
+        />
+        <div className="relative z-10 flex flex-col sm:flex-row gap-5 items-center">
+          {state.logoBase64 && (
+            <div className="w-16 h-16 rounded-2xl bg-white/10 p-2 border border-white/20 flex items-center justify-center flex-shrink-0 shadow-2xl">
+              <img src={state.logoBase64} className="w-full h-full object-contain" alt="Logo" />
+            </div>
+          )}
+          <div className="text-center sm:text-left flex-1">
+            <div className="text-xs font-bold text-white/40 uppercase tracking-widest mb-1">{formatString(currentDay)}</div>
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-2">
+              Ol├í, {state.agencyName || "Ag├¬ncia"}! ­ƒæï
+            </h2>
+            <p className="text-sm text-white/60 max-w-md leading-relaxed">
+              Diagn├│stico: <span className="font-bold text-emerald-400">N├¡vel {state.level || 1}</span> ÔÇó {state.selectedPackages.length} Pacotes Ativos no Site.
+            </p>
+          </div>
+          <button 
+            onClick={() => setPhase(3)}
+            className="text-[10px] font-bold bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-2 rounded-full text-white/60 transition-all hover:text-white"
+          >
+            Ô£Å´©Å Editar Dados
+          </button>
+        </div>
+      </div>
+
+      {/* BARRA DE GAMIFICA├ç├âO GLOBAL */}
+      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 flex items-center justify-between gap-4 group hover:border-white/20 transition-all shadow-lg">
+        <div className="flex items-center gap-3 flex-1">
+           <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+             {progress.badge.e}
+           </div>
+           <div className="flex-1">
+             <div className="flex items-center justify-between mb-1.5">
+               <span className={`text-xs font-extrabold uppercase tracking-wider ${progress.badge.c}`}>{progress.badge.n}</span>
+               <span className="text-[10px] font-bold text-white/40">{progress.points}% Conclu├¡do</span>
+             </div>
+             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+               <div className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-1000" style={{ width: `${progress.points}%` }} />
+             </div>
+           </div>
+        </div>
+        <div className="text-right hidden sm:block pl-4 border-l border-white/10">
+           <div className="text-[10px] font-bold text-white/40 uppercase">Passos Ativos</div>
+           <div className="text-sm font-black text-white">{progress.count}/4</div>
+        </div>
+      </div>
+
+      {/* M├ôDULO F5: OS DADOS VITAIS (MUITO VISUAL!) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Card Visitas */}
+        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.04] transition-all group">
+          <div className="flex items-start justify-between mb-4">
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400">
+              <Users className="w-5 h-5" />
+            </div>
+            <div className="text-[10px] font-bold px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/20 flex items-center gap-0.5">
+              AO VIVO
+            </div>
+          </div>
+          <div className="text-3xl font-black text-white mb-0.5">
+            {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : stats.visits}
+          </div>
+          <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Visitas ├Ünicas</div>
+          <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
+            <div className="h-full bg-emerald-500 rounded-full w-[65%] animate-in slide-in-from-left duration-1000" />
+          </div>
+        </div>
+
+        {/* Card Cliques */}
+        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.04] transition-all group">
+          <div className="flex items-start justify-between mb-4">
+            <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400">
+              <MousePointerClick className="w-5 h-5" />
+            </div>
+            <div className="text-[10px] font-bold px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded-full border border-blue-500/20 flex items-center gap-0.5">
+              CONVERS├âO
+            </div>
+          </div>
+          <div className="text-3xl font-black text-white mb-0.5">
+            {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : stats.clicks}
+          </div>
+          <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Cliques WhatsApp</div>
+          <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
+            <div className="h-full bg-blue-500 rounded-full w-[40%] animate-in slide-in-from-left duration-1000 delay-100" />
+          </div>
+        </div>
+
+        {/* Card Leads */}
+        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.04] transition-all group">
+          <div className="flex items-start justify-between mb-4">
+            <div className="p-2.5 rounded-xl bg-violet-500/10 text-violet-400">
+              <MessageSquare className="w-5 h-5" />
+            </div>
+            <div className="text-[10px] font-bold px-2 py-0.5 bg-violet-500/20 text-violet-300 rounded-full border border-violet-500/20">
+              {stats.leads > 0 ? "RECEBIDOS" : "AGUARDANDO"}
+            </div>
+          </div>
+          <div className="text-3xl font-black text-white mb-0.5">
+            {loading ? <Loader2 className="w-6 h-6 animate-spin text-white/40" /> : stats.leads}
+          </div>
+          <div className="text-xs font-bold text-white/40 uppercase tracking-wider">Formul├írios Preenchidos</div>
+          <div className="mt-3 w-full bg-white/5 h-1 rounded-full overflow-hidden">
+            <div className="h-full bg-violet-500 rounded-full w-[25%] animate-in slide-in-from-left duration-1000 delay-200" />
+          </div>
+        </div>
+      </div>
+
+      {/* Conte├║do Removido: O bloco de Status Lovable/Vercel e Novidades foi removido para focar o F5 no CRM */}
+
+      {/* ­ƒåò NOVO M├ôDULO: CENTRO DE LEADS / CRM INTEGRADO (ULTRA VALOR AGREGADO) */}
+      <div className="bg-white/[0.03] border border-white/10 rounded-3xl overflow-hidden shadow-xl animate-in fade-in slide-in-from-bottom-6 duration-700 mt-6">
+         <div className="p-6 border-b border-white/10 flex items-center justify-between bg-gradient-to-br from-violet-500/5 to-transparent">
+            <div className="flex items-center gap-3">
+               <div className="p-2.5 rounded-xl bg-violet-500/20 text-violet-400 shadow-inner">
+                  <Users className="w-5 h-5" />
+               </div>
+               <div>
+                  <h3 className="font-black text-white text-base tracking-tight">Carteira de Clientes (Leads)</h3>
+                  <p className="text-[11px] text-white/50">Pessoas interessadas que preencheram o formul├írio no seu site.</p>
+               </div>
+            </div>
+            <div className="hidden sm:block text-[10px] font-extrabold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full animate-pulse">
+               DADOS AO VIVO
+            </div>
+         </div>
+
+         <div className="overflow-x-auto">
+            {leadsList.length === 0 ? (
+               <div className="p-12 text-center flex flex-col items-center justify-center space-y-3 text-white/30">
+                  <MousePointerClick className="w-8 h-8 opacity-40" />
+                  <div className="text-sm font-medium">Nenhum lead recebido ainda.</div>
+                  <p className="text-[10px] max-w-xs leading-relaxed">Assim que algu├®m clicar em comprar no seu site, os dados aparecer├úo aqui automaticamente em tempo real.</p>
+               </div>
+            ) : (
+               <table className="w-full text-left text-sm border-collapse">
+                  <thead>
+                     <tr className="bg-white/[0.02] border-b border-white/5">
+                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Data/Hora</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Nome do Cliente</th>
+                         <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Destino</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Detalhes</th>
+                        <th className="px-6 py-4 text-right text-[10px] font-bold text-white/40 uppercase tracking-wider">A├º├úo</th>
+                     </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                     {leadsList.map((l: any) => {
+                        const rawDate = new Date(l.created_at);
+                        const cleanPhone = String(l.whatsapp || "").replace(/\D/g, "");
+                        
+                        return (
+                           <tr key={l.id} className="hover:bg-white/[0.02] transition-colors group">
+                              <td className="px-6 py-4 whitespace-nowrap text-xs text-white/50">
+                                 {rawDate.toLocaleDateString('pt-BR')} <span className="opacity-50 text-[10px] ml-1">{rawDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                              </td>
+                              <td className="px-6 py-4">
+                                 <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-black text-white shadow-lg group-hover:scale-110 transition-transform">
+                                       {String(l.nome_completo || "L").charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                       <div className="font-bold text-white group-hover:text-violet-300 transition-colors">{l.nome_completo || "N├úo informado"}</div>
+                                       <div className="text-[10px] text-white/40">{l.email || "Sem e-mail"}</div>
+                                    </div>
+                                 </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                 <span className="inline-flex px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] font-medium text-white/70 max-w-[180px] truncate">
+                                    {l.destino_interesse || "Navega├º├úo Geral"}
+                                 </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                 <div className="text-[10px] text-white/50 space-y-0.5">
+                                    <div>Viajantes: <strong className="text-white/80">{l.numero_viajantes || 1}</strong></div>
+                                    {l.data_ida && <div>Ida: <strong className="text-white/80">{new Date(l.data_ida).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</strong></div>}
+                                    {l.data_volta && <div>Volta: <strong className="text-white/80">{new Date(l.data_volta).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</strong></div>}
+                                 </div>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                 {cleanPhone ? (
+                                    <a 
+                                       href={`https://wa.me/${cleanPhone.startsWith('55') ? '' : '55'}${cleanPhone}`} 
+                                       target="_blank" 
+                                       rel="noreferrer"
+                                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#25D366] hover:bg-[#22c35e] text-white text-[11px] font-black rounded-lg transition-all active:scale-95 shadow-lg shadow-green-900/20"
+                                    >
+                                       <MessageSquare className="w-3.5 h-3.5" /> Chamar Whats
+                                    </a>
+                                 ) : (
+                                    <span className="text-[10px] text-white/30">Sem contato</span>
+                                 )}
+                              </td>
+                           </tr>
+                        );
+                     })}
+                  </tbody>
+               </table>
+            )}
+         </div>
+      </div>
+
+      {/* EXPLANATORY MODAL: COMO FUNCIONA O SUBDOM├ìNIO */}
+      {showUrlHelp && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[#121214] border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+             <div className="p-6 border-b border-white/10 bg-gradient-to-br from-amber-500/10 to-transparent">
+                <h3 className="text-lg font-black text-white flex items-center gap-2">
+                  <ExternalLink className="w-5 h-5 text-amber-400" /> Entendendo o Subdom├¡nio
+                </h3>
+                <p className="text-xs text-white/50 mt-1">Como este recurso de escala funciona.</p>
+             </div>
+             <div className="p-6 space-y-5">
+                <div className="space-y-3 text-sm text-white/70 leading-relaxed">
+                   <p>
+                     <strong className="text-white">1. ├ë Autom├ítico?</strong><br/>
+                     Sim! O sistema apenas *reserva* o nome. Para ele funcionar na internet, voc├¬ (o dono da plataforma) precisa apontar o seu dom├¡nio principal para o servidor (Vercel/Netlify) usando uma regra de DNS chamada "Wildcard" (*).
+                   </p>
+                   <p>
+                     <strong className="text-white">2. Tem custo ou limite de Tokens?</strong><br/>
+                     <span className="text-emerald-400 font-bold">ZERO CUSTO.</span> N├úo usa tokens de IA! O site gerado ├® est├ítico (HTML/CSS), o que significa que 1.000 ou 10.000 pessoas acessando n├úo custam absolutamente nada nos servidores gratuitos.
+                   </p>
+                   <p>
+                     <strong className="text-white">3. Onde ficam os dados?</strong><br/>
+                     Tudo no seu Supabase! Quando o site carrega, ele "pede" ao seu banco os textos e fotos da ag├¬ncia X e monta a tela instantaneamente. Sem gerar 1.000 contas separadas. Tudo centralizado na SUA conta mestra.
+                   </p>
+                </div>
+                <button 
+                  onClick={() => setShowUrlHelp(false)}
+                  className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-colors"
+                >
+                  Entendi, fechar
+                </button>
+             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ­ƒåò MODAL DE PR├ëVIA AO VIVO (SIMULADOR) */}
+      {showLivePreview && (
+        <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex flex-col animate-in fade-in duration-300">
+           {/* Header da Pr├®via */}
+           <div className="bg-[#121214] border-b border-white/10 p-4 flex items-center justify-between shadow-xl">
+             <div className="flex items-center gap-3">
+               <div className="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg">
+                 <Eye className="w-5 h-5" />
+               </div>
+               <div>
+                 <h3 className="text-white font-black text-sm uppercase tracking-wider">Simulador de Site Ativo</h3>
+                 <p className="text-[10px] text-white/50">Visualizando sua ag├¬ncia localmente antes da publica├º├úo oficial.</p>
+               </div>
+             </div>
+             <button 
+               onClick={() => setShowLivePreview(false)}
+               className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 transition-all"
+             >
+               <CloseIcon className="w-6 h-6" />
+             </button>
+           </div>
+           
+           {/* Container do IFrame (Simulando o site rodando) */}
+           <div className="flex-1 bg-zinc-900 relative">
+             {previewBlobUrl ? (
+               <iframe 
+                 src={previewBlobUrl} 
+                 className="w-full h-full border-none"
+                 title="Preview Realtime do Site"
+               />
+             ) : (
+               <div className="absolute inset-0 flex items-center justify-center text-white/30 gap-2">
+                 <Loader2 className="w-6 h-6 animate-spin" /> Renderizando visualiza├º├úo...
+               </div>
+             )}
+           </div>
+        </div>
+      )}
+
+    </div>
+  );
+};

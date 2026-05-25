@@ -1107,9 +1107,9 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         <h2 style="margin-top:12px">${esc(sc.orcamentoTitle || "Fale com um consultor agora")}</h2>
         <p>${esc(sc.orcamentoText || "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.")}</p>
         <div class="contact-list">
-          <div class="contact-item"><div class="contact-icon">💬</div><div><strong>WhatsApp</strong><span>${esc(state.whatsapp || "—")}</span></div></div>
-          <div class="contact-item"><div class="contact-icon">✉</div><div><strong>E-mail</strong><span>contato@${esc((agencia || "agencia").toLowerCase().replace(/[^a-z0-9]/g, ""))}.com.br</span></div></div>
-          <div class="contact-item"><div class="contact-icon">🕐</div><div><strong>Atendimento</strong><span>Seg–Sex 8h–20h · Sáb 9h–15h</span></div></div>
+          <div class="contact-item"><div class="contact-icon">📱</div><div><strong>WhatsApp</strong><span>${esc(state.whatsapp || "—")}</span></div></div>
+          <div class="contact-item"><div class="contact-icon">✉️</div><div><strong>E-mail</strong><span>${esc(state.agencyEmail || `contato@${(agencia || "agencia").toLowerCase().replace(/[^a-z0-9]/g, "")}.com.br`)}</span></div></div>
+          <div class="contact-item"><div class="contact-icon">⏰</div><div><strong>Atendimento</strong><span>${esc(sc.atendimentoText || "Seg–Sex 8h–20h · Sáb 9h–15h")}</span></div></div>
           <div class="contact-item"><div class="contact-icon">📍</div><div><strong>Localização</strong><span>${esc(cidade)}</span></div></div>
         </div>
       </div>

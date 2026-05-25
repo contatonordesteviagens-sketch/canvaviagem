@@ -80,11 +80,8 @@ const FabricaInner = () => {
       <aside className="w-64 border-r border-white/5 bg-[#0F0F11] flex-shrink-0 flex flex-col hidden md:flex sticky top-0 h-screen z-40 select-none">
         {/* Brand Header */}
         <div className="p-6 border-b border-white/5 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-br from-amber-500 to-yellow-300 shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-            <Sparkles className="w-4 h-4 text-black font-black" />
-          </div>
           <div>
-            <div className="text-xs font-black text-white leading-none tracking-tight">Fábrica de Viagens</div>
+            <div className="text-xs font-black text-white leading-none tracking-tight">Fábrica de Destinos</div>
             <div className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-0.5">Painel de Criação</div>
           </div>
         </div>
@@ -102,7 +99,7 @@ const FabricaInner = () => {
               }`}
             >
               <LayoutDashboard className={`w-4 h-4 ${activeTab === "dashboard" ? "text-amber-400" : "text-white/40"}`} />
-              <span>Painel Inicial</span>
+              <span>Painel Fábrica</span>
             </button>
           </div>
 
@@ -252,14 +249,16 @@ const FabricaInner = () => {
           </div>
         </div>
 
-        {/* User Footer / Info */}
-        <div className="p-4 border-t border-white/5 bg-[#0A0A0B]/40">
-          <button
-            onClick={() => navigate("/")}
-            className="w-full py-2.5 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] text-white/80 text-xs font-semibold flex items-center justify-center gap-2 transition-all"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> Voltar ao Painel
-          </button>
+        {/* Bottom Actions */}
+        <div className="p-4 border-t border-white/5 space-y-3">
+          <div className="pt-2">
+            <button
+              onClick={() => navigate("/")}
+              className="w-full py-2.5 rounded-xl bg-blue-600/20 border border-blue-500/30 hover:bg-blue-600/30 text-blue-400 text-xs font-semibold flex items-center justify-center gap-2 transition-all"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Voltar ao Canva Viagem
+            </button>
+          </div>
         </div>
       </aside>
 

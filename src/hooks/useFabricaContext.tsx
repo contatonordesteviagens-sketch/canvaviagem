@@ -77,6 +77,7 @@ export interface SiteContent {
   orcamentoEyebrow?: string;
   orcamentoTitle?: string;
   orcamentoText?: string;
+  atendimentoText?: string;
   footerText?: string;
 }
 
@@ -107,6 +108,7 @@ export interface FabricaState {
   whatsapp: string;          // número nacional (sem DDI)
   whatsappDialCode: string;  // DDI em dígitos: "55", "1", "351"...
   whatsappCountryCode: string; // ISO code: "BR", "US", "PT"...
+  agencyEmail: string;
   niche: Niche;
   destinos: string[]; // destinos específicos vendidos pela agência
   logoBase64: string;
@@ -192,6 +194,7 @@ const defaultState: FabricaState = {
   whatsapp: "",
   whatsappDialCode: "55",
   whatsappCountryCode: "BR",
+  agencyEmail: "",
   niche: "",
   destinos: [],
   logoBase64: "",
@@ -284,6 +287,7 @@ const defaultState: FabricaState = {
     orcamentoEyebrow: "Orçamento",
     orcamentoTitle: "Fale com um consultor agora",
     orcamentoText: "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.",
+    atendimentoText: "Seg–Sex 8h–20h · Sáb 9h–15h",
     footerText: "Sua parceira ideal para viagens inesquecíveis. Cuidamos de cada detalhe para que você apenas aproveite o momento.",
   },
   lastCategoria: "oferta_pacote",
@@ -461,23 +465,13 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     const loadSavedState = async () => {
       try {
         console.log("[Supabase Load] Iniciando carregamento do banco de dados...");
-        let { data, error } = await supabase
-          .from("fabrica_user_states")
+        const { data, error } = await supabase
+          .from("fabrica_diagnosticos")
           .select("state_snapshot, updated_at")
           .eq("user_id", user.id)
+          .order("updated_at", { ascending: false })
+          .limit(1)
           .maybeSingle();
-
-        if (!data && !error) {
-          const fallback = await supabase
-            .from("fabrica_diagnosticos")
-            .select("state_snapshot, updated_at")
-            .eq("user_id", user.id)
-            .order("updated_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          data = fallback.data;
-          error = fallback.error;
-        }
 
         if (error) {
           console.warn("[Supabase Load] Falha ao carregar estado:", error.message);
@@ -566,7 +560,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         };
 
         const { error } = await supabase
-          .from("fabrica_user_states")
+          .from("fabrica_diagnosticos")
           .upsert({
             user_id: user.id,
             agency_name: state.agencyName || "Nova Agência",

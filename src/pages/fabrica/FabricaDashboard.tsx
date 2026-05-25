@@ -15,6 +15,7 @@ import {
   ExternalLink, 
   Package, 
   Link, 
+  Mail,
   Image as ImageIcon 
 } from "lucide-react";
 import { toast } from "sonner";
@@ -64,6 +65,38 @@ export const FabricaDashboard = () => {
   const [newDesc, setNewDesc] = useState("");
   const [newPrice, setNewPrice] = useState("");
 
+  // Address Autocomplete
+  const [addressQuery, setAddressQuery] = useState(state.address || "");
+  const [addressOptions, setAddressOptions] = useState<any[]>([]);
+  const [showAddressOptions, setShowAddressOptions] = useState(false);
+  const addressTimeoutRef = useRef<any>(null);
+
+  const handleAddressChange = (val: string) => {
+    setAddressQuery(val);
+    update({ address: val });
+    if (addressTimeoutRef.current) clearTimeout(addressTimeoutRef.current);
+    if (!val || val.length < 4) {
+      setAddressOptions([]);
+      setShowAddressOptions(false);
+      return;
+    }
+    addressTimeoutRef.current = setTimeout(() => {
+      fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&format=json&addressdetails=1&limit=5&countrycodes=br`)
+        .then(r => r.json())
+        .then(data => {
+          setAddressOptions(data);
+          setShowAddressOptions(data.length > 0);
+        }).catch(() => {});
+    }, 600);
+  };
+
+  const selectAddress = (addr: any) => {
+    const formatted = addr.display_name;
+    setAddressQuery(formatted);
+    update({ address: formatted });
+    setShowAddressOptions(false);
+  };
+
   const slugify = (text: string) => {
     return text
       .toLowerCase()
@@ -74,7 +107,7 @@ export const FabricaDashboard = () => {
   };
 
   const domainSlug = state.agencyName ? slugify(state.agencyName) : "sua-agencia";
-  const mockUrl = `https://${domainSlug}.vercel.app`;
+  const displayUrl = state.siteContent?.vercelUrl || `https://${domainSlug}.vercel.app`;
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -302,7 +335,22 @@ export const FabricaDashboard = () => {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">WhatsApp de Vendas *</label>
+                  <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">E-mail da Agência</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-white/30" />
+                    <input 
+                      type="email"
+                      value={state.agencyEmail || ""}
+                      onChange={(e) => update({ agencyEmail: e.target.value })}
+                      placeholder="contato@suaagencia.com.br"
+                      className="w-full bg-white/[0.03] border border-white/5 hover:border-white/10 focus:border-amber-500/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">WhatsApp de Vendas *</label>
                   <div className="relative flex items-stretch w-full bg-white/[0.03] border border-white/5 hover:border-white/10 focus-within:border-amber-500/50 rounded-xl overflow-visible transition-all">
                     {/* Seletor de país / DDI */}
                     <button
@@ -361,20 +409,33 @@ export const FabricaDashboard = () => {
                       wa.me/{currentCountry.dialRaw}{(state.whatsapp || "").replace(/\D/g, "")}
                     </p>
                   )}
-                </div>
-              </div>
-
-              <div>
+                </div>              <div>
                 <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5">Endereço Físico (Mapa)</label>
                 <div className="relative">
                   <MapPin className="absolute left-3.5 top-3.5 w-4 h-4 text-white/30" />
                   <input 
                     type="text"
-                    value={state.address || ""}
-                    onChange={(e) => update({ address: e.target.value })}
+                    value={addressQuery}
+                    onChange={(e) => handleAddressChange(e.target.value)}
+                    onFocus={() => { if (addressOptions.length > 0) setShowAddressOptions(true); }}
+                    onBlur={() => setTimeout(() => setShowAddressOptions(false), 200)}
                     placeholder="Av. Paulista, 1000 - São Paulo, SP"
                     className="w-full bg-white/[0.03] border border-white/5 hover:border-white/10 focus:border-amber-500/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-all"
                   />
+                  {showAddressOptions && (
+                    <div className="absolute z-50 top-full left-0 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-white/10 bg-[#161619] shadow-2xl">
+                      {addressOptions.map((opt, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onMouseDown={() => selectAddress(opt)}
+                          className="w-full text-left px-4 py-3 text-xs text-white/80 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0"
+                        >
+                          {opt.display_name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -396,7 +457,7 @@ export const FabricaDashboard = () => {
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
                 <div className="flex-1 max-w-[280px] mx-auto bg-white/[0.03] border border-white/5 rounded-md px-3 py-0.5 text-[10px] text-white/30 text-center truncate flex items-center justify-center gap-1 select-none">
                   <Globe className="w-2.5 h-2.5 text-white/20" />
-                  {mockUrl}
+                  {displayUrl}
                 </div>
               </div>
 
@@ -415,7 +476,7 @@ export const FabricaDashboard = () => {
                 <div className="flex gap-2">
                   <button 
                     onClick={() => {
-                      navigator.clipboard.writeText(mockUrl);
+                      navigator.clipboard.writeText(displayUrl);
                       toast.success("Link copiado para a área de transferência!");
                     }}
                     className="flex-1 py-2 px-3 rounded-lg bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] text-[10px] font-bold text-white/80 hover:text-white transition-all"
@@ -423,7 +484,7 @@ export const FabricaDashboard = () => {
                     Copiar Link
                   </button>
                   <button 
-                    onClick={() => window.open(mockUrl, "_blank")}
+                    onClick={() => window.open(displayUrl, "_blank")}
                     className="flex-1 py-2 px-3 rounded-lg bg-amber-500 hover:bg-amber-600 text-[10px] font-bold text-black flex items-center justify-center gap-1 transition-all"
                   >
                     Visitar Site <ExternalLink className="w-2.5 h-2.5" />

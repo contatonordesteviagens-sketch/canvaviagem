@@ -136,6 +136,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         ".orc-info .eyebrow",
         ".orc-info h2",
         ".orc-info p",
+        ".contact-item span",
         "footer .foot-desc",
         ".btn",
         ".dest-card h3",
@@ -204,10 +205,22 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               updSite({ equipeFeatures: feats });
             }
           }
-          // Orçamento
+          // Orçamento e Contatos
           else if (el.classList.contains("eyebrow") && el.closest(".orc-info")) updSite({ orcamentoEyebrow: textVal });
           else if (el.tagName === "H2" && el.closest(".orc-info")) updSite({ orcamentoTitle: textVal });
           else if (el.tagName === "P" && el.closest(".orc-info")) updSite({ orcamentoText: textVal });
+          else if (el.closest(".contact-item")) {
+            const strongLabel = el.closest(".contact-item")?.querySelector("strong")?.innerText?.toLowerCase() || "";
+            if (strongLabel.includes("atendimento")) {
+              updSite({ atendimentoText: textVal });
+            } else if (strongLabel.includes("whatsapp")) {
+              update({ whatsapp: textVal });
+            } else if (strongLabel.includes("e-mail") || strongLabel.includes("email")) {
+              update({ agencyEmail: textVal });
+            } else if (strongLabel.includes("local") || strongLabel.includes("endereço")) {
+              update({ address: textVal });
+            }
+          }
           // Footer
           else if (el.classList.contains("foot-desc")) updSite({ footerText: textVal });
           
