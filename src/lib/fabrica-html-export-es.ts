@@ -1331,7 +1331,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     
     btn.innerHTML = originalText;
     btn.disabled = false;
-    window.location.href = \`https://api.whatsapp.com/send?phone=\${wpp}&text=\` + msg;
+    window.location.href = "https://api.whatsapp.com/send?phone=${wpp}&text=" + msg;
   }
 
   async function handleSubmitLead(e) {
