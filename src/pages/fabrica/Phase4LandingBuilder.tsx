@@ -672,6 +672,9 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                   </div>
                 );
               })()}
+            </FabricaCard>
+
+
 
             <FabricaCard title="👁️ Seções do site">
               <p className="text-xs text-white/50 mb-3">
