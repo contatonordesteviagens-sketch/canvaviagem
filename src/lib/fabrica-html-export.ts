@@ -61,6 +61,21 @@ const socialMeta: Record<string, { label: string; svg: string }> = {
   site: { label: "Site", svg: "↗" },
 };
 
+const normalizeSocialHref = (type: string, value: string) => {
+  const v = String(value || "").trim();
+  if (!v) return "";
+  if (/^https?:\/\//i.test(v)) return v;
+  const clean = v.replace(/^@/, "").replace(/^\/+/, "");
+  if (type === "instagram") return `https://instagram.com/${clean.replace(/^instagram\.com\//, "")}`;
+  if (type === "facebook") return `https://facebook.com/${clean.replace(/^facebook\.com\//, "")}`;
+  if (type === "tiktok") return `https://tiktok.com/@${clean.replace(/^tiktok\.com\/@?/, "")}`;
+  if (type === "youtube") return clean.includes("youtube.com") ? `https://${clean}` : `https://youtube.com/@${clean}`;
+  if (type === "linkedin") return clean.includes("linkedin.com") ? `https://${clean}` : `https://linkedin.com/company/${clean}`;
+  if (type === "x") return `https://x.com/${clean.replace(/^(x|twitter)\.com\//, "")}`;
+  if (type === "google") return clean.includes("google.") || clean.includes("maps.") ? `https://${clean}` : `https://www.google.com/search?q=${encodeURIComponent(v)}`;
+  return `https://${clean}`;
+};
+
 const formatWhatsAppDisplay = (raw: string, dial = "55") => {
   const digits = String(raw || "").replace(/\D/g, "");
   const dialCode = String(dial || "55").replace(/\D/g, "") || "55";
@@ -77,9 +92,13 @@ const formatWhatsAppDisplay = (raw: string, dial = "55") => {
 };
 
 const renderSocialIcons = (state: FabricaState, extraClass = "") => {
-  const links = (state.socialLinks || [])
+  const baseLinks = [...(state.socialLinks || [])];
+  if (state.instagram && !baseLinks.some((link) => link.type === "instagram")) {
+    baseLinks.unshift({ id: "instagram_default", type: "instagram", url: state.instagram } as any);
+  }
+  const links = baseLinks
     .filter((link) => link?.url?.trim())
-    .map((link) => ({ ...link, meta: socialMeta[link.type] || socialMeta.site }));
+    .map((link) => ({ ...link, url: normalizeSocialHref(link.type, link.url), meta: socialMeta[link.type] || socialMeta.site }));
   if (!links.length) return "";
   return `<div class="social-icons ${extraClass}">${links
     .map((link) => `<a href="${esc(link.url)}" target="_blank" rel="noopener noreferrer" class="social-icon social-${esc(link.type)}" aria-label="${esc(link.meta.label)}"><span>${link.meta.svg}</span></a>`)
