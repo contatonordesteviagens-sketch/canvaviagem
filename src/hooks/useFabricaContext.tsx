@@ -525,31 +525,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     if (userId && !hasLoadedFromDb) return;
 
     try {
-      const { logoBase64, generatedAdImage, lastCleanPhoto, allGeneratedAdImages, siteContent, ...rest } = state;
-      const { galleryImages, ...siteRest } = siteContent;
-
-      // Leve (sem base64 grandes)
-      safeSetItem(
-        scopedKey(STORAGE_KEY, userId),
-        JSON.stringify({ ...rest, siteContent: siteRest })
-      );
-
-      // Pesados em chaves próprias (sobrevivem mesmo se um deles falhar)
-      const heavyPrefix = scopedHeavyPrefix(userId);
-      if (logoBase64) safeSetItem(heavyPrefix + "logoBase64", logoBase64);
-      else localStorage.removeItem(heavyPrefix + "logoBase64");
-
-      if (generatedAdImage) safeSetItem(heavyPrefix + "generatedAdImage", generatedAdImage);
-      else localStorage.removeItem(heavyPrefix + "generatedAdImage");
-
-      if (lastCleanPhoto) safeSetItem(heavyPrefix + "lastCleanPhoto", lastCleanPhoto);
-      else localStorage.removeItem(heavyPrefix + "lastCleanPhoto");
-
-      // Galeria separada (pode ter várias imagens)
-      safeSetItem(scopedKey(GALLERY_KEY, userId), JSON.stringify(galleryImages || []));
-
-      // Artes geradas separadas
-      safeSetItem(scopedKey(GENERATED_KEY, userId), JSON.stringify(allGeneratedAdImages || []));
+      persistLocalState(state, userId);
     } catch {}
   }, [state, user?.id, hasLoadedFromDb]);
 
@@ -560,12 +536,14 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    safeSetItem(LAST_ACTIVE_USER_KEY, user.id);
+
     setHasLoadedFromDb(false);
 
     setState((prev) => {
       const scopedLocal = loadInitialState(user.id);
-      const hasScopedProgress = !!scopedLocal.agencyName || !!scopedLocal.logoBase64 || !!scopedLocal.whatsapp || scopedLocal.currentPhase > 1;
-      const prevIsDefault = !prev.agencyName && !prev.logoBase64 && !prev.whatsapp && prev.digitalScore === 0 && prev.currentPhase <= 1;
+      const hasScopedProgress = hasMeaningfulProgress(scopedLocal);
+      const prevIsDefault = !hasMeaningfulProgress(prev);
       return hasScopedProgress && prevIsDefault ? scopedLocal : prev;
     });
 
@@ -589,46 +567,41 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
           const saved = data.state_snapshot as unknown as FabricaState;
           setState((prev) => {
             console.log("[Supabase Load] Comparando última edição local com a nuvem.");
-            const dbTime = new Date(data.updated_at || saved.lastEditedAt || 0).getTime() || 0;
-            const localTime = new Date(prev.lastEditedAt || 0).getTime() || 0;
-            const source = localTime > dbTime ? prev : saved;
-            const cache = localTime > dbTime ? saved : prev;
-            const keepLocalIdentity =
-              localTime === 0 &&
-              dbTime > 0 &&
-              (!!prev.agencyName || !!prev.whatsapp || !!prev.instagram || !!prev.agencyEmail || !!prev.logoBase64 || !!prev.address);
-            
-            // Quem tiver a data mais recente vence. Assim telefone, logo e dados editados não voltam para versões antigas.
+            const localSnapshot = readPersistedState(user.id);
+            const localTime = Math.max(getStateTimestamp(prev), getStateTimestamp(localSnapshot));
+            const dbTime = getStateTimestamp(saved, data.updated_at);
+            const useLocal = localTime > dbTime && hasMeaningfulProgress(localSnapshot);
+            const primary = useLocal ? localSnapshot : saved;
+            const fallback = useLocal ? saved : localSnapshot;
+
             const merged = {
-              ...source,
-              ...(keepLocalIdentity
-                ? {
-                    agencyName: prev.agencyName || source.agencyName,
-                    agencyType: prev.agencyType || source.agencyType,
-                    agencyTypeOther: prev.agencyTypeOther || source.agencyTypeOther,
-                    instagram: prev.instagram || source.instagram,
-                    socialLinks: prev.socialLinks?.length ? prev.socialLinks : (source.socialLinks || []),
-                    whatsapp: prev.whatsapp || source.whatsapp,
-                    whatsappDialCode: prev.whatsappDialCode || source.whatsappDialCode,
-                    whatsappCountryCode: prev.whatsappCountryCode || source.whatsappCountryCode,
-                    agencyEmail: prev.agencyEmail || source.agencyEmail,
-                    address: prev.address || source.address,
-                    lastEditedAt: new Date().toISOString(),
-                  }
-                : { lastEditedAt: source.lastEditedAt || data.updated_at || "" }),
-              
-              // Preserva imagens pesadas quando a fonte mais recente não tiver esses campos.
-              logoBase64: keepLocalIdentity ? (prev.logoBase64 || source.logoBase64 || "") : (source.logoBase64 ?? cache.logoBase64 ?? ""),
-              generatedAdImage: source.generatedAdImage || cache.generatedAdImage || "",
-              lastCleanPhoto: source.lastCleanPhoto || cache.lastCleanPhoto || "",
-              allGeneratedAdImages: source.allGeneratedAdImages?.length ? source.allGeneratedAdImages : (cache.allGeneratedAdImages || []),
-              
+              ...defaultState,
+              ...primary,
+              logoBase64: primary.logoBase64 || fallback.logoBase64 || "",
+              generatedAdImage: primary.generatedAdImage || fallback.generatedAdImage || "",
+              lastCleanPhoto: primary.lastCleanPhoto || fallback.lastCleanPhoto || "",
+              allGeneratedAdImages: primary.allGeneratedAdImages?.length
+                ? primary.allGeneratedAdImages
+                : (fallback.allGeneratedAdImages || []),
+              socialLinks: primary.socialLinks?.length ? primary.socialLinks : (fallback.socialLinks || []),
               siteContent: {
-                ...(source.siteContent || {}),
-                galleryImages: source.siteContent?.galleryImages?.length ? source.siteContent.galleryImages : (cache.siteContent?.galleryImages || []),
-              }
+                ...defaultState.siteContent,
+                ...(primary.siteContent || {}),
+                galleryImages: primary.siteContent?.galleryImages?.length
+                  ? primary.siteContent.galleryImages
+                  : (fallback.siteContent?.galleryImages || []),
+                sections: {
+                  ...defaultState.siteContent.sections,
+                  ...(primary.siteContent?.sections || {}),
+                },
+              },
+              lastEditedAt: useLocal
+                ? (localSnapshot.lastEditedAt || prev.lastEditedAt || "")
+                : (saved.lastEditedAt || data.updated_at || ""),
             };
-            
+
+            persistLocalState(merged as FabricaState, user.id);
+            clearLegacyState();
             return merged as FabricaState;
           });
           console.log("[Supabase Load] Estado carregado e mesclado com sucesso!");
