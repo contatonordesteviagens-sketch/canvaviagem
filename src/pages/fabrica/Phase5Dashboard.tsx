@@ -360,11 +360,20 @@ export const Phase5Dashboard = () => {
 
          <div className="overflow-x-auto">
             {leadsList.length === 0 ? (
-               <div className="p-12 text-center flex flex-col items-center justify-center space-y-3 text-white/30">
-                  <MousePointerClick className="w-8 h-8 opacity-40" />
-                  <div className="text-sm font-medium">Nenhum lead recebido ainda.</div>
-                  <p className="text-[10px] max-w-xs leading-relaxed">Assim que alguém clicar em comprar no seu site, os dados aparecerão aqui automaticamente em tempo real.</p>
-               </div>
+                 <div className="py-16 px-6 text-center flex flex-col items-center justify-center space-y-4">
+                    <div className="p-4 rounded-full bg-amber-500/10 text-amber-400/80 mb-2 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+                       <MousePointerClick className="w-8 h-8" />
+                    </div>
+                    <h4 className="text-sm font-bold text-white">Nenhum lead por aqui... ainda!</h4>
+                    <div className="max-w-md text-[11px] text-white/50 leading-relaxed text-center space-y-3 bg-white/[0.02] border border-white/5 p-5 rounded-2xl">
+                      <p className="font-semibold text-white/70">Como capturar contatos e encher seu CRM:</p>
+                      <ul className="text-left space-y-2 inline-block">
+                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div> Volte ao <strong className="text-white">Painel Fábrica</strong> ou vá em <strong className="text-white">Página de Vendas</strong> e crie o seu site.</li>
+                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div> Envie o <strong className="text-white">link do seu site</strong> para seus potenciais clientes.</li>
+                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div> Quando alguém preencher o formulário lá, os dados cairão aqui automaticamente.</li>
+                      </ul>
+                    </div>
+                 </div>
             ) : (
                <table className="w-full text-left text-sm border-collapse">
                   <thead>
