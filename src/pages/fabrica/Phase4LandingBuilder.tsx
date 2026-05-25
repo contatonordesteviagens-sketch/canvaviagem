@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useFabricaContext, type Pacote, type Depoimento } from "@/hooks/useFabricaContext";
+import { useFabricaContext, type Pacote, type Depoimento, type SocialType } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export";
 import {
