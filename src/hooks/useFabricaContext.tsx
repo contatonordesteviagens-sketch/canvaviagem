@@ -535,6 +535,11 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (authLoading) return;
 
+    console.log("[Fabrica Auth Gate] Auth pronta para hidratar:", {
+      authLoading,
+      userId: user?.id ?? null,
+    });
+
     if (!user?.id) {
       activeUserIdRef.current = null;
       setState(defaultState);
