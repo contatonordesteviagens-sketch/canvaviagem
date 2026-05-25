@@ -523,7 +523,8 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   // Persistência: salva campos leves em uma chave, pesados em chaves separadas
   useEffect(() => {
     const userId = user?.id;
-    if (userId && !hasLoadedFromDb) return;
+    if (!userId) return;
+    if (!hasLoadedFromDb) return;
 
     try {
       persistLocalState(state, userId);
