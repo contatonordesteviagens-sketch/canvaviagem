@@ -761,6 +761,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const [editingIconIdx, setEditingIconIdx] = useState<number | null>(null);
   const [newHl, setNewHl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
   const [isBatchMode, setIsBatchMode] = useState(false); // Nova feature: Lote A/B (3 variações)
   const [generatedImage, setGeneratedImage] = useState<string>("");
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
@@ -1693,54 +1694,64 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         <div className="lg:col-span-5 space-y-6">
           <MinimizableCard title="👤 Perfil y Canales de Atención">
             <div className="space-y-5">
-              {user && (
-                <div className="p-4 bg-white/[0.04] border border-white/10 rounded-2xl relative overflow-hidden">
+                            {user && (
+                <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl relative overflow-hidden transition-all shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
                   <div className="absolute top-0 left-0 w-1 h-full" style={{ background: primaryColor }}></div>
-                  <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">📂 Proyectos Guardados</label>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    {savedProjects && savedProjects.length > 0 ? (
-                      <select
-                        onChange={(e) => {
-                          const p = savedProjects.find(x => x.id === e.target.value);
-                          if (p && p.state_snapshot) {
-                             update({ 
-                               ...p.state_snapshot, 
-                               currentPhase: state.currentPhase, 
-                               diagnosticoCompleto: false 
-                             });
-                             toast.success(`¡Proyecto "${p.agency_name || 'Sin Nombre'}" cargado! Todas las configuraciones han sido restauradas.`);
-                          }
-                          e.target.value = "";
+                  <button
+                    type="button"
+                    onClick={() => setProjectsPanelOpen(!projectsPanelOpen)}
+                    className="w-full flex items-center justify-between text-[11px] text-white/60 font-bold uppercase tracking-wider outline-none text-left"
+                  >
+                    <span className="flex items-center gap-1.5">📂 Proyectos Guardados {savedProjects && savedProjects.length > 0 && `(${savedProjects.length})`}</span>
+                    <span className="text-[10px] text-white/30 font-medium">{projectsPanelOpen ? "▲ Contraer" : "▼ Expandir / Cargar"}</span>
+                  </button>
+                  
+                  {projectsPanelOpen && (
+                    <div className="mt-3 flex flex-col sm:flex-row gap-2 pt-2 border-t border-white/5">
+                      {savedProjects && savedProjects.length > 0 ? (
+                        <select
+                          onChange={(e) => {
+                            const p = savedProjects.find(x => x.id === e.target.value);
+                            if (p && p.state_snapshot) {
+                               update({ 
+                                 ...p.state_snapshot, 
+                                 currentPhase: state.currentPhase, 
+                                 diagnosticoCompleto: false 
+                               });
+                               toast.success(`¡Proyecto "${p.agency_name || 'Sin Nombre'}" cargado! Todas las configuraciones han sido restauradas.`);
+                            }
+                            e.target.value = "";
+                          }}
+                          className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-white/30 transition-colors text-xs"
+                        >
+                          <option value="" className="bg-zinc-900">Seleccionar un proyecto...</option>
+                          {savedProjects.map((p) => (
+                            <option key={p.id} value={p.id} className="bg-zinc-900">{p.agency_name || "Sin Nombre"} ({new Date(p.updated_at).toLocaleDateString()})</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <div className="flex-1 bg-white/[0.01] border border-white/5 rounded-lg px-3 py-2 text-white/40 text-xs flex items-center">
+                          No se encontraron proyectos guardados
+                        </div>
+                      )}
+                      
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentPhase = state.currentPhase;
+                          reset();
+                          setTimeout(() => {
+                            update({ currentPhase });
+                          }, 50);
+                          toast.success("¡Nuevo projeto iniciado! Las informaciones han sido reiniciadas.");
                         }}
-                        className="flex-1 bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-white/40 transition-colors"
+                        className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
+                        style={{ borderColor: `${primaryColor}40` }}
                       >
-                        <option value="" className="bg-zinc-900">Seleccionar un proyecto...</option>
-                        {savedProjects.map((p) => (
-                          <option key={p.id} value={p.id} className="bg-zinc-900">{p.agency_name || "Sin Nombre"} ({new Date(p.updated_at).toLocaleDateString()})</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <div className="flex-1 bg-white/[0.02] border border-white/5 rounded-xl px-3 py-2 text-white/40 text-xs flex items-center">
-                        No se encontraron proyectos guardados
-                      </div>
-                    )}
-                    
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const currentPhase = state.currentPhase;
-                        reset();
-                        setTimeout(() => {
-                          update({ currentPhase });
-                        }, 50);
-                        toast.success("¡Nuevo proyecto iniciado! Las informaciones han sido reiniciadas.");
-                      }}
-                      className="px-4 py-2 rounded-xl text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-2"
-                      style={{ borderColor: `${primaryColor}40` }}
-                    >
-                      <span>+ Nuevo</span>
-                    </button>
-                  </div>
+                        <span>+ Nuevo</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 

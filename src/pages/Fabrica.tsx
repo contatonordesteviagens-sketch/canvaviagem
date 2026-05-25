@@ -421,7 +421,14 @@ const FabricaInner = () => {
 
         {/* Dynamic Component Render */}
         <div className="transition-all duration-300">
-          {activeTab === "dashboard" && <FabricaDashboard />}
+          {activeTab === "dashboard" && (
+            <FabricaDashboard 
+              onNavigate={(tab, phase) => {
+                setActiveTab(tab);
+                if (phase) setPhase(phase);
+              }} 
+            />
+          )}
           {activeTab === "library" && (
             <FabricaLibrary subTab={librarySubTab} setSubTab={setLibrarySubTab} />
           )}

@@ -192,6 +192,7 @@ export interface FabricaState {
   footerContact2Icon?: "whatsapp_green" | "whatsapp_custom" | "instagram_gradient" | "instagram_custom" | "website" | "none";
   footerContact2Value?: string;
   lastEditedAt?: string;
+  leadStatuses?: Record<string, string>;
 }
 
 const defaultState: FabricaState = {
@@ -326,6 +327,7 @@ const defaultState: FabricaState = {
   footerContact2Icon: "instagram_gradient",
   footerContact2Value: "",
   lastEditedAt: "",
+  leadStatuses: {},
 };
 
 const STORAGE_KEY = "fabrica-context-v1";

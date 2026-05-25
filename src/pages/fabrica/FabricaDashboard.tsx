@@ -38,7 +38,7 @@ const AGENCY_TYPES = [
   { v: "outro", l: "Outro tipo" },
 ] as const;
 
-export const FabricaDashboard = () => {
+export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
   const { state, update } = useFabricaContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -238,9 +238,13 @@ export const FabricaDashboard = () => {
           
           {/* CARD 1: IDENTIDADE & PERFIL DA AGÊNCIA */}
           <div className="bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5">
-            <h3 className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 mb-2">
+            <h3 
+              onClick={() => onNavigate?.("phase", 5)}
+              className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 mb-2 cursor-pointer hover:text-amber-400 transition-colors group"
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
               Identidade & Perfil da Agência
+              <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ml-1 text-amber-400 shrink-0" />
             </h3>
 
             {/* Logo e Nome */}
@@ -447,9 +451,13 @@ export const FabricaDashboard = () => {
 
           {/* CARD 2: DOMÍNIO DO SITE MOCKUP (VERCEL) */}
           <div className="bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-4">
-            <h3 className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2">
+            <h3 
+              onClick={() => onNavigate?.("phase", 2)}
+              className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 cursor-pointer hover:text-amber-400 transition-colors group"
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
               Seu Endereço de Internet
+              <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ml-1 text-amber-400 shrink-0" />
             </h3>
 
             {/* Chrome Bar Mockup */}
@@ -506,7 +514,10 @@ export const FabricaDashboard = () => {
           <div className="bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2">
+                <h3 
+                  onClick={() => onNavigate?.("phase", 2)}
+                  className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 cursor-pointer hover:text-emerald-400 transition-colors group"
+                >
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                   Pacotes prontos para vender ({state.selectedPackages.length})
                 </h3>
@@ -730,21 +741,30 @@ export const FabricaDashboard = () => {
 
             {/* Cards de contagem */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center">
+              <div 
+                onClick={() => onNavigate?.("phase", 1)}
+                className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-violet-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+              >
                 <div className="w-8 h-8 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center mx-auto mb-2">
                   <ImageIcon className="w-4 h-4" />
                 </div>
                 <div className="text-2xl font-black text-white leading-none">{state.allGeneratedAdImages?.length || 0}</div>
                 <div className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1.5">Imagens geradas</div>
               </div>
-              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center">
+              <div 
+                onClick={() => onNavigate?.("phase", 2)}
+                className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-emerald-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+              >
                 <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-2">
                   <Globe className="w-4 h-4" />
                 </div>
                 <div className="text-2xl font-black text-white leading-none">{state.siteContent?.vercelUrl ? 1 : 0}</div>
                 <div className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1.5">Sites publicados</div>
               </div>
-              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center">
+              <div 
+                onClick={() => onNavigate?.("phase", 3)}
+                className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center cursor-pointer hover:bg-white/[0.06] hover:border-amber-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+              >
                 <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto mb-2">
                   <Package className="w-4 h-4" />
                 </div>

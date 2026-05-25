@@ -37,7 +37,7 @@ const AGENCY_TYPES = [
   { v: "outro", l: "Otro tipo" },
 ] as const;
 
-export const FabricaDashboardES = () => {
+export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
   const { state, update } = useFabricaContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -201,9 +201,13 @@ export const FabricaDashboardES = () => {
           
           {/* CARD 1: IDENTIDAD & PERFIL DE LA AGENCIA */}
           <div className="bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5">
-            <h3 className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 mb-2">
+            <h3 
+              onClick={() => onNavigate?.("phase", 5)}
+              className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 mb-2 cursor-pointer hover:text-amber-400 transition-colors group"
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
               Identidad y Perfil de la Agencia
+              <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ml-1 text-amber-400 shrink-0" />
             </h3>
 
             {/* Logo y Nombre */}
@@ -378,9 +382,13 @@ export const FabricaDashboardES = () => {
 
           {/* CARD 2: DOMÍNIO DO SITE MOCKUP (VERCEL) */}
           <div className="bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-4">
-            <h3 className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2">
+            <h3 
+              onClick={() => onNavigate?.("phase", 2)}
+              className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 cursor-pointer hover:text-amber-400 transition-colors group"
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
               Tu Dirección de Internet
+              <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ml-1 text-amber-400 shrink-0" />
             </h3>
 
             {/* Chrome Bar Mockup */}
@@ -437,9 +445,13 @@ export const FabricaDashboardES = () => {
           <div className="bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2">
+                <h3 
+                  onClick={() => onNavigate?.("phase", 2)}
+                  className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 cursor-pointer hover:text-emerald-400 transition-colors group"
+                >
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                   Paquetes listos para vender ({state.selectedPackages.length})
+                  <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ml-1 text-emerald-400 shrink-0" />
                 </h3>
                 <span className="text-[9px] text-white/30 uppercase font-semibold font-sans">Fase 2 / Integración Comercial</span>
               </div>

@@ -1342,9 +1342,9 @@ ${state.address ? `
   });
   window.onload = () => {
     const trackerKey = "cv_visit_" + CONFIG.agencyId;
-    if (!localStorage.getItem(trackerKey)) {
+    if (!sessionStorage.getItem(trackerKey)) {
       track("page_view", { path: window.location.pathname });
-      localStorage.setItem(trackerKey, "true"); // Marca como já visitou!
+      sessionStorage.setItem(trackerKey, "true"); // Marca como já visitou!
     }
   };
 
