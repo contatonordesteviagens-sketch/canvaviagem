@@ -652,6 +652,90 @@ export const FabricaDashboard = () => {
               )}
             </div>
           </div>
+
+          {/* CARD RESUMO & HISTÓRICO DO USUÁRIO */}
+          <div className="mt-6 bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
+                Resumo & Histórico da sua Fábrica
+              </h3>
+              <span className="text-[9px] text-white/30 uppercase font-semibold">Apenas o seu conteúdo</span>
+            </div>
+
+            {/* Cards de contagem */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center">
+                <div className="w-8 h-8 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center mx-auto mb-2">
+                  <ImageIcon className="w-4 h-4" />
+                </div>
+                <div className="text-2xl font-black text-white leading-none">{state.allGeneratedAdImages?.length || 0}</div>
+                <div className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1.5">Imagens geradas</div>
+              </div>
+              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-2">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <div className="text-2xl font-black text-white leading-none">{state.siteContent?.vercelUrl ? 1 : 0}</div>
+                <div className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1.5">Sites publicados</div>
+              </div>
+              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto mb-2">
+                  <Package className="w-4 h-4" />
+                </div>
+                <div className="text-2xl font-black text-white leading-none">{state.selectedPackages?.length || 0}</div>
+                <div className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1.5">Pacotes / Leads</div>
+              </div>
+            </div>
+
+            {/* Histórico de sites publicados */}
+            {state.siteContent?.vercelUrl && (
+              <div>
+                <div className="text-[10px] font-bold text-white/40 uppercase tracking-wider mb-2">Site publicado</div>
+                <a
+                  href={state.siteContent.vercelUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span className="text-xs text-white/85 font-semibold truncate">{state.siteContent.vercelUrl.replace("https://", "")}</span>
+                  </div>
+                  <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white shrink-0" />
+                </a>
+              </div>
+            )}
+
+            {/* Histórico de imagens geradas (miniaturas) */}
+            {(state.allGeneratedAdImages?.length || 0) > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Últimas imagens geradas</div>
+                  <span className="text-[9px] text-white/30">{state.allGeneratedAdImages!.length} no total</span>
+                </div>
+                <div className="grid grid-cols-6 gap-1.5">
+                  {state.allGeneratedAdImages!.slice(-6).reverse().map((src, i) => (
+                    <a
+                      key={i}
+                      href={src}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="aspect-square rounded-lg overflow-hidden border border-white/5 hover:border-violet-500/40 transition-all bg-white/[0.02]"
+                    >
+                      <img src={src} alt={`Geração ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(state.allGeneratedAdImages?.length || 0) === 0 && !state.siteContent?.vercelUrl && (
+              <p className="text-[11px] text-white/40 italic text-center py-2">
+                Seu histórico aparecerá aqui assim que você gerar suas primeiras imagens ou publicar seu primeiro site.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
