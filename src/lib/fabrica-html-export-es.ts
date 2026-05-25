@@ -1139,7 +1139,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
           <div class="contact-item"><div class="contact-icon">📍</div><div><strong>Localização</strong><span>${esc(cidade)}</span></div></div>
         </div>
       </div>
-      <form class="orc-form" onsubmit="event.preventDefault();const f=this;const msg=encodeURIComponent('¡Hola! Quiero un presupuesto.\\n\\nNome: '+f.nome.value+'\\nWhatsApp: '+f.wpp.value+'\\nE-mail: '+f.email.value+'\\nDestino: '+f.destino.value+'\\nViajeros: '+f.viaj.value+'\\nIda: '+f.ida.value+'\\nRegreso: '+f.volta.value+'\\nObs: '+f.obs.value);window.open('https://wa.me/${wpp}?text='+msg,'_blank')">
+      <form class="orc-form" onsubmit="handleMainFormSubmit(event)">
         <div class="form-row">
           <div class="field"><label>Nombre Completo</label><input name="nome" required placeholder="Ej: Maria Silva"></div>
           <div class="field"><label>WhatsApp</label><input name="wpp" required placeholder="(00) 00000-0000"></div>
@@ -1307,15 +1307,78 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     document.getElementById("lead-modal").classList.remove("active");
   }
 
-  function handleSubmitLead(e) {
+  async function handleMainFormSubmit(e) {
+    e.preventDefault();
+    const f = e.target;
+    const btn = f.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Aguarde...';
+    btn.disabled = true;
+
+    const leadData = {
+      user_id: CONFIG.agencyId,
+      nome_completo: f.nome.value,
+      whatsapp: f.wpp.value,
+      email: f.email.value,
+      destino_interesse: f.destino.value,
+      numero_viajantes: parseInt(f.viaj.value) || 1,
+      data_ida: f.ida.value || null,
+      data_volta: f.volta.value || null,
+      observacoes: f.obs.value || null
+    };
+
+    if (CONFIG.supabaseUrl && CONFIG.supabaseKey) {
+      await fetch(\`\${CONFIG.supabaseUrl}/rest/v1/leads\`, {
+        method: 'POST',
+        headers: {
+          'apikey': CONFIG.supabaseKey,
+          'Authorization': 'Bearer ' + CONFIG.supabaseKey,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(leadData)
+      }).catch(console.error);
+    }
+    
+    track("lead_captured", { name: f.nome.value, phone: f.wpp.value, interest: f.destino.value });
+    
+    const msg = encodeURIComponent('¡Hola! Quiero un presupuesto.\\n\\nNome: '+f.nome.value+'\\nWhatsApp: '+f.wpp.value+'\\nE-mail: '+f.email.value+'\\nDestino: '+f.destino.value+'\\nViajeros: '+f.viaj.value+'\\nIda: '+f.ida.value+'\\nRegreso: '+f.volta.value+'\\nObs: '+f.obs.value);
+    
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    window.open('https://wa.me/${wpp}?text=' + msg, '_blank');
+  }
+
+  async function handleSubmitLead(e) {
     e.preventDefault();
     const name = document.getElementById("lead-name").value;
     const phone = document.getElementById("lead-phone").value;
     
-    // Salva localmente para não chatear o cliente nas próximas vezes
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Aguarde...';
+    btn.disabled = true;
+    
     localStorage.setItem("cv_lead_name", name);
 
-    // Envia silencioso pro banco de dados em segundo plano (SEM AWAIT para não bloquear popup)
+    if (CONFIG.supabaseUrl && CONFIG.supabaseKey) {
+      await fetch(\`\${CONFIG.supabaseUrl}/rest/v1/leads\`, {
+        method: 'POST',
+        headers: {
+          'apikey': CONFIG.supabaseKey,
+          'Authorization': 'Bearer ' + CONFIG.supabaseKey,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          user_id: CONFIG.agencyId,
+          nome_completo: name,
+          whatsapp: phone,
+          destino_interesse: currentTarget
+        })
+      }).catch(console.error);
+    }
+
     track("lead_captured", {
       name: name,
       phone: phone,
@@ -1323,8 +1386,9 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     });
 
     closeModal();
+    btn.innerHTML = originalText;
+    btn.disabled = false;
     
-    // Redireciona pro WhatsApp anexando o nome no texto pra ficar ainda mais TOP
     let finalWppUrl = pendingUrl;
     if(finalWppUrl.indexOf("?") === -1) {
       finalWppUrl += "?text=" + encodeURIComponent("Hola, mi nombre es " + name + "!");
@@ -1332,7 +1396,6 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
       finalWppUrl += encodeURIComponent(" (Mi nombre es " + name + ")");
     }
     
-    // Síncrono garante que o navegador não bloqueie o popup!
     window.open(finalWppUrl, "_blank");
   }
   ${seasonalScripts}

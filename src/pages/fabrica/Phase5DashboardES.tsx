@@ -137,19 +137,17 @@ export const Phase5DashboardES = () => {
           .eq("event_type", "click_whatsapp")
           .contains("event_data", { agency_id: agencyTrackingId });
 
-        // 3. Contagem REAL de Leads Capturados
+        // 3. Contagem REAL de Leads Capturados (Agora na tabela leads!)
         const { count: lCount } = await supabase
-          .from("analytics_events")
+          .from("leads")
           .select("*", { count: "exact", head: true })
-          .eq("event_type", "lead_captured")
-          .contains("event_data", { agency_id: agencyTrackingId });
+          .eq("user_id", user?.id);
 
         // 4. NOVA COLEÇÃO: BUSCA OS DADOS REAIS DOS ÚLTIMOS 15 LEADS (CRM!)
         const { data: lData } = await supabase
-          .from("analytics_events")
-          .select("id, created_at, event_data")
-          .eq("event_type", "lead_captured")
-          .contains("event_data", { agency_id: agencyTrackingId })
+          .from("leads")
+          .select("*")
+          .eq("user_id", user?.id)
           .order("created_at", { ascending: false })
           .limit(15);
 
@@ -492,15 +490,15 @@ export const Phase5DashboardES = () => {
                      <tr className="bg-white/[0.02] border-b border-white/5">
                         <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Fecha/Hora</th>
                         <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Nombre del Cliente</th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Interés</th>
+                         <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Destino</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Detalles</th>
                         <th className="px-6 py-4 text-right text-[10px] font-bold text-white/40 uppercase tracking-wider">Acción</th>
                      </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
                      {leadsList.map((l: any) => {
-                        const data = l.event_data || {};
                         const rawDate = new Date(l.created_at);
-                        const cleanPhone = String(data.phone || "").replace(/\D/g, "");
+                        const cleanPhone = String(l.whatsapp || "").replace(/\D/g, "");
                         
                         return (
                            <tr key={l.id} className="hover:bg-white/[0.02] transition-colors group">
@@ -510,18 +508,25 @@ export const Phase5DashboardES = () => {
                               <td className="px-6 py-4">
                                  <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-black text-white shadow-lg group-hover:scale-110 transition-transform">
-                                       {String(data.name || "L").charAt(0).toUpperCase() || "L"}
+                                       {String(l.nome_completo || "L").charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                       <div className="font-bold text-white group-hover:text-violet-300 transition-colors">{data.name || "No informado"}</div>
-                                       <div className="text-[10px] text-white/40">{data.phone || "Sin teléfono"}</div>
+                                       <div className="font-bold text-white group-hover:text-violet-300 transition-colors">{l.nome_completo || "No informado"}</div>
+                                       <div className="text-[10px] text-white/40">{l.email || "Sin e-mail"}</div>
                                     </div>
                                  </div>
                               </td>
                               <td className="px-6 py-4">
                                  <span className="inline-flex px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] font-medium text-white/70 max-w-[180px] truncate">
-                                    {data.interest || "Navegación General"}
+                                    {l.destino_interesse || "Navegación General"}
                                  </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                 <div className="text-[10px] text-white/50 space-y-0.5">
+                                    <div>Viajeros: <strong className="text-white/80">{l.numero_viajantes || 1}</strong></div>
+                                    {l.data_ida && <div>Ida: <strong className="text-white/80">{new Date(l.data_ida).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</strong></div>}
+                                    {l.data_volta && <div>Regreso: <strong className="text-white/80">{new Date(l.data_volta).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</strong></div>}
+                                 </div>
                               </td>
                               <td className="px-6 py-4 text-right">
                                  {cleanPhone ? (
