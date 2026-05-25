@@ -1236,10 +1236,11 @@ ${state.address ? `
       <div>
         <h4>Contato</h4>
         <ul>
-          <li>${esc(state.whatsapp || "—")}</li>
-          <li>${esc(cidade)}</li>
+          <li>${esc(wppDisplay || "—")}</li>
+          <li>${esc(enderecoExibicao)}</li>
           <li>Seg–Sex 8h–20h</li>
         </ul>
+        ${renderSocialIcons("footer-socials")}
       </div>
     <div class="foot-bottom">
       <div>© ${new Date().getFullYear()} ${esc(agencia)} · Todos os direitos reservados</div>
