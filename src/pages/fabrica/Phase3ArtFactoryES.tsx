@@ -1693,26 +1693,54 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         <div className="lg:col-span-5 space-y-6">
           <MinimizableCard title="👤 Perfil y Canales de Atención">
             <div className="space-y-5">
-              {user && savedProjects && savedProjects.length > 0 && (
+              {user && (
                 <div className="p-4 bg-white/[0.04] border border-white/10 rounded-2xl relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-1 h-full" style={{ background: primaryColor }}></div>
-                  <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">📂 Cargar Cliente / Proyecto Guardado</label>
-                  <select
-                    onChange={(e) => {
-                      const p = savedProjects.find(x => x.id === e.target.value);
-                      if (p && p.state_snapshot) {
-                         update({ ...p.state_snapshot, diagnosticoCompleto: false });
-                         toast.success(`¡Cliente "${p.agency_name}" cargado! Todas las configuraciones (logotipo, color, etc.) han sido restauradas.`);
-                      }
-                      e.target.value = "";
-                    }}
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-white/40 transition-colors"
-                  >
-                    <option value="" className="bg-zinc-900">Seleccionar un cliente...</option>
-                    {savedProjects.map((p) => (
-                      <option key={p.id} value={p.id} className="bg-zinc-900">{p.agency_name || "Sin Nombre"} ({new Date(p.updated_at).toLocaleDateString()})</option>
-                    ))}
-                  </select>
+                  <label className="text-xs text-white/60 uppercase tracking-wider font-semibold block mb-2">📂 Proyectos Guardados</label>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    {savedProjects && savedProjects.length > 0 ? (
+                      <select
+                        onChange={(e) => {
+                          const p = savedProjects.find(x => x.id === e.target.value);
+                          if (p && p.state_snapshot) {
+                             update({ 
+                               ...p.state_snapshot, 
+                               currentPhase: state.currentPhase, 
+                               diagnosticoCompleto: false 
+                             });
+                             toast.success(`¡Proyecto "${p.agency_name || 'Sin Nombre'}" cargado! Todas las configuraciones han sido restauradas.`);
+                          }
+                          e.target.value = "";
+                        }}
+                        className="flex-1 bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-white/40 transition-colors"
+                      >
+                        <option value="" className="bg-zinc-900">Seleccionar un proyecto...</option>
+                        {savedProjects.map((p) => (
+                          <option key={p.id} value={p.id} className="bg-zinc-900">{p.agency_name || "Sin Nombre"} ({new Date(p.updated_at).toLocaleDateString()})</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="flex-1 bg-white/[0.02] border border-white/5 rounded-xl px-3 py-2 text-white/40 text-xs flex items-center">
+                        No se encontraron proyectos guardados
+                      </div>
+                    )}
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentPhase = state.currentPhase;
+                        reset();
+                        setTimeout(() => {
+                          update({ currentPhase });
+                        }, 50);
+                        toast.success("¡Nuevo proyecto iniciado! Las informaciones han sido reiniciadas.");
+                      }}
+                      className="px-4 py-2 rounded-xl text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-2"
+                      style={{ borderColor: `${primaryColor}40` }}
+                    >
+                      <span>+ Nuevo</span>
+                    </button>
+                  </div>
                 </div>
               )}
 
