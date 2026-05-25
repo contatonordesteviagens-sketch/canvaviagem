@@ -584,8 +584,8 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    // Debounce maior para evitar flooding do banco em digitações rápidas
-    const timer = setTimeout(syncState, 8000);
+    // Salva rápido para evitar que telefone/logo voltem se o usuário recarregar ou sair logo após editar.
+    const timer = setTimeout(syncState, 1500);
     return () => clearTimeout(timer);
   }, [
     JSON.stringify({
