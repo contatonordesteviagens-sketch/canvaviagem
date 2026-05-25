@@ -171,7 +171,7 @@ export const FabricaDashboard = () => {
         <div className="space-y-2 relative z-10">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-amber-500/20 bg-amber-500/10 mb-1">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            <span className="text-[9px] font-black uppercase tracking-wider text-amber-400">Painel Geral</span>
+            <span className="text-[9px] font-black uppercase tracking-wider text-amber-400">Painel Fábrica</span>
           </div>
           <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-2">
             Bem-vindo à sua Fábrica de Destinos 🏰
