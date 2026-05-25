@@ -338,14 +338,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Prevent double initialization in StrictMode
-    if (initializedRef.current) return;
-    initializedRef.current = true;
- 
+    let mounted = true;
+
     // Set up auth state listener FIRST
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         console.log('[AuthContext] Auth state changed:', event);
+        if (!mounted) return;
+        
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         if (authReadyRef.current) {
@@ -355,7 +355,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Only check subscription on specific events, not every state change
         if (currentSession?.access_token && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
           setTimeout(() => {
-            checkSubscription(currentSession.access_token, currentSession?.user ?? null);
+            if (mounted) checkSubscription(currentSession.access_token, currentSession?.user ?? null);
           }, 100);
         } else if (!currentSession && authReadyRef.current) {
           setIsAdmin(false);
@@ -371,7 +371,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (!mounted) return;
+      
+      const existingSession = data?.session ?? null;
+      
       authReadyRef.current = true;
       setSession(existingSession);
       setUser(existingSession?.user ?? null);
@@ -408,9 +412,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         setSubscription(prev => ({ ...prev, loading: false }));
       }
+    }).catch(err => {
+      console.error('[AuthContext] Error getting session:', err);
+      if (mounted) {
+        authReadyRef.current = true;
+        setLoading(false);
+        setSubscription(prev => ({ ...prev, loading: false }));
+      }
     });
 
-    return () => authSubscription.unsubscribe();
+    return () => {
+      mounted = false;
+      authSubscription.unsubscribe();
+    };
   }, [checkSubscription]);
 
   // Auto-refresh subscription quietly; avoid interrupting users while editing tools
