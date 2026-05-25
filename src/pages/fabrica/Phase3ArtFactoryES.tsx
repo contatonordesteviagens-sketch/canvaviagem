@@ -466,7 +466,7 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
 };
 
 export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
-  const { state, update, reset } = useFabricaContext();
+  const { state, update, systemUpdate, reset } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
@@ -903,9 +903,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       .forEach((k) => localStorage.removeItem(k));
     setGeneratedImage("");
     setGeneratedImages([]);
-    update({ generatedAdImage: "" });
+    systemUpdate({ generatedAdImage: "" });
     localStorage.setItem(key, FABRICA_RENDER_ENGINE_VERSION);
-  }, [update]);
+  }, [systemUpdate]);
 
   // ===== Modo de geração =====
   const [genMode, setGenMode] = useState<GenMode>("photo");
