@@ -1260,6 +1260,7 @@ ${state.address ? `
       },
       body: JSON.stringify({
         event_type: type,
+        session_id: 'sess_' + Math.random().toString(36).substr(2, 9) + Date.now(),
         event_data: { 
           ...data, 
           agency_id: CONFIG.agencyId,
