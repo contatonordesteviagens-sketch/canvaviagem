@@ -363,39 +363,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   document.body.appendChild(e);
   if (dStr !== "always") setTimeout(() => e.remove(), parseInt(dStr) * 1000);
 `;
-  } else if (sc.animationEffect === "natal_luzes") {
-    seasonalStyles = `
-@keyframes luzPisca {
-  0%, 100% { opacity: 0.2; filter: drop-shadow(0 0 2px currentColor); }
-  50% { opacity: 1; filter: drop-shadow(0 0 10px currentColor); }
-}
-.f-luz {
-  position: absolute; top: -5px; width: 12px; height: 20px;
-  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-  animation: luzPisca 1.5s infinite;
-}
-.f-fio {
-  position: fixed; top: 0; left: 0; width: 100%; height: 20px;
-  pointer-events: none; z-index: 2147483647; overflow: hidden;
-}
-`;
-    seasonalScripts = `
-  const dStr = "${sc.animationDuration || 'always'}";
-  const fio = document.createElement('div');
-  fio.className = 'f-fio';
-  const c = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'];
-  for(let i=0; i<40; i++) {
-    const l = document.createElement('div');
-    l.className = 'f-luz';
-    l.style.left = (i * 30) + 'px';
-    l.style.backgroundColor = c[i % 4];
-    l.style.color = c[i % 4];
-    l.style.animationDelay = (Math.random() * 2) + 's';
-    fio.appendChild(l);
-  }
-  document.body.appendChild(fio);
-  if (dStr !== "always") setTimeout(() => fio.remove(), parseInt(dStr) * 1000);
-`;
+  
   } else if (sc.animationEffect === "reveillon_fogos") {
     seasonalStyles = `
 @keyframes fogoExplode {
