@@ -854,7 +854,7 @@ section{padding:80px 0}
 .feat-icon{flex-shrink:0;width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:18px}
 .feat h4{font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#fff;margin-bottom:4px}
 .feat p{font-size:14px;opacity:.65;line-height:1.6}
-.equipe-img{width:100%;aspect-ratio:4/5;border-radius:20px;overflow:hidden;background:url("https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=900&q=80") center/cover}
+.equipe-img{width:100%;aspect-ratio:4/5;border-radius:20px;overflow:hidden;background:url("https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80") center/cover}
 @media (max-width: 840px){.equipe-grid{grid-template-columns:1fr;gap:40px}.equipe-img{max-width:420px;width:100%;margin:0 auto}}
 
 /* DEPOIMENTOS */
@@ -1064,7 +1064,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         </div>
         <a href="#" onclick="openLeadForm('Falar com Especialista', 'https://wa.me/55${wpp}');return false;" class="btn">Falar com um especialista</a>
       </div>
-      <div class="equipe-img" style="background-image: url('${esc(sc.aboutImageUrl || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=900&q=80")}')"></div>
+      <div class="equipe-img" style="background-image: url('${esc(sc.aboutImageUrl || "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80")}')"></div>
     </div>
   </div>
 </section>`;
