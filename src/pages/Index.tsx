@@ -339,7 +339,23 @@ const Index = () => {
   const displayedSortedVideos = showAllVideos ? sortedVideos : sortedVideos.slice(0, 20);
 
   // Top-level preparation for LCP and Sections
-  const coveredVideos = useMemo(() => sortedVideos.filter(v => v.image_url), [sortedVideos]);
+  const coveredVideos = useMemo(() => {
+    let videos = sortedVideos.filter(v => v.image_url);
+    if (activeCategory === 'all') {
+      const crossedOutTitles = [
+        'japão mel', 'japão - mel',
+        'bia pacotes',
+        'maragogi - al',
+        'eva - destinos feriados',
+        'tipos de pasajeros', 'tipos de passageiros', 'types of passengers',
+        'eva - destinos'
+      ];
+      videos = videos.filter(v => 
+        !crossedOutTitles.some(title => v.title.toLowerCase().includes(title))
+      );
+    }
+    return videos;
+  }, [sortedVideos, activeCategory]);
   const uncoveredVideos = useMemo(() => sortedVideos.filter(v => !v.image_url), [sortedVideos]);
   const firstFourVideos = useMemo(() => coveredVideos.slice(0, 4), [coveredVideos]);
 

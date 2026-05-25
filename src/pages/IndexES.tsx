@@ -284,7 +284,18 @@ const IndexES = () => {
     switch (activeCategory) {
       case 'all': {
         const firstFourTools = toolsData?.slice(0, 4) || [];
-        const coveredVideos = sortedVideos.filter(v => v.image_url);
+        const coveredVideos = sortedVideos.filter(v => {
+          if (!v.image_url) return false;
+          const crossedOutTitles = [
+            'japão mel', 'japão - mel',
+            'bia pacotes',
+            'maragogi - al',
+            'eva - destinos feriados',
+            'tipos de pasajeros', 'tipos de passageiros', 'types of passengers',
+            'eva - destinos'
+          ];
+          return !crossedOutTitles.some(title => v.title.toLowerCase().includes(title));
+        });
         const remainingVideos = showAllVideos ? coveredVideos.slice(10) : coveredVideos.slice(10, 20);
         const initialCaptions = captionsData?.slice(0, 8) || [];
         const initialOffers = contentLibraryES.filter(item => item.category === 'offer').slice(0, 2);
