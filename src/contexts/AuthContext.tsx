@@ -348,7 +348,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // 🛡️ RESILIÊNCIA: Não derruba o usuário em falhas transitórias.
         // Só limpa a sessão em eventos explícitos de logout/exclusão.
-        const isExplicitSignOut = event === 'SIGNED_OUT' || event === 'USER_DELETED';
+        const isExplicitSignOut = event === 'SIGNED_OUT';
 
         if (currentSession) {
           setSession(currentSession);
