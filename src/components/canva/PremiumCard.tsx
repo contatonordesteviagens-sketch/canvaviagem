@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { ExternalLink, Heart, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 interface PremiumCardProps {
   id?: string;
@@ -73,6 +74,7 @@ const PremiumCardComponent = ({
   fetchPriority = "auto"
 }: PremiumCardProps) => {
   const gradient = getTypeGradient(contentType, title);
+  const navigate = useNavigate();
 
   const handleClick = (e: React.MouseEvent) => {
     if (onPremiumRequired) {
@@ -80,6 +82,14 @@ const PremiumCardComponent = ({
       onPremiumRequired();
       return;
     }
+    
+    if (url.startsWith("/")) {
+      e.preventDefault();
+      if (onClick) onClick();
+      navigate(url);
+      return;
+    }
+
     if (onClick) onClick();
     // Comportamento padrão de link (target="_blank") fará o trabalho
   };
@@ -90,11 +100,13 @@ const PremiumCardComponent = ({
     if (onToggleFavorite) onToggleFavorite();
   };
 
+  const isRelative = url.startsWith("/");
+
   return (
     <a
       href={url}
-      target="_blank"
-      rel="noopener noreferrer"
+      target={isRelative ? undefined : "_blank"}
+      rel={isRelative ? undefined : "noopener noreferrer"}
       className="group block relative"
       onClick={handleClick}
     >

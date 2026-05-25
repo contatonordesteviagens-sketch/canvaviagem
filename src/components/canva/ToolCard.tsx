@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { ExternalLink, Heart, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 interface ToolCardProps {
   id?: string;
@@ -29,6 +30,8 @@ const ToolCardComponent = ({
   onPremiumRequired,
   isPremium = false
 }: ToolCardProps) => {
+  const navigate = useNavigate();
+
   // Generate gradient based on title
   const getGradient = () => {
     const gradients = [
@@ -49,6 +52,16 @@ const ToolCardComponent = ({
       onPremiumRequired();
       return;
     }
+    
+    if (url.startsWith("/")) {
+      e.preventDefault();
+      if (onClick) {
+        onClick();
+      }
+      navigate(url);
+      return;
+    }
+
     if (onClick) {
       onClick();
     }
@@ -63,11 +76,13 @@ const ToolCardComponent = ({
     }
   };
 
+  const isRelative = url.startsWith("/");
+
   return (
     <a
       href={url}
-      target="_blank"
-      rel="noopener noreferrer"
+      target={isRelative ? undefined : "_blank"}
+      rel={isRelative ? undefined : "noopener noreferrer"}
       className="group block"
       onClick={handleClick}
     >

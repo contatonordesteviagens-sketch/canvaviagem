@@ -249,7 +249,7 @@ export const weeklyStories: Template[] = [
 export const aiTools = [
   {
     title: "IA Vendedor de Viagens (novo)",
-    url: "https://copy-travel-1089893400135.us-west1.run.app/",
+    url: "/vendedor-ia",
     icon: "🤖",
     description: "Assistente IA para vender viagens"
   },
@@ -314,7 +314,7 @@ export const narracaoTool = {
 // IA Vendedor de Viagens - ferramenta nova
 export const iaVendedorTool = {
   title: "IA Vendedor de Viagens",
-  url: "https://copy-travel-1089893400135.us-west1.run.app/",
+  url: "/vendedor-ia",
   icon: "🤖",
   is_new: true
 };

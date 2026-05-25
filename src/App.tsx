@@ -104,6 +104,7 @@ const Fabrica = lazy(() => import("./pages/Fabrica"));
 const FabricaES = lazy(() => import("./pages/FabricaES"));
 const PainelMarketing = lazy(() => import("./pages/PainelMarketing"));
 const SiteViewer = lazy(() => import("./pages/SiteViewer"));
+const VendedorIA = lazy(() => import("./pages/vendedor-ia/VendedorIA"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -152,6 +153,11 @@ const App = () => {
                     <Route path="/diferencas" element={<Diferencas />} />
                     <Route path="/imersao-ao-vivo" element={<AulaSecreta />} />
                     <Route path="/fabrica" element={<Fabrica />} />
+                    <Route path="/vendedor-ia" element={
+                      <ProtectedRoute requireSubscription>
+                        <VendedorIA />
+                      </ProtectedRoute>
+                    } />
                     <Route path="/live-aovivo" element={<LiveStream />} />
                     <Route path="/painel-marketing" element={
                       <ProtectedRoute requireElite>
