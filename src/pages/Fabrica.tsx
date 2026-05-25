@@ -25,7 +25,7 @@ import {
   ChevronDown,
   Users
 } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
 
 const FabricaInner = () => {
@@ -464,11 +464,7 @@ const FabricaContent = () => {
     try { return localStorage.getItem(FABRICA_ACCESS_KEY) === "1"; } catch { return false; }
   });
 
-  useEffect(() => {
-    if (!authLoading && !subscription.loading && !user) {
-      navigate("/auth");
-    }
-  }, [user, authLoading, subscription.loading, navigate]);
+  // Navigate is now handled gracefully during render with <Navigate />
 
   const ELITE_PRODUCT_IDS = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
   const isElite = subscription.subscribed && ELITE_PRODUCT_IDS.includes(subscription.productId || "");
@@ -494,10 +490,15 @@ const FabricaContent = () => {
   }
 
   if (!user) {
+    if (!authLoading) {
+      // Use standard react-router Navigate component instead of useEffect for reliable redirects
+      return <Navigate to="/auth?redirect=/fabrica" replace />;
+    }
+    
     return (
       <div className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center text-white">
         <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mb-2" />
-        <span className="text-sm text-white/60">Redirecionando para o login...</span>
+        <span className="text-sm text-white/60">Verificando sessão...</span>
       </div>
     );
   }

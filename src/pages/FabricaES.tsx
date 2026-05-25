@@ -24,7 +24,7 @@ import {
   Menu,
   X
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
 
 const FabricaInnerES = () => {
@@ -448,11 +448,7 @@ const FabricaContentES = () => {
   const { subscription, isAdmin, user, loading: authLoading } = useAuth();
   const [accessGranted, setAccessGranted] = useState(false);
 
-  useEffect(() => {
-    if (!authLoading && !subscription.loading && !user) {
-      navigate("/auth");
-    }
-  }, [user, authLoading, subscription.loading, navigate]);
+  // Navigate is now handled gracefully during render with <Navigate />
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -499,10 +495,15 @@ const FabricaContentES = () => {
   }
 
   if (!user) {
+    if (!authLoading) {
+      // Use standard react-router Navigate component instead of useEffect for reliable redirects
+      return <Navigate to="/auth?redirect=/es/fabrica" replace />;
+    }
+    
     return (
       <div className="min-h-screen bg-[#03070F] flex flex-col items-center justify-center text-white font-sans">
         <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mb-2" />
-        <span className="text-sm text-white/60">Redirigiendo al inicio de sesión...</span>
+        <span className="text-sm text-white/60">Verificando sesión...</span>
       </div>
     );
   }
