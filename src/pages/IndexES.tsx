@@ -291,9 +291,8 @@ const IndexES = () => {
 
         return (
           <section className="animate-fade-in space-y-8">
-            <div className="flex justify-between items-center mb-6 gap-4">
+            <div className="flex items-center mb-6 gap-4">
               <AccessFilter selectedFilters={accessFilters} onFiltersChange={setAccessFilters} />
-              <ContentFilterDropdown selectedFilters={contentFilters} onFiltersChange={setContentFilters} />
             </div>
 
             <div className="space-y-10">
@@ -513,14 +512,10 @@ const IndexES = () => {
               subtitle="Plantillas listas para editar en Canva y publicar"
             />
 
-            <div className="flex justify-between items-center mb-6 gap-4">
+            <div className="flex items-center mb-6 gap-4">
               <AccessFilter
                 selectedFilters={accessFilters}
                 onFiltersChange={setAccessFilters}
-              />
-              <ContentFilterDropdown
-                selectedFilters={contentFilters}
-                onFiltersChange={setContentFilters}
               />
             </div>
 

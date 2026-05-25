@@ -498,10 +498,10 @@ export const Phase5Dashboard = () => {
                    onChange={(e) => setFilterData(e.target.value)}
                    className="bg-transparent text-xs text-white/70 outline-none cursor-pointer border-r border-white/10 pr-2"
                  >
-                   <option value="Todas">Qualquer Data</option>
-                   <option value="Hoje">Hoje</option>
-                   <option value="7 dias">Últimos 7 dias</option>
-                   <option value="30 dias">Últimos 30 dias</option>
+                   <option value="Todas" className="bg-zinc-900 text-white">Qualquer Data</option>
+                   <option value="Hoje" className="bg-zinc-900 text-white">Hoje</option>
+                   <option value="7 dias" className="bg-zinc-900 text-white">Últimos 7 dias</option>
+                   <option value="30 dias" className="bg-zinc-900 text-white">Últimos 30 dias</option>
                  </select>
 
                  <select 
@@ -509,12 +509,12 @@ export const Phase5Dashboard = () => {
                    onChange={(e) => setFilterFase(e.target.value)}
                    className="bg-transparent text-xs text-white/70 outline-none cursor-pointer border-r border-white/10 pr-2 ml-2"
                  >
-                   <option value="Todas">Todas as Fases</option>
-                   <option value="novo">Novo</option>
-                   <option value="contato">Em Contato</option>
-                   <option value="proposta">Proposta</option>
-                   <option value="venda">Venda</option>
-                   <option value="perda">Perda</option>
+                   <option value="Todas" className="bg-zinc-900 text-white">Todas as Fases</option>
+                   <option value="novo" className="bg-zinc-900 text-white">Novo</option>
+                   <option value="contato" className="bg-zinc-900 text-white">Em Contato</option>
+                   <option value="proposta" className="bg-zinc-900 text-white">Proposta</option>
+                   <option value="venda" className="bg-zinc-900 text-white">Venda</option>
+                   <option value="perda" className="bg-zinc-900 text-white">Perda</option>
                  </select>
 
                  <select 
@@ -523,7 +523,7 @@ export const Phase5Dashboard = () => {
                    className="bg-transparent text-xs text-white/70 outline-none cursor-pointer ml-2 max-w-[100px] sm:max-w-[150px]"
                  >
                    {getRoteirosUnicos().map(r => (
-                     <option key={r} value={r}>{r}</option>
+                     <option key={r} value={r} className="bg-zinc-900 text-white">{r}</option>
                    ))}
                  </select>
                </div>

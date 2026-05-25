@@ -437,14 +437,10 @@ const Index = () => {
               title="Tudo"
               subtitle="Todo o conteúdo da plataforma em um lugar"
             />
-            <div className="flex justify-between items-center mb-6 gap-4">
+            <div className="flex items-center mb-6 gap-4">
               <AccessFilter
                 selectedFilters={accessFilters}
                 onFiltersChange={setAccessFilters}
-              />
-              <ContentFilterDropdown
-                selectedFilters={contentFilters}
-                onFiltersChange={setContentFilters}
               />
             </div>
 
@@ -814,7 +810,7 @@ const Index = () => {
               subtitle="Templates prontos para editar no Canva e publicar"
             />
 
-            <div className="flex justify-between items-center mb-6 gap-4">
+            <div className="flex items-center mb-6 gap-4">
               <AccessFilter
                 selectedFilters={accessFilters}
                 onFiltersChange={(newFilters) => {
@@ -825,10 +821,6 @@ const Index = () => {
                     setAccessFilters(accessFilters.includes(last as AccessFilterType) ? [] : [last as AccessFilterType]);
                   }
                 }}
-              />
-              <ContentFilterDropdown
-                selectedFilters={contentFilters}
-                onFiltersChange={setContentFilters}
               />
             </div>
 
