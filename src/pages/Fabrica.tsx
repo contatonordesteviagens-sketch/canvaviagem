@@ -5,6 +5,7 @@ import { Phase1Diagnostico } from "@/pages/fabrica/Phase1Diagnostico";
 import { Phase2Ativos } from "@/pages/fabrica/Phase2Ativos";
 import { Phase3ArtFactory } from "@/pages/fabrica/Phase3ArtFactory";
 import { Phase4LandingBuilder } from "@/pages/fabrica/Phase4LandingBuilder";
+import { Phase5Dashboard } from "@/pages/fabrica/Phase5Dashboard";
 import { FabricaDashboard } from "@/pages/fabrica/FabricaDashboard";
 import { FabricaLibrary } from "@/pages/fabrica/FabricaLibrary";
 import { 
@@ -21,7 +22,8 @@ import {
   Library,
   Menu,
   X,
-  ChevronDown
+  ChevronDown,
+  Users
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
@@ -59,6 +61,7 @@ const FabricaInner = () => {
     if (state.currentPhase === 2) return "Página de Vendas";
     if (state.currentPhase === 3) return "Diagnóstico";
     if (state.currentPhase === 4) return "Meus Ativos";
+    if (state.currentPhase === 5) return "CRM & Leads";
     return "";
   };
 
@@ -184,6 +187,25 @@ const FabricaInner = () => {
                   <span>Meus Ativos</span>
                 </div>
                 <span className="text-[10px] text-white/30 font-bold">F4</span>
+              </button>
+
+              {/* F5: CRM & Leads */}
+              <button
+                onClick={() => {
+                  setPhase(5);
+                  setActiveTab("phase");
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  activeTab === "phase" && state.currentPhase === 5
+                    ? "bg-white/[0.06] text-white border border-white/10"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Users className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>CRM & Leads</span>
+                </div>
+                <span className="text-[10px] text-white/30 font-bold">F5</span>
               </button>
             </div>
           </div>
@@ -321,6 +343,18 @@ const FabricaInner = () => {
           >
             ⚙️ Meus Ativos (F4)
           </button>
+          <button
+            onClick={() => {
+              setPhase(5);
+              setActiveTab("phase");
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+              activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            👥 CRM & Leads (F5)
+          </button>
 
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Conteúdo</div>
           <button
@@ -365,7 +399,7 @@ const FabricaInner = () => {
         {isAdmin && (
           <div className="mb-6 p-3 rounded-2xl bg-black border border-white/10 flex items-center gap-2 overflow-x-auto">
             <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest mr-2 select-none">Atalhos Admin:</span>
-            {[1, 2, 3, 4].map((num) => (
+            {[1, 2, 3, 4, 5].map((num) => (
               <button
                 key={num}
                 onClick={() => {
@@ -393,7 +427,8 @@ const FabricaInner = () => {
               {state.currentPhase === 1 && <Phase3ArtFactory onNext={() => setPhase(2)} onBack={() => {}} />}
               {state.currentPhase === 2 && <Phase4LandingBuilder onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
               {state.currentPhase === 3 && <Phase1Diagnostico onComplete={() => setPhase(4)} onBack={() => setPhase(2)} />}
-              {state.currentPhase === 4 && <Phase2Ativos onNext={() => setPhase(1)} onBack={() => setPhase(3)} />}
+              {state.currentPhase === 4 && <Phase2Ativos onNext={() => setPhase(5)} onBack={() => setPhase(3)} />}
+              {state.currentPhase === 5 && <Phase5Dashboard />}
             </>
           )}
         </div>
