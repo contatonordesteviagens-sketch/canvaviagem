@@ -336,6 +336,7 @@ const HEAVY_KEYS = ["logoBase64", "generatedAdImage", "lastCleanPhoto"] as const
 const HEAVY_STORAGE_PREFIX = "fabrica-heavy-v1:";
 const GALLERY_KEY = "fabrica-gallery-v1";
 const GENERATED_KEY = "fabrica-generated-v1";
+const LAST_ACTIVE_USER_KEY = "fabrica-last-user-id";
 
 const scopedKey = (key: string, userId?: string | null) => (userId ? `${key}:${userId}` : key);
 const scopedHeavyPrefix = (userId?: string | null) => (userId ? `${HEAVY_STORAGE_PREFIX}${userId}:` : HEAVY_STORAGE_PREFIX);
@@ -349,38 +350,41 @@ const safeSetItem = (key: string, value: string): boolean => {
   }
 };
 
-interface FabricaContextType {
-  state: FabricaState;
-  update: (patch: Partial<FabricaState>) => void;
-  reset: () => void;
-  setPhase: (phase: number) => void;
-  toggleChecklist: (key: string) => void;
-  undo: () => void;
-  redo: () => void;
-  canUndo: boolean;
-  canRedo: boolean;
-}
-
-const FABRICA_CONTEXT_KEY = "__CANVA_VIAGEM_FABRICA_CONTEXT__" as const;
-const globalFabricaScope = globalThis as typeof globalThis & {
-  [FABRICA_CONTEXT_KEY]?: Context<FabricaContextType | undefined>;
+const hasMeaningfulProgress = (snapshot?: Partial<FabricaState> | null): boolean => {
+  if (!snapshot) return false;
+  return Boolean(
+    snapshot.agencyName ||
+      snapshot.logoBase64 ||
+      snapshot.whatsapp ||
+      snapshot.instagram ||
+      snapshot.agencyEmail ||
+      snapshot.address ||
+      (snapshot.siteContent?.galleryImages?.length ?? 0) > 0 ||
+      (snapshot.allGeneratedAdImages?.length ?? 0) > 0 ||
+      (snapshot.selectedPackages?.length ?? 0) > 0 ||
+      (snapshot.currentPhase ?? 1) > 1
+  );
 };
 
-const FabricaContext =
-  globalFabricaScope[FABRICA_CONTEXT_KEY] ??
-  (globalFabricaScope[FABRICA_CONTEXT_KEY] = createContext<FabricaContextType | undefined>(undefined));
+const getStateTimestamp = (snapshot?: Partial<FabricaState> | null, fallback?: string | null): number => {
+  const raw = snapshot?.lastEditedAt || fallback || 0;
+  return new Date(raw).getTime() || 0;
+};
 
-const loadInitialState = (userId?: string | null): FabricaState => {
+const readPersistedState = (userId?: string | null): FabricaState => {
   if (typeof window === "undefined") return defaultState;
+
   try {
     const stored = localStorage.getItem(scopedKey(STORAGE_KEY, userId));
     const parsed = stored ? JSON.parse(stored) : {};
     const heavy: Record<string, string> = {};
     const heavyPrefix = scopedHeavyPrefix(userId);
+
     HEAVY_KEYS.forEach((k) => {
       const v = localStorage.getItem(heavyPrefix + k);
       if (v) heavy[k] = v;
     });
+
     let gallery: string[] = [];
     try {
       const g = localStorage.getItem(scopedKey(GALLERY_KEY, userId));
@@ -393,17 +397,14 @@ const loadInitialState = (userId?: string | null): FabricaState => {
       if (gen) generated = JSON.parse(gen);
     } catch {}
 
-    // 🚀 MIGRAÇÃO LEGADA: Move anúncios (PNGs) presos na galeria de fotos para a seção correta de artes geradas.
-    // Isso conserta de uma vez por todas o problema onde a arte ia parar no banco de fotos da Phase 4.
     const explicitAds = new Set(generated);
-    const legacyAds = gallery.filter(img => typeof img === 'string' && img.startsWith("data:image/png"));
-    
+    const legacyAds = gallery.filter((img) => typeof img === "string" && img.startsWith("data:image/png"));
+
     if (legacyAds.length > 0) {
-      gallery = gallery.filter(img => typeof img !== 'string' || !img.startsWith("data:image/png"));
-      const newAds = legacyAds.filter(ad => !explicitAds.has(ad));
+      gallery = gallery.filter((img) => typeof img !== "string" || !img.startsWith("data:image/png"));
+      const newAds = legacyAds.filter((ad) => !explicitAds.has(ad));
       generated = [...newAds, ...generated];
-      
-      // Salva silenciosamente a correção para o usuário não sofrer mais desse mal.
+
       try {
         localStorage.setItem(scopedKey(GALLERY_KEY, userId), JSON.stringify(gallery));
         localStorage.setItem(scopedKey(GENERATED_KEY, userId), JSON.stringify(generated));
@@ -429,6 +430,83 @@ const loadInitialState = (userId?: string | null): FabricaState => {
     return defaultState;
   }
 };
+
+const loadInitialState = (userId?: string | null): FabricaState => {
+  if (typeof window === "undefined") return defaultState;
+
+  const rememberedUserId = userId ?? localStorage.getItem(LAST_ACTIVE_USER_KEY);
+  const scopedState = rememberedUserId ? readPersistedState(rememberedUserId) : defaultState;
+
+  if (hasMeaningfulProgress(scopedState)) return scopedState;
+
+  const legacyState = readPersistedState();
+  return hasMeaningfulProgress(legacyState) ? legacyState : scopedState;
+};
+
+const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
+  if (typeof window === "undefined") return;
+
+  const resolvedUserId = userId ?? localStorage.getItem(LAST_ACTIVE_USER_KEY);
+
+  if (resolvedUserId) {
+    safeSetItem(LAST_ACTIVE_USER_KEY, resolvedUserId);
+  }
+
+  const { logoBase64, generatedAdImage, lastCleanPhoto, allGeneratedAdImages, siteContent, ...rest } = nextState;
+  const { galleryImages, ...siteRest } = siteContent;
+
+  safeSetItem(
+    scopedKey(STORAGE_KEY, resolvedUserId),
+    JSON.stringify({ ...rest, siteContent: siteRest })
+  );
+
+  const heavyPrefix = scopedHeavyPrefix(resolvedUserId);
+
+  if (logoBase64) safeSetItem(heavyPrefix + "logoBase64", logoBase64);
+  else localStorage.removeItem(heavyPrefix + "logoBase64");
+
+  if (generatedAdImage) safeSetItem(heavyPrefix + "generatedAdImage", generatedAdImage);
+  else localStorage.removeItem(heavyPrefix + "generatedAdImage");
+
+  if (lastCleanPhoto) safeSetItem(heavyPrefix + "lastCleanPhoto", lastCleanPhoto);
+  else localStorage.removeItem(heavyPrefix + "lastCleanPhoto");
+
+  safeSetItem(scopedKey(GALLERY_KEY, resolvedUserId), JSON.stringify(galleryImages || []));
+  safeSetItem(scopedKey(GENERATED_KEY, resolvedUserId), JSON.stringify(allGeneratedAdImages || []));
+};
+
+const clearLegacyState = () => {
+  if (typeof window === "undefined") return;
+
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(GALLERY_KEY);
+  localStorage.removeItem(GENERATED_KEY);
+
+  HEAVY_KEYS.forEach((key) => {
+    localStorage.removeItem(`${HEAVY_STORAGE_PREFIX}${key}`);
+  });
+};
+
+interface FabricaContextType {
+  state: FabricaState;
+  update: (patch: Partial<FabricaState>) => void;
+  reset: () => void;
+  setPhase: (phase: number) => void;
+  toggleChecklist: (key: string) => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+}
+
+const FABRICA_CONTEXT_KEY = "__CANVA_VIAGEM_FABRICA_CONTEXT__" as const;
+const globalFabricaScope = globalThis as typeof globalThis & {
+  [FABRICA_CONTEXT_KEY]?: Context<FabricaContextType | undefined>;
+};
+
+const FabricaContext =
+  globalFabricaScope[FABRICA_CONTEXT_KEY] ??
+  (globalFabricaScope[FABRICA_CONTEXT_KEY] = createContext<FabricaContextType | undefined>(undefined));
 
 export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
