@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { 
   Upload, 
@@ -96,6 +96,10 @@ export const FabricaDashboard = () => {
     update({ address: formatted });
     setShowAddressOptions(false);
   };
+
+  useEffect(() => {
+    setAddressQuery(state.address || "");
+  }, [state.address]);
 
   const slugify = (text: string) => {
     return text
