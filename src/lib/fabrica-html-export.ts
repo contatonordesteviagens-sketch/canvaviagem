@@ -50,6 +50,42 @@ function parsePriceHTML(priceStr: string): string {
   </div>`;
 }
 
+const socialMeta: Record<string, { label: string; svg: string }> = {
+  instagram: { label: "Instagram", svg: "IG" },
+  facebook: { label: "Facebook", svg: "f" },
+  tiktok: { label: "TikTok", svg: "♪" },
+  youtube: { label: "YouTube", svg: "▶" },
+  google: { label: "Google", svg: "G" },
+  linkedin: { label: "LinkedIn", svg: "in" },
+  x: { label: "X", svg: "𝕏" },
+  site: { label: "Site", svg: "↗" },
+};
+
+const formatWhatsAppDisplay = (raw: string, dial = "55") => {
+  const digits = String(raw || "").replace(/\D/g, "");
+  const dialCode = String(dial || "55").replace(/\D/g, "") || "55";
+  const national = digits.startsWith(dialCode) ? digits.slice(dialCode.length) : digits;
+  if (!national) return "—";
+  if (dialCode === "55" && national.length >= 10) {
+    const ddd = national.slice(0, 2);
+    const number = national.slice(2);
+    const first = number.length === 9 ? number.slice(0, 5) : number.slice(0, 4);
+    const last = number.length === 9 ? number.slice(5, 9) : number.slice(4, 8);
+    return `+${dialCode} (${ddd}) ${first}${last ? `-${last}` : ""}`;
+  }
+  return `+${dialCode} ${national}`;
+};
+
+const renderSocialIcons = (state: FabricaState, extraClass = "") => {
+  const links = (state.socialLinks || [])
+    .filter((link) => link?.url?.trim())
+    .map((link) => ({ ...link, meta: socialMeta[link.type] || socialMeta.site }));
+  if (!links.length) return "";
+  return `<div class="social-icons ${extraClass}">${links
+    .map((link) => `<a href="${esc(link.url)}" target="_blank" rel="noopener noreferrer" class="social-icon social-${esc(link.type)}" aria-label="${esc(link.meta.label)}"><span>${link.meta.svg}</span></a>`)
+    .join("")}</div>`;
+};
+
 export function buildLandingHTML(state: FabricaState, trackingId?: string): string {
   const color = state.primaryColor || "#0F2742";
   const colorDark = darken(color, 0.45);
@@ -60,6 +96,11 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   const sc = state.siteContent;
   const agencia = state.agencyName || "Agência de Viagens";
   const cidade = state.city || "Brasil";
+  const wppDisplay = formatWhatsAppDisplay(state.whatsapp, state.whatsappDialCode);
+  const contactLocation = state.address?.trim() || cidade;
+  const agencyEmail = state.agencyEmail || `contato@${(agencia || "agencia").toLowerCase().replace(/[^a-z0-9]/g, "")}.com.br`;
+  const socialIcons = renderSocialIcons(state);
+  const footerSocialIcons = renderSocialIcons(state, "footer-socials");
 
   // ----- SISTEMA DE ANIMAÇÕES SAZONAIS E TEMÁTICAS -----
   let seasonalStyles = "";
