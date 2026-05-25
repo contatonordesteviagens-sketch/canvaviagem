@@ -914,6 +914,12 @@ section{padding:80px 0}
 .contact-icon{width:40px;height:40px;border-radius:10px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .contact-item strong{display:block;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:600}
 .contact-item span{font-size:15px;color:var(--ink);font-weight:500}
+.social-icons{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.social-icons a{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--brand);color:#fff;transition:transform .2s,opacity .2s;text-decoration:none}
+.social-icons a:hover{transform:translateY(-2px);opacity:.9}
+.footer-socials{margin-top:14px}
+.footer-socials a{background:rgba(255,255,255,.1)}
+.footer-socials a:hover{background:var(--brand)}
 .orc-form{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:20px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.04)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .form-row.single{grid-template-columns:1fr}
