@@ -33,6 +33,14 @@ export interface Depoimento {
   text: string;
 }
 
+export type SocialType = "instagram" | "facebook" | "tiktok" | "youtube" | "google" | "linkedin" | "x" | "site";
+
+export interface SocialLink {
+  id: string;
+  type: SocialType;
+  url: string;
+}
+
 export interface SectionVisibility {
   hero: boolean;
   processo: boolean;
@@ -105,6 +113,7 @@ export interface FabricaState {
   agencyTypeOther: string;
   city: string;
   instagram: string;
+  socialLinks: SocialLink[];
   whatsapp: string;          // número nacional (sem DDI)
   whatsappDialCode: string;  // DDI em dígitos: "55", "1", "351"...
   whatsappCountryCode: string; // ISO code: "BR", "US", "PT"...
@@ -191,6 +200,7 @@ const defaultState: FabricaState = {
   agencyTypeOther: "",
   city: "",
   instagram: "",
+  socialLinks: [],
   whatsapp: "",
   whatsappDialCode: "55",
   whatsappCountryCode: "BR",
