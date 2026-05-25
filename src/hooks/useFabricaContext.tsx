@@ -515,7 +515,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
                 : { lastEditedAt: source.lastEditedAt || data.updated_at || "" }),
               
               // Preserva imagens pesadas quando a fonte mais recente não tiver esses campos.
-              logoBase64: keepLocalIdentity ? (prev.logoBase64 || source.logoBase64 || "") : (source.logoBase64 || cache.logoBase64 || ""),
+              logoBase64: keepLocalIdentity ? (prev.logoBase64 || source.logoBase64 || "") : (source.logoBase64 ?? cache.logoBase64 ?? ""),
               generatedAdImage: source.generatedAdImage || cache.generatedAdImage || "",
               lastCleanPhoto: source.lastCleanPhoto || cache.lastCleanPhoto || "",
               allGeneratedAdImages: source.allGeneratedAdImages?.length ? source.allGeneratedAdImages : (cache.allGeneratedAdImages || []),
