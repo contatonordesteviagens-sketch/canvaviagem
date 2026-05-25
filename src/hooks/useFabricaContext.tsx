@@ -514,6 +514,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const stateRef = useRef(state);
   const lastUserEditAtRef = useRef(0);
   const [hasLoadedFromDb, setHasLoadedFromDb] = useState(false);
+  const activeUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     stateRef.current = state;
@@ -532,16 +533,23 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   // ☁️ CARREGAR DO BANCO: Busca o estado salvo do usuário no Supabase
   useEffect(() => {
     if (!user?.id) {
+      activeUserIdRef.current = null;
+      setState(defaultState);
       setHasLoadedFromDb(false);
       return;
     }
 
     safeSetItem(LAST_ACTIVE_USER_KEY, user.id);
+    const userChanged = activeUserIdRef.current !== user.id;
+    activeUserIdRef.current = user.id;
 
     setHasLoadedFromDb(false);
 
     setState((prev) => {
       const scopedLocal = loadInitialState(user.id);
+      if (userChanged) {
+        return hasMeaningfulProgress(scopedLocal) ? scopedLocal : defaultState;
+      }
       const hasScopedProgress = hasMeaningfulProgress(scopedLocal);
       const prevIsDefault = !hasMeaningfulProgress(prev);
       return hasScopedProgress && prevIsDefault ? scopedLocal : prev;
