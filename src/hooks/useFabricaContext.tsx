@@ -805,6 +805,8 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         redo,
         canUndo: history.length > 0,
         canRedo: redoStack.length > 0,
+        syncStatus,
+        lastSyncedAt,
       }}
     >
       {children}
