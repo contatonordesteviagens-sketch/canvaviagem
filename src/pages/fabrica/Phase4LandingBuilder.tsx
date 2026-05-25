@@ -591,6 +591,88 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
+            <FabricaCard title="🌐 Redes Sociais e Canais">
+              <p className="text-xs text-white/50 mb-3">
+                Adicione links que aparecerão como ícones no rodapé e na seção de contato do seu site. Tudo sincronizado em tempo real.
+              </p>
+              {(() => {
+                const SOCIAL_OPTIONS: { type: SocialType; label: string; icon: string; placeholder: string }[] = [
+                  { type: "instagram", label: "Instagram", icon: "📸", placeholder: "https://instagram.com/sua-agencia" },
+                  { type: "facebook", label: "Facebook", icon: "📘", placeholder: "https://facebook.com/sua-agencia" },
+                  { type: "tiktok", label: "TikTok", icon: "🎵", placeholder: "https://tiktok.com/@sua-agencia" },
+                  { type: "youtube", label: "YouTube", icon: "▶️", placeholder: "https://youtube.com/@sua-agencia" },
+                  { type: "google", label: "Google Negócios", icon: "🔍", placeholder: "https://g.page/sua-agencia" },
+                  { type: "linkedin", label: "LinkedIn", icon: "💼", placeholder: "https://linkedin.com/company/sua-agencia" },
+                  { type: "twitter", label: "X / Twitter", icon: "𝕏", placeholder: "https://x.com/sua-agencia" },
+                  { type: "website", label: "Site próprio", icon: "🔗", placeholder: "https://sua-agencia.com.br" },
+                ];
+                const links = state.socialLinks || [];
+                const usedTypes = new Set(links.map((l) => l.type));
+                const available = SOCIAL_OPTIONS.filter((o) => !usedTypes.has(o.type));
+                const updateLinks = (next: { type: SocialType; url: string }[]) => update({ socialLinks: next });
+
+                return (
+                  <div className="space-y-2">
+                    {links.length === 0 && (
+                      <p className="text-xs text-white/40 italic">Nenhuma rede adicionada ainda. Clique em "Adicionar" abaixo.</p>
+                    )}
+                    {links.map((link, i) => {
+                      const opt = SOCIAL_OPTIONS.find((o) => o.type === link.type);
+                      return (
+                        <div key={i} className="flex items-center gap-2 bg-white/[0.03] border border-white/10 rounded-lg p-2">
+                          <span className="text-lg flex-shrink-0 w-8 text-center">{opt?.icon || "🔗"}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold">{opt?.label}</div>
+                            <input
+                              type="url"
+                              value={link.url}
+                              onChange={(e) => {
+                                const next = [...links];
+                                next[i] = { ...link, url: e.target.value };
+                                updateLinks(next);
+                              }}
+                              placeholder={opt?.placeholder}
+                              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/30"
+                            />
+                          </div>
+                          <button
+                            onClick={() => updateLinks(links.filter((_, idx) => idx !== i))}
+                            className="flex-shrink-0 text-white/40 hover:text-red-400 p-1"
+                            aria-label="Remover"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                    {available.length > 0 && (
+                      <div className="pt-2">
+                        <details className="group">
+                          <summary className="cursor-pointer list-none inline-flex items-center gap-2 text-xs font-bold text-amber-400 hover:text-amber-300 border border-amber-400/30 hover:border-amber-400/60 rounded-lg px-3 py-2 transition-all">
+                            <Plus className="w-4 h-4" /> Adicionar rede social
+                          </summary>
+                          <div className="mt-2 grid grid-cols-2 gap-2">
+                            {available.map((o) => (
+                              <button
+                                key={o.type}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  updateLinks([...links, { type: o.type, url: "" }]);
+                                  (e.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open");
+                                }}
+                                className="flex items-center gap-2 text-left text-xs bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 rounded-lg px-3 py-2 transition-all text-white"
+                              >
+                                <span className="text-base">{o.icon}</span> {o.label}
+                              </button>
+                            ))}
+                          </div>
+                        </details>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
             <FabricaCard title="👁️ Seções do site">
               <p className="text-xs text-white/50 mb-3">
                 Escolha o que aparece no site. Desmarque qualquer seção pra removê-la (some também do HTML exportado).
