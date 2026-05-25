@@ -1,5 +1,14 @@
 
 -- 1) Tighten webinar_leads INSERT: validate fields + block writing to global_live_settings row
+CREATE TABLE IF NOT EXISTS public.webinar_leads (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    name TEXT NOT NULL,
+    source TEXT,
+    whatsapp TEXT NOT NULL
+);
+ALTER TABLE public.webinar_leads ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS "Anyone can insert webinar leads" ON public.webinar_leads;
 
 CREATE POLICY "Validated insert on webinar_leads"

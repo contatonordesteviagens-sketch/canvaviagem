@@ -12,6 +12,7 @@ SELECT
 FROM public.abandoned_checkouts;
 
 -- 2. Criar view mascarada para profiles (admin view)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS language TEXT;
 CREATE VIEW public.profiles_admin_view
 WITH (security_invoker=on) AS
 SELECT 

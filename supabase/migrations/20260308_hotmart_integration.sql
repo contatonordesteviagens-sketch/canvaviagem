@@ -1,3 +1,6 @@
+-- Migration for Hotmart integration and sales tracking
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user';
+
 -- Create hotmart_sales table
 CREATE TABLE IF NOT EXISTS public.hotmart_sales (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

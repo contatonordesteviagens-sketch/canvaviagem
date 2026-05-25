@@ -6,4 +6,5 @@ DROP POLICY IF EXISTS "Admins can read abandoned checkouts" ON public.abandoned_
 -- 2. Fix "Extension in Public" warning
 -- Move pg_net extension to a dedicated extensions schema.
 CREATE SCHEMA IF NOT EXISTS extensions;
-ALTER EXTENSION pg_net SET SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
+-- ALTER EXTENSION pg_net SET SCHEMA extensions;
