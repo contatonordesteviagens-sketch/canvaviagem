@@ -39,6 +39,10 @@ const FabricaInner = () => {
   useEffect(() => {
     const color = state.primaryColor || "#F59E0B";
     document.documentElement.style.setProperty("--fabrica-primary", color);
+
+    const handleNavToDashboard = () => setActiveTab("dashboard");
+    window.addEventListener("nav-to-dashboard", handleNavToDashboard);
+    return () => window.removeEventListener("nav-to-dashboard", handleNavToDashboard);
   }, [state.primaryColor]);
 
   const getContrastText = (hex: string): string => {
