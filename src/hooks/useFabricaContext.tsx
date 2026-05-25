@@ -183,7 +183,19 @@ export interface FabricaState {
   footerContact2Icon?: "whatsapp_green" | "whatsapp_custom" | "instagram_gradient" | "instagram_custom" | "website" | "none";
   footerContact2Value?: string;
   lastEditedAt?: string;
+  // Redes sociais e outros canais — sincronizados com o site exportado
+  socialLinks?: { type: SocialType; url: string }[];
 }
+
+export type SocialType =
+  | "instagram"
+  | "facebook"
+  | "tiktok"
+  | "youtube"
+  | "google"
+  | "linkedin"
+  | "twitter"
+  | "website";
 
 const defaultState: FabricaState = {
   agencyName: "",
