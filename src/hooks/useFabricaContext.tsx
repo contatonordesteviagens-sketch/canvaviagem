@@ -381,6 +381,23 @@ const loadInitialState = (userId?: string | null): FabricaState => {
       if (gen) generated = JSON.parse(gen);
     } catch {}
 
+    // 🚀 MIGRAÇÃO LEGADA: Move anúncios (PNGs) presos na galeria de fotos para a seção correta de artes geradas.
+    // Isso conserta de uma vez por todas o problema onde a arte ia parar no banco de fotos da Phase 4.
+    const explicitAds = new Set(generated);
+    const legacyAds = gallery.filter(img => typeof img === 'string' && img.startsWith("data:image/png"));
+    
+    if (legacyAds.length > 0) {
+      gallery = gallery.filter(img => typeof img !== 'string' || !img.startsWith("data:image/png"));
+      const newAds = legacyAds.filter(ad => !explicitAds.has(ad));
+      generated = [...newAds, ...generated];
+      
+      // Salva silenciosamente a correção para o usuário não sofrer mais desse mal.
+      try {
+        localStorage.setItem(scopedKey(GALLERY_KEY, userId), JSON.stringify(gallery));
+        localStorage.setItem(scopedKey(GENERATED_KEY, userId), JSON.stringify(generated));
+      } catch {}
+    }
+
     return {
       ...defaultState,
       ...parsed,

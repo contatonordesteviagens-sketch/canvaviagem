@@ -63,9 +63,9 @@ const FabricaInner = () => {
     }
     if (state.currentPhase === 1) return "Gerador de Imagens";
     if (state.currentPhase === 2) return "Página de Vendas";
-    if (state.currentPhase === 3) return "Diagnóstico";
+    if (state.currentPhase === 3) return "CRM & Leads";
     if (state.currentPhase === 4) return "Meus Ativos";
-    if (state.currentPhase === 5) return "CRM & Leads";
+    if (state.currentPhase === 5) return "Diagnóstico";
     return "";
   };
 
@@ -152,7 +152,7 @@ const FabricaInner = () => {
                 <span className="text-[10px] text-white/30 font-bold">F2</span>
               </button>
 
-              {/* F3: Diagnóstico */}
+              {/* F3: CRM & Leads */}
               <button
                 onClick={() => {
                   setPhase(3);
@@ -160,15 +160,15 @@ const FabricaInner = () => {
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                   activeTab === "phase" && state.currentPhase === 3
-                    ? "bg-[#D97706]/15 text-[#F59E0B] border border-[#D97706]/35 shadow-[0_0_15px_rgba(245,158,11,0.08)]"
+                    ? "bg-white/[0.06] text-white border border-white/10"
                     : "text-white/60 hover:text-white hover:bg-white/[0.04]"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Zap className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Diagnóstico</span>
+                  <Users className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>CRM & Leads</span>
                 </div>
-                <span className={`text-[10px] font-bold ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/30"}`}>F3</span>
+                <span className="text-[10px] text-white/30 font-bold">F3</span>
               </button>
 
               {/* F4: Meus Ativos */}
@@ -190,7 +190,7 @@ const FabricaInner = () => {
                 <span className="text-[10px] text-white/30 font-bold">F4</span>
               </button>
 
-              {/* F5: CRM & Leads */}
+              {/* F5: Diagnóstico */}
               <button
                 onClick={() => {
                   setPhase(5);
@@ -198,15 +198,15 @@ const FabricaInner = () => {
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                   activeTab === "phase" && state.currentPhase === 5
-                    ? "bg-white/[0.06] text-white border border-white/10"
+                    ? "bg-[#D97706]/15 text-[#F59E0B] border border-[#D97706]/35 shadow-[0_0_15px_rgba(245,158,11,0.08)]"
                     : "text-white/60 hover:text-white hover:bg-white/[0.04]"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Users className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>CRM & Leads</span>
+                  <Zap className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>Diagnóstico</span>
                 </div>
-                <span className="text-[10px] text-white/30 font-bold">F5</span>
+                <span className={`text-[10px] font-bold ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/30"}`}>F5</span>
               </button>
             </div>
           </div>
@@ -332,7 +332,7 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ⚡ Diagnóstico (F3)
+            👥 CRM & Leads (F3)
           </button>
           <button
             onClick={() => {
@@ -356,7 +356,7 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            👥 CRM & Leads (F5)
+            ⚡ Diagnóstico (F5)
           </button>
 
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Conteúdo</div>
@@ -429,9 +429,9 @@ const FabricaInner = () => {
             <>
               {state.currentPhase === 1 && <Phase3ArtFactory onNext={() => setPhase(2)} onBack={() => {}} />}
               {state.currentPhase === 2 && <Phase4LandingBuilder onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
-              {state.currentPhase === 3 && <Phase1Diagnostico onComplete={() => setPhase(4)} onBack={() => setPhase(2)} />}
+              {state.currentPhase === 3 && <Phase5Dashboard />}
               {state.currentPhase === 4 && <Phase2Ativos onNext={() => setPhase(5)} onBack={() => setPhase(3)} />}
-              {state.currentPhase === 5 && <Phase5Dashboard />}
+              {state.currentPhase === 5 && <Phase1Diagnostico onComplete={() => setPhase(4)} onBack={() => setPhase(4)} />}
             </>
           )}
         </div>
@@ -537,7 +537,7 @@ const FabricaContent = () => {
               </div>
 
               <button 
-                onClick={() => window.open("https://buy.stripe.com/fZu14ogGugreeH9bF28so0d", "_blank")}
+                onClick={() => navigate("/planos")}
                 className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs transition-all shadow-lg shadow-orange-500/20 uppercase tracking-wider border-0 cursor-pointer text-center"
               >
                 Garantir Anual com Desconto →
@@ -557,7 +557,7 @@ const FabricaContent = () => {
                 </div>
               </div>
               <button 
-                onClick={() => window.open("https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c", "_blank")}
+                onClick={() => navigate("/planos")}
                 className="w-full bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-bold py-2 px-3 rounded-xl text-xs mt-1 transition-colors border-0 cursor-pointer text-center"
               >
                 Assinar Mensal por R$ 97 →

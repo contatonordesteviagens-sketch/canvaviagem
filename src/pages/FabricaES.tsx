@@ -56,8 +56,9 @@ const FabricaInnerES = () => {
     }
     if (state.currentPhase === 1) return "Generador de Imágenes";
     if (state.currentPhase === 2) return "Página de Ventas";
-    if (state.currentPhase === 3) return "Diagnóstico";
+    if (state.currentPhase === 3) return "CRM & Leads";
     if (state.currentPhase === 4) return "Mis Activos";
+    if (state.currentPhase === 5) return "Diagnóstico";
     return "";
   };
 
@@ -147,7 +148,7 @@ const FabricaInnerES = () => {
                 <span className="text-[10px] text-white/30 font-bold font-sans">F2</span>
               </button>
 
-              {/* F3: Diagnóstico */}
+              {/* F3: CRM & Leads */}
               <button
                 onClick={() => {
                   setPhase(3);
@@ -155,15 +156,15 @@ const FabricaInnerES = () => {
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                   activeTab === "phase" && state.currentPhase === 3
-                    ? "bg-[#D97706]/15 text-[#F59E0B] border border-[#D97706]/35 shadow-[0_0_15px_rgba(245,158,11,0.08)]"
+                    ? "bg-white/[0.06] text-white border border-white/10"
                     : "text-white/60 hover:text-white hover:bg-white/[0.04]"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Zap className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Diagnóstico</span>
+                  <Users className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>CRM & Leads</span>
                 </div>
-                <span className={`text-[10px] font-bold ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/30"}`}>F3</span>
+                <span className="text-[10px] text-white/30 font-bold font-sans">F3</span>
               </button>
 
               {/* F4: Mis Activos */}
@@ -183,6 +184,25 @@ const FabricaInnerES = () => {
                   <span>Mis Activos</span>
                 </div>
                 <span className="text-[10px] text-white/30 font-bold font-sans">F4</span>
+              </button>
+
+              {/* F5: Diagnóstico */}
+              <button
+                onClick={() => {
+                  setPhase(5);
+                  setActiveTab("phase");
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  activeTab === "phase" && state.currentPhase === 5
+                    ? "bg-[#D97706]/15 text-[#F59E0B] border border-[#D97706]/35 shadow-[0_0_15px_rgba(245,158,11,0.08)]"
+                    : "text-white/60 hover:text-white hover:bg-white/[0.04]"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Zap className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/40"}`} />
+                  <span>Diagnóstico</span>
+                </div>
+                <span className={`text-[10px] font-bold ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/30"}`}>F5</span>
               </button>
             </div>
           </div>
@@ -306,7 +326,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ⚡ Diagnóstico (F3)
+            👥 CRM & Leads (F3)
           </button>
           <button
             onClick={() => {
@@ -319,6 +339,18 @@ const FabricaInnerES = () => {
             }`}
           >
             ⚙️ Mis Activos (F4)
+          </button>
+          <button
+            onClick={() => {
+              setPhase(5);
+              setActiveTab("phase");
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full py-3 px-4 rounded-xl text-left text-sm font-semibold ${
+              activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
+            }`}
+          >
+            ⚡ Diagnóstico (F5)
           </button>
 
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Contenido</div>
@@ -364,7 +396,7 @@ const FabricaInnerES = () => {
         {isAdmin && (
           <div className="mb-6 p-3 rounded-2xl bg-black border border-white/10 flex items-center gap-2 overflow-x-auto font-sans">
             <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest mr-2 select-none">Atajos Admin:</span>
-            {[1, 2, 3, 4].map((num) => (
+            {[1, 2, 3, 4, 5].map((num) => (
               <button
                 key={num}
                 onClick={() => {
@@ -391,8 +423,9 @@ const FabricaInnerES = () => {
             <>
               {state.currentPhase === 1 && <Phase3ArtFactoryES onNext={() => setPhase(2)} onBack={() => {}} />}
               {state.currentPhase === 2 && <Phase4LandingBuilderES onNext={() => setPhase(3)} onBack={() => setPhase(1)} />}
-              {state.currentPhase === 3 && <Phase1DiagnosticoES onComplete={() => setPhase(4)} onBack={() => setPhase(2)} />}
-              {state.currentPhase === 4 && <Phase2AtivosES onNext={() => setPhase(1)} onBack={() => setPhase(3)} />}
+              {state.currentPhase === 3 && <Phase5DashboardES />}
+              {state.currentPhase === 4 && <Phase2AtivosES onNext={() => setPhase(5)} onBack={() => setPhase(3)} />}
+              {state.currentPhase === 5 && <Phase1DiagnosticoES onComplete={() => setPhase(4)} onBack={() => setPhase(4)} />}
             </>
           )}
         </div>
@@ -513,7 +546,7 @@ const FabricaContentES = () => {
               </div>
 
               <button 
-                onClick={() => window.open("https://buy.stripe.com/fZu14ogGugreeH9bF28so0d", "_blank")}
+                onClick={() => navigate("/es/planos")}
                 className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs transition-all shadow-lg shadow-orange-500/20 uppercase tracking-wider border-0 cursor-pointer text-center"
               >
                 Garantizar Anual con Descuento →
@@ -533,7 +566,7 @@ const FabricaContentES = () => {
                 </div>
               </div>
               <button 
-                onClick={() => window.open("https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c", "_blank")}
+                onClick={() => navigate("/es/planos")}
                 className="w-full bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-bold py-2 px-3 rounded-xl text-xs mt-1 transition-colors border-0 cursor-pointer text-center"
               >
                 Suscribir Mensual por $ 97 →
