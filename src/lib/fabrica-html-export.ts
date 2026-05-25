@@ -1340,7 +1340,7 @@ ${state.address ? `
     btn.innerHTML = 'Aguarde...';
     btn.disabled = true;
 
-    track("lead_captured", { 
+    await track("lead_captured", { 
       name: f.nome.value, 
       phone: f.wpp.value, 
       email: f.email.value,
@@ -1371,7 +1371,7 @@ ${state.address ? `
     
     localStorage.setItem("cv_lead_name", name);
 
-    track("lead_captured", {
+    await track("lead_captured", {
       name: name,
       phone: phone,
       interest: currentTarget,
@@ -1391,6 +1391,21 @@ ${state.address ? `
     
     window.location.href = finalWppUrl;
   }
+  // Máscara de telefone simples
+  function maskPhone(e) {
+    let v = e.target.value.replace(/\\D/g, "");
+    if (v.length > 11) v = v.slice(0, 11);
+    if (v.length > 2) v = "(" + v.slice(0, 2) + ") " + v.slice(2);
+    if (v.length > 9) v = v.slice(0, 10) + "-" + v.slice(10);
+    e.target.value = v;
+  }
+  
+  const leadPhone = document.getElementById("lead-phone");
+  if(leadPhone) leadPhone.addEventListener("input", maskPhone);
+  
+  const mainWpp = document.querySelector('input[name="wpp"]');
+  if(mainWpp) mainWpp.addEventListener("input", maskPhone);
+
   ${seasonalScripts}
 </script>
 
