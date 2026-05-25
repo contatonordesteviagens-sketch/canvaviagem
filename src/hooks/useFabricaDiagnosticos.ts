@@ -67,7 +67,7 @@ export const useSaveDiagnostico = () => {
       }
       const { data, error } = await supabase
         .from("fabrica_diagnosticos" as any)
-        .insert(payload)
+        .upsert(payload, { onConflict: "user_id" })
         .select()
         .single();
       if (error) throw error;

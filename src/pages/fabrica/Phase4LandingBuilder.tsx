@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useFabricaContext, type Pacote, type Depoimento, type SocialType } from "@/hooks/useFabricaContext";
+import { useFabricaContext, type Pacote, type Depoimento, type SocialLink, type SocialType } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export";
 import {
@@ -39,6 +39,32 @@ const TEAM_PRESET_IMAGES = [
   "https://img.freepik.com/fotos-premium/retrato-de-um-agente-de-viagens-em-uma-agencia-de-viagens-com-passaportes-e-passagens_199620-11415.jpg",
   "https://img.freepik.com/fotos-gratis/pessoas-em-filmagens-medias-na-agencia-de-viagens_52683-136429.jpg?semt=ais_hybrid&w=740&q=80",
 ];
+
+const SOCIAL_OPTIONS: Array<{ type: SocialType; label: string; icon: string; placeholder: string }> = [
+  { type: "instagram", label: "Instagram", icon: "📸", placeholder: "@suaagencia ou instagram.com/suaagencia" },
+  { type: "facebook", label: "Facebook", icon: "f", placeholder: "facebook.com/suaagencia" },
+  { type: "tiktok", label: "TikTok", icon: "♪", placeholder: "tiktok.com/@suaagencia" },
+  { type: "youtube", label: "YouTube", icon: "▶", placeholder: "youtube.com/@suaagencia" },
+  { type: "google", label: "Google", icon: "G", placeholder: "Perfil no Google ou Google Maps" },
+  { type: "linkedin", label: "LinkedIn", icon: "in", placeholder: "linkedin.com/company/suaagencia" },
+  { type: "x", label: "X/Twitter", icon: "𝕏", placeholder: "x.com/suaagencia" },
+  { type: "site", label: "Site próprio", icon: "🌐", placeholder: "https://suaagencia.com.br" },
+];
+
+const normalizeSocialUrl = (type: SocialType, value: string) => {
+  const v = value.trim();
+  if (!v) return "";
+  if (/^https?:\/\//i.test(v)) return v;
+  const clean = v.replace(/^@/, "").replace(/^\/+/, "");
+  if (type === "instagram") return `https://instagram.com/${clean.replace(/^instagram\.com\//, "")}`;
+  if (type === "facebook") return `https://facebook.com/${clean.replace(/^facebook\.com\//, "")}`;
+  if (type === "tiktok") return `https://tiktok.com/@${clean.replace(/^tiktok\.com\/@?/, "")}`;
+  if (type === "youtube") return clean.includes("youtube.com") ? `https://${clean}` : `https://youtube.com/@${clean}`;
+  if (type === "linkedin") return clean.includes("linkedin.com") ? `https://${clean}` : `https://linkedin.com/company/${clean}`;
+  if (type === "x") return `https://x.com/${clean.replace(/^(x|twitter)\.com\//, "")}`;
+  if (type === "google") return clean.includes("google.") || clean.includes("maps.") ? `https://${clean}` : `https://www.google.com/search?q=${encodeURIComponent(v)}`;
+  return `https://${clean}`;
+};
 
 export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
   const { state, update, undo, redo, canUndo, canRedo } = useFabricaContext();
@@ -222,7 +248,9 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             if (strongLabel.includes("atendimento")) {
               updSite({ atendimentoText: textVal });
             } else if (strongLabel.includes("whatsapp")) {
-              update({ whatsapp: textVal });
+              const digits = textVal.replace(/\D/g, "");
+              const dial = (state.whatsappDialCode || "55").replace(/\D/g, "");
+              update({ whatsapp: digits.startsWith(dial) ? digits.slice(dial.length) : digits });
             } else if (strongLabel.includes("e-mail") || strongLabel.includes("email")) {
               update({ agencyEmail: textVal });
             } else if (strongLabel.includes("local") || strongLabel.includes("endereço")) {
@@ -475,6 +503,21 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
     update({ siteContent: { ...state.siteContent, ...patch } });
   };
 
+  const addSocialLink = (type: SocialType) => {
+    const exists = state.socialLinks?.some((link) => link.type === type && !link.url);
+    if (exists) return;
+    const next: SocialLink = { id: `${type}_${Date.now()}`, type, url: type === "instagram" ? state.instagram || "" : "" };
+    update({ socialLinks: [...(state.socialLinks || []), next] });
+  };
+
+  const updateSocialLink = (id: string, patch: Partial<SocialLink>) => {
+    update({ socialLinks: (state.socialLinks || []).map((link) => (link.id === id ? { ...link, ...patch } : link)) });
+  };
+
+  const removeSocialLink = (id: string) => {
+    update({ socialLinks: (state.socialLinks || []).filter((link) => link.id !== id) });
+  };
+
   const toggleSection = (key: keyof SectionVisibility) => {
     updSite({
       sections: {
@@ -592,89 +635,64 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             </FabricaCard>
 
             <FabricaCard title="🌐 Redes Sociais e Canais">
-              <p className="text-xs text-white/50 mb-3">
-                Adicione links que aparecerão como ícones no rodapé e na seção de contato do seu site. Tudo sincronizado em tempo real.
-              </p>
-              {(() => {
-                const SOCIAL_OPTIONS: { type: SocialType; label: string; icon: string; placeholder: string }[] = [
-                  { type: "instagram", label: "Instagram", icon: "📸", placeholder: "https://instagram.com/sua-agencia" },
-                  { type: "facebook", label: "Facebook", icon: "📘", placeholder: "https://facebook.com/sua-agencia" },
-                  { type: "tiktok", label: "TikTok", icon: "🎵", placeholder: "https://tiktok.com/@sua-agencia" },
-                  { type: "youtube", label: "YouTube", icon: "▶️", placeholder: "https://youtube.com/@sua-agencia" },
-                  { type: "google", label: "Google Negócios", icon: "🔍", placeholder: "https://g.page/sua-agencia" },
-                  { type: "linkedin", label: "LinkedIn", icon: "💼", placeholder: "https://linkedin.com/company/sua-agencia" },
-                  { type: "twitter", label: "X / Twitter", icon: "𝕏", placeholder: "https://x.com/sua-agencia" },
-                  { type: "website", label: "Site próprio", icon: "🔗", placeholder: "https://sua-agencia.com.br" },
-                ];
-                const links = state.socialLinks || [];
-                const usedTypes = new Set(links.map((l) => l.type));
-                const available = SOCIAL_OPTIONS.filter((o) => !usedTypes.has(o.type));
-                const updateLinks = (next: { type: SocialType; url: string }[]) => update({ socialLinks: next });
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {SOCIAL_OPTIONS.map((option) => (
+                    <button
+                      key={option.type}
+                      type="button"
+                      onClick={() => addSocialLink(option.type)}
+                      className="px-3 py-2 rounded-xl border border-white/10 bg-white/[0.04] text-white/70 hover:text-white hover:border-white/25 text-xs font-semibold flex items-center justify-center gap-2 transition-all"
+                    >
+                      <span className="text-sm">{option.icon}</span>
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
 
-                return (
-                  <div className="space-y-2">
-                    {links.length === 0 && (
-                      <p className="text-xs text-white/40 italic">Nenhuma rede adicionada ainda. Clique em "Adicionar" abaixo.</p>
-                    )}
-                    {links.map((link, i) => {
-                      const opt = SOCIAL_OPTIONS.find((o) => o.type === link.type);
+                <div className="space-y-3">
+                  {(state.socialLinks || []).length === 0 ? (
+                    <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-4 text-xs text-white/40 text-center">
+                      Clique em uma rede acima para adicionar o link no site.
+                    </div>
+                  ) : (
+                    (state.socialLinks || []).map((link) => {
+                      const option = SOCIAL_OPTIONS.find((item) => item.type === link.type) || SOCIAL_OPTIONS[0];
                       return (
-                        <div key={i} className="flex items-center gap-2 bg-white/[0.03] border border-white/10 rounded-lg p-2">
-                          <span className="text-lg flex-shrink-0 w-8 text-center">{opt?.icon || "🔗"}</span>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold">{opt?.label}</div>
-                            <input
-                              type="url"
-                              value={link.url}
-                              onChange={(e) => {
-                                const next = [...links];
-                                next[i] = { ...link, url: e.target.value };
-                                updateLinks(next);
-                              }}
-                              placeholder={opt?.placeholder}
-                              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/30"
-                            />
-                          </div>
+                        <div key={link.id} className="grid grid-cols-1 sm:grid-cols-[160px_1fr_auto] gap-2 items-center rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                          <select
+                            value={link.type}
+                            onChange={(e) => updateSocialLink(link.id, { type: e.target.value as SocialType, url: "" })}
+                            className="bg-zinc-900 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-white/30"
+                          >
+                            {SOCIAL_OPTIONS.map((item) => (
+                              <option key={item.type} value={item.type} className="bg-zinc-900">
+                                {item.label}
+                              </option>
+                            ))}
+                          </select>
+                          <input
+                            value={link.url}
+                            onChange={(e) => updateSocialLink(link.id, { url: e.target.value })}
+                            onBlur={(e) => updateSocialLink(link.id, { url: normalizeSocialUrl(link.type, e.target.value) })}
+                            placeholder={option.placeholder}
+                            className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/25 outline-none focus:border-white/30"
+                          />
                           <button
-                            onClick={() => updateLinks(links.filter((_, idx) => idx !== i))}
-                            className="flex-shrink-0 text-white/40 hover:text-red-400 p-1"
-                            aria-label="Remover"
+                            type="button"
+                            onClick={() => removeSocialLink(link.id)}
+                            className="p-2 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500/25 justify-self-start sm:justify-self-auto"
+                            aria-label="Remover rede social"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       );
-                    })}
-                    {available.length > 0 && (
-                      <div className="pt-2">
-                        <details className="group">
-                          <summary className="cursor-pointer list-none inline-flex items-center gap-2 text-xs font-bold text-amber-400 hover:text-amber-300 border border-amber-400/30 hover:border-amber-400/60 rounded-lg px-3 py-2 transition-all">
-                            <Plus className="w-4 h-4" /> Adicionar rede social
-                          </summary>
-                          <div className="mt-2 grid grid-cols-2 gap-2">
-                            {available.map((o) => (
-                              <button
-                                key={o.type}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  updateLinks([...links, { type: o.type, url: "" }]);
-                                  (e.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open");
-                                }}
-                                className="flex items-center gap-2 text-left text-xs bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 rounded-lg px-3 py-2 transition-all text-white"
-                              >
-                                <span className="text-base">{o.icon}</span> {o.label}
-                              </button>
-                            ))}
-                          </div>
-                        </details>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
+                    })
+                  )}
+                </div>
+              </div>
             </FabricaCard>
-
-
 
             <FabricaCard title="👁️ Seções do site">
               <p className="text-xs text-white/50 mb-3">

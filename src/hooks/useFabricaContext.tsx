@@ -33,6 +33,14 @@ export interface Depoimento {
   text: string;
 }
 
+export type SocialType = "instagram" | "facebook" | "tiktok" | "youtube" | "google" | "linkedin" | "x" | "site";
+
+export interface SocialLink {
+  id: string;
+  type: SocialType;
+  url: string;
+}
+
 export interface SectionVisibility {
   hero: boolean;
   processo: boolean;
@@ -105,6 +113,7 @@ export interface FabricaState {
   agencyTypeOther: string;
   city: string;
   instagram: string;
+  socialLinks: SocialLink[];
   whatsapp: string;          // número nacional (sem DDI)
   whatsappDialCode: string;  // DDI em dígitos: "55", "1", "351"...
   whatsappCountryCode: string; // ISO code: "BR", "US", "PT"...
@@ -183,19 +192,7 @@ export interface FabricaState {
   footerContact2Icon?: "whatsapp_green" | "whatsapp_custom" | "instagram_gradient" | "instagram_custom" | "website" | "none";
   footerContact2Value?: string;
   lastEditedAt?: string;
-  // Redes sociais e outros canais — sincronizados com o site exportado
-  socialLinks?: { type: SocialType; url: string }[];
 }
-
-export type SocialType =
-  | "instagram"
-  | "facebook"
-  | "tiktok"
-  | "youtube"
-  | "google"
-  | "linkedin"
-  | "twitter"
-  | "website";
 
 const defaultState: FabricaState = {
   agencyName: "",
@@ -203,6 +200,7 @@ const defaultState: FabricaState = {
   agencyTypeOther: "",
   city: "",
   instagram: "",
+  socialLinks: [],
   whatsapp: "",
   whatsappDialCode: "55",
   whatsappCountryCode: "BR",
@@ -328,7 +326,6 @@ const defaultState: FabricaState = {
   footerContact2Icon: "instagram_gradient",
   footerContact2Value: "",
   lastEditedAt: "",
-  socialLinks: [],
 };
 
 const STORAGE_KEY = "fabrica-context-v1";
@@ -374,23 +371,23 @@ const FabricaContext =
 const loadInitialState = (userId?: string | null): FabricaState => {
   if (typeof window === "undefined") return defaultState;
   try {
-    const stored = localStorage.getItem(scopedKey(STORAGE_KEY, userId)) || (userId ? localStorage.getItem(STORAGE_KEY) : null);
+    const stored = localStorage.getItem(scopedKey(STORAGE_KEY, userId));
     const parsed = stored ? JSON.parse(stored) : {};
     const heavy: Record<string, string> = {};
     const heavyPrefix = scopedHeavyPrefix(userId);
     HEAVY_KEYS.forEach((k) => {
-      const v = localStorage.getItem(heavyPrefix + k) || (userId ? localStorage.getItem(HEAVY_STORAGE_PREFIX + k) : null);
+      const v = localStorage.getItem(heavyPrefix + k);
       if (v) heavy[k] = v;
     });
     let gallery: string[] = [];
     try {
-      const g = localStorage.getItem(scopedKey(GALLERY_KEY, userId)) || (userId ? localStorage.getItem(GALLERY_KEY) : null);
+      const g = localStorage.getItem(scopedKey(GALLERY_KEY, userId));
       if (g) gallery = JSON.parse(g);
     } catch {}
 
     let generated: string[] = [];
     try {
-      const gen = localStorage.getItem(scopedKey(GENERATED_KEY, userId)) || (userId ? localStorage.getItem(GENERATED_KEY) : null);
+      const gen = localStorage.getItem(scopedKey(GENERATED_KEY, userId));
       if (gen) generated = JSON.parse(gen);
     } catch {}
 
@@ -519,7 +516,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
             const keepLocalIdentity =
               localTime === 0 &&
               dbTime > 0 &&
-              (!!prev.agencyName || !!prev.whatsapp || !!prev.instagram || !!prev.logoBase64 || !!prev.address);
+              (!!prev.agencyName || !!prev.whatsapp || !!prev.instagram || !!prev.agencyEmail || !!prev.logoBase64 || !!prev.address);
             
             // Quem tiver a data mais recente vence. Assim telefone, logo e dados editados não voltam para versões antigas.
             const merged = {
@@ -530,9 +527,11 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
                     agencyType: prev.agencyType || source.agencyType,
                     agencyTypeOther: prev.agencyTypeOther || source.agencyTypeOther,
                     instagram: prev.instagram || source.instagram,
+                    socialLinks: prev.socialLinks?.length ? prev.socialLinks : (source.socialLinks || []),
                     whatsapp: prev.whatsapp || source.whatsapp,
                     whatsappDialCode: prev.whatsappDialCode || source.whatsappDialCode,
                     whatsappCountryCode: prev.whatsappCountryCode || source.whatsappCountryCode,
+                    agencyEmail: prev.agencyEmail || source.agencyEmail,
                     address: prev.address || source.address,
                     lastEditedAt: new Date().toISOString(),
                   }

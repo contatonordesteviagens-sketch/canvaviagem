@@ -50,6 +50,61 @@ function parsePriceHTML(priceStr: string): string {
   </div>`;
 }
 
+const socialMeta: Record<string, { label: string; svg: string }> = {
+  instagram: { label: "Instagram", svg: "IG" },
+  facebook: { label: "Facebook", svg: "f" },
+  tiktok: { label: "TikTok", svg: "♪" },
+  youtube: { label: "YouTube", svg: "▶" },
+  google: { label: "Google", svg: "G" },
+  linkedin: { label: "LinkedIn", svg: "in" },
+  x: { label: "X", svg: "𝕏" },
+  site: { label: "Site", svg: "↗" },
+};
+
+const normalizeSocialHref = (type: string, value: string) => {
+  const v = String(value || "").trim();
+  if (!v) return "";
+  if (/^https?:\/\//i.test(v)) return v;
+  const clean = v.replace(/^@/, "").replace(/^\/+/, "");
+  if (type === "instagram") return `https://instagram.com/${clean.replace(/^instagram\.com\//, "")}`;
+  if (type === "facebook") return `https://facebook.com/${clean.replace(/^facebook\.com\//, "")}`;
+  if (type === "tiktok") return `https://tiktok.com/@${clean.replace(/^tiktok\.com\/@?/, "")}`;
+  if (type === "youtube") return clean.includes("youtube.com") ? `https://${clean}` : `https://youtube.com/@${clean}`;
+  if (type === "linkedin") return clean.includes("linkedin.com") ? `https://${clean}` : `https://linkedin.com/company/${clean}`;
+  if (type === "x") return `https://x.com/${clean.replace(/^(x|twitter)\.com\//, "")}`;
+  if (type === "google") return clean.includes("google.") || clean.includes("maps.") ? `https://${clean}` : `https://www.google.com/search?q=${encodeURIComponent(v)}`;
+  return `https://${clean}`;
+};
+
+const formatWhatsAppDisplay = (raw: string, dial = "55") => {
+  const digits = String(raw || "").replace(/\D/g, "");
+  const dialCode = String(dial || "55").replace(/\D/g, "") || "55";
+  const national = digits.startsWith(dialCode) ? digits.slice(dialCode.length) : digits;
+  if (!national) return "—";
+  if (dialCode === "55" && national.length >= 10) {
+    const ddd = national.slice(0, 2);
+    const number = national.slice(2);
+    const first = number.length === 9 ? number.slice(0, 5) : number.slice(0, 4);
+    const last = number.length === 9 ? number.slice(5, 9) : number.slice(4, 8);
+    return `+${dialCode} (${ddd}) ${first}${last ? `-${last}` : ""}`;
+  }
+  return `+${dialCode} ${national}`;
+};
+
+const renderSocialIcons = (state: FabricaState, extraClass = "") => {
+  const baseLinks = [...(state.socialLinks || [])];
+  if (state.instagram && !baseLinks.some((link) => link.type === "instagram")) {
+    baseLinks.unshift({ id: "instagram_default", type: "instagram", url: state.instagram } as any);
+  }
+  const links = baseLinks
+    .filter((link) => link?.url?.trim())
+    .map((link) => ({ ...link, url: normalizeSocialHref(link.type, link.url), meta: socialMeta[link.type] || socialMeta.site }));
+  if (!links.length) return "";
+  return `<div class="social-icons ${extraClass}">${links
+    .map((link) => `<a href="${esc(link.url)}" target="_blank" rel="noopener noreferrer" class="social-icon social-${esc(link.type)}" aria-label="${esc(link.meta.label)}"><span>${link.meta.svg}</span></a>`)
+    .join("")}</div>`;
+};
+
 export function buildLandingHTML(state: FabricaState, trackingId?: string): string {
   const color = state.primaryColor || "#0F2742";
   const colorDark = darken(color, 0.45);
@@ -57,44 +112,14 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   // Usa o DDI salvo no estado (padrão Brasil +55)
   const dialCode = (state.whatsappDialCode || "55").replace(/\D/g, "");
   const wpp = rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`;
-  // Telefone formatado bonitinho: +55 (XX) XXXXX-XXXX
-  const nationalDigits = rawWpp.startsWith(dialCode) ? rawWpp.slice(dialCode.length) : rawWpp;
-  const wppDisplay = (() => {
-    if (!nationalDigits) return "";
-    if (dialCode === "55" && nationalDigits.length >= 10) {
-      const ddd = nationalDigits.slice(0, 2);
-      const rest = nationalDigits.slice(2);
-      const isMobile = rest.length === 9;
-      const part1 = isMobile ? rest.slice(0, 5) : rest.slice(0, 4);
-      const part2 = isMobile ? rest.slice(5) : rest.slice(4);
-      return `+${dialCode} (${ddd}) ${part1}-${part2}`;
-    }
-    return `+${dialCode} ${nationalDigits}`;
-  })();
   const sc = state.siteContent;
   const agencia = state.agencyName || "Agência de Viagens";
   const cidade = state.city || "Brasil";
-  const enderecoExibicao = state.address || cidade;
-
-  // Redes sociais cadastradas pelo usuário
-  const socialList = (state.socialLinks || []).filter((s) => s && s.url && s.url.trim());
-  const socialMeta: Record<string, { label: string; svg: string }> = {
-    instagram: { label: "Instagram", svg: '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2.2c3.2 0 3.6 0 4.8.1 1.2.1 1.8.3 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.2.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 1.2-.3 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.2.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-1.2-.1-1.8-.3-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.8c.1-1.2.3-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2M12 0C8.7 0 8.3 0 7.1.1 5.8.1 5 .3 4.2.6c-.8.3-1.5.7-2.2 1.4C1.3 2.7.9 3.4.6 4.2.3 5 .1 5.8.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9c0 1.3.3 2.1.6 2.9.3.8.7 1.5 1.4 2.2.7.7 1.4 1.1 2.2 1.4.8.3 1.6.5 2.9.6 1.2.1 1.6.1 4.9.1s3.7 0 4.9-.1c1.3 0 2.1-.3 2.9-.6.8-.3 1.5-.7 2.2-1.4.7-.7 1.1-1.4 1.4-2.2.3-.8.5-1.6.6-2.9.1-1.2.1-1.6.1-4.9s0-3.7-.1-4.9c0-1.3-.3-2.1-.6-2.9-.3-.8-.7-1.5-1.4-2.2C21.3 1.3 20.6.9 19.8.6 19 .3 18.2.1 16.9.1 15.7 0 15.3 0 12 0z"/><path d="M12 5.8c-3.4 0-6.2 2.8-6.2 6.2s2.8 6.2 6.2 6.2 6.2-2.8 6.2-6.2S15.4 5.8 12 5.8zm0 10.2c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"/><circle cx="18.4" cy="5.6" r="1.4"/></svg>' },
-    facebook: { label: "Facebook", svg: '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M22 12c0-5.5-4.5-10-10-10S2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7C18.3 21.1 22 17 22 12z"/></svg>' },
-    tiktok: { label: "TikTok", svg: '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M19.6 6.8c-1.5-.3-2.9-1.2-3.7-2.5-.3-.4-.5-.9-.5-1.4V2h-3.2v13c0 1.4-1.1 2.6-2.6 2.6S7 16.4 7 15s1.1-2.6 2.6-2.6c.3 0 .6 0 .8.1V9.3c-.3 0-.5-.1-.8-.1C6.5 9.2 4 11.8 4 15s2.6 5.8 5.8 5.8 5.8-2.6 5.8-5.8V9.3c1.3.9 2.9 1.5 4.6 1.5V7.6c-.2 0-.5 0-.6-.1l0-.7z"/></svg>' },
-    youtube: { label: "YouTube", svg: '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M23 7.2s-.2-1.6-.9-2.3c-.8-.9-1.8-.9-2.2-1C16.7 3.6 12 3.6 12 3.6s-4.7 0-7.9.3c-.4.1-1.4.1-2.2 1C1.2 5.6 1 7.2 1 7.2S.8 9.1.8 11v1.9c0 1.9.2 3.8.2 3.8s.2 1.6.9 2.3c.8.9 2 .9 2.5 1 1.8.2 7.6.3 7.6.3s4.7 0 7.9-.3c.4-.1 1.4-.1 2.2-1 .7-.7.9-2.3.9-2.3s.2-1.9.2-3.8V11c0-1.9-.2-3.8-.2-3.8zM9.7 14.7V8.2l6.1 3.3-6.1 3.2z"/></svg>' },
-    google: { label: "Google", svg: '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4c-.2 1.2-.9 2.3-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3z"/><path d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6C4.7 19.7 8.1 22 12 22z"/><path d="M6.4 14c-.2-.6-.3-1.3-.3-2s.1-1.4.3-2V7.4H3.1C2.4 8.8 2 10.3 2 12s.4 3.2 1.1 4.6L6.4 14z"/><path d="M12 5.9c1.5 0 2.8.5 3.8 1.5l2.8-2.8C17 3 14.7 2 12 2 8.1 2 4.7 4.3 3.1 7.4L6.4 10c.8-2.3 3-4.1 5.6-4.1z"/></svg>' },
-    linkedin: { label: "LinkedIn", svg: '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20.4 3H3.6C3.3 3 3 3.3 3 3.6v16.7c0 .4.3.7.6.7h16.7c.4 0 .7-.3.7-.7V3.6c0-.3-.3-.6-.6-.6zM8.3 18.3H5.7V9.7h2.7v8.6zM7 8.5c-.9 0-1.6-.7-1.6-1.6S6.1 5.3 7 5.3s1.6.7 1.6 1.6S7.9 8.5 7 8.5zm11.3 9.8h-2.7V14c0-1-.3-1.7-1.2-1.7-.7 0-1.1.5-1.3 1-.1.2-.1.4-.1.7v4.3h-2.7V9.7h2.7v1.2c.4-.6 1-1.4 2.5-1.4 1.8 0 3.1 1.2 3.1 3.7v5.1z"/></svg>' },
-    twitter: { label: "X", svg: '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M18.2 2H21l-6.5 7.4L22 22h-5.9l-4.6-6-5.3 6H3.4l7-7.9L2 2h6l4.2 5.5L18.2 2zm-2.1 18h1.6L7.9 3.9H6.2L16.1 20z"/></svg>' },
-    website: { label: "Site", svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/></svg>' },
-  };
-  const renderSocialIcons = (extraClass = "") => socialList.length
-    ? `<div class="social-icons ${extraClass}">${socialList.map((s) => {
-        const m = socialMeta[s.type] || socialMeta.website;
-        return `<a href="${esc(s.url)}" target="_blank" rel="noopener" aria-label="${m.label}" title="${m.label}">${m.svg}</a>`;
-      }).join("")}</div>`
-    : "";
-
+  const wppDisplay = formatWhatsAppDisplay(state.whatsapp, state.whatsappDialCode);
+  const contactLocation = state.address?.trim() || cidade;
+  const agencyEmail = state.agencyEmail || `contato@${(agencia || "agencia").toLowerCase().replace(/[^a-z0-9]/g, "")}.com.br`;
+  const socialIcons = renderSocialIcons(state);
+  const footerSocialIcons = renderSocialIcons(state, "footer-socials");
 
   // ----- SISTEMA DE ANIMAÇÕES SAZONAIS E TEMÁTICAS -----
   let seasonalStyles = "";
@@ -914,12 +939,12 @@ section{padding:80px 0}
 .contact-icon{width:40px;height:40px;border-radius:10px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .contact-item strong{display:block;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:600}
 .contact-item span{font-size:15px;color:var(--ink);font-weight:500}
-.social-icons{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
-.social-icons a{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--brand);color:#fff;transition:transform .2s,opacity .2s;text-decoration:none}
-.social-icons a:hover{transform:translateY(-2px);opacity:.9}
-.footer-socials{margin-top:14px}
-.footer-socials a{background:rgba(255,255,255,.1)}
-.footer-socials a:hover{background:var(--brand)}
+.social-icons{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.social-icon{width:40px;height:40px;border-radius:999px;background:var(--ink);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;transition:all .2s;border:1px solid rgba(255,255,255,.12)}
+.social-icon:hover{background:var(--brand);transform:translateY(-2px)}
+.social-icon span{line-height:1;color:inherit;font-weight:inherit}
+.footer-socials{margin-top:18px}
+.footer-socials .social-icon{background:rgba(255,255,255,.08);color:#fff}
 .orc-form{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:20px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.04)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .form-row.single{grid-template-columns:1fr}
@@ -1148,12 +1173,12 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         <h2 style="margin-top:12px">${esc(sc.orcamentoTitle || "Fale com um consultor agora")}</h2>
         <p>${esc(sc.orcamentoText || "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.")}</p>
         <div class="contact-list">
-          <div class="contact-item"><div class="contact-icon">📱</div><div><strong>WhatsApp</strong><span>${esc(wppDisplay || "—")}</span></div></div>
-          <div class="contact-item"><div class="contact-icon">✉️</div><div><strong>E-mail</strong><span>${esc(state.agencyEmail || `contato@${(agencia || "agencia").toLowerCase().replace(/[^a-z0-9]/g, "")}.com.br`)}</span></div></div>
+          <div class="contact-item"><div class="contact-icon">📱</div><div><strong>WhatsApp</strong><span>${esc(wppDisplay)}</span></div></div>
+          <div class="contact-item"><div class="contact-icon">✉️</div><div><strong>E-mail</strong><span>${esc(agencyEmail)}</span></div></div>
           <div class="contact-item"><div class="contact-icon">⏰</div><div><strong>Atendimento</strong><span>${esc(sc.atendimentoText || "Seg–Sex 8h–20h · Sáb 9h–15h")}</span></div></div>
-          <div class="contact-item"><div class="contact-icon">📍</div><div><strong>Localização</strong><span>${esc(enderecoExibicao)}</span></div></div>
-          ${socialList.length ? `<div class="contact-item" style="grid-column:1/-1"><div class="contact-icon">🌐</div><div style="flex:1"><strong>Redes Sociais</strong>${renderSocialIcons("contact-socials")}</div></div>` : ""}
+          <div class="contact-item"><div class="contact-icon">📍</div><div><strong>Localização</strong><span>${esc(contactLocation)}</span></div></div>
         </div>
+        ${socialIcons}
       </div>
       <form class="orc-form" onsubmit="handleMainFormSubmit(event)">
         <div class="form-row">
@@ -1225,6 +1250,7 @@ ${state.address ? `
       <div>
         <div class="foot-brand">${esc(agencia)}</div>
         <p class="foot-desc">${esc(sc.footerText || "Consultoria especializada em viagens premium e roteiros personalizados para quem não aceita o comum.")}</p>
+        ${footerSocialIcons}
       </div>
       <div>
         <h4>Destinos</h4>
@@ -1242,11 +1268,11 @@ ${state.address ? `
       <div>
         <h4>Contato</h4>
         <ul>
-          <li>${esc(wppDisplay || "—")}</li>
-          <li>${esc(enderecoExibicao)}</li>
+          <li>${esc(wppDisplay)}</li>
+          <li>${esc(agencyEmail)}</li>
+          <li>${esc(contactLocation)}</li>
           <li>Seg–Sex 8h–20h</li>
         </ul>
-        ${renderSocialIcons("footer-socials")}
       </div>
     <div class="foot-bottom">
       <div>© ${new Date().getFullYear()} ${esc(agencia)} · Todos os direitos reservados</div>
