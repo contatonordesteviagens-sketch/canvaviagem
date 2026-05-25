@@ -328,6 +328,7 @@ const defaultState: FabricaState = {
   footerContact2Icon: "instagram_gradient",
   footerContact2Value: "",
   lastEditedAt: "",
+  socialLinks: [],
 };
 
 const STORAGE_KEY = "fabrica-context-v1";
