@@ -345,19 +345,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       (event, currentSession) => {
         console.log('[AuthContext] Auth state changed:', event);
         if (!mounted) return;
-        
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
+
+        // 🛡️ RESILIÊNCIA: Não derruba o usuário em falhas transitórias.
+        // Só limpa a sessão em eventos explícitos de logout/exclusão.
+        const isExplicitSignOut = event === 'SIGNED_OUT' || event === 'USER_DELETED';
+
+        if (currentSession) {
+          setSession(currentSession);
+          setUser(currentSession.user ?? null);
+        } else if (isExplicitSignOut) {
+          setSession(null);
+          setUser(null);
+        } else {
+          // Sessão veio null em evento não-explícito (ex: refresh falhou por rede).
+          // Mantemos a sessão atual para não kickar o usuário da Fábrica.
+          console.warn('[AuthContext] Null session on non-signout event — keeping prior session');
+        }
+
         if (authReadyRef.current) {
           setLoading(false);
         }
-        
+
         // Only check subscription on specific events, not every state change
         if (currentSession?.access_token && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
           setTimeout(() => {
             if (mounted) checkSubscription(currentSession.access_token, currentSession?.user ?? null);
           }, 100);
-        } else if (!currentSession && authReadyRef.current) {
+        } else if (isExplicitSignOut && authReadyRef.current) {
           setIsAdmin(false);
           setSubscription({
             subscribed: false,
