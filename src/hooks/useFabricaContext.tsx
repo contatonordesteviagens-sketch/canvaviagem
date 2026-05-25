@@ -646,8 +646,8 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       // 🛡️ SEGURANÇA DE HIDRATAÇÃO: Não sobe um estado VAZIO por cima do que já está na nuvem!
       if (!state.agencyName && state.digitalScore === 0 && state.currentPhase <= 1) return;
 
+      setSyncStatus("saving");
       try {
-        // Salva na nuvem o estado atual do usuário. A logo também vai quando estiver em tamanho seguro.
         const logoForCloud = state.logoBase64 && state.logoBase64.length < 400_000 ? state.logoBase64 : "";
         const cleanState = {
           ...state,
@@ -671,12 +671,15 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
           }, { onConflict: "user_id" });
 
         if (error) {
-          console.warn("[Supabase Sync] Falha silenciosa no sincronismo:", error.message);
+          console.warn("[Supabase Sync] Falha:", error.message);
+          setSyncStatus("error");
         } else {
-          console.log("[Supabase Sync] Sincronização de estado concluída no Supabase.");
+          console.log("[Supabase Sync] ✓ Salvo na nuvem");
+          setLastSyncedAt(new Date());
+          setSyncStatus("saved");
         }
       } catch (err) {
-        // Falha silenciosa
+        setSyncStatus("error");
       }
     };
 
