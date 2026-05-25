@@ -466,7 +466,7 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
 };
 
 export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
-  const { state, update, reset } = useFabricaContext();
+  const { state, update, systemUpdate, reset } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
