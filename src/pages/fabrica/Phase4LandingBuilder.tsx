@@ -504,7 +504,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
   const addSocialLink = (type: SocialType) => {
     const exists = state.socialLinks?.some((link) => link.type === type && !link.url);
     if (exists) return;
-    const next: SocialLink = { id: `${type}_${Date.now()}`, type, url: "" };
+    const next: SocialLink = { id: `${type}_${Date.now()}`, type, url: type === "instagram" ? state.instagram || "" : "" };
     update({ socialLinks: [...(state.socialLinks || []), next] });
   };
 
