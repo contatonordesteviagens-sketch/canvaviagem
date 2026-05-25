@@ -509,7 +509,7 @@ const FabricaContext =
   (globalFabricaScope[FABRICA_CONTEXT_KEY] = createContext<FabricaContextType | undefined>(undefined));
 
 export const FabricaProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [state, setState] = useState<FabricaState>(() => loadInitialState());
   const stateRef = useRef(state);
   const lastUserEditAtRef = useRef(0);
@@ -533,6 +533,13 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
 
   // ☁️ CARREGAR DO BANCO: Busca o estado salvo do usuário no Supabase
   useEffect(() => {
+    if (authLoading) return;
+
+    console.log("[Fabrica Auth Gate] Auth pronta para hidratar:", {
+      authLoading,
+      userId: user?.id ?? null,
+    });
+
     if (!user?.id) {
       activeUserIdRef.current = null;
       setState(defaultState);
@@ -625,7 +632,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     };
 
     loadSavedState();
-  }, [user?.id]);
+  }, [user?.id, authLoading]);
 
   // ☁️ PERSISTÊNCIA NUVEM: Sincroniza estado debounced com Supabase
   useEffect(() => {
