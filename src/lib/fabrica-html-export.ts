@@ -57,9 +57,44 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   // Usa o DDI salvo no estado (padrão Brasil +55)
   const dialCode = (state.whatsappDialCode || "55").replace(/\D/g, "");
   const wpp = rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`;
+  // Telefone formatado bonitinho: +55 (XX) XXXXX-XXXX
+  const nationalDigits = rawWpp.startsWith(dialCode) ? rawWpp.slice(dialCode.length) : rawWpp;
+  const wppDisplay = (() => {
+    if (!nationalDigits) return "";
+    if (dialCode === "55" && nationalDigits.length >= 10) {
+      const ddd = nationalDigits.slice(0, 2);
+      const rest = nationalDigits.slice(2);
+      const isMobile = rest.length === 9;
+      const part1 = isMobile ? rest.slice(0, 5) : rest.slice(0, 4);
+      const part2 = isMobile ? rest.slice(5) : rest.slice(4);
+      return `+${dialCode} (${ddd}) ${part1}-${part2}`;
+    }
+    return `+${dialCode} ${nationalDigits}`;
+  })();
   const sc = state.siteContent;
   const agencia = state.agencyName || "Agência de Viagens";
   const cidade = state.city || "Brasil";
+  const enderecoExibicao = state.address || cidade;
+
+  // Redes sociais cadastradas pelo usuário
+  const socialList = (state.socialLinks || []).filter((s) => s && s.url && s.url.trim());
+  const socialMeta: Record<string, { label: string; svg: string }> = {
+    instagram: { label: "Instagram", svg: '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2.2c3.2 0 3.6 0 4.8.1 1.2.1 1.8.3 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.2.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 1.2-.3 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.2.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-1.2-.1-1.8-.3-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.8c.1-1.2.3-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2M12 0C8.7 0 8.3 0 7.1.1 5.8.1 5 .3 4.2.6c-.8.3-1.5.7-2.2 1.4C1.3 2.7.9 3.4.6 4.2.3 5 .1 5.8.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9c0 1.3.3 2.1.6 2.9.3.8.7 1.5 1.4 2.2.7.7 1.4 1.1 2.2 1.4.8.3 1.6.5 2.9.6 1.2.1 1.6.1 4.9.1s3.7 0 4.9-.1c1.3 0 2.1-.3 2.9-.6.8-.3 1.5-.7 2.2-1.4.7-.7 1.1-1.4 1.4-2.2.3-.8.5-1.6.6-2.9.1-1.2.1-1.6.1-4.9s0-3.7-.1-4.9c0-1.3-.3-2.1-.6-2.9-.3-.8-.7-1.5-1.4-2.2C21.3 1.3 20.6.9 19.8.6 19 .3 18.2.1 16.9.1 15.7 0 15.3 0 12 0z"/><path d="M12 5.8c-3.4 0-6.2 2.8-6.2 6.2s2.8 6.2 6.2 6.2 6.2-2.8 6.2-6.2S15.4 5.8 12 5.8zm0 10.2c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"/><circle cx="18.4" cy="5.6" r="1.4"/></svg>' },
+    facebook: { label: "Facebook", svg: '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M22 12c0-5.5-4.5-10-10-10S2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7C18.3 21.1 22 17 22 12z"/></svg>' },
+    tiktok: { label: "TikTok", svg: '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M19.6 6.8c-1.5-.3-2.9-1.2-3.7-2.5-.3-.4-.5-.9-.5-1.4V2h-3.2v13c0 1.4-1.1 2.6-2.6 2.6S7 16.4 7 15s1.1-2.6 2.6-2.6c.3 0 .6 0 .8.1V9.3c-.3 0-.5-.1-.8-.1C6.5 9.2 4 11.8 4 15s2.6 5.8 5.8 5.8 5.8-2.6 5.8-5.8V9.3c1.3.9 2.9 1.5 4.6 1.5V7.6c-.2 0-.5 0-.6-.1l0-.7z"/></svg>' },
+    youtube: { label: "YouTube", svg: '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M23 7.2s-.2-1.6-.9-2.3c-.8-.9-1.8-.9-2.2-1C16.7 3.6 12 3.6 12 3.6s-4.7 0-7.9.3c-.4.1-1.4.1-2.2 1C1.2 5.6 1 7.2 1 7.2S.8 9.1.8 11v1.9c0 1.9.2 3.8.2 3.8s.2 1.6.9 2.3c.8.9 2 .9 2.5 1 1.8.2 7.6.3 7.6.3s4.7 0 7.9-.3c.4-.1 1.4-.1 2.2-1 .7-.7.9-2.3.9-2.3s.2-1.9.2-3.8V11c0-1.9-.2-3.8-.2-3.8zM9.7 14.7V8.2l6.1 3.3-6.1 3.2z"/></svg>' },
+    google: { label: "Google", svg: '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4c-.2 1.2-.9 2.3-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3z"/><path d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6C4.7 19.7 8.1 22 12 22z"/><path d="M6.4 14c-.2-.6-.3-1.3-.3-2s.1-1.4.3-2V7.4H3.1C2.4 8.8 2 10.3 2 12s.4 3.2 1.1 4.6L6.4 14z"/><path d="M12 5.9c1.5 0 2.8.5 3.8 1.5l2.8-2.8C17 3 14.7 2 12 2 8.1 2 4.7 4.3 3.1 7.4L6.4 10c.8-2.3 3-4.1 5.6-4.1z"/></svg>' },
+    linkedin: { label: "LinkedIn", svg: '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20.4 3H3.6C3.3 3 3 3.3 3 3.6v16.7c0 .4.3.7.6.7h16.7c.4 0 .7-.3.7-.7V3.6c0-.3-.3-.6-.6-.6zM8.3 18.3H5.7V9.7h2.7v8.6zM7 8.5c-.9 0-1.6-.7-1.6-1.6S6.1 5.3 7 5.3s1.6.7 1.6 1.6S7.9 8.5 7 8.5zm11.3 9.8h-2.7V14c0-1-.3-1.7-1.2-1.7-.7 0-1.1.5-1.3 1-.1.2-.1.4-.1.7v4.3h-2.7V9.7h2.7v1.2c.4-.6 1-1.4 2.5-1.4 1.8 0 3.1 1.2 3.1 3.7v5.1z"/></svg>' },
+    twitter: { label: "X", svg: '<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M18.2 2H21l-6.5 7.4L22 22h-5.9l-4.6-6-5.3 6H3.4l7-7.9L2 2h6l4.2 5.5L18.2 2zm-2.1 18h1.6L7.9 3.9H6.2L16.1 20z"/></svg>' },
+    website: { label: "Site", svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/></svg>' },
+  };
+  const renderSocialIcons = (extraClass = "") => socialList.length
+    ? `<div class="social-icons ${extraClass}">${socialList.map((s) => {
+        const m = socialMeta[s.type] || socialMeta.website;
+        return `<a href="${esc(s.url)}" target="_blank" rel="noopener" aria-label="${m.label}" title="${m.label}">${m.svg}</a>`;
+      }).join("")}</div>`
+    : "";
+
 
   // ----- SISTEMA DE ANIMAÇÕES SAZONAIS E TEMÁTICAS -----
   let seasonalStyles = "";
