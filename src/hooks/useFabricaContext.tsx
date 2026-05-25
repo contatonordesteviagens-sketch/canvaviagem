@@ -462,8 +462,8 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       try {
         console.log("[Supabase Load] Iniciando carregamento do banco de dados...");
         const { data, error } = await supabase
-          .from("fabrica_diagnosticos")
-          .select("state_snapshot")
+          .from("fabrica_user_states")
+          .select("state_snapshot, updated_at")
           .eq("user_id", user.id)
           .maybeSingle();
 
@@ -475,23 +475,25 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         if (data?.state_snapshot) {
           const saved = data.state_snapshot as unknown as FabricaState;
           setState((prev) => {
-            console.log("[Supabase Load] Adopting DB state as Single Source of Truth, keeping only heavy Base64 from local cache.");
+            console.log("[Supabase Load] Comparando última edição local com a nuvem.");
+            const dbTime = new Date(data.updated_at || saved.lastEditedAt || 0).getTime() || 0;
+            const localTime = new Date(prev.lastEditedAt || 0).getTime() || 0;
+            const source = localTime > dbTime ? prev : saved;
+            const cache = localTime > dbTime ? saved : prev;
             
-            // O Banco de Dados é a Fonte Única de Verdade para textos, configs, urls.
-            // O localStorage (prev) é usado EXCLUSIVAMENTE para hidratar os base64 pesados que o Supabase não guarda.
+            // Quem tiver a data mais recente vence. Assim telefone, logo e dados editados não voltam para versões antigas.
             const merged = {
-              ...saved, // Supabase WIN
+              ...source,
               
-              // Hidratação segura de campos pesados que estavam no cache local do usuário
-              logoBase64: prev.logoBase64 || saved.logoBase64,
-              generatedAdImage: prev.generatedAdImage || saved.generatedAdImage,
-              lastCleanPhoto: prev.lastCleanPhoto || saved.lastCleanPhoto,
-              allGeneratedAdImages: prev.allGeneratedAdImages?.length ? prev.allGeneratedAdImages : (saved.allGeneratedAdImages || []),
+              // Preserva imagens pesadas quando a fonte mais recente não tiver esses campos.
+              logoBase64: source.logoBase64 || cache.logoBase64 || "",
+              generatedAdImage: source.generatedAdImage || cache.generatedAdImage || "",
+              lastCleanPhoto: source.lastCleanPhoto || cache.lastCleanPhoto || "",
+              allGeneratedAdImages: source.allGeneratedAdImages?.length ? source.allGeneratedAdImages : (cache.allGeneratedAdImages || []),
               
               siteContent: {
-                ...(saved.siteContent || {}), // Supabase WIN
-                // Hidrata as imagens da galeria que ficaram no cache local
-                galleryImages: prev.siteContent?.galleryImages?.length ? prev.siteContent.galleryImages : (saved.siteContent?.galleryImages || []),
+                ...(source.siteContent || {}),
+                galleryImages: source.siteContent?.galleryImages?.length ? source.siteContent.galleryImages : (cache.siteContent?.galleryImages || []),
               }
             };
             
