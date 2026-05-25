@@ -516,6 +516,8 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const stateRef = useRef(state);
   const lastUserEditAtRef = useRef(0);
   const [hasLoadedFromDb, setHasLoadedFromDb] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   const activeUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
