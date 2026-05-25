@@ -480,13 +480,30 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
             const localTime = new Date(prev.lastEditedAt || 0).getTime() || 0;
             const source = localTime > dbTime ? prev : saved;
             const cache = localTime > dbTime ? saved : prev;
+            const keepLocalIdentity =
+              localTime === 0 &&
+              dbTime > 0 &&
+              (!!prev.agencyName || !!prev.whatsapp || !!prev.instagram || !!prev.logoBase64 || !!prev.address);
             
             // Quem tiver a data mais recente vence. Assim telefone, logo e dados editados não voltam para versões antigas.
             const merged = {
               ...source,
+              ...(keepLocalIdentity
+                ? {
+                    agencyName: prev.agencyName || source.agencyName,
+                    agencyType: prev.agencyType || source.agencyType,
+                    agencyTypeOther: prev.agencyTypeOther || source.agencyTypeOther,
+                    instagram: prev.instagram || source.instagram,
+                    whatsapp: prev.whatsapp || source.whatsapp,
+                    whatsappDialCode: prev.whatsappDialCode || source.whatsappDialCode,
+                    whatsappCountryCode: prev.whatsappCountryCode || source.whatsappCountryCode,
+                    address: prev.address || source.address,
+                    lastEditedAt: new Date().toISOString(),
+                  }
+                : { lastEditedAt: source.lastEditedAt || data.updated_at || "" }),
               
               // Preserva imagens pesadas quando a fonte mais recente não tiver esses campos.
-              logoBase64: source.logoBase64 || cache.logoBase64 || "",
+              logoBase64: keepLocalIdentity ? (prev.logoBase64 || source.logoBase64 || "") : (source.logoBase64 || cache.logoBase64 || ""),
               generatedAdImage: source.generatedAdImage || cache.generatedAdImage || "",
               lastCleanPhoto: source.lastCleanPhoto || cache.lastCleanPhoto || "",
               allGeneratedAdImages: source.allGeneratedAdImages?.length ? source.allGeneratedAdImages : (cache.allGeneratedAdImages || []),
