@@ -180,6 +180,7 @@ export interface FabricaState {
   footerContact1Value?: string;
   footerContact2Icon?: "whatsapp_green" | "whatsapp_custom" | "instagram_gradient" | "instagram_custom" | "website" | "none";
   footerContact2Value?: string;
+  lastEditedAt?: string;
 }
 
 const defaultState: FabricaState = {
@@ -310,6 +311,7 @@ const defaultState: FabricaState = {
   footerContact1Value: "",
   footerContact2Icon: "instagram_gradient",
   footerContact2Value: "",
+  lastEditedAt: "",
 };
 
 const STORAGE_KEY = "fabrica-context-v1";
@@ -399,6 +401,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [state, setState] = useState<FabricaState>(() => loadInitialState());
   const stateRef = useRef(state);
+  const lastUserEditAtRef = useRef(0);
   const [hasLoadedFromDb, setHasLoadedFromDb] = useState(false);
 
   useEffect(() => {
