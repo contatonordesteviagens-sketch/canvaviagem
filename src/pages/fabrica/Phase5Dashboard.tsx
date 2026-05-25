@@ -249,7 +249,7 @@ export const Phase5Dashboard = () => {
             </p>
           </div>
           <button 
-            onClick={() => setPhase(3)}
+            onClick={() => setPhase(1)}
             className="text-[10px] font-bold bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-2 rounded-full text-white/60 transition-all hover:text-white"
           >
             ✏️ Editar Dados
