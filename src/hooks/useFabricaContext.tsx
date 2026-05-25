@@ -258,7 +258,7 @@ const defaultState: FabricaState = {
     animationEffect: "none",
     animationLocation: "all",
     animationDuration: "always",
-    aboutImageUrl: "",
+    aboutImageUrl: "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80",
     
     // Default values for new fields
     heroEyebrow: "Consultoria Premium de Viagens",
