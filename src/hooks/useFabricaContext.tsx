@@ -522,7 +522,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       if (!state.agencyName && state.digitalScore === 0 && state.currentPhase <= 1) return;
 
       try {
-        // Salva na nuvem só o estado leve da conta; imagens/base64 grandes ficam no navegador do próprio usuário
+        // Salva na nuvem o estado atual do usuário. A logo também vai quando estiver em tamanho seguro.
         const logoForCloud = state.logoBase64 && state.logoBase64.length < 400_000 ? state.logoBase64 : "";
         const cleanState = {
           ...state,
@@ -537,12 +537,10 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         };
 
         const { error } = await supabase
-          .from("fabrica_diagnosticos")
+          .from("fabrica_user_states")
           .upsert({
             user_id: user.id,
             agency_name: state.agencyName || "Nova Agência",
-            digital_score: state.digitalScore || 0,
-            level: state.level || 1,
             state_snapshot: cleanState as any,
             updated_at: new Date().toISOString()
           }, { onConflict: "user_id" });
