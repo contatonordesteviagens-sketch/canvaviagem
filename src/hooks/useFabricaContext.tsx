@@ -516,7 +516,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
             const keepLocalIdentity =
               localTime === 0 &&
               dbTime > 0 &&
-              (!!prev.agencyName || !!prev.whatsapp || !!prev.instagram || !!prev.logoBase64 || !!prev.address);
+              (!!prev.agencyName || !!prev.whatsapp || !!prev.instagram || !!prev.agencyEmail || !!prev.logoBase64 || !!prev.address);
             
             // Quem tiver a data mais recente vence. Assim telefone, logo e dados editados não voltam para versões antigas.
             const merged = {
@@ -527,9 +527,11 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
                     agencyType: prev.agencyType || source.agencyType,
                     agencyTypeOther: prev.agencyTypeOther || source.agencyTypeOther,
                     instagram: prev.instagram || source.instagram,
+                    socialLinks: prev.socialLinks?.length ? prev.socialLinks : (source.socialLinks || []),
                     whatsapp: prev.whatsapp || source.whatsapp,
                     whatsappDialCode: prev.whatsappDialCode || source.whatsappDialCode,
                     whatsappCountryCode: prev.whatsappCountryCode || source.whatsappCountryCode,
+                    agencyEmail: prev.agencyEmail || source.agencyEmail,
                     address: prev.address || source.address,
                     lastEditedAt: new Date().toISOString(),
                   }
