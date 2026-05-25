@@ -579,6 +579,8 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   const [redoStack, setRedoStack] = useState<FabricaState[]>([]);
 
   const update = useCallback((patch: Partial<FabricaState>) => {
+    const editedAt = new Date().toISOString();
+    lastUserEditAtRef.current = Date.now();
     // Salva o histórico de forma limpa e síncrona no corpo do callback do evento
     const snapshot = stateRef.current;
     setHistory((h) => {
@@ -590,7 +592,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     setRedoStack([]);
     // Aplica a alteração no estado principal
     setState((prev) => {
-      const next = { ...prev, ...patch };
+      const next = { ...prev, ...patch, lastEditedAt: editedAt };
       stateRef.current = next;
       return next;
     });
