@@ -540,47 +540,46 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
               </div>
             </FabricaCard>
 
-            <FabricaCard title="💖 Campañas y Animaciones Estacionales">
-              <p className="text-xs text-white/50 mb-3">
-                Decora sutilmente el sitio de tu cliente con animaciones estacionales para impulsar fechas comerciales (como el Día de los Enamorados), manteniendo la ligereza y el rendimiento total.
+            <FabricaCard title="✨ Efeitos Visuais & Campanhas">
+              <p className="text-xs text-white/50 mb-4">
+                Adicione efeitos visuais flutuantes na tela para destacar campanhas e ofertas especiais de forma sutil.
               </p>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-semibold text-white/60 mb-1.5">Elige la Campaña / Efecto</label>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-semibold text-white/60 uppercase tracking-wider">Efeito Animado</label>
                   <div className="relative">
                     <select
                       value={state.siteContent.animationEffect || "none"}
                       onChange={(e) => updSite({ animationEffect: e.target.value as any })}
-                      className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-white/30 appearance-none pr-8"
+                      className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#00ff88]/50 transition-colors appearance-none pr-8"
                     >
-                      <option value="none" className="bg-zinc-900">Ninguno (Por defecto)</option>
-                      <option value="namorados_hearts" className="bg-zinc-900">💖 Día de los Enamorados: Corazones Flotantes (Hover)</option>
-                      <option value="namorados_pulse" className="bg-zinc-900">💖 Día de los Enamorados: Pulsar Romántico (Borde suave)</option>
-                      <option value="neve" className="bg-zinc-900">❄️ Temporada de Invierno: Caída de Nieve (Ligera)</option>
-                      <option value="confete" className="bg-zinc-900">🎉 Fiestas / Promociones: Lluvia de Confeti</option>
+                      <option value="none" className="bg-zinc-900">Nenhum (Padrão)</option>
+                      <option value="neve" className="bg-zinc-900">❄️ Queda de Neve (Inverno)</option>
+                      <option value="confete" className="bg-zinc-900">🎉 Chuva de Confetes (Ofertas)</option>
                     </select>
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
-                      <ChevronDown className="w-3.5 h-3.5 text-white" />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                      <ChevronDown className="w-4 h-4 text-white" />
                     </div>
                   </div>
                 </div>
 
                 {state.siteContent.animationEffect && state.siteContent.animationEffect !== "none" && (
-                  <div>
-                    <label className="block text-xs font-semibold text-white/60 mb-1.5">Dónde va el efecto (Qué parte del sitio)</label>
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-semibold text-white/60 uppercase tracking-wider">Duração do Efeito</label>
                     <div className="relative">
                       <select
-                        value={state.siteContent.animationLocation || "all"}
-                        onChange={(e) => updSite({ animationLocation: e.target.value as any })}
-                        className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-white/30 appearance-none pr-8"
+                        value={state.siteContent.animationDuration || "always"}
+                        onChange={(e) => updSite({ animationDuration: e.target.value as any })}
+                        className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#00ff88]/50 transition-colors appearance-none pr-8"
                       >
-                        <option value="all" className="bg-zinc-900">Todo el sitio</option>
-                        <option value="buttons" className="bg-zinc-900">Solo en los Botones de Acción (CTA)</option>
-                        <option value="cards" className="bg-zinc-900">Solo en los Bordes de las Tarjetas de Paquetes</option>
-                        <option value="footer" className="bg-zinc-900">Solo en el Pie de Página (Footer)</option>
+                        <option value="always" className="bg-zinc-900">O tempo todo (Padrão)</option>
+                        <option value="5" className="bg-zinc-900">Durar 5 segundos ao abrir</option>
+                        <option value="10" className="bg-zinc-900">Durar 10 segundos ao abrir</option>
+                        <option value="30" className="bg-zinc-900">Durar 30 segundos ao abrir</option>
                       </select>
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
-                        <ChevronDown className="w-3.5 h-3.5 text-white" />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                        <ChevronDown className="w-4 h-4 text-white" />
                       </div>
                     </div>
                   </div>

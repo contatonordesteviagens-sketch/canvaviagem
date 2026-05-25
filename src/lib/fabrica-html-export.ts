@@ -65,54 +65,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   let seasonalStyles = "";
   let seasonalScripts = "";
 
-  if (sc.animationEffect === "namorados_hearts") {
-    let targetSelector = '.dest-card, .btn, .nav-cta, .form-submit';
-    if (sc.animationLocation === 'buttons') targetSelector = '.btn, .nav-cta, .form-submit';
-    if (sc.animationLocation === 'cards') targetSelector = '.dest-card';
-    if (sc.animationLocation === 'footer') targetSelector = 'footer';
-
-    seasonalStyles = `
-/* ANIMAÇÃO DIA DOS NAMORADOS - CORAÇÕES (PURE CSS) */
-@keyframes heartFloat {
-  0% { transform: translate(-50%, 0) scale(0); opacity: 0; }
-  50% { opacity: 1; }
-  100% { transform: translate(-50%, -50px) scale(1.5); opacity: 0; }
-}
-${targetSelector} {
-  position: relative;
-}
-${targetSelector}:hover::after {
-  content: '💖';
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  font-size: 20px;
-  pointer-events: none;
-  animation: heartFloat 1s ease-out forwards;
-  z-index: 100;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-}
-`;
-  } else if (sc.animationEffect === "namorados_pulse") {
-    let targetSelector = '.dest-card, .btn, .nav-cta, .form-submit';
-    if (sc.animationLocation === 'buttons') targetSelector = '.btn, .nav-cta, .form-submit';
-    if (sc.animationLocation === 'cards') targetSelector = '.dest-card';
-    if (sc.animationLocation === 'footer') targetSelector = 'footer';
-
-    seasonalStyles = `
-/* ANIMAÇÃO DIA DOS NAMORADOS - PULSAR (PURE CSS) */
-@keyframes romanticPulse {
-  0% { box-shadow: 0 0 0 0 rgba(255, 75, 114, 0.5); }
-  70% { box-shadow: 0 0 0 12px rgba(255, 75, 114, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 75, 114, 0); }
-}
-${targetSelector} {
-  animation: romanticPulse 2s infinite !important;
-  border: 2px solid rgba(255, 75, 114, 0.6) !important;
-  box-sizing: border-box;
-}
-`;
-  } else if (sc.animationEffect === "neve") {
+  if (sc.animationEffect === "neve") {
     seasonalStyles = `
 /* ANIMAÇÃO INVERNO - NEVE */
 @keyframes snowFall {
@@ -132,7 +85,8 @@ ${targetSelector} {
 `;
     seasonalScripts = `
   // Queda de neve leve
-  setInterval(() => {
+  const durationStr = "${sc.animationDuration || 'always'}";
+  const snowInterval = setInterval(() => {
     const snow = document.createElement('span');
     snow.className = 'snow-particle';
     snow.innerHTML = '❄️';
@@ -142,6 +96,10 @@ ${targetSelector} {
     document.body.appendChild(snow);
     setTimeout(() => snow.remove(), 8000);
   }, 350);
+  
+  if (durationStr !== "always") {
+    setTimeout(() => clearInterval(snowInterval), parseInt(durationStr) * 1000);
+  }
 `;
   } else if (sc.animationEffect === "confete") {
     seasonalStyles = `
@@ -164,6 +122,7 @@ ${targetSelector} {
 `;
     seasonalScripts = `
   // Chuva de confetes coloridos
+  const durationStr = "${sc.animationDuration || 'always'}";
   const colors = ['#ff4b72', '#00e5a0', '#00b8ff', '#fcd34d', '#7000ff'];
   function spawnConfete() {
     const conf = document.createElement('div');
@@ -177,8 +136,13 @@ ${targetSelector} {
   }
   // Explosão inicial
   for (let i = 0; i < 30; i++) setTimeout(spawnConfete, i * 60);
+  
   // Chuva mantida
-  setInterval(spawnConfete, 400);
+  const confeteInterval = setInterval(spawnConfete, 400);
+  
+  if (durationStr !== "always") {
+    setTimeout(() => clearInterval(confeteInterval), parseInt(durationStr) * 1000);
+  }
 `;
   }
 

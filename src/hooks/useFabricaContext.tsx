@@ -58,8 +58,9 @@ export interface SiteContent {
   galleryImages: string[]; // banco de imagens geradas pra reuso
   vercelUrl?: string; // URL do site publicado no Vercel
   sections: SectionVisibility;
-  animationEffect?: "none" | "namorados_hearts" | "namorados_pulse" | "neve" | "confete";
+  animationEffect?: "none" | "neve" | "confete";
   animationLocation?: "all" | "buttons" | "cards" | "footer";
+  animationDuration?: "5" | "10" | "30" | "always";
   aboutImageUrl?: string; // Imagem da seção Sobre/Equipe do site
   
   // NOVOS CAMPOS PARA EDIÇÃO 100%
@@ -256,6 +257,7 @@ const defaultState: FabricaState = {
     },
     animationEffect: "none",
     animationLocation: "all",
+    animationDuration: "always",
     aboutImageUrl: "",
     
     // Default values for new fields
