@@ -32,6 +32,14 @@ import type { SectionVisibility } from "@/hooks/useFabricaContext";
 const LOVABLE_INVITE_URL = "https://lovable.dev/invite/2ZD6VL6";
 const PRESET_COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#000000"];
 
+// Sugestões padrão de fotos para a seção "Equipe / Agência"
+const TEAM_PRESET_IMAGES = [
+  "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80",
+  "https://img.freepik.com/fotos-premium/agente-de-viagens-de-frente-sentada-atras-do-seu-local-de-trabalho-a-brincar-com-um-aviao-de-brinquedo_926199-2841227.jpg?semt=ais_hybrid&w=740&q=80",
+  "https://img.freepik.com/fotos-premium/retrato-de-um-agente-de-viagens-em-uma-agencia-de-viagens-com-passaportes-e-passagens_199620-11415.jpg",
+  "https://img.freepik.com/fotos-gratis/pessoas-em-filmagens-medias-na-agencia-de-viagens_52683-136429.jpg?semt=ais_hybrid&w=740&q=80",
+];
+
 export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
   const { state, update, undo, redo, canUndo, canRedo } = useFabricaContext();
   const { user } = useAuth();
