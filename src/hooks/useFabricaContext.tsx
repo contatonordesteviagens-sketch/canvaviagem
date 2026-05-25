@@ -687,6 +687,30 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     hasLoadedFromDb
   ]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const flushCurrentState = () => {
+      const currentUserId = activeUserIdRef.current;
+      if (!currentUserId || !hasLoadedFromDb) return;
+      persistLocalState(stateRef.current, currentUserId);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        flushCurrentState();
+      }
+    };
+
+    window.addEventListener("beforeunload", flushCurrentState);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("beforeunload", flushCurrentState);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [hasLoadedFromDb]);
+
   // Histórico de alterações (Undo / Redo)
   const [history, setHistory] = useState<FabricaState[]>([]);
   const [redoStack, setRedoStack] = useState<FabricaState[]>([]);
