@@ -340,38 +340,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let mounted = true;
 
+    // 🛡️ SAFETY: nunca deixa o app travado em "Verificando sessão..." mesmo se
+    // o Supabase pendurar o getSession() por falha de rede.
+    const safetyTimeout = setTimeout(() => {
+      if (mounted && !authReadyRef.current) {
+        console.warn('[AuthContext] Safety timeout — forçando loading=false');
+        authReadyRef.current = true;
+        setLoading(false);
+        setSubscription(prev => ({ ...prev, loading: false }));
+      }
+    }, 2500);
+
     // Set up auth state listener FIRST
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         console.log('[AuthContext] Auth state changed:', event);
         if (!mounted) return;
 
-        // 🛡️ RESILIÊNCIA: Não derruba o usuário em falhas transitórias.
-        // Só limpa a sessão em eventos explícitos de logout/exclusão.
-        const isExplicitSignOut = event === 'SIGNED_OUT';
+        // Eventos que RESOLVEM o estado inicial (podem ser null legitimamente)
+        const isResolvingEvent = event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT';
 
         if (currentSession) {
           setSession(currentSession);
           setUser(currentSession.user ?? null);
-        } else if (isExplicitSignOut) {
+        } else if (isResolvingEvent) {
           setSession(null);
           setUser(null);
         } else {
-          // Sessão veio null em evento não-explícito (ex: refresh falhou por rede).
-          // Mantemos a sessão atual para não kickar o usuário da Fábrica.
-          console.warn('[AuthContext] Null session on non-signout event — keeping prior session');
+          // TOKEN_REFRESHED/USER_UPDATED com null = falha transitória; mantém sessão anterior.
+          console.warn('[AuthContext] Null session em evento não-resolutivo — mantendo sessão prévia');
         }
 
-        if (authReadyRef.current) {
+        // Marca pronto e libera o loading em qualquer evento resolutivo
+        if (isResolvingEvent) {
+          authReadyRef.current = true;
           setLoading(false);
         }
 
         // Only check subscription on specific events, not every state change
-        if (currentSession?.access_token && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+        if (currentSession?.access_token && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
           setTimeout(() => {
             if (mounted) checkSubscription(currentSession.access_token, currentSession?.user ?? null);
           }, 100);
-        } else if (isExplicitSignOut && authReadyRef.current) {
+        } else if (event === 'SIGNED_OUT') {
           setIsAdmin(false);
           setSubscription({
             subscribed: false,
@@ -384,19 +395,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data, error }) => {
+    // THEN check for existing session (com timeout próprio)
+    const getSessionPromise = supabase.auth.getSession();
+    const timedSession = Promise.race([
+      getSessionPromise,
+      new Promise<{ data: { session: null }; error: null }>((resolve) =>
+        setTimeout(() => resolve({ data: { session: null }, error: null }), 2000)
+      ),
+    ]);
+
+    timedSession.then(({ data }) => {
       if (!mounted) return;
-      
       const existingSession = data?.session ?? null;
-      
-      authReadyRef.current = true;
-      setSession(existingSession);
-      setUser(existingSession?.user ?? null);
-      setLoading(false);
-      
+
+      if (!authReadyRef.current) {
+        authReadyRef.current = true;
+        setSession(existingSession);
+        setUser(existingSession?.user ?? null);
+        setLoading(false);
+      }
+
       if (existingSession?.access_token) {
-        // Hydrate from localStorage instantly
         const userId = existingSession.user?.id;
         let cached = null;
         if (userId) {
@@ -404,21 +423,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const stored = localStorage.getItem(`cv-sub-cache-${userId}`);
             if (stored) {
               const parsed = JSON.parse(stored);
-                if (Date.now() - parsed.timestamp < PERSISTED_CACHE_DURATION) {
+              if (Date.now() - parsed.timestamp < PERSISTED_CACHE_DURATION) {
                 cached = parsed.data;
-                subscriptionCache = {
-                  data: parsed.data,
-                  timestamp: parsed.timestamp,
-                  userId
-                };
+                subscriptionCache = { data: parsed.data, timestamp: parsed.timestamp, userId };
               }
             }
-          } catch (e) {}
+          } catch {}
         }
 
         if (cached) {
           setSubscription({ ...cached, loading: false });
-          // Still verify silently in the background
           checkSubscription(existingSession.access_token, existingSession.user, false);
         } else {
           checkSubscription(existingSession.access_token, existingSession?.user ?? null);
@@ -428,7 +442,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }).catch(err => {
       console.error('[AuthContext] Error getting session:', err);
-      if (mounted) {
+      if (mounted && !authReadyRef.current) {
         authReadyRef.current = true;
         setLoading(false);
         setSubscription(prev => ({ ...prev, loading: false }));
@@ -437,6 +451,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       mounted = false;
+      clearTimeout(safetyTimeout);
       authSubscription.unsubscribe();
     };
   }, [checkSubscription]);
