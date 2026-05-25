@@ -91,19 +91,11 @@ const formatWhatsAppDisplay = (raw: string, dial = "55") => {
   return `+${dialCode} ${national}`;
 };
 
-const renderSocialIcons = (state: FabricaState, extraClass = "") => {
-  const baseLinks = [...(state.socialLinks || [])];
-  if (state.instagram && !baseLinks.some((link) => link.type === "instagram")) {
-    baseLinks.unshift({ id: "instagram_default", type: "instagram", url: state.instagram } as any);
-  }
-  const links = baseLinks
-    .filter((link) => link?.url?.trim())
-    .map((link) => ({ ...link, url: normalizeSocialHref(link.type, link.url), meta: socialMeta[link.type] || socialMeta.site }));
-  if (!links.length) return "";
-  return `<div class="social-icons ${extraClass}">${links
-    .map((link) => `<a href="${esc(link.url)}" target="_blank" rel="noopener noreferrer" class="social-icon social-${esc(link.type)}" aria-label="${esc(link.meta.label)}"><span>${link.meta.svg}</span></a>`)
-    .join("")}</div>`;
+const renderSocialIcons = (_state: FabricaState, _extraClass = "") => {
+  // Desativado temporariamente — visual ficou ruim. Reativar depois.
+  return "";
 };
+
 
 export function buildLandingHTML(state: FabricaState, trackingId?: string): string {
   const color = state.primaryColor || "#0F2742";
