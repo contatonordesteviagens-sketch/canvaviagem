@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useFabricaContext, type Pacote, type Depoimento, type SocialLink, type SocialType } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export";
+import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
 import {
   Plus,
   Trash2,
