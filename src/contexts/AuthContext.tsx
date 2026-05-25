@@ -451,6 +451,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       mounted = false;
+      clearTimeout(safetyTimeout);
       authSubscription.unsubscribe();
     };
   }, [checkSubscription]);
