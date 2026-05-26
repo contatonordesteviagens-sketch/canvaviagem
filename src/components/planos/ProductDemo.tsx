@@ -7,7 +7,7 @@ export const ProductDemo = () => {
   const [mutedActive, setMutedActive] = useState(true);
   const [showStartVideo, setShowStartVideo] = useState(false);
 
-  const ELITE_VIDEO_ID = 'Xqcw-NpPz08';
+  const ELITE_VIDEO_ID = 'P0_4EdEOQAc';
   const START_VIDEO_ID = '1Or9QJPn6OA';
 
   const handleActivateSound = () => {

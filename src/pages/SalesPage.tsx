@@ -36,7 +36,7 @@ const T = {
   text3: "rgba(255,255,255,0.4)",
 };
 
-const DEMO_VIDEO_URL = "https://www.youtube.com/embed/dvInvZZ7fLY?autoplay=1";
+const DEMO_VIDEO_URL = "https://www.youtube.com/embed/P0_4EdEOQAc?autoplay=1";
 
 // ────────────────────────────────────────────────────────────
 // DATA
