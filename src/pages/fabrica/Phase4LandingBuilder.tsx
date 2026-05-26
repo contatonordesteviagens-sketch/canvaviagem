@@ -343,7 +343,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
     const SYNC_KEY = "fabrica-phase4-autosync-v1";
     const lastSyncHash = localStorage.getItem(SYNC_KEY);
     const dest = (state.destinos?.[0] || "").trim();
-    const currentHash = [dest, state.lastPrice, state.lastPaymentMode, state.agencyName].join("|");
+    const currentHash = [dest, state.lastPrice, state.lastPaymentMode, state.agencyName, state.agencyType].join("|");
 
     // Se já sincronizou com esses mesmos dados, não re-sincroniza
     if (lastSyncHash === currentHash) return;
@@ -397,6 +397,48 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         patches["siteContent.sections.porQue"] = true;
         synced.push("Blindagem de Autoridade (Diferenciais Ativados)");
       }
+    }
+
+    // 6. Sincronização Inteligente por Tipo de Agência
+    const type = state.agencyType;
+    const isAutonoma = type === "autonoma";
+    const isCorp = type === "corporativa";
+    const isLuxo = type === "luxo";
+
+    if (!state.siteContent.heroEyebrow || state.siteContent.heroEyebrow === "Consultoria Premium de Viagens") {
+      let eyebrow = "Consultoria Premium de Viagens";
+      if (isAutonoma) eyebrow = "Agente de Viagens Especialista";
+      if (isCorp) eyebrow = "Gestão de Viagens Corporativas";
+      if (isLuxo) eyebrow = "Viagens de Luxo Sob Medida";
+      if (state.niche === "cruzeiro") eyebrow = "Especialista em Cruzeiros";
+      patches["siteContent.heroEyebrow"] = eyebrow;
+      synced.push("Identidade do Nicho/Agência");
+    }
+
+    if (!state.siteContent.equipeEyebrow || state.siteContent.equipeEyebrow === "Nossa equipe") {
+      patches["siteContent.equipeEyebrow"] = isAutonoma ? "Sobre Mim" : "Nossa equipe";
+    }
+
+    if (!state.siteContent.equipeTitle || state.siteContent.equipeTitle === "Uma equipe dedicada exclusivamente a você") {
+      patches["siteContent.equipeTitle"] = isAutonoma 
+        ? "Atendimento dedicado exclusivamente a você" 
+        : isCorp 
+        ? "Especialistas focados na sua empresa" 
+        : "Uma equipe dedicada exclusivamente a você";
+    }
+
+    if (!state.siteContent.equipeIntro || state.siteContent.equipeIntro.startsWith("Cada viagem começa com uma conversa")) {
+      patches["siteContent.equipeIntro"] = isAutonoma
+        ? "Meu foco é planejar cada detalhe da sua viagem. Conheço os destinos de perto e cuido de tudo para o seu perfil e momento."
+        : isCorp
+        ? "Ajudamos sua empresa a economizar e ter total segurança nas viagens de negócios. Atendimento rápido e eficiente."
+        : "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.";
+    }
+
+    if (!state.siteContent.processoTitle || state.siteContent.processoTitle === "Sua viagem dos sonhos em 3 passos") {
+      patches["siteContent.processoTitle"] = isCorp 
+        ? "Gestão inteligente em 3 passos" 
+        : "Sua viagem dos sonhos em 3 passos";
     }
 
     if (synced.length === 0) return;
@@ -592,12 +634,40 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
       <div className="flex flex-col-reverse gap-8 items-stretch">
         {/* Painel Esquerdo: Opções de Configuração (5 colunas em lg) */}
         <div className="w-full space-y-6">
-          <div className="border-b border-white/10 pb-4">
+          {/* PUBLICAÇÃO DIRETA NO VERCEL (Movido para o topo) */}
+          <PublishOnLovableCard primaryColor={state.primaryColor} html={previewHTML} onBack={onBack} onNext={onNext} />
+
+          <div className="border-b border-white/10 pb-4 pt-6">
             <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <Palette className="w-5 h-5 text-amber-400" />
               ⚙️ Ajustes Finos e Configurações Avançadas do Site:
             </h4>
           </div>
+
+            <FabricaCard title="📦 Pacotes oferecidos">
+              <FieldText
+                label="Título da seção"
+                value={state.siteContent.pacotesTitle}
+                onChange={(v) => updSite({ pacotesTitle: v })}
+              />
+              <div className="space-y-3 mt-4">
+                {state.selectedPackages.map((p) => (
+                  <PacoteEditor
+                    key={p.id}
+                    pacote={p}
+                    gallery={state.siteContent.galleryImages}
+                    onChange={(patch) => updPacote(p.id, patch)}
+                    onDelete={() => delPacote(p.id)}
+                  />
+                ))}
+                <button
+                  onClick={addPacote}
+                  className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
+                >
+                  <Plus className="w-4 h-4" /> Adicionar pacote
+                </button>
+              </div>
+            </FabricaCard>
 
           <div className="space-y-6">
             <FabricaCard title="🎨 Cor primária do site">
@@ -845,30 +915,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               />
             </FabricaCard>
 
-            <FabricaCard title="📦 Pacotes oferecidos">
-              <FieldText
-                label="Título da seção"
-                value={state.siteContent.pacotesTitle}
-                onChange={(v) => updSite({ pacotesTitle: v })}
-              />
-              <div className="space-y-3 mt-4">
-                {state.selectedPackages.map((p) => (
-                  <PacoteEditor
-                    key={p.id}
-                    pacote={p}
-                    gallery={state.siteContent.galleryImages}
-                    onChange={(patch) => updPacote(p.id, patch)}
-                    onDelete={() => delPacote(p.id)}
-                  />
-                ))}
-                <button
-                  onClick={addPacote}
-                  className="w-full py-3 rounded-xl border border-dashed border-white/20 text-white/60 hover:border-white/40 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm"
-                >
-                  <Plus className="w-4 h-4" /> Adicionar pacote
-                </button>
-              </div>
-            </FabricaCard>
+
 
             <FabricaCard title="⭐ Depoimentos">
               <FieldText
@@ -996,10 +1043,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             </button>
           </div>
 
-          {/* PUBLICAÇÃO DIRETA NO VERCEL */}
-          <div className="mt-6">
-            <PublishOnLovableCard primaryColor={state.primaryColor} html={previewHTML} onBack={onBack} onNext={onNext} />
-          </div>
+
         </div>
 
         {/* Painel Direito: Preview do Site (7 colunas em lg, Sticky) */}
@@ -1773,21 +1817,9 @@ const PublishOnLovableCard = ({
       />
       <div className="relative">
         <div className="flex items-center gap-2 mb-3">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{
-              background: `linear-gradient(135deg, ${primaryColor}, #FCD34D)`,
-              boxShadow: `0 0 20px ${primaryColor}55`,
-            }}
-          >
-            <Rocket className="w-5 h-5 text-black" />
-          </div>
           <div>
-            <div className="text-[10px] font-extrabold uppercase tracking-widest" style={{ color: primaryColor }}>
-              PASSO FINAL · 100% GRÁTIS
-            </div>
             <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
-              Publique seu site no ar em <span style={{ color: primaryColor }}>1 Clique</span>
+              Publique seu site
             </h3>
           </div>
         </div>
@@ -1798,7 +1830,7 @@ const PublishOnLovableCard = ({
 
         {/* PUBLICAÇÃO DIRETA */}
         <div 
-          className="my-6 p-6 rounded-2xl border-2 backdrop-blur-xl transition-all relative overflow-hidden text-left"
+          className="my-4 p-6 rounded-2xl border-2 backdrop-blur-xl transition-all relative overflow-hidden text-left"
           style={{ 
             borderColor: state.siteContent.vercelUrl ? "#10B98188" : `${primaryColor}44`,
             background: state.siteContent.vercelUrl 
@@ -1807,11 +1839,6 @@ const PublishOnLovableCard = ({
             boxShadow: state.siteContent.vercelUrl ? "0 10px 30px rgba(16,185,129,0.1)" : "none"
           }}
         >
-          <div className="mb-4">
-            <h4 className="text-base font-black text-white tracking-wide">
-              Publicar Site Diretamente
-            </h4>
-          </div>
 
           {/* Se já estiver publicado, mostra o link em destaque */}
           {state.siteContent.vercelUrl && (
@@ -1862,6 +1889,32 @@ const PublishOnLovableCard = ({
               </div>
             </div>
 
+            {showVercelConfig && (
+              <div className="mt-4 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 space-y-3">
+                <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider">
+                  Vercel Access Token:
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="password"
+                    value={customVercelToken}
+                    onChange={(e) => setCustomVercelToken(e.target.value)}
+                    placeholder="Sua chave secreta da Vercel"
+                    className="flex-1 bg-black/40 border border-amber-500/20 px-3 py-2 text-sm text-white rounded-lg outline-none focus:border-amber-400"
+                  />
+                  <button
+                    onClick={() => handleSaveToken(customVercelToken)}
+                    className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs rounded-lg transition-all"
+                  >
+                    Salvar Token
+                  </button>
+                </div>
+                <p className="text-[10px] text-white/50 leading-relaxed">
+                  Crie um token em <a href="https://vercel.com/account/tokens" target="_blank" className="text-amber-400 hover:underline">vercel.com/account/tokens</a> e cole aqui.
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 onClick={handleVercelPublish}
@@ -1908,21 +1961,7 @@ const PublishOnLovableCard = ({
           </div>
         </div>
 
-        {/* Opções secundárias — minimalistas */}
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
-          <button
-            onClick={() => downloadLandingHTML(state, undefined, user?.id)}
-            className="py-2 px-3 rounded-lg bg-white/[0.04] border border-white/10 text-white/70 hover:text-white hover:bg-white/[0.08] transition-all flex items-center gap-1.5"
-          >
-            <Download className="w-3.5 h-3.5" /> Baixar HTML
-          </button>
-          <button
-            onClick={copyHtml}
-            className="py-2 px-3 rounded-lg bg-white/[0.04] border border-white/10 text-white/70 hover:text-white hover:bg-white/[0.08] transition-all flex items-center gap-1.5"
-          >
-            <Copy className="w-3.5 h-3.5" /> Copiar HTML
-          </button>
-        </div>
+
 
         <details className="mt-6 p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
           <summary className="list-none cursor-pointer text-sm font-semibold text-white/60 hover:text-white transition-colors flex items-center gap-2">
@@ -1986,8 +2025,13 @@ const PublishOnLovableCard = ({
           </button>
           <button
             onClick={onNext}
-            className="flex-[2] py-4 rounded-xl font-black text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
-            style={{ background: primaryColor }}
+            className="flex-[2] py-4 rounded-xl font-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+            style={{ 
+              background: primaryColor, 
+              color: primaryColor === "#000000" ? "#ffffff" : "#000000",
+              border: primaryColor === "#000000" ? "1px solid rgba(255,255,255,0.3)" : "none",
+              boxShadow: `0 0 20px ${primaryColor}55`
+            }}
           >
             Avançar para CRM & Leads (Fase 3) <Rocket className="w-5 h-5" />
           </button>
