@@ -651,14 +651,31 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
               socialLinks: primary.socialLinks?.length ? primary.socialLinks : (fallback.socialLinks || []),
               siteContent: {
                 ...defaultState.siteContent,
-                ...(primary.siteContent || {}),
+                hero: {
+                  ...defaultState.siteContent.hero,
+                  ...(fallback.siteContent?.hero || {}),
+                  ...(primary.siteContent?.hero?.headline ? primary.siteContent.hero : {}),
+                },
+                about: {
+                  ...defaultState.siteContent.about,
+                  ...(fallback.siteContent?.about || {}),
+                  ...(primary.siteContent?.about?.content ? primary.siteContent.about : {}),
+                },
+                features: primary.siteContent?.features?.length ? primary.siteContent.features : (fallback.siteContent?.features || []),
+                footer: {
+                  ...defaultState.siteContent.footer,
+                  ...(fallback.siteContent?.footer || {}),
+                  ...(primary.siteContent?.footer?.text && primary.siteContent.footer.text !== "© 2024 Todos os direitos reservados." ? primary.siteContent.footer : {}),
+                },
                 galleryImages: primary.siteContent?.galleryImages?.length
                   ? primary.siteContent.galleryImages
                   : (fallback.siteContent?.galleryImages || []),
                 sections: {
                   ...defaultState.siteContent.sections,
+                  ...(fallback.siteContent?.sections || {}),
                   ...(primary.siteContent?.sections || {}),
                 },
+                vercelUrl: primary.siteContent?.vercelUrl || fallback.siteContent?.vercelUrl || "",
               },
               lastEditedAt: useLocal
                 ? (localSnapshot.lastEditedAt || prev.lastEditedAt || "")

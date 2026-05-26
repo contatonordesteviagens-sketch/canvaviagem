@@ -442,7 +442,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }).catch(err => {
       console.error('[AuthContext] Error getting session:', err);
-<<<<<<< HEAD
       if (mounted && !authReadyRef.current) {
         authReadyRef.current = true;
         setLoading(false);
@@ -453,15 +452,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       mounted = false;
       clearTimeout(safetyTimeout);
-=======
-      // Even on error, we must unlock the UI
-      authReadyRef.current = true;
-      setLoading(false);
-      setSubscription(prev => ({ ...prev, loading: false }));
-    });
-
-    return () => {
->>>>>>> 65e2046 (fix(auth): revert strict mode unmount logic to initializedRef to prevent infinite skeleton loading caused by swallowed session resolution)
       authSubscription.unsubscribe();
     };
   }, [checkSubscription]);
