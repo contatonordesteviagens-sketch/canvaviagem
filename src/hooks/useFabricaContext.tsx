@@ -629,6 +629,19 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
             const merged = {
               ...defaultState,
               ...primary,
+              // Always preserve core data from DB if local is suspiciously empty or default
+              agencyName: primary.agencyName || fallback.agencyName || "",
+              whatsapp: primary.whatsapp || fallback.whatsapp || "",
+              instagram: primary.instagram || fallback.instagram || "",
+              agencyEmail: primary.agencyEmail || fallback.agencyEmail || "",
+              niche: primary.niche || fallback.niche || "",
+              address: primary.address || fallback.address || "",
+              city: primary.city || fallback.city || "",
+              digitalScore: primary.digitalScore || fallback.digitalScore || 0,
+              level: primary.level > 1 ? primary.level : (fallback.level > 1 ? fallback.level : 1),
+              selectedPackages: primary.selectedPackages?.length ? primary.selectedPackages : (fallback.selectedPackages || []),
+              leadStatuses: Object.keys(primary.leadStatuses || {}).length ? primary.leadStatuses : (fallback.leadStatuses || {}),
+              depoimentos: primary.depoimentos?.length ? primary.depoimentos : (fallback.depoimentos || []),
               logoBase64: primary.logoBase64 || fallback.logoBase64 || "",
               generatedAdImage: primary.generatedAdImage || fallback.generatedAdImage || "",
               lastCleanPhoto: primary.lastCleanPhoto || fallback.lastCleanPhoto || "",
@@ -676,7 +689,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     
     const syncState = async () => {
       // 🛡️ SEGURANÇA DE HIDRATAÇÃO: Não sobe um estado VAZIO por cima do que já está na nuvem!
-      if (!state.agencyName && state.digitalScore === 0 && state.currentPhase <= 1) return;
+      if (!state.agencyName && state.digitalScore === 0 && state.currentPhase <= 1 && state.selectedPackages.length === 0) return;
 
       setSyncStatus("saving");
       try {

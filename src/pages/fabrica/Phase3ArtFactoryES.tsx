@@ -1263,7 +1263,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         setGeneratedImages((prev) => [...prev, ...composed].slice(-MAX_VARIATIONS_PHOTO));
         setGeneratedImage(composed[composed.length - 1]);
         const currentGenerated = state.allGeneratedAdImages || [];
-        const updatedGenerated = [composed[composed.length - 1], ...currentGenerated].slice(0, 30);
+        const updatedGenerated = [composed[composed.length - 1], ...currentGenerated].slice(0, 10);
         update({ 
           generatedAdImage: composed[composed.length - 1], 
           primaryColor: palette.primary,
@@ -1477,7 +1477,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         setGeneratedImages((prev) => [...prev, ...images].slice(-MAX_VARIATIONS_AI));
         setGeneratedImage(images[images.length - 1]);
         const currentGenerated = state.allGeneratedAdImages || [];
-        const updatedGenerated = [images[images.length - 1], ...currentGenerated].slice(0, 30);
+        const updatedGenerated = [images[images.length - 1], ...currentGenerated].slice(0, 10);
         update({ 
           generatedAdImage: images[images.length - 1], 
           primaryColor: palette.primary,
@@ -1609,7 +1609,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       });
       setGeneratedImage(imagesCustom[imagesCustom.length - 1]);
       const currentGenerated = state.allGeneratedAdImages || [];
-      const updatedGenerated = [imagesCustom[imagesCustom.length - 1], ...currentGenerated].slice(0, 30);
+      const updatedGenerated = [imagesCustom[imagesCustom.length - 1], ...currentGenerated].slice(0, 10);
       update({ 
         generatedAdImage: imagesCustom[imagesCustom.length - 1], 
         primaryColor: palette.primary,
