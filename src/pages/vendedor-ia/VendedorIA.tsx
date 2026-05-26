@@ -21,7 +21,7 @@ const PROFILE_KEY = 'ia_vendedor_profile_cv';
 
 const VendedorIA: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, subscription, isAdmin } = useAuth();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
@@ -163,6 +163,23 @@ const VendedorIA: React.FC = () => {
       timestamp: Date.now()
     };
 
+    const today = new Date().toDateString();
+    const usageKey = `ia_vendedor_usage_${user?.id || 'guest'}`;
+    const usageStr = localStorage.getItem(usageKey);
+    let usage = usageStr ? JSON.parse(usageStr) : { date: today, count: 0 };
+    
+    if (usage.date !== today) {
+      usage = { date: today, count: 0 };
+    }
+
+    if (!isAdmin && usage.count >= 10) {
+      toast.error("Limite de 10 mensagens por dia atingido. Volte amanhã para gerar mais copys estratégicas!");
+      return;
+    }
+
+    usage.count += 1;
+    localStorage.setItem(usageKey, JSON.stringify(usage));
+
     updateCurrentSession(userMessage.content, 'user');
     setIsLoading(true);
 
@@ -196,6 +213,36 @@ const VendedorIA: React.FC = () => {
   };
 
   const currentSession = sessions.find(s => s.id === currentSessionId);
+
+  if (!isAdmin && !subscription?.subscribed) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-[#0f0f0f] text-white p-4">
+        <div className="max-w-md w-full bg-[#111114] border border-white/10 rounded-2xl p-8 text-center shadow-2xl">
+          <div className="size-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ShieldCheck className="size-8 text-blue-400" />
+          </div>
+          <h2 className="text-2xl font-black mb-3">Acesso Premium</h2>
+          <p className="text-[#8a8a8f] mb-8 text-sm leading-relaxed">
+            O Vendedor IA é uma ferramenta exclusiva para assinantes Canva Viagem. Faça o upgrade para ter acesso ilimitado às melhores copys do mercado.
+          </p>
+          <div className="flex gap-4 flex-col sm:flex-row">
+            <button
+              onClick={() => navigate('/')}
+              className="flex-1 py-3 px-4 rounded-xl font-bold text-sm bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              Voltar
+            </button>
+            <button
+              onClick={() => navigate('/planos')}
+              className="flex-1 py-3 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-colors"
+            >
+              Ver Planos
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen w-full bg-[#0f0f0f] text-white overflow-hidden font-sans">

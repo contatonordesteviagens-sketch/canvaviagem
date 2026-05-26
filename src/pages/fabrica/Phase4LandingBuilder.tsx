@@ -1590,7 +1590,49 @@ const PublishOnLovableCard = ({
     const toastId = toast.loading("Preparando publicação no Vercel...");
 
     try {
-      toast.loading("Enviando código para o Vercel (sem limites)...", { id: toastId });
+      toast.loading("Otimizando imagens do site (isso pode levar alguns segundos)...", { id: toastId });
+      
+      let finalHtml = html;
+      const base64Regex = /src="(data:image\/[^;]+;base64,[^"]+)"/g;
+      const matches = [...finalHtml.matchAll(base64Regex)];
+      
+      for (let i = 0; i < matches.length; i++) {
+        const fullMatch = matches[i][0];
+        const base64Data = matches[i][1];
+        
+        try {
+          const mimeType = base64Data.split(';')[0].split(':')[1];
+          const b64Data = base64Data.split(',')[1];
+          const byteCharacters = atob(b64Data);
+          const byteArrays = [];
+          for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+            const slice = byteCharacters.slice(offset, offset + 512);
+            const byteNumbers = new Array(slice.length);
+            for (let j = 0; j < slice.length; j++) {
+              byteNumbers[j] = slice.charCodeAt(j);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+          }
+          const blob = new Blob(byteArrays, { type: mimeType });
+          
+          const ext = mimeType.split('/')[1] || 'webp';
+          const filename = `vercel_assets/${user?.id || 'anon'}_${Date.now()}_${i}.${ext}`;
+          
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("thumbnails")
+            .upload(filename, blob, { contentType: mimeType, upsert: true });
+            
+          if (!uploadError && uploadData) {
+            const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(filename).data.publicUrl;
+            finalHtml = finalHtml.replace(fullMatch, `src="${publicUrl}"`);
+          }
+        } catch (e) {
+          console.warn("Falha ao fazer upload da imagem base64", e);
+        }
+      }
+
+      toast.loading("Enviando código otimizado para o Vercel...", { id: toastId });
 
       // Envia deploy para o Vercel usando API v13
       const res = await fetch("https://api.vercel.com/v13/deployments", {
@@ -1604,7 +1646,7 @@ const PublishOnLovableCard = ({
           files: [
             {
               file: "index.html",
-              data: btoa(unescape(encodeURIComponent(html))),
+              data: btoa(unescape(encodeURIComponent(finalHtml))),
               encoding: "base64",
             },
           ],
@@ -1947,7 +1989,7 @@ const PublishOnLovableCard = ({
             className="flex-[2] py-4 rounded-xl font-black text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
             style={{ background: primaryColor }}
           >
-            Próximo Passo: Diagnóstico <Rocket className="w-5 h-5" />
+            Avançar para CRM & Leads (Fase 3) <Rocket className="w-5 h-5" />
           </button>
         </div>
       </div>

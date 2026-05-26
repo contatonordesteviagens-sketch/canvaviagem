@@ -393,8 +393,8 @@ const IndexES = () => {
               {/* Show more button */}
               {(coveredVideos.length > 20) && (
                 <div className="flex justify-center">
-                  <Button variant="outline" onClick={() => setShowAllVideos(!showAllVideos)} className="gap-2 rounded-full px-6">
-                    {showAllVideos ? <><ChevronUp className="h-4 w-4" />Menos</> : <><ChevronDown className="h-4 w-4" />Más videos</>}
+                  <Button variant="outline" onClick={() => { setActiveCategory('videos'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-2 rounded-full px-6">
+                    <>Ver todos los videos Reels</>
                   </Button>
                 </div>
               )}
@@ -1106,7 +1106,12 @@ const IndexES = () => {
       {/* Hero Banner with Search */}
       <HeroBanner
         searchValue={searchQuery}
-        onSearchChange={setSearchQuery}
+        onSearchChange={(val) => {
+          setSearchQuery(val);
+          if (val.trim() !== '' && activeCategory === 'all') {
+            setActiveCategory('videos');
+          }
+        }}
       />
 
       {/* Category Navigation - Horizontal scroll with icons */}

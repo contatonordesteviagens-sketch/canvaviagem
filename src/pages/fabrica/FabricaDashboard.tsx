@@ -820,6 +820,16 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 Seu histórico aparecerá aqui assim que você gerar suas primeiras imagens ou publicar seu primeiro site.
               </p>
             )}
+            
+            {/* Call to action de Avançar para Fase 1 */}
+            <div className="pt-2 border-t border-white/5">
+              <button
+                onClick={() => onNavigate?.("phase", 1)}
+                className="w-full py-3 rounded-xl bg-white/[0.03] hover:bg-violet-500/10 border border-white/5 hover:border-violet-500/30 text-white/60 hover:text-violet-400 text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+              >
+                <Plus className="w-3.5 h-3.5" /> Começar Novo Projeto (Fase 1)
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -1056,14 +1056,39 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     setEditingIconIdx(null);
   };
 
+  const compressImage = async (base64Str: string, maxWidth = 400): Promise<string> => {
+    if (!base64Str.startsWith("data:image")) return base64Str;
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = (maxWidth * height) / width;
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return resolve(base64Str);
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/webp", 0.7));
+      };
+      img.onerror = () => resolve(base64Str);
+      img.src = base64Str;
+    });
+  };
+
   // 🌐 Integração Inteligente de Pacotes com o Site F2 (Acumulativo)
   // Pega o último anúncio gerado e o insere no Site, preferencialmente usando a FOTO LIMPA
   // para o fundo do site, em vez da arte poluída com texto do Canva, conforme exigido pelo usuário.
-  const syncGeneratedPackageToSite = (finalComposedImg: string, sourceCleanImg?: string) => {
+  const syncGeneratedPackageToSite = async (finalComposedImg: string, sourceCleanImg?: string) => {
     if (!finalComposedImg || !destination.trim()) return;
 
     // A imagem que vai para o site é PREFERENCIALMENTE a foto limpa de fundo!
-    const imageToUse = sourceCleanImg || finalComposedImg;
+    const rawImageToUse = sourceCleanImg || finalComposedImg;
+    const imageToUse = await compressImage(rawImageToUse);
 
     const currentPrice = formattedPriceForAd || price;
     const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
@@ -1112,8 +1137,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     // Se não há foto limpa (modo IA pura sem referência), não adiciona nada ao banco de fotos.
     const currentGallery = state.siteContent.galleryImages || [];
     let updatedGallery = [...currentGallery];
-    if (sourceCleanImg && !updatedGallery.includes(sourceCleanImg)) {
-       updatedGallery = [sourceCleanImg, ...updatedGallery];
+    if (sourceCleanImg) {
+       const compressedClean = await compressImage(sourceCleanImg);
+       if (!updatedGallery.includes(compressedClean)) {
+         updatedGallery = [compressedClean, ...updatedGallery];
+       }
     }
 
     // Inteligência Adicional: Se o site não tem NENHUMA foto de capa no Hero,
@@ -1271,7 +1299,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           primaryColor: palette.primary,
           allGeneratedAdImages: updatedGenerated
         });
-        syncGeneratedPackageToSite(composed[composed.length - 1], refImage);
+        await syncGeneratedPackageToSite(composed[composed.length - 1], refImage);
 
         const newCount = generationCount + composed.length;
         setGenerationCount(newCount);
@@ -1487,7 +1515,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         });
         // Passa a ÚLTIMA imagem final E a ÚLTIMA imagem limpa gerada no loop (via closure seria complexo, então guardamos uma referência fora do loop se precisasse, mas podemos re-extrair ou apenas guardar no array)
         // ATENÇÃO: Para IA, como gera múltiplos em array, precisamos capturar a LIMPA da que foi pra tela!
-        syncGeneratedPackageToSite(images[images.length - 1], cleanBackgroundForSite);
+        await syncGeneratedPackageToSite(images[images.length - 1], cleanBackgroundForSite);
         if (providerSeen) {
           setLastProvider(providerSeen);
           localStorage.setItem("fabrica_last_provider", providerSeen);
@@ -1620,7 +1648,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         primaryColor: palette.primary,
         allGeneratedAdImages: updatedGenerated
       });
-      syncGeneratedPackageToSite(imagesCustom[imagesCustom.length - 1], refImage);
+      await syncGeneratedPackageToSite(imagesCustom[imagesCustom.length - 1], refImage);
 
       const newCount = generationCount + imagesCustom.length;
       setGenerationCount(newCount);

@@ -651,18 +651,12 @@ const Index = () => {
                     <Button
                       variant="outline"
                       onClick={() => {
-                        if (showAllVideos) {
-                          setShowAllVideos(false);
-                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                        } else {
-                          setShowAllVideos(true);
-                        }
+                        setActiveCategory('videos');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
                       }}
                       className="gap-2 rounded-full px-6"
                     >
-                      {showAllVideos
-                        ? <><ChevronUp className="h-4 w-4" />Mostrar menos</>
-                        : <><ChevronDown className="h-4 w-4" />Ver mais vídeos</>}
+                      <>Ver todos os vídeos Reels</>
                     </Button>
                   </div>
                 )}
@@ -1446,7 +1440,12 @@ const Index = () => {
     <>
       <HeroBanner
         searchValue={searchQuery}
-        onSearchChange={setSearchQuery}
+        onSearchChange={(val) => {
+          setSearchQuery(val);
+          if (val.trim() !== '' && activeCategory === 'all') {
+            setActiveCategory('videos');
+          }
+        }}
       />
 
       <CategoryNav
