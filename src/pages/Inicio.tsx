@@ -399,7 +399,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         {/* Video Demonstration directly under Headline */}
         <Reveal delay={0.1}>
           <div style={{ margin: "32px auto", maxWidth: 800 }}>
-            <ProductDemo />
+            <ProductDemo showStartDemo={false} />
           </div>
         </Reveal>
 

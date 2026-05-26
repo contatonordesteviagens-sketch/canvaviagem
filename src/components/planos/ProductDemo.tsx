@@ -3,7 +3,11 @@ import { Play, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { trackViewContent } from '@/lib/meta-pixel';
 
-export const ProductDemo = () => {
+interface ProductDemoProps {
+  showStartDemo?: boolean;
+}
+
+export const ProductDemo = ({ showStartDemo = true }: ProductDemoProps) => {
   const [mutedActive, setMutedActive] = useState(true);
   const [showStartVideo, setShowStartVideo] = useState(false);
 
@@ -91,25 +95,26 @@ export const ProductDemo = () => {
         )}
       </div>
 
-      {/* Botão de Minimizar / Revelar Plano Start */}
-      <div>
-        <button
-          onClick={() => setShowStartVideo(!showStartVideo)}
-          className="hover:bg-white/5 active:scale-95 transition-all"
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
-            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '100px', padding: '10px 20px', fontSize: '12px',
-            fontWeight: 800, color: 'rgba(255,255,255,0.7)', cursor: 'pointer'
-          }}
-        >
-          <span>{showStartVideo ? 'Ocultar Vídeo do Plano Start' : 'Quer ver o vídeo do Plano Start? Clique aqui'}</span>
-          {showStartVideo ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-        </button>
-      </div>
+      {showStartDemo && (
+        <div>
+          <button
+            onClick={() => setShowStartVideo(!showStartVideo)}
+            className="hover:bg-white/5 active:scale-95 transition-all"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '100px', padding: '10px 20px', fontSize: '12px',
+              fontWeight: 800, color: 'rgba(255,255,255,0.7)', cursor: 'pointer'
+            }}
+          >
+            <span>{showStartVideo ? 'Ocultar Vídeo do Plano Start' : 'Quer ver o vídeo do Plano Start? Clique aqui'}</span>
+            {showStartVideo ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
+        </div>
+      )}
 
       {/* Player Oculto do Plano Start */}
-      {showStartVideo && (
+      {showStartDemo && showStartVideo && (
         <div style={{
           marginTop: '24px',
           animation: 'fadeIn 0.4s ease-out'
