@@ -97,6 +97,7 @@ const BlogPost49 = lazy(() => import("./pages/BlogPost49"));
 const BlogPost50 = lazy(() => import("./pages/BlogPost50"));
 const Blog = lazy(() => import("./pages/Blog"));
 const AulaSecreta = lazy(() => import("./pages/AulaSecreta"));
+const Inicio = lazy(() => import("./pages/Inicio"));
 const SalesPage = lazy(() => import("./pages/SalesPage"));
 const Diferencas = lazy(() => import("./pages/Diferencas"));
 const MinhaConta = lazy(() => import("./pages/MinhaConta"));
@@ -150,6 +151,7 @@ const App = () => {
                     } />
                     <Route path="/planos" element={<SalesPage />} />
                     <Route path="/pt/planos" element={<SalesPage />} />
+                    <Route path="/inicio" element={<Inicio />} />
                     <Route path="/diferencas" element={<Diferencas />} />
                     <Route path="/imersao-ao-vivo" element={<AulaSecreta />} />
                     <Route path="/fabrica" element={<Fabrica />} />
