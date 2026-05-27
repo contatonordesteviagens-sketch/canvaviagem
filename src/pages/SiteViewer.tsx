@@ -20,7 +20,7 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
       }
 
       try {
-        const publicUrl = `https://zdjtcwtakgizbsbbwtgc.supabase.co/storage/v1/object/public/thumbnails/sites/${id}.webp`;
+        const publicUrl = `https://zdjtcwtakgizbsbbwtgc.supabase.co/storage/v1/object/public/thumbnails/vercel_assets/${id}.webp`;
         const response = await fetch(`${publicUrl}?t=${Date.now()}`, { cache: 'no-store' });
         
         if (!response.ok) {

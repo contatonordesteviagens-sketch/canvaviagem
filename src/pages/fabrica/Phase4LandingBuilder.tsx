@@ -1785,11 +1785,11 @@ const PublishOnLovableCard = ({
     setIsPublishing(true);
     try {
       const blob = new Blob([html], { type: FABRICA_SITE_STORAGE_CONTENT_TYPE });
-      const fileName = `sites/${user.id}.webp`;
+      const fileName = `vercel_assets/${user.id}.webp`;
       
       const rawName = state.agencyName || `agencia-${user.id.substring(0,4)}`;
       const cleanSlug = rawName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-      const slugName = `sites/${cleanSlug}.webp`;
+      const slugName = `vercel_assets/${cleanSlug}.webp`;
 
       const { error: uploadError } = await supabase.storage
         .from("thumbnails")
@@ -1888,8 +1888,8 @@ const PublishOnLovableCard = ({
       toast.loading("Enviando código para o Canva Viagem...", { id: toastId });
 
       const liveUrl = `https://${cleanSlug}.${CANVA_VIAGEM_DOMAIN}`;
-      const fileNameSlug = `sites/${cleanSlug}.webp`; // bypass RLS attempt
-      const fileNameId = `sites/${user.id}.webp`; // Upload Oficial (passa RLS)
+      const fileNameSlug = `vercel_assets/${cleanSlug}.webp`; // bypass RLS attempt
+      const fileNameId = `vercel_assets/${user.id}.webp`; // Upload Oficial (passa RLS)
 
       if (state.siteContent.canvaViagemUrl && state.siteContent.canvaViagemUrl !== liveUrl) {
         try {
@@ -1901,7 +1901,7 @@ const PublishOnLovableCard = ({
             oldSlug = oldUrl.replace("https://", "").replace(`.${CANVA_VIAGEM_DOMAIN}`, "");
           }
           if (oldSlug && oldSlug !== cleanSlug) {
-            await supabase.storage.from("thumbnails").remove([`sites/${oldSlug}.html`, `sites/${oldSlug}.webp`]);
+            await supabase.storage.from("thumbnails").remove([`vercel_assets/${oldSlug}.html`, `vercel_assets/${oldSlug}.webp`]);
           }
         } catch (e) {
           console.error("Erro ao deletar antigo Supabase:", e);
