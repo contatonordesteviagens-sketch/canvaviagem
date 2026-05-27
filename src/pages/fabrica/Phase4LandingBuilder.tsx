@@ -1832,14 +1832,6 @@ const PublishOnLovableCard = ({
     try {
       const liveUrl = `${CANVA_VIAGEM_SITE_BASE_URL}/${cleanSlug}`;
       const fileName = `sites/${cleanSlug}.html`;
-      const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(fileName).data.publicUrl;
-
-      if (state.siteContent.canvaViagemUrl !== liveUrl) {
-        const exists = await fetch(`${publicUrl}?t=${Date.now()}`, { method: "HEAD", cache: "no-store" });
-        if (exists.ok) {
-          throw new Error("Esse subdomínio já existe. Escolha outro nome para evitar sobrescrever o site de outro cliente.");
-        }
-      }
 
       const blob = new Blob([html], { type: FABRICA_SITE_STORAGE_CONTENT_TYPE });
       const { error: uploadError } = await supabase.storage
