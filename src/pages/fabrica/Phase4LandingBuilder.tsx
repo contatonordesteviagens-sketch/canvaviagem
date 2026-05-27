@@ -1887,7 +1887,7 @@ const PublishOnLovableCard = ({
 
       toast.loading("Enviando código para o Canva Viagem...", { id: toastId });
 
-      const liveUrl = `${CANVA_VIAGEM_SITE_BASE_URL}/${cleanSlug}`;
+      const liveUrl = `https://${cleanSlug}.${CANVA_VIAGEM_DOMAIN}`;
       const fileNameSlug = `vercel_assets/${cleanSlug}.html`; // bypass RLS attempt
       const fileNameId = `vercel_assets/${user.id}.html`; // Upload Oficial (passa RLS)
 
@@ -1933,7 +1933,7 @@ const PublishOnLovableCard = ({
       let finalUrl = liveUrl;
       if (uploadSlugError) {
           console.warn("RLS do Supabase bloqueou o nome customizado. Fallback para ID.");
-          finalUrl = `${CANVA_VIAGEM_SITE_BASE_URL}/${user.id}`;
+          finalUrl = `https://${user.id}.${CANVA_VIAGEM_DOMAIN}`;
       }
 
       update({
