@@ -1881,7 +1881,7 @@ const PublishOnLovableCard = ({
 
       toast.loading("Enviando código para o Canva Viagem...", { id: toastId });
 
-      const liveUrl = `https://${cleanSlug}.${CANVA_VIAGEM_DOMAIN}`;
+      const liveUrl = `${CANVA_VIAGEM_SITE_BASE_URL}/${cleanSlug}`;
       const fileNameSlug = `vercel_assets/${cleanSlug}_site.webp`; // bypass RLS attempt
       const fileNameId = `vercel_assets/${user.id}_site.webp`; // Upload Oficial (passa RLS)
 
@@ -1914,7 +1914,7 @@ const PublishOnLovableCard = ({
 
       if (dbError) {
           console.warn("Falha ao salvar slug customizado na tabela. Fallback para ID.", dbError);
-          finalUrl = `https://${user.id}.${CANVA_VIAGEM_DOMAIN}`;
+          finalUrl = `${CANVA_VIAGEM_SITE_BASE_URL}/${user.id}`;
           await supabase.from("public_sites").upsert({ id: user.id, html: finalHtml }).catch(e => console.error("Fallback error:", e));
       }
 
