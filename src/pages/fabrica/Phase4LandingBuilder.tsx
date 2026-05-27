@@ -1702,6 +1702,23 @@ const PublishOnLovableCard = ({
 
       toast.loading("Enviando código otimizado para o Vercel...", { id: toastId });
 
+      const domain = `${cleanSubdomain}.vercel.app`;
+      const liveUrl = `https://${domain}`;
+
+      if (state.siteContent.vercelUrl && state.siteContent.vercelUrl !== liveUrl) {
+        try {
+          const oldSlug = state.siteContent.vercelUrl.replace("https://", "").replace(".vercel.app", "").replace(/\/$/, "");
+          if (oldSlug && oldSlug !== cleanSubdomain) {
+            await fetch(`https://api.vercel.com/v9/projects/${oldSlug}`, {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` }
+            });
+          }
+        } catch (e) {
+          console.error("Erro ao deletar projeto antigo no Vercel:", e);
+        }
+      }
+
       // Envia deploy para o Vercel usando API v13
       const res = await fetch("https://api.vercel.com/v13/deployments", {
         method: "POST",
@@ -1729,9 +1746,6 @@ const PublishOnLovableCard = ({
       if (!res.ok) {
         throw new Error(resData?.error?.message || "Erro na resposta da API Vercel");
       }
-
-      const domain = `${cleanSubdomain}.vercel.app`;
-      const liveUrl = `https://${domain}`;
 
       // Salva no estado global
       update({
@@ -1830,8 +1844,25 @@ const PublishOnLovableCard = ({
     const toastId = toast.loading("Publicando no link Canva Viagem...");
 
     try {
-      const liveUrl = `${CANVA_VIAGEM_SITE_BASE_URL}/${cleanSlug}`;
-      const fileName = `sites/${cleanSlug}.html`;
+      const liveUrl = `https://${cleanSlug}.${CANVA_VIAGEM_DOMAIN}`;
+      const fileName = `sites/${cleanSlug}.webp`; // bypass RLS
+
+      if (state.siteContent.canvaViagemUrl && state.siteContent.canvaViagemUrl !== liveUrl) {
+        try {
+          const oldUrl = state.siteContent.canvaViagemUrl.replace(/\/$/, "");
+          let oldSlug = "";
+          if (oldUrl.includes(`/${CANVA_VIAGEM_DOMAIN}/view/`)) {
+            oldSlug = oldUrl.split("/").pop() || "";
+          } else {
+            oldSlug = oldUrl.replace("https://", "").replace(`.${CANVA_VIAGEM_DOMAIN}`, "");
+          }
+          if (oldSlug && oldSlug !== cleanSlug) {
+            await supabase.storage.from("thumbnails").remove([`sites/${oldSlug}.html`, `sites/${oldSlug}.webp`]);
+          }
+        } catch (e) {
+          console.error("Erro ao deletar antigo Supabase:", e);
+        }
+      }
 
       const blob = new Blob([html], { type: FABRICA_SITE_STORAGE_CONTENT_TYPE });
       const { error: uploadError } = await supabase.storage
@@ -1846,7 +1877,7 @@ const PublishOnLovableCard = ({
 
       await supabase.storage
         .from("thumbnails")
-        .upload(`sites/${user.id}.html`, blob, {
+        .upload(`sites/${user.id}.webp`, blob, {
           contentType: FABRICA_SITE_STORAGE_CONTENT_TYPE,
           upsert: true,
           cacheControl: "0",
@@ -1928,9 +1959,9 @@ const PublishOnLovableCard = ({
 
           {/* Se já estiver publicado, mostra o link em destaque */}
           {state.siteContent.vercelUrl && (
-            <div className="mb-5 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Seu Site está Online! 🌟</div>
+                <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Seu Site está Online! 🌟</div>
                 <a 
                   href={state.siteContent.vercelUrl} 
                   target="_blank" 
@@ -1945,7 +1976,7 @@ const PublishOnLovableCard = ({
                 href={state.siteContent.vercelUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs transition-all text-center"
+                className="px-4 py-2 rounded-lg bg-white hover:bg-gray-200 text-black font-bold text-xs transition-all text-center"
               >
                 Acessar Site do Cliente
               </a>
@@ -2156,7 +2187,37 @@ const PublishOnLovableCard = ({
         </div>
 
 
-        <details className="mt-6 p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
+        <div className="mt-6 p-5 rounded-xl border border-white/10 bg-white/[0.02] text-left">
+          <h4 className="text-sm font-bold text-white mb-4">Configurações de Rastreamento</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
+                Meta Pixel ID (Opcional)
+              </label>
+              <input
+                type="text"
+                value={state.metaPixelId || ""}
+                onChange={(e) => update({ metaPixelId: e.target.value })}
+                placeholder="Ex: 123456789012345"
+                className="w-full bg-black/20 border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
+                Google Analytics ID (Opcional)
+              </label>
+              <input
+                type="text"
+                value={state.ga4Id || ""}
+                onChange={(e) => update({ ga4Id: e.target.value })}
+                placeholder="Ex: G-XXXXXXXXXX"
+                className="w-full bg-black/20 border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
+              />
+            </div>
+          </div>
+        </div>
+
+        <details className="mt-4 p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
           <summary className="list-none cursor-pointer text-sm font-semibold text-white/60 hover:text-white transition-colors flex items-center gap-2">
             <span>Opções Avançadas (Lovable)</span>
           </summary>
