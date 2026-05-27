@@ -32,6 +32,17 @@ import type { SectionVisibility } from "@/hooks/useFabricaContext";
 
 const LOVABLE_INVITE_URL = "https://lovable.dev/invite/2ZD6VL6";
 const PRESET_COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#000000"];
+const CANVA_VIAGEM_DOMAIN = "canvaviagem.com";
+
+const buildSiteSlug = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 
 // Sugestões padrão de fotos para a seção "Equipe / Agência"
 const TEAM_PRESET_IMAGES = [
@@ -1588,6 +1599,15 @@ const PublishOnLovableCard = ({
 
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+  const [canvaViagemSubdomain, setCanvaViagemSubdomain] = useState(() => {
+    if (state.siteContent.canvaViagemUrl) {
+      return state.siteContent.canvaViagemUrl
+        .replace("https://", "")
+        .replace(`.${CANVA_VIAGEM_DOMAIN}`, "");
+    }
+    return buildSiteSlug(state.agencyName || "");
+  });
+  const [isCanvaViagemPublishing, setIsCanvaViagemPublishing] = useState(false);
 
   // ── ESTADOS E FUNÇÕES PARA A PUBLICAÇÃO 1-CLIQUE NO VERCEL ──
   const [vercelSubdomain, setVercelSubdomain] = useState(() => {
@@ -1783,6 +1803,76 @@ const PublishOnLovableCard = ({
     }
   };
 
+  const handleCanvaViagemPublish = async () => {
+    if (!user?.id) {
+      toast.error("Faça login para publicar.");
+      return;
+    }
+
+    const cleanSlug = buildSiteSlug(canvaViagemSubdomain || state.agencyName || "");
+
+    if (cleanSlug.length < 3) {
+      toast.error("Digite um subdomínio com pelo menos 3 caracteres.");
+      return;
+    }
+
+    const reserved = new Set(["www", "app", "admin", "api", "painel", "blog"]);
+    if (reserved.has(cleanSlug)) {
+      toast.error("Esse subdomínio é reservado. Escolha outro nome.");
+      return;
+    }
+
+    setIsCanvaViagemPublishing(true);
+    const toastId = toast.loading("Publicando no subdomínio Canva Viagem...");
+
+    try {
+      const liveUrl = `https://${cleanSlug}.${CANVA_VIAGEM_DOMAIN}`;
+      const fileName = `sites/${cleanSlug}.html`;
+      const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(fileName).data.publicUrl;
+
+      if (state.siteContent.canvaViagemUrl !== liveUrl) {
+        const exists = await fetch(`${publicUrl}?t=${Date.now()}`, { method: "HEAD", cache: "no-store" });
+        if (exists.ok) {
+          throw new Error("Esse subdomínio já existe. Escolha outro nome para evitar sobrescrever o site de outro cliente.");
+        }
+      }
+
+      const blob = new Blob([html], { type: "text/html" });
+      const { error: uploadError } = await supabase.storage
+        .from("thumbnails")
+        .upload(fileName, blob, {
+          contentType: "text/html",
+          upsert: true,
+          cacheControl: "0",
+        });
+
+      if (uploadError) throw uploadError;
+
+      await supabase.storage
+        .from("thumbnails")
+        .upload(`sites/${user.id}.html`, blob, {
+          contentType: "text/html",
+          upsert: true,
+          cacheControl: "0",
+        })
+        .catch((error) => console.warn("User mirror upload error:", error));
+
+      update({
+        siteContent: {
+          ...state.siteContent,
+          canvaViagemUrl: liveUrl,
+        },
+      });
+
+      toast.success("Site publicado no subdomínio Canva Viagem!", { id: toastId });
+    } catch (err: any) {
+      console.error("Canva Viagem publish error:", err);
+      toast.error(`Erro ao publicar: ${err.message || "tente novamente"}`, { id: toastId });
+    } finally {
+      setIsCanvaViagemPublishing(false);
+    }
+  };
+
   const copyHtml = async () => {
     try {
       await navigator.clipboard.writeText(html);
@@ -1961,6 +2051,89 @@ const PublishOnLovableCard = ({
           </div>
         </div>
 
+
+        {/* PUBLICAÇÃO EM SUBDOMÍNIO CANVA VIAGEM */}
+        <div className="my-4 p-6 rounded-2xl border-2 border-cyan-400/30 bg-cyan-400/[0.05] backdrop-blur-xl text-left">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <div className="text-[10px] font-black text-cyan-300 uppercase tracking-[0.18em] mb-1">
+                Nova opção experimental
+              </div>
+              <h4 className="text-lg font-black text-white leading-tight">
+                Publicar com subdomínio Canva Viagem
+              </h4>
+              <p className="text-xs text-white/60 mt-1 leading-relaxed">
+                Gera um link premium para o cliente usando seu domínio principal, como nome-da-agencia.canvaviagem.com.
+              </p>
+            </div>
+            <LinkIcon className="w-5 h-5 text-cyan-300 flex-shrink-0" />
+          </div>
+
+          {state.siteContent.canvaViagemUrl && (
+            <div className="mb-5 p-4 rounded-xl bg-cyan-400/10 border border-cyan-300/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="text-[10px] font-bold text-cyan-300 uppercase tracking-wider">Link Canva Viagem publicado</div>
+                <a
+                  href={state.siteContent.canvaViagemUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-bold text-white hover:underline flex items-center gap-1.5 mt-0.5 group"
+                >
+                  {state.siteContent.canvaViagemUrl}
+                  <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white transition-colors" />
+                </a>
+              </div>
+              <a
+                href={state.siteContent.canvaViagemUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs transition-all text-center"
+              >
+                Abrir site
+              </a>
+            </div>
+          )}
+
+          <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
+            Subdomínio do cliente:
+          </label>
+          <div className="flex items-center mb-3">
+            <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-l-lg text-xs text-white/40 select-none">
+              https://
+            </span>
+            <input
+              type="text"
+              value={canvaViagemSubdomain}
+              onChange={(e) => setCanvaViagemSubdomain(buildSiteSlug(e.target.value))}
+              placeholder="nome-da-agencia"
+              className="flex-1 min-w-0 bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-cyan-300/70"
+            />
+            <span className="px-2 sm:px-3 py-2 bg-white/[0.04] border border-white/10 border-l-0 rounded-r-lg text-[10px] sm:text-xs text-white/40 select-none">
+              .canvaviagem.com
+            </span>
+          </div>
+
+          <button
+            onClick={handleCanvaViagemPublish}
+            disabled={isCanvaViagemPublishing}
+            className="w-full py-3.5 px-4 rounded-xl font-black text-black flex items-center justify-center gap-2 hover:brightness-110 disabled:brightness-50 disabled:cursor-not-allowed transition-all text-sm bg-cyan-300"
+          >
+            {isCanvaViagemPublishing ? (
+              <>
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                Publicando...
+              </>
+            ) : (
+              <>
+                Publicar em canvaviagem.com
+              </>
+            )}
+          </button>
+
+          <p className="text-[10px] text-white/45 mt-3 leading-relaxed">
+            Essa opção já salva o HTML no Supabase. O link por subdomínio começa a abrir assim que o DNS wildcard do domínio estiver configurado.
+          </p>
+        </div>
 
 
         <details className="mt-6 p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">

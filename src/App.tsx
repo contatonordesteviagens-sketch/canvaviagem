@@ -107,6 +107,40 @@ const PainelMarketing = lazy(() => import("./pages/PainelMarketing"));
 const SiteViewer = lazy(() => import("./pages/SiteViewer"));
 const VendedorIA = lazy(() => import("./pages/vendedor-ia/VendedorIA"));
 
+const RESERVED_CANVA_VIAGEM_SUBDOMAINS = new Set([
+  "www",
+  "app",
+  "admin",
+  "api",
+  "painel",
+  "blog",
+]);
+
+const getCanvaViagemSiteSlug = () => {
+  if (typeof window === "undefined") return null;
+
+  const hostname = window.location.hostname.toLowerCase();
+  const baseDomain = "canvaviagem.com";
+  const sitesDomain = `sites.${baseDomain}`;
+  const sitesSuffix = `.${sitesDomain}`;
+  const suffix = `.${baseDomain}`;
+
+  if (hostname.endsWith(sitesSuffix)) {
+    const subdomain = hostname.slice(0, -sitesSuffix.length);
+    if (!subdomain || subdomain.includes(".")) return null;
+    if (RESERVED_CANVA_VIAGEM_SUBDOMAINS.has(subdomain)) return null;
+    return subdomain;
+  }
+
+  if (!hostname.endsWith(suffix)) return null;
+
+  const subdomain = hostname.slice(0, -suffix.length);
+  if (!subdomain || subdomain.includes(".")) return null;
+  if (RESERVED_CANVA_VIAGEM_SUBDOMAINS.has(subdomain)) return null;
+
+  return subdomain;
+};
+
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
     <Loader2 className="h-8 w-8 animate-spin text-primary opacity-50" />
@@ -122,6 +156,8 @@ const UtmTracker = () => {
 };
 
 const App = () => {
+  const canvaViagemSiteSlug = getCanvaViagemSiteSlug();
+
   return (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
@@ -135,6 +171,9 @@ const App = () => {
                 <UtmTracker />
 
                 <Suspense fallback={<PageLoader />}>
+                  {canvaViagemSiteSlug ? (
+                    <SiteViewer forcedId={canvaViagemSiteSlug} />
+                  ) : (
                   <Routes>
                     {/* ROTAS PORTUGUÊS */}
                     <Route path="/" element={<Index />} />
@@ -288,6 +327,7 @@ const App = () => {
                     <Route path="/view/:id" element={<SiteViewer />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  )}
                 </Suspense>
               </BrowserRouter>
             </LanguageProvider>
