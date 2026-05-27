@@ -50,12 +50,12 @@ export const Phase5Dashboard = () => {
     try {
       const html = buildLandingHTML(state, user.id);
       const blob = new Blob([html], { type: FABRICA_SITE_STORAGE_CONTENT_TYPE });
-      const fileName = `vercel_assets/${user.id}.webp`;
+      const fileName = `vercel_assets/${user.id}_site.webp`;
       
       // 🚀 NOVO: Motor de Subdomínios Reais!
       const rawName = state.agencyName || `agencia-${user.id.substring(0,4)}`;
       const cleanSlug = rawName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-      const slugName = `vercel_assets/${cleanSlug}.webp`;
+      const slugName = `vercel_assets/${cleanSlug}_site.webp`;
       
       // Faz o upload Oficial
       const { error: uploadError } = await supabase.storage
