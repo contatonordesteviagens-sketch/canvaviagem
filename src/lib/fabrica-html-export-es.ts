@@ -1404,17 +1404,8 @@ export function downloadLandingHTML(state: FabricaState, version?: number, track
   URL.revokeObjectURL(url);
 }
 
-export const renderSocialIcons = (state: FabricaState, extraClass = "") => {
-  if (!state.socialLinks || state.socialLinks.length === 0) return "";
-  const html = state.socialLinks.map(link => {
-    const meta = socialMeta[link.type];
-    if (!meta) return "";
-    const href = normalizeSocialHref(link.type, link.url);
-    if (!href) return "";
-    return `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="${meta.label}" title="${meta.label}"><span>${meta.svg}</span></a>`;
-  }).join("");
-  if (!html) return "";
-  return `<div class="social-icons ${extraClass}">${html}</div>`;
+export const renderSocialIcons = (_state: FabricaState, _extraClass = "") => {
+  return "";
 };
 
 /**
