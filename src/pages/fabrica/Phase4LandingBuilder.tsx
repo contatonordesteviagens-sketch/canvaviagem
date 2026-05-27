@@ -1888,8 +1888,8 @@ const PublishOnLovableCard = ({
       toast.loading("Enviando código para o Canva Viagem...", { id: toastId });
 
       const liveUrl = `${CANVA_VIAGEM_SITE_BASE_URL}/${cleanSlug}`;
-      const fileNameSlug = `sites/${cleanSlug}.html`; // bypass RLS attempt
-      const fileNameId = `sites/${user.id}.html`; // Upload Oficial (passa RLS)
+      const fileNameSlug = `vercel_assets/${cleanSlug}.html`; // bypass RLS attempt
+      const fileNameId = `vercel_assets/${user.id}.html`; // Upload Oficial (passa RLS)
 
       if (state.siteContent.canvaViagemUrl && state.siteContent.canvaViagemUrl !== liveUrl) {
         try {
@@ -1901,7 +1901,7 @@ const PublishOnLovableCard = ({
             oldSlug = oldUrl.replace("https://", "").replace(`.${CANVA_VIAGEM_DOMAIN}`, "");
           }
           if (oldSlug && oldSlug !== cleanSlug) {
-            await supabase.storage.from("thumbnails").remove([`sites/${oldSlug}.html`, `sites/${oldSlug}.webp`]);
+            await supabase.storage.from("thumbnails").remove([`vercel_assets/${oldSlug}.html`, `vercel_assets/${oldSlug}.webp`]);
           }
         } catch (e) {
           console.error("Erro ao deletar antigo Supabase:", e);
@@ -2058,32 +2058,6 @@ const PublishOnLovableCard = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
-                  Meta Pixel ID (Opcional):
-                </label>
-                <input
-                  type="text"
-                  value={state.metaPixelId || ""}
-                  onChange={(e) => update({ metaPixelId: e.target.value })}
-                  placeholder="Ex: 123456789012345"
-                  className="w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white rounded-lg outline-none focus:border-white/30"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
-                  Google Analytics ID (Opcional):
-                </label>
-                <input
-                  type="text"
-                  value={state.ga4Id || ""}
-                  onChange={(e) => update({ ga4Id: e.target.value })}
-                  placeholder="Ex: G-XXXXXXXXXX"
-                  className="w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white rounded-lg outline-none focus:border-white/30"
-                />
-              </div>
-            </div>
 
             {showVercelConfig && (
               <div className="mt-4 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 space-y-3">
