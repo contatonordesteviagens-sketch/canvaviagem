@@ -91,9 +91,17 @@ const formatWhatsAppDisplay = (raw: string, dial = "55") => {
   return `+${dialCode} ${national}`;
 };
 
-const renderSocialIcons = (_state: FabricaState, _extraClass = "") => {
-  // Desativado temporariamente — visual ficou ruim. Reativar depois.
-  return "";
+const renderSocialIcons = (state: FabricaState, extraClass = "") => {
+  if (!state.socialLinks || state.socialLinks.length === 0) return "";
+  const html = state.socialLinks.map(link => {
+    const meta = socialMeta[link.type];
+    if (!meta) return "";
+    const href = normalizeSocialHref(link.type, link.url);
+    if (!href) return "";
+    return `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="${meta.label}" title="${meta.label}"><span>${meta.svg}</span></a>`;
+  }).join("");
+  if (!html) return "";
+  return `<div class="social-icons ${extraClass}">${html}</div>`;
 };
 
 
@@ -103,7 +111,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   const rawWpp = (state.whatsapp || "").replace(/\D/g, "");
   // Usa o DDI salvo no estado (padrão Brasil +55)
   const dialCode = (state.whatsappDialCode || "55").replace(/\D/g, "");
-  const wpp = rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`;
+  const wpp = rawWpp ? (rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`) : "";
   const sc = state.siteContent;
   const agencia = state.agencyName || "Agência de Viagens";
   const cidade = state.city || "Brasil";
@@ -757,7 +765,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
       ];
 
   const wppMsg = (titulo: string) =>
-    `https://wa.me/${wpp}?text=${encodeURIComponent(`Olá! Tenho interesse em ${titulo}.`)}`;
+    wpp ? `https://wa.me/${wpp}?text=${encodeURIComponent(`Olá! Tenho interesse em ${titulo}.`)}` : "#";
 
   // Stats default (a agência pode editar depois). Usamos números crescentes para autoridade.
   const stats = [
@@ -776,9 +784,38 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
 
   const heroImg = sc.heroImageUrl || sc.galleryImages?.[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80";
   
+  const pixelCode = state.metaPixelId ? `
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '${esc(state.metaPixelId)}');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${esc(state.metaPixelId)}&ev=PageView&noscript=1" /></noscript>
+<!-- End Meta Pixel Code -->` : "";
+
+  const ga4Code = state.ga4Id ? `
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(state.ga4Id)}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '${esc(state.ga4Id)}');
+</script>` : "";
+
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+${pixelCode}
+${ga4Code}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${esc(agencia)} — Consultoria Premium de Viagens</title>
@@ -1273,7 +1310,7 @@ ${state.address ? `
   </div>
 </footer>
 
-<a href="#" onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;" class="wpp-float" aria-label="WhatsApp">💬</a>
+${wpp ? `<a href="#" onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;" class="wpp-float" aria-label="WhatsApp">💬</a>` : ''}
 
 <!-- SMART LEAD CAPTURE MODAL -->
 <div id="lead-modal">
@@ -1497,7 +1534,7 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
   }
 
   const wppMsg = (titulo: string) =>
-    `https://wa.me/${wpp}?text=${encodeURIComponent(`Olá! Tenho interesse em ${titulo}.`)}`;
+    wpp ? `https://wa.me/${wpp}?text=${encodeURIComponent(`Olá! Tenho interesse em ${titulo}.`)}` : "#";
 
   const cardsHTML = pacotes
     .map((p) => 

@@ -56,10 +56,12 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   const rawWpp = (state.whatsapp || "").replace(/\D/g, "");
   // Usa o DDI salvo no estado (padrão Brasil +55)
   const dialCode = (state.whatsappDialCode || "55").replace(/\D/g, "");
-  const wpp = rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`;
+  const wpp = rawWpp ? (rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`) : "";
   const sc = state.siteContent;
   const agencia = state.agencyName || "Agencia de Viajes";
   const cidade = state.city || "Brasil";
+  const socialIcons = renderSocialIcons(state);
+  const footerSocialIcons = renderSocialIcons(state, "footer-socials");
 
   // ----- SISTEMA DE ANIMAÇÕES SAZONAIS E TEMÁTICAS -----
   let seasonalStyles = "";
@@ -705,7 +707,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
       ];
 
   const wppMsg = (titulo: string) =>
-    `https://wa.me/${wpp}?text=${encodeURIComponent(`¡Hola! Tengo interés en ${titulo}.`)}`;
+    wpp ? `https://wa.me/${wpp}?text=${encodeURIComponent(`¡Hola! Tengo interés en ${titulo}.`)}` : "#";
 
   // Stats default (a agência pode editar depois). Usamos números crescentes para autoridade.
   const stats = [
@@ -724,9 +726,38 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
 
   const heroImg = sc.heroImageUrl || sc.galleryImages?.[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80";
   
+  const pixelCode = state.metaPixelId ? `
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '${esc(state.metaPixelId)}');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${esc(state.metaPixelId)}&ev=PageView&noscript=1" /></noscript>
+<!-- End Meta Pixel Code -->` : "";
+
+  const ga4Code = state.ga4Id ? `
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(state.ga4Id)}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '${esc(state.ga4Id)}');
+</script>` : "";
+
   return `<!DOCTYPE html>
 <html lang="es-ES">
 <head>
+${pixelCode}
+${ga4Code}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${esc(agencia)} — Consultoría Premium de Viajes</title>
@@ -1106,6 +1137,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
           <div class="contact-item"><div class="contact-icon">🕐</div><div><strong>Atendimento</strong><span>Lun–Vie 8h–20h · Sáb 9h–15h</span></div></div>
           <div class="contact-item"><div class="contact-icon">📍</div><div><strong>Localização</strong><span>${esc(cidade)}</span></div></div>
         </div>
+        ${socialIcons}
       </div>
       <form class="orc-form" onsubmit="handleMainFormSubmit(event)">
         <div class="form-row">
@@ -1157,6 +1189,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
       <div>
         <div class="foot-brand">${esc(agencia)}</div>
         <p>Consultoría especializada en viajes premium e itinerarios a medida para quienes no aceptan lo común.</p>
+        ${footerSocialIcons}
       </div>
       <div>
         <h4>Destinos</h4>
@@ -1187,7 +1220,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
   </div>
 </footer>
 
-<a href="#" onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;" class="wpp-float" aria-label="WhatsApp">💬</a>
+${wpp ? `<a href="#" onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;" class="wpp-float" aria-label="WhatsApp">💬</a>` : ''}
 
 <!-- SMART LEAD CAPTURE MODAL -->
 <div id="lead-modal">
@@ -1371,6 +1404,19 @@ export function downloadLandingHTML(state: FabricaState, version?: number, track
   URL.revokeObjectURL(url);
 }
 
+export const renderSocialIcons = (state: FabricaState, extraClass = "") => {
+  if (!state.socialLinks || state.socialLinks.length === 0) return "";
+  const html = state.socialLinks.map(link => {
+    const meta = socialMeta[link.type];
+    if (!meta) return "";
+    const href = normalizeSocialHref(link.type, link.url);
+    if (!href) return "";
+    return `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="${meta.label}" title="${meta.label}"><span>${meta.svg}</span></a>`;
+  }).join("");
+  if (!html) return "";
+  return `<div class="social-icons ${extraClass}">${html}</div>`;
+};
+
 /**
  * Gera um Prompt cirúrgico para o Lovable contendo APENAS o HTML dos pacotes novos,
  * evitando que o usuário precise reconstruir o site do zero.
@@ -1388,7 +1434,7 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
   }
 
   const wppMsg = (titulo: string) =>
-    `https://wa.me/${wpp}?text=${encodeURIComponent(`¡Hola! Tengo interés en ${titulo}.`)}`;
+    wpp ? `https://wa.me/${wpp}?text=${encodeURIComponent(`¡Hola! Tengo interés en ${titulo}.`)}` : "#";
 
   const cardsHTML = pacotes
     .map((p) => 

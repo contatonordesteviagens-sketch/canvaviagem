@@ -116,6 +116,8 @@ export interface FabricaState {
   instagram: string;
   socialLinks: SocialLink[];
   whatsapp: string;          // número nacional (sem DDI)
+  metaPixelId?: string;
+  ga4Id?: string;
   whatsappDialCode: string;  // DDI em dígitos: "55", "1", "351"...
   whatsappCountryCode: string; // ISO code: "BR", "US", "PT"...
   agencyEmail: string;
@@ -203,6 +205,8 @@ const defaultState: FabricaState = {
   city: "",
   instagram: "",
   socialLinks: [],
+  metaPixelId: "",
+  ga4Id: "",
   whatsapp: "",
   whatsappDialCode: "55",
   whatsappCountryCode: "BR",
@@ -649,6 +653,8 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
               allGeneratedAdImages: primary.allGeneratedAdImages?.length
                 ? primary.allGeneratedAdImages
                 : (fallback.allGeneratedAdImages || []),
+              metaPixelId: primary.metaPixelId || fallback.metaPixelId || "",
+              ga4Id: primary.ga4Id || fallback.ga4Id || "",
               socialLinks: primary.socialLinks?.length ? primary.socialLinks : (fallback.socialLinks || []),
               siteContent: {
                 ...defaultState.siteContent,

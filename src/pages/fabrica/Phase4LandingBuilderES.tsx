@@ -1569,6 +1569,33 @@ const PublishOnLovableCard = ({
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div>
+                <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
+                  Meta Pixel ID (Opcional):
+                </label>
+                <input
+                  type="text"
+                  value={state.metaPixelId || ""}
+                  onChange={(e) => update({ metaPixelId: e.target.value })}
+                  placeholder="Ex: 123456789012345"
+                  className="w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white rounded-lg outline-none focus:border-white/30"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
+                  Google Analytics ID (Opcional):
+                </label>
+                <input
+                  type="text"
+                  value={state.ga4Id || ""}
+                  onChange={(e) => update({ ga4Id: e.target.value })}
+                  placeholder="Ex: G-XXXXXXXXXX"
+                  className="w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white rounded-lg outline-none focus:border-white/30"
+                />
+              </div>
+            </div>
+
             {showVercelConfig && (
               <div className="mt-4 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 space-y-3">
                 <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider">
