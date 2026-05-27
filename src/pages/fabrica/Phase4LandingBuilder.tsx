@@ -1844,6 +1844,49 @@ const PublishOnLovableCard = ({
     const toastId = toast.loading("Publicando no link Canva Viagem...");
 
     try {
+      toast.loading("Otimizando imagens do site para o Canva Viagem (isso pode levar alguns segundos)...", { id: toastId });
+      let finalHtml = html;
+      const base64Regex = /src="(data:image\/[^;]+;base64,[^"]+)"/g;
+      const matches = [...finalHtml.matchAll(base64Regex)];
+      
+      for (let i = 0; i < matches.length; i++) {
+        const fullMatch = matches[i][0];
+        const base64Data = matches[i][1];
+        
+        try {
+          const mimeType = base64Data.split(';')[0].split(':')[1];
+          const b64Data = base64Data.split(',')[1];
+          const byteCharacters = atob(b64Data);
+          const byteArrays = [];
+          for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+            const slice = byteCharacters.slice(offset, offset + 512);
+            const byteNumbers = new Array(slice.length);
+            for (let j = 0; j < slice.length; j++) {
+              byteNumbers[j] = slice.charCodeAt(j);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+          }
+          const blob = new Blob(byteArrays, { type: mimeType });
+          
+          const ext = mimeType.split('/')[1] || 'webp';
+          const filename = `vercel_assets/${user?.id || 'anon'}_${Date.now()}_cv_${i}.${ext}`;
+          
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("thumbnails")
+            .upload(filename, blob, { contentType: mimeType, upsert: true });
+            
+          if (!uploadError && uploadData) {
+            const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(filename).data.publicUrl;
+            finalHtml = finalHtml.replace(fullMatch, `src="${publicUrl}"`);
+          }
+        } catch (e) {
+          console.warn("Falha ao fazer upload da imagem base64 no Canva Viagem", e);
+        }
+      }
+
+      toast.loading("Enviando código para o Canva Viagem...", { id: toastId });
+
       const liveUrl = `${CANVA_VIAGEM_SITE_BASE_URL}/${cleanSlug}`;
       const fileName = `sites/${cleanSlug}.webp`; // bypass RLS
 
@@ -1864,7 +1907,7 @@ const PublishOnLovableCard = ({
         }
       }
 
-      const blob = new Blob([html], { type: FABRICA_SITE_STORAGE_CONTENT_TYPE });
+      const blob = new Blob([finalHtml], { type: FABRICA_SITE_STORAGE_CONTENT_TYPE });
       const { error: uploadError } = await supabase.storage
         .from("thumbnails")
         .upload(fileName, blob, {
@@ -2006,32 +2049,7 @@ const PublishOnLovableCard = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
-                  Meta Pixel ID (Opcional):
-                </label>
-                <input
-                  type="text"
-                  value={state.metaPixelId || ""}
-                  onChange={(e) => update({ metaPixelId: e.target.value })}
-                  placeholder="Ex: 123456789012345"
-                  className="w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white rounded-lg outline-none focus:border-white/30"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
-                  Google Analytics ID (Opcional):
-                </label>
-                <input
-                  type="text"
-                  value={state.ga4Id || ""}
-                  onChange={(e) => update({ ga4Id: e.target.value })}
-                  placeholder="Ex: G-XXXXXXXXXX"
-                  className="w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white rounded-lg outline-none focus:border-white/30"
-                />
-              </div>
-            </div>
+
 
             {showVercelConfig && (
               <div className="mt-4 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 space-y-3">
@@ -2296,10 +2314,10 @@ const PublishOnLovableCard = ({
             onClick={onNext}
             className="flex-[2] py-4 rounded-xl font-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
             style={{ 
-              background: primaryColor, 
-              color: primaryColor === "#000000" ? "#ffffff" : "#000000",
-              border: primaryColor === "#000000" ? "1px solid rgba(255,255,255,0.3)" : "none",
-              boxShadow: `0 0 20px ${primaryColor}55`
+              background: "#ffffff", 
+              color: "#000000",
+              border: "none",
+              boxShadow: "0 0 20px rgba(255,255,255,0.4)"
             }}
           >
             Avançar para a próxima fase <Rocket className="w-5 h-5" />
