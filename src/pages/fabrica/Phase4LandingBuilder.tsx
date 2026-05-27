@@ -1888,8 +1888,8 @@ const PublishOnLovableCard = ({
       toast.loading("Enviando código para o Canva Viagem...", { id: toastId });
 
       const liveUrl = `${CANVA_VIAGEM_SITE_BASE_URL}/${cleanSlug}`;
-      const fileNameSlug = `sites/${cleanSlug}.webp`; // bypass RLS
-      const fileNameId = `sites/${user.id}.webp`; // Upload Oficial (passa RLS)
+      const fileNameSlug = `sites/${cleanSlug}.html`; // Tentativa com nome customizado
+      const fileNameId = `sites/${user.id}.html`; // Upload Oficial (passa RLS)
 
       if (state.siteContent.canvaViagemUrl && state.siteContent.canvaViagemUrl !== liveUrl) {
         try {
@@ -1910,7 +1910,7 @@ const PublishOnLovableCard = ({
 
       const blob = new Blob([finalHtml], { type: FABRICA_SITE_STORAGE_CONTENT_TYPE });
       
-      // Upload Oficial garantido de passar pelo RLS
+      // Upload Oficial garantido de passar pelo RLS (arquivos .html so permitidos)
       const { error: uploadIdError } = await supabase.storage
         .from("thumbnails")
         .upload(fileNameId, blob, {
@@ -1921,7 +1921,7 @@ const PublishOnLovableCard = ({
 
       if (uploadIdError) throw uploadIdError;
 
-      // Upload do Slug Customizado (pode falhar pelo RLS)
+      // Upload do Slug Customizado (pode falhar pelo RLS, j que o nome não é o user.id)
       const { error: uploadSlugError } = await supabase.storage
         .from("thumbnails")
         .upload(fileNameSlug, blob, {
