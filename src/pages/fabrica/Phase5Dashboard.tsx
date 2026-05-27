@@ -53,13 +53,11 @@ export const Phase5Dashboard = () => {
       const { error: dbError } = await supabase
         .from("public_sites")
         .upsert({
-          id: cleanSlug,
+          id: user.id,
           html: html
         });
 
       if (dbError) {
-        // Fallback for user id just in case
-        await supabase.from("public_sites").upsert({ id: user.id, html: html }).catch(console.error);
         throw dbError;
       }
 
