@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maquina de Crescimento com Agentes de IA para Agencia de Viagens</title>
+  <style>
+    :root {
+      --ink: #17201b;
+      --muted: #5d6a63;
+      --paper: #f7f3ea;
+      --panel: #ffffff;
+      --line: #d8d0c3;
+      --green: #1f7a5c;
+      --blue: #245f9e;
+      --coral: #c75f4a;
+      --gold: #b5852d;
+      --dark: #101713;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      overflow: hidden;
+    }
+
+    .deck {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      padding: 54px 64px 42px;
+      background:
+        linear-gradient(90deg, rgba(31,122,92,.06), transparent 34%),
+        radial-gradient(circle at 88% 12%, rgba(199,95,74,.16), transparent 24%),
+        var(--paper);
+    }
+
+    .slide.active {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 28px;
+    }
+
+    .kicker {
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      max-width: 1000px;
+      font-size: 62px;
+      line-height: .98;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      max-width: 1040px;
+      font-size: 44px;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      font-size: 22px;
+      line-height: 1.12;
+    }
+
+    .lead {
+      max-width: 900px;
+      color: var(--muted);
+      font-size: 23px;
+      line-height: 1.38;
+      margin-top: 22px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 42px;
+      align-items: center;
+    }
+
+    .map {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      min-height: 132px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.72);
+      box-shadow: 0 12px 30px rgba(23,32,27,.06);
+    }
+
+    .card strong {
+      display: block;
+      color: var(--dark);
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .card span {
+      display: block;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.32;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .step {
+      padding: 18px;
+      border-radius: 8px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      min-height: 190px;
+    }
+
+    .step b {
+      color: var(--coral);
+      font-size: 34px;
+      line-height: 1;
+    }
+
+    .step p {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.36;
+      margin-top: 14px;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: .92fr 1.08fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.76);
+    }
+
+    .panel h3 { margin-bottom: 16px; }
+
+    .list {
+      display: grid;
+      gap: 11px;
+    }
+
+    .item {
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      gap: 10px;
+      align-items: start;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.32;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 99px;
+      margin-top: 8px;
+      background: var(--green);
+    }
+
+    .agent-table {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1.35fr;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--panel);
+    }
+
+    .agent-table div {
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    .agent-table div:nth-child(3n) { border-right: 0; }
+    .agent-table div:nth-last-child(-n+3) { border-bottom: 0; }
+    .head { font-weight: 800; color: var(--dark); background: #eee6d7; }
+
+    .demo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .prompt {
+      min-height: 172px;
+      padding: 20px;
+      border-radius: 8px;
+      background: #101713;
+      color: #f4efe5;
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: 15px;
+      line-height: 1.42;
+      border: 1px solid rgba(255,255,255,.16);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric {
+      padding: 22px;
+      border-radius: 8px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      min-height: 150px;
+    }
+
+    .metric b {
+      display: block;
+      color: var(--blue);
+      font-size: 34px;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.32;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 10px;
+      border-radius: 99px;
+      color: var(--dark);
+      background: #e8dcc8;
+      font-size: 13px;
+      font-weight: 800;
+      margin-right: 8px;
+    }
+
+    .big-quote {
+      max-width: 980px;
+      font-size: 42px;
+      line-height: 1.12;
+      font-weight: 800;
+    }
+
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .deck { height: auto; }
+      .slide {
+        position: relative;
+        min-height: 100vh;
+        padding: 32px 22px 26px;
+      }
+      h1 { font-size: 42px; }
+      h2 { font-size: 32px; }
+      .lead { font-size: 19px; }
+      .hero-grid, .split, .demo { grid-template-columns: 1fr; }
+      .map, .flow, .metrics { grid-template-columns: 1fr; }
+      .agent-table { grid-template-columns: 1fr; }
+      .agent-table div { border-right: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" aria-live="polite">
+    <section class="slide active">
+      <div>
+        <div class="kicker">Proposta de implantacao</div>
+        <div class="hero-grid">
+          <div>
+            <h1>Uma equipe de IA trabalhando dentro da agencia de viagens.</h1>
+            <p class="lead">Nao e apenas ChatGPT. E uma maquina operacional com agentes por departamento: marketing organico, remarketing, SEO, inteligencia competitiva, vendas, atendimento e gestao.</p>
+          </div>
+          <div class="panel">
+            <h3>Promessa da reuniao</h3>
+            <div class="list">
+              <div class="item"><i class="dot"></i><span>Mostrar a arquitetura dos agentes instalados.</span></div>
+              <div class="item"><i class="dot"></i><span>Executar uma demo ao vivo no Codex.</span></div>
+              <div class="item"><i class="dot"></i><span>Transformar redes sociais em rotina comercial mensuravel.</span></div>
+              <div class="item"><i class="dot"></i><span>Conectar marketing, WhatsApp, email, remarketing e planilhas.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div></div>
+      <footer class="footer"><span>Agentes de IA para agencias de viagem</span><span>Use setas para navegar</span></footer>
+    </section>
+
+    <section class="slide">
+      <div>
+        <div class="kicker">Diagnostico</div>
+        <h2>O problema nao e postar mais. E criar um sistema que transforma atencao em demanda.</h2>
+      </div>
+      <div class="flow">
+        <div class="step"><b>01</b><h3>Atrair</h3><p>Conteudo organico, Reels, carrosseis, SEO e tendencias do mercado de viagens.</p></div>
+        <div class="step"><b>02</b><h3>Capturar</h3><p>WhatsApp, formularios, landing pages e listas de leads por campanha.</p></div>
+        <div class="step"><b>03</b><h3>Nutrir</h3><p>Email marketing, sequencias, comunidade e relacionamento com contatos frios.</p></div>
+        <div class="step"><b>04</b><h3>Reaparecer</h3><p>Remarketing para quem viu conteudo, clicou, chamou no WhatsApp ou abandonou a compra.</p></div>
+        <div class="step"><b>05</b><h3>Medir</h3><p>Planilhas, CRM simples, dashboard de vendas, entradas, saidas e oportunidades.</p></div>
+      </div>
+      <footer class="footer"><span>A IA entra como sistema operacional do crescimento</span><span>2 / 11</span></footer>
+    </section>
+
+    <section class="slide">
+      <div>
+        <div class="kicker">Arquitetura</div>
+        <h2>Os agentes viram departamentos. Cada departamento entrega uma parte da operacao.</h2>
+      </div>
+      <div class="map">
+        <div class="card"><strong>Diretoria de IA</strong><span>Orquestrador, CEO, CMO e CRO definem prioridade, campanha e proxima acao.</span></div>
+        <div class="card"><strong>Marketing Organico</strong><span>Calendario, Reels, stories, carrosseis, copy e postagens por objetivo.</span></div>
+        <div class="card"><strong>Inteligencia de Mercado</strong><span>Concorrentes, tendencias, hooks, ofertas, SEO e oportunidades de nicho.</span></div>
+        <div class="card"><strong>Remarketing e CRM</strong><span>Email, WhatsApp, listas, recuperacao de leads e reativacao de contatos.</span></div>
+        <div class="card"><strong>Conteudo e SEO</strong><span>Blog, autoridade, palavras-chave, paginas e reposicionamento organico.</span></div>
+        <div class="card"><strong>Gestao Comercial</strong><span>Planilhas, funil, vendas, atendimento, relatorios e rotina de decisao.</span></div>
+      </div>
+      <footer class="footer"><span>Departamentos claros vendem melhor que uma lista de ferramentas</span><span>3 / 11</span></footer>
+    </section>
+
+    <section class="slide">
+      <div>
+        <div class="kicker">Departamento 1</div>
+        <h2>Diretoria de IA: o cerebro que decide o que fazer primeiro.</h2>
+      </div>
+      <div class="agent-table">
+        <div class="head">Agente</div><div class="head">Papel</div><div class="head">Como apresentar ao cliente</div>
+        <div>Orquestrador</div><div>Diagnostica o estado do negocio e aciona a sequencia certa.</div><div>"Ele olha os numeros e decide a prioridade do dia."</div>
+        <div>CEO / CMO</div><div>Define estrategia, posicionamento, oferta e prioridades.</div><div>"Aqui a IA pensa como diretoria, nao como ferramenta."</div>
+        <div>CRO Ganancia</div><div>Olha receita, vendas, CAC, ofertas e urgencias comerciais.</div><div>"Esse agente protege o foco em venda e caixa."</div>
+        <div>Relatorio Visual</div><div>Transforma dados em painel para reuniao e decisao.</div><div>"Toda semana a agencia sabe o que cresceu e o que travou."</div>
+      </div>
+      <footer class="footer"><span>Primeira demo recomendada: briefing do dia</span><span>4 / 11</span></footer>
+    </section>
+
+    <section class="slide">
+      <div>
+        <div class="kicker">Departamento 2</div>
+        <h2>Marketing Organico: conteudo diario com estrategia, nao postagem aleatoria.</h2>
+      </div>
+      <div class="agent-table">
+        <div class="head">Agente</div><div class="head">Entrega</div><div class="head">Exemplo pratico</div>
+        <div>Departamento Marketing Social</div><div>Calendario, Reels, stories, carrosseis e growth.</div><div>7 dias de posts para vender pacotes e captar leads.</div>
+        <div>Aquisicao Conteudo</div><div>Conteudos organicos com intencao de venda.</div><div>Reel "3 erros ao comprar viagem para ferias".</div>
+        <div>Designer / Feed / Stories</div><div>Briefings visuais e criativos prontos para redes.</div><div>Post 4:5, story 9:16 e roteiro visual.</div>
+        <div>Videos & Reels</div><div>Pesquisa de trends, roteiro e composicao de video.</div><div>Roteiro curto para Reels com gancho nos 3 primeiros segundos.</div>
+      </div>
+      <footer class="footer"><span>Mostre um calendario semanal gerado ao vivo</span><span>5 / 11</span></footer>
+    </section>
+
+    <section class="slide">
+      <div>
+        <div class="kicker">Departamento 3</div>
+        <h2>Inteligencia competitiva: descobrir o que ja funciona antes de criar.</h2>
+      </div>
+      <div class="split">
+        <div class="panel">
+          <h3>Agentes principais</h3>
+          <div class="list">
+            <div class="item"><i class="dot"></i><span>Departamento de Inteligencia</span></div>
+            <div class="item"><i class="dot"></i><span>Pesquisa de Mercado</span></div>
+            <div class="item"><i class="dot"></i><span>Escuta de Redes Sociais</span></div>
+            <div class="item"><i class="dot"></i><span>Pesquisa YouTube</span></div>
+            <div class="item"><i class="dot"></i><span>SEO Manager</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>O que o cliente entende</h3>
+          <p class="lead" style="font-size: 22px; margin: 0;">"Antes de postar, a IA olha concorrentes, trends, perguntas do publico, palavras-chave e formatos que estao performando. A agencia para de criar no escuro."</p>
+        </div>
+      </div>
+      <footer class="footer"><span>Essa parte cria a sensacao de metodo proprietario</span><span>6 / 11</span></footer>
+    </section>
+
+    <section class="slide">
+      <div>
+        <div class="kicker">Departamento 4</div>
+        <h2>Remarketing e relacionamento: reaparecer para quem ja demonstrou interesse.</h2>
+      </div>
+      <div class="map">
+        <div class="card"><strong>Email Diretor</strong><span>Sequencias de nutricao, oferta, reativacao e follow-up.</span></div>
+        <div class="card"><strong>Aquisicao Email</strong><span>Converte leads que ainda nao compraram ou nao chamaram no WhatsApp.</span></div>
+        <div class="card"><strong>Atendimento</strong><span>Scripts de WhatsApp, respostas, qualificacao e recuperacao de conversas.</span></div>
+        <div class="card"><strong>Comunidade</strong><span>Relacionamento continuo com clientes, leads e indicacoes.</span></div>
+        <div class="card"><strong>Win-back</strong><span>Reativa contatos antigos, clientes perdidos e oportunidades paradas.</span></div>
+        <div class="card"><strong>Meta Ads / Trafego</strong><span>Remarketing pago para visitantes, engajados e listas quentes.</span></div>
+      </div>
+      <footer class="footer"><span>Principal mensagem: a base atual vale dinheiro</span><span>7 / 11</span></footer>
+    </section>
+
+    <section class="slide">
+      <div>
+        <div class="kicker">Departamento 5</div>
+        <h2>SEO e autoridade: a agencia aparece quando o cliente esta pesquisando viagem.</h2>
+      </div>
+      <div class="split">
+        <div class="panel">
+          <h3>Agentes</h3>
+          <div class="list">
+            <div class="item"><i class="dot"></i><span>SEO Manager</span></div>
+            <div class="item"><i class="dot"></i><span>Blog Manager</span></div>
+            <div class="item"><i class="dot"></i><span>Blog Automacao Autonoma</span></div>
+            <div class="item"><i class="dot"></i><span>Landing Page Direct Response</span></div>
+            <div class="item"><i class="dot"></i><span>Copywriter</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Entregas</h3>
+          <div class="list">
+            <div class="item"><i class="dot"></i><span>Mapa de palavras-chave por destino, pacote e perfil de cliente.</span></div>
+            <div class="item"><i class="dot"></i><span>Artigos para capturar buscas de alta intencao.</span></div>
+            <div class="item"><i class="dot"></i><span>Paginas de venda para campanhas e ofertas sazonais.</span></div>
+            <div class="item"><i class="dot"></i><span>Conteudo reaproveitado em email, WhatsApp e redes sociais.</span></div>
+          </div>
+        </div>
+      </div>
+      <footer class="footer"><span>SEO vira ativo de longo prazo</span><span>8 / 11</span></footer>
+    </section>
+
+    <section class="slide">
+      <div>
+        <div class="kicker">Demo ao vivo</div>
+        <h2>Quatro comandos para causar o efeito "isso ja esta funcionando".</h2>
+      </div>
+      <div class="demo">
+        <div class="prompt">1. Orquestrador
+"Monte o briefing do dia para uma agencia de viagens que quer vender pacotes para julho, captar leads no WhatsApp e reativar contatos antigos. Separe prioridade, agentes acionados e acao imediata."</div>
+        <div class="prompt">2. Marketing Social
+"Crie um calendario de 7 dias de Instagram para agencia de viagens com foco em captacao de leads no WhatsApp, incluindo Reels, stories, carrosseis, CTA e objetivo de cada post."</div>
+        <div class="prompt">3. Remarketing
+"Crie uma sequencia de 5 mensagens de WhatsApp e 3 emails para leads que pediram orcamento de viagem, nao fecharam e precisam receber uma nova oferta sem parecer insistente."</div>
+        <div class="prompt">4. Inteligencia
+"Analise quais tipos de conteudo e ofertas tendem a funcionar para agencias de viagem no organico. Transforme isso em 10 ideias de posts e 5 angulos de remarketing."</div>
+      </div>
+      <footer class="footer"><span>Abra o Codex e rode um por vez durante a reuniao</span><span>9 / 11</span></footer>
+    </section>
+
+    <section class="slide">
+      <div>
+        <div class="kicker">Plano de implantacao</div>
+        <h2>Implantar em 30 dias, com valor percebido logo na primeira semana.</h2>
+      </div>
+      <div class="flow">
+        <div class="step"><b>1</b><h3>Mapa</h3><p>Diagnosticar canais, ofertas, WhatsApp, planilhas, base de leads e concorrentes.</p></div>
+        <div class="step"><b>2</b><h3>Setup</h3><p>Instalar agentes, organizar pastas, prompts, rotinas e padroes de aprovacao.</p></div>
+        <div class="step"><b>3</b><h3>Conteudo</h3><p>Gerar calendario, posts, stories, Reels, blog e campanhas por destino.</p></div>
+        <div class="step"><b>4</b><h3>Remarketing</h3><p>Criar sequencias para WhatsApp, email, contatos antigos e listas quentes.</p></div>
+        <div class="step"><b>5</b><h3>Gestao</h3><p>Medir resultados, ajustar rotas e transformar a IA em reuniao semanal.</p></div>
+      </div>
+      <footer class="footer"><span>Venda como implantacao + gestao mensal</span><span>10 / 11</span></footer>
+    </section>
+
+    <section class="slide">
+      <div>
+        <div class="kicker">Fechamento</div>
+        <h2>O que o cliente compra nao e IA. Ele compra previsibilidade comercial.</h2>
+      </div>
+      <div class="metrics">
+        <div class="metric"><b>+ conteudo</b><span>Postagens com frequencia, intencao e adaptacao por canal.</span></div>
+        <div class="metric"><b>+ leads</b><span>Mais oportunidades entrando pelo WhatsApp, SEO e redes sociais.</span></div>
+        <div class="metric"><b>+ retorno</b><span>Reaproveitamento de contatos, orcamentos antigos e listas quentes.</span></div>
+        <div class="metric"><b>+ gestao</b><span>Planilhas, relatorios e decisao semanal com base em dados.</span></div>
+      </div>
+      <p class="big-quote">"A gente coloca uma equipe de IA para trabalhar junto com sua agencia todos os dias."</p>
+      <footer class="footer"><span>Proximo passo: piloto de 30 dias</span><span>11 / 11</span></footer>
+    </section>
+  </main>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    let current = 0;
+
+    function show(index) {
+      current = Math.max(0, Math.min(slides.length - 1, index));
+      slides.forEach((slide, i) => slide.classList.toggle('active', i === current));
+    }
+
+    window.addEventListener('keydown', (event) => {
+      if (['ArrowRight', 'PageDown', ' '].includes(event.key)) show(current + 1);
+      if (['ArrowLeft', 'PageUp'].includes(event.key)) show(current - 1);
+      if (event.key === 'Home') show(0);
+      if (event.key === 'End') show(slides.length - 1);
+    });
+  </script>
+</body>
+</html>

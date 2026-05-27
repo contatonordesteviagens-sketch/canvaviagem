@@ -20,18 +20,20 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
       }
 
       try {
-        const publicUrl = `https://zdjtcwtakgizbsbbwtgc.supabase.co/storage/v1/object/public/thumbnails/vercel_assets/${id}_site.webp`;
-        const response = await fetch(`${publicUrl}?t=${Date.now()}`, { cache: 'no-store' });
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabase = createClient('https://zdjtcwtakgizbsbbwtgc.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkanRjd3Rha2dpemJzYmJ3dGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMzIxMjMsImV4cCI6MjA4NDYwODEyM30.juuc45o-OZbLQcx2LaMLyltRABAVy70kgJ_L_JXeUEs');
+
+        const { data, error } = await supabase
+          .from('public_sites')
+          .select('html')
+          .eq('id', id)
+          .single();
         
-        if (!response.ok) {
-          throw new Error("Não foi possível conectar com o servidor.");
+        if (error || !data) {
+          throw new Error("Site não encontrado ou aguardando processamento.");
         }
 
-        const html = await response.text();
-
-        if (html.includes('{"statusCode":"404"}') || html.includes('Object not found')) {
-           throw new Error("Site aguardando processamento.");
-        }
+        const html = data.html;
 
         if (isSubscribed) {
           setHtmlContent(html);

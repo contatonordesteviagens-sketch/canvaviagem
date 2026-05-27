@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Implantacao de Agentes de IA para Agencia de Viagens</title>
+  <style>
+    :root {
+      --ink: #14201d;
+      --muted: #65716c;
+      --paper: #f6f2e9;
+      --panel: #fffdf7;
+      --line: #d9d0c0;
+      --green: #15735a;
+      --blue: #225d93;
+      --red: #b85643;
+      --gold: #aa7d25;
+      --dark: #0f1513;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    header {
+      min-height: 86vh;
+      display: grid;
+      align-items: center;
+      padding: 56px;
+      color: #fff7ea;
+      background:
+        linear-gradient(110deg, rgba(15,21,19,.97) 0%, rgba(15,21,19,.89) 48%, rgba(21,115,90,.70) 100%),
+        url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80") center/cover;
+    }
+    header h1 {
+      max-width: 1040px;
+      margin: 0;
+      font-size: 68px;
+      line-height: .96;
+      letter-spacing: 0;
+    }
+    header p {
+      max-width: 900px;
+      margin: 24px 0 0;
+      color: #eadfcb;
+      font-size: 24px;
+      line-height: 1.35;
+    }
+    .price {
+      display: inline-flex;
+      margin-top: 28px;
+      padding: 12px 16px;
+      border: 1px solid rgba(255,255,255,.26);
+      border-radius: 999px;
+      font-weight: 900;
+      background: rgba(255,255,255,.12);
+    }
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 12px 44px;
+      background: rgba(246,242,233,.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+    nav a {
+      color: var(--ink);
+      text-decoration: none;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 999px;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-weight: 850;
+    }
+    main { padding: 34px 52px 70px; display: grid; gap: 26px; }
+    section {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,253,247,.92);
+      padding: 30px;
+      box-shadow: 0 18px 50px rgba(20,32,29,.06);
+    }
+    h2 {
+      margin: 0 0 18px;
+      max-width: 980px;
+      font-size: 42px;
+      line-height: 1.04;
+      letter-spacing: 0;
+    }
+    h3 { margin: 0 0 10px; font-size: 21px; line-height: 1.15; }
+    p, li {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.42;
+    }
+    .lead {
+      max-width: 920px;
+      margin: -4px 0 22px;
+      font-size: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 19px;
+      background: #fff;
+      min-height: 168px;
+    }
+    .card strong { color: var(--ink); }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 25px;
+      padding: 0 9px;
+      margin: 0 6px 8px 0;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 850;
+      background: #e8e0d2;
+      color: var(--ink);
+    }
+    .green { background: #dceee7; color: #145841; }
+    .blue { background: #dce8f5; color: #1b4b7f; }
+    .red { background: #f3ded9; color: #934333; }
+    .gold { background: #f0e2c2; color: #795819; }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+    .step {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      background: #fff;
+      min-height: 190px;
+    }
+    .step b {
+      color: var(--red);
+      display: block;
+      font-size: 31px;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    .table {
+      display: grid;
+      grid-template-columns: .82fr 1.24fr 1.28fr;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .table div {
+      padding: 13px 14px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+      line-height: 1.3;
+    }
+    .table div:nth-child(3n) { border-right: 0; }
+    .table div:nth-last-child(-n + 3) { border-bottom: 0; }
+    .head {
+      background: #eee6d8;
+      font-weight: 900;
+      color: var(--ink);
+    }
+    pre {
+      margin: 10px 0 0;
+      white-space: pre-wrap;
+      border-radius: 8px;
+      padding: 16px;
+      color: #fff4e4;
+      background: var(--dark);
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .callout {
+      border-left: 5px solid var(--green);
+      padding: 16px 18px;
+      border-radius: 8px;
+      background: #edf7f3;
+      color: var(--ink);
+      font-weight: 750;
+      line-height: 1.38;
+    }
+    .offer {
+      display: grid;
+      grid-template-columns: 1fr .75fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+    .priceBox {
+      display: grid;
+      align-content: center;
+      text-align: center;
+      border-radius: 10px;
+      color: #fff7ea;
+      background: var(--dark);
+      padding: 24px;
+    }
+    .priceBox b { font-size: 54px; line-height: 1; }
+    .priceBox span { margin-top: 10px; color: #d8ccbb; }
+    @media print {
+      nav { display: none; }
+      header { min-height: auto; page-break-after: always; }
+      section { page-break-inside: avoid; box-shadow: none; }
+      body { background: #fff; }
+    }
+    @media (max-width: 920px) {
+      header, main { padding-left: 20px; padding-right: 20px; }
+      header h1 { font-size: 42px; }
+      header p { font-size: 18px; }
+      h2 { font-size: 31px; }
+      .grid, .grid.two, .flow, .offer, .table { grid-template-columns: 1fr; }
+      .table div { border-right: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Implantacao de uma equipe de IA dentro da agencia de viagens</h1>
+      <p>Agentes por departamento, operando marketing organico, vendas, remarketing, SDR, planilhas, SEO, paginas e rotina diaria. O cliente fala com um chat; por tras, a equipe de IA se organiza.</p>
+      <div class="price">Oferta de implantacao: R$ 5.000 + gestao mensal opcional</div>
+    </div>
+  </header>
+  <nav>
+    <a href="#promessa">Promessa</a>
+    <a href="#arquitetura">Arquitetura</a>
+    <a href="#agentes">Agentes</a>
+    <a href="#demos">Demos uau</a>
+    <a href="#automacoes">Automacoes</a>
+    <a href="#implantacao">Implantacao</a>
+    <a href="#fechamento">Fechamento</a>
+  </nav>
+  <main>
+    <section id="promessa">
+      <h2>O que o cliente compra</h2>
+      <p class="lead">Ele nao compra ChatGPT. Ele compra uma operacao assistida por IA que ajuda a agencia a vender mais com menos desorganizacao.</p>
+      <div class="grid">
+        <div class="card"><h3>Central de comando</h3><p>Um chat principal onde o dono pede: "o que fazemos hoje?", "crie campanha", "responda esse lead", "monte pagina".</p></div>
+        <div class="card"><h3>Agentes especialistas</h3><p>Marketing, designer, SDR, consultor de vendas, SEO, analista, financeiro, compliance e gestor de automacao.</p></div>
+        <div class="card"><h3>Rotina operacional</h3><p>Planejamento semanal, entregaveis diarios, follow-ups, planilha/CRM e relatorio de resultados.</p></div>
+      </div>
+      <div class="callout" style="margin-top:16px;">Frase para a reuniao: "Voce fala com um chat simples. A diferenca e que esse chat aciona uma equipe inteira de agentes por departamento, treinada no contexto da sua agencia."</div>
+    </section>
+
+    <section id="arquitetura">
+      <h2>Como os agentes se comunicam</h2>
+      <div class="flow">
+        <div class="step"><b>01</b><h3>Orquestrador</h3><p>Recebe o pedido, entende o objetivo e escolhe os agentes certos.</p></div>
+        <div class="step"><b>02</b><h3>Departamento</h3><p>Marketing, vendas, SEO, financeiro, atendimento ou automacao assume a tarefa.</p></div>
+        <div class="step"><b>03</b><h3>Especialistas</h3><p>Copywriter, designer, SDR, analista, consultor e outros produzem as partes.</p></div>
+        <div class="step"><b>04</b><h3>Revisor</h3><p>Checa clareza, tom, risco, CTA, qualidade e aderencia ao objetivo.</p></div>
+        <div class="step"><b>05</b><h3>Entrega</h3><p>O cliente recebe roteiro, pagina, planilha, automacao ou plano pronto.</p></div>
+      </div>
+      <pre>Cliente: "Quero vender pacotes para Maceio esta semana."
+Orquestrador -> Marketing Social -> Designer -> Videos/Reels -> Atendimento/SDR -> Planilha/CRM -> Relatorio</pre>
+    </section>
+
+    <section id="agentes">
+      <h2>Departamentos que ficam instalados na agencia</h2>
+      <div class="table">
+        <div class="head">Departamento</div><div class="head">Agentes usados</div><div class="head">O que o cliente consegue pedir</div>
+        <div>Diretoria de IA</div><div>Canvaviagem Orquestrador, CEO, CMO, CRO, agents-orchestrator, workflow-architect</div><div>"O que eu devo fazer essa semana para vender mais?"</div>
+        <div>Marketing Organico</div><div>Marketing Social, Instagram Curator, Content Creator, Carousel Growth Engine, TikTok Strategist</div><div>"Monte meu calendario de Instagram e Reels."</div>
+        <div>Design e Criativos</div><div>Designer, Feed Creator, Stories Creator, Image Prompt Engineer, Brand Guardian</div><div>"Crie artes, stories e prompts de imagem para essa oferta."</div>
+        <div>Videos e Reels</div><div>Videos & Reels, video-pipeline, short-video-editing-coach, TikTok Strategist</div><div>"Crie 5 Reels com roteiro, cena e legenda."</div>
+        <div>SDR e Atendimento</div><div>Atendimento, sales-discovery-coach, sales-outbound-strategist, private-domain-operator</div><div>"Responda leads e crie follow-up no WhatsApp/Instagram."</div>
+        <div>Remarketing</div><div>Email Diretor, Aquisicao Email, Win-Back, Paid Social Strategist, Tracking Specialist</div><div>"Reative quem pediu orcamento e sumiu."</div>
+        <div>SEO e Autoridade</div><div>SEO Manager, SEO Specialist, Blog Manager, AI Citation Strategist</div><div>"Crie paginas e artigos para aparecer no Google."</div>
+        <div>Financeiro e Gestao</div><div>Finance Tracker, Accounts Payable, Sales Pipeline Analyst, Analytics Reporter</div><div>"Monte minha planilha de vendas, lucro e follow-up."</div>
+        <div>Compliance/Consultor</div><div>Legal Compliance Checker, Compliance Auditor, Account Strategist, Proposal Strategist</div><div>"Revise riscos, proposta, contrato e comunicacao."</div>
+      </div>
+    </section>
+
+    <section id="demos">
+      <h2>Demos que impressionam na call</h2>
+      <p class="lead">Nao mostre so calendario de posts. Mostre entregas que parecem uma operacao real.</p>
+      <div class="grid two">
+        <div class="card">
+          <span class="badge green">Demo 1</span><span class="badge gold">Pagina de vendas</span>
+          <h3>Gerar uma pagina completa para um pacote</h3>
+          <p>Entrega headline, estrutura, copy, FAQ, CTA para WhatsApp e sugestao visual.</p>
+          <pre>Use landing-page-dr, copy-direct-response, design-ui-designer e sales-proposal-strategist. Crie uma pagina de vendas completa para uma agencia vender pacote para Maceio em julho, com CTA para WhatsApp.</pre>
+        </div>
+        <div class="card">
+          <span class="badge green">Demo 2</span><span class="badge red">SDR</span>
+          <h3>Transformar Direct/WhatsApp em atendimento comercial</h3>
+          <p>Entrega script, perguntas de qualificacao, follow-up e quando passar para humano.</p>
+          <pre>Use Atendimento, sales-discovery-coach e sales-outbound-strategist. Crie um SDR de Instagram/WhatsApp para leads interessados em pacotes de viagem.</pre>
+        </div>
+        <div class="card">
+          <span class="badge blue">Demo 3</span><span class="badge gold">CRM</span>
+          <h3>Planilha automatica de leads e vendas</h3>
+          <p>Entrega abas, colunas, formulas, status e rotina de uso.</p>
+          <pre>Use Spreadsheets, sales-pipeline-analyst, finance-tracker e analytics-reporter. Crie uma planilha CRM para leads do Instagram, Direct, WhatsApp e site.</pre>
+        </div>
+        <div class="card">
+          <span class="badge red">Demo 4</span><span class="badge green">Remarketing</span>
+          <h3>Reativar orcamentos parados</h3>
+          <p>Entrega WhatsApps, emails, segmentacao e oferta de retorno.</p>
+          <pre>Use Email Diretor, Atendimento, Win-Back e paid-social-strategist. Crie uma campanha para leads que pediram orcamento e nao fecharam.</pre>
+        </div>
+        <div class="card">
+          <span class="badge blue">Demo 5</span><span class="badge green">Conteudo</span>
+          <h3>Maquina semanal de conteudo</h3>
+          <p>Entrega Reels, carrosseis, stories, artes, legendas e CTAs.</p>
+          <pre>Use Marketing Social, Instagram Curator, Carousel Growth Engine, Designer e Videos & Reels. Crie uma campanha de 7 dias para vender Porto de Galinhas.</pre>
+        </div>
+        <div class="card">
+          <span class="badge gold">Demo 6</span><span class="badge blue">Consultores</span>
+          <h3>Conselheiro, analista, financeiro e compliance</h3>
+          <p>Mostra que a IA tambem ajuda decisao, risco, caixa e proposta.</p>
+          <pre>Use Account Strategist, Finance Tracker, Legal Compliance Checker e Analytics Reporter. Analise esta campanha e diga riscos, oportunidades, margem e proxima acao.</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="automacoes">
+      <h2>Automacoes que viram produto</h2>
+      <p class="lead">Essas automacoes exigem conexao com contas e permissoes oficiais, mas a arquitetura e clara e vendavel.</p>
+      <div class="grid">
+        <div class="card"><h3>SDR Instagram/WhatsApp</h3><p>Comentario ou Direct entra, agente qualifica, salva lead na planilha, envia primeira resposta e marca follow-up.</p><p><strong>Stack:</strong> Meta API/Manychat/n8n + Google Sheets + agentes de atendimento.</p></div>
+        <div class="card"><h3>CRM automatico</h3><p>Todo lead ganha origem, destino, valor estimado, status, proxima acao e responsavel.</p><p><strong>Stack:</strong> Google Sheets + n8n/Zapier + Sales Pipeline Analyst.</p></div>
+        <div class="card"><h3>Conteudo diario</h3><p>Orquestrador cria pauta, agentes geram posts, revisor valida e a equipe aprova/agende.</p><p><strong>Stack:</strong> ChatGPT/Codex/Claude + Google Drive/Docs + ferramenta de agendamento.</p></div>
+        <div class="card"><h3>Remarketing inteligente</h3><p>Leads parados recebem sequencias por interesse, destino e etapa do funil.</p><p><strong>Stack:</strong> planilha/CRM + WhatsApp/email + agentes de copy e SDR.</p></div>
+        <div class="card"><h3>Relatorio semanal</h3><p>Agente analisa posts, leads, vendas, follow-ups e recomenda a proxima semana.</p><p><strong>Stack:</strong> Sheets + Analytics Reporter + Orquestrador.</p></div>
+        <div class="card"><h3>Pagina de campanha</h3><p>Agente cria pagina para cada destino/oferta com copy, criativos e rastreamento.</p><p><strong>Stack:</strong> landing-page-dr + frontend + tracking specialist.</p></div>
+      </div>
+      <div class="callout" style="margin-top:16px;">Importante na venda: "Automacao de Instagram sera feita por caminhos permitidos: APIs, ferramentas conectadas e aprovacoes. A IA nao precisa burlar plataforma; ela precisa organizar atendimento, follow-up e dados."</div>
+    </section>
+
+    <section id="implantacao">
+      <h2>Plano de implantacao de R$5.000</h2>
+      <div class="offer">
+        <div class="card">
+          <h3>O que voce entrega</h3>
+          <ul>
+            <li>Mapeamento da agencia, ofertas, destinos e canais.</li>
+            <li>Instalacao/organizacao dos agentes por departamento.</li>
+            <li>Prompt mestre com contexto da agencia.</li>
+            <li>Central de comando para o dono usar no chat.</li>
+            <li>Playbooks de posts, Reels, SDR, remarketing, SEO e planilhas.</li>
+            <li>1 pagina de vendas modelo.</li>
+            <li>1 planilha CRM modelo.</li>
+            <li>1 automacao piloto de lead/follow-up desenhada ou conectada conforme acessos.</li>
+            <li>Treinamento de uso em 1 reuniao.</li>
+          </ul>
+        </div>
+        <div class="priceBox"><b>R$5.000</b><span>implantacao inicial<br>+ gestao mensal opcional</span></div>
+      </div>
+      <div class="flow" style="margin-top:16px;">
+        <div class="step"><b>S1</b><h3>Diagnostico</h3><p>Contexto, ofertas, canais, dores, planilhas e acessos.</p></div>
+        <div class="step"><b>S2</b><h3>Agentes</h3><p>Departamentos, prompt mestre, rotinas e comandos.</p></div>
+        <div class="step"><b>S3</b><h3>Ativos</h3><p>Pagina, conteudo, SDR, CRM e remarketing.</p></div>
+        <div class="step"><b>S4</b><h3>Automacao</h3><p>Conectar o que for possivel com acessos: sheets, forms, Manychat, n8n.</p></div>
+        <div class="step"><b>S5</b><h3>Treinamento</h3><p>Ensinar o dono a pedir e operar pelos departamentos.</p></div>
+      </div>
+    </section>
+
+    <section id="fechamento">
+      <h2>Fechamento para a reuniao</h2>
+      <pre>Hoje sua agencia tem pessoas, mensagens, posts, orcamentos e planilhas separados.
+
+O que eu proponho e instalar uma equipe de IA por departamento:
+- um gerente que decide prioridade;
+- um time de marketing que cria conteudo;
+- um SDR que ajuda no atendimento;
+- um time de remarketing que reaparece para leads;
+- um analista que organiza planilha e relatorio;
+- consultores que revisam proposta, risco, caixa e estrategia.
+
+Voce continua decidindo. A diferenca e que agora a agencia ganha uma operacao de IA trabalhando todo dia.</pre>
+    </section>
+  </main>
+</body>
+</html>

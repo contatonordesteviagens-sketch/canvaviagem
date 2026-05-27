@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel Real de Agentes IA - Agencia de Viagens</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --ink: #171b1a;
+      --muted: #5e6561;
+      --panel: #fffdf8;
+      --line: #d8d0c2;
+      --green: #1d7a5d;
+      --blue: #245b95;
+      --red: #bd5949;
+      --gold: #a77b26;
+      --black: #101312;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    header {
+      padding: 44px 52px 32px;
+      background: var(--black);
+      color: #fffaf0;
+    }
+    header p {
+      max-width: 980px;
+      margin: 18px 0 0;
+      color: #d9d2c5;
+      font-size: 22px;
+      line-height: 1.36;
+    }
+    h1 {
+      max-width: 1120px;
+      margin: 0;
+      font-size: 54px;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 0 0 18px;
+      font-size: 31px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      line-height: 1.15;
+    }
+    main {
+      padding: 28px 52px 64px;
+      display: grid;
+      gap: 24px;
+    }
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      position: sticky;
+      top: 0;
+      z-index: 4;
+      background: rgba(244,241,234,.94);
+      padding: 12px 0;
+      backdrop-filter: blur(10px);
+    }
+    .nav a {
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 9px 12px;
+      background: var(--panel);
+    }
+    section {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 28px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      background: #fff;
+      min-height: 150px;
+    }
+    .card p, li {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.36;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 0 9px;
+      margin: 0 6px 8px 0;
+      border-radius: 999px;
+      background: #e8e0d2;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .tag.green { background: #dceee7; color: #145841; }
+    .tag.blue { background: #dce8f5; color: #1b4b7f; }
+    .tag.red { background: #f3ded9; color: #934333; }
+    .tag.gold { background: #f0e2c2; color: #795819; }
+    .table {
+      display: grid;
+      grid-template-columns: .85fr 1.15fr 1.2fr;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .table div {
+      padding: 13px 14px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+      line-height: 1.28;
+    }
+    .table div:nth-child(3n) { border-right: 0; }
+    .table div:nth-last-child(-n + 3) { border-bottom: 0; }
+    .head {
+      font-weight: 900;
+      background: #ece4d6;
+    }
+    pre {
+      white-space: pre-wrap;
+      margin: 12px 0 0;
+      border-radius: 8px;
+      padding: 16px;
+      color: #f7efe2;
+      background: var(--black);
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .note {
+      border-left: 5px solid var(--red);
+      padding: 14px 16px;
+      background: #fbf1ee;
+      color: var(--ink);
+      line-height: 1.4;
+      border-radius: 6px;
+    }
+    @media (max-width: 900px) {
+      header, main { padding-left: 20px; padding-right: 20px; }
+      h1 { font-size: 38px; }
+      header p { font-size: 18px; }
+      .grid, .split, .table { grid-template-columns: 1fr; }
+      .table div { border-right: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Painel real de agentes de IA para agencia de viagens</h1>
+    <p>Use isto na reuniao: mostre os departamentos, leia os agentes reais instalados e rode as demos no Codex ou Claude Code. A venda e uma maquina operacional, nao um PDF.</p>
+  </header>
+  <main>
+    <nav class="nav">
+      <a href="#inventario">Inventario</a>
+      <a href="#ativacao">Ativacao</a>
+      <a href="#departamentos">Departamentos</a>
+      <a href="#demos">Demos</a>
+      <a href="#fabrica">Fabrica</a>
+      <a href="#proposta">Proposta</a>
+    </nav>
+
+    <section id="inventario">
+      <h2>O que existe na sua maquina</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Skills Canva Viagem / Codex</h3>
+          <span class="tag green">marketing</span><span class="tag green">SEO</span><span class="tag green">remarketing</span>
+          <p>Local: C:\Users\win 10\Desktop\canvaviagem-repo\.agents\skills\. Sao os agentes mais fortes para vender ao cliente de agencia de viagens.</p>
+        </div>
+        <div class="card">
+          <h3>.agency-agents</h3>
+          <span class="tag blue">Claude Code</span><span class="tag blue">OpenClaw</span><span class="tag blue">especialistas</span>
+          <p>Local: .agency-agents. Biblioteca com agentes de marketing, vendas, design, paid media, produto, operacao e automacao.</p>
+        </div>
+        <div class="card">
+          <h3>Sistema Fabrica</h3>
+          <span class="tag red">artes</span><span class="tag red">landing page</span><span class="tag red">dashboard</span>
+          <p>Local: src/pages/fabrica. Fluxo visual para diagnostico, pacotes, composicao de artes, landing page e metricas.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="ativacao">
+      <h2>Como ativar</h2>
+      <div class="split">
+        <div class="card">
+          <h3>No Codex</h3>
+          <p>Chame a skill pelo nome, de forma explicita.</p>
+          <pre>Use Canvaviagem Orquestrador e monte o briefing do dia para uma agencia de viagens.</pre>
+          <pre>Use Departamento de Marketing Social — Canva Viagem para criar uma semana de posts.</pre>
+        </div>
+        <div class="card">
+          <h3>No Claude Code</h3>
+          <p>A biblioteca .agency-agents ativa por nome do agente.</p>
+          <pre>Activate marketing-social-media-strategist and create a 30-day Instagram plan for a travel agency.</pre>
+          <pre>Activate paid-media-paid-social-strategist and build a remarketing campaign.</pre>
+        </div>
+      </div>
+      <div class="note" style="margin-top:14px;">OpenClaw: o README encontrado indica gerar e instalar com ./scripts/convert.sh --tool openclaw e ./scripts/install.sh --tool openclaw. Depois reiniciar o gateway.</div>
+    </section>
+
+    <section id="departamentos">
+      <h2>Departamentos para apresentar ao cliente</h2>
+      <div class="table">
+        <div class="head">Departamento</div><div class="head">Agentes reais</div><div class="head">Demo vendavel</div>
+        <div>Diretoria de IA</div><div>Canvaviagem Orquestrador, CEO, Diretor de Marketing, Ganancia CRO</div><div>Briefing do dia, prioridade, acao imediata e indicador</div>
+        <div>Marketing organico</div><div>Departamento Marketing Social, Aquisicao Conteudo, Instagram Curator, Carousel Growth Engine</div><div>Calendario semanal com Reels, stories, carrosseis e CTA para WhatsApp</div>
+        <div>Artes e fotos</div><div>Designer, Feed Creator, Stories Creator, Design Image Prompt Engineer, Diretor de Artes</div><div>Briefing de arte 4:5, story 9:16, capa de Reel e prompt de imagem</div>
+        <div>Videos e Reels</div><div>Departamento Videos & Reels, video-pipeline-completo, video-pesquisa-mercado, Short Video Editing Coach</div><div>Roteiro de Reel com cenas, texto na tela, narracao e CTA</div>
+        <div>Remarketing</div><div>Email Diretor, Aquisicao Email, Atendimento, Win-Back, Paid Social Strategist</div><div>5 WhatsApps + 3 emails para leads que pediram orcamento e sumiram</div>
+        <div>SEO</div><div>SEO Manager, SEO & Autoridade, Blog Manager, Blog Autonomo, SEO Specialist</div><div>Mapa de palavras-chave, artigos, paginas e reaproveitamento em redes</div>
+        <div>Gestao</div><div>Spreadsheets, Sales Pipeline Analyst, Finance Tracker, Relatorio Visual</div><div>Planilha de leads, vendas, entradas, saidas e follow-up</div>
+      </div>
+    </section>
+
+    <section id="demos">
+      <h2>Prompts de demo ao vivo</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>1. Orquestrador</h3>
+          <pre>Use Canvaviagem Orquestrador. Crie o briefing do dia para uma agencia de viagens que quer vender pacotes de julho, captar leads no WhatsApp e reativar contatos antigos.</pre>
+        </div>
+        <div class="card">
+          <h3>2. Postagens</h3>
+          <pre>Use Departamento de Marketing Social — Canva Viagem. Crie um calendario de 7 dias com 2 Reels, 2 carrosseis, 2 posts de prova social, 1 oferta, stories diarios e CTA.</pre>
+        </div>
+        <div class="card">
+          <h3>3. Artes</h3>
+          <pre>Use Canvaviagem Feed Creator e Stories Creator. Crie briefings para vender pacote para Maceio: feed 4:5, story 9:16 e capa de Reel.</pre>
+        </div>
+        <div class="card">
+          <h3>4. Video</h3>
+          <pre>Use Departamento de Videos & Reels e video-pipeline-completo. Crie roteiro de Reel de 30 segundos para Porto de Galinhas com hook, cenas, texto na tela e CTA.</pre>
+        </div>
+        <div class="card">
+          <h3>5. Remarketing</h3>
+          <pre>Use Diretor de Email Marketing, Atendimento e Win-Back. Crie 5 mensagens de WhatsApp e 3 emails para leads que pediram orcamento e nao fecharam.</pre>
+        </div>
+        <div class="card">
+          <h3>6. Planilha</h3>
+          <pre>Use Spreadsheets e sales-pipeline-analyst. Monte uma planilha de leads, origem, destino, valor, etapa, follow-up, pagamento, entradas, saidas e lucro.</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="fabrica">
+      <h2>Sistema Fabrica para impressionar visualmente</h2>
+      <div class="table">
+        <div class="head">Fase</div><div class="head">Arquivo encontrado</div><div class="head">O que mostrar</div>
+        <div>F1 Diagnostico</div><div>Phase1Diagnostico.tsx</div><div>Diagnostico da agencia e maturidade digital</div>
+        <div>F2 Ativos</div><div>Phase2Ativos.tsx</div><div>Pacotes, ofertas, ativos e cronograma</div>
+        <div>F3 Art Factory</div><div>Phase3ArtFactory.tsx</div><div>Geracao/composicao de artes para viagem</div>
+        <div>F4 Landing Builder</div><div>Phase4LandingBuilder.tsx</div><div>Landing page/site da agencia</div>
+        <div>F5 Dashboard</div><div>Phase5Dashboard.tsx</div><div>Metricas, cliques, insights e gestao</div>
+      </div>
+      <pre>npm run dev</pre>
+    </section>
+
+    <section id="proposta">
+      <h2>Fechamento comercial</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Setup inicial</h3>
+          <p>Mapear agencia, ofertas, destinos, base de leads, WhatsApp, marca, prompts e departamentos de IA.</p>
+        </div>
+        <div class="card">
+          <h3>Piloto 30 dias</h3>
+          <p>Diagnostico, calendario, posts, roteiros, remarketing, planilha e relatorio final.</p>
+        </div>
+        <div class="card">
+          <h3>Gestao mensal</h3>
+          <p>Rotina de conteudo, WhatsApp/email, SEO, analise de concorrentes, relatorios e ajustes.</p>
+        </div>
+      </div>
+      <pre>A gente nao esta vendendo IA. A gente esta colocando uma equipe operacional dentro da sua agencia para trazer cliente, reaparecer para quem ja demonstrou interesse e organizar a venda.</pre>
+    </section>
+  </main>
+</body>
+</html>

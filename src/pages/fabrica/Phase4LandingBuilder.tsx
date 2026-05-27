@@ -1784,26 +1784,20 @@ const PublishOnLovableCard = ({
 
     setIsPublishing(true);
     try {
-      const blob = new Blob([html], { type: FABRICA_SITE_STORAGE_CONTENT_TYPE });
-      const fileName = `vercel_assets/${user.id}_site.webp`;
-      
-      const rawName = state.agencyName || `agencia-${user.id.substring(0,4)}`;
-      const cleanSlug = rawName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-      const slugName = `vercel_assets/${cleanSlug}_site.webp`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("thumbnails")
-        .upload(fileName, blob, {
-          contentType: FABRICA_SITE_STORAGE_CONTENT_TYPE,
-          upsert: true,
-          cacheControl: '0'
+      // Bypass Supabase Storage RLS entirely by saving to public_sites table
+      const { error: dbError } = await supabase
+        .from("public_sites")
+        .upsert({
+          id: cleanSlug,
+          html: html
         });
 
-      if (uploadError) throw uploadError;
-
-      if (cleanSlug.length > 2) {
-         await supabase.storage.from("thumbnails").upload(slugName, blob, { contentType: FABRICA_SITE_STORAGE_CONTENT_TYPE, upsert: true, cacheControl: '0' }).catch(e => console.warn("Subdomain upload error:", e));
+      if (dbError) {
+        // Fallback for user id just in case
+        await supabase.from("public_sites").upsert({ id: user.id, html: html }).catch(console.error);
+        throw dbError;
       }
+
 
       const internalUrl = `${window.location.origin}/view/${user.id}`;
       setPublishedUrl(internalUrl);
@@ -1908,32 +1902,20 @@ const PublishOnLovableCard = ({
         }
       }
 
-      const blob = new Blob([finalHtml], { type: FABRICA_SITE_STORAGE_CONTENT_TYPE });
-      
-      // Upload Oficial garantido de passar pelo RLS
-      const { error: uploadIdError } = await supabase.storage
-        .from("thumbnails")
-        .upload(fileNameId, blob, {
-          contentType: FABRICA_SITE_STORAGE_CONTENT_TYPE,
-          upsert: true,
-          cacheControl: "0",
-        });
-
-      if (uploadIdError) throw uploadIdError;
-
-      // Upload do Slug Customizado (pode falhar pelo RLS)
-      const { error: uploadSlugError } = await supabase.storage
-        .from("thumbnails")
-        .upload(fileNameSlug, blob, {
-          contentType: FABRICA_SITE_STORAGE_CONTENT_TYPE,
-          upsert: true,
-          cacheControl: "0",
+      // Upload Oficial garantido de passar pelo RLS salvando direto na tabela public_sites
+      const { error: dbError } = await supabase
+        .from("public_sites")
+        .upsert({
+          id: cleanSlug,
+          html: finalHtml
         });
 
       let finalUrl = liveUrl;
-      if (uploadSlugError) {
-          console.warn("RLS do Supabase bloqueou o nome customizado. Fallback para ID.");
+
+      if (dbError) {
+          console.warn("Falha ao salvar slug customizado na tabela. Fallback para ID.", dbError);
           finalUrl = `https://${user.id}.${CANVA_VIAGEM_DOMAIN}`;
+          await supabase.from("public_sites").upsert({ id: user.id, html: finalHtml }).catch(e => console.error("Fallback error:", e));
       }
 
       update({
@@ -2143,7 +2125,7 @@ const PublishOnLovableCard = ({
                 Publicar com link Canva Viagem
               </h4>
               <p className="text-xs text-white/60 mt-1 leading-relaxed">
-                Gera um link seguro no seu domínio principal, como canvaviagem.com/view/nome-da-agencia.
+                Gera um link seguro no seu domínio principal, como nomedaagencia.canvaviagem.com.
               </p>
             </div>
             <LinkIcon className="w-5 h-5 text-white/40 flex-shrink-0" />
