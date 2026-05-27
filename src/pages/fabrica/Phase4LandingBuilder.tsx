@@ -1888,7 +1888,8 @@ const PublishOnLovableCard = ({
       toast.loading("Enviando código para o Canva Viagem...", { id: toastId });
 
       const liveUrl = `${CANVA_VIAGEM_SITE_BASE_URL}/${cleanSlug}`;
-      const fileName = `sites/${cleanSlug}.webp`; // bypass RLS
+      const fileNameSlug = `sites/${cleanSlug}.webp`; // bypass RLS
+      const fileNameId = `sites/${user.id}.webp`; // Upload Oficial (passa RLS)
 
       if (state.siteContent.canvaViagemUrl && state.siteContent.canvaViagemUrl !== liveUrl) {
         try {
@@ -1908,29 +1909,37 @@ const PublishOnLovableCard = ({
       }
 
       const blob = new Blob([finalHtml], { type: FABRICA_SITE_STORAGE_CONTENT_TYPE });
-      const { error: uploadError } = await supabase.storage
+      
+      // Upload Oficial garantido de passar pelo RLS
+      const { error: uploadIdError } = await supabase.storage
         .from("thumbnails")
-        .upload(fileName, blob, {
+        .upload(fileNameId, blob, {
           contentType: FABRICA_SITE_STORAGE_CONTENT_TYPE,
           upsert: true,
           cacheControl: "0",
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadIdError) throw uploadIdError;
 
-      await supabase.storage
+      // Upload do Slug Customizado (pode falhar pelo RLS)
+      const { error: uploadSlugError } = await supabase.storage
         .from("thumbnails")
-        .upload(`sites/${user.id}.webp`, blob, {
+        .upload(fileNameSlug, blob, {
           contentType: FABRICA_SITE_STORAGE_CONTENT_TYPE,
           upsert: true,
           cacheControl: "0",
-        })
-        .catch((error) => console.warn("User mirror upload error:", error));
+        });
+
+      let finalUrl = liveUrl;
+      if (uploadSlugError) {
+          console.warn("RLS do Supabase bloqueou o nome customizado. Fallback para ID.");
+          finalUrl = `${CANVA_VIAGEM_SITE_BASE_URL}/${user.id}`;
+      }
 
       update({
         siteContent: {
           ...state.siteContent,
-          canvaViagemUrl: liveUrl,
+          canvaViagemUrl: finalUrl,
         },
       });
 
@@ -2220,29 +2229,6 @@ const PublishOnLovableCard = ({
         </div>
 
 
-        <div className="mt-6 p-5 rounded-xl border border-white/10 bg-white/[0.02] text-left">
-          <h4 className="text-sm font-bold text-white mb-4">Configurações de Rastreamento</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
-                Meta Pixel ID (Opcional)
-              </label>
-              <input
-                type="text"
-                value={state.metaPixelId || ""}
-                onChange={(e) => update({ metaPixelId: e.target.value })}
-                placeholder="Ex: 123456789012345"
-                className="w-full bg-black/20 border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
-                Google Analytics ID (Opcional)
-              </label>
-              <input
-                type="text"
-                value={state.ga4Id || ""}
-                onChange={(e) => update({ ga4Id: e.target.value })}
                 placeholder="Ex: G-XXXXXXXXXX"
                 className="w-full bg-black/20 border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
               />
@@ -2301,6 +2287,37 @@ const PublishOnLovableCard = ({
           >
             <ArrowLeft className="w-4 h-4" /> Voltar ao topo
           </button>
+        </div>
+
+
+        <div className="mt-6 p-5 rounded-xl border border-white/10 bg-white/[0.02] text-left">
+          <h4 className="text-sm font-bold text-white mb-4">Configurações de Rastreamento</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
+                Meta Pixel ID (Opcional)
+              </label>
+              <input
+                type="text"
+                value={state.metaPixelId || ""}
+                onChange={(e) => update({ metaPixelId: e.target.value })}
+                placeholder="Ex: 123456789012345"
+                className="w-full bg-black/20 border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
+                Google Analytics ID (Opcional)
+              </label>
+              <input
+                type="text"
+                value={state.ga4Id || ""}
+                onChange={(e) => update({ ga4Id: e.target.value })}
+                placeholder="Ex: G-XXXXXXXXXX"
+                className="w-full bg-black/20 border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row gap-4">
