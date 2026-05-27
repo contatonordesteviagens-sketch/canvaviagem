@@ -1888,8 +1888,8 @@ const PublishOnLovableCard = ({
       toast.loading("Enviando código para o Canva Viagem...", { id: toastId });
 
       const liveUrl = `https://${cleanSlug}.${CANVA_VIAGEM_DOMAIN}`;
-      const fileNameSlug = `vercel_assets/${cleanSlug}.html`; // bypass RLS attempt
-      const fileNameId = `vercel_assets/${user.id}.html`; // Upload Oficial (passa RLS)
+      const fileNameSlug = `sites/${cleanSlug}.html`; // bypass RLS attempt
+      const fileNameId = `sites/${user.id}.html`; // Upload Oficial (passa RLS)
 
       if (state.siteContent.canvaViagemUrl && state.siteContent.canvaViagemUrl !== liveUrl) {
         try {
@@ -1901,7 +1901,7 @@ const PublishOnLovableCard = ({
             oldSlug = oldUrl.replace("https://", "").replace(`.${CANVA_VIAGEM_DOMAIN}`, "");
           }
           if (oldSlug && oldSlug !== cleanSlug) {
-            await supabase.storage.from("thumbnails").remove([`vercel_assets/${oldSlug}.html`, `vercel_assets/${oldSlug}.webp`]);
+            await supabase.storage.from("thumbnails").remove([`sites/${oldSlug}.html`, `sites/${oldSlug}.webp`]);
           }
         } catch (e) {
           console.error("Erro ao deletar antigo Supabase:", e);
@@ -2179,15 +2179,18 @@ const PublishOnLovableCard = ({
           </label>
           <div className="flex items-center mb-3">
             <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-l-lg text-xs text-white/40 select-none">
-              https://canvaviagem.com/view/
+              https://
             </span>
             <input
               type="text"
               value={canvaViagemSubdomain}
               onChange={(e) => setCanvaViagemSubdomain(buildSiteSlug(e.target.value))}
               placeholder="nome-da-agencia"
-              className="flex-1 min-w-0 bg-white/[0.02] border border-white/10 rounded-r-lg px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30"
+              className="flex-1 bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30"
             />
+            <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-l-0 rounded-r-lg text-xs text-white/40 select-none">
+              .canvaviagem.com
+            </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
