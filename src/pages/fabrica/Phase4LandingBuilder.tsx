@@ -34,6 +34,7 @@ const LOVABLE_INVITE_URL = "https://lovable.dev/invite/2ZD6VL6";
 const PRESET_COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#000000"];
 const CANVA_VIAGEM_DOMAIN = "canvaviagem.com";
 const FABRICA_SITE_STORAGE_CONTENT_TYPE = "image/webp";
+const CANVA_VIAGEM_SITE_BASE_URL = `https://${CANVA_VIAGEM_DOMAIN}/view`;
 
 const buildSiteSlug = (value: string) =>
   value
@@ -1602,9 +1603,11 @@ const PublishOnLovableCard = ({
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
   const [canvaViagemSubdomain, setCanvaViagemSubdomain] = useState(() => {
     if (state.siteContent.canvaViagemUrl) {
-      return state.siteContent.canvaViagemUrl
-        .replace("https://", "")
-        .replace(`.${CANVA_VIAGEM_DOMAIN}`, "");
+      const savedUrl = state.siteContent.canvaViagemUrl.replace(/\/$/, "");
+      if (savedUrl.includes(`/${CANVA_VIAGEM_DOMAIN}/view/`)) {
+        return savedUrl.split("/").pop() || "";
+      }
+      return savedUrl.replace("https://", "").replace(`.${CANVA_VIAGEM_DOMAIN}`, "");
     }
     return buildSiteSlug(state.agencyName || "");
   });
@@ -1824,10 +1827,10 @@ const PublishOnLovableCard = ({
     }
 
     setIsCanvaViagemPublishing(true);
-    const toastId = toast.loading("Publicando no subdomínio Canva Viagem...");
+    const toastId = toast.loading("Publicando no link Canva Viagem...");
 
     try {
-      const liveUrl = `https://${cleanSlug}.${CANVA_VIAGEM_DOMAIN}`;
+      const liveUrl = `${CANVA_VIAGEM_SITE_BASE_URL}/${cleanSlug}`;
       const fileName = `sites/${cleanSlug}.html`;
       const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(fileName).data.publicUrl;
 
@@ -1865,7 +1868,7 @@ const PublishOnLovableCard = ({
         },
       });
 
-      toast.success("Site publicado no subdomínio Canva Viagem!", { id: toastId });
+      toast.success("Site publicado no link Canva Viagem!", { id: toastId });
     } catch (err: any) {
       console.error("Canva Viagem publish error:", err);
       toast.error(`Erro ao publicar: ${err.message || "tente novamente"}`, { id: toastId });
@@ -2088,10 +2091,10 @@ const PublishOnLovableCard = ({
                 Nova opção experimental
               </div>
               <h4 className="text-lg font-black text-white leading-tight">
-                Publicar com subdomínio Canva Viagem
+                Publicar com link Canva Viagem
               </h4>
               <p className="text-xs text-white/60 mt-1 leading-relaxed">
-                Gera um link premium para o cliente usando seu domínio principal, como nome-da-agencia.canvaviagem.com.
+                Gera um link seguro no seu domínio principal, como canvaviagem.com/view/nome-da-agencia.
               </p>
             </div>
             <LinkIcon className="w-5 h-5 text-cyan-300 flex-shrink-0" />
@@ -2123,22 +2126,19 @@ const PublishOnLovableCard = ({
           )}
 
           <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
-            Subdomínio do cliente:
+            Link do cliente:
           </label>
           <div className="flex items-center mb-3">
             <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-l-lg text-xs text-white/40 select-none">
-              https://
+              https://canvaviagem.com/view/
             </span>
             <input
               type="text"
               value={canvaViagemSubdomain}
               onChange={(e) => setCanvaViagemSubdomain(buildSiteSlug(e.target.value))}
               placeholder="nome-da-agencia"
-              className="flex-1 min-w-0 bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-cyan-300/70"
+              className="flex-1 min-w-0 bg-white/[0.02] border border-white/10 rounded-r-lg px-3 py-2 text-sm text-white font-semibold outline-none focus:border-cyan-300/70"
             />
-            <span className="px-2 sm:px-3 py-2 bg-white/[0.04] border border-white/10 border-l-0 rounded-r-lg text-[10px] sm:text-xs text-white/40 select-none">
-              .canvaviagem.com
-            </span>
           </div>
 
           <button
@@ -2159,7 +2159,7 @@ const PublishOnLovableCard = ({
           </button>
 
           <p className="text-[10px] text-white/45 mt-3 leading-relaxed">
-            Essa opção já salva o HTML no Supabase. O link por subdomínio começa a abrir assim que o DNS wildcard do domínio estiver configurado.
+            Essa opção salva o HTML no Supabase e usa o SSL que já existe no domínio principal.
           </p>
         </div>
 
