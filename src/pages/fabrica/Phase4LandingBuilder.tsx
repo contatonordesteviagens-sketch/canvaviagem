@@ -2227,13 +2227,6 @@ const PublishOnLovableCard = ({
             Essa opção salva o HTML no Supabase e usa o SSL que já existe no domínio principal.
           </p>
         </div>
-
-
-                placeholder="Ex: G-XXXXXXXXXX"
-                className="w-full bg-black/20 border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
-              />
-            </div>
-          </div>
         </div>
 
         <details className="mt-4 p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
