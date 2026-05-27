@@ -1888,7 +1888,7 @@ const PublishOnLovableCard = ({
       toast.loading("Enviando código para o Canva Viagem...", { id: toastId });
 
       const liveUrl = `${CANVA_VIAGEM_SITE_BASE_URL}/${cleanSlug}`;
-      const fileNameSlug = `sites/${cleanSlug}.html`; // Tentativa com nome customizado
+      const fileNameSlug = `sites/${cleanSlug}.html`; // bypass RLS attempt
       const fileNameId = `sites/${user.id}.html`; // Upload Oficial (passa RLS)
 
       if (state.siteContent.canvaViagemUrl && state.siteContent.canvaViagemUrl !== liveUrl) {
@@ -1910,7 +1910,7 @@ const PublishOnLovableCard = ({
 
       const blob = new Blob([finalHtml], { type: FABRICA_SITE_STORAGE_CONTENT_TYPE });
       
-      // Upload Oficial garantido de passar pelo RLS (arquivos .html so permitidos)
+      // Upload Oficial garantido de passar pelo RLS
       const { error: uploadIdError } = await supabase.storage
         .from("thumbnails")
         .upload(fileNameId, blob, {
@@ -1921,7 +1921,7 @@ const PublishOnLovableCard = ({
 
       if (uploadIdError) throw uploadIdError;
 
-      // Upload do Slug Customizado (pode falhar pelo RLS, j que o nome não é o user.id)
+      // Upload do Slug Customizado (pode falhar pelo RLS)
       const { error: uploadSlugError } = await supabase.storage
         .from("thumbnails")
         .upload(fileNameSlug, blob, {
@@ -2058,7 +2058,32 @@ const PublishOnLovableCard = ({
               </div>
             </div>
 
-
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div>
+                <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
+                  Meta Pixel ID (Opcional):
+                </label>
+                <input
+                  type="text"
+                  value={state.metaPixelId || ""}
+                  onChange={(e) => update({ metaPixelId: e.target.value })}
+                  placeholder="Ex: 123456789012345"
+                  className="w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white rounded-lg outline-none focus:border-white/30"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
+                  Google Analytics ID (Opcional):
+                </label>
+                <input
+                  type="text"
+                  value={state.ga4Id || ""}
+                  onChange={(e) => update({ ga4Id: e.target.value })}
+                  placeholder="Ex: G-XXXXXXXXXX"
+                  className="w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white rounded-lg outline-none focus:border-white/30"
+                />
+              </div>
+            </div>
 
             {showVercelConfig && (
               <div className="mt-4 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 space-y-3">
@@ -2227,6 +2252,36 @@ const PublishOnLovableCard = ({
             Essa opção salva o HTML no Supabase e usa o SSL que já existe no domínio principal.
           </p>
         </div>
+
+
+        <div className="mt-6 p-5 rounded-xl border border-white/10 bg-white/[0.02] text-left">
+          <h4 className="text-sm font-bold text-white mb-4">Configurações de Rastreamento</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
+                Meta Pixel ID (Opcional)
+              </label>
+              <input
+                type="text"
+                value={state.metaPixelId || ""}
+                onChange={(e) => update({ metaPixelId: e.target.value })}
+                placeholder="Ex: 123456789012345"
+                className="w-full bg-black/20 border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
+                Google Analytics ID (Opcional)
+              </label>
+              <input
+                type="text"
+                value={state.ga4Id || ""}
+                onChange={(e) => update({ ga4Id: e.target.value })}
+                placeholder="Ex: G-XXXXXXXXXX"
+                className="w-full bg-black/20 border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
+              />
+            </div>
+          </div>
         </div>
 
         <details className="mt-4 p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
@@ -2282,37 +2337,6 @@ const PublishOnLovableCard = ({
           </button>
         </div>
 
-
-        <div className="mt-6 p-5 rounded-xl border border-white/10 bg-white/[0.02] text-left">
-          <h4 className="text-sm font-bold text-white mb-4">Configurações de Rastreamento</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
-                Meta Pixel ID (Opcional)
-              </label>
-              <input
-                type="text"
-                value={state.metaPixelId || ""}
-                onChange={(e) => update({ metaPixelId: e.target.value })}
-                placeholder="Ex: 123456789012345"
-                className="w-full bg-black/20 border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
-                Google Analytics ID (Opcional)
-              </label>
-              <input
-                type="text"
-                value={state.ga4Id || ""}
-                onChange={(e) => update({ ga4Id: e.target.value })}
-                placeholder="Ex: G-XXXXXXXXXX"
-                className="w-full bg-black/20 border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
-              />
-            </div>
-          </div>
-        </div>
-
         <div className="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row gap-4">
           <button
             onClick={onBack}
@@ -2324,10 +2348,10 @@ const PublishOnLovableCard = ({
             onClick={onNext}
             className="flex-[2] py-4 rounded-xl font-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
             style={{ 
-              background: "#ffffff", 
-              color: "#000000",
-              border: "none",
-              boxShadow: "0 0 20px rgba(255,255,255,0.4)"
+              background: primaryColor, 
+              color: primaryColor === "#000000" ? "#ffffff" : "#000000",
+              border: primaryColor === "#000000" ? "1px solid rgba(255,255,255,0.3)" : "none",
+              boxShadow: `0 0 20px ${primaryColor}55`
             }}
           >
             Avançar para a próxima fase <Rocket className="w-5 h-5" />
