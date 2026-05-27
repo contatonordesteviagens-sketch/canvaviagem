@@ -31,6 +31,7 @@ import type { SectionVisibility } from "@/hooks/useFabricaContext";
 
 const LOVABLE_INVITE_URL = "https://lovable.dev/invite/2ZD6VL6";
 const PRESET_COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#000000"];
+const FABRICA_SITE_STORAGE_CONTENT_TYPE = "image/webp";
 
 export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
   const { state, update, systemUpdate, undo, redo, canUndo, canRedo, isHydrated } = useFabricaContext();
@@ -1429,7 +1430,7 @@ const PublishOnLovableCard = ({
 
     setIsPublishing(true);
     try {
-      const blob = new Blob([html], { type: 'text/html' });
+      const blob = new Blob([html], { type: FABRICA_SITE_STORAGE_CONTENT_TYPE });
       const fileName = `sites/${user.id}.html`;
       
       const rawName = state.agencyName || `agencia-${user.id.substring(0,4)}`;
@@ -1439,7 +1440,7 @@ const PublishOnLovableCard = ({
       const { error: uploadError } = await supabase.storage
         .from("thumbnails")
         .upload(fileName, blob, {
-          contentType: 'text/html',
+          contentType: FABRICA_SITE_STORAGE_CONTENT_TYPE,
           upsert: true,
           cacheControl: '0'
         });
@@ -1447,7 +1448,7 @@ const PublishOnLovableCard = ({
       if (uploadError) throw uploadError;
 
       if (cleanSlug.length > 2) {
-         await supabase.storage.from("thumbnails").upload(slugName, blob, { contentType: 'text/html', upsert: true, cacheControl: '0' }).catch(e => console.warn("Subdomain upload error:", e));
+         await supabase.storage.from("thumbnails").upload(slugName, blob, { contentType: FABRICA_SITE_STORAGE_CONTENT_TYPE, upsert: true, cacheControl: '0' }).catch(e => console.warn("Subdomain upload error:", e));
       }
 
       const internalUrl = `${window.location.origin}/view/${user.id}`;

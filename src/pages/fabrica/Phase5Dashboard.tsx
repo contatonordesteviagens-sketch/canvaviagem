@@ -27,6 +27,8 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+const FABRICA_SITE_STORAGE_CONTENT_TYPE = "image/webp";
+
 export const Phase5Dashboard = () => {
   const { state, setPhase, update } = useFabricaContext();
   const { user } = useAuth();
@@ -47,7 +49,7 @@ export const Phase5Dashboard = () => {
     
     try {
       const html = buildLandingHTML(state, user.id);
-      const blob = new Blob([html], { type: 'text/html' });
+      const blob = new Blob([html], { type: FABRICA_SITE_STORAGE_CONTENT_TYPE });
       const fileName = `sites/${user.id}.html`;
       
       // 🚀 NOVO: Motor de Subdomínios Reais!
@@ -59,13 +61,13 @@ export const Phase5Dashboard = () => {
       const { error: uploadError } = await supabase.storage
         .from("thumbnails")
         .upload(fileName, blob, {
-          contentType: 'text/html',
+          contentType: FABRICA_SITE_STORAGE_CONTENT_TYPE,
           upsert: true
         });
       
       // Faz o upload Secundário para Subdomínio (se for válido)
       if (cleanSlug.length > 2) {
-         await supabase.storage.from("thumbnails").upload(slugName, blob, { contentType: 'text/html', upsert: true }).catch(() => {});
+         await supabase.storage.from("thumbnails").upload(slugName, blob, { contentType: FABRICA_SITE_STORAGE_CONTENT_TYPE, upsert: true }).catch(() => {});
       }
         
       if (uploadError) throw uploadError;
