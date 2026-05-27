@@ -659,20 +659,20 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
               siteContent: {
                 ...defaultState.siteContent,
                 hero: {
-                  ...defaultState.siteContent.hero,
-                  ...(fallback.siteContent?.hero || {}),
-                  ...(primary.siteContent?.hero?.headline ? primary.siteContent.hero : {}),
+                  ...(defaultState.siteContent as any).hero,
+                  ...((fallback.siteContent as any)?.hero || {}),
+                  ...((primary.siteContent as any)?.hero?.headline ? (primary.siteContent as any).hero : {}),
                 },
                 about: {
-                  ...defaultState.siteContent.about,
-                  ...(fallback.siteContent?.about || {}),
-                  ...(primary.siteContent?.about?.content ? primary.siteContent.about : {}),
+                  ...(defaultState.siteContent as any).about,
+                  ...((fallback.siteContent as any)?.about || {}),
+                  ...((primary.siteContent as any)?.about?.content ? (primary.siteContent as any).about : {}),
                 },
-                features: primary.siteContent?.features?.length ? primary.siteContent.features : (fallback.siteContent?.features || []),
+                features: (primary.siteContent as any)?.features?.length ? (primary.siteContent as any).features : ((fallback.siteContent as any)?.features || []),
                 footer: {
-                  ...defaultState.siteContent.footer,
-                  ...(fallback.siteContent?.footer || {}),
-                  ...(primary.siteContent?.footer?.text && primary.siteContent.footer.text !== "© 2024 Todos os direitos reservados." ? primary.siteContent.footer : {}),
+                  ...(defaultState.siteContent as any).footer,
+                  ...((fallback.siteContent as any)?.footer || {}),
+                  ...((primary.siteContent as any)?.footer?.text && (primary.siteContent as any).footer.text !== "© 2024 Todos os direitos reservados." ? (primary.siteContent as any).footer : {}),
                 },
                 galleryImages: primary.siteContent?.galleryImages?.length
                   ? primary.siteContent.galleryImages
