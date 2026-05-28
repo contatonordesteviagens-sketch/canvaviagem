@@ -8,7 +8,32 @@ export const BusinessExtractor = ({ onExtract }: { onExtract: (data: any) => voi
   const [urlInput, setUrlInput] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   
-  const extractFromAPI = async (type: "text" | "pdf" | "image", content: string) => {
+  const checkLimit = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const stored = localStorage.getItem('fabrica_ai_extractions');
+    let data = stored ? JSON.parse(stored) : { date: today, count: 0 };
+    
+    if (data.date !== today) {
+      data = { date: today, count: 0 };
+    }
+    
+    if (data.count >= 3) {
+      toast.error("Você atingiu o limite de 3 extrações por dia. Volte amanhã!");
+      return false;
+    }
+    return true;
+  };
+
+  const incrementLimit = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const stored = localStorage.getItem('fabrica_ai_extractions');
+    let data = stored ? JSON.parse(stored) : { date: today, count: 0 };
+    if (data.date !== today) data = { date: today, count: 0 };
+    data.count += 1;
+    localStorage.setItem('fabrica_ai_extractions', JSON.stringify(data));
+  };
+
+  const extractFromAPI = async (type: "text" | "pdf" | "image" | "images", content: any) => {
     try {
       setLoading(true);
       toast.info(`Iniciando extração inteligente via IA...`, { duration: 3000 });
@@ -20,6 +45,7 @@ export const BusinessExtractor = ({ onExtract }: { onExtract: (data: any) => voi
       if (error) throw new Error(error.message || "Erro ao comunicar com a inteligência artificial");
       
       onExtract(data);
+      incrementLimit();
       toast.success("Extração concluída com sucesso! 🎉");
       setUrlInput("");
     } catch (err: any) {
@@ -35,26 +61,44 @@ export const BusinessExtractor = ({ onExtract }: { onExtract: (data: any) => voi
       toast.error("Insira o link do site");
       return;
     }
+    if (!checkLimit()) return;
     extractFromAPI("text", urlInput.trim());
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    if (!checkLimit()) return;
+    
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Arquivo muito grande. O limite é 5MB para extração.");
+    if (files.length > 5) {
+      toast.error("O limite é de 5 arquivos por vez.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
-      const type = file.type === "application/pdf" ? "pdf" : "image";
-      extractFromAPI(type, base64);
-      if (fileRef.current) fileRef.current.value = "";
-    };
-    reader.readAsDataURL(file);
+    const totalSize = files.reduce((acc, file) => acc + file.size, 0);
+    if (totalSize > 5 * 1024 * 1024) {
+      toast.error("Os arquivos ultrapassam o limite de 5MB.");
+      return;
+    }
+
+    if (files.length === 1 && files[0].type === "application/pdf") {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        extractFromAPI("pdf", event.target?.result as string);
+        if (fileRef.current) fileRef.current.value = "";
+      };
+      reader.readAsDataURL(files[0]);
+    } else {
+      Promise.all(files.map(file => new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (event) => resolve(event.target?.result as string);
+        reader.readAsDataURL(file);
+      }))).then(base64Array => {
+        extractFromAPI("images", base64Array);
+        if (fileRef.current) fileRef.current.value = "";
+      });
+    }
   };
 
   return (
@@ -127,6 +171,7 @@ export const BusinessExtractor = ({ onExtract }: { onExtract: (data: any) => voi
             ref={fileRef} 
             onChange={handleFileUpload} 
             accept="application/pdf,image/*" 
+            multiple
             className="hidden" 
           />
 

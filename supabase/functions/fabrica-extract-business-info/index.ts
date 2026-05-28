@@ -65,6 +65,15 @@ Não retorne blocos de código (markdown \`\`\`json) na resposta, apenas o JSON 
         }
       };
       result = await model.generateContent([prompt, imagePart]);
+    } else if (type === 'images') {
+      // Array of Base64 Images
+      const parts = content.map((imgStr: string) => ({
+        inlineData: {
+          data: imgStr.split(',')[1] || imgStr,
+          mimeType: "image/jpeg"
+        }
+      }));
+      result = await model.generateContent([prompt, ...parts]);
     } else {
       throw new Error("Invalid type provided.");
     }
