@@ -25,6 +25,7 @@ import {
   Undo,
   Redo,
   ArrowLeft,
+  ArrowRight,
   ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -1114,12 +1115,18 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
           </div>
 
           {/* BARRA DE AÇÕES INFERIOR FIXA */}
-          <div className="flex gap-3 bg-black/40 backdrop-blur-md p-2 rounded-2xl border border-white/10 mt-6">
+          <div className="flex flex-col sm:flex-row gap-3 bg-black/40 backdrop-blur-md p-2 rounded-2xl border border-white/10 mt-6">
             <button
               onClick={onBack}
-              className="w-full py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white/80 font-semibold hover:bg-white/[0.08] flex items-center justify-center gap-2"
+              className="flex-1 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white/80 font-semibold hover:bg-white/[0.08] flex items-center justify-center gap-2"
             >
               Voltar ao Início
+            </button>
+            <button
+              onClick={onNext}
+              className="flex-[2] py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)]"
+            >
+              Avançar <ArrowRight className="w-5 h-5" />
             </button>
           </div>
 
@@ -2289,13 +2296,7 @@ const PublishOnLovableCard = ({
           </button>
           <button
             onClick={onNext}
-            className="flex-[2] py-4 rounded-xl font-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
-            style={{ 
-              background: primaryColor, 
-              color: primaryColor === "#000000" ? "#ffffff" : "#000000",
-              border: primaryColor === "#000000" ? "1px solid rgba(255,255,255,0.3)" : "none",
-              boxShadow: `0 0 20px ${primaryColor}55`
-            }}
+            className="flex-[2] py-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)]"
           >
             Avançar para CRM <Rocket className="w-5 h-5" />
           </button>
