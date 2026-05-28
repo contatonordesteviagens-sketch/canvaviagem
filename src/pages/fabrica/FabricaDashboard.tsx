@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
+import { BusinessExtractor } from "@/components/fabrica/BusinessExtractor";
 import { 
   Upload, 
   X, 
@@ -198,6 +199,29 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     setNewPrice("");
     setShowAddForm(false);
     toast.success("Novo pacote adicionado!");
+  };
+
+  const handleExtractorData = (data: any) => {
+    let newUpdates: any = {};
+    if (data.agencyName) newUpdates.agencyName = data.agencyName;
+    if (data.niche) newUpdates.agencyType = data.niche;
+    
+    // Convert extracted array into proper package objects
+    if (data.packages && Array.isArray(data.packages)) {
+      const newPackages = data.packages.map((pkg: any) => ({
+        id: `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        title: pkg.title || "Pacote IA",
+        description: pkg.description || "",
+        price: pkg.price || "Consulte",
+        imageUrl: "",
+        ctaLabel: "Reservar agora"
+      }));
+      newUpdates.selectedPackages = [...newPackages, ...state.selectedPackages];
+    }
+    
+    if (Object.keys(newUpdates).length > 0) {
+      update(newUpdates);
+    }
   };
 
   return (
@@ -508,8 +532,10 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
         </div>
 
         {/* Right Side: Package Management (7 Cols) */}
-        <div className="lg:col-span-7">
+        <div className="lg:col-span-7 space-y-6">
           
+          <BusinessExtractor onExtract={handleExtractorData} />
+
           {/* DYNAMIC CARD: SEUS PACOTES */}
           <div className="bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-6">
             <div className="flex items-center justify-between">
