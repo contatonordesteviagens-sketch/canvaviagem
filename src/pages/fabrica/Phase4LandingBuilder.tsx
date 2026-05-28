@@ -723,6 +723,38 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               </div>
             </FabricaCard>
 
+            <FabricaCard title="📊 Configurações de Rastreamento">
+              <div className="space-y-4">
+                <p className="text-xs text-white/50 mb-3">Insira seus pixels de rastreamento para acompanhar as métricas do site.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
+                      Meta Pixel ID (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      value={state.metaPixelId || ""}
+                      onChange={(e) => update({ metaPixelId: e.target.value })}
+                      placeholder="Ex: 123456789012345"
+                      className="w-full bg-white/[0.04] border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
+                      Google Analytics ID (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      value={state.ga4Id || ""}
+                      onChange={(e) => update({ ga4Id: e.target.value })}
+                      placeholder="Ex: G-XXXXXXXXXX"
+                      className="w-full bg-white/[0.04] border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
+                    />
+                  </div>
+                </div>
+              </div>
+            </FabricaCard>
+
             <FabricaCard title="🌐 Redes Sociais e Canais">
               <div className="space-y-4">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -785,37 +817,82 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
             <FabricaCard title="👁️ Seções do site">
               <p className="text-xs text-white/50 mb-3">
-                Escolha o que aparece no site. Desmarque qualquer seção pra removê-la (some também do HTML exportado).
+                Escolha o que aparece no site e arraste para reordenar as seções (some também do HTML exportado).
               </p>
-              <div className="grid grid-cols-2 gap-2">
-                {(
-                  [
-                    { key: "hero", label: "Topo (Hero)" },
-                    { key: "processo", label: "Como funciona (3 passos)" },
-                    { key: "destinos", label: "Destinos / Pacotes" },
-                    { key: "porQue", label: "Por que nós / Equipe" },
-                    { key: "depoimentos", label: "Depoimentos" },
-                    { key: "orcamento", label: "Formulário de orçamento" },
-                    { key: "faq", label: "Perguntas Frequentes" },
-                    { key: "ctaFinal", label: "CTA Final" },
-                  ] as { key: keyof SectionVisibility; label: string }[]
-                ).map(({ key, label }) => {
-                  const on = isVisible(key);
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => toggleSection(key)}
-                      className={`flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                        on
-                          ? "bg-white/[0.06] border-white/20 text-white"
-                          : "bg-white/[0.02] border-white/10 text-white/40 line-through"
-                      }`}
-                    >
-                      <span className="truncate text-left">{label}</span>
-                      {on ? <Eye className="w-4 h-4 flex-shrink-0" /> : <EyeOff className="w-4 h-4 flex-shrink-0" />}
-                    </button>
-                  );
-                })}
+              <div className="flex flex-col gap-2">
+                {(() => {
+                  const sectionLabels: Record<string, string> = {
+                    hero: "Topo (Hero)",
+                    processo: "Como funciona (3 passos)",
+                    destinos: "Destinos / Pacotes",
+                    porQue: "Por que nós / Equipe",
+                    depoimentos: "Depoimentos",
+                    orcamento: "Formulário de orçamento",
+                    faq: "Perguntas Frequentes",
+                    ctaFinal: "CTA Final"
+                  };
+                  const currentOrder = state.sectionOrder?.length 
+                    ? state.sectionOrder 
+                    : ["hero", "processo", "destinos", "porQue", "depoimentos", "orcamento", "faq", "ctaFinal"];
+                  
+                  // Garantir que todas as seções mapeadas existam na ordem (caso estado antigo não as tenha)
+                  Object.keys(sectionLabels).forEach(key => {
+                    if (!currentOrder.includes(key)) currentOrder.push(key);
+                  });
+
+                  return currentOrder.filter(key => !!sectionLabels[key]).map((key, index) => {
+                    const on = isVisible(key as keyof SectionVisibility);
+                    return (
+                      <div
+                        key={key}
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData("text/plain", index.toString());
+                        }}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          const fromIndex = parseInt(e.dataTransfer.getData("text/plain"), 10);
+                          const toIndex = index;
+                          if (fromIndex !== toIndex && !isNaN(fromIndex)) {
+                            const newOrder = [...currentOrder];
+                            const [movedItem] = newOrder.splice(fromIndex, 1);
+                            newOrder.splice(toIndex, 0, movedItem);
+                            update({ sectionOrder: newOrder });
+                          }
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all cursor-move select-none ${
+                          on
+                            ? "bg-white/[0.06] border-white/20 shadow-sm"
+                            : "bg-white/[0.02] border-white/5 opacity-70"
+                        }`}
+                      >
+                        <span className="text-xs font-black text-white/30 flex-shrink-0 w-4 text-right">
+                          {index + 1}
+                        </span>
+                        <div className="flex-shrink-0 cursor-grab active:cursor-grabbing text-white/20 hover:text-white/50">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="19" r="1"></circle>
+                            <circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="19" r="1"></circle>
+                          </svg>
+                        </div>
+                        <span className={`flex-1 truncate text-left text-sm font-semibold ${on ? "text-white" : "text-white/40 line-through"}`}>
+                          {sectionLabels[key]}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSection(key as keyof SectionVisibility);
+                          }}
+                          className={`p-1.5 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0 cursor-pointer ${on ? "text-white" : "text-white/40"}`}
+                        >
+                          {on ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </FabricaCard>
 
@@ -1040,19 +1117,9 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
           <div className="flex gap-3 bg-black/40 backdrop-blur-md p-2 rounded-2xl border border-white/10 mt-6">
             <button
               onClick={onBack}
-              className="flex-1 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white/80 font-semibold hover:bg-white/[0.08] flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white/80 font-semibold hover:bg-white/[0.08] flex items-center justify-center gap-2"
             >
-              Voltar
-            </button>
-            <button
-              onClick={handleDownload}
-              className="flex-1 py-3 rounded-xl font-bold text-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
-              style={{
-                background: `linear-gradient(135deg, ${state.primaryColor}, #FCD34D)`,
-                boxShadow: `0 8px 24px ${state.primaryColor}55`,
-              }}
-            >
-              <Download className="w-4 h-4" /> Baixar HTML {downloadCount > 0 && `(v${downloadCount})`}
+              Voltar ao Início
             </button>
           </div>
 
@@ -1881,7 +1948,7 @@ const PublishOnLovableCard = ({
 
       toast.loading("Enviando código para o Canva Viagem...", { id: toastId });
 
-      const liveUrl = `${CANVA_VIAGEM_SITE_BASE_URL}/${cleanSlug}`;
+      const liveUrl = `https://${cleanSlug}.${CANVA_VIAGEM_DOMAIN}`;
       const fileNameSlug = `vercel_assets/${cleanSlug}_site.webp`; // bypass RLS attempt
       const fileNameId = `vercel_assets/${user.id}_site.webp`; // Upload Oficial (passa RLS)
 
@@ -1914,7 +1981,7 @@ const PublishOnLovableCard = ({
 
       if (dbError) {
           console.warn("Falha ao salvar slug customizado na tabela. Fallback para ID.", dbError);
-          finalUrl = `${CANVA_VIAGEM_SITE_BASE_URL}/${user.id}`;
+          finalUrl = `https://${user.id}.${CANVA_VIAGEM_DOMAIN}`;
           await supabase.from("public_sites").upsert({ id: user.id, html: finalHtml }).catch(e => console.error("Fallback error:", e));
       }
 
@@ -1979,147 +2046,12 @@ const PublishOnLovableCard = ({
           Escolha a sua opção preferida para publicar ou baixar o código completo do seu site perfeitamente como ele está:
         </p>
 
-        {/* PUBLICAÇÃO DIRETA */}
-        <div 
-          className="my-4 p-6 rounded-2xl border-2 backdrop-blur-xl transition-all relative overflow-hidden text-left"
-          style={{ 
-            borderColor: state.siteContent.vercelUrl ? "#10B98188" : `${primaryColor}44`,
-            background: state.siteContent.vercelUrl 
-              ? "linear-gradient(135deg, rgba(16,185,129,0.08), rgba(0,0,0,0.4))"
-              : "linear-gradient(135deg, rgba(245,158,11,0.06), rgba(0,0,0,0.4))",
-            boxShadow: state.siteContent.vercelUrl ? "0 10px 30px rgba(16,185,129,0.1)" : "none"
-          }}
-        >
-
-          {/* Se já estiver publicado, mostra o link em destaque */}
-          {state.siteContent.vercelUrl && (
-            <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Seu Site está Online! 🌟</div>
-                <a 
-                  href={state.siteContent.vercelUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-sm font-bold text-white hover:underline flex items-center gap-1.5 mt-0.5 group"
-                >
-                  {state.siteContent.vercelUrl}
-                  <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white transition-colors" />
-                </a>
-              </div>
-              <a 
-                href={state.siteContent.vercelUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="px-4 py-2 rounded-lg bg-white hover:bg-gray-200 text-black font-bold text-xs transition-all text-center"
-              >
-                Acessar Site do Cliente
-              </a>
-            </div>
-          )}
-
-          {/* Form de Publicação */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
-                NOME DO DOMÍNIO (LINK DO SITE):
-              </label>
-              <div className="flex items-center">
-                <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-l-lg text-xs text-white/40 select-none">
-                  https://
-                </span>
-                <input
-                  type="text"
-                  value={vercelSubdomain}
-                  onChange={(e) => setVercelSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
-                  placeholder="nome-da-sua-agencia"
-                  className="flex-1 bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30"
-                />
-                <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-l-0 rounded-r-lg text-xs text-white/40 select-none">
-                  .vercel.app
-                </span>
-              </div>
-            </div>
-
-
-            {showVercelConfig && (
-              <div className="mt-4 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 space-y-3">
-                <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider">
-                  Vercel Access Token:
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="password"
-                    value={customVercelToken}
-                    onChange={(e) => setCustomVercelToken(e.target.value)}
-                    placeholder="Sua chave secreta da Vercel"
-                    className="flex-1 bg-black/40 border border-amber-500/20 px-3 py-2 text-sm text-white rounded-lg outline-none focus:border-amber-400"
-                  />
-                  <button
-                    onClick={() => handleSaveToken(customVercelToken)}
-                    className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs rounded-lg transition-all"
-                  >
-                    Salvar Token
-                  </button>
-                </div>
-                <p className="text-[10px] text-white/50 leading-relaxed">
-                  Crie um token em <a href="https://vercel.com/account/tokens" target="_blank" className="text-amber-400 hover:underline">vercel.com/account/tokens</a> e cole aqui.
-                </p>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
-                onClick={handleVercelPublish}
-                disabled={isVercelDeploying}
-                className="py-3.5 px-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 hover:brightness-110 disabled:brightness-50 disabled:cursor-not-allowed transition-all text-sm"
-                style={{ 
-                  background: `linear-gradient(135deg, ${primaryColor}, #F59E0B)`,
-                  boxShadow: `0 4px 12px ${primaryColor}33`
-                }}
-              >
-                {isVercelDeploying ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Publicando...
-                  </>
-                ) : (
-                  <>
-                    Publicar Site
-                  </>
-                )}
-              </button>
-
-              <button
-                onClick={handleVercelPublish}
-                disabled={isVercelDeploying}
-                className="py-3.5 px-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 hover:brightness-110 disabled:brightness-50 disabled:cursor-not-allowed transition-all text-sm"
-                style={{ 
-                  background: "linear-gradient(135deg, #10B981, #34D399)",
-                  boxShadow: "0 4px 12px rgba(16,185,129,0.2)"
-                }}
-              >
-                {isVercelDeploying ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                    Atualizando...
-                  </>
-                ) : (
-                  <>
-                    Atualizar Site
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-
-
-        {/* PUBLICAÇÃO EM SUBDOMÍNIO CANVA VIAGEM */}
+        {/* PUBLICAÇÃO EM SUBDOMÍNIO CANVA VIAGEM (PRIMÁRIA) */}
         <div className="my-4 p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl text-left">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div>
               <div className="text-[10px] font-black text-white/40 uppercase tracking-[0.18em] mb-1">
-                Nova opção
+                Publicação Principal
               </div>
               <h4 className="text-lg font-black text-white leading-tight">
                 Publicar com link Canva Viagem
@@ -2179,11 +2111,15 @@ const PublishOnLovableCard = ({
             <button
               onClick={handleCanvaViagemPublish}
               disabled={isCanvaViagemPublishing}
-              className="py-3 px-4 rounded-xl font-semibold text-white flex items-center justify-center gap-2 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm border border-white/20 bg-white/5"
+              className="py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
+              style={{
+                backgroundColor: primaryColor,
+                color: primaryColor === "#000000" ? "#ffffff" : "#000000"
+              }}
             >
               {isCanvaViagemPublishing ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                   Publicando...
                 </>
               ) : (
@@ -2194,15 +2130,20 @@ const PublishOnLovableCard = ({
             <button
               onClick={handleCanvaViagemPublish}
               disabled={isCanvaViagemPublishing}
-              className="py-3 px-4 rounded-xl font-semibold text-white flex items-center justify-center gap-2 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm border border-white/20 bg-transparent"
+              className="py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm border"
+              style={{
+                borderColor: primaryColor,
+                color: "#ffffff",
+                backgroundColor: "transparent"
+              }}
             >
               {isCanvaViagemPublishing ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                   Atualizando...
                 </>
               ) : (
-                <>Atualizar Canva Viagem</>
+                <>Atualizar Site</>
               )}
             </button>
           </div>
@@ -2212,76 +2153,97 @@ const PublishOnLovableCard = ({
           </p>
         </div>
 
-
-        <div className="mt-6 p-5 rounded-xl border border-white/10 bg-white/[0.02] text-left">
-          <h4 className="text-sm font-bold text-white mb-4">Configurações de Rastreamento</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
-                Meta Pixel ID (Opcional)
-              </label>
-              <input
-                type="text"
-                value={state.metaPixelId || ""}
-                onChange={(e) => update({ metaPixelId: e.target.value })}
-                placeholder="Ex: 123456789012345"
-                className="w-full bg-black/20 border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
-                Google Analytics ID (Opcional)
-              </label>
-              <input
-                type="text"
-                value={state.ga4Id || ""}
-                onChange={(e) => update({ ga4Id: e.target.value })}
-                placeholder="Ex: G-XXXXXXXXXX"
-                className="w-full bg-black/20 border border-white/10 px-3 py-2.5 text-sm text-white rounded-lg outline-none focus:border-white/30 transition-colors"
-              />
-            </div>
-          </div>
-        </div>
-
-        <details className="mt-4 p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
-          <summary className="list-none cursor-pointer text-sm font-semibold text-white/60 hover:text-white transition-colors flex items-center gap-2">
-            <span>Opções Avançadas (Lovable)</span>
-          </summary>
-          <div className="mt-4 space-y-4">
-            <p className="text-xs text-white/60 leading-relaxed">
-              Quer customizar fontes, layout avançado ou usar domínio próprio? Você pode enviar o seu site para o Lovable e pedir edições avançadas por IA.
-            </p>
+        {/* OUTRAS OPÇÕES */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <details className="p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
+            <summary className="list-none cursor-pointer text-sm font-semibold text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <span>Opção 2: Publicar Vercel</span>
+            </summary>
             
-            <div className="space-y-2 mb-4">
-              <div className="text-xs text-white/50 bg-black/40 p-3 rounded-lg border border-white/5">
-                <strong className="text-white">Passo 1:</strong> Copie o prompt de atualização abaixo.
-              </div>
-              <div className="text-xs text-white/50 bg-black/40 p-3 rounded-lg border border-white/5">
-                <strong className="text-white">Passo 2:</strong> Abra o Lovable e cole o prompt no chat.
-              </div>
-              <div className="text-xs text-white/50 bg-black/40 p-3 rounded-lg border border-white/5">
-                <strong className="text-white">Passo 3:</strong> Deixe o Lovable gerar o seu site atualizado!
-              </div>
-            </div>
+            <div className="mt-4">
+              {/* Form de Publicação */}
+              <div className="space-y-4">
+                {state.siteContent.vercelUrl && (
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/10 flex flex-col gap-2">
+                    <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Site Online</div>
+                    <a 
+                      href={state.siteContent.vercelUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs font-bold text-white hover:underline truncate"
+                    >
+                      {state.siteContent.vercelUrl}
+                    </a>
+                  </div>
+                )}
+                <div>
+                  <label className="block text-[10px] font-bold text-white/60 uppercase tracking-wider mb-2">
+                    Domínio:
+                  </label>
+                  <div className="flex items-center">
+                    <input
+                      type="text"
+                      value={vercelSubdomain}
+                      onChange={(e) => setVercelSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
+                      placeholder="nome-da-agencia"
+                      className="flex-1 bg-white/[0.02] border border-white/10 px-3 py-2 text-xs text-white outline-none focus:border-white/30 rounded-l-lg border-r-0"
+                    />
+                    <span className="px-2 py-2 bg-white/[0.04] border border-white/10 border-l-0 rounded-r-lg text-[10px] text-white/40 select-none">
+                      .vercel.app
+                    </span>
+                  </div>
+                </div>
 
-            <div className="flex flex-col sm:flex-row gap-2">
-              <button
-                onClick={copyUpdatePrompt}
-                className="flex-1 py-3 px-3 rounded-lg border border-white/15 text-white/80 hover:text-white hover:bg-white/[0.04] transition-all text-xs font-semibold flex items-center justify-center gap-1.5"
-              >
-                <Copy className="w-4 h-4" /> 1. Copiar Prompt
-              </button>
-              <a
-                href={LOVABLE_INVITE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 py-3 px-3 rounded-lg bg-white/[0.06] border border-white/15 text-white text-xs font-semibold hover:bg-white/[0.10] transition-all flex items-center justify-center gap-1.5"
-              >
-                <Sparkles className="w-4 h-4" /> 2. Abrir Lovable <ExternalLink className="w-3 h-3 ml-1" />
-              </a>
+                <div className="grid grid-cols-1 gap-2">
+                  <button
+                    onClick={handleVercelPublish}
+                    disabled={isVercelDeploying}
+                    className="py-2.5 px-4 rounded-lg font-bold text-white flex items-center justify-center gap-2 hover:brightness-110 disabled:brightness-50 disabled:cursor-not-allowed transition-all text-xs bg-white/10 border border-white/20"
+                  >
+                    {isVercelDeploying ? "Publicando..." : "Publicar/Atualizar Vercel"}
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        </details>
+          </details>
+
+          <details className="p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
+            <summary className="list-none cursor-pointer text-sm font-semibold text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <span>Opção 3: Lovable (IA)</span>
+            </summary>
+            <div className="mt-4 space-y-4">
+              <p className="text-[11px] text-white/60 leading-relaxed">
+                Quer customizar fontes ou layout avançado? Envie para o Lovable e peça edições por IA.
+              </p>
+              
+              <div className="space-y-1 mb-4">
+                <div className="text-[10px] text-white/50 bg-black/40 p-2 rounded border border-white/5">
+                  <strong className="text-white">1:</strong> Copie o prompt.
+                </div>
+                <div className="text-[10px] text-white/50 bg-black/40 p-2 rounded border border-white/5">
+                  <strong className="text-white">2:</strong> Cole no chat do Lovable.
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={copyUpdatePrompt}
+                  className="w-full py-2.5 px-3 rounded-lg border border-white/15 text-white/80 hover:text-white hover:bg-white/[0.04] transition-all text-[11px] font-semibold flex items-center justify-center gap-1.5"
+                >
+                  <Copy className="w-3.5 h-3.5" /> 1. Copiar Prompt
+                </button>
+                <a
+                  href={LOVABLE_INVITE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-2.5 px-3 rounded-lg bg-white/[0.06] border border-white/15 text-white text-[11px] font-semibold hover:bg-white/[0.10] transition-all flex items-center justify-center gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> 2. Abrir Lovable
+                </a>
+              </div>
+            </div>
+          </details>
+        </div>
 
         <div className="mt-6 pt-5 border-t border-white/10 flex justify-center">
           <button
@@ -2304,6 +2266,12 @@ const PublishOnLovableCard = ({
             Voltar
           </button>
           <button
+            onClick={handleDownload}
+            className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white font-bold hover:bg-white/[0.08] transition-all flex items-center justify-center gap-2"
+          >
+            <Download className="w-4 h-4" /> Baixar HTML
+          </button>
+          <button
             onClick={onNext}
             className="flex-[2] py-4 rounded-xl font-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
             style={{ 
@@ -2313,7 +2281,7 @@ const PublishOnLovableCard = ({
               boxShadow: `0 0 20px ${primaryColor}55`
             }}
           >
-            Avançar para a próxima fase <Rocket className="w-5 h-5" />
+            Avançar para CRM <Rocket className="w-5 h-5" />
           </button>
         </div>
       </div>
