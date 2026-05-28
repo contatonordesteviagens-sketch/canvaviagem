@@ -1915,7 +1915,7 @@ const PublishOnLovableCard = ({
       if (dbError) {
           console.warn("Falha ao salvar slug customizado na tabela. Fallback para ID.", dbError);
           finalUrl = `https://${user.id}.${CANVA_VIAGEM_DOMAIN}`;
-          try { await supabase.from("public_sites").upsert({ id: user.id, html: finalHtml }); } catch (e) { console.error("Fallback error:", e); }
+          try { await supabase.from("public_sites").upsert({ id: user.id, owner_id: user.id, html: finalHtml }); } catch (e) { console.error("Fallback error:", e); }
       }
 
       update({
