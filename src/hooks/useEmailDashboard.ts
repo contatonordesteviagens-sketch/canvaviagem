@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { DateRange } from "react-day-picker";
 
 interface EmailEvent {
   id: string;
@@ -29,15 +30,24 @@ interface UserEmailAutomation {
   unsubscribed: boolean;
 }
 
-export const useEmailDashboard = () => {
+export const useEmailDashboard = (dateRange?: DateRange) => {
   // Estatísticas da tabela user_email_automations
   const automationsQuery = useQuery({
-    queryKey: ["email-automations"],
+    queryKey: ["email-automations", dateRange?.from, dateRange?.to],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("user_email_automations")
         .select("*")
         .order("created_at", { ascending: false });
+        
+      if (dateRange?.from) {
+        query = query.gte("created_at", dateRange.from.toISOString());
+      }
+      if (dateRange?.to) {
+        query = query.lte("created_at", dateRange.to.toISOString());
+      }
+
+      const { data, error } = await query;
       
       if (error) throw error;
       return data as UserEmailAutomation[];
@@ -47,13 +57,22 @@ export const useEmailDashboard = () => {
 
   // Eventos recentes - mascarar emails no cliente
   const eventsQuery = useQuery({
-    queryKey: ["email-events"],
+    queryKey: ["email-events", dateRange?.from, dateRange?.to],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("email_events")
         .select("id, email_id, type, recipient_email, email_type, created_at")
         .order("created_at", { ascending: false })
-        .limit(50);
+        .limit(1000);
+        
+      if (dateRange?.from) {
+        query = query.gte("created_at", dateRange.from.toISOString());
+      }
+      if (dateRange?.to) {
+        query = query.lte("created_at", dateRange.to.toISOString());
+      }
+
+      const { data, error } = await query;
       
       if (error) throw error;
       

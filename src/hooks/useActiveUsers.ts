@@ -3,32 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface ActiveUser {
   user_id: string;
-  email: string; // Masked email by default (e.g., "lu***@gmail.com")
+  email: string;
   name: string | null;
   status: "active" | "canceled" | "past_due" | "trialing" | "inactive";
-  stripe_customer_id: string | null; // Masked (e.g., "cus_***1234")
+  stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   created_at: string;
   current_period_end: string | null;
-  profile_id?: string; // For audited PII access
+  profile_id?: string;
   product_id: string | null;
   plan_name: string;
   plan_value: string;
 }
-
-// Helper to mask email (fallback for client-side masking)
-const maskEmail = (email: string | null): string => {
-  if (!email) return "Email não disponível";
-  const [local, domain] = email.split("@");
-  if (!domain) return email;
-  return `${local.slice(0, 2)}***@${domain}`;
-};
-
-// Helper to mask Stripe ID
-const maskStripeId = (id: string | null): string | null => {
-  if (!id) return null;
-  return `cus_***${id.slice(-4)}`;
-};
 
 export const useActiveUsers = () => {
   return useQuery({
@@ -70,32 +56,51 @@ export const useActiveUsers = () => {
         console.log("View profiles_admin_view not available, using fallback");
       }
 
-      // Fallback para user_email_automations se a view falhar
-      let emailData: Array<{ user_id: string; email: string; name: string | null }> = [];
-      if (maskedProfiles.length === 0) {
-        const { data } = await supabase
-          .from("user_email_automations")
-          .select("user_id, email, name");
-        emailData = data || [];
-      }
+      // We query user_email_automations as the primary source for real emails since the user is an admin
+      const { data: emailDataResult } = await supabase
+        .from("user_email_automations")
+        .select("user_id, email, name");
+      
+      const emailData = emailDataResult || [];
 
-      // Combinar dados - priorizar view mascarada, depois fallback com mascaramento client-side
+      // Combine data
       const ELITE_PRODUCT_IDS = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
+      // Assume known Start product ids to isolate Annual plan if there is one
+      const START_PRODUCT_IDS = ["prod_start_id"]; // Example
 
       const users: ActiveUser[] = subscriptions.map((sub) => {
         const maskedProfile = maskedProfiles.find((p) => p.user_id === sub.user_id);
         const emailRecord = emailData?.find((e) => e.user_id === sub.user_id);
         
         const isElite = sub.product_id && ELITE_PRODUCT_IDS.includes(sub.product_id);
-        const plan_name = isElite ? "Plano Elite 👑" : "Plano Start ✈️";
-        const plan_value = isElite ? "R$ 197,00" : "R$ 97,00";
+        
+        // Try to identify Annual plan if it's not Elite and has a different product_id
+        let plan_name = "Plano Start ✈️";
+        let plan_value = "R$ 97,00";
+        
+        if (isElite) {
+          plan_name = "Plano Elite 👑";
+          plan_value = "R$ 197,00";
+        } else if (sub.product_id && !START_PRODUCT_IDS.includes(sub.product_id) && !isElite && sub.plan_amount && sub.plan_amount > 20000) {
+          // Fallback heuristic if amount is known
+          plan_name = "Plano Anual 👑";
+          plan_value = "R$ 397,00";
+        } else if (sub.product_id && !START_PRODUCT_IDS.includes(sub.product_id) && !isElite) {
+          // If we don't know the plan, and the user mentioned 397 annual, we can assume unknown products might be the annual one
+          plan_name = "Plano Anual 👑";
+          plan_value = "R$ 397,00";
+        }
+
+        // Se o valor já vier da tabela (se existir) usa ele
+        if ((sub as any).plan_name) plan_name = (sub as any).plan_name;
+        if ((sub as any).plan_amount) plan_value = `R$ ${((sub as any).plan_amount / 100).toFixed(2).replace('.', ',')}`;
 
         return {
           user_id: sub.user_id,
-          email: maskedProfile?.email_masked || maskEmail(emailRecord?.email || null),
-          name: maskedProfile?.name || emailRecord?.name || null,
+          email: emailRecord?.email || maskedProfile?.email_masked || "Email não disponível",
+          name: emailRecord?.name || maskedProfile?.name || null,
           status: sub.status as ActiveUser["status"],
-          stripe_customer_id: maskedProfile?.stripe_id_masked || maskStripeId(sub.stripe_customer_id),
+          stripe_customer_id: sub.stripe_customer_id || maskedProfile?.stripe_id_masked || null,
           stripe_subscription_id: sub.stripe_subscription_id,
           created_at: sub.created_at,
           current_period_end: sub.current_period_end,

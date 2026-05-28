@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "./useContent";
+import type { DateRange } from "react-day-picker";
 
 export interface StripeDashboardData {
   mrr: number;
@@ -20,13 +21,19 @@ export interface StripeDashboardData {
   trialingCount: number;
 }
 
-export const useStripeDashboard = () => {
+export const useStripeDashboard = (dateRange?: DateRange) => {
   const { data: isAdmin } = useIsAdmin();
 
   return useQuery<StripeDashboardData>({
-    queryKey: ["stripe-dashboard"],
+    queryKey: ["stripe-dashboard", dateRange?.from, dateRange?.to],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("stripe-dashboard");
+      const body = {
+        from: dateRange?.from?.toISOString(),
+        to: dateRange?.to?.toISOString(),
+      };
+      const { data, error } = await supabase.functions.invoke("stripe-dashboard", {
+        body,
+      });
 
       if (error) {
         console.error("Error fetching stripe dashboard:", error);

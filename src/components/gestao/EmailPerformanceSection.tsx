@@ -17,11 +17,17 @@ import {
   Line,
 } from "recharts";
 
+import type { DateRange } from "react-day-picker";
+
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
-export const EmailPerformanceSection = () => {
-  const { metrics: emailStats, isLoading: emailLoading } = useEmailDashboard();
-  const { data: emailMetrics, isLoading: metricsLoading } = useEmailMetrics();
+interface EmailPerformanceSectionProps {
+  dateRange?: DateRange;
+}
+
+export const EmailPerformanceSection = ({ dateRange }: EmailPerformanceSectionProps) => {
+  const { metrics: emailStats, isLoading: emailLoading } = useEmailDashboard(dateRange);
+  const { data: emailMetrics, isLoading: metricsLoading } = useEmailMetrics(dateRange);
 
   const isLoading = emailLoading || metricsLoading;
 

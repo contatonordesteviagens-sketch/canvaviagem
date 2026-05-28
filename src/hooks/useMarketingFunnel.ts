@@ -188,13 +188,20 @@ export const useMarketingFunnel = (dateRange?: DateRangeParam) => {
   });
 };
 
-export const useEmailMetrics = () => {
+export const useEmailMetrics = (dateRange?: DateRangeParam) => {
   return useQuery<EmailMetrics>({
-    queryKey: ["email-metrics"],
+    queryKey: ["email-metrics", dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
     queryFn: async () => {
-      const { data: events } = await supabase
-        .from("email_events")
-        .select("*");
+      let query = supabase.from("email_events").select("*");
+      
+      if (dateRange?.from) {
+        query = query.gte("created_at", dateRange.from.toISOString());
+      }
+      if (dateRange?.to) {
+        query = query.lte("created_at", dateRange.to.toISOString());
+      }
+      
+      const { data: events } = await query;
 
       const allEvents = events || [];
       

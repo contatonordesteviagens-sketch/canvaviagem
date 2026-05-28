@@ -63,6 +63,20 @@ serve(async (req) => {
 
     console.log("[STRIPE-DASHBOARD] Admin verified:", user.email);
 
+    // ============ DATE RANGE FILTER ============
+    let body = {};
+    try {
+      if (req.headers.get("content-type")?.includes("application/json")) {
+        body = await req.json();
+      }
+    } catch (e) {
+      console.log("[STRIPE-DASHBOARD] No JSON body", e);
+    }
+    
+    const { from, to } = body as any;
+    const fromUnix = from ? Math.floor(new Date(from).getTime() / 1000) : undefined;
+    const toUnix = to ? Math.floor(new Date(to).getTime() / 1000) : undefined;
+
     // ============ STRIPE DATA FETCH ============
     const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeSecretKey) {
@@ -74,34 +88,51 @@ serve(async (req) => {
     });
 
     // Fetch subscriptions
-    const activeSubscriptions = await stripe.subscriptions.list({
-      status: "active",
-      limit: 100,
-    });
+    let activeSubsParams: any = { status: "active", limit: 100 };
+    if (fromUnix || toUnix) {
+      activeSubsParams.created = {};
+      if (fromUnix) activeSubsParams.created.gte = fromUnix;
+      if (toUnix) activeSubsParams.created.lte = toUnix;
+    }
+    const activeSubscriptions = await stripe.subscriptions.list(activeSubsParams);
 
-    const allSubscriptions = await stripe.subscriptions.list({
-      limit: 100,
-    });
+    let allSubsParams: any = { limit: 100 };
+    if (fromUnix || toUnix) {
+      allSubsParams.created = {};
+      if (fromUnix) allSubsParams.created.gte = fromUnix;
+      if (toUnix) allSubsParams.created.lte = toUnix;
+    }
+    const allSubscriptions = await stripe.subscriptions.list(allSubsParams);
 
-    const canceledSubscriptions = await stripe.subscriptions.list({
-      status: "canceled",
-      limit: 100,
-    });
+    let canceledSubsParams: any = { status: "canceled", limit: 100 };
+    if (fromUnix || toUnix) {
+      canceledSubsParams.created = {};
+      if (fromUnix) canceledSubsParams.created.gte = fromUnix;
+      if (toUnix) canceledSubsParams.created.lte = toUnix;
+    }
+    const canceledSubscriptions = await stripe.subscriptions.list(canceledSubsParams);
 
-    const trialingSubscriptions = await stripe.subscriptions.list({
-      status: "trialing",
-      limit: 100,
-    });
+    let trialingSubsParams: any = { status: "trialing", limit: 100 };
+    if (fromUnix || toUnix) {
+      trialingSubsParams.created = {};
+      if (fromUnix) trialingSubsParams.created.gte = fromUnix;
+      if (toUnix) trialingSubsParams.created.lte = toUnix;
+    }
+    const trialingSubscriptions = await stripe.subscriptions.list(trialingSubsParams);
 
     // Fetch customers
-    const customers = await stripe.customers.list({
-      limit: 100,
-    });
+    let customersParams: any = { limit: 100 };
+    if (fromUnix || toUnix) {
+      customersParams.created = {};
+      if (fromUnix) customersParams.created.gte = fromUnix;
+      if (toUnix) customersParams.created.lte = toUnix;
+    }
+    const customers = await stripe.customers.list(customersParams);
 
     // Fetch invoices for revenue calculation
     const now = new Date();
-    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const currentMonthStart = from ? new Date(from) : new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = from ? new Date(currentMonthStart.getTime() - (currentMonthStart.getTime() - (to ? new Date(to).getTime() : now.getTime()))) : new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
     const invoices = await stripe.invoices.list({
       status: "paid",
@@ -111,11 +142,14 @@ serve(async (req) => {
       limit: 100,
     });
 
-    // Fetch ALL paid invoices for total revenue
-    const allPaidInvoices = await stripe.invoices.list({
-      status: "paid",
-      limit: 100,
-    });
+    // Fetch ALL paid invoices for total revenue (if date range is used, only for that range)
+    let allPaidInvoicesParams: any = { status: "paid", limit: 100 };
+    if (fromUnix || toUnix) {
+      allPaidInvoicesParams.created = {};
+      if (fromUnix) allPaidInvoicesParams.created.gte = fromUnix;
+      if (toUnix) allPaidInvoicesParams.created.lte = toUnix;
+    }
+    const allPaidInvoices = await stripe.invoices.list(allPaidInvoicesParams);
 
     // Calculate MRR from active subscriptions
     let mrr = 0;

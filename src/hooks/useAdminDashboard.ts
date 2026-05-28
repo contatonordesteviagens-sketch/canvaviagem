@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "./useContent";
+import type { DateRange } from "react-day-picker";
 
 export interface DashboardStats {
   totalSubscribers: number;
@@ -25,16 +26,21 @@ export interface PageView {
   viewed_at: string;
 }
 
-export const useAdminDashboard = () => {
+export const useAdminDashboard = (dateRange?: DateRange) => {
   const { data: isAdmin } = useIsAdmin();
 
   return useQuery({
-    queryKey: ["admin-dashboard"],
+    queryKey: ["admin-dashboard", dateRange?.from, dateRange?.to],
     queryFn: async (): Promise<DashboardStats> => {
-      // Buscar total de assinantes
-      const { data: subscriptions, error: subError } = await supabase
-        .from("subscriptions")
-        .select("*");
+      // Construir query de assinantes
+      let subsQuery = supabase.from("subscriptions").select("*");
+      if (dateRange?.from) {
+        subsQuery = subsQuery.gte("created_at", dateRange.from.toISOString());
+      }
+      if (dateRange?.to) {
+        subsQuery = subsQuery.lte("created_at", dateRange.to.toISOString());
+      }
+      const { data: subscriptions, error: subError } = await subsQuery;
       
       if (subError) throw subError;
 
@@ -42,9 +48,14 @@ export const useAdminDashboard = () => {
       const totalSubscribers = subscriptions?.length || 0;
 
       // Buscar cliques agregados
-      const { data: clicks, error: clickError } = await supabase
-        .from("content_clicks")
-        .select("content_id, content_type");
+      let clicksQuery = supabase.from("content_clicks").select("content_id, content_type");
+      if (dateRange?.from) {
+        clicksQuery = clicksQuery.gte("created_at", dateRange.from.toISOString());
+      }
+      if (dateRange?.to) {
+        clicksQuery = clicksQuery.lte("created_at", dateRange.to.toISOString());
+      }
+      const { data: clicks, error: clickError } = await clicksQuery;
       
       if (clickError) throw clickError;
 
@@ -107,16 +118,18 @@ export const useAdminDashboard = () => {
 };
 
 // Hook para page views - usando query genérica já que a tabela foi recém criada
-export const usePageViews = () => {
+export const usePageViews = (dateRange?: DateRange) => {
   const { data: isAdmin } = useIsAdmin();
 
   return useQuery({
-    queryKey: ["page-views"],
+    queryKey: ["page-views", dateRange?.from, dateRange?.to],
     queryFn: async () => {
       // Usando rpc ou query direta com tipagem manual
+      // Filter by date directly with PostgREST syntax if doing direct query, but rpc might not support it
+      // So we filter manually after fetching
       const { data, error } = await supabase
         .rpc('get_page_views' as never)
-        .limit(1000);
+        .limit(10000);
       
       // Se a função não existir, retornar vazio
       if (error) {
@@ -124,9 +137,18 @@ export const usePageViews = () => {
         return [];
       }
 
+      let filteredData = (data as PageView[]) || [];
+      
+      if (dateRange?.from) {
+        filteredData = filteredData.filter(v => new Date(v.viewed_at) >= dateRange.from!);
+      }
+      if (dateRange?.to) {
+        filteredData = filteredData.filter(v => new Date(v.viewed_at) <= dateRange.to!);
+      }
+
       // Agregar por página
       const pageCounts: Record<string, number> = {};
-      (data as PageView[])?.forEach(view => {
+      filteredData.forEach(view => {
         pageCounts[view.page_path] = (pageCounts[view.page_path] || 0) + 1;
       });
 

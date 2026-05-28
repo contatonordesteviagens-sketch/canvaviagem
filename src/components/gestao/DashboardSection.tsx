@@ -36,10 +36,10 @@ interface OverviewTabProps {
 }
 
 const OverviewTab = ({ dateRange }: OverviewTabProps) => {
-  const { data: stats, isLoading } = useAdminDashboard();
-  const { data: pageViews } = usePageViews();
-  const { metrics: emailStats, isLoading: emailLoading } = useEmailDashboard();
-  const { data: stripeData, isLoading: stripeLoading } = useStripeDashboard();
+  const { data: stats, isLoading } = useAdminDashboard(dateRange);
+  const { data: pageViews } = usePageViews(dateRange);
+  const { metrics: emailStats, isLoading: emailLoading } = useEmailDashboard(dateRange);
+  const { data: stripeData, isLoading: stripeLoading } = useStripeDashboard(dateRange);
   const { data: funnel } = useMarketingFunnel(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
 
   if (isLoading) {
@@ -554,7 +554,7 @@ export const DashboardSection = () => {
         </TabsContent>
 
         <TabsContent value="email">
-          <EmailPerformanceSection />
+          <EmailPerformanceSection dateRange={dateRange} />
         </TabsContent>
       </Tabs>
     </div>
