@@ -1435,6 +1435,7 @@ const PublishOnLovableCard = ({
         .from("public_sites")
         .upsert({
           id: user.id,
+          owner_id: user.id,
           html: html
         });
 

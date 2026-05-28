@@ -54,6 +54,7 @@ export const Phase5Dashboard = () => {
         .from("public_sites")
         .upsert({
           id: user.id,
+          owner_id: user.id,
           html: html
         });
 
