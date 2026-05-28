@@ -1668,6 +1668,22 @@ const PublishOnLovableCard = ({
 
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+
+  const handleDownload = () => {
+    try {
+      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${buildSiteSlug(state.agencyName || "site") || "site"}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("[Phase4] download failed", e);
+    }
+  };
   const [canvaViagemSubdomain, setCanvaViagemSubdomain] = useState(() => {
     if (state.siteContent.canvaViagemUrl) {
       const savedUrl = state.siteContent.canvaViagemUrl.replace(/\/$/, "");
