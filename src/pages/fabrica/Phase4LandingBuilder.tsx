@@ -1837,11 +1837,14 @@ const PublishOnLovableCard = ({
         throw new Error(resData?.error?.message || "Erro na resposta da API Vercel");
       }
 
-      // Salva no estado global
+      // Vercel returns the actual assigned URL (e.g., project-abc.vercel.app)
+      const assignedUrl = resData.url ? `https://${resData.url}` : liveUrl;
+
+      // Salva no estado global com a URL real do Vercel
       update({
         siteContent: {
           ...state.siteContent,
-          vercelUrl: liveUrl,
+          vercelUrl: assignedUrl,
         },
       });
 
