@@ -596,6 +596,30 @@ export type Database = {
         }
         Relationships: []
       }
+      public_sites: {
+        Row: {
+          created_at: string
+          html: string
+          id: string
+          owner_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          html: string
+          id: string
+          owner_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          html?: string
+          id?: string
+          owner_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string
