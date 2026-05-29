@@ -1,3 +1,9 @@
-﻿node_modules
-dist
-.env*
+node_modules
+.git
+supabase
+Vendedor-de-Viagens-IA-main
+*.txt
+*.ps1
+migrated_prompt_history
+scratch_test_extractor.js
+check_supabase.js

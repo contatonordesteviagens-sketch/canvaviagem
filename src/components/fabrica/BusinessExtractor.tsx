@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Sparkles, Link as LinkIcon, Upload, Image as ImageIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { getGeminiApiKey } from "@/pages/vendedor-ia/services/gemini";
 
 export const BusinessExtractor = ({ onExtract }: { onExtract: (data: any) => void }) => {
   const [loading, setLoading] = useState(false);
@@ -38,10 +38,11 @@ export const BusinessExtractor = ({ onExtract }: { onExtract: (data: any) => voi
       setLoading(true);
       toast.info(`Iniciando extração inteligente via IA...`, { duration: 3000 });
       
+      const apiKey = getGeminiApiKey();
       const response = await fetch("https://mgdsjxasolxoclchyqdx.supabase.co/functions/v1/fabrica-extract-business-info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, content })
+        body: JSON.stringify({ type, content, geminiApiKey: apiKey })
       });
       
       const responseData = await response.json().catch(() => null);
