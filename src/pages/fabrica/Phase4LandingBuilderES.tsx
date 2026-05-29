@@ -1290,6 +1290,22 @@ const PublishOnLovableCard = ({
       .replace(/^-|-$/g, "");
   });
 
+  const handleDownload = () => {
+    try {
+      const blob = new Blob([html], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${buildSiteSlug(state.agencyName || "site")}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
 
   const handleDirectPublish = async () => {
     if (!user?.id) {
