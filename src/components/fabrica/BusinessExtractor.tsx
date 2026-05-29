@@ -38,11 +38,17 @@ export const BusinessExtractor = ({ onExtract }: { onExtract: (data: any) => voi
       setLoading(true);
       toast.info(`Iniciando extração inteligente via IA...`, { duration: 3000 });
       
-      const { data, error } = await supabase.functions.invoke("fabrica-extract-business-info", {
-        body: { type, content }
+      const response = await fetch("https://mgdsjxasolxoclchyqdx.supabase.co/functions/v1/fabrica-extract-business-info", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, content })
       });
       
-      if (error) throw new Error(error.message || "Erro ao comunicar com a inteligência artificial");
+      const responseData = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(responseData?.error || "Erro ao comunicar com a inteligência artificial");
+      }
+      const data = responseData;
       
       onExtract(data);
       incrementLimit();
