@@ -1516,6 +1516,8 @@ const PublishOnLovableCard = ({
 
 
 
+        {/* Temporariamente oculto - voltar depois */}
+        {false && (
         <details className="mt-6 p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
           <summary className="list-none cursor-pointer text-sm font-semibold text-white/60 hover:text-white transition-colors flex items-center gap-2">
             <span>Opciones Avanzadas (Lovable)</span>
@@ -1555,6 +1557,7 @@ const PublishOnLovableCard = ({
             </div>
           </div>
         </details>
+        )}
 
         <div className="mt-6 pt-5 border-t border-white/10 flex justify-center">
           <button
