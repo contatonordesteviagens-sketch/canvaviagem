@@ -15,9 +15,9 @@ serve(async (req) => {
     const { type, content } = await req.json();
     
     // API KEY usually injected by Supabase secrets
-    const apiKey = Deno.env.get("GEMINI_API_KEY");
+    const apiKey = Deno.env.get("USER_GEMINI_API_KEY") || Deno.env.get("IA_PURA_GEMINI_KEY") || Deno.env.get("GEMINI_API_KEY");
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY missing");
+      throw new Error("API Key for Gemini is missing");
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
