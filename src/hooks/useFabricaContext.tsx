@@ -818,8 +818,10 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   }, [hasLoadedFromDb]);
 
   // Histórico de alterações (Undo / Redo)
-  const [history, setHistory] = useState<FabricaState[]>([]);
-  const [redoStack, setRedoStack] = useState<FabricaState[]>([]);
+  const [historyCount, setHistoryCount] = useState(0);
+  const [redoCount, setRedoCount] = useState(0);
+  const historyRef = useRef<FabricaState[]>([]);
+  const redoStackRef = useRef<FabricaState[]>([]);
 
   const applyPatch = useCallback(
     (
@@ -834,12 +836,11 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
 
       if (recordHistory) {
         const snapshot = stateRef.current;
-        setHistory((h) => {
-          const nextH = [...h, snapshot];
-          if (nextH.length > 50) nextH.shift();
-          return nextH;
-        });
-        setRedoStack([]);
+        historyRef.current.push(snapshot);
+        if (historyRef.current.length > 50) historyRef.current.shift();
+        redoStackRef.current = [];
+        setHistoryCount(historyRef.current.length);
+        setRedoCount(0);
       }
 
       setState((prev) => {
@@ -864,36 +865,42 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
   }, [applyPatch]);
 
   const undo = useCallback(() => {
-    if (history.length === 0) return;
+    if (historyRef.current.length === 0) return;
 
-    const previous = history[history.length - 1];
-    const newHistory = history.slice(0, -1);
-
+    const previous = historyRef.current.pop()!;
+    
     // Adiciona o estado atual à pilha de refazer (redo)
-    setRedoStack((prevRedo) => [...prevRedo, state]);
-    // Atualiza a pilha de histórico e o estado principal
-    setHistory(newHistory);
+    redoStackRef.current.push(stateRef.current);
+    
+    // Atualiza a interface
+    setHistoryCount(historyRef.current.length);
+    setRedoCount(redoStackRef.current.length);
+    
     stateRef.current = previous;
     setState(previous);
-  }, [history, state]);
+  }, []);
 
   const redo = useCallback(() => {
-    if (redoStack.length === 0) return;
+    if (redoStackRef.current.length === 0) return;
 
-    const next = redoStack[redoStack.length - 1];
-    const newRedoStack = redoStack.slice(0, -1);
-
+    const next = redoStackRef.current.pop()!;
+    
     // Adiciona o estado atual à pilha de desfazer (history)
-    setHistory((prevHistory) => [...prevHistory, state]);
-    // Atualiza a pilha de refazer e o estado principal
-    setRedoStack(newRedoStack);
+    historyRef.current.push(stateRef.current);
+    
+    // Atualiza a interface
+    setHistoryCount(historyRef.current.length);
+    setRedoCount(redoStackRef.current.length);
+    
     stateRef.current = next;
     setState(next);
-  }, [redoStack, state]);
+  }, []);
 
   const reset = useCallback(() => {
-    setHistory([]);
-    setRedoStack([]);
+    historyRef.current = [];
+    redoStackRef.current = [];
+    setHistoryCount(0);
+    setRedoCount(0);
     stateRef.current = defaultState;
     setState(defaultState);
   }, []);
@@ -920,8 +927,8 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         toggleChecklist,
         undo,
         redo,
-        canUndo: history.length > 0,
-        canRedo: redoStack.length > 0,
+        canUndo: historyCount > 0,
+        canRedo: redoCount > 0,
         syncStatus,
         lastSyncedAt,
         isHydrated: hasLoadedFromDb,
