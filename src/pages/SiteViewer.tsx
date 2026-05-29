@@ -38,6 +38,52 @@ export default function SiteViewer({ forcedId }: { forcedId?: string } = {}) {
         if (isSubscribed) {
           setHtmlContent(html);
           setLoading(false);
+          
+          // Inject Meta Pixel into top window if found in HTML
+          const metaMatch = html.match(/fbq\('init',\s*'([^']+)'\)/);
+          if (metaMatch && metaMatch[1]) {
+            const pixelId = metaMatch[1];
+            if (!document.getElementById('meta-pixel-injected')) {
+               const script = document.createElement('script');
+               script.id = 'meta-pixel-injected';
+               script.innerHTML = `
+                  !function(f,b,e,v,n,t,s)
+                  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+                  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+                  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+                  n.queue=[];t=b.createElement(e);t.async=!0;
+                  t.src=v;s=b.getElementsByTagName(e)[0];
+                  s.parentNode.insertBefore(t,s)}(window, document,'script',
+                  'https://connect.facebook.net/en_US/fbevents.js');
+                  fbq('init', '${pixelId}');
+                  fbq('track', 'PageView');
+               `;
+               document.head.appendChild(script);
+            }
+          }
+          
+          // Inject GA4 into top window if found in HTML
+          const gaMatch = html.match(/gtag\('config',\s*'([^']+)'\)/);
+          if (gaMatch && gaMatch[1]) {
+             const gaId = gaMatch[1];
+             if (!document.getElementById('ga4-injected')) {
+                const script1 = document.createElement('script');
+                script1.id = 'ga4-injected-src';
+                script1.async = true;
+                script1.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+                document.head.appendChild(script1);
+                
+                const script2 = document.createElement('script');
+                script2.id = 'ga4-injected';
+                script2.innerHTML = `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${gaId}');
+                `;
+                document.head.appendChild(script2);
+             }
+          }
         }
 
       } catch (err: any) {
