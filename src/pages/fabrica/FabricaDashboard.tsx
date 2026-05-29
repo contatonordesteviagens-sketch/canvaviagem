@@ -899,24 +899,35 @@ const AGENCY_TYPES = [
               </div>
             </div>
 
-            {/* Histórico de sites publicados */}
-            {state.siteContent?.vercelUrl && (
+            {/* Histórico de sites publicados no canvaviagem.com */}
+            {publishedSites.length > 0 && (
               <div>
-                <div className="text-[10px] font-bold text-white/40 uppercase tracking-wider mb-2">Site publicado</div>
-                <a
-                  href={state.siteContent.vercelUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span className="text-xs text-white/85 font-semibold truncate">{state.siteContent.vercelUrl.replace("https://", "")}</span>
-                  </div>
-                  <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white shrink-0" />
-                </a>
+                <div className="text-[10px] font-bold text-white/40 uppercase tracking-wider mb-2">
+                  Sites publicados ({publishedSites.length})
+                </div>
+                <div className="space-y-1.5">
+                  {publishedSites.map((site) => {
+                    const url = `https://${site.id}.canvaviagem.com`;
+                    return (
+                      <a
+                        key={site.id}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span className="text-xs text-white/85 font-semibold truncate">{site.id}.canvaviagem.com</span>
+                        </div>
+                        <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white shrink-0" />
+                      </a>
+                    );
+                  })}
+                </div>
               </div>
             )}
+
 
             {/* Histórico de imagens geradas (miniaturas) */}
             {(state.allGeneratedAdImages?.length || 0) > 0 && (
