@@ -1165,7 +1165,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                   <span className="w-3 h-3 rounded-full bg-green-500/80 inline-block" />
                 </div>
                 <div className="ml-3 px-3 py-1 rounded-lg bg-white/[0.04] text-[11px] font-mono text-white/50 w-44 sm:w-64 truncate border border-white/5">
-                  https://{(state.agencyName || "sua-agencia").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "-")}.vercel.app
+                  https://{(state.agencyName || "sua-agencia").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "-")}.canvaviagem.com
                 </div>
               </div>
 

@@ -148,7 +148,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   };
 
   const domainSlug = state.agencyName ? slugify(state.agencyName) : "sua-agencia";
-  const displayUrl = state.siteContent?.vercelUrl || `https://${domainSlug}.vercel.app`;
+  const displayUrl = state.siteContent?.vercelUrl || `https://${domainSlug}.canvaviagem.com`;
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -308,11 +308,11 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               <button
                 type="button"
                 onClick={() => {
-                  // Zera tudo via evento (defaultState completo) e volta pra Fase 1
+                  // Zera tudo via evento (defaultState completo) e mantém no Painel
                   window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: {} }));
                   reset();
-                  toast.success("Novo projeto iniciado! Comece pela Fase 1.");
-                  setTimeout(() => onNavigate?.("phase", 1), 100);
+                  toast.success("Novo projeto iniciado! Você pode preencher os dados iniciais aqui.");
+                  setProjectsPanelOpen(false); // Fecha o painel de seleção
                 }}
                 className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
                 style={{ borderColor: `${state.primaryColor || "#F59E0B"}40` }}
