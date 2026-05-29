@@ -226,7 +226,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             const allCards = Array.from(doc.querySelectorAll(".proc-card"));
             const idx = allCards.indexOf(card as Element);
             if (idx !== -1) {
-              const steps = [...(state.siteContent.processoSteps || [])];
+              const steps = (state.siteContent.processoSteps || []).map(s => ({ ...s }));
               if (!steps[idx]) steps[idx] = { num: "", title: "", desc: "" };
               if (el.classList.contains("proc-num")) steps[idx].num = textVal;
               else if (el.tagName === "H3") steps[idx].title = textVal;
@@ -247,7 +247,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             const allFeats = Array.from(doc.querySelectorAll(".feat"));
             const idx = allFeats.indexOf(feat as Element);
             if (idx !== -1) {
-              const feats = [...(state.siteContent.equipeFeatures || [])];
+              const feats = (state.siteContent.equipeFeatures || []).map(f => ({ ...f }));
               if (!feats[idx]) feats[idx] = { icon: "", title: "", desc: "" };
               if (el.classList.contains("feat-icon")) feats[idx].icon = textVal;
               else if (el.tagName === "H4") feats[idx].title = textVal;
@@ -306,12 +306,12 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
               const allStats = Array.from(doc.querySelectorAll(".stats-bar > div"));
               const idx = allStats.indexOf(statDiv as Element);
               if (idx !== -1) {
-                const stats = [...(state.siteContent.stats || [
+                const stats = (state.siteContent.stats || [
                   { num: "12+", label: "Anos de Experiência" },
                   { num: "15k+", label: "Viajantes Felizes" },
                   { num: "25", label: "Países Atendidos" },
                   { num: "99%", label: "Satisfação" }
-                ])];
+                ]).map(s => ({ ...s }));
                 if (!stats[idx]) stats[idx] = { num: "", label: "" };
                 if (el.classList.contains("stat-num")) stats[idx].num = textVal;
                 else if (el.classList.contains("stat-label")) stats[idx].label = textVal;
