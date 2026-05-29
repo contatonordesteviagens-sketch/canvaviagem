@@ -81,7 +81,7 @@ export const useActiveUsers = () => {
         if (isElite) {
           plan_name = "Plano Elite 👑";
           plan_value = "R$ 197,00";
-        } else if (sub.product_id && !START_PRODUCT_IDS.includes(sub.product_id) && !isElite && sub.plan_amount && sub.plan_amount > 20000) {
+        } else if (sub.product_id && !START_PRODUCT_IDS.includes(sub.product_id) && !isElite && (sub as any).plan_amount && (sub as any).plan_amount > 20000) {
           // Fallback heuristic if amount is known
           plan_name = "Plano Anual 👑";
           plan_value = "R$ 397,00";
