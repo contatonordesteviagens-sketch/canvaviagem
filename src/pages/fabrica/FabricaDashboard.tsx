@@ -285,12 +285,11 @@ const AGENCY_TYPES = [
                     if (!val) return;
                     const p = savedProjects.find(x => x.id === val);
                     if (p && p.state_snapshot) {
-                       update({ 
-                         ...p.state_snapshot, 
-                         currentPhase: state.currentPhase, 
-                         diagnosticoCompleto: false 
-                       });
-                       toast.success(`Projeto "${p.agency_name || 'Sem Nome'}" carregado! Todas as configs foram restauradas.`);
+                      // Carrega o snapshot completo (defaultState + snapshot) via evento
+                      window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: p.state_snapshot }));
+                      toast.success(`Projeto "${p.agency_name || 'Sem Nome'}" carregado!`);
+                      // Volta ao dashboard pra ver o conteúdo carregado
+                      setTimeout(() => onNavigate?.("dashboard"), 100);
                     }
                   }}
                   className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-white/30 transition-colors text-xs"
@@ -309,12 +308,11 @@ const AGENCY_TYPES = [
               <button
                 type="button"
                 onClick={() => {
-                  const currentPhase = state.currentPhase;
+                  // Zera tudo via evento (defaultState completo) e volta pra Fase 1
+                  window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: {} }));
                   reset();
-                  setTimeout(() => {
-                    update({ currentPhase });
-                  }, 50);
-                  toast.success("Novo projeto iniciado! As informações foram zeradas.");
+                  toast.success("Novo projeto iniciado! Comece pela Fase 1.");
+                  setTimeout(() => onNavigate?.("phase", 1), 100);
                 }}
                 className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
                 style={{ borderColor: `${state.primaryColor || "#F59E0B"}40` }}
@@ -323,6 +321,9 @@ const AGENCY_TYPES = [
               </button>
             </div>
           )}
+        </div>
+      )}
+
         </div>
       )}
 
