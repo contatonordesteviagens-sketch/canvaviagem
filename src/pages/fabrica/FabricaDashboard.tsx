@@ -884,7 +884,7 @@ const AGENCY_TYPES = [
                 <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-2">
                   <Globe className="w-4 h-4" />
                 </div>
-                <div className="text-2xl font-black text-white leading-none">{state.siteContent?.vercelUrl ? 1 : 0}</div>
+                <div className="text-2xl font-black text-white leading-none">{publishedSites.length}</div>
                 <div className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1.5">Sites publicados</div>
               </div>
               <div 
