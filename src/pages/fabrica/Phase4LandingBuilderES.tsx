@@ -1296,7 +1296,8 @@ const PublishOnLovableCard = ({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${buildSiteSlug(state.agencyName || "site")}.html`;
+      const slug = (state.agencyName || "site").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || "site";
+      a.download = `${slug}.html`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
