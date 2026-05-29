@@ -1290,13 +1290,6 @@ const PublishOnLovableCard = ({
       .replace(/^-|-$/g, "");
   });
 
-  const handleSaveToken = (val: string) => {
-    setCustomVercelToken(val);
-    localStorage.setItem("vercel_token", val.trim());
-    if (val.trim()) {
-      toast.success("¡Vercel Token guardado localmente!");
-    }
-  };
 
   const handleDirectPublish = async () => {
     if (!user?.id) {
