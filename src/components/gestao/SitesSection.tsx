@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useGeneratedSites, useDeleteGeneratedSite } from "@/hooks/useGeneratedSites";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Loader2, Trash2, ExternalLink, Globe } from "lucide-react";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { toast } from "sonner";

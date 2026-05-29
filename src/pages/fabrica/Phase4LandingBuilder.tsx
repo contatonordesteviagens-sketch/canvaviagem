@@ -1719,13 +1719,6 @@ const PublishOnLovableCard = ({
       .replace(/^-|-$/g, "");
   });
 
-  const handleSaveToken = (val: string) => {
-    setCustomVercelToken(val);
-    localStorage.setItem("vercel_token", val.trim());
-    if (val.trim()) {
-      toast.success("Vercel Token salvo localmente!");
-    }
-  };
 
   const handleDirectPublish = async () => {
     if (!user?.id) {
@@ -2037,7 +2030,8 @@ const PublishOnLovableCard = ({
           </p>
         </div>
 
-        {/* OUTRAS OPÇÕES */}
+        {/* OUTRAS OPÇÕES - Temporariamente ocultas (voltar depois) */}
+        {false && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <details className="p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
             <summary className="list-none cursor-pointer text-sm font-semibold text-white/60 hover:text-white transition-colors flex items-center gap-2">
@@ -2163,6 +2157,7 @@ const PublishOnLovableCard = ({
             </div>
           </details>
         </div>
+        )}
 
         <div className="mt-6 pt-5 border-t border-white/10 flex justify-center">
           <button

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { BusinessExtractor } from "@/components/fabrica/BusinessExtractor";
 import { 
   Upload, 
@@ -40,13 +41,43 @@ const AGENCY_TYPES = [
   { v: "religioso", l: "Turismo Religioso" },
   { v: "outro", l: "Outro tipo" },
 ] as const;
-
 export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
   const { state, update, reset } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sites publicados reais (canvaviagem.com) deste usuário
+  const [publishedSites, setPublishedSites] = useState<{ id: string; updated_at: string }[]>([]);
+  // Leads reais capturados (sincronizado com CRM Fase 5)
+  const [realLeadsCount, setRealLeadsCount] = useState<number>(0);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: sites } = await supabase
+          .from("public_sites")
+          .select("id, updated_at")
+          .eq("owner_id", user.id)
+          .order("updated_at", { ascending: false });
+        if (!cancelled && sites) setPublishedSites(sites);
+
+        const { count } = await supabase
+          .from("analytics_events")
+          .select("*", { count: "exact", head: true })
+          .eq("event_type", "lead_captured")
+          .contains("event_data", { agency_id: user.id });
+        if (!cancelled) setRealLeadsCount(count || 0);
+      } catch (e) {
+        console.warn("[FabricaDashboard] Falha ao sincronizar sites/leads:", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, state.siteContent?.canvaViagemUrl, state.siteContent?.vercelUrl]);
+
 
   const [phoneDropOpen, setPhoneDropOpen] = useState(false);
 
@@ -254,12 +285,11 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                     if (!val) return;
                     const p = savedProjects.find(x => x.id === val);
                     if (p && p.state_snapshot) {
-                       update({ 
-                         ...p.state_snapshot, 
-                         currentPhase: state.currentPhase, 
-                         diagnosticoCompleto: false 
-                       });
-                       toast.success(`Projeto "${p.agency_name || 'Sem Nome'}" carregado! Todas as configs foram restauradas.`);
+                      // Carrega o snapshot completo (defaultState + snapshot) via evento
+                      window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: p.state_snapshot }));
+                      toast.success(`Projeto "${p.agency_name || 'Sem Nome'}" carregado!`);
+                      // Volta ao dashboard pra ver o conteúdo carregado
+                      setTimeout(() => onNavigate?.("dashboard"), 100);
                     }
                   }}
                   className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-white/30 transition-colors text-xs"
@@ -278,12 +308,11 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
               <button
                 type="button"
                 onClick={() => {
-                  const currentPhase = state.currentPhase;
+                  // Zera tudo via evento (defaultState completo) e volta pra Fase 1
+                  window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: {} }));
                   reset();
-                  setTimeout(() => {
-                    update({ currentPhase });
-                  }, 50);
-                  toast.success("Novo projeto iniciado! As informações foram zeradas.");
+                  toast.success("Novo projeto iniciado! Comece pela Fase 1.");
+                  setTimeout(() => onNavigate?.("phase", 1), 100);
                 }}
                 className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
                 style={{ borderColor: `${state.primaryColor || "#F59E0B"}40` }}
@@ -294,6 +323,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           )}
         </div>
       )}
+
 
       {/* Header Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0F0F11] to-[#0A0A0B] border border-white/5 p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
@@ -603,7 +633,8 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
         {/* Right Side: Package Management (7 Cols) */}
         <div className="lg:col-span-7 space-y-6">
           
-          <BusinessExtractor onExtract={handleExtractorData} />
+          {/* Temporariamente oculto - voltar depois */}
+          {false && <BusinessExtractor onExtract={handleExtractorData} />}
 
           {/* DYNAMIC CARD: SEUS PACOTES */}
           <div className="bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-6">
@@ -853,7 +884,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-2">
                   <Globe className="w-4 h-4" />
                 </div>
-                <div className="text-2xl font-black text-white leading-none">{state.siteContent?.vercelUrl ? 1 : 0}</div>
+                <div className="text-2xl font-black text-white leading-none">{publishedSites.length}</div>
                 <div className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1.5">Sites publicados</div>
               </div>
               <div 
@@ -863,29 +894,40 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto mb-2">
                   <Package className="w-4 h-4" />
                 </div>
-                <div className="text-2xl font-black text-white leading-none">{state.selectedPackages?.length || 0}</div>
-                <div className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1.5">Pacotes / Leads</div>
+                <div className="text-2xl font-black text-white leading-none">{realLeadsCount}</div>
+                <div className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1.5">Leads capturados</div>
               </div>
             </div>
 
-            {/* Histórico de sites publicados */}
-            {state.siteContent?.vercelUrl && (
+            {/* Histórico de sites publicados no canvaviagem.com */}
+            {publishedSites.length > 0 && (
               <div>
-                <div className="text-[10px] font-bold text-white/40 uppercase tracking-wider mb-2">Site publicado</div>
-                <a
-                  href={state.siteContent.vercelUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span className="text-xs text-white/85 font-semibold truncate">{state.siteContent.vercelUrl.replace("https://", "")}</span>
-                  </div>
-                  <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white shrink-0" />
-                </a>
+                <div className="text-[10px] font-bold text-white/40 uppercase tracking-wider mb-2">
+                  Sites publicados ({publishedSites.length})
+                </div>
+                <div className="space-y-1.5">
+                  {publishedSites.map((site) => {
+                    const url = `https://${site.id}.canvaviagem.com`;
+                    return (
+                      <a
+                        key={site.id}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span className="text-xs text-white/85 font-semibold truncate">{site.id}.canvaviagem.com</span>
+                        </div>
+                        <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white shrink-0" />
+                      </a>
+                    );
+                  })}
+                </div>
               </div>
             )}
+
 
             {/* Histórico de imagens geradas (miniaturas) */}
             {(state.allGeneratedAdImages?.length || 0) > 0 && (

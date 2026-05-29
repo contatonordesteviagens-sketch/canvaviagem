@@ -1290,13 +1290,23 @@ const PublishOnLovableCard = ({
       .replace(/^-|-$/g, "");
   });
 
-  const handleSaveToken = (val: string) => {
-    setCustomVercelToken(val);
-    localStorage.setItem("vercel_token", val.trim());
-    if (val.trim()) {
-      toast.success("¡Vercel Token guardado localmente!");
+  const handleDownload = () => {
+    try {
+      const blob = new Blob([html], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const slug = (state.agencyName || "site").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || "site";
+      a.download = `${slug}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
     }
   };
+
 
   const handleDirectPublish = async () => {
     if (!user?.id) {
@@ -1516,6 +1526,8 @@ const PublishOnLovableCard = ({
 
 
 
+        {/* Temporariamente oculto - voltar depois */}
+        {false && (
         <details className="mt-6 p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
           <summary className="list-none cursor-pointer text-sm font-semibold text-white/60 hover:text-white transition-colors flex items-center gap-2">
             <span>Opciones Avanzadas (Lovable)</span>
@@ -1555,6 +1567,7 @@ const PublishOnLovableCard = ({
             </div>
           </div>
         </details>
+        )}
 
         <div className="mt-6 pt-5 border-t border-white/10 flex justify-center">
           <button
