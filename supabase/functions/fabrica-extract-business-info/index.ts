@@ -12,16 +12,17 @@ serve(async (req) => {
   }
 
   try {
-    const { type, content } = await req.json();
+    const bodyData = await req.json();
+    const { type, content, geminiApiKey } = bodyData;
     
-    // API KEY usually injected by Supabase secrets
-    const apiKey = Deno.env.get("USER_GEMINI_API_KEY") || Deno.env.get("IA_PURA_GEMINI_KEY") || Deno.env.get("GEMINI_API_KEY");
+    // API KEY usually injected by Supabase secrets or passed from client
+    const apiKey = geminiApiKey || Deno.env.get("USER_GEMINI_API_KEY") || Deno.env.get("IA_PURA_GEMINI_KEY") || Deno.env.get("GEMINI_API_KEY");
     if (!apiKey) {
       throw new Error("API Key for Gemini is missing");
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
 Você é um extrator de informações de negócios focado em Agências de Viagens.
