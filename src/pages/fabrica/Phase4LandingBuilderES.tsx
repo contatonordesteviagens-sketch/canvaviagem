@@ -1659,6 +1659,36 @@ const PublishOnLovableCard = ({
                 )}
               </button>
             </div>
+
+            {/* VERCEL MANUAL INSTRUCTIONS */}
+            <div className="mt-6 pt-5 border-t border-white/10">
+              <h4 className="text-xs font-bold text-white tracking-wide uppercase mb-3 flex items-center gap-2">
+                <Rocket className="w-4 h-4 text-emerald-400" /> O publica manualmente (Gratis y sin Tokens)
+              </h4>
+              <div className="space-y-3 text-[11px] text-white/70 leading-relaxed mb-4">
+                <div className="flex gap-2 items-start">
+                  <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">1</span>
+                  <p>
+                    Haz clic en el botón verde <strong className="text-emerald-400">"Descargar HTML"</strong> al final de la página (¡necesitas crear el botón si no existe en la UI actual o copia el código HTML generado!).
+                  </p>
+                </div>
+                <div className="flex gap-2 items-start">
+                  <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">2</span>
+                  <p>
+                    Crea una nueva carpeta en tu computadora y coloca el archivo HTML descargado dentro. Renombra el archivo a <strong className="text-emerald-400">index.html</strong>.
+                  </p>
+                </div>
+                <div className="flex gap-2 items-start">
+                  <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">3</span>
+                  <p>
+                    Accede a <a href="https://vercel.com/dashboard" target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline hover:text-indigo-300">vercel.com/dashboard</a> ¡y arrastra esa carpeta al panel para publicar inmediatamente!
+                  </p>
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 text-[10px] text-amber-300/80">
+                💡 <strong>Consejo:</strong> La opción manual siempre funciona, incluso si no has configurado el Token de Vercel.
+              </div>
+            </div>
           </div>
         </div>
 

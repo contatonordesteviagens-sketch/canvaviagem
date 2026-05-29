@@ -2229,6 +2229,36 @@ const PublishOnLovableCard = ({
                     {isVercelDeploying ? "Publicando..." : "Publicar/Atualizar Vercel"}
                   </button>
                 </div>
+
+                {/* VERCEL MANUAL INSTRUCTIONS */}
+                <div className="mt-6 pt-5 border-t border-white/10">
+                  <h4 className="text-xs font-bold text-white tracking-wide uppercase mb-3 flex items-center gap-2">
+                    <Rocket className="w-4 h-4 text-emerald-400" /> Ou publique manualmente (Grátis & Sem Tokens)
+                  </h4>
+                  <div className="space-y-3 text-[11px] text-white/70 leading-relaxed mb-4">
+                    <div className="flex gap-2 items-start">
+                      <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">1</span>
+                      <p>
+                        Clique no botão verde <strong className="text-emerald-400">"Baixar HTML"</strong> no final da página.
+                      </p>
+                    </div>
+                    <div className="flex gap-2 items-start">
+                      <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">2</span>
+                      <p>
+                        Crie uma nova pasta no seu computador e coloque o arquivo baixado lá dentro. Renomeie o arquivo para <strong className="text-emerald-400">index.html</strong>.
+                      </p>
+                    </div>
+                    <div className="flex gap-2 items-start">
+                      <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">3</span>
+                      <p>
+                        Acesse <a href="https://vercel.com/dashboard" target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline hover:text-indigo-300">vercel.com/dashboard</a> e arraste essa pasta para dentro do painel para publicar imediatamente!
+                      </p>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 text-[10px] text-amber-300/80">
+                    💡 <strong>Dica:</strong> A opção manual sempre funciona mesmo se você não tiver configurado o Vercel Token.
+                  </div>
+                </div>
               </div>
             </div>
           </details>
