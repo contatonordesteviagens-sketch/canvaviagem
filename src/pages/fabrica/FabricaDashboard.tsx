@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { BusinessExtractor } from "@/components/fabrica/BusinessExtractor";
 import { 
   Upload, 
