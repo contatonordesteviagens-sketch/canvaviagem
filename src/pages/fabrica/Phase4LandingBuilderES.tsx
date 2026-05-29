@@ -1290,130 +1290,6 @@ const PublishOnLovableCard = ({
       .replace(/^-|-$/g, "");
   });
 
-  const [isVercelDeploying, setIsVercelDeploying] = useState(false);
-  const [customVercelToken, setCustomVercelToken] = useState(() => localStorage.getItem("vercel_token") || "");
-  const [showVercelConfig, setShowVercelConfig] = useState(false);
-
-  const handleVercelPublish = async () => {
-    const token = (import.meta.env.VITE_VERCEL_TOKEN || customVercelToken || "").trim();
-    if (!token) {
-      toast.error("¡Vercel Token no configurado! Haz clic en 'Configurar Cuenta' abajo e ingresa tu token.");
-      setShowVercelConfig(true);
-      return;
-    }
-
-    const cleanSubdomain = vercelSubdomain
-      .trim()
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9-]/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
-
-    if (!cleanSubdomain) {
-      toast.error("Por favor, escribe un nombre de subdomínio válido.");
-      return;
-    }
-
-    setIsVercelDeploying(true);
-    const toastId = toast.loading("Preparando publicación en Vercel...");
-
-    try {
-      toast.loading("Optimizando imágenes del sitio (esto puede tardar unos segundos)...", { id: toastId });
-      
-      let finalHtml = html;
-      const base64Regex = /src="(data:image\/[^;]+;base64,[^"]+)"/g;
-      const matches = [...finalHtml.matchAll(base64Regex)];
-      
-      for (let i = 0; i < matches.length; i++) {
-        const fullMatch = matches[i][0];
-        const base64Data = matches[i][1];
-        
-        try {
-          const mimeType = base64Data.split(';')[0].split(':')[1];
-          const b64Data = base64Data.split(',')[1];
-          const byteCharacters = atob(b64Data);
-          const byteArrays = [];
-          for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-            const slice = byteCharacters.slice(offset, offset + 512);
-            const byteNumbers = new Array(slice.length);
-            for (let j = 0; j < slice.length; j++) {
-              byteNumbers[j] = slice.charCodeAt(j);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            byteArrays.push(byteArray);
-          }
-          const blob = new Blob(byteArrays, { type: mimeType });
-          
-          const ext = mimeType.split('/')[1] || 'webp';
-          const filename = `vercel_assets/${user?.id || 'anon'}_${Date.now()}_${i}.${ext}`;
-          
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from("thumbnails")
-            .upload(filename, blob, { contentType: mimeType, upsert: true });
-            
-          if (!uploadError && uploadData) {
-            const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(filename).data.publicUrl;
-            finalHtml = finalHtml.replace(fullMatch, `src="${publicUrl}"`);
-          }
-        } catch (e) {
-          console.warn("Error subiendo imagen base64", e);
-        }
-      }
-
-      toast.loading("Enviando código optimizado a Vercel...", { id: toastId });
-
-      const res = await fetch("https://api.vercel.com/v13/deployments", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: cleanSubdomain,
-          files: [
-            {
-              file: "index.html",
-              data: btoa(unescape(encodeURIComponent(finalHtml))),
-              encoding: "base64",
-            },
-          ],
-          projectSettings: {
-            framework: null,
-          },
-          target: "production",
-        }),
-      });
-
-      const resData = await res.json();
-      if (!res.ok) {
-        throw new Error(resData?.error?.message || "Error en la respuesta de la API de Vercel");
-      }
-
-      const domain = `${cleanSubdomain}.vercel.app`;
-      const liveUrl = `https://${domain}`;
-
-      update({
-        siteContent: {
-          ...state.siteContent,
-          vercelUrl: liveUrl,
-        },
-      });
-
-      toast.success("🚀 ¡FELICITACIONES! ¡TU SITIO WEB ESTÁ EN LÍNEA EN VERCEL!", { id: toastId });
-
-      if (typeof window !== "undefined" && (window as any).confetti) {
-        (window as any).confetti();
-      }
-    } catch (err: any) {
-      console.error("Vercel Deploy Error:", err);
-      toast.error(`Error al publicar en Vercel: ${err.message || "Inténtalo de nuevo"}`, { id: toastId });
-    } finally {
-      setIsVercelDeploying(false);
-    }
-  };
-
   const handleSaveToken = (val: string) => {
     setCustomVercelToken(val);
     localStorage.setItem("vercel_token", val.trim());
@@ -1590,103 +1466,49 @@ const PublishOnLovableCard = ({
               </div>
             </div>
 
-            {showVercelConfig && (
-              <div className="mt-4 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 space-y-3">
-                <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider">
-                  Vercel Access Token:
-                </label>
-                <div className="flex gap-2">
-                  <input
-                     type="password"
-                     value={customVercelToken}
-                     onChange={(e) => setCustomVercelToken(e.target.value)}
-                     placeholder="Tu clave secreta de Vercel"
-                     className="flex-1 bg-black/40 border border-amber-500/20 px-3 py-2 text-sm text-white rounded-lg outline-none focus:border-amber-400"
-                  />
-                  <button
-                     onClick={() => handleSaveToken(customVercelToken)}
-                     className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs rounded-lg transition-all"
-                  >
-                     Guardar Token
-                  </button>
-                </div>
-                <p className="text-[10px] text-white/50 leading-relaxed">
-                  Crea un token en <a href="https://vercel.com/account/tokens" target="_blank" className="text-amber-400 hover:underline">vercel.com/account/tokens</a> y pégalo aquí.
-                </p>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
               <button
-                onClick={handleVercelPublish}
-                disabled={isVercelDeploying}
-                className="py-3.5 px-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 hover:brightness-110 disabled:brightness-50 disabled:cursor-not-allowed transition-all text-sm"
-                style={{ 
-                  background: `linear-gradient(135deg, ${primaryColor}, #F59E0B)`,
-                  boxShadow: `0 4px 12px ${primaryColor}33`
-                }}
+                onClick={handleDownload}
+                className="py-3 px-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all text-sm bg-emerald-500 hover:bg-emerald-600 shadow-[0_4px_12px_rgba(16,185,129,0.3)]"
               >
-                {isVercelDeploying ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Publicando...
-                  </>
-                ) : (
-                  <>
-                    Publicar Sitio
-                  </>
-                )}
+                <Download className="w-4 h-4" /> 1. Descargar HTML
               </button>
 
-              <button
-                onClick={handleVercelPublish}
-                disabled={isVercelDeploying}
-                className="py-3.5 px-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 hover:brightness-110 disabled:brightness-50 disabled:cursor-not-allowed transition-all text-sm"
-                style={{ 
-                  background: "linear-gradient(135deg, #10B981, #34D399)",
-                  boxShadow: "0 4px 12px rgba(16,185,129,0.2)"
-                }}
+              <a
+                href="https://vercel.com/dashboard"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-3 px-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all text-sm hover:brightness-110"
+                style={{ background: `linear-gradient(135deg, ${primaryColor}, #F59E0B)` }}
               >
-                {isVercelDeploying ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                    Actualizando...
-                  </>
-                ) : (
-                  <>
-                    Actualizar Sitio
-                  </>
-                )}
-              </button>
+                🚀 2. Abrir Vercel (Upload)
+              </a>
             </div>
 
             {/* VERCEL MANUAL INSTRUCTIONS */}
             <div className="mt-6 pt-5 border-t border-white/10">
               <h4 className="text-xs font-bold text-white tracking-wide uppercase mb-3 flex items-center gap-2">
-                <Rocket className="w-4 h-4 text-emerald-400" /> O publica manualmente (Gratis y sin Tokens)
+                <Rocket className="w-4 h-4 text-emerald-400" /> Cómo publicar gratis
               </h4>
               <div className="space-y-3 text-[11px] text-white/70 leading-relaxed mb-4">
                 <div className="flex gap-2 items-start">
                   <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">1</span>
                   <p>
-                    Haz clic en el botón verde <strong className="text-emerald-400">"Descargar HTML"</strong> al final de la página (¡necesitas crear el botón si no existe en la UI actual o copia el código HTML generado!).
+                    Haz clic en el botón verde <strong className="text-emerald-400">"Descargar HTML"</strong> arriba para guardar el archivo en tu computadora.
                   </p>
                 </div>
                 <div className="flex gap-2 items-start">
                   <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">2</span>
                   <p>
-                    Crea una nueva carpeta en tu computadora y coloca el archivo HTML descargado dentro. Renombra el archivo a <strong className="text-emerald-400">index.html</strong>.
+                    Crea una nueva carpeta en tu computadora y coloca el archivo HTML descargado dentro. Renombra el archivo a <strong className="text-emerald-400">index.html</strong> si es necesario.
                   </p>
                 </div>
                 <div className="flex gap-2 items-start">
                   <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">3</span>
                   <p>
-                    Accede a <a href="https://vercel.com/dashboard" target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline hover:text-indigo-300">vercel.com/dashboard</a> ¡y arrastra esa carpeta al panel para publicar inmediatamente!
+                    ¡Accede a Vercel con el botón amarillo y arrastra esa carpeta al panel para publicar inmediatamente!
                   </p>
                 </div>
-              </div>
-              <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 text-[10px] text-amber-300/80">
-                💡 <strong>Consejo:</strong> La opción manual siempre funciona, incluso si no has configurado el Token de Vercel.
               </div>
             </div>
           </div>

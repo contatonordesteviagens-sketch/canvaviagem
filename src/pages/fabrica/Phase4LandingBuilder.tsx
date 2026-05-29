@@ -1691,6 +1691,7 @@ const PublishOnLovableCard = ({
       console.error("[Phase4] download failed", e);
     }
   };
+
   const [canvaViagemSubdomain, setCanvaViagemSubdomain] = useState(() => {
     if (state.siteContent.canvaViagemUrl) {
       const savedUrl = state.siteContent.canvaViagemUrl.replace(/\/$/, "");
@@ -1718,147 +1719,6 @@ const PublishOnLovableCard = ({
       .replace(/^-|-$/g, "");
   });
 
-  const [isVercelDeploying, setIsVercelDeploying] = useState(false);
-  const [customVercelToken, setCustomVercelToken] = useState(() => localStorage.getItem("vercel_token") || "");
-  const [showVercelConfig, setShowVercelConfig] = useState(false);
-
-  const handleVercelPublish = async () => {
-    const token = (import.meta.env.VITE_VERCEL_TOKEN || customVercelToken || "").trim();
-    if (!token) {
-      toast.error("Vercel Token não configurado! Clique em 'Configurar Conta' abaixo e insira seu token.");
-      setShowVercelConfig(true);
-      return;
-    }
-
-    const cleanSubdomain = vercelSubdomain
-      .trim()
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9-]/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
-
-    if (!cleanSubdomain) {
-      toast.error("Por favor, digite um nome de subdomínio válido.");
-      return;
-    }
-
-    setIsVercelDeploying(true);
-    const toastId = toast.loading("Preparando publicação no Vercel...");
-
-    try {
-      toast.loading("Otimizando imagens do site (isso pode levar alguns segundos)...", { id: toastId });
-      
-      let finalHtml = html;
-      const base64Regex = /src="(data:image\/[^;]+;base64,[^"]+)"/g;
-      const matches = [...finalHtml.matchAll(base64Regex)];
-      
-      for (let i = 0; i < matches.length; i++) {
-        const fullMatch = matches[i][0];
-        const base64Data = matches[i][1];
-        
-        try {
-          const mimeType = base64Data.split(';')[0].split(':')[1];
-          const b64Data = base64Data.split(',')[1];
-          const byteCharacters = atob(b64Data);
-          const byteArrays = [];
-          for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-            const slice = byteCharacters.slice(offset, offset + 512);
-            const byteNumbers = new Array(slice.length);
-            for (let j = 0; j < slice.length; j++) {
-              byteNumbers[j] = slice.charCodeAt(j);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            byteArrays.push(byteArray);
-          }
-          const blob = new Blob(byteArrays, { type: mimeType });
-          
-          const ext = mimeType.split('/')[1] || 'webp';
-          const filename = `vercel_assets/${user?.id || 'anon'}_${Date.now()}_${i}.${ext}`;
-          
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from("thumbnails")
-            .upload(filename, blob, { contentType: mimeType, upsert: true });
-            
-          if (!uploadError && uploadData) {
-            const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(filename).data.publicUrl;
-            finalHtml = finalHtml.replace(fullMatch, `src="${publicUrl}"`);
-          }
-        } catch (e) {
-          console.warn("Falha ao fazer upload da imagem base64", e);
-        }
-      }
-
-      toast.loading("Enviando código otimizado para o Vercel...", { id: toastId });
-
-      const domain = `${cleanSubdomain}.vercel.app`;
-      const liveUrl = `https://${domain}`;
-
-      if (state.siteContent.vercelUrl && state.siteContent.vercelUrl !== liveUrl) {
-        try {
-          const oldSlug = state.siteContent.vercelUrl.replace("https://", "").replace(".vercel.app", "").replace(/\/$/, "");
-          if (oldSlug && oldSlug !== cleanSubdomain) {
-            await fetch(`https://api.vercel.com/v9/projects/${oldSlug}`, {
-              method: "DELETE",
-              headers: { Authorization: `Bearer ${token}` }
-            });
-          }
-        } catch (e) {
-          console.error("Erro ao deletar projeto antigo no Vercel:", e);
-        }
-      }
-
-      // Envia deploy para o Vercel usando API v13
-      const res = await fetch("https://api.vercel.com/v13/deployments", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: cleanSubdomain,
-          files: [
-            {
-              file: "index.html",
-              data: btoa(unescape(encodeURIComponent(finalHtml))),
-              encoding: "base64",
-            },
-          ],
-          projectSettings: {
-            framework: null,
-          },
-          target: "production",
-        }),
-      });
-
-      const resData = await res.json();
-      if (!res.ok) {
-        throw new Error(resData?.error?.message || "Erro na resposta da API Vercel");
-      }
-
-      // Vercel returns the actual assigned URL (e.g., project-abc.vercel.app)
-      const assignedUrl = resData.url ? `https://${resData.url}` : liveUrl;
-
-      // Salva no estado global com a URL real do Vercel
-      update({
-        siteContent: {
-          ...state.siteContent,
-          vercelUrl: assignedUrl,
-        },
-      });
-
-      toast.success("🚀 PARABÉNS! SEU SITE ESTÁ NO AR NO VERCEL!", { id: toastId });
-
-      if (typeof window !== "undefined" && (window as any).confetti) {
-        (window as any).confetti();
-      }
-    } catch (err: any) {
-      console.error("Vercel Deploy Error:", err);
-      toast.error(`Erro ao publicar no Vercel: ${err.message || "Tente novamente"}`, { id: toastId });
-    } finally {
-      setIsVercelDeploying(false);
-    }
   };
 
   const handleSaveToken = (val: string) => {
@@ -2220,43 +2080,48 @@ const PublishOnLovableCard = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                   <button
-                    onClick={handleVercelPublish}
-                    disabled={isVercelDeploying}
-                    className="py-2.5 px-4 rounded-lg font-bold text-white flex items-center justify-center gap-2 hover:brightness-110 disabled:brightness-50 disabled:cursor-not-allowed transition-all text-xs bg-white/10 border border-white/20"
+                    onClick={handleDownload}
+                    className="py-3 px-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all text-sm bg-emerald-500 hover:bg-emerald-600 shadow-[0_4px_12px_rgba(16,185,129,0.3)]"
                   >
-                    {isVercelDeploying ? "Publicando..." : "Publicar/Atualizar Vercel"}
+                    <Download className="w-4 h-4" /> 1. Baixar HTML
                   </button>
+
+                  <a
+                    href="https://vercel.com/dashboard"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-3 px-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all text-sm hover:brightness-110"
+                    style={{ background: `linear-gradient(135deg, ${primaryColor}, #F59E0B)` }}
+                  >
+                    🚀 2. Abrir Vercel (Upload)
+                  </a>
                 </div>
 
-                {/* VERCEL MANUAL INSTRUCTIONS */}
                 <div className="mt-6 pt-5 border-t border-white/10">
                   <h4 className="text-xs font-bold text-white tracking-wide uppercase mb-3 flex items-center gap-2">
-                    <Rocket className="w-4 h-4 text-emerald-400" /> Ou publique manualmente (Grátis & Sem Tokens)
+                    <Rocket className="w-4 h-4 text-emerald-400" /> Como publicar grátis
                   </h4>
                   <div className="space-y-3 text-[11px] text-white/70 leading-relaxed mb-4">
                     <div className="flex gap-2 items-start">
                       <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">1</span>
                       <p>
-                        Clique no botão verde <strong className="text-emerald-400">"Baixar HTML"</strong> no final da página.
+                        Clique no botão verde <strong className="text-emerald-400">"Baixar HTML"</strong> logo acima para salvar o arquivo do site no seu computador.
                       </p>
                     </div>
                     <div className="flex gap-2 items-start">
                       <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">2</span>
                       <p>
-                        Crie uma nova pasta no seu computador e coloque o arquivo baixado lá dentro. Renomeie o arquivo para <strong className="text-emerald-400">index.html</strong>.
+                        Crie uma nova pasta no seu computador e coloque o arquivo baixado lá dentro. Renomeie o arquivo para <strong className="text-emerald-400">index.html</strong> se necessário.
                       </p>
                     </div>
                     <div className="flex gap-2 items-start">
                       <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">3</span>
                       <p>
-                        Acesse <a href="https://vercel.com/dashboard" target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline hover:text-indigo-300">vercel.com/dashboard</a> e arraste essa pasta para dentro do painel para publicar imediatamente!
+                        Acesse o Vercel pelo botão amarelo, e arraste a pasta para dentro do painel para colocar o seu site no ar na mesma hora!
                       </p>
                     </div>
-                  </div>
-                  <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 text-[10px] text-amber-300/80">
-                    💡 <strong>Dica:</strong> A opção manual sempre funciona mesmo se você não tiver configurado o Vercel Token.
                   </div>
                 </div>
               </div>
