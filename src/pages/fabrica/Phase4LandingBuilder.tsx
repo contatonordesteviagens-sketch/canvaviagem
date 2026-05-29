@@ -193,8 +193,9 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         ".price-value",
         ".price-main",
         ".dest-tag",
-        ".depo-text",
         ".depo-name",
+        ".stat-num",
+        ".stat-label",
         "summary",
         ".faq-item p"
       ].join(",");
@@ -296,6 +297,26 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             if (idx !== -1 && state.depoimentos[idx]) {
               if (el.classList.contains("depo-text")) updDepo(idx, { text: textVal });
               else if (el.classList.contains("depo-name")) updDepo(idx, { name: textVal });
+            }
+          }
+          // Stats Banner
+          else if (el.closest(".stats-bar > div") || el.classList.contains("stat-num") || el.classList.contains("stat-label")) {
+            const statDiv = el.closest(".stats-bar > div");
+            if (statDiv) {
+              const allStats = Array.from(doc.querySelectorAll(".stats-bar > div"));
+              const idx = allStats.indexOf(statDiv as Element);
+              if (idx !== -1) {
+                const stats = [...(state.siteContent.stats || [
+                  { num: "12+", label: "Anos de Experiência" },
+                  { num: "15k+", label: "Viajantes Felizes" },
+                  { num: "25", label: "Países Atendidos" },
+                  { num: "99%", label: "Satisfação" }
+                ])];
+                if (!stats[idx]) stats[idx] = { num: "", label: "" };
+                if (el.classList.contains("stat-num")) stats[idx].num = textVal;
+                else if (el.classList.contains("stat-label")) stats[idx].label = textVal;
+                updSite({ stats });
+              }
             }
           }
         });

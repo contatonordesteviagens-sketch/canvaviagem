@@ -88,6 +88,7 @@ export interface SiteContent {
   orcamentoText?: string;
   atendimentoText?: string;
   footerText?: string;
+  stats?: Array<{ num: string; label: string }>;
 }
 
 export type AgencyType =
@@ -196,9 +197,11 @@ export interface FabricaState {
   footerContact2Value?: string;
   lastEditedAt?: string;
   leadStatuses?: Record<string, string>;
+  projectId?: string;
 }
 
 const defaultState: FabricaState = {
+  projectId: "",
   agencyName: "",
   agencyType: "",
   agencyTypeOther: "",
@@ -305,6 +308,12 @@ const defaultState: FabricaState = {
     orcamentoText: "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.",
     atendimentoText: "Seg–Sex 8h–20h · Sáb 9h–15h",
     footerText: "Sua parceira ideal para viagens inesquecíveis. Cuidamos de cada detalhe para que você apenas aproveite o momento.",
+    stats: [
+      { num: "12+", label: "Anos de Experiência" },
+      { num: "15k+", label: "Viajantes Felizes" },
+      { num: "25", label: "Países Atendidos" },
+      { num: "99%", label: "Satisfação" },
+    ],
   },
   lastCategoria: "oferta_pacote",
   lastFormat: "story",
@@ -609,7 +618,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         console.log("[Supabase Load] Iniciando carregamento do banco de dados...");
         const { data, error } = await supabase
           .from("fabrica_diagnosticos")
-          .select("state_snapshot, updated_at")
+          .select("id, state_snapshot, updated_at")
           .eq("user_id", user.id)
           .order("updated_at", { ascending: false })
           .limit(1)
@@ -633,6 +642,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
 
             const merged = {
               ...defaultState,
+              projectId: primary.projectId || fallback.projectId || data.id,
               ...primary,
               // Always preserve core data from DB if local is suspiciously empty or default
               agencyName: primary.agencyName || fallback.agencyName || "",
@@ -730,14 +740,22 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
           allGeneratedAdImages: []
         };
 
-        const { error } = await supabase
+        const payloadToSave: any = {
+          user_id: user.id,
+          agency_name: state.agencyName || "Nova Agência",
+          state_snapshot: cleanState as any,
+          updated_at: new Date().toISOString()
+        };
+        
+        if (state.projectId) {
+          payloadToSave.id = state.projectId;
+        }
+
+        const { error, data } = await supabase
           .from("fabrica_diagnosticos")
-          .upsert({
-            user_id: user.id,
-            agency_name: state.agencyName || "Nova Agência",
-            state_snapshot: cleanState as any,
-            updated_at: new Date().toISOString()
-          }, { onConflict: "user_id" });
+          .upsert(payloadToSave, { onConflict: "id" })
+          .select("id")
+          .maybeSingle();
 
         if (error) {
           console.warn("[Supabase Sync] Falha:", error.message);
@@ -746,6 +764,10 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
           console.log("[Supabase Sync] ✓ Salvo na nuvem");
           setLastSyncedAt(new Date());
           setSyncStatus("saved");
+          if (data?.id && !state.projectId) {
+            stateRef.current.projectId = data.id;
+            setState(prev => ({ ...prev, projectId: data.id }));
+          }
         }
       } catch (err) {
         setSyncStatus("error");

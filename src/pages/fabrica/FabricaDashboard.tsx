@@ -286,7 +286,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                     const p = savedProjects.find(x => x.id === val);
                     if (p && p.state_snapshot) {
                       // Carrega o snapshot completo (defaultState + snapshot) via evento
-                      window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: p.state_snapshot }));
+                      window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
                       toast.success(`Projeto "${p.agency_name || 'Sem Nome'}" carregado!`);
                       // Volta ao dashboard pra ver o conteúdo carregado
                       setTimeout(() => onNavigate?.("dashboard"), 100);

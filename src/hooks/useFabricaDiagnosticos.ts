@@ -46,7 +46,7 @@ export const useSaveDiagnostico = () => {
       existingId?: string;
     }) => {
       if (!user) throw new Error("Faça login para salvar");
-      const payload = {
+      const payload: any = {
         user_id: user.id,
         agency_name: params.state.agencyName || "Sem nome",
         digital_score: params.score,
@@ -55,19 +55,12 @@ export const useSaveDiagnostico = () => {
         state_snapshot: params.state as any,
         checklist_progress: params.state.checklist30days as any,
       };
-      if (params.existingId) {
-        const { data, error } = await supabase
-          .from("fabrica_diagnosticos" as any)
-          .update(payload)
-          .eq("id", params.existingId)
-          .select()
-          .single();
-        if (error) throw error;
-        return data;
+      if (params.existingId || params.state.projectId) {
+        payload.id = params.existingId || params.state.projectId;
       }
       const { data, error } = await supabase
         .from("fabrica_diagnosticos" as any)
-        .upsert(payload, { onConflict: "user_id" })
+        .upsert(payload, { onConflict: "id" })
         .select()
         .single();
       if (error) throw error;

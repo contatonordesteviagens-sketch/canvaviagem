@@ -817,8 +817,8 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
   const wppMsg = (titulo: string) =>
     wpp ? `https://wa.me/${wpp}?text=${encodeURIComponent(`Olá! Tenho interesse em ${titulo}.`)}` : "#";
 
-  // Stats default (a agência pode editar depois). Usamos números crescentes para autoridade.
-  const stats = [
+  // Stats default ou personalizado
+  const stats = state.siteContent.stats || [
     { num: "12+", label: "Anos de Experiência" },
     { num: "15k+", label: "Viajantes Felizes" },
     { num: "25", label: "Países Atendidos" },
