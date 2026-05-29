@@ -1790,70 +1790,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         </div>
       )}
 
-      {/* NOVO TOPO: Perfil e Logo */}
-      <div className={`${sectionCls} space-y-5 mb-8`}>
-        {user && (
-          <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl relative overflow-hidden transition-all shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
-            <div className="absolute top-0 left-0 w-1 h-full" style={{ background: primaryColor }}></div>
-            <button
-              type="button"
-              onClick={() => setProjectsPanelOpen(!projectsPanelOpen)}
-              className="w-full flex items-center justify-between text-[11px] text-white/60 font-bold uppercase tracking-wider outline-none"
-            >
-              <span className="flex items-center gap-1.5">📂 Projetos Salvos {savedProjects && savedProjects.length > 0 && `(${savedProjects.length})`}</span>
-              <span className="text-[10px] text-white/30 font-medium">{projectsPanelOpen ? "▲ Recolher" : "▼ Expandir / Carregar"}</span>
-            </button>
-            
-            {projectsPanelOpen && (
-              <div className="mt-3 flex flex-col sm:flex-row gap-2 pt-2 border-t border-white/5">
-                {savedProjects && savedProjects.length > 0 ? (
-                  <select
-                    onChange={(e) => {
-                      const p = savedProjects.find(x => x.id === e.target.value);
-                      if (p && p.state_snapshot) {
-                         update({ 
-                           ...p.state_snapshot, 
-                           currentPhase: state.currentPhase, 
-                           diagnosticoCompleto: false 
-                         });
-                         toast.success(`Projeto "${p.agency_name || 'Sem Nome'}" carregado! Todas as configs foram restauradas.`);
-                      }
-                      e.target.value = "";
-                    }}
-                    className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-white/30 transition-colors text-xs"
-                  >
-                    <option value="" className="bg-zinc-900">Selecione um projeto salvo...</option>
-                    {savedProjects.map((p) => (
-                      <option key={p.id} value={p.id} className="bg-zinc-900">{p.agency_name || "Sem Nome"} (Salvo em {new Date(p.updated_at).toLocaleDateString()})</option>
-                    ))}
-                  </select>
-                ) : (
-                  <div className="flex-1 bg-white/[0.01] border border-white/5 rounded-lg px-3 py-2 text-white/40 text-xs flex items-center">
-                    Nenhum projeto salvo encontrado
-                  </div>
-                )}
-                
-                <button
-                  type="button"
-                  onClick={() => {
-                    const currentPhase = state.currentPhase;
-                    reset();
-                    setTimeout(() => {
-                      update({ currentPhase });
-                    }, 50);
-                    toast.success("Novo projeto iniciado! As informações foram zeradas.");
-                  }}
-                  className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
-                  style={{ borderColor: `${primaryColor}40` }}
-                >
-                  <span>+ Novo Projeto</span>
-                </button>
-              </div>
-            )}
-          </div>
-        )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
           {/* Coluna Logo: mais estreita e profissional */}
           <div className="sm:col-span-4">
             <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Identidade Visual</label>
