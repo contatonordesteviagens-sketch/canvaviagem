@@ -1790,7 +1790,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         </div>
       )}
 
-
+      {/* Grid de Perfil e Contatos */}
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 bg-white/[0.02] border border-white/[0.08] p-6 rounded-2xl">
           {/* Coluna Logo: mais estreita e profissional */}
           <div className="sm:col-span-4">
             <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Identidade Visual</label>
@@ -1897,7 +1898,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             </div>
           </div>
         </div>
-      </div>
       {/* 0 e 1 · Modo e Categoria */}
       <div className={`${sectionCls} space-y-5`}>
         {/* Modo de Geração - Segmented Control */}
