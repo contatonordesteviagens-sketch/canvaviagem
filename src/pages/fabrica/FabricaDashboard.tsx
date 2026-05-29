@@ -42,12 +42,42 @@ const AGENCY_TYPES = [
   { v: "outro", l: "Outro tipo" },
 ] as const;
 
-export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
   const { state, update, reset } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sites publicados reais (canvaviagem.com) deste usuário
+  const [publishedSites, setPublishedSites] = useState<{ id: string; updated_at: string }[]>([]);
+  // Leads reais capturados (sincronizado com CRM Fase 5)
+  const [realLeadsCount, setRealLeadsCount] = useState<number>(0);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: sites } = await supabase
+          .from("public_sites")
+          .select("id, updated_at")
+          .eq("owner_id", user.id)
+          .order("updated_at", { ascending: false });
+        if (!cancelled && sites) setPublishedSites(sites);
+
+        const { count } = await supabase
+          .from("analytics_events")
+          .select("*", { count: "exact", head: true })
+          .eq("event_type", "lead_captured")
+          .contains("event_data", { agency_id: user.id });
+        if (!cancelled) setRealLeadsCount(count || 0);
+      } catch (e) {
+        console.warn("[FabricaDashboard] Falha ao sincronizar sites/leads:", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, state.siteContent?.canvaViagemUrl, state.siteContent?.vercelUrl]);
+
 
   const [phoneDropOpen, setPhoneDropOpen] = useState(false);
 
