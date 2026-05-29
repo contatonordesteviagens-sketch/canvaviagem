@@ -41,7 +41,7 @@ const AGENCY_TYPES = [
   { v: "religioso", l: "Turismo Religioso" },
   { v: "outro", l: "Outro tipo" },
 ] as const;
-
+export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
   const { state, update, reset } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
