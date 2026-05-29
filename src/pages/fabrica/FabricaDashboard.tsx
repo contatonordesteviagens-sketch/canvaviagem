@@ -603,7 +603,8 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
         {/* Right Side: Package Management (7 Cols) */}
         <div className="lg:col-span-7 space-y-6">
           
-          <BusinessExtractor onExtract={handleExtractorData} />
+          {/* Temporariamente oculto - voltar depois */}
+          {false && <BusinessExtractor onExtract={handleExtractorData} />}
 
           {/* DYNAMIC CARD: SEUS PACOTES */}
           <div className="bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-6">
