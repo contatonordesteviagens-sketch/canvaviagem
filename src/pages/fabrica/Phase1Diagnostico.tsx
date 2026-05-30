@@ -420,6 +420,8 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
       score: result.digitalScore,
       level: result.level,
       levelName: result.levelName,
+    }, {
+      onSuccess: () => toast.success("✅ Diagnóstico salvo na sua conta!"),
     });
   };
 

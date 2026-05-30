@@ -432,7 +432,10 @@ const readPersistedState = (userId?: string | null): FabricaState => {
       ...defaultState,
       ...parsed,
       ...heavy,
-      allGeneratedAdImages: generated.length ? generated : (parsed.allGeneratedAdImages || []),
+      // Não recarregamos allGeneratedAdImages do localStorage — era a causa principal
+      // de travadas (20MB+ de base64 carregado na inicialização). As imagens vão
+      // para o Supabase/storage e o estado central do banco já traz o que é necessário.
+      allGeneratedAdImages: parsed.allGeneratedAdImages || [],
       siteContent: {
         ...defaultState.siteContent,
         ...(parsed.siteContent || {}),
@@ -489,10 +492,9 @@ const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
   else localStorage.removeItem(heavyPrefix + "lastCleanPhoto");
 
   const savedGallery = safeSetItem(scopedKey(GALLERY_KEY, resolvedUserId), JSON.stringify(galleryImages || []));
-  const savedGenerated = safeSetItem(scopedKey(GENERATED_KEY, resolvedUserId), JSON.stringify(allGeneratedAdImages || []));
   
-  if (!savedGallery || !savedGenerated) {
-    console.warn("Quota exceeded when saving images to local storage.");
+  if (!savedGallery) {
+    console.warn("Quota exceeded when saving gallery to local storage.");
   }
 };
 

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
-import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
+import { useDiagnosticos, useSaveDiagnostico } from "@/hooks/useFabricaDiagnosticos";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BusinessExtractor } from "@/components/fabrica/BusinessExtractor";
@@ -45,8 +45,29 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
   const { state, update, reset } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
+  const saveProject = useSaveDiagnostico();
   const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSaveProject = async () => {
+    if (!user) { toast.error("Faça login para salvar"); return; }
+    setIsSaving(true);
+    try {
+      await saveProject.mutateAsync({
+        state,
+        score: state.digitalScore || 0,
+        level: 1,
+        levelName: "Projeto Salvo",
+        existingId: state.projectId,
+      });
+      toast.success("✅ Projeto salvo com sucesso na sua conta!");
+    } catch (e: any) {
+      toast.error(e?.message || "Erro ao salvar projeto");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Sites publicados reais (canvaviagem.com) deste usuário
   const [publishedSites, setPublishedSites] = useState<{ id: string; updated_at: string }[]>([]);
@@ -310,15 +331,41 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                   Nenhum projeto salvo encontrado
                 </div>
               )}
-              
+              {/* Botão Salvar Projeto */}
+              <button
+                type="button"
+                onClick={handleSaveProject}
+                disabled={isSaving || !state.agencyName}
+                className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-95 shrink-0 flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={!state.agencyName ? "Preencha o nome da agência antes de salvar" : "Salvar projeto atual na sua conta"}
+              >
+                {isSaving ? (
+                  <>
+                    <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+                    </svg>
+                    <span>Salvando...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>💾</span>
+                    <span>Salvar Projeto</span>
+                  </>
+                )}
+              </button>
+
               <button
                 type="button"
                 onClick={() => {
-                  // Zera tudo via evento (defaultState completo) e mantém no Painel
+                  const confirmed = window.confirm(
+                    `⚠️ Antes de criar um novo projeto, certifique-se de ter salvo o projeto atual ("${state.agencyName || 'Sem nome'}").\n\nDeseja continuar e criar um novo projeto em branco?`
+                  );
+                  if (!confirmed) return;
                   window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: {} }));
                   reset();
                   toast.success("Novo projeto iniciado! Você pode preencher os dados iniciais aqui.");
-                  setProjectsPanelOpen(false); // Fecha o painel de seleção
+                  setProjectsPanelOpen(false);
                 }}
                 className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-white/10 hover:bg-white/5 active:scale-95 shrink-0 flex items-center justify-center gap-1.5"
                 style={{ borderColor: `${state.primaryColor || "#F59E0B"}40` }}

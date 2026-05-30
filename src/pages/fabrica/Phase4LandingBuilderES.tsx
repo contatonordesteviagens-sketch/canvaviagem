@@ -652,13 +652,11 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                   />
                 </div>
               </div>
-              <p className="text-xs text-white/50 mt-3">Aplicado en botones, encabezados y CTAs.</p>
+
             </FabricaCard>
 
             <FabricaCard title="👁️ Secciones del sitio">
-              <p className="text-xs text-white/50 mb-3">
-                Elige lo que aparece en el sitio. Desmarca cualquier sección para eliminarla (también se elimina del HTML exportado).
-              </p>
+
               <div className="grid grid-cols-2 gap-2">
                 {(
                   [
@@ -692,9 +690,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             </FabricaCard>
 
             <FabricaCard title="✨ Efeitos Visuais & Campanhas">
-              <p className="text-xs text-white/50 mb-4">
-                Adicione efeitos visuais flutuantes na tela para destacar campanhas e ofertas especiais de forma sutil.
-              </p>
+
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">

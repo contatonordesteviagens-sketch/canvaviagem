@@ -808,7 +808,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                   />
                 </div>
               </div>
-              <p className="text-xs text-white/50 mt-3">Aplicada em botões, headers e CTAs.</p>
+
             </FabricaCard>
 
             <FabricaCard title="📍 Endereço e Mapa">
@@ -819,15 +819,13 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                   onChange={(v) => update({ address: v })}
                   placeholder="Ex: Av. Paulista, 1000 - Bela Vista, São Paulo - SP"
                 />
-                <p className="text-xs text-white/50">
-                  Ao preencher o endereço, um Google Map interativo responsivo será exibido automaticamente no rodapé do seu site! Deixe em branco caso não queira exibir o mapa.
-                </p>
+
               </div>
             </FabricaCard>
 
             <FabricaCard title="📊 Configurações de Rastreamento">
               <div className="space-y-4">
-                <p className="text-xs text-white/50 mb-3">Insira seus pixels de rastreamento para acompanhar as métricas do site.</p>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider mb-2">
@@ -918,9 +916,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             </FabricaCard>
 
             <FabricaCard title="👁️ Seções do site">
-              <p className="text-xs text-white/50 mb-3">
-                Escolha o que aparece no site e arraste para reordenar as seções (some também do HTML exportado).
-              </p>
+
               <div className="flex flex-col gap-2">
                 {(() => {
                   const sectionLabels: Record<string, string> = {
@@ -999,9 +995,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
             </FabricaCard>
 
             <FabricaCard title="✨ Efeitos Visuais & Campanhas">
-              <p className="text-xs text-white/50 mb-4">
-                Adicione efeitos visuais flutuantes na tela para destacar campanhas e ofertas especiais de forma sutil.
-              </p>
+
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">

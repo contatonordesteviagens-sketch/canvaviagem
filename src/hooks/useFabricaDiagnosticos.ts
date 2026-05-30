@@ -68,7 +68,7 @@ export const useSaveDiagnostico = () => {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["fabrica-diagnosticos"] });
-      toast.success("Diagnóstico salvo na sua conta!");
+      // toast controlado pelo chamador para evitar duplicação
     },
     onError: (e: any) => {
       toast.error(e?.message || "Erro ao salvar diagnóstico");

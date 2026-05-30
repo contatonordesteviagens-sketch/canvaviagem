@@ -2003,9 +2003,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               );
             })}
           </div>
-          <p className="text-[10px] text-white/40 mt-2">
-            Cada clique gera 1 imagem única. A próxima geração troca layout, texto e formatação automaticamente.
-          </p>
         </div>
 
         {/* Formato do Anúncio */}
@@ -2470,7 +2467,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                     <option key={f} value={f}>{f}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-white/40 mt-1.5">A fonte escolhida é aplicada a todas as artes geradas.</p>
               </div>
 
               {/* Ajustes Avançados de Tamanho — accordion interno */}
