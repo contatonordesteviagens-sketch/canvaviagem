@@ -1785,11 +1785,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.restore();
 
         const priceBlockY = ringY + 30;
-        const priceGroupW = Math.min(ringW - 48, Math.round(width * 0.46));
+        // Aumentado a largura útil para evitar colisão entre A VISTA e o preço em layouts quadrados
+        const priceGroupW = Math.min(ringW - 48, Math.round(width * 0.78));
         const priceGroupX = ringX + (ringW - priceGroupW) / 2;
         const leftColX = priceGroupX;
         const rightEdgeX = priceGroupX + priceGroupW;
-        const minGap = 18;
+        const minGap = 24;
 
         // Quebra "R$ 229" em simbolo pequeno + valor gigante
         const priceParts = priceStr.match(/^(\D+)\s*([\d.,]+)$/);
@@ -1797,7 +1798,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const valNum = priceParts ? priceParts[2].trim() : priceStr;
 
         // DEFENSIVE: Ajusta tamanho da fonte se o preco for MUITO longo (evita colisao com 10X)
-        const leftReservedW = 210;
+        const leftReservedW = 280; // Aumentado para acomodar "A VISTA"
         const maxPriceW = priceGroupW - leftReservedW - minGap;
         let priceSize = 120;
         ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
