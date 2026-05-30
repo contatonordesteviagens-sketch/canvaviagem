@@ -11,7 +11,7 @@ import { getForbiddenSets, registerGeneration, freshSeed } from "@/lib/fabrica-g
 import {
   Loader2, Download, Sparkles, ArrowRight, Plus, X, Trash2, ChevronDown, RotateCcw,
   Bus, Hotel, Plane, Check, Star, Heart, Sun, Camera, MapPin, Utensils, Ship, Palmtree, Coffee, Wifi, User,
-  Square, Smartphone, Image as ImageIcon, Upload, Link2, Search, Wand2, Copy, ClipboardCheck, FileText,
+  Square, Smartphone, Image as ImageIcon, Upload, Link2, Search, Wand2, Copy, ClipboardCheck, FileText, Key,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -1337,7 +1337,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         return;
       }
 
-        // ===== MODO IA PURA: gera 1 prompt da categoria; Experiência usa fluxo seguro sem texto da IA =====
       // ===== MODO IA PURA: MOTOR DE LAYOUT DINÂMICO =====
       if (genMode === "ai") {
         const refImage = selectedPhotoUrl;
@@ -1347,16 +1346,19 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           return;
         }
 
-        toast.info("Iniciando IA Designer v2...");
+        const userGeminiKey = localStorage.getItem("user_gemini_api_key");
+        if (!userGeminiKey) {
+          toast.error("Por favor, configure sua Chave do Gemini na seção 'Configurações de IA' abaixo.");
+          setLoading(false);
+          return;
+        }
 
-        // Extrai os destaques
+        toast.info("Iniciando IA Designer v3...");
+
         let parsedHighlights: string[] = [];
-        try { parsedHighlights = Array.isArray(highlights) ? (highlights as any[]).map(h => typeof h === "string" ? h : (h?.text || "")) : JSON.parse((highlights as any) || "[]"); } catch {}
+        try { parsedHighlights = JSON.parse(highlights || "[]"); } catch {}
 
         try {
-          const geminiKey = localStorage.getItem("user_gemini_api_key");
-          if (!geminiKey) throw new Error("Chave do Gemini não configurada nas engrenagens (Configurações).");
-
           const promptText = `Crie um layout moderno e de alta conversão para um pacote de viagem.
 Destino: ${destination || "Destino"}
 Preço: ${currencySymbol} ${formattedPriceForAd || price}
@@ -1391,11 +1393,9 @@ Retorne EXCLUSIVAMENTE um JSON válido com a estrutura:
     }
   ]
 }
-Apenas o JSON, sem markdown.
+Apenas o JSON, sem markdown. CRITICAL: You MUST return ONLY the raw, minified JSON object.`;
 
-CRITICAL: You MUST return ONLY the raw, minified JSON object. Do NOT wrap the JSON in markdown code blocks (\`\`\`json). Do NOT add any conversational text before or after the JSON.`;
-
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userGeminiKey}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -1407,34 +1407,24 @@ CRITICAL: You MUST return ONLY the raw, minified JSON object. Do NOT wrap the JS
             }),
           });
 
-          if (!response.ok) throw new Error("Falha na chamada direta à API do Gemini.");
+          if (!response.ok) throw new Error("Falha na chamada direta à API do Gemini. Verifique sua chave.");
           
           const data = await response.json();
-          const rawResponseText: string | undefined = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-          console.log("RAW_RESPONSE_IA:", rawResponseText);
+          const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (!rawText) throw new Error("JSON não retornado pela IA.");
 
-          let layoutJson: any = null;
-          if (rawResponseText) {
-            // Sanitização robusta: remove fences markdown e ruído antes/depois do JSON
-            let cleanJsonString = rawResponseText
-              .replace(/```json/gi, "")
-              .replace(/```/g, "")
-              .trim();
-            const firstBrace = cleanJsonString.indexOf("{");
-            const lastBrace = cleanJsonString.lastIndexOf("}");
-            if (firstBrace !== -1 && lastBrace > firstBrace) {
-              cleanJsonString = cleanJsonString.slice(firstBrace, lastBrace + 1);
-            }
-            try {
-              layoutJson = JSON.parse(cleanJsonString);
-            } catch (parseErr) {
-              console.error("ERRO_IA_PURA_PARSE:", parseErr, "CLEANED:", cleanJsonString);
-              throw new Error("JSON inválido retornado pela IA após sanitização.");
-            }
+          let layoutJson = null;
+          try {
+            const cleaned = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+            const start = cleaned.indexOf("{");
+            const end = cleaned.lastIndexOf("}");
+            layoutJson = JSON.parse(cleaned.substring(start, end + 1));
+          } catch (e) {
+            console.error("Erro no parse do JSON da IA:", e);
+            throw new Error("A IA retornou um formato inválido.");
           }
-          if (!layoutJson || !Array.isArray(layoutJson.elements)) {
-            throw new Error("JSON de layout não retornado ou sem 'elements'.");
-          }
+
+          if (!layoutJson || !Array.isArray(layoutJson.elements)) throw new Error("JSON de layout inválido.");
 
           const { renderIAPuraLayout } = await import("@/lib/fabrica-compose-art");
           
@@ -1445,19 +1435,59 @@ CRITICAL: You MUST return ONLY the raw, minified JSON object. Do NOT wrap the JS
           const ctx = canvas.getContext("2d");
           if (!ctx) throw new Error("Falha ao inicializar Canvas");
 
-          await renderIAPuraLayout(ctx, ({
+          await renderIAPuraLayout(ctx, {
             format,
-            imageUrl: refImage,
-            logoDataUrl: state.logoBase64,
+            destination: destination || "Destino",
+            price: formattedPriceForAd || price,
+            travelPeriod: travelPeriod || "5 NOITES",
+            highlights: parsedHighlights,
+            promoName: promoName || "OFERTA ESPECIAL",
+            primaryColor,
+            secondaryColor,
+            currencySymbol,
+            paymentMode,
+            installments,
+            paymentSuffix,
+            logoBase64: state.logoBase64,
+            logoFormat: state.logoFormat,
             footerContact1Icon: state.footerContact1Icon,
             footerContact1Value: state.footerContact1Value,
             footerContact2Icon: state.footerContact2Icon,
             footerContact2Value: state.footerContact2Value,
-            fontFamily: (state as any).fontFamily || "Inter",
-            textColorOverride: (state as any).textColorOverride
-          }) as any, layoutJson);
+            fontFamily,
+            titleScale,
+            descScale,
+            textColorOverride,
+          }, layoutJson);
 
-          const finalImageUrl = canvas.toDataURL("image/png");
+          const iaLayerBase64 = canvas.toDataURL("image/png", 0.9);
+          
+          const finalCanvas = document.createElement("canvas");
+          finalCanvas.width = 1080;
+          finalCanvas.height = isStory ? 1920 : 1080;
+          const fCtx = finalCanvas.getContext("2d");
+          if (!fCtx) throw new Error("Erro no canvas final");
+
+          const bgImg = new Image();
+          bgImg.crossOrigin = "anonymous";
+          const bgLoaded = new Promise((res, rej) => {
+            bgImg.onload = res;
+            bgImg.onerror = rej;
+          });
+          bgImg.src = refImage;
+          await bgLoaded;
+          
+          const { reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
+          await reframeImageToAspect(fCtx, bgImg, isStory ? "story" : "square");
+
+          const overlayImg = new Image();
+          const overlayLoaded = new Promise((res) => { overlayImg.onload = res; });
+          overlayImg.src = iaLayerBase64;
+          await overlayLoaded;
+
+          fCtx.drawImage(overlayImg, 0, 0, finalCanvas.width, finalCanvas.height);
+          
+          const finalImageUrl = finalCanvas.toDataURL("image/png", 0.9);
 
           setGeneratedImages([finalImageUrl]);
           setGeneratedImage(finalImageUrl);
@@ -1471,7 +1501,7 @@ CRITICAL: You MUST return ONLY the raw, minified JSON object. Do NOT wrap the JS
           
           await syncGeneratedPackageToSite(finalImageUrl, refImage);
           
-          toast.success("Design Dinâmico gerado com sucesso!");
+          toast.success("Design Dinâmico gerado com sucesso pela IA!");
 
           const newCount = generationCount + 1;
           setGenerationCount(newCount);
@@ -1481,7 +1511,6 @@ CRITICAL: You MUST return ONLY the raw, minified JSON object. Do NOT wrap the JS
           requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
         } catch (error: any) {
           console.error("ERRO_IA_PURA_CATCH:", error);
-          console.error("Erro no motor de IA Dinâmica:", error);
           toast.error("Erro ao gerar design da IA: " + error.message);
           
           toast.info("Carregando layout de segurança (V0) devido à falha da IA...");
@@ -2699,7 +2728,31 @@ CRITICAL: You MUST return ONLY the raw, minified JSON object. Do NOT wrap the JS
             Pressione Enter ou clique em <kbd className="text-white/60">+</kbd> para adicionar. Até {MAX_HIGHLIGHTS} benefícios.
           </p>
         </div>
-
+        
+        {/* Configurações de IA (Gemini Key) */}
+        {genMode === "ai" && (
+          <div className="bg-white/[0.03] border border-emerald-500/30 rounded-xl p-4 mb-4">
+            <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+              <Key className="w-3.5 h-3.5" />
+              Sua Chave API do Gemini
+            </h4>
+            <p className="text-[10px] text-white/50 mb-3 leading-relaxed">
+              Para usar o motor de IA Pura sem passar pelo servidor, cole sua chave do Google Gemini abaixo. 
+              Ela fica salva <strong>apenas no seu navegador local</strong> (é 100% segura e invisível para o público).
+            </p>
+            <input
+              type="password"
+              placeholder="AIzaSy..."
+              className={`${inputCls} font-mono text-xs`}
+              value={localStorage.getItem("user_gemini_api_key") || ""}
+              onChange={(e) => {
+                localStorage.setItem("user_gemini_api_key", e.target.value);
+                // force re-render by dispatching a fake state update
+                update({} as any);
+              }}
+            />
+          </div>
+        )}
 
         {/* Feature: Lote A/B (3 variações) */}
         <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 flex items-center justify-between gap-4 hover:bg-white/[0.05] transition-colors cursor-pointer group" onClick={() => setIsBatchMode(!isBatchMode)}>
