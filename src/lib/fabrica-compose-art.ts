@@ -1559,28 +1559,34 @@ const panelBottom = RULES.PANEL_BOTTOM;
         
         // Linha acima: Parcelas/Destaque separado com respiro visual
         ctx.font = "800 24px Inter, Arial, sans-serif";
-        ctx.fillText((topLabel || "À VISTA").toString().toUpperCase(), priceCenterX, ringY + 50);
+        
+        const isCash = paymentMode === "cash" || paymentMode === "cash_discount";
+        const topLabelRender = isCash 
+          ? (pricePrefix !== undefined ? pricePrefix : "A VISTA").toString().toUpperCase()
+          : (topLabel || "À VISTA").toString().toUpperCase();
+          
+        ctx.fillText(topLabelRender, priceCenterX, ringY + 60);
         
         ctx.save();
         ctx.shadowColor = "rgba(0, 0, 0, 0.18)";
         ctx.shadowBlur = 12;
         ctx.shadowOffsetY = 4;
         
-        let priceFs = 86; // Proeminente e descongestionado
+        let priceFs = 96; // Um pouco maior para ter presença sem ser sufocado
         ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
         while (ctx.measureText(priceStr).width > ringW - 40 && priceFs > 30) {
           priceFs -= 4;
           ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
         }
         ctx.fillStyle = navy;
-        safeFillText(ctx, priceStr, priceCenterX, ringY + 124, ringW - 40, 24);
+        safeFillText(ctx, priceStr, priceCenterX, ringY + 130, ringW - 40, 24);
         ctx.restore();
         
         // Linha abaixo: coesa
         ctx.fillStyle = navy;
         ctx.globalAlpha = 0.75;
         ctx.font = "800 22px Inter, Arial, sans-serif";
-        ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 172);
+        ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 175);
         ctx.globalAlpha = 1;
 
         // Faixa de Desconto Pix no rodapé do cartão amarelo
@@ -1785,34 +1791,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.restore();
 
         const priceBlockY = ringY + 30;
-        // Aumentado a largura útil para evitar colisão entre A VISTA e o preço em layouts quadrados
-        const priceGroupW = Math.min(ringW - 48, Math.round(width * 0.78));
-        const priceGroupX = ringX + (ringW - priceGroupW) / 2;
-        const leftColX = priceGroupX;
-        const rightEdgeX = priceGroupX + priceGroupW;
-        const minGap = 24;
 
         // Quebra "R$ 229" em simbolo pequeno + valor gigante
         const priceParts = priceStr.match(/^(\D+)\s*([\d.,]+)$/);
         const sym = priceParts ? priceParts[1].trim() : curSym;
         const valNum = priceParts ? priceParts[2].trim() : priceStr;
 
-        // DEFENSIVE: Ajusta tamanho da fonte se o preco for MUITO longo (evita colisao com 10X)
-        const leftReservedW = 280; // Aumentado para acomodar "A VISTA"
-        const maxPriceW = priceGroupW - leftReservedW - minGap;
-        let priceSize = 120;
-        ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
-        while (ctx.measureText(valNum).width > maxPriceW && priceSize > 44) {
-          priceSize -= 4;
-          ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
-        }
-        const valW = ctx.measureText(valNum).width;
-        const symSize = Math.round(priceSize * 0.36);
-
-        // Lado esquerdo (informações de parcelamento/pagamento dinâmico)
-        ctx.textAlign = "left";
-        ctx.fillStyle = navy;
-        
         const isCash = paymentMode === "cash" || paymentMode === "cash_discount";
         const isDownPlus = paymentMode === "down_plus";
         
@@ -1825,26 +1809,65 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         const btmTxt = isCash ? (paymentSuffix || "por pessoa").trim() : (isDownPlus ? "parcelas" : "sem juros");
 
-        ctx.font = "600 20px Inter, Arial, sans-serif";
-        ctx.fillText(topTxt, leftColX, priceBlockY - 10);
-        
-        let pTxtSize = 64;
+        // Tamanhos das fontes mais refinados
+        let pTxtSize = isCash ? 44 : 56; // "A VISTA" menor que "10X" para não dominar
         ctx.font = `900 ${pTxtSize}px Inter, Arial, sans-serif`;
-        while (ctx.measureText(mainTxt).width > leftReservedW && pTxtSize > 32) {
-          pTxtSize -= 2;
-          ctx.font = `900 ${pTxtSize}px Inter, Arial, sans-serif`;
-        }
-        ctx.fillText(mainTxt, leftColX, priceBlockY + 45);
+        const mainTxtW = ctx.measureText(mainTxt).width;
         
         ctx.font = "600 20px Inter, Arial, sans-serif";
-        ctx.fillText(btmTxt, leftColX, priceBlockY + 75);
+        const topTxtW = ctx.measureText(topTxt).width;
+        const btmTxtW = ctx.measureText(btmTxt).width;
+        
+        const leftColW = Math.max(mainTxtW, topTxtW, btmTxtW);
 
-        // Lado direito (preço gigante) - Ajustado baseline para não bater no 10X
-        ctx.textAlign = "right";
+        // Lado direito (preço)
+        let priceSize = 110;
         ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(valNum, rightEdgeX, priceBlockY + 80);
+        let valW = ctx.measureText(valNum).width;
+        
+        // Se o valor for muito grande, reduz um pouco
+        while (valW > ringW * 0.45 && priceSize > 48) {
+           priceSize -= 4;
+           ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+           valW = ctx.measureText(valNum).width;
+        }
+        
+        const symSize = Math.round(priceSize * 0.36);
         ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(sym, rightEdgeX - valW - 12, priceBlockY + 80 - priceSize * 0.45);
+        const symW = ctx.measureText(sym).width;
+        const rightColW = symW + 12 + valW;
+
+        // Layout Centralizado
+        const midGap = 32;
+        const totalW = leftColW + midGap + rightColW;
+        const startX = ringX + (ringW - totalW) / 2;
+        
+        const leftColX = startX;
+        const rightColX = startX + leftColW + midGap;
+
+        // Desenhar Lado Esquerdo
+        ctx.textAlign = "left";
+        ctx.fillStyle = navy;
+        
+        ctx.font = "600 20px Inter, Arial, sans-serif";
+        ctx.fillText(topTxt, leftColX, priceBlockY - 2);
+        
+        ctx.font = `900 ${pTxtSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(mainTxt, leftColX, priceBlockY + 44);
+        
+        ctx.font = "600 20px Inter, Arial, sans-serif";
+        ctx.fillText(btmTxt, leftColX, priceBlockY + 76);
+
+        // Desenhar Lado Direito (alinhado pela baseline de mainTxt)
+        // Baseline de mainTxt é priceBlockY + 44. O valor gigante centraliza visualmente com isso
+        const priceBaseY = priceBlockY + 68; 
+        
+        ctx.textAlign = "left";
+        ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(sym, rightColX, priceBaseY - priceSize * 0.45);
+        
+        ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(valNum, rightColX + symW + 12, priceBaseY);
 
         cursorY = ringY + ringH + totalGap;
 
