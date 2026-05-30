@@ -1455,7 +1455,7 @@ CRITICAL: You MUST return ONLY the raw, minified JSON object. Do NOT wrap the JS
             footerContact2Value: state.footerContact2Value,
             fontFamily: (state as any).fontFamily || "Inter",
             textColorOverride: (state as any).textColorOverride
-          }, layoutJson);
+          }) as any, layoutJson);
 
           const finalImageUrl = canvas.toDataURL("image/png");
 
