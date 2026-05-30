@@ -1354,22 +1354,65 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         try { parsedHighlights = JSON.parse(highlights || "[]"); } catch {}
 
         try {
-          const response = await supabase.functions.invoke("fabrica-design-ai", {
-            body: {
-              format,
-              destination: destination || "Destino",
-              price: formattedPriceForAd || price,
-              currencySymbol,
-              promoName: promoName || "OFERTA ESPECIAL",
-              duration: travelPeriod || "5 NOITES",
-              highlights: parsedHighlights
-            }
+          const geminiKey = localStorage.getItem("user_gemini_api_key");
+          if (!geminiKey) throw new Error("Chave do Gemini não configurada nas engrenagens (Configurações).");
+
+          const promptText = `Crie um layout moderno e de alta conversão para um pacote de viagem.
+Destino: ${destination || "Destino"}
+Preço: ${currencySymbol} ${formattedPriceForAd || price}
+Duração: ${travelPeriod || "5 NOITES"}
+Destaques: ${parsedHighlights.join(", ")}
+Promoção: ${promoName || "OFERTA ESPECIAL"}
+
+O formato do canvas é ${format === "story" ? "1080x1920" : "1080x1080"}.
+Crie blocos translúcidos e posicionamento de textos.
+
+Retorne EXCLUSIVAMENTE um JSON válido com a estrutura:
+{
+  "elements": [
+    {
+      "type": "box",
+      "x": 50,
+      "y": ${format === "story" ? "1400" : "800"},
+      "width": 980,
+      "height": 200,
+      "backgroundColor": "rgba(0,0,0,0.6)",
+      "borderRadius": 24
+    },
+    {
+      "type": "text",
+      "x": 100,
+      "y": ${format === "story" ? "1450" : "850"},
+      "content": "${(destination || "Destino").toUpperCase()}",
+      "fontSize": 64,
+      "fontFamily": "Inter",
+      "color": "#FFFFFF",
+      "fontWeight": "bold"
+    }
+  ]
+}
+Apenas o JSON, sem markdown.`;
+
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ role: "user", parts: [{ text: promptText }] }],
+              generationConfig: {
+                responseMimeType: "application/json",
+                temperature: 0.7,
+              }
+            }),
           });
 
-          if (response.error) throw new Error(response.error.message || "Falha na resposta da Edge Function");
+          if (!response.ok) throw new Error("Falha na chamada direta à API do Gemini.");
           
-          const layoutJson = response.data?.layout;
-          if (!layoutJson) throw new Error("JSON de layout não retornado pela IA.");
+          const data = await response.json();
+          let layoutJson = null;
+          if (data.candidates && data.candidates[0].content.parts[0].text) {
+            layoutJson = JSON.parse(data.candidates[0].content.parts[0].text);
+          }
+          if (!layoutJson || !layoutJson.elements) throw new Error("JSON de layout não retornado ou inválido.");
 
           const { renderIAPuraLayout } = await import("@/lib/fabrica-compose-art");
           
