@@ -91,6 +91,7 @@ export interface SiteContent {
   atendimentoText?: string;
   footerText?: string;
   stats?: Array<{ num: string; label: string }>;
+  hiddenElements?: string[];
 }
 
 export type AgencyType =

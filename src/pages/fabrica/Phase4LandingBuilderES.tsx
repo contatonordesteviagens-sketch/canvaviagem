@@ -34,6 +34,15 @@ import type { SectionVisibility } from "@/hooks/useFabricaContext";
 const LOVABLE_INVITE_URL = "https://lovable.dev/invite/2ZD6VL6";
 const PRESET_COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#000000"];
 const FABRICA_SITE_STORAGE_CONTENT_TYPE = "image/webp";
+const CANVA_VIAGEM_DOMAIN = "canvaviagem.com";
+const buildSiteSlug = (value: string) =>
+  (value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 
 export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
   const { data: savedProjects } = useDiagnosticos();
@@ -1446,6 +1455,7 @@ const PublishOnLovableCard = ({
                       .replace(/-+/g, "-")
                       .replace(/^-|-$/g, "");
   });
+  const [canvaViagemSubdomain, setCanvaViagemSubdomain] = useState<string>(() => buildSiteSlug(state.agencyName || ""));
 
   useEffect(() => {
     if (state.siteContent.canvaViagemUrl) {
@@ -1502,7 +1512,7 @@ const PublishOnLovableCard = ({
       let publishId = state.projectId;
       if (!publishId) {
         publishId = crypto.randomUUID();
-        systemUpdate({ projectId: publishId });
+        update({ projectId: publishId });
       }
 
       // Bypass Supabase Storage RLS entirely by saving to public_sites table

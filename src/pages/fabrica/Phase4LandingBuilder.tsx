@@ -1931,7 +1931,7 @@ const PublishOnLovableCard = ({
       let publishId = state.projectId;
       if (!publishId) {
         publishId = crypto.randomUUID();
-        systemUpdate({ projectId: publishId });
+        update({ projectId: publishId });
       }
 
       // Bypass Supabase Storage RLS entirely by saving to public_sites table

@@ -1351,7 +1351,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
         // Extrai os destaques
         let parsedHighlights: string[] = [];
-        try { parsedHighlights = JSON.parse(highlights || "[]"); } catch {}
+        try { parsedHighlights = Array.isArray(highlights) ? (highlights as any[]).map(h => typeof h === "string" ? h : (h?.text || "")) : JSON.parse((highlights as any) || "[]"); } catch {}
 
         try {
           const geminiKey = localStorage.getItem("user_gemini_api_key");
@@ -1445,7 +1445,7 @@ CRITICAL: You MUST return ONLY the raw, minified JSON object. Do NOT wrap the JS
           const ctx = canvas.getContext("2d");
           if (!ctx) throw new Error("Falha ao inicializar Canvas");
 
-          await renderIAPuraLayout(ctx, {
+          await renderIAPuraLayout(ctx, ({
             format,
             imageUrl: refImage,
             logoDataUrl: state.logoBase64,
@@ -1455,7 +1455,7 @@ CRITICAL: You MUST return ONLY the raw, minified JSON object. Do NOT wrap the JS
             footerContact2Value: state.footerContact2Value,
             fontFamily: (state as any).fontFamily || "Inter",
             textColorOverride: (state as any).textColorOverride
-          }, layoutJson);
+          }) as any, layoutJson);
 
           const finalImageUrl = canvas.toDataURL("image/png");
 

@@ -61,8 +61,8 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
         existingId: state.projectId,
       });
       // Atualiza o projectId no state com o ID retornado pelo Supabase para evitar duplicatas
-      if (saved?.id && saved.id !== state.projectId) {
-        update({ projectId: saved.id });
+      if ((saved as any)?.id && (saved as any).id !== state.projectId) {
+        update({ projectId: (saved as any).id });
       }
       toast.success("✅ ¡Proyecto guardado exitosamente en tu cuenta!");
     } catch (e: any) {
