@@ -426,9 +426,11 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   }, [isHydrated, state.agencyName, state.destinos, state.lastPaymentMode, state.lastPrice, state.level, state.siteContent, systemUpdate]);
 
   const resetSiteToBlank = () => {
-    const SYNC_KEY = "fabrica-phase4-autosync-v1";
+    const SYNC_KEY = "fabrica-phase4-autosync-v1-es";
     localStorage.removeItem(SYNC_KEY);
     update({
+      projectId: undefined,
+      agencyName: "",
       selectedPackages: [],
       siteContent: {
         ...state.siteContent,
@@ -442,7 +444,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
     });
     setAutoSyncDone(false);
     setAutoSyncFields([]);
-    toast.success("Sitio restaurado a la plantilla en blanco.");
+    toast.success("¡Nuevo proyecto en blanco creado!");
   };
 
   // Pacotes
@@ -536,9 +538,9 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
           <button
             onClick={resetSiteToBlank}
             className="flex-shrink-0 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
-            title="Limpiar todo y comenzar de cero"
+            title="Limpiar todo y comenzar un nuevo proyecto"
           >
-            Limpiar sitio
+            Crear Nuevo Sitio
           </button>
         </div>
       )}
@@ -580,7 +582,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             onClick={resetSiteToBlank}
             className="flex-shrink-0 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
           >
-            Empezar de cero
+            Crear Nuevo Sitio
           </button>
         </div>
       )}
