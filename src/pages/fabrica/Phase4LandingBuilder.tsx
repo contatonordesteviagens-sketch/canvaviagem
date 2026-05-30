@@ -1753,7 +1753,7 @@ const PublishOnLovableCard = ({
       const { error: dbError } = await supabase
         .from("public_sites")
         .upsert({
-          id: user.id,
+          id: state.projectId || user.id,
           owner_id: user.id,
           html: html
         });
@@ -1763,7 +1763,7 @@ const PublishOnLovableCard = ({
       }
 
 
-      const internalUrl = `${window.location.origin}/view/${user.id}`;
+      const internalUrl = `${window.location.origin}/view/${state.projectId || user.id}`;
       setPublishedUrl(internalUrl);
       toast.success("🚀 SITE PUBLICADO COM SUCESSO!");
 
@@ -1880,7 +1880,7 @@ const PublishOnLovableCard = ({
       if (dbError) {
           console.warn("Falha ao salvar slug customizado na tabela. Fallback para ID.", dbError);
           finalUrl = `https://${user.id}.${CANVA_VIAGEM_DOMAIN}`;
-          try { await supabase.from("public_sites").upsert({ id: user.id, owner_id: user.id, html: finalHtml }); } catch (e) { console.error("Fallback error:", e); }
+          try { await supabase.from("public_sites").upsert({ id: state.projectId || user.id, owner_id: user.id, html: finalHtml }); } catch (e) { console.error("Fallback error:", e); }
       }
 
       update({

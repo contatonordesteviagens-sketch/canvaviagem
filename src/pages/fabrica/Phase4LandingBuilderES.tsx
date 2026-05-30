@@ -1320,7 +1320,7 @@ const PublishOnLovableCard = ({
       const { error: dbError } = await supabase
         .from("public_sites")
         .upsert({
-          id: user.id,
+          id: state.projectId || user.id,
           owner_id: user.id,
           html: html
         });
@@ -1330,7 +1330,7 @@ const PublishOnLovableCard = ({
       }
 
 
-      const internalUrl = `${window.location.origin}/view/${user.id}`;
+      const internalUrl = `${window.location.origin}/view/${state.projectId || user.id}`;
       setPublishedUrl(internalUrl);
       toast.success("🚀 ¡SITIO PUBLICADO CON ÉXITO!");
 

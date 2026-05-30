@@ -53,7 +53,7 @@ export const Phase5DashboardES = () => {
       const { error: dbError } = await supabase
         .from("public_sites")
         .upsert({
-          id: user.id,
+          id: state.projectId || user.id,
           owner_id: user.id,
           html: html
         });
@@ -85,7 +85,7 @@ export const Phase5DashboardES = () => {
     const checkStatus = async () => {
       if (!user?.id) return;
       try {
-        const siteUrl = `${window.location.origin}/view/${user.id}`;
+        const siteUrl = `${window.location.origin}/view/${state.projectId || user.id}`;
         const res = await fetch(siteUrl, { method: 'HEAD', cache: 'no-cache' });
         setSiteExists(res.ok);
       } catch {
