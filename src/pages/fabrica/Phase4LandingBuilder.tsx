@@ -1944,6 +1944,12 @@ const PublishOnLovableCard = ({
       return;
     }
 
+    const { data: existingDomain } = await supabase.from("public_sites").select("owner_id").eq("id", cleanSlug).maybeSingle();
+    if (existingDomain && existingDomain.owner_id !== user.id) {
+      toast.error(`O domínio "${cleanSlug}.canvaviagem.com" já está sendo usado por outra agência. Por favor, escolha outro subdomínio.`);
+      return;
+    }
+
     setIsCanvaViagemPublishing(true);
     const toastId = toast.loading("Publicando no link Canva Viagem...");
 
