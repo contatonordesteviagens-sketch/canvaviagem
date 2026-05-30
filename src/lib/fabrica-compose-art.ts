@@ -3392,7 +3392,7 @@ export interface IALayoutSchema {
 
 export async function renderIAPuraLayout(
   ctx: CanvasRenderingContext2D,
-  options: AdOptions,
+  options: ComposeTravelAdOptions,
   layoutJson: IALayoutSchema
 ): Promise<void> {
   const isStory = options.format === "story";
