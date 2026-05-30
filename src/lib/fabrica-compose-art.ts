@@ -403,9 +403,12 @@ async function drawFinalBranding(
 
   const isStory = ch > cw;
   const footerHeight = isStory ? 120 : 100;
-  // Move o rodape para cima da barra de mensagens do Instagram (aprox 280px do fundo)
-  const safeBottomMargin = isStory ? 340 : 20; // Subido de 280 para 340 para limpar a reply bar do Instagram
-  const footerY = ch - footerHeight - safeBottomMargin;
+  
+  // TAREFA 3 — ANCORAGEM DE BASE (CHÃO DA GAIOLA)
+  // SAFE_BOTTOM = 380, logo PANEL_BOTTOM = ch - 380. 
+  // O footerY deve ser calculado retroativamente a partir de PANEL_BOTTOM menos a altura do rodapé.
+  const panelBottom = ch - (isStory ? 380 : 120);
+  const footerY = panelBottom - footerHeight;
 
   // 1. Fundo do Rodapé (VÉU GRADIENTE ESCURO)
   // O usuário prefere SEMPRE o véu escuro com letras brancas para garantir o look "Premium".
@@ -1106,11 +1109,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   })();
 
   const RULES = {
-    SAFE_BOTTOM: isStory ? 480 : 120, // Zona de exclusão absoluta para conteudo dinâmico
-    SAFE_TOP: isStory ? 280 : 60,
-    LEFT: 80,
-    RIGHT: width - 80,
-    PANEL_BOTTOM: height - (isStory ? 480 : 120)
+    SAFE_BOTTOM: isStory ? 380 : 120, // Zona de exclusão absoluta para caixa de texto e botões (Stories)
+    SAFE_TOP: isStory ? 280 : 60, // Reserva para avatar e ícones do app (Stories)
+    LEFT: isStory ? 60 : 80,
+    RIGHT: width - (isStory ? 60 : 80),
+    PANEL_BOTTOM: height - (isStory ? 380 : 120)
   };
 
   
@@ -1459,7 +1462,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         // ── [BOX] amarelo arredondado ─ ─────
         const boxX = 40;
         const boxW = width - 80; // 1000px
-        const boxY = 40;
+        const boxY = safeTop; // Ancorado na Safe Zone
         const boxH = 860;
 
         ctx.save();
@@ -1809,12 +1812,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         const btmTxt = isCash ? (paymentSuffix || "por pessoa").trim() : (isDownPlus ? "parcelas" : "sem juros");
 
-        // Tamanhos das fontes mais refinados
-        let pTxtSize = isCash ? 44 : 56; // "A VISTA" menor que "10X" para não dominar
+        // Tamanhos das fontes mais refinados para não dominar (Task: centralizar e diminuir)
+        let pTxtSize = isCash ? 32 : 46; 
         ctx.font = `900 ${pTxtSize}px Inter, Arial, sans-serif`;
         const mainTxtW = ctx.measureText(mainTxt).width;
         
-        ctx.font = "600 20px Inter, Arial, sans-serif";
+        ctx.font = "600 18px Inter, Arial, sans-serif";
         const topTxtW = ctx.measureText(topTxt).width;
         const btmTxtW = ctx.measureText(btmTxt).width;
         
@@ -1845,22 +1848,23 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const leftColX = startX;
         const rightColX = startX + leftColW + midGap;
 
-        // Desenhar Lado Esquerdo
-        ctx.textAlign = "left";
+        // Desenhar Lado Esquerdo centralizado em si mesmo para harmonizar
+        ctx.textAlign = "center";
         ctx.fillStyle = navy;
+        const leftColCx = leftColX + leftColW / 2;
         
-        ctx.font = "600 20px Inter, Arial, sans-serif";
-        ctx.fillText(topTxt, leftColX, priceBlockY - 2);
+        ctx.font = "600 18px Inter, Arial, sans-serif";
+        ctx.fillText(topTxt, leftColCx, priceBlockY - 2);
         
         ctx.font = `900 ${pTxtSize}px Inter, Arial, sans-serif`;
-        ctx.fillText(mainTxt, leftColX, priceBlockY + 44);
+        ctx.fillText(mainTxt, leftColCx, priceBlockY + 36);
         
-        ctx.font = "600 20px Inter, Arial, sans-serif";
-        ctx.fillText(btmTxt, leftColX, priceBlockY + 76);
+        ctx.font = "600 18px Inter, Arial, sans-serif";
+        ctx.fillText(btmTxt, leftColCx, priceBlockY + 68);
 
         // Desenhar Lado Direito (alinhado pela baseline de mainTxt)
-        // Baseline de mainTxt é priceBlockY + 44. O valor gigante centraliza visualmente com isso
-        const priceBaseY = priceBlockY + 68; 
+        // Baseline de mainTxt é priceBlockY + 36. O valor gigante centraliza visualmente com isso
+        const priceBaseY = priceBlockY + 60; 
         
         ctx.textAlign = "left";
         ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
@@ -1945,15 +1949,6 @@ const panelBottom = RULES.PANEL_BOTTOM;
     const destUp = (destination || "DESTINO").toUpperCase();
 
     if (variant === 0) {
-      // Story 9:16: usa o mesmo renderer premium do V3-story (box amarelo sobre foto)
-      // O layout de quadrado abaixo é exclusivo do formato 1:1.
-      if (format === "story") {
-        // Redireciona internamente: força variant=3 com format=story (já testado e estável)
-        const savedVariant = variant;
-        // Re-executa como V3-story chamando o mesmo bloco via recursão controlada
-        return await composeTravelAd({ ...options, forceVariant: 3 });
-      }
-
       // REGRA GLOBAL DE LEGIBILIDADE: texto sempre tem que destacar do fundo.
       // Painel = secondaryColor → texto principal = primaryColor com contraste garantido.
       // Badge  = primaryColor   → texto da badge = secondaryColor com contraste garantido.
@@ -1982,16 +1977,17 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const contentRowH = Math.max(benefitsBlockH, priceBlockH);
 
       // 4) Altura ADAPTATIVA do painel:
-      //    logo + badge(60) + gap(40) + título + gap(50) + content + padding(50)
       const badgeH = 60;
       const topPaddingBeforeTitle = 40;
       const titleToContent = 50;
       const bottomPadding = 50;
+      const safeAnchorY = isStory ? safeTop : (logoH + 28);
+      
       const topH = Math.min(
         Math.round(height * 0.62),
         Math.max(
           Math.round(height * 0.46),
-          logoH + 28 + badgeH + topPaddingBeforeTitle + titleSize + titleToContent + contentRowH + bottomPadding
+          safeAnchorY + badgeH + topPaddingBeforeTitle + titleSize + titleToContent + contentRowH + bottomPadding
         )
       );
 
@@ -2000,7 +1996,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillRect(0, 0, width, topH);
 
       // 6) Badge "Saindo de"
-      const badgeY = logoH + 28;
+      const badgeY = safeAnchorY;
       if (city && city.trim() !== '' && city.trim().toLowerCase() !== 'fortaleza') {
         fillRoundRect(ctx, left, badgeY, 500, badgeH, 8, v0BadgeBg);
         ctx.fillStyle = v0OnBadge;
@@ -2013,7 +2009,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // 7) Headline (1 linha, fonte adaptativa)
       ctx.fillStyle = v0OnPanel;
       ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
-      const titleY = Math.max(badgeY + badgeH + topPaddingBeforeTitle + titleSize, logoH + 40 + titleSize);
+      const titleY = Math.max(badgeY + badgeH + topPaddingBeforeTitle + titleSize, safeAnchorY + 12 + titleSize);
       safeFillText(ctx, titleText, left, titleY, width - left - 40, 22);
 
       // 8) Benefits + Preço lado a lado — preço ALINHADO À DIREITA pra eliminar
@@ -2115,7 +2111,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const px = 56;
       const pw = panelW - px * 2;
       // Teto EXTREMAMENTE apertado no Feed para ganhar máxima área útil vertical (subido para 24px)
-      const logoReserve = format === "story" ? (hasLogo ? 150 : 50) : (hasLogo ? 110 : 24);
+      const logoReserve = format === "story" ? safeTop : (hasLogo ? 110 : 24);
 
       // 4) BADGE pílula
       const badgeText = (promoName || "OFERTA ESPECIAL").toUpperCase();
@@ -2788,7 +2784,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       // Posicão vertical: card comeca em ~32% para deixar ceu visível em cima.
       const cardX = cardMarginX;
       const idealCardY = format === "story" ? Math.round(height * 0.24) : Math.round(height * 0.16);
-      const cardY = Math.min(idealCardY, panelBottom - cardH - 20);
+      const cardY = Math.min(Math.max(isStory ? safeTop : 0, idealCardY), panelBottom - cardH - 20);
       const cardR = 28;
 
       // Sombra suave
@@ -3016,12 +3012,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
     const promo = (promoName || "EXPERIÊNCIA EXCLUSIVA").toUpperCase();
     ctx.font = `800 ${isStory ? 44 : 36}px ${serif}`;
-    ctx.fillText(promo.split("").join("\u2009"), cx, isStory ? 300 : 150);
+    const topAnchorY = isStory ? safeTop + 20 : 150;
+    ctx.fillText(promo.split("").join("\u2009"), cx, topAnchorY);
 
     if (titleText) {
       ctx.font = `300 ${isStory ? 28 : 22}px ${sans}`;
       ctx.fillStyle = "rgba(255,255,255,0.92)";
-      safeFillText(ctx, titleText.trim(), cx, isStory ? 370 : 200, width - 120, 16);
+      safeFillText(ctx, titleText.trim(), cx, topAnchorY + 70, width - 120, 16);
     }
 
     const brandingSafeY = panelBottom;
@@ -3074,7 +3071,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
     const promo = (promoName || "Experiencia Única").toUpperCase();
     ctx.font = `800 ${isStory ? 32 : 24}px ${sans}`;
     ctx.fillStyle = secondaryColor;
-    ctx.fillText(promo.split("").join(" "), cx, isStory ? 320 : 150);
+    const topAnchorY = isStory ? safeTop + 40 : 150;
+    ctx.fillText(promo.split("").join(" "), cx, topAnchorY);
 
     ctx.fillStyle = "#ffffff";
     const titSize = isStory ? 120 : 90;
@@ -3236,7 +3234,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
     const sans = `Inter, Arial, sans-serif`;
 
     const padLeft = isStory ? 100 : 70;
-    const topY = isStory ? 380 : 180;
+    const topY = isStory ? Math.max(380, safeTop + 40) : 180;
     
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
