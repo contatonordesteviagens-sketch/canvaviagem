@@ -1148,7 +1148,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
           ${!sc.hiddenElements?.includes('equipe-feat-2') ? `<div class="feat" data-visual-removable="equipe-feat-2"><div class="feat-icon">✨</div><div><h4>Experiencias Exclusivas</h4><p>Acceso a hoteles y experiencias no disponibles para el público en general.</p></div></div>` : ''}
           ${!sc.hiddenElements?.includes('equipe-feat-3') ? `<div class="feat" data-visual-removable="equipe-feat-3"><div class="feat-icon">💰</div><div><h4>Mejor Relación Calidad-Precio</h4><p>Nuestra red de socios ofrece condiciones especiales que no encontrarás en otros lugares.</p></div></div>` : ''}
         </div>
-        ${!sc.hiddenElements?.includes('equipe-cta') ? `<a href="#" onclick="openLeadForm('Falar com Especialista', 'https://wa.me/55${wpp}');return false;" class="btn" data-visual-removable="equipe-cta">Hablar con un experto</a>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-cta') ? `<a href="#" onclick="openLeadForm('Falar com Especialista', 'https://wa.me/${wpp}');return false;" class="btn" data-visual-removable="equipe-cta">Hablar con un experto</a>` : ''}
       </div>
       <div class="equipe-img" style="background-image: url('${esc(sc.aboutImageUrl || "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80")}')"></div>
     </div>

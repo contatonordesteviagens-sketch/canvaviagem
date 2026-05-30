@@ -1218,7 +1218,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
           <div class="feat" data-visual-removable="equipe-feat-${i}"><div class="feat-icon">${feat.icon}</div><div><h4>${esc(feat.title)}</h4><p>${esc(feat.desc)}</p></div></div>
           ` : '').join("")}
         </div>
-        ${!sc.hiddenElements?.includes('equipe-cta') ? `<a href="#" onclick="openLeadForm('Falar com Especialista', 'https://wa.me/55${wpp}');return false;" class="btn" data-visual-removable="equipe-cta">Falar com um especialista</a>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-cta') ? `<a href="#" onclick="openLeadForm('Falar com Especialista', 'https://wa.me/${wpp}');return false;" class="btn" data-visual-removable="equipe-cta">Falar com um especialista</a>` : ''}
       </div>
       <div class="equipe-img" style="background-image: url('${esc(sc.aboutImageUrl || "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80")}')"></div>
     </div>

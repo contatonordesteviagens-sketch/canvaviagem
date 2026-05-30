@@ -1,5 +1,7 @@
 import { useState, useRef } from "react";
 import { useFabricaContext } from "@/hooks/useFabricaContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useDiagnosticos, useSaveDiagnostico } from "@/hooks/useFabricaDiagnosticos";
 import { 
   Upload, 
   X, 
@@ -39,7 +41,36 @@ const AGENCY_TYPES = [
 
 export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboard" | "phase" | "library", phase?: number) => void }) => {
   const { state, update } = useFabricaContext();
+  const { user } = useAuth();
+  const { data: savedProjects } = useDiagnosticos();
+  const saveProject = useSaveDiagnostico();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [projectsPanelOpen, setProjectsPanelOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSaveProject = async () => {
+    if (!user) { toast.error("Inicia sesión para guardar"); return; }
+    setIsSaving(true);
+    try {
+      const saved = await saveProject.mutateAsync({
+        state,
+        score: state.digitalScore || 0,
+        level: 1,
+        levelName: "Proyecto Guardado",
+        existingId: state.projectId,
+      });
+      // Atualiza o projectId no state com o ID retornado pelo Supabase para evitar duplicatas
+      if (saved?.id && saved.id !== state.projectId) {
+        update({ projectId: saved.id });
+      }
+      toast.success("✅ ¡Proyecto guardado exitosamente en tu cuenta!");
+    } catch (e: any) {
+      toast.error(e?.message || "Error al guardar proyecto");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const [phoneDropOpen, setPhoneDropOpen] = useState(false);
 
@@ -199,6 +230,87 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
           </div>
         </div>
       </div>
+
+      {/* Projetos Salvos / Guardados */}
+      {user && (
+        <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl relative overflow-hidden transition-all shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
+          <div className="absolute top-0 left-0 w-1 h-full" style={{ background: state.primaryColor || "#F59E0B" }}></div>
+          <button
+            type="button"
+            onClick={() => setProjectsPanelOpen(!projectsPanelOpen)}
+            className="w-full flex items-center justify-between text-[11px] text-white/60 font-bold uppercase tracking-wider outline-none text-left"
+          >
+            <span className="flex items-center gap-1.5">📂 EDITAR SITIOS (Proyectos Guardados) {savedProjects && savedProjects.length > 0 && `(${savedProjects.length})`}</span>
+            <span className="text-[10px] text-white/30 font-medium">{projectsPanelOpen ? "▲ OCULTAR" : "▼ EXPANDIR / CARGAR"}</span>
+          </button>
+          
+          {projectsPanelOpen && (
+            <div className="mt-3 flex flex-col sm:flex-row gap-2 pt-2 border-t border-white/5">
+              {savedProjects && savedProjects.length > 0 ? (
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (!val) return;
+                    const p = savedProjects!.find(x => x.id === val);
+                    if (!p || !p.state_snapshot) return;
+                    const targetName = p.agency_name || 'Sin Nombre';
+                    const currentName = state.agencyName || 'Sin nombre';
+                    if (state.agencyName && p.id !== state.projectId) {
+                      const ok = window.confirm(`⚠️ Estás editando "${currentName}".\n\n¿Deseas cargar "${targetName}"? Guarda antes si tienes cambios sin confirmar.`);
+                      if (!ok) { e.target.value = ""; return; }
+                    }
+                    window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
+                    toast.success(`📂 ¡Proyecto "${targetName}" cargado!`);
+                  }}
+                  className="flex-1 bg-white/[0.04] border border-white/10 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
+                >
+                  <option value="" disabled className="bg-zinc-900">Seleccionar proyecto guardado...</option>
+                  {savedProjects.map((p) => {
+                    const snap = p.state_snapshot as any;
+                    const pkgCount = snap?.selectedPackages?.length || 0;
+                    const score = snap?.digitalScore || p.digital_score || 0;
+                    const date = new Date(p.updated_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+                    const isCurrent = p.id === state.projectId;
+                    return (
+                      <option key={p.id} value={p.id} className="bg-zinc-900">
+                        {isCurrent ? '● ' : ''}{p.agency_name || "Sin Nombre"} — {pkgCount} paquete{pkgCount !== 1 ? 's' : ''} • Score {score}% • {date}
+                      </option>
+                    );
+                  })}
+                </select>
+              ) : (
+                <div className="flex-1 bg-white/[0.01] border border-white/5 rounded-lg px-3 py-2 text-white/40 text-xs flex items-center">
+                  Ningún proyecto guardado encontrado
+                </div>
+              )}
+              {/* Botão Guardar Projeto */}
+              <button
+                type="button"
+                onClick={handleSaveProject}
+                disabled={isSaving || !state.agencyName}
+                className="px-3 py-2 rounded-lg text-white text-xs font-bold transition-all border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-95 shrink-0 flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={!state.agencyName ? "Rellena el nombre de la agencia antes de guardar" : "Guardar proyecto actual en tu cuenta"}
+              >
+                {isSaving ? (
+                  <>
+                    <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+                    </svg>
+                    <span>Guardando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Guardar Proyecto</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Main Responsive Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
