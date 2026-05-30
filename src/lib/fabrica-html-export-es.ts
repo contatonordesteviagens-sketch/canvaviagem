@@ -1111,7 +1111,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     <div class="destinos-grid">
       ${pacotes
         .map(
-          (p) => `<a href="#" onclick="openLeadForm('${esc(p.title)}', '${wppMsg(p.title)}');return false;" class="dest-card">
+          (p, i) => !sc.hiddenElements?.includes(`dest-card-${i}`) ? `<a href="#" onclick="openLeadForm('${esc(p.title)}', '${wppMsg(p.title)}');return false;" class="dest-card" data-visual-removable="dest-card-${i}">
         <div class="dest-img-wrap">
           <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
           <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
@@ -1124,7 +1124,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
           <div class="dest-price">${parsePriceHTML(p.price)}</div>
           <span class="dest-cta">Saber más →</span>
         </div>
-      </a>`
+      </a>` : ''
         )
         .join("")}
     </div>
@@ -1136,19 +1136,19 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
 <!-- POR QUE NÓS / EQUIPE -->
 <section id="por-que" class="equipe">
   <div class="container">
-    <div class="equipe-grid">
+    <div class="equipe-grid" data-visual-removable="por-que-grid">
       <div class="equipe-left">
-        <span class="badge-counter">+15k Clientes Satisfechos</span>
-        <div class="eyebrow" style="color:#fff;opacity:.6">Nuestro equipo</div>
-        <h2>Un equipo dedicado exclusivamente a ti</h2>
-        <p class="intro">Cada viaje comienza con una conversación real. Nuestro equipo de expertos conoce los destinos de cerca — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.</p>
+        ${!sc.hiddenElements?.includes('equipe-badge') ? `<span class="badge-counter" data-visual-removable="equipe-badge">+15k Clientes Satisfechos</span>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-eyebrow') ? `<div class="eyebrow" style="color:#fff;opacity:.6" data-visual-removable="equipe-eyebrow">Nuestro equipo</div>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-title') ? `<h2 data-visual-removable="equipe-title">Un equipo dedicado exclusivamente a ti</h2>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-intro') ? `<p class="intro" data-visual-removable="equipe-intro">Cada viaje comienza con una conversación real. Nuestro equipo de expertos conoce los destinos de cerca — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.</p>` : ''}
         <div class="equipe-features">
-          <div class="feat"><div class="feat-icon">🛡️</div><div><h4>Seguridad y Confiabilidad</h4><p>Años de experiencia con miles de familias y socios verificados en todo el mundo.</p></div></div>
-          <div class="feat"><div class="feat-icon">📞</div><div><h4>Soporte 24h Durante el Viaje</h4><p>Nuestro equipo está disponível a qualquer hora. Cualquier imprevisto, lo resolvemos.</p></div></div>
-          <div class="feat"><div class="feat-icon">✨</div><div><h4>Experiencias Exclusivas</h4><p>Acceso a hoteles y experiencias no disponibles para el público en general.</p></div></div>
-          <div class="feat"><div class="feat-icon">💰</div><div><h4>Mejor Relación Calidad-Precio</h4><p>Nuestra red de socios ofrece condiciones especiales que no encontrarás en otros lugares.</p></div></div>
+          ${!sc.hiddenElements?.includes('equipe-feat-0') ? `<div class="feat" data-visual-removable="equipe-feat-0"><div class="feat-icon">🛡️</div><div><h4>Seguridad y Confiabilidad</h4><p>Años de experiencia con miles de familias y socios verificados en todo el mundo.</p></div></div>` : ''}
+          ${!sc.hiddenElements?.includes('equipe-feat-1') ? `<div class="feat" data-visual-removable="equipe-feat-1"><div class="feat-icon">📞</div><div><h4>Soporte 24h Durante el Viaje</h4><p>Nuestro equipo está disponível a qualquer hora. Cualquier imprevisto, lo resolvemos.</p></div></div>` : ''}
+          ${!sc.hiddenElements?.includes('equipe-feat-2') ? `<div class="feat" data-visual-removable="equipe-feat-2"><div class="feat-icon">✨</div><div><h4>Experiencias Exclusivas</h4><p>Acceso a hoteles y experiencias no disponibles para el público en general.</p></div></div>` : ''}
+          ${!sc.hiddenElements?.includes('equipe-feat-3') ? `<div class="feat" data-visual-removable="equipe-feat-3"><div class="feat-icon">💰</div><div><h4>Mejor Relación Calidad-Precio</h4><p>Nuestra red de socios ofrece condiciones especiales que no encontrarás en otros lugares.</p></div></div>` : ''}
         </div>
-        <a href="#" onclick="openLeadForm('Falar com Especialista', 'https://wa.me/55${wpp}');return false;" class="btn">Hablar con un experto</a>
+        ${!sc.hiddenElements?.includes('equipe-cta') ? `<a href="#" onclick="openLeadForm('Falar com Especialista', 'https://wa.me/55${wpp}');return false;" class="btn" data-visual-removable="equipe-cta">Hablar con un experto</a>` : ''}
       </div>
       <div class="equipe-img" style="background-image: url('${esc(sc.aboutImageUrl || "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80")}')"></div>
     </div>
@@ -1167,14 +1167,14 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
       ${state.depoimentos
         .slice(0, 3)
         .map(
-          (d) => `<div class="depo-card">
+          (d, i) => !sc.hiddenElements?.includes(`depo-${i}`) ? `<div class="depo-card" data-visual-removable="depo-${i}">
         <div class="stars">★★★★★</div>
         <p class="depo-text">"${esc(d.text)}"</p>
         <div class="depo-author">
           <img src="${avatarSvg(d.name, color)}" class="depo-avatar" alt="${esc(d.name)}" data-ai-ignore="true" data-preserve-image="true">
           <div><div class="depo-name">${esc(d.name)}</div><div class="depo-meta">Cliente verificado</div></div>
         </div>
-      </div>`
+      </div>` : ''
         )
         .join("")}
     </div>
@@ -1189,9 +1189,9 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
   <div class="container">
     <div class="orc-grid">
       <div class="orc-info">
-        <span class="eyebrow">Presupuesto</span>
-        <h2 style="margin-top:12px">Habla con un consultor ahora</h2>
-        <p>Completa el formulario y nuestro equipo te contactará en menos de 2 horas con una propuesta.</p>
+        ${!sc.hiddenElements?.includes('orcamento-eyebrow') ? `<span class="eyebrow" data-visual-removable="orcamento-eyebrow">Presupuesto</span>` : ''}
+        ${!sc.hiddenElements?.includes('orcamento-title') ? `<h2 style="margin-top:12px" data-visual-removable="orcamento-title">Habla con un consultor ahora</h2>` : ''}
+        ${!sc.hiddenElements?.includes('orcamento-text') ? `<p data-visual-removable="orcamento-text">Completa el formulario y nuestro equipo te contactará en menos de 2 horas con una propuesta.</p>` : ''}
         <div class="contact-list">
           ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon">💬</div><div><strong>WhatsApp</strong><span>${esc(state.whatsapp || "—")}</span></div></div>` : ''}
           ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon">✉</div><div><strong>E-mail</strong><span>contato@${esc((agencia || "agencia").toLowerCase().replace(/[^a-z0-9]/g, ""))}.com.br</span></div></div>` : ''}
@@ -1229,12 +1229,17 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
       return sc.sections?.faq !== false && sc.faq && sc.faq.length > 0
         ? `
 <!-- FAQ -->
-<section class="faq-bg">
+<section id="faq">
   <div class="container">
-    <div class="section-eyebrow eyebrow">Dudas</div>
-    <h2 class="section-title">${esc(sc.faqTitle || "Preguntas Frecuentes")}</h2>
+    ${!sc.hiddenElements?.includes('faq-eyebrow') ? `<div class="section-eyebrow eyebrow" data-visual-removable="faq-eyebrow">Dudas</div>` : ''}
+    ${!sc.hiddenElements?.includes('faq-title') ? `<h2 class="section-title" data-visual-removable="faq-title">${esc(sc.faqTitle || "Preguntas Frecuentes")}</h2>` : ''}
     <div class="faq-list">
-      ${sc.faq.map((f) => `<details class="faq-item"><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join("")}
+      ${sc.faq.map((f, i) => !sc.hiddenElements?.includes(`faq-${i}`) ? `
+      <details class="faq-item" data-visual-removable="faq-${i}">
+        <summary>${esc(f.q)}</summary>
+        <p>${esc(f.a)}</p>
+      </details>
+      ` : '').join("")}
     </div>
   </div>
 </section>`
