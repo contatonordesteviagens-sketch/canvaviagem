@@ -127,6 +127,7 @@ export interface FabricaState {
   niche: Niche;
   destinos: string[]; // destinos específicos vendidos pela agência
   logoBase64: string;
+  logoFormat?: "circle" | "square";
   address?: string;
 
   // Diagnóstico
@@ -219,6 +220,7 @@ const defaultState: FabricaState = {
   niche: "",
   destinos: [],
   logoBase64: "",
+  logoFormat: "circle",
   address: "",
   postFrequency: "",
   followers: "",

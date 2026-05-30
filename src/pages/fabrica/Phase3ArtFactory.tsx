@@ -1805,20 +1805,38 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
               </label>
             ) : (
-              <div className="relative group rounded-2xl overflow-hidden bg-white/[0.03] p-3 border border-white/10 h-[110px] flex items-center justify-center">
-                <img src={state.logoBase64} alt="Logo" className="max-w-full max-h-full object-contain" />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 cursor-pointer transition-all backdrop-blur-sm">
-                  <label className="p-2 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-colors" title="Trocar Logo">
-                    <RotateCcw className="w-4 h-4 text-white" />
-                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                  </label>
-                  <button
+              <div className="flex flex-col gap-2">
+                <div className="relative group rounded-2xl overflow-hidden bg-white/[0.03] p-3 border border-white/10 h-[76px] flex items-center justify-center">
+                  <img src={state.logoBase64} alt="Logo" className="max-w-full max-h-full object-contain" />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 cursor-pointer transition-all backdrop-blur-sm">
+                    <label className="p-2 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-colors" title="Trocar Logo">
+                      <RotateCcw className="w-4 h-4 text-white" />
+                      <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => { update({ logoBase64: "" }); toast.success("Logo removida"); }}
+                      className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full transition-colors"
+                      title="Remover"
+                    >
+                      <X className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 h-[26px]">
+                  <button 
                     type="button"
-                    onClick={() => { update({ logoBase64: "" }); toast.success("Logo removida"); }}
-                    className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full transition-colors"
-                    title="Remover"
+                    onClick={() => update({ logoFormat: "circle" })}
+                    className={`flex-1 h-full text-[9px] font-bold uppercase tracking-wider rounded-lg border transition-all ${state.logoFormat !== "square" ? "bg-white/10 border-white/20 text-white" : "bg-transparent border-white/5 text-white/40 hover:bg-white/5"}`}
                   >
-                    <X className="w-4 h-4 text-white" />
+                    Redonda
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => update({ logoFormat: "square" })}
+                    className={`flex-1 h-full text-[9px] font-bold uppercase tracking-wider rounded-lg border transition-all ${state.logoFormat === "square" ? "bg-white/10 border-white/20 text-white" : "bg-transparent border-white/5 text-white/40 hover:bg-white/5"}`}
+                  >
+                    Quadrada
                   </button>
                 </div>
               </div>

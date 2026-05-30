@@ -162,6 +162,7 @@ interface ComposeTravelAdOptions {
   promoName: string;
   highlights: Highlight[];
   hasLogo?: boolean;
+  logoFormat?: "circle" | "square";
   paymentMode?: PaymentMode;
   paymentLabel?: string;
   paymentSuffix?: string;
@@ -388,7 +389,8 @@ async function drawFinalBranding(
   contact2?: { icon: string; value: string },
   textColorOverride?: string,
   fontFamily: string = "Inter",
-  skipLogo: boolean = false
+  skipLogo: boolean = false,
+  logoFormat: "circle" | "square" = "circle"
 ) {
   const contactsToDraw: { icon: string; value: string }[] = [];
   // So adiciona contatos que tenham valor preenchido (evita ícones vazios)
@@ -443,6 +445,15 @@ async function drawFinalBranding(
       ctx.shadowBlur = 15;
       ctx.shadowOffsetY = 5;
       
+      if (logoFormat === "circle") {
+        ctx.beginPath();
+        ctx.arc(padX + lw / 2, centerY, Math.min(lw, lh) / 2, 0, Math.PI * 2);
+        ctx.clip();
+      } else if (logoFormat === "square") {
+        roundRect(ctx, padX, centerY - lh / 2, lw, lh, 16);
+        ctx.clip();
+      }
+
       ctx.drawImage(logo, padX, centerY - lh / 2, lw, lh);
       ctx.restore();
     } catch (e) {
@@ -951,6 +962,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     footerContact2Value,
     isExperience,
     hideCents,
+    logoFormat = "circle",
   } = options;
 
   const destination = sanitizeAdText(options.destination || "");
@@ -2008,7 +2020,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
         effectiveTextColor,
         userFamily,
-        false
+        false,
+        logoFormat
       );
       applyFilmGrain(ctx, width, height, 0.04);
       return canvas.toDataURL("image/png");
@@ -2171,7 +2184,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
         effectiveTextColor,
         userFamily,
-        false
+        false,
+        logoFormat
       );
       if (false) {
         // ==========================================
@@ -2259,7 +2273,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
           options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
           effectiveTextColor,
           userFamily,
-          true
+          true,
+          logoFormat
         );
       }
       applyFilmGrain(ctx, width, height, 0.04);
@@ -2587,7 +2602,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
         effectiveTextColor,
         userFamily,
-        false
+        false,
+        logoFormat
       );
       applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
@@ -2901,7 +2917,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
         effectiveTextColor,
         userFamily,
-        false
+        false,
+        logoFormat
       );
       applyFilmGrain(ctx, width, height, 0.04);
       return canvas.toDataURL("image/png");
@@ -2960,7 +2977,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
       effectiveTextColor,
       userFamily,
-      false
+      false,
+      logoFormat
     );
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
@@ -3019,7 +3037,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
       effectiveTextColor,
       userFamily,
-      false
+      false,
+      logoFormat
     );
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
@@ -3079,7 +3098,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
       effectiveTextColor,
       userFamily,
-      false
+      false,
+      logoFormat
     );
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
@@ -3126,7 +3146,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
       effectiveTextColor,
       userFamily,
-      false
+      false,
+      logoFormat
     );
     applyFilmGrain(ctx, width, height, 0.05);
     return canvas.toDataURL("image/png");
@@ -3192,7 +3213,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       footerContact2Icon ? { icon: footerContact2Icon, value: footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
       effectiveTextColor,
       userFamily,
-      false
+      false,
+      logoFormat
     );
     applyFilmGrain(ctx, width, height, 0.04);
     return canvas.toDataURL("image/png");
