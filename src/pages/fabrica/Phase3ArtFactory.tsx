@@ -1347,7 +1347,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           return;
         }
 
-        toast.info("Iniciando IA Designer (Layout Dinâmico)...");
+        toast.info("Iniciando IA Designer v2...");
 
         // Extrai os destaques
         let parsedHighlights: string[] = [];
