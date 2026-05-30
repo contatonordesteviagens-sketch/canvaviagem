@@ -751,7 +751,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
     `Itinerarios exclusivos y a medida para viajeros que no aceptan lo comum. Desde la primera reunión hasta el regreso a casa, cuidamos cada detalle.`;
 
   const pacotes = state.selectedPackages.length
-    ? state.selectedPackages
+    ? state.selectedPackages.filter(p => !p.isDraft)
     : [
         { id: "1", title: "Itinerario a Medida", description: "Armamos tu itinerario ideal con alojamiento, transporte y tours.", price: "A consultar", imageUrl: "", ctaLabel: "Quiero este" },
       ];
@@ -1468,7 +1468,7 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
   const wpp = rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`;
   const cidade = state.city || "Brasil";
 
-  const pacotes = state.selectedPackages.length ? state.selectedPackages : [];
+  const pacotes = state.selectedPackages.length ? state.selectedPackages.filter(p => !p.isDraft) : [];
   
   if (pacotes.length === 0) {
     return "Aún no se ha generado ningún paquete. Por favor, crea anuncios en la Fase 3 primeiro.";

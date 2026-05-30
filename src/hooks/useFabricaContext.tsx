@@ -26,6 +26,7 @@ export interface Pacote {
   price: string;
   imageUrl?: string;
   ctaLabel?: string;
+  isDraft?: boolean;
 }
 
 export interface Depoimento {

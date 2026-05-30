@@ -122,6 +122,12 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
     toast.success("Paquete eliminado");
   };
 
+  const togglePublish = (id: string, currentDraft: boolean) => {
+    const updated = packages.map(p => p.id === id ? { ...p, isDraft: !currentDraft } : p);
+    update({ selectedPackages: updated });
+    toast.success(currentDraft ? "¡Paquete aprobado y enviado al sitio!" : "Paquete eliminado del sitio (borrador).");
+  };
+
   const addPackage = () => {
     if (!newTitle.trim()) { toast.error("Agregue un título al paquete"); return; }
     const pkg = {
@@ -322,7 +328,20 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
                           {pkg.price}
                         </div>
                       </div>
-                      <div className="flex gap-1 flex-shrink-0">
+                      <div className="flex gap-1 flex-shrink-0 items-center">
+                        {pkg.isDraft ? (
+                          <button
+                            onClick={() => togglePublish(pkg.id, true)}
+                            title="Aprobar para el Sitio"
+                            className="h-7 px-2 flex items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400 text-[10px] font-bold hover:bg-emerald-500/30 transition-all cursor-pointer mr-1"
+                          >
+                            <Check className="w-3 h-3 mr-1" /> Aprobar para el Sitio
+                          </button>
+                        ) : (
+                          <span className="h-7 px-2 flex items-center justify-center rounded-lg bg-white/5 text-white/50 text-[9px] font-bold mr-1 uppercase tracking-wider border border-white/10">
+                            En el Sitio
+                          </span>
+                        )}
                         <button onClick={() => startEdit(pkg)} title="Editar" className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/50 hover:text-white transition-all"><Pencil className="w-3 h-3" /></button>
                         <button onClick={() => duplicatePackage(pkg)} title="Duplicar" className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/50 hover:text-white transition-all"><Copy className="w-3 h-3" /></button>
                         <button onClick={() => removePackage(pkg.id)} title="Eliminar" className="w-7 h-7 flex items-center justify-center rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400/60 hover:text-red-400 transition-all"><Trash2 className="w-3 h-3" /></button>

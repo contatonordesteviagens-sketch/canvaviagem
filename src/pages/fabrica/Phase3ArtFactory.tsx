@@ -1111,7 +1111,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       description: descLines + period,
       price: priceLabel,
       imageUrl: imageToUse,
-      ctaLabel: "Reservar", 
+      ctaLabel: "Reservar",
+      isDraft: true,
     };
 
     const currentPackages = state.selectedPackages || [];

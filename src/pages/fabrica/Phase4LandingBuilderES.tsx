@@ -529,7 +529,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                 onChange={(v) => updSite({ pacotesTitle: v })}
               />
               <div className="space-y-3 mt-4">
-                {state.selectedPackages.map((p) => (
+                {state.selectedPackages.filter(p => !p.isDraft).map((p) => (
                   <PacoteEditor
                      key={p.id}
                      pacote={p}
@@ -1008,6 +1008,36 @@ const PacoteEditor = ({
   onDelete: () => void;
 }) => {
   const [pickingImage, setPickingImage] = useState(false);
+  const [photoQuery, setPhotoQuery] = useState("");
+  const [searchingPhotos, setSearchingPhotos] = useState(false);
+  const [photos, setPhotos] = useState<Array<{ id: number; url: string; thumb: string; alt: string }>>([]);
+
+  const searchPhotos = async () => {
+    const q = photoQuery.trim() || pacote.title.split(' ')[0] || ""; // default to first word of title
+    if (!q) {
+      toast.error("Ingrese el destino para buscar fotos");
+      return;
+    }
+    setPhotoQuery(q);
+    setSearchingPhotos(true);
+    setPhotos([]);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("fabrica-search-photos", {
+        body: { query: q, perPage: 8, engine: "pexels" }
+      });
+      if (error) throw error;
+      if (data?.photos) {
+        setPhotos(data.photos);
+        toast.success(`¡Fotos de ${q} cargadas con éxito!`);
+      }
+    } catch (err) {
+      console.error("Error al buscar fotos:", err);
+      toast.error("Error en la búsqueda de fotos.");
+    } finally {
+      setSearchingPhotos(false);
+    }
+  };
 
   return (
     <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 space-y-3">
@@ -1079,6 +1109,45 @@ const PacoteEditor = ({
       {pickingImage && (
         <div className="bg-black/40 border border-white/10 rounded-xl p-3 space-y-3">
           <div className="text-[11px] font-bold text-white/60 uppercase tracking-wider">Elegir imagen</div>
+
+          {/* Buscar no Pexels */}
+          <div className="space-y-2">
+            <div className="text-[10px] text-white/40">Buscar en la base gratuita:</div>
+            <div className="flex gap-2">
+              <input
+                value={photoQuery}
+                onChange={(e) => setPhotoQuery(e.target.value)}
+                placeholder="Ej: Paris, Cancún..."
+                className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/30 outline-none focus:border-white/40"
+                onKeyDown={(e) => e.key === 'Enter' && searchPhotos()}
+              />
+              <button
+                onClick={searchPhotos}
+                disabled={searchingPhotos}
+                className="px-3 py-2 rounded-lg bg-blue-500/20 text-blue-400 font-bold text-xs hover:bg-blue-500/30 disabled:opacity-50"
+              >
+                {searchingPhotos ? "Buscando..." : "Buscar"}
+              </button>
+            </div>
+            {photos.length > 0 && (
+              <div className="grid grid-cols-4 gap-2 mt-2">
+                {photos.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      onChange({ imageUrl: p.url });
+                      setPickingImage(false);
+                      toast.success("¡Imagen aplicada!");
+                    }}
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${pacote.imageUrl === p.url ? "border-blue-400" : "border-white/10 hover:border-white/40"
+                      }`}
+                  >
+                    <img src={p.thumb} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Galeria salva */}
           {gallery.length > 0 && (

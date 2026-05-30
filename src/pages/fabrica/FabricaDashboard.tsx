@@ -216,6 +216,12 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     toast.success("Pacote removido!");
   };
 
+  const togglePublish = (id: string, currentDraft: boolean) => {
+    const updated = state.selectedPackages.map(p => p.id === id ? { ...p, isDraft: !currentDraft } : p);
+    update({ selectedPackages: updated });
+    toast.success(currentDraft ? "Pacote aprovado e enviado para o site!" : "Pacote removido do site (rascunho).");
+  };
+
   const addPackage = () => {
     if (!newTitle.trim()) {
       toast.error("Adicione um título ao pacote");
@@ -802,7 +808,20 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                             </div>
 
                             {/* Action Tools Overlay */}
-                            <div className="flex gap-1">
+                            <div className="flex gap-1 items-center">
+                              {pkg.isDraft ? (
+                                <button
+                                  onClick={() => togglePublish(pkg.id, true)}
+                                  title="Aprovar e Enviar para o Site"
+                                  className="h-7 px-2 flex items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400 text-[10px] font-bold hover:bg-emerald-500/30 transition-all cursor-pointer mr-1"
+                                >
+                                  <Check className="w-3.5 h-3.5 mr-1" /> Aprovar para o Site
+                                </button>
+                              ) : (
+                                <span className="h-7 px-2 flex items-center justify-center rounded-lg bg-white/5 text-white/50 text-[9px] font-bold mr-1 uppercase tracking-wider border border-white/10">
+                                  No Site
+                                </span>
+                              )}
                               <button 
                                 onClick={() => startEdit(pkg)}
                                 title="Editar pacote"

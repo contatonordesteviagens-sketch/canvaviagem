@@ -809,7 +809,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
     `Roteiros exclusivos e sob medida para viajantes que não aceitam o comum. Da primeira reunião ao retorno em casa — cuidamos de cada detalhe.`;
 
   const pacotes = state.selectedPackages.length
-    ? state.selectedPackages
+    ? state.selectedPackages.filter(p => !p.isDraft)
     : [
         { id: "1", title: "Roteiro Sob Medida", description: "Montamos o seu roteiro ideal com hospedagem, transporte e passeios.", price: "Sob consulta", imageUrl: "", ctaLabel: "Quero esse" },
       ];
@@ -1577,7 +1577,7 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
   const wpp = rawWpp.startsWith(dialCode) ? rawWpp : `${dialCode}${rawWpp}`;
   const cidade = state.city || "Brasil";
 
-  const pacotes = state.selectedPackages.length ? state.selectedPackages : [];
+  const pacotes = state.selectedPackages.length ? state.selectedPackages.filter(p => !p.isDraft) : [];
   
   if (pacotes.length === 0) {
     return "Nenhum pacote foi gerado ainda. Por favor, crie anúncios na Fase 3 primeiro.";
