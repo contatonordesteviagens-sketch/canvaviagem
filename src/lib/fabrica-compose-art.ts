@@ -1296,14 +1296,26 @@ const panelBottom = RULES.PANEL_BOTTOM;
     ctx.font = `700 17px Inter, Arial, sans-serif`;
     ctx.fillText(`${days}   •   ✈️   🏨   ☕`, cx, y + 92);
 
-    // 4. "a partir de" pequeno + selo "12X sem juros" colado ao R$ gigante
+    // 4. Texto acima do preco ("a partir de" ou "pagamento")
+    const isCash = paymentMode === "cash" || paymentMode === "cash_discount";
+    const isDownPlus = paymentMode === "down_plus";
+    const topTxt = isCash ? "pagamento" : (isDownPlus ? "entrada +" : "a partir de");
+    
     ctx.font = `600 13px Inter, Arial, sans-serif`;
-    ctx.fillText("a partir de", cx, y + 118);
+    ctx.fillText(topTxt, cx, y + 118);
 
     // Calcula tamanhos do selo de parcelas e do preco lado a lado
-    // Padroniza installments: ex "10x" -> "10x de"
-    let installmentsText = (installments || "12X").toUpperCase().replace(/\s+/g, "").replace(/\$/g, "");
-    if (/^\d+X$/.test(installmentsText)) installmentsText = `${installmentsText.slice(0, -1)}x de`;
+    let installmentsText = "A VISTA";
+    if (!isCash) {
+       if (isDownPlus) {
+          const clean = (installments || paymentLabel || "Entrada + 10x").replace(/entrada\s*\+?/i, "").trim();
+          installmentsText = clean || "10X";
+       } else {
+          installmentsText = (installments || "12X").toUpperCase().replace(/\s+/g, "").replace(/\$/g, "");
+          if (/^\d+X$/.test(installmentsText)) installmentsText = `${installmentsText.slice(0, -1)}x de`;
+       }
+    }
+    const btmTxt = isCash ? (paymentSuffix || "por pessoa").trim() : (isDownPlus ? "parcelas" : "sem juros");
     
     const priceText = mainPrice || `${curSym} ${price}`;
     // Tamanho robusto para impacto visual
@@ -1327,7 +1339,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
     ctx.textAlign = "center";
     safeFillText(ctx, installmentsText, groupX + badgeW / 2, priceY - 8, badgeW - 10, 10);
     ctx.font = `700 10px Inter, Arial, sans-serif`;
-    ctx.fillText("sem juros", groupX + badgeW / 2, priceY + 14);
+    ctx.fillText(btmTxt, groupX + badgeW / 2, priceY + 14);
 
     // Preco gigante
     ctx.fillStyle = cardTextColor;
@@ -1792,15 +1804,35 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const valW = ctx.measureText(valNum).width;
         const symSize = Math.round(priceSize * 0.36);
 
-        // Lado esquerdo (informações de parcelamento)
+        // Lado esquerdo (informações de parcelamento/pagamento dinâmico)
         ctx.textAlign = "left";
         ctx.fillStyle = navy;
+        
+        const isCash = paymentMode === "cash" || paymentMode === "cash_discount";
+        const isDownPlus = paymentMode === "down_plus";
+        
+        const topTxt = isCash ? "pagamento" : (isDownPlus ? "entrada +" : "a partir de");
+        let mainTxt = `${parcN}X`;
+        if (isCash) mainTxt = "A VISTA";
+        else if (isDownPlus) {
+          const clean = (installments || paymentLabel || "Entrada + 10x").replace(/entrada\s*\+?/i, "").trim();
+          mainTxt = clean || `${parcN}X`;
+        }
+        const btmTxt = isCash ? (paymentSuffix || "por pessoa").trim() : (isDownPlus ? "parcelas" : "sem juros");
+
         ctx.font = "600 20px Inter, Arial, sans-serif";
-        ctx.fillText("a partir de", leftColX, priceBlockY - 10);
-        ctx.font = "900 64px Inter, Arial, sans-serif";
-        ctx.fillText(`${parcN}X`, leftColX, priceBlockY + 45);
+        ctx.fillText(topTxt, leftColX, priceBlockY - 10);
+        
+        let pTxtSize = 64;
+        ctx.font = `900 ${pTxtSize}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(mainTxt).width > leftReservedW && pTxtSize > 32) {
+          pTxtSize -= 2;
+          ctx.font = `900 ${pTxtSize}px Inter, Arial, sans-serif`;
+        }
+        ctx.fillText(mainTxt, leftColX, priceBlockY + 45);
+        
         ctx.font = "600 20px Inter, Arial, sans-serif";
-        ctx.fillText("sem juros", leftColX, priceBlockY + 75);
+        ctx.fillText(btmTxt, leftColX, priceBlockY + 75);
 
         // Lado direito (preço gigante) - Ajustado baseline para não bater no 10X
         ctx.textAlign = "right";
