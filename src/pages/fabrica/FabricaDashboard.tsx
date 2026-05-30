@@ -63,8 +63,8 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       });
       // ✅ FIX CRÍTICO: Atualiza o projectId no state com o ID retornado pelo Supabase
       // Isso evita que o auto-sync crie um segundo registro duplicado
-      if (saved?.id && saved.id !== state.projectId) {
-        update({ projectId: saved.id });
+      if ((saved as any)?.id && (saved as any).id !== state.projectId) {
+        update({ projectId: (saved as any).id });
       }
       toast.success("✅ Projeto salvo com sucesso na sua conta!");
     } catch (e: any) {
