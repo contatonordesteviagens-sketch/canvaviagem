@@ -269,6 +269,7 @@ const defaultState: FabricaState = {
     heroImageUrl: "",
     galleryImages: [],
     vercelUrl: "",
+    canvaViagemUrl: "",
     sections: {
       hero: true,
       processo: true,
@@ -694,6 +695,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
                   ...(primary.siteContent?.sections || {}),
                 },
                 vercelUrl: primary.siteContent?.vercelUrl || fallback.siteContent?.vercelUrl || "",
+                canvaViagemUrl: primary.siteContent?.canvaViagemUrl || fallback.siteContent?.canvaViagemUrl || "",
               },
               lastEditedAt: useLocal
                 ? (localSnapshot.lastEditedAt || prev.lastEditedAt || "")
