@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
+import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
 
 const FabricaInner = () => {
   const { state, setPhase, update } = useFabricaContext();
@@ -259,6 +260,8 @@ const FabricaInner = () => {
 
         {/* Bottom Actions */}
         <div className="p-4 border-t border-white/5 space-y-3">
+          {/* ✅ FIX #5: Indicador de sync visível em todas as fases */}
+          <CloudSaveIndicator />
           <div className="pt-2">
             <button
               onClick={() => navigate("/")}
@@ -286,6 +289,10 @@ const FabricaInner = () => {
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
+        {/* ✅ FIX #5 Mobile: indicador de sync no header mobile */}
+        <div className="hidden sm:block">
+          <CloudSaveIndicator />
+        </div>
       </div>
 
       {/* Mobile Menu Dropdown */}

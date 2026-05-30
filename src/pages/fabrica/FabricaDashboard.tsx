@@ -54,13 +54,18 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
     if (!user) { toast.error("Faça login para salvar"); return; }
     setIsSaving(true);
     try {
-      await saveProject.mutateAsync({
+      const saved = await saveProject.mutateAsync({
         state,
         score: state.digitalScore || 0,
         level: 1,
         levelName: "Projeto Salvo",
         existingId: state.projectId,
       });
+      // ✅ FIX CRÍTICO: Atualiza o projectId no state com o ID retornado pelo Supabase
+      // Isso evita que o auto-sync crie um segundo registro duplicado
+      if (saved?.id && saved.id !== state.projectId) {
+        update({ projectId: saved.id });
+      }
       toast.success("✅ Projeto salvo com sucesso na sua conta!");
     } catch (e: any) {
       toast.error(e?.message || "Erro ao salvar projeto");
@@ -310,21 +315,38 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                   onChange={(e) => {
                     const val = e.target.value;
                     if (!val) return;
-                    const p = savedProjects.find(x => x.id === val);
-                    if (p && p.state_snapshot) {
-                      // Carrega o snapshot completo (defaultState + snapshot) via evento
-                      window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
-                      toast.success(`Projeto "${p.agency_name || 'Sem Nome'}" carregado!`);
-                      // Volta ao dashboard pra ver o conteúdo carregado
-                      setTimeout(() => onNavigate?.("dashboard"), 100);
+                    const p = savedProjects!.find(x => x.id === val);
+                    if (!p || !p.state_snapshot) return;
+                    // ✅ FIX #7 e #14: Confirma antes de carregar se há edições não salvas
+                    const currentName = state.agencyName || 'Sem nome';
+                    const targetName = p.agency_name || 'Sem nome';
+                    if (state.agencyName && p.id !== state.projectId) {
+                      const ok = window.confirm(`⚠️ Você tem edições não salvas no projeto "${currentName}".\n\nSe continuar, essas edições serão perdidas.\n\nDeseja mesmo carregar "${targetName}"?`);
+                      if (!ok) {
+                        e.target.value = "";
+                        return;
+                      }
                     }
+                    window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
+                    toast.success(`📂 Projeto "${targetName}" carregado!`);
+                    setTimeout(() => onNavigate?.("dashboard"), 100);
                   }}
                   className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-white/30 transition-colors text-xs"
                 >
-                <option value="" className="bg-zinc-900">Selecione o site que deseja editar...</option>
-                  {savedProjects.map((p) => (
-                    <option key={p.id} value={p.id} className="bg-zinc-900">{p.agency_name || "Sem Nome"} (Salvo em {new Date(p.updated_at).toLocaleDateString()})</option>
-                  ))}
+                  <option value="" className="bg-zinc-900">Selecione o site que deseja editar...</option>
+                  {savedProjects!.map((p) => {
+                    // ✅ FIX #8: Labels com informações úteis para distinguir projetos
+                    const snap = p.state_snapshot as any;
+                    const pkgCount = snap?.selectedPackages?.length || 0;
+                    const score = snap?.digitalScore || p.digital_score || 0;
+                    const date = new Date(p.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+                    const isCurrent = p.id === state.projectId;
+                    return (
+                      <option key={p.id} value={p.id} className="bg-zinc-900">
+                        {isCurrent ? '● ' : ''}{p.agency_name || "Sem Nome"} — {pkgCount} pacote{pkgCount !== 1 ? 's' : ''} • Score {score}% • {date}
+                      </option>
+                    );
+                  })}
                 </select>
               ) : (
                 <div className="flex-1 bg-white/[0.01] border border-white/5 rounded-lg px-3 py-2 text-white/40 text-xs flex items-center">

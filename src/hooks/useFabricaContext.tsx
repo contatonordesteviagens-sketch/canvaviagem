@@ -556,10 +556,14 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
       if (!snapshot) return;
 
       setState((prev) => {
+        // 🔑 Se o snapshot não tem projectId (ex: novo projeto vazio), gera um novo
+        const resolvedProjectId = snapshot.projectId || `proj_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
         const merged = {
           ...defaultState,
           ...snapshot,
-          currentPhase: prev.currentPhase,
+          projectId: resolvedProjectId,
+          // ✅ Restaura a fase do projeto carregado (não mantém a fase atual)
+          currentPhase: snapshot.currentPhase ?? prev.currentPhase,
           diagnosticoCompleto: false,
           lastEditedAt: new Date().toISOString(),
           siteContent: {
@@ -573,6 +577,7 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
         } as FabricaState;
 
         stateRef.current = merged;
+        // ✅ Persiste no localStorage IMEDIATAMENTE para evitar restauração errada se a aba fechar
         if (activeUserIdRef.current) persistLocalState(merged, activeUserIdRef.current);
         return merged;
       });
@@ -737,12 +742,26 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     if (!user?.id || !hasLoadedFromDb) return; // 🛡️ Bloqueia sincronização antes da hidratação completa!
     
     const syncState = async () => {
-      // 🛡️ SEGURANÇA DE HIDRATAÇÃO: Não sobe um estado VAZIO por cima do que já está na nuvem!
-      if (!state.agencyName && state.digitalScore === 0 && state.currentPhase <= 1 && state.selectedPackages.length === 0) return;
+      // 🛡️ SEGURANÇA DE HIDRATAÇÃO REFORÇADA: bloqueia sync de estado vazio ou de novo projeto sem nome
+      const hasContent = state.agencyName || state.digitalScore > 0 || state.selectedPackages.length > 0 || state.whatsapp || state.niche;
+      if (!hasContent) return;
+      // 🛡️ Se é um projeto NOVO (projectId gerado localmente começa com "proj_") e ainda não tem nome, não sobe
+      const isBlankNewProject = (state.projectId?.startsWith('proj_') && !state.agencyName);
+      if (isBlankNewProject) return;
 
       setSyncStatus("saving");
       try {
-        const logoForCloud = state.logoBase64 && state.logoBase64.length < 400_000 ? state.logoBase64 : "";
+        // ⚠️ Se logo muito grande, avisa o usuário em vez de falhar silenciosamente
+        const logoIsTooBig = state.logoBase64 && state.logoBase64.length >= 400_000;
+        if (logoIsTooBig) {
+          console.warn("[Supabase Sync] Logo muito grande para nuvem (>400KB). Use uma imagem menor.");
+          // Aviso só aparece uma vez por sessão usando sessionStorage
+          if (!sessionStorage.getItem('logo-size-warned')) {
+            toast.warning("⚠️ Logo muito grande — ela fica salva neste dispositivo, mas não será sincronizada em outros. Use uma imagem abaixo de 300KB.", { duration: 8000 });
+            sessionStorage.setItem('logo-size-warned', '1');
+          }
+        }
+        const logoForCloud = !logoIsTooBig ? state.logoBase64 : "";
         const cleanState = {
           ...state,
           logoBase64: logoForCloud,
@@ -916,8 +935,14 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
     redoStackRef.current = [];
     setHistoryCount(0);
     setRedoCount(0);
-    stateRef.current = defaultState;
-    setState(defaultState);
+    // 🔑 Gera novo projectId ÚNICO para evitar que o auto-sync sobrescreva o projeto anterior
+    const freshState = { ...defaultState, projectId: `proj_${Date.now()}_${Math.random().toString(36).slice(2, 8)}` };
+    stateRef.current = freshState;
+    setState(freshState);
+    // Limpa o localStorage do projeto anterior para evitar restauração errada
+    if (activeUserIdRef.current) {
+      persistLocalState(freshState, activeUserIdRef.current);
+    }
   }, []);
 
   const setPhase = useCallback((phase: number) => {

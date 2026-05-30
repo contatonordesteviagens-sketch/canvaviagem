@@ -5,12 +5,12 @@ export const CloudSaveIndicator = () => {
   const { syncStatus, lastSyncedAt } = useFabricaContext();
 
   const time = lastSyncedAt
-    ? lastSyncedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    ? lastSyncedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
     : null;
 
-  let icon = <Cloud className="w-3.5 h-3.5" />;
-  let label = "Aguardando edição…";
-  let cls = "bg-muted text-muted-foreground border-border";
+  let icon = <Cloud className="w-3.5 h-3.5 opacity-50" />;
+  let label = time ? `Nuvem · ${time}` : "Sincronizando…";
+  let cls = "bg-white/5 text-white/40 border-white/10";
 
   if (syncStatus === "saving") {
     icon = <Loader2 className="w-3.5 h-3.5 animate-spin" />;
