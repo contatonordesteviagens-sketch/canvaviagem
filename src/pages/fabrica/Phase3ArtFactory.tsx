@@ -1351,7 +1351,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
         // Extrai os destaques
         let parsedHighlights: string[] = [];
-        try { parsedHighlights = JSON.parse(highlights || "[]"); } catch {}
+        try { parsedHighlights = Array.isArray(highlights) ? (highlights as any[]).map(h => typeof h === "string" ? h : (h?.text || "")) : JSON.parse((highlights as any) || "[]"); } catch {}
 
         try {
           const geminiKey = localStorage.getItem("user_gemini_api_key");
