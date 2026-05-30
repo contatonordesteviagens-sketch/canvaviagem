@@ -1167,6 +1167,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       toast.error("Digite o destino do anúncio");
       return;
     }
+    if (loading && genMode === "ai") return;
     setLoading(true);
     setGeneratedImage("");
     setGenerationError(null);
@@ -1406,14 +1407,16 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         const mustComposeWithCanvas = isAiExperienceStory || shouldComposeOfertaAi;
         variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantAi];
 
-        const results = await Promise.all(
-          picks.map((pick, idx) => supabase.functions.invoke("fabrica-generate-ad", {
-            body: {
+        const invokeWithTimeout = (bodyPayload: any) => Promise.race([
+          supabase.functions.invoke("fabrica-generate-ad", { body: bodyPayload }),
+          new Promise<any>((_, reject) => setTimeout(() => reject(new Error("Timeout de 25s excedido. A API demorou muito a responder.")), 25000))
+        ]);
+
+        const settledResults = await Promise.allSettled(
+          picks.map((pick, idx) => invokeWithTimeout({
               strategy: categoria === "oferta_pacote" ? "ancora" : categoria === "experiencia_destino" ? "vitrine" : "matriz",
               format,
-              destination: isAiExperienceStory
-                ? destination
-                : destination.toUpperCase(),
+              destination: isAiExperienceStory ? destination : destination.toUpperCase(),
               niche: state.niche,
               agencyName: state.agencyName,
               agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
@@ -1435,14 +1438,13 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               duration: categoria === "experiencia_destino" ? (travelPeriod || "") : (travelPeriod || "5 NOITES"),
               forbiddenHeadlines: guard.headlines,
               forbiddenLayouts: guard.layouts,
-              ...(isAiExperienceStory
-                ? { customPrompt: experienceBackgroundPrompt(nextVariantAi + idx) }
-                : {}),
+              ...(isAiExperienceStory ? { customPrompt: experienceBackgroundPrompt(nextVariantAi + idx) } : {}),
               iaPuraMode: true,
-              userGeminiKey: "AIzaSyBqZ0IOgfYIprzdfirVQUiE6hbtWOS1Tw0",
-            },
-          }))
+              userGeminiKey: localStorage.getItem("user_gemini_api_key") || undefined, // BLOCO 1: Chave hardcoded removida por segurança
+            }))
         );
+
+        const results = settledResults.map(res => res.status === "fulfilled" ? res.value : { error: res.reason });
 
         const images: string[] = [];
         let providerSeen: "user_gemini" | "lovable_ai" | null = null;
@@ -1456,13 +1458,41 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             toast.error(result.data.error);
             return;
           }
-          if (result.data?.error) throw new Error(result.data.error);
-          if (!result.data?.image) throw new Error("Nenhuma imagem foi gerada.");
+          if (result.data?.error) {
+            if (result.data.error.includes("Nenhuma imagem gerada")) {
+              throw new Error("Imagem bloqueada pelos filtros de segurança da IA. Tente outro termo.");
+            }
+            throw new Error(result.data.error);
+          }
+          if (!result.data?.image) throw new Error("Imagem bloqueada pelos filtros de segurança da IA. Tente outro termo.");
 
           let img = result.data.image as string;
           // Ajusta o enquadramento se a IA entregar algo fora do aspecto (especialmente em Square)
           try { img = await reframeImageToAspect(img, format); }
           catch (e) { console.warn("reframe failed", e); }
+
+          // BLOCO 3: Fim do Base64 no LocalStorage. Upload imediato para bucket Supabase
+          if (img.startsWith("data:")) {
+             try {
+                const b64Data = img.split(',')[1];
+                const mimeString = img.split(',')[0].split(':')[1].split(';')[0];
+                const ext = mimeString.includes("png") ? "png" : "jpg";
+                const byteCharacters = atob(b64Data);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], {type: mimeString});
+                const fileName = `ai_gen_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+                const { error: uploadError } = await supabase.storage.from('thumbnails').upload(fileName, blob, { contentType: mimeString });
+                if (uploadError) throw uploadError;
+                const { data: { publicUrl } } = supabase.storage.from('thumbnails').getPublicUrl(fileName);
+                img = publicUrl;
+             } catch (e) {
+                console.warn("Upload to Supabase failed, falling back to Base64:", e);
+             }
+          }
 
           // TRAVA DE CÓDIGO: a IA entrega apenas o fundo. A arte final SEMPRE passa pelo Canvas.
           cleanBackgroundForSite = img; // Preserva a foto LIMPA da IA antes de sujar com o texto!

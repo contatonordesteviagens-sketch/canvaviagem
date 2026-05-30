@@ -73,7 +73,8 @@ function nicheToScene(niche?: string, destination?: string): string {
 // ===== Safe zones por formato =====
 function safeZoneRules(format: Format): string {
   if (format === "story") {
-    return `FORMATO VERTICAL 9:16 — para Stories e Reels.
+    return `CRITICAL REQUIREMENT: You MUST generate a STRICTLY VERTICAL portrait image (9:16 aspect ratio). DO NOT generate square images.
+FORMATO VERTICAL 9:16 — para Stories e Reels.
 GERE A IMAGEM DIRETAMENTE EM PROPORÇÃO VERTICAL 9:16 (mais alta do que larga, formato de celular em pé).
 NÃO entregue uma composição quadrada — a tela é 1080x1920, vertical.
 SAFE ZONES:
@@ -265,7 +266,14 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
             responseModalities: ["IMAGE", "TEXT"],
             temperature: imageTemperature,
             topP: imageTopP,
+            ...(format === "story" ? { aspectRatio: "9:16" } : { aspectRatio: "1:1" }),
           },
+          safetySettings: [
+            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+          ],
         };
 
         const geminiModelCandidates = [
@@ -325,7 +333,7 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
     // ===== Tentativa 2: Lovable AI Gateway =====
     if (!imageUrl && LOVABLE_API_KEY) {
       provider = "lovable_ai";
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/images/generations", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -333,19 +341,12 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
         },
         body: JSON.stringify({
           model: "google/gemini-3.1-flash-image-preview",
-          messages: [{
-            role: "user",
-            content: isOferta && !forcePhotoOnly
-              ? [
-                  { type: "image_url", image_url: { url: CVC_REF_URL } },
-                  { type: "text", text: "Use este anúncio como referência visual de layout (foto de fundo + caixa de preço estilo agência brasileira). Replique a ESTRUTURA, mas use EXCLUSIVAMENTE as cores, destino e dados do prompt. PROIBIDO copiar logos ou marcas.\n\n" + prompt },
-                ]
+          prompt: isOferta && !forcePhotoOnly
+              ? "Use a referência estrutural de anúncio de viagens do Brasil. Replique a ESTRUTURA (fundo + caixa), mas use EXCLUSIVAMENTE as cores e destino descritos aqui: " + prompt
               : prompt,
-          }],
-          modalities: ["image", "text"],
-          temperature: imageTemperature,
-          top_p: imageTopP,
-          max_tokens: 8192,
+          n: 1,
+          response_format: "b64_json",
+          size: format === "story" ? "1080x1920" : "1080x1080"
         }),
       });
 
@@ -373,7 +374,9 @@ Sem texto, sem logos, sem watermarks, sem ícones e sem pictogramas na imagem.`;
       }
 
       const data = await response.json();
-      imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      const b64 = data.data?.[0]?.b64_json;
+      const url = data.data?.[0]?.url;
+      imageUrl = b64 ? `data:image/jpeg;base64,${b64}` : url;
     }
 
     if (!imageUrl) {
