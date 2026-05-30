@@ -776,7 +776,8 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
 
   const heroImg = sc.heroImageUrl || sc.galleryImages?.[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=80";
   
-  const pixelCode = state.metaPixelId ? `
+  const cleanPixelId = state.metaPixelId ? state.metaPixelId.replace(/\D/g, '') : '';
+  const pixelCode = cleanPixelId ? `
 <!-- Meta Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
@@ -787,20 +788,24 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '${esc(state.metaPixelId)}');
+fbq('init', '${cleanPixelId}');
 fbq('track', 'PageView');
 </script>
-<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${esc(state.metaPixelId)}&ev=PageView&noscript=1" /></noscript>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${cleanPixelId}&ev=PageView&noscript=1" /></noscript>
 <!-- End Meta Pixel Code -->` : "";
 
-  const ga4Code = state.ga4Id ? `
+  const rawGa4 = state.ga4Id || "";
+  const matchGa4 = rawGa4.match(/G-[A-Z0-9]+/i);
+  const cleanGa4Id = matchGa4 ? matchGa4[0].toUpperCase() : "";
+
+  const ga4Code = cleanGa4Id ? `
 <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=${esc(state.ga4Id)}"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=${cleanGa4Id}"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', '${esc(state.ga4Id)}');
+  gtag('config', '${cleanGa4Id}');
 </script>` : "";
 
   return `<!DOCTYPE html>
@@ -1070,7 +1075,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
       </div>
     </div>
     <div class="stats-bar">
-      ${stats.map((s) => `<div><div class="stat-num">${esc(s.num)}</div><div class="stat-label">${esc(s.label)}</div></div>`).join("")}
+      ${stats.map((s, i) => !sc.hiddenElements?.includes(`stat-${i}`) ? `<div data-visual-removable="stat-${i}"><div class="stat-num">${esc(s.num)}</div><div class="stat-label">${esc(s.label)}</div></div>` : '').join("")}
     </div>
   </div>
 </section>`;
