@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback,
 import type { Context } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 export type Niche = "nordeste" | "sul" | "internacional" | "cruzeiro" | "aventura" | "luademel" | "";
 
@@ -468,10 +469,13 @@ const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
   const { logoBase64, generatedAdImage, lastCleanPhoto, allGeneratedAdImages, siteContent, ...rest } = nextState;
   const { galleryImages, ...siteRest } = siteContent;
 
-  safeSetItem(
+  const savedMain = safeSetItem(
     scopedKey(STORAGE_KEY, resolvedUserId),
     JSON.stringify({ ...rest, siteContent: siteRest })
   );
+  if (!savedMain) {
+    toast.error("Memória do navegador cheia! Suas edições podem não ser salvas offline. Limpe o cache ou imagens geradas.");
+  }
 
   const heavyPrefix = scopedHeavyPrefix(resolvedUserId);
 
@@ -484,8 +488,12 @@ const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
   if (lastCleanPhoto) safeSetItem(heavyPrefix + "lastCleanPhoto", lastCleanPhoto);
   else localStorage.removeItem(heavyPrefix + "lastCleanPhoto");
 
-  safeSetItem(scopedKey(GALLERY_KEY, resolvedUserId), JSON.stringify(galleryImages || []));
-  safeSetItem(scopedKey(GENERATED_KEY, resolvedUserId), JSON.stringify(allGeneratedAdImages || []));
+  const savedGallery = safeSetItem(scopedKey(GALLERY_KEY, resolvedUserId), JSON.stringify(galleryImages || []));
+  const savedGenerated = safeSetItem(scopedKey(GENERATED_KEY, resolvedUserId), JSON.stringify(allGeneratedAdImages || []));
+  
+  if (!savedGallery || !savedGenerated) {
+    console.warn("Quota exceeded when saving images to local storage.");
+  }
 };
 
 const clearLegacyState = () => {

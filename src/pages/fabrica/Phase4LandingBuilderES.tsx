@@ -428,8 +428,9 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   const resetSiteToBlank = () => {
     const SYNC_KEY = "fabrica-phase4-autosync-v1-es";
     localStorage.removeItem(SYNC_KEY);
+    const newProjectId = crypto.randomUUID();
     update({
-      projectId: undefined,
+      projectId: newProjectId,
       agencyName: "",
       selectedPackages: [],
       siteContent: {
@@ -1491,11 +1492,17 @@ const PublishOnLovableCard = ({
 
     setIsPublishing(true);
     try {
+      let publishId = state.projectId;
+      if (!publishId) {
+        publishId = crypto.randomUUID();
+        systemUpdate({ projectId: publishId });
+      }
+
       // Bypass Supabase Storage RLS entirely by saving to public_sites table
       const { error: dbError } = await supabase
         .from("public_sites")
         .upsert({
-          id: state.projectId || user.id,
+          id: publishId,
           owner_id: user.id,
           html: html
         });
@@ -1505,7 +1512,7 @@ const PublishOnLovableCard = ({
       }
 
 
-      const internalUrl = `${window.location.origin}/view/${state.projectId || user.id}`;
+      const internalUrl = `${window.location.origin}/view/${publishId}`;
       setPublishedUrl(internalUrl);
       toast.success("🚀 ¡SITIO PUBLICADO CON ÉXITO!");
 
