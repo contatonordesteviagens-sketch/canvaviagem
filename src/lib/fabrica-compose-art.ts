@@ -1683,9 +1683,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const instMatch = (installments || "12x").match(/(\d{1,2})\s*x?/i);
         const parcN = instMatch ? instMatch[1] : "12";
         const priceStr = mainPrice || `${curSym} ${price}`;
-        // Calcula total = preco × parcelas, formatando milhares com "." e centavos com ","
+        // Calcula total = preco × parcelas (se parcelado), formatando milhares com "." e centavos com ","
         const priceNumeric = parseFloat(((price || "").trim()).replace(/\./g, "").replace(",", "."));
-        const totalNum = !isNaN(priceNumeric) ? priceNumeric * parseInt(parcN, 10) : NaN;
+        const totalMultiplier = (paymentMode === "cash" || paymentMode === "cash_discount") ? 1 : parseInt(parcN, 10);
+        const totalNum = !isNaN(priceNumeric) ? priceNumeric * totalMultiplier : NaN;
         // Se preco não tem centavos (inteiro), o total tambem não tera.
         const priceHasDecimals = /[.,]\d{1,2}\s*$/.test((price || "").trim());
         const fmtBR = (n) => {
