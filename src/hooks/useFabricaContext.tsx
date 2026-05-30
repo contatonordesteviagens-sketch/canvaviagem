@@ -670,6 +670,8 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
               socialLinks: primary.socialLinks?.length ? primary.socialLinks : (fallback.socialLinks || []),
               siteContent: {
                 ...defaultState.siteContent,
+                ...(fallback.siteContent || {}),
+                ...(primary.siteContent || {}),
                 hero: {
                   ...(defaultState.siteContent as any).hero,
                   ...((fallback.siteContent as any)?.hero || {}),
