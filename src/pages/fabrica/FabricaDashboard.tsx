@@ -271,7 +271,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
             onClick={() => setProjectsPanelOpen(!projectsPanelOpen)}
             className="w-full flex items-center justify-between text-[11px] text-white/60 font-bold uppercase tracking-wider outline-none text-left"
           >
-            <span className="flex items-center gap-1.5">📂 PROJETOS SALVOS {savedProjects && savedProjects.length > 0 && `(${savedProjects.length})`}</span>
+            <span className="flex items-center gap-1.5">📂 EDITAR SITES (Projetos Salvos) {savedProjects && savedProjects.length > 0 && `(${savedProjects.length})`}</span>
             <span className="text-[10px] text-white/30 font-medium">{projectsPanelOpen ? "▲ RECOLHER" : "▼ EXPANDIR / CARREGAR"}</span>
           </button>
           
@@ -294,7 +294,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                   }}
                   className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-white/30 transition-colors text-xs"
                 >
-                  <option value="" className="bg-zinc-900">Selecione um projeto salvo...</option>
+                <option value="" className="bg-zinc-900">Selecione o site que deseja editar...</option>
                   {savedProjects.map((p) => (
                     <option key={p.id} value={p.id} className="bg-zinc-900">{p.agency_name || "Sem Nome"} (Salvo em {new Date(p.updated_at).toLocaleDateString()})</option>
                   ))}
@@ -886,6 +886,11 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                 </div>
                 <div className="text-2xl font-black text-white leading-none">{publishedSites.length}</div>
                 <div className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1.5">Sites publicados</div>
+                {publishedSites.length > 0 && (
+                   <div className="text-[9px] text-zinc-500/80 mb-2 leading-tight">
+                     Dica: Para editar um destes sites, selecione-o na lista <b>"EDITAR SITE"</b> no topo da página.
+                   </div>
+                )}
               </div>
               <div 
                 onClick={() => onNavigate?.("phase", 3)}
