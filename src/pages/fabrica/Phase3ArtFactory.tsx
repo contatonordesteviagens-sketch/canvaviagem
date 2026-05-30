@@ -1391,7 +1391,9 @@ Retorne EXCLUSIVAMENTE um JSON válido com a estrutura:
     }
   ]
 }
-Apenas o JSON, sem markdown.`;
+Apenas o JSON, sem markdown.
+
+CRITICAL: You MUST return ONLY the raw, minified JSON object. Do NOT wrap the JSON in markdown code blocks (\`\`\`json). Do NOT add any conversational text before or after the JSON.`;
 
           const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
             method: "POST",
@@ -1408,11 +1410,31 @@ Apenas o JSON, sem markdown.`;
           if (!response.ok) throw new Error("Falha na chamada direta à API do Gemini.");
           
           const data = await response.json();
-          let layoutJson = null;
-          if (data.candidates && data.candidates[0].content.parts[0].text) {
-            layoutJson = JSON.parse(data.candidates[0].content.parts[0].text);
+          const rawResponseText: string | undefined = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          console.log("RAW_RESPONSE_IA:", rawResponseText);
+
+          let layoutJson: any = null;
+          if (rawResponseText) {
+            // Sanitização robusta: remove fences markdown e ruído antes/depois do JSON
+            let cleanJsonString = rawResponseText
+              .replace(/```json/gi, "")
+              .replace(/```/g, "")
+              .trim();
+            const firstBrace = cleanJsonString.indexOf("{");
+            const lastBrace = cleanJsonString.lastIndexOf("}");
+            if (firstBrace !== -1 && lastBrace > firstBrace) {
+              cleanJsonString = cleanJsonString.slice(firstBrace, lastBrace + 1);
+            }
+            try {
+              layoutJson = JSON.parse(cleanJsonString);
+            } catch (parseErr) {
+              console.error("ERRO_IA_PURA_PARSE:", parseErr, "CLEANED:", cleanJsonString);
+              throw new Error("JSON inválido retornado pela IA após sanitização.");
+            }
           }
-          if (!layoutJson || !layoutJson.elements) throw new Error("JSON de layout não retornado ou inválido.");
+          if (!layoutJson || !Array.isArray(layoutJson.elements)) {
+            throw new Error("JSON de layout não retornado ou sem 'elements'.");
+          }
 
           const { renderIAPuraLayout } = await import("@/lib/fabrica-compose-art");
           
@@ -1423,7 +1445,6 @@ Apenas o JSON, sem markdown.`;
           const ctx = canvas.getContext("2d");
           if (!ctx) throw new Error("Falha ao inicializar Canvas");
 
-          // Renderiza o Layout Dinâmico
           await renderIAPuraLayout(ctx, {
             format,
             imageUrl: refImage,
@@ -1448,7 +1469,6 @@ Apenas o JSON, sem markdown.`;
             allGeneratedAdImages: updatedGenerated
           });
           
-          // O background limpo continua sendo a foto original
           await syncGeneratedPackageToSite(finalImageUrl, refImage);
           
           toast.success("Design Dinâmico gerado com sucesso!");
@@ -1460,10 +1480,10 @@ Apenas o JSON, sem markdown.`;
 
           requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
         } catch (error: any) {
+          console.error("ERRO_IA_PURA_CATCH:", error);
           console.error("Erro no motor de IA Dinâmica:", error);
           toast.error("Erro ao gerar design da IA: " + error.message);
           
-          // TAREFA 4: Fallback gracioso para a V0
           toast.info("Carregando layout de segurança (V0) devido à falha da IA...");
           setForcedVariant(0);
           setGenMode("photo");
