@@ -576,6 +576,8 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         finalCtaTitle: "Pronto para sua próxima viagem?",
         finalCtaLabel: "Chamar no WhatsApp",
         galleryImages: [],
+        canvaViagemUrl: "",
+        vercelUrl: "",
       },
     });
     setAutoSyncDone(false);

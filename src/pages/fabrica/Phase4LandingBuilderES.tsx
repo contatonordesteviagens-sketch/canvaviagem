@@ -440,6 +440,8 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         finalCtaTitle: "¿Listo para tu próximo viaje?",
         finalCtaLabel: "Llamar por WhatsApp",
         galleryImages: [],
+        canvaViagemUrl: "",
+        vercelUrl: "",
       },
     });
     setAutoSyncDone(false);
