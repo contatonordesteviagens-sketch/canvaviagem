@@ -1063,19 +1063,21 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     if (secKey === "hero") {
       return sc.sections?.hero === false ? "" : `
 <!-- HERO -->
-<section id="inicio" class="hero">
+<section id="inicio" class="hero" data-visual-removable="hero-section">
   <div class="container">
-    <div class="hero-grid">
+    ${!sc.hiddenElements?.includes('hero-content') ? `
+    <div class="hero-grid" data-visual-removable="hero-content">
       <div class="hero-content">
-        <span class="eyebrow">Consultoría Premium de Viajes</span>
-        <h1>${esc(headline)}</h1>
-        <p class="lead">${esc(subheadline)}</p>
+        ${!sc.hiddenElements?.includes('hero-eyebrow') ? `<span class="eyebrow" data-visual-removable="hero-eyebrow">Consultoría Premium de Viajes</span>` : ''}
+        ${!sc.hiddenElements?.includes('hero-headline') ? `<h1 data-visual-removable="hero-headline">${esc(headline)}</h1>` : ''}
+        ${!sc.hiddenElements?.includes('hero-sub') ? `<p class="lead" data-visual-removable="hero-sub">${esc(subheadline)}</p>` : ''}
         <div class="hero-actions">
-          <a href="#orcamento" class="btn">${esc(sc.heroCtaLabel || "Solicitar Mi Itinerario")}</a>
-          <a href="#destinos" class="btn btn-outline">Ver Destinos</a>
+          ${!sc.hiddenElements?.includes('hero-cta-1') ? `<a href="#orcamento" class="btn" data-visual-removable="hero-cta-1">${esc(sc.heroCtaLabel || "Solicitar Mi Itinerario")}</a>` : ''}
+          ${!sc.hiddenElements?.includes('hero-cta-2') ? `<a href="#destinos" class="btn btn-outline" data-visual-removable="hero-cta-2">Ver Destinos</a>` : ''}
         </div>
       </div>
     </div>
+    ` : ''}
     ${stats.some((s, i) => !sc.hiddenElements?.includes(`stat-${i}`)) ? `
     <div class="stats-bar">
       ${stats.map((s, i) => !sc.hiddenElements?.includes(`stat-${i}`) ? `<div data-visual-removable="stat-${i}"><div class="stat-num">${esc(s.num)}</div><div class="stat-label">${esc(s.label)}</div></div>` : '').join("")}
@@ -1087,14 +1089,14 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     if (secKey === "processo") {
       return sc.sections?.processo === false ? "" : `
 <!-- PROCESSO -->
-<section class="processo">
+<section class="processo" id="processo" data-visual-removable="processo-section">
   <div class="container">
-    <div class="section-eyebrow eyebrow">Proceso</div>
-    <h2 class="section-title">Tu viaje de ensueño en 3 pasos</h2>
+    ${!sc.hiddenElements?.includes('processo-eyebrow') ? `<div class="section-eyebrow eyebrow" data-visual-removable="processo-eyebrow">Proceso</div>` : ''}
+    ${!sc.hiddenElements?.includes('processo-title') ? `<h2 class="section-title" data-visual-removable="processo-title">Tu viaje de ensueño en 3 pasos</h2>` : ''}
     <div class="proc-grid">
-      <div class="proc-card"><div class="proc-num">1</div><h3>Consulta Personalizada</h3><p>Entendemos tus sueños, fechas, presupuesto y estilo en una charla de 30 minutos sin compromiso.</p></div>
-      <div class="proc-card"><div class="proc-num">2</div><h3>Curaduría Exclusiva</h3><p>Creamos un itinerario 100% personalizado con los mejores hoteles, tours y experiencias para tu perfil.</p></div>
-      <div class="proc-card"><div class="proc-num">3</div><h3>Embarque Tranquilo</h3><p>Nos encargamos de vuelos, alojamiento, traslados y soporte 24h durante todo tu viaje.</p></div>
+      ${!sc.hiddenElements?.includes('proc-step-0') ? `<div class="proc-card" data-visual-removable="proc-step-0"><div class="proc-num">1</div><h3>Consulta Personalizada</h3><p>Entendemos tus sueños, fechas, presupuesto y estilo en una charla de 30 minutos sin compromiso.</p></div>` : ''}
+      ${!sc.hiddenElements?.includes('proc-step-1') ? `<div class="proc-card" data-visual-removable="proc-step-1"><div class="proc-num">2</div><h3>Curaduría Exclusiva</h3><p>Creamos un itinerario 100% personalizado com los mejores hoteles, tours y experiencias para tu perfil.</p></div>` : ''}
+      ${!sc.hiddenElements?.includes('proc-step-2') ? `<div class="proc-card" data-visual-removable="proc-step-2"><div class="proc-num">3</div><h3>Embarque Tranquilo</h3><p>Nos encargamos de vuelos, alojamiento, traslados y soporte 24h durante todo tu viaje.</p></div>` : ''}
     </div>
   </div>
 </section>`;

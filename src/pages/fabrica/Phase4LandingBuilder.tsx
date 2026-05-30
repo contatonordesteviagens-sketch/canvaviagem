@@ -393,7 +393,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
         btn.innerHTML = "×";
         btn.className = "fabrica-remove-btn";
         btn.title = "Ocultar este elemento";
-        btn.style.cssText = "position:absolute; top:-8px; right:-8px; background:#EF4444; color:white; border:2px solid #fff; border-radius:50%; width:24px; height:24px; cursor:pointer; font-size:16px; font-weight:bold; display:none; align-items:center; justify-content:center; z-index:10000; box-shadow:0 2px 4px rgba(0,0,0,0.2); line-height:1; font-family:sans-serif; padding-bottom:2px;";
+        btn.style.cssText = "position:absolute; top:-6px; right:-6px; background:rgba(239,68,68,0.9); color:white; border:1px solid #fff; border-radius:50%; width:16px; height:16px; cursor:pointer; font-size:10px; font-weight:bold; display:none; align-items:center; justify-content:center; z-index:10000; box-shadow:0 2px 4px rgba(0,0,0,0.15); line-height:1; font-family:sans-serif; padding-bottom:1px; transition:all 0.2s ease; backdrop-filter:blur(2px);";
         
         (el as HTMLElement).style.position = "relative";
         el.appendChild(btn);
@@ -406,7 +406,7 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
           e.preventDefault();
           const id = el.getAttribute("data-visual-removable");
           if (id) {
-            window.parent.postMessage({ type: "FABRICA_REMOVE", elementId: id }, "*");
+            window.postMessage({ type: "FABRICA_REMOVE", elementId: id }, "*");
           }
         });
       });

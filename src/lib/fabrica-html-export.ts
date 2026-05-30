@@ -1136,17 +1136,19 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
 <!-- HERO -->
 <section id="inicio" class="hero">
   <div class="container">
-    <div class="hero-grid">
+    ${!sc.hiddenElements?.includes('hero-content') ? `
+    <div class="hero-grid" data-visual-removable="hero-content">
       <div class="hero-content">
-        <span class="eyebrow">${esc(sc.heroEyebrow || "Consultoria Premium de Viagens")}</span>
-        <h1>${esc(headline)}</h1>
-        <p class="lead">${esc(subheadline)}</p>
+        ${!sc.hiddenElements?.includes('hero-eyebrow') ? `<span class="eyebrow" data-visual-removable="hero-eyebrow">${esc(sc.heroEyebrow || "Consultoria Premium de Viagens")}</span>` : ''}
+        ${!sc.hiddenElements?.includes('hero-headline') ? `<h1 data-visual-removable="hero-headline">${esc(headline)}</h1>` : ''}
+        ${!sc.hiddenElements?.includes('hero-sub') ? `<p class="lead" data-visual-removable="hero-sub">${esc(subheadline)}</p>` : ''}
         <div class="hero-actions">
-          <a href="#orcamento" class="btn">${esc(sc.heroCtaLabel || "Solicitar Meu Roteiro")}</a>
-          <a href="#destinos" class="btn btn-outline">Ver Destinos</a>
+          ${!sc.hiddenElements?.includes('hero-cta-1') ? `<a href="#orcamento" class="btn" data-visual-removable="hero-cta-1">${esc(sc.heroCtaLabel || "Solicitar Meu Roteiro")}</a>` : ''}
+          ${!sc.hiddenElements?.includes('hero-cta-2') ? `<a href="#destinos" class="btn btn-outline" data-visual-removable="hero-cta-2">Ver Destinos</a>` : ''}
         </div>
       </div>
     </div>
+    ` : ''}
     ${stats.some((s, i) => !sc.hiddenElements?.includes(`stat-${i}`)) ? `
     <div class="stats-bar">
       ${stats.map((s, i) => !sc.hiddenElements?.includes(`stat-${i}`) ? `<div data-visual-removable="stat-${i}"><div class="stat-num">${esc(s.num)}</div><div class="stat-label">${esc(s.label)}</div></div>` : '').join("")}
@@ -1158,14 +1160,14 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     if (secKey === "processo") {
       return sc.sections?.processo === false ? "" : `
 <!-- PROCESSO -->
-<section class="processo">
+<section class="processo" id="processo">
   <div class="container">
-    <div class="section-eyebrow eyebrow">${esc(sc.processoEyebrow || "Processo")}</div>
-    <h2 class="section-title">${esc(sc.processoTitle || "Sua viagem dos sonhos em 3 passos")}</h2>
+    ${!sc.hiddenElements?.includes('processo-eyebrow') ? `<div class="section-eyebrow eyebrow" data-visual-removable="processo-eyebrow">${esc(sc.processoEyebrow || "Processo")}</div>` : ''}
+    ${!sc.hiddenElements?.includes('processo-title') ? `<h2 class="section-title" data-visual-removable="processo-title">${esc(sc.processoTitle || "Sua viagem dos sonhos em 3 passos")}</h2>` : ''}
     <div class="proc-grid">
-      ${(sc.processoSteps || []).map((step, i) => `
-      <div class="proc-card"><div class="proc-num">${esc(step.num)}</div><h3>${esc(step.title)}</h3><p>${esc(step.desc)}</p></div>
-      `).join("")}
+      ${(sc.processoSteps || []).map((step, i) => !sc.hiddenElements?.includes(`proc-step-${i}`) ? `
+      <div class="proc-card" data-visual-removable="proc-step-${i}"><div class="proc-num">${esc(step.num)}</div><h3>${esc(step.title)}</h3><p>${esc(step.desc)}</p></div>
+      ` : '').join("")}
     </div>
   </div>
 </section>`;
@@ -1180,7 +1182,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
     <div class="destinos-grid">
       ${pacotes
         .map(
-          (p) => `<a href="#" onclick="openLeadForm('${esc(p.title)}', '${wppMsg(p.title)}');return false;" class="dest-card">
+          (p, i) => !sc.hiddenElements?.includes(`dest-card-${i}`) ? `<a href="#" onclick="openLeadForm('${esc(p.title)}', '${wppMsg(p.title)}');return false;" class="dest-card" data-visual-removable="dest-card-${i}">
         <div class="dest-img-wrap">
           <img src="${esc(p.imageUrl || DEFAULT_DEST_IMG)}" alt="${esc(p.title)}" loading="lazy" data-ai-ignore="true" data-preserve-image="true">
           <span class="dest-tag">${esc(p.title.split(" ")[0] || "Destino")}</span>
@@ -1193,7 +1195,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
           <div class="dest-price">${parsePriceHTML(p.price)}</div>
           <span class="dest-cta">Saiba mais →</span>
         </div>
-      </a>`
+      </a>` : ''
         )
         .join("")}
     </div>
@@ -1205,18 +1207,18 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
 <!-- POR QUE NÓS / EQUIPE -->
 <section id="por-que" class="equipe">
   <div class="container">
-    <div class="equipe-grid">
+    <div class="equipe-grid" data-visual-removable="por-que-grid">
       <div class="equipe-left">
-        <span class="badge-counter">${esc(sc.equipeBadge || "+15k Clientes Satisfeitos")}</span>
-        <div class="eyebrow" style="color:#fff;opacity:.6">${esc(sc.equipeEyebrow || "Nossa equipe")}</div>
-        <h2>${esc(sc.equipeTitle || "Uma equipe dedicada exclusivamente a você")}</h2>
-        <p class="intro">${esc(sc.equipeIntro || "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.")}</p>
+        ${!sc.hiddenElements?.includes('equipe-badge') ? `<span class="badge-counter" data-visual-removable="equipe-badge">${esc(sc.equipeBadge || "+15k Clientes Satisfeitos")}</span>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-eyebrow') ? `<div class="eyebrow" style="color:#fff;opacity:.6" data-visual-removable="equipe-eyebrow">${esc(sc.equipeEyebrow || "Nossa equipe")}</div>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-title') ? `<h2 data-visual-removable="equipe-title">${esc(sc.equipeTitle || "Uma equipe dedicada exclusivamente a você")}</h2>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-intro') ? `<p class="intro" data-visual-removable="equipe-intro">${esc(sc.equipeIntro || "Cada viagem começa com uma conversa real. Nossa equipe de especialistas conhece os destinos de perto — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.")}</p>` : ''}
         <div class="equipe-features">
-          ${(sc.equipeFeatures || []).map(feat => `
-          <div class="feat"><div class="feat-icon">${feat.icon}</div><div><h4>${esc(feat.title)}</h4><p>${esc(feat.desc)}</p></div></div>
-          `).join("")}
+          ${(sc.equipeFeatures || []).map((feat, i) => !sc.hiddenElements?.includes(`equipe-feat-${i}`) ? `
+          <div class="feat" data-visual-removable="equipe-feat-${i}"><div class="feat-icon">${feat.icon}</div><div><h4>${esc(feat.title)}</h4><p>${esc(feat.desc)}</p></div></div>
+          ` : '').join("")}
         </div>
-        <a href="#" onclick="openLeadForm('Falar com Especialista', 'https://wa.me/55${wpp}');return false;" class="btn">Falar com um especialista</a>
+        ${!sc.hiddenElements?.includes('equipe-cta') ? `<a href="#" onclick="openLeadForm('Falar com Especialista', 'https://wa.me/55${wpp}');return false;" class="btn" data-visual-removable="equipe-cta">Falar com um especialista</a>` : ''}
       </div>
       <div class="equipe-img" style="background-image: url('${esc(sc.aboutImageUrl || "https://img.freepik.com/fotos-gratis/voce-esta-pronto-para-suas-ferias-representante-de-vendas-dando-passaportes-e-passagens-de-aviao-para-uma-jovem-e-um-homem-para-sua-viagem-de-ferias-na-agencia-de-viagens_662251-2215.jpg?semt=ais_hybrid&w=740&q=80")}')"></div>
     </div>
@@ -1235,14 +1237,14 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
       ${state.depoimentos
         .slice(0, 3)
         .map(
-          (d) => `<div class="depo-card">
+          (d, i) => !sc.hiddenElements?.includes(`depo-${i}`) ? `<div class="depo-card" data-visual-removable="depo-${i}">
         <div class="stars">★★★★★</div>
         <p class="depo-text">"${esc(d.text)}"</p>
         <div class="depo-author">
           <img src="${avatarSvg(d.name, color)}" class="depo-avatar" alt="${esc(d.name)}" data-ai-ignore="true" data-preserve-image="true">
           <div><div class="depo-name">${esc(d.name)}</div><div class="depo-meta">Cliente verificado</div></div>
         </div>
-      </div>`
+      </div>` : ''
         )
         .join("")}
     </div>
@@ -1257,9 +1259,9 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
   <div class="container">
     <div class="orc-grid">
       <div class="orc-info">
-        <span class="eyebrow">${esc(sc.orcamentoEyebrow || "Orçamento")}</span>
-        <h2 style="margin-top:12px">${esc(sc.orcamentoTitle || "Fale com um consultor agora")}</h2>
-        <p>${esc(sc.orcamentoText || "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.")}</p>
+        ${!sc.hiddenElements?.includes('orcamento-eyebrow') ? `<span class="eyebrow" data-visual-removable="orcamento-eyebrow">${esc(sc.orcamentoEyebrow || "Orçamento")}</span>` : ''}
+        ${!sc.hiddenElements?.includes('orcamento-title') ? `<h2 style="margin-top:12px" data-visual-removable="orcamento-title">${esc(sc.orcamentoTitle || "Fale com um consultor agora")}</h2>` : ''}
+        ${!sc.hiddenElements?.includes('orcamento-text') ? `<p data-visual-removable="orcamento-text">${esc(sc.orcamentoText || "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.")}</p>` : ''}
         <div class="contact-list">
           ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon">📱</div><div><strong>WhatsApp</strong><span>${esc(wppDisplay)}</span></div></div>` : ''}
           ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon">✉️</div><div><strong>E-mail</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
@@ -1297,12 +1299,17 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
       return sc.sections?.faq !== false && sc.faq && sc.faq.length > 0
         ? `
 <!-- FAQ -->
-<section class="faq-bg">
+<section id="faq">
   <div class="container">
-    <div class="section-eyebrow eyebrow">Dúvidas</div>
-    <h2 class="section-title">${esc(sc.faqTitle || "Perguntas Frequentes")}</h2>
+    ${!sc.hiddenElements?.includes('faq-eyebrow') ? `<div class="section-eyebrow eyebrow" data-visual-removable="faq-eyebrow">Dúvidas Frequentes</div>` : ''}
+    ${!sc.hiddenElements?.includes('faq-title') ? `<h2 class="section-title" data-visual-removable="faq-title">${esc(sc.faqTitle || "Tudo que você precisa saber")}</h2>` : ''}
     <div class="faq-list">
-      ${sc.faq.map((f) => `<details class="faq-item"><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join("")}
+      ${sc.faq.map((f, i) => !sc.hiddenElements?.includes(`faq-${i}`) ? `
+      <details class="faq-item" data-visual-removable="faq-${i}">
+        <summary>${esc(f.q)}</summary>
+        <p>${esc(f.a)}</p>
+      </details>
+      ` : '').join("")}
     </div>
   </div>
 </section>`
