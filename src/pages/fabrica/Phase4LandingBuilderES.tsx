@@ -1432,10 +1432,36 @@ const PublishOnLovableCard = ({
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "") // elimina acentos
-      .replace(/[^a-z0-9]/g, "-") // solo minusculas y guiones
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
+                      .replace(/[^a-z0-9]/g, "-") // solo minusculas y guiones
+                      .replace(/-+/g, "-")
+                      .replace(/^-|-$/g, "");
   });
+
+  useEffect(() => {
+    if (state.siteContent.canvaViagemUrl) {
+      const savedUrl = state.siteContent.canvaViagemUrl.replace(/\/$/, "");
+      if (savedUrl.includes(`/${CANVA_VIAGEM_DOMAIN}/view/`)) {
+        setCanvaViagemSubdomain(savedUrl.split("/").pop() || "");
+      } else {
+        setCanvaViagemSubdomain(savedUrl.replace("https://", "").replace(`.${CANVA_VIAGEM_DOMAIN}`, ""));
+      }
+    } else {
+      setCanvaViagemSubdomain(buildSiteSlug(state.agencyName || ""));
+    }
+
+    if (state.siteContent.vercelUrl) {
+      setVercelSubdomain(state.siteContent.vercelUrl.replace("https://", "").replace(".vercel.app", ""));
+    } else {
+      const rawAgency = state.agencyName || "";
+      setVercelSubdomain(rawAgency
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, ""));
+    }
+  }, [state.projectId, state.siteContent.canvaViagemUrl, state.siteContent.vercelUrl, state.agencyName]);
 
   const handleDownload = () => {
     try {
