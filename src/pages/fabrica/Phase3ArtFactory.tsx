@@ -1847,6 +1847,41 @@ CRITICAL: You MUST return ONLY the raw, minified JSON object. Do NOT wrap the JS
             </button>
           </div>
 
+          {/* Campo de Chave Gemini — visível apenas no modo IA Pura */}
+          {genMode === "ai" && (
+            <div className="mt-3 p-3 rounded-xl border border-amber-400/20 bg-amber-500/5">
+              <label className="block text-[11px] font-bold text-amber-200/80 uppercase tracking-widest mb-1.5">
+                🔑 Chave Gemini (obrigatória para IA Pura)
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="password"
+                  defaultValue={typeof window !== "undefined" ? (localStorage.getItem("user_gemini_api_key") || "") : ""}
+                  placeholder="Cole aqui sua API Key (AIza...)"
+                  onChange={(e) => {
+                    const v = e.target.value.trim();
+                    if (v) localStorage.setItem("user_gemini_api_key", v);
+                    else localStorage.removeItem("user_gemini_api_key");
+                  }}
+                  className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-amber-400/40"
+                />
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 text-[11px] font-bold whitespace-nowrap transition-colors"
+                >
+                  Obter chave →
+                </a>
+              </div>
+              <p className="text-[10px] text-white/40 mt-1.5">
+                Salva localmente no seu navegador. Pegue grátis em aistudio.google.com/app/apikey
+              </p>
+            </div>
+          )}
+
+
+
 
           {/* Seletor de Versão (V0..V4) — para correções cirúrgicas em cada layout */}
           <div className="mt-4">
