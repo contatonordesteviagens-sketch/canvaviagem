@@ -486,7 +486,8 @@ async function drawFinalBranding(
   const logoEdge = logoUrl ? (padX + lw + bgPad * 2 + 30) : padX;
   const maxAllowedWidthForContacts = isStory ? (cw * 0.70) : (cw * 0.45);
 
-  let yPos = contactsToDraw.length === 2 ? centerY + (footerHeight * 0.18) : centerY;
+  // Aumentado o espaçamento vertical entre os dois contatos (de 0.18 para 0.22)
+  let yPos = contactsToDraw.length === 2 ? centerY + (footerHeight * 0.22) : centerY;
 
   for (const c of contactsToDraw) {
     let displayValue = c.value;
@@ -520,7 +521,8 @@ async function drawFinalBranding(
       drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle);
     }
 
-    yPos -= (footerHeight * 0.36);
+    // Aumentado o pulo para a linha de cima (de 0.36 para 0.44)
+    yPos -= (footerHeight * 0.44);
   }
   ctx.restore();
 }
