@@ -1459,11 +1459,32 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const topLabel = paymentLabel || (installments ? `${installments} de` : `${parcN}x de`);
         const bottomSuffix = paymentSuffix || "por pessoa";
 
+        // Pre-calculo para altura dinamica
+        const shownItems = highlights.filter(h => h && h.text && h.text.trim()).slice(0, 4);
+        const benefitsList = shownItems.length > 0 ? shownItems.map(h => ({
+          text: h.text,
+          icon: h.icon || "check"
+        })) : [
+          { text: "Transporte", icon: "bus" },
+          { text: "Hospedagem", icon: "hotel" },
+          { text: "Café da manhã", icon: "coffee" },
+          { text: "Guia local", icon: "guide" }
+        ];
+
+        const rowGap = 80;
+        const startY = safeTop + 230;
+        const benefitsEnd = startY + (Math.ceil(benefitsList.length / 2) * rowGap);
+        const priceBlockY = benefitsEnd + 55;
+        const ringH = 210;
+
+        const baseBoxH = (priceBlockY - safeTop) + ringH + 30;
+        const stripeH = 64;
+        const boxH = showPixBanner ? baseBoxH + stripeH + 30 : baseBoxH;
+
         // ── [BOX] amarelo arredondado ─ ─────
         const boxX = 40;
         const boxW = width - 80; // 1000px
         const boxY = safeTop; // Ancorado na Safe Zone
-        const boxH = 860;
 
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.3)";
@@ -1489,22 +1510,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
         }
         safeFillText(ctx, destinoUp, cx, boxY + 140, boxW - 80, 24);
 
-        // Grade de 4 Benefícios (2 colunas) - Dinâmicos e com escala perfeita
-        const shownItems = highlights.filter(h => h && h.text && h.text.trim()).slice(0, 4);
-        const benefitsList = shownItems.length > 0 ? shownItems.map(h => ({
-          text: h.text,
-          icon: h.icon || "check"
-        })) : [
-          { text: "Transporte incluso", icon: "bus" },
-          { text: "Hospedagem", icon: "hotel" },
-          { text: "Café da manhã", icon: "coffee" },
-          { text: "Guia local", icon: "guide" }
-        ];
-
+        // Grade de 4 Benefícios
         const colW = (boxW - 100) / 2; // 450px cada coluna
         const colGap = 40;
-        const rowGap = 80; // Aumentado para respiro visual (Task 1)
-        const startY = boxY + 230;
         const startX = boxX + 50;
         
         benefitsList.forEach((b, i) => {
@@ -1513,12 +1521,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
           const tx = startX + col * (colW + colGap);
           const ty = startY + row * rowGap;
           
-          // Ícones oficiais de alta fidelidade (aumentados em 20%)
           const iconSize = 64;
           drawMonoIcon(ctx, b.icon as IconKey, tx + iconSize/2, ty, iconSize, navy);
           
-          // Escala (aumentada em 20%): se for "6 dias / 5 noites" (ou contiver "dia"), fica 31px.
-          // Caso contrário, fica 41px.
           const isDuration = /\d+\s*dia/i.test(b.text) || /noite/i.test(b.text);
           let bfs = isDuration ? 37 : 49;
           ctx.fillStyle = navy;
@@ -1533,15 +1538,12 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ctx.fillText(b.text, textX, ty + 10);
         });
 
-        // Bloco de Preço - Dinâmico, Responsivo e com Destaque 3D (Task 3)
-        const benefitsEnd = startY + (Math.ceil(benefitsList.length / 2) * rowGap);
-        const priceBlockY = benefitsEnd + 65; // Subida proporcional baseada no fim dos benefícios com mais respiro
+        // Bloco de Preço
         const ringX = boxX + 40;
         const ringY = priceBlockY;
         const ringW = boxW - 80;
-        const ringH = 210;
 
-        // Alto Relevo Nítido: Drop-shadow forte + borda interna chanfrada de alto contraste
+        // Alto Relevo
         ctx.save();
         ctx.shadowColor = "rgba(0,0,0,0.38)";
         ctx.shadowBlur = 20;
@@ -1560,41 +1562,38 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.textAlign = "center";
         ctx.fillStyle = navy;
         
-        // Linha acima: Parcelas/Destaque separado com respiro visual
-        ctx.font = "800 24px Inter, Arial, sans-serif";
-        
         const isCash = paymentMode === "cash" || paymentMode === "cash_discount";
         const topLabelRender = isCash 
           ? (pricePrefix !== undefined ? pricePrefix : "A VISTA").toString().toUpperCase()
           : (topLabel || "À VISTA").toString().toUpperCase();
           
-        ctx.fillText(topLabelRender, priceCenterX, ringY + 60);
+        ctx.font = "800 24px Inter, Arial, sans-serif";
+        ctx.fillText(topLabelRender, priceCenterX, ringY + 45); // Movido para cima
         
         ctx.save();
         ctx.shadowColor = "rgba(0, 0, 0, 0.18)";
         ctx.shadowBlur = 12;
         ctx.shadowOffsetY = 4;
         
-        let priceFs = 96; // Um pouco maior para ter presença sem ser sufocado
+        let priceFs = 96;
         ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
         while (ctx.measureText(priceStr).width > ringW - 40 && priceFs > 30) {
           priceFs -= 4;
           ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
         }
         ctx.fillStyle = navy;
-        safeFillText(ctx, priceStr, priceCenterX, ringY + 130, ringW - 40, 24);
+        safeFillText(ctx, priceStr, priceCenterX, ringY + 142, ringW - 40, 24); // Movido para baixo
         ctx.restore();
         
-        // Linha abaixo: coesa
         ctx.fillStyle = navy;
         ctx.globalAlpha = 0.75;
         ctx.font = "800 22px Inter, Arial, sans-serif";
-        ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 175);
+        ctx.fillText(bottomSuffix || "por pessoa", priceCenterX, ringY + 185); // Movido para baixo
         ctx.globalAlpha = 1;
 
         // Faixa de Desconto Pix no rodapé do cartão amarelo
         if (showPixBanner) {
-          const stripeY = boxY + boxH - 100;
+          const stripeY = boxY + boxH - 85;
           const stripeX = boxX + 40;
           const stripeW = boxW - 80;
           const stripeH = 64;
