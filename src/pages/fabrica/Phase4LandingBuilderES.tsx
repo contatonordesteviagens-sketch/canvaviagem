@@ -525,9 +525,67 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
   return (
     <div className="max-w-3xl lg:max-w-[1550px] mx-auto transition-all duration-300">
-      {/* ── Banner de Auto-Sync da Fase 3 ── */}
+      {/* ── SELETOR DE PROJETO PERMANENTE — Siempre visible sin importar el estado ── */}
+      <div className="rounded-2xl p-3 border bg-white/[0.03] border-white/10 flex items-center gap-3 mb-4">
+        <span className="text-base flex-shrink-0">📂</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] text-white/40 mb-1.5 font-semibold uppercase tracking-wider">
+            Editando sitio: <span className="text-white/70 normal-case font-bold">{state.agencyName || "Sin nombre"}</span>
+            {state.siteContent?.canvaViagemUrl && (
+              <a href={`https://${state.siteContent.canvaViagemUrl}`} target="_blank" rel="noopener noreferrer"
+                className="ml-2 text-emerald-400 hover:text-emerald-300 transition-colors">
+                ↗ {state.siteContent.canvaViagemUrl}
+              </a>
+            )}
+          </p>
+          {/* ✅ CORRECCIÓN CRÍTICA: selector siempre visible para TODOS los proyectos guardados */}
+          {savedProjects && savedProjects.length > 0 && (
+            <select
+              value=""
+              onChange={(e) => {
+                const val = e.target.value;
+                if (!val) return;
+                const p = savedProjects!.find(x => x.id === val);
+                if (!p || !p.state_snapshot) return;
+                const targetName = p.agency_name || 'Sin Nombre';
+                const currentName = state.agencyName || 'Sin nombre';
+                if (state.agencyName && p.id !== state.projectId) {
+                  const ok = window.confirm(`⚠️ Estás editando "${currentName}".\n\n¿Deseas cargar "${targetName}"? Guarda antes si tienes cambios sin confirmar.`);
+                  if (!ok) { e.target.value = ""; return; }
+                }
+                window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
+                toast.success(`📂 ¡Proyecto "${targetName}" cargado!`);
+              }}
+              className="w-full max-w-md bg-white/[0.04] border border-white/15 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
+            >
+              <option value="" className="bg-zinc-900">↕ Cambiar proyecto / Cargar otro sitio guardado...</option>
+              {savedProjects.map((p) => {
+                const snap = p.state_snapshot as any;
+                const pkgCount = snap?.selectedPackages?.length || 0;
+                const url = snap?.siteContent?.canvaViagemUrl || "";
+                const isCurrent = p.id === state.projectId;
+                const date = new Date(p.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+                return (
+                  <option key={p.id} value={p.id} className="bg-zinc-900 text-white">
+                    {isCurrent ? "● " : ""}{p.agency_name || "Sin Nombre"}{url ? ` — ${url}` : ""} • {pkgCount} paquete{pkgCount !== 1 ? "s" : ""} • {date}
+                  </option>
+                );
+              })}
+            </select>
+          )}
+        </div>
+        <button
+          onClick={resetSiteToBlank}
+          className="flex-shrink-0 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
+          title="Limpiar todo y comenzar un nuevo sitio desde cero"
+        >
+          Crear Nuevo Sitio
+        </button>
+      </div>
+
+      {/* ── Banner de Auto-Sync (informativo, no bloquea el selector) ── */}
       {autoSyncDone && autoSyncFields.length > 0 && (
-        <div className="rounded-2xl p-4 border bg-emerald-500/10 border-emerald-500/25 flex items-start gap-3 mb-6">
+        <div className="rounded-2xl p-4 border bg-emerald-500/10 border-emerald-500/25 flex items-start gap-3 mb-4">
           <div className="text-2xl flex-shrink-0">✅</div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-bold text-white mb-1">
@@ -538,57 +596,10 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
               Puedes editar cualquier campo directamente en la vista previa a continuación o en los ajustes.
             </p>
           </div>
-          <button
-            onClick={resetSiteToBlank}
-            className="flex-shrink-0 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
-            title="Limpiar todo y comenzar un nuevo proyecto"
-          >
-            Crear Nuevo Sitio
-          </button>
         </div>
       )}
 
-      {!autoSyncDone && (state.destinos?.[0] || state.lastPrice) && (
-        <div className="rounded-2xl p-4 border bg-white/[0.04] border-white/10 flex items-center justify-between gap-3 mb-6">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <span className="text-lg flex-shrink-0">🔄</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] text-white/50 leading-snug mb-2">
-                Datos de la Fábrica ya sincronizados con este sitio.
-                <span className="ml-1 text-white/30">Selecciona otro proyecto abajo o haz clic en la vista previa para editar.</span>
-              </p>
-              {savedProjects && savedProjects.length > 0 && (
-                <select
-                  value=""
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (!val) return;
-                    const p = savedProjects.find(x => x.id === val);
-                    if (p && p.state_snapshot) {
-                      window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
-                      toast.success(`¡Proyecto "${p.agency_name || 'Sin Nombre'}" cargado!`);
-                    }
-                  }}
-                  className="w-full max-w-sm bg-white/5 border border-white/10 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-emerald-500/50 appearance-none cursor-pointer"
-                >
-                  <option value="" disabled>Cargar otro proyecto guardado...</option>
-                  {savedProjects.map((p) => (
-                    <option key={p.id} value={p.id} className="bg-zinc-900 text-white">
-                      {p.agency_name || "Proyecto sin nombre"} • {new Date(p.updated_at).toLocaleDateString()}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          </div>
-          <button
-            onClick={resetSiteToBlank}
-            className="flex-shrink-0 text-[10px] font-bold text-white/50 hover:text-white/80 border border-white/15 hover:border-white/30 rounded-lg px-3 py-1.5 transition-all whitespace-nowrap"
-          >
-            Crear Nuevo Sitio
-          </button>
-        </div>
-      )}
+
 
       {/* Grid lateral */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
