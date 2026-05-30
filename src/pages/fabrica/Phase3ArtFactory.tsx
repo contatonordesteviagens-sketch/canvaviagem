@@ -1445,7 +1445,7 @@ CRITICAL: You MUST return ONLY the raw, minified JSON object. Do NOT wrap the JS
           const ctx = canvas.getContext("2d");
           if (!ctx) throw new Error("Falha ao inicializar Canvas");
 
-          await renderIAPuraLayout(ctx, {
+          await renderIAPuraLayout(ctx, ({
             format,
             imageUrl: refImage,
             logoDataUrl: state.logoBase64,
