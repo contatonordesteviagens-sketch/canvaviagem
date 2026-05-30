@@ -2482,7 +2482,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   className={inputCls}
                 >
                   {FONT_PRESETS.map((f) => (
-                    <option key={f} value={f}>{f}</option>
+                    <option key={f} value={f} className="bg-neutral-900 text-white">{f}</option>
                   ))}
                 </select>
               </div>
