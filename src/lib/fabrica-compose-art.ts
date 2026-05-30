@@ -3365,3 +3365,96 @@ export async function reframeImageToAspect(
     img.src = imageDataUrl;
   });
 }
+
+// ==============================================================================
+// 🤖 TAREFA 3: O Renderizador Universal de IA (Canvas 2D para JSON Dinâmico)
+// ==============================================================================
+
+export interface IAElement {
+  type: "box" | "text";
+  x: number;
+  y: number;
+  width?: number;
+  height?: number;
+  backgroundColor?: string;
+  borderRadius?: number;
+  color?: string;
+  fontSize?: number;
+  fontFamily?: string;
+  fontWeight?: string;
+  content?: string;
+  textAlign?: "left" | "center" | "right";
+}
+
+export interface IALayoutSchema {
+  elements: IAElement[];
+}
+
+export async function renderIAPuraLayout(
+  ctx: CanvasRenderingContext2D,
+  options: AdOptions,
+  layoutJson: IALayoutSchema
+): Promise<void> {
+  const isStory = options.format === "story";
+  const cw = 1080;
+  const ch = isStory ? 1920 : 1080;
+
+  // Passo 1: Desenhar Foto Real (Base)
+  if (options.imageUrl) {
+    const bg = await loadImage(options.imageUrl);
+    const scale = Math.max(cw / bg.naturalWidth, ch / bg.naturalHeight);
+    const dw = bg.naturalWidth * scale;
+    const dh = bg.naturalHeight * scale;
+    const dx = (cw - dw) / 2;
+    const dy = (ch - dh) / 2;
+    ctx.drawImage(bg, dx, dy, dw, dh);
+  } else {
+    // Fundo preto caso não tenha foto (embora obrigatório pela UI)
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, cw, ch);
+  }
+
+  // Passo 2: Ancoragem de base (gradiente para o branding)
+  const gradY = ch * 0.5;
+  const grad = ctx.createLinearGradient(0, gradY, 0, ch);
+  grad.addColorStop(0, "rgba(0,0,0,0)");
+  grad.addColorStop(0.5, "rgba(0,0,0,0.5)");
+  grad.addColorStop(1, "rgba(0,0,0,0.9)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, gradY, cw, ch - gradY);
+
+  // Passo 3: Parse do JSON Matemático
+  if (layoutJson && layoutJson.elements) {
+    for (const el of layoutJson.elements) {
+      if (el.type === "box") {
+        ctx.fillStyle = el.backgroundColor || "rgba(0,0,0,0.5)";
+        if (el.borderRadius) {
+          fillRoundRect(ctx, el.x, el.y, el.width || 0, el.height || 0, el.borderRadius, ctx.fillStyle);
+        } else {
+          ctx.fillRect(el.x, el.y, el.width || 0, el.height || 0);
+        }
+      } else if (el.type === "text") {
+        ctx.fillStyle = el.color || "#FFFFFF";
+        const weight = el.fontWeight || "bold";
+        const family = el.fontFamily || options.fontFamily || "Inter";
+        ctx.font = `${weight} ${el.fontSize || 32}px "${family}"`;
+        ctx.textAlign = el.textAlign || "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(el.content || "", el.x, el.y);
+        ctx.textAlign = "left"; // reset
+      }
+    }
+  }
+
+  // Passo 4: OBRIGATÓRIO (Branding Final & Seguranças)
+  await drawFinalBranding(
+    ctx,
+    cw,
+    ch,
+    options.logoDataUrl,
+    { icon: options.footerContact1Icon || "none", value: options.footerContact1Value || "" },
+    { icon: options.footerContact2Icon || "none", value: options.footerContact2Value || "" },
+    options.textColorOverride,
+    options.fontFamily || "Inter"
+  );
+}

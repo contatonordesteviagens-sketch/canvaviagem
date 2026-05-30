@@ -1338,247 +1338,95 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       }
 
         // ===== MODO IA PURA: gera 1 prompt da categoria; Experiência usa fluxo seguro sem texto da IA =====
+      // ===== MODO IA PURA: MOTOR DE LAYOUT DINÂMICO =====
       if (genMode === "ai") {
-        const cat = getCategoria(categoria);
-        // HÍBRIDO: para Experiência de Destino (qualquer formato — square 1:1 ou story 9:16),
-        // a IA gera APENAS o fundo fotográfico limpo; o motor Canvas (composeTravelAd)
-        // desenha por cima logo, textos, preço, ícones e contraste com HEX exato.
-        const isAiExperienceStory = categoria === "experiencia_destino" && (format === "square" || format === "story");
-        const guard = getForbiddenSets(categoria, "ai", format);
-        const categoryLastKey = scopedTemplateKey("last", categoria, "ai");
-        const categoryRecentKey = scopedTemplateKey("recent", categoria, "ai");
-        const storedLast = localStorage.getItem(categoryLastKey) || (cat.prompts.some((p) => p.templateId === lastTemplateId) ? lastTemplateId : null);
-        let storedRecent: string[] = [];
-        try { storedRecent = JSON.parse(localStorage.getItem(categoryRecentKey) || "[]"); }
-        catch { storedRecent = []; }
-        // Junta histórico local com o GenerationGuard para evitar repetir templates
-        const mergedRecent = Array.from(new Set([...storedRecent, ...guard.layouts]));
-        const picks = isAiExperienceStory
-          ? [{ code: "ED_SAFE_BACKGROUND", templateId: "photo_only_experience_background" }]
-          : pickPromptsForCategoria(categoria, 1, storedLast, mergedRecent);
-        const freshSeedAi = freshSeed(generationSeed);
+        const refImage = selectedPhotoUrl;
+        if (!refImage) {
+          toast.error("Por favor, busque e selecione uma Foto Real na galeria para a IA desenhar por cima.");
+          setLoading(false);
+          return;
+        }
 
-        // Paleta — sempre usa exatamente as cores selecionadas pelo usuário.
-        const palette = selectedPalette(primaryColor, secondaryColor);
-        const aiExperienceStrategy = (() => {
-          if (!isAiExperienceStory) return "experiencia_hero" as StrategyId;
-          const key = scopedStrategyHistoryKey(categoria, "ai", format);
-          let history: StrategyId[] = [];
-          try { history = JSON.parse(localStorage.getItem(key) || "[]"); } catch { history = []; }
-          const mergedH = Array.from(new Set([...history, ...(guard.layouts as StrategyId[])]));
-          const [picked] = pickDistinctLocalStrategies(categoria, freshSeedAi, 1, mergedH);
-          localStorage.setItem(key, JSON.stringify([picked]));
-          return picked;
-        })();
+        toast.info("Iniciando IA Designer (Layout Dinâmico)...");
 
-        toast.info(`Gerando ${picks.length} ${picks.length === 1 ? "variação" : "variações"} em IA Pura — ${cat.name}`);
+        // Extrai os destaques
+        let parsedHighlights: string[] = [];
+        try { parsedHighlights = JSON.parse(highlights || "[]"); } catch {}
 
-        // PROMPT DE FUNDO LIMPO — A IA é instruída a gerar APENAS a fotografia,
-        // sem nenhum elemento gráfico/tipográfico. Toda a UI (logo, textos, preço,
-        // ── PROMPTS PARA EXPERIÊNCIA DE DESTINO (BLINDADOS) ────────────────
-        // REGRA DE OURO: a imagem da IA deve ser APENAS fotografia.
-        // O motor de renderização (Canvas) é desenhado depois pelo motor Canvas (composeTravelAd).
-        const NEGATIVE_UI = `STRICT NEGATIVE CONSTRAINTS — the output MUST be a pure photograph only. ABSOLUTELY FORBIDDEN: any text, letters, numbers, words, captions, headlines, prices, currency symbols, dates, typography, fonts, watermarks, signatures, logos, brand marks, badges, stamps, stickers, labels, banners, ribbons, callouts, speech bubbles, icons, pictograms, emojis, arrows, frames, borders, overlays, color blocks, gradients painted on top, UI elements, buttons, cards, panels, mockup chrome, phone frames, social media UI, Instagram/Facebook/TikTok interface, hashtags, @mentions, QR codes, barcodes. The image must look like an untouched RAW photograph straight from a professional camera — nothing rendered, nothing added, no graphic design whatsoever. No people, no faces, no crowds.`;
-        const experienceBackgroundPrompt = (variant: number) => {
-          const base = `Ultra-high-end editorial travel photography, cinematic 8K, Shot on RED. Magnificent landscape of ${destination || "paradise destination"}.`;
-          const variants = [
-            `Misty morning light, ethereal atmosphere, soft focus background, minimalist composition. Luxury resort architecture visible in the distance. Wide lens.`,
-            `Golden hour sunset, dramatic long shadows, deep blue ocean, golden sand. Rim lighting on palm trees. Tropical paradise vibe.`,
-            `Night photography, luxury outdoor lounge with fire pit, starry sky, turquoise pool glowing. Sophisticated and mysterious atmosphere.`,
-            `Aerial view, turquoise water patterns, white sandbars, luxury yacht anchored. Minimalist blue and white palette.`,
-            `Elegant interior of a luxury villa overlooking the ocean through floor-to-ceiling windows. Morning light, white linen, neutral tones.`,
-          ];
-          return `${base} ${variants[variant % variants.length]} ${NEGATIVE_UI}`;
-        };
-
-        // ── Decisão V4 em IA Pura (apenas Oferta de Pacote) ─────────────────
-        // Sorteia se esta geração será V4 (compositor card) ou IA tradicional,
-        // respeitando histórico para garantir variedade entre cliques.
-        const isOfertaIA = categoria === "oferta_pacote";
-        // Experiência de Destino: V0-V4 agora totalmente suportados
-        const totalVariantsAi = 5;
-        const recentAi = variantHistoryRef.current.slice(-2);
-        let candidatesAi = Array.from({ length: totalVariantsAi }, (_, i) => i).filter((v) => !recentAi.includes(v));
-        if (candidatesAi.length === 0) candidatesAi = Array.from({ length: totalVariantsAi }, (_, i) => i);
-        const nextVariantAi = forcedVariant !== null && forcedVariant >= 0 && forcedVariant < totalVariantsAi
-          ? forcedVariant
-          : candidatesAi[Math.floor(Math.random() * candidatesAi.length)];
-        const shouldComposeOfertaAi = isOfertaIA;
-        const mustComposeWithCanvas = isAiExperienceStory || shouldComposeOfertaAi;
-        variantHistoryRef.current = [...variantHistoryRef.current.slice(-3), nextVariantAi];
-
-        const invokeWithTimeout = (bodyPayload: any) => Promise.race([
-          supabase.functions.invoke("fabrica-generate-ad", { body: bodyPayload }),
-          new Promise<any>((_, reject) => setTimeout(() => reject(new Error("Timeout de 25s excedido. A API demorou muito a responder.")), 25000))
-        ]);
-
-        const settledResults = await Promise.allSettled(
-          picks.map((pick, idx) => invokeWithTimeout({
-              strategy: categoria === "oferta_pacote" ? "ancora" : categoria === "experiencia_destino" ? "vitrine" : "matriz",
+        try {
+          const response = await supabase.functions.invoke("fabrica-design-ai", {
+            body: {
               format,
-              destination: isAiExperienceStory ? destination : destination.toUpperCase(),
-              niche: state.niche,
-              agencyName: state.agencyName,
-              agencyType: state.agencyType === "outro" ? state.agencyTypeOther : state.agencyType,
-              city: state.city,
-              primaryColor: palette.primary,
-              secondaryColor: palette.secondary,
-              hasLogo: !!state.logoBase64,
+              destination: destination || "Destino",
               price: formattedPriceForAd || price,
               currencySymbol,
-              installments,
-              promoName: (promoName || "Oferta Especial").toUpperCase(),
-              highlights: categoria === "experiencia_destino" ? [] : highlights,
-              ctaText: state.whatsapp ? "Reserve no WhatsApp" : "Reserve agora",
-              templateId: mustComposeWithCanvas ? undefined : pick.templateId,
-              photoOnly: true,
-              canvasOnly: mustComposeWithCanvas,
-              variation: (forcedVariant !== null ? forcedVariant : nextVariantAi) + idx,
-              packageType: "Voo + Hotel",
-              duration: categoria === "experiencia_destino" ? (travelPeriod || "") : (travelPeriod || "5 NOITES"),
-              forbiddenHeadlines: guard.headlines,
-              forbiddenLayouts: guard.layouts,
-              ...(isAiExperienceStory ? { customPrompt: experienceBackgroundPrompt(nextVariantAi + idx) } : {}),
-              iaPuraMode: true,
-              userGeminiKey: localStorage.getItem("user_gemini_api_key") || undefined, // BLOCO 1: Chave hardcoded removida por segurança
-            }))
-        );
-
-        const results = settledResults.map(res => res.status === "fulfilled" ? res.value : { error: res.reason });
-
-        const images: string[] = [];
-        let providerSeen: "user_gemini" | "lovable_ai" | null = null;
-        const { reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
-        let cleanBackgroundForSite = ""; // Içado para coletar a última foto da IA
-
-        for (const result of results) {
-          if (result.error) throw result.error;
-          if (result.data?.error && result.data?.fallback === false) {
-            setGenerationError(result.data.error);
-            toast.error(result.data.error);
-            return;
-          }
-          if (result.data?.error) {
-            if (result.data.error.includes("Nenhuma imagem gerada")) {
-              throw new Error("Imagem bloqueada pelos filtros de segurança da IA. Tente outro termo.");
+              promoName: promoName || "OFERTA ESPECIAL",
+              duration: travelPeriod || "5 NOITES",
+              highlights: parsedHighlights
             }
-            throw new Error(result.data.error);
-          }
-          if (!result.data?.image) throw new Error("Imagem bloqueada pelos filtros de segurança da IA. Tente outro termo.");
+          });
 
-          let img = result.data.image as string;
-          // Ajusta o enquadramento se a IA entregar algo fora do aspecto (especialmente em Square)
-          try { img = await reframeImageToAspect(img, format); }
-          catch (e) { console.warn("reframe failed", e); }
-
-          // BLOCO 3: Fim do Base64 no LocalStorage. Upload imediato para bucket Supabase
-          if (img.startsWith("data:")) {
-             try {
-                const b64Data = img.split(',')[1];
-                const mimeString = img.split(',')[0].split(':')[1].split(';')[0];
-                const ext = mimeString.includes("png") ? "png" : "jpg";
-                const byteCharacters = atob(b64Data);
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                const blob = new Blob([byteArray], {type: mimeString});
-                const fileName = `ai_gen_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
-                const { error: uploadError } = await supabase.storage.from('thumbnails').upload(fileName, blob, { contentType: mimeString });
-                if (uploadError) throw uploadError;
-                const { data: { publicUrl } } = supabase.storage.from('thumbnails').getPublicUrl(fileName);
-                img = publicUrl;
-             } catch (e) {
-                console.warn("Upload to Supabase failed, falling back to Base64:", e);
-             }
-          }
-
-          // TRAVA DE CÓDIGO: a IA entrega apenas o fundo. A arte final SEMPRE passa pelo Canvas.
-          cleanBackgroundForSite = img; // Preserva a foto LIMPA da IA antes de sujar com o texto!
+          if (response.error) throw new Error(response.error.message || "Falha na resposta da Edge Function");
           
-          // Define estratégia para o motor Canvas:
-          const canvasStrategy: StrategyId = isAiExperienceStory 
-            ? aiExperienceStrategy 
-            : (cat.legacyStrategy || "matriz");
-            
-          // 🧠 INTELIGÊNCIA LOTE A/B PARA IA:
-          // Em vez de fazer 3 chamadas pagas para a IA, usamos o MESMO fundo limpo gerado acima
-          // e mandamos o motor Canvas renderizar 3 variações visuais diferentes dele instantaneamente!
-          const numVersions = isBatchMode ? 3 : 1;
-          const renderVersions = Array.from({ length: numVersions }, (_, i) => i);
+          const layoutJson = response.data?.layout;
+          if (!layoutJson) throw new Error("JSON de layout não retornado pela IA.");
+
+          const { renderIAPuraLayout } = await import("@/lib/fabrica-compose-art");
           
-          const renderedSet = await Promise.all(
-            renderVersions.map(async (vIdx) => {
-              const finalImg = await composeTravelAd(
-                buildComposeOptions(
-                  img,
-                  canvasStrategy,
-                  freshSeedAi + images.length + vIdx,
-                  typeof nextVariantAi === "number" ? (nextVariantAi + images.length + vIdx) % 5 : undefined,
-                  palette
-                )
-              );
-              return finalImg;
-            })
-          );
+          const canvas = document.createElement("canvas");
+          const isStory = format === "story";
+          canvas.width = 1080;
+          canvas.height = isStory ? 1920 : 1080;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) throw new Error("Falha ao inicializar Canvas");
 
-          images.push(...renderedSet);
-          if (result.data.provider) providerSeen = result.data.provider;
+          // Renderiza o Layout Dinâmico
+          await renderIAPuraLayout(ctx, {
+            format,
+            imageUrl: refImage,
+            logoDataUrl: state.logoBase64,
+            footerContact1Icon: state.footerContact1Icon,
+            footerContact1Value: state.footerContact1Value,
+            footerContact2Icon: state.footerContact2Icon,
+            footerContact2Value: state.footerContact2Value,
+            fontFamily: (state as any).fontFamily || "Inter",
+            textColorOverride: (state as any).textColorOverride
+          }, layoutJson);
+
+          const finalImageUrl = canvas.toDataURL("image/png");
+
+          setGeneratedImages([finalImageUrl]);
+          setGeneratedImage(finalImageUrl);
+          
+          const currentGenerated = state.allGeneratedAdImages || [];
+          const updatedGenerated = [finalImageUrl, ...currentGenerated].slice(0, 10);
+          update({ 
+            generatedAdImage: finalImageUrl, 
+            allGeneratedAdImages: updatedGenerated
+          });
+          
+          // O background limpo continua sendo a foto original
+          await syncGeneratedPackageToSite(finalImageUrl, refImage);
+          
+          toast.success("Design Dinâmico gerado com sucesso!");
+
+          const newCount = generationCount + 1;
+          setGenerationCount(newCount);
+          localStorage.setItem("fabrica_gen_count", String(newCount));
+          finishCycle(1);
+
+          requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+        } catch (error: any) {
+          console.error("Erro no motor de IA Dinâmica:", error);
+          toast.error("Erro ao gerar design da IA: " + error.message);
+          
+          // TAREFA 4: Fallback gracioso para a V0
+          toast.info("Carregando layout de segurança (V0) devido à falha da IA...");
+          setForcedVariant(0);
+          setGenMode("photo");
+          setTimeout(() => generate(), 500);
         }
-
-        const MAX_VARIATIONS_AI = 3;
-        setGeneratedImages((prev) => [...prev, ...images].slice(-MAX_VARIATIONS_AI));
-        setGeneratedImage(images[images.length - 1]);
-        const currentGenerated = state.allGeneratedAdImages || [];
-        const updatedGenerated = [images[images.length - 1], ...currentGenerated].slice(0, 10);
-        update({ 
-          generatedAdImage: images[images.length - 1], 
-          primaryColor: palette.primary,
-          allGeneratedAdImages: updatedGenerated
-        });
-        // Passa a ÚLTIMA imagem final E a ÚLTIMA imagem limpa gerada no loop (via closure seria complexo, então guardamos uma referência fora do loop se precisasse, mas podemos re-extrair ou apenas guardar no array)
-        // ATENÇÃO: Para IA, como gera múltiplos em array, precisamos capturar a LIMPA da que foi pra tela!
-        await syncGeneratedPackageToSite(images[images.length - 1], cleanBackgroundForSite);
-        if (providerSeen) {
-          setLastProvider(providerSeen);
-          localStorage.setItem("fabrica_last_provider", providerSeen);
-        }
-
-        // Registra no GenerationGuard
-        const layoutId = isAiExperienceStory ? aiExperienceStrategy : (picks[0]?.templateId || "ai_unknown");
-        // Headline real é decidida no backend, mas registramos a "categoria visual" como hash:
-        // o que importa é layout+paleta para impedir mesmo arranjo no próximo clique.
-        registerGeneration(categoria, "ai", format, {
-          layoutId,
-          headline: `${categoria}-${freshSeedAi}`, // o real fica no backend; isso impede colisão
-          primary: palette.primary,
-          secondary: palette.secondary,
-        });
-
-        // Persiste o último prompt usado para a próxima rotação não repetir
-        const usedTemplateIds = isAiExperienceStory ? [] : picks.map((p) => p.templateId);
-        const lastUsed = usedTemplateIds[usedTemplateIds.length - 1];
-        const nextRecent = isAiExperienceStory ? storedRecent : [...usedTemplateIds, ...storedRecent.filter((id) => !usedTemplateIds.includes(id))].slice(0, Math.max(1, cat.prompts.length - usedTemplateIds.length));
-        if (!isAiExperienceStory && lastUsed) {
-          setLastTemplateId(lastUsed);
-          setRecentTemplateIds(nextRecent);
-          localStorage.setItem(categoryLastKey, lastUsed);
-          localStorage.setItem(categoryRecentKey, JSON.stringify(nextRecent));
-          localStorage.setItem("fabrica_last_template_id", lastUsed);
-          localStorage.setItem("fabrica_recent_template_ids", JSON.stringify(nextRecent));
-        }
-
-        const newCount = generationCount + images.length;
-        setGenerationCount(newCount);
-        localStorage.setItem("fabrica_gen_count", String(newCount));
         
-        const newAiCount = incrementAiPureDailyCount(images.length);
-        setAiPureCount(newAiCount);
-
-        finishCycle(images.length);
-
-        toast.success(`${images.length} ${images.length === 1 ? "variação gerada" : "variações geradas"} — ${cat.name}`);
         return;
       }
 
@@ -1929,13 +1777,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               <Upload className="w-3.5 h-3.5" /> Sua Imagem
             </button>
             <button
-              type="button"
-              disabled
-              title="Em manutenção — reativaremos em breve"
-              aria-disabled="true"
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold text-white/30 cursor-not-allowed opacity-50"
+              onClick={() => setGenMode("ai")}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "ai" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
             >
-              <Wand2 className="w-3.5 h-3.5" /> IA Pura <span className="hidden sm:inline font-normal opacity-70">(desativado)</span>
+              <Wand2 className="w-3.5 h-3.5" /> IA Pura
             </button>
           </div>
 
@@ -2046,8 +1891,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         </div>
       </div>
 
-      {/* 1b · Galeria Pexels (modo foto) - F1 só tem busca Pexels */}
-      {genMode === "photo" && (
+      {/* 1b · Galeria Pexels (modo foto ou IA Pura) */}
+      {(genMode === "photo" || genMode === "ai") && (
         <div className={sectionCls}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">1 · Escolha uma foto real</h3>
