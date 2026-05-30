@@ -1182,10 +1182,10 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         <h2 style="margin-top:12px">Habla con un consultor ahora</h2>
         <p>Completa el formulario y nuestro equipo te contactará en menos de 2 horas con una propuesta.</p>
         <div class="contact-list">
-          <div class="contact-item"><div class="contact-icon">💬</div><div><strong>WhatsApp</strong><span>${esc(state.whatsapp || "—")}</span></div></div>
-          <div class="contact-item"><div class="contact-icon">✉</div><div><strong>E-mail</strong><span>contato@${esc((agencia || "agencia").toLowerCase().replace(/[^a-z0-9]/g, ""))}.com.br</span></div></div>
-          <div class="contact-item"><div class="contact-icon">🕐</div><div><strong>Atendimento</strong><span>Lun–Vie 8h–20h · Sáb 9h–15h</span></div></div>
-          <div class="contact-item"><div class="contact-icon">📍</div><div><strong>Localização</strong><span>${esc(cidade)}</span></div></div>
+          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon">💬</div><div><strong>WhatsApp</strong><span>${esc(state.whatsapp || "—")}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon">✉</div><div><strong>E-mail</strong><span>contato@${esc((agencia || "agencia").toLowerCase().replace(/[^a-z0-9]/g, ""))}.com.br</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon">🕐</div><div><strong>Atendimento</strong><span>Lun–Vie 8h–20h · Sáb 9h–15h</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon">📍</div><div><strong>Localização</strong><span>${esc(cidade)}</span></div></div>` : ''}
         </div>
         ${socialIcons}
       </div>
@@ -1270,7 +1270,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
   </div>
 </footer>
 
-${wpp ? `<a href="#" onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;" class="wpp-float" aria-label="WhatsApp">💬</a>` : ''}
+${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;" class="wpp-float" aria-label="WhatsApp" data-visual-removable="contact-wpp-float">💬</a>` : ''}
 
 <!-- SMART LEAD CAPTURE MODAL -->
 <div id="lead-modal">

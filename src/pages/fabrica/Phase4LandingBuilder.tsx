@@ -131,6 +131,22 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
     setActiveImageEdit(null);
   };
 
+  const iframeScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data?.type === "FABRICA_REMOVE" && e.data.elementId) {
+        const currentHidden = state.siteContent.hiddenElements || [];
+        if (!currentHidden.includes(e.data.elementId)) {
+          updSite({ hiddenElements: [...currentHidden, e.data.elementId] });
+          toast.success("Elemento removido do site!");
+        }
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [state.siteContent.hiddenElements]);
+
   // Bind dos eventos de clique no iframe para edição visual em tempo real
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -139,6 +155,14 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
     const handleIframeLoad = () => {
       const doc = iframe.contentDocument || iframe.contentWindow?.document;
       if (!doc || !doc.head || !doc.body) return;
+
+      // Restaura o scroll para evitar pulos
+      if (iframe.contentWindow) {
+        iframe.contentWindow.scrollTo(0, iframeScrollY.current);
+        iframe.contentWindow.addEventListener("scroll", () => {
+          iframeScrollY.current = iframe.contentWindow?.scrollY || 0;
+        });
+      }
 
       // Injeta estilos de hover, focus e indicador visual de edição
       const style = doc.createElement("style");
@@ -358,6 +382,31 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
                 setGlobalPickingImage(true);
               }
             }
+          }
+        });
+      });
+
+      // Lógica de elementos removíveis (X button)
+      const removables = doc.querySelectorAll("[data-visual-removable]");
+      removables.forEach(el => {
+        const btn = doc.createElement("button");
+        btn.innerHTML = "×";
+        btn.className = "fabrica-remove-btn";
+        btn.title = "Ocultar este elemento";
+        btn.style.cssText = "position:absolute; top:-8px; right:-8px; background:#EF4444; color:white; border:2px solid #fff; border-radius:50%; width:24px; height:24px; cursor:pointer; font-size:16px; font-weight:bold; display:none; align-items:center; justify-content:center; z-index:10000; box-shadow:0 2px 4px rgba(0,0,0,0.2); line-height:1; font-family:sans-serif; padding-bottom:2px;";
+        
+        (el as HTMLElement).style.position = "relative";
+        el.appendChild(btn);
+        
+        el.addEventListener("mouseenter", () => btn.style.display = "flex");
+        el.addEventListener("mouseleave", () => btn.style.display = "none");
+        
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          const id = el.getAttribute("data-visual-removable");
+          if (id) {
+            window.parent.postMessage({ type: "FABRICA_REMOVE", elementId: id }, "*");
           }
         });
       });

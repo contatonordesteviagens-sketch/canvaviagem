@@ -1252,10 +1252,10 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         <h2 style="margin-top:12px">${esc(sc.orcamentoTitle || "Fale com um consultor agora")}</h2>
         <p>${esc(sc.orcamentoText || "Preencha o formulário e nossa equipe entrará em contato em até 2 horas com uma proposta personalizada.")}</p>
         <div class="contact-list">
-          <div class="contact-item"><div class="contact-icon">📱</div><div><strong>WhatsApp</strong><span>${esc(wppDisplay)}</span></div></div>
-          <div class="contact-item"><div class="contact-icon">✉️</div><div><strong>E-mail</strong><span>${esc(agencyEmail)}</span></div></div>
-          <div class="contact-item"><div class="contact-icon">⏰</div><div><strong>Atendimento</strong><span>${esc(sc.atendimentoText || "Seg–Sex 8h–20h · Sáb 9h–15h")}</span></div></div>
-          <div class="contact-item"><div class="contact-icon">📍</div><div><strong>Localização</strong><span>${esc(contactLocation)}</span></div></div>
+          ${!sc.hiddenElements?.includes("contact-wpp") ? `<div class="contact-item" data-visual-removable="contact-wpp"><div class="contact-icon">📱</div><div><strong>WhatsApp</strong><span>${esc(wppDisplay)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-email") ? `<div class="contact-item" data-visual-removable="contact-email"><div class="contact-icon">✉️</div><div><strong>E-mail</strong><span>${esc(agencyEmail)}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-hours") ? `<div class="contact-item" data-visual-removable="contact-hours"><div class="contact-icon">⏰</div><div><strong>Atendimento</strong><span>${esc(sc.atendimentoText || "Seg–Sex 8h–20h · Sáb 9h–15h")}</span></div></div>` : ''}
+          ${!sc.hiddenElements?.includes("contact-location") ? `<div class="contact-item" data-visual-removable="contact-location"><div class="contact-icon">📍</div><div><strong>Localização</strong><span>${esc(contactLocation)}</span></div></div>` : ''}
         </div>
         ${socialIcons}
       </div>
@@ -1360,7 +1360,7 @@ ${state.address ? `
   </div>
 </footer>
 
-${wpp ? `<a href="#" onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;" class="wpp-float" aria-label="WhatsApp">💬</a>` : ''}
+${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclick="openLeadForm('Botão Flutuante', 'https://wa.me/${wpp}');return false;" class="wpp-float" aria-label="WhatsApp" data-visual-removable="contact-wpp-float">💬</a>` : ''}
 
 <!-- SMART LEAD CAPTURE MODAL -->
 <div id="lead-modal">
