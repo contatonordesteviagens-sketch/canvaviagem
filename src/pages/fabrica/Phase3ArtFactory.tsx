@@ -502,6 +502,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     update({ hideCents: v });
     // NUNCA sobrescreve o valor bruto 'price' no state, para não corromper a digitação original do usuário!
   };
+  const [pricePrefix, setPricePrefixState] = useState<string>((state as any).pricePrefix ?? "a partir de");
+  const setPricePrefix = (v: string) => { setPricePrefixState(v); update({ pricePrefix: v } as any); };
   const [showTotal, setShowTotalState] = useState<boolean>(state.showTotal !== false);
   const setShowTotal = (v: boolean) => { setShowTotalState(v); update({ showTotal: v }); };
   const [totalOverride, setTotalOverrideState] = useState<string>(state.totalOverride || "");
@@ -1196,6 +1198,58 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         localStorage.setItem(cycleKey, String(nextSeed));
       };
 
+      const buildComposeOptions = (
+        imgUrl: string,
+        localStrategy: string,
+        varSeed: number,
+        forceVar?: number,
+        paletteOverride?: { primary: string; secondary: string }
+      ): any => {
+        const pal = paletteOverride || selectedPalette(primaryColor, secondaryColor);
+        return {
+          imageUrl: imgUrl,
+          format,
+          destination,
+          city: state.city,
+          primaryColor: pal.primary,
+          secondaryColor: pal.secondary,
+          price: formattedPriceForAd || price,
+          currencySymbol,
+          hideCents,
+          installments,
+          promoName,
+          highlights,
+          hasLogo: !!state.logoBase64,
+          logoDataUrl: state.logoBase64,
+          logoFormat: state.logoFormat,
+          footerContact1Icon: state.footerContact1Icon,
+          footerContact1Value: state.footerContact1Value,
+          footerContact2Icon: state.footerContact2Icon,
+          footerContact2Value: state.footerContact2Value,
+          whatsapp: state.whatsapp,
+          instagram: state.instagram,
+          paymentMode,
+          paymentLabel: paymentLabel || undefined,
+          paymentSuffix,
+          pricePrefix: pricePrefix || undefined,
+          strategy: localStrategy,
+          variation: varSeed,
+          forceVariant: forceVar,
+          titleOverride: resolvedAdTitle,
+          titleVariations: adTitleVariations,
+          travelPeriod,
+          totalOverride: totalOverride || undefined,
+          showPixBanner,
+          pixBannerText: pixBannerText || undefined,
+          showTotal,
+          fontFamily,
+          titleScale,
+          descScale,
+          textColorOverride: effectiveTextColor,
+          isExperience: categoria === "experiencia_destino",
+        };
+      };
+
       // ===== TRAVA DE CRÉDITOS DA PLATAFORMA (20 gerações no modo IA sem chave própria) =====
       const PLATFORM_CREDIT_LIMIT = 20;
       if (genMode === "ai" && aiPureCount >= PLATFORM_CREDIT_LIMIT && lastProvider !== "user_gemini") {
@@ -1239,45 +1293,15 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
         const composed = await Promise.all(
           chosen.map(async (localStrategy, idx) => {
-            let img = await composeTravelAd({
-              imageUrl: photoRefs[idx],
-              format,
-              destination,
-              city: state.city,
-              primaryColor: palette.primary,
-              secondaryColor: palette.secondary,
-              price: formattedPriceForAd || price,
-              currencySymbol,
-              installments,
-              promoName,
-              highlights,
-              hasLogo: !!state.logoBase64,
-              logoDataUrl: state.logoBase64,
-              footerContact1Icon: state.footerContact1Icon,
-              footerContact1Value: state.footerContact1Value,
-              footerContact2Icon: state.footerContact2Icon,
-              footerContact2Value: state.footerContact2Value,
-              whatsapp: state.whatsapp,
-              instagram: state.instagram,
-              paymentMode,
-              paymentLabel: paymentLabel || undefined,
-              paymentSuffix,
-              strategy: localStrategy,
-              variation: freshSeedPhoto + idx,
-              forceVariant: typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % 5 : undefined,
-              titleOverride: resolvedAdTitle,
-              titleVariations: adTitleVariations,
-              travelPeriod,
-              totalOverride: totalOverride || undefined,
-              showPixBanner,
-              pixBannerText: pixBannerText || undefined,
-              showTotal,
-              fontFamily,
-              titleScale,
-              descScale,
-              textColorOverride: effectiveTextColor,
-              isExperience: categoria === "experiencia_destino",
-            });
+            let img = await composeTravelAd(
+              buildComposeOptions(
+                photoRefs[idx],
+                localStrategy,
+                freshSeedPhoto + idx,
+                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % 5 : undefined,
+                palette
+              )
+            );
             return img;
           })
         );
@@ -1456,46 +1480,15 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           
           const renderedSet = await Promise.all(
             renderVersions.map(async (vIdx) => {
-              const finalImg = await composeTravelAd({
-                imageUrl: img,
-                format,
-                destination,
-                city: state.city,
-                primaryColor: palette.primary,
-                secondaryColor: palette.secondary,
-                price: formattedPriceForAd || price,
-                currencySymbol,
-                installments,
-                promoName,
-                highlights,
-                hasLogo: !!state.logoBase64,
-                logoDataUrl: state.logoBase64,
-                footerContact1Icon: state.footerContact1Icon,
-                footerContact1Value: state.footerContact1Value,
-                footerContact2Icon: state.footerContact2Icon,
-                footerContact2Value: state.footerContact2Value,
-                whatsapp: state.whatsapp,
-                instagram: state.instagram,
-                paymentMode,
-                paymentLabel: paymentLabel || undefined,
-                paymentSuffix,
-                strategy: canvasStrategy,
-                variation: freshSeedAi + images.length + vIdx,
-                // Força variação diferente para cada versão do loop garantindo A/B visual!
-                forceVariant: typeof nextVariantAi === "number" ? (nextVariantAi + images.length + vIdx) % 5 : undefined,
-                isExperience: categoria === "experiencia_destino",
-                titleOverride: resolvedAdTitle,
-                titleVariations: adTitleVariations,
-                travelPeriod,
-                totalOverride: totalOverride || undefined,
-                showPixBanner,
-                pixBannerText: pixBannerText || undefined,
-                showTotal,
-                fontFamily,
-                titleScale,
-                descScale,
-                textColorOverride: effectiveTextColor,
-              });
+              const finalImg = await composeTravelAd(
+                buildComposeOptions(
+                  img,
+                  canvasStrategy,
+                  freshSeedAi + images.length + vIdx,
+                  typeof nextVariantAi === "number" ? (nextVariantAi + images.length + vIdx) % 5 : undefined,
+                  palette
+                )
+              );
               return finalImg;
             })
           );
@@ -1585,45 +1578,15 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
       const imagesCustom = await Promise.all(
         chosen.map(async (localStrategy, idx) => {
-          let img = await composeTravelAd({
-            imageUrl: refImage,
-            format,
-            destination,
-            city: state.city,
-            primaryColor: palette.primary,
-            secondaryColor: palette.secondary,
-            price: formattedPriceForAd || price,
-            currencySymbol,
-            installments,
-            promoName,
-            highlights,
-            hasLogo: !!state.logoBase64,
-            logoDataUrl: state.logoBase64,
-            footerContact1Icon: state.footerContact1Icon,
-            footerContact1Value: state.footerContact1Value,
-            footerContact2Icon: state.footerContact2Icon,
-            footerContact2Value: state.footerContact2Value,
-            whatsapp: state.whatsapp,
-            instagram: state.instagram,
-            paymentMode,
-            paymentLabel: paymentLabel || undefined,
-            paymentSuffix,
-            strategy: localStrategy,
-            variation: freshSeedCustom + idx,
-            forceVariant: typeof nextVariant === "number" ? (nextVariant + idx) % 5 : undefined,
-            isExperience: categoria === "experiencia_destino",
-            titleOverride: resolvedAdTitle,
-            titleVariations: adTitleVariations,
-            travelPeriod,
-            totalOverride: totalOverride || undefined,
-            showPixBanner,
-            pixBannerText: pixBannerText || undefined,
-            showTotal,
-            fontFamily,
-            titleScale,
-            descScale,
-            textColorOverride: effectiveTextColor,
-          });
+          let img = await composeTravelAd(
+            buildComposeOptions(
+              refImage,
+              localStrategy,
+              freshSeedCustom + idx,
+              typeof nextVariant === "number" ? (nextVariant + idx) % 5 : undefined,
+              palette
+            )
+          );
           return img;
         })
       );
@@ -2378,7 +2341,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
               {paymentMode !== "cash" && (
                 <div>
                   <label className={labelCls}>Parcelas</label>
@@ -2391,7 +2354,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   />
                 </div>
               )}
-              <div>
+              <div className={paymentMode === "cash" ? "col-span-2" : ""}>
                 <label className={labelCls}>Valor ({currencySymbol})</label>
                 <div className="flex gap-1.5">
                   <select
@@ -2411,6 +2374,16 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                     className={`${inputCls} flex-1`}
                   />
                 </div>
+              </div>
+              <div>
+                <label className={labelCls}>Prefixo</label>
+                <input
+                  value={pricePrefix}
+                  onChange={(e) => setPricePrefix(e.target.value)}
+                  onFocus={(e) => e.target.select()}
+                  placeholder="a partir de"
+                  className={inputCls}
+                />
               </div>
               <div>
                 <label className={labelCls}>Complemento</label>

@@ -180,6 +180,8 @@ interface ComposeTravelAdOptions {
   travelPeriod?: string;
   /** V3: texto livre do "Total" (ex.: "R$ 1.999 por casal"). Se vazio, calcula automatico. */
   totalOverride?: string;
+  /** Prefixo customizavel para o valor (ex: "a partir de", "Por apenas"). Se vazio, apaga o texto. */
+  pricePrefix?: string;
   /** V3: controla se a linha de total aparece no box. Default true. */
   showTotal?: boolean;
   /** V3: texto da faixa azul do Pix. Default "{N}% OFF A VISTA NO pix". */
@@ -948,6 +950,7 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
     currencySymbol,
     travelPeriod,
     totalOverride,
+    pricePrefix,
     showTotal: rawShowTotal = true,
     pixBannerText,
     showPixBanner: rawShowPixBanner = true,
@@ -1299,7 +1302,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
     // 4. Texto acima do preco ("a partir de" ou "pagamento")
     const isCash = paymentMode === "cash" || paymentMode === "cash_discount";
     const isDownPlus = paymentMode === "down_plus";
-    const topTxt = isCash ? "pagamento" : (isDownPlus ? "entrada +" : "a partir de");
+    const topTxt = isCash ? "pagamento" : (isDownPlus ? "entrada +" : (pricePrefix !== undefined ? pricePrefix : "a partir de"));
     
     ctx.font = `600 13px Inter, Arial, sans-serif`;
     ctx.fillText(topTxt, cx, y + 118);
@@ -1812,7 +1815,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const isCash = paymentMode === "cash" || paymentMode === "cash_discount";
         const isDownPlus = paymentMode === "down_plus";
         
-        const topTxt = isCash ? "pagamento" : (isDownPlus ? "entrada +" : "a partir de");
+        const topTxt = isCash ? "pagamento" : (isDownPlus ? "entrada +" : (pricePrefix !== undefined ? pricePrefix : "a partir de"));
         let mainTxt = `${parcN}X`;
         if (isCash) mainTxt = "A VISTA";
         else if (isDownPlus) {
@@ -2699,7 +2702,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const leftTopV4 = (() => {
         if (paymentMode === "cash" || paymentMode === "cash_discount") return "pagamento";
         if (paymentMode === "down_plus") return "entrada +";
-        return "a partir de";
+        return pricePrefix !== undefined ? pricePrefix : "a partir de";
       })();
       const pillTxt = (() => {
         if (paymentMode === "cash" || paymentMode === "cash_discount") return "A VISTA";
