@@ -3,6 +3,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useFabricaContext, type Pacote, type Depoimento as Testimonio } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export-es";
+import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
+import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import {
   Plus,
   Trash2,
@@ -34,6 +36,7 @@ const PRESET_COLORS = ["#F59E0B", "#3B82F6", "#10B981", "#EF4444", "#8B5CF6", "#
 const FABRICA_SITE_STORAGE_CONTENT_TYPE = "image/webp";
 
 export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
+  const { data: savedProjects } = useDiagnosticos();
   const { state, update, systemUpdate, undo, redo, canUndo, canRedo, isHydrated } = useFabricaContext();
   const { user } = useAuth();
   const [previewing, setPreviewing] = useState(true);
@@ -283,7 +286,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
       }
     }
 
-    // ðŸ§  5. CONTINUIDADE DO DIAGNÓSTICO (Ponto 3):
+    // 🧠 5. CONTINUIDADE DO DIAGNÓSTICO (Ponto 3):
     // Se o nível do usuário é baixo (menos que 3), o sistema INTUI que falta autoridade.
     // Logo, ele OBRIGA e ATIVA automaticamente os depoimentos e a sessão 'Por que Nós'.
     if (state.level && state.level < 3) {
@@ -493,12 +496,36 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
       {!autoSyncDone && (state.destinos?.[0] || state.lastPrice) && (
         <div className="rounded-2xl p-4 border bg-white/[0.04] border-white/10 flex items-center justify-between gap-3 mb-6">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <span className="text-lg flex-shrink-0">🔄</span>
-            <p className="text-[11px] text-white/50 leading-snug">
-              Datos de la Fábrica ya sincronizados con este sitio.
-              <span className="ml-1 text-white/30">Edita haciendo clic en la vista previa al lado o usa los ajustes.</span>
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] text-white/50 leading-snug mb-2">
+                Datos de la Fábrica ya sincronizados con este sitio.
+                <span className="ml-1 text-white/30">Selecciona otro proyecto abajo o haz clic en la vista previa para editar.</span>
+              </p>
+              {savedProjects && savedProjects.length > 0 && (
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (!val) return;
+                    const p = savedProjects.find(x => x.id === val);
+                    if (p && p.state_snapshot) {
+                      window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
+                      toast.success(`¡Proyecto "${p.agency_name || 'Sin Nombre'}" cargado!`);
+                    }
+                  }}
+                  className="w-full max-w-sm bg-white/5 border border-white/10 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-emerald-500/50 appearance-none cursor-pointer"
+                >
+                  <option value="" disabled>Cargar otro proyecto guardado...</option>
+                  {savedProjects.map((p) => (
+                    <option key={p.id} value={p.id} className="bg-zinc-900 text-white">
+                      {p.agency_name || "Proyecto sin nombre"} • {new Date(p.updated_at).toLocaleDateString()}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
           </div>
           <button
             onClick={resetSiteToBlank}

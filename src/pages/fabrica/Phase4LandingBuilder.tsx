@@ -4,6 +4,7 @@ import { useFabricaContext, type Pacote, type Depoimento, type SocialLink, type 
 import { supabase } from "@/integrations/supabase/client";
 import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export";
 import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
+import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import {
   Plus,
   Trash2,
@@ -84,6 +85,7 @@ const normalizeSocialUrl = (type: SocialType, value: string) => {
 export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; onNext: () => void }) => {
   const { state, update, systemUpdate, undo, redo, canUndo, canRedo, isHydrated } = useFabricaContext();
   const { user } = useAuth();
+  const { data: savedProjects } = useDiagnosticos();
   const [previewing, setPreviewing] = useState(true);
   const [downloadCount, setDownloadCount] = useState(0);
   const [autoSyncDone, setAutoSyncDone] = useState(false);
@@ -649,12 +651,36 @@ export const Phase4LandingBuilder = ({ onBack, onNext }: { onBack: () => void; o
 
       {!autoSyncDone && (state.destinos?.[0] || state.lastPrice) && (
         <div className="rounded-2xl p-4 border bg-white/[0.04] border-white/10 flex items-center justify-between gap-3 mb-6">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <span className="text-lg flex-shrink-0">🔄</span>
-            <p className="text-[11px] text-white/50 leading-snug">
-              Dados da Fábrica já sincronizados com este site.
-              <span className="ml-1 text-white/30">Edite clicando na prévia ao lado ou use as configurações.</span>
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] text-white/50 leading-snug mb-2">
+                Dados da Fábrica já sincronizados com este site.
+                <span className="ml-1 text-white/30">Selecione outro projeto abaixo ou clique na prévia para editar.</span>
+              </p>
+              {savedProjects && savedProjects.length > 0 && (
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (!val) return;
+                    const p = savedProjects.find(x => x.id === val);
+                    if (p && p.state_snapshot) {
+                      window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
+                      toast.success(`Projeto "${p.agency_name || 'Sem Nome'}" carregado!`);
+                    }
+                  }}
+                  className="w-full max-w-sm bg-white/5 border border-white/10 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-emerald-500/50 appearance-none cursor-pointer"
+                >
+                  <option value="" disabled>Carregar outro projeto salvo...</option>
+                  {savedProjects.map((p) => (
+                    <option key={p.id} value={p.id} className="bg-zinc-900 text-white">
+                      {p.agency_name || "Projeto sem nome"} • {new Date(p.updated_at).toLocaleDateString()}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
           </div>
           <button
             onClick={resetSiteToBlank}
