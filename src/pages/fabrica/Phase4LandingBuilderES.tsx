@@ -1455,6 +1455,7 @@ const PublishOnLovableCard = ({
                       .replace(/-+/g, "-")
                       .replace(/^-|-$/g, "");
   });
+  const [canvaViagemSubdomain, setCanvaViagemSubdomain] = useState<string>(() => buildSiteSlug(state.agencyName || ""));
 
   useEffect(() => {
     if (state.siteContent.canvaViagemUrl) {
