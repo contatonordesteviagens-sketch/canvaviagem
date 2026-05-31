@@ -1412,6 +1412,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
           toast.success("Design Dinâmico gerado com sucesso pela IA!");
 
+          const nextAiPureCount = incrementAiPureDailyCount(1);
+          setAiPureCount(nextAiPureCount);
+
           const newCount = generationCount + 1;
           setGenerationCount(newCount);
           localStorage.setItem("fabrica_gen_count", String(newCount));
