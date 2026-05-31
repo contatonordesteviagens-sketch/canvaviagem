@@ -84,13 +84,27 @@ You MUST return ONLY the raw, minified JSON object. Do NOT wrap in markdown. Do 
       },
       body: JSON.stringify({
         systemInstruction: {
-          parts: [{ text: "You are a layout designer. Respond ONLY with raw minified JSON. No markdown, no prose." }],
+          parts: [{ text: `Você é um designer de layouts publicitários profissional e matemático rigoroso. Sua única função é retornar um objeto JSON válido descrevendo os elementos de design.
+REGRAS CRÍTICAS DE CORES:
+1. Você DEVE usar estritamente as cores fornecidas pelo usuário:
+   - Cor Primária dos Elementos (para caixas principais ou fundos translúcidos): ${primaryColor || "#0C2340"}.
+   - Cor Secundária de Destaque (para pílulas, crachás ou preço): ${secondaryColor || "#FFE600"}.
+2. É TERMINANTEMENTE PROIBIDO inventar qualquer outra cor (como laranja, vermelho, verde, etc.) a menos que seja fornecida.
+3. Use fundos escuros translúcidos baseados na Cor Primária (ex: rgba(0,0,0,0.85) ou uma versão opaca de ${primaryColor}).
+
+REGRAS DE GRID E ESPAÇAMENTO (CABRESTO ESPACIAL):
+Para um canvas de largura 1080px:
+1. Título e Destaque: Posicionados com X=80. A largura ('width') do elemento de texto não deve ultrapassar 920px para não vazar.
+2. O TÍTULO DEVE FICAR EM CIMA! (Y entre 150 e 350).
+3. Card de Benefícios (Inclusos): Uma grande caixa translúcida (type 'box') no rodapé. Inicie em X=40, Y=${isStory ? "1100" : "650"}, width=1000, height=${isStory ? "520" : "300"}. Cor de fundo escura translúcida baseada em ${primaryColor} (ex: rgba(0,0,0,0.85)).
+4. Preço e Inclusos: Devem ser gerados como textos ou pequenas pílulas aninhadas DENTRO das coordenadas do Card de Benefícios (Y > ${isStory ? "1100" : "650"}). O preço NUNCA deve flutuar solto ou sobrepor o título no topo.
+5. EVITE SOBREPOSIÇÃO: Garanta que as coordenadas Y de caixas e textos de preço não colidam de forma alguma com o Título que fica no topo.` }],
         },
         contents: [
           { role: "user", parts: [{ text: promptText }] },
         ],
         generationConfig: {
-          temperature: 0.7,
+          temperature: 0.2, // Reduzido para maior determinismo matemático e obediência estrita
           responseMimeType: "application/json",
         },
       }),
