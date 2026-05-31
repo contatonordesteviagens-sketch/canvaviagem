@@ -776,8 +776,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   // Histórico das últimas variantes do compositor canvas (modo Sua Imagem) para forçar rotação
   const variantHistoryRef = useRef<number[]>([]);
   // Versão forçada (null = automático/rotação). 0..4 fixa a variante exata para correções cirúrgicas.
-  const [lastProvider, setLastProvider] = useState<"user_gemini" | "lovable_ai" | null>(() => {
-    return (localStorage.getItem("fabrica_last_provider") as "user_gemini" | "lovable_ai") || null;
+  const [lastProvider, setLastProvider] = useState<"secure_gemini" | null>(() => {
+    return (localStorage.getItem("fabrica_last_provider") as "secure_gemini") || "secure_gemini";
   });
   const [generationError, setGenerationError] = useState<string | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
@@ -883,13 +883,11 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       localStorage.setItem(resetKey, "true");
       localStorage.setItem("fabrica_ai_pure_daily_count", "0");
       localStorage.setItem("fabrica_gen_count", "0");
-      // Quando reiniciar os limites (nova chave adicionada), forçamos o provedor inicial a ser "user_gemini"
-      // para permitir que todos os usuários tentem usar a nova chave sem esbarrar no limite local!
-      localStorage.setItem("fabrica_last_provider", "user_gemini");
+      localStorage.setItem("fabrica_last_provider", "secure_gemini");
       setAiPureCount(0);
       setGenerationCount(0);
-      setLastProvider("user_gemini");
-      toast.success("Limites de geração diária reiniciados com a nova chave API!");
+      setLastProvider("secure_gemini");
+      toast.success("IA Pura segura no servidor ativada!");
     }
   }, []);
 
@@ -1250,17 +1248,6 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           isExperience: categoria === "experiencia_destino",
         };
       };
-
-      // ===== TRAVA DE CRÉDITOS DA PLATAFORMA (20 gerações no modo IA sem chave própria) =====
-      const PLATFORM_CREDIT_LIMIT = 20;
-      if (genMode === "ai" && aiPureCount >= PLATFORM_CREDIT_LIMIT && lastProvider !== "user_gemini") {
-        toast.error(
-          `⚡ Limite de ${PLATFORM_CREDIT_LIMIT} gerações IA diárias atingido! Use as outras formas ilimitadas: modo Foto Real e modo Sua Imagem, ou conecte sua chave Gemini nas Configurações.`,
-          { duration: 8000 }
-        );
-        setLoading(false);
-        return;
-      }
 
       // ===== MODO FOTO (composição local) — gera 1 ou mais imagens =====
       if (genMode === "photo") {
