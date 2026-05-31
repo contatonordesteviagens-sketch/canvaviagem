@@ -1367,29 +1367,42 @@ Destaques: ${parsedHighlights.join(", ")}
 Promoção: ${promoName || "OFERTA ESPECIAL"}
 
 O formato do canvas é ${format === "story" ? "1080x1920" : "1080x1080"}.
-Crie blocos translúcidos e posicionamento de textos.
+
+CRITICAL COLOR RULES:
+You MUST use the exact colors provided by the user:
+- Primary Box Color (main dark elements background): ${primaryColor}.
+- Highlight/Pill Color (accents or highlight badges): ${secondaryColor}.
+DO NOT invent other colors like orange, red, green, etc., unless they match the colors provided here. You may use translucent rgba versions of ${primaryColor} for the main box (e.g. rgba(0,0,0,0.85) or translucid ${primaryColor}).
+
+CABRESTO ESPACIAL (GRID SYSTEM):
+Siga este grid mental rigoroso no canvas de largura 1080px:
+1. Título e Destaque: Posicionados com X=80 (alinhamento à esquerda). O width do texto do título não deve ultrapassar 920.
+2. Card de Benefícios (Inclusos): Uma grande caixa (type 'box') no rodapé. Inicie em X=40, Y=${format === "story" ? "1100" : "650"}, width=1000, height=${format === "story" ? "520" : "300"}. A cor de fundo DEVE ser escura translúcida (ex: rgba(0,0,0,0.85)).
+3. Preço e Inclusos: Devem ser gerados como textos ou pequenas pílulas aninhadas DENTRO das coordenadas do Card de Benefícios para que fiquem protegidas, coesas e não fiquem flutuando aleatoriamente.
+Todos os elementos de texto devem respeitar estritamente estas coordenadas para não colidirem e não vazarem da tela.
 
 Retorne EXCLUSIVAMENTE um JSON válido com a estrutura:
 {
   "elements": [
     {
       "type": "box",
-      "x": 50,
-      "y": ${format === "story" ? "1400" : "800"},
-      "width": 980,
-      "height": 200,
-      "backgroundColor": "rgba(0,0,0,0.6)",
+      "x": 40,
+      "y": ${format === "story" ? "1100" : "650"},
+      "width": 1000,
+      "height": ${format === "story" ? "520" : "300"},
+      "backgroundColor": "rgba(0,0,0,0.85)",
       "borderRadius": 24
     },
     {
       "type": "text",
-      "x": 100,
-      "y": ${format === "story" ? "1450" : "850"},
+      "x": 80,
+      "y": ${format === "story" ? "400" : "200"},
       "content": "${(destination || "Destino").toUpperCase()}",
-      "fontSize": 64,
+      "fontSize": 72,
       "fontFamily": "Inter",
       "color": "#FFFFFF",
-      "fontWeight": "bold"
+      "fontWeight": "bold",
+      "width": 920
     }
   ]
 }

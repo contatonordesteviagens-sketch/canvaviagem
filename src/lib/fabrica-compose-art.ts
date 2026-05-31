@@ -392,7 +392,8 @@ async function drawFinalBranding(
   textColorOverride?: string,
   fontFamily: string = "Inter",
   skipLogo: boolean = false,
-  logoFormat: "circle" | "square" = "circle"
+  logoFormat: "circle" | "square" = "circle",
+  isIAPura: boolean = false
 ) {
   const contactsToDraw: { icon: string; value: string }[] = [];
   // So adiciona contatos que tenham valor preenchido (evita ícones vazios)
@@ -402,12 +403,13 @@ async function drawFinalBranding(
   if (!logoUrl && contactsToDraw.length === 0) return;
 
   const isStory = ch > cw;
-  const footerHeight = isStory ? 120 : 100;
+  const footerHeight = isIAPura ? (isStory ? 80 : 60) : (isStory ? 120 : 100);
   
   // TAREFA 3 — ANCORAGEM DE BASE (CHÃO DA GAIOLA)
   // SAFE_BOTTOM = 380, logo PANEL_BOTTOM = ch - 380. 
   // O footerY deve ser calculado retroativamente a partir de PANEL_BOTTOM menos a altura do rodapé.
-  const panelBottom = ch - (isStory ? 380 : 120);
+  // No modo IA Pura, desenha isolado no fundo absoluto (Y > 950 para formato quadrado) para não colidir com o box de benefícios.
+  const panelBottom = isIAPura ? (ch - 30) : ch - (isStory ? 380 : 120);
   const footerY = panelBottom - footerHeight;
 
   // 1. Fundo do Rodapé (VÉU GRADIENTE ESCURO)
@@ -3437,16 +3439,39 @@ export async function renderIAPuraLayout(
         ctx.fillStyle = el.color || "#FFFFFF";
         const weight = el.fontWeight || "bold";
         const family = el.fontFamily || options.fontFamily || "Inter";
-        ctx.font = `${weight} ${el.fontSize || 32}px "${family}"`;
+        const fontSize = el.fontSize || 32;
+        ctx.font = `${weight} ${fontSize}px "${family}"`;
         ctx.textAlign = el.textAlign || "left";
         ctx.textBaseline = "top";
-        ctx.fillText(el.content || "", el.x, el.y);
+
+        const text = el.content || "";
+        const maxWidth = el.width || (cw - 100);
+        
+        // AUTO-WRAP inteligente para o texto não vazar da tela de jeito nenhum
+        const words = text.split(" ");
+        let line = "";
+        let currentY = el.y;
+        const lineHeight = fontSize * 1.25;
+
+        for (let n = 0; n < words.length; n++) {
+          const testLine = line ? `${line} ${words[n]}` : words[n];
+          const metrics = ctx.measureText(testLine);
+          const testWidth = metrics.width;
+          if (testWidth > maxWidth && n > 0) {
+            ctx.fillText(line, el.x, currentY);
+            line = words[n];
+            currentY += lineHeight;
+          } else {
+            line = testLine;
+          }
+        }
+        ctx.fillText(line, el.x, currentY);
         ctx.textAlign = "left"; // reset
       }
     }
   }
 
-  // Passo 4: OBRIGATÓRIO (Branding Final & Seguranças)
+  // Passo 4: OBRIGATÓRIO (Branding Final & Seguranças - isIAPura = true para isolar rodapé)
   await drawFinalBranding(
     ctx,
     cw,
@@ -3455,6 +3480,9 @@ export async function renderIAPuraLayout(
     { icon: options.footerContact1Icon || "none", value: options.footerContact1Value || "" },
     { icon: options.footerContact2Icon || "none", value: options.footerContact2Value || "" },
     options.textColorOverride,
-    options.fontFamily || "Inter"
+    options.fontFamily || "Inter",
+    false,
+    options.logoFormat || "circle",
+    true
   );
 }
