@@ -3386,6 +3386,8 @@ export interface IAElement {
   fontWeight?: string;
   content?: string;
   textAlign?: "left" | "center" | "right";
+  borderColor?: string;
+  borderWidth?: number;
 }
 
 export interface IALayoutSchema {
@@ -3429,11 +3431,32 @@ export async function renderIAPuraLayout(
   if (layoutJson && layoutJson.elements) {
     for (const el of layoutJson.elements) {
       if (el.type === "box") {
-        ctx.fillStyle = el.backgroundColor || "rgba(0,0,0,0.5)";
-        if (el.borderRadius) {
-          fillRoundRect(ctx, el.x, el.y, el.width || 0, el.height || 0, el.borderRadius, ctx.fillStyle);
-        } else {
-          ctx.fillRect(el.x, el.y, el.width || 0, el.height || 0);
+        const hasBg = !!el.backgroundColor;
+        const hasBorder = !!el.borderColor;
+        
+        if (hasBg || !hasBorder) {
+          ctx.fillStyle = el.backgroundColor || "rgba(0,0,0,0.5)";
+          if (el.borderRadius) {
+            fillRoundRect(ctx, el.x, el.y, el.width || 0, el.height || 0, el.borderRadius, ctx.fillStyle);
+          } else {
+            ctx.fillRect(el.x, el.y, el.width || 0, el.height || 0);
+          }
+        }
+        
+        if (hasBorder) {
+          ctx.strokeStyle = el.borderColor!;
+          ctx.lineWidth = el.borderWidth || 2;
+          if (el.borderRadius) {
+            ctx.beginPath();
+            if (ctx.roundRect) {
+              ctx.roundRect(el.x, el.y, el.width || 0, el.height || 0, el.borderRadius);
+            } else {
+              ctx.rect(el.x, el.y, el.width || 0, el.height || 0);
+            }
+            ctx.stroke();
+          } else {
+            ctx.strokeRect(el.x, el.y, el.width || 0, el.height || 0);
+          }
         }
       } else if (el.type === "text") {
         ctx.fillStyle = el.color || "#FFFFFF";

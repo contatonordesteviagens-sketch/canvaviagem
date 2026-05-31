@@ -28,7 +28,7 @@ serve(async (req) => {
     const { format, destination, price, highlights, promoName, currencySymbol, duration, primaryColor, secondaryColor } = body;
     const isStory = format === "story";
 
-    const promptText = `Crie um layout moderno e de alta conversão para um pacote de viagem.
+    const promptText = `Crie um layout moderno e de altíssima conversão de acordo com um dos 4 Estilos Premium mapeados das referências de turismo e luxo.
 Destino: ${destination}
 Preço: ${currencySymbol} ${price}
 Duração: ${duration}
@@ -37,45 +37,39 @@ Promoção: ${promoName}
 
 O formato do canvas é ${isStory ? "1080x1920" : "1080x1080"}.
 
-CRITICAL COLOR RULES:
-You MUST use the exact colors provided by the user:
-- Primary Box Color (main dark elements background): ${primaryColor || "#0c2340"}.
-- Highlight/Pill Color (accents or highlight badges): ${secondaryColor || "#FCD34D"}.
-DO NOT invent other colors like orange, red, green, etc., unless they match the colors provided here.
+CORES EXATAS DO USUÁRIO (Obrigatório usar estritamente):
+- Cor Primária: ${primaryColor || "#0c2340"}
+- Cor Secundária: ${secondaryColor || "#FCD34D"}
 
-CABRESTO ESPACIAL (GRID SYSTEM):
-Siga este grid mental rigoroso no canvas de largura 1080px:
-1. Título e Destaque: Posicionados com X=80 (alinhamento à esquerda). O width do texto do título não deve ultrapassar 920.
-2. Card de Benefícios (Inclusos): Uma grande caixa (type 'box') no rodapé. Inicie em X=40, Y=${isStory ? "1100" : "650"}, width=1000, height=${isStory ? "520" : "300"}. A cor de fundo DEVE ser escura translúcida (ex: rgba(0,0,0,0.85)).
-3. Preço e Inclusos: Devem ser gerados como textos ou pequenas pílulas aninhadas DENTRO das coordenadas do Card de Benefícios para que fiquem protegidas, coesas e não fiquem flutuando aleatoriamente.
-Todos os elementos de texto devem respeitar estritamente estas coordenadas para não colidirem e não vazarem da tela.
+REGRAS DE OURO DOS 4 ESTILOS PREMIUM:
+Escolha de forma inteligente qual destes 4 estilos combina melhor com as informações fornecidas e gere as coordenadas exatas:
+
+Estilo A: "New York Editorial" (Foco: Elegância com Serifa)
+- Textos centralizados com fontes elegantes de Serifa (ex: 'Georgia' ou 'Playfair Display'). Título gigante centralizado (Y: ${isStory ? "450" : "250"}).
+- Uma pílula de preço (type 'box') dourada/secundária (${secondaryColor || "#FCD34D"}) centralizada logo abaixo do título contendo o valor em texto escuro de alta legibilidade.
+- Um botão vazado (type 'box' com borderColor="${secondaryColor || "#FCD34D"}", borderWidth=3) na base centralizado contendo "VER PREÇOS AGORA" ou similar.
+
+Estilo B: "Caribe Resort" (Foco: Card lateral de benefícios + Destaque geométrico)
+- Uma grande caixa translúcida à direita (type 'box', X=${isStory ? "540" : "600"}, Y=${isStory ? "300" : "200"}, width=480, height=${isStory ? "1200" : "700"}, backgroundColor="rgba(255,255,255,0.92)", borderRadius=24) contendo os benefícios listados.
+- Um badge de desconto massivo à esquerda (type 'box', X=60, Y=${isStory ? "400" : "300"}, width=400, height=180, backgroundColor="${primaryColor || "#0c2340"}") contendo o preço ou "45% OFF".
+- Uma barra sólida de CTA na base.
+
+Estilo C: "Quiet Luxury Safari" (Foco: Minimalismo extremo e sofisticação)
+- Logo centralizada no topo. Textos centralizados pequenos com amplo respiro visual.
+- Fonte serifada e itálica leve, convidativa: "Sua história começa aqui..." ou "Every moment, unforgettable".
+- Sem cards pesados ou pílulas gigantescas. Apenas tipografia perfeita com sombras sutis.
+
+Estilo D: "Jaecoo / Jeep Premium" (Foco: Bloco de impacto na base + Destaque inclinado)
+- Bloco na base (type 'box', X=40, Y=${isStory ? "1200" : "700"}, width=1000, height=${isStory ? "450" : "280"}, backgroundColor="rgba(0,0,0,0.85)") contendo colunas de benefícios impactantes em texto (ex: "5 ANOS SEM JUROS + 7 ANOS DE GARANTIA").
+- Um badge inclinado "É ISSO MESMO" ou similar e contatos em destaque.
 
 Retorne EXCLUSIVAMENTE um JSON válido com a estrutura:
 {
   "elements": [
-    {
-      "type": "box",
-      "x": 40,
-      "y": ${isStory ? "1100" : "650"},
-      "width": 1000,
-      "height": ${isStory ? "520" : "300"},
-      "backgroundColor": "rgba(0,0,0,0.85)",
-      "borderRadius": 24
-    },
-    {
-      "type": "text",
-      "x": 80,
-      "y": ${isStory ? "400" : "200"},
-      "content": "${destination.toUpperCase()}",
-      "fontSize": 72,
-      "fontFamily": "Inter",
-      "color": "#FFFFFF",
-      "fontWeight": "bold",
-      "width": 920
-    }
+    // elementos geométricos (box) e tipográficos (text) perfeitamente posicionados sem colisão
   ]
 }
-You MUST return ONLY the raw, minified JSON object. Do NOT wrap in markdown. Do NOT add any conversational text.`;
+Retorne APENAS o JSON puro. Não envolva em markdown. Não escreva explicações.`;
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
@@ -84,27 +78,26 @@ You MUST return ONLY the raw, minified JSON object. Do NOT wrap in markdown. Do 
       },
       body: JSON.stringify({
         systemInstruction: {
-          parts: [{ text: `Você é um designer de layouts publicitários profissional e matemático rigoroso. Sua única função é retornar um objeto JSON válido descrevendo os elementos de design.
-REGRAS CRÍTICAS DE CORES:
+          parts: [{ text: `Você é um designer de layouts publicitários profissional de agências de turismo e luxo de altíssimo padrão. Sua única função é retornar um objeto JSON válido descrevendo os elementos de design seguindo estritamente um dos 4 estilos premium descritos pelo usuário.
+REGRAS CRÍTICAS DE CORES E CONTRASTE:
 1. Você DEVE usar estritamente as cores fornecidas pelo usuário:
-   - Cor Primária dos Elementos (para caixas principais ou fundos translúcidos): ${primaryColor || "#0C2340"}.
-   - Cor Secundária de Destaque (para pílulas, crachás ou preço): ${secondaryColor || "#FFE600"}.
-2. É TERMINANTEMENTE PROIBIDO inventar qualquer outra cor (como laranja, vermelho, verde, etc.) a menos que seja fornecida.
-3. Use fundos escuros translúcidos baseados na Cor Primária (ex: rgba(0,0,0,0.85) ou uma versão opaca de ${primaryColor}).
+   - Cor Primária: ${primaryColor || "#0C2340"}.
+   - Cor Secundária: ${secondaryColor || "#FCD34D"}.
+2. É expressamente proibido inventar cores alheias (como vermelho, azul puro, verde) a menos que fornecidas nas variáveis.
+3. Se gerar um botão vazado (stroke/outline), utilize a propriedade 'borderColor' (ex: "${secondaryColor || "#FCD34D"}") e 'borderWidth' (ex: 3), sem preencher 'backgroundColor'.
 
-REGRAS DE GRID E ESPAÇAMENTO (CABRESTO ESPACIAL):
-Para um canvas de largura 1080px:
-1. Título e Destaque: Posicionados com X=80. A largura ('width') do elemento de texto não deve ultrapassar 920px para não vazar.
-2. O TÍTULO DEVE FICAR EM CIMA! (Y entre 150 e 350).
-3. Card de Benefícios (Inclusos): Uma grande caixa translúcida (type 'box') no rodapé. Inicie em X=40, Y=${isStory ? "1100" : "650"}, width=1000, height=${isStory ? "520" : "300"}. Cor de fundo escura translúcida baseada em ${primaryColor} (ex: rgba(0,0,0,0.85)).
-4. Preço e Inclusos: Devem ser gerados como textos ou pequenas pílulas aninhadas DENTRO das coordenadas do Card de Benefícios (Y > ${isStory ? "1100" : "650"}). O preço NUNCA deve flutuar solto ou sobrepor o título no topo.
-5. EVITE SOBREPOSIÇÃO: Garanta que as coordenadas Y de caixas e textos de preço não colidam de forma alguma com o Título que fica no topo.` }],
+REGRAS DE ALINHAMENTO E COMPOSIÇÃO:
+1. NUNCA sobreponha textos ou caixas. Calcule a altura das fontes e dê espaçamento generoso.
+2. No Estilo New York Editorial, use fontFamily: "Playfair Display" ou "Georgia" para títulos e subtítulos elegantes.
+3. No Estilo Caribe, posicione o card translúcido no canto direito e os badges e preços grandes no canto esquerdo.
+4. No Estilo Quiet Luxury Safari, mantenha tudo pequeno, centralizado, nobre, com amplo espaço livre.
+5. No Estilo Jaecoo/Jeep, mantenha os boxes e textos bem estruturados e alinhados na base com cores sólidas e letras em caixa alta.` }],
         },
         contents: [
           { role: "user", parts: [{ text: promptText }] },
         ],
         generationConfig: {
-          temperature: 0.2, // Reduzido para maior determinismo matemático e obediência estrita
+          temperature: 0.2,
           responseMimeType: "application/json",
         },
       }),
