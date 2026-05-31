@@ -2627,30 +2627,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </p>
         </div>
         
-        {/* Configurações de IA (Gemini Key) */}
-        {genMode === "ai" && (
-          <div className="bg-white/[0.03] border border-emerald-500/30 rounded-xl p-4 mb-4">
-            <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-              <Key className="w-3.5 h-3.5" />
-              Sua Chave API do Gemini
-            </h4>
-            <p className="text-[10px] text-white/50 mb-3 leading-relaxed">
-              Para usar o motor de IA Pura sem passar pelo servidor, cole sua chave do Google Gemini abaixo. 
-              Ela fica salva <strong>apenas no seu navegador local</strong> (é 100% segura e invisível para o público).
-            </p>
-            <input
-              type="password"
-              placeholder="AIzaSy..."
-              className={`${inputCls} font-mono text-xs`}
-              value={localStorage.getItem("user_gemini_api_key") || ""}
-              onChange={(e) => {
-                localStorage.setItem("user_gemini_api_key", e.target.value);
-                // force re-render by dispatching a fake state update
-                update({} as any);
-              }}
-            />
-          </div>
-        )}
+        {/* IA Pura agora roda no servidor — chave não é mais necessária */}
 
         {/* Feature: Lote A/B (3 variações) */}
         <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 flex items-center justify-between gap-4 hover:bg-white/[0.05] transition-colors cursor-pointer group" onClick={() => setIsBatchMode(!isBatchMode)}>
