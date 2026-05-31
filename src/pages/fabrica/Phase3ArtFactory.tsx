@@ -1337,99 +1337,47 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         return;
       }
 
-      // ===== MODO IA PURA: MOTOR DE LAYOUT DINÂMICO =====
+      // ===== MODO IA PURA: MOTOR DE LAYOUT DINÂMICO (via Lovable AI Gateway) =====
       if (genMode === "ai") {
         const refImage = selectedPhotoUrl;
         if (!refImage) {
-          toast.error("Por favor, busque e selecione uma Foto Real na galeria para a IA desenhar por cima.");
-          setLoading(false);
-          return;
-        }
-
-        const userGeminiKey = localStorage.getItem("user_gemini_api_key");
-        if (!userGeminiKey) {
-          toast.error("Por favor, configure sua Chave do Gemini na seção 'Configurações de IA' abaixo.");
+          toast.error("Selecione uma Foto Real na galeria para a IA desenhar por cima.");
           setLoading(false);
           return;
         }
 
         toast.info("Iniciando IA Designer v3...");
 
-        let parsedHighlights: string[] = [];
-        try { parsedHighlights = JSON.parse(highlights || "[]"); } catch {}
+        const highlightTexts: string[] = (highlights || []).map((h: any) =>
+          typeof h === "string" ? h : (h?.text || "")
+        ).filter(Boolean);
 
         try {
-          const promptText = `Crie um layout moderno e de alta conversão para um pacote de viagem.
-Destino: ${destination || "Destino"}
-Preço: ${currencySymbol} ${formattedPriceForAd || price}
-Duração: ${travelPeriod || "5 NOITES"}
-Destaques: ${parsedHighlights.join(", ")}
-Promoção: ${promoName || "OFERTA ESPECIAL"}
-
-O formato do canvas é ${format === "story" ? "1080x1920" : "1080x1080"}.
-Crie blocos translúcidos e posicionamento de textos.
-
-Retorne EXCLUSIVAMENTE um JSON válido com a estrutura:
-{
-  "elements": [
-    {
-      "type": "box",
-      "x": 50,
-      "y": ${format === "story" ? "1400" : "800"},
-      "width": 980,
-      "height": 200,
-      "backgroundColor": "rgba(0,0,0,0.6)",
-      "borderRadius": 24
-    },
-    {
-      "type": "text",
-      "x": 100,
-      "y": ${format === "story" ? "1450" : "850"},
-      "content": "${(destination || "Destino").toUpperCase()}",
-      "fontSize": 64,
-      "fontFamily": "Inter",
-      "color": "#FFFFFF",
-      "fontWeight": "bold"
-    }
-  ]
-}
-Apenas o JSON, sem markdown. CRITICAL: You MUST return ONLY the raw, minified JSON object.`;
-
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userGeminiKey}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ role: "user", parts: [{ text: promptText }] }],
-              generationConfig: {
-                responseMimeType: "application/json",
-                temperature: 0.7,
-              }
-            }),
+          const { data: aiData, error: aiError } = await supabase.functions.invoke("fabrica-design-ai", {
+            body: {
+              format,
+              destination: destination || "Destino",
+              price: formattedPriceForAd || price,
+              duration: travelPeriod || "5 NOITES",
+              highlights: highlightTexts,
+              promoName: promoName || "OFERTA ESPECIAL",
+              currencySymbol,
+            },
           });
 
-          if (!response.ok) throw new Error("Falha na chamada direta à API do Gemini. Verifique sua chave.");
-          
-          const data = await response.json();
-          const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (!rawText) throw new Error("JSON não retornado pela IA.");
-
-          let layoutJson = null;
-          try {
-            const cleaned = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-            const start = cleaned.indexOf("{");
-            const end = cleaned.lastIndexOf("}");
-            layoutJson = JSON.parse(cleaned.substring(start, end + 1));
-          } catch (e) {
-            console.error("Erro no parse do JSON da IA:", e);
-            throw new Error("A IA retornou um formato inválido.");
+          if (aiError) throw new Error(aiError.message || "Falha na IA");
+          if ((aiData as any)?.error) throw new Error((aiData as any).error);
+          const layoutJson = (aiData as any)?.layout;
+          if (!layoutJson || !Array.isArray(layoutJson.elements)) {
+            throw new Error("Layout inválido retornado pela IA.");
           }
 
-          if (!layoutJson || !Array.isArray(layoutJson.elements)) throw new Error("JSON de layout inválido.");
+          const { renderIAPuraLayout, reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
 
-          const { renderIAPuraLayout } = await import("@/lib/fabrica-compose-art");
-          
-          const canvas = document.createElement("canvas");
           const isStory = format === "story";
+          const reframedBg = await reframeImageToAspect(refImage, format);
+
+          const canvas = document.createElement("canvas");
           canvas.width = 1080;
           canvas.height = isStory ? 1920 : 1080;
           const ctx = canvas.getContext("2d");
@@ -1440,7 +1388,7 @@ Apenas o JSON, sem markdown. CRITICAL: You MUST return ONLY the raw, minified JS
             destination: destination || "Destino",
             price: formattedPriceForAd || price,
             travelPeriod: travelPeriod || "5 NOITES",
-            highlights: parsedHighlights,
+            highlights: (highlights || []) as any,
             promoName: promoName || "OFERTA ESPECIAL",
             primaryColor,
             secondaryColor,
@@ -1458,49 +1406,23 @@ Apenas o JSON, sem markdown. CRITICAL: You MUST return ONLY the raw, minified JS
             titleScale,
             descScale,
             textColorOverride,
-          }, layoutJson);
+            imageUrl: reframedBg,
+          } as any, layoutJson as any);
 
-          const iaLayerBase64 = canvas.toDataURL("image/png", 0.9);
-          
-          const finalCanvas = document.createElement("canvas");
-          finalCanvas.width = 1080;
-          finalCanvas.height = isStory ? 1920 : 1080;
-          const fCtx = finalCanvas.getContext("2d");
-          if (!fCtx) throw new Error("Erro no canvas final");
-
-          const bgImg = new Image();
-          bgImg.crossOrigin = "anonymous";
-          const bgLoaded = new Promise((res, rej) => {
-            bgImg.onload = res;
-            bgImg.onerror = rej;
-          });
-          bgImg.src = refImage;
-          await bgLoaded;
-          
-          const { reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
-          await reframeImageToAspect(fCtx, bgImg, isStory ? "story" : "square");
-
-          const overlayImg = new Image();
-          const overlayLoaded = new Promise((res) => { overlayImg.onload = res; });
-          overlayImg.src = iaLayerBase64;
-          await overlayLoaded;
-
-          fCtx.drawImage(overlayImg, 0, 0, finalCanvas.width, finalCanvas.height);
-          
-          const finalImageUrl = finalCanvas.toDataURL("image/png", 0.9);
+          const finalImageUrl = canvas.toDataURL("image/png", 0.9);
 
           setGeneratedImages([finalImageUrl]);
           setGeneratedImage(finalImageUrl);
-          
+
           const currentGenerated = state.allGeneratedAdImages || [];
           const updatedGenerated = [finalImageUrl, ...currentGenerated].slice(0, 10);
-          update({ 
-            generatedAdImage: finalImageUrl, 
+          update({
+            generatedAdImage: finalImageUrl,
             allGeneratedAdImages: updatedGenerated
           });
-          
+
           await syncGeneratedPackageToSite(finalImageUrl, refImage);
-          
+
           toast.success("Design Dinâmico gerado com sucesso pela IA!");
 
           const newCount = generationCount + 1;
@@ -1511,14 +1433,14 @@ Apenas o JSON, sem markdown. CRITICAL: You MUST return ONLY the raw, minified JS
           requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
         } catch (error: any) {
           console.error("ERRO_IA_PURA_CATCH:", error);
-          toast.error("Erro ao gerar design da IA: " + error.message);
-          
-          toast.info("Carregando layout de segurança (V0) devido à falha da IA...");
+          toast.error("Erro ao gerar design da IA: " + (error?.message || "desconhecido"));
+
+          toast.info("Carregando layout de segurança (V0)...");
           setForcedVariant(0);
           setGenMode("photo");
           setTimeout(() => generate(), 500);
         }
-        
+
         return;
       }
 
