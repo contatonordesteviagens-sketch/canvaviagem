@@ -1358,8 +1358,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           if (aiError) throw new Error(aiError.message || "Falha na IA");
           if ((aiData as any)?.error) throw new Error((aiData as any).error);
           const layoutJson = (aiData as any)?.layout;
-          if (!layoutJson || !Array.isArray(layoutJson.elements)) {
-            throw new Error("Layout inválido retornado pela IA.");
+          if (!layoutJson || !layoutJson.style) {
+            throw new Error("Estilo de design inválido retornado pela IA.");
           }
 
           const { renderIAPuraLayout, reframeImageToAspect } = await import("@/lib/fabrica-compose-art");

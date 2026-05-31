@@ -3427,8 +3427,371 @@ export async function renderIAPuraLayout(
   ctx.fillStyle = grad;
   ctx.fillRect(0, gradY, cw, ch - gradY);
 
-  // Passo 3: Parse do JSON Matemático
-  if (layoutJson && layoutJson.elements) {
+  // Passo 3: Renderizador de Estilos Híbridos Determinísticos (ou fallback para elementos dinâmicos)
+  if (layoutJson && layoutJson.style) {
+    const style = layoutJson.style || "A";
+    const sans = options.fontFamily ? `"${options.fontFamily}", Inter, Arial, sans-serif` : `Inter, Arial, sans-serif`;
+    const serif = `'Playfair Display', Georgia, serif`;
+    
+    if (style === "A") {
+      // === Estilo A: New York Editorial ===
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      
+      // Destino/Título em Serifa Elegante
+      ctx.fillStyle = "#ffffff";
+      let destFs = isStory ? 100 : 76;
+      ctx.font = `900 ${destFs}px ${serif}`;
+      safeFillText(ctx, (options.destination || "Destino").toUpperCase(), cw / 2, isStory ? 480 : 260, cw - 120, 24);
+      
+      // Pílula de Preço (Fita Dourada)
+      const priceText = `${options.promoName || "OFERTA ESPECIAL"} • ${options.currencySymbol || "R$"} ${options.price}`;
+      ctx.font = `800 28px ${sans}`;
+      const pWidth = Math.min(cw - 160, ctx.measureText(priceText).width + 60);
+      const pHeight = 64;
+      const pX = (cw - pWidth) / 2;
+      const pY = isStory ? 580 : 350;
+      fillRoundRect(ctx, pX, pY, pWidth, pHeight, pHeight / 2, options.secondaryColor || "#F59E0B");
+      
+      ctx.fillStyle = contrastOn(options.secondaryColor || "#F59E0B");
+      ctx.font = `900 26px ${sans}`;
+      safeFillText(ctx, priceText, cw / 2, pY + pHeight / 2, pWidth - 40, 14);
+      
+      // Botão Vazado (Stroke)
+      const btnText = "VER PREÇOS AGORA ➔";
+      ctx.font = `800 24px ${sans}`;
+      const bWidth = Math.min(cw - 200, ctx.measureText(btnText).width + 60);
+      const bHeight = 60;
+      const bX = (cw - bWidth) / 2;
+      const bY = isStory ? 1300 : 750;
+      
+      ctx.strokeStyle = options.secondaryColor || "#F59E0B";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(bX, bY, bWidth, bHeight, 12);
+      } else {
+        ctx.rect(bX, bY, bWidth, bHeight);
+      }
+      ctx.stroke();
+      
+      ctx.fillStyle = "#ffffff";
+      safeFillText(ctx, btnText, cw / 2, bY + bHeight / 2, bWidth - 40, 14);
+      
+    } else if (style === "B") {
+      // === Estilo B: Caribe Resort ===
+      const cardW = 480;
+      const cardH = isStory ? 1000 : 620;
+      const cardX = cw - cardW - 60;
+      const cardY = isStory ? 300 : 150;
+      
+      fillRoundRect(ctx, cardX, cardY, cardW, cardH, 24, "rgba(255, 255, 255, 0.92)");
+      
+      // Título no topo do Card
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.fillStyle = options.primaryColor || "#0C2340";
+      ctx.font = `800 22px ${sans}`;
+      safeFillText(ctx, (options.promoName || "ALL-INCLUSIVE").toUpperCase(), cardX + 40, cardY + 40, cardW - 80, 12);
+      
+      // Destaques do Card
+      const cardHighlights = (options.highlights || []).slice(0, 4);
+      cardHighlights.forEach((hl: any, idx) => {
+        const hy = cardY + 110 + idx * 80;
+        const iconKey = hl.icon || "star";
+        drawMonoIcon(ctx, iconKey, cardX + 50, hy + 15, 32, options.secondaryColor || "#F59E0B");
+        
+        let hfs = 24;
+        ctx.font = `700 ${hfs}px ${sans}`;
+        ctx.fillStyle = "#333333";
+        ctx.textBaseline = "middle";
+        safeFillText(ctx, hl.text, cardX + 100, hy + 15, cardW - 140, 14);
+      });
+      
+      // CTA base do Card
+      const btnY = cardY + cardH - 100;
+      fillRoundRect(ctx, cardX + 40, btnY, cardW - 80, 60, 12, options.primaryColor || "#0C2340");
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = `900 22px ${sans}`;
+      safeFillText(ctx, "COMPARE & BOOK NOW ➔", cardX + cardW / 2, btnY + 30, cardW - 120, 12);
+      
+      // Grande Badge de Preço à esquerda
+      const badgeW = 400;
+      const badgeH = 220;
+      const badgeX = 60;
+      const badgeY = isStory ? 500 : 250;
+      fillRoundRect(ctx, badgeX, badgeY, badgeW, badgeH, 18, options.primaryColor || "#0C2340");
+      
+      ctx.fillStyle = options.secondaryColor || "#F59E0B";
+      ctx.font = `800 24px ${sans}`;
+      safeFillText(ctx, "UP TO 45% OFF", badgeX + badgeW / 2, badgeY + 45, badgeW - 40, 14);
+      
+      ctx.fillStyle = "#ffffff";
+      let pfsB = 76;
+      ctx.font = `900 ${pfsB}px ${sans}`;
+      const priceStrB = `${options.currencySymbol || "R$"} ${options.price}`;
+      safeFillText(ctx, priceStrB, badgeX + badgeW / 2, badgeY + 100, badgeW - 40, 24);
+      
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `700 20px ${sans}`;
+      ctx.globalAlpha = 0.8;
+      safeFillText(ctx, options.paymentSuffix || "por pessoa", badgeX + badgeW / 2, badgeY + 160, badgeW - 40, 12);
+      ctx.globalAlpha = 1.0;
+      
+    } else if (style === "C") {
+      // === Estilo C: Quiet Luxury Safari ===
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      
+      // Logo / Categoria
+      ctx.fillStyle = options.secondaryColor || "#F59E0B";
+      ctx.font = `800 26px ${sans}`;
+      safeFillText(ctx, (options.promoName || "MDLULI SAFARI LODGE").toUpperCase(), cw / 2, isStory ? 420 : 200, cw - 120, 12);
+      
+      // Linha Serifada Convidativa
+      ctx.fillStyle = "#ffffff";
+      let serifSizeC = isStory ? 76 : 56;
+      ctx.font = `italic 500 ${serifSizeC}px ${serif}`;
+      safeFillText(ctx, options.destination || "Every moment, unforgettable", cw / 2, isStory ? 580 : 340, cw - 160, 20);
+      
+      ctx.font = `italic 300 ${isStory ? 34 : 26}px ${serif}`;
+      ctx.fillStyle = "rgba(255,255,255,0.9)";
+      safeFillText(ctx, options.travelPeriod || "Your safari story begins here", cw / 2, isStory ? 700 : 430, cw - 160, 14);
+      
+    } else if (style === "D") {
+      // === Estilo D: Jaecoo/Jeep Premium ===
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `900 ${isStory ? 80 : 64}px ${sans}`;
+      safeFillText(ctx, (options.destination || "DESTINO").toUpperCase(), cw / 2, isStory ? 320 : 160, cw - 120, 24);
+      
+      // Bloco de impacto na base
+      const blockW = 1000;
+      const blockH = isStory ? 480 : 300;
+      const blockX = 40;
+      const blockY = isStory ? 1200 : 660;
+      
+      fillRoundRect(ctx, blockX, blockY, blockW, blockH, 24, "rgba(0,0,0,0.85)");
+      
+      // Destaque inclinado
+      const badgeW = 280;
+      const badgeH = 56;
+      fillRoundRect(ctx, blockX + 40, blockY + 40, badgeW, badgeH, 8, options.secondaryColor || "#F59E0B");
+      ctx.fillStyle = contrastOn(options.secondaryColor || "#F59E0B");
+      ctx.font = `900 24px ${sans}`;
+      safeFillText(ctx, options.promoName || "É ISSO MESMO", blockX + 40 + badgeW / 2, blockY + 40 + badgeH / 2, badgeW - 20, 12);
+      
+      // Detalhes / Benefícios
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `900 ${isStory ? 40 : 32}px ${sans}`;
+      const descTextD = `${options.installments || "12X"} R$ ${options.price} ${options.paymentSuffix || ""}`;
+      safeFillText(ctx, descTextD, blockX + 40, blockY + 140, blockW - 80, 16);
+      
+      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      ctx.font = `700 24px ${sans}`;
+      const bulletD = (options.highlights || []).map((h: any) => h.text || h).join(" • ");
+      safeFillText(ctx, bulletD || "Emplacamento e insulfilm grátis", blockX + 40, blockY + 220, blockW - 80, 14);
+      
+    } else if (style === "E") {
+      // === Estilo E: Circuito Central Card ===
+      const cardW = 920;
+      const cardH = isStory ? 880 : 620;
+      const cardX = (cw - cardW) / 2;
+      const cardY = isStory ? 250 : 120;
+      
+      fillRoundRect(ctx, cardX, cardY, cardW, cardH, 40, options.primaryColor || "#0000D8");
+      
+      // Título do Pacote
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `900 ${isStory ? 64 : 52}px ${sans}`;
+      safeFillText(ctx, (options.destination || "CIRCUITO PORTUGAL").toUpperCase(), cw / 2, cardY + 100, cardW - 80, 24);
+      
+      // Duração / Período
+      ctx.fillStyle = options.secondaryColor || "#F59E0B";
+      ctx.font = `800 28px ${sans}`;
+      safeFillText(ctx, options.travelPeriod || "5 dias | Roteiro Completo", cw / 2, cardY + 200, cardW - 80, 14);
+      
+      // Grupo de Preço
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `600 24px ${sans}`;
+      safeFillText(ctx, options.pricePrefix || "a partir de", cardX + 160, cardY + 310, 260, 12);
+      
+      // Pílula 12X
+      const pillTxt = options.installments || "12X";
+      fillRoundRect(ctx, cardX + 60, cardY + 340, 200, 52, 10, options.secondaryColor || "#F59E0B");
+      ctx.fillStyle = contrastOn(options.secondaryColor || "#F59E0B");
+      ctx.font = `900 28px ${sans}`;
+      safeFillText(ctx, pillTxt, cardX + 160, cardY + 366, 180, 12);
+      
+      // Valor
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `900 ${isStory ? 150 : 110}px ${sans}`;
+      safeFillText(ctx, options.price, cardX + cardW - 60, cardY + 350, 480, 48);
+      
+      // Moeda
+      ctx.font = `900 42px ${sans}`;
+      safeFillText(ctx, options.currencySymbol || "R$", cardX + cardW - 60 - ctx.measureText(options.price).width - 20, cardY + 340, 120, 20);
+      
+      // Banner do Pix
+      const pixY = cardY + cardH - 120;
+      fillRoundRect(ctx, cardX + 60, pixY, cardW - 120, 72, 36, options.secondaryColor || "#F59E0B");
+      ctx.fillStyle = contrastOn(options.secondaryColor || "#F59E0B");
+      ctx.textAlign = "center";
+      ctx.font = `900 24px ${sans}`;
+      safeFillText(ctx, options.pixBannerText || "5% OFF À VISTA NO Pix", cw / 2, pixY + 36, cardW - 180, 12);
+      
+    } else if (style === "F") {
+      // === Estilo F: Vertical Sidebar ===
+      const sideW = isStory ? 200 : 150;
+      fillRoundRect(ctx, 0, 0, sideW, ch, 0, options.secondaryColor || "#F59E0B");
+      
+      // Texto Vertical
+      ctx.save();
+      ctx.translate(sideW / 2, ch / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = contrastOn(options.secondaryColor || "#F59E0B");
+      ctx.font = `900 36px ${sans}`;
+      safeFillText(ctx, (options.destination || "CRUZEIROS").toUpperCase(), 0, 0, ch - 200, 18);
+      ctx.restore();
+      
+      // Conteúdo flutuante na direita
+      const cX = sideW + (cw - sideW) / 2;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      
+      // Tag
+      fillRoundRect(ctx, sideW + 60, isStory ? 350 : 200, cw - sideW - 120, 60, 30, options.primaryColor || "#0C2340");
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `800 20px ${sans}`;
+      safeFillText(ctx, options.promoName || "Sua próxima viagem começa aqui", cX, isStory ? 380 : 230, cw - sideW - 180, 12);
+      
+      // Título
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `900 ${isStory ? 80 : 64}px ${sans}`;
+      safeFillText(ctx, options.destination || "Cruzeiros", cX, isStory ? 520 : 340, cw - sideW - 100, 24);
+      
+      // Card Parcelamento
+      const cardY = isStory ? 700 : 480;
+      const cardW = 380;
+      const cardH = 140;
+      fillRoundRect(ctx, cX - cardW / 2, cardY, cardW, cardH, 20, options.primaryColor || "#0C2340");
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `800 22px ${sans}`;
+      safeFillText(ctx, `EM ATÉ ${options.installments || "12X"}`, cX, cardY + 40, cardW - 40, 12);
+      ctx.fillStyle = options.secondaryColor || "#F59E0B";
+      ctx.font = `900 32px ${sans}`;
+      safeFillText(ctx, `R$ ${options.price}`, cX, cardY + 96, cardW - 40, 14);
+      
+    } else if (style === "G") {
+      // === Estilo G: Column Split ===
+      const colW = isStory ? 440 : 380;
+      fillRoundRect(ctx, 0, 0, colW, ch, 0, options.primaryColor || "#0C2340");
+      
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      
+      // Título da Marca
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `900 32px ${sans}`;
+      safeFillText(ctx, options.promoName || "VIAGEM PREMIUM", 40, isStory ? 120 : 60, colW - 80, 14);
+      
+      // Título / Destino
+      let destFsG = isStory ? 56 : 42;
+      ctx.font = `900 ${destFsG}px ${sans}`;
+      ctx.fillStyle = options.secondaryColor || "#F59E0B";
+      safeFillText(ctx, options.destination || "Combo 3 Praias", 40, isStory ? 200 : 120, colW - 80, 20);
+      
+      // Bullets com Checkmark
+      const bulletsG = (options.highlights || []).slice(0, 5);
+      bulletsG.forEach((b: any, idx) => {
+        const by = (isStory ? 340 : 210) + idx * 72;
+        drawMonoIcon(ctx, "check", 50, by + 12, 28, "#16a34a");
+        
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `700 22px ${sans}`;
+        ctx.textBaseline = "middle";
+        safeFillText(ctx, b.text || b, 90, by + 12, colW - 130, 12);
+      });
+      
+      // Bloco de Preço na base
+      const priceY = isStory ? 1250 : 700;
+      fillRoundRect(ctx, 30, priceY, colW - 60, 200, 20, "rgba(255,255,255,0.12)");
+      
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = options.secondaryColor || "#F59E0B";
+      ctx.font = `800 20px ${sans}`;
+      safeFillText(ctx, options.pricePrefix || "DE R$ 670 POR", colW / 2, priceY + 36, colW - 100, 12);
+      
+      ctx.fillStyle = "#ffffff";
+      let pfsG = 56;
+      ctx.font = `900 ${pfsG}px ${sans}`;
+      const priceStrG = `${options.currencySymbol || "R$"} ${options.price}`;
+      safeFillText(ctx, priceStrG, colW / 2, priceY + 100, colW - 100, 20);
+      
+      ctx.font = `700 18px ${sans}`;
+      ctx.fillStyle = options.secondaryColor || "#F59E0B";
+      safeFillText(ctx, options.paymentSuffix || "APENAS HOJE", colW / 2, priceY + 160, colW - 100, 12);
+      
+    } else if (style === "H") {
+      // === Estilo H: Header & Bottom Card ===
+      const headW = 960;
+      const headH = 88;
+      const headX = (cw - headW) / 2;
+      const headY = isStory ? 120 : 60;
+      fillRoundRect(ctx, headX, headY, headW, headH, headH / 2, options.primaryColor || "#0C2340");
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = `900 24px ${sans}`;
+      safeFillText(ctx, options.promoName || "EXCLUSIVO NAS LOJAS DECOLAR", cw / 2, headY + headH / 2, headW - 60, 12);
+      
+      // Card Inferior
+      const cardW = 1000;
+      const cardH = isStory ? 520 : 320;
+      const cardX = 40;
+      const cardY = isStory ? 1220 : 660;
+      fillRoundRect(ctx, cardX, cardY, cardW, cardH, 32, options.primaryColor || "#0C2340");
+      
+      // Título / Destino
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `900 ${isStory ? 48 : 38}px ${sans}`;
+      safeFillText(ctx, (options.destination || "CANCÚN").toUpperCase(), cardX + 60, cardY + 50, cardW - 120, 18);
+      
+      // Preço
+      const subCardW = 440;
+      const subCardH = isStory ? 300 : 160;
+      const subCardY = cardY + 140;
+      fillRoundRect(ctx, cardX + 40, subCardY, subCardW, subCardH, 20, "rgba(0,0,0,0.32)");
+      
+      ctx.fillStyle = "rgba(255,255,255,0.8)";
+      ctx.font = `700 18px ${sans}`;
+      safeFillText(ctx, options.paymentLabel || "SEM JUROS", cardX + 70, subCardY + 36, subCardW - 60, 12);
+      
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `900 48px ${sans}`;
+      safeFillText(ctx, `${options.installments || "12X"} R$ ${options.price}`, cardX + 70, subCardY + 100, subCardW - 60, 20);
+      
+      // Detalhes da viagem
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `800 26px ${sans}`;
+      safeFillText(ctx, "Voo + Hotel", cardX + cardW - 60, subCardY + 36, 400, 14);
+      safeFillText(ctx, options.travelPeriod || "5 NOITES", cardX + cardW - 60, subCardY + 110, 400, 14);
+    }
+  } else if (layoutJson && layoutJson.elements) {
+    // Passo 3: Parse do JSON Matemático antigo de elementos dinâmicos (Fallback de Segurança)
     for (const el of layoutJson.elements) {
       if (el.type === "box") {
         const hasBg = !!el.backgroundColor;
@@ -3469,16 +3832,13 @@ export async function renderIAPuraLayout(
         ctx.textBaseline = "top";
 
         const text = el.content || "";
-        // BLINDAGEM MESTRE: Margem direita rigorosa baseada na posição X do elemento para nunca estourar a tela
         const maxWidth = el.width || (cw - el.x - 40);
         
-        // AUTO-WRAP ultra-blindado com quebra de palavras longas (hifenização/split forçado)
         const words = text.split(" ");
         let line = "";
         let currentY = el.y;
         const lineHeight = fontSize * 1.25;
 
-        // Âncora horizontal conforme o alinhamento
         const getDrawX = (lineText: string) => {
           if (align === "center") return el.x + maxWidth / 2;
           if (align === "right") return el.x + maxWidth;
@@ -3487,17 +3847,12 @@ export async function renderIAPuraLayout(
 
         for (let n = 0; n < words.length; n++) {
           const word = words[n];
-          
-          // Se a palavra individual por si só já estoura o limite de largura máximo permitido
           if (ctx.measureText(word).width > maxWidth) {
-            // Descarrega o que já estava acumulado antes
             if (line) {
               ctx.fillText(line, getDrawX(line), currentY);
               currentY += lineHeight;
               line = "";
             }
-            
-            // Fatia a palavra letra por letra para caber no box
             let subWord = "";
             for (let charIdx = 0; charIdx < word.length; charIdx++) {
               const testCharLine = subWord + word[charIdx];
@@ -3522,8 +3877,6 @@ export async function renderIAPuraLayout(
             }
           }
         }
-        
-        // Desenha a última linha restante
         if (line) {
           ctx.fillText(line, getDrawX(line), currentY);
         }
