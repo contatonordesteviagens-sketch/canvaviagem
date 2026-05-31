@@ -1,8 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from "../_shared/fabricaAccess.ts";
+import { verifyFabricaEliteAccess } from "../_shared/fabricaAccess.ts";
 
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+const GEMINI_API_KEY = Deno.env.get("IA_PURA_GEMINI_KEY") || Deno.env.get("USER_GEMINI_API_KEY");
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -10,6 +14,16 @@ serve(async (req) => {
   }
 
   try {
+    const access = await verifyFabricaEliteAccess(req, corsHeaders);
+    if (!access.ok) return access.response;
+
+    if (!GEMINI_API_KEY) {
+      return new Response(JSON.stringify({ error: "Chave IA Pura não configurada no servidor. Adicione IA_PURA_GEMINI_KEY em Secrets." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const body = await req.json();
     const { format, destination, price, highlights, promoName, currencySymbol, duration, primaryColor, secondaryColor } = body;
     const isStory = format === "story";
@@ -18,7 +32,7 @@ serve(async (req) => {
 Destino: ${destination}
 Preço: ${currencySymbol} ${price}
 Duração: ${duration}
-Destaques: ${highlights ? highlights.join(", ") : ""}
+Destaques: ${Array.isArray(highlights) ? highlights.join(", ") : ""}
 Promoção: ${promoName}
 
 O formato do canvas é ${isStory ? "1080x1920" : "1080x1080"}.
@@ -61,39 +75,73 @@ Retorne EXCLUSIVAMENTE um JSON válido com a estrutura:
     }
   ]
 }
-Apenas o JSON, sem markdown.`;
+You MUST return ONLY the raw, minified JSON object. Do NOT wrap in markdown. Do NOT add any conversational text.`;
 
-    let provider = "gemini";
-    let jsonOutput = null;
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: "You are a layout designer. Respond ONLY with raw minified JSON. No markdown, no prose." }],
+        },
+        contents: [
+          { role: "user", parts: [{ text: promptText }] },
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          responseMimeType: "application/json",
+        },
+      }),
+    });
 
-    if (GEMINI_API_KEY) {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: promptText }] }],
-          generationConfig: {
-            responseMimeType: "application/json",
-            temperature: 0.7,
-          }
-        }),
+    if (response.status === 429) {
+      return new Response(JSON.stringify({ error: "Limite de requisições atingido. Tente novamente em instantes." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
-
-      const data = await response.json();
-      if (data.candidates && data.candidates[0].content.parts[0].text) {
-        jsonOutput = JSON.parse(data.candidates[0].content.parts[0].text);
-      }
+    }
+    if (response.status === 402) {
+      return new Response(JSON.stringify({ error: "Créditos da API de IA esgotados. Verifique a cobrança/limite da sua chave." }), {
+        status: 402,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (response.status === 400 || response.status === 401 || response.status === 403) {
+      return new Response(JSON.stringify({ error: "Chave IA Pura inválida, sem permissão ou com API desativada." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!response.ok) {
+      const errTxt = await response.text().catch(() => "");
+      console.error("Gemini API error:", response.status, errTxt);
+      return new Response(JSON.stringify({ error: "Falha na API de IA" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    if (!jsonOutput) {
-      throw new Error("Failed to generate layout JSON");
+    const data = await response.json();
+    const rawText: string = data?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("") ?? "";
+    if (!rawText) throw new Error("IA não retornou conteúdo.");
+
+    const cleaned = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+    const jsonOutput = JSON.parse(cleaned.substring(start, end + 1));
+
+    if (!jsonOutput || !Array.isArray(jsonOutput.elements)) {
+      throw new Error("JSON de layout inválido.");
     }
 
-    return new Response(JSON.stringify({ provider, layout: jsonOutput }), {
+    return new Response(JSON.stringify({ provider: "secure_gemini", layout: jsonOutput }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e: any) {
-    return new Response(JSON.stringify({ error: e.message }), {
+    console.error("fabrica-design-ai error:", e);
+    return new Response(JSON.stringify({ error: e?.message || "Erro desconhecido" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
