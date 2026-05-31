@@ -1,7 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from "../_shared/fabricaAccess.ts";
+import { verifyFabricaEliteAccess } from "../_shared/fabricaAccess.ts";
 
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+const GEMINI_API_KEY = Deno.env.get("IA_PURA_GEMINI_KEY") || Deno.env.get("USER_GEMINI_API_KEY");
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -9,8 +14,11 @@ serve(async (req) => {
   }
 
   try {
-    if (!LOVABLE_API_KEY) {
-      return new Response(JSON.stringify({ error: "LOVABLE_API_KEY não configurada no servidor." }), {
+    const access = await verifyFabricaEliteAccess(req, corsHeaders);
+    if (!access.ok) return access.response;
+
+    if (!GEMINI_API_KEY) {
+      return new Response(JSON.stringify({ error: "Chave IA Pura não configurada no servidor. Adicione IA_PURA_GEMINI_KEY em Secrets." }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -56,19 +64,22 @@ Retorne EXCLUSIVAMENTE um JSON válido com a estrutura:
 }
 You MUST return ONLY the raw, minified JSON object. Do NOT wrap in markdown. Do NOT add any conversational text.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: "You are a layout designer. Respond ONLY with raw minified JSON. No markdown, no prose." },
-          { role: "user", content: promptText },
+        systemInstruction: {
+          parts: [{ text: "You are a layout designer. Respond ONLY with raw minified JSON. No markdown, no prose." }],
+        },
+        contents: [
+          { role: "user", parts: [{ text: promptText }] },
         ],
-        temperature: 0.7,
+        generationConfig: {
+          temperature: 0.7,
+          responseMimeType: "application/json",
+        },
       }),
     });
 
@@ -79,22 +90,28 @@ You MUST return ONLY the raw, minified JSON object. Do NOT wrap in markdown. Do 
       });
     }
     if (response.status === 402) {
-      return new Response(JSON.stringify({ error: "Créditos de IA esgotados. Adicione créditos no workspace Lovable." }), {
+      return new Response(JSON.stringify({ error: "Créditos da API de IA esgotados. Verifique a cobrança/limite da sua chave." }), {
         status: 402,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (response.status === 400 || response.status === 401 || response.status === 403) {
+      return new Response(JSON.stringify({ error: "Chave IA Pura inválida, sem permissão ou com API desativada." }), {
+        status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     if (!response.ok) {
       const errTxt = await response.text().catch(() => "");
-      console.error("AI gateway error:", response.status, errTxt);
-      return new Response(JSON.stringify({ error: "Falha no gateway de IA" }), {
+      console.error("Gemini API error:", response.status, errTxt);
+      return new Response(JSON.stringify({ error: "Falha na API de IA" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const data = await response.json();
-    const rawText: string = data?.choices?.[0]?.message?.content ?? "";
+    const rawText: string = data?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("") ?? "";
     if (!rawText) throw new Error("IA não retornou conteúdo.");
 
     const cleaned = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
@@ -106,7 +123,7 @@ You MUST return ONLY the raw, minified JSON object. Do NOT wrap in markdown. Do 
       throw new Error("JSON de layout inválido.");
     }
 
-    return new Response(JSON.stringify({ provider: "lovable_ai", layout: jsonOutput }), {
+    return new Response(JSON.stringify({ provider: "secure_gemini", layout: jsonOutput }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e: any) {
