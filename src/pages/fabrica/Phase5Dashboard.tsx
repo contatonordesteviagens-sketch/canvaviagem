@@ -35,6 +35,23 @@ export const Phase5Dashboard = () => {
   const [showUrlHelp, setShowUrlHelp] = useState(false);
   const [showLivePreview, setShowLivePreview] = useState(false);
   const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
+
+  // Shortcut Shift+Ctrl+P to toggle Mobile Mode in Live Preview
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && (e.key === 'P' || e.key === 'p')) {
+        e.preventDefault();
+        setPreviewMode(prev => {
+          const next = prev === 'desktop' ? 'mobile' : 'desktop';
+          toast.success(next === 'mobile' ? "Modo Mobile (iPhone) Ativado! 📱" : "Modo Computador Ativado! 💻");
+          return next;
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const [isPublishing, setIsPublishing] = useState(false);
   
@@ -796,11 +813,32 @@ export const Phase5Dashboard = () => {
                <div className="bg-emerald-500/20 text-emerald-400 p-2 rounded-lg">
                  <Eye className="w-5 h-5" />
                </div>
-               <div>
+               <div className="hidden sm:block">
                  <h3 className="text-white font-black text-sm uppercase tracking-wider">Simulador de Site Ativo</h3>
                  <p className="text-[10px] text-white/50">Visualizando sua agência localmente antes da publicação oficial.</p>
                </div>
              </div>
+
+             {/* Seletor Dispositivo */}
+             <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/15">
+               <button
+                 onClick={() => setPreviewMode("desktop")}
+                 className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${
+                   previewMode === "desktop" ? "bg-white text-zinc-900 shadow" : "text-white/60 hover:text-white"
+                 }`}
+               >
+                 Computador
+               </button>
+               <button
+                 onClick={() => setPreviewMode("mobile")}
+                 className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${
+                   previewMode === "mobile" ? "bg-white text-zinc-900 shadow" : "text-white/60 hover:text-white"
+                 }`}
+               >
+                 Celular
+               </button>
+             </div>
+             
              <button 
                onClick={() => setShowLivePreview(false)}
                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 transition-all"
@@ -810,12 +848,35 @@ export const Phase5Dashboard = () => {
            </div>
            
            {/* Container do IFrame (Simulando o site rodando) */}
-           <div className="flex-1 bg-zinc-900 relative">
+           <div className="flex-1 bg-zinc-900 relative p-4 flex items-center justify-center overflow-auto">
              {previewBlobUrl ? (
                <iframe 
                  src={previewBlobUrl} 
-                 className="w-full h-full border-none"
+                 className={`bg-white transition-all duration-300 shadow-2xl ${
+                   previewMode === "mobile"
+                     ? "w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px]"
+                     : "w-full h-full border-none rounded-2xl"
+                 }`}
                  title="Preview Realtime do Site"
+                 onLoad={(e) => {
+                    const iframeWin = e.currentTarget.contentWindow;
+                    if (iframeWin) {
+                      iframeWin.addEventListener("keydown", (ev: KeyboardEvent) => {
+                        if (ev.ctrlKey && ev.shiftKey && (ev.key === 'P' || ev.key === 'p')) {
+                          ev.preventDefault();
+                          window.dispatchEvent(new KeyboardEvent("keydown", {
+                            key: ev.key,
+                            code: ev.code,
+                            ctrlKey: ev.ctrlKey,
+                            shiftKey: ev.shiftKey,
+                            altKey: ev.altKey,
+                            metaKey: ev.metaKey,
+                            bubbles: true
+                          }));
+                        }
+                      });
+                    }
+                  }}
                />
              ) : (
                <div className="absolute inset-0 flex items-center justify-center text-white/30 gap-2">

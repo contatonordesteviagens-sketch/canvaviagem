@@ -124,6 +124,22 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
         iframe.contentWindow.addEventListener("scroll", () => {
           iframeScrollY.current = iframe.contentWindow?.scrollY || 0;
         });
+
+        // Encaminhar atalhos de teclado (Shift+Ctrl+P) para a janela principal
+        iframe.contentWindow.addEventListener("keydown", (e: KeyboardEvent) => {
+          if (e.ctrlKey && e.shiftKey && (e.key === 'P' || e.key === 'p')) {
+            e.preventDefault();
+            window.dispatchEvent(new KeyboardEvent("keydown", {
+              key: e.key,
+              code: e.code,
+              ctrlKey: e.ctrlKey,
+              shiftKey: e.shiftKey,
+              altKey: e.altKey,
+              metaKey: e.metaKey,
+              bubbles: true
+            }));
+          }
+        });
       }
 
       // Inyectar estilos de hover, focus e indicador visual de edición
@@ -525,6 +541,22 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
   const previewHTML = buildLandingHTML(state, user?.id);
 
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
+
+  // Shortcut Shift+Ctrl+P to toggle Mobile Mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && (e.key === 'P' || e.key === 'p')) {
+        e.preventDefault();
+        setPreviewMode(prev => {
+          const next = prev === 'desktop' ? 'mobile' : 'desktop';
+          toast.success(next === 'mobile' ? "¡Modo Móvil (iPhone) Activado! 📱" : "¡Modo Computadora Activado! 💻");
+          return next;
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleDownload = () => {
     setDownloadCount((c) => c + 1);
