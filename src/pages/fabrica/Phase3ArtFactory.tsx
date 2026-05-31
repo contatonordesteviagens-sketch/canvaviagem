@@ -1567,61 +1567,21 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
       {/* Banner de provedor de IA */}
       {genMode === "ai" && (
-        <div className={`rounded-2xl p-4 border mb-6 ${
-          lastProvider === "user_gemini"
-            ? "bg-emerald-500/15 border-emerald-500/30"
-            : lastProvider === "lovable_ai"
-              ? "bg-blue-500/15 border-blue-500/30"
-              : "bg-white/[0.05] border-white/10"
-        }`}>
+        <div className="rounded-2xl p-4 border mb-6 bg-emerald-500/15 border-emerald-500/30">
           <div className="flex items-start gap-3">
-            <div className="text-2xl">
-              {lastProvider === "user_gemini" ? "🟢" : lastProvider === "lovable_ai" ? "🔵" : "⚡"}
-            </div>
+            <div className="text-2xl">🔐</div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold text-white">
-                {lastProvider === "user_gemini" && "Usando sua chave Gemini (grátis)"}
-                {lastProvider === "lovable_ai" && "Usando créditos da plataforma"}
-                {!lastProvider && "Provedor de IA configurado"}
-              </div>
+              <div className="text-sm font-bold text-white">IA Pura usando chave segura do servidor</div>
               <p className="text-[11px] text-white/60 leading-snug mt-0.5">
-                {lastProvider === "user_gemini" && (
-                  <>Cota gratuita do Google: ~1.500 imagens/dia. Cheque seu uso em <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline text-emerald-300">aistudio.google.com</a>.</>
-                )}
-                {lastProvider === "lovable_ai" && (
-                  <>Cada imagem consome créditos da plataforma.</>
-                )}
-                {!lastProvider && (
-                  <>Tentaremos primeiro sua chave Gemini gratuita. Se falhar, usa créditos da plataforma.</>
-                )}
+                A chave fica em Secrets do Lovable Cloud como <strong>IA_PURA_GEMINI_KEY</strong> e nunca aparece para usuários.
               </p>
               {/* Barra de progresso de créditos */}
-              {lastProvider !== "user_gemini" && (
+              {lastProvider && (
                 <div className="mt-2">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-[10px] text-white/40 uppercase tracking-wider">Créditos IA usados</span>
-                    <span className={`text-[11px] font-bold ${
-                      aiPureCount >= 20 ? "text-red-400" :
-                      aiPureCount >= 15 ? "text-amber-400" :
-                      "text-emerald-400"
-                    }`}>{aiPureCount}/20</span>
+                    <span className="text-[10px] text-white/40 uppercase tracking-wider">Gerações IA Pura hoje</span>
+                    <span className="text-[11px] font-bold text-emerald-400">{aiPureCount}</span>
                   </div>
-                  <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className={`h-1.5 rounded-full transition-all duration-500 ${
-                        aiPureCount >= 20 ? "bg-red-500" :
-                        aiPureCount >= 15 ? "bg-amber-400" :
-                        "bg-emerald-500"
-                      }`}
-                      style={{ width: `${Math.min(100, (aiPureCount / 20) * 100)}%` }}
-                    />
-                  </div>
-                  {aiPureCount >= 20 && (
-                    <p className="text-[10px] text-red-400 mt-1">⚡ Limite atingido. Conecte sua chave Gemini gratuita para continuar.</p>
-                  )}
-                  {aiPureCount >= 15 && aiPureCount < 20 && (
-                    <p className="text-[10px] text-amber-400 mt-1">⚠️ {20 - aiPureCount} gerações restantes nesta sessão.</p>
-                  )}
                 </div>
               )}
             </div>
