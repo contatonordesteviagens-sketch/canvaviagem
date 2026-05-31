@@ -3441,31 +3441,69 @@ export async function renderIAPuraLayout(
         const family = el.fontFamily || options.fontFamily || "Inter";
         const fontSize = el.fontSize || 32;
         ctx.font = `${weight} ${fontSize}px "${family}"`;
-        ctx.textAlign = el.textAlign || "left";
+        const align = el.textAlign || "left";
+        ctx.textAlign = align;
         ctx.textBaseline = "top";
 
         const text = el.content || "";
-        const maxWidth = el.width || (cw - 100);
+        // BLINDAGEM MESTRE: Margem direita rigorosa baseada na posição X do elemento para nunca estourar a tela
+        const maxWidth = el.width || (cw - el.x - 40);
         
-        // AUTO-WRAP inteligente para o texto não vazar da tela de jeito nenhum
+        // AUTO-WRAP ultra-blindado com quebra de palavras longas (hifenização/split forçado)
         const words = text.split(" ");
         let line = "";
         let currentY = el.y;
         const lineHeight = fontSize * 1.25;
 
+        // Âncora horizontal conforme o alinhamento
+        const getDrawX = (lineText: string) => {
+          if (align === "center") return el.x + maxWidth / 2;
+          if (align === "right") return el.x + maxWidth;
+          return el.x;
+        };
+
         for (let n = 0; n < words.length; n++) {
-          const testLine = line ? `${line} ${words[n]}` : words[n];
-          const metrics = ctx.measureText(testLine);
-          const testWidth = metrics.width;
-          if (testWidth > maxWidth && n > 0) {
-            ctx.fillText(line, el.x, currentY);
-            line = words[n];
-            currentY += lineHeight;
+          const word = words[n];
+          
+          // Se a palavra individual por si só já estoura o limite de largura máximo permitido
+          if (ctx.measureText(word).width > maxWidth) {
+            // Descarrega o que já estava acumulado antes
+            if (line) {
+              ctx.fillText(line, getDrawX(line), currentY);
+              currentY += lineHeight;
+              line = "";
+            }
+            
+            // Fatia a palavra letra por letra para caber no box
+            let subWord = "";
+            for (let charIdx = 0; charIdx < word.length; charIdx++) {
+              const testCharLine = subWord + word[charIdx];
+              if (ctx.measureText(testCharLine).width > maxWidth) {
+                ctx.fillText(subWord, getDrawX(subWord), currentY);
+                currentY += lineHeight;
+                subWord = word[charIdx];
+              } else {
+                subWord = testCharLine;
+              }
+            }
+            line = subWord;
           } else {
-            line = testLine;
+            const testLine = line ? `${line} ${word}` : word;
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth && n > 0) {
+              ctx.fillText(line, getDrawX(line), currentY);
+              line = word;
+              currentY += lineHeight;
+            } else {
+              line = testLine;
+            }
           }
         }
-        ctx.fillText(line, el.x, currentY);
+        
+        // Desenha a última linha restante
+        if (line) {
+          ctx.fillText(line, getDrawX(line), currentY);
+        }
         ctx.textAlign = "left"; // reset
       }
     }
