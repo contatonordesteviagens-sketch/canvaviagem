@@ -1337,99 +1337,47 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         return;
       }
 
-      // ===== MODO IA PURA: MOTOR DE LAYOUT DINÂMICO =====
+      // ===== MODO IA PURA: MOTOR DE LAYOUT DINÂMICO (via Lovable AI Gateway) =====
       if (genMode === "ai") {
         const refImage = selectedPhotoUrl;
         if (!refImage) {
-          toast.error("Por favor, busque e selecione uma Foto Real na galeria para a IA desenhar por cima.");
-          setLoading(false);
-          return;
-        }
-
-        const userGeminiKey = localStorage.getItem("user_gemini_api_key");
-        if (!userGeminiKey) {
-          toast.error("Por favor, configure sua Chave do Gemini na seção 'Configurações de IA' abaixo.");
+          toast.error("Selecione uma Foto Real na galeria para a IA desenhar por cima.");
           setLoading(false);
           return;
         }
 
         toast.info("Iniciando IA Designer v3...");
 
-        let parsedHighlights: string[] = [];
-        try { parsedHighlights = JSON.parse(highlights || "[]"); } catch {}
+        const highlightTexts: string[] = (highlights || []).map((h: any) =>
+          typeof h === "string" ? h : (h?.text || "")
+        ).filter(Boolean);
 
         try {
-          const promptText = `Crie um layout moderno e de alta conversão para um pacote de viagem.
-Destino: ${destination || "Destino"}
-Preço: ${currencySymbol} ${formattedPriceForAd || price}
-Duração: ${travelPeriod || "5 NOITES"}
-Destaques: ${parsedHighlights.join(", ")}
-Promoção: ${promoName || "OFERTA ESPECIAL"}
-
-O formato do canvas é ${format === "story" ? "1080x1920" : "1080x1080"}.
-Crie blocos translúcidos e posicionamento de textos.
-
-Retorne EXCLUSIVAMENTE um JSON válido com a estrutura:
-{
-  "elements": [
-    {
-      "type": "box",
-      "x": 50,
-      "y": ${format === "story" ? "1400" : "800"},
-      "width": 980,
-      "height": 200,
-      "backgroundColor": "rgba(0,0,0,0.6)",
-      "borderRadius": 24
-    },
-    {
-      "type": "text",
-      "x": 100,
-      "y": ${format === "story" ? "1450" : "850"},
-      "content": "${(destination || "Destino").toUpperCase()}",
-      "fontSize": 64,
-      "fontFamily": "Inter",
-      "color": "#FFFFFF",
-      "fontWeight": "bold"
-    }
-  ]
-}
-Apenas o JSON, sem markdown. CRITICAL: You MUST return ONLY the raw, minified JSON object.`;
-
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userGeminiKey}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ role: "user", parts: [{ text: promptText }] }],
-              generationConfig: {
-                responseMimeType: "application/json",
-                temperature: 0.7,
-              }
-            }),
+          const { data: aiData, error: aiError } = await supabase.functions.invoke("fabrica-design-ai", {
+            body: {
+              format,
+              destination: destination || "Destino",
+              price: formattedPriceForAd || price,
+              duration: travelPeriod || "5 NOITES",
+              highlights: highlightTexts,
+              promoName: promoName || "OFERTA ESPECIAL",
+              currencySymbol,
+            },
           });
 
-          if (!response.ok) throw new Error("Falha na chamada direta à API do Gemini. Verifique sua chave.");
-          
-          const data = await response.json();
-          const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (!rawText) throw new Error("JSON não retornado pela IA.");
-
-          let layoutJson = null;
-          try {
-            const cleaned = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-            const start = cleaned.indexOf("{");
-            const end = cleaned.lastIndexOf("}");
-            layoutJson = JSON.parse(cleaned.substring(start, end + 1));
-          } catch (e) {
-            console.error("Erro no parse do JSON da IA:", e);
-            throw new Error("A IA retornou um formato inválido.");
+          if (aiError) throw new Error(aiError.message || "Falha na IA");
+          if ((aiData as any)?.error) throw new Error((aiData as any).error);
+          const layoutJson = (aiData as any)?.layout;
+          if (!layoutJson || !Array.isArray(layoutJson.elements)) {
+            throw new Error("Layout inválido retornado pela IA.");
           }
 
-          if (!layoutJson || !Array.isArray(layoutJson.elements)) throw new Error("JSON de layout inválido.");
+          const { renderIAPuraLayout, reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
 
-          const { renderIAPuraLayout } = await import("@/lib/fabrica-compose-art");
-          
-          const canvas = document.createElement("canvas");
           const isStory = format === "story";
+          const reframedBg = await reframeImageToAspect(refImage, format);
+
+          const canvas = document.createElement("canvas");
           canvas.width = 1080;
           canvas.height = isStory ? 1920 : 1080;
           const ctx = canvas.getContext("2d");
@@ -1440,7 +1388,7 @@ Apenas o JSON, sem markdown. CRITICAL: You MUST return ONLY the raw, minified JS
             destination: destination || "Destino",
             price: formattedPriceForAd || price,
             travelPeriod: travelPeriod || "5 NOITES",
-            highlights: parsedHighlights,
+            highlights: (highlights || []) as any,
             promoName: promoName || "OFERTA ESPECIAL",
             primaryColor,
             secondaryColor,
@@ -1458,49 +1406,23 @@ Apenas o JSON, sem markdown. CRITICAL: You MUST return ONLY the raw, minified JS
             titleScale,
             descScale,
             textColorOverride,
-          }, layoutJson);
+            imageUrl: reframedBg,
+          } as any, layoutJson as any);
 
-          const iaLayerBase64 = canvas.toDataURL("image/png", 0.9);
-          
-          const finalCanvas = document.createElement("canvas");
-          finalCanvas.width = 1080;
-          finalCanvas.height = isStory ? 1920 : 1080;
-          const fCtx = finalCanvas.getContext("2d");
-          if (!fCtx) throw new Error("Erro no canvas final");
-
-          const bgImg = new Image();
-          bgImg.crossOrigin = "anonymous";
-          const bgLoaded = new Promise((res, rej) => {
-            bgImg.onload = res;
-            bgImg.onerror = rej;
-          });
-          bgImg.src = refImage;
-          await bgLoaded;
-          
-          const { reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
-          await reframeImageToAspect(fCtx, bgImg, isStory ? "story" : "square");
-
-          const overlayImg = new Image();
-          const overlayLoaded = new Promise((res) => { overlayImg.onload = res; });
-          overlayImg.src = iaLayerBase64;
-          await overlayLoaded;
-
-          fCtx.drawImage(overlayImg, 0, 0, finalCanvas.width, finalCanvas.height);
-          
-          const finalImageUrl = finalCanvas.toDataURL("image/png", 0.9);
+          const finalImageUrl = canvas.toDataURL("image/png", 0.9);
 
           setGeneratedImages([finalImageUrl]);
           setGeneratedImage(finalImageUrl);
-          
+
           const currentGenerated = state.allGeneratedAdImages || [];
           const updatedGenerated = [finalImageUrl, ...currentGenerated].slice(0, 10);
-          update({ 
-            generatedAdImage: finalImageUrl, 
+          update({
+            generatedAdImage: finalImageUrl,
             allGeneratedAdImages: updatedGenerated
           });
-          
+
           await syncGeneratedPackageToSite(finalImageUrl, refImage);
-          
+
           toast.success("Design Dinâmico gerado com sucesso pela IA!");
 
           const newCount = generationCount + 1;
@@ -1511,14 +1433,14 @@ Apenas o JSON, sem markdown. CRITICAL: You MUST return ONLY the raw, minified JS
           requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
         } catch (error: any) {
           console.error("ERRO_IA_PURA_CATCH:", error);
-          toast.error("Erro ao gerar design da IA: " + error.message);
-          
-          toast.info("Carregando layout de segurança (V0) devido à falha da IA...");
+          toast.error("Erro ao gerar design da IA: " + (error?.message || "desconhecido"));
+
+          toast.info("Carregando layout de segurança (V0)...");
           setForcedVariant(0);
           setGenMode("photo");
           setTimeout(() => generate(), 500);
         }
-        
+
         return;
       }
 
@@ -1876,35 +1798,11 @@ Apenas o JSON, sem markdown. CRITICAL: You MUST return ONLY the raw, minified JS
             </button>
           </div>
 
-          {/* Campo de Chave Gemini — visível apenas no modo IA Pura */}
+          {/* Modo IA Pura — sem chave necessária, processado no servidor Lovable Cloud */}
           {genMode === "ai" && (
-            <div className="mt-3 p-3 rounded-xl border border-amber-400/20 bg-amber-500/5">
-              <label className="block text-[11px] font-bold text-amber-200/80 uppercase tracking-widest mb-1.5">
-                🔑 Chave Gemini (obrigatória para IA Pura)
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="password"
-                  defaultValue={typeof window !== "undefined" ? (localStorage.getItem("user_gemini_api_key") || "") : ""}
-                  placeholder="Cole aqui sua API Key (AIza...)"
-                  onChange={(e) => {
-                    const v = e.target.value.trim();
-                    if (v) localStorage.setItem("user_gemini_api_key", v);
-                    else localStorage.removeItem("user_gemini_api_key");
-                  }}
-                  className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-amber-400/40"
-                />
-                <a
-                  href="https://aistudio.google.com/app/apikey"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 text-[11px] font-bold whitespace-nowrap transition-colors"
-                >
-                  Obter chave →
-                </a>
-              </div>
-              <p className="text-[10px] text-white/40 mt-1.5">
-                Salva localmente no seu navegador. Pegue grátis em aistudio.google.com/app/apikey
+            <div className="mt-3 p-3 rounded-xl border border-emerald-400/20 bg-emerald-500/5">
+              <p className="text-[11px] text-emerald-200/90 leading-relaxed">
+                ✨ <strong>IA Pura ativada.</strong> A geração roda no servidor (Lovable Cloud) — você não precisa configurar nenhuma chave. É só selecionar uma foto real e clicar em gerar.
               </p>
             </div>
           )}
@@ -2729,30 +2627,7 @@ Apenas o JSON, sem markdown. CRITICAL: You MUST return ONLY the raw, minified JS
           </p>
         </div>
         
-        {/* Configurações de IA (Gemini Key) */}
-        {genMode === "ai" && (
-          <div className="bg-white/[0.03] border border-emerald-500/30 rounded-xl p-4 mb-4">
-            <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-              <Key className="w-3.5 h-3.5" />
-              Sua Chave API do Gemini
-            </h4>
-            <p className="text-[10px] text-white/50 mb-3 leading-relaxed">
-              Para usar o motor de IA Pura sem passar pelo servidor, cole sua chave do Google Gemini abaixo. 
-              Ela fica salva <strong>apenas no seu navegador local</strong> (é 100% segura e invisível para o público).
-            </p>
-            <input
-              type="password"
-              placeholder="AIzaSy..."
-              className={`${inputCls} font-mono text-xs`}
-              value={localStorage.getItem("user_gemini_api_key") || ""}
-              onChange={(e) => {
-                localStorage.setItem("user_gemini_api_key", e.target.value);
-                // force re-render by dispatching a fake state update
-                update({} as any);
-              }}
-            />
-          </div>
-        )}
+        {/* IA Pura agora roda no servidor — chave não é mais necessária */}
 
         {/* Feature: Lote A/B (3 variações) */}
         <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 flex items-center justify-between gap-4 hover:bg-white/[0.05] transition-colors cursor-pointer group" onClick={() => setIsBatchMode(!isBatchMode)}>
