@@ -3437,7 +3437,68 @@ export async function renderIAPuraLayout(
   ctx.fillRect(0, gradY, cw, ch - gradY);
 
   if (layoutJson && layoutJson.elements) {
-    // Passo 3: Parse do JSON Matemático antigo de elementos dinâmicos (Fallback de Segurança)
+    // Passo 3: Parse do JSON Matemático de elementos dinâmicos com Auto-Layout e Auto-Contrast
+    
+    // 1. Pré-processamento de Auto-Layout para ajustar o tamanho dos Boxes que possuem texto interno
+    for (const textEl of layoutJson.elements) {
+      if (textEl.type === "text") {
+        const family = textEl.fontFamily || options.fontFamily || "Inter";
+        const fontSize = textEl.fontSize || 32;
+        const weight = textEl.fontWeight || "bold";
+        ctx.font = `${weight} ${fontSize}px "${family}"`;
+        
+        const text = textEl.content || "";
+        const maxWidth = textEl.width || (cw - textEl.x - 40);
+        
+        // Simular quebra de linha para calcular a altura real ocupada pelo texto
+        const words = text.split(" ");
+        let line = "";
+        let lineCount = 1;
+        
+        for (let n = 0; n < words.length; n++) {
+          const word = words[n];
+          const testLine = line ? `${line} ${word}` : word;
+          if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+            line = word;
+            lineCount++;
+          } else {
+            line = testLine;
+          }
+        }
+        
+        const lineHeight = fontSize * 1.25;
+        const totalTextHeight = lineCount * lineHeight;
+        
+        // Procurar se esse texto está dentro de algum Box
+        for (const boxEl of layoutJson.elements) {
+          if (boxEl.type === "box") {
+            const isInside = 
+              textEl.x >= boxEl.x - 5 &&
+              textEl.x <= boxEl.x + (boxEl.width || 0) + 5 &&
+              textEl.y >= boxEl.y - 5 &&
+              textEl.y <= boxEl.y + (boxEl.height || 0) + 5;
+              
+            if (isInside) {
+              // Auto-Layout: Ajustar altura do Box para acomodar o texto + padding vertical correspondente
+              const verticalOffset = textEl.y - boxEl.y;
+              const padding = Math.max(20, verticalOffset); 
+              const neededHeight = verticalOffset + totalTextHeight + padding;
+              
+              if ((boxEl.height || 0) < neededHeight) {
+                boxEl.height = neededHeight;
+              }
+              
+              // Auto-Contrast: Se a cor do texto conflitar com a cor de fundo do Box, corrige usando ensureContrast!
+              if (boxEl.backgroundColor && textEl.color) {
+                textEl.color = ensureContrast(textEl.color, boxEl.backgroundColor, 0.4);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // 2. Renderização real com os tamanhos e cores ajustados pelo Auto-Layout e Auto-Contrast
     for (const el of layoutJson.elements) {
       if (el.type === "box") {
         const hasBg = !!el.backgroundColor;
