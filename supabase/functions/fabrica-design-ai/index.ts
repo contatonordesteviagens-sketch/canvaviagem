@@ -189,10 +189,39 @@ Retorne APENAS o JSON puro.`;
     const rawText: string = data?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("") ?? "";
     if (!rawText) throw new Error("IA não retornou conteúdo.");
 
-    const cleaned = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
-    const start = cleaned.indexOf("{");
-    const end = cleaned.lastIndexOf("}");
-    const jsonOutput = JSON.parse(cleaned.substring(start, end + 1));
+    // Robust Bracket-Matching Extractor to securely isolate the layout JSON
+    const extractJSON = (str: string): any => {
+      const firstOpen = str.indexOf("{");
+      if (firstOpen === -1) throw new Error("Não foi encontrado início de objeto JSON ({) na resposta.");
+      
+      let count = 0;
+      for (let i = firstOpen; i < str.length; i++) {
+        if (str[i] === "{") {
+          count++;
+        } else if (str[i] === "}") {
+          count--;
+          if (count === 0) {
+            const candidate = str.substring(firstOpen, i + 1);
+            try {
+              return JSON.parse(candidate);
+            } catch (e) {
+              // Fail silently to search next block
+            }
+          }
+        }
+      }
+      
+      // Fallback: try simple string boundaries
+      const lastClose = str.lastIndexOf("}");
+      if (lastClose !== -1 && lastClose > firstOpen) {
+        try {
+          return JSON.parse(str.substring(firstOpen, lastClose + 1));
+        } catch (e) {}
+      }
+      throw new Error("Formato JSON corrompido ou chaves desalinhadas.");
+    };
+    
+    const jsonOutput = extractJSON(rawText);
 
     if (!jsonOutput || !Array.isArray(jsonOutput.elements)) {
       throw new Error("JSON de layout dinâmico inválido.");

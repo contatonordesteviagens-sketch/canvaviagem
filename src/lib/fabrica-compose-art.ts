@@ -43,11 +43,37 @@ function contrastOn(bg: string): string {
  * Garante contraste mínimo entre `fg` (cor preferida do usuario) e `bg`.
  * Se a diferenca de luminância for baixa, devolve preto/branco em vez de `fg`.
  */
+function getContrastRatio(hex1: string, hex2: string): number {
+  const getRGB = (hex: string) => {
+    let cleanHex = (hex || "").trim().replace("#", "");
+    if (cleanHex.length === 3) cleanHex = cleanHex.split("").map((c) => c + c).join("");
+    if (cleanHex.length !== 6) return [0.5, 0.5, 0.5];
+    const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
+    const g = parseInt(cleanHex.substring(2, 4), 16) / 255;
+    const b = parseInt(cleanHex.substring(4, 6), 16) / 255;
+    return [r, g, b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+  };
+  
+  const [r1, g1, b1] = getRGB(hex1);
+  const [r2, g2, b2] = getRGB(hex2);
+  
+  const l1 = 0.2126 * r1 + 0.7152 * g1 + 0.0722 * b1;
+  const l2 = 0.2126 * r2 + 0.7152 * g2 + 0.0722 * b2;
+  
+  const brightest = Math.max(l1, l2);
+  const darkest = Math.min(l1, l2);
+  
+  return (brightest + 0.05) / (darkest + 0.05);
+}
+
 function ensureContrast(fg: string, bg: string, minDelta = 0.35): string {
+  const ratio = getContrastRatio(fg, bg);
+  if (ratio >= 4.5) return fg; // WCAG AA standard
   const dl = Math.abs(luminance(fg) - luminance(bg));
   if (dl >= minDelta) return fg;
   return contrastOn(bg);
 }
+
 
 export type PaymentMode =
   | "installments"
@@ -3473,19 +3499,45 @@ export async function renderIAPuraLayout(
         for (const boxEl of layoutJson.elements) {
           if (boxEl.type === "box") {
             const isInside = 
-              textEl.x >= boxEl.x - 5 &&
-              textEl.x <= boxEl.x + (boxEl.width || 0) + 5 &&
-              textEl.y >= boxEl.y - 5 &&
-              textEl.y <= boxEl.y + (boxEl.height || 0) + 5;
+              textEl.x >= boxEl.x - 10 &&
+              textEl.x <= boxEl.x + (boxEl.width || 0) + 10 &&
+              textEl.y >= boxEl.y - 10 &&
+              textEl.y <= boxEl.y + (boxEl.height || 0) + 10;
               
             if (isInside) {
-              // Auto-Layout: Ajustar altura do Box para acomodar o texto + padding vertical correspondente
+              // Auto-Layout: Ajustar altura e largura do Box dinamicamente
               const verticalOffset = textEl.y - boxEl.y;
-              const padding = Math.max(20, verticalOffset); 
-              const neededHeight = verticalOffset + totalTextHeight + padding;
+              const paddingY = Math.max(20, verticalOffset); 
+              const neededHeight = verticalOffset + totalTextHeight + paddingY;
               
               if ((boxEl.height || 0) < neededHeight) {
                 boxEl.height = neededHeight;
+              }
+
+              // Medição de largura real máxima de linha
+              let maxLineWidth = 0;
+              let tempLine = "";
+              for (let n = 0; n < words.length; n++) {
+                const word = words[n];
+                const testLine = tempLine ? `${tempLine} ${word}` : word;
+                if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+                  const wMetrics = ctx.measureText(tempLine).width;
+                  if (wMetrics > maxLineWidth) maxLineWidth = wMetrics;
+                  tempLine = word;
+                } else {
+                  tempLine = testLine;
+                }
+              }
+              if (tempLine) {
+                const wMetrics = ctx.measureText(tempLine).width;
+                if (wMetrics > maxLineWidth) maxLineWidth = wMetrics;
+              }
+              
+              const horizontalOffset = textEl.x - boxEl.x;
+              const paddingX = Math.max(30, horizontalOffset);
+              const neededWidth = horizontalOffset + maxLineWidth + paddingX;
+              if ((boxEl.width || 0) < neededWidth) {
+                boxEl.width = neededWidth;
               }
               
               // Auto-Contrast: Se a cor do texto conflitar com a cor de fundo do Box, corrige usando ensureContrast!
