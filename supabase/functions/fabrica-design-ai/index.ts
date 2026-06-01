@@ -125,7 +125,7 @@ Retorne APENAS o JSON puro. Não envolva em markdown. Não escreva explicações
     const end = cleaned.lastIndexOf("}");
     const jsonOutput = JSON.parse(cleaned.substring(start, end + 1));
 
-    if (!jsonOutput || !Array.isArray(jsonOutput.elements)) {
+    if (!jsonOutput || !jsonOutput.style) {
       throw new Error("JSON de layout inválido.");
     }
 

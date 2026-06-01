@@ -27,11 +27,11 @@ import { MobileFloatingCTA } from "@/components/planos/MobileFloatingCTA";
 import { ProductDemo } from "@/components/planos/ProductDemo";
 
 const STRIPE = {
-  monthly: "https://checkout.ticto.app/O92B5A71E",
-  annual: "https://checkout.ticto.app/O8EBF4E91",
-  // Elite — Payment Links reais da Ticto
-  elite_monthly: "https://checkout.ticto.app/O15C50840",
-  elite_annual: "https://checkout.ticto.app/OEABD4A5A",
+  monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
+  annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
+  // Elite — Payment Links reais da Stripe
+  elite_monthly: "https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c",
+  elite_annual: "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d",
 };
 
 const ABACATE_PIX_LINKS = {
