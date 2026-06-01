@@ -1363,14 +1363,15 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   secondaryColor,
                   variation: idx + 1,
                   excludeStyles: exclude,
-                  userGeminiKey: localStorage.getItem("user_gemini_api_key") || ""
+                  userGeminiKey: localStorage.getItem("user_gemini_api_key") || "",
+                  timestamp: Date.now() + Math.random().toString(36).substring(7)
                 },
               });
 
               if (aiError) throw new Error(aiError.message || "Falha na IA");
               if ((aiData as any)?.error) throw new Error((aiData as any).error);
               const layoutJson = (aiData as any)?.layout;
-              if (!layoutJson || !layoutJson.style) {
+              if (!layoutJson || (!layoutJson.style && !layoutJson.elements)) {
                 throw new Error("Estilo de design inválido retornado pela IA.");
               }
               return layoutJson;

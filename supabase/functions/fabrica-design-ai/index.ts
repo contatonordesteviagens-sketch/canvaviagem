@@ -35,62 +35,84 @@ serve(async (req) => {
       duration, 
       primaryColor, 
       secondaryColor,
-      variation,
-      excludeStyles
+      variation
     } = body;
     const isStory = format === "story";
+    const width = 1080;
+    const height = isStory ? 1920 : 1080;
+    const safeY = isStory ? 1500 : 850;
 
-    // Formatar exclusões se existirem
-    const exclusionsText = Array.isArray(excludeStyles) && excludeStyles.length > 0
-      ? `\nCRITICAL RESTRICTION: You MUST NOT select any of the following styles: ${excludeStyles.join(", ")}. They are strictly prohibited for this variation to ensure design variety.`
-      : "";
+    const inputPrimary = primaryColor || "#0C2340";
+    const inputSecondary = secondaryColor || "#F59E0B";
 
-    const variationText = variation
-      ? `\nThis is variation index/number: ${variation}. Please select a style that maximizes visual diversity and aesthetic appeal relative to other styles.`
-      : "";
+    const promptText = `Você é um Engenheiro de UI/UX sênior e Diretor de Arte de alta fidelidade.
+Seu objetivo é projetar e compor matematicamente um layout de anúncio de viagem impressionante sobre uma imagem de fundo (que já está inserida no canvas).
+Você deve calcular e posicionar perfeitamente as caixas de fundo e os textos para que nada fique desalinhado ou ultrapasse a tela.
 
-    const promptText = `Analise os dados do pacote de viagem abaixo e selecione qual dos 8 Estilos Premium de design é o mais adequado e elegante para este anúncio:
+DIMENSÕES DO CANVAS E REGRAS DE LAYOUT:
+- Largura (width): ${width}px
+- Altura (height): ${height}px
+- ZONA MORTA (RODAPÉ): Nunca posicione nenhuma caixa ou texto abaixo de Y = ${safeY}px (Y > ${safeY} é reservado estritamente para o branding/logo e contatos da agência que serão renderizados por cima).
 
-DADOS DO ANÚNCIO:
-- Título/Destino: ${destination}
+CORES OBRIGATÓRIAS DA IDENTIDADE DO CLIENTE:
+- Cor Primária (Fundo dos cartões/caixas principais, painéis): ${inputPrimary}
+- Cor Secundária (Destaques comerciais, badges, faixas secundárias, preços, pílulas de destaque): ${inputSecondary}
+- Para textos sobre fundo escuro (como ${inputPrimary}), use a cor branca ("#FFFFFF"). Para textos sobre fundo claro, use preto/cinza-escuro ("#111111").
+
+DADOS DINÂMICOS DO PACOTE DE VIAGEM A INSERIR NO DESIGN:
+- Destino/Título Principal: ${destination}
 - Preço: ${currencySymbol} ${price}
-- Duração/Período: ${duration}
-- Destaques/Inclusos: ${Array.isArray(highlights) ? highlights.join(", ") : ""}
-- Nome da Promoção: ${promoName}
-${exclusionsText}${variationText}
+- Período/Duração: ${duration}
+- Benefícios/Highlights (Gere pequenas caixas ou linhas para estes itens): ${Array.isArray(highlights) ? highlights.join(", ") : ""}
+- Chamada da Promoção (badge de destaque): ${promoName}
 
-OS 8 ESTILOS PREMIUM DISPONÍVEIS:
+CRITICAL REQUIREMENT FOR DIVERSITY:
+This is generation request number: ${variation || 1}. You MUST use this variation seed to design a radically unique structural layout:
+- If variation is 1: Focus strictly on bottom-heavy layouts (main cards, prices, and benefits aligned at the bottom of the canvas, between Y = ${isStory ? 800 : 450} and Y = ${safeY}).
+- If variation is 2: Focus strictly on split/sidebar layouts (main boxes and elements aligned horizontally either strictly to the left or strictly to the right).
+- If variation is 3: Focus strictly on floating, minimalist, highly transparent cards or central capsules located near the center of the canvas.
+DO NOT repeat the same coordinates from previous variations. Maximize structural variety!
 
-Estilo A: "New York Editorial" (Foco: Elegância com Serifa clássica)
-- Ideal para hotéis urbanos sofisticados, resorts tradicionais e destinos clássicos.
+GERAÇÃO DO DESIGN:
+Você deve planejar o layout criando uma composição harmoniosa. Insira:
+1. Pelo menos uma caixa de fundo de cartão ("box") com cantos arredondados usando a Cor Primária (${inputPrimary}) ou uma opacidade translúcida como "rgba(12, 35, 64, 0.85)".
+2. Elementos de texto ("text") posicionados perfeitamente em cima dessas caixas, calculando corretamente o 'x', 'y', 'width' (largura disponível) e 'height'.
+3. Uma pílula de destaque/badge ("box") com a Cor Secundária (${inputSecondary}) para destacar a chamada "${promoName}".
+4. O preço em tamanho de fonte gigante (ex: 64px a 96px) posicionado para alto impacto.
+5. Outros detalhes (período, lista de benefícios) organizados de forma limpa.
 
-Estilo B: "Caribe Resort" (Foco: Card translúcido lateral para benefícios e badge de oferta destacado)
-- Ideal para resorts de praia, all-inclusive e pacotes com fotos vibrantes.
+Retorne EXCLUSIVAMENTE um objeto JSON válido contendo a raiz 'elements' (array de objetos). Não envolva em markdown. Não escreva explicações fora do JSON.
+Cada elemento no array 'elements' deve seguir estritamente um destes formatos:
 
-Estilo C: "Quiet Luxury Safari" (Foco: Minimalismo extremo, logo centralizado no topo, fontes finas serifadas e amplo espaço de respiro)
-- Ideal para ecoturismo, safáris, viagens de lua de mel e experiências exclusivas.
-
-Estilo D: "Jaecoo / Jeep Premium" (Foco: Bloco na base com colunas horizontais de benefícios e destaque comercial)
-- Ideal para aluguel de carros, destinos de aventura e apelo comercial.
-
-Estilo E: "Circuito Central Card" (Foco: Card flutuante centralizado na metade superior)
-- Ideal para circuitos rodoviários ou europeus.
-
-Estilo F: "Vertical Sidebar" (Foco: Faixa vertical amarela/secundária no canto esquerdo com o logo no topo)
-- Ideal para cruzeiros, resorts náuticos ou anúncios institucionais de marca forte.
-
-Estilo G: "Column Split" (Foco: Divisão vertical exata de tela, esquerda sólida com destinos e direita exibindo a foto)
-- Altamente recomendado sempre que o Título/Destino contiver palavras como "Combo", "Roteiro", "Circuito" ou se listar múltiplos destinos (ex: "Combo 3 Praias", "Roteiro do Cangaço").
-
-Estilo H: "Header & Bottom Card" (Foco: Cabeçalho estreito no topo e grande bloco detalhado na base)
-- Ideal para ofertas de voos ou pacotes aéreos rápidos.
-
-Retorne EXCLUSIVAMENTE um objeto JSON válido com o estilo selecionado e a justificativa:
+Se type for "box":
 {
-  "style": "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H",
-  "justification": "Uma frase explicando por que este estilo combina perfeitamente com os dados do anúncio."
+  "type": "box",
+  "x": number,
+  "y": number,
+  "width": number,
+  "height": number,
+  "backgroundColor": string (aceita hex ou rgba),
+  "borderColor": string (opcional),
+  "borderWidth": number (opcional),
+  "borderRadius": number (opcional)
 }
-Retorne APENAS o JSON puro. Não envolva em markdown. Não escreva explicações fora do JSON.`;
+
+Se type for "text":
+{
+  "type": "text",
+  "x": number,
+  "y": number,
+  "width": number,
+  "height": number,
+  "content": string (texto dinâmico mapeado),
+  "color": string (hex/rgb),
+  "fontSize": number (em pixels),
+  "fontFamily": "Inter" | "Playfair Display" | "Arial",
+  "fontWeight": "bold" | "normal" | "900",
+  "textAlign": "left" | "center" | "right"
+}
+
+Retorne APENAS o JSON puro.`;
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
@@ -99,13 +121,13 @@ Retorne APENAS o JSON puro. Não envolva em markdown. Não escreva explicações
       },
       body: JSON.stringify({
         systemInstruction: {
-          parts: [{ text: `Você é um diretor de arte sênior de agências de turismo e luxo de altíssimo padrão. Sua única função é receber os dados do anúncio e escolher de forma inteligente qual dos 8 Estilos Premium pré-definidos (de A a H) é o esteticamente mais adequado para compor a imagem de fundo.` }],
+          parts: [{ text: `Você é um Engenheiro de UI/UX sênior e Diretor de Arte especializado em compor coordenadas matemáticas precisas de elementos gráficos em Canvas (1080x1080 ou 1080x1920) para anúncios de turismo premium de luxo. Sua única função é calcular coordenadas sem colisão e retornar a lista estruturada de elementos em JSON.` }],
         },
         contents: [
           { role: "user", parts: [{ text: promptText }] },
         ],
         generationConfig: {
-          temperature: 0.7,
+          temperature: 1.0,
           responseMimeType: "application/json",
         },
       }),
@@ -147,8 +169,8 @@ Retorne APENAS o JSON puro. Não envolva em markdown. Não escreva explicações
     const end = cleaned.lastIndexOf("}");
     const jsonOutput = JSON.parse(cleaned.substring(start, end + 1));
 
-    if (!jsonOutput || !jsonOutput.style) {
-      throw new Error("JSON de layout inválido.");
+    if (!jsonOutput || !Array.isArray(jsonOutput.elements)) {
+      throw new Error("JSON de layout dinâmico inválido.");
     }
 
     return new Response(JSON.stringify({ provider: "secure_gemini", layout: jsonOutput }), {

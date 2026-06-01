@@ -3436,8 +3436,100 @@ export async function renderIAPuraLayout(
   ctx.fillStyle = grad;
   ctx.fillRect(0, gradY, cw, ch - gradY);
 
-  // Passo 3: Renderizador de Estilos Híbridos Determinísticos (ou fallback para elementos dinâmicos)
-  if (layoutJson && layoutJson.style) {
+  if (layoutJson && layoutJson.elements) {
+    // Passo 3: Parse do JSON Matemático antigo de elementos dinâmicos (Fallback de Segurança)
+    for (const el of layoutJson.elements) {
+      if (el.type === "box") {
+        const hasBg = !!el.backgroundColor;
+        const hasBorder = !!el.borderColor;
+        
+        if (hasBg || !hasBorder) {
+          ctx.fillStyle = el.backgroundColor || "rgba(0,0,0,0.5)";
+          if (el.borderRadius) {
+            fillRoundRect(ctx, el.x, el.y, el.width || 0, el.height || 0, el.borderRadius, ctx.fillStyle);
+          } else {
+            ctx.fillRect(el.x, el.y, el.width || 0, el.height || 0);
+          }
+        }
+        
+        if (hasBorder) {
+          ctx.strokeStyle = el.borderColor!;
+          ctx.lineWidth = el.borderWidth || 2;
+          if (el.borderRadius) {
+            ctx.beginPath();
+            if (ctx.roundRect) {
+              ctx.roundRect(el.x, el.y, el.width || 0, el.height || 0, el.borderRadius);
+            } else {
+              ctx.rect(el.x, el.y, el.width || 0, el.height || 0);
+            }
+            ctx.stroke();
+          } else {
+            ctx.strokeRect(el.x, el.y, el.width || 0, el.height || 0);
+          }
+        }
+      } else if (el.type === "text") {
+        ctx.fillStyle = el.color || "#FFFFFF";
+        const weight = el.fontWeight || "bold";
+        const family = el.fontFamily || options.fontFamily || "Inter";
+        const fontSize = el.fontSize || 32;
+        ctx.font = `${weight} ${fontSize}px "${family}"`;
+        const align = el.textAlign || "left";
+        ctx.textAlign = align;
+        ctx.textBaseline = "top";
+
+        const text = el.content || "";
+        const maxWidth = el.width || (cw - el.x - 40);
+        
+        const words = text.split(" ");
+        let line = "";
+        let currentY = el.y;
+        const lineHeight = fontSize * 1.25;
+
+        const getDrawX = (lineText: string) => {
+          if (align === "center") return el.x + maxWidth / 2;
+          if (align === "right") return el.x + maxWidth;
+          return el.x;
+        };
+
+        for (let n = 0; n < words.length; n++) {
+          const word = words[n];
+          if (ctx.measureText(word).width > maxWidth) {
+            if (line) {
+              ctx.fillText(line, getDrawX(line), currentY);
+              currentY += lineHeight;
+              line = "";
+            }
+            let subWord = "";
+            for (let charIdx = 0; charIdx < word.length; charIdx++) {
+              const testCharLine = subWord + word[charIdx];
+              if (ctx.measureText(testCharLine).width > maxWidth) {
+                ctx.fillText(subWord, getDrawX(subWord), currentY);
+                currentY += lineHeight;
+                subWord = word[charIdx];
+              } else {
+                subWord = testCharLine;
+              }
+            }
+            line = subWord;
+          } else {
+            const testLine = line ? `${line} ${word}` : word;
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth && n > 0) {
+              ctx.fillText(line, getDrawX(line), currentY);
+              line = word;
+              currentY += lineHeight;
+            } else {
+              line = testLine;
+            }
+          }
+        }
+        if (line) {
+          ctx.fillText(line, getDrawX(line), currentY);
+        }
+        ctx.textAlign = "left"; // reset
+      }
+    }
+  } else if (layoutJson && layoutJson.style) {
     const style = layoutJson.style || "A";
     const sans = options.fontFamily ? `"${options.fontFamily}", Inter, Arial, sans-serif` : `Inter, Arial, sans-serif`;
     const serif = `'Playfair Display', Georgia, serif`;
@@ -3797,100 +3889,6 @@ export async function renderIAPuraLayout(
       ctx.fillStyle = "#ffffff";
       ctx.font = `800 26px ${sans}`;
       safeFillText(ctx, "Voo + Hotel", cardX + cardW - 60, subCardY + 36, 400, 14);
-      safeFillText(ctx, options.travelPeriod || "5 NOITES", cardX + cardW - 60, subCardY + 110, 400, 14);
-    }
-  } else if (layoutJson && layoutJson.elements) {
-    // Passo 3: Parse do JSON Matemático antigo de elementos dinâmicos (Fallback de Segurança)
-    for (const el of layoutJson.elements) {
-      if (el.type === "box") {
-        const hasBg = !!el.backgroundColor;
-        const hasBorder = !!el.borderColor;
-        
-        if (hasBg || !hasBorder) {
-          ctx.fillStyle = el.backgroundColor || "rgba(0,0,0,0.5)";
-          if (el.borderRadius) {
-            fillRoundRect(ctx, el.x, el.y, el.width || 0, el.height || 0, el.borderRadius, ctx.fillStyle);
-          } else {
-            ctx.fillRect(el.x, el.y, el.width || 0, el.height || 0);
-          }
-        }
-        
-        if (hasBorder) {
-          ctx.strokeStyle = el.borderColor!;
-          ctx.lineWidth = el.borderWidth || 2;
-          if (el.borderRadius) {
-            ctx.beginPath();
-            if (ctx.roundRect) {
-              ctx.roundRect(el.x, el.y, el.width || 0, el.height || 0, el.borderRadius);
-            } else {
-              ctx.rect(el.x, el.y, el.width || 0, el.height || 0);
-            }
-            ctx.stroke();
-          } else {
-            ctx.strokeRect(el.x, el.y, el.width || 0, el.height || 0);
-          }
-        }
-      } else if (el.type === "text") {
-        ctx.fillStyle = el.color || "#FFFFFF";
-        const weight = el.fontWeight || "bold";
-        const family = el.fontFamily || options.fontFamily || "Inter";
-        const fontSize = el.fontSize || 32;
-        ctx.font = `${weight} ${fontSize}px "${family}"`;
-        const align = el.textAlign || "left";
-        ctx.textAlign = align;
-        ctx.textBaseline = "top";
-
-        const text = el.content || "";
-        const maxWidth = el.width || (cw - el.x - 40);
-        
-        const words = text.split(" ");
-        let line = "";
-        let currentY = el.y;
-        const lineHeight = fontSize * 1.25;
-
-        const getDrawX = (lineText: string) => {
-          if (align === "center") return el.x + maxWidth / 2;
-          if (align === "right") return el.x + maxWidth;
-          return el.x;
-        };
-
-        for (let n = 0; n < words.length; n++) {
-          const word = words[n];
-          if (ctx.measureText(word).width > maxWidth) {
-            if (line) {
-              ctx.fillText(line, getDrawX(line), currentY);
-              currentY += lineHeight;
-              line = "";
-            }
-            let subWord = "";
-            for (let charIdx = 0; charIdx < word.length; charIdx++) {
-              const testCharLine = subWord + word[charIdx];
-              if (ctx.measureText(testCharLine).width > maxWidth) {
-                ctx.fillText(subWord, getDrawX(subWord), currentY);
-                currentY += lineHeight;
-                subWord = word[charIdx];
-              } else {
-                subWord = testCharLine;
-              }
-            }
-            line = subWord;
-          } else {
-            const testLine = line ? `${line} ${word}` : word;
-            const metrics = ctx.measureText(testLine);
-            if (metrics.width > maxWidth && n > 0) {
-              ctx.fillText(line, getDrawX(line), currentY);
-              line = word;
-              currentY += lineHeight;
-            } else {
-              line = testLine;
-            }
-          }
-        }
-        if (line) {
-          ctx.fillText(line, getDrawX(line), currentY);
-        }
-        ctx.textAlign = "left"; // reset
-      }
     }
   }
 
