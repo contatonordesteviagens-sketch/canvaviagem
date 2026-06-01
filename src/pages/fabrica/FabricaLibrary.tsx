@@ -114,30 +114,6 @@ export const FabricaLibrary = ({ subTab, setSubTab }: Props) => {
         </div>
       </div>
 
-      {/* Tab Label Banner */}
-      {subTab === "ofertas" ? (
-        <div className="flex items-center gap-3 bg-amber-500/5 border border-amber-500/20 rounded-2xl px-4 py-3">
-          <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
-          <p className="text-[11px] text-amber-200 leading-normal">
-            <strong>Artes & Anúncios:</strong> Aqui ficam todas as imagens compostas geradas pelo motor de criação — anúncios prontos com logo, preço e texto, prontos para postar nas redes sociais.
-          </p>
-        </div>
-      ) : (
-        <div className="flex items-center gap-3 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl px-4 py-3">
-          <Camera className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-          <p className="text-[11px] text-emerald-200 leading-normal">
-            <strong>Banco de Fotos:</strong> Aqui ficam somente as fotos limpas de destinos — sem texto nem sobreposições. Use-as como fundo do site, galeria de viagens ou materiais de apoio.
-          </p>
-        </div>
-      )}
-
-      {/* Database Guard Notice */}
-      <div className="flex items-start gap-3 bg-blue-500/5 border border-blue-500/20 rounded-2xl p-4 text-[11px] text-blue-200 leading-normal">
-        <AlertCircle className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-        <div>
-          💡 <strong>Tecnologia de Armazenamento Local:</strong> Para proteger os recursos do seu banco de dados, mantemos todas as suas imagens salvas em cache local ilimitado de alto desempenho. Apenas os 10 itens mais recentes de cada aba são persistidos no Supabase de maneira comprimida para garantir que seu site permaneça rápido e estável.
-        </div>
-      </div>
 
       {/* Grid of Images */}
       {activeImages.length === 0 ? (
