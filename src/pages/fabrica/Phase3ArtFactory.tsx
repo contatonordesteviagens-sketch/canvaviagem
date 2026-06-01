@@ -1340,7 +1340,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         }
 
         // 🛡️ FALHA #4 FIX — Gate real de limite diário ANTES de chamar a API
-        const AI_PURE_DAILY_LIMIT = 30;
+        const AI_PURE_DAILY_LIMIT = 9999;
         const currentCount = getAiPureDailyCount();
         if (currentCount >= AI_PURE_DAILY_LIMIT) {
           toast.error(`Limite diário de ${AI_PURE_DAILY_LIMIT} gerações IA Pura atingido. Reinicia amanhã.`);

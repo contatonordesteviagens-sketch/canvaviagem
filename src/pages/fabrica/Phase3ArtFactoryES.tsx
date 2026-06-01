@@ -1167,7 +1167,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       };
 
       // ===== TRAVA DE CRÉDITOS DA PLATAFORMA (20 gerações no modo IA sem chave própria) =====
-      const PLATFORM_CREDIT_LIMIT = 20;
+      const PLATFORM_CREDIT_LIMIT = 9999;
       if (genMode === "ai" && aiPureCount >= PLATFORM_CREDIT_LIMIT && lastProvider !== "user_gemini") {
         toast.error(
           `⚡ ¡Límite de ${PLATFORM_CREDIT_LIMIT} generaciones de IA Pura diarias alcanzado! Usa las otras formas ilimitadas: modo Foto Real y modo Tu Foto, o conecta tu clave Gemini en Configuración.`,
@@ -1725,26 +1725,26 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-[10px] text-white/40 uppercase tracking-wider">Créditos IA usados</span>
                     <span className={`text-[11px] font-bold ${
-                      aiPureCount >= 20 ? "text-red-400" :
-                      aiPureCount >= 15 ? "text-amber-400" :
+                      aiPureCount >= 9999 ? "text-red-400" :
+                      aiPureCount >= 9990 ? "text-amber-400" :
                       "text-emerald-400"
                     }`}>{aiPureCount}/20</span>
                   </div>
                   <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
                     <div
                       className={`h-1.5 rounded-full transition-all duration-500 ${
-                        aiPureCount >= 20 ? "bg-red-500" :
-                        aiPureCount >= 15 ? "bg-amber-400" :
+                        aiPureCount >= 9999 ? "bg-red-500" :
+                        aiPureCount >= 9990 ? "bg-amber-400" :
                         "bg-emerald-500"
                       }`}
-                      style={{ width: `${Math.min(100, (aiPureCount / 20) * 100)}%` }}
+                      style={{ width: `${Math.min(100, (aiPureCount / 9999) * 100)}%` }}
                     />
                   </div>
-                  {aiPureCount >= 20 && (
+                  {aiPureCount >= 9999 && (
                     <p className="text-[10px] text-red-400 mt-1">⚡ Límite alcanzado. Conecta tu clave Gemini gratuita para continuar.</p>
                   )}
-                  {aiPureCount >= 15 && aiPureCount < 20 && (
-                    <p className="text-[10px] text-amber-400 mt-1">⚠️ {20 - aiPureCount} generaciones restantes en esta sesión.</p>
+                  {aiPureCount >= 9990 && aiPureCount < 20 && (
+                    <p className="text-[10px] text-amber-400 mt-1">⚠️ {9999 - aiPureCount} generaciones restantes en esta sesión.</p>
                   )}
                 </div>
               )}
@@ -2042,7 +2042,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   <label className={labelCls}>2 · Formato del Anuncio</label>
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { id: "story", label: "Story / Reels", size: "9:16 (1080x1920)", desc: "Ideal para Stories y Reels de Instagram", Icon: Smartphone },
+                      { id: "story", label: "Story / Reels", size: "9:16 (1080x199999)", desc: "Ideal para Stories y Reels de Instagram", Icon: Smartphone },
                       { id: "square", label: "Cuadrado Feed", size: "1:1 (1080x1080)", desc: "Ideal para Feed y WhatsApp", Icon: Square },
                     ].map((opt) => {
                       const selected = format === opt.id;
