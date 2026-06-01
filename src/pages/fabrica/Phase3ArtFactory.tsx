@@ -1339,89 +1339,111 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           typeof h === "string" ? h : (h?.text || "")
         ).filter(Boolean);
 
-        try {
-          const { data: aiData, error: aiError } = await supabase.functions.invoke("fabrica-design-ai", {
-            body: {
-              format,
-              destination: destination || "Destino",
-              price: formattedPriceForAd || price,
-              duration: travelPeriod || "5 NOITES",
-              highlights: highlightTexts,
-              promoName: promoName || "OFERTA ESPECIAL",
-              currencySymbol,
-              primaryColor,
-              secondaryColor,
-              userGeminiKey: localStorage.getItem("user_gemini_api_key") || ""
-            },
-          });
+        const numToGen = isBatchMode ? 3 : 1;
+        const picks = Array.from({ length: numToGen }, (_, idx) => idx);
 
-          if (aiError) throw new Error(aiError.message || "Falha na IA");
-          if ((aiData as any)?.error) throw new Error((aiData as any).error);
-          const layoutJson = (aiData as any)?.layout;
-          if (!layoutJson || !layoutJson.style) {
-            throw new Error("Estilo de design inválido retornado pela IA.");
-          }
+        try {
+          const results = await Promise.all(
+            picks.map(async (idx) => {
+              // Rotação defensiva de exclusões para forçar variedade de Estilos Premium
+              const exclude: string[] = [];
+              if (idx === 1) exclude.push("A", "C");
+              if (idx === 2) exclude.push("A", "B", "D", "G");
+
+              const { data: aiData, error: aiError } = await supabase.functions.invoke("fabrica-design-ai", {
+                body: {
+                  format,
+                  destination: destination || "Destino",
+                  price: formattedPriceForAd || price,
+                  duration: travelPeriod || "5 NOITES",
+                  highlights: highlightTexts,
+                  promoName: promoName || "OFERTA ESPECIAL",
+                  currencySymbol,
+                  primaryColor,
+                  secondaryColor,
+                  variation: idx + 1,
+                  excludeStyles: exclude,
+                  userGeminiKey: localStorage.getItem("user_gemini_api_key") || ""
+                },
+              });
+
+              if (aiError) throw new Error(aiError.message || "Falha na IA");
+              if ((aiData as any)?.error) throw new Error((aiData as any).error);
+              const layoutJson = (aiData as any)?.layout;
+              if (!layoutJson || !layoutJson.style) {
+                throw new Error("Estilo de design inválido retornado pela IA.");
+              }
+              return layoutJson;
+            })
+          );
 
           const { renderIAPuraLayout, reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
 
           const isStory = format === "story";
           const reframedBg = await reframeImageToAspect(refImage, format);
 
-          const canvas = document.createElement("canvas");
-          canvas.width = 1080;
-          canvas.height = isStory ? 1920 : 1080;
-          const ctx = canvas.getContext("2d");
-          if (!ctx) throw new Error("Falha ao inicializar Canvas");
+          const finalImages = await Promise.all(
+            results.map(async (layoutJson) => {
+              const canvas = document.createElement("canvas");
+              canvas.width = 1080;
+              canvas.height = isStory ? 1920 : 1080;
+              const ctx = canvas.getContext("2d");
+              if (!ctx) throw new Error("Falha ao inicializar Canvas");
 
-          await renderIAPuraLayout(ctx, {
-            format,
-            destination: destination || "Destino",
-            price: formattedPriceForAd || price,
-            travelPeriod: travelPeriod || "5 NOITES",
-            highlights: (highlights || []) as any,
-            promoName: promoName || "OFERTA ESPECIAL",
-            primaryColor,
-            secondaryColor,
-            currencySymbol,
-            paymentMode,
-            installments,
-            paymentSuffix,
-            logoBase64: state.logoBase64,
-            logoFormat: state.logoFormat,
-            footerContact1Icon: state.footerContact1Icon,
-            footerContact1Value: state.footerContact1Value,
-            footerContact2Icon: state.footerContact2Icon,
-            footerContact2Value: state.footerContact2Value,
-            fontFamily,
-            titleScale,
-            descScale,
-            textColorOverride,
-            imageUrl: reframedBg,
-          } as any, layoutJson as any);
+              await renderIAPuraLayout(ctx, {
+                format,
+                destination: destination || "Destino",
+                price: formattedPriceForAd || price,
+                travelPeriod: travelPeriod || "5 NOITES",
+                highlights: (highlights || []) as any,
+                promoName: promoName || "OFERTA ESPECIAL",
+                primaryColor,
+                secondaryColor,
+                currencySymbol,
+                paymentMode,
+                installments,
+                paymentSuffix,
+                logoBase64: state.logoBase64,
+                logoFormat: state.logoFormat,
+                footerContact1Icon: state.footerContact1Icon,
+                footerContact1Value: state.footerContact1Value,
+                footerContact2Icon: state.footerContact2Icon,
+                footerContact2Value: state.footerContact2Value,
+                fontFamily,
+                titleScale,
+                descScale,
+                textColorOverride,
+                imageUrl: reframedBg,
+              } as any, layoutJson as any);
 
-          const finalImageUrl = canvas.toDataURL("image/png", 0.9);
+              return canvas.toDataURL("image/png", 0.9);
+            })
+          );
 
-          setGeneratedImages([finalImageUrl]);
-          setGeneratedImage(finalImageUrl);
+          setGeneratedImages((prev) => {
+            const merged = isBatchMode ? finalImages : [...prev, ...finalImages].slice(-3);
+            return merged;
+          });
+          setGeneratedImage(finalImages[finalImages.length - 1]);
 
           const currentGenerated = state.allGeneratedAdImages || [];
-          const updatedGenerated = [finalImageUrl, ...currentGenerated].slice(0, 10);
+          const updatedGenerated = [...finalImages.slice().reverse(), ...currentGenerated].slice(0, 10);
           update({
-            generatedAdImage: finalImageUrl,
+            generatedAdImage: finalImages[finalImages.length - 1],
             allGeneratedAdImages: updatedGenerated
           });
 
-          await syncGeneratedPackageToSite(finalImageUrl, refImage);
+          await syncGeneratedPackageToSite(finalImages[finalImages.length - 1], refImage);
 
-          toast.success("Design Dinâmico gerado com sucesso pela IA!");
+          toast.success(`${finalImages.length} ${finalImages.length === 1 ? "Design Dinâmico gerado" : "Designs Dinâmicos gerados"} com sucesso pela IA!`);
 
-          const nextAiPureCount = incrementAiPureDailyCount(1);
+          const nextAiPureCount = incrementAiPureDailyCount(finalImages.length);
           setAiPureCount(nextAiPureCount);
 
-          const newCount = generationCount + 1;
+          const newCount = generationCount + finalImages.length;
           setGenerationCount(newCount);
           localStorage.setItem("fabrica_gen_count", String(newCount));
-          finishCycle(1);
+          finishCycle(finalImages.length);
 
           requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
         } catch (error: any) {
