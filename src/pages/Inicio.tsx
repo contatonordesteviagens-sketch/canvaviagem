@@ -8,12 +8,23 @@ import depoimento1 from "@/assets/depoimento1.jpg";
 import depoimento2 from "@/assets/depoimento2.png";
 import depoimento3 from "@/assets/depoimento3.jpg";
 import siteCanvaViagem from "@/assets/site_canva_viagem.webp";
+import logoImage from "@/assets/logo.png";
+
+// Import local premium tools showcase images
+import showcaseAdCreation from "@/assets/images/showcase-ad-creation.png";
+import showcaseLandingPages from "@/assets/images/showcase-landing-pages.png";
+import showcaseCrm from "@/assets/images/showcase-crm.png";
+import showcaseScheduler from "@/assets/images/showcase-scheduler.png";
+import showcasePremiumMedias from "@/assets/images/showcase-premium-medias.png";
 
 export default function Inicio() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("annual");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [activeFeature, setActiveFeature] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<number>(0);
+  const [activeToolTab, setActiveToolTab] = useState<string>("featured");
+  const [mutedActive, setMutedActive] = useState(true);
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
   const eliteFeatures = [
     {
@@ -59,18 +70,17 @@ export default function Inicio() {
     <div className="w-full min-h-screen bg-white text-[#0e1318] font-sans overflow-x-hidden selection:bg-[#8b3dff] selection:text-white">
       <Helmet>
         <title>Canva Viagem Elite | Marketing para Agências de Turismo</title>
-        <link rel="stylesheet" href="/css/_app.404af339.css" />
-        <link rel="stylesheet" href="/css/hoisted.fd49266e.css" />
-        <link rel="stylesheet" href="/css/home.b96be070.css" />
-        <link rel="stylesheet" href="/css/12607.c00c5469.css" />
-        <link rel="stylesheet" href="/css/30540.6bd2af4f.css" />
-        <link rel="stylesheet" href="/css/43171.82d570e1.css" />
       </Helmet>
 
       {/* HEADER NAVBAR (Canva Style) */}
       <header className="fixed top-0 left-0 w-full h-[64px] bg-white border-b border-[#d4d8db] z-50 flex items-center px-6 justify-between shadow-sm">
         <div className="flex items-center gap-2">
-          <div className="text-xl font-black text-[#8b3dff] tracking-tight">CANVA VIAGEM</div>
+          {/* Logo oficial do Canva Viagem */}
+          <img 
+            src={logoImage} 
+            alt="Canva Viagem Logo" 
+            className="w-10 h-10 object-contain rounded-xl hover:scale-105 transition-transform duration-200 cursor-pointer" 
+          />
         </div>
         <div className="hidden md:flex items-center gap-6">
           <a href="#como-funciona" className="text-sm font-semibold hover:text-[#8b3dff]">Como funciona</a>
@@ -126,31 +136,384 @@ export default function Inicio() {
           </svg>
         </div>
       </section>
-
-      {/* POR QUE ESCOLHER O CANVA VIAGEM ELITE (Adaptação do Canva) */}
-      <div dangerouslySetInnerHTML={{ __html: CANVA_FEATURES_HTML }} />
       
       {/* COMO A IA CRIA SEU ANÚNCIO */}
       <section className="py-20 px-6 bg-[#f7f9fa]">
         <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-[12px] font-bold text-[#8b3dff] tracking-[0.2em] uppercase mb-4">Velocidade Máxima</h2>
-          <h3 className="text-3xl md:text-5xl font-bold mb-6">Como a IA cria seu anúncio</h3>
-          <p className="text-lg text-[#405466] mb-16">Zero complexidade. Só 3 cliques entre a oferta e o vídeo.</p>
+          <h2 className="text-[12px] font-bold text-[#8b3dff] tracking-[0.2em] uppercase mb-4">Cresça sua agência na velocidade Máxima</h2>
+          <h3 className="text-3xl md:text-5xl font-bold mb-6">Como a IA cria tudo para sua agência</h3>
+          <p className="text-lg text-[#405466] mb-12">Ela faz o trabalho que uma equipe de marketing digital inteira faz em poucos cliques:</p>
 
+          {/* Bloco de Vídeo Premium */}
+          <div className="max-w-[800px] mx-auto text-center w-full mb-16">
+            <h4 className="text-xl font-extrabold mb-6 text-[#0f172a]">
+              Veja como a ferramenta cria tudo para sua agência de viagens
+            </h4>
+            
+            <div className="relative w-full pt-[56.25%] rounded-3xl overflow-hidden border-2 border-[#8b3dff]/30 shadow-2xl shadow-[#8b3dff]/15 bg-black">
+              {mutedActive ? (
+                <>
+                  <iframe
+                    className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                    style={{ width: '100%', height: '100%', border: 0 }}
+                    src="https://www.youtube.com/embed/P0_4EdEOQAc?autoplay=1&mute=1&controls=0&loop=1&playlist=P0_4EdEOQAc&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0"
+                    allow="autoplay; encrypted-media"
+                    title="Como a IA Cria Tudo"
+                  />
+                  
+                  {/* Overlay com botão para ativar o áudio do vídeo */}
+                  <div 
+                    onClick={() => setMutedActive(false)}
+                    className="absolute inset-0 bg-black/45 flex flex-col items-center justify-center gap-4 cursor-pointer transition-all duration-300 hover:bg-black/35"
+                  >
+                    <div className="absolute top-5 bg-black/85 border border-[#8b3dff]/30 rounded-full px-4.5 py-1.5 text-[11px] font-extrabold text-[#8b3dff] flex items-center gap-2">
+                      <span className="inline-block w-1.5 h-1.5 bg-[#8b3dff] rounded-full animate-pulse" />
+                      ASSISTIR COM SOM (CLIQUE PARA ATIVAR)
+                    </div>
+
+                    <div className="hover:scale-105 active:scale-95 transition-all animate-bounce duration-[2200ms] flex items-center gap-3 bg-[#8b3dff] hover:bg-[#7b32e6] text-white font-black text-sm px-8 py-4 rounded-full shadow-lg shadow-[#8b3dff]/40">
+                      <Play size={16} fill="#ffffff" />
+                      ATIVAR ÁUDIO DO VÍDEO
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <iframe
+                  className="absolute top-0 left-0 w-full h-full"
+                  style={{ width: '100%', height: '100%', border: 0 }}
+                  src="https://www.youtube.com/embed/P0_4EdEOQAc?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0"
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                  title="Como a IA Cria Tudo"
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Passos de Escala (embaixo do vídeo) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {[
-              { n: "1", t: "VOCÊ DIGITA", d: "Preço, destino, parcelas." },
-              { n: "2", t: "IA CONSTRÓI", d: "Arte montada em 2 segundos." },
-              { n: "3", t: "PRONTO", d: "Direto no seu celular com sua logo." }
+              { n: "1", t: "VOCÊ DIGITA", d: "Nome da sua agência, pacote de viagem e Preço." },
+              { n: "2", t: "IA TE ENTREGA", d: "Artes de anúncios, Site e Plano de ação com Vídeos pra postar dos Destinos ." },
+              { n: "3", t: "VOCÊ APLICA E POSTA", d: "Direto no seu dispositivo com tudo pronto vender viagens." }
             ].map((s, i) => (
               <div key={i} className="text-center">
-                <div className="w-16 h-16 rounded-full bg-[#e8f1ff] text-[#0055ff] flex items-center justify-center text-2xl font-bold mx-auto mb-6">
+                <div className="w-16 h-16 rounded-full bg-[#e8f1ff] text-[#8b3dff] flex items-center justify-center text-2xl font-bold mx-auto mb-6">
                   {s.n}
                 </div>
                 <h4 className="text-xl font-bold mb-3">{s.t}</h4>
                 <p className="text-[#405466]">{s.d}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── SHOWCASE SECTION: FERRAMENTAS PROFISSIONAIS (3rd Fold) ─── */}
+      <section className="py-24 px-6 bg-white border-b border-[#e5e7eb]">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
+            Ferramentas profissionais para todas as tarefas
+          </h2>
+          <p className="text-[#64748b] text-base md:text-lg max-w-3xl mx-auto mb-12">
+            Seja para um trabalho paralelo ou um projeto pessoal, o Canva Viagem Elite oferece acesso a recursos Pro e ferramentas de IA avançados para que você possa criar conteúdo profissional mais rapidamente, em um só lugar.
+          </p>
+
+          {/* Navigation Tabs (Pills) */}
+          <div className="flex flex-wrap justify-center gap-2 mb-16">
+            {[
+              { id: "featured", label: "Em destaque" },
+              { id: "social", label: "Redes sociais" },
+              { id: "video", label: "Vídeos" },
+              { id: "photo", label: "Fotos e Designs" },
+              { id: "ai", label: "Inteligência Artificial" },
+              { id: "texts", label: "Textos e Contratos" }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveToolTab(tab.id)}
+                className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-200 ${
+                  activeToolTab === tab.id
+                    ? "bg-[#8b3dff] text-white shadow-md shadow-[#8b3dff]/20 scale-105"
+                    : "bg-[#f1f5f9] text-[#64748b] hover:bg-[#e2e8f0] hover:text-[#0f172a]"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Dynamic Grid of Cards based on activeToolTab */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Tab: Em destaque */}
+            {activeToolTab === "featured" && (
+              <>
+                {/* 1. Criação de anúncio com IA */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src={showcaseAdCreation} alt="Criação de anúncios com IA" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">⚡</span> Criação de anúncios com IA
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      Crie campanhas e ofertas irresistíveis em segundos. Digite o destino, preço e parcelas, e nossa inteligência artificial gera o anúncio completo com a sua identidade visual pronta para atrair viajantes de alto padrão.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 2. Construtor de sites */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src={showcaseLandingPages} alt="Construtor de sites" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">🌐</span> Construtor de sites
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      Crie modelos profissionais de landing pages de vendas e roteiros de viagens completos em instantes. Aplique suas cores, fontes e logotipos com um clique para impressionar seus leads e vender pacotes mais rápido.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 3. CRM para gestão de clientes */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src={showcaseCrm} alt="CRM para gestão de clientes" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">📊</span> CRM para gestão de clientes
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      Organize suas conversas, gerencie o funil de atendimento e vendas de pacotes de viagem, e controle todo o histórico de contatos e contratos da sua agência em um único sistema prático e intuitivo.
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Tab: Redes sociais */}
+            {activeToolTab === "social" && (
+              <>
+                {/* 1. Calendário de postagens */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src={showcaseScheduler} alt="Calendário de postagens" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">📅</span> Calendário de postagens
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      Planeje, crie e agende suas postagens diretamente da plataforma para todas as suas redes de forma automatizada, mantendo seu perfil sempre ativo.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 2. Mais de 400 mídias exclusivas */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src={showcasePremiumMedias} alt="Mais de 400 mídias exclusivas" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">✨</span> Mais de 400 mídias exclusivas
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      Acesso completo ao acervo de gabaritos prontos para posts no feed, stories editáveis, legendas e criativos. Tudo perfeitamente desenhado para engajar sua audiência nas redes.
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Tab: Vídeos */}
+            {activeToolTab === "video" && (
+              <>
+                {/* 1. Mais de 300 vídeos Reels */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src="/images/LOC_MarTechB2C_CanvaPro_LandingPage_PremiumVideoTemplates_Small_pt-BR.png" alt="Mais de 300 vídeos Reels de destinos" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">🎥</span> Mais de 300 vídeos Reels
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      Desbloqueie uma biblioteca com centenas de vídeos cinematográficos gravados em alta definição dos principais destinos nacionais e internacionais prontos para atrair viajantes.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 2. Roteiros e Copys para Vídeos */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src="/images/PRO25001_JTBD_Section_Video_Tab_Captions.png" alt="Roteiros para vídeos" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">💬</span> Roteiros e Textos para Vídeos
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      Tenha acesso a roteiros detalhados e ganchos persuasivos para seus vídeos Reels. Saiba como prender a atenção do cliente e gerar mais mensagens diretas querendo fechar viagens.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 3. Acesso Fácil via Google Drive */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src="/images/Whiteboard_ProTemplates_Desktop_2x_pt-BR.png" alt="Acesso ao Google Drive" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">📥</span> Download via Google Drive
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      Todos os arquivos de vídeo estão hospedados e organizados de forma profissional no Google Drive. Baixe as mídias em 4K e HD com um único clique diretamente no seu celular ou desktop.
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Tab: Fotos e Designs */}
+            {activeToolTab === "photo" && (
+              <>
+                {/* 1. Artes prontas para o Feed */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src="/images/ArtistCollection_small_pt-BR.png" alt="Artes prontas para o Feed" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">🎨</span> Artes prontas para o Feed
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      Modelos profissionais prontos de carrosséis e posts estáticos com artes de ofertas e roteiros explicativos. Perfeitos para manter seu feed sofisticado e harmônico.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 2. Stories interativos para Instagram */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src="/images/Spotlight_Disney_Mobile.png" alt="Stories interativos" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">📱</span> Stories interativos
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      Apareça todos os dias utilizando caixas de perguntas elegantes, enquetes, quizzes e roteiros de interação diários para converter seguidores em compradores.
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Tab: Inteligência Artificial */}
+            {activeToolTab === "ai" && (
+              <>
+                {/* 1. Vendedor de Viagens com IA */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300 ring-2 ring-[#8b3dff]/30">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src="/images/PRO25001_JTBD_Section_Brand_Tab_Magic_Write.png" alt="Vendedor de viagens com IA" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">👑</span> Vendedor de Viagens IA
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      O assistente virtual mais potente do mercado, treinado para vender pacotes e criar ofertas exclusivas. Escreva a ideia ou o destino e a IA gera a copy de venda instantaneamente.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 2. Agentes de IA para Marketing */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src="/images/LOC_MarTechB2C_CanvaPro_LandingPage_AIAdCreation_Small_pt-BR.png" alt="Agentes de marketing com IA" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">🤖</span> Agentes IA de Marketing
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      Agilize sua produção de conteúdo com assistentes de IA para escrever descrições e títulos que vendem pacotes turísticos sem esforço.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 3. Gerador Inteligente de Roteiros */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src="/images/PRO25001_JTBD_Section_Spotlight_Tab_Style_Match.png" alt="Gerador de roteiros inteligente" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">🗺️</span> Gerador IA de Roteiros
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      Crie propostas de viagem e roteiros completos dia a dia ultra detalhados e personalizados para o perfil de cada cliente em segundos.
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Tab: Textos e Contratos */}
+            {activeToolTab === "texts" && (
+              <>
+                {/* 1. Legendas Prontas e Persuasivas */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src="/images/PRO25001_JTBD_Section_Video_Tab_Captions.png" alt="Legendas prontas" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">✍️</span> Legendas Prontas
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      Centenas de legendas perfeitamente estruturadas com gatilhos mentais prontos para você copiar, colar e aplicar nas fotos ou Reels do seu feed.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 2. Textos de Ofertas Validadas */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src="/images/LOC_MarTechB2C_CanvaPro_LandingPage_AdInspiration_Small_pt-BR.png" alt="Textos de ofertas validadas" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">💰</span> Textos de Ofertas
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      Copywriting de alta performance validado por agências para ofertas especiais e campanhas de fechamento de pacotes de viagem.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 3. Contratos de Viagens Validados */}
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-3xl p-6 flex flex-col hover:shadow-lg transition-all duration-300">
+                  <div>
+                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                      <img src="/images/PRO25001_JTBD_Section_Print_Tab_Disney_Collection.png" alt="Contratos de viagens validados" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0f172a] mb-2 text-left flex items-center gap-2">
+                      <span className="text-[#8b3dff]">📄</span> Modelos de Contratos
+                    </h3>
+                    <p className="text-[#64748b] text-sm text-left leading-relaxed">
+                      Modelos prontos e juridicamente estruturados de contratos de intermediação de viagens e prestação de serviços para dar total segurança jurídica ao seu negócio.
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -185,32 +548,6 @@ export default function Inicio() {
           </div>
           <div className="w-full md:w-[400px]">
             {lucasPortrait && <img src={lucasPortrait} alt="Lucas Ferrari" className="w-full rounded-2xl shadow-xl" />}
-          </div>
-        </div>
-      </section>
-
-      {/* VOCÊ SE IDENTIFICA? */}
-      <section className="py-24 px-6 bg-[#18191b] text-white">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-[12px] font-bold text-[#8b3dff] tracking-[0.2em] uppercase mb-4">Você se identifica?</h2>
-            <h3 className="text-3xl md:text-5xl font-bold mb-6">Vender viagens ficou impossível com um perfil comum</h3>
-            <p className="text-lg text-white/70">Se você se identifica com algum desses, continue lendo.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              { icon: "👻", title: "Instagram Fantasma", desc: "Você posta uma vez por semana (com medo) e o engajamento é zero. Cliente passa direto para o concorrente." },
-              { icon: "🎨", title: "Designer Entregou Lixo", desc: "Pagou R$ 500 nas artes bonitas mas não vende." },
-              { icon: "💸", title: "Viajante de alta renda Te Ignora", desc: "Quem paga R$ 8.000 por pacote olha seu perfil 3 segundos e vai para o concorrente com perfil e site top." },
-              { icon: "⏳", title: "Não Fazer Nada Custa Mais", desc: "Cada dia com perfil e site parado são viagens que seu concorrente fecha no lugar de você. O custo real de não agir é muito mais que 8k/mês em vendas." }
-            ].map((item, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 p-8 rounded-2xl">
-                <div className="text-4xl mb-4">{item.icon}</div>
-                <h4 className="text-xl font-bold mb-3">{item.title}</h4>
-                <p className="text-white/60 leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -255,7 +592,7 @@ export default function Inicio() {
       </section>
 
       {/* COMPARATIVO HONESTO */}
-      <section id="comparativo" className="py-24 px-6 bg-white">
+      <section id="comparativo" className="py-24 px-6 bg-white text-black">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-[12px] font-bold text-[#8b3dff] tracking-[0.2em] uppercase mb-4">Comparativo Honesto</h2>
@@ -276,9 +613,9 @@ export default function Inicio() {
               <tbody className="text-[#0e1318]">
                 {[
                   { l: "Investimento", a: "R$ 197 uma vez", b: "R$ 1.500 / mês", c: "A partir de R$ 197 / ano" },
-                  { l: "Conteúdo", a: "150 reels fixos", b: "4–8 entregas/mês", c: "250+ vídeos 4K + Sites de Vendas" },
-                  { l: "Atualizações", a: "❌ Nenhuma", b: "Depende dele", c: "✅ Acesso vitalício à evolução" },
-                  { l: "IAs e Scripts", a: "❌ Não tem", b: "❌ Não tem", c: "✅ 11 IAs + Fábrica de Anúncios" },
+                  { l: "Conteúdo", a: "150 reels fixos", b: "4–8 entregas/mês", c: "300+ Reels + 400+ Mídias e Feed" },
+                  { l: "Atualizações", a: "❌ Nenhuma", b: "Depende dele", c: "✅ Atualizações semanais inclusas" },
+                  { l: "IAs e Ferramentas", a: "❌ Não tem", b: "❌ Não tem", c: "✅ Vendedor IA + Construtor + CRM" },
                   { l: "Suporte", a: "Só do produtor", b: "1 freelancer", c: "WhatsApp VIP direto com o Lucas" }
                 ].map((row, i) => (
                   <tr key={i} className="border-b border-[#e5e7eb]">
@@ -294,19 +631,109 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* A PERGUNTA QUE TODO MUNDO FAZ */}
-      <section className="py-24 px-6 bg-[#f7f9fa]">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-8">"Por que tão barato? Você não tá escondendo nada?"</h2>
-          <div className="text-lg text-[#405466] leading-relaxed space-y-6 text-left">
-            <p><strong>Resposta honesta:</strong> cobramos R$ 16/mês porque atendemos 187 agências, não 3 contas grandes. O custo de produzir um vídeo se divide entre todo mundo.</p>
-            <p>Sem designer no meio = sem repasse de R$ 1.500/mês para você. A IA escreve as legendas; o time só revisa.</p>
-            <p>Quanto mais agências entram, mais vídeos novos conseguimos produzir por semana. É por isso que o preço continua o mesmo desde 2023.</p>
+      {/* TRABALHE MELHOR COM A IA - SLIDER SINCRONIZADO COM FUNDO ROXO */}
+      <section className="py-24 px-6 bg-gradient-to-br from-[#6b11ff] via-[#8b3dff] to-[#7d2ae8] relative text-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-[12px] font-bold text-white/80 tracking-[0.2em] uppercase mb-4">Trabalhe melhor com a IA</h2>
+            <h3 className="text-3xl md:text-5xl font-bold mb-6 text-white">Tudo o que sua agência precisa em um só lugar</h3>
+            <p className="text-lg text-white/90 max-w-3xl mx-auto">
+              Desbloqueie todas essas ferramentas na sua agência de viagens para aumentar a produtividade e as vendas, tudo em um só lugar de forma 100% integrada.
+            </p>
           </div>
-          <div className="mt-12 text-left border-l-4 border-[#8b3dff] pl-6 py-2">
-            <div className="font-bold text-2xl">LF</div>
-            <div className="font-bold text-lg mt-2">Lucas Ferrari</div>
-            <div className="text-[#405466]">Fundador · Canva Viagem</div>
+
+          {/* Carousel Slider */}
+          <div className="relative w-full">
+            <div className="overflow-hidden w-full rounded-3xl py-2">
+              <div 
+                className="flex gap-6 transition-transform duration-500 ease-in-out"
+                style={{ 
+                  transform: `translateX(-${carouselIndex * (100 / 3)}%)`
+                }}
+              >
+                {[
+                  {
+                    title: "Criação de anúncios com IA",
+                    desc: "Crie campanhas e ofertas irresistíveis em segundos. Nossa IA gera o anúncio completo com a sua identidade visual pronta para atrair viajantes de alto padrão.",
+                    img: "/images/LOC_MarTechB2C_CanvaPro_LandingPage_AIAdCreation_Small_pt-BR.png",
+                    badge: "⚡"
+                  },
+                  {
+                    title: "Construtor de sites",
+                    desc: "Crie modelos profissionais de landing pages de vendas e roteiros de viagens completos em instantes. Aplique suas cores, fontes e logotipos com um clique.",
+                    img: siteCanvaViagem,
+                    badge: "🌐"
+                  },
+                  {
+                    title: "CRM para gestão de clientes",
+                    desc: "Organize suas conversas, gerencie o funil de atendimento e vendas de pacotes de viagem, e controle todo o histórico de contatos em um sistema prático.",
+                    img: "/images/PRO25001_JTBD_Section_Social_Media_Tab_MSAS.png",
+                    badge: "📊"
+                  },
+                  {
+                    title: "Vendedor de Viagens IA",
+                    desc: "O assistente virtual definitivo treinado para vender pacotes e criar ofertas exclusivas. Escreva a ideia e a IA gera a copy de venda instantaneamente.",
+                    img: "/images/PRO25001_JTBD_Section_Brand_Tab_Magic_Write.png",
+                    badge: "👑"
+                  },
+                  {
+                    title: "Mais de 300 vídeos Reels",
+                    desc: "Desbloqueie uma biblioteca com centenas de vídeos cinematográficos gravados em alta definição dos principais destinos prontos para atrair viajantes.",
+                    img: "/images/LOC_MarTechB2C_CanvaPro_LandingPage_PremiumVideoTemplates_Small_pt-BR.png",
+                    badge: "🎥"
+                  },
+                  {
+                    title: "Artes prontas para o Feed",
+                    desc: "Modelos profissionais prontos de carrosséis e posts estáticos com artes de ofertas e roteiros explicativos 100% editáveis no Canva.",
+                    img: "/images/ArtistCollection_small_pt-BR.png",
+                    badge: "🎨"
+                  },
+                  {
+                    title: "Stories interativos",
+                    desc: "Apareça todos os dias nos stories e aumente seu engajamento com roteiros de destinos, caixas de perguntas, enquetes e templates de alta conversão.",
+                    img: "/images/Spotlight_Disney_Mobile.png",
+                    badge: "📱"
+                  }
+                ].map((card, idx) => (
+                  <div 
+                    key={idx} 
+                    className="bg-white border border-[#e2e8f0] rounded-3xl p-6 flex flex-col justify-between hover:shadow-lg transition-all duration-300 w-[calc(33.333%-16px)] shrink-0 min-w-[280px]"
+                  >
+                    <div>
+                      <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 border border-[#e2e8f0]">
+                        <img src={card.img} alt={card.title} className="w-full h-full object-cover" />
+                      </div>
+                      <h4 className="text-lg font-bold text-[#0f172a] mb-2 flex items-center gap-2">
+                        <span className="text-[#8b3dff]">{card.badge}</span> {card.title}
+                      </h4>
+                      <p className="text-[#64748b] text-sm leading-relaxed">
+                        {card.desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Slider Navigation Controls */}
+            <div className="flex items-center justify-end gap-3 mt-8 pr-2">
+              <button 
+                onClick={() => setCarouselIndex(Math.max(0, carouselIndex - 1))}
+                disabled={carouselIndex === 0}
+                className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center justify-center font-bold text-lg shadow-lg backdrop-blur-md"
+                aria-label="Voltar slide"
+              >
+                ←
+              </button>
+              <button 
+                onClick={() => setCarouselIndex(Math.min(4, carouselIndex + 1))}
+                disabled={carouselIndex >= 4}
+                className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white disabled:opacity-30 disabled:pointer-events-none transition-all flex items-center justify-center font-bold text-lg shadow-lg backdrop-blur-md"
+                aria-label="Avançar slide"
+              >
+                →
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -445,54 +872,123 @@ export default function Inicio() {
             </div>
 
           </div>
-
-          {/* O que deixa de ganhar */}
-          <div className="max-w-3xl mx-auto mt-16 bg-[#f7f9fa] p-8 rounded-2xl border border-[#d4d8db]">
-            <h4 className="font-bold text-xl mb-4 text-center">O que você deixa de ganhar sem isso:</h4>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 text-[#d93025] font-semibold"><X className="w-5 h-5"/> Sem o Canva Viagem: feed parado = 0 DMs orgânicos por mês</div>
-              <div className="flex items-center gap-3 text-[#008a00] font-semibold"><Check className="w-5 h-5"/> 1 pacote vendido pelo feed: R$ 3.500 a R$ 8.000 de lucro</div>
-              <div className="flex items-center gap-3 text-[#8b3dff] font-bold"><Star className="w-5 h-5"/> Retorno do plano Elite em 1 venda: 2.300%</div>
-            </div>
-            <p className="text-sm text-[#405466] mt-6 text-center">1 pacote de viagem fechado paga 23 anos de assinatura.</p>
-          </div>
         </div>
       </section>
 
-      {/* GARANTIA */}
-      <section className="py-20 px-6 bg-[#18191b] text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <ShieldCheck className="w-16 h-16 mx-auto mb-6 text-[#00d2ff]" />
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">Garantia Dupla</h2>
-          <p className="text-xl text-white/80 mb-12">O risco é 100% meu — não seu.</p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left max-w-2xl mx-auto mb-16">
-            <div className="bg-white/10 p-6 rounded-xl">
-              <div className="text-4xl font-black text-[#00d2ff] opacity-50 mb-2">1</div>
-              <h4 className="text-xl font-bold mb-2">7 dias para testar tudo</h4>
-              <p className="text-white/70">Acesso completo. Não gostou? Devolvo.</p>
-            </div>
-            <div className="bg-white/10 p-6 rounded-xl">
-              <div className="text-4xl font-black text-[#00d2ff] opacity-50 mb-2">2</div>
-              <h4 className="text-xl font-bold mb-2">Qualidade não convenceu?</h4>
-              <p className="text-white/70">100% de volta.</p>
-            </div>
+      {/* GARANTIA E DECISÃO UNIFICADA (COMPACT & PROFESSIONAL DESIGN) */}
+      <section className="py-16 px-6 bg-[#f8fafc] border-t border-b border-[#e2e8f0]">
+        <div className="max-w-5xl mx-auto">
+          
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-[#0f172a] mb-3">
+              Sua Decisão com Risco Zero
+            </h2>
+            <p className="text-base text-[#64748b] max-w-xl mx-auto">
+              Ao assinar o Plano Elite, o risco é 100% nosso. Você avalia e decide sem qualquer complicação.
+            </p>
           </div>
 
-          <div className="bg-white text-[#0e1318] p-8 rounded-2xl max-w-3xl mx-auto text-left shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#8b3dff]/10 rounded-bl-full"></div>
-            <h3 className="text-2xl font-bold mb-4">Seu feed. Sua autoridade. Sua decisão.</h3>
-            <p className="text-[#405466] mb-4">Você provavelmente está pensando: "Parece bom, mas vou ver depois."</p>
-            <p className="text-[#405466] font-bold mb-6">Cada dia com feed parado é um pacote fechando com o concorrente. Não existe depois. Existe agora ou existe perda.</p>
-            <p className="text-[#405466] mb-8">A garantia dupla existe exatamente para você testar sem risco. Se não funcionar, devolvemos tudo. Simples assim.</p>
+          {/* Grid principal: Lado a Lado (Garantia vs Perdas) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch mb-12">
             
-            <button onClick={() => { document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' }) }} className="bg-[#8b3dff] hover:bg-[#7b32e6] text-white px-8 py-4 rounded-lg text-lg font-bold transition-transform hover:scale-105 w-full text-center">
+            {/* Coluna 1: A Garantia Dupla */}
+            <div className="bg-white border border-[#e2e8f0] p-8 rounded-2xl flex flex-col justify-between shadow-sm">
+              <div>
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-[#8b3dff]/10 text-[#8b3dff] flex items-center justify-center font-bold text-lg shrink-0">
+                      🛡️
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg text-[#0f172a]">Garantia Incondicional</h3>
+                      <p className="text-xs text-[#64748b]">Teste sem riscos por 7 dias</p>
+                      {/* Estrelas de confiança */}
+                      <div className="flex items-center gap-0.5 mt-1.5">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} size={13} className="text-[#eab308] fill-[#eab308]" />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Número 7 grande estilizado premium */}
+                  <div className="relative flex items-center justify-center bg-gradient-to-br from-[#8b3dff] to-[#6d28d9] text-white w-16 h-16 rounded-2xl shadow-md shadow-[#8b3dff]/20 shrink-0">
+                    <div className="text-3xl font-black tracking-tighter">7</div>
+                    <div className="absolute -bottom-1.5 bg-[#eab308] text-[9px] text-[#0f172a] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                      Dias
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4 text-sm text-[#64748b]">
+                  <p>
+                    <strong>• 7 dias para testar tudo:</strong> Acesso total a todas as ferramentas de IA, artes e vídeos. Se não gostar, basta pedir o reembolso.
+                  </p>
+                  <p>
+                    <strong>• Satisfação Garantida:</strong> Se a qualidade da nossa Fábrica de Anúncios e materiais não te convencer, devolvemos 100% do seu dinheiro.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-4 border-t border-[#f1f5f9] text-xs font-bold text-[#8b3dff] flex items-center gap-1.5">
+                <Check size={14} /> Risco zero absoluto para você iniciar hoje
+              </div>
+            </div>
+
+            {/* Coluna 2: O que você deixa de ganhar */}
+            <div className="bg-white border border-[#e2e8f0] p-8 rounded-2xl flex flex-col justify-between shadow-sm">
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-[#ef4444]/10 text-[#ef4444] flex items-center justify-center font-bold text-lg">
+                    📉
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-[#0f172a]">O Custo de Não Agir</h3>
+                    <p className="text-xs text-[#ef4444]">O que você deixa de ganhar sem a plataforma</p>
+                  </div>
+                </div>
+                
+                <ul className="space-y-4 text-sm font-semibold">
+                  <li className="flex items-start gap-2.5 text-[#64748b]">
+                    <X className="w-5 h-5 text-[#ef4444] shrink-0 mt-0.5" />
+                    <span>Sem o Canva Viagem: feed parado = <strong className="text-[#ef4444]">0 DMs orgânicos</strong> por mês</span>
+                  </li>
+                  <li className="flex items-start gap-2.5 text-[#64748b]">
+                    <Check className="w-5 h-5 text-[#22c55e] shrink-0 mt-0.5" />
+                    <span>1 pacote vendido pelo feed: <strong className="text-[#22c55e]">R$ 3.500 a R$ 8.000 de lucro</strong></span>
+                  </li>
+                  <li className="flex items-start gap-2.5 text-[#64748b]">
+                    <Star className="w-5 h-5 text-[#8b3dff] shrink-0 fill-[#8b3dff] mt-0.5" />
+                    <span>Retorno do plano Elite em apenas 1 venda: <strong className="text-[#8b3dff]">2.300% de ROI</strong></span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-[#f1f5f9] text-xs text-[#64748b] font-bold">
+                💡 1 pacote de viagem fechado paga 23 anos de assinatura.
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bloco de Ação Rápida */}
+          <div className="max-w-2xl mx-auto text-center">
+            <p className="text-sm font-bold text-[#0f172a] mb-6 leading-relaxed">
+              Seu feed. Sua autoridade. Sua decisão. Cada dia com feed parado é um cliente fechando com o concorrente.
+            </p>
+            
+            <button 
+              onClick={() => { document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' }) }} 
+              className="bg-[#8b3dff] hover:bg-[#7b32e6] text-white px-8 py-3.5 rounded-xl text-base font-bold transition-all duration-200 hover:scale-[1.02] inline-block shadow-lg shadow-[#8b3dff]/20"
+            >
               QUERO ACESSO ELITE — R$ 28,91/MÊS →
             </button>
-            <div className="text-center text-sm font-semibold text-[#008a00] mt-4">
-              Acesso em 2 min · Garantia dupla · Cancele quando quiser
+            <div className="text-center text-xs font-bold text-[#22c55e] mt-4 flex items-center justify-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse"></span>
+              Acesso em 2 min · Garantia incondicional · Cancele quando quiser
             </div>
           </div>
+
         </div>
       </section>
 
