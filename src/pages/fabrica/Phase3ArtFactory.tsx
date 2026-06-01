@@ -1593,33 +1593,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
 
-      {/* Banner de provedor de IA */}
-      {genMode === "ai" && (
-        <div className="rounded-2xl p-4 border mb-6 bg-emerald-500/15 border-emerald-500/30">
-          <div className="flex items-start gap-3">
-            <div className="text-2xl">🔐</div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold text-white">IA Pura usando chave segura do servidor</div>
-              <p className="text-[11px] text-white/60 leading-snug mt-0.5">
-                A chave fica em Secrets do Lovable Cloud como <strong>IA_PURA_GEMINI_KEY</strong> e nunca aparece para usuários.
-              </p>
-              {/* Barra de progresso de créditos */}
-              {lastProvider && (
-                <div className="mt-2">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-[10px] text-white/40 uppercase tracking-wider">Gerações IA Pura hoje</span>
-                    <span className="text-[11px] font-bold text-emerald-400">{aiPureCount}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="text-right shrink-0">
-              <div className="text-[10px] text-white/40 uppercase tracking-wider">Geradas</div>
-              <div className="text-lg font-bold text-white">{aiPureCount}</div>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Grid de Perfil e Contatos */}
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 bg-white/[0.02] border border-white/[0.08] p-6 rounded-2xl">
@@ -1765,22 +1739,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             >
               <Upload className="w-3.5 h-3.5" /> Sua Imagem
             </button>
-            <button
-              onClick={() => setGenMode("ai")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "ai" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-            >
-              <Wand2 className="w-3.5 h-3.5" /> IA Pura
-            </button>
           </div>
-
-          {/* Modo IA Pura — sem chave necessária, processado no servidor Lovable Cloud */}
-          {genMode === "ai" && (
-            <div className="mt-3 p-3 rounded-xl border border-emerald-400/20 bg-emerald-500/5">
-              <p className="text-[11px] text-emerald-200/90 leading-relaxed">
-                ✨ <strong>IA Pura ativada.</strong> A geração roda no servidor (Lovable Cloud) — você não precisa configurar nenhuma chave. É só selecionar uma foto real e clicar em gerar.
-              </p>
-            </div>
-          )}
 
 
 
