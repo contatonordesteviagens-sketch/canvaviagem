@@ -2627,12 +2627,18 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const bfs = benefitRowsV2 <= 2 ? 36 : 32;
         
         const contentCeilLimit = faixaY + faixaH;
-        const verticalFreeSpace = contentFloorLimit - contentCeilLimit;
+        // Garante um respiro mínimo de 35px abaixo da faixa preta
+        const topSpacing = 35;
+        const contentCeilWithSpacing = contentCeilLimit + topSpacing;
+        const verticalFreeSpace = contentFloorLimit - contentCeilWithSpacing;
         
-        const benefitsTop = contentCeilLimit + (verticalFreeSpace - benefitsEffectiveH) / 2;
+        const benefitsTop = contentCeilWithSpacing + Math.max(0, (verticalFreeSpace - benefitsEffectiveH) / 2);
 
         const colGapV2 = 28;
         const colWV2 = (contentWidth - colGapV2) / 2;
+        
+        ctx.save();
+        ctx.textBaseline = "middle";
         benefitsListV2.forEach((h, i) => {
           let fs = bfs;
           const col = i % 2;
@@ -2641,7 +2647,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
           const ty = benefitsTop + row * benefitGap;
           
           const iconSizeV2 = Math.round(fs * 1.4);
-          drawMonoIcon(ctx, h.icon || "check", tx + iconSizeV2/2, ty - fs/6, iconSizeV2, v2BenefitColor);
+          // Desenha o ícone centralizado perfeitamente na linha ty
+          drawMonoIcon(ctx, h.icon || "check", tx + iconSizeV2/2, ty, iconSizeV2, v2BenefitColor);
           
           ctx.fillStyle = v2BenefitColor;
           ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
@@ -2651,8 +2658,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
             fs -= 1;
             ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
           }
+          // Desenha o texto centralizado na linha ty
           ctx.fillText(h.text, textX, ty);
         });
+        ctx.restore();
       }
 
       await drawFinalBranding(
