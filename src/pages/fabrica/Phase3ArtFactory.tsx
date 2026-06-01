@@ -1272,7 +1272,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
         // Rotação determinística entre as 5 variantes do compositor (V0/V1/V2/V3/V4)
         // evitando as 2 últimas usadas — garante imagem nova a cada clique e cobre V4.
-        const TOTAL_VARIANTS_PHOTO = 5;
+        const TOTAL_VARIANTS_PHOTO = 6;
         const recentPhoto = variantHistoryRef.current.slice(-2);
         let candidatesPhoto = Array.from({ length: TOTAL_VARIANTS_PHOTO }, (_, i) => i).filter((v) => !recentPhoto.includes(v));
         if (candidatesPhoto.length === 0) {
@@ -1288,7 +1288,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 photoRefs[idx],
                 localStrategy,
                 freshSeedPhoto + idx,
-                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % 5 : undefined,
+                typeof nextVariantPhoto === "number" ? (nextVariantPhoto + idx) % 6 : undefined,
                 palette
               )
             );
@@ -1515,7 +1515,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       const palette = selectedPalette(primaryColor, secondaryColor);
 
       // Rotação determinística entre as 5 variantes do compositor (V0/V1/V2/V3/V4)
-      const TOTAL_VARIANTS = 5;
+      const TOTAL_VARIANTS = 6;
       const recent = variantHistoryRef.current.slice(-2);
       let candidates = Array.from({ length: TOTAL_VARIANTS }, (_, i) => i).filter((v) => !recent.includes(v));
       if (candidates.length === 0) {
@@ -1531,7 +1531,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               refImage,
               localStrategy,
               freshSeedCustom + idx,
-              typeof nextVariant === "number" ? (nextVariant + idx) % 5 : undefined,
+              typeof nextVariant === "number" ? (nextVariant + idx) % 6 : undefined,
               palette
             )
           );
@@ -1819,7 +1819,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               >
                 Auto
               </button>
-              {[0, 1, 2, 3, 4].map((v) => (
+              {[0, 1, 2, 3, 4, 5].map((v) => (
                 <button
                   key={v}
                   onClick={() => setForcedVariant(v)}
@@ -1832,7 +1832,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             </div>
             <p className="text-[10px] text-white/40 mt-1.5 leading-snug">
               {forcedVariant === null
-                ? "Rotação automática entre V0..V4 a cada clique."
+                ? "Rotação automática entre V0..V5 a cada clique."
                 : <>Gerando sempre a <strong className="text-white">V{forcedVariant}</strong>. Selecione "Auto" para retomar a rotação.</>}
             </p>
           </div>

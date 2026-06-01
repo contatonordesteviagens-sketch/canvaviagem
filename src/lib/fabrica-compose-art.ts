@@ -1430,8 +1430,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
   };
 
   const renderSafeSquareOffer = async () => {
-    // Variantes ATIVAS: V0, V1, V2, V3, V4 (todas implementadas).
-    const TOTAL_VARIANTS = 5;
+    // Variantes ATIVAS: V0, V1, V2, V3, V4, V5 (todas implementadas).
+    const TOTAL_VARIANTS = 6;
     let variant = typeof forceVariant === "number"
       ? ((forceVariant % TOTAL_VARIANTS) + TOTAL_VARIANTS) % TOTAL_VARIANTS
       : Math.abs(variation) % TOTAL_VARIANTS;
@@ -3017,6 +3017,214 @@ const panelBottom = RULES.PANEL_BOTTOM;
       applyFilmGrain(ctx, width, height, 0.04);
       return canvas.toDataURL("image/png");
     }
+
+    // ── V5 · AURORA PREMIUM — glassmorphism card with glowing borders ─
+    if (variant === 5) {
+      await drawProminentLogo(ctx, 40, 40, 120);
+      // [BG] foto cobre 100%
+      const cBgV5 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.45);
+      ctx.drawImage(image, cBgV5.sx, cBgV5.sy, cBgV5.sw, cBgV5.sh, 0, 0, width, height);
+
+      // Gradient overlay for auroral glow
+      const auroraGrad = ctx.createLinearGradient(0, height * 0.2, 0, height);
+      auroraGrad.addColorStop(0, "rgba(0,0,0,0.1)");
+      auroraGrad.addColorStop(0.5, "rgba(10, 15, 30, 0.6)");
+      auroraGrad.addColorStop(1, "rgba(5, 8, 15, 0.95)");
+      ctx.fillStyle = auroraGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      const v5Primary = primaryColor || "#7C3AED"; // Roxo elegante por padrão
+      const v5Secondary = secondaryColor || "#FBBF24"; // Amarelo/Dourado quente
+      const destinoV5 = (destination || "DESTINO").toUpperCase();
+      const taglineV5 = ((promoName || "OPORTUNIDADE ÚNICA").trim()).toUpperCase();
+      const titleLineV5 = (() => {
+        const t = (titleText || destinoV5).trim();
+        const firstLine = t.split(/\r?\n/)[0] || t;
+        return firstLine.replace(new RegExp(`^${taglineV5}\\s*`, "i"), "").trim() || destinoV5;
+      })();
+
+      const daysItemV5 = highlights.find((h) => /\d+\s*dia|\d+\s*noite|janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro/i.test(h?.text || ""));
+      const daysTextV5 = (travelPeriod?.trim() || daysItemV5?.text || "").trim();
+      const iconListV5: IconKey[] = (() => {
+        const fromHl = highlights
+          .map((h) => h?.icon as IconKey | undefined)
+          .filter((k): k is IconKey => !!k);
+        if (fromHl.length === 0) return ["plane", "hotel", "coffee", "guide"] as IconKey[];
+        const seen = new Set<IconKey>(); const out: IconKey[] = [];
+        for (const k of fromHl) { if (!seen.has(k)) { seen.add(k); out.push(k); if (out.length >= 4) break; } }
+        return out;
+      })();
+
+      const instMatchV5 = (installments || "12x").match(/(\d{1,2})\s*x/i);
+      const parcNV5 = instMatchV5 ? instMatchV5[1] : "12";
+      const leftTopV5 = (() => {
+        if (paymentMode === "cash" || paymentMode === "cash_discount") return "A VISTA";
+        if (paymentMode === "down_plus") return "entrada +";
+        return pricePrefix !== undefined ? pricePrefix : "a partir de";
+      })();
+      const pillTxtV5 = (() => {
+        if (paymentMode === "cash" || paymentMode === "cash_discount") return "PIX";
+        if (paymentMode === "down_plus") {
+          const clean = (installments || paymentLabel || "Entrada + 12x").replace(/entrada\s*\+?/i, "").trim();
+          return clean || `${parcNV5}X`;
+        }
+        return `${parcNV5}X`;
+      })().toUpperCase();
+
+      const priceRawV5 = (price || "").trim();
+      const priceNumV5 = parseFloat(priceRawV5.replace(/\./g, "").replace(",", "."));
+      const hasCentsV5 = /[.,]\d{1,2}\s*$/.test(priceRawV5);
+      const fmtBRv5 = (n: number, withCents: boolean) =>
+        n.toLocaleString("pt-BR", {
+          minimumFractionDigits: withCents ? 2 : 0,
+          maximumFractionDigits: withCents ? 2 : 0,
+        });
+      const valNumV5 = !isNaN(priceNumV5)
+        ? fmtBRv5(priceNumV5, hasCentsV5)
+        : priceRawV5;
+
+      const totalMultiplierV5 = (paymentMode === "cash" || paymentMode === "cash_discount") ? 1 : parseInt(parcNV5, 10);
+      const totalNumV5 = !isNaN(priceNumV5) ? priceNumV5 * totalMultiplierV5 : NaN;
+      const totalStrV5 = (totalOverride && totalOverride.trim())
+        || (!isNaN(totalNumV5) ? `Total: ${curSym} ${fmtBRv5(totalNumV5, hasCentsV5)}` : "");
+
+      // Card dimensões
+      const cardW = Math.round(width * (format === "story" ? 0.82 : 0.74));
+      const cardX = Math.round((width - cardW) / 2);
+      const cardH = format === "story" ? 640 : 480;
+      const cardY = format === "story" ? Math.round(height * 0.32) : Math.round(height * 0.22);
+      const cardR = 32;
+
+      // Desenha card Aurora semi-transparente
+      ctx.save();
+      // Glow border
+      ctx.shadowColor = v5Primary;
+      ctx.shadowBlur = 40;
+      fillRoundRect(ctx, cardX - 3, cardY - 3, cardW + 6, cardH + 6, cardR, "rgba(255,255,255,0.05)");
+      ctx.restore();
+
+      ctx.save();
+      // Glass card fill
+      fillRoundRect(ctx, cardX, cardY, cardW, cardH, cardR, "rgba(10, 15, 30, 0.88)");
+      
+      // Card border stroke
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+      ctx.lineWidth = 2;
+      roundRect(ctx, cardX, cardY, cardW, cardH, cardR);
+      ctx.stroke();
+      ctx.restore();
+
+      const cxV5 = cardX + cardW / 2;
+      const leftPadV5 = cardX + 40;
+
+      // 1) Tagline
+      ctx.textAlign = "left";
+      ctx.fillStyle = v5Secondary;
+      ctx.font = "900 24px Inter, Arial, sans-serif";
+      safeFillText(ctx, taglineV5, leftPadV5, cardY + 50, cardW - 80, 12);
+
+      // 2) Título Destino
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "900 52px Inter, Arial, sans-serif";
+      safeFillText(ctx, titleLineV5, leftPadV5, cardY + 110, cardW - 80, 18);
+
+      // 3) Dias / Info
+      if (daysTextV5) {
+        ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+        ctx.font = "700 24px Inter, Arial, sans-serif";
+        ctx.fillText(daysTextV5.toUpperCase(), leftPadV5, cardY + 160);
+      }
+
+      // 4) Ícones Highlights (horizontal)
+      const iconSizeV5 = 38;
+      const iconGapV5 = 14;
+      const iconStartY = cardY + 200;
+      iconListV5.forEach((k, idx) => {
+        const ix = leftPadV5 + idx * (iconSizeV5 + iconGapV5);
+        // Frosted circle for icon
+        fillRoundRect(ctx, ix, iconStartY, iconSizeV5, iconSizeV5, iconSizeV5 / 2, "rgba(255,255,255,0.08)");
+        drawMonoIcon(ctx, k, ix + iconSizeV5 / 2, iconStartY + iconSizeV5 / 2, iconSizeV5 * 0.6, "#ffffff");
+      });
+
+      // 5) Price Box Area
+      const priceY = cardY + (format === "story" ? 330 : 255);
+      
+      // Esquerda do preço
+      ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.font = "800 20px Inter, Arial, sans-serif";
+      ctx.fillText(leftTopV5.toUpperCase(), leftPadV5, priceY + 20);
+
+      // Pill de Parcelamento / Forma
+      const pillH = 46;
+      const pillY = priceY + 36;
+      ctx.font = "900 26px Inter, Arial, sans-serif";
+      const pillW = ctx.measureText(pillTxtV5).width + 30;
+      fillRoundRect(ctx, leftPadV5, pillY, pillW, pillH, 8, v5Secondary);
+      ctx.fillStyle = contrastOn(v5Secondary);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(pillTxtV5, leftPadV5 + pillW / 2, pillY + pillH / 2 + 1);
+      ctx.textBaseline = "alphabetic";
+      ctx.textAlign = "left";
+
+      // Direita do preço (Valor)
+      ctx.fillStyle = "#ffffff";
+      const rightX = cardX + cardW - 40;
+      ctx.textAlign = "right";
+      
+      let valSize = format === "story" ? 100 : 80;
+      ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
+      const valW = ctx.measureText(valNumV5).width;
+      const symSize = Math.round(valSize * 0.35);
+      
+      const priceBaseY = priceY + 120;
+      ctx.fillText(valNumV5, rightX, priceBaseY);
+      
+      ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
+      ctx.fillStyle = v5Secondary;
+      ctx.fillText(curSym, rightX - valW - 10, priceBaseY - valSize * 0.35);
+
+      // Total
+      if (showTotal && totalStrV5) {
+        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.font = "700 20px Inter, Arial, sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(totalStrV5, rightX, priceBaseY + 32);
+      }
+
+      // Pix/Promo Badge se ativado
+      if (showPixBanner) {
+        const pixY = cardY + cardH - 85;
+        const pixH = 50;
+        const pixLabel = (pixBannerText && pixBannerText.trim()) || "GARANTA DESCONTO NO Pix";
+        
+        ctx.textAlign = "center";
+        fillRoundRect(ctx, leftPadV5, pixY, cardW - 80, pixH, 12, "rgba(255, 255, 255, 0.06)");
+        
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+        ctx.lineWidth = 1;
+        roundRect(ctx, leftPadV5, pixY, cardW - 80, pixH, 12);
+        ctx.stroke();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "800 20px Inter, Arial, sans-serif";
+        ctx.textBaseline = "middle";
+        ctx.fillText(pixLabel.toUpperCase(), cxV5, pixY + pixH / 2 + 1);
+        ctx.textBaseline = "alphabetic";
+      }
+
+      await drawFinalBranding(
+        ctx, width, height, logoDataUrl, 
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        effectiveTextColor,
+        userFamily,
+        false,
+        logoFormat
+      );
+      applyFilmGrain(ctx, width, height, 0.04);
+      return canvas.toDataURL("image/png");
+    }
     return canvas.toDataURL("image/png");
   };
 
@@ -3321,7 +3529,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
   try {
     if (isExperience) {
       const v = typeof forceVariant === "number" ? forceVariant : variation;
-      const variant = ((v % 5) + 5) % 5; 
+      const variant = ((v % 6) + 6) % 6; 
 
       if (variant === 0) return await renderV0Experiencia();
       if (variant === 1) return await renderV1Experiencia();
@@ -3331,6 +3539,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
         return await renderSafeSquareOffer();
       }
       if (variant === 4) return await renderV4Experiencia();
+      if (variant === 5) {
+        // Reutiliza o motor Aurora Premium que é altamente estético e compatível
+        return await renderSafeSquareOffer();
+      }
       
       return await renderV0Experiencia();
     }
