@@ -37,120 +37,128 @@ serve(async (req) => {
       secondaryColor,
       variation
     } = body;
+
     const isStory = format === "story";
     const width = 1080;
     const height = isStory ? 1920 : 1080;
-    const safeY = isStory ? 1500 : 850;
+    // Safe zone: footer reserved below this Y
+    const safeY = isStory ? 1650 : 900;
+    const v = Number(variation) || 1;
 
     const inputPrimary = primaryColor || "#0C2340";
     const inputSecondary = secondaryColor || "#F59E0B";
+    const highlightList = Array.isArray(highlights) ? highlights.join(", ") : String(highlights || "");
 
-    // CONSTANTES PARA IMAGENS GOLDEN STANDARD (BASE64)
-    // TODO: Insert Base64 Square Image here
-    const SQUARE_GOLDEN_REF_BASE64 = "";
+    // ============================================================
+    // MATHEMATICAL ZONE DEFINITIONS — mutually exclusive per variation
+    // These make it STRUCTURALLY IMPOSSIBLE for the LLM to produce
+    // the same layout across the 3 batch calls.
+    // ============================================================
 
-    // TODO: Insert Base64 Story Image here
-    const STORY_GOLDEN_REF_BASE64 = "";
+    // Variation 1 — BOTTOM HEAVY
+    // Main content block anchored in the lower 50% of the canvas
+    const v1 = {
+      archetype: "BOTTOM HEAVY — toda a composição principal deve estar na metade INFERIOR da tela",
+      anchorZone: `Y entre ${Math.round(height * 0.5)} e ${safeY}`,
+      forbiddenZone: `PROIBIDO posicionar o card/caixa principal com Y < ${Math.round(height * 0.5)}. A metade superior (Y < ${Math.round(height * 0.5)}) só pode ter texto solto (título do destino) ou badge de promoção, NUNCA caixas opacas grandes.`,
+      mandatoryFirstElement: `O primeiro elemento do array DEVE ser uma box em Y = ${Math.round(height * 0.52)}, x = 40, width = ${width - 80}, height >= ${Math.round(height * 0.28)}, backgroundColor = "${inputPrimary}" com borderRadius = 24.`,
+      pricePosition: `O preço DEVE estar dentro dessa caixa, alinhado à ESQUERDA (textAlign: "left"), com fontSize entre 72 e 96px.`,
+    };
 
-    const referenceImageBase64 = isStory ? STORY_GOLDEN_REF_BASE64 : SQUARE_GOLDEN_REF_BASE64;
+    // Variation 2 — LEFT SIDEBAR SPLIT
+    // A vertical panel occupies the left column, content on the right floats
+    const v2 = {
+      archetype: "LEFT SIDEBAR SPLIT — painel vertical estreito na esquerda, conteúdo flutuante na direita",
+      anchorZone: `Uma coluna vertical ESQUERDA de x=0 a x=${Math.round(width * 0.38)}, altura total de Y=0 a Y=${safeY}`,
+      forbiddenZone: `PROIBIDO criar um card/caixa grande centralizado (x entre 150 e 750 com width > 600). O layout DEVE ser assimétrico: coluna da esquerda + elementos flutuantes na direita.`,
+      mandatoryFirstElement: `O primeiro elemento do array DEVE ser uma box em x=0, y=0, width=${Math.round(width * 0.38)}, height=${safeY}, backgroundColor = "${inputPrimary}" (painel lateral completo, sem borderRadius).`,
+      pricePosition: `O preço DEVE estar na coluna da DIREITA (x > ${Math.round(width * 0.42)}), textAlign: "right", fontSize entre 80 e 110px.`,
+    };
 
-    const promptText = `Você é um Engenheiro de UI/UX sênior e Diretor de Arte de alta fidelidade.
-Seu objetivo é projetar e compor matematicamente um layout de anúncio de viagem impressionante sobre uma imagem de fundo (que já está inserida no canvas).
-Você deve calcular e posicionar perfeitamente as caixas de fundo e os textos para que nada fique desalinhado ou ultrapasse a tela.
+    // Variation 3 — FLOATING CENTER CAPSULE
+    // A compact floating capsule/card centered vertically and horizontally
+    const v3 = {
+      archetype: "FLOATING CENTER CAPSULE — cartão compacto flutuante no centro da tela, extremamente minimalista",
+      anchorZone: `Centro da tela: x entre 60 e ${width - 60}, Y entre ${Math.round(height * 0.3)} e ${Math.round(height * 0.72)}`,
+      forbiddenZone: `PROIBIDO criar painéis que toquem as bordas laterais (x=0 ou x+width=${width}). PROIBIDO criar elementos com Y > ${Math.round(height * 0.73)}. A composição deve parecer uma peça flutuando no centro sobre a foto.`,
+      mandatoryFirstElement: `O primeiro elemento do array DEVE ser uma box de alta transparência em x=${Math.round(width * 0.08)}, y=${Math.round(height * 0.32)}, width=${Math.round(width * 0.84)}, height=${Math.round(height * 0.36)}, backgroundColor = "rgba(${parseInt(inputPrimary.slice(1,3),16)},${parseInt(inputPrimary.slice(3,5),16)},${parseInt(inputPrimary.slice(5,7),16)},0.82)", borderRadius=32.`,
+      pricePosition: `O preço DEVE estar centralizado (textAlign: "center") dentro do card, fontSize entre 64 e 88px.`,
+    };
 
-DIMENSÕES DO CANVAS E REGRAS DE LAYOUT:
-- Largura (width): ${width}px
-- Altura (height): ${height}px
-- ZONA MORTA (RODAPÉ): Nunca posicione nenhuma caixa ou texto abaixo de Y = ${safeY}px (Y > ${safeY} é reservado estritamente para o branding/logo e contatos da agência que serão renderizados por cima).
+    const variantConfig = v === 1 ? v1 : v === 2 ? v2 : v3;
 
-CORES OBRIGATÓRIAS DA IDENTIDADE DO CLIENTE:
-- Cor Primária (Fundo dos cartões/caixas principais, painéis): ${inputPrimary}
-- Cor Secundária (Destaques comerciais, badges, faixas secundárias, preços, pílulas de destaque): ${inputSecondary}
-- Para textos sobre fundo escuro (como ${inputPrimary}), use a cor branca ("#FFFFFF"). Para textos sobre fundo claro, use preto/cinza-escuro ("#111111").
+    // ============================================================
+    // SYSTEM INSTRUCTION — identity of the model
+    // ============================================================
+    const systemInstruction = `Você é um Engenheiro de UI/UX sênior especializado em compor coordenadas matemáticas precisas de elementos gráficos em Canvas 2D (dimensões exatas: ${width}x${height}px) para anúncios de viagem premium. 
+Sua ÚNICA função é retornar um JSON puro com a chave "elements" contendo um array de objetos do tipo box ou text. 
+Você NUNCA repete o mesmo layout se a variação mudar. Você é obcecado em respeitar as zonas de coordenadas proibidas.`;
 
-DADOS DINÂMICOS DO PACOTE DE VIAGEM A INSERIR NO DESIGN:
-- Destino/Título Principal: ${destination}
-- Preço: ${currencySymbol} ${price}
-- Período/Duração: ${duration}
-- Benefícios/Highlights (Gere pequenas caixas ou linhas para estes itens): ${Array.isArray(highlights) ? highlights.join(", ") : ""}
-- Chamada da Promoção (badge de destaque): ${promoName}
+    // ============================================================
+    // USER PROMPT — data-driven with hard coordinate constraints
+    // ============================================================
+    const promptText = `TAREFA: Gere um layout de anúncio de viagem premium para um canvas ${width}x${height}px.
 
-CRITICAL INSTRUCTION: You are designing for a ${format} canvas. Look at the attached reference image. It represents the perfect structural layout, visual balance, and mathematical alignment (Golden Standard) for this specific format. 
-Your task is to generate a JSON array of 'elements' (type, x, y, width, height, backgroundColor, color, fontSize, content) that MIMICS the exact positioning, padding, and hierarchy seen in this reference image. 
-For Stories (9:16), ensure Y-coordinates respect safe zones (do not place elements below Y=1700).
-Apply the user's specific text (Destination, Price, Highlights) and exact colors (Primary: ${inputPrimary}, Secondary: ${inputSecondary}).
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DADOS DO PACOTE (OBRIGATÓRIO inserir todos no design):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Destino: ${destination}
+- Preço: ${currencySymbol || "R$"} ${price}
+- Período: ${duration}
+- Benefícios: ${highlightList}
+- Badge/Promoção: ${promoName}
 
-CRITICAL REQUIREMENT FOR DIVERSITY:
-This is generation request number: ${variation || 1}. You MUST use this variation seed to design a radically unique structural layout:
-- If variation is 1: Focus strictly on bottom-heavy layouts (main cards, prices, and benefits aligned at the bottom of the canvas, between Y = ${isStory ? 800 : 450} and Y = ${safeY}).
-- If variation is 2: Focus strictly on split/sidebar layouts (main boxes and elements aligned horizontally either strictly to the left or strictly to the right).
-- If variation is 3: Focus strictly on floating, minimalist, highly transparent cards or central capsules located near the center of the canvas.
-DO NOT repeat the same coordinates from previous variations. Maximize structural variety!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IDENTIDADE VISUAL (USE EXATAMENTE ESTAS CORES):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- COR PRIMÁRIA (cards, painéis, fundos): ${inputPrimary}
+- COR SECUNDÁRIA (badges, preço, destaques): ${inputSecondary}
+- Texto sobre fundo escuro: "#FFFFFF"
+- Texto sobre fundo claro: "#111111"
 
-GERAÇÃO DO DESIGN:
-Você deve planejar o layout criando uma composição harmoniosa. Insira:
-1. Pelo menos uma caixa de fundo de cartão ("box") com cantos arredondados usando a Cor Primária (${inputPrimary}) ou uma opacidade translúcida como "rgba(12, 35, 64, 0.85)".
-2. Elementos de texto ("text") posicionados perfeitamente em cima dessas caixas, calculando corretamente o 'x', 'y', 'width' (largura disponível) e 'height'.
-3. Uma pílula de destaque/badge ("box") com a Cor Secundária (${inputSecondary}) para destacar a chamada "${promoName}".
-4. O preço em tamanho de fonte gigante (ex: 64px a 96px) posicionado para alto impacto.
-5. Outros detalhes (período, lista de benefícios) organizados de forma limpa.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨 ZONA MORTA — NUNCA ULTRAPASSE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- PROIBIDO qualquer elemento com Y > ${safeY}px. Essa área é reservada exclusivamente para o rodapé de branding que será sobreposto depois.
 
-Retorne EXCLUSIVAMENTE um objeto JSON válido contendo a raiz 'elements' (array de objetos). Não envolva em markdown. Não escreva explicações fora do JSON.
-Cada elemento no array 'elements' deve seguir estritamente um destes formatos:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 VARIAÇÃO ${v} DE 3 — ARQUÉTIPO: ${variantConfig.archetype}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Se type for "box":
+ZONA PERMITIDA: ${variantConfig.anchorZone}
+
+${variantConfig.forbiddenZone}
+
+ELEMENTO ÂNCORA OBRIGATÓRIO (PRIMEIRO DO ARRAY):
+${variantConfig.mandatoryFirstElement}
+
+POSICIONAMENTO DO PREÇO:
+${variantConfig.pricePosition}
+
+REGRAS RESTANTES DO LAYOUT:
+1. O badge da promoção ("${promoName}") DEVE ser uma box com backgroundColor="${inputSecondary}" e borderRadius entre 20 e 40.
+2. O título do destino ("${destination}") deve ter fontSize entre 52 e 80px, fontWeight "900".
+3. Os benefícios (${highlightList}) devem ser textos individuais separados com fontSize entre 24 e 32px.
+4. Todos os elementos text DEVEM ter campo "width" definido para controle do text wrap.
+5. NÃO use x ou y negativos. NÃO ultrapasse x + width > ${width} ou y + height > ${safeY}.
+6. Mínimo de 6 elementos, máximo de 14 elementos no array.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FORMATO DE SAÍDA — JSON PURO (sem markdown, sem explicações):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {
-  "type": "box",
-  "x": number,
-  "y": number,
-  "width": number,
-  "height": number,
-  "backgroundColor": string (aceita hex ou rgba),
-  "borderColor": string (opcional),
-  "borderWidth": number (opcional),
-  "borderRadius": number (opcional)
-}
-
-Se type for "text":
-{
-  "type": "text",
-  "x": number,
-  "y": number,
-  "width": number,
-  "height": number,
-  "content": string (texto dinâmico mapeado),
-  "color": string (hex/rgb),
-  "fontSize": number (em pixels),
-  "fontFamily": "Inter" | "Playfair Display" | "Arial",
-  "fontWeight": "bold" | "normal" | "900",
-  "textAlign": "left" | "center" | "right"
-}
-
-Retorne APENAS o JSON puro.`;
-
-    const parts: any[] = [];
-    if (referenceImageBase64) {
-      parts.push({
-        inlineData: {
-          mimeType: "image/png",
-          data: referenceImageBase64
-        }
-      });
-    }
-    parts.push({ text: promptText });
+  "elements": [
+    { "type": "box", "x": number, "y": number, "width": number, "height": number, "backgroundColor": string, "borderRadius": number },
+    { "type": "text", "x": number, "y": number, "width": number, "height": number, "content": string, "color": string, "fontSize": number, "fontFamily": "Inter", "fontWeight": "900"|"bold"|"normal", "textAlign": "left"|"center"|"right" }
+  ]
+}`;
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: `Você é um Engenheiro de UI/UX sênior e Diretor de Arte especializado em compor coordenadas matemáticas precisas de elementos gráficos em Canvas (1080x1080 ou 1080x1920) para anúncios de turismo premium de luxo. Sua única função é calcular coordenadas sem colisão e retornar a lista estruturada de elementos in JSON.` }],
-        },
-        contents: [
-          { role: "user", parts },
-        ],
+        systemInstruction: { parts: [{ text: systemInstruction }] },
+        contents: [{ role: "user", parts: [{ text: promptText }] }],
         generationConfig: {
           temperature: 1.0,
           responseMimeType: "application/json",
@@ -189,47 +197,51 @@ Retorne APENAS o JSON puro.`;
     const rawText: string = data?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("") ?? "";
     if (!rawText) throw new Error("IA não retornou conteúdo.");
 
-    // Robust Bracket-Matching Extractor to securely isolate the layout JSON
+    // Robust Bracket-Matching Extractor — survives markdown noise, trailing text, invalid escapes
     const extractJSON = (str: string): any => {
-      const firstOpen = str.indexOf("{");
-      if (firstOpen === -1) throw new Error("Não foi encontrado início de objeto JSON ({) na resposta.");
+      // Sanitize invisible control chars that break JSON.parse
+      const sanitized = str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
+      const firstOpen = sanitized.indexOf("{");
+      if (firstOpen === -1) throw new Error("Não foi encontrado início de objeto JSON na resposta.");
       
       let count = 0;
-      for (let i = firstOpen; i < str.length; i++) {
-        if (str[i] === "{") {
+      for (let i = firstOpen; i < sanitized.length; i++) {
+        if (sanitized[i] === "{") {
           count++;
-        } else if (str[i] === "}") {
+        } else if (sanitized[i] === "}") {
           count--;
           if (count === 0) {
-            const candidate = str.substring(firstOpen, i + 1);
+            const candidate = sanitized.substring(firstOpen, i + 1);
             try {
               return JSON.parse(candidate);
-            } catch (e) {
-              // Fail silently to search next block
+            } catch (_e) {
+              // Try repairing trailing commas before closing bracket/brace
+              try {
+                const repaired = candidate.replace(/,\s*([}\]])/g, "$1");
+                return JSON.parse(repaired);
+              } catch (_e2) {
+                // Continue scanning for next balanced block
+              }
             }
           }
         }
       }
-      
-      // Fallback: try simple string boundaries
-      const lastClose = str.lastIndexOf("}");
-      if (lastClose !== -1 && lastClose > firstOpen) {
-        try {
-          return JSON.parse(str.substring(firstOpen, lastClose + 1));
-        } catch (e) {}
-      }
-      throw new Error("Formato JSON corrompido ou chaves desalinhadas.");
+      throw new Error("Formato JSON corrompido ou chaves desbalanceadas.");
     };
-    
+
     const jsonOutput = extractJSON(rawText);
 
-    if (!jsonOutput || !Array.isArray(jsonOutput.elements)) {
-      throw new Error("JSON de layout dinâmico inválido.");
+    if (!jsonOutput || !Array.isArray(jsonOutput.elements) || jsonOutput.elements.length === 0) {
+      throw new Error("JSON de layout dinâmico inválido ou vazio.");
     }
+
+    // Log chosen variation for observability (visible in Supabase function logs)
+    console.log(`[IA_PURA] variation=${v} format=${format} elements=${jsonOutput.elements.length} destination="${destination}"`);
 
     return new Response(JSON.stringify({ provider: "secure_gemini", layout: jsonOutput }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+
   } catch (e: any) {
     console.error("fabrica-design-ai error:", e);
     return new Response(JSON.stringify({ error: e?.message || "Erro desconhecido" }), {
