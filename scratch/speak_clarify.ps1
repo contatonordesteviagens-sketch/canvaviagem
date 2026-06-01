@@ -1,5 +1,0 @@
-Add-Type -AssemblyName System.speech
-$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer
-$speak.Rate = 2
-$speak.SelectVoice('Microsoft Daniel')
-$speak.Speak('Meu amigo, peço sinceras desculpas! Você tem toda a razão e eu vou te explicar exatamente como isso funciona. Para que os seus clientes publiquem de graça na sua conta do Vercel com apenas dois cliques, nós precisamos de uma chave especial chamada Token do Vercel. Essa chave conecta a plataforma à sua conta oficial do Vercel. Sem ela no arquivo ponto env, o Vercel não tem como saber em qual conta do mundo ele deve publicar! Você pode gerar esse Token em trinta segundos no painel do Vercel. Depois, basta colar o seu Token no arquivo ponto env como VITE_VERCEL_TOKEN, ou me enviar aqui no chat que eu escrevo para você! Assim que colocarmos a sua chave no arquivo ponto env, qualquer agência poderá digitar o nome desejado e publicar ou atualizar o site dela na sua conta Vercel com um clique, de forma totalmente invisível e segura para eles! Vamos fazer isso juntos agora?')
