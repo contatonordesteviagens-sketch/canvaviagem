@@ -45,6 +45,15 @@ serve(async (req) => {
     const inputPrimary = primaryColor || "#0C2340";
     const inputSecondary = secondaryColor || "#F59E0B";
 
+    // CONSTANTES PARA IMAGENS GOLDEN STANDARD (BASE64)
+    // TODO: Insert Base64 Square Image here
+    const SQUARE_GOLDEN_REF_BASE64 = "";
+
+    // TODO: Insert Base64 Story Image here
+    const STORY_GOLDEN_REF_BASE64 = "";
+
+    const referenceImageBase64 = isStory ? STORY_GOLDEN_REF_BASE64 : SQUARE_GOLDEN_REF_BASE64;
+
     const promptText = `Você é um Engenheiro de UI/UX sênior e Diretor de Arte de alta fidelidade.
 Seu objetivo é projetar e compor matematicamente um layout de anúncio de viagem impressionante sobre uma imagem de fundo (que já está inserida no canvas).
 Você deve calcular e posicionar perfeitamente as caixas de fundo e os textos para que nada fique desalinhado ou ultrapasse a tela.
@@ -65,6 +74,11 @@ DADOS DINÂMICOS DO PACOTE DE VIAGEM A INSERIR NO DESIGN:
 - Período/Duração: ${duration}
 - Benefícios/Highlights (Gere pequenas caixas ou linhas para estes itens): ${Array.isArray(highlights) ? highlights.join(", ") : ""}
 - Chamada da Promoção (badge de destaque): ${promoName}
+
+CRITICAL INSTRUCTION: You are designing for a ${format} canvas. Look at the attached reference image. It represents the perfect structural layout, visual balance, and mathematical alignment (Golden Standard) for this specific format. 
+Your task is to generate a JSON array of 'elements' (type, x, y, width, height, backgroundColor, color, fontSize, content) that MIMICS the exact positioning, padding, and hierarchy seen in this reference image. 
+For Stories (9:16), ensure Y-coordinates respect safe zones (do not place elements below Y=1700).
+Apply the user's specific text (Destination, Price, Highlights) and exact colors (Primary: ${inputPrimary}, Secondary: ${inputSecondary}).
 
 CRITICAL REQUIREMENT FOR DIVERSITY:
 This is generation request number: ${variation || 1}. You MUST use this variation seed to design a radically unique structural layout:
@@ -114,6 +128,17 @@ Se type for "text":
 
 Retorne APENAS o JSON puro.`;
 
+    const parts: any[] = [];
+    if (referenceImageBase64) {
+      parts.push({
+        inlineData: {
+          mimeType: "image/png",
+          data: referenceImageBase64
+        }
+      });
+    }
+    parts.push({ text: promptText });
+
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: {
@@ -121,10 +146,10 @@ Retorne APENAS o JSON puro.`;
       },
       body: JSON.stringify({
         systemInstruction: {
-          parts: [{ text: `Você é um Engenheiro de UI/UX sênior e Diretor de Arte especializado em compor coordenadas matemáticas precisas de elementos gráficos em Canvas (1080x1080 ou 1080x1920) para anúncios de turismo premium de luxo. Sua única função é calcular coordenadas sem colisão e retornar a lista estruturada de elementos em JSON.` }],
+          parts: [{ text: `Você é um Engenheiro de UI/UX sênior e Diretor de Arte especializado em compor coordenadas matemáticas precisas de elementos gráficos em Canvas (1080x1080 ou 1080x1920) para anúncios de turismo premium de luxo. Sua única função é calcular coordenadas sem colisão e retornar a lista estruturada de elementos in JSON.` }],
         },
         contents: [
-          { role: "user", parts: [{ text: promptText }] },
+          { role: "user", parts },
         ],
         generationConfig: {
           temperature: 1.0,
