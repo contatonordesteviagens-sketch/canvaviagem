@@ -25,8 +25,29 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { format, destination, price, highlights, promoName, currencySymbol, duration, primaryColor, secondaryColor } = body;
+    const { 
+      format, 
+      destination, 
+      price, 
+      highlights, 
+      promoName, 
+      currencySymbol, 
+      duration, 
+      primaryColor, 
+      secondaryColor,
+      variation,
+      excludeStyles
+    } = body;
     const isStory = format === "story";
+
+    // Formatar exclusões se existirem
+    const exclusionsText = Array.isArray(excludeStyles) && excludeStyles.length > 0
+      ? `\nCRITICAL RESTRICTION: You MUST NOT select any of the following styles: ${excludeStyles.join(", ")}. They are strictly prohibited for this variation to ensure design variety.`
+      : "";
+
+    const variationText = variation
+      ? `\nThis is variation index/number: ${variation}. Please select a style that maximizes visual diversity and aesthetic appeal relative to other styles.`
+      : "";
 
     const promptText = `Analise os dados do pacote de viagem abaixo e selecione qual dos 8 Estilos Premium de design é o mais adequado e elegante para este anúncio:
 
@@ -36,6 +57,7 @@ DADOS DO ANÚNCIO:
 - Duração/Período: ${duration}
 - Destaques/Inclusos: ${Array.isArray(highlights) ? highlights.join(", ") : ""}
 - Nome da Promoção: ${promoName}
+${exclusionsText}${variationText}
 
 OS 8 ESTILOS PREMIUM DISPONÍVEIS:
 
@@ -83,7 +105,7 @@ Retorne APENAS o JSON puro. Não envolva em markdown. Não escreva explicações
           { role: "user", parts: [{ text: promptText }] },
         ],
         generationConfig: {
-          temperature: 0.2,
+          temperature: 0.7,
           responseMimeType: "application/json",
         },
       }),
