@@ -775,6 +775,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
   const [captionCopied, setCaptionCopied] = useState(false);
   // Histórico das últimas variantes do compositor canvas (modo Sua Imagem) para forçar rotação
   const variantHistoryRef = useRef<number[]>([]);
+  // Proteção anti-loop: limita fallbacks automáticos da IA Pura
+  const retryCountRef = useRef<number>(0);
   // Versão forçada (null = automático/rotação). 0..4 fixa a variante exata para correções cirúrgicas.
   const [lastProvider, setLastProvider] = useState<"secure_gemini" | null>(() => {
     return (localStorage.getItem("fabrica_last_provider") as "secure_gemini") || "secure_gemini";
@@ -1318,6 +1320,10 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         setGenerationCount(newCount);
         localStorage.setItem("fabrica_gen_count", String(newCount));
         finishCycle(composed.length);
+        // 🛡️ CRÍTICO: Limpa forcedVariant para que V0-V4 voltem a rotacionar
+        // Sem isso, o fallback de erro da IA Pura trava TODAS as gerações em Variant 0
+        if (forcedVariant !== null) setForcedVariant(null);
+        retryCountRef.current = 0;
 
         toast.success(`${composed.length} ${composed.length === 1 ? "variação gerada" : "variações geradas"} com foto real!`);
         requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
@@ -1333,6 +1339,25 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           return;
         }
 
+        // 🛡️ FALHA #4 FIX — Gate real de limite diário ANTES de chamar a API
+        const AI_PURE_DAILY_LIMIT = 30;
+        const currentCount = getAiPureDailyCount();
+        if (currentCount >= AI_PURE_DAILY_LIMIT) {
+          toast.error(`Limite diário de ${AI_PURE_DAILY_LIMIT} gerações IA Pura atingido. Reinicia amanhã.`);
+          setLoading(false);
+          return;
+        }
+
+        // 🛡️ FALHA #9 FIX — Pré-carrega Playfair Display antes do canvas para evitar fallback em Times New Roman
+        if (document.fonts?.load) {
+          try {
+            await Promise.race([
+              document.fonts.load('900 64px "Playfair Display"'),
+              new Promise((_, reject) => setTimeout(() => reject(), 2000))
+            ]);
+          } catch { /* fonte não disponível, usa Inter como fallback — aceitável */ }
+        }
+
         toast.info("Iniciando IA Designer v3...");
 
         const highlightTexts: string[] = (highlights || []).map((h: any) =>
@@ -1343,13 +1368,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         const picks = Array.from({ length: numToGen }, (_, idx) => idx);
 
         try {
-          const results = await Promise.all(
+          // 🛡️ Promise.allSettled: 1 falha NÃO derruba as outras 2 variações
+          const settled = await Promise.allSettled(
             picks.map(async (idx) => {
-              // Rotação defensiva de exclusões para forçar variedade de Estilos Premium
-              const exclude: string[] = [];
-              if (idx === 1) exclude.push("A", "C");
-              if (idx === 2) exclude.push("A", "B", "D", "G");
-
               const { data: aiData, error: aiError } = await supabase.functions.invoke("fabrica-design-ai", {
                 body: {
                   format,
@@ -1362,9 +1383,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   primaryColor,
                   secondaryColor,
                   variation: idx + 1,
-                  excludeStyles: exclude,
-                  userGeminiKey: localStorage.getItem("user_gemini_api_key") || "",
-                  timestamp: Date.now() + Math.random().toString(36).substring(7)
+                  timestamp: Date.now().toString(36) + Math.random().toString(36).substring(2, 7)
                 },
               });
 
@@ -1372,19 +1391,27 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
               if ((aiData as any)?.error) throw new Error((aiData as any).error);
               const layoutJson = (aiData as any)?.layout;
               if (!layoutJson || (!layoutJson.style && !layoutJson.elements)) {
-                throw new Error("Estilo de design inválido retornado pela IA.");
+                throw new Error("Layout inválido retornado pela IA.");
               }
               return layoutJson;
             })
           );
+
+          const results = settled
+            .filter((r): r is PromiseFulfilledResult<any> => r.status === "fulfilled")
+            .map(r => r.value);
+          const failedCount = settled.filter(r => r.status === "rejected").length;
+          if (failedCount > 0) toast.warning(`${failedCount} variação(ões) falharam, renderizando as restantes...`);
+          if (results.length === 0) throw new Error("Todas as variações de IA falharam. Tente novamente.");
 
           const { renderIAPuraLayout, reframeImageToAspect } = await import("@/lib/fabrica-compose-art");
 
           const isStory = format === "story";
           const reframedBg = await reframeImageToAspect(refImage, format);
 
-          const finalImages = await Promise.all(
-            results.map(async (layoutJson) => {
+          // 🛡️ Renderização SEQUENCIAL para evitar OOM em mobile (3 canvases 1080×1920 simultâneos = ~25MB)
+          const finalImages: string[] = [];
+          for (const layoutJson of results) {
               const canvas = document.createElement("canvas");
               canvas.width = 1080;
               canvas.height = isStory ? 1920 : 1080;
@@ -1404,7 +1431,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 paymentMode,
                 installments,
                 paymentSuffix,
-                logoBase64: state.logoBase64,
+                logoDataUrl: state.logoBase64,
                 logoFormat: state.logoFormat,
                 footerContact1Icon: state.footerContact1Icon,
                 footerContact1Value: state.footerContact1Value,
@@ -1417,9 +1444,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                 imageUrl: reframedBg,
               } as any, layoutJson as any);
 
-              return canvas.toDataURL("image/png", 0.9);
-            })
-          );
+              finalImages.push(canvas.toDataURL("image/png", 0.9));
+          }
 
           setGeneratedImages((prev) => {
             const merged = isBatchMode ? finalImages : [...prev, ...finalImages].slice(-3);
@@ -1434,7 +1460,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             allGeneratedAdImages: updatedGenerated
           });
 
-          await syncGeneratedPackageToSite(finalImages[finalImages.length - 1], refImage);
+          // 🛡️ FALHA #10 FIX — Sincroniza a PRIMEIRA imagem do lote (mais estável) em vez da última
+          await syncGeneratedPackageToSite(finalImages[0], refImage);
 
           toast.success(`${finalImages.length} ${finalImages.length === 1 ? "Design Dinâmico gerado" : "Designs Dinâmicos gerados"} com sucesso pela IA!`);
 
@@ -1445,16 +1472,29 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           setGenerationCount(newCount);
           localStorage.setItem("fabrica_gen_count", String(newCount));
           finishCycle(finalImages.length);
+          retryCountRef.current = 0;
 
           requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
         } catch (error: any) {
           console.error("ERRO_IA_PURA_CATCH:", error);
           toast.error("Erro ao gerar design da IA: " + (error?.message || "desconhecido"));
 
-          toast.info("Carregando layout de segurança (V0)...");
-          setForcedVariant(0);
-          setGenMode("photo");
-          setTimeout(() => generate(), 500);
+          // 🛡️ Anti-loop: só tenta fallback UMA vez. Sem isso, erros consecutivos entram em loop infinito.
+          if (retryCountRef.current < 1 && selectedPhotoUrl) {
+            retryCountRef.current += 1;
+            toast.info("Carregando layout de segurança...");
+            // NÃO muda genMode — mantém em 'ai' para o usuário saber onde está
+            // NÃO força variant 0 — deixa a rotação normal acontecer
+            setGenMode("photo");
+            setTimeout(() => {
+              generate();
+              // Restaura modo IA após o fallback para não confundir o usuário
+              setTimeout(() => setGenMode("ai"), 200);
+            }, 500);
+          } else {
+            retryCountRef.current = 0;
+            toast.error("Falha persistente na IA. Verifique sua conexão ou tente com outra foto.");
+          }
         }
 
         return;
@@ -1531,7 +1571,12 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
     } catch (err: any) {
       console.error("generate error", err);
-      const message = err?.message || "Erro ao gerar anúncio";
+      // 🛡️ FALHA #8 FIX — Mensagem específica para erros de CORS em links externos
+      const rawMsg = err?.message || "Erro ao gerar anúncio";
+      const isCorsError = rawMsg.toLowerCase().includes("tainted") || rawMsg.toLowerCase().includes("cors") || rawMsg.toLowerCase().includes("security") || rawMsg.toLowerCase().includes("cross-origin");
+      const message = isCorsError
+        ? "Link externo bloqueado por segurança (CORS). Use o upload de arquivo no seu dispositivo."
+        : rawMsg;
       setGenerationError(message);
       toast.error(message);
     } finally {
