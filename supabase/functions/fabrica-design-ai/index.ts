@@ -87,6 +87,17 @@ serve(async (req) => {
 
     const variantConfig = v === 1 ? v1 : v === 2 ? v2 : v3;
 
+    let strictLayoutRule = "";
+    if (v === 1) {
+      strictLayoutRule = "CRITICAL RULE FOR VARIATION 1: You MUST place the Price and Benefits boxes strictly on the LEFT side of the screen. Leave the right side empty.";
+    } else if (v === 2) {
+      strictLayoutRule = "CRITICAL RULE FOR VARIATION 2: You MUST place the Price and Benefits boxes strictly at the absolute BOTTOM of the screen (Footer heavy). Leave the top empty.";
+    } else if (v === 3) {
+      strictLayoutRule = "CRITICAL RULE FOR VARIATION 3: You MUST place the Price and Benefits boxes strictly on the RIGHT side of the screen. Leave the left side empty.";
+    } else {
+      strictLayoutRule = "CRITICAL RULE: Ensure this layout is completely unique.";
+    }
+
     // ============================================================
     // SYSTEM INSTRUCTION — identity of the model
     // ============================================================
@@ -142,6 +153,8 @@ REGRAS RESTANTES DO LAYOUT:
 4. Todos os elementos text DEVEM ter campo "width" definido para controle do text wrap.
 5. NÃO use x ou y negativos. NÃO ultrapasse x + width > ${width} ou y + height > ${safeY}.
 6. Mínimo de 6 elementos, máximo de 14 elementos no array.
+
+${strictLayoutRule}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FORMATO DE SAÍDA — JSON PURO (sem markdown, sem explicações):

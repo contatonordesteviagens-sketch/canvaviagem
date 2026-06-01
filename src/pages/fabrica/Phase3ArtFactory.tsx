@@ -1383,7 +1383,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
                   primaryColor,
                   secondaryColor,
                   variation: idx + 1,
-                  timestamp: Date.now().toString(36) + Math.random().toString(36).substring(2, 7)
+                  timestamp: Date.now() + idx
                 },
               });
 
