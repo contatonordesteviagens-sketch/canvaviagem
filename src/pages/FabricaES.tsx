@@ -479,8 +479,11 @@ const FabricaContentES = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [user]);
 
-  const ELITE_PRODUCT_IDS = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
-  const isElite = subscription.subscribed && ELITE_PRODUCT_IDS.includes(subscription.productId || "");
+  const isStart = subscription.subscribed && 
+    (subscription.productId?.includes("smart") || 
+     subscription.productId?.includes("start") || 
+     subscription.productId?.includes("basic"));
+  const isElite = subscription.subscribed && !isStart;
   const hasAccess = isAdmin || isElite || localStorage.getItem("cv_bypass") === "true";
   const canUseFabrica = accessGranted || hasAccess;
 

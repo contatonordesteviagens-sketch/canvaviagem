@@ -314,8 +314,16 @@ serve(async (req) => {
       const phone = payload.data?.customer?.phone || payload.data?.phone ? String(payload.data?.customer?.phone || payload.data?.phone).replace(/\D/g, '') : null;
       
       const transactionId = payload.data?.transaction_id || payload.data?.id || `ticto-${Date.now()}`;
-      const productId = payload.data?.product?.id ? String(payload.data?.product?.id) : undefined;
+      const rawProductId = payload.data?.product?.id ? String(payload.data?.product?.id) : undefined;
       const productName = payload.data?.product?.name || "Canva Viagem Premium";
+
+      // Map product_id to Start or Elite based on the product name
+      let productId = rawProductId || "monthly_access_ticto";
+      if (productName.toLowerCase().includes("start")) {
+        productId = "start_ticto";
+      } else if (productName.toLowerCase().includes("elite")) {
+        productId = "elite_ticto";
+      }
 
       if (email) {
         logStep("Processing approved payment onboarding", { email: redactEmail(email), transactionId, productId });

@@ -60,8 +60,11 @@ export const ProtectedRoute = ({
         return <Navigate to="/planos" replace />;
     }
 
-    const eliteProductIds = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
-    const isElite = subscription.subscribed && eliteProductIds.includes(subscription.productId || "");
+    const isStart = subscription.subscribed && 
+      (subscription.productId?.includes("smart") || 
+       subscription.productId?.includes("start") || 
+       subscription.productId?.includes("basic"));
+    const isElite = subscription.subscribed && !isStart;
 
     if (requireElite && !isElite && !isAdmin) {
         return <Navigate to="/fabrica" replace />;

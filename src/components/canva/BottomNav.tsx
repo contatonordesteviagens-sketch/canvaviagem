@@ -32,8 +32,11 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
         navigate("/auth");
         return;
       }
-      const eliteProductIds = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
-      const isElite = subscription.subscribed && eliteProductIds.includes(subscription.productId || "");
+      const isStart = subscription.subscribed && 
+        (subscription.productId?.includes("smart") || 
+         subscription.productId?.includes("start") || 
+         subscription.productId?.includes("basic"));
+      const isElite = subscription.subscribed && !isStart;
       const isUnlocked = isElite || isAdmin || localStorage.getItem("fabrica-unlocked") === "true";
 
       if (isUnlocked) {
@@ -93,11 +96,11 @@ export const BottomNav = ({ activeCategory, onCategoryChange }: BottomNavProps) 
           <Dock items={navItems} className="h-auto" />
         </div>
       </div>
-      language === "es" ? (
+      {language === "es" ? (
         <FabricaUpgradeModalES open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
       ) : (
         <FabricaUpgradeModal open={fabricaUpgradeOpen} onOpenChange={setFabricaUpgradeOpen} />
-      )
+      )}
     </>
   );
 };

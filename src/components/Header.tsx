@@ -153,8 +153,11 @@ const HeaderComponent = ({ onCategoryChange }: HeaderProps) => {
 
   // Intercept navigation to gated routes (Fábrica / Painel de Marketing)
   const handleNavClick = (to: string) => {
-    const eliteProductIds = ["prod_UTFlCWzNqvqSNx", "prod_UTFsXcKq8m0mol", "prod_UTSmPe3GPt8iHt"];
-    const isElite = subscription.subscribed && eliteProductIds.includes(subscription.productId || "");
+    const isStart = subscription.subscribed && 
+      (subscription.productId?.includes("smart") || 
+       subscription.productId?.includes("start") || 
+       subscription.productId?.includes("basic"));
+    const isElite = subscription.subscribed && !isStart;
 
     if ((to === "/fabrica" || to === "/painel-marketing") && !isAdmin && !isElite) {
       setFabricaUpgradeOpen(true);
