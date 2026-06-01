@@ -409,7 +409,7 @@ async function drawFinalBranding(
   // SAFE_BOTTOM = 380, logo PANEL_BOTTOM = ch - 380. 
   // O footerY deve ser calculado retroativamente a partir de PANEL_BOTTOM menos a altura do rodapé.
   // No modo IA Pura, desenha isolado no fundo absoluto (Y > 950 para formato quadrado) para não colidir com o box de benefícios.
-  const panelBottom = isIAPura ? (ch - 30) : (isStory ? ch - 380 : ch - 30);
+  const panelBottom = isIAPura ? (ch - 30) : (isStory ? ch - 90 : ch - 30);
   const footerY = panelBottom - footerHeight;
 
   // 1. Fundo do Rodapé (VÉU GRADIENTE ESCURO)
