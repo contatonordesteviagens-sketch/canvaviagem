@@ -671,19 +671,19 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                   {publishedSites.map((site) => {
                     const url = `https://${site.id}.canvaviagem.com`;
                     return (
-                      <a
-                        key={site.id}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                          <span className="text-xs text-white/85 font-semibold truncate">{site.id}.canvaviagem.com</span>
-                        </div>
-                        <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white shrink-0" />
-                      </a>
+                      <div key={site.id} className="flex gap-2">
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                            <span className="text-xs text-white/85 font-semibold truncate">{site.id}.canvaviagem.com</span>
+                          </div>
+                          <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white shrink-0" />
+                        </a>
                         <button
                           type="button"
                           onClick={() => {
@@ -732,29 +732,6 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                     >
                       <img src={src} alt={`Geração ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
                     </a>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const p = savedProjects?.find(x => x.id === site.id);
-                            if (p && p.state_snapshot) {
-                              const currentName = state.agencyName || 'Sem nome';
-                              const targetName = p.agency_name || 'Sem nome';
-                              if (state.agencyName && p.id !== state.projectId) {
-                                const ok = window.confirm(`⚠️ Você tem edições não salvas no projeto "${currentName}".\n\nSe continuar, essas edições serão perdidas.\n\nDeseja mesmo carregar "${targetName}" para editá-lo?`);
-                                if (!ok) return;
-                              }
-                              window.dispatchEvent(new CustomEvent("fabrica-load-snapshot", { detail: { ...p.state_snapshot, projectId: p.id } }));
-                              toast.success(`📂 Projeto "${targetName}" carregado!`);
-                              setTimeout(() => onNavigate?.("phase", 2), 100);
-                            } else {
-                               toast.error("Projeto não encontrado ou dados inválidos.");
-                            }
-                          }}
-                          className="px-3 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 text-violet-400 text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-                        >
-                          <Pencil className="w-3.5 h-3.5" /> Editar Site
-                        </button>
-                      </div>
                   ))}
                 </div>
               </div>
