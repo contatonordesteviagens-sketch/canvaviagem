@@ -33,19 +33,19 @@ type IconKey = "bus" | "hotel" | "plane" | "check" | "star" | "heart" | "sun" | 
 
 const ICON_OPTIONS: { key: IconKey; Icon: typeof Bus; label: string }[] = [
   { key: "check", Icon: Check, label: "Check" },
-  { key: "bus", Icon: Bus, label: "Ônibus" },
+  { key: "bus", Icon: Bus, label: "Bus" },
   { key: "hotel", Icon: Hotel, label: "Hotel" },
-  { key: "plane", Icon: Plane, label: "Avião" },
-  { key: "ship", Icon: Ship, label: "Navio" },
-  { key: "palm", Icon: Palmtree, label: "Coqueiro" },
+  { key: "plane", Icon: Plane, label: "Avión" },
+  { key: "ship", Icon: Ship, label: "Barco" },
+  { key: "palm", Icon: Palmtree, label: "Palmera" },
   { key: "sun", Icon: Sun, label: "Sol" },
-  { key: "food", Icon: Utensils, label: "Refeição" },
+  { key: "food", Icon: Utensils, label: "Comida" },
   { key: "coffee", Icon: Coffee, label: "Café" },
   { key: "map", Icon: MapPin, label: "Mapa" },
-  { key: "camera", Icon: Camera, label: "Câmera" },
-  { key: "star", Icon: Star, label: "Estrela" },
-  { key: "heart", Icon: Heart, label: "Coração" },
-  { key: "guide", Icon: User, label: "Guia" },
+  { key: "camera", Icon: Camera, label: "Cámara" },
+  { key: "star", Icon: Star, label: "Estrella" },
+  { key: "heart", Icon: Heart, label: "Corazón" },
+  { key: "guide", Icon: User, label: "Guía" },
   { key: "wifi", Icon: Wifi, label: "Wi-Fi" },
 ];
 
@@ -64,7 +64,7 @@ const DEFAULT_EXPERIENCE_HIGHLIGHTS: Highlight[] = [
   { text: "CURADORÍA PREMIUM", icon: "check" },
 ];
 
-const DEFAULT_SUFFIXES_OFERTA = new Set(["por persona", "por casal", "por pacote", "por grupo", "total do pacote"]);
+const DEFAULT_SUFFIXES_OFERTA = new Set(["por persona", "por pareja", "por paquete", "por grupo", "total del paquete"]);
 const DEFAULT_SUFFIX_EXPERIENCIA = "Tu viaje comienza aquí";
 
 // ====== Padronização de CORES por categoria ======
@@ -613,7 +613,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         }
 
         update({ logoBase64: canvas.toDataURL("image/png") });
-        toast.success("Logo adicionada com sucesso!");
+        toast.success("¡Logo añadido con éxito!");
       };
       img.src = event.target?.result as string;
     };
@@ -726,7 +726,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const [priceOptionsEnabled, setPriceOptionsEnabled] = useState(false);
   const resolvedAdTitle = (adTitleTemplate || "").replace(/\{destino\}/gi, destination?.trim() || "Destino *");
   const adTitleVariations = buildTitleVariations(adTitleTemplate || "Pacote {destino}", destination);
-  const SUFFIX_PRESETS = ["por persona", "por casal", "por pacote", "por grupo", "total do pacote"];
+  const SUFFIX_PRESETS = ["por persona", "por pareja", "por paquete", "por grupo", "total del paquete"];
   const DESTINATION_SUGGESTIONS = Array.from(new Set([
     ...(state.destinos || []),
     "Maragogi", "Jericoacoara", "Fernando de Noronha", "Gramado", "Bonito",
@@ -1388,7 +1388,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   primaryColor,
                   secondaryColor,
                   variation: idx + 1,
-                  timestamp: Date.now() + idx
+                  timestamp: Date.now() + idx,
+                  locale: "es"
                 },
               });
 

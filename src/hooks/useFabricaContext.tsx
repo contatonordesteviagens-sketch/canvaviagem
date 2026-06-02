@@ -415,16 +415,18 @@ const getBaseState = (): FabricaState => {
   return defaultStateBR;
 };
 
-const STORAGE_KEY = "fabrica-context-v1";
+const isEs = () => typeof window !== "undefined" && window.location.pathname.startsWith("/es");
+
+const getStorageKey = () => isEs() ? "fabrica-context-v1-es" : "fabrica-context-v1";
 // Campos pesados (base64) ficam em chaves separadas pra não estourar a quota do localStorage
 const HEAVY_KEYS = ["logoBase64", "generatedAdImage", "lastCleanPhoto"] as const;
-const HEAVY_STORAGE_PREFIX = "fabrica-heavy-v1:";
-const GALLERY_KEY = "fabrica-gallery-v1";
-const GENERATED_KEY = "fabrica-generated-v1";
+const getHeavyStoragePrefix = () => isEs() ? "fabrica-heavy-v1-es:" : "fabrica-heavy-v1:";
+const getGalleryKey = () => isEs() ? "fabrica-gallery-v1-es" : "fabrica-gallery-v1";
+const getGeneratedKey = () => isEs() ? "fabrica-generated-v1-es" : "fabrica-generated-v1";
 const LAST_ACTIVE_USER_KEY = "fabrica-last-user-id";
 
 const scopedKey = (key: string, userId?: string | null) => (userId ? `${key}:${userId}` : key);
-const scopedHeavyPrefix = (userId?: string | null) => (userId ? `${HEAVY_STORAGE_PREFIX}${userId}:` : HEAVY_STORAGE_PREFIX);
+const scopedHeavyPrefix = (userId?: string | null) => (userId ? `${getHeavyStoragePrefix()}${userId}:` : getHeavyStoragePrefix());
 
 const safeSetItem = (key: string, value: string): boolean => {
   try {
@@ -460,7 +462,7 @@ const readPersistedState = (userId?: string | null): FabricaState => {
   if (typeof window === "undefined") return getBaseState();
 
   try {
-    const stored = localStorage.getItem(scopedKey(STORAGE_KEY, userId));
+    const stored = localStorage.getItem(scopedKey(getStorageKey(), userId));
     const parsed = stored ? JSON.parse(stored) : {};
     const heavy: Record<string, string> = {};
     const heavyPrefix = scopedHeavyPrefix(userId);
@@ -472,13 +474,13 @@ const readPersistedState = (userId?: string | null): FabricaState => {
 
     let gallery: string[] = [];
     try {
-      const g = localStorage.getItem(scopedKey(GALLERY_KEY, userId));
+      const g = localStorage.getItem(scopedKey(getGalleryKey(), userId));
       if (g) gallery = JSON.parse(g);
     } catch {}
 
     let generated: string[] = [];
     try {
-      const gen = localStorage.getItem(scopedKey(GENERATED_KEY, userId));
+      const gen = localStorage.getItem(scopedKey(getGeneratedKey(), userId));
       if (gen) generated = JSON.parse(gen);
     } catch {}
 
@@ -491,8 +493,8 @@ const readPersistedState = (userId?: string | null): FabricaState => {
       generated = [...newAds, ...generated];
 
       try {
-        localStorage.setItem(scopedKey(GALLERY_KEY, userId), JSON.stringify(gallery));
-        localStorage.setItem(scopedKey(GENERATED_KEY, userId), JSON.stringify(generated));
+        localStorage.setItem(scopedKey(getGalleryKey(), userId), JSON.stringify(gallery));
+        localStorage.setItem(scopedKey(getGeneratedKey(), userId), JSON.stringify(generated));
       } catch {}
     }
 
@@ -541,7 +543,7 @@ const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
   const { galleryImages, ...siteRest } = siteContent;
 
   const savedMain = safeSetItem(
-    scopedKey(STORAGE_KEY, resolvedUserId),
+    scopedKey(getStorageKey(), resolvedUserId),
     JSON.stringify({ ...rest, siteContent: siteRest })
   );
   if (!savedMain) {
@@ -559,7 +561,7 @@ const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
   if (lastCleanPhoto) safeSetItem(heavyPrefix + "lastCleanPhoto", lastCleanPhoto);
   else localStorage.removeItem(heavyPrefix + "lastCleanPhoto");
 
-  const savedGallery = safeSetItem(scopedKey(GALLERY_KEY, resolvedUserId), JSON.stringify(galleryImages || []));
+  const savedGallery = safeSetItem(scopedKey(getGalleryKey(), resolvedUserId), JSON.stringify(galleryImages || []));
   
   if (!savedGallery) {
     console.warn("Quota exceeded when saving gallery to local storage.");
@@ -569,12 +571,12 @@ const persistLocalState = (nextState: FabricaState, userId?: string | null) => {
 const clearLegacyState = () => {
   if (typeof window === "undefined") return;
 
-  localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(GALLERY_KEY);
-  localStorage.removeItem(GENERATED_KEY);
+  localStorage.removeItem(getStorageKey());
+  localStorage.removeItem(getGalleryKey());
+  localStorage.removeItem(getGeneratedKey());
 
   HEAVY_KEYS.forEach((key) => {
-    localStorage.removeItem(`${HEAVY_STORAGE_PREFIX}${key}`);
+    localStorage.removeItem(`${getHeavyStoragePrefix()}${key}`);
   });
 };
 

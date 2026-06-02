@@ -72,7 +72,8 @@ export const Phase5Dashboard = () => {
         .upsert({
           id: state.projectId || user.id,
           owner_id: user.id,
-          html: html
+          html: html,
+          locale: "pt-BR"
         });
 
       if (dbError) {

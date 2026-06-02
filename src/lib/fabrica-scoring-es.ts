@@ -24,7 +24,7 @@ export function calculateScore(state: FabricaState): {
   levelDescription: string;
   gargalos: Gargalo[];
 } {
-  // Presença (25%)
+  // Presencia (25%)
   let presenca = 0;
   if (state.followers === "10k+") presenca += 30;
   else if (state.followers === "2k-10k") presenca += 20;
@@ -44,7 +44,7 @@ export function calculateScore(state: FabricaState): {
   if (state.hasBioLink) presenca += 15;
   presenca = Math.min(100, presenca);
 
-  // Conteúdo (25%)
+  // Contenido (25%)
   let conteudo = 0;
   if (state.postFrequency === "diario") conteudo += 20;
   else if (state.postFrequency === "semanal") conteudo += 15;
@@ -60,7 +60,7 @@ export function calculateScore(state: FabricaState): {
   
   conteudo = Math.min(100, conteudo);
 
-  // Vendas (20%)
+  // Ventas (20%)
   let vendas = 0;
   const fechamentos = parseInt(state.fechamentosMes || "0", 10);
   if (fechamentos >= 20) vendas = 65;
@@ -73,14 +73,14 @@ export function calculateScore(state: FabricaState): {
 
   vendas = Math.min(100, vendas);
 
-  // Tráfego (15%)
+  // Tráfico (15%)
   let trafego = state.investeAds ? 65 : 15;
   if (posts === "200_500" || posts === "more_500") trafego += 20; 
   if (state.usesFabricaTemplates) trafego += 15; 
 
   trafego = Math.min(100, trafego);
 
-  // Conversão (15%)
+  // Conversión (15%)
   let conversao = 0;
   const ticket = parseInt(state.ticketMedio || "0", 10);
   if (ticket >= 5000) conversao = 55;

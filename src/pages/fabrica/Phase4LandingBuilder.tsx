@@ -1972,7 +1972,8 @@ const PublishOnLovableCard = ({
         .upsert({
           id: publishId,
           owner_id: user.id,
-          html: html
+          html: html,
+          locale: 'pt-BR'
         });
 
       if (dbError) {
@@ -2095,7 +2096,8 @@ const PublishOnLovableCard = ({
         .upsert({
           id: cleanSlug,
           owner_id: user.id,
-          html: finalHtml
+          html: finalHtml,
+          locale: 'pt-BR'
         });
 
       if (dbError) {

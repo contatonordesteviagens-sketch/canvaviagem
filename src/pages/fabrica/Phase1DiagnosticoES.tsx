@@ -525,7 +525,7 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
 
         {/* Body */}
         <div className="p-7">
-          <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-500 mb-4 pb-2 border-b-2 border-gray-100">âš ï¸ Cuellos de botella identificados</h3>
+          <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-500 mb-4 pb-2 border-b-2 border-gray-100">⚠️ Cuellos de botella identificados</h3>
           <div className="space-y-2 mb-7">
             {result.gargalos.map((g, i) => (
               <div key={i} className={`flex gap-3 p-3 rounded-lg ${g.level === "red" ? "bg-red-50 border border-red-200" : g.level === "amber" ? "bg-amber-50 border border-amber-200" : "bg-green-50 border border-green-200"}`}>
@@ -651,7 +651,7 @@ const DiagnosticoResult = ({ onNext, onBack, onEdit }: { onNext: () => void; onB
           onClick={onEdit}
           className="px-5 py-3 bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/10 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors"
         >
-          âœï¸ Editar / complementar datos (se acumula sin borrar)
+          ✏️ Editar / complementar datos (se acumula sin borrar)
         </button>
       </div>
 

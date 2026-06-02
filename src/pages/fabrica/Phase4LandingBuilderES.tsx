@@ -742,12 +742,12 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
               </div>
             </FabricaCard>
 
-            <FabricaCard title="✨ Efeitos Visuais & Campanhas">
+            <FabricaCard title="✨ Efectos Visuales & Campañas">
 
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="block text-[11px] font-semibold text-white/60 uppercase tracking-wider">Efeito Animado</label>
+                  <label className="block text-[11px] font-semibold text-white/60 uppercase tracking-wider">Efecto Animado</label>
                   <div className="relative">
                     <select
                       value={state.siteContent.animationEffect || "none"}
@@ -793,17 +793,17 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
                 {state.siteContent.animationEffect && state.siteContent.animationEffect !== "none" && (
                   <div className="space-y-1.5">
-                    <label className="block text-[11px] font-semibold text-white/60 uppercase tracking-wider">Duração do Efeito</label>
+                    <label className="block text-[11px] font-semibold text-white/60 uppercase tracking-wider">Duración del Efecto</label>
                     <div className="relative">
                       <select
                         value={state.siteContent.animationDuration || "always"}
                         onChange={(e) => updSite({ animationDuration: e.target.value as any })}
                         className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#00ff88]/50 transition-colors appearance-none pr-8"
                       >
-                        <option value="always" className="bg-zinc-900">O tempo todo (Padrão)</option>
-                        <option value="5" className="bg-zinc-900">Durar 5 segundos ao abrir</option>
-                        <option value="10" className="bg-zinc-900">Durar 10 segundos ao abrir</option>
-                        <option value="30" className="bg-zinc-900">Durar 30 segundos ao abrir</option>
+                        <option value="always" className="bg-zinc-900">Todo el tiempo (Predeterminado)</option>
+                        <option value="5" className="bg-zinc-900">Durar 5 segundos al abrir</option>
+                        <option value="10" className="bg-zinc-900">Durar 10 segundos al abrir</option>
+                        <option value="30" className="bg-zinc-900">Durar 30 segundos al abrir</option>
                       </select>
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
                         <ChevronDown className="w-4 h-4 text-white" />
@@ -957,7 +957,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
             </FabricaCard>
           </div>
 
-          {/* BARRA DE AÇÕES INFERIOR FIXA */}
+          {/* BARRA DE ACCIONES INFERIOR FIJA */}
           <div className="flex gap-3 bg-black/40 backdrop-blur-md p-2 rounded-2xl border border-white/10 mt-6">
             <button
               onClick={onBack}
@@ -991,7 +991,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                   <span className="w-2.5 h-2.5 rounded-full bg-green-400/70 inline-block" />
                 </div>
                 <div className="ml-3 px-3 py-1.5 rounded-lg bg-white/[0.03] text-[10px] font-mono text-white/40 w-44 sm:w-64 truncate border border-white/[0.05] tracking-wide">
-                  https://{(state.agencyName || "sua-agencia").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "-")}.vercel.app
+                  https://{(state.agencyName || "tu-agencia").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "-")}.vercel.app
                 </div>
               </div>
 
@@ -1554,7 +1554,8 @@ const PublishOnLovableCard = ({
         .upsert({
           id: publishId,
           owner_id: user.id,
-          html: html
+          html: html,
+          locale: 'es'
         });
 
     try {

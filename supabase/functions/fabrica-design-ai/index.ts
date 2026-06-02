@@ -35,7 +35,8 @@ serve(async (req) => {
       duration, 
       primaryColor, 
       secondaryColor,
-      variation
+      variation,
+      locale
     } = body;
 
     const isStory = format === "story";
@@ -101,9 +102,11 @@ serve(async (req) => {
     // ============================================================
     // SYSTEM INSTRUCTION — identity of the model
     // ============================================================
+    const isEs = locale === "es";
     const systemInstruction = `Você é um Engenheiro de UI/UX sênior especializado em compor coordenadas matemáticas precisas de elementos gráficos em Canvas 2D (dimensões exatas: ${width}x${height}px) para anúncios de viagem premium. 
 Sua ÚNICA função é retornar um JSON puro com a chave "elements" contendo um array de objetos do tipo box ou text. 
-Você NUNCA repete o mesmo layout se a variação mudar. Você é obcecado em respeitar as zonas de coordenadas proibidas.`;
+Você NUNCA repete o mesmo layout se a variação mudar. Você é obcecado em respeitar as zonas de coordenadas proibidas.
+${isEs ? "\nCRITICAL: You are operating in the Spanish SaaS instance. ALL generated text, keys, and reasoning MUST be strictly in Spanish. Portuguese is forbidden." : ""}`;
 
     // ============================================================
     // USER PROMPT — data-driven with hard coordinate constraints

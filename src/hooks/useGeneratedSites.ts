@@ -13,9 +13,12 @@ export const useGeneratedSites = () => {
   return useQuery({
     queryKey: ["public-sites"],
     queryFn: async () => {
+      const isEs = typeof window !== 'undefined' && window.location.pathname.startsWith('/es');
+      const locale = isEs ? 'es' : 'pt-BR';
       const { data, error } = await supabase
         .from("public_sites")
         .select("id, created_at, updated_at, owner_id")
+        .eq("locale", locale)
         .order("created_at", { ascending: false });
 
       if (error) throw error;

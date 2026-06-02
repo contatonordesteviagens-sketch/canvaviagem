@@ -88,6 +88,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
           .from("public_sites")
           .select("id, updated_at")
           .eq("owner_id", user.id)
+          .eq("locale", "pt-BR")
           .order("updated_at", { ascending: false });
         if (!cancelled && sites) setPublishedSites(sites);
 
