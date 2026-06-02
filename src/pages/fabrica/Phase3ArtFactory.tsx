@@ -20,7 +20,7 @@ type CustomSource = "upload" | "link";
 
 interface Props { onNext: () => void; onBack: () => void; }
 
-const FABRICA_RENDER_ENGINE_VERSION = "canvas-hybrid-v3-nowordmark";
+const FABRICA_RENDER_ENGINE_VERSION = "canvas-hybrid-v3-premium";
 
 const BADGE_BG: Record<string, string> = {
   blue: "bg-blue-500/15 text-blue-400 border-blue-500/30",

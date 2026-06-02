@@ -47,10 +47,10 @@ export default function InicioES() {
 
   const checkout = (planId: string) => {
     const STRIPE: Record<string, string> = {
-      smart_monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
-      smart_annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
-      elite_monthly: "https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c",
-      elite_annual: "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d",
+      smart_monthly: "https://buy.stripe.com/eVqeVe61Q3Es9mPbF28so0h",
+      smart_annual: "https://buy.stripe.com/aFaaEY61Q2AoeH94cA8so0g",
+      elite_monthly: "https://buy.stripe.com/cNi00k2PEfna2Yr10o8so0f",
+      elite_annual: "https://buy.stripe.com/dRm3cweymgre9mPbF28so0e",
     };
     window.location.href = STRIPE[planId] || "/es/planos";
   };

@@ -20,7 +20,7 @@ type CustomSource = "upload" | "link";
 
 interface Props { onNext: () => void; onBack: () => void; }
 
-const FABRICA_RENDER_ENGINE_VERSION = "canvas-hybrid-v3-nowordmark";
+const FABRICA_RENDER_ENGINE_VERSION = "canvas-hybrid-v3-premium";
 
 const BADGE_BG: Record<string, string> = {
   blue: "bg-blue-500/15 text-blue-400 border-blue-500/30",
@@ -1683,9 +1683,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     } catch { toast.error("Error al descargar la imagen"); }
   };
 
-  const sectionCls = "bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-4";
+  const sectionCls = "bg-[#0A0A0E]/90 border border-white/10 rounded-3xl p-6 backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] space-y-4";
   const labelCls = "text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5";
-  const inputCls = "w-full bg-white/[0.03] border border-white/5 hover:border-white/10 focus:border-amber-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-all";
+  const inputCls = "w-full bg-white/[0.03] border border-white/10 hover:bg-white/[0.05] focus:border-amber-500/50 focus:shadow-[0_0_15px_rgba(251,191,36,0.15)] rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-all";
 
   return (
     <div className="max-w-3xl lg:max-w-[1550px] mx-auto transition-all duration-300">
@@ -2674,7 +2674,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           <button
             onClick={() => generateNext()}
             disabled={loading || !destination}
-            className="w-full py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110 text-xs uppercase tracking-wider"
+            className="w-full py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(var(--primary-color),0.4)] text-xs uppercase tracking-wider"
             style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 8px 24px ${primaryColor}55` }}
           >
             {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Generando con IA...</> : <><Sparkles className="w-4 h-4" /> Generar Anuncio</>}

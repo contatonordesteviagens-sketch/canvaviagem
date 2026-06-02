@@ -27,11 +27,11 @@ import { MobileFloatingCTA } from "@/components/planos/MobileFloatingCTA";
 import { ProductDemo } from "@/components/planos/ProductDemo";
 
 const STRIPE = {
-  monthly: "https://buy.stripe.com/8x26oIgGuej656zaAY8so05",
-  annual: "https://buy.stripe.com/dRm8wQ75U1wk7eH9wU8so09",
+  monthly: "https://buy.stripe.com/eVqeVe61Q3Es9mPbF28so0h",
+  annual: "https://buy.stripe.com/aFaaEY61Q2AoeH94cA8so0g",
   // Elite — Payment Links reais da Stripe
-  elite_monthly: "https://buy.stripe.com/fZucN6bma6QEeH96kI8so0c",
-  elite_annual: "https://buy.stripe.com/fZu14ogGugreeH9bF28so0d",
+  elite_monthly: "https://buy.stripe.com/cNi00k2PEfna2Yr10o8so0f",
+  elite_annual: "https://buy.stripe.com/dRm3cweymgre9mPbF28so0e",
 };
 
 const ABACATE_PIX_LINKS = {
@@ -82,7 +82,7 @@ const PixCheckoutModal = ({
   if (!isOpen) return null;
   
   const total = planType === "annual" ? "$ 118.00 USD" : "$ 17.00 USD";
-  const pixTotal = planType === "annual" ? "$ 118.00 USD" : "R$ 27,55";
+  const pixTotal = planType === "annual" ? "$ 118.00 USD" : "$ 17.00 USD";
   const cardInstallments = planType === "annual" ? "o 12x de $ 11.80 USD" : null;
   const planName = planType === "annual" ? "Plan Anual Full" : "Plan Mensual Full";
 
@@ -834,11 +834,11 @@ const PlanosES = () => {
               <div className="p-8 text-center">
                 <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">PRO</p>
                 <p className="text-5xl font-black italic tracking-tighter text-black leading-none mb-1">
-                  R$ {isAnnual ? "16,41" : "29"}
-                  <span className="text-base font-bold text-zinc-400 ml-1">/m├¬s</span>
+                  $ {isAnnual ? "9,83" : "17,00"}
+                  <span className="text-base font-bold text-zinc-400 ml-1">USD/mes</span>
                 </p>
                 <p className="text-[10px] text-zinc-400 font-bold uppercase mb-6">
-                  {isAnnual ? "R$ 197/año ┬À economize R$ 151" : "Recorr├¬ncia mensal"}
+                  {isAnnual ? "$ 118 USD/año · ahorro masivo" : "Suscripción mensual"}
                 </p>
                 <ul className="space-y-3 mb-8 text-left">
                   {[
@@ -872,7 +872,7 @@ const PlanosES = () => {
                     cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase'
                   }}
                 >
-                  {isAnnual ? "QUERO O PLANO ANUAL PRO →" : "ASSINAR MENSAL"}
+                  {isAnnual ? "QUIERO EL PLAN ANUAL PRO →" : "SUSCRIBIRSE MENSUAL"}
                 </button>
               </div>
             </motion.div>
@@ -886,23 +886,23 @@ const PlanosES = () => {
               className="relative bg-zinc-950 text-white rounded-[32px] overflow-hidden shadow-2xl border-4 border-zinc-800"
             >
               <div className="bg-black text-yellow-400 text-center py-2 text-[10px] font-black uppercase tracking-[0.3em]">
-                Ô£ª NOVO ÔÇö ELITE
+                ⭐ NUEVO — ELITE
               </div>
               <div className="p-8 text-center">
                 <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">ELITE</p>
                 <p className="text-5xl font-black italic tracking-tighter text-white leading-none mb-1">
-                  R$ {isAnnual ? "58" : "97"}
-                  <span className="text-base font-bold text-zinc-500 ml-1">/m├¬s</span>
+                  $ {isAnnual ? "17,33" : "29,90"}
+                  <span className="text-base font-bold text-zinc-500 ml-1">USD/mes</span>
                 </p>
                 <p className="text-[10px] text-zinc-500 font-bold uppercase mb-6">
-                  {isAnnual ? "R$ 697/año ┬À -40% de desconto" : "Recorr├¬ncia mensal"}
+                  {isAnnual ? "$ 208 USD/año · -40% de descuento" : "Suscripción mensual"}
                 </p>
-                <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-bold mb-3">Tudo do Pro, mais:</p>
+                <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-bold mb-3">Todo lo del Pro, más:</p>
                 <ul className="space-y-3 mb-8 text-left">
                   {[
-                    "F├íbrica de Viagens",
-                    "Ofertas prontas para Meta Ads e site",
-                    "Acesso antecipado a novidades",
+                    "Fábrica de Viajes",
+                    "Ofertas listas para Meta Ads y sitio",
+                    "Acceso anticipado a novedades",
                   ].map((f) => (
                     <li key={f} className="flex items-center gap-3 text-xs font-bold text-zinc-300">
                       <div className="w-5 h-5 rounded-full bg-yellow-500/20 flex items-center justify-center shrink-0 border border-yellow-500/30">
@@ -916,7 +916,7 @@ const PlanosES = () => {
                   onClick={handleEliteCheckout}
                   className="w-full bg-yellow-400 text-black font-black uppercase text-xs tracking-widest py-5 rounded-2xl hover:bg-yellow-300 transition-all shadow-xl"
                 >
-                  {isAnnual ? "Assinar Elite ÔÇö R$ 697/año" : "Assinar Elite ÔÇö R$ 97/m├¬s"}
+                  {isAnnual ? "Suscribirse Elite — $ 208 USD/año" : "Suscribirse Elite — $ 29.90 USD/mes"}
                 </button>
               </div>
             </motion.div>
