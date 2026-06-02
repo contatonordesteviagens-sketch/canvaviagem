@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useFabricaESContext } from "@/hooks/useFabricaContext";
+import { useFabricaContext } from "@/hooks/useFabricaContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import { type StrategyId } from "@/data/fabrica-prompts";
@@ -466,7 +466,7 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
 };
 
 export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
-  const { state, update, systemUpdate, reset } = useFabricaESContext();
+  const { state, update, systemUpdate, reset } = useFabricaContext();
   const { user } = useAuth();
   const { data: savedProjects } = useDiagnosticos();
   const [categoria, setCategoriaState] = useState<CategoriaId>((state.lastCategoria as CategoriaId) || "oferta_pacote");
