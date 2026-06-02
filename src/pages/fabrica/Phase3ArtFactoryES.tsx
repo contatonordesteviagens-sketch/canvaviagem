@@ -52,16 +52,16 @@ const ICON_OPTIONS: { key: IconKey; Icon: typeof Bus; label: string }[] = [
 interface Highlight { text: string; icon: IconKey; }
 
 const DEFAULT_HIGHLIGHTS: Highlight[] = [
-  { text: "Transporte incluso", icon: "bus" },
-  { text: "Hospedagem", icon: "hotel" },
-  { text: "Café da manhã", icon: "coffee" },
-  { text: "Guia local", icon: "guide" },
+  { text: "Transporte incluido", icon: "bus" },
+  { text: "Alojamiento", icon: "hotel" },
+  { text: "Desayuno", icon: "coffee" },
+  { text: "Guía local", icon: "guide" },
 ];
 
 const DEFAULT_EXPERIENCE_HIGHLIGHTS: Highlight[] = [
-  { text: "EXPERIÊNCIA SENSORIAL", icon: "check" },
-  { text: "MOMENTOS INESQUECÍVEIS", icon: "check" },
-  { text: "CURADORIA PREMIUM", icon: "check" },
+  { text: "EXPERIENCIA SENSORIAL", icon: "check" },
+  { text: "MOMENTOS INOLVIDABLES", icon: "check" },
+  { text: "CURADORÍA PREMIUM", icon: "check" },
 ];
 
 const DEFAULT_SUFFIXES_OFERTA = new Set(["por persona", "por casal", "por pacote", "por grupo", "total do pacote"]);
@@ -1802,7 +1802,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               <button
                 onClick={() => setForcedVariant(null)}
                 className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${forcedVariant === null ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-                title="Rotação automática (sorteia entre V1..V4)"
+                title="Rotación automática (sortea entre V1..V4)"
               >
                 Auto
               </button>
@@ -1811,7 +1811,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   key={v}
                   onClick={() => setForcedVariant(v)}
                   className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${forcedVariant === v ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-                  title={`Forçar variação V${v}`}
+                  title={`Forzar variación V${v}`}
                 >
                   V{v}
                 </button>
@@ -1881,7 +1881,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               style={format === "square" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
             >
               <Square className="w-6 h-6 mb-2 text-white/80" />
-              <div className="text-sm font-bold text-white">Quadrado 1:1</div>
+              <div className="text-sm font-bold text-white">Cuadrado 1:1</div>
               <div className="text-[11px] text-white/55">Feed Instagram (1080×1080)</div>
             </button>
             <button
@@ -1903,7 +1903,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       {(genMode === "photo" || genMode === "ai") && (
         <div className={sectionCls}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">1 · Escolha uma foto real</h3>
+            <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">1 · Elige una foto real</h3>
             <span className="text-[9px] font-bold uppercase tracking-wider text-white/30 bg-white/5 px-2 py-1 rounded-md border border-white/10">Pexels (Top)</span>
           </div>
 
@@ -1990,7 +1990,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       {/* 1c · Sua imagem (modo custom) */}
       {genMode === "custom" && (
         <div className={sectionCls}>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">1 · Sua imagem de referência</h3>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">1 · Tu imagen de referencia</h3>
           <div className="flex gap-2 mb-4">
             <button
               onClick={() => setCustomSource("upload")}
@@ -2093,7 +2093,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
           <div>
             <label className={labelCls}>
-              {categoria === "experiencia_destino" ? "Nome da experiência" : "Nombre de la promoción"}
+              {categoria === "experiencia_destino" ? "Nombre de la experiencia" : "Nombre de la promoción"}
             </label>
             <div className="relative">
               <input
@@ -2136,7 +2136,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 onChange={(e) => setAdTitleTemplate(e.target.value)}
                 onFocus={(e) => { setTimeout(() => e.target.select(), 50); setAdTitleMenuOpen(true); }}
                 onClick={() => setAdTitleMenuOpen(true)}
-                placeholder="Ex: Pacote {destino}"
+                placeholder="Ej: Paquete {destino}"
                 className={`${inputCls} pr-10 cursor-pointer`}
               />
               <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${adTitleMenuOpen ? "rotate-180" : ""}`} />
@@ -2167,14 +2167,14 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         </div>
 
         <div>
-          <label className={labelCls}>Dias / data da viagem</label>
+          <label className={labelCls}>Días / fecha del viaje</label>
           <div className="relative">
             <input
               value={travelPeriod}
               onChange={(e) => setTravelPeriod(e.target.value)}
               onFocus={(e) => { setTimeout(() => e.target.select(), 50); setTravelPeriodMenuOpen(true); }}
               onClick={() => setTravelPeriodMenuOpen(true)}
-              placeholder="Ex: 5 dias, Janeiro"
+              placeholder="Ej: 5 días, Enero"
               className={`${inputCls} pr-10 cursor-pointer`}
             />
             <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none transition-transform ${travelPeriodMenuOpen ? "rotate-180" : ""}`} />
@@ -2227,7 +2227,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
               {paymentMode !== "cash" && (
                 <div>
-                  <label className={labelCls}>Parcelas</label>
+                  <label className={labelCls}>Cuotas</label>
                   <input
                     value={paymentLabel}
                     onChange={(e) => setInstallments(e.target.value)}
@@ -2301,7 +2301,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   </label>
                   <label className="flex items-center gap-2 text-[12px] text-white/80 cursor-pointer">
                     <input type="checkbox" checked={showPixBanner} onChange={(e) => setShowPixBanner(e.target.checked)} className="accent-yellow-400" />
-                    Mostrar faixa de desconto
+                    Mostrar cinta de descuento
                   </label>
                 </div>
               )}
@@ -2320,7 +2320,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
           >
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-sm font-bold text-white">Tipografia</span>
+              <span className="text-sm font-bold text-white">Tipografía</span>
               <span className="text-[10px] text-white/40 truncate" style={{ fontFamily: `${fontFamily}, Inter, sans-serif` }}>
                 {fontFamily} · T {Math.round(titleScale * 100)}% · D {Math.round(descScale * 100)}%
               </span>
@@ -2331,7 +2331,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             <div className="px-4 pb-4 pt-3 space-y-4 border-t border-white/10">
               {/* Fonte: select + chips */}
               <div>
-                <label className={labelCls}>Fonte</label>
+                <label className={labelCls}>Fuente</label>
                 <select
                   value={FONT_PRESETS.includes(fontFamily) ? fontFamily : "Inter"}
                   onChange={(e) => setFontFamily(e.target.value)}
@@ -2350,7 +2350,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   onClick={() => setAdvancedSizeOpen((v) => !v)}
                   className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/[0.04] transition-colors"
                 >
-                  <span className="text-[12px] font-semibold text-white/85">⚙️ Ajustes Avançados de Tamanho</span>
+                  <span className="text-[12px] font-semibold text-white/85">⚙️ Ajustes Avanzados de Tamaño</span>
                   <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${advancedSizeOpen ? "rotate-180" : ""}`} />
                 </button>
                 {advancedSizeOpen && (
@@ -2361,7 +2361,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                         onChange={(e) => setTitleScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
                     </div>
                     <div>
-                      <label className={labelCls}>Descrição <span className="text-white/40">({Math.round(descScale * 100)}%)</span></label>
+                      <label className={labelCls}>Descripción <span className="text-white/40">({Math.round(descScale * 100)}%)</span></label>
                       <input type="range" min={0.6} max={1.6} step={0.05} value={descScale}
                         onChange={(e) => setDescScale(parseFloat(e.target.value))} className="w-full accent-yellow-400" />
                     </div>
@@ -2372,8 +2372,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               {/* Cor do texto: mesmo padrão das cores Primária/Secundária */}
               <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
                 <div className="flex items-baseline justify-between mb-2">
-                  <label className={labelCls}>Cor do texto</label>
-                  <span className="text-[10px] text-white/40">aplica em todos os textos</span>
+                  <label className={labelCls}>Color del texto</label>
+                  <span className="text-[10px] text-white/40">aplica a todos los textos</span>
                 </div>
                 <div className="grid grid-cols-10 gap-1 mb-3">
                   {PRESET_COLORS.map((c) => (
@@ -2395,7 +2395,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                     <span className="absolute inset-1.5 rounded-full border border-white/40" style={{ background: textColorOverride || "#ffffff" }} />
                   </label>
                   <input value={textColorOverride} onChange={(e) => setTextColorOverride(e.target.value)}
-                    placeholder="Padrão (branco)"
+                    placeholder="Por defecto (blanco)"
                     className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-white/40 font-mono uppercase" />
                   {textColorOverride && (
                     <button onClick={() => setTextColorOverride("")}
