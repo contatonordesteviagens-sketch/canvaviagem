@@ -2003,10 +2003,18 @@ const PublishOnLovableCard = ({
       return;
     }
 
+    // Fix #5: Bloqueia se o nome da agência está em branco (geraria slug inválido)
+    if (!state.agencyName?.trim() && !canvaViagemSubdomain?.trim()) {
+      toast.error("Preencha o nome da agência no painel inicial antes de publicar.", {
+        description: "Volte à etapa 'Dados da Agência' e adicione o nome da sua agência.",
+      });
+      return;
+    }
+
     const cleanSlug = buildSiteSlug(canvaViagemSubdomain || state.agencyName || "");
 
     if (cleanSlug.length < 3) {
-      toast.error("Digite um subdomínio com pelo menos 3 caracteres.");
+      toast.error("O nome da agência precisa ter pelo menos 3 caracteres válidos para criar o link do site.");
       return;
     }
 
@@ -2115,8 +2123,18 @@ const PublishOnLovableCard = ({
 
       toast.success("Site publicado no link Canva Viagem!", { id: toastId });
     } catch (err: any) {
+      // Fix #7b: Sanitiza mensagem técnica de banco antes de exibir ao usuário
       console.error("Canva Viagem publish error:", err);
-      toast.error(`Erro ao publicar: ${err.message || "tente novamente"}`, { id: toastId });
+      const rawMsg = err?.message || "";
+      let friendlyMsg = "Não foi possível publicar. Tente novamente em instantes.";
+      if (rawMsg.toLowerCase().includes("row-level") || rawMsg.toLowerCase().includes("rls") || rawMsg.toLowerCase().includes("policy")) {
+        friendlyMsg = "Sessão expirada. Faça logout e login novamente para publicar.";
+      } else if (rawMsg.toLowerCase().includes("network") || rawMsg.toLowerCase().includes("fetch")) {
+        friendlyMsg = "Sem conexão com a internet. Verifique sua rede e tente de novo.";
+      } else if (rawMsg.toLowerCase().includes("duplicate") || rawMsg.toLowerCase().includes("unique")) {
+        friendlyMsg = "Já existe um site com esse endereço. Tente um subdomínio diferente.";
+      }
+      toast.error(friendlyMsg, { id: toastId });
     } finally {
       setIsCanvaViagemPublishing(false);
     }

@@ -413,7 +413,8 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
   const hasPrice = !!priceStr && v.paymentMode !== "free_quote";
   const hasInstall = !!v.installments.trim() && v.paymentMode === "installments";
   const period = v.travelPeriod.trim();
-  const agency = v.agencyName.trim() || "nossa agência";
+  // Fix #4: Usa nome real da agência na legenda; fallback amigável genérico
+  const agency = v.agencyName.trim() || "nossa equipe especializada";
   const ig = v.instagram.trim() ? `@${v.instagram.replace(/^@/, "").trim()}` : "";
   const wa = v.whatsapp.trim();
   const contactLine = wa
@@ -889,7 +890,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
       setAiPureCount(0);
       setGenerationCount(0);
       setLastProvider("secure_gemini");
-      toast.success("IA Pura segura no servidor ativada!");
+      // Fix #6: Não exibir toast técnico para o usuário final
+      console.log("[Fábrica] Limites de geração resetados para versão v4.");
     }
   }, []);
 
@@ -1478,23 +1480,31 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
         } catch (error: any) {
           console.error("ERRO_IA_PURA_CATCH:", error);
-          toast.error("Erro ao gerar design da IA: " + (error?.message || "desconhecido"));
+          // Fix #1: Mensagem de erro clara e acionável para o usuário
+          const rawErrMsg = error?.message || "desconhecido";
+          // Sanitiza mensagens técnicas de banco/API antes de exibir
+          const isDbError = rawErrMsg.toLowerCase().includes("row-level") || rawErrMsg.toLowerCase().includes("rls") || rawErrMsg.toLowerCase().includes("policy");
+          const isApiKeyError = rawErrMsg.toLowerCase().includes("api key") || rawErrMsg.toLowerCase().includes("401") || rawErrMsg.toLowerCase().includes("403");
+          const isLimitError = rawErrMsg.toLowerCase().includes("429") || rawErrMsg.toLowerCase().includes("quota");
 
-          // 🛡️ Anti-loop: só tenta fallback UMA vez. Sem isso, erros consecutivos entram em loop infinito.
+          let userFriendlyMsg = "Não foi possível gerar o design. Tente novamente.";
+          if (isLimitError) userFriendlyMsg = "Muitas gerações em pouco tempo. Aguarde alguns segundos e tente de novo.";
+          else if (isApiKeyError) userFriendlyMsg = "Serviço de IA temporariamente indisponível. Tente novamente em instantes.";
+          else if (isDbError) userFriendlyMsg = "Erro de autenticação. Faça login novamente para continuar.";
+
+          // 🛡️ Anti-loop: só tenta fallback UMA vez com foto real antes de desistir
           if (retryCountRef.current < 1 && selectedPhotoUrl) {
             retryCountRef.current += 1;
-            toast.info("Carregando layout de segurança...");
-            // NÃO muda genMode — mantém em 'ai' para o usuário saber onde está
-            // NÃO força variant 0 — deixa a rotação normal acontecer
+            toast.warning("IA indisponível no momento. Gerando com Foto Real como alternativa...");
             setGenMode("photo");
             setTimeout(() => {
               generate();
-              // Restaura modo IA após o fallback para não confundir o usuário
-              setTimeout(() => setGenMode("ai"), 200);
-            }, 500);
+              setTimeout(() => setGenMode("ai"), 300);
+            }, 600);
           } else {
             retryCountRef.current = 0;
-            toast.error("Falha persistente na IA. Verifique sua conexão ou tente com outra foto.");
+            setGenerationError(userFriendlyMsg + " Se o problema persistir, selecione outra foto ou troque o modo de geração.");
+            toast.error(userFriendlyMsg);
           }
         }
 
@@ -2649,9 +2659,22 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
 
 
 
+        {/* Fix #3: Bloqueia visualmente e avisa quando foto não selecionada */}
+        {!loading && (genMode === "photo" && !selectedPhotoUrl) && (
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs font-semibold">
+            <span className="text-base">📷</span>
+            Selecione uma foto acima para habilitar a geração do anúncio
+          </div>
+        )}
+        {!loading && (genMode === "custom" && !customImageData && !customLink.trim()) && (
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs font-semibold">
+            <span className="text-base">🖼️</span>
+            {customSource === "upload" ? "Carregue uma imagem para habilitar a geração" : "Cole o link da imagem para habilitar a geração"}
+          </div>
+        )}
         <button
           onClick={() => generateNext()}
-          disabled={loading || !destination}
+          disabled={loading || !destination || (genMode === "photo" && !selectedPhotoUrl) || (genMode === "custom" && !customImageData && !customLink.trim())}
           className="w-full py-4 rounded-xl font-extrabold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
           style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 10px 30px ${primaryColor}66` }}
         >

@@ -1557,8 +1557,10 @@ const PublishOnLovableCard = ({
           html: html,
           locale: 'es'
         });
+      if (dbError) {
+        throw new Error(dbError.message || "Error al guardar sitio en la base de datos.");
+      }
 
-    try {
       const result = await publishToCanvaViagem(finalSubdomain, html);
       if (result.success) {
         toast.success(
@@ -1574,6 +1576,8 @@ const PublishOnLovableCard = ({
       }
     } catch (err: any) {
       toast.error("Error al publicar: " + err.message);
+    } finally {
+      setIsPublishing(false);
     }
   };
 

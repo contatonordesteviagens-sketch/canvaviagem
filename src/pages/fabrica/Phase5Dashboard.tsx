@@ -54,6 +54,22 @@ export const Phase5Dashboard = () => {
   }, []);
 
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isPublishError, setIsPublishError] = useState(false); // Fix #8: estado visual de falha
+  
+  // Fix #7: Sanitiza mensagens técnicas antes de exibir ao usuário
+  const sanitizePublishError = (err: any): string => {
+    const raw = err?.message || err?.details || "Erro desconhecido";
+    if (raw.toLowerCase().includes("row-level") || raw.toLowerCase().includes("rls") || raw.toLowerCase().includes("policy")) {
+      return "Sessão expirada. Faça logout e login novamente para publicar.";
+    }
+    if (raw.toLowerCase().includes("network") || raw.toLowerCase().includes("fetch")) {
+      return "Sem conexão com a internet. Verifique sua rede e tente de novo.";
+    }
+    if (raw.toLowerCase().includes("timeout")) {
+      return "A operação demorou demais. Tente publicar novamente.";
+    }
+    return "Não foi possível publicar seu site agora. Tente novamente em instantes.";
+  };
   
   const handleDashboardPublish = async () => {
     if (!user?.id) {
@@ -62,6 +78,7 @@ export const Phase5Dashboard = () => {
     }
     
     setIsPublishing(true);
+    setIsPublishError(false); // Fix #8: reseta estado de falha
     const loadingToast = toast.loading("Publicando e ativando seu site...");
     
     try {
@@ -83,15 +100,22 @@ export const Phase5Dashboard = () => {
       
       toast.dismiss(loadingToast);
       toast.success("🚀 SITE PUBLICADO E ATIVO COM SUCESSO!");
+      setIsPublishError(false);
       
       if (typeof window !== "undefined" && (window as any).confetti) {
          (window as any).confetti();
       }
       
-    } catch (err) {
+    } catch (err: any) {
+      // Fix #2 + #7: Mensagem humanizada + instrumento de recuperação
       console.error("Publish error:", err);
+      const friendlyMsg = sanitizePublishError(err);
       toast.dismiss(loadingToast);
-      toast.error("Erro ao publicar site.");
+      toast.error(friendlyMsg, {
+        description: "Clique em \"Tentar novamente\" abaixo ou atualize a página.",
+        duration: 8000,
+      });
+      setIsPublishError(true); // Fix #8: ativa estado visual de falha
     } finally {
       setIsPublishing(false);
     }
@@ -403,6 +427,28 @@ export const Phase5Dashboard = () => {
            <div className="text-sm font-black text-white">{progress.count}/4</div>
         </div>
       </div>
+
+      {/* Fix #8: Banner de erro de publicação com botão de retry */}
+      {isPublishError && (
+        <div className="flex items-center gap-4 p-4 rounded-2xl border border-red-500/40 bg-red-500/10 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="p-2 rounded-xl bg-red-500/20 text-red-400 flex-shrink-0">
+            <span className="text-xl">⚠️</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-bold text-red-300">Publicação falhou</div>
+            <p className="text-xs text-red-300/70 leading-relaxed">
+              Não foi possível ativar seu site. Isso não apagou seus dados.
+            </p>
+          </div>
+          <button
+            onClick={handleDashboardPublish}
+            disabled={isPublishing}
+            className="flex-shrink-0 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-xs font-black rounded-xl transition-colors"
+          >
+            {isPublishing ? "Tentando..." : "Tentar novamente"}
+          </button>
+        </div>
+      )}
 
       {/* MÓDULO F5: OS DADOS VITAIS (MUITO VISUAL!) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
