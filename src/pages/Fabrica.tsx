@@ -430,7 +430,8 @@ const FabricaInner = () => {
                   activeTab === "phase" && state.currentPhase === num ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60"
                 }`}
               >{name} (F{num})</button>
-            ))}
+              );
+            })}
           </div>
         )}
 
