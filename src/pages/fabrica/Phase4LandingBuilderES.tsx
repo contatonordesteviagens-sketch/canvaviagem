@@ -754,35 +754,35 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                       onChange={(e) => updSite({ animationEffect: e.target.value as any })}
                       className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#00ff88]/50 transition-colors appearance-none pr-8"
                     >
-                      <option value="none" className="bg-zinc-900">Nenhum (Padrão)</option>
+                      <option value="none" className="bg-zinc-900">Ninguno (Estándar)</option>
                       
-                      <optgroup label="📅 Datas Comemorativas">
-                        <option value="junina_bandeiras" className="bg-zinc-900">🌽 Festa Junina (Bandeirinhas)</option>
-                        <option value="junina_baloes" className="bg-zinc-900">🌽 Festa Junina (Balões)</option>
-                        <option value="junina_fagulhas" className="bg-zinc-900">🔥 Festa Junina (Fagulhas)</option>
-                        <option value="natal_luzes" className="bg-zinc-900">🎄 Especial Natal (Luzes)</option>
-                        <option value="natal_estrela" className="bg-zinc-900">⭐ Especial Natal (Estrela Guia)</option>
-                        <option value="reveillon_fogos" className="bg-zinc-900">🎆 Ano Novo (Micro-Fogos)</option>
-                        <option value="reveillon_poeira" className="bg-zinc-900">✨ Ano Novo (Poeira de Ouro)</option>
-                        <option value="carnaval_mascaras" className="bg-zinc-900">🎭 Carnaval (Máscaras Flutuantes)</option>
-                        <option value="pascoa_orelhas" className="bg-zinc-900">🐰 Páscoa (Orelhas Curiosas)</option>
-                        <option value="pascoa_pegadas" className="bg-zinc-900">🐾 Páscoa (Pegadas de Coelho)</option>
-                        <option value="neve" className="bg-zinc-900">❄️ Queda de Neve (Inverno)</option>
-                        <option value="confete" className="bg-zinc-900">🎉 Chuva de Confetes (Ofertas)</option>
+                      <optgroup label="📅 Fechas Especiales">
+                        <option value="junina_bandeiras" className="bg-zinc-900">🌽 Fiesta Junina (Banderines)</option>
+                        <option value="junina_baloes" className="bg-zinc-900">🌽 Fiesta Junina (Globos)</option>
+                        <option value="junina_fagulhas" className="bg-zinc-900">🔥 Fiesta Junina (Chispas)</option>
+                        <option value="natal_luzes" className="bg-zinc-900">🎄 Especial Navidad (Luces)</option>
+                        <option value="natal_estrela" className="bg-zinc-900">⭐ Especial Navidad (Estrella Guía)</option>
+                        <option value="reveillon_fogos" className="bg-zinc-900">🎆 Año Nuevo (Micro-Fuegos)</option>
+                        <option value="reveillon_poeira" className="bg-zinc-900">✨ Año Nuevo (Polvo de Oro)</option>
+                        <option value="carnaval_mascaras" className="bg-zinc-900">🎭 Carnaval (Máscaras Flotantes)</option>
+                        <option value="pascoa_orelhas" className="bg-zinc-900">🐰 Pascua (Orejas Curiosas)</option>
+                        <option value="pascoa_pegadas" className="bg-zinc-900">🐾 Pascua (Huellas de Conejo)</option>
+                        <option value="neve" className="bg-zinc-900">❄️ Nieve (Invierno)</option>
+                        <option value="confete" className="bg-zinc-900">🎉 Lluvia de Confeti (Ofertas)</option>
                       </optgroup>
 
-                      <optgroup label="🎯 Temas por Nicho (Ano Todo)">
-                        <option value="eco_folhas" className="bg-zinc-900">🏔️ Ecoturismo (Folhas ao Vento)</option>
-                        <option value="eco_borboletas" className="bg-zinc-900">🦋 Ecoturismo (Borboletas)</option>
-                        <option value="praia_bolhas" className="bg-zinc-900">🏖️ Praia (Bolhas de Água)</option>
-                        <option value="praia_ondas" className="bg-zinc-900">🌊 Praia (Ondas Suaves)</option>
-                        <option value="praia_sol" className="bg-zinc-900">☀️ Praia (Brilho do Sol)</option>
-                        <option value="cruzeiro_navio" className="bg-zinc-900">🛳️ Cruzeiro (Navio Navegante)</option>
-                        <option value="cruzeiro_gotas" className="bg-zinc-900">💧 Cruzeiro (Gotas de Orvalho)</option>
-                        <option value="internacional_aviao" className="bg-zinc-900">✈️ Internacional (Avião de Papel)</option>
-                        <option value="internacional_bussola" className="bg-zinc-900">🧭 Internacional (Bússola Giratória)</option>
-                        <option value="luxo_aurora" className="bg-zinc-900">👑 Luxo (Aurora Boreal)</option>
-                        <option value="luxo_reflexo" className="bg-zinc-900">✨ Luxo (Reflexo Metálico)</option>
+                      <optgroup label="🎯 Temas por Nicho (Todo el Año)">
+                        <option value="eco_folhas" className="bg-zinc-900">🏔️ Ecoturismo (Hojas al Viento)</option>
+                        <option value="eco_borboletas" className="bg-zinc-900">🦋 Ecoturismo (Mariposas)</option>
+                        <option value="praia_bolhas" className="bg-zinc-900">🏖️ Playa (Burbujas de Agua)</option>
+                        <option value="praia_ondas" className="bg-zinc-900">🌊 Playa (Olas Suaves)</option>
+                        <option value="praia_sol" className="bg-zinc-900">☀️ Playa (Brillo del Sol)</option>
+                        <option value="cruzeiro_navio" className="bg-zinc-900">🛳️ Crucero (Barco Navegante)</option>
+                        <option value="cruzeiro_gotas" className="bg-zinc-900">💧 Crucero (Gotas de Rocío)</option>
+                        <option value="internacional_aviao" className="bg-zinc-900">✈️ Internacional (Avión de Papel)</option>
+                        <option value="internacional_bussola" className="bg-zinc-900">🧭 Internacional (Brújula Giratoria)</option>
+                        <option value="luxo_aurora" className="bg-zinc-900">👑 Lujo (Aurora Boreal)</option>
+                        <option value="luxo_reflexo" className="bg-zinc-900">✨ Lujo (Reflejo Metálico)</option>
                       </optgroup>
                     </select>
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
@@ -1313,7 +1313,7 @@ const PacoteEditor = ({
             <button
               onClick={() => {
                 onChange({ imageUrl: "" });
-                toast.success("Imagem removida");
+                toast.success("Imagen eliminada");
               }}
               className="px-3 py-2 rounded-lg bg-white/[0.06] text-white/70 text-xs hover:bg-white/[0.1]"
             >
@@ -1349,7 +1349,7 @@ const ImageGallery = ({
 
   const handleFile = (file: File) => {
     if (file.size > 3 * 1024 * 1024) {
-      toast.error("Imagem muito grande (máx 3MB).");
+      toast.error("Imagen muy grande (máx 3MB).");
       return;
     }
     const reader = new FileReader();
@@ -1384,18 +1384,18 @@ const ImageGallery = ({
                     onClick={() => {
                       const a = document.createElement("a");
                       a.href = url;
-                      a.download = `banco-imagem-${Date.now()}.png`;
+                      a.download = `banco-imagen-${Date.now()}.png`;
                       a.click();
                     }}
                     className="p-1.5 rounded-lg bg-black/80 backdrop-blur-md text-emerald-400 hover:bg-black hover:scale-105 active:scale-95 transition-all"
-                    title="Baixar imagem original"
+                    title="Descargar imagen original"
                   >
                     <Download className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => onRemove(url)}
                     className="p-1.5 rounded-lg bg-black/80 backdrop-blur-md text-red-400 hover:bg-black hover:scale-105 active:scale-95 transition-all"
-                    title="Excluir imagem"
+                    title="Eliminar imagen"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -1406,7 +1406,7 @@ const ImageGallery = ({
         </div>
       ) : (
         <div className="text-xs text-white/40 italic text-center py-4 border border-dashed border-white/10 rounded-xl">
-          Nenhuma imagem ainda. Adicione abaixo ðŸ‘‡
+          Ninguna imagen aún. Añade abajo 👇
         </div>
       )}
 
@@ -1431,7 +1431,7 @@ const ImageGallery = ({
           disabled={!newUrl.trim()}
           className="px-4 py-2 rounded-lg bg-white/[0.08] text-white text-sm font-semibold hover:bg-white/[0.12] disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          Adicionar
+          Añadir
         </button>
       </div>
 

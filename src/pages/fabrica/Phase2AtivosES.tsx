@@ -196,7 +196,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
 
   const copy = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success("¡¡¡¡¡Copiado!");
+    toast.success("¡Copiado!");
   };
 
   // Gamificação: Calcula Progresso do Plano 30 Dias
@@ -364,7 +364,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
 
           {packages.length > 0 && (
             <div className="text-[10px] text-white/30 text-center pt-1 uppercase tracking-widest font-bold">
-              ✅ {packages.length} pacote{packages.length !== 1 ? "s" : ""} sincronizado{packages.length !== 1 ? "s" : ""} com seu site
+              ✅ {packages.length} paquete{packages.length !== 1 ? "s" : ""} sincronizado{packages.length !== 1 ? "s" : ""} con tu sitio
             </div>
           )}
         </div>
@@ -436,7 +436,7 @@ export const Phase2AtivosES = ({ onNext, onBack }: Props) => {
 
 
 
-      <FabricaCard title="âœï¸ Leyendas listas">
+      <FabricaCard title="✍️ Leyendas listas">
         {filteredCaptions.length === 0 ? (
           <p className="text-white/50 text-sm">No hay leyendas disponibles en este momento.</p>
         ) : (

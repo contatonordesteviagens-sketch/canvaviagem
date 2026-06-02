@@ -65,7 +65,7 @@ const DEFAULT_EXPERIENCE_HIGHLIGHTS: Highlight[] = [
 ];
 
 const DEFAULT_SUFFIXES_OFERTA = new Set(["por persona", "por casal", "por pacote", "por grupo", "total do pacote"]);
-const DEFAULT_SUFFIX_EXPERIENCIA = "Sua viagem começa aqui";
+const DEFAULT_SUFFIX_EXPERIENCIA = "Tu viaje comienza aquí";
 
 // ====== Padronização de CORES por categoria ======
 // Estas cores são aplicadas automaticamente ao trocar de categoria, garantindo
@@ -221,45 +221,45 @@ const PAYMENT_PRESETS: PaymentPreset[] = [
 ];
 
 const AD_TITLE_PRESETS: string[] = [
-  "Conheça o melhor de {destino}",
-  "Descubra {destino}",
-  "Pacote {destino}",
-  "Explore {destino}",
-  "{destino} vai te surpreender",
-  "Você precisa conhecer {destino}!",
-  "O que fazer em {destino}",
-  "O melhor de {destino}",
-  "Meu sonho se chama {destino}",
-  "Partiu {destino}",
-  "Sua próxima viagem é {destino}",
-  "Pacote Promocional {destino}",
-  "Viagem Completa {destino}",
+  "Conoce lo mejor de {destino}",
+  "Descubre {destino}",
+  "Paquete {destino}",
+  "Explora {destino}",
+  "{destino} te sorprenderá",
+  "¡Tienes que conocer {destino}!",
+  "Qué hacer en {destino}",
+  "Lo mejor de {destino}",
+  "Mi sueño se llama {destino}",
+  "Nos vamos a {destino}",
+  "Tu próximo viaje es a {destino}",
+  "Paquete Promocional {destino}",
+  "Viaje Completo a {destino}",
   "{destino} te espera",
-  "Vamos para {destino}?",
+  "¿Vamos a {destino}?",
 ];
 
 // Presets de TÍTULO para a categoria "Experiencia de Destino *" (luxo / sensação)
 const AD_TITLE_PRESETS_EXPERIENCIA: string[] = [
-  "Sua próxima viagem é {destino}",
-  "Viva o melhor de {destino}",
-  "Momentos inesquecíveis em {destino}",
-  "Desperte os sentidos em {destino}",
-  "Experiencia exclusiva em {destino}",
-  "Prazer em cada detalhe · {destino}",
-  "{destino} como você nunca viveu",
+  "Tu próximo viaje es a {destino}",
+  "Vive lo mejor de {destino}",
+  "Momentos inolvidables en {destino}",
+  "Despierta los sentidos en {destino}",
+  "Experiencia exclusiva en {destino}",
+  "Placer en cada detalle · {destino}",
+  "{destino} como nunca lo viviste",
   "All Inclusive · {destino}",
-  "Refúgio dos sonhos em {destino}",
-  "Descubra o lado secreto de {destino}",
+  "Refugio soñado en {destino}",
+  "Descubre el lado secreto de {destino}",
 ];
 
 // Nomes "promo" sofisticados para Experiencia de Destino *
 const PROMO_NAME_PRESETS_EXPERIENCIA: string[] = [
-  "EXPERIÊNCIA EXCLUSIVA",
-  "MOMENTOS INESQUECÍVEIS",
-  "PRAZER EM CADA VIAGEM",
+  "EXPERIENCIA EXCLUSIVA",
+  "MOMENTOS INOLVIDABLES",
+  "PLACER EN CADA VIAJE",
   "ALL INCLUSIVE",
-  "VIVÊNCIA PREMIUM",
-  "REFÚGIO DOS SONHOS",
+  "VIVENCIA PREMIUM",
+  "REFUGIO SOÑADO",
 ];
 
 const PROMO_NAME_PRESETS: string[] = [
@@ -274,31 +274,31 @@ const PROMO_NAME_PRESETS: string[] = [
 // Defaults reconhecidos como "padrão da Oferta" — autorizados a serem sobrescritos
 // quando o usuário troca de categoria sem ter customizado.
 const DEFAULT_PROMO_NAMES_OFERTA = new Set(["OFERTA ESPECIAL", "Oferta Especial", "BLACK FRIDAY"]);
-const DEFAULT_AD_TITLES_OFERTA = new Set(["Pacote {destino}", "Conheça o melhor de {destino}", "Descubra {destino}"]);
+const DEFAULT_AD_TITLES_OFERTA = new Set(["Paquete {destino}", "Conoce lo mejor de {destino}", "Descubre {destino}"]);
 const DEFAULT_PROMO_NAMES_EXPERIENCIA = new Set(PROMO_NAME_PRESETS_EXPERIENCIA);
 const DEFAULT_AD_TITLES_EXPERIENCIA = new Set(AD_TITLE_PRESETS_EXPERIENCIA);
 
 const TRAVEL_PERIOD_PRESETS: string[] = [
-  "5 dias", "7 dias", "10 dias", "15 dias", "Final de semana",
-  "Janeiro", "Julho", "Dezembro", "Feriado prolongado", "12 a 18/01",
-  "Data flexível", "Saídas semanais",
+  "5 días", "7 días", "10 días", "15 días", "Fin de semana",
+  "Enero", "Julio", "Diciembre", "Feriado largo", "12 al 18/01",
+  "Fecha flexible", "Salidas semanales",
 ];
 
 const TITLE_NEIGHBORS: Record<string, string[]> = {
-  "Conheça o melhor de {destino}": ["Descubra {destino}", "Pacote {destino}"],
-  "Descubra {destino}": ["Conheça o melhor de {destino}", "Explore {destino}"],
-  "Pacote {destino}": ["Viagem Completa {destino}", "Pacote Promocional {destino}"],
-  "Explore {destino}": ["Descubra {destino}", "{destino} vai te surpreender"],
-  "Partiu {destino}": ["Vamos para {destino}?", "{destino} te espera"],
-  "Vamos para {destino}?": ["Partiu {destino}", "{destino} te espera"],
+  "Conoce lo mejor de {destino}": ["Descubre {destino}", "Paquete {destino}"],
+  "Descubre {destino}": ["Conoce lo mejor de {destino}", "Explora {destino}"],
+  "Paquete {destino}": ["Viaje Completo a {destino}", "Paquete Promocional {destino}"],
+  "Explora {destino}": ["Descubre {destino}", "{destino} te sorprenderá"],
+  "Nos vamos a {destino}": ["¿Vamos a {destino}?", "{destino} te espera"],
+  "¿Vamos a {destino}?": ["Nos vamos a {destino}", "{destino} te espera"],
   // Vizinhos de Experiencia
-  "Sua próxima viagem é {destino}": ["Viva o melhor de {destino}", "Momentos inesquecíveis em {destino}"],
-  "Viva o melhor de {destino}": ["Sua próxima viagem é {destino}", "Experiencia exclusiva em {destino}"],
-  "Momentos inesquecíveis em {destino}": ["Desperte os sentidos em {destino}", "Prazer em cada detalhe · {destino}"],
-  "Desperte os sentidos em {destino}": ["Momentos inesquecíveis em {destino}", "Refúgio dos sonhos em {destino}"],
-  "Experiencia exclusiva em {destino}": ["Viva o melhor de {destino}", "{destino} como você nunca viveu"],
-  "Prazer em cada detalhe · {destino}": ["All Inclusive · {destino}", "Experiencia exclusiva em {destino}"],
-  "{destino} como você nunca viveu": ["Descubra o lado secreto de {destino}", "Viva o melhor de {destino}"],
+  "Tu próximo viaje es a {destino}": ["Vive lo mejor de {destino}", "Momentos inolvidables en {destino}"],
+  "Vive lo mejor de {destino}": ["Tu próximo viaje es a {destino}", "Experiencia exclusiva en {destino}"],
+  "Momentos inolvidables en {destino}": ["Despierta los sentidos en {destino}", "Placer en cada detalle · {destino}"],
+  "Despierta los sentidos en {destino}": ["Momentos inolvidables en {destino}", "Refugio soñado en {destino}"],
+  "Experiencia exclusiva en {destino}": ["Vive lo mejor de {destino}", "{destino} como nunca lo viviste"],
+  "Placer en cada detalle · {destino}": ["All Inclusive · {destino}", "Experiencia exclusiva en {destino}"],
+  "{destino} como nunca lo viviste": ["Descubre el lado secreto de {destino}", "Vive lo mejor de {destino}"],
 };
 
 const buildTitleVariations = (template: string, destination: string): string[] => {

@@ -529,7 +529,7 @@ export const Phase5DashboardES = () => {
                    <option value="contato" className="bg-zinc-900 text-white">En Contacto</option>
                    <option value="proposta" className="bg-zinc-900 text-white">Propuesta</option>
                    <option value="venda" className="bg-zinc-900 text-white">Venta</option>
-                   <option value="perda" className="bg-zinc-900 text-white">Perda</option>
+                   <option value="perda" className="bg-zinc-900 text-white">Pérdida</option>
                  </select>
 
                  <select 
@@ -617,7 +617,7 @@ export const Phase5DashboardES = () => {
                                        <option value="contato" className="bg-zinc-900 text-blue-400">🔵 En Contacto</option>
                                        <option value="proposta" className="bg-zinc-900 text-purple-400">🟣 Propuesta</option>
                                        <option value="venda" className="bg-zinc-900 text-green-400">🟢 Venta</option>
-                                       <option value="perda" className="bg-zinc-900 text-zinc-400">⚪ Perda</option>
+                                       <option value="perda" className="bg-zinc-900 text-zinc-400">⚪ Pérdida</option>
                                     </select>
                                     <ChevronDown className="absolute right-2.5 top-1.5 w-3 h-3 pointer-events-none opacity-50" />
                                  </div>
@@ -700,7 +700,7 @@ export const Phase5DashboardES = () => {
                      <div className="text-[10px] text-white/40 font-bold uppercase mb-2">Fase del Lead</div>
                      <div className="flex flex-wrap gap-2">
                        {['novo','contato','proposta','venda','perda'].map(fase => {
-                         const labels: Record<string, string> = { novo: '🟡 Nuevo', contato: '🔵 En Contacto', proposta: '🟣 Propuesta', venda: '🟢 Venta', perda: '⚪ Perda' };
+                         const labels: Record<string, string> = { novo: '🟡 Nuevo', contato: '🔵 En Contacto', proposta: '🟣 Propuesta', venda: '🟢 Venta', perda: '⚪ Pérdida' };
                          const isActive = (selectedLead.status || 'novo') === fase;
                          return (
                            <button

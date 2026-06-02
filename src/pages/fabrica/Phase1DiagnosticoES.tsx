@@ -31,11 +31,11 @@ const AGENCY_TYPES: { v: AgencyType; l: string }[] = [
 type NicheOption = { id: Niche; label: string; emoji: string };
 
 const NICHES_DEFAULT: NicheOption[] = [
-  { id: "nordeste", label: "Playa Caribe / Tulum", emoji: "🏖️" },
+  { id: "nordeste", label: "Playa Caribe / Tulum", emoji: "🌴" },
   { id: "sul", label: "Playa Pacífico / Cancún", emoji: "🌅" },
   { id: "internacional", label: "Internacional", emoji: "✈️" },
   { id: "cruzeiro", label: "Cruceros", emoji: "🚢" },
-  { id: "aventura", label: "Aventura / Ecoturismo", emoji: "⛰️" },
+  { id: "aventura", label: "Aventura / Ecoturismo", emoji: "🍃" },
   { id: "luademel", label: "Luna de Miel", emoji: "💕" },
 ];
 
@@ -43,10 +43,10 @@ const NICHES_DEFAULT: NicheOption[] = [
 // Usamos os mesmos ids do tipo Niche para reaproveitar destinos/legendas/ofertas.
 const NICHES_BY_AGENCY: Partial<Record<AgencyType, NicheOption[]>> = {
   receptiva: [
-    { id: "nordeste", label: "Receptivo Caribe", emoji: "🏖️" },
+    { id: "nordeste", label: "Receptivo Caribe", emoji: "🌴" },
     { id: "sul", label: "Receptivo Pacífico", emoji: "🌅" },
-    { id: "aventura", label: "Receptivo Ecoturismo", emoji: "⛰️" },
-    { id: "internacional", label: "City Tour / Urbano", emoji: "🏙️" },
+    { id: "aventura", label: "Receptivo Ecoturismo", emoji: "🍃" },
+    { id: "internacional", label: "City Tour / Urbano", emoji: "🚌" },
     { id: "cruzeiro", label: "Transfer Portuario", emoji: "🚢" },
     { id: "luademel", label: "Rutas Privadas", emoji: "💕" },
   ],
@@ -55,7 +55,7 @@ const NICHES_BY_AGENCY: Partial<Record<AgencyType, NicheOption[]>> = {
     { id: "sul", label: "Viajes Nacionales Corporativos", emoji: "🏢" },
     { id: "luademel", label: "Eventos e Incentivos", emoji: "🎯" },
     { id: "cruzeiro", label: "Convenciones y MICE", emoji: "🤝" },
-    { id: "aventura", label: "Team Building / Retiros", emoji: "⛰️" },
+    { id: "aventura", label: "Team Building / Retiros", emoji: "🍃" },
     { id: "nordeste", label: "Workation / Bleisure", emoji: "💼" },
   ],
   religioso: [
@@ -70,14 +70,14 @@ const NICHES_BY_AGENCY: Partial<Record<AgencyType, NicheOption[]>> = {
     { id: "internacional", label: "Emisiones Internacionales", emoji: "✈️" },
     { id: "sul", label: "Emisiones Domésticas", emoji: "🛫" },
     { id: "luademel", label: "Luna de Miel con Millas", emoji: "💕" },
-    { id: "nordeste", label: "Paquetes Caribe con Millas", emoji: "🏖️" },
+    { id: "nordeste", label: "Paquetes Caribe con Millas", emoji: "🌴" },
     { id: "cruzeiro", label: "Cruceros + Vuelos con Puntos", emoji: "🚢" },
     { id: "aventura", label: "Rutas Premium / Ejecutiva", emoji: "🥂" },
   ],
   luxo: [
     { id: "internacional", label: "Europa Lujo", emoji: "🇪🇺" },
-    { id: "luademel", label: "Maldivas / Bora Bora", emoji: "🏖️" },
-    { id: "nordeste", label: "Resorts Premium Caribe", emoji: "🏖️" },
+    { id: "luademel", label: "Maldivas / Bora Bora", emoji: "🌴" },
+    { id: "nordeste", label: "Resorts Premium Caribe", emoji: "🌴" },
     { id: "cruzeiro", label: "Cruceros de Lujo", emoji: "🚢" },
     { id: "aventura", label: "Safaris / Expediciones", emoji: "🦁" },
     { id: "sul", label: "Destinos de Nieve Premium", emoji: "🍷" },
@@ -85,9 +85,9 @@ const NICHES_BY_AGENCY: Partial<Record<AgencyType, NicheOption[]>> = {
   grupos: [
     { id: "internacional", label: "Excursiones Internacionales", emoji: "✈️" },
     { id: "sul", label: "Excursiones Pacífico / Nieve", emoji: "🚌" },
-    { id: "nordeste", label: "Caravanas Caribe", emoji: "🏖️" },
+    { id: "nordeste", label: "Caravanas Caribe", emoji: "🌴" },
     { id: "luademel", label: "Grupos de Tercera Edad", emoji: "👵" },
-    { id: "aventura", label: "Grupos de Ecoturismo", emoji: "⛰️" },
+    { id: "aventura", label: "Grupos de Ecoturismo", emoji: "🍃" },
     { id: "cruzeiro", label: "Grupos en Cruceros", emoji: "🚢" },
   ],
   cruzeiros: [
@@ -99,7 +99,7 @@ const NICHES_BY_AGENCY: Partial<Record<AgencyType, NicheOption[]>> = {
     { id: "sul", label: "Cruceros Fluviales", emoji: "🚢" },
   ],
   ecoturismo: [
-    { id: "aventura", label: "Montañas y Senderos", emoji: "⛰️" },
+    { id: "aventura", label: "Montañas y Senderos", emoji: "🍃" },
     { id: "nordeste", label: "Desiertos / Oasis", emoji: "🏜️" },
     { id: "sul", label: "Selvas / Safari Pantanales", emoji: "🐅" },
     { id: "internacional", label: "Patagonia / Atacama", emoji: "🏔️" },
@@ -110,7 +110,7 @@ const NICHES_BY_AGENCY: Partial<Record<AgencyType, NicheOption[]>> = {
     { id: "internacional", label: "Aéreo Internacional", emoji: "✈️" },
     { id: "sul", label: "Aéreo Doméstico", emoji: "🛫" },
     { id: "luademel", label: "Hotelería Internacional", emoji: "🏨" },
-    { id: "nordeste", label: "Hotelería Nacional", emoji: "🏖️" },
+    { id: "nordeste", label: "Hotelería Nacional", emoji: "🌴" },
     { id: "cruzeiro", label: "Cruceros (B2B)", emoji: "🚢" },
     { id: "aventura", label: "Paquetes Operadores", emoji: "📦" },
   ],
