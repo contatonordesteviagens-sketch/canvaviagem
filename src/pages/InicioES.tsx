@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X, ChevronDown, ChevronUp, ArrowRight, Play, Star, ShieldCheck } from 'lucide-react';
+import { MetaPixel916689227676142 } from '@/components/MetaPixel916689227676142';
 
 import lucasPortrait from "@/assets/lucas-ferrari-portrait.webp";
 import depoimento1 from "@/assets/depoimento1.jpg";
@@ -71,6 +72,7 @@ export default function InicioES() {
       <Helmet>
         <title>Canva Travel Elite | Marketing para Agencias de Turismo</title>
       </Helmet>
+      <MetaPixel916689227676142 />
 
       {/* HEADER NAVBAR (Canva Style) */}
       <header className="fixed top-0 left-0 w-full h-[64px] bg-white border-b border-[#d4d8db] z-50 flex items-center px-6 justify-between shadow-sm">

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SpanishPixel } from "@/components/SpanishPixel";
 import { trackESPurchase, trackESSubscribe } from "@/lib/meta-pixel-es";
+import { MetaPixel916689227676142 } from "@/components/MetaPixel916689227676142";
 
 /**
  * Slow & Abundant Confetti Component
@@ -196,6 +197,7 @@ const ObrigadoES = () => {
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-500/5 blur-[100px] pointer-events-none" />
 
       <SpanishPixel />
+      <MetaPixel916689227676142 isPurchase={true} />
       {showConfetti && <ConfettiCanvas />}
 
       <div className="w-full max-w-md flex flex-col items-center relative z-10 gap-8">

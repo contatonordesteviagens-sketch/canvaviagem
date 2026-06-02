@@ -9,6 +9,7 @@ import { MetaPixelNew } from "@/components/MetaPixelNew";
 import { SpanishPixel } from "@/components/SpanishPixel";
 import { trackPurchase, trackSubscribe } from "@/lib/meta-pixel";
 import { trackESPurchase, trackESSubscribe } from "@/lib/meta-pixel-es";
+import { MetaPixel916689227676142 } from "@/components/MetaPixel916689227676142";
 
 // Pixel IDs that should receive Purchase event on PT thank you page
 const PT_PIXEL_IDS = [
@@ -249,6 +250,7 @@ const Obrigado = () => {
 
       <MetaPixelNew isPurchasePage={true} />
       <SpanishPixel />
+      <MetaPixel916689227676142 isPurchase={true} />
       {showConfetti && <ConfettiCanvas />}
 
       <div className="w-full max-w-md flex flex-col items-center relative z-10 gap-8">
