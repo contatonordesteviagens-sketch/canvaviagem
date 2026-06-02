@@ -202,34 +202,6 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
 
   return (
     <div className="space-y-8 animate-fadeIn max-w-[1280px] mx-auto pb-12">
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0F0F11] to-[#0A0A0B] border border-white/5 p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-amber-500/10 to-transparent blur-3xl rounded-full" />
-        <div className="space-y-2 relative z-10">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-amber-500/20 bg-amber-500/10 mb-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            <span className="text-[9px] font-black uppercase tracking-wider text-amber-400">Panel General</span>
-          </div>
-          <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-2">
-            Bienvenido a tu Fábrica de Destinos 🏰
-          </h2>
-          <p className="text-xs text-white/50 leading-relaxed max-w-xl">
-            Configura el perfil de tu agencia, agrega tus paquetes y gestiona tus recursos en tiempo real. ¡Todo lo que completes aquí se sincronizará automáticamente con tu sitio de viajes!
-          </p>
-        </div>
-
-        {/* Quick Analytics */}
-        <div className="flex gap-4 relative z-10">
-          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 min-w-[120px] text-center backdrop-blur-md">
-            <span className="text-[9px] font-bold text-white/40 uppercase tracking-wider block mb-1">Paquetes Activos</span>
-            <span className="text-2xl font-black text-amber-400">{state.selectedPackages.length}</span>
-          </div>
-          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 min-w-[120px] text-center backdrop-blur-md">
-            <span className="text-[9px] font-bold text-white/40 uppercase tracking-wider block mb-1">Score Digital</span>
-            <span className="text-2xl font-black text-emerald-400">{state.digitalScore || 0}%</span>
-          </div>
-        </div>
-      </div>
 
       {/* Projetos Salvos / Guardados */}
       {user && (
@@ -366,13 +338,6 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                 )}
               </div>
 
-              {/* Dica */}
-              <div className="text-center sm:text-left space-y-1">
-                <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">Foto de Perfil</span>
-                <p className="text-[10px] text-white/40 leading-relaxed">
-                  Sube el logo de tu agencia en formato PNG/JPG. Se aplicará en tus anuncios generados por IA y en el encabezado de tu sitio web.
-                </p>
-              </div>
             </div>
 
             {/* Inputs de Informação */}
@@ -498,62 +463,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
             </div>
           </div>
 
-          {/* CARD 2: DOMÍNIO DO SITE MOCKUP (VERCEL) */}
-          <div className="bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-4">
-            <h3 
-              onClick={() => onNavigate?.("phase", 2)}
-              className="text-xs font-black text-white/60 uppercase tracking-widest flex items-center gap-2 cursor-pointer hover:text-amber-400 transition-colors group"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-              Tu Dirección de Internet
-              <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity ml-1 text-amber-400 shrink-0" />
-            </h3>
 
-            {/* Chrome Bar Mockup */}
-            <div className="border border-white/5 rounded-2xl bg-[#070708] overflow-hidden shadow-lg">
-              {/* Browser control header */}
-              <div className="flex items-center gap-1.5 px-4 py-2 bg-white/[0.02] border-b border-white/5">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-                <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-                <div className="flex-1 max-w-[280px] mx-auto bg-white/[0.03] border border-white/5 rounded-md px-3 py-0.5 text-[10px] text-white/30 text-center truncate flex items-center justify-center gap-1 select-none">
-                  <Globe className="w-2.5 h-2.5 text-white/20" />
-                  {mockUrl}
-                </div>
-              </div>
-
-              {/* Browser content placeholder */}
-              <div className="p-5 text-center space-y-4">
-                <div className="w-10 h-10 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto shadow-inner">
-                  <Globe className="w-5 h-5" />
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold text-white leading-tight">¡Tu sitio web está activo!</h4>
-                  <p className="text-[10px] text-white/40 max-w-[280px] mx-auto leading-normal">
-                    Todos los paquetes creados en la columna de al lado se sincronizarán al instante.
-                  </p>
-                </div>
-
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => {
-                      navigator.clipboard.writeText(mockUrl);
-                      toast.success("¡Enlace copiado al portapapeles!");
-                    }}
-                    className="flex-1 py-2 px-3 rounded-lg bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] text-[10px] font-bold text-white/80 hover:text-white transition-all"
-                  >
-                    Copiar Enlace
-                  </button>
-                  <button 
-                    onClick={() => window.open(mockUrl, "_blank")}
-                    className="flex-1 py-2 px-3 rounded-lg bg-amber-500 hover:bg-amber-600 text-[10px] font-bold text-black flex items-center justify-center gap-1 transition-all"
-                  >
-                    Visitar Sitio <ExternalLink className="w-2.5 h-2.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Right Side: Package Management (7 Cols) */}

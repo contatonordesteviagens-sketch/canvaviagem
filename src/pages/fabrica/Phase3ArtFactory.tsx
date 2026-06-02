@@ -2646,12 +2646,7 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
           </div>
         </div>
 
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-[11px] text-amber-200/90">
-          💡 Dados da Fase 1: <strong>{state.agencyName || "agência"}</strong>
-          {state.city && <> · {state.city}</>}
-          {state.niche && <> · nicho {state.niche}</>}
-          {!state.logoBase64 && <> · <span className="text-amber-300">sem logo (será usado o nome como wordmark)</span></>}
-        </div>
+
 
         <button
           onClick={() => generateNext()}

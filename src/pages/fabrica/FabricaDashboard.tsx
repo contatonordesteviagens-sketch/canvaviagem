@@ -400,34 +400,6 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
       )}
 
 
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0F0F11] to-[#0A0A0B] border border-white/5 p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-amber-500/10 to-transparent blur-3xl rounded-full" />
-        <div className="space-y-2 relative z-10">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-amber-500/20 bg-amber-500/10 mb-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            <span className="text-[9px] font-black uppercase tracking-wider text-amber-400">Painel Fábrica</span>
-          </div>
-          <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-2">
-            Bem-vindo à sua Fábrica de Destinos 🏰
-          </h2>
-          <p className="text-xs text-white/50 leading-relaxed max-w-xl">
-            Configure o perfil da sua agência, adicione seus pacotes e gerencie suas mídias em tempo real. Tudo o que você preencher aqui será sincronizado com o seu site de viagens!
-          </p>
-        </div>
-
-        {/* Quick Analytics */}
-        <div className="flex gap-4 relative z-10">
-          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 min-w-[120px] text-center backdrop-blur-md">
-            <span className="text-[9px] font-bold text-white/40 uppercase tracking-wider block mb-1">Pacotes Ativos</span>
-            <span className="text-2xl font-black text-amber-400">{state.selectedPackages.length}</span>
-          </div>
-          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 min-w-[120px] text-center backdrop-blur-md">
-            <span className="text-[9px] font-bold text-white/40 uppercase tracking-wider block mb-1">Score Digital</span>
-            <span className="text-2xl font-black text-emerald-400">{state.digitalScore || 0}%</span>
-          </div>
-        </div>
-      </div>
 
       {/* Main Responsive Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

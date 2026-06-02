@@ -82,9 +82,7 @@ export const FabricaLibrary = ({ subTab, setSubTab }: Props) => {
           <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
             Minha Biblioteca de Ativos 📚
           </h2>
-          <p className="text-xs text-white/50 leading-relaxed max-w-xl">
-            Acesse suas artes publicitárias geradas e as fotos de destinos selecionadas — cada uma em sua aba separada. Baixe qualquer imagem direto para o dispositivo!
-          </p>
+
         </div>
 
         {/* Subtabs Bar */}

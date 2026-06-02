@@ -2122,9 +2122,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                       );
                     })}
                   </div>
-                ) : (
-                  <p className="text-[10px] text-white/40 text-center py-4">¡Escribe tu destino arriba y busca entre miles de fotos de alta calidad!</p>
-                )}
+                ) : null}
               </div>
             </MinimizableCard>
           )}
@@ -2672,12 +2670,6 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             </div>
           </MinimizableCard>
 
-          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-[10px] text-amber-200/90 leading-relaxed">
-            💡 Datos sincronizados de la agencia: <strong>{state.agencyName || "agencia"}</strong>
-            {state.city && <> · {state.city}</>}
-            {state.niche && <> · nicho {state.niche}</>}
-            {!state.logoBase64 && <> · <span className="text-amber-300">usando wordmark de texto</span></>}
-          </div>
 
           <button
             onClick={() => generateNext()}
