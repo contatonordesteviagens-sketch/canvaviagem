@@ -75,41 +75,30 @@ export const FabricaLibrary = ({ subTab, setSubTab }: Props) => {
 
   return (
     <div className="space-y-6 animate-fadeIn max-w-[1280px] mx-auto pb-12">
-      {/* Header Info */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0F0F11] to-[#0A0A0B] border border-white/5 p-6 backdrop-blur-xl shadow-lg">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-3xl rounded-full" />
-        <div className="space-y-2 relative z-10">
-          <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-            Minha Biblioteca de Ativos 📚
-          </h2>
-
-        </div>
-
-        {/* Subtabs Bar */}
-        <div className="flex gap-2 mt-6 border-t border-white/5 pt-6 relative z-10 select-none">
-          <button
-            onClick={() => setSubTab("ofertas")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
-              subTab === "ofertas"
-                ? "bg-amber-500 text-black shadow-md shadow-amber-500/10"
-                : "bg-white/[0.02] border border-white/5 text-white/60 hover:bg-white/[0.06] hover:text-white"
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            Minhas Artes & Anúncios ({getAdImages().length})
-          </button>
-          <button
-            onClick={() => setSubTab("galeria")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
-              subTab === "galeria"
-                ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/10"
-                : "bg-white/[0.02] border border-white/5 text-white/60 hover:bg-white/[0.06] hover:text-white"
-            }`}
-          >
-            <Camera className="w-3.5 h-3.5" />
-            Banco de Fotos Selecionadas ({getGalleryImages().length})
-          </button>
-        </div>
+      {/* Subtabs Bar */}
+      <div className="flex gap-2 select-none">
+        <button
+          onClick={() => setSubTab("ofertas")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
+            subTab === "ofertas"
+              ? "bg-amber-500 text-black shadow-md shadow-amber-500/10"
+              : "bg-white/[0.02] border border-white/5 text-white/60 hover:bg-white/[0.06] hover:text-white"
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          Minhas Artes & Anúncios ({getAdImages().length})
+        </button>
+        <button
+          onClick={() => setSubTab("galeria")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
+            subTab === "galeria"
+              ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/10"
+              : "bg-white/[0.02] border border-white/5 text-white/60 hover:bg-white/[0.06] hover:text-white"
+          }`}
+        >
+          <Camera className="w-3.5 h-3.5" />
+          Banco de Fotos Selecionadas ({getGalleryImages().length})
+        </button>
       </div>
 
 
