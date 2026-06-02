@@ -1760,9 +1760,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="flex flex-col gap-8 items-start">
         {/* COLUNA ESQUERDA: Sidebar de Configurações */}
-        <div className="lg:col-span-5 space-y-6">
+        <div className="w-full space-y-6">
           <MinimizableCard title="👤 Perfil y Canales de Atención">
             <div className="space-y-5">
                             {user && (
@@ -1956,12 +1956,10 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   </button>
                   <button
                     type="button"
-                    disabled
-                    title="En mantenimiento — lo reactivaremos pronto"
-                    aria-disabled="true"
-                    className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-bold text-white/30 cursor-not-allowed opacity-50"
+                    onClick={() => setGenMode("ai")}
+                    className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-bold transition-all disabled:opacity-30 ${genMode === "ai" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
                   >
-                    <Sparkles className="w-3.5 h-3.5 inline mr-1" /> Imagen IA <span className="hidden sm:inline font-normal opacity-70">(desactivado)</span>
+                    <Sparkles className="w-3.5 h-3.5 inline mr-1" /> Imagen IA
                   </button>
                 </div>
               </div>
@@ -2686,7 +2684,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         </div>
 
         {/* COLUNA DIREITA: Resultado e visualização */}
-        <div className="lg:col-span-7 space-y-6 lg:sticky lg:top-24">
+        <div className="w-full space-y-6">
           {(generationError || generatedImages.length > 0) ? (
             <div ref={resultRef} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 space-y-4 scroll-mt-24">
               {generationError && (
