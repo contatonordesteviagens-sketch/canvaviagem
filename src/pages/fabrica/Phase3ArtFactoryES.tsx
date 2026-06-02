@@ -210,9 +210,9 @@ interface PaymentPreset {
 }
 
 const PAYMENT_PRESETS: PaymentPreset[] = [
-  { id: "installments", name: "En cuotas",          emoji: "💳", description: "Ex: 10x $ 149,90",       hint: "Parcelas: 10x · Valor: 149,90" },
-  { id: "cash",         name: "Al contado",            emoji: "💰", description: "Ex: À VISTA $ 1.499",    hint: "Valor: 1.499" },
-  { id: "down_plus",    name: "Enganche + cuotas", emoji: "ðŸ’µ", description: "Ex: ENTRADA + 10x $ 149", hint: "Parcelas: ENTRADA $ 200 + 10x · Valor: 149" },
+  { id: "installments", name: "En cuotas",          emoji: "💳", description: "Ex: 10x $ 149,90",       hint: "Cuotas: 10x · Valor: 149,90" },
+  { id: "cash",         name: "Al contado",            emoji: "💰", description: "Ex: AL CONTADO $ 1.499",    hint: "Valor: 1.499" },
+  { id: "down_plus",    name: "Enganche + cuotas", emoji: "ðŸ’µ", description: "Ex: ENGANCHE + 10x $ 149", hint: "Cuotas: ENGANCHE $ 200 + 10x · Valor: 149" },
 ];
 
 const AD_TITLE_PRESETS: string[] = [
@@ -606,7 +606,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         }
 
         update({ logoBase64: canvas.toDataURL("image/png") });
-        toast.success("Logo adicionada com sucesso!");
+        toast.success("¡Logo agregado con éxito!");
       };
       img.src = event.target?.result as string;
     };
@@ -1277,7 +1277,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         localStorage.setItem("fabrica_gen_count", String(newCount));
         finishCycle(composed.length);
 
-        toast.success(`${composed.length} ${composed.length === 1 ? "variação gerada" : "variações geradas"} com foto real!`);
+        toast.success(`${composed.length} ${composed.length === 1 ? "variación generada" : "variaciones generadas"} con foto real!`);
         requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
         return;
       }
@@ -1316,7 +1316,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           return picked;
         })();
 
-        toast.info(`Gerando ${picks.length} ${picks.length === 1 ? "variação" : "variações"} em IA Pura — ${cat.name}`);
+        toast.info(`Generando ${picks.length} ${picks.length === 1 ? "variación" : "variaciones"} en IA Pura — ${cat.name}`);
 
         // PROMPT DE FUNDO LIMPO — A IA é instruída a gerar APENAS a fotografia,
         // sem nenhum elemento gráfico/tipográfico. Toda a UI (logo, textos, preço,
@@ -1403,7 +1403,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             return;
           }
           if (result.data?.error) throw new Error(result.data.error);
-          if (!result.data?.image) throw new Error("Nenhuma imagem foi gerada.");
+          if (!result.data?.image) throw new Error("No se generó ninguna imagen.");
 
           let img = result.data.image as string;
           // Ajusta o enquadramento se a IA entregar algo fora do aspecto (especialmente em Square)
@@ -1522,12 +1522,12 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
         finishCycle(images.length);
 
-        toast.success(`${images.length} ${images.length === 1 ? "variação gerada" : "variações geradas"} — ${cat.name}`);
+        toast.success(`${images.length} ${images.length === 1 ? "variación generada" : "variaciones generadas"} — ${cat.name}`);
         return;
       }
 
       // ===== MODO CUSTOM (link/upload do usuário) — gera 1 ou mais imagens locais =====
-      toast.info(isBatchMode ? "Gerando lote de 3 variações com sua imagem" : "Gerando 1 imagem única com sua imagem");
+      toast.info(isBatchMode ? "Generando lote de 3 variaciones con tu imagen" : "Generando 1 imagen única con tu imagen");
       const guardCustom = getForbiddenSets(categoria, "custom", format);
       const stratHistKeyCustom = scopedStrategyHistoryKey(categoria, "custom", format);
       let stratHistoryCustom: StrategyId[] = [];
