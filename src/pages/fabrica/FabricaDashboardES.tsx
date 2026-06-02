@@ -646,9 +646,13 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                                   <Check className="w-3.5 h-3.5 mr-1" /> Aprobar para el Sitio
                                 </button>
                               ) : (
-                                <span className="h-7 px-2 flex items-center justify-center rounded-lg bg-white/5 text-white/50 text-[9px] font-bold mr-1 uppercase tracking-wider border border-white/10">
+                                <button
+                                  onClick={() => togglePublish(pkg.id, false)}
+                                  title="Quitar del Sitio"
+                                  className="h-7 px-2 flex items-center justify-center rounded-lg bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-white/50 text-[9px] font-bold mr-1 uppercase tracking-wider border border-white/10 transition-all cursor-pointer"
+                                >
                                   En el Sitio
-                                </span>
+                                </button>
                               )}
                               <button 
                                 onClick={() => startEdit(pkg)}

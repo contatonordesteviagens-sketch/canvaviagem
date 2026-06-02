@@ -312,9 +312,13 @@ export const Phase2Ativos = ({ onNext, onBack }: Props) => {
                             <Check className="w-3 h-3 mr-1" /> Aprovar para o Site
                           </button>
                         ) : (
-                          <span className="h-7 px-2 flex items-center justify-center rounded-lg bg-white/5 text-white/50 text-[9px] font-bold mr-1 uppercase tracking-wider border border-white/10">
+                          <button
+                            onClick={() => togglePublish(pkg.id, false)}
+                            title="Remover do Site"
+                            className="h-7 px-2 flex items-center justify-center rounded-lg bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-white/50 text-[9px] font-bold mr-1 uppercase tracking-wider border border-white/10 transition-all cursor-pointer"
+                          >
                             No Site
-                          </span>
+                          </button>
                         )}
                         <button onClick={() => startEdit(pkg)} title="Editar" className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/50 hover:text-white transition-all"><Pencil className="w-3 h-3" /></button>
                         <button onClick={() => duplicatePackage(pkg)} title="Duplicar" className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/50 hover:text-white transition-all"><Copy className="w-3 h-3" /></button>

@@ -748,7 +748,7 @@ export function buildLandingHTML(state: FabricaState, trackingId?: string): stri
     sc.heroHeadline?.trim() || "Viajes que transforman para siempre";
   const subheadline =
     sc.heroSubheadline?.trim() ||
-    `Itinerarios exclusivos y a medida para viajeros que no aceptan lo comum. Desde la primera reunión hasta el regreso a casa, cuidamos cada detalle.`;
+    `Itinerarios exclusivos y a medida para viajeros que no aceptan lo común. Desde la primera reunión hasta el regreso a casa, cuidamos cada detalle.`;
 
   const pacotes = state.selectedPackages.length
     ? state.selectedPackages.filter(p => !p.isDraft)
@@ -1141,10 +1141,10 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
         ${!sc.hiddenElements?.includes('equipe-badge') ? `<span class="badge-counter" data-visual-removable="equipe-badge">+15k Clientes Satisfechos</span>` : ''}
         ${!sc.hiddenElements?.includes('equipe-eyebrow') ? `<div class="eyebrow" style="color:#fff;opacity:.6" data-visual-removable="equipe-eyebrow">Nuestro equipo</div>` : ''}
         ${!sc.hiddenElements?.includes('equipe-title') ? `<h2 data-visual-removable="equipe-title">Un equipo dedicado exclusivamente a ti</h2>` : ''}
-        ${!sc.hiddenElements?.includes('equipe-intro') ? `<p class="intro" data-visual-removable="equipe-intro">Cada viaje comienza con una conversación real. Nuestro equipo de expertos conoce los destinos de cerca — cada detalhe pensado para o seu perfil, seus sonhos e o seu momento.</p>` : ''}
+        ${!sc.hiddenElements?.includes('equipe-intro') ? `<p class="intro" data-visual-removable="equipe-intro">Cada viaje comienza con una conversación real. Nuestro equipo de expertos conoce los destinos de cerca — cada detalle pensado para tu perfil, tus sueños y tu momento.</p>` : ''}
         <div class="equipe-features">
           ${!sc.hiddenElements?.includes('equipe-feat-0') ? `<div class="feat" data-visual-removable="equipe-feat-0"><div class="feat-icon">🛡️</div><div><h4>Seguridad y Confiabilidad</h4><p>Años de experiencia con miles de familias y socios verificados en todo el mundo.</p></div></div>` : ''}
-          ${!sc.hiddenElements?.includes('equipe-feat-1') ? `<div class="feat" data-visual-removable="equipe-feat-1"><div class="feat-icon">📞</div><div><h4>Soporte 24h Durante el Viaje</h4><p>Nuestro equipo está disponível a qualquer hora. Cualquier imprevisto, lo resolvemos.</p></div></div>` : ''}
+          ${!sc.hiddenElements?.includes('equipe-feat-1') ? `<div class="feat" data-visual-removable="equipe-feat-1"><div class="feat-icon">📞</div><div><h4>Soporte 24h Durante el Viaje</h4><p>Nuestro equipo está disponible a cualquier hora. Cualquier imprevisto, lo resolvemos.</p></div></div>` : ''}
           ${!sc.hiddenElements?.includes('equipe-feat-2') ? `<div class="feat" data-visual-removable="equipe-feat-2"><div class="feat-icon">✨</div><div><h4>Experiencias Exclusivas</h4><p>Acceso a hoteles y experiencias no disponibles para el público en general.</p></div></div>` : ''}
           ${!sc.hiddenElements?.includes('equipe-feat-3') ? `<div class="feat" data-visual-removable="equipe-feat-3"><div class="feat-icon">💰</div><div><h4>Mejor Relación Calidad-Precio</h4><p>Nuestra red de socios ofrece condiciones especiales que no encontrarás en otros lugares.</p></div></div>` : ''}
         </div>
@@ -1217,7 +1217,7 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
           <div class="field"><label>Fecha de Regreso</label><input type="date" name="volta"></div>
         </div>
         <div class="form-row single">
-          <div class="field"><label>Observações (opcional)</label><textarea name="obs" placeholder="Preferências, ocasião especial, orçamento…"></textarea></div>
+          <div class="field"><label>Observaciones (opcional)</label><textarea name="obs" placeholder="Preferencias, ocasión especial, presupuesto…"></textarea></div>
         </div>
         <button type="submit" class="btn form-submit">💬 Enviar por WhatsApp</button>
       </form>
@@ -1280,8 +1280,8 @@ ${(state.sectionOrder || ["hero", "processo", "destinos", "porQue", "depoimentos
       </div>
     </div>
     <div class="foot-bottom">
-      <div>© ${new Date().getFullYear()} ${esc(agencia)} · Todos os direitos reservados</div>
-      <div>Hecho con ❤ con <a href="https://canvaviagem.com" target="_blank" style="text-decoration: underline; font-weight: 600; color: #fff;">Canva Viagem</a></div>
+      <div>© ${new Date().getFullYear()} ${esc(agencia)} · Todos los derechos reservados</div>
+      <div>Hecho con ❤ por <a href="https://canvaviagem.com" target="_blank" style="text-decoration: underline; font-weight: 600; color: #fff;">Canva Viagem</a></div>
     </div>
   </div>
 </footer>
@@ -1514,17 +1514,17 @@ export function generateUpdatePackagesPrompt(state: FabricaState): string {
   return `Lovable, por favor, actualiza mi sitio actual.
 Agrega los siguientes paquetes actualizados en mi cuadrícula de destinos/paquetes existente.
 
-INSTRUÇÃO CRÍTICA: 
-1. NÃO recrie o site do zero. 
-2. NÃO altere as cores ou o design atual. 
-3. NÃO gere novas imagens fictícias. Mantenha os links originais que estou fornecendo.
-4. APENAS substitua ou adicione os cards de pacotes na div/grid que contém a classe "destinos-grid".
+INSTRUCCIÓN CRÍTICA: 
+1. NO recrees el sitio desde cero. 
+2. NO cambies los colores o el diseño actual. 
+3. NO generes nuevas imágenes ficticias. Mantén los enlaces originales que estoy proporcionando.
+4. SÓLO reemplaza o agrega las tarjetas de los paquetes en el div/grid que contiene la clase "destinos-grid".
 
-Aqui está o bloco de código HTML que deve ser inserido:
+Aquí está el bloque de código HTML que debe ser insertado:
 
 \`\`\`html
 ${cardsHTML}
 \`\`\`
 
-Obrado!`;
+¡Gracias!`;
 }
