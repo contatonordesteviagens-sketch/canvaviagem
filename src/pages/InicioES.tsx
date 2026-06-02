@@ -582,9 +582,59 @@ export default function InicioES() {
           <p className="text-lg text-[#405466] mb-16">Resultados directos en WhatsApp para quienes lo usan.</p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[depoimento1, depoimento2, depoimento3].map((img, i) => (
-              <div key={i} className="rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-[#d4d8db]">
-                <img src={img} alt={`Resultado real ${i+1}`} className="w-full h-auto object-cover" />
+            {[
+              {
+                agency: "Guía de Dubái en Español",
+                messages: [
+                  { sender: "client", text: "Lucas, menos de 24 horas y tuve la primera venta para Disney, con más de mil de comisión, usando los anuncios que enseñas, antes solo aparecían curiosos pero no cerraba nada" },
+                  { sender: "client", text: "Usé la I.A para armar el itinerario rapidito, subí el anuncio y ya vino un montón de gente escribiendo al whatsapp" },
+                  { sender: "lucas", text: "Qué bueno, ahora solo queda atender rápido" },
+                  { sender: "client", text: "Sí, voy a enfocarme en eso ahora" }
+                ]
+              },
+              {
+                agency: "iPlanet Viajes",
+                messages: [
+                  { sender: "client", text: "Lucas, quería decirte una cosa" },
+                  { sender: "client", text: "Usé ese modelo de anuncio que mostraste para la promoción de vacaciones y funcionó aquí en mi ciudad" },
+                  { sender: "client", text: "Gastando poco ya apareció mucha gente interesada" },
+                  { sender: "client", text: "Hice 23 presupuestos solo ayer" },
+                  { sender: "client", text: "Y logré cerrar 5 paquetes" },
+                  { sender: "client", text: "Para mí esto ya fue un resultado que nunca había tenido antes" }
+                ]
+              },
+              {
+                agency: "Reservas Bot",
+                messages: [
+                  { sender: "client", text: "Este mes ya salieron varias ventas, hasta aumenté la meta del mes" },
+                  { sender: "client", text: "Estoy demasiado feliz amigo, ¡gracias!" },
+                  { sender: "lucas", text: "Me hace muy feliz leer esto amigo, me alegraste el día, sigue haciendo más y más que los resultados van a seguir mejorando, cuenta conmigo" },
+                  { sender: "client", text: "Lo haré, voy a grabar algunos videos hablando ahora para probar" }
+                ]
+              }
+            ].map((testimonial, i) => (
+              <div key={i} className="flex flex-col rounded-2xl overflow-hidden shadow-lg border border-[#d4d8db] bg-[#0b141a] font-sans">
+                {/* Header de WhatsApp */}
+                <div className="bg-[#202c33] px-4 py-3 border-b border-[#2a3942] flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6b11ff] to-[#00d2ff] flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                    {testimonial.agency.charAt(0)}
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="text-[#e9edef] font-semibold text-sm truncate">{testimonial.agency}</div>
+                    <div className="text-[#8696a0] text-xs">en línea</div>
+                  </div>
+                </div>
+                {/* Cuerpo del Chat */}
+                <div className="p-4 flex flex-col gap-2 flex-1 bg-[#0b141a]/95 bg-[url('https://i.pinimg.com/originals/8f/ba/cb/8fbacbd464e996966eb9d4a6b7a9c21e.jpg')] bg-cover bg-blend-overlay">
+                  {testimonial.messages.map((msg, j) => (
+                    <div key={j} className={`flex flex-col max-w-[85%] rounded-lg px-3 py-2 text-[13px] text-[#e9edef] shadow-sm relative ${msg.sender === "client" ? "bg-[#202c33] self-start rounded-tl-none" : "bg-[#005c4b] self-end rounded-tr-none"}`}>
+                      <span className="leading-relaxed text-left">{msg.text}</span>
+                      <span className="text-[10px] text-white/50 text-right mt-1 flex justify-end items-center gap-1">
+                        {`14:0${j + 1}`} {msg.sender === "lucas" && <Check className="w-[14px] h-[14px] text-[#53bdeb] ml-1" />}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

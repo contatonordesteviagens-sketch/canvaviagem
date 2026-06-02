@@ -1632,9 +1632,9 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
     } catch { toast.error("Erro ao baixar imagem"); }
   };
 
-  const sectionCls = "bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-4";
-  const labelCls = "text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5";
-  const inputCls = "w-full bg-white/[0.03] border border-white/5 hover:border-white/10 focus:border-amber-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-all";
+  const sectionCls = "bg-[#0F0F11]/80 border border-white/10 rounded-3xl p-6 backdrop-blur-2xl shadow-2xl shadow-black/50 space-y-4 transition-all";
+  const labelCls = "text-[10px] font-extrabold text-white/50 uppercase tracking-[0.15em] block mb-1.5";
+  const inputCls = "w-full bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05] focus:border-amber-400/60 focus:bg-white/[0.05] focus:shadow-[0_0_15px_rgba(251,191,36,0.15)] rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-all duration-300";
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -2651,8 +2651,8 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
         <button
           onClick={() => generateNext()}
           disabled={loading || !destination}
-          className="w-full py-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:brightness-110"
-          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 8px 24px ${primaryColor}55` }}
+          className="w-full py-4 rounded-xl font-extrabold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
+          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 10px 30px ${primaryColor}66` }}
         >
           {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando com IA...</> : <><Sparkles className="w-4 h-4" /> Gerar Anúncio</>}
         </button>

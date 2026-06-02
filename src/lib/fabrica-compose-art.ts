@@ -32,11 +32,11 @@ function luminance(hex: string): number {
   return 0.299 * r + 0.587 * g + 0.114 * b;
 }
 
-// Retorna preto ou branco com melhor contraste sobre `bg` (tons premium).
+// Retorna um tom profundo ou claro derivado do fundo, em vez de preto/branco puro.
 function contrastOn(bg: string): string {
   const normalized = (bg || "").trim().toLowerCase();
   if (normalized === "#0c2340") return "#ffffff";
-  return luminance(bg) > 0.6 ? "#111116" : "#ffffff";
+  return luminance(bg) > 0.6 ? shadeColor(bg, -80) : "#ffffff";
 }
 
 /**
@@ -114,7 +114,7 @@ function safeFillText(
   x: number,
   y: number,
   maxWidth: number,
-  minSize = 12
+  minSize = 16
 ): void {
   if (!text) return;
   // Parse current font to get size and family
@@ -140,7 +140,7 @@ function wrapTextSafe(
   text: string,
   maxWidth: number,
   maxLines: number,
-  minSize = 12
+  minSize = 16
 ): string[] {
   if (!text) return [];
   const words = text.trim().split(/\s+/);
@@ -621,16 +621,29 @@ function fillGlassRoundRect(
   h: number,
   r: number,
   bgColor: string,
-  borderColor = "rgba(255, 255, 255, 0.15)"
+  borderColor = "rgba(255, 255, 255, 0.25)"
 ) {
   ctx.save();
+  // Ambient glow shadow for glassmorphism
+  ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+  ctx.shadowBlur = 24;
+  ctx.shadowOffsetY = 8;
+  
   ctx.fillStyle = bgColor;
   roundRect(ctx, x, y, w, h, r);
   ctx.fill();
 
+  ctx.shadowColor = "transparent";
   ctx.strokeStyle = borderColor;
   ctx.lineWidth = 1.5;
   ctx.stroke();
+  
+  // Inner highlight reflection
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+  ctx.lineWidth = 1;
+  roundRect(ctx, x + 1, y + 1, w - 2, h - 2, r - 1);
+  ctx.stroke();
+  
   ctx.restore();
 }
 
@@ -1180,11 +1193,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   })();
 
   const RULES = {
-    SAFE_BOTTOM: isStory ? 380 : 120, // Zona de exclusão absoluta para caixa de texto e botões (Stories)
-    SAFE_TOP: isStory ? 280 : 60, // Reserva para avatar e ícones do app (Stories)
+    SAFE_BOTTOM: isStory ? Math.max(346, height * 0.18) : 120, // 18% min bottom padding
+    SAFE_TOP: isStory ? Math.max(288, height * 0.15) : 60, // 15% min top padding
     LEFT: isStory ? 60 : 80,
     RIGHT: width - (isStory ? 60 : 80),
-    PANEL_BOTTOM: height - (isStory ? 380 : 120)
+    PANEL_BOTTOM: height - (isStory ? Math.max(346, height * 0.18) : 120)
   };
 
   
