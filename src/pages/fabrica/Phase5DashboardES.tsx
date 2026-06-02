@@ -632,18 +632,31 @@ export const Phase5DashboardES = () => {
                                        <Maximize2 className="w-4 h-4" />
                                     </button>
                                     
-                                    {cleanPhone ? (
-                                       <a 
-                                          href={`https://wa.me/${cleanPhone.startsWith('55') ? '' : '55'}${cleanPhone}?text=${encodeURIComponent(`¡Hola ${l.nome_completo || 'cliente'}! Recibimos tu interés en el destino ${l.destino_interesse || 'General'}. ¿Cómo podemos ayudarte?`)}`} 
-                                          target="_blank" 
-                                          rel="noreferrer"
-                                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#25D366] hover:bg-[#22c35e] text-white text-[11px] font-black rounded-lg transition-all active:scale-95 shadow-lg shadow-green-900/20"
-                                       >
-                                          <MessageSquare className="w-3.5 h-3.5" /> Whats
-                                       </a>
-                                    ) : (
-                                       <span className="text-[10px] text-white/30 px-2">S/ Whats</span>
-                                    )}
+                                    {cleanPhone ? (() => {
+                                        const agencyDDI = (state.whatsappDialCode || "55").replace(/\D/g, "");
+                                        const waLink = cleanPhone.startsWith(agencyDDI) ? cleanPhone : `${agencyDDI}${cleanPhone}`;
+                                        return (
+                                           <a 
+                                              href={`https://wa.me/${waLink}?text=${encodeURIComponent(`¡Hola ${l.nome_completo || 'cliente'}! Recibimos tu interés en el destino ${l.destino_interesse || 'General'}. ¿Cómo podemos ayudarte?`)}`} 
+                                              target="_blank" 
+                                              rel="noreferrer"
+                                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#25D366] hover:bg-[#22c35e] text-white text-[11px] font-black rounded-lg transition-all active:scale-95 shadow-lg shadow-green-900/20"
+                                           >
+                                              <MessageSquare className="w-3.5 h-3.5" /> Whats
+                                           </a>
+                                        );
+                                     })() : (
+                                        <span className="text-[10px] text-white/30 px-2">S/ Whats</span>
+                                     )}
+                                     
+                                     {l.email && (
+                                        <a 
+                                           href={`mailto:${l.email}?subject=Cotización de Viaje - ${state.agencyName || 'Agencia'}`} 
+                                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-[11px] font-black rounded-lg transition-all active:scale-95 shadow-lg shadow-blue-900/20"
+                                        >
+                                           ✉️ Email
+                                        </a>
+                                     )}
                                  </div>
                               </td>
                            </tr>
@@ -746,16 +759,21 @@ export const Phase5DashboardES = () => {
                </div>
 
                <div className="p-5 border-t border-white/10 bg-black/20 flex justify-end">
-                  {selectedLead.whatsapp ? (
-                     <a 
-                        href={`https://wa.me/${String(selectedLead.whatsapp).replace(/\D/g, "").startsWith('55') ? '' : '55'}${String(selectedLead.whatsapp).replace(/\D/g, "")}?text=${encodeURIComponent(`¡Hola ${selectedLead.nome_completo || 'cliente'}! Recibimos tu interés en el destino ${selectedLead.destino_interesse || 'General'}. ¿Cómo podemos ayudarte?`)}`} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="px-6 py-2.5 bg-[#25D366] hover:bg-[#22c35e] text-white text-sm font-black rounded-xl transition-all flex items-center gap-2 shadow-lg"
-                     >
-                        <MessageSquare className="w-4 h-4" /> Iniciar Conversación
-                     </a>
-                  ) : (
+                  {selectedLead.whatsapp ? (() => {
+                     const cleanPhoneLead = String(selectedLead.whatsapp).replace(/\D/g, "");
+                     const agencyDDI = (state.whatsappDialCode || "55").replace(/\D/g, "");
+                     const waLinkLead = cleanPhoneLead.startsWith(agencyDDI) ? cleanPhoneLead : `${agencyDDI}${cleanPhoneLead}`;
+                     return (
+                        <a 
+                           href={`https://wa.me/${waLinkLead}?text=${encodeURIComponent(`¡Hola ${selectedLead.nome_completo || 'cliente'}! Recibimos tu interés en el destino ${selectedLead.destino_interesse || 'General'}. ¿Cómo podemos ayudarte?`)}`} 
+                           target="_blank" 
+                           rel="noreferrer"
+                           className="px-6 py-2.5 bg-[#25D366] hover:bg-[#22c35e] text-white text-sm font-black rounded-xl transition-all flex items-center gap-2 shadow-lg"
+                        >
+                           <MessageSquare className="w-4 h-4" /> Iniciar Conversación
+                        </a>
+                     );
+                  })() : (
                      <button onClick={() => setSelectedLead(null)} className="px-6 py-2.5 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-all">
                         Cerrar Detalles
                      </button>

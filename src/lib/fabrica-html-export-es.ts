@@ -1303,8 +1303,12 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
         <input type="text" id="lead-name" required placeholder="Ej: Maria Silva">
       </div>
       <div class="field">
+        <label>Tu E-mail</label>
+        <input type="email" id="lead-email" required placeholder="tu@email.com">
+      </div>
+      <div class="field">
         <label>Tu WhatsApp / Celular</label>
-        <input type="tel" id="lead-phone" required placeholder="(00) 90000-0000">
+        <input type="tel" id="lead-phone" required placeholder="Ej: +54 9 11 1234-5678">
       </div>
       <button type="submit" class="btn modal-submit">🚀 Hablar en WhatsApp</button>
     </form>
@@ -1405,6 +1409,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     e.preventDefault();
     const name = document.getElementById("lead-name").value;
     const phone = document.getElementById("lead-phone").value;
+    const email = document.getElementById("lead-email").value;
     
     const btn = e.target.querySelector('button[type="submit"]');
     const originalText = btn.innerHTML;
@@ -1416,6 +1421,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     await track("lead_captured", {
       name: name,
       phone: phone,
+      email: email,
       interest: currentTarget,
       status: 'novo'
     });
@@ -1433,21 +1439,7 @@ ${wpp && !sc.hiddenElements?.includes("contact-wpp-float") ? `<a href="#" onclic
     
     window.location.href = finalWppUrl;
   }
-  // Máscara de telefone simples
-  function maskPhone(e) {
-    let v = e.target.value.replace(/\\D/g, "");
-    if (v.length > 11) v = v.slice(0, 11);
-    if (v.length > 2) v = "(" + v.slice(0, 2) + ") " + v.slice(2);
-    if (v.length > 9) v = v.slice(0, 10) + "-" + v.slice(10);
-    e.target.value = v;
-  }
   
-  const leadPhone = document.getElementById("lead-phone");
-  if(leadPhone) leadPhone.addEventListener("input", maskPhone);
-  
-  const mainWpp = document.querySelector('input[name="wpp"]');
-  if(mainWpp) mainWpp.addEventListener("input", maskPhone);
-
   ${seasonalScripts}
 </script>
 

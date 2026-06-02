@@ -230,6 +230,7 @@ interface ComposeTravelAdOptions {
   /** OpcÁes de Branding (Logo e Contatos) unificadas no motor principal */
   logoDataUrl?: string;
   whatsapp?: string;
+  whatsappDialCode?: string;
   instagram?: string;
   footerContact1Icon?: string;
   footerContact1Value?: string;
@@ -240,13 +241,22 @@ interface ComposeTravelAdOptions {
 }
 
 /** Formata telefone no padrão (XX) 9 XXXX-XXXX */
-export function formatAdPhone(val: string): string {
-  const d = (val || "").replace(/\D/g, "");
-  if (d.length > 11) return val;
-  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3, 7)}-${d.slice(7)}`;
-  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
-  if (d.length > 2) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
-  return d;
+export let __currentDialCode = "55";
+
+export function formatAdPhone(val: string, explicitDialCode?: string): string {
+  if (!val) return "";
+  const d = val.replace(/\D/g, "");
+  const dial = (explicitDialCode || __currentDialCode || "55").replace(/\D/g, "");
+  
+  if (dial === "55" && !val.startsWith("+") && d.length <= 11) {
+    if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3, 7)}-${d.slice(7)}`;
+    if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+    if (d.length > 2) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  }
+  
+  if (val.startsWith("+")) return val;
+  if (d.startsWith(dial)) return `+${d}`;
+  return `+${dial} ${val}`;
 }
 
 /** Desenha ícone do WhatsApp colorido */
@@ -1015,6 +1025,7 @@ function sanitizeAdText(text: string): string {
 }
 
 export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<string> {
+  __currentDialCode = options.whatsappDialCode || "55";
   const {
     imageUrl,
     format,
