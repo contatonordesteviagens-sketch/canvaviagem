@@ -730,7 +730,7 @@ const FabricaContentES = () => {
             {/* Opción Anual */}
             <div className="border border-orange-500/30 bg-orange-500/[0.02] hover:bg-orange-500/[0.04] p-5 rounded-2xl text-left relative overflow-hidden transition-all shadow-[0_0_15px_rgba(249,115,22,0.05)]">
               <div className="absolute top-0 right-0 bg-gradient-to-r from-orange-500 to-red-600 text-[9px] font-black uppercase text-white px-2.5 py-1 rounded-bl-xl tracking-wider">
-                MAYOR AHORRO (70% DE DESCONTO)
+                MAYOR AHORRO (70% DE DESCUENTO)
               </div>
               
               <div className="flex justify-between items-start mb-2 mt-1">
@@ -764,7 +764,7 @@ const FabricaContentES = () => {
             <div className="border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] p-4 rounded-2xl text-left transition-all">
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <span className="text-xs font-bold text-white/80">Plan Elite Mensal</span>
+                  <span className="text-xs font-bold text-white/80">Plan Elite Mensual</span>
                   <p className="text-[10px] text-white/40 mt-0.5">Acceso recurrente, cancela cuando quieras</p>
                 </div>
                 <div className="text-right">
@@ -794,7 +794,7 @@ const FabricaContentES = () => {
 
   return (
     <>
-      <SeoMetadata title="Fábrica de Viagens | Canva Viajes" description="Sistema completo de marketing e geração de anúncios com IA para agências de viagens." />
+      <SeoMetadata title="Fábrica de Viajes | Canva Viajes" description="Sistema completo de marketing y generación de anuncios con IA para agencias de viajes." />
       <FabricaInnerES />
     </>
   );
