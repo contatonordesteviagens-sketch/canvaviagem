@@ -70,11 +70,11 @@ const FabricaInner = () => {
     if (activeTab === "library") {
       return librarySubTab === "ofertas" ? "Minhas Ofertas" : "Minha Biblioteca";
     }
-    if (state.currentPhase === 1) return "Gerador de Imagens";
-    if (state.currentPhase === 2) return "Página de Vendas";
-    if (state.currentPhase === 3) return "CRM & Leads";
-    if (state.currentPhase === 4) return "Meus Ativos";
-    if (state.currentPhase === 5) return "Diagnóstico";
+    if (state.currentPhase === 1) return "Anúncio";
+    if (state.currentPhase === 2) return "Site";
+    if (state.currentPhase === 3) return "CRM";
+    if (state.currentPhase === 4) return "Plano";
+    if (state.currentPhase === 5) return "Checkup";
     return "";
   };
 
@@ -130,7 +130,7 @@ const FabricaInner = () => {
             >
               <div className="flex items-center gap-3">
                 <ImageIcon className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 1 ? "text-amber-400" : "text-white/40"}`} />
-                <span>Gerador de Imagens</span>
+                <span>Anúncio</span>
               </div>
               <span className="text-[10px] text-white/30 font-bold">F1</span>
             </button>
@@ -142,7 +142,7 @@ const FabricaInner = () => {
               FERRAMENTAS
             </div>
             <div className="space-y-1">
-              {/* F2: Página de Vendas (Moved up) */}
+              {/* F2: Site (Moved up) */}
               <button
                 onClick={() => {
                   setPhase(2);
@@ -156,12 +156,12 @@ const FabricaInner = () => {
               >
                 <div className="flex items-center gap-3">
                   <FileText className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 2 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Página de Vendas</span>
+                  <span>Site</span>
                 </div>
                 <span className="text-[10px] text-white/30 font-bold">F2</span>
               </button>
 
-              {/* F3: CRM & Leads */}
+              {/* F3: CRM */}
               <button
                 onClick={() => {
                   setPhase(3);
@@ -175,12 +175,12 @@ const FabricaInner = () => {
               >
                 <div className="flex items-center gap-3">
                   <Users className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>CRM & Leads</span>
+                  <span>CRM</span>
                 </div>
                 <span className="text-[10px] text-white/30 font-bold">F3</span>
               </button>
 
-              {/* F4: Meus Ativos */}
+              {/* F4: Plano */}
               <button
                 onClick={() => {
                   setPhase(4);
@@ -194,12 +194,12 @@ const FabricaInner = () => {
               >
                 <div className="flex items-center gap-3">
                   <Sliders className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 4 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Meus Ativos</span>
+                  <span>Plano</span>
                 </div>
                 <span className="text-[10px] text-white/30 font-bold">F4</span>
               </button>
 
-              {/* F5: Diagnóstico */}
+              {/* F5: Checkup */}
               <button
                 onClick={() => {
                   setPhase(5);
@@ -213,7 +213,7 @@ const FabricaInner = () => {
               >
                 <div className="flex items-center gap-3">
                   <Zap className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Diagnóstico</span>
+                  <span>Checkup</span>
                 </div>
                 <span className={`text-[10px] font-bold ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/30"}`}>F5</span>
               </button>
@@ -321,7 +321,7 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 1 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            🖼️ Gerador de Imagens (F1)
+            🖼️ Anúncio (F1)
           </button>
 
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Ferramentas</div>
@@ -335,7 +335,7 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            📄 Página de Vendas (F2)
+            📄 Site (F2)
           </button>
           <button
             onClick={() => {
@@ -347,7 +347,7 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            👥 CRM & Leads (F3)
+            👥 CRM (F3)
           </button>
           <button
             onClick={() => {
@@ -359,7 +359,7 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ⚙️ Meus Ativos (F4)
+            ⚙️ Plano (F4)
           </button>
           <button
             onClick={() => {
@@ -371,7 +371,7 @@ const FabricaInner = () => {
               activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ⚡ Diagnóstico (F5)
+            ⚡ Checkup (F5)
           </button>
 
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Conteúdo</div>
@@ -417,7 +417,9 @@ const FabricaInner = () => {
         {isAdmin && (
           <div className="mb-6 p-3 rounded-2xl bg-black border border-white/10 flex items-center gap-2 overflow-x-auto">
             <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest mr-2 select-none">Atalhos Admin:</span>
-            {[1, 2, 3, 4, 5].map((num) => (
+            {['Anúncio', 'Site', 'CRM', 'Plano', 'Checkup'].map((name, idx) => {
+              const num = idx + 1;
+              return (
               <button
                 key={num}
                 onClick={() => {
@@ -427,9 +429,7 @@ const FabricaInner = () => {
                 className={`px-3 py-1 rounded-lg text-[10px] font-bold border transition-colors ${
                   activeTab === "phase" && state.currentPhase === num ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60"
                 }`}
-              >
-                Fase {num}
-              </button>
+              >{name} (F{num})</button>
             ))}
           </div>
         )}

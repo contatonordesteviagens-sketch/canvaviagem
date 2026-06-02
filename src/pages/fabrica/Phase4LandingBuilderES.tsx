@@ -1474,7 +1474,35 @@ const PublishOnLovableCard = ({
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
 
-  // ── ESTADOS Y FUNCIONES PARA LA PUBLICACIÓN EN 1-CLIC EN VERCEL ──
+  const handleDownload = () => {
+    try {
+      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${buildSiteSlug(state.agencyName || "site") || "site"}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("[Phase4] download failed", e);
+    }
+  };
+
+  const [canvaViagemSubdomain, setCanvaViagemSubdomain] = useState(() => {
+    if (state.siteContent.canvaViagemUrl) {
+      const savedUrl = state.siteContent.canvaViagemUrl.replace(/\/$/, "");
+      if (savedUrl.includes(`/${CANVA_VIAGEM_DOMAIN}/view/`)) {
+        return savedUrl.split("/").pop() || "";
+      }
+      return savedUrl.replace("https://", "").replace(`.${CANVA_VIAGEM_DOMAIN}`, "");
+    }
+    return buildSiteSlug(state.agencyName || "");
+  });
+  const [isCanvaViagemPublishing, setIsCanvaViagemPublishing] = useState(false);
+
+  // ── ESTADOS E FUNÇÕES PARA A PUBLICAÇÃO 1-CLIQUE NO VERCEL ──
   const [vercelSubdomain, setVercelSubdomain] = useState(() => {
     if (state.siteContent.vercelUrl) {
       return state.siteContent.vercelUrl.replace("https://", "").replace(".vercel.app", "");
@@ -1483,12 +1511,11 @@ const PublishOnLovableCard = ({
     return rawAgency
       .toLowerCase()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // elimina acentos
-                      .replace(/[^a-z0-9]/g, "-") // solo minusculas y guiones
-                      .replace(/-+/g, "-")
-                      .replace(/^-|-$/g, "");
+      .replace(/[\u0300-\u036f]/g, "") // remove acentos
+      .replace(/[^a-z0-9]/g, "-") // apenas minusculas e hifens
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
   });
-  const [canvaViagemSubdomain, setCanvaViagemSubdomain] = useState<string>(() => buildSiteSlug(state.agencyName || ""));
 
   useEffect(() => {
     if (state.siteContent.canvaViagemUrl) {
@@ -1516,24 +1543,6 @@ const PublishOnLovableCard = ({
     }
   }, [state.projectId, state.siteContent.canvaViagemUrl, state.siteContent.vercelUrl, state.agencyName]);
 
-  const handleDownload = () => {
-    try {
-      const blob = new Blob([html], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      const slug = (state.agencyName || "site").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || "site";
-      a.download = `${slug}.html`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-
   const handleDirectPublish = async () => {
     if (!user?.id) {
       toast.error("Inicia sesión para publicar.");
@@ -1557,36 +1566,169 @@ const PublishOnLovableCard = ({
           html: html
         });
 
-    try {
-      const result = await publishToCanvaViagem(finalSubdomain, html);
-      if (result.success) {
-        toast.success(
-          <div>
-            ¡Sitio publicado con éxito! 🎉
-            <br />
-            Tu enlace es: <b>{result.url}</b>
-          </div>,
-          { duration: 6000 }
-        );
-      } else {
-        toast.error(result.message || "Error al publicar. El nombre ya podría estar en uso.");
+      if (dbError) {
+        throw dbError;
       }
+
+
+      const internalUrl = `${window.location.origin}/view/${publishId}`;
+      setPublishedUrl(internalUrl);
+      toast.success("🚀 ¡SITIO PUBLICADO CON ÉXITO!");
+
+      if (typeof window !== "undefined" && (window as any).confetti) {
+        (window as any).confetti();
+      }
+
     } catch (err: any) {
-      toast.error("Error al publicar: " + err.message);
+      console.error("Publish error:", err);
+      toast.error(`Error al publicar: ${err.message || "Verifica tu conexión"}`);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleCanvaViagemPublish = async () => {
+    if (!user?.id) {
+      toast.error("Inicia sesión para publicar.");
+      return;
+    }
+
+    const cleanSlug = buildSiteSlug(canvaViagemSubdomain || state.agencyName || "");
+
+    if (cleanSlug.length < 3) {
+      toast.error("Escribe un subdominio con al menos 3 caracteres.");
+      return;
+    }
+
+    const reserved = new Set(["www", "app", "admin", "api", "painel", "blog"]);
+    if (reserved.has(cleanSlug)) {
+      toast.error("Este subdominio está reservado. Elige otro nombre.");
+      return;
+    }
+
+    const { data: existingDomain } = await supabase.from("public_sites").select("owner_id").eq("id", cleanSlug).maybeSingle();
+    if (existingDomain && existingDomain.owner_id !== user.id) {
+      toast.error(`El dominio "${cleanSlug}.canvaviagem.com" ya está siendo usado por otra agencia. Por favor, elige otro subdominio.`);
+      return;
+    }
+
+    setIsCanvaViagemPublishing(true);
+    const toastId = toast.loading("Publicando en el enlace Canva Viagem...");
+
+    try {
+      toast.loading("Optimizando imágenes del sitio para Canva Viagem (esto puede tardar unos segundos)...", { id: toastId });
+      let finalHtml = html;
+      const base64Regex = /src="(data:image\/[^;]+;base64,[^"]+)"/g;
+      const matches = [...finalHtml.matchAll(base64Regex)];
+      
+      for (let i = 0; i < matches.length; i++) {
+        const fullMatch = matches[i][0];
+        const base64Data = matches[i][1];
+        
+        try {
+          const mimeType = base64Data.split(';')[0].split(':')[1];
+          const b64Data = base64Data.split(',')[1];
+          const byteCharacters = atob(b64Data);
+          const byteArrays = [];
+          for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+            const slice = byteCharacters.slice(offset, offset + 512);
+            const byteNumbers = new Array(slice.length);
+            for (let j = 0; j < slice.length; j++) {
+              byteNumbers[j] = slice.charCodeAt(j);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+          }
+          const blob = new Blob(byteArrays, { type: mimeType });
+          
+          const ext = mimeType.split('/')[1] || 'webp';
+          const filename = `vercel_assets/${user?.id || 'anon'}_${Date.now()}_cv_${i}.${ext}`;
+          
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("thumbnails")
+            .upload(filename, blob, { contentType: mimeType, upsert: true });
+            
+          if (!uploadError && uploadData) {
+            const publicUrl = supabase.storage.from("thumbnails").getPublicUrl(filename).data.publicUrl;
+            finalHtml = finalHtml.replace(fullMatch, `src="${publicUrl}"`);
+          }
+        } catch (e) {
+          console.warn("Error al subir la imagen base64 a Canva Viagem", e);
+        }
+      }
+
+      toast.loading("Enviando código a Canva Viagem...", { id: toastId });
+
+      const liveUrl = `https://${cleanSlug}.${CANVA_VIAGEM_DOMAIN}`;
+      const fileNameSlug = `vercel_assets/${cleanSlug}_site.webp`; // bypass RLS attempt
+      const fileNameId = `vercel_assets/${user.id}_site.webp`; // Upload Oficial (passa RLS)
+
+      if (state.siteContent.canvaViagemUrl && state.siteContent.canvaViagemUrl !== liveUrl) {
+        try {
+          const oldUrl = state.siteContent.canvaViagemUrl.replace(/\/$/, "");
+          let oldSlug = "";
+          if (oldUrl.includes(`/${CANVA_VIAGEM_DOMAIN}/view/`)) {
+            oldSlug = oldUrl.split("/").pop() || "";
+          } else {
+            oldSlug = oldUrl.replace("https://", "").replace(`.${CANVA_VIAGEM_DOMAIN}`, "");
+          }
+          if (oldSlug && oldSlug !== cleanSlug) {
+            await supabase.storage.from("thumbnails").remove([`vercel_assets/${oldSlug}_site.html`, `vercel_assets/${oldSlug}_site.webp`]);
+          }
+        } catch (e) {
+          console.error("Error al eliminar antiguo Supabase:", e);
+        }
+      }
+
+      // Upload Oficial garantido de passar pelo RLS salvando direto na tabela public_sites
+      const { error: dbError } = await supabase
+        .from("public_sites")
+        .upsert({
+          id: cleanSlug,
+          owner_id: user.id,
+          html: finalHtml
+        });
+
+      if (dbError) {
+        throw new Error(dbError.message || "Error desconocido en la base de datos.");
+      }
+
+      const finalUrl = liveUrl;
+
+      update({
+        siteContent: {
+          ...state.siteContent,
+          canvaViagemUrl: finalUrl,
+        },
+      });
+
+      toast.success("¡Sitio publicado en el enlace Canva Viagem!", { id: toastId });
+    } catch (err: any) {
+      console.error("Canva Viagem publish error:", err);
+      toast.error(`Error al publicar: ${err.message || "inténtalo de nuevo"}`, { id: toastId });
+    } finally {
+      setIsCanvaViagemPublishing(false);
     }
   };
 
   const copyHtml = async () => {
     try {
       await navigator.clipboard.writeText(html);
-      toast.success("¡HTML copiado! Pégalo en Lovable.");
+      toast.success("¡HTML copiado! Pégalo en Lovable para generar el sitio.");
     } catch {
       toast.error("No se pudo copiar. Usa el botón Descargar HTML.");
     }
   };
 
-  const isPublished = !!state.siteContent.canvaViagemUrl;
-  const siteUrl = isPublished ? `https://${state.siteContent.canvaViagemUrl}` : "";
+  const copyUpdatePrompt = async () => {
+    try {
+      const prompt = generateUpdatePackagesPrompt(state);
+      await navigator.clipboard.writeText(prompt);
+      toast.success("🚀 ¡Prompt de actualización copiado! Ahora pégalo en el chat de tu Lovable.");
+    } catch {
+      toast.error("Error al copiar el prompt.");
+    }
+  };
 
   return (
     <div
@@ -1603,186 +1745,251 @@ const PublishOnLovableCard = ({
       />
       <div className="relative">
         <div className="flex items-center gap-2 mb-3">
-          <Rocket className="w-8 h-8 sm:w-10 sm:h-10 text-amber-400" />
           <div>
             <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
-              ¡Publicar Sitio!
+              Publicar Sitio
             </h3>
-            <p className="text-xs sm:text-sm text-white/60 font-semibold">
-              Tu sitio en vivo con 1 clic
-            </p>
           </div>
         </div>
 
-        <div className="mb-6 p-4 rounded-xl bg-black/40 border border-white/10 backdrop-blur-sm">
-          <p className="text-[13px] text-white/80 leading-relaxed font-medium">
-            Acabamos de lanzar la publicación automática. ¡Elige un enlace y presiona publicar!
-          </p>
-        </div>
+        <p className="text-sm text-white/70 mb-5 leading-relaxed">
+          Elige tu opción preferida para publicar o descargar el código completo de tu sitio tal como está:
+        </p>
 
-        {/* PUBLICACIÓN DIRECTA */}
-        <div 
-          className="my-4 p-6 rounded-2xl border-2 backdrop-blur-xl transition-all relative overflow-hidden text-left"
-          style={{ 
-            borderColor: isPublished ? "#10B98188" : `${primaryColor}44`,
-            background: isPublished 
-              ? "linear-gradient(135deg, rgba(16,185,129,0.08), rgba(0,0,0,0.4))"
-              : "linear-gradient(135deg, rgba(245,158,11,0.06), rgba(0,0,0,0.4))",
-            boxShadow: isPublished ? "0 10px 30px rgba(16,185,129,0.1)" : "none"
-          }}
-        >
-          {/* Se o site estiver publicado */}
-          {isPublished && (
-            <div className="mb-5 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* PUBLICAÇÃO EM SUBDOMÍNIO CANVA VIAGEM (PRIMÁRIA) */}
+        <div className="my-4 p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-xl text-left">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <div className="text-[10px] font-black text-white/40 uppercase tracking-[0.18em] mb-1">
+                Publicación Principal
+              </div>
+              <h4 className="text-lg font-black text-white leading-tight">
+                Publicar con enlace Canva Viagem
+              </h4>
+              <p className="text-xs text-white/60 mt-1 leading-relaxed">
+                Genera un enlace seguro en tu dominio principal, como nombredetuagencia.canvaviagem.com.
+              </p>
+            </div>
+            <LinkIcon className="w-5 h-5 text-white/40 flex-shrink-0" />
+          </div>
+
+          {state.siteContent.canvaViagemUrl && (
+            <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">¡Tu sitio está en línea! 🌟</div>
-                <a 
-                  href={siteUrl} 
-                  target="_blank" 
+                <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Enlace Canva Viagem publicado</div>
+                <a
+                  href={state.siteContent.canvaViagemUrl}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm font-bold text-white hover:underline flex items-center gap-1.5 mt-0.5 group"
                 >
-                  {siteUrl.replace("https://", "")}
+                  {state.siteContent.canvaViagemUrl}
                   <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white transition-colors" />
                 </a>
               </div>
-              <a 
-                href={siteUrl} 
-                target="_blank" 
+              <a
+                href={state.siteContent.canvaViagemUrl}
+                target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs transition-all text-center"
+                className="px-4 py-2 rounded-lg bg-white hover:bg-gray-200 text-black font-bold text-xs transition-all text-center"
               >
-                Acceder al Sitio
+                Abrir sitio
               </a>
             </div>
           )}
 
-          {/* Form de Publicação */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2 flex justify-between">
-                <span>Enlace personalizado</span>
-                {isPublished && <span className="text-emerald-400 text-[10px]">Alterar mudará el enlace</span>}
-              </label>
-              <div className="flex items-center">
-                <input
-                  type="text"
-                  value={subdomain}
-                  onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
-                  placeholder="nombre-de-tu-agencia"
-                  className="flex-1 bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30 rounded-l-lg border-r-0 text-right"
-                  style={{ textAlign: "right" }}
-                />
-                <span className="px-3 py-2 bg-white/[0.04] border border-white/10 rounded-r-lg text-xs text-white/40 select-none border-l-0">
-                  .canvaviagem.com
-                </span>
-              </div>
-              <p className="text-[10px] text-white/40 mt-1">Usa solo letras minúsculas, números y guiones.</p>
-              <div>
-                <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
-                  Google Analytics ID (Opcional):
-                </label>
-                <input
-                  type="text"
-                  value={state.ga4Id || ""}
-                  onChange={(e) => update({ ga4Id: e.target.value })}
-                  placeholder="Ex: G-XXXXXXXXXX"
-                  className="w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white rounded-lg outline-none focus:border-white/30"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-              <button
-                onClick={handleDownload}
-                className="py-3 px-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all text-sm bg-emerald-500 hover:bg-emerald-600 shadow-[0_4px_12px_rgba(16,185,129,0.3)]"
-              >
-                <Download className="w-4 h-4" /> 1. Descargar HTML
-              </button>
-
-              <a
-                href="https://vercel.com/dashboard"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="py-3 px-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all text-sm hover:brightness-110"
-                style={{ background: `linear-gradient(135deg, ${primaryColor}, #F59E0B)` }}
-              >
-                🚀 2. Abrir Vercel (Upload)
-              </a>
-            </div>
-
-            {/* VERCEL MANUAL INSTRUCTIONS */}
-            <div className="mt-6 pt-5 border-t border-white/10">
-              <h4 className="text-xs font-bold text-white tracking-wide uppercase mb-3 flex items-center gap-2">
-                <Rocket className="w-4 h-4 text-emerald-400" /> Cómo publicar gratis
-              </h4>
-              <div className="space-y-3 text-[11px] text-white/70 leading-relaxed mb-4">
-                <div className="flex gap-2 items-start">
-                  <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">1</span>
-                  <p>
-                    Haz clic en el botón verde <strong className="text-emerald-400">"Descargar HTML"</strong> arriba para guardar el archivo en tu computadora.
-                  </p>
-                </div>
-                <div className="flex gap-2 items-start">
-                  <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">2</span>
-                  <p>
-                    Crea una nueva carpeta en tu computadora y coloca el archivo HTML descargado dentro. Renombra el archivo a <strong className="text-emerald-400">index.html</strong> si es necesario.
-                  </p>
-                </div>
-                <div className="flex gap-2 items-start">
-                  <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">3</span>
-                  <p>
-                    ¡Accede a Vercel con el botón amarillo y arrastra esa carpeta al panel para publicar inmediatamente!
-                  </p>
-                </div>
-              </div>
-            </div>
+          <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
+            Enlace del cliente:
+          </label>
+          <div className="flex items-center mb-3">
+            <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-l-lg text-xs text-white/40 select-none">
+              https://
+            </span>
+            <input
+              type="text"
+              value={canvaViagemSubdomain}
+              onChange={(e) => setCanvaViagemSubdomain(buildSiteSlug(e.target.value))}
+              placeholder="nombre-de-tu-agencia"
+              className="flex-1 bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30"
+            />
+            <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-l-0 rounded-r-lg text-xs text-white/40 select-none">
+              .canvaviagem.com
+            </span>
           </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+            <button
+              onClick={handleCanvaViagemPublish}
+              disabled={isCanvaViagemPublishing}
+              className="py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm"
+              style={{
+                backgroundColor: primaryColor,
+                color: primaryColor === "#000000" ? "#ffffff" : "#000000"
+              }}
+            >
+              {isCanvaViagemPublishing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  Publicando...
+                </>
+              ) : (
+                <>Publicar en Canva Viagem</>
+              )}
+            </button>
+
+            <button
+              onClick={handleCanvaViagemPublish}
+              disabled={isCanvaViagemPublishing}
+              className="py-3 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm border"
+              style={{
+                borderColor: primaryColor,
+                color: "#ffffff",
+                backgroundColor: "transparent"
+              }}
+            >
+              {isCanvaViagemPublishing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  Actualizando...
+                </>
+              ) : (
+                <>Actualizar Sitio</>
+              )}
+            </button>
+          </div>
+
+          <p className="text-[10px] text-white/45 mt-3 leading-relaxed">
+            Esta opción guarda el HTML en Supabase y usa el SSL del dominio principal.
+          </p>
         </div>
 
-
-
-        {/* Temporariamente oculto - voltar depois */}
+        {/* OUTRAS OPÇÕES - Temporariamente ocultas (voltar depois) */}
         {false && (
-        <details className="mt-6 p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
-          <summary className="list-none cursor-pointer text-sm font-semibold text-white/60 hover:text-white transition-colors flex items-center gap-2">
-            <span>Opciones Avanzadas (Lovable)</span>
-          </summary>
-          <div className="mt-4 space-y-4">
-            <p className="text-xs text-white/60 leading-relaxed">
-              ¿Quieres personalizar fuentes, layout avanzado o usar dominio propio? Edita en Lovable y pide ediciones avanzadas por IA.
-            </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <details className="p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
+            <summary className="list-none cursor-pointer text-sm font-semibold text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <span>Opción 2: Publicar Vercel</span>
+            </summary>
             
-            <div className="space-y-2 mb-4">
-              <div className="text-xs text-white/50 bg-black/40 p-3 rounded-lg border border-white/5">
-                <strong className="text-white">Paso 1:</strong> Copia el prompt de actualización abajo.
-              </div>
-              <div className="text-xs text-white/50 bg-black/40 p-3 rounded-lg border border-white/5">
-                <strong className="text-white">Paso 2:</strong> Abre Lovable y pega el prompt en el chat.
-              </div>
-              <div className="text-xs text-white/50 bg-black/40 p-3 rounded-lg border border-white/5">
-                <strong className="text-white">Paso 3:</strong> ¡Deja que Lovable genere tu sitio actualizado!
-              </div>
-            </div>
+            <div className="mt-4">
+              {/* Form de Publicação */}
+              <div className="space-y-4">
+                {state.siteContent.vercelUrl && (
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/10 flex flex-col gap-2">
+                    <div className="text-[10px] font-bold text-white/50 uppercase tracking-wider">Sitio en Línea</div>
+                    <a 
+                      href={state.siteContent.vercelUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs font-bold text-white hover:underline truncate"
+                    >
+                      {state.siteContent.vercelUrl}
+                    </a>
+                  </div>
+                )}
+                <div>
+                  <label className="block text-[10px] font-bold text-white/60 uppercase tracking-wider mb-2">
+                    Domínio:
+                  </label>
+                  <div className="flex items-center">
+                    <input
+                      type="text"
+                      value={vercelSubdomain}
+                      onChange={(e) => setVercelSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
+                      placeholder="nombre-de-tu-agencia"
+                      className="flex-1 bg-white/[0.02] border border-white/10 px-3 py-2 text-xs text-white outline-none focus:border-white/30 rounded-l-lg border-r-0"
+                    />
+                    <span className="px-2 py-2 bg-white/[0.04] border border-white/10 border-l-0 rounded-r-lg text-[10px] text-white/40 select-none">
+                      .vercel.app
+                    </span>
+                  </div>
+                </div>
 
-            <div className="flex flex-col sm:flex-row gap-2">
-              <button
-                onClick={copyUpdatePrompt}
-                className="flex-1 py-3 px-3 rounded-lg border border-white/15 text-white/80 hover:text-white hover:bg-white/[0.04] transition-all text-xs font-semibold flex items-center justify-center gap-1.5"
-              >
-                <Copy className="w-4 h-4" /> 1. Copiar Prompt
-              </button>
-              <a
-                href={LOVABLE_INVITE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 py-3 px-3 rounded-lg bg-white/[0.06] border border-white/15 text-white text-xs font-semibold hover:bg-white/[0.10] transition-all flex items-center justify-center gap-1.5"
-              >
-                <Sparkles className="w-4 h-4" /> 2. Abrir Lovable <ExternalLink className="w-3 h-3 ml-1" />
-              </a>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                  <button
+                    onClick={handleDownload}
+                    className="py-3 px-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all text-sm bg-emerald-500 hover:bg-emerald-600 shadow-[0_4px_12px_rgba(16,185,129,0.3)]"
+                  >
+                    <Download className="w-4 h-4" /> 1. Baixar HTML
+                  </button>
+
+                  <a
+                    href="https://vercel.com/dashboard"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-3 px-4 rounded-xl font-bold text-black flex items-center justify-center gap-2 transition-all text-sm hover:brightness-110"
+                    style={{ background: `linear-gradient(135deg, ${primaryColor}, #F59E0B)` }}
+                  >
+                    🚀 2. Abrir Vercel (Upload)
+                  </a>
+                </div>
+
+                <div className="mt-6 pt-5 border-t border-white/10">
+                  <h4 className="text-xs font-bold text-white tracking-wide uppercase mb-3 flex items-center gap-2">
+                    <Rocket className="w-4 h-4 text-emerald-400" /> Como publicar grátis
+                  </h4>
+                  <div className="space-y-3 text-[11px] text-white/70 leading-relaxed mb-4">
+                    <div className="flex gap-2 items-start">
+                      <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">1</span>
+                      <p>
+                        Clique no botão verde <strong className="text-emerald-400">"Baixar HTML"</strong> logo acima para salvar o arquivo do site no seu computador.
+                      </p>
+                    </div>
+                    <div className="flex gap-2 items-start">
+                      <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">2</span>
+                      <p>
+                        Crie uma nova pasta no seu computador e coloque o arquivo baixado lá dentro. Renomeie o arquivo para <strong className="text-emerald-400">index.html</strong> se necessário.
+                      </p>
+                    </div>
+                    <div className="flex gap-2 items-start">
+                      <span className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5">3</span>
+                      <p>
+                        Acesse o Vercel pelo botão amarelo, e arraste a pasta para dentro do painel para colocar o seu site no ar na mesma hora!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </details>
+          </details>
+
+          <details className="p-4 rounded-xl border border-white/10 bg-white/[0.02] group text-left">
+            <summary className="list-none cursor-pointer text-sm font-semibold text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <span>Opção 3: Lovable (IA)</span>
+            </summary>
+            <div className="mt-4 space-y-4">
+              <p className="text-[11px] text-white/60 leading-relaxed">
+                Quer customizar fontes ou layout avançado? Envie para o Lovable e peça edições por IA.
+              </p>
+              
+              <div className="space-y-1 mb-4">
+                <div className="text-[10px] text-white/50 bg-black/40 p-2 rounded border border-white/5">
+                  <strong className="text-white">1:</strong> Copie o prompt.
+                </div>
+                <div className="text-[10px] text-white/50 bg-black/40 p-2 rounded border border-white/5">
+                  <strong className="text-white">2:</strong> Cole no chat do Lovable.
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={copyUpdatePrompt}
+                  className="w-full py-2.5 px-3 rounded-lg border border-white/15 text-white/80 hover:text-white hover:bg-white/[0.04] transition-all text-[11px] font-semibold flex items-center justify-center gap-1.5"
+                >
+                  <Copy className="w-3.5 h-3.5" /> 1. Copiar Prompt
+                </button>
+                <a
+                  href={LOVABLE_INVITE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-2.5 px-3 rounded-lg bg-white/[0.06] border border-white/15 text-white text-[11px] font-semibold hover:bg-white/[0.10] transition-all flex items-center justify-center gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> 2. Abrir Lovable
+                </a>
+              </div>
+            </div>
+          </details>
+        </div>
         )}
 
         <div className="mt-6 pt-5 border-t border-white/10 flex justify-center">
@@ -1806,23 +2013,22 @@ const PublishOnLovableCard = ({
             Volver
           </button>
           <button
-            onClick={onNext}
-            className="flex-[2] py-4 rounded-xl font-black flex items-center justify-center gap-2 hover:brightness-110 transition-all"
-            style={{ 
-              background: primaryColor, 
-              color: primaryColor === "#000000" ? "#ffffff" : "#000000",
-              border: primaryColor === "#000000" ? "1px solid rgba(255,255,255,0.3)" : "none",
-              boxShadow: `0 0 20px ${primaryColor}55`
-            }}
+            onClick={handleDownload}
+            className="flex-1 py-4 rounded-xl border border-white/10 bg-white/[0.04] text-white font-bold hover:bg-white/[0.08] transition-all flex items-center justify-center gap-2"
           >
-            Siguiente Paso: Diagnóstico <Rocket className="w-5 h-5" />
+            <Download className="w-4 h-4" /> Baixar HTML
+          </button>
+          <button
+            onClick={onNext}
+            className="flex-[2] py-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)]"
+          >
+            Avançar para CRM <Rocket className="w-5 h-5" />
           </button>
         </div>
       </div>
     </div>
   );
 };
-
 const FabricaCard = ({ title, children }: { title: string; children: React.ReactNode }) => {
   const { state } = useFabricaContext();
   const primaryColor = state.primaryColor || "#F59E0B";

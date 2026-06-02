@@ -57,11 +57,11 @@ const FabricaInnerES = () => {
     if (activeTab === "library") {
       return librarySubTab === "ofertas" ? "Mis Ofertas" : "Mi Biblioteca";
     }
-    if (state.currentPhase === 1) return "Generador de Imágenes";
-    if (state.currentPhase === 2) return "Página de Ventas";
-    if (state.currentPhase === 3) return "CRM & Leads";
-    if (state.currentPhase === 4) return "Mis Activos";
-    if (state.currentPhase === 5) return "Diagnóstico";
+    if (state.currentPhase === 1) return "Anuncio";
+    if (state.currentPhase === 2) return "Sitio";
+    if (state.currentPhase === 3) return "CRM";
+    if (state.currentPhase === 4) return "Plan";
+    if (state.currentPhase === 5) return "Checkup";
     return "";
   };
 
@@ -120,7 +120,7 @@ const FabricaInnerES = () => {
             >
               <div className="flex items-center gap-3">
                 <ImageIcon className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 1 ? "text-amber-400" : "text-white/40"}`} />
-                <span>Generador de Imágenes</span>
+                <span>Anuncio</span>
               </div>
               <span className="text-[10px] text-white/30 font-bold">F1</span>
             </button>
@@ -132,7 +132,7 @@ const FabricaInnerES = () => {
               HERRAMIENTAS
             </div>
             <div className="space-y-1">
-              {/* F2: Página de Ventas (Moved up) */}
+              {/* F2: Sitio (Moved up) */}
               <button
                 onClick={() => {
                   setPhase(2);
@@ -146,12 +146,12 @@ const FabricaInnerES = () => {
               >
                 <div className="flex items-center gap-3">
                   <FileText className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 2 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Página de Ventas</span>
+                  <span>Sitio</span>
                 </div>
                 <span className="text-[10px] text-white/30 font-bold font-sans">F2</span>
               </button>
 
-              {/* F3: CRM & Leads */}
+              {/* F3: CRM */}
               <button
                 onClick={() => {
                   setPhase(3);
@@ -165,12 +165,12 @@ const FabricaInnerES = () => {
               >
                 <div className="flex items-center gap-3">
                   <Users className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 3 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>CRM & Leads</span>
+                  <span>CRM</span>
                 </div>
                 <span className="text-[10px] text-white/30 font-bold font-sans">F3</span>
               </button>
 
-              {/* F4: Mis Activos */}
+              {/* F4: Plan */}
               <button
                 onClick={() => {
                   setPhase(4);
@@ -184,12 +184,12 @@ const FabricaInnerES = () => {
               >
                 <div className="flex items-center gap-3">
                   <Sliders className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 4 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Mis Activos</span>
+                  <span>Plan</span>
                 </div>
                 <span className="text-[10px] text-white/30 font-bold font-sans">F4</span>
               </button>
 
-              {/* F5: Diagnóstico */}
+              {/* F5: Checkup */}
               <button
                 onClick={() => {
                   setPhase(5);
@@ -203,7 +203,7 @@ const FabricaInnerES = () => {
               >
                 <div className="flex items-center gap-3">
                   <Zap className={`w-4 h-4 ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/40"}`} />
-                  <span>Diagnóstico</span>
+                  <span>Checkup</span>
                 </div>
                 <span className={`text-[10px] font-bold ${activeTab === "phase" && state.currentPhase === 5 ? "text-amber-400" : "text-white/30"}`}>F5</span>
               </button>
@@ -305,7 +305,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 1 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            🖼️ Generador de Imágenes (F1)
+            🖼️ Anuncio (F1)
           </button>
 
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Herramientas</div>
@@ -319,7 +319,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 2 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            📄 Página de Ventas (F2)
+            📄 Sitio (F2)
           </button>
           <button
             onClick={() => {
@@ -331,7 +331,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 3 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            👥 CRM & Leads (F3)
+            👥 CRM (F3)
           </button>
           <button
             onClick={() => {
@@ -343,7 +343,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 4 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ⚙️ Mis Activos (F4)
+            ⚙️ Plan (F4)
           </button>
           <button
             onClick={() => {
@@ -355,7 +355,7 @@ const FabricaInnerES = () => {
               activeTab === "phase" && state.currentPhase === 5 ? "bg-white/[0.06] text-amber-400" : "text-white/70"
             }`}
           >
-            ⚡ Diagnóstico (F5)
+            ⚡ Checkup (F5)
           </button>
 
           <div className="text-[9px] font-extrabold text-white/30 tracking-widest uppercase px-4 pt-2">Contenido</div>
@@ -401,7 +401,9 @@ const FabricaInnerES = () => {
         {isAdmin && (
           <div className="mb-6 p-3 rounded-2xl bg-black border border-white/10 flex items-center gap-2 overflow-x-auto font-sans">
             <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest mr-2 select-none">Atajos Admin:</span>
-            {[1, 2, 3, 4, 5].map((num) => (
+            {['Anuncio', 'Sitio', 'CRM', 'Plan', 'Checkup'].map((name, idx) => {
+              const num = idx + 1;
+              return (
               <button
                 key={num}
                 onClick={() => {
@@ -411,9 +413,7 @@ const FabricaInnerES = () => {
                 className={`px-3 py-1 rounded-lg text-[10px] font-bold border transition-colors ${
                   activeTab === "phase" && state.currentPhase === num ? "border-amber-400 bg-amber-400/10 text-amber-400" : "border-white/10 text-white/60"
                 }`}
-              >
-                Fase {num}
-              </button>
+              >{name} (F{num})</button>
             ))}
           </div>
         )}
