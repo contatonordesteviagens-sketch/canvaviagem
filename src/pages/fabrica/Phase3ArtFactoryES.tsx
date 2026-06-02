@@ -2124,45 +2124,39 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   >
                     <Upload className="w-3.5 h-3.5 inline mr-1" /> Tu Foto
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setGenMode("ai")}
-                    className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-bold transition-all disabled:opacity-30 ${genMode === "ai" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-                  >
-                    <Sparkles className="w-3.5 h-3.5 inline mr-1" /> Imagen IA
-                  </button>
                 </div>
               </div>
 
 
-              {/* Layout Version Selector */}
+              {/* Layout Version Selector (forcedVariant) */}
               {genMode !== "custom" && (
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className={labelCls}>0b · Versión del Layout</label>
-                    <span className="text-[9px] text-white/30 font-bold uppercase tracking-wider bg-white/5 px-2 py-0.5 rounded border border-white/10">Engine v3</span>
+                    <span className="text-[9px] text-white/30 font-bold uppercase tracking-wider bg-white/5 px-2 py-0.5 rounded border border-white/10">Selector de Diseño</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-5 gap-2">
                     {[
-                      { id: "canvas-hybrid-v3-nowordmark", label: "Texto Integrado (Nueva)", desc: "Layout integrado premium sin franja gris", labelTag: "Mejor" },
-                      { id: "canvas-v3-clean", label: "Estilo Clásico", desc: "Texto con fondo semi-transparente clásico", labelTag: "Original" },
-                      { id: "canvas-v3-minimalist", label: "Arte Limpio", desc: "Diseño minimalista enfocado en la foto", labelTag: "Sutil" },
+                      { id: null, label: "Aleatoria", desc: "Variada" },
+                      { id: 0, label: "Versión 1", desc: "Layout 1" },
+                      { id: 1, label: "Versión 2", desc: "Layout 2" },
+                      { id: 2, label: "Versión 3", desc: "Layout 3" },
+                      { id: 3, label: "Versión 4", desc: "Layout 4" },
                     ].map((opt) => {
-                      const selected = (state as any).renderEngineVersion === opt.id || (opt.id === "canvas-hybrid-v3-nowordmark" && !(state as any).renderEngineVersion);
+                      const selected = forcedVariant === opt.id;
                       return (
                         <button
-                          key={opt.id}
+                          key={String(opt.id)}
                           type="button"
-                          onClick={() => update({ renderEngineVersion: opt.id } as any)}
-                          className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all ${
+                          onClick={() => setForcedVariant(opt.id)}
+                          className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all ${
                             selected
-                              ? "bg-white/[0.08] text-white"
-                              : "bg-white/[0.02] text-white/60 border-white/5 hover:border-white/20"
+                              ? "bg-white/[0.08] text-white shadow-[0_0_10px_rgba(255,255,255,0.05)]"
+                              : "bg-white/[0.02] text-white/60 border-white/5 hover:border-white/20 hover:bg-white/[0.04]"
                           }`}
                           style={selected ? { borderColor: primaryColor } : undefined}
                         >
                           <span className="text-[10px] font-bold block leading-tight">{opt.label}</span>
-                          <span className="text-[8px] text-white/40 block mt-1 leading-normal scale-90">{opt.desc}</span>
                         </button>
                       );
                     })}
