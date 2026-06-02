@@ -643,8 +643,9 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
 
       {/* Grid lateral */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <div className="lg:col-span-5 space-y-6">
+      <div className="flex flex-col-reverse gap-8 items-stretch">
+        {/* Painel Esquerdo: Opções de Configuração (5 colunas em lg) */}
+        <div className="w-full space-y-6">
           {/* PUBLICAÇÃO DIRETA NO VERCEL (Movido para o topo) */}
           <PublishOnLovableCard primaryColor={state.primaryColor} html={previewHTML} onBack={onBack} onNext={onNext} />
 
@@ -979,8 +980,8 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
         </div>
 
-        {/* Painel Direito: Preview do Site (7 colunas em lg, Sticky) */}
-        <div className="lg:col-span-7 space-y-6 lg:sticky lg:top-24">
+        {/* Painel Direito: Preview do Site */}
+        <div className="w-full space-y-6 lg:sticky lg:top-24">
           <div className="bg-[#0A0A0C] border border-white/[0.07] rounded-3xl overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.7)]">
             <div className="px-4 py-3 bg-black/60 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
@@ -1556,45 +1557,36 @@ const PublishOnLovableCard = ({
           html: html
         });
 
-      if (dbError) {
-        throw dbError;
+    try {
+      const result = await publishToCanvaViagem(finalSubdomain, html);
+      if (result.success) {
+        toast.success(
+          <div>
+            ¡Sitio publicado con éxito! 🎉
+            <br />
+            Tu enlace es: <b>{result.url}</b>
+          </div>,
+          { duration: 6000 }
+        );
+      } else {
+        toast.error(result.message || "Error al publicar. El nombre ya podría estar en uso.");
       }
-
-
-      const internalUrl = `${window.location.origin}/view/${publishId}`;
-      setPublishedUrl(internalUrl);
-      toast.success("🚀 ¡SITIO PUBLICADO CON ÉXITO!");
-
-      if (typeof window !== "undefined" && (window as any).confetti) {
-        (window as any).confetti();
-      }
-
     } catch (err: any) {
-      console.error("Publish error:", err);
-      toast.error(`Error al publicar: ${err.message || "Verifica tu conexión"}`);
-    } finally {
-      setIsPublishing(false);
+      toast.error("Error al publicar: " + err.message);
     }
   };
 
   const copyHtml = async () => {
     try {
       await navigator.clipboard.writeText(html);
-      toast.success("¡HTML copiado! Pégalo en Lovable para generar la web.");
+      toast.success("¡HTML copiado! Pégalo en Lovable.");
     } catch {
       toast.error("No se pudo copiar. Usa el botón Descargar HTML.");
     }
   };
 
-  const copyUpdatePrompt = async () => {
-    try {
-      const prompt = generateUpdatePackagesPrompt(state);
-      await navigator.clipboard.writeText(prompt);
-      toast.success("🚀 ¡Prompt de actualización copiado! Ahora pégalo en el chat de tu Lovable.");
-    } catch {
-      toast.error("Error al copiar el prompt.");
-    }
-  };
+  const isPublished = !!state.siteContent.canvaViagemUrl;
+  const siteUrl = isPublished ? `https://${state.siteContent.canvaViagemUrl}` : "";
 
   return (
     <div
@@ -1611,88 +1603,81 @@ const PublishOnLovableCard = ({
       />
       <div className="relative">
         <div className="flex items-center gap-2 mb-3">
+          <Rocket className="w-8 h-8 sm:w-10 sm:h-10 text-amber-400" />
           <div>
             <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
-              Publicar Sitio
+              ¡Publicar Sitio!
             </h3>
+            <p className="text-xs sm:text-sm text-white/60 font-semibold">
+              Tu sitio en vivo con 1 clic
+            </p>
           </div>
         </div>
 
+        <div className="mb-6 p-4 rounded-xl bg-black/40 border border-white/10 backdrop-blur-sm">
+          <p className="text-[13px] text-white/80 leading-relaxed font-medium">
+            Acabamos de lanzar la publicación automática. ¡Elige un enlace y presiona publicar!
+          </p>
+        </div>
 
         {/* PUBLICACIÓN DIRECTA */}
         <div 
           className="my-4 p-6 rounded-2xl border-2 backdrop-blur-xl transition-all relative overflow-hidden text-left"
           style={{ 
-            borderColor: state.siteContent.vercelUrl ? "#10B98188" : `${primaryColor}44`,
-            background: state.siteContent.vercelUrl 
+            borderColor: isPublished ? "#10B98188" : `${primaryColor}44`,
+            background: isPublished 
               ? "linear-gradient(135deg, rgba(16,185,129,0.08), rgba(0,0,0,0.4))"
               : "linear-gradient(135deg, rgba(245,158,11,0.06), rgba(0,0,0,0.4))",
-            boxShadow: state.siteContent.vercelUrl ? "0 10px 30px rgba(16,185,129,0.1)" : "none"
+            boxShadow: isPublished ? "0 10px 30px rgba(16,185,129,0.1)" : "none"
           }}
         >
-
-          {/* Si ya está publicado, muestra el enlace destacado */}
-          {state.siteContent.vercelUrl && (
+          {/* Se o site estiver publicado */}
+          {isPublished && (
             <div className="mb-5 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">¡Tu sitio está en línea! 🌟</div>
                 <a 
-                  href={state.siteContent.vercelUrl} 
+                  href={siteUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-sm font-bold text-white hover:underline flex items-center gap-1.5 mt-0.5 group"
                 >
-                  {state.siteContent.vercelUrl}
+                  {siteUrl.replace("https://", "")}
                   <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-white transition-colors" />
                 </a>
               </div>
               <a 
-                href={state.siteContent.vercelUrl} 
+                href={siteUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs transition-all text-center"
               >
-                Acceder al Sitio del Cliente
+                Acceder al Sitio
               </a>
             </div>
           )}
 
-          {/* Form de Publicación */}
+          {/* Form de Publicação */}
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
-                NOMBRE DEL DOMINIO (ENLACE DEL SITIO):
+              <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2 flex justify-between">
+                <span>Enlace personalizado</span>
+                {isPublished && <span className="text-emerald-400 text-[10px]">Alterar mudará el enlace</span>}
               </label>
               <div className="flex items-center">
-                <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-r-0 rounded-l-lg text-xs text-white/40 select-none">
-                  https://
-                </span>
                 <input
                   type="text"
-                  value={vercelSubdomain}
-                  onChange={(e) => setVercelSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
+                  value={subdomain}
+                  onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
                   placeholder="nombre-de-tu-agencia"
-                  className="flex-1 bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30"
+                  className="flex-1 bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white font-semibold outline-none focus:border-white/30 rounded-l-lg border-r-0 text-right"
+                  style={{ textAlign: "right" }}
                 />
-                <span className="px-3 py-2 bg-white/[0.04] border border-white/10 border-l-0 rounded-r-lg text-xs text-white/40 select-none">
-                  .vercel.app
+                <span className="px-3 py-2 bg-white/[0.04] border border-white/10 rounded-r-lg text-xs text-white/40 select-none border-l-0">
+                  .canvaviagem.com
                 </span>
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
-                  Meta Pixel ID (Opcional):
-                </label>
-                <input
-                  type="text"
-                  value={state.metaPixelId || ""}
-                  onChange={(e) => update({ metaPixelId: e.target.value })}
-                  placeholder="Ex: 123456789012345"
-                  className="w-full bg-white/[0.02] border border-white/10 px-3 py-2 text-sm text-white rounded-lg outline-none focus:border-white/30"
-                />
-              </div>
+              <p className="text-[10px] text-white/40 mt-1">Usa solo letras minúsculas, números y guiones.</p>
               <div>
                 <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">
                   Google Analytics ID (Opcional):

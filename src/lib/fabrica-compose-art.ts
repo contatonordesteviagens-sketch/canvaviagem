@@ -447,10 +447,9 @@ async function drawFinalBranding(
   const footerHeight = isIAPura ? (isStory ? 80 : 60) : (isStory ? 120 : 100);
   
   // TAREFA 3 — ANCORAGEM DE BASE (CHÃO DA GAIOLA)
-  // SAFE_BOTTOM = 380, logo PANEL_BOTTOM = ch - 380. 
   // O footerY deve ser calculado retroativamente a partir de PANEL_BOTTOM menos a altura do rodapé.
-  // No modo IA Pura, desenha isolado no fundo absoluto (Y > 950 para formato quadrado) para não colidir com o box de benefícios.
-  const panelBottom = isIAPura ? (ch - 30) : (isStory ? ch - 380 : ch - 150);
+  // Ajustado para ficar muito mais próximo do chão da arte (80px no quadrado, 150px no story)
+  const panelBottom = isIAPura ? (ch - 30) : (isStory ? ch - 150 : ch - 80);
   const footerY = panelBottom - footerHeight;
 
   // 1. Fundo do Rodapé (VÉU GRADIENTE ESCURO) - REMOVIDO

@@ -1568,6 +1568,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             highlights,
             hasLogo: !!state.logoBase64,
             logoDataUrl: state.logoBase64,
+            logoFormat: state.logoFormat,
             footerContact1Icon: state.footerContact1Icon,
             footerContact1Value: state.footerContact1Value,
             footerContact2Icon: state.footerContact2Icon,
@@ -1826,111 +1827,132 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 gap-4">
-                {/* Logo */}
-                <div>
-                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Identidad Visual</label>
-                  {!state.logoBase64 ? (
-                    <label className="flex flex-col items-center justify-center gap-2.5 p-4 bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-white/20 hover:bg-white/[0.04] transition-all group h-[100px]">
-                      <Upload className="w-5 h-5 text-white/40 group-hover:text-white/70" />
-                      <span className="text-[10px] font-bold text-white/40 uppercase tracking-tighter group-hover:text-white/60">Subir Logo</span>
+      {/* Grid de Perfil e Contatos */}
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 bg-white/[0.02] border border-white/[0.08] p-6 rounded-2xl">
+          {/* Coluna Logo: mais estreita e profissional */}
+          <div className="sm:col-span-4">
+            <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Identidad Visual</label>
+            {!state.logoBase64 ? (
+              <label className="flex flex-col items-center justify-center gap-2.5 p-6 bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-white/20 hover:bg-white/[0.04] transition-all group h-[110px]">
+                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Upload className="w-5 h-5 text-white/40 group-hover:text-white/70" />
+                </div>
+                <span className="text-[10px] font-bold text-white/40 uppercase tracking-tighter group-hover:text-white/60">Subir Logo</span>
+                <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+              </label>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <div className="relative group rounded-2xl overflow-hidden bg-white/[0.03] p-3 border border-white/10 h-[76px] flex items-center justify-center">
+                  <img src={state.logoBase64} alt="Logo" className="max-w-full max-h-full object-contain" />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 cursor-pointer transition-all backdrop-blur-sm">
+                    <label className="p-2 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-colors" title="Cambiar Logo">
+                      <RotateCcw className="w-4 h-4 text-white" />
                       <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                     </label>
-                  ) : (
-                    <div className="relative group rounded-2xl overflow-hidden bg-white/[0.03] p-3 border border-white/10 h-[100px] flex items-center justify-center">
-                      <img src={state.logoBase64} alt="Logo" className="max-w-full max-h-full object-contain" />
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 cursor-pointer transition-all backdrop-blur-sm">
-                        <label className="p-2 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-colors" title="Cambiar Logo">
-                          <RotateCcw className="w-4 h-4 text-white" />
-                          <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => { update({ logoBase64: "" }); toast.success("Logotipo eliminado"); }}
-                          className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full transition-colors"
-                          title="Eliminar"
-                        >
-                          <X className="w-4 h-4 text-white" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                    <button
+                      type="button"
+                      onClick={() => { update({ logoBase64: "" }); toast.success("Logotipo eliminado"); }}
+                      className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full transition-colors"
+                      title="Eliminar"
+                    >
+                      <X className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
                 </div>
-
-                {/* Contatos */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-1 block">Canales de Atención</label>
-                  
-                  {/* Contato 1 */}
-                  <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
-                    <div className="w-[45%] relative">
-                      <select
-                        value={state.footerContact1Icon || "whatsapp_green"}
-                        onChange={(e) => update({ footerContact1Icon: e.target.value as any })}
-                        className="w-full bg-white/5 border-none rounded-lg pl-2 pr-6 py-1.5 text-[10px] font-medium text-white outline-none appearance-none cursor-pointer"
-                      >
-                        <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Oficial</option>
-                        <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
-                        <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
-                        <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
-                        <option value="website" className="bg-zinc-900">Website / Enlace</option>
-                        <option value="none" className="bg-zinc-900">Ocultar</option>
-                      </select>
-                      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
-                        <ChevronDown className="w-3 h-3 text-white" />
-                      </div>
-                    </div>
-                    <div className="w-[55%]">
-                      <input
-                        value={state.footerContact1Value ?? formatAdPhone(state.whatsapp || "")}
-                        onChange={(e) => {
-                          const isPhone = state.footerContact1Icon?.startsWith("whatsapp");
-                          const val = isPhone ? formatAdPhone(e.target.value) : e.target.value;
-                          update({ footerContact1Value: val });
-                        }}
-                        placeholder={state.footerContact1Icon?.startsWith("whatsapp") ? "(00) 9 0000-0000" : "Enlace o Teléfono"}
-                        className="w-full bg-transparent border-none px-2 py-1.5 text-[10px] text-white outline-none placeholder:text-white/10"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Contato 2 */}
-                  <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
-                    <div className="w-[45%] relative">
-                      <select
-                        value={state.footerContact2Icon || "instagram_gradient"}
-                        onChange={(e) => update({ footerContact2Icon: e.target.value as any })}
-                        className="w-full bg-white/5 border-none rounded-lg pl-2 pr-6 py-1.5 text-[10px] font-medium text-white outline-none appearance-none cursor-pointer"
-                      >
-                        <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Oficial</option>
-                        <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
-                        <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
-                        <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
-                        <option value="website" className="bg-zinc-900">Website / Enlace</option>
-                        <option value="none" className="bg-zinc-900">Ocultar</option>
-                      </select>
-                      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
-                        <ChevronDown className="w-3 h-3 text-white" />
-                      </div>
-                    </div>
-                    <div className="w-[55%]">
-                      <input
-                        value={state.footerContact2Value ?? (state.instagram || "")}
-                        onChange={(e) => {
-                          const isPhone = state.footerContact2Icon?.startsWith("whatsapp");
-                          const isInsta = state.footerContact2Icon?.startsWith("instagram");
-                          let val = e.target.value;
-                          if (isPhone) val = formatAdPhone(val);
-                          else if (isInsta) val = val.replace(/^@/, "");
-                          update({ footerContact2Value: val });
-                        }}
-                        placeholder={state.footerContact2Icon?.startsWith("instagram") ? "@usuario" : "Perfil o Enlace"}
-                        className="w-full bg-transparent border-none px-2 py-1.5 text-[10px] text-white outline-none placeholder:text-white/10"
-                      />
-                    </div>
-                  </div>
+                <div className="flex items-center gap-1.5 h-[26px]">
+                  <button 
+                    type="button"
+                    onClick={() => update({ logoFormat: "circle" })}
+                    className={`flex-1 h-full text-[9px] font-bold uppercase tracking-wider rounded-lg border transition-all ${state.logoFormat !== "square" ? "bg-white/10 border-white/20 text-white" : "bg-transparent border-white/5 text-white/40 hover:bg-white/5"}`}
+                  >
+                    Redonda
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => update({ logoFormat: "square" })}
+                    className={`flex-1 h-full text-[9px] font-bold uppercase tracking-wider rounded-lg border transition-all ${state.logoFormat === "square" ? "bg-white/10 border-white/20 text-white" : "bg-transparent border-white/5 text-white/40 hover:bg-white/5"}`}
+                  >
+                    Cuadrada
+                  </button>
                 </div>
               </div>
+            )}
+          </div>
+
+          {/* Coluna Contatos: mais larga e organizada */}
+          <div className="sm:col-span-8 space-y-3">
+            <label className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2.5 block">Canales de Atención</label>
+            
+            {/* Contato 1 */}
+            <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
+              <div className="w-[45%] relative">
+                <select
+                  value={state.footerContact1Icon || "whatsapp_green"}
+                  onChange={(e) => update({ footerContact1Icon: e.target.value as any })}
+                  className="w-full bg-white/5 border-none rounded-lg pl-3 pr-8 py-2 text-[11px] font-medium text-white outline-none appearance-none cursor-pointer"
+                >
+                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Oficial</option>
+                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
+                  <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
+                  <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
+                  <option value="website" className="bg-zinc-900">Website / Enlace</option>
+                  <option value="none" className="bg-zinc-900">Ocultar</option>
+                </select>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
+                  <ChevronDown className="w-3.5 h-3.5 text-white" />
+                </div>
+              </div>
+              <div className="w-[55%]">
+                <input
+                  value={state.footerContact1Value ?? formatAdPhone(state.whatsapp || "")}
+                  onChange={(e) => {
+                    const isPhone = state.footerContact1Icon?.startsWith("whatsapp");
+                    const val = isPhone ? formatAdPhone(e.target.value) : e.target.value;
+                    update({ footerContact1Value: val });
+                  }}
+                  placeholder={state.footerContact1Icon?.startsWith("whatsapp") ? "(00) 9 0000-0000" : "Enlace o Teléfono"}
+                  className="w-full bg-transparent border-none px-3 py-2 text-[11px] text-white outline-none placeholder:text-white/10"
+                />
+              </div>
+            </div>
+
+            {/* Contato 2 */}
+            <div className="flex items-center gap-2 bg-white/[0.02] p-1 rounded-xl border border-white/5 focus-within:border-white/20 transition-colors">
+              <div className="w-[45%] relative">
+                <select
+                  value={state.footerContact2Icon || "instagram_gradient"}
+                  onChange={(e) => update({ footerContact2Icon: e.target.value as any })}
+                  className="w-full bg-white/5 border-none rounded-lg pl-3 pr-8 py-2 text-[11px] font-medium text-white outline-none appearance-none cursor-pointer"
+                >
+                  <option value="whatsapp_green" className="bg-zinc-900">WhatsApp Oficial</option>
+                  <option value="whatsapp_custom" className="bg-zinc-900">WhatsApp Sólido</option>
+                  <option value="instagram_gradient" className="bg-zinc-900">Instagram Color</option>
+                  <option value="instagram_custom" className="bg-zinc-900">Instagram Sólido</option>
+                  <option value="website" className="bg-zinc-900">Website / Enlace</option>
+                  <option value="none" className="bg-zinc-900">Ocultar</option>
+                </select>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
+                  <ChevronDown className="w-3.5 h-3.5 text-white" />
+                </div>
+              </div>
+              <div className="w-[55%]">
+                <input
+                  value={state.footerContact2Value ?? (state.instagram || "")}
+                  onChange={(e) => {
+                    const isPhone = state.footerContact2Icon?.startsWith("whatsapp");
+                    const isInsta = state.footerContact2Icon?.startsWith("instagram");
+                    let val = e.target.value;
+                    if (isPhone) val = formatAdPhone(val);
+                    else if (isInsta) val = val.replace(/^@/, "");
+                    update({ footerContact2Value: val });
+                  }}
+                  placeholder={state.footerContact2Icon?.startsWith("instagram") ? "@usuario" : "Perfil o Enlace"}
+                  className="w-full bg-transparent border-none px-3 py-2 text-[11px] text-white outline-none placeholder:text-white/10"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
             </div>
           </MinimizableCard>
 
