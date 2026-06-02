@@ -170,7 +170,7 @@ export default function InicioES() {
                   <iframe
                     className="absolute top-0 left-0 w-full h-full pointer-events-none"
                     style={{ width: '100%', height: '100%', border: 0 }}
-                    src="https://www.youtube.com/embed/P0_4EdEOQAc?autoplay=1&mute=1&controls=0&loop=1&playlist=P0_4EdEOQAc&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0"
+                    src="https://www.youtube.com/embed/INkZn5pdPeM?autoplay=1&mute=1&controls=0&loop=1&playlist=INkZn5pdPeM&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0"
                     allow="autoplay; encrypted-media"
                     title="Cómo la IA crea todo"
                   />
@@ -195,7 +195,7 @@ export default function InicioES() {
                 <iframe
                   className="absolute top-0 left-0 w-full h-full"
                   style={{ width: '100%', height: '100%', border: 0 }}
-                  src="https://www.youtube.com/embed/P0_4EdEOQAc?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0"
+                  src="https://www.youtube.com/embed/INkZn5pdPeM?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0"
                   allow="autoplay; encrypted-media"
                   allowFullScreen
                   title="Cómo la IA crea todo"
