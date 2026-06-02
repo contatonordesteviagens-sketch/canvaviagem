@@ -101,13 +101,26 @@ const PRESET_COLORS = [
   "#16a34a", // verde
 ];
 
-type Currency = "BRL" | "USD" | "EUR" | "ARS" | "GBP";
-const CURRENCY_PRESETS: { id: Currency; symbol: string; label: string; locale: string }[] = [
-  { id: "BRL", symbol: "$", label: "Real ($)", locale: "es-ES" },
-  { id: "USD", symbol: "US$", label: "Dólar (US$)", locale: "en-US" },
-  { id: "EUR", symbol: "🖼️‚¬", label: "Euro (🖼️‚¬)", locale: "de-DE" },
-  { id: "GBP", symbol: "Â£", label: "Libra (Â£)", locale: "en-GB" },
-  { id: "ARS", symbol: "A$", label: "Peso AR (A$)", locale: "es-AR" },
+type Currency = "BRL" | "USD" | "EUR" | "ARS" | "GBP" | "MXN" | "COP" | "CLP" | "PEN" | "PYG" | "BOB" | "UYU" | "CRC" | "VES" | "DOP" | "GTQ" | "HNL" | "NIO";
+const CURRENCY_PRESETS: { id: Currency; symbol: string; label: string; locale: string; flag: string; country: string }[] = [
+  { id: "USD", symbol: "US$", label: "Dólar (US$)",            locale: "en-US",  flag: "🇺🇸", country: "Estados Unidos" },
+  { id: "BRL", symbol: "R$",  label: "Real (R$)",              locale: "pt-BR",  flag: "🇧🇷", country: "Brasil" },
+  { id: "ARS", symbol: "$",   label: "Peso Argentino ($)",     locale: "es-AR",  flag: "🇦🇷", country: "Argentina" },
+  { id: "MXN", symbol: "$",   label: "Peso Mexicano ($)",      locale: "es-MX",  flag: "🇲🇽", country: "México" },
+  { id: "COP", symbol: "$",   label: "Peso Colombiano ($)",    locale: "es-CO",  flag: "🇨🇴", country: "Colombia" },
+  { id: "CLP", symbol: "$",   label: "Peso Chileno ($)",       locale: "es-CL",  flag: "🇨🇱", country: "Chile" },
+  { id: "PEN", symbol: "S/",  label: "Sol Peruano (S/)",       locale: "es-PE",  flag: "🇵🇪", country: "Perú" },
+  { id: "UYU", symbol: "$U",  label: "Peso Uruguayo ($U)",     locale: "es-UY",  flag: "🇺🇾", country: "Uruguay" },
+  { id: "PYG", symbol: "₲",   label: "Guaraní (₲)",            locale: "es-PY",  flag: "🇵🇾", country: "Paraguay" },
+  { id: "BOB", symbol: "Bs.", label: "Boliviano (Bs.)",        locale: "es-BO",  flag: "🇧🇴", country: "Bolivia" },
+  { id: "CRC", symbol: "₡",   label: "Colón (₡)",              locale: "es-CR",  flag: "🇨🇷", country: "Costa Rica" },
+  { id: "DOP", symbol: "RD$", label: "Peso Dominicano (RD$)", locale: "es-DO",  flag: "🇩🇴", country: "Rep. Dominicana" },
+  { id: "GTQ", symbol: "Q",   label: "Quetzal (Q)",            locale: "es-GT",  flag: "🇬🇹", country: "Guatemala" },
+  { id: "HNL", symbol: "L",   label: "Lempira (L)",            locale: "es-HN",  flag: "🇭🇳", country: "Honduras" },
+  { id: "NIO", symbol: "C$",  label: "Córdoba (C$)",           locale: "es-NI",  flag: "🇳🇮", country: "Nicaragua" },
+  { id: "VES", symbol: "Bs.S",label: "Bolívar (Bs.S)",         locale: "es-VE",  flag: "🇻🇪", country: "Venezuela" },
+  { id: "EUR", symbol: "€",   label: "Euro (€)",               locale: "de-DE",  flag: "🇪🇺", country: "Europa" },
+  { id: "GBP", symbol: "£",   label: "Libra (£)",              locale: "en-GB",  flag: "🇬🇧", country: "Reino Unido" },
 ];
 
 /**
@@ -178,7 +191,12 @@ const buildPriceWithCurrency = (raw: string, currency: Currency): string => {
 
 const stripCurrencyFromPrice = (raw: string, currency: Currency): string => {
   const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "$";
-  return (raw || "").replace(sym, "").replace(/R\$|US\$|AR\$|🖼️‚¬|Â£/g, "").trim();
+  // Escapa o símbolo para uso em regex e remove todos os símbolos conhecidos
+  const escapedSym = sym.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return (raw || "")
+    .replace(new RegExp(escapedSym, "g"), "")
+    .replace(/R\$|US\$|RD\$|\$U|Bs\.S|Bs\.|S\/|C\$|\$U|€|£|₲|₡|[A-Z]{1,3}\$/g, "")
+    .trim();
 };
 
 const formatPriceWhileTyping = (raw: string, currency: Currency): string => {
@@ -2249,27 +2267,60 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
               {/* Price Options */}
               {categoria === "oferta_pacote" && (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-3">
+                  {/* Seletor Visual de Moeda */}
                   <div>
-                    <label className={labelCls}>Moneda</label>
-                    <select
-                      value={currency}
-                      onChange={(e) => setCurrency(e.target.value as Currency)}
-                      className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-white/40 appearance-none animate-none"
-                    >
-                      {CURRENCY_PRESETS.map((c) => (
-                        <option key={c.id} value={c.id} className="bg-zinc-900">{c.label}</option>
-                      ))}
-                    </select>
+                    <label className={labelCls}>💱 Moneda del Anuncio</label>
+                    <div className="grid grid-cols-3 gap-1.5 mt-1 max-h-[160px] overflow-y-auto pr-1">
+                      {CURRENCY_PRESETS.map((c) => {
+                        const selected = currency === c.id;
+                        return (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => setCurrency(c.id as Currency)}
+                            className={`flex items-center gap-1.5 px-2 py-2 rounded-xl border text-left transition-all ${
+                              selected
+                                ? "border-yellow-400/60 bg-yellow-400/10 shadow-[0_0_12px_rgba(250,204,21,0.15)]"
+                                : "border-white/8 bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/20"
+                            }`}
+                            style={selected ? { borderColor: primaryColor + "99" } : undefined}
+                          >
+                            <span className="text-base leading-none">{c.flag}</span>
+                            <div className="min-w-0">
+                              <div className={`text-[10px] font-bold truncate ${selected ? "text-white" : "text-white/70"}`}>{c.symbol}</div>
+                              <div className="text-[8px] text-white/40 truncate">{c.country}</div>
+                            </div>
+                            {selected && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-yellow-400 flex-shrink-0" style={{ background: primaryColor }} />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {/* Badge moeda selecionada */}
+                    <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-white/[0.04] rounded-xl border border-white/10">
+                      <span className="text-lg">{CURRENCY_PRESETS.find(c => c.id === currency)?.flag}</span>
+                      <div>
+                        <span className="text-[10px] text-white/40 block">Moneda activa:</span>
+                        <span className="text-xs font-bold text-white">{CURRENCY_PRESETS.find(c => c.id === currency)?.label} — {CURRENCY_PRESETS.find(c => c.id === currency)?.country}</span>
+                      </div>
+                      <span className="ml-auto text-lg font-black" style={{ color: primaryColor }}>{CURRENCY_PRESETS.find(c => c.id === currency)?.symbol}</span>
+                    </div>
                   </div>
+
+                  {/* Campo de Precio */}
                   <div>
                     <label className={labelCls}>Precio Base</label>
-                    <input
-                      value={price}
-                      onChange={(e) => setPrice(formatPriceWhileTyping(e.target.value, currency))}
-                      placeholder="Ej: 149.90"
-                      className="w-full bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-white/40"
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-black text-white/50">
+                        {CURRENCY_PRESETS.find(c => c.id === currency)?.symbol}
+                      </span>
+                      <input
+                        value={price}
+                        onChange={(e) => setPrice(formatPriceWhileTyping(e.target.value, currency))}
+                        placeholder="Ej: 149.90"
+                        className="w-full bg-white/[0.06] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white outline-none focus:border-white/40"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
