@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useFabricaESContext } from "@/hooks/useFabricaESContext";
+import { useFabricaESContext } from "@/hooks/useFabricaContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import { type StrategyId } from "@/data/fabrica-prompts";
