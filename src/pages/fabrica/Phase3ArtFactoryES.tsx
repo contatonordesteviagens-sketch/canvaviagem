@@ -1013,7 +1013,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       const { data, error } = await supabase.functions.invoke("fabrica-search-photos", {
         body: { 
           query: q, 
-          perPage: 12, 
+          perPage: 40, 
           engine: searchEngine 
         }
       });
@@ -1764,6 +1764,131 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       <div className="flex flex-col gap-8 items-start">
         {/* COLUNA ESQUERDA: Sidebar de Configurações */}
         <div className="w-full space-y-6">
+
+
+          {genMode === "photo" && (
+            <MinimizableCard title="📷 Elegir una foto real">
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <input
+                      value={photoQuery}
+                      onChange={(e) => setPhotoQuery(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && searchPhotos(photoQuery)}
+                      placeholder="Buscar destino (ej: Cancún, Orlando, Madrid...)"
+                      className="w-full bg-white/[0.05] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-white/30 outline-none focus:border-white/30"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => searchPhotos(photoQuery)}
+                    disabled={searchingPhotos || !photoQuery.trim()}
+                    className="px-4 py-2.5 bg-white/10 hover:bg-white/15 disabled:opacity-40 disabled:hover:bg-white/10 rounded-xl text-xs font-bold text-white transition-all flex items-center gap-1.5"
+                  >
+                    {searchingPhotos ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Buscar"}
+                  </button>
+                </div>
+
+                {photos.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-2 max-h-[220px] overflow-y-auto pr-1">
+                    {photos.map((p) => {
+                      const active = selectedPhotoUrl === p.url;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedPhotoUrl(p.url);
+                            toast.success("¡Foto seleccionada!");
+                          }}
+                          className={`relative aspect-[3/4] rounded-lg overflow-hidden border-2 bg-zinc-950 transition-all ${
+                            active ? "border-white scale-95 shadow-lg" : "border-white/5 hover:border-white/20"
+                          }`}
+                        >
+                          <img src={p.thumb} alt={p.alt} className="w-full h-full object-cover" />
+                          {active && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                              <Check className="w-5 h-5 text-white" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
+            </MinimizableCard>
+          )}
+
+          {genMode === "custom" && (
+            <MinimizableCard title="🖼️ Su imagen de referencia">
+              <div className="space-y-4">
+                <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full">
+                  <button
+                    type="button"
+                    onClick={() => setCustomSource("upload")}
+                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${customSource === "upload" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+                  >
+                    <Upload className="w-3.5 h-3.5 inline mr-1" /> Archivo de Computadora
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomSource("link")}
+                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${customSource === "link" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+                  >
+                    <Link2 className="w-3.5 h-3.5 inline mr-1" /> Enlace de Internet (URL)
+                  </button>
+                </div>
+
+                {customSource === "upload" ? (
+                  <div>
+                    {!customImageData ? (
+                      <label className="flex flex-col items-center justify-center gap-3 p-8 bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-white/20 hover:bg-white/[0.04] transition-all group h-[140px]">
+                        <ImageIcon className="w-8 h-8 text-white/30 group-hover:scale-110 transition-transform" />
+                        <div className="text-center">
+                          <span className="text-[11px] font-bold text-white/50 block group-hover:text-white/80">Elegir imagen de anuncio</span>
+                          <span className="text-[9px] text-white/30 block mt-0.5">JPG o PNG, hasta 5MB</span>
+                        </div>
+                        <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                      </label>
+                    ) : (
+                      <div className="relative group rounded-2xl overflow-hidden bg-black/40 border border-white/10 aspect-video flex items-center justify-center">
+                        <img src={customImageData} alt="Custom upload" className="max-w-full max-h-full object-contain" />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 cursor-pointer transition-all backdrop-blur-sm">
+                          <label className="p-2.5 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-colors" title="Cambiar imagen">
+                            <RotateCcw className="w-4 h-4 text-white" />
+                            <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => { setCustomImageData(""); toast.success("Imagen removida"); }}
+                            className="p-2.5 bg-red-500/20 hover:bg-red-500/40 rounded-full transition-colors"
+                            title="Eliminar"
+                          >
+                            <X className="w-4 h-4 text-white" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <label className={labelCls}>URL de la imagen externa</label>
+                    <input
+                      value={customLink}
+                      onChange={(e) => {
+                        setCustomLink(e.target.value);
+                        setCustomImageData(e.target.value);
+                      }}
+                      placeholder="https://ejemplo.com/tu-imagen.jpg"
+                      className={inputCls}
+                    />
+                  </div>
+                )}
+              </div>
+            </MinimizableCard>
+          )}
           <MinimizableCard title="👤 Perfil y Canales de Atención">
             <div className="space-y-5">
                             {user && (
@@ -2094,130 +2219,6 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               )}
             </div>
           </MinimizableCard>
-
-          {genMode === "photo" && (
-            <MinimizableCard title="📷 Elegir una foto real">
-              <div className="space-y-4">
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                    <input
-                      value={photoQuery}
-                      onChange={(e) => setPhotoQuery(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && searchPhotos(photoQuery)}
-                      placeholder="Buscar destino (ej: Cancún, Orlando, Madrid...)"
-                      className="w-full bg-white/[0.05] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-white/30 outline-none focus:border-white/30"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => searchPhotos(photoQuery)}
-                    disabled={searchingPhotos || !photoQuery.trim()}
-                    className="px-4 py-2.5 bg-white/10 hover:bg-white/15 disabled:opacity-40 disabled:hover:bg-white/10 rounded-xl text-xs font-bold text-white transition-all flex items-center gap-1.5"
-                  >
-                    {searchingPhotos ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Buscar"}
-                  </button>
-                </div>
-
-                {photos.length > 0 ? (
-                  <div className="grid grid-cols-3 gap-2 max-h-[220px] overflow-y-auto pr-1">
-                    {photos.map((p) => {
-                      const active = selectedPhotoUrl === p.url;
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedPhotoUrl(p.url);
-                            toast.success("¡Foto seleccionada!");
-                          }}
-                          className={`relative aspect-[3/4] rounded-lg overflow-hidden border-2 bg-zinc-950 transition-all ${
-                            active ? "border-white scale-95 shadow-lg" : "border-white/5 hover:border-white/20"
-                          }`}
-                        >
-                          <img src={p.thumb} alt={p.alt} className="w-full h-full object-cover" />
-                          {active && (
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                              <Check className="w-5 h-5 text-white" />
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </div>
-            </MinimizableCard>
-          )}
-
-          {genMode === "custom" && (
-            <MinimizableCard title="🖼️ Su imagen de referencia">
-              <div className="space-y-4">
-                <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full">
-                  <button
-                    type="button"
-                    onClick={() => setCustomSource("upload")}
-                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${customSource === "upload" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-                  >
-                    <Upload className="w-3.5 h-3.5 inline mr-1" /> Archivo de Computadora
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCustomSource("link")}
-                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${customSource === "link" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-                  >
-                    <Link2 className="w-3.5 h-3.5 inline mr-1" /> Enlace de Internet (URL)
-                  </button>
-                </div>
-
-                {customSource === "upload" ? (
-                  <div>
-                    {!customImageData ? (
-                      <label className="flex flex-col items-center justify-center gap-3 p-8 bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-white/20 hover:bg-white/[0.04] transition-all group h-[140px]">
-                        <ImageIcon className="w-8 h-8 text-white/30 group-hover:scale-110 transition-transform" />
-                        <div className="text-center">
-                          <span className="text-[11px] font-bold text-white/50 block group-hover:text-white/80">Elegir imagen de anuncio</span>
-                          <span className="text-[9px] text-white/30 block mt-0.5">JPG o PNG, hasta 5MB</span>
-                        </div>
-                        <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                      </label>
-                    ) : (
-                      <div className="relative group rounded-2xl overflow-hidden bg-black/40 border border-white/10 aspect-video flex items-center justify-center">
-                        <img src={customImageData} alt="Custom upload" className="max-w-full max-h-full object-contain" />
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 cursor-pointer transition-all backdrop-blur-sm">
-                          <label className="p-2.5 bg-white/10 hover:bg-white/20 rounded-full cursor-pointer transition-colors" title="Cambiar imagen">
-                            <RotateCcw className="w-4 h-4 text-white" />
-                            <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => { setCustomImageData(""); toast.success("Imagen removida"); }}
-                            className="p-2.5 bg-red-500/20 hover:bg-red-500/40 rounded-full transition-colors"
-                            title="Eliminar"
-                          >
-                            <X className="w-4 h-4 text-white" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <label className={labelCls}>URL de la imagen externa</label>
-                    <input
-                      value={customLink}
-                      onChange={(e) => {
-                        setCustomLink(e.target.value);
-                        setCustomImageData(e.target.value);
-                      }}
-                      placeholder="https://ejemplo.com/tu-imagen.jpg"
-                      className={inputCls}
-                    />
-                  </div>
-                )}
-              </div>
-            </MinimizableCard>
-          )}
 
           <MinimizableCard title="📝 Datos del anuncio">
             <div className="space-y-4">
