@@ -64,7 +64,7 @@ const DEFAULT_EXPERIENCE_HIGHLIGHTS: Highlight[] = [
   { text: "CURADORIA PREMIUM", icon: "check" },
 ];
 
-const DEFAULT_SUFFIXES_OFERTA = new Set(["por pessoa", "por casal", "por pacote", "por grupo", "total do pacote"]);
+const DEFAULT_SUFFIXES_OFERTA = new Set(["por persona", "por casal", "por pacote", "por grupo", "total do pacote"]);
 const DEFAULT_SUFFIX_EXPERIENCIA = "Sua viagem começa aqui";
 
 // ====== Padronização de CORES por categoria ======
@@ -210,8 +210,8 @@ interface PaymentPreset {
 }
 
 const PAYMENT_PRESETS: PaymentPreset[] = [
-  { id: "installments", name: "Parcelado",          emoji: "💳", description: "Ex: 10x R$ 149,90",       hint: "Parcelas: 10x · Valor: 149,90" },
-  { id: "cash",         name: "À vista",            emoji: "💰", description: "Ex: À VISTA R$ 1.499",    hint: "Valor: 1.499" },
+  { id: "installments", name: "En cuotas",          emoji: "💳", description: "Ex: 10x R$ 149,90",       hint: "Parcelas: 10x · Valor: 149,90" },
+  { id: "cash",         name: "Al contado",            emoji: "💰", description: "Ex: À VISTA R$ 1.499",    hint: "Valor: 1.499" },
   { id: "down_plus",    name: "Entrada + parcelas", emoji: "💵", description: "Ex: ENTRADA + 10x R$ 149", hint: "Parcelas: ENTRADA R$ 200 + 10x · Valor: 149" },
 ];
 
@@ -233,13 +233,13 @@ const AD_TITLE_PRESETS: string[] = [
   "Vamos para {destino}?",
 ];
 
-// Presets de TÍTULO para a categoria "Experiência de Destino" (luxo / sensação)
+// Presets de TÍTULO para a categoria "Experiencia de Destino *" (luxo / sensação)
 const AD_TITLE_PRESETS_EXPERIENCIA: string[] = [
   "Sua próxima viagem é {destino}",
   "Viva o melhor de {destino}",
   "Momentos inesquecíveis em {destino}",
   "Desperte os sentidos em {destino}",
-  "Experiência exclusiva em {destino}",
+  "Experiencia exclusiva em {destino}",
   "Prazer em cada detalhe · {destino}",
   "{destino} como você nunca viveu",
   "All Inclusive · {destino}",
@@ -247,7 +247,7 @@ const AD_TITLE_PRESETS_EXPERIENCIA: string[] = [
   "Descubra o lado secreto de {destino}",
 ];
 
-// Nomes "promo" sofisticados para Experiência de Destino
+// Nomes "promo" sofisticados para Experiencia de Destino *
 const PROMO_NAME_PRESETS_EXPERIENCIA: string[] = [
   "EXPERIÊNCIA EXCLUSIVA",
   "MOMENTOS INESQUECÍVEIS",
@@ -259,11 +259,11 @@ const PROMO_NAME_PRESETS_EXPERIENCIA: string[] = [
 
 const PROMO_NAME_PRESETS: string[] = [
   "OFERTA ESPECIAL",
-  "SUPER OFERTA",
-  "ÚLTIMAS VAGAS",
-  "PROMOÇÃO DO DIA",
+  "SÚPER OFERTA",
+  "ÚLTIMOS LUGARES",
+  "PROMOCIÓN DEL DÍA",
   "BLACK FRIDAY",
-  "QUEIMA DE ESTOQUE"
+  "LIQUIDACIÓN"
 ];
 
 // Defaults reconhecidos como "padrão da Oferta" — autorizados a serem sobrescritos
@@ -286,18 +286,18 @@ const TITLE_NEIGHBORS: Record<string, string[]> = {
   "Explore {destino}": ["Descubra {destino}", "{destino} vai te surpreender"],
   "Partiu {destino}": ["Vamos para {destino}?", "{destino} te espera"],
   "Vamos para {destino}?": ["Partiu {destino}", "{destino} te espera"],
-  // Vizinhos de Experiência
+  // Vizinhos de Experiencia
   "Sua próxima viagem é {destino}": ["Viva o melhor de {destino}", "Momentos inesquecíveis em {destino}"],
-  "Viva o melhor de {destino}": ["Sua próxima viagem é {destino}", "Experiência exclusiva em {destino}"],
+  "Viva o melhor de {destino}": ["Sua próxima viagem é {destino}", "Experiencia exclusiva em {destino}"],
   "Momentos inesquecíveis em {destino}": ["Desperte os sentidos em {destino}", "Prazer em cada detalhe · {destino}"],
   "Desperte os sentidos em {destino}": ["Momentos inesquecíveis em {destino}", "Refúgio dos sonhos em {destino}"],
-  "Experiência exclusiva em {destino}": ["Viva o melhor de {destino}", "{destino} como você nunca viveu"],
-  "Prazer em cada detalhe · {destino}": ["All Inclusive · {destino}", "Experiência exclusiva em {destino}"],
+  "Experiencia exclusiva em {destino}": ["Viva o melhor de {destino}", "{destino} como você nunca viveu"],
+  "Prazer em cada detalhe · {destino}": ["All Inclusive · {destino}", "Experiencia exclusiva em {destino}"],
   "{destino} como você nunca viveu": ["Descubra o lado secreto de {destino}", "Viva o melhor de {destino}"],
 };
 
 const buildTitleVariations = (template: string, destination: string): string[] => {
-  const dest = (destination || "").trim() || "Destino";
+  const dest = (destination || "").trim() || "Destino *";
   const fill = (t: string) => t.replace(/\{destino\}/gi, dest);
   const main = fill(template);
   // Se o template foi editado (não bate com nenhum preset), reaproveita vizinhos do preset mais próximo.
@@ -388,7 +388,7 @@ const pickPhotoRefs = (
 
 // ============================================================
 // GERADOR DE LEGENDAS / COPY para Instagram
-// Gera 3 variações de texto adaptadas aos dados do anúncio,
+// Gera 3 variações de texto adaptadas aos dados do anuncio,
 // sem chamadas à IA — 100% local, instantâneo.
 // ============================================================
 interface CaptionVars {
@@ -437,10 +437,10 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
   const periodLine = period ? `🗓️ ${period}` : "";
 
   if (v.isExperience) {
-    // Variante Experiência: estilo editorial/luxo
+    // Variante Experiencia: estilo editorial/luxo
     const caps: string[] = [
       // Variação 1 — Cinematográfica
-      `✨ ${destUp} vai te surpreender.\n\nExperiências como essa não se esquecem — e você merece vivê-las.\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}${contactLine}`,
+      `✨ ${destUp} vai te surpreender.\n\nExperiencias como essa não se esquecem — e você merece vivê-las.\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}${contactLine}`,
 
       // Variação 2 — Direta com CTA
       `🌟 Já imaginou ${v.isExperience ? "viver" : "conhecer"} ${dest}?\n\n${benefitLines}\n\n${periodLine ? periodLine + "\n" : ""}Cada detalhe foi pensado para você. Vamos planejar juntos?\n\n${contactLine}`,
@@ -502,7 +502,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     update({ hideCents: v });
     // NUNCA sobrescreve o valor bruto 'price' no state, para não corromper a digitação original do usuário!
   };
-  const [pricePrefix, setPricePrefixState] = useState<string>((state as any).pricePrefix ?? "a partir de");
+  const [pricePrefix, setPricePrefixState] = useState<string>((state as any).pricePrefix ?? "desde");
   const setPricePrefix = (v: string) => { setPricePrefixState(v); update({ pricePrefix: v } as any); };
   const [showTotal, setShowTotalState] = useState<boolean>(state.showTotal !== false);
   const setShowTotal = (v: boolean) => { setShowTotalState(v); update({ showTotal: v }); };
@@ -652,8 +652,8 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         return DEFAULT_SUFFIX_EXPERIENCIA;
       }
       if (c === "oferta_pacote" && prev === DEFAULT_SUFFIX_EXPERIENCIA) {
-        update({ lastPaymentSuffix: "por pessoa" });
-        return "por pessoa";
+        update({ lastPaymentSuffix: "por persona" });
+        return "por persona";
       }
       return prev;
     });
@@ -707,7 +707,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const [promoName, setPromoNameState] = useState(state.lastPromoName || initialPromoDefault);
   const setPromoName = (n: string) => { setPromoNameState(n); update({ lastPromoName: n }); };
 
-  // Título do anúncio (com presets editáveis usando {destino})
+  // Título del anuncio (com presets editáveis usando {destino})
   const [adTitleTemplate, setAdTitleTemplateState] = useState(state.lastAdTitle || initialAdTitleDefault);
   const setAdTitleTemplate = (t: string) => { setAdTitleTemplateState(t); update({ lastAdTitle: t }); };
   const [adTitleMenuOpen, setAdTitleMenuOpen] = useState(false);
@@ -719,9 +719,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const [suffixMenuOpen, setSuffixMenuOpen] = useState(false);
   const [priceOptionsOpen, setPriceOptionsOpen] = useState(false);
   const [priceOptionsEnabled, setPriceOptionsEnabled] = useState(false);
-  const resolvedAdTitle = (adTitleTemplate || "").replace(/\{destino\}/gi, destination?.trim() || "Destino");
+  const resolvedAdTitle = (adTitleTemplate || "").replace(/\{destino\}/gi, destination?.trim() || "Destino *");
   const adTitleVariations = buildTitleVariations(adTitleTemplate || "Pacote {destino}", destination);
-  const SUFFIX_PRESETS = ["por pessoa", "por casal", "por pacote", "por grupo", "total do pacote"];
+  const SUFFIX_PRESETS = ["por persona", "por casal", "por pacote", "por grupo", "total do pacote"];
   const DESTINATION_SUGGESTIONS = Array.from(new Set([
     ...(state.destinos || []),
     "Maragogi", "Jericoacoara", "Fernando de Noronha", "Gramado", "Bonito",
@@ -735,7 +735,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const [paymentLabelState, setPaymentLabelState] = useState(state.lastPaymentLabel || "");
   const setPaymentLabel = (label: string) => { setPaymentLabelState(label); update({ lastPaymentLabel: label }); };
   const [paymentSuffixState, setPaymentSuffixState] = useState(() => {
-    const savedSuffix = state.lastPaymentSuffix || "por pessoa";
+    const savedSuffix = state.lastPaymentSuffix || "por persona";
     return (state.lastCategoria as CategoriaId) === "experiencia_destino" && DEFAULT_SUFFIXES_OFERTA.has(savedSuffix)
       ? DEFAULT_SUFFIX_EXPERIENCIA
       : savedSuffix;
@@ -773,7 +773,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   const [adCaptions, setAdCaptions] = useState<string[]>([]);
   const [selectedCaption, setSelectedCaption] = useState<string | null>(null);
   const [captionCopied, setCaptionCopied] = useState(false);
-  // Histórico das últimas variantes do compositor canvas (modo Sua Imagem) para forçar rotação
+  // Histórico das últimas variantes do compositor canvas (modo Tu Imagen) para forçar rotação
   const variantHistoryRef = useRef<number[]>([]);
   // Proteção anti-loop: limita fallbacks automáticos da IA Pura
   const retryCountRef = useRef<number>(0);
@@ -833,7 +833,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     setPaymentModeState(state.lastPaymentMode || "installments");
     setPaymentLabelState(state.lastPaymentLabel || "");
     setPaymentSuffixState(() => {
-      const savedSuffix = state.lastPaymentSuffix || "por pessoa";
+      const savedSuffix = state.lastPaymentSuffix || "por persona";
       return (state.lastCategoria as CategoriaId) === "experiencia_destino" && DEFAULT_SUFFIXES_OFERTA.has(savedSuffix)
         ? DEFAULT_SUFFIX_EXPERIENCIA
         : savedSuffix;
@@ -1083,7 +1083,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
   };
 
   // 🌐 Integração Inteligente de Pacotes com o Site F2 (Acumulativo)
-  // Pega o último anúncio gerado e o insere no Site, preferencialmente usando a FOTO LIMPA
+  // Pega o último anuncio gerado e o insere no Site, preferencialmente usando a FOTO LIMPA
   // para o fundo do site, em vez da arte poluída com texto do Canva, conforme exigido pelo usuário.
   const syncGeneratedPackageToSite = async (finalComposedImg: string, sourceCleanImg?: string) => {
     if (!finalComposedImg || !destination.trim()) return;
@@ -1096,10 +1096,10 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     const sym = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "R$";
 
     const priceLabel = (() => {
-      const suffix = paymentSuffix || "por pessoa";
+      const suffix = paymentSuffix || "por persona";
       const pVal = `${sym} ${currentPrice}`;
       if (paymentMode === "installments") return `${installments || "10x"} de ${pVal} ${suffix}`;
-      if (paymentMode === "cash") return `À vista ${pVal} ${suffix}`;
+      if (paymentMode === "cash") return `Al contado ${pVal} ${suffix}`;
       return `${pVal} ${suffix}`;
     })();
 
@@ -1136,7 +1136,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
       updatedPackages = [newPkg, ...base];
     }
 
-    // Garante APENAS a foto LIMPA (sem a arte poluída de texto do anúncio) no banco do site.
+    // Garante APENAS a foto LIMPA (sem a arte poluída de texto do anuncio) no banco do site.
     // Se não há foto limpa (modo IA pura sem referência), não adiciona nada ao banco de fotos.
     const currentGallery = state.siteContent.galleryImages || [];
     let updatedGallery = [...currentGallery];
@@ -1164,7 +1164,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
   const generate = async (forceVariation?: number, accumulate: boolean = false) => {
     if (!destination.trim()) {
-      toast.error("Digite o destino do anúncio");
+      toast.error("Digite o destino do anuncio");
       return;
     }
     if (loading && genMode === "ai") return;
@@ -1374,7 +1374,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               const { data: aiData, error: aiError } = await supabase.functions.invoke("fabrica-design-ai", {
                 body: {
                   format,
-                  destination: destination || "Destino",
+                  destination: destination || "Destino *",
                   price: formattedPriceForAd || price,
                   duration: travelPeriod || "5 NOITES",
                   highlights: highlightTexts,
@@ -1420,7 +1420,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
               await renderIAPuraLayout(ctx, {
                 format,
-                destination: destination || "Destino",
+                destination: destination || "Destino *",
                 price: formattedPriceForAd || price,
                 travelPeriod: travelPeriod || "5 NOITES",
                 highlights: (highlights || []) as any,
@@ -1572,7 +1572,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     } catch (err: any) {
       console.error("generate error", err);
       // 🛡️ FALHA #8 FIX — Mensagem específica para erros de CORS em links externos
-      const rawMsg = err?.message || "Erro ao gerar anúncio";
+      const rawMsg = err?.message || "Erro ao gerar anuncio";
       const isCorsError = rawMsg.toLowerCase().includes("tainted") || rawMsg.toLowerCase().includes("cors") || rawMsg.toLowerCase().includes("security") || rawMsg.toLowerCase().includes("cross-origin");
       const message = isCorsError
         ? "Link externo bloqueado por segurança (CORS). Use o upload de arquivo no seu dispositivo."
@@ -1590,7 +1590,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     generate(next, true);
   };
 
-  // Gera as legendas de copy sempre que as imagens ou os dados do anúncio mudarem
+  // Gera as legendas de copy sempre que as imagens ou os dados do anuncio mudarem
   useEffect(() => {
     if (generatedImages.length === 0) return;
     const caps = buildAdCaptions({
@@ -1781,7 +1781,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               onClick={() => setGenMode("custom")}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "custom" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
             >
-              <Upload className="w-3.5 h-3.5" /> Sua Imagem
+              <Upload className="w-3.5 h-3.5" /> Tu Imagen
             </button>
             <button
               type="button"
@@ -1798,7 +1798,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           {genMode === "ai" && (
             <div className="mt-3 p-3 rounded-xl border border-amber-400/20 bg-amber-500/5">
               <p className="text-[11px] text-amber-200/90 leading-relaxed">
-                ✨ <strong>IA Pura em manutenção.</strong> Este recurso está temporariamente indisponível. Por favor, utilize o modo "Foto Real" ou "Sua Imagem".
+                ✨ <strong>IA Pura em manutenção.</strong> Este recurso está temporariamente indisponível. Por favor, utilize o modo "Foto Real" ou "Tu Imagen".
               </p>
             </div>
           )}
@@ -1840,7 +1840,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
         {/* Categoria - Compacta */}
         <div>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">1 · Tipo de Anúncio</h3>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">1 · Tipo de Anuncio</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {CATEGORIAS.map((c) => {
               const isExperiencia = c.id === "experiencia_destino";
@@ -1882,9 +1882,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           </div>
         </div>
 
-        {/* Formato do Anúncio */}
+        {/* Formato do Anuncio */}
         <div>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">2 · Formato do Anúncio</h3>
+          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">2 · Formato do Anuncio</h3>
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => setFormat("square")}
@@ -1906,7 +1906,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
             >
               <Smartphone className="w-6 h-6 mb-2 text-white/80" />
               <div className="text-sm font-bold text-white">Stories / Reels 9:16</div>
-              <div className="text-[11px] text-white/55">Vertical com safe zones (1080×1920)</div>
+              <div className="text-[11px] text-white/55">Vertical con safe zones (1080×1920)</div>
             </button>
           </div>
         </div>
@@ -2065,11 +2065,11 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
       {/* 3 · Dados */}
       <div className={`${sectionCls} space-y-4`}>
-        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">3 · Dados do anúncio</h3>
+        <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">3 · DATOS DEL ANUNCIO</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Destino *</label>
+            <label className={labelCls}>Destino **</label>
             <div className="relative">
               <input
                 value={destination}
@@ -2106,7 +2106,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
           <div>
             <label className={labelCls}>
-              {categoria === "experiencia_destino" ? "Nome da experiência" : "Nome da promoção"}
+              {categoria === "experiencia_destino" ? "Nome da experiência" : "Nombre de la promoción"}
             </label>
             <div className="relative">
               <input
@@ -2142,7 +2142,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           </div>
 
           <div className="sm:col-span-2">
-            <label className={labelCls}>Título do anúncio</label>
+            <label className={labelCls}>Título del anuncio</label>
             <div className="relative">
               <input
                 value={adTitleTemplate}
@@ -2158,7 +2158,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   <div className="fixed inset-0 z-40" onClick={() => setAdTitleMenuOpen(false)} />
                   <div className="absolute left-0 right-0 mt-2 max-h-80 overflow-y-auto bg-neutral-900 border-2 rounded-xl shadow-2xl z-50 py-1" style={{ borderColor: `${secondaryColor}66` }}>
                     {(categoria === "experiencia_destino" ? AD_TITLE_PRESETS_EXPERIENCIA : AD_TITLE_PRESETS).map((tpl) => {
-                      const preview = tpl.replace(/\{destino\}/gi, destination?.trim() || "Destino");
+                      const preview = tpl.replace(/\{destino\}/gi, destination?.trim() || "Destino *");
                       const active = tpl === adTitleTemplate;
                       return (
                         <button
@@ -2218,7 +2218,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
         {/* Modo de pagamento */}
         {categoria !== "experiencia_destino" && (
           <div className="space-y-3">
-            <label className={labelCls}>Modo de exibição do preço</label>
+            <label className={labelCls}>Modo de visualización del precio</label>
             <div className="grid grid-cols-3 gap-1.5">
               {PAYMENT_PRESETS.map((p) => (
                 <button
@@ -2272,12 +2272,12 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 </div>
               </div>
               <div>
-                <label className={labelCls}>Prefixo</label>
+                <label className={labelCls}>Prefijo</label>
                 <input
                   value={pricePrefix}
                   onChange={(e) => setPricePrefix(e.target.value)}
                   onFocus={(e) => e.target.select()}
-                  placeholder="a partir de"
+                  placeholder="desde"
                   className={inputCls}
                 />
               </div>
@@ -2287,7 +2287,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                   value={paymentSuffix}
                   onChange={(e) => setPaymentSuffix(e.target.value)}
                   onFocus={(e) => e.target.select()}
-                  placeholder="por pessoa"
+                  placeholder="por persona"
                   className={inputCls}
                 />
               </div>
@@ -2299,7 +2299,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                 onClick={() => setPriceOptionsOpen((v) => !v)}
                 className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
               >
-                <span className="text-sm font-bold text-white">Opções de preço</span>
+                <span className="text-sm font-bold text-white">Opciones de precio</span>
                 <ChevronDown className={`w-4 h-4 text-white/50 transition-transform ${priceOptionsOpen ? "rotate-180" : ""}`} />
               </button>
               {priceOptionsOpen && (
@@ -2521,7 +2521,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           )}
         </div>
 
-        {/* Benefícios — em Experiência de Destino usa apenas texto, sem selector de ícones. */}
+        {/* Benefícios — em Experiencia de Destino *usa apenas texto, sem selector de ícones. */}
         <div>
           <div className="flex items-baseline justify-between mb-2 gap-2">
             <label className={labelCls}>{categoria === "experiencia_destino" ? "Descrição da experiência" : "Benefícios / Inclusos"}</label>
@@ -2654,7 +2654,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
           className="w-full py-4 rounded-xl font-extrabold text-black flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
           style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, boxShadow: `0 10px 30px ${primaryColor}66` }}
         >
-          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando com IA...</> : <><Sparkles className="w-4 h-4" /> Gerar Anúncio</>}
+          {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Gerando com IA...</> : <><Sparkles className="w-4 h-4" /> Gerar Anuncio</>}
         </button>
         {loading && <p className="text-xs text-white/50 text-center mt-1">A IA leva 8 a 25 segundos.</p>}
 
@@ -2694,7 +2694,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                         className={`w-full overflow-hidden rounded-xl border-2 bg-black/30 transition-all ${generatedImage === img ? "border-white shadow-lg" : "border-white/10 hover:border-white/30"}`}
                         title={`Selecionar variação ${idx + 1}`}
                       >
-                        <img src={img} alt={`Anúncio gerado ${idx + 1}`} className="w-full h-auto object-contain" />
+                        <img src={img} alt={`Anuncio gerado ${idx + 1}`} className="w-full h-auto object-contain" />
                       </button>
                       <button
                         onClick={(e) => {
@@ -2772,7 +2772,7 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
               color: "#0A0A0A",
             }}
           >
-            <span>Avançar para Fase 2 — Seu Site</span>
+            <span>Avanzar a la Fase 2 — Tu Sitio</span>
             <ArrowRight className="w-5 h-5" />
           </button>
           <p className="text-center text-[11px] text-white/30 mt-2">

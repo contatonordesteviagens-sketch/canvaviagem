@@ -203,7 +203,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
   return (
     <div className="space-y-8 animate-fadeIn max-w-[1280px] mx-auto pb-12">
 
-      {/* Projetos Salvos / Guardados */}
+      {/* Projetos Guardados / Guardados */}
       {user && (
         <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl relative overflow-hidden transition-all shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
           <div className="absolute top-0 left-0 w-1 h-full" style={{ background: state.primaryColor || "#F59E0B" }}></div>
