@@ -647,7 +647,7 @@ export default function InicioES() {
           <div className="text-center mb-16">
             <h2 className="text-[12px] font-bold text-[#8b3dff] tracking-[0.2em] uppercase mb-4">Comparación honesta</h2>
             <h3 className="text-3xl md:text-5xl font-bold mb-6">Descubre dónde tu dinero rinde más</h3>
-            <p className="text-lg text-[#405466] max-w-2xl mx-auto">No te engañaremos comparándote con una agencia de diseño de $ 2,000 USD. Analiza las alternativas reales que estás considerando.</p>
+            <p className="text-lg text-[#405466] max-w-2xl mx-auto">No te engañaremos comparándote con una agencia de diseño de $ 10,000 USD. Analiza las alternativas reales que estás considerando.</p>
           </div>
 
           <div className="overflow-x-auto">
@@ -662,7 +662,7 @@ export default function InicioES() {
               </thead>
               <tbody className="text-[#0e1318]">
                 {[
-                  { l: "Inversión", a: "$ 118 USD (pago único)", b: "$ 300 USD/mes", c: "Desde $ 118 USD/año" },
+                  { l: "Inversión", a: "$ 197 USD (pago único)", b: "$ 1500 USD/mes", c: "Desde $ 197 USD/año" },
                   { l: "Contenido", a: "150 reels fijos", b: "4–8 entregas/mes", c: "Más de 300 reels + Más de 400 medios y feeds" },
                   { l: "Actualizaciones", a: "❌ Ninguna", b: "Depende de ellas", c: "✅ Actualizaciones semanales incluidas" },
                   { l: "IA y herramientas", a: "❌ Ninguna", b: "❌ Ninguna", c: "✅ Vendedor: IA + Creador + CRM" },
@@ -823,12 +823,12 @@ export default function InicioES() {
                 <h4 className="text-2xl font-bold mb-2 text-[#0e1318]">PLAN BÁSICO</h4>
                 <div className="flex items-baseline gap-1 mb-2 text-[#0e1318]">
                   <span className="text-2xl font-bold">$</span>
-                  <span className="text-6xl font-bold">{billingPeriod === 'monthly' ? '17' : '9'}</span>
-                  <span className="text-2xl font-bold">{billingPeriod === 'monthly' ? ',00' : ',83'}</span>
+                  <span className="text-6xl font-bold">{billingPeriod === 'monthly' ? '29' : '16'}</span>
+                  <span className="text-2xl font-bold">{billingPeriod === 'monthly' ? ',90' : ',41'}</span>
                   <span className="text-[#405466] text-base font-normal">USD/mes</span>
                 </div>
                 <p className="text-sm text-[#405466]">
-                  {billingPeriod === 'monthly' ? 'Suscripción mensual recurrente' : 'Equivalente a $ 118.00 USD anuales'}
+                  {billingPeriod === 'monthly' ? 'Suscripción mensual recurrente' : 'Equivalente a $ 197.00 USD anuales'}
                 </p>
               </div>
 
@@ -877,12 +877,12 @@ export default function InicioES() {
                 <h4 className="text-2xl font-bold mb-2 text-[#8b3dff]">PLAN ÉLITE</h4>
                 <div className="flex items-baseline gap-1 mb-2 text-[#0e1318]">
                   <span className="text-2xl font-bold">$</span>
-                  <span className="text-6xl font-bold">{billingPeriod === 'monthly' ? '29' : '17'}</span>
-                  <span className="text-2xl font-bold">{billingPeriod === 'monthly' ? ',90' : ',33'}</span>
+                  <span className="text-6xl font-bold">{billingPeriod === 'monthly' ? '97' : '28'}</span>
+                  <span className="text-2xl font-bold">{billingPeriod === 'monthly' ? ',00' : ',91'}</span>
                   <span className="text-[#405466] text-base font-normal">USD/mes</span>
                 </div>
                 <p className="text-sm text-[#405466]">
-                  {billingPeriod === 'monthly' ? 'Suscripción mensual recurrente' : 'Equivalente a $ 208.00 USD anuales (Ahorro considerable)'}
+                  {billingPeriod === 'monthly' ? 'Suscripción mensual recurrente' : 'Equivalente a $ 347.00 USD anuales (Ahorro considerable)'}
                 </p>
               </div>
 

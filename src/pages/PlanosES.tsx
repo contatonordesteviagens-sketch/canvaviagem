@@ -81,9 +81,9 @@ const PixCheckoutModal = ({
   
   if (!isOpen) return null;
   
-  const total = planType === "annual" ? "$ 118.00 USD" : "$ 17.00 USD";
-  const pixTotal = planType === "annual" ? "$ 118.00 USD" : "$ 17.00 USD";
-  const cardInstallments = planType === "annual" ? "o 12x de $ 11.80 USD" : null;
+  const total = planType === "annual" ? "$ 197.00 USD" : "$ 29.90 USD";
+  const pixTotal = planType === "annual" ? "$ 197.00 USD" : "$ 29.90 USD";
+  const cardInstallments = planType === "annual" ? "o 12x de $ 19.70 USD" : null;
   const planName = planType === "annual" ? "Plan Anual Full" : "Plan Mensual Full";
 
   const handleAction = async () => {
@@ -834,11 +834,11 @@ const PlanosES = () => {
               <div className="p-8 text-center">
                 <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">PRO</p>
                 <p className="text-5xl font-black italic tracking-tighter text-black leading-none mb-1">
-                  $ {isAnnual ? "9,83" : "17,00"}
+                  $ {isAnnual ? "16,41" : "29"}
                   <span className="text-base font-bold text-zinc-400 ml-1">USD/mes</span>
                 </p>
                 <p className="text-[10px] text-zinc-400 font-bold uppercase mb-6">
-                  {isAnnual ? "$ 118 USD/año · ahorro masivo" : "Suscripción mensual"}
+                  {isAnnual ? "$ 197 USD/año · ahorro masivo" : "Suscripción mensual"}
                 </p>
                 <ul className="space-y-3 mb-8 text-left">
                   {[
@@ -891,11 +891,11 @@ const PlanosES = () => {
               <div className="p-8 text-center">
                 <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">ELITE</p>
                 <p className="text-5xl font-black italic tracking-tighter text-white leading-none mb-1">
-                  $ {isAnnual ? "17,33" : "29,90"}
+                  $ {isAnnual ? "58" : "97"}
                   <span className="text-base font-bold text-zinc-500 ml-1">USD/mes</span>
                 </p>
                 <p className="text-[10px] text-zinc-500 font-bold uppercase mb-6">
-                  {isAnnual ? "$ 208 USD/año · -40% de descuento" : "Suscripción mensual"}
+                  {isAnnual ? "$ 697 USD/año · -40% de descuento" : "Suscripción mensual"}
                 </p>
                 <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-bold mb-3">Todo lo del Pro, más:</p>
                 <ul className="space-y-3 mb-8 text-left">
@@ -916,7 +916,7 @@ const PlanosES = () => {
                   onClick={handleEliteCheckout}
                   className="w-full bg-yellow-400 text-black font-black uppercase text-xs tracking-widest py-5 rounded-2xl hover:bg-yellow-300 transition-all shadow-xl"
                 >
-                  {isAnnual ? "Suscribirse Elite — $ 208 USD/año" : "Suscribirse Elite — $ 29.90 USD/mes"}
+                  {isAnnual ? "Suscribirse Elite — $ 697 USD/año" : "Suscribirse Elite — $ 97 USD/mes"}
                 </button>
               </div>
             </motion.div>
