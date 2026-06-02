@@ -1683,9 +1683,9 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
     } catch { toast.error("Error al descargar la imagen"); }
   };
 
-  const sectionCls = "bg-white/[0.05] border border-white/[0.08] rounded-2xl p-6";
-  const labelCls = "text-[11px] text-white/60 uppercase tracking-wider font-semibold block mb-1.5";
-  const inputCls = "w-full bg-white/[0.06] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-white/40";
+  const sectionCls = "bg-[#0F0F11]/90 border border-white/5 rounded-3xl p-6 backdrop-blur-xl shadow-xl space-y-4";
+  const labelCls = "text-[10px] font-bold text-white/40 uppercase tracking-wider block mb-1.5";
+  const inputCls = "w-full bg-white/[0.03] border border-white/5 hover:border-white/10 focus:border-amber-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none transition-all";
 
   return (
     <div className="max-w-3xl lg:max-w-[1550px] mx-auto transition-all duration-300">

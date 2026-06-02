@@ -32,11 +32,11 @@ function luminance(hex: string): number {
   return 0.299 * r + 0.587 * g + 0.114 * b;
 }
 
-// Retorna preto ou branco com melhor contraste sobre `bg`.
+// Retorna preto ou branco com melhor contraste sobre `bg` (tons premium).
 function contrastOn(bg: string): string {
   const normalized = (bg || "").trim().toLowerCase();
   if (normalized === "#0c2340") return "#ffffff";
-  return luminance(bg) > 0.6 ? "#0d0d0d" : "#ffffff";
+  return luminance(bg) > 0.6 ? "#111116" : "#ffffff";
 }
 
 /**
@@ -435,7 +435,7 @@ async function drawFinalBranding(
   // SAFE_BOTTOM = 380, logo PANEL_BOTTOM = ch - 380. 
   // O footerY deve ser calculado retroativamente a partir de PANEL_BOTTOM menos a altura do rodapé.
   // No modo IA Pura, desenha isolado no fundo absoluto (Y > 950 para formato quadrado) para não colidir com o box de benefícios.
-  const panelBottom = isIAPura ? (ch - 30) : (isStory ? ch - 90 : ch - 30);
+  const panelBottom = isIAPura ? (ch - 30) : (isStory ? ch - 260 : ch - 40);
   const footerY = panelBottom - footerHeight;
 
   // 1. Fundo do Rodapé (VÉU GRADIENTE ESCURO)
@@ -610,6 +610,49 @@ function fillRoundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: n
   ctx.fillStyle = color;
   roundRect(ctx, x, y, w, h, r);
   ctx.fill();
+  ctx.restore();
+}
+
+function fillGlassRoundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+  bgColor: string,
+  borderColor = "rgba(255, 255, 255, 0.15)"
+) {
+  ctx.save();
+  ctx.fillStyle = bgColor;
+  roundRect(ctx, x, y, w, h, r);
+  ctx.fill();
+
+  ctx.strokeStyle = borderColor;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawPremiumShadow(
+  ctx: CanvasRenderingContext2D,
+  drawFn: () => void,
+  intensity = 1
+) {
+  ctx.save();
+  // Pass 1: Ambient soft shadow
+  ctx.shadowColor = `rgba(0, 0, 0, ${0.08 * intensity})`;
+  ctx.shadowBlur = 32;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 4;
+  drawFn();
+
+  // Pass 2: Sharp contact shadow
+  ctx.shadowColor = `rgba(0, 0, 0, ${0.16 * intensity})`;
+  ctx.shadowBlur = 12;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 8;
+  drawFn();
   ctx.restore();
 }
 

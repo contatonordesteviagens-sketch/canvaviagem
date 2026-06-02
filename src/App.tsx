@@ -98,6 +98,7 @@ const BlogPost50 = lazy(() => import("./pages/BlogPost50"));
 const Blog = lazy(() => import("./pages/Blog"));
 const AulaSecreta = lazy(() => import("./pages/AulaSecreta"));
 const Inicio = lazy(() => import("./pages/Inicio"));
+const InicioES = lazy(() => import("./pages/InicioES"));
 const CanvaClone = lazy(() => import("./pages/CanvaClone"));
 const SalesPage = lazy(() => import("./pages/SalesPage"));
 const Diferencas = lazy(() => import("./pages/Diferencas"));
@@ -219,6 +220,7 @@ const App = () => {
                     <Route path="/es/planos" element={<SalesPageES />} />
                     <Route path="/es/obrigado" element={<ObrigadoES />} />
                     <Route path="/es/fabrica" element={<FabricaES />} />
+                    <Route path="/inicio/es" element={<InicioES />} />
 
                     {/* Auth e outras rotas compartilhadas */}
                     <Route path="/auth" element={<Auth />} />
