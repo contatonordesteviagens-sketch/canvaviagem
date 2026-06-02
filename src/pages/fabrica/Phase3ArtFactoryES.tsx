@@ -576,7 +576,12 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
 
   // Preço formatado que será passado para o composer (ex: "$ 1.499,90" ou "US$ 1,499.90")
   const formattedPriceForAd = formatPriceValue(stripCurrencyFromPrice(price, currency), currency, false, hideCents);
-  const currencySymbol = CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "$";
+  // Variante do símbolo do Dólar: "$" | "US$" | "USD" (só ativo quando currency === "USD")
+  const [usdSymbolVariant, setUsdSymbolVariantState] = useState<"$" | "US$" | "USD">(
+    ((state as any).usdSymbolVariant as "$" | "US$" | "USD") || "US$"
+  );
+  const setUsdSymbolVariant = (v: "$" | "US$" | "USD") => { setUsdSymbolVariantState(v); update({ usdSymbolVariant: v } as any); };
+  const currencySymbol = currency === "USD" ? usdSymbolVariant : (CURRENCY_PRESETS.find((c) => c.id === currency)?.symbol || "$");
 
   const [installments, setInstallmentsState] = useState(state.lastInstallments || "10x");
   const setInstallments = (i: string) => { setInstallmentsState(i); update({ lastInstallments: i }); };
@@ -2303,8 +2308,35 @@ export const Phase3ArtFactoryES = ({ onNext, onBack }: Props) => {
                         <span className="text-[10px] text-white/40 block">Moneda activa:</span>
                         <span className="text-xs font-bold text-white">{CURRENCY_PRESETS.find(c => c.id === currency)?.label} — {CURRENCY_PRESETS.find(c => c.id === currency)?.country}</span>
                       </div>
-                      <span className="ml-auto text-lg font-black" style={{ color: primaryColor }}>{CURRENCY_PRESETS.find(c => c.id === currency)?.symbol}</span>
+                      <span className="ml-auto text-lg font-black" style={{ color: primaryColor }}>{currencySymbol}</span>
                     </div>
+
+                    {/* Mini-seletor de variante para Dólar */}
+                    {currency === "USD" && (
+                      <div className="mt-2 p-3 bg-white/[0.03] border border-white/10 rounded-xl space-y-2">
+                        <span className="text-[10px] font-bold text-white/50 uppercase tracking-wider block">🔤 ¿Cómo mostrar el símbolo en la imagen?</span>
+                        <div className="flex gap-2">
+                          {(["$", "US$", "USD"] as const).map((variant) => (
+                            <button
+                              key={variant}
+                              type="button"
+                              onClick={() => setUsdSymbolVariant(variant)}
+                              className={`flex-1 py-2 rounded-xl border text-sm font-black transition-all ${
+                                usdSymbolVariant === variant
+                                  ? "text-white shadow-lg scale-105"
+                                  : "border-white/10 bg-white/[0.03] text-white/50 hover:text-white hover:border-white/20"
+                              }`}
+                              style={usdSymbolVariant === variant ? { borderColor: primaryColor, backgroundColor: primaryColor + "22", color: primaryColor } : undefined}
+                            >
+                              {variant}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-[9px] text-white/30 leading-relaxed">
+                          Esta opción afecta la imagen generada, el sitio web y todos los textos del anuncio.
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Campo de Precio */}
