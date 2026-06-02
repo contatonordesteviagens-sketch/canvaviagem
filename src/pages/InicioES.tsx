@@ -53,7 +53,19 @@ export default function InicioES() {
       elite_monthly: "https://buy.stripe.com/cNi00k2PEfna2Yr10o8so0f",
       elite_annual: "https://buy.stripe.com/dRm3cweymgre9mPbF28so0e",
     };
-    window.location.href = STRIPE[planId] || "/es/planos";
+    const targetUrl = STRIPE[planId] || "/es/planos";
+    if (targetUrl.startsWith("http")) {
+      try {
+        const url = new URL(targetUrl);
+        const params = new URLSearchParams(window.location.search);
+        params.forEach((value, key) => url.searchParams.append(key, value));
+        window.location.href = url.toString();
+      } catch (e) {
+        window.location.href = targetUrl;
+      }
+    } else {
+      window.location.href = targetUrl;
+    }
   };
 
   const faqs = [

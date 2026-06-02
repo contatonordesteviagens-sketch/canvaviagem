@@ -350,7 +350,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     else if (plan === "smart_annual") priceVal = 197;
     else if (plan === "elite_monthly") priceVal = 97;
     trackInitiateCheckout(priceVal);
-    window.open(STRIPE[plan], "_blank");
+    
+    const baseUrl = STRIPE[plan];
+    if (baseUrl) {
+      try {
+        const url = new URL(baseUrl);
+        const params = new URLSearchParams(window.location.search);
+        params.forEach((value, key) => url.searchParams.append(key, value));
+        window.open(url.toString(), "_blank");
+      } catch (e) {
+        window.open(baseUrl, "_blank");
+      }
+    }
   };
 
   return (

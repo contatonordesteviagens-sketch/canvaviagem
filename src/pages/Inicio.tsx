@@ -53,7 +53,19 @@ export default function Inicio() {
       elite_monthly: "https://checkout.ticto.app/O15C50840",
       elite_annual: "https://checkout.ticto.app/OEABD4A5A",
     };
-    window.location.href = STRIPE[planId] || "/planos";
+    const targetUrl = STRIPE[planId] || "/planos";
+    if (targetUrl.startsWith("http")) {
+      try {
+        const url = new URL(targetUrl);
+        const params = new URLSearchParams(window.location.search);
+        params.forEach((value, key) => url.searchParams.append(key, value));
+        window.location.href = url.toString();
+      } catch (e) {
+        window.location.href = targetUrl;
+      }
+    } else {
+      window.location.href = targetUrl;
+    }
   };
 
   const faqs = [
