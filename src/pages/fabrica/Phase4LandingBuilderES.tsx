@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useFabricaContext, type Pacote, type Depoimento as Testimonio } from "@/hooks/useFabricaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadLandingHTML, buildLandingHTML, generateUpdatePackagesPrompt } from "@/lib/fabrica-html-export-es";
-import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
+import { CloudSaveIndicatorES } from "@/components/fabrica/CloudSaveIndicatorES";
 import { useDiagnosticos } from "@/hooks/useFabricaDiagnosticos";
 import {
   Plus,

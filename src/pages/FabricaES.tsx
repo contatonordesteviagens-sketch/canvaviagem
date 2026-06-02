@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { useNavigate, Navigate } from "react-router-dom";
 import SeoMetadata from "@/components/SeoMetadata";
-import { CloudSaveIndicator } from "@/components/fabrica/CloudSaveIndicator";
+import { CloudSaveIndicatorES } from "@/components/fabrica/CloudSaveIndicatorES";
 
 const FabricaInnerES = () => {
   const { state, setPhase } = useFabricaContext();
@@ -251,7 +251,7 @@ const FabricaInnerES = () => {
         {/* User Footer / Info */}
         <div className="p-4 border-t border-white/5 bg-[#0A0A0B]/40 font-sans space-y-3">
           {/* ✅ FIX #5: Indicador de sync visível em todas as fases */}
-          <CloudSaveIndicator />
+          <CloudSaveIndicatorES />
           <button
             onClick={() => navigate("/es")}
             className="w-full py-2.5 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] text-white/80 text-xs font-semibold flex items-center justify-center gap-2 transition-all"

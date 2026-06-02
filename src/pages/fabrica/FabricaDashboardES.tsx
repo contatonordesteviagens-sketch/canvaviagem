@@ -700,7 +700,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
               {/* Banner indicator */}
               {state.selectedPackages.length > 0 && (
                 <div className="text-center py-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-[9px] uppercase font-black tracking-widest text-white/30 font-sans">
-                  ⚡ {state.selectedPackages.length} paquete{state.selectedPackages.length !== 1 ? "s" : ""} sincronizado{state.selectedPackages.length !== 1 ? "s" : ""} con tu sitio web Vercel
+                  ⚡ {state.selectedPackages.length} paquete{state.selectedPackages.length !== 1 ? "s" : ""} sincronizado{state.selectedPackages.length !== 1 ? "s" : ""} con tu sitio web
                 </div>
               )}
             </div>
