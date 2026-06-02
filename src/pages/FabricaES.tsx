@@ -594,7 +594,7 @@ const FabricaContentES = () => {
             onClick={() => navigate("/es")}
             className="text-xs text-white/40 hover:text-white flex items-center justify-center gap-1.5 mx-auto transition-colors border-0 bg-transparent cursor-pointer"
           >
-            ← Voltar para o Painel
+            ← Volver al Panel
           </button>
         </div>
       </div>
