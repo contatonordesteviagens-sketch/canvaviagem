@@ -406,7 +406,7 @@ export const Phase5DashboardES = () => {
       {/* MÓDULO F5: OS DADOS VITAIS (MUITO VISUAL!) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card Visitas */}
-        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.04] transition-all group">
+        <div className="bg-white/[0.02] border border-white/[0.05] shadow-2xl backdrop-blur-3xl rounded-2xl p-6 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300 group">
           <div className="flex items-start justify-between mb-4">
             <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400">
               <Users className="w-5 h-5" />
@@ -425,7 +425,7 @@ export const Phase5DashboardES = () => {
         </div>
 
         {/* Card Cliques */}
-        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.04] transition-all group">
+        <div className="bg-white/[0.02] border border-white/[0.05] shadow-2xl backdrop-blur-3xl rounded-2xl p-6 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300 group">
           <div className="flex items-start justify-between mb-4">
             <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400">
               <MousePointerClick className="w-5 h-5" />
@@ -444,7 +444,7 @@ export const Phase5DashboardES = () => {
         </div>
 
         {/* Card Leads */}
-        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.04] transition-all group">
+        <div className="bg-white/[0.02] border border-white/[0.05] shadow-2xl backdrop-blur-3xl rounded-2xl p-6 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300 group">
           <div className="flex items-start justify-between mb-4">
             <div className="p-2.5 rounded-xl bg-violet-500/10 text-violet-400">
               <MessageSquare className="w-5 h-5" />
@@ -463,7 +463,7 @@ export const Phase5DashboardES = () => {
         </div>
 
         {/* Card Conversão */}
-        <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.04] transition-all group">
+        <div className="bg-white/[0.02] border border-white/[0.05] shadow-2xl backdrop-blur-3xl rounded-2xl p-6 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300 group">
           <div className="flex items-start justify-between mb-4">
             <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400">
               <Target className="w-5 h-5" />
@@ -569,44 +569,44 @@ export const Phase5DashboardES = () => {
                <table className="w-full text-left text-sm border-collapse">
                   <thead>
                      <tr className="bg-white/[0.02] border-b border-white/5">
-                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Fecha/Hora</th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Nombre del Cliente</th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Destino</th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Fase del Lead</th>
-                        <th className="px-6 py-4 text-right text-[10px] font-bold text-white/40 uppercase tracking-wider">Acciones</th>
+                        <th className="px-6 py-5 text-[10px] font-bold text-white/40 uppercase tracking-widest">Fecha/Hora</th>
+                        <th className="px-6 py-5 text-[10px] font-bold text-white/40 uppercase tracking-widest">Nombre del Cliente</th>
+                        <th className="px-6 py-5 text-[10px] font-bold text-white/40 uppercase tracking-widest">Destino</th>
+                        <th className="px-6 py-5 text-[10px] font-bold text-white/40 uppercase tracking-widest">Fase del Lead</th>
+                        <th className="px-6 py-5 text-right text-[10px] font-bold text-white/40 uppercase tracking-widest">Acciones</th>
                      </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-white/[0.02]">
                      {filteredLeads.map((l: any) => {
                         const rawDate = new Date(l.created_at);
                         const cleanPhone = String(l.whatsapp || "").replace(/\D/g, "");
                         const currentStatus = l.status || 'novo';
                         
                         return (
-                           <tr key={l.id} className="hover:bg-white/[0.02] transition-colors group">
-                              <td className="px-6 py-4 whitespace-nowrap text-xs text-white/50">
+                           <tr key={l.id} className="hover:bg-white/[0.03] transition-colors group">
+                              <td className="px-6 py-5 whitespace-nowrap text-xs text-white/50 tracking-wide">
                                  <div>{rawDate.toLocaleDateString('es-ES')} <span className="opacity-50 text-[10px] ml-1">{rawDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span></div>
                                  {(Date.now() - rawDate.getTime()) < 86400000 && (
-                                   <span className="inline-block mt-0.5 text-[9px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded-full animate-pulse">NUEVO</span>
+                                   <span className="inline-block mt-1 text-[9px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full animate-pulse tracking-widest">NUEVO</span>
                                  )}
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="px-6 py-5">
                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-black text-white shadow-lg group-hover:scale-110 transition-transform">
+                                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500/20 to-indigo-600/20 border border-violet-500/30 flex items-center justify-center text-xs font-black text-violet-300 shadow-lg group-hover:scale-110 transition-transform">
                                        {String(l.nome_completo || "L").charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                       <div className="font-bold text-white group-hover:text-violet-300 transition-colors">{l.nome_completo || "No informado"}</div>
-                                       <div className="text-[10px] text-white/40">{l.email || "Sin e-mail"}</div>
+                                       <div className="font-bold text-white/90 group-hover:text-violet-300 transition-colors tracking-wide">{l.nome_completo || "No informado"}</div>
+                                       <div className="text-[10px] text-white/40 tracking-wide mt-0.5">{l.email || "Sin e-mail"}</div>
                                     </div>
                                  </div>
                               </td>
-                              <td className="px-6 py-4">
-                                 <span className="inline-flex px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] font-medium text-white/70 max-w-[180px] truncate">
+                              <td className="px-6 py-5">
+                                 <span className="inline-flex px-3 py-1 rounded-lg bg-white/[0.03] border border-white/[0.05] text-[10px] font-medium text-white/60 max-w-[180px] truncate shadow-sm tracking-wide">
                                     {l.destino_interesse || "Navegación General"}
                                  </span>
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="px-6 py-5">
                                  <div className="relative inline-block">
                                     <select
                                        value={currentStatus}

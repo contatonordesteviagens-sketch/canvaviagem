@@ -641,7 +641,7 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
                                 <button
                                   onClick={() => togglePublish(pkg.id, true)}
                                   title="Aprobar para el Sitio"
-                                  className="h-7 px-2 flex items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400 text-[10px] font-bold hover:bg-emerald-500/30 transition-all cursor-pointer mr-1"
+                                  className="h-7 px-3 flex items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400/80 text-[10px] font-bold hover:bg-emerald-500/20 transition-all cursor-pointer mr-1"
                                 >
                                   <Check className="w-3.5 h-3.5 mr-1" /> Aprobar para el Sitio
                                 </button>
@@ -676,12 +676,12 @@ export const FabricaDashboardES = ({ onNavigate }: { onNavigate?: (tab: "dashboa
 
                           {/* Image sync banner status */}
                           {pkg.imageUrl ? (
-                            <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-[9px] font-bold text-emerald-400 font-sans">
+                            <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-emerald-500/10 bg-emerald-500/[0.02] text-[9px] font-bold text-emerald-400/70 font-sans tracking-wide">
                               <Check className="w-3 h-3" />
                               Sincronizado con Anuncio & Foto de la Fase 3
                             </div>
                           ) : (
-                            <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-amber-500/20 bg-amber-500/5 text-[9px] font-bold text-amber-400 font-sans">
+                            <div className="flex items-center gap-1.5 mt-3 py-1.5 px-3 rounded-lg border border-amber-500/10 bg-amber-500/[0.02] text-[9px] font-bold text-amber-400/80 font-sans tracking-wide">
                               <Link className="w-3 h-3 animate-pulse" />
                               <span>Foto vinculada ausente: Usa el <strong>Generador de Anuncios (F1)</strong> para crear el anuncio de este paquete</span>
                             </div>

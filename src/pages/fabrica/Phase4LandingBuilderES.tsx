@@ -981,15 +981,15 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
 
         {/* Painel Direito: Preview do Site (7 colunas em lg, Sticky) */}
         <div className="lg:col-span-7 space-y-6 lg:sticky lg:top-24">
-          <div className="bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-            <div className="px-4 py-3 bg-zinc-950 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="bg-[#0A0A0C] border border-white/[0.07] rounded-3xl overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.7)]">
+            <div className="px-4 py-3 bg-black/60 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <div className="flex gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
-                  <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block" />
-                  <span className="w-3 h-3 rounded-full bg-green-500/80 inline-block" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-400/70 inline-block" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/70 inline-block" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-green-400/70 inline-block" />
                 </div>
-                <div className="ml-3 px-3 py-1 rounded-lg bg-white/[0.04] text-[11px] font-mono text-white/50 w-44 sm:w-64 truncate border border-white/5">
+                <div className="ml-3 px-3 py-1.5 rounded-lg bg-white/[0.03] text-[10px] font-mono text-white/40 w-44 sm:w-64 truncate border border-white/[0.05] tracking-wide">
                   https://{(state.agencyName || "sua-agencia").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "-")}.vercel.app
                 </div>
               </div>
@@ -1020,7 +1020,7 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
                 </div>
 
                 {/* Seletor Dispositivo */}
-                <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/15">
+                <div className="flex rounded-lg bg-white/[0.04] p-0.5 border border-white/10">
                   <button
                     onClick={() => setPreviewMode("desktop")}
                     className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${
@@ -1046,20 +1046,20 @@ export const Phase4LandingBuilderES = ({ onBack, onNext }: { onBack: () => void;
               </div>
             </div>
 
-            <div className="p-4 bg-zinc-950/40 relative">
-              <div className="mb-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center text-xs text-amber-300 font-semibold flex items-center justify-center gap-2">
-                <Pencil className="w-4 h-4 text-amber-400" />
-                💡 <strong>Haz clic en cualquier texto del sitio para escribir</strong> o <strong>toca una foto</strong> para cambiarla en vivo en la pantalla!
+            <div className="p-5 bg-black/50 relative">
+              <div className="mb-3 p-3 rounded-xl bg-amber-500/[0.06] border border-amber-500/10 text-center text-[11px] text-amber-300/80 font-semibold flex items-center justify-center gap-2">
+                <Pencil className="w-3.5 h-3.5 text-amber-400" />
+                💡 <strong>Haz clic en cualquier texto del sitio para escribir</strong> o <strong>toca una foto</strong> para cambiarla en vivo!
               </div>
 
               <div className="transition-all duration-300 ease-in-out">
                 <iframe
                   ref={iframeRef}
                   srcDoc={previewHTML}
-                  className={`bg-white transition-all duration-300 shadow-xl ${
+                  className={`bg-white transition-all duration-500 ${
                     previewMode === "mobile"
-                      ? "w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px]"
-                      : "w-full h-[1150px] border border-white/10 rounded-2xl"
+                      ? "w-[375px] h-[720px] mx-auto border-[10px] border-zinc-800 rounded-[36px] shadow-[0_20px_60px_rgba(0,0,0,0.7)]"
+                      : "w-full h-[1150px] border border-white/[0.05] rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
                   }`}
                   title="Preview"
                 />

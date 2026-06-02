@@ -152,16 +152,21 @@ function wrapTextSafe(
       cur = test;
     } else {
       if (cur) lines.push(cur);
-      // Single word wider than maxWidth — shrink font
-      const fontStr = ctx.font;
-      const sizeMatch = fontStr.match(/(\d+(?:\.\d+)?)px/);
-      if (sizeMatch) {
-        let size = parseFloat(sizeMatch[1]);
-        const fontWithoutSize = fontStr.replace(/(\d+(?:\.\d+)?)px/, "SIZE_PX");
-        while (ctx.measureText(w).width > maxWidth && size > minSize) {
-          size = Math.max(minSize, size - 1);
-          ctx.font = fontWithoutSize.replace("SIZE_PX", `${size}px`);
+      // Single word wider than maxWidth - shrink font or force break
+      if (ctx.measureText(w).width > maxWidth) {
+        let shrunk = false;
+        const fontStr = ctx.font;
+        const sizeMatch = fontStr.match(/(\d+(?:\.\d+)?)px/);
+        if (sizeMatch) {
+          let size = parseFloat(sizeMatch[1]);
+          const fontWithoutSize = fontStr.replace(/(\d+(?:\.\d+)?)px/, "SIZE_PX");
+          while (ctx.measureText(w).width > maxWidth && size > minSize) {
+            size -= 1;
+            ctx.font = fontWithoutSize.replace("SIZE_PX", `${size}px`);
+            shrunk = true;
+          }
         }
+        // Even after shrinking, if word is too big, let it break gracefully instead of hanging forever
       }
       cur = w;
     }
@@ -435,22 +440,12 @@ async function drawFinalBranding(
   // SAFE_BOTTOM = 380, logo PANEL_BOTTOM = ch - 380. 
   // O footerY deve ser calculado retroativamente a partir de PANEL_BOTTOM menos a altura do rodapé.
   // No modo IA Pura, desenha isolado no fundo absoluto (Y > 950 para formato quadrado) para não colidir com o box de benefícios.
-  const panelBottom = isIAPura ? (ch - 30) : (isStory ? ch - 260 : ch - 40);
+  const panelBottom = isIAPura ? (ch - 30) : (isStory ? ch - 380 : ch - 150);
   const footerY = panelBottom - footerHeight;
 
-  // 1. Fundo do Rodapé (VÉU GRADIENTE ESCURO)
-  // O usuário prefere SEMPRE o véu escuro com letras brancas para garantir o look "Premium".
-  const veilStartY = footerY - 80; // Aumentado de 50 para 80 para garantir que o texto não fique no "limbo"
-  const grad = ctx.createLinearGradient(0, veilStartY, 0, ch);
-  grad.addColorStop(0, "rgba(0,0,0,0.0)");
-  grad.addColorStop(0.2, "rgba(0,0,0,0.30)"); // Aumentado de 0.20 para 0.30
-  grad.addColorStop(1, "rgba(0,0,0,0.55)"); // Aumentado de 0.35 para 0.55 conforme solicitação do usuário para contraste
+  // 1. Fundo do Rodapé (VÉU GRADIENTE ESCURO) - REMOVIDO
+  // Substituído por sombras precisas nos elementos para não estragar a foto de fundo.
   
-  ctx.save();
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, veilStartY, cw, ch - veilStartY);
-  ctx.restore();
-
   const padX = isStory ? 80 : 60; // Mais margem lateral
   const bgPad = isStory ? 10 : 8;
   const centerY = footerY + footerHeight / 2;
@@ -509,10 +504,11 @@ async function drawFinalBranding(
   const safeFont = fontFamily || "Inter";
   ctx.font = `700 ${fontSize}px ${safeFont}, sans-serif`;
   
-  // Rodape sempre BRANCO com sombra escura (look classico Canva Viagem)
+  // Rodape sempre BRANCO com sombra difusa e profunda para contraste natural
   ctx.fillStyle = "#ffffff";
-  ctx.shadowColor = "rgba(0,0,0,0.8)";
-  ctx.shadowBlur = 6;
+  ctx.shadowColor = "rgba(0,0,0,0.85)";
+  ctx.shadowBlur = 40;
+  ctx.shadowOffsetY = 4;
 
   let textRightX = cw - (isStory ? 80 : 60); // Sincronizado com a margem do logo
   const itemGap = 20; // Aumentado o gap entre ícone e texto
@@ -1193,11 +1189,11 @@ export async function composeTravelAd(options: ComposeTravelAdOptions): Promise<
   })();
 
   const RULES = {
-    SAFE_BOTTOM: isStory ? Math.max(346, height * 0.18) : 120, // 18% min bottom padding
+    SAFE_BOTTOM: isStory ? 380 : 150, // Absolute safe zones
     SAFE_TOP: isStory ? Math.max(288, height * 0.15) : 60, // 15% min top padding
     LEFT: isStory ? 60 : 80,
     RIGHT: width - (isStory ? 60 : 80),
-    PANEL_BOTTOM: height - (isStory ? Math.max(346, height * 0.18) : 120)
+    PANEL_BOTTOM: height - (isStory ? 380 : 150)
   };
 
   
