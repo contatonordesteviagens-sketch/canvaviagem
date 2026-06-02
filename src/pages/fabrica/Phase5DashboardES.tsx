@@ -651,7 +651,7 @@ export const Phase5DashboardES = () => {
                                      
                                      {l.email && (
                                         <a 
-                                           href={`mailto:${l.email}?subject=Cotización de Viaje - ${state.agencyName || 'Agencia'}`} 
+                                           href={`mailto:${l.email}?subject=${encodeURIComponent(`Cotización de Viaje - ${state.agencyName || 'Agencia'}`)}&body=${encodeURIComponent(`¡Hola ${l.nome_completo || 'cliente'}!\n\nRecibimos tu interés en el destino ${l.destino_interesse || 'General'}.\n\n¿Cómo podemos ayudarte con la planificación de tu viaje?\n\nSaludos,\n${state.agencyName || 'Agencia'}`)}`} 
                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-[11px] font-black rounded-lg transition-all active:scale-95 shadow-lg shadow-blue-900/20"
                                         >
                                            ✉️ Email
@@ -758,8 +758,21 @@ export const Phase5DashboardES = () => {
                   </div>
                </div>
 
-               <div className="p-5 border-t border-white/10 bg-black/20 flex justify-end">
-                  {selectedLead.whatsapp ? (() => {
+               <div className="p-5 border-t border-white/10 bg-black/20 flex flex-wrap justify-end gap-3">
+                  <button onClick={() => setSelectedLead(null)} className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-all">
+                     Cerrar
+                  </button>
+                  
+                  {selectedLead.email && (
+                     <a 
+                        href={`mailto:${selectedLead.email}?subject=${encodeURIComponent(`Cotización de Viaje - ${state.agencyName || 'Agencia'}`)}&body=${encodeURIComponent(`¡Hola ${selectedLead.nome_completo || 'cliente'}!\n\nRecibimos tu interés en el destino ${selectedLead.destino_interesse || 'General'}.\n\n¿Cómo podemos ayudarte con la planificación de tu viaje?\n\nSaludos,\n${state.agencyName || 'Agencia'}`)}`} 
+                        className="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-black rounded-xl transition-all flex items-center gap-2 shadow-lg"
+                     >
+                        ✉️ Enviar Email
+                     </a>
+                  )}
+
+                  {selectedLead.whatsapp && (() => {
                      const cleanPhoneLead = String(selectedLead.whatsapp).replace(/\D/g, "");
                      const agencyDDI = (state.whatsappDialCode || "55").replace(/\D/g, "");
                      const waLinkLead = cleanPhoneLead.startsWith(agencyDDI) ? cleanPhoneLead : `${agencyDDI}${cleanPhoneLead}`;
@@ -770,14 +783,10 @@ export const Phase5DashboardES = () => {
                            rel="noreferrer"
                            className="px-6 py-2.5 bg-[#25D366] hover:bg-[#22c35e] text-white text-sm font-black rounded-xl transition-all flex items-center gap-2 shadow-lg"
                         >
-                           <MessageSquare className="w-4 h-4" /> Iniciar Conversación
+                           <MessageSquare className="w-4 h-4" /> Iniciar WhatsApp
                         </a>
                      );
-                  })() : (
-                     <button onClick={() => setSelectedLead(null)} className="px-6 py-2.5 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-all">
-                        Cerrar Detalles
-                     </button>
-                  )}
+                  })()}
                </div>
             </div>
          </div>
