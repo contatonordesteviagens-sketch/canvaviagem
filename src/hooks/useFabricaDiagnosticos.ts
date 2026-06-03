@@ -46,17 +46,22 @@ export const useSaveDiagnostico = () => {
       existingId?: string;
     }) => {
       if (!user) throw new Error("Faça login para salvar");
+      // Remove heavy base64 image history to prevent Supabase Payload Too Large / Row Size errors
+      const { allGeneratedAdImages, ...lightweightState } = params.state;
+
       const payload: any = {
         user_id: user.id,
         agency_name: params.state.agencyName || "Sem nome",
         digital_score: params.score,
         level: params.level,
         level_name: params.levelName,
-        state_snapshot: params.state as any,
+        state_snapshot: lightweightState as any,
         checklist_progress: params.state.checklist30days as any,
       };
-      if (params.existingId || params.state.projectId) {
-        payload.id = params.existingId || params.state.projectId;
+      let projectId = params.existingId || params.state.projectId;
+      // Remove temporary frontend-generated IDs from payload to allow Supabase to generate a valid UUID
+      if (projectId && !projectId.startsWith("proj_")) {
+        payload.id = projectId;
       }
       const { data, error } = await supabase
         .from("fabrica_diagnosticos" as any)
