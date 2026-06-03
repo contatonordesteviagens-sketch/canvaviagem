@@ -229,6 +229,24 @@ serve(async (req) => {
 
     // --- STRIPE SUBSCRIPTION CHECK + LOCAL SYNC ---
     let isSubscribed = false;
+
+    // Check local subscription first (for Ticto and existing users)
+    try {
+      const { data: localSub } = await supabaseAdmin
+        .from("subscriptions")
+        .select("status, product_id")
+        .eq("user_id", userId)
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (localSub) {
+        console.log("[VERIFY-MAGIC-LINK] Found active local subscription:", localSub.product_id);
+        isSubscribed = true;
+      }
+    } catch (localSubErr) {
+      console.warn("[VERIFY-MAGIC-LINK] Local sub check failed:", localSubErr);
+    }
+
     let stripeSync: {
       customerId: string;
       subscriptionId: string | null;

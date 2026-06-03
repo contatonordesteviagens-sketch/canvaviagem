@@ -108,8 +108,8 @@ serve(async (req) => {
         const endDate = localSub.current_period_end;
         if (!endDate || new Date(endDate) > new Date()) {
           localActiveSub = localSub;
-          if (ELITE_PRODUCT_IDS.has(localSub.product_id)) {
-            logStep("Elite subscription found in local database", { productId: localSub.product_id });
+          if (ELITE_PRODUCT_IDS.has(localSub.product_id) || localSub.product_id.includes("ticto")) {
+            logStep("Elite/Ticto subscription found in local database", { productId: localSub.product_id });
             return new Response(JSON.stringify({ 
               subscribed: true, 
               product_id: localSub.product_id, 
@@ -126,7 +126,7 @@ serve(async (req) => {
 
     // --- STRIPE CHECK ---
     if (stripeKey) {
-      const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+      const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
       const customers = await stripe.customers.list({ email: email.toLowerCase(), limit: 10 });
 
       if (customers.data.length > 0) {
