@@ -3169,19 +3169,32 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const cardR = 32;
 
       // Desenha card Aurora semi-transparente
+      const hexToRgbaV5 = (hexColor: string, alpha: number) => {
+        const h = (hexColor || "#ffffff").replace("#", "");
+        if (h.length !== 6) return `rgba(255, 255, 255, ${alpha})`;
+        const r = parseInt(h.substring(0,2), 16);
+        const g = parseInt(h.substring(2,4), 16);
+        const b = parseInt(h.substring(4,6), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      };
+      
+      const v5TextMain = effectiveTextColor || "#ffffff";
+      const v5TextMuted = hexToRgbaV5(v5TextMain, 0.7);
+      const v5TextFaint = hexToRgbaV5(v5TextMain, 0.5);
+
       ctx.save();
-      // Glow border
-      ctx.shadowColor = v5Primary;
+      // Glow border is now secondary color
+      ctx.shadowColor = v5Secondary;
       ctx.shadowBlur = 40;
-      fillRoundRect(ctx, cardX - 3, cardY - 3, cardW + 6, cardH + 6, cardR, "rgba(255,255,255,0.05)");
+      fillRoundRect(ctx, cardX - 3, cardY - 3, cardW + 6, cardH + 6, cardR, hexToRgbaV5(v5TextMain, 0.05));
       ctx.restore();
 
       ctx.save();
-      // Glass card fill
-      fillRoundRect(ctx, cardX, cardY, cardW, cardH, cardR, "rgba(10, 15, 30, 0.88)");
+      // Glass card fill -> using primaryColor
+      fillRoundRect(ctx, cardX, cardY, cardW, cardH, cardR, hexToRgbaV5(v5Primary, 0.92));
       
       // Card border stroke
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+      ctx.strokeStyle = hexToRgbaV5(v5TextMain, 0.15);
       ctx.lineWidth = 2;
       roundRect(ctx, cardX, cardY, cardW, cardH, cardR);
       ctx.stroke();
@@ -3197,13 +3210,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       safeFillText(ctx, taglineV5, leftPadV5, cardY + 50, cardW - 80, 12);
 
       // 2) Título Destino
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = v5TextMain;
       ctx.font = "900 52px Inter, Arial, sans-serif";
       safeFillText(ctx, titleLineV5, leftPadV5, cardY + 110, cardW - 80, 18);
 
       // 3) Dias / Info
       if (daysTextV5) {
-        ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+        ctx.fillStyle = v5TextMuted;
         ctx.font = "700 24px Inter, Arial, sans-serif";
         ctx.fillText(daysTextV5.toUpperCase(), leftPadV5, cardY + 160);
       }
@@ -3215,15 +3228,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
       iconListV5.forEach((k, idx) => {
         const ix = leftPadV5 + idx * (iconSizeV5 + iconGapV5);
         // Frosted circle for icon
-        fillRoundRect(ctx, ix, iconStartY, iconSizeV5, iconSizeV5, iconSizeV5 / 2, "rgba(255,255,255,0.08)");
-        drawMonoIcon(ctx, k, ix + iconSizeV5 / 2, iconStartY + iconSizeV5 / 2, iconSizeV5 * 0.6, "#ffffff");
+        fillRoundRect(ctx, ix, iconStartY, iconSizeV5, iconSizeV5, iconSizeV5 / 2, hexToRgbaV5(v5TextMain, 0.08));
+        drawMonoIcon(ctx, k, ix + iconSizeV5 / 2, iconStartY + iconSizeV5 / 2, iconSizeV5 * 0.6, v5TextMain);
       });
 
       // 5) Price Box Area
       const priceY = cardY + (format === "story" ? 330 : 255);
       
       // Esquerda do preço
-      ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.fillStyle = hexToRgbaV5(v5TextMain, 0.6);
       ctx.font = "800 20px Inter, Arial, sans-serif";
       ctx.fillText(leftTopV5.toUpperCase(), leftPadV5, priceY + 20);
 
@@ -3241,7 +3254,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.textAlign = "left";
 
       // Direita do preço (Valor)
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = v5TextMain;
       const rightX = cardX + cardW - 40;
       ctx.textAlign = "right";
       
@@ -3259,7 +3272,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       // Total
       if (showTotal && totalStrV5) {
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.fillStyle = v5TextFaint;
         ctx.font = "700 20px Inter, Arial, sans-serif";
         ctx.textAlign = "right";
         ctx.fillText(totalStrV5, rightX, priceBaseY + 32);
@@ -3272,14 +3285,14 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const pixLabel = (pixBannerText && pixBannerText.trim()) || "GARANTA DESCONTO NO Pix";
         
         ctx.textAlign = "center";
-        fillRoundRect(ctx, leftPadV5, pixY, cardW - 80, pixH, 12, "rgba(255, 255, 255, 0.06)");
+        fillRoundRect(ctx, leftPadV5, pixY, cardW - 80, pixH, 12, hexToRgbaV5(v5TextMain, 0.06));
         
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+        ctx.strokeStyle = hexToRgbaV5(v5TextMain, 0.1);
         ctx.lineWidth = 1;
         roundRect(ctx, leftPadV5, pixY, cardW - 80, pixH, 12);
         ctx.stroke();
 
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = v5TextMain;
         ctx.font = "800 20px Inter, Arial, sans-serif";
         ctx.textBaseline = "middle";
         ctx.fillText(pixLabel.toUpperCase(), cxV5, pixY + pixH / 2 + 1);
