@@ -300,12 +300,21 @@ const buildTitleVariations = (template: string, destination: string): string[] =
   const dest = (destination || "").trim() || "Destino";
   const fill = (t: string) => t.replace(/\{destino\}/gi, dest);
   const main = fill(template);
-  // Se o template foi editado (não bate com nenhum preset), reaproveita vizinhos do preset mais próximo.
-  const neighbors = TITLE_NEIGHBORS[template] || [];
+  
   const isExperienceTemplate = AD_TITLE_PRESETS_EXPERIENCIA.includes(template);
+  const isPreset = AD_TITLE_PRESETS.includes(template) || isExperienceTemplate;
+  
+  // Se for um título customizado digitado pelo usuário, aplica ele em todas as variações (Lote A/B)
+  if (!isPreset) {
+    return [main, main, main];
+  }
+
+  // Se o template bate com um preset, fazemos a mesclagem com vizinhos para gerar variações
+  const neighbors = TITLE_NEIGHBORS[template] || [];
   const poolForFallback = isExperienceTemplate ? AD_TITLE_PRESETS_EXPERIENCIA : AD_TITLE_PRESETS;
   const fallback = poolForFallback.filter((p) => p !== template).slice(0, 2);
   const pool = [main, ...neighbors.map(fill), ...fallback.map(fill)];
+  
   // dedup mantendo ordem
   const seen = new Set<string>();
   const out: string[] = [];

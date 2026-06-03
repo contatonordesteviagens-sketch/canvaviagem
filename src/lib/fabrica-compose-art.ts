@@ -2055,8 +2055,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
       }
 
-      // 2) Quantidade de benefits que serão exibidos (até 6) — TODOS aparecem
-      const benefitsList = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
+      let benefitsList = highlights.filter((h) => h?.text && h.text.trim().length > 0);
+      if (travelPeriod && travelPeriod.trim()) {
+        const tp = travelPeriod.trim();
+        benefitsList = benefitsList.filter(b => b.text.toLowerCase() !== tp.toLowerCase());
+        benefitsList.unshift({ text: tp, icon: "calendar" as IconKey });
+      }
+      benefitsList = benefitsList.slice(0, 6);
       const benefitsCount = Math.max(1, benefitsList.length);
       const benefitLineH = benefitsCount <= 4 ? 44 : benefitsCount === 5 ? 38 : 34;
       const benefitsBlockH = benefitsCount * benefitLineH;
@@ -2260,7 +2265,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const limitY = format === "story" ? height - 680 : height - 460;
       
       // 8) BENEFITS — pílulas adaptativas no espaco restante
-      const benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
+      let benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0);
+      if (travelPeriod && travelPeriod.trim()) {
+        const tp = travelPeriod.trim();
+        benefitsListV1 = benefitsListV1.filter(b => b.text.toLowerCase() !== tp.toLowerCase());
+        benefitsListV1.unshift({ text: tp, icon: "calendar" as IconKey });
+      }
+      benefitsListV1 = benefitsListV1.slice(0, 6);
       const hlStart = titleY + titleBlockH + (format === "story" ? 24 : 16);
       
       // O espaço disponível força o encolhimento das pílulas, empurrando tudo para cima logicamente!
