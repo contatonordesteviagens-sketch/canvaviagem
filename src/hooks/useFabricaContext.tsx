@@ -851,15 +851,27 @@ export const FabricaProvider = ({ children }: { children: ReactNode }) => {
           updated_at: new Date().toISOString()
         };
         
-        if (state.projectId) {
+        let request;
+
+        if (state.projectId && !state.projectId.startsWith("proj_")) {
           payloadToSave.id = state.projectId;
+          // Update existente
+          request = supabase
+            .from("fabrica_diagnosticos")
+            .update(payloadToSave)
+            .eq("id", state.projectId)
+            .select("id")
+            .maybeSingle();
+        } else {
+          // Novo projeto
+          request = supabase
+            .from("fabrica_diagnosticos")
+            .insert(payloadToSave)
+            .select("id")
+            .maybeSingle();
         }
 
-        const { error, data } = await supabase
-          .from("fabrica_diagnosticos")
-          .upsert(payloadToSave, { onConflict: "id" })
-          .select("id")
-          .maybeSingle();
+        const { error, data } = await request;
 
         if (error) {
           console.warn("[Supabase Sync] Falha:", error.message);
