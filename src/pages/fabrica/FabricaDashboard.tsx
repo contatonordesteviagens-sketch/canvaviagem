@@ -677,7 +677,7 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                           href={url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
+                          className="flex-1 flex items-center justify-between gap-2 min-w-0 px-3 py-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 hover:bg-emerald-500/10 transition-all group"
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
@@ -921,13 +921,13 @@ export const FabricaDashboard = ({ onNavigate }: { onNavigate?: (tab: "dashboard
                               <h4 className="text-sm font-bold text-white leading-tight mb-1 truncate">{pkg.title}</h4>
                               <p className="text-xs text-white/50 line-clamp-2 leading-relaxed mb-2 pr-4">{pkg.description}</p>
                               
-                              <span className="inline-flex text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-                                {pkg.price}
+                              <span className="inline-flex text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg w-fit mt-0.5 max-w-full">
+                                <span className="line-clamp-2">{pkg.price}</span>
                               </span>
                             </div>
 
                             {/* Action Tools Overlay */}
-                            <div className="flex gap-1 items-center">
+                            <div className="flex gap-1 items-center shrink-0">
                               {pkg.isDraft ? (
                                 <button
                                   onClick={() => togglePublish(pkg.id, true)}
