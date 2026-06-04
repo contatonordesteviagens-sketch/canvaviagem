@@ -1761,152 +1761,67 @@ export const Phase3ArtFactory = ({ onNext, onBack }: Props) => {
             </div>
           </div>
         </div>
-      {/* 0 e 1 · Modo e Categoria */}
+      {/* 0 · Modo de Criação (Foto Real | Sua Imagem) */}
       <div className={`${sectionCls} space-y-5`}>
-        {/* Modo de Geração - Segmented Control */}
         <div>
           <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">0 · Modo de Criação</h3>
           <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full">
             <button
               onClick={() => setGenMode("photo")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "photo" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all ${genMode === "photo" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
             >
               <ImageIcon className="w-3.5 h-3.5" /> Foto Real <span className="hidden sm:inline font-normal opacity-50">(ilimitada)</span>
             </button>
             <button
               onClick={() => setGenMode("custom")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 ${genMode === "custom" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold transition-all ${genMode === "custom" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
             >
               <Upload className="w-3.5 h-3.5" /> Sua Imagem
             </button>
+          </div>
+
+          {/* Seletor de Versão (V0..V5) — COLAPSÁVEL */}
+          <div className="mt-3">
             <button
               type="button"
-              disabled
-              title="Em manutenção — reativaremos em breve"
-              aria-disabled="true"
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold text-white/30 cursor-not-allowed opacity-50"
+              onClick={() => setVariationsOpen(v => !v)}
+              className="w-full flex items-center justify-between text-[10px] font-bold text-white/40 hover:text-white/70 uppercase tracking-widest transition-colors py-1.5"
             >
-              <Wand2 className="w-3.5 h-3.5" /> IA Pura <span className="hidden sm:inline font-normal opacity-70">(desativado)</span>
+              <span className="flex items-center gap-1.5">
+                Variações
+                {forcedVariant !== null && (
+                  <span className="text-amber-400 normal-case tracking-normal">· V{forcedVariant} fixada</span>
+                )}
+              </span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${variationsOpen ? "rotate-180" : ""}`} />
             </button>
-          </div>
-
-          {/* Modo IA Pura — desativado em manutenção */}
-          {genMode === "ai" && (
-            <div className="mt-3 p-3 rounded-xl border border-amber-400/20 bg-amber-500/5">
-              <p className="text-[11px] text-amber-200/90 leading-relaxed">
-                ✨ <strong>IA Pura em manutenção.</strong> Este recurso está temporariamente indisponível. Por favor, utilize o modo "Foto Real" ou "Sua Imagem".
-              </p>
-            </div>
-          )}
-
-
-
-
-          {/* Seletor de Versão (V0..V4) — para correções cirúrgicas em cada layout */}
-          <div className="mt-4">
-            <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">
-              0b · Versão do Layout
-            </h3>
-            <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 w-full gap-1">
-              <button
-                onClick={() => setForcedVariant(null)}
-                className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${forcedVariant === null ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-                title="Rotação automática (sorteia entre V0..V4)"
-              >
-                Auto
-              </button>
-              {[0, 1, 2, 3, 4, 5].map((v) => (
+            {variationsOpen && (
+              <div className="mt-2 flex bg-black/40 p-1 rounded-xl border border-white/5 w-full gap-1">
                 <button
-                  key={v}
-                  onClick={() => setForcedVariant(v)}
-                  className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-all ${forcedVariant === v ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
-                  title={`Forçar variação V${v}`}
+                  onClick={() => setForcedVariant(null)}
+                  className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${forcedVariant === null ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+                  title="Rotação automática"
                 >
-                  V{v}
+                  Auto
                 </button>
-              ))}
-            </div>
-            <p className="text-[10px] text-white/40 mt-1.5 leading-snug">
-              {forcedVariant === null
-                ? "Rotação automática entre V0..V5 a cada clique."
-                : <>Gerando sempre a <strong className="text-white">V{forcedVariant}</strong>. Selecione "Auto" para retomar a rotação.</>}
-            </p>
+                {[0, 1, 2, 3, 4, 5].map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setForcedVariant(v)}
+                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${forcedVariant === v ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}
+                    title={`Forçar V${v}`}
+                  >
+                    V{v}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Categoria - Compacta */}
-        <div>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">1 · Tipo de Anúncio</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {CATEGORIAS.map((c) => {
-              const isExperiencia = c.id === "experiencia_destino";
-              const selected = categoria === c.id;
-              return (
-                <button
-                  key={c.id}
-                  disabled={isExperiencia}
-                  onClick={() => {
-                    if (!isExperiencia) setCategoria(c.id);
-                  }}
-                  className={`p-3 rounded-xl border-2 text-left transition-all flex flex-col justify-between min-h-[85px] ${
-                    isExperiencia
-                      ? "border-white/5 bg-black/10 opacity-35 cursor-not-allowed pointer-events-none"
-                      : selected
-                      ? "shadow-lg scale-[1.02]"
-                      : "border-white/5 bg-black/20 hover:bg-white/[0.04]"
-                  }`}
-                  style={selected && !isExperiencia ? { borderColor: c.accent, background: `${c.accent}33` } : undefined}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl leading-none">{c.emoji}</span>
-                    <span
-                      className="text-[9px] font-extrabold px-1.5 py-0.5 rounded border tracking-wider"
-                      style={{ background: `${c.accent}26`, borderColor: `${c.accent}66`, color: c.accent }}
-                    >
-                      {c.badge}
-                    </span>
-                    {isExperiencia && (
-                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded border tracking-wider bg-amber-500/20 border-amber-500/40 text-amber-400 animate-pulse">
-                        EM BREVE
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-sm font-bold text-white leading-tight">{c.name}</div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Formato do Anúncio */}
-        <div>
-          <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">2 · Formato do Anúncio</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => setFormat("square")}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
-                format === "square" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
-              }`}
-              style={format === "square" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
-            >
-              <Square className="w-6 h-6 mb-2 text-white/80" />
-              <div className="text-sm font-bold text-white">Quadrado 1:1</div>
-              <div className="text-[11px] text-white/55">Feed Instagram (1080×1080)</div>
-            </button>
-            <button
-              onClick={() => setFormat("story")}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
-                format === "story" ? "" : "border-white/[0.08] bg-white/[0.02] hover:border-white/15"
-              }`}
-              style={format === "story" ? { borderColor: primaryColor, background: `${primaryColor}1a` } : undefined}
-            >
-              <Smartphone className="w-6 h-6 mb-2 text-white/80" />
-              <div className="text-sm font-bold text-white">Stories / Reels 9:16</div>
-              <div className="text-[11px] text-white/55">Vertical com safe zones (1080×1920)</div>
-            </button>
-          </div>
-        </div>
+        {/* Tipo de Anúncio e Formato — ocultos: só existe uma opção ativa */}
       </div>
+
 
       {/* 1b · Galeria Pexels (modo foto ou IA Pura) */}
       {(genMode === "photo" || genMode === "ai") && (
