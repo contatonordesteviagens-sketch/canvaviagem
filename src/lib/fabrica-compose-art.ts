@@ -2630,8 +2630,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         ctx.font = "900 52px Inter, Arial, sans-serif";
         const titleLines = wrapTextSafe(ctx, resolvedTitle, contentWidth - 40, 2, 32);
         const isMultiLine = titleLines.length > 1;
-        const promoH = hasPromoV2 ? 34 : 0;
-        const faixaH = (isMultiLine ? 150 : 110) + promoH;
+        const promoH = hasPromoV2 ? 28 : 0;
+        const faixaH = (isMultiLine ? 134 : 96) + promoH;
 
         // ðŸ›¡ï¸ DYNAMIC COLLISION PROTECTION ENGINE ðŸ›¡ï¸
         const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
