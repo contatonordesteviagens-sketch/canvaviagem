@@ -2652,12 +2652,24 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const faixaY = photoBottom + 16;
 
         fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, v2CardBg);
+
+        // Promo tagline accent at top of faixa
+        if (hasPromoV2) {
+          ctx.fillStyle = secondaryColor;
+          ctx.font = "800 22px Inter, Arial, sans-serif";
+          ctx.textAlign = "left";
+          ctx.textBaseline = "alphabetic";
+          safeFillText(ctx, promoTagV2, left, faixaY + 28, width - left - 40, 14);
+        }
+
         ctx.fillStyle = v2HeadlineColor;
         ctx.textBaseline = "middle";
-        
+
         const lineSpacing = 58;
         const textBlockH = isMultiLine ? lineSpacing : 0;
-        const startTextY = (faixaY + faixaH / 2) - (textBlockH / 2);
+        const titleZoneY = faixaY + promoH;
+        const titleZoneH = faixaH - promoH;
+        const startTextY = (titleZoneY + titleZoneH / 2) - (textBlockH / 2);
 
         titleLines.forEach((txt, i) => {
            safeFillText(ctx, txt, left, startTextY + (i * lineSpacing), width - left - 40, 20);
