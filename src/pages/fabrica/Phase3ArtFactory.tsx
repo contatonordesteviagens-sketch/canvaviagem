@@ -403,7 +403,7 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
   const ig = v.instagram.trim() ? `@${v.instagram.replace(/^@/, "").trim()}` : "";
   const wa = v.whatsapp.trim();
   const contactLine = wa
-    ? `📲 Fale comigo agora: *${wa}* ${ig ? `| ${ig}` : ""}`
+    ? `📲 Fale comigo agora: ${wa}${ig ? ` | ${ig}` : ""}`
     : ig
     ? `📲 Nos siga: ${ig}`
     : "📲 Entre em contato para reservar!";
@@ -416,8 +416,8 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
 
   const priceBlock = hasPrice
     ? hasInstall
-      ? `💳 Apenas ${v.installments} de *${priceStr}* ${v.paymentSuffix}`
-      : `💰 Por apenas *${priceStr}* ${v.paymentSuffix}`
+      ? `💳 Apenas ${v.installments} de ${priceStr} ${v.paymentSuffix}`
+      : `💰 Por apenas ${priceStr} ${v.paymentSuffix}`
     : "💬 Solicite seu orçamento personalizado!";
 
   const periodLine = period ? `🗓️ ${period}` : "";
@@ -437,16 +437,16 @@ const buildAdCaptions = (v: CaptionVars): string[] => {
     return caps;
   }
 
-  // Variante Oferta: direto e comercial
+  // Variante Oferta: 3 estilos distintos
   const caps: string[] = [
-    // Variação 1 — Urgência + preço em destaque
-    `🚨 *${v.promoName || "OFERTA ESPECIAL"}* — ${destUp}!\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n⚠️ Vagas limitadas! Não perca essa oportunidade.\n\n${contactLine}`,
+    // Variação 1 — Benefícios/Inclusos
+    `🚨 ${v.promoName || "OFERTA ESPECIAL"} — ${destUp}!\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n⚠️ Vagas limitadas! Não perca essa oportunidade.\n\n${contactLine}`,
 
-    // Variação 2 — Storytelling + preço
+    // Variação 2 — SEO / Posicionamento Google
+    `${dest}: Pacote completo com a ${agency} 🌎\n\nProcurando o melhor pacote para ${dest}? Veja o que está incluso:\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\nAgência especializada em ${dest} — atendimento humanizado e suporte 24h. Solicite seu orçamento.\n\n${contactLine}`,
+
+    // Variação 3 — Storytelling / CTA direto
     `Partiu ${dest}? ✈️\n\nMontamos um pacote COMPLETO pra você não se preocupar com nada:\n\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n👉 Me chama agora e garanta sua vaga!\n\n${contactLine}`,
-
-    // Variação 3 — Benefícios + prova social
-    `📍 ${dest} — Um pacote que você vai amar!\n\nIncluso na sua viagem:\n${benefitLines}\n\n${priceBlock}\n${periodLine ? periodLine + "\n" : ""}\n✅ Agência especializada. Atendimento humanizado. Suporte 24h.\n\n${contactLine}`,
   ];
   return caps;
 };
