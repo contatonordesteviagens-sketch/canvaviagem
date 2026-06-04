@@ -2618,8 +2618,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ctx.fillStyle = v2CardBg;
           ctx.font = "900 30px Inter, Arial, sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText(travelPeriod.trim().toUpperCase(), width / 2, priceCardY - 28);
-          periodYOffset = 56;
+          ctx.fillText(travelPeriod.trim().toUpperCase(), width / 2, priceCardY - 38);
+          periodYOffset = 90;
         }
         ctx.textAlign = "left";
 
