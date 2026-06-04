@@ -2483,59 +2483,143 @@ const panelBottom = RULES.PANEL_BOTTOM;
         const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
         const benefitsCountV2 = Math.max(1, benefitsListV2.length);
 
-        // 1) Dynamic Price Block for Feed
-        const priceStrV2 = mainPrice || `${curSym} ${price}`;
-        const topLabelTxt = (topLabel || installments || "por apenas").toString().toUpperCase();
-        const bottomLabelTxt = (bottomSuffix || "por pessoa").toString().toUpperCase();
-        
-        ctx.font = "700 24px Inter, Arial, sans-serif";
-        const w1 = ctx.measureText(topLabelTxt).width;
-        ctx.font = "900 68px Inter, Arial, sans-serif";
-        const w2 = ctx.measureText(priceStrV2).width;
-        ctx.font = "600 22px Inter, Arial, sans-serif";
-        const w3 = ctx.measureText(bottomLabelTxt).width;
-        
-        const maxContentW = Math.max(w1, w2, w3);
-        const priceBlockW = Math.min(width * 0.8, Math.max(width * 0.40, Math.round(maxContentW + 85)));
-        const priceCardH = 168;
-        const priceCardX = Math.round((width - priceBlockW) / 2);
-        // Anchored elegantly above global footer branding zone
-        const priceCardY = panelBottom - priceCardH - 40; 
+        // 1) Price block with full form parity (prefix + pill + price + suffix + total + pix)
+        const isCashV2 = paymentMode === "cash" || paymentMode === "cash_discount";
+        const isDownPlusV2 = paymentMode === "down_plus";
+        const instMatchV2 = (installments || "10x").match(/(\d{1,2})\s*x/i);
+        const parcNV2 = instMatchV2 ? instMatchV2[1] : "10";
 
-        // Subtle relief effect on card
-        fillRoundRect(ctx, priceCardX, priceCardY, priceBlockW, priceCardH, 20, v2CardBg);
+        const prefixTxtV2 = (isCashV2
+          ? (pricePrefix !== undefined ? pricePrefix : "pagamento")
+          : (isDownPlusV2 ? (pricePrefix || "entrada +") : (pricePrefix !== undefined ? pricePrefix : "a partir de"))
+        ).toString().toUpperCase();
+
+        const pillTxtV2 = (isCashV2 ? "À VISTA" : `${parcNV2}X`).toUpperCase();
+
+        const priceRawV2 = (price || "").trim();
+        const priceNumV2 = parseFloat(priceRawV2.replace(/\./g, "").replace(",", "."));
+        const hasCentsV2 = /[.,]\d{1,2}\s*$/.test(priceRawV2);
+        const fmtBRV2 = (n: number) => {
+          try { return n.toLocaleString("pt-BR", { minimumFractionDigits: hasCentsV2 ? 2 : 0, maximumFractionDigits: hasCentsV2 ? 2 : 0 }); }
+          catch { return String(n); }
+        };
+        const priceValV2 = !isNaN(priceNumV2) ? fmtBRV2(priceNumV2) : priceRawV2;
+        const priceStrV2 = `${curSym} ${priceValV2}`;
+
+        const suffixTxtV2 = (paymentSuffix || (isDownPlusV2 ? "parcelas" : "por pessoa")).toString().toUpperCase();
+
+        const totalMultV2 = isCashV2 ? 1 : parseInt(parcNV2, 10) || 1;
+        const totalNumV2 = !isNaN(priceNumV2) ? priceNumV2 * totalMultV2 : NaN;
+        const totalStrV2 = (totalOverride && totalOverride.trim())
+          || (!isNaN(totalNumV2) ? `Total ${curSym} ${fmtBRV2(totalNumV2)}` : "");
+        const showTotalV2 = showTotal && !!totalStrV2 && !isCashV2;
+
+        const pixTxtV2 = (pixBannerText || "").trim().toUpperCase();
+        const showPixV2 = pixTxtV2.length > 0;
+
+        // Compute card width based on widest piece of content
+        ctx.font = "800 24px Inter, Arial, sans-serif";
+        const wPrefV2 = ctx.measureText(prefixTxtV2).width;
+        ctx.font = "900 28px Inter, Arial, sans-serif";
+        const wPillV2 = ctx.measureText(pillTxtV2).width + 36;
+        ctx.font = "900 76px Inter, Arial, sans-serif";
+        const wPriceV2 = ctx.measureText(priceStrV2).width;
+        ctx.font = "800 22px Inter, Arial, sans-serif";
+        const wSufV2 = ctx.measureText(suffixTxtV2).width;
+        const maxContentWV2 = Math.max(wPrefV2, wPillV2, wPriceV2, wSufV2);
+        const priceBlockW = Math.min(width * 0.84, Math.max(width * 0.5, Math.round(maxContentWV2 + 110)));
+        const priceCardH = 232;
+        const priceCardX = Math.round((width - priceBlockW) / 2);
+
+        // Reserve space for total + pix badges below the card
+        const extrasBelowH = (showTotalV2 ? 36 : 0) + (showPixV2 ? 46 : 0) + (showTotalV2 || showPixV2 ? 16 : 0);
+        const priceCardY = panelBottom - priceCardH - extrasBelowH - 40;
+
+        // Card body
+        fillRoundRect(ctx, priceCardX, priceCardY, priceBlockW, priceCardH, 22, v2CardBg);
         ctx.save();
-        ctx.strokeStyle = "rgba(255,255,255,0.3)";
+        ctx.strokeStyle = "rgba(255,255,255,0.28)";
         ctx.lineWidth = 2.5;
-        fillRoundRect(ctx, priceCardX + 1.5, priceCardY + 1.5, priceBlockW - 3, priceCardH - 3, 18, "transparent");
+        fillRoundRect(ctx, priceCardX + 1.5, priceCardY + 1.5, priceBlockW - 3, priceCardH - 3, 20, "transparent");
         ctx.stroke();
         ctx.restore();
-        
+
         const cardCenterX = priceCardX + priceBlockW / 2;
-        ctx.fillStyle = v2CardLabel; 
-        ctx.font = "800 24px Inter, Arial, sans-serif";
+
+        // Prefix (top)
+        if (prefixTxtV2) {
+          ctx.fillStyle = v2CardLabel;
+          ctx.font = "800 24px Inter, Arial, sans-serif";
+          ctx.textAlign = "center";
+          safeFillText(ctx, prefixTxtV2, cardCenterX, priceCardY + 38, priceBlockW - 40, 14);
+        }
+
+        // Installment pill
+        const pillH = 38;
+        const pillW = Math.max(72, wPillV2);
+        const pillX = cardCenterX - pillW / 2;
+        const pillY = priceCardY + 56;
+        fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, v2CardLabel);
+        ctx.fillStyle = v2CardBg;
+        ctx.font = "900 22px Inter, Arial, sans-serif";
         ctx.textAlign = "center";
-        safeFillText(ctx, topLabelTxt, cardCenterX, priceCardY + 42, priceBlockW - 30, 14);
-        
-        let pfsV2 = 68;
+        ctx.textBaseline = "middle";
+        ctx.fillText(pillTxtV2, cardCenterX, pillY + pillH / 2 + 1);
+        ctx.textBaseline = "alphabetic";
+
+        // Price (auto-shrink)
+        let pfsV2 = 76;
         ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
-        while (ctx.measureText(priceStrV2).width > priceBlockW - 40 && pfsV2 > 28) {
+        while (ctx.measureText(priceStrV2).width > priceBlockW - 50 && pfsV2 > 30) {
           pfsV2 -= 4;
           ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
         }
-        safeFillText(ctx, priceStrV2, cardCenterX, priceCardY + 108, priceBlockW - 40, 24);
-        
-        ctx.font = "800 22px Inter, Arial, sans-serif";
-        ctx.globalAlpha = 0.9;
-        ctx.fillText(bottomLabelTxt, cardCenterX, priceCardY + 150);
-        ctx.globalAlpha = 1.0;
-        
+        ctx.fillStyle = v2CardLabel;
+        ctx.textAlign = "center";
+        ctx.fillText(priceStrV2, cardCenterX, priceCardY + 158);
+
+        // Suffix (bottom)
+        if (suffixTxtV2) {
+          ctx.font = "800 22px Inter, Arial, sans-serif";
+          ctx.globalAlpha = 0.92;
+          ctx.fillText(suffixTxtV2, cardCenterX, priceCardY + 200);
+          ctx.globalAlpha = 1.0;
+        }
+
+        // Total line below card
+        let extrasY = priceCardY + priceCardH + 18;
+        if (showTotalV2) {
+          ctx.fillStyle = primaryColor;
+          ctx.font = "800 24px Inter, Arial, sans-serif";
+          ctx.textAlign = "center";
+          ctx.globalAlpha = 0.85;
+          ctx.fillText(totalStrV2, cardCenterX, extrasY);
+          ctx.globalAlpha = 1.0;
+          extrasY += 36;
+        }
+
+        // Pix badge below
+        if (showPixV2) {
+          ctx.font = "900 20px Inter, Arial, sans-serif";
+          const pixW = ctx.measureText(pixTxtV2).width + 40;
+          const pixH = 36;
+          const pixX = cardCenterX - pixW / 2;
+          fillRoundRect(ctx, pixX, extrasY, pixW, pixH, pixH / 2, secondaryColor);
+          ctx.fillStyle = ensureContrast(secondaryColor, "#0a0a0a", 0.4);
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(pixTxtV2, cardCenterX, extrasY + pixH / 2 + 1);
+          ctx.textBaseline = "alphabetic";
+        }
+
+        // Travel period rendered as a small line ABOVE the price card (no longer overlapping benefits)
         let periodYOffset = 0;
         if (travelPeriod && travelPeriod.trim()) {
-          ctx.fillStyle = v2BenefitColor;
-          ctx.font = "900 32px Inter, Arial, sans-serif";
-          ctx.fillText(travelPeriod.trim().toUpperCase(), width / 2, priceCardY - 46);
-          periodYOffset = 65; 
+          ctx.fillStyle = v2CardBg;
+          ctx.font = "900 30px Inter, Arial, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(travelPeriod.trim().toUpperCase(), width / 2, priceCardY - 28);
+          periodYOffset = 56;
         }
         ctx.textAlign = "left";
 
