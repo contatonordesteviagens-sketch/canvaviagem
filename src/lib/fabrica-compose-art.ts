@@ -1804,6 +1804,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
         logoFormat
       );
       return canvas.toDataURL("image/png");
+      }
+      return canvas.toDataURL("image/png");
     }
     return canvas.toDataURL("image/png");
   };
