@@ -508,8 +508,8 @@ async function drawFinalBranding(
   ctx.save();
   ctx.textAlign = "right";
   ctx.textBaseline = "middle";
-  // Revertido para Bold (700) e tamanhos mais impactantes conforme desejo do usuario
-  const fontSize = isStory ? 36 : 30; 
+  // Tamanhos reduzidos conforme desejo do usuario para nao vazar a imagem
+  const fontSize = isStory ? 24 : 20; 
   const safeFont = fontFamily || "Inter";
   ctx.font = `700 ${fontSize}px ${safeFont}, sans-serif`;
   
@@ -1612,14 +1612,16 @@ const panelBottom = RULES.PANEL_BOTTOM;
           const ty = startY + row * rowGap;
           
           const iconSize = 64;
-          drawMonoIcon(ctx, b.icon as IconKey, tx + iconSize/2, ty, iconSize, navy);
-          
           const isDuration = /\d+\s*dia/i.test(b.text) || /noite/i.test(b.text);
+          if (!isDuration) {
+            drawMonoIcon(ctx, b.icon as IconKey, tx + iconSize/2, ty, iconSize, navy);
+          }
+          
           let bfs = isDuration ? 37 : 49;
           ctx.fillStyle = navy;
           ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
           ctx.textAlign = "left";
-          const textX = tx + iconSize + 14;
+          const textX = isDuration ? tx + 10 : tx + iconSize + 14;
           const textMaxW = colW - (iconSize + 14);
           while (ctx.measureText(b.text).width > textMaxW && bfs > 16) {
             bfs -= 1;
