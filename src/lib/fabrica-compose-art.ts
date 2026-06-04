@@ -677,34 +677,104 @@ function drawPremiumShadow(
 
 function drawMonoIcon(
   ctx: CanvasRenderingContext2D,
-  kind: IconKey | string,
+  kind: IconKey,
   cx: number,
   cy: number,
   size: number,
   color: string,
 ) {
-  const emojis: Record<string, string> = {
-    check: "✅", bus: "🚌", hotel: "🏨", plane: "✈️", ship: "🛳️", palm: "🌴",
-    sun: "☀️", food: "🍽️", coffee: "☕", map: "🗺️", camera: "📷", star: "⭐",
-    heart: "❤️", guide: "🙋‍♂️", user: "👤", wifi: "📶"
-  };
-  
-  if (emojis[kind as string]) {
-    ctx.save();
-    ctx.font = `${size * 1.2}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(emojis[kind as string], cx, cy);
-    ctx.restore();
-    return;
-  }
-
-  // fallback se a chave não existir
   ctx.save();
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.arc(cx, cy, size/2, 0, Math.PI*2);
-  ctx.fill();
+  const s = size / 24;
+  ctx.translate(cx - 12 * s, cy - 12 * s);
+  ctx.scale(s, s);
+  
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  const paths: Record<string, string[]> = {
+    check: ["M20 6 9 17l-5-5"],
+    bus: [
+      "M4 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2",
+      "M15 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2",
+      "M4 11v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6",
+      "M4 11V6a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v5",
+      "M4 11h16",
+      "M8 15h.01", "M16 15h.01"
+    ],
+    hotel: [
+      "M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18",
+      "M14 22v-4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v4",
+      "M10 10h.01", "M14 10h.01", "M10 14h.01", "M14 14h.01",
+      "M2 22h20"
+    ],
+    plane: [
+      "M17.8 19.2 16 11l3.5-3.5a2.1 2.1 0 0 0-3-3L13 8 4.8 6.2c-.5-.1-.9.2-1.1.6L3 8l6 3-4 4-3-1-1 1 4 4 1-1-1-3 4-4 3 6 1.2-.7.6-1.1c.4-.2.7-.6.6-1.1z"
+    ],
+    ship: [
+      "M2 21c.6.5 1.2 1 2.5 1 1.3 0 1.9-.5 2.5-1 .6-.5 1.2-1 2.5-1 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 1.3 0 1.9-.5 2.5-1 .6-.5 1.2-1 2.5-1 1.3 0 1.9.5 2.5 1",
+      "M19.38 20A11.6 11.6 0 0 0 21 14l-9-4-9 4c0 2.9.94 5.34 2.81 7.76",
+      "M19 13V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6",
+      "M12 10v4"
+    ],
+    palm: [
+      "M12 22V10",
+      "M12 10a10 10 0 0 0-8 6",
+      "M12 10a10 10 0 0 1 8 6",
+      "M12 10a8 8 0 0 0-6-8",
+      "M12 10a8 8 0 0 1 6-8"
+    ],
+    sun: [
+      "M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+      "M12 2v2", "M12 20v2", "M5 5l1.5 1.5", "M17.5 17.5L19 19",
+      "M2 12h2", "M20 12h2", "M5 19l1.5-1.5", "M17.5 6.5L19 5"
+    ],
+    food: [
+      "M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2",
+      "M7 2v20",
+      "M21 2l-6 6v14h4z"
+    ],
+    coffee: [
+      "M18 8h1a4 4 0 0 1 0 8h-1",
+      "M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z",
+      "M6 1v3", "M10 1v3", "M14 1v3"
+    ],
+    map: [
+      "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z",
+      "M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"
+    ],
+    camera: [
+      "M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z",
+      "M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
+    ],
+    star: [
+      "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+    ],
+    heart: [
+      "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+    ],
+    guide: [
+      "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+      "M5 22v-2c0-2.2 1.8-4 4-4h6c2.2 0 4 1.8 4 4v2"
+    ],
+    user: [
+      "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+      "M5 22v-2c0-2.2 1.8-4 4-4h6c2.2 0 4 1.8 4 4v2"
+    ],
+    wifi: [
+      "M5 12.55a11 11 0 0 1 14.08 0",
+      "M1.42 9a16 16 0 0 1 21.16 0",
+      "M8.53 16.11a6 6 0 0 1 6.95 0",
+      "M12 20h.01"
+    ]
+  };
+
+  const p = paths[kind] || paths['check'];
+  p.forEach(d => {
+    ctx.stroke(new Path2D(d));
+  });
+
   ctx.restore();
 }
 
@@ -1483,12 +1553,1367 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
         // Faixa de Desconto Pix no rodapÃ© do cartÃ£o amarelo
         if (showPixBanner) {
+          const stripeY = boxY + boxH - 85;
+          const stripeX = boxX + 40;
+          const stripeW = boxW - 80;
+          const stripeH = 64;
+          fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 16, navyRaw);
+          ctx.fillStyle = contrastOn(navyRaw);
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = "900 24px Inter, Arial, sans-serif";
+          
+          const pixText = `${descN}% OFF A VISTA NO`;
+          const pixTextW = ctx.measureText(pixText).width;
+          const pixIconSize = 32;
+          const pixGap = 10;
+          ctx.font = "800 24px Inter, Arial, sans-serif";
+          const pixLabelW = ctx.measureText("pix").width;
+          
+          const pillPad = 8;
+          const pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
+          const pillH = stripeH - 16;
+          const totalPixW = pixTextW + pixGap + pillW;
+          const pixStartX = stripeX + (stripeW - totalPixW) / 2;
+          
+          ctx.textAlign = "left";
+          ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2);
+          const pillX = pixStartX + pixTextW + pixGap;
+          const pillY = stripeY + (stripeH - pillH) / 2;
+          fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, "#ffffff");
+          
+          const pxCx = pillX + pillPad + pixIconSize / 2;
+          const pxCy = stripeY + stripeH / 2;
+          drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
+          
+          ctx.fillStyle = "#32BCAD";
+          ctx.font = "900 24px Inter, Arial, sans-serif";
+          ctx.fillText("pix", pillX + pillPad + pixIconSize + pixGap, stripeY + stripeH / 2);
+          ctx.textBaseline = "alphabetic";
+        }
+
+        // VÃ©u Gradiente Escuro do rodapÃ©
+        await drawFinalBranding(
+          ctx,
+          width,
+          height,
+          logoDataUrl,
+          options.footerContact1Icon ? { icon: options.footerContact1Icon.startsWith("whatsapp") ? "whatsapp_green" : options.footerContact1Icon, value: options.footerContact1Value || "" } : (whatsapp ? { icon: "whatsapp_green", value: whatsapp } : undefined),
+          options.footerContact2Icon ? { icon: options.footerContact2Icon.startsWith("whatsapp") ? "whatsapp_green" : options.footerContact2Icon, value: options.footerContact2Value || "" } : (instagram ? { icon: "instagram_gradient", value: instagram } : undefined),
+          effectiveTextColor,
+          userFamily,
+          false
+        );
+        return canvas.toDataURL("image/png");
+      } else {
+        // [BG] Foto do destino cobrindo todo o canvas (primeira coisa a desenhar)
+        const cBg = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.45);
+        // Bypassed logo (drawProminentLogo called after drawImage is complete)
+
+        // â”€â”€ Cores do V3 (box CVC) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // yellow  = cor secundÃ¡ria do usuÃ¡rio (fundo do box)
+        // navy    = cor primÃ¡ria do usuÃ¡rio   (texto/anel dentro do box)
+        // navyRaw = primaryColor normalizado  (para a faixa Pix)
+        const yellow = secondaryColor || "#FCD34D";
+        const yellowDark = shadeColor(yellow, -12);
+        const navy = getSafeColor(yellow, primaryColor);
+        const navyRaw = primaryColor || "#0c2340";
+
+        ctx.drawImage(image, cBg.sx, cBg.sy, cBg.sw, cBg.sh, 0, 0, width, height);
+        await drawProminentLogo(ctx, 40, 40, 120);
+
+        // â”€â”€ Dados dinÃ¢micos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        const destinoUp = (destination || "DESTINO").toUpperCase();
+        const daysItem = highlights.find((h) => /\d+\s*dia/i.test(h?.text || ""));
+        const daysText = (travelPeriod && travelPeriod.trim()) || (daysItem?.text || "").trim();
+        // Ãcones: usa APENAS os selecionados pelo usuario (sem merge com defaults).
+        // Se nenhum highlight tiver Ã­cone, usa um conjunto padrÃ£o mÃ­nimo.
+        const iconList = (() => {
+          const fromHl = highlights
+            .map((h) => h?.icon)
+            .filter((k) => !!k);
+          if (fromHl.length === 0) {
+            return ["plane", "hotel", "coffee", "camera"];
+          }
+          // dedup preservando ordem do usuario, maximo 5
+          const seen = new Set();
+          const out = [];
+          for (const k of fromHl) {
+            if (!seen.has(k)) {
+              seen.add(k);
+              out.push(k);
+              if (out.length >= 5) break;
+            }
+          }
+          return out;
+        })();
+
+        // Parcelas: extrai nÃºmero de "12x", "12 x", "12" etc.
+        const instMatch = (installments || "12x").match(/(\d{1,2})\s*x?/i);
+        const parcN = instMatch ? instMatch[1] : "12";
+        const priceStr = mainPrice || `${curSym} ${price}`;
+        // Calcula total = preco Ã— parcelas (se parcelado), formatando milhares com "." e centavos com ","
+        const priceNumeric = parseFloat(((price || "").trim()).replace(/\./g, "").replace(",", "."));
+        const totalMultiplier = (paymentMode === "cash" || paymentMode === "cash_discount") ? 1 : parseInt(parcN, 10);
+        const totalNum = !isNaN(priceNumeric) ? priceNumeric * totalMultiplier : NaN;
+        // Se preco nÃ£o tem centavos (inteiro), o total tambem nÃ£o tera.
+        const priceHasDecimals = /[.,]\d{1,2}\s*$/.test((price || "").trim());
+        const fmtBR = (n) => {
+          const showDec = priceHasDecimals && n % 1 !== 0;
+          return n.toLocaleString("pt-BR", {
+            minimumFractionDigits: showDec ? 2 : 0,
+            maximumFractionDigits: showDec ? 2 : 0,
+          });
+        };
+        // Total: prioriza override do usuario; senÃ£o calcula automatico com sufixo
+        const computedTotal = !isNaN(totalNum)
+          ? `Total ${(paymentSuffix || "por pessoa").trim()}: ${curSym} ${fmtBR(totalNum)}`
+          : "";
+        const totalStr = (totalOverride && totalOverride.trim()) || computedTotal;
+        // Desconto: extrai nÃºmero do promoName (ex.: "5% OFF") ou usa 5 como default
+        const descMatch = (promoName || "").match(/(\d{1,2})\s*%/);
+        const descN = descMatch ? descMatch[1] : "5";
+
+        // â”€â”€ [BOX] amarelo arredondado â”€ â”€â”€â”€â”€â”€
+        const boxX = (width - Math.round(width * 0.68)) / 2;
+        const boxW = Math.round(width * 0.68); // Ajustado de 0.72 para 0.68 para ser menos "largo"
+        const boxR = 36;
+        const padTop = 36;
+        const titleH = 50; const titleGap = 12;
+        const destH = 60; const destGap = 18;
+        const infoH = 42; const infoGap = 22;
+        const priceBlockH = 160; 
+        const totalH = (showTotal && totalStr) ? 36 : 0;
+        const totalGap = totalH ? 14 : 0;
+        const stripeH = 64;
+        const stripeGap = showPixBanner ? 22 : 0;
+        const padBottom = 36;
+
+        const boxH = padTop + titleH + titleGap + destH + destGap + infoH + infoGap + priceBlockH + totalGap + totalH + (showPixBanner ? stripeGap + stripeH : 0) + padBottom;
+        const safeBoxY = 180;
+
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.25)"; ctx.shadowBlur = 28; ctx.shadowOffsetY = 8;
+        fillRoundRect(ctx, boxX, safeBoxY, boxW, boxH, boxR, yellow);
+        ctx.restore();
+
+        const cx = boxX + boxW / 2;
+        let cursorY = safeBoxY + padTop + 32;
+        ctx.fillStyle = navy; ctx.textAlign = "center"; ctx.font = "900 44px Inter, Arial, sans-serif";
+        ctx.fillText("PACOTE", cx, cursorY);
+        cursorY += titleGap + 48;
+
+        ctx.font = "500 56px Inter, Arial, sans-serif";
+        let destSize = 56;
+        while (ctx.measureText(destinoUp).width > boxW - 80 && destSize > 32) {
+          destSize -= 2; ctx.font = `500 ${destSize}px Inter, Arial, sans-serif`;
+        }
+        safeFillText(ctx, destinoUp, cx, cursorY, boxW - 80, 24);
+        cursorY += destGap + 36;
+
+        let benefitsFontSize = 36; ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
+        let daysW = 0;
+        if (daysText && daysText.trim()) {
+          while (ctx.measureText(daysText).width > boxW * 0.45 && benefitsFontSize > 20) {
+            benefitsFontSize -= 2; ctx.font = `700 ${benefitsFontSize}px Inter, Arial, sans-serif`;
+          }
+          daysW = ctx.measureText(daysText).width;
+        }
+        const sepGap = 18; const iconSize = Math.round(benefitsFontSize * 1.8); const iconGap = 18;
+        const iconsTotal = iconList.length * iconSize + Math.max(0, iconList.length - 1) * iconGap;
+        
+        const hasDays = !!(daysText && daysText.trim());
+        const sepW = hasDays ? 4 : 0;
+        const actualGap = hasDays ? sepGap : 0;
+        const infoTotalW = (hasDays ? daysW + actualGap : 0) + sepW + (hasDays ? actualGap : 0) + iconsTotal;
+        
+        let infoX = cx - infoTotalW / 2;
+        ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillStyle = navy;
+        
+        if (hasDays) {
+          safeFillText(ctx, daysText, infoX, cursorY, boxW * 0.5, 14);
+          infoX += daysW + actualGap;
+          ctx.fillRect(infoX, cursorY - 18, sepW, 36);
+          infoX += sepW + actualGap;
+        }
+        iconList.forEach((k, i) => {
+          drawMonoIcon(ctx, k, infoX + i * (iconSize + iconGap) + iconSize / 2, cursorY, iconSize, navy);
+        });
+        ctx.textBaseline = "alphabetic"; cursorY += 55;
+        const ringX = boxX + 30;
+        const ringY = cursorY;
+        const ringW = boxW - 60;
+        const ringH = priceBlockH - 8;
+        ctx.save();
+        ctx.fillStyle = yellowDark;
+        roundRect(ctx, ringX, ringY, ringW, ringH, 24);
+        ctx.fill();
+        ctx.restore();
+
+        const priceBlockY = ringY + 30;
+
+        // Quebra "R$ 229" em simbolo pequeno + valor gigante
+        const priceParts = priceStr.match(/^(\D+)\s*([\d.,]+)$/);
+        const sym = priceParts ? priceParts[1].trim() : curSym;
+        const valNum = priceParts ? priceParts[2].trim() : priceStr;
+
+        const isCash = paymentMode === "cash" || paymentMode === "cash_discount";
+        const isDownPlus = paymentMode === "down_plus";
+        
+        const topTxt = isCash ? "pagamento" : (isDownPlus ? "entrada +" : (pricePrefix !== undefined ? pricePrefix : "a partir de"));
+        let mainTxt = `${parcN}X`;
+        if (isCash) mainTxt = "A VISTA";
+        else if (isDownPlus) {
+          const clean = (installments || paymentLabel || "Entrada + 10x").replace(/entrada\s*\+?/i, "").trim();
+          mainTxt = clean || `${parcN}X`;
+        }
+        const btmTxt = isCash ? (paymentSuffix || "por pessoa").trim() : (isDownPlus ? "parcelas" : "sem juros");
+
+        // Tamanhos das fontes mais refinados para nÃ£o dominar (Task: centralizar e diminuir)
+        let pTxtSize = isCash ? 32 : 46; 
+        ctx.font = `900 ${pTxtSize}px Inter, Arial, sans-serif`;
+        const mainTxtW = ctx.measureText(mainTxt).width;
+        
+        ctx.font = "600 18px Inter, Arial, sans-serif";
+        const topTxtW = ctx.measureText(topTxt).width;
+        const btmTxtW = ctx.measureText(btmTxt).width;
+        
+        const leftColW = Math.max(mainTxtW, topTxtW, btmTxtW);
+
+        // Lado direito (preÃ§o)
+        let priceSize = 110;
+        ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+        let valW = ctx.measureText(valNum).width;
+        
+        // Se o valor for muito grande, reduz um pouco
+        while (valW > ringW * 0.45 && priceSize > 48) {
+           priceSize -= 4;
+           ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+           valW = ctx.measureText(valNum).width;
+        }
+        
+        const symSize = Math.round(priceSize * 0.36);
+        ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
+        const symW = ctx.measureText(sym).width;
+        const rightColW = symW + 12 + valW;
+
+        // Layout Centralizado
+        const midGap = 32;
+        const totalW = leftColW + midGap + rightColW;
+        const startX = ringX + (ringW - totalW) / 2;
+        
+        const leftColX = startX;
+        const rightColX = startX + leftColW + midGap;
+
+        // Desenhar Lado Esquerdo centralizado em si mesmo para harmonizar
+        ctx.textAlign = "center";
+        ctx.fillStyle = navy;
+        const leftColCx = leftColX + leftColW / 2;
+        
+        ctx.font = "600 18px Inter, Arial, sans-serif";
+        ctx.fillText(topTxt, leftColCx, priceBlockY - 2);
+        
+        ctx.font = `900 ${pTxtSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(mainTxt, leftColCx, priceBlockY + 36);
+        
+        ctx.font = "600 18px Inter, Arial, sans-serif";
+        ctx.fillText(btmTxt, leftColCx, priceBlockY + 68);
+
+        // Desenhar Lado Direito (alinhado pela baseline de mainTxt)
+        // Baseline de mainTxt Ã© priceBlockY + 36. O valor gigante centraliza visualmente com isso
+        const priceBaseY = priceBlockY + 60; 
+        
+        ctx.textAlign = "left";
+        ctx.font = `900 ${symSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(sym, rightColX, priceBaseY - priceSize * 0.45);
+        
+        ctx.font = `900 ${priceSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(valNum, rightColX + symW + 12, priceBaseY);
+
+        cursorY = ringY + ringH + totalGap;
+
+        // [TOTAL] rodape do box (apenas se showTotal)
+        if (totalH > 0) {
+          ctx.textAlign = "center";
+          ctx.font = "600 22px Inter, Arial, sans-serif";
+          ctx.fillStyle = navy;
+          ctx.fillText(totalStr, cx, cursorY + 22);
+          cursorY += totalH;
+        }
+
+        // [PROMO] faixa horizontal com texto Pix (opcional)
+        // Fundo da faixa = primaryColor (navy padrÃ£o). Texto sempre com contraste.
+        if (showPixBanner) {
+          const stripeY = safeBoxY + boxH - stripeH - 24;
+          const stripeX = boxX + 40;
+          const stripeW = boxW - 80;
+          const stripeBg = navyRaw; // mantem a cor escolhida pelo usuario p/ a faixa
+          const stripeFg = contrastOn(stripeBg); // texto preto/branco automatico
+          fillRoundRect(ctx, stripeX, stripeY, stripeW, stripeH, 16, stripeBg);
+          ctx.fillStyle = stripeFg;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = "900 26px Inter, Arial, sans-serif";
+
+          const customBanner = (pixBannerText || "").trim();
+          if (customBanner) {
+            ctx.fillText(customBanner, stripeX + stripeW / 2, stripeY + stripeH / 2 + 1);
+          } else {
+            // "{N}% OFF A VISTA NO  [pix]"
+            const pixText = `${descN}% OFF A VISTA NO`;
+            const pixTextW = ctx.measureText(pixText).width;
+            const pixIconSize = 36;
+            const pixGap = 12;
+            ctx.font = "800 28px Inter, Arial, sans-serif";
+            const pixLabelW = ctx.measureText("pix").width;
+            ctx.font = "900 26px Inter, Arial, sans-serif";
+            // pÃ­lula branca atras do logo+pix p/ garantir visibilidade da marca Pix
+            const pillPad = 10;
+            const pillW = pixIconSize + pixGap + pixLabelW + pillPad * 2;
+            const pillH = stripeH - 16;
+            const totalPixW = pixTextW + pixGap + pillW;
+            const pixStartX = stripeX + (stripeW - totalPixW) / 2;
+            ctx.textAlign = "left";
+            ctx.fillStyle = stripeFg;
+            ctx.fillText(pixText, pixStartX, stripeY + stripeH / 2 + 1);
+            const pillX = pixStartX + pixTextW + pixGap;
+            const pillY = stripeY + (stripeH - pillH) / 2;
+            fillRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, "#ffffff");
+            const pxCx = pillX + pillPad + pixIconSize / 2;
+            const pxCy = stripeY + stripeH / 2;
+            drawPixLogo(ctx, pxCx, pxCy, pixIconSize, "#32BCAD");
+            ctx.fillStyle = "#32BCAD";
+            ctx.font = "900 28px Inter, Arial, sans-serif";
+            ctx.fillText("pix", pillX + pillPad + pixIconSize + pixGap, stripeY + stripeH / 2 + 1);
+          }
+          ctx.textBaseline = "alphabetic";
+        }
+
+        await drawFinalBranding(
+          ctx, width, height, logoDataUrl, 
+          options.footerContact1Icon ? { icon: options.footerContact1Icon.startsWith("whatsapp") ? "whatsapp_green" : options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+          options.footerContact2Icon ? { icon: options.footerContact2Icon.startsWith("whatsapp") ? "whatsapp_green" : options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+          effectiveTextColor,
+          userFamily,
+          false
+        );
+        return canvas.toDataURL("image/png");
+      }
+    }
+
+    const logoH = hasLogo ? 130 : 0;
+    const destUp = (destination || "DESTINO").toUpperCase();
+
+    if (variant === 0) {
+      // REGRA GLOBAL DE LEGIBILIDADE: texto sempre tem que destacar do fundo.
+      // Painel = secondaryColor â†’ texto principal = primaryColor com contraste garantido.
+      // Badge  = primaryColor   â†’ texto da badge = secondaryColor com contraste garantido.
+      const v0PanelBg = secondaryColor;
+      const v0OnPanel = getSafeColor(v0PanelBg, primaryColor);
+      const v0BadgeBg = primaryColor;
+      const v0OnBadge = ensureContrast(secondaryColor, v0BadgeBg, 0.35);
+
+      // 1) Calcula tamanho do tÃ­tulo para saber a altura real
+      ctx.textAlign = "left";
+      let titleSize = 78;
+      ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(titleText).width > contentWidth && titleSize > 38) {
+        titleSize -= 4;
+        ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
+      }
+
+      let benefitsList = highlights.filter((h) => h?.text && h.text.trim().length > 0);
+      if (travelPeriod && travelPeriod.trim()) {
+        const tp = travelPeriod.trim();
+        benefitsList = benefitsList.filter(b => b.text.toLowerCase() !== tp.toLowerCase());
+        benefitsList.unshift({ text: tp, icon: "calendar" as IconKey });
+      }
+      benefitsList = benefitsList.slice(0, 6);
+      const benefitsCount = Math.max(1, benefitsList.length);
+      const benefitLineH = benefitsCount <= 4 ? 44 : benefitsCount === 5 ? 38 : 34;
+      const benefitsBlockH = benefitsCount * benefitLineH;
+
+      // 3) Altura do bloco preÃ§o (fixa, ~120px)
+      const priceBlockH = 120;
+      const contentRowH = Math.max(benefitsBlockH, priceBlockH);
+
+      // 4) Altura ADAPTATIVA do painel:
+      const badgeH = 60;
+      const topPaddingBeforeTitle = 40;
+      const titleToContent = 50;
+      const bottomPadding = 50;
+      const safeAnchorY = isStory ? safeTop : (logoH + 28);
+      
+      const topH = Math.min(
+        Math.round(height * 0.62),
+        Math.max(
+          Math.round(height * 0.46),
+          safeAnchorY + badgeH + topPaddingBeforeTitle + titleSize + titleToContent + contentRowH + bottomPadding
+        )
+      );
+
+      // 5) Pinta painel
+      ctx.fillStyle = v0PanelBg;
+      ctx.fillRect(0, 0, width, topH);
+
+      // 6) Badge "Saindo de"
+      const badgeY = safeAnchorY;
+      if (city && city.trim() !== '' && city.trim().toLowerCase() !== 'fortaleza') {
+        fillRoundRect(ctx, left, badgeY, 500, badgeH, 8, v0BadgeBg);
+        ctx.fillStyle = v0OnBadge;
+        ctx.font = "800 26px Inter, Arial, sans-serif";
+        ctx.textAlign = "left"; ctx.textBaseline = "middle";
+        ctx.fillText(`Saindo de ${cityFmt}`, left + 20, badgeY + badgeH / 2);
+        ctx.textBaseline = "alphabetic";
+      }
+
+      // 7) Headline (1 linha, fonte adaptativa)
+      ctx.fillStyle = v0OnPanel;
+      ctx.font = `900 ${titleSize}px Inter, Arial, sans-serif`;
+      const titleY = Math.max(badgeY + badgeH + topPaddingBeforeTitle + titleSize, safeAnchorY + 12 + titleSize);
+      safeFillText(ctx, titleText, left, titleY, width - left - 40, 22);
+
+      // 8) Benefits + PreÃ§o lado a lado â€” preÃ§o ALINHADO Ã€ DIREITA pra eliminar
+      //    o espaÃ§o em branco que sobrava no canto direito.
+      const rowTopY = titleY + titleToContent;
+      const benefitsX = left;
+      // Largura do bloco de preÃ§o: ~46% da contentWidth, mÃ­nimo 380px
+      const priceBlockW = Math.max(380, Math.round(contentWidth * 0.46));
+      const priceX = width - 60 - priceBlockW; // encosta no padding direito
+      const benefitsMaxW = priceX - 24 - benefitsX;
+
+      ctx.fillStyle = v0OnPanel;
+      const iconSize0 = 28;
+      const iconTextGap = 42; // espaÃ§o reservado para o Ã­cone + margem
+      benefitsList.forEach((b, i) => {
+        const iconKey = (b.icon as IconKey) || (["bus", "map", "guide", "star"][i] as IconKey) || "check";
+        const lineY = rowTopY + 28 + i * benefitLineH;
+        // Desenha Ã­cone grÃ¡fico
+        drawMonoIcon(ctx, iconKey, benefitsX + iconSize0 / 2, lineY - iconSize0 * 0.25, iconSize0, v0OnPanel);
+        // Texto ao lado do Ã­cone, com auto-shrink
+        let bfs = 26;
+        ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
+        const textMaxW = benefitsMaxW - iconTextGap;
+        while (ctx.measureText(b.text).width > textMaxW && bfs > 16) {
+          bfs -= 2;
+          ctx.font = `700 ${bfs}px Inter, Arial, sans-serif`;
+        }
+        ctx.textBaseline = "middle";
+        safeFillText(ctx, b.text, benefitsX + iconTextGap, lineY - benefitLineH * 0.1, textMaxW, 14);
+        ctx.textBaseline = "alphabetic";
+      });
+
+      // Divisor vertical
+      ctx.fillStyle = v0OnPanel; ctx.globalAlpha = 0.2;
+      ctx.fillRect(priceX - 24, rowTopY, 2, contentRowH);
+      ctx.globalAlpha = 1;
+
+      // PreÃ§o â€” agora CENTRALIZADO dentro do bloco direito
+      const priceCenterX = priceX + priceBlockW / 2;
+      ctx.textAlign = "center";
+      ctx.fillStyle = v0OnPanel; ctx.font = "600 22px Inter, Arial, sans-serif";
+      safeFillText(ctx, (topLabel || "por apenas").toString(), priceCenterX, rowTopY + 28, priceBlockW - 20, 14);
+      const priceStr = mainPrice || `${curSym} ${price}`;
+      // Auto-shrink do preÃ§o pra nÃ£o vazar do bloco direito
+      let priceFs = 64;
+      ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(priceStr).width > priceBlockW - 20 && priceFs > 30) {
+        priceFs -= 4;
+        ctx.font = `900 ${priceFs}px Inter, Arial, sans-serif`;
+      }
+      ctx.fillStyle = v0OnPanel;
+      safeFillText(ctx, priceStr, priceCenterX, rowTopY + 92, priceBlockW - 20, 24);
+      ctx.font = "600 20px Inter, Arial, sans-serif"; ctx.fillStyle = v0OnPanel;
+      ctx.globalAlpha = 0.7;
+      ctx.fillText(bottomSuffix, priceCenterX, rowTopY + 120);
+      ctx.globalAlpha = 1;
+      ctx.textAlign = "left";
+
+      // 9) Foto MAIOR na base (porque o painel encolheu)
+      const photoH0 = height - topH;
+      const c0 = fitCover(image.naturalWidth, image.naturalHeight, width, photoH0, 0.42);
+      ctx.drawImage(image, c0.sx, c0.sy, c0.sw, c0.sh, 0, topH, width, photoH0);
+      await drawFinalBranding(
+        ctx, width, height, logoDataUrl, 
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        effectiveTextColor,
+        userFamily,
+        false,
+        logoFormat
+      );
+      return canvas.toDataURL("image/png");
+    }
+
+
+
+    // â”€â”€ V1 Â· REF "Black Friday" â€” painel escuro ESQUERDA + coluna fotos DIREITA â”€â”€
+    // Painel primario na esquerda com texto/preco; coluna direita com foto empilhada
+    if (variant === 1) {
+      await drawProminentLogo(ctx, 40, 40, 120);
+      // â”€â”€ V1 STORIES 9:16 â€” REFATORADO: painel esquerdo SÃ“LIDO + foto sangrada Ã¡ direita â”€
+      const panelW = Math.round(width * 0.44);
+      const photoX = panelW;
+      const photoW = width - panelW;
+      const v1PanelBg = primaryColor;
+      const v1OnPanel = getSafeColor(v1PanelBg);
+      const v1Accent  = getSafeColor(v1PanelBg, secondaryColor);
+
+      // 1) PAINEL ESQUERDO solido
+      ctx.fillStyle = v1PanelBg;
+      ctx.fillRect(0, 0, panelW, height);
+
+      // 2) FOTO sangrada Ã¡ direita (sem moldura)
+      const c1 = fitCover(image.naturalWidth, image.naturalHeight, photoW, height, 0.40);
+      ctx.drawImage(image, c1.sx, c1.sy, c1.sw, c1.sh, photoX, 0, photoW, height);
+
+      // 3) Layout do painel
+      const px = 56;
+      const pw = panelW - px * 2;
+      // Teto EXTREMAMENTE apertado no Feed para ganhar mÃ¡xima Ã¡rea Ãºtil vertical (subido para 24px)
+      const logoReserve = format === "story" ? safeTop : (hasLogo ? 110 : 24);
+
+      // 4) BADGE pÃ­lula
+      const badgeText = (promoName || "OFERTA ESPECIAL").toUpperCase();
+      const badgeBg   = v1Accent;
+      const badgeFg   = contrastOn(badgeBg);
+      const badgeH    = 56;
+      const badgeY    = logoReserve;
+      ctx.font = "800 22px Inter, Arial, sans-serif";
+      const badgeTextW = ctx.measureText(badgeText).width;
+      const badgeW = Math.min(pw, badgeTextW + 40);
+      fillRoundRect(ctx, px, badgeY, badgeW, badgeH, badgeH / 2, badgeBg);
+      ctx.fillStyle = badgeFg;
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      safeFillText(ctx, badgeText, px + 20, badgeY + badgeH / 2, badgeW - 40, 14);
+      ctx.textBaseline = "alphabetic";
+
+      // 5) TÃTULO PRINCIPAL (Gap ajustado para 65px no feed p/ compensar baseline e nunca sobrepor!)
+      const titleY = badgeY + badgeH + (format === "story" ? 40 : 65); 
+      ctx.fillStyle = v1OnPanel; 
+      
+      // ComeÃ§a um pouco menor no feed (42px) para nÃ£o estourar no topo
+      let mainTitleSize = format === "story" ? 48 : 42; 
+      ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
+
+      const titleWords = (titleText || "").split(/\s+/).filter(Boolean);
+      let titleLines: string[] = [];
+      let currentLine = "";
+
+      for (const w of titleWords) {
+        const tryLine = currentLine ? `${currentLine} ${w}` : w;
+        ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
+        if (ctx.measureText(tryLine).width > pw && currentLine) {
+          titleLines.push(currentLine);
+          currentLine = w;
+        } else {
+          currentLine = tryLine;
+        }
+      }
+      if (currentLine) titleLines.push(currentLine);
+
+      // Encolhimento dinÃ¢mico de seguranÃ§a do font-size para que caiba perfeitamente no pw
+      while (titleLines.some(ln => ctx.measureText(ln).width > pw) && mainTitleSize > 24) {
+        mainTitleSize -= 2;
+        ctx.font = `900 ${mainTitleSize}px Inter, Arial, sans-serif`;
+      }
+
+      titleLines.forEach((ln, i) => {
+        ctx.fillText(ln, px, titleY + i * (mainTitleSize + 8));
+      });
+
+      const titleBlockH = titleLines.length * (mainTitleSize + 8);
+
+      // 7) PRICE CARD & BENEFITS - Engenharia dinÃ¢mica inteligente
+      const priceBlockH = 200;
+      
+      // Ponto limite calculado: no feed, deixamos mais alto (height - 460) para garantir respiro na base
+      const limitY = format === "story" ? height - 680 : height - 460;
+      
+      // 8) BENEFITS â€” pÃ­lulas adaptativas no espaco restante
+      let benefitsListV1 = highlights.filter((h) => h?.text && h.text.trim().length > 0);
+      if (travelPeriod && travelPeriod.trim()) {
+        const tp = travelPeriod.trim();
+        benefitsListV1 = benefitsListV1.filter(b => b.text.toLowerCase() !== tp.toLowerCase());
+        benefitsListV1.unshift({ text: tp, icon: "calendar" as IconKey });
+      }
+      benefitsListV1 = benefitsListV1.slice(0, 6);
+      const hlStart = titleY + titleBlockH + (format === "story" ? 24 : 16);
+      
+      // O espaÃ§o disponÃ­vel forÃ§a o encolhimento das pÃ­lulas, empurrando tudo para cima logicamente!
+      const hlAvailH = limitY - hlStart; 
+      const count = Math.max(1, benefitsListV1.length);
+      const pillGap = 12;
+      const pillH = Math.max(42, Math.min(68, Math.floor((hlAvailH - pillGap * (count - 1)) / count)));
+
+      // O bloco de preÃ§o AGORA segue dinamicamente o fim dos benefÃ­cios TANTO no story QUANTO no feed!
+      const lastBenefitY = hlStart + (count - 1) * (pillH + pillGap) + pillH;
+      let priceBlockY = lastBenefitY + (format === "story" ? height * 0.08 : 28);
+      
+      // Fontes e Ã­cones aumentados em 20% para legibilidade impecÃ¡vel
+      const pillFont = pillH >= 56 ? 28 : pillH >= 46 ? 24 : 20;
+      const iconFont = pillH >= 56 ? 34 : 30;
+      const pillBg = v1OnPanel === "#ffffff" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.14)";
+
+      benefitsListV1.forEach((h, i) => {
+        const py = hlStart + i * (pillH + pillGap);
+        fillRoundRect(ctx, px, py, pw, pillH, 14, pillBg);
+        ctx.fillStyle = v1Accent;
+        ctx.font = `400 ${iconFont}px Inter, Arial, sans-serif`;
+        ctx.textBaseline = "middle";
+        drawMonoIcon(ctx, h.icon || "check", px + 22 + 32/2, py + pillH / 2, 32, v1Accent); // Ãcone aumentado para 32px (20% maior)
+        ctx.fillStyle = v1OnPanel;
+        let tf = pillFont;
+        ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
+        const maxTw = pw - 90; // Respiro ampliado
+        while (ctx.measureText(h.text).width > maxTw && tf > 14) {
+          tf -= 2;
+          ctx.font = `700 ${tf}px Inter, Arial, sans-serif`;
+        }
+        safeFillText(ctx, h.text, px + 76, py + pillH / 2, pw - 90, 14); // Afastamento aumentado para 76px para o Ã­cone maior
+        ctx.textBaseline = "alphabetic";
+      });
+
+      // 9) PRICE CARD overlay
+      const priceCardOverlay = v1OnPanel === "#ffffff" ? "rgba(0,0,0,0.32)" : "rgba(255,255,255,0.28)";
+      fillRoundRect(ctx, px, priceBlockY, pw, priceBlockH, 18, priceCardOverlay);
+      ctx.textAlign = "center";
+      ctx.fillStyle = v1Accent;
+      ctx.font = "800 22px Inter, Arial, sans-serif";
+      ctx.fillText((topLabel || "A VISTA").toString().toUpperCase(), px + pw / 2, priceBlockY + 36);
+      ctx.fillStyle = v1OnPanel;
+      
+      let priceStrV1 = mainPrice || `${curSym} ${price}`;
+      if (hideCents) {
+        // Remove os decimais/centavos do final da string de preÃ§o caso desativado
+        priceStrV1 = priceStrV1.replace(/[.,]\d{2}\s*$/, "");
+      }
+
+      let pfsV1 = 76;
+      ctx.font = `900 ${pfsV1}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(priceStrV1).width > pw - 32 && pfsV1 > 30) {
+        pfsV1 -= 4;
+        ctx.font = `900 ${pfsV1}px Inter, Arial, sans-serif`;
+      }
+      const priceBaseY = priceBlockY + 36 + pfsV1 + 4;
+      safeFillText(ctx, priceStrV1, px + pw / 2, priceBaseY, pw - 40, 24);
+      ctx.fillStyle = v1Accent;
+      ctx.font = "800 22px Inter, Arial, sans-serif"; // Negrito forte para legibilidade mÃ¡xima
+      ctx.fillText(bottomSuffix || "por pessoa", px + pw / 2, priceBaseY + 30); // Ajustado Y para ser exatamente 30px abaixo da linha de base do valor principal
+      ctx.textAlign = "left";
+
+      await drawFinalBranding(
+        ctx, width, height, logoDataUrl, 
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        effectiveTextColor,
+        userFamily,
+        false,
+        logoFormat
+      );
+      if (false) {
+        // ==========================================
+        // DEDICATED RENDERER FOR V1 SQUARE 1:1 FOOTER
+        // ==========================================
+        const footerHeight = 100;
+        const footerY = height - footerHeight - 20;
+        const centerY = footerY + footerHeight / 2;
+
+        // 1. VÃ©u Gradiente Escuro
+        const veilStartY = footerY - 80;
+        const grad = ctx.createLinearGradient(0, veilStartY, 0, height);
+        grad.addColorStop(0, "rgba(0,0,0,0.0)");
+        grad.addColorStop(0.2, "rgba(0,0,0,0.7)");
+        grad.addColorStop(1, "rgba(0,0,0,0.96)");
+        ctx.save();
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, veilStartY, width, height - veilStartY);
+        ctx.restore();
+
+        // 2. Resolver Contatos
+        const contact1 = options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined);
+        const contact2 = options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined);
+
+        const contactsToDraw: { icon: string; value: string }[] = [];
+        if (contact1 && contact1.icon !== "none" && contact1.value && contact1.value.trim()) contactsToDraw.push(contact1);
+        if (contact2 && contact2.icon !== "none" && contact2.value && contact2.value.trim()) contactsToDraw.push(contact2);
+
+        if (contactsToDraw.length > 0) {
+          ctx.save();
+          ctx.textAlign = "right";
+          ctx.textBaseline = "middle";
+          ctx.fillStyle = "#ffffff";
+          ctx.shadowColor = "rgba(0,0,0,0.8)";
+          ctx.shadowBlur = 6;
+
+          const textRightX = width - 60;
+          const itemGap = 20;
+          const safeFont = userFamily || "Inter";
+          
+          let yPos = contactsToDraw.length === 2 ? centerY + (footerHeight * 0.18) : centerY;
+
+          for (const c of contactsToDraw) {
+            let displayValue = c.value;
+            const isWhatsapp = c.icon.startsWith("whatsapp");
+            const isWebsite = c.icon === "website" || c.icon === "website_custom";
+            
+            if (isWhatsapp) displayValue = formatAdPhone(c.value);
+            if (c.icon.startsWith("instagram")) displayValue = c.value.startsWith("@") ? c.value : `@${c.value}`;
+
+            let currentFontSize = 22;
+            const iconSizeFactor = 1.35;
+            let currentIconSize = currentFontSize * iconSizeFactor;
+
+            // REGRA MATEMÃTICA RIGOROSA DE LIMITE PARA ESTE TEXTO NA V1 QUADRADO
+            const maxUrlWidth = width * 0.40;
+
+            ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
+            while (ctx.measureText(displayValue).width > maxUrlWidth && currentFontSize > 12) {
+              currentFontSize -= 1;
+              currentIconSize = currentFontSize * iconSizeFactor;
+              ctx.font = `700 ${currentFontSize}px ${safeFont}, sans-serif`;
+            }
+
+            ctx.fillText(displayValue, textRightX, yPos);
+            const textWidth = ctx.measureText(displayValue).width;
+            const iconX = textRightX - textWidth - itemGap - currentIconSize / 2;
+
+            if (isWhatsapp) {
+              await drawWhatsAppContact(ctx, iconX, yPos, currentIconSize);
+            } else if (c.icon.startsWith("instagram")) {
+              drawAdInstagramIcon(ctx, iconX, yPos, currentIconSize, "gradient");
+            } else if (isWebsite) {
+              drawAdWebsiteIcon(ctx, iconX, yPos, currentIconSize, ctx.fillStyle as string);
+            }
+
+            yPos -= (footerHeight * 0.36);
+          }
+          ctx.restore();
+        }
+      } else {
+        await drawFinalBranding(
+          ctx, width, height, logoDataUrl, 
+          options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+          options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+          effectiveTextColor,
+          userFamily,
+          true,
+          logoFormat
+        );
+      }
+    return canvas.toDataURL("image/png");
+    }
+
+    // â”€â”€ V2 Â· REF "Santa Teresa" â€” foto topo + faixa headline + benefits + preco â”€â”€
+    // Layout ADAPTATIVO: a foto cresce/encolhe conforme a quantidade de benefÃ­cios,
+    // garantindo que TODOS os benefÃ­cios aparecam (ate 5) e que nÃ£o sobre espaco branco.
+    if (variant === 2) {
+      await drawProminentLogo(ctx, 40, 40, 120);
+
+      if (format === "story") {
+        // ============================================================
+        // DEDICATED REENGINEERING FOR V2 STORIES (9:16)
+        // ============================================================
+        ctx.fillStyle = "#f7f4ef"; 
+        ctx.fillRect(0, 0, width, height);
+
+        const v2CardBg = primaryColor;
+        const v2CardLabel = getSafeColor(v2CardBg, secondaryColor);
+        const v2BenefitColor = getSafeColor("#f7f4ef", secondaryColor);
+        const v2HeadlineColor = v2CardLabel;
+
+        const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
+        const benefitsCountV2 = Math.max(1, benefitsListV2.length);
+
+        // 1) Dynamic Price Block - Mirror Feed logic to avoid being oversized & fix hardcoded labels
+        const priceStrV2 = mainPrice || `${curSym} ${price}`;
+        const topLabelTxt = (topLabel || installments || "por apenas").toString().toUpperCase();
+        
+        ctx.font = "700 24px Inter, Arial, sans-serif";
+        const w1 = ctx.measureText(topLabelTxt).width;
+        ctx.font = "900 74px Inter, Arial, sans-serif";
+        const w2 = ctx.measureText(priceStrV2).width;
+        ctx.font = "800 22px Inter, Arial, sans-serif";
+        const w3 = ctx.measureText((bottomSuffix || "por pessoa").toUpperCase()).width;
+        
+        const maxContentW = Math.max(w1, w2, w3);
+        const priceBlockW = Math.min(width * 0.8, Math.max(width * 0.45, Math.round(maxContentW + 100)));
+        const priceCardH = 168;
+        const priceCardX = Math.round((width - priceBlockW) / 2);
+        // Securely anchor above the Instagram safe bottom zone (1440)
+        const priceCardY = panelBottom - priceCardH - 35; 
+        
+        fillRoundRect(ctx, priceCardX, priceCardY, priceBlockW, priceCardH, 24, v2CardBg);
+        
+        // Subtle relief effect on card
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,0.3)";
+        ctx.lineWidth = 2.5;
+        fillRoundRect(ctx, priceCardX + 1.5, priceCardY + 1.5, priceBlockW - 3, priceCardH - 3, 22, "transparent");
+        ctx.stroke();
+        ctx.restore();
+
+        const cardCenterX = priceCardX + priceBlockW / 2;
+        ctx.textAlign = "center";
+        ctx.fillStyle = v2CardLabel;
+        
+        ctx.font = "800 24px Inter, Arial, sans-serif";
+        safeFillText(ctx, topLabelTxt, cardCenterX, priceCardY + 45, priceBlockW - 40, 14);
+
+        let pfsV2 = 74;
+        ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(priceStrV2).width > priceBlockW - 50 && pfsV2 > 28) {
+          pfsV2 -= 4;
+          ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
+        }
+        safeFillText(ctx, priceStrV2, cardCenterX, priceCardY + 108, priceBlockW - 50, 24);
+
+        ctx.fillStyle = v2CardLabel;
+        ctx.globalAlpha = 0.9;
+        ctx.font = "800 22px Inter, Arial, sans-serif";
+        ctx.fillText((bottomSuffix || "por pessoa").toUpperCase(), cardCenterX, priceCardY + 150);
+        ctx.globalAlpha = 1.0;
+
+        // Optional Travel Period injection between components
+        let periodYOffset = 0;
+        if (travelPeriod && travelPeriod.trim()) {
+          ctx.fillStyle = v2BenefitColor;
+          ctx.font = "900 36px Inter, Arial, sans-serif";
+          ctx.fillText(travelPeriod.trim().toUpperCase(), width / 2, priceCardY - 52);
+          periodYOffset = 72; // Allocates extra safety offset upwards
+        }
+        ctx.textAlign = "left";
+
+        // 2) Intelligent Multi-line Headline Bar
+        const resolvedTitle = (titleText || "").toUpperCase();
+        ctx.font = "900 56px Inter, Arial, sans-serif";
+        const titleLines = wrapTextSafe(ctx, resolvedTitle, contentWidth - 40, 2, 34);
+        const isMultiLine = titleLines.length > 1;
+        const faixaH = isMultiLine ? 190 : 135;
+
+        // ðŸ›¡ï¸ DYNAMIC COLLISION PROTECTION ENGINE ðŸ›¡ï¸
+        // Calculates guaranteed minimum vertical space reservation to prevent component overlaps.
+        const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
+        const benefitGap = benefitRowsV2 <= 2 ? 82 : 68; 
+        const benefitsEffectiveH = (benefitRowsV2 - 1) * benefitGap;
+        
+        // We require at least the highlights stack, the price floor, and reasonable empty buffers (70px total)
+        const requiredBuff = 70; 
+        const contentFloorLimit = priceCardY - periodYOffset;
+        // Safe ceiling threshold for content based on strict stacking needs
+        const maxSafeCeiling = contentFloorLimit - (benefitsEffectiveH + requiredBuff);
+
+        // Re-evaluate optimal photo anchor to make it large, but fit inside constraints
+        let photoBottom = 800; 
+        // photoBottom + 16 (gap) + faixaH must not exceed maxSafeCeiling
+        const photoConstraint = maxSafeCeiling - 16 - faixaH;
+        photoBottom = Math.min(photoBottom, photoConstraint);
+        
+        const faixaY = photoBottom + 16;
+
+        fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, v2CardBg);
+        ctx.fillStyle = v2HeadlineColor;
+        ctx.textBaseline = "middle";
+        
+        const lineSpacing = 62;
+        const textBlockH = isMultiLine ? lineSpacing : 0;
+        const startTextY = (faixaY + faixaH / 2) - (textBlockH / 2);
+        
+        titleLines.forEach((txt, i) => {
+           safeFillText(ctx, txt, left, startTextY + (i * lineSpacing), width - left - 40, 20);
+        });
+        ctx.textBaseline = "alphabetic";
+
+        // 3) Expanded Photo Mask - Autonomously size-constrained to prevent content bleed
+        const photoTop = safeTop - 20; 
+        const fW2 = width - 32;
+        const fH2 = photoBottom - photoTop; 
+        const c2 = fitCover(image.naturalWidth, image.naturalHeight, fW2, fH2, 0.36);
+        ctx.save();
+        fillRoundRect(ctx, 16, photoTop, fW2, fH2, 22, "#ccc");
+        ctx.clip();
+        ctx.drawImage(image, c2.sx, c2.sy, c2.sw, c2.sh, 16, photoTop, fW2, fH2);
+        ctx.restore();
+
+        // 4) Mathematical Vertical Balancing (Safe Centering)
+        const bfs = benefitRowsV2 <= 2 ? 38 : 32; 
+        const contentCeilLimit = faixaY + faixaH;
+        const verticalFreeSpace = contentFloorLimit - contentCeilLimit;
+        
+        // Anchor top at the precise vertical half-point of the computed gap
+        const benefitsTop = contentCeilLimit + (verticalFreeSpace - benefitsEffectiveH) / 2;
+
+        const colGapV2 = 28;
+        const colWV2 = (contentWidth - colGapV2) / 2;
+
+        benefitsListV2.forEach((h, i) => {
+          let fs = bfs;
+          const col = i % 2;
+          const row = Math.floor(i / 2);
+          const tx = left + col * (colWV2 + colGapV2);
+          const ty = benefitsTop + row * benefitGap;
+          
+          const iconSizeV2 = Math.round(fs * 1.5);
+          // Offset icon slightly upwards visually to accommodate text baseline
+          drawMonoIcon(ctx, h.icon || "check", tx + iconSizeV2 / 2, ty - fs/6, iconSizeV2, v2BenefitColor);
+          
+          ctx.fillStyle = v2BenefitColor;
+          ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
+          const textX = tx + iconSizeV2 + 15;
+          const textMaxW = colWV2 - (iconSizeV2 + 15);
+          while (ctx.measureText(h.text).width > textMaxW && fs > 14) {
+            fs -= 1;
+            ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
+          }
+          ctx.fillText(h.text, textX, ty);
+        });
+
+      } else {
+        // ============================================================
+        // REENGINEERED SQUARE 1:1 LAYOUT (FULL PARITY WITH STORY ARCHITECTURE)
+        // ============================================================
+        ctx.fillStyle = "#f7f4ef"; 
+        ctx.fillRect(0, 0, width, height);
+
+        const v2CardBg = primaryColor;
+        const v2CardLabel = getSafeColor(v2CardBg, secondaryColor);
+        const v2BenefitColor = getSafeColor("#f7f4ef", secondaryColor);
+        const v2HeadlineColor = v2CardLabel;
+
+        const benefitsListV2 = highlights.filter((h) => h?.text && h.text.trim().length > 0).slice(0, 6);
+        const benefitsCountV2 = Math.max(1, benefitsListV2.length);
+
+        // 1) Dynamic Price Block for Feed
+        const priceStrV2 = mainPrice || `${curSym} ${price}`;
+        const topLabelTxt = (topLabel || installments || "por apenas").toString().toUpperCase();
+        const bottomLabelTxt = (bottomSuffix || "por pessoa").toString().toUpperCase();
+        
+        ctx.font = "700 24px Inter, Arial, sans-serif";
+        const w1 = ctx.measureText(topLabelTxt).width;
+        ctx.font = "900 68px Inter, Arial, sans-serif";
+        const w2 = ctx.measureText(priceStrV2).width;
+        ctx.font = "600 22px Inter, Arial, sans-serif";
+        const w3 = ctx.measureText(bottomLabelTxt).width;
+        
+        const maxContentW = Math.max(w1, w2, w3);
+        const priceBlockW = Math.min(width * 0.8, Math.max(width * 0.40, Math.round(maxContentW + 85)));
+        const priceCardH = 168;
+        const priceCardX = Math.round((width - priceBlockW) / 2);
+        // Anchored elegantly above global footer branding zone
+        const priceCardY = panelBottom - priceCardH - 40; 
+
+        // Subtle relief effect on card
+        fillRoundRect(ctx, priceCardX, priceCardY, priceBlockW, priceCardH, 20, v2CardBg);
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,0.3)";
+        ctx.lineWidth = 2.5;
+        fillRoundRect(ctx, priceCardX + 1.5, priceCardY + 1.5, priceBlockW - 3, priceCardH - 3, 18, "transparent");
+        ctx.stroke();
+        ctx.restore();
+        
+        const cardCenterX = priceCardX + priceBlockW / 2;
+        ctx.fillStyle = v2CardLabel; 
+        ctx.font = "800 24px Inter, Arial, sans-serif";
+        ctx.textAlign = "center";
+        safeFillText(ctx, topLabelTxt, cardCenterX, priceCardY + 42, priceBlockW - 30, 14);
+        
+        let pfsV2 = 68;
+        ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
+        while (ctx.measureText(priceStrV2).width > priceBlockW - 40 && pfsV2 > 28) {
+          pfsV2 -= 4;
+          ctx.font = `900 ${pfsV2}px Inter, Arial, sans-serif`;
+        }
+        safeFillText(ctx, priceStrV2, cardCenterX, priceCardY + 108, priceBlockW - 40, 24);
+        
+        ctx.font = "800 22px Inter, Arial, sans-serif";
+        ctx.globalAlpha = 0.9;
+        ctx.fillText(bottomLabelTxt, cardCenterX, priceCardY + 150);
+        ctx.globalAlpha = 1.0;
+        
+        let periodYOffset = 0;
+        if (travelPeriod && travelPeriod.trim()) {
+          ctx.fillStyle = v2BenefitColor;
+          ctx.font = "900 32px Inter, Arial, sans-serif";
+          ctx.fillText(travelPeriod.trim().toUpperCase(), width / 2, priceCardY - 46);
+          periodYOffset = 65; 
+        }
+        ctx.textAlign = "left";
+
+        // 2) Intelligent Multi-line Headline Bar
+        const resolvedTitle = (titleText || "").toUpperCase();
+        ctx.font = "900 52px Inter, Arial, sans-serif";
+        const titleLines = wrapTextSafe(ctx, resolvedTitle, contentWidth - 40, 2, 32);
+        const isMultiLine = titleLines.length > 1;
+        const faixaH = isMultiLine ? 150 : 110;
+
+        // ðŸ›¡ï¸ DYNAMIC COLLISION PROTECTION ENGINE ðŸ›¡ï¸
+        const benefitRowsV2 = Math.ceil(benefitsCountV2 / 2);
+        const benefitGap = benefitRowsV2 <= 2 ? 74 : 58;
+        const benefitsEffectiveH = (benefitRowsV2 - 1) * benefitGap;
+        
+        // Fixed reservation buffer required for the mid-panel assets
+        const requiredBuff = 60; 
+        const contentFloorLimit = priceCardY - periodYOffset;
+        const maxSafeCeiling = contentFloorLimit - (benefitsEffectiveH + requiredBuff);
+
+        // Layout Positioning: TOP-DOWN with dynamic safety clamp
+        let photoBottom = 480; 
+        const photoConstraint = maxSafeCeiling - 16 - faixaH;
+        photoBottom = Math.min(photoBottom, photoConstraint);
+        
+        const photoTop = safeTop - 20; // Typically 40 in square mode
+        const faixaY = photoBottom + 16;
+
+        fillRoundRect(ctx, 0, faixaY, width, faixaH, 0, v2CardBg);
+        ctx.fillStyle = v2HeadlineColor;
+        ctx.textBaseline = "middle";
+        
+        const lineSpacing = 58;
+        const textBlockH = isMultiLine ? lineSpacing : 0;
+        const startTextY = (faixaY + faixaH / 2) - (textBlockH / 2);
+
+        titleLines.forEach((txt, i) => {
+           safeFillText(ctx, txt, left, startTextY + (i * lineSpacing), width - left - 40, 20);
+        });
+        ctx.textBaseline = "alphabetic";
+
+        // 3) The Expanded Photo Mask
+        const fW2 = width - 32;
+        const fH2 = photoBottom - photoTop;
+        const c2 = fitCover(image.naturalWidth, image.naturalHeight, fW2, fH2, 0.36);
+        ctx.save();
+        fillRoundRect(ctx, 16, photoTop, fW2, fH2, 22, "#ccc");
+        ctx.clip();
+        ctx.drawImage(image, c2.sx, c2.sy, c2.sw, c2.sh, 16, photoTop, fW2, fH2);
+        ctx.restore();
+
+        // 4) Highlights Centering Module (Aligns content between panels)
+        const bfs = benefitRowsV2 <= 2 ? 36 : 32;
+        
+        const contentCeilLimit = faixaY + faixaH;
+        // Garante um respiro mÃ­nimo de 35px abaixo da faixa preta
+        const topSpacing = 35;
+        const contentCeilWithSpacing = contentCeilLimit + topSpacing;
+        const verticalFreeSpace = contentFloorLimit - contentCeilWithSpacing;
+        
+        const benefitsTop = contentCeilWithSpacing + Math.max(0, (verticalFreeSpace - benefitsEffectiveH) / 2);
+
+        const colGapV2 = 28;
+        const colWV2 = (contentWidth - colGapV2) / 2;
+        
+        ctx.save();
+        ctx.textBaseline = "middle";
+        benefitsListV2.forEach((h, i) => {
+          let fs = bfs;
+          const col = i % 2;
+          const row = Math.floor(i / 2);
+          const tx = left + col * (colWV2 + colGapV2);
+          const ty = benefitsTop + row * benefitGap;
+          
+          const iconSizeV2 = Math.round(fs * 1.4);
+          // Desenha o Ã­cone centralizado perfeitamente na linha ty
+          drawMonoIcon(ctx, h.icon || "check", tx + iconSizeV2/2, ty, iconSizeV2, v2BenefitColor);
+          
+          ctx.fillStyle = v2BenefitColor;
+          ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
+          const textX = tx + iconSizeV2 + 14;
+          const textMaxW = colWV2 - (iconSizeV2 + 14);
+          while (ctx.measureText(h.text).width > textMaxW && fs > 14) {
+            fs -= 1;
+            ctx.font = `700 ${fs}px Inter, Arial, sans-serif`;
+          }
+          // Desenha o texto centralizado na linha ty
+          ctx.fillText(h.text, textX, ty);
+        });
+        ctx.restore();
+      }
+
+      await drawFinalBranding(
+        ctx, width, height, logoDataUrl, 
+        options.footerContact1Icon ? { icon: options.footerContact1Icon, value: options.footerContact1Value || '' } : (whatsapp ? { icon: 'whatsapp_green', value: whatsapp } : undefined), 
+        options.footerContact2Icon ? { icon: options.footerContact2Icon, value: options.footerContact2Value || '' } : (instagram ? { icon: 'instagram_gradient', value: instagram } : undefined),
+        effectiveTextColor,
+        userFamily,
+        false,
+        logoFormat
+      );
+    return canvas.toDataURL("image/png");
+    }
+
+    // â”€â”€ V4 Â· CIRCUITO BR â€” card azul flutuante centralizado + pÃ­lula Pix vazada â”€
+    // Estrutura ref. anuncio "Circuito Portugal": foto cinematografica do destino
+    // ocupando 100% do canvas; card primario arredondado centralizado mais abaixo
+    // do meio (deixa ceu/paisagem visÃ­vel em cima); pÃ­lula Pix em formato pÃ­lula
+    // "vazando" metade para fora da borda inferior do card.
+    //
+    // Mapeamento estrito form â†’ render:
+    //   BG          â†’ image (Foto Real / Sua Imagem / IA Pura por Destino)
+    //   card.bg     â†’ primaryColor
+    //   tagline     â†’ promoName               cor: secondaryColor
+    //   tÃ­tulo      â†’ titleText (resolvido)   cor: branco
+    //   info        â†’ daysText | Ã­cones       cor: secondaryColor (mono)
+    //   12X pill bg â†’ secondaryColor          texto: primaryColor
+    //   "a partir de"/"sem juros"/"Total ..." â†’ branco
+    //   R$ + valor  â†’ branco (valor SEM vÃ­rgula/centavos â€” absoluto)
+    //   pix pill    â†’ bg secondaryColor, texto branco, vazando bottom: -28
+    if (variant === 4) {
+      await drawProminentLogo(ctx, 40, 40, 120);
+      // [BG] foto cobre 100%
+      const cBgV4 = fitCover(image.naturalWidth, image.naturalHeight, width, height, 0.42);
+      ctx.drawImage(image, cBgV4.sx, cBgV4.sy, cBgV4.sw, cBgV4.sh, 0, 0, width, height);
+
+      // â”€â”€ Dados â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      const v4Primary = primaryColor || "#0B2B7A";
+      const v4Secondary = secondaryColor || "#FFE600";
+      const v4OnSecondary = ensureContrast(v4Primary, v4Secondary, 0.4); // contraste do texto sobre amarelo
+      const destinoV4 = (destination || "DESTINO").toUpperCase();
+      // Tagline do topo = promoName (se vazio, usa "PACOTE" como neutro)
+      const taglineV4 = ((promoName || "PACOTE").trim()).toUpperCase();
+      // TÃ­tulo = primeira linha do titleText OU destino (sem repetir tagline)
+      const titleLineV4 = (() => {
+        const t = (titleText || "").trim();
+        const firstLine = t.split(/\r?\n/)[0] || t;
+        // remove tagline duplicada se titleText comecar com ela
+        return firstLine.replace(new RegExp(`^${taglineV4}\\s*`, "i"), "").trim() || destinoV4;
+      })();
+
+      const daysItemV4 = highlights.find((h) => /\d+\s*dia|\d+\s*noite|janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro/i.test(h?.text || ""));
+      const daysTextV4 = (travelPeriod?.trim() || daysItemV4?.text || "").trim();
+      const iconListV4: IconKey[] = (() => {
+        const fromHl = highlights
+          .map((h) => h?.icon as IconKey | undefined)
+          .filter((k): k is IconKey => !!k);
+        if (fromHl.length === 0) return ["coffee", "users", "bus", "camera"] as IconKey[];
+        const seen = new Set<IconKey>(); const out: IconKey[] = [];
+        for (const k of fromHl) { if (!seen.has(k)) { seen.add(k); out.push(k); if (out.length >= 5) break; } }
+        return out;
+      })();
+
+      // Chamada do pagamento sincronizada com o modo escolhido no formulario.
+      const instMatchV4 = (installments || "10x").match(/(\d{1,2})\s*x/i);
+      const parcNV4 = instMatchV4 ? instMatchV4[1] : "1";
+      const leftTopV4 = (() => {
+        if (paymentMode === "cash" || paymentMode === "cash_discount") return "pagamento";
+        if (paymentMode === "down_plus") return "entrada +";
+        return pricePrefix !== undefined ? pricePrefix : "a partir de";
+      })();
+      const pillTxt = (() => {
+        if (paymentMode === "cash" || paymentMode === "cash_discount") return "A VISTA";
+        if (paymentMode === "down_plus") {
+          const clean = (installments || paymentLabel || "Entrada + 10x").replace(/entrada\s*\+?/i, "").trim();
+          return clean || `${parcNV4}X`;
+        }
+        return `${parcNV4}X`;
+      })().toUpperCase();
+      const leftBottomV4 = (() => {
+        if (paymentMode === "cash" || paymentMode === "cash_discount") return (paymentSuffix || "por pessoa").trim();
+        if (paymentMode === "down_plus") return "parcelas";
+        return "sem juros";
+      })();
+
+      // Preco V4 â€” respeita o toggle "Mostrar centavos" do formulario.
+      // Se o `price` recebido ja vem com vÃ­rgula/centavos (ex: "423,00"), preserva.
+      // Caso contrario, exibe absoluto (sem decimais).
+      const priceRawV4 = (price || "").trim();
+      const priceNumV4 = parseFloat(priceRawV4.replace(/\./g, "").replace(",", "."));
+      const hasCentsV4 = /[.,]\d{1,2}\s*$/.test(priceRawV4);
+      const fmtBRv4 = (n: number, withCents: boolean) =>
+        n.toLocaleString("pt-BR", {
+          minimumFractionDigits: withCents ? 2 : 0,
+          maximumFractionDigits: withCents ? 2 : 0,
+        });
+      const valNumV4 = !isNaN(priceNumV4)
+        ? fmtBRv4(priceNumV4, hasCentsV4)
+        : priceRawV4;
+
+      // Total: usa override OU calcula (mesma regra de centavos)
+      const totalMultiplierV4 = (paymentMode === "cash" || paymentMode === "cash_discount") ? 1 : parseInt(parcNV4, 10);
+      const totalNumV4 = !isNaN(priceNumV4) ? priceNumV4 * totalMultiplierV4 : NaN;
+      const totalStrV4 = (totalOverride && totalOverride.trim())
+        || (!isNaN(totalNumV4) ? `Total ${(paymentSuffix || "por pessoa").trim()}: ${curSym} ${fmtBRv4(totalNumV4, hasCentsV4)}` : "");
+
+      // Desconto p/ pÃ­lula Pix
+      const descMatchV4 = (promoName || "").match(/(\d{1,2})\s*%/);
+      const descNV4 = descMatchV4 ? descMatchV4[1] : "5";
+
+      // â”€â”€ [CARD] dimensÃes e posicÃ£o (centralizado, mais abaixo do centro) â”€
+      // V4 precisa ser compacto: evita o â€œmarâ€ de fundo primÃ¡rio entre a pÃ­lula 10X e o preÃ§o.
+      const cardW = Math.round(width * (format === "story" ? 0.78 : 0.70));
+      const cardMarginX = Math.round((width - cardW) / 2);
+      // Altura adaptativa
+      const cardPadTop = 36;
+      const tagH = 50;
+      const tagGap = 4;
+      const titleH = 64;
+      const titleGap = 16;
+      const infoH = 42;
+      const infoGap = 22;
+      const priceBlockH = 150;
+      const totalGap = (showTotal && totalStrV4) ? 12 : 0;
+      const totalHv4 = (showTotal && totalStrV4) ? 24 : 0;
+      const cardPadBottom = 36;
+      const cardH = cardPadTop + tagH + tagGap + titleH + titleGap + infoH + infoGap + priceBlockH + totalGap + totalHv4 + cardPadBottom;
+
+      // PosicÃ£o vertical: card comeca em ~32% para deixar ceu visÃ­vel em cima.
+      const cardX = cardMarginX;
+      const idealCardY = format === "story" ? Math.round(height * 0.24) : Math.round(height * 0.16);
+      const cardY = Math.min(Math.max(isStory ? safeTop : 0, idealCardY), panelBottom - cardH - 20);
+      const cardR = 28;
+
+      // Sombra suave
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.32)";
+      ctx.shadowBlur = 32;
+      ctx.shadowOffsetY = 10;
+      fillRoundRect(ctx, cardX, cardY, cardW, cardH, cardR, v4Primary);
+      ctx.restore();
+
+      const cxV4 = cardX + cardW / 2;
+      let cyV4 = cardY + cardPadTop + 44; // baseline aproximada da tagline
+
+      // [TAGLINE] cor secundaria, peso black
+      ctx.textAlign = "left";
+      ctx.fillStyle = v4Secondary;
+      let tagSize = 56;
+      ctx.font = `900 ${tagSize}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(taglineV4).width > cardW - 80 && tagSize > 28) {
+        tagSize -= 2;
+        ctx.font = `900 ${tagSize}px Inter, Arial, sans-serif`;
+      }
+      safeFillText(ctx, taglineV4, cardX + 36, cyV4, cardW - 80, 12);
+      cyV4 += tagGap + 56;
+
+      // [TÃTULO/DESTINO] branco, regular (mais leve), maior
+      ctx.fillStyle = "#ffffff";
+      let titSize = 72;
+      ctx.font = `400 ${titSize}px Inter, Arial, sans-serif`;
+      while (ctx.measureText(titleLineV4).width > cardW - 80 && titSize > 36) {
+        titSize -= 2;
+        ctx.font = `400 ${titSize}px Inter, Arial, sans-serif`;
+      }
+      safeFillText(ctx, titleLineV4, cardX + 36, cyV4, cardW - 80, 18);
+      cyV4 += titleGap + 26;
+
+      // [INFO] dias | Ã­cones â€” todos secondaryColor
+      const infoYv4 = cyV4 + 8;
+      ctx.fillStyle = v4Secondary;
+      ctx.font = "700 32px Inter, Arial, sans-serif";
+      ctx.textBaseline = "middle";
+      const infoStartX = cardX + 36;
+      const hasDaysV4 = !!(daysTextV4 && daysTextV4.trim());
+      let currentXv4 = infoStartX;
+      if (hasDaysV4) {
+        ctx.fillText(daysTextV4, currentXv4, infoYv4);
+        const daysWv4 = ctx.measureText(daysTextV4).width;
+        currentXv4 += daysWv4 + 14;
+        ctx.fillText("|", currentXv4, infoYv4);
+        const sepWv4 = ctx.measureText("|").width;
+        currentXv4 += sepWv4 + 18;
+      }
+      
+      // Ã­cones na mesma linha
+      const iconSizeV4 = 44;
+      const iconGapV4 = 14;
+      let iconCursor = currentXv4;
+      iconListV4.forEach((k) => {
+        drawMonoIcon(ctx, k, iconCursor + iconSizeV4 / 2, infoYv4, iconSizeV4, v4Secondary);
+        iconCursor += iconSizeV4 + iconGapV4;
+      });
+      ctx.textBaseline = "alphabetic";
+      cyV4 += infoGap + 38;
+
+      // [PRICE BLOCK] â€” esquerda: "a partir de" + pÃ­lula 12X + "sem juros"
+      //                 direita: R$ pequeno + valor GIGANTE branco
+      const priceY = cyV4;
+      const priceGroupW = Math.min(cardW - 72, Math.round(width * (format === "story" ? 0.68 : 0.58)));
+      const priceGroupX = cxV4 - priceGroupW / 2;
+      const leftX = priceGroupX;
+      const rightEdge = priceGroupX + priceGroupW;
+
+      // Esquerda
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "600 22px Inter, Arial, sans-serif";
+      ctx.fillText(leftTopV4, leftX, priceY + 24);
+
+      // PÃ­lula sincronizada com o modo de pagamento (10X / A VISTA / Entrada + parcelas)
+      ctx.font = "900 38px Inter, Arial, sans-serif";
+      const pillTxtW = ctx.measureText(pillTxt).width;
+      const pillPadX = 18;
+      const pillPadY = 8;
+      const pillW = pillTxtW + pillPadX * 2;
+      const pillH = 52;
+      const pillX = leftX;
+      const pillY = priceY + 36;
+      fillRoundRect(ctx, pillX, pillY, pillW, pillH, 12, v4Secondary);
+      ctx.fillStyle = v4OnSecondary;
+      ctx.textBaseline = "middle";
+      ctx.textAlign = "center";
+      ctx.fillText(pillTxt, pillX + pillW / 2, pillY + pillH / 2 + 1);
+      ctx.textBaseline = "alphabetic";
+      ctx.textAlign = "left";
+
+      // "sem juros" abaixo da pÃ­lula
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "600 22px Inter, Arial, sans-serif";
+      ctx.fillText(leftBottomV4, leftX, pillY + pillH + 28);
+
+      // Direita: R$ + centavos pequenos; valor principal gigante.
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#ffffff";
+      // Auto-shrink valor
+      const reservedLeftPrice = pillX + pillW + 20;
+      const maxValW = rightEdge - reservedLeftPrice - 70; // reserva menor p/ aproximar R$ + valor da pÃ­lula
+      const centsMatchV4 = valNumV4.match(/^(.+?)([,.]\d{1,2})$/);
+      const mainValV4 = centsMatchV4 ? centsMatchV4[1] : valNumV4;
+      const centsValV4 = centsMatchV4 ? centsMatchV4[2] : "";
+      let valSize = 140;
+      ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
+      let smallPriceSize = Math.round(valSize * 0.34);
+      let mainValWv4 = ctx.measureText(mainValV4).width;
+      ctx.font = `700 ${smallPriceSize}px Inter, Arial, sans-serif`;
+      let centsWv4 = centsValV4 ? ctx.measureText(centsValV4).width : 0;
+      while (mainValWv4 + centsWv4 > maxValW && valSize > 64) {
+        valSize -= 4;
+        ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
+        mainValWv4 = ctx.measureText(mainValV4).width;
+        smallPriceSize = Math.round(valSize * 0.34);
+        ctx.font = `700 ${smallPriceSize}px Inter, Arial, sans-serif`;
+        centsWv4 = centsValV4 ? ctx.measureText(centsValV4).width : 0;
+      }
+      const priceBaseY = priceY + 130;
+      const mainRightX = rightEdge - centsWv4;
+      ctx.font = `900 ${valSize}px Inter, Arial, sans-serif`;
+      safeFillText(ctx, mainValV4, mainRightX, priceBaseY, mainRightX - leftX - 40, 48);
+      if (centsValV4) {
+        ctx.font = `700 ${smallPriceSize}px Inter, Arial, sans-serif`;
+        ctx.fillText(centsValV4, rightEdge, priceBaseY - valSize * 0.08);
+      }
+      ctx.font = `700 ${smallPriceSize}px Inter, Arial, sans-serif`;
+      ctx.fillText(curSym, mainRightX - mainValWv4 - 10, priceBaseY - valSize * 0.46);
+
+      cyV4 = priceY + priceBlockH;
+
+      // [TOTAL] (opcional)
+      if (totalHv4 > 0) {
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "600 22px Inter, Arial, sans-serif";
+        ctx.fillText(totalStrV4, cxV4, cyV4 + 18);
+      }
+
+      // [BADGE PIX] pÃ­lula vazada na borda inferior â€” bottom: -20
+      if (showPixBanner) {
         const pixLabel = (pixBannerText && pixBannerText.trim())
-          || `${descNV4}% OFF NO PIX`;
+          || `${descNV4}% OFF A VISTA NO`;
         ctx.font = "900 26px Inter, Arial, sans-serif";
         const pixLabelW = ctx.measureText(pixLabel).width;
+        const pixIconSize = 32;
+        const pixGap = 10;
+        ctx.font = "900 26px Inter, Arial, sans-serif";
+        const pixWordW = ctx.measureText("pix").width;
         const pixPadX = 22;
-        const pixTotalW = pixLabelW + pixPadX * 2;
+        const pixTotalW = pixLabelW + pixGap + pixIconSize + 6 + pixWordW + pixPadX * 2;
         const pixHbadge = 60;
         const pixXbadge = cxV4 - pixTotalW / 2;
         const pixYbadge = Math.min(cardY + cardH - pixHbadge / 2, panelBottom - pixHbadge - 10);
@@ -1501,13 +2926,19 @@ const panelBottom = RULES.PANEL_BOTTOM;
         fillRoundRect(ctx, pixXbadge, pixYbadge, pixTotalW, pixHbadge, pixHbadge / 2, v4Secondary);
         ctx.restore();
 
-        // texto centralizado
+        // texto + logo pix
         ctx.fillStyle = v4OnSecondary;
-        ctx.textAlign = "center";
+        ctx.textAlign = "left";
         ctx.textBaseline = "middle";
         ctx.font = "900 26px Inter, Arial, sans-serif";
+        const txtX = pixXbadge + pixPadX;
         const midY = pixYbadge + pixHbadge / 2;
-        ctx.fillText(pixLabel, pixXbadge + pixTotalW / 2, midY + 1);
+        ctx.fillText(pixLabel, txtX, midY + 1);
+        const pxIconCx = txtX + pixLabelW + pixGap + pixIconSize / 2;
+        drawPixLogo(ctx, pxIconCx, midY, pixIconSize, v4OnSecondary);
+        ctx.font = "900 26px Inter, Arial, sans-serif";
+        ctx.fillStyle = v4OnSecondary;
+        ctx.fillText("pix", pxIconCx + pixIconSize / 2 + 6, midY + 1);
         ctx.textBaseline = "alphabetic";
       }
 
@@ -1603,7 +3034,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const willShowBottomTxt = showTotal ? !!(totalStrV5 || bottomSuffix) : !!bottomSuffix;
       let cardH = basePriceOffset + 10;
       if (willShowBottomTxt) cardH += 35;
-      if (showPixBanner) cardH += 0; // Removido espaço extra para o Pix, diminuindo ~10% do bloco preto
+      if (showPixBanner) cardH += 40;
       const cardY = format === "story" ? Math.round(height * 0.42) : Math.round(height * 0.40);
       const cardR = 32;
 
@@ -1664,7 +3095,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const iconSizeV5 = 44;
       const iconGapV5 = 12;
       const iconStartX = leftPadV5;
-        const iconStartY = cardY + 165; // Below daysTextV5, slightly higher
+        const iconStartY = cardY + 155 + 20; // Below daysTextV5
       iconListV5.forEach((k, idx) => {
         const ix = iconStartX + idx * (iconSizeV5 + iconGapV5);
         fillRoundRect(ctx, ix, iconStartY, iconSizeV5, iconSizeV5, iconSizeV5 / 2, hexToRgbaV5(v5TextMain, 0.08));
@@ -1673,7 +3104,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
 
       // 5) Price Block (Lado a lado: Prefix/Pill + Price)
       // Base Y para alinhar tudo
-      const priceBaseY = cardY + basePriceOffset - 40; // Subiu mais 15px
+      const priceBaseY = cardY + basePriceOffset - 25; // Subiu para preencher o espaco
       
       // Right-aligned Price Value
       ctx.fillStyle = v5TextMain;
@@ -1769,9 +3200,9 @@ const panelBottom = RULES.PANEL_BOTTOM;
           ctx.fillText(bottomTxt, rightX, priceBaseY + 34);
         }
 
-      // Pix/Promo Badge centralizado na borda inferior do card (50% dentro, 50% fora)
+      // Pix/Promo Badge lateral (Abaixo do price block)
         if (showPixBanner) {
-          const rawPixLabel = ((pixBannerText && pixBannerText.trim()) || "10% OFF NO PIX").replace(/[⭐🌟✨]/g, '').toUpperCase();
+          const rawPixLabel = ((pixBannerText && pixBannerText.trim()) || "10% OFF NO PIX").toUpperCase();
           
           ctx.font = "900 16px Inter, Arial, sans-serif";
           const textW = ctx.measureText(rawPixLabel).width;
@@ -1779,18 +3210,15 @@ const panelBottom = RULES.PANEL_BOTTOM;
           const pixPadX = 14;
           const pixW = textW + pixPadX * 2;
           const pixH = 32;
-          
-          // Posiciona no centro horizontal (cxV5) e vazando metade para fora na borda inferior (cardY + cardH)
-          const pixX = cxV5 - pixW / 2;
-          const pixY = cardY + cardH - pixH - 20; // Banner inteiro dentro do card
+          const pixY = priceBaseY + (bottomTxt ? 50 : 25);
           
           // Draw yellow pill
-          fillRoundRect(ctx, pixX, pixY, pixW, pixH + 10, 20, v5Secondary);
+          fillRoundRect(ctx, rightX - pixW, pixY, pixW, pixH, 16, v5Secondary);
           
           ctx.fillStyle = contrastOn(v5Secondary);
           ctx.textBaseline = "middle";
           ctx.textAlign = "center";
-          ctx.fillText(rawPixLabel, cxV5, pixY + (pixH + 10) / 2 + 1);
+          ctx.fillText(rawPixLabel, rightX - pixW + pixW / 2, pixY + pixH / 2 + 1);
           ctx.textBaseline = "alphabetic";
         }
 
@@ -1958,7 +3386,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
     ctx.fillStyle = "#ffffff";
     const titSize = isStory ? 110 : 80;
     ctx.font = `900 ${titSize}px ${serif}`;
-    const lines = (titleText || "").split(/\s+/);
+    const lines = (titleText || "").toUpperCase().split(/\s+/);
     let curY = height / 2 - (lines.length * titSize * 0.5);
     lines.forEach((l, i) => {
       ctx.fillText(l, cx, curY + i * titSize * 0.95);
