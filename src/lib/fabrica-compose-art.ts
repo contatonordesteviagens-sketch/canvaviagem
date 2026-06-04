@@ -3108,14 +3108,13 @@ const panelBottom = RULES.PANEL_BOTTOM;
       ctx.fillStyle = auroraGrad;
       ctx.fillRect(0, 0, width, height);
 
-      const v5Primary = primaryColor || "#7C3AED"; // Roxo elegante por padrão
-      const v5Secondary = secondaryColor || "#FBBF24"; // Amarelo/Dourado quente
+      const v5Primary = primaryColor || "#7C3AED";
+      const v5Secondary = secondaryColor || "#FBBF24";
       const destinoV5 = (destination || "DESTINO").toUpperCase();
-      const taglineV5 = ((promoName || "OPORTUNIDADE ÚNICA").trim()).toUpperCase();
+      const taglineV5 = ((promoName || "OFERTA ESPECIAL").trim()).toUpperCase();
       const titleLineV5 = (() => {
-        const t = (titleText || destinoV5).trim();
-        const firstLine = t.split(/\r?\n/)[0] || t;
-        return firstLine.replace(new RegExp(`^${taglineV5}\\s*`, "i"), "").trim() || destinoV5;
+        const t = (destination || destinoV5).trim();
+        return t.toUpperCase() || destinoV5;
       })();
 
       const daysItemV5 = highlights.find((h) => /\d+\s*dia|\d+\s*noite|janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro/i.test(h?.text || ""));
@@ -3123,8 +3122,8 @@ const panelBottom = RULES.PANEL_BOTTOM;
       const iconListV5: IconKey[] = (() => {
         const fromHl = highlights
           .map((h) => h?.icon as IconKey | undefined)
-          .filter((k): k is IconKey => !!k);
-        if (fromHl.length === 0) return ["plane", "hotel", "coffee", "guide"] as IconKey[];
+          .filter((k): k is IconKey => !!k && k !== "check");
+        if (fromHl.length === 0) return ["plane", "hotel", "coffee", "camera"] as IconKey[];
         const seen = new Set<IconKey>(); const out: IconKey[] = [];
         for (const k of fromHl) { if (!seen.has(k)) { seen.add(k); out.push(k); if (out.length >= 4) break; } }
         return out;
@@ -3146,6 +3145,7 @@ const panelBottom = RULES.PANEL_BOTTOM;
         return `${parcNV5}X`;
       })().toUpperCase();
 
+      // Preço — parse robusto com fallback para exibir o raw se não puder parsear
       const priceRawV5 = (price || "").trim();
       const priceNumV5 = parseFloat(priceRawV5.replace(/\./g, "").replace(",", "."));
       const hasCentsV5 = /[.,]\d{1,2}\s*$/.test(priceRawV5);
@@ -3154,9 +3154,10 @@ const panelBottom = RULES.PANEL_BOTTOM;
           minimumFractionDigits: withCents ? 2 : 0,
           maximumFractionDigits: withCents ? 2 : 0,
         });
-      const valNumV5 = !isNaN(priceNumV5)
+      // Garante que sempre há um valor para exibir
+      const valNumV5 = (!isNaN(priceNumV5) && priceNumV5 > 0)
         ? fmtBRv5(priceNumV5, hasCentsV5)
-        : priceRawV5;
+        : (priceRawV5 || "---");
 
       const totalMultiplierV5 = (paymentMode === "cash" || paymentMode === "cash_discount") ? 1 : parseInt(parcNV5, 10);
       const totalNumV5 = !isNaN(priceNumV5) ? priceNumV5 * totalMultiplierV5 : NaN;
